@@ -61,7 +61,8 @@ public class GrimoireFloatRenderer {
         HOLDERS.clear();
         if (mc.level == null) { ANIMS.clear(); return; }
         for (Player p : mc.level.players()) {
-            if (Utils.getPlayerSpellbookStack(p).getItem() instanceof BlackGrimoireItem) HOLDERS.add(p.getId());
+            ItemStack equipped = Utils.getPlayerSpellbookStack(p);   // can be null (e.g. right after joining a world)
+            if (equipped != null && equipped.getItem() instanceof BlackGrimoireItem) HOLDERS.add(p.getId());
         }
         long now = mc.level.getGameTime();
         ANIMS.values().removeIf(s -> now - s > SummonQueue.DELAY_TICKS + 2);

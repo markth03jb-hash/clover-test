@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 /** Exclusive to the Black Grimoire: puts a greatsword in your empty main hand. */
@@ -48,7 +49,8 @@ public class SummonGreatswordSpell extends AbstractSpell {
         if (!base.isSuccess()) return base;
 
         // Exclusive: only castable while the Black Grimoire is equipped
-        if (!(Utils.getPlayerSpellbookStack(player).getItem() instanceof BlackGrimoireItem)) {
+        ItemStack equippedBook = Utils.getPlayerSpellbookStack(player);
+        if (equippedBook == null || !(equippedBook.getItem() instanceof BlackGrimoireItem)) {
             return new CastResult(CastResult.Type.FAILURE,
                     Component.translatable("ui.arcane_addon.grimoire_only").withStyle(ChatFormatting.RED));
         }
