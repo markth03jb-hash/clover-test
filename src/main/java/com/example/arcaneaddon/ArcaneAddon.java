@@ -1,5 +1,6 @@
 package com.example.arcaneaddon;
 
+import com.example.arcaneaddon.network.AddonNetwork;
 import com.example.arcaneaddon.registry.AddonItemRegistry;
 import com.example.arcaneaddon.registry.AddonSpellRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -15,5 +16,6 @@ public class ArcaneAddon {
         AddonSpellRegistry.SPELLS.register(modBus);
         AddonItemRegistry.ITEMS.register(modBus);
         AddonItemRegistry.TABS.register(modBus);
+        AddonNetwork.init();
     }
 }
