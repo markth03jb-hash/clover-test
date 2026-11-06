@@ -1,0 +1,30 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+description = '''An addon for Iron's Spells 'n Spellbooks.'''
+
+[[dependencies.${mod_id}]]
+modId = "forge"
+mandatory = true
+versionRange = "[47.4.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20.1,1.21)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "irons_spellbooks"
+mandatory = true
+versionRange = "[3.16.3,)"
+ordering = "AFTER"
+side = "BOTH"

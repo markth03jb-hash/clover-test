@@ -1,0 +1,11 @@
+{
+  "spell.arcane_addon.arcane_pulse": "Arcane Pulse",
+  "spell.arcane_addon.arcane_pulse.guide": "Release a shockwave of raw arcane energy, damaging all enemies around you.",
+  "item.arcane_addon.black_grimoire": "Black Grimoire",
+  "itemGroup.arcane_addon": "Arcane Addon",
+  "item.arcane_addon.summoned_greatsword": "Summoned Greatsword",
+  "spell.arcane_addon.summon_greatsword": "Summon Greatsword",
+  "spell.arcane_addon.summon_greatsword.guide": "Materialize a colossal black greatsword in your empty hand. It vanishes when you switch away from it.",
+  "ui.arcane_addon.empty_hand_required": "Your hand must be empty to use this spell.",
+  "ui.arcane_addon.grimoire_only": "This spell can only be cast from the Black Grimoire."
+}

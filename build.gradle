@@ -1,0 +1,67 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+group = mod_group_id
+version = mod_version
+base { archivesName = mod_id }
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: minecraft_version
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'debug'
+            mods { "${mod_id}" { source sourceSets.main } }
+        }
+        client { property 'forge.enabledGameTestNamespaces', mod_id }
+        server { property 'forge.enabledGameTestNamespaces', mod_id; args '--nogui' }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    maven { name = "Iron's Maven - Release"; url = 'https://code.redspace.io/releases' }
+    // Iron's own dependencies
+    maven { url = 'https://maven.theillusivec4.top/' }          // Curios
+    maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' } // GeckoLib
+    maven { url = 'https://maven.blamejared.com/' }
+    maven { url = 'https://maven.kosmx.dev/' }  // player animation lib
+    flatDir { dir 'libs' }                       // optional: drop dependency jars here as name-version.jar
+    maven { url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    // Compile against the stable API only (io.redspace.ironsspellbooks.api.*)
+    // The book uses SimpleAttributeSpellBook (not in the :api package) so compile against the full mod,
+    // plus the Curios API it extends.
+    implementation fg.deobf("io.redspace:irons_spellbooks:${irons_spells_version}")
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
+    // Iron's other runtime requirements (versions match the jars you supplied)
+    runtimeOnly fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.1:${geckolib_version}")
+    runtimeOnly fg.deobf("dev.kosmx.player-anim:player-animation-lib-forge:${playeranimator_version}")
+    // Full mod + lib at runtime so runClient works.
+    // If you use classes outside .api (e.g. damage.DamageSources, used in the example spell),
+    // switch the compileOnly line above to: implementation fg.deobf("io.redspace:irons_spellbooks:${irons_spells_version}")
+    runtimeOnly fg.deobf("io.redspace:irons_lib:${irons_lib_version}")
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var props = [mod_id: mod_id, mod_name: mod_name, mod_version: mod_version,
+                 minecraft_version: minecraft_version, forge_version: forge_version,
+                 irons_spells_version: irons_spells_version]
+    inputs.properties props
+    filesMatching(['META-INF/mods.toml']) { expand props }
+}
+
+tasks.named('jar', Jar).configure { finalizedBy 'reobfJar' }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
