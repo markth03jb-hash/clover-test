@@ -1,85 +1,19 @@
 {
- "credit": "Geometry layout follows Iron's Spells template",
  "texture_size": [
-  64,
-  64
+  16,
+  16
  ],
+ "textures": {
+  "leather": "arcane_addon:item/spell_book_models/black_grimoire_leather",
+  "trim": "arcane_addon:item/spell_book_models/black_grimoire_trim",
+  "edge": "arcane_addon:item/spell_book_models/black_grimoire_edge",
+  "front": "arcane_addon:item/spell_book_models/black_grimoire_front",
+  "back": "arcane_addon:item/spell_book_models/black_grimoire_back",
+  "pageL": "arcane_addon:item/spell_book_models/black_grimoire_page_left",
+  "pageR": "arcane_addon:item/spell_book_models/black_grimoire_page_right",
+  "particle": "arcane_addon:item/spell_book_models/black_grimoire_leather"
+ },
  "display": {
-  "thirdperson_righthand": {
-   "rotation": [
-    90,
-    180,
-    0
-   ],
-   "translation": [
-    0,
-    -2,
-    2
-   ],
-   "scale": [
-    0.75,
-    0.75,
-    0.75
-   ]
-  },
-  "thirdperson_lefthand": {
-   "rotation": [
-    90,
-    180,
-    0
-   ],
-   "translation": [
-    0,
-    -2,
-    2
-   ],
-   "scale": [
-    0.75,
-    0.75,
-    0.75
-   ]
-  },
-  "firstperson_righthand": {
-   "rotation": [
-    -137,
-    10,
-    90
-   ],
-   "translation": [
-    -4.25,
-    2,
-    -3.75
-   ]
-  },
-  "firstperson_lefthand": {
-   "rotation": [
-    -137,
-    10,
-    -90
-   ],
-   "translation": [
-    4.25,
-    2,
-    -3.25
-   ]
-  },
-  "ground": {
-   "rotation": [
-    -89,
-    0,
-    0
-   ],
-   "translation": [
-    0,
-    0,
-    -4
-   ],
-   "scale": [
-    0.75,
-    0.75,
-    0.75
-   ]
-  },
   "head": {
    "rotation": [
     0,
@@ -98,60 +32,45 @@
    ]
   }
  },
- "textures": {
-  "book": "arcane_addon:item/spell_book_models/black_grimoire",
-  "front": "arcane_addon:item/spell_book_models/black_grimoire_front",
-  "back": "arcane_addon:item/spell_book_models/black_grimoire_back",
-  "particle": "arcane_addon:item/spell_book_models/black_grimoire"
- },
  "elements": [
   {
    "from": [
-    6,
-    -5,
-    3
+    7.4,
+    2,
+    6.2
    ],
    "to": [
-    7,
-    2,
-    13
+    8.6,
+    14,
+    8.2
    ],
-   "rotation": {
-    "angle": 0,
-    "axis": "z",
-    "origin": [
-     8,
-     2,
-     8
-    ]
-   },
    "faces": {
     "north": {
      "uv": [
-      2.5,
-      2.25,
-      2.75,
-      4
+      0,
+      0,
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#leather"
     },
     "east": {
      "uv": [
-      5.25,
-      2.25,
-      2.75,
-      4
+      0,
+      0,
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#leather"
     },
     "south": {
      "uv": [
-      5.25,
-      2.25,
-      5.5,
-      4
+      0,
+      0,
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#leather"
     },
     "west": {
      "uv": [
@@ -160,81 +79,67 @@
       16,
       16
      ],
-     "texture": "#back",
-     "rotation": 90
+     "texture": "#leather"
     },
     "up": {
      "uv": [
-      0.25,
-      6.5,
       0,
-      4
+      0,
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#leather"
     },
     "down": {
      "uv": [
-      0.5,
-      4,
-      0.25,
-      6.5
+      0,
+      0,
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#leather"
     }
-   }
+   },
+   "name": "spine"
   },
   {
    "from": [
-    6,
-    2,
-    3
+    7.3,
+    4.2,
+    6.1
    ],
    "to": [
-    7,
-    9,
-    13
+    8.7,
+    5.0,
+    8.3
    ],
-   "rotation": {
-    "angle": 0,
-    "axis": "z",
-    "origin": [
-     8,
-     2,
-     8
-    ]
-   },
    "faces": {
     "north": {
      "uv": [
-      2.5,
-      2.25,
-      2.75,
-      4
+      0,
+      0,
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#trim"
     },
     "east": {
      "uv": [
-      2.75,
-      2.25,
-      5.25,
-      4
+      0,
+      0,
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#trim"
     },
     "south": {
      "uv": [
-      5.25,
-      2.25,
-      5.5,
-      4
+      0,
+      0,
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#trim"
     },
     "west": {
      "uv": [
@@ -243,348 +148,877 @@
       16,
       16
      ],
-     "texture": "#front",
-     "rotation": 270
+     "texture": "#trim"
     },
     "up": {
      "uv": [
-      0.5,
-      4,
-      0.25,
-      6.5
+      0,
+      0,
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#trim"
     },
     "down": {
      "uv": [
-      0.25,
-      6.5,
       0,
-      4
+      0,
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#trim"
     }
-   }
+   },
+   "name": "spine band"
   },
   {
    "from": [
-    7,
-    -3,
-    4
+    7.3,
+    10.8,
+    6.1
    ],
    "to": [
-    8,
-    2,
-    12
+    8.7,
+    11.600000000000001,
+    8.3
    ],
-   "rotation": {
-    "angle": 0,
-    "axis": "z",
-    "origin": [
-     8,
-     2,
-     8
-    ]
-   },
    "faces": {
     "north": {
      "uv": [
-      7.75,
-      4,
-      8,
-      5.25
+      0,
+      0,
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#trim"
     },
     "east": {
      "uv": [
-      5.5,
-      4,
-      7.5,
-      5.25
+      0,
+      0,
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#trim"
     },
     "south": {
      "uv": [
-      5.25,
-      4,
-      5.5,
-      5.25
+      0,
+      0,
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#trim"
     },
     "west": {
      "uv": [
-      3,
-      4,
-      5,
-      5.25
+      0,
+      0,
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#trim"
     },
     "up": {
      "uv": [
-      5.25,
-      4,
-      5,
-      2
+      0,
+      0,
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#trim"
     },
     "down": {
      "uv": [
-      6,
-      2,
-      5.75,
-      4
+      0,
+      0,
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#trim"
     }
-   }
+   },
+   "name": "spine band"
   },
   {
    "from": [
-    8,
-    -3,
-    4
+    0.5,
+    2,
+    6.4
    ],
    "to": [
-    8,
-    2,
-    12
+    7.8,
+    14,
+    7.4
    ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#front"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather"
+    }
+   },
    "rotation": {
     "angle": 22.5,
-    "axis": "z",
+    "axis": "y",
     "origin": [
      8,
-     2,
-     8
+     8,
+     7.5
     ]
    },
+   "name": "boardL"
+  },
+  {
+   "from": [
+    0.9,
+    2.5,
+    7.4
+   ],
+   "to": [
+    7.55,
+    13.5,
+    8.9
+   ],
    "faces": {
     "north": {
      "uv": [
       0,
       0,
-      0,
-      0
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#edge"
     },
     "east": {
      "uv": [
-      5.5,
-      4,
-      7.5,
-      5.25
+      0,
+      0,
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#edge"
     },
     "south": {
      "uv": [
       0,
       0,
-      0,
-      0
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#pageL"
     },
     "west": {
      "uv": [
-      3,
-      4,
-      5,
-      5.25
+      0,
+      0,
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#edge"
     },
     "up": {
      "uv": [
       0,
       0,
-      0,
-      0
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#edge"
     },
     "down": {
      "uv": [
       0,
       0,
-      0,
-      0
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#edge"
     }
-   }
-  },
-  {
-   "from": [
-    7,
-    2,
-    4
-   ],
-   "to": [
-    8,
-    7,
-    12
-   ],
+   },
    "rotation": {
-    "angle": 0,
-    "axis": "z",
+    "angle": 22.5,
+    "axis": "y",
     "origin": [
      8,
-     2,
-     8
+     8,
+     7.5
     ]
    },
-   "faces": {
-    "north": {
-     "uv": [
-      7.5,
-      4,
-      7.75,
-      5.25
-     ],
-     "rotation": 180,
-     "texture": "#book"
-    },
-    "east": {
-     "uv": [
-      3,
-      4,
-      5,
-      5.25
-     ],
-     "rotation": 180,
-     "texture": "#book"
-    },
-    "south": {
-     "uv": [
-      5,
-      4,
-      5.25,
-      5.25
-     ],
-     "rotation": 180,
-     "texture": "#book"
-    },
-    "west": {
-     "uv": [
-      5.5,
-      4,
-      7.5,
-      5.25
-     ],
-     "rotation": 180,
-     "texture": "#book"
-    },
-    "up": {
-     "uv": [
-      5.75,
-      2,
-      5.5,
-      4
-     ],
-     "texture": "#book"
-    },
-    "down": {
-     "uv": [
-      5.25,
-      4,
-      5,
-      2
-     ],
-     "texture": "#book"
-    }
-   }
+   "name": "pagesL"
   },
   {
    "from": [
-    8,
-    2,
-    4
+    0.7,
+    2.25,
+    7.4
    ],
    "to": [
-    8,
-    7,
-    12
+    7.8,
+    13.75,
+    8.2
    ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    }
+   },
+   "rotation": {
+    "angle": 22.5,
+    "axis": "y",
+    "origin": [
+     8,
+     8,
+     7.5
+    ]
+   },
+   "name": "pages underL"
+  },
+  {
+   "from": [
+    0.3,
+    1.8,
+    6.2
+   ],
+   "to": [
+    1.7,
+    3.2,
+    7.6
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    }
+   },
+   "rotation": {
+    "angle": 22.5,
+    "axis": "y",
+    "origin": [
+     8,
+     8,
+     7.5
+    ]
+   },
+   "name": "cornerL"
+  },
+  {
+   "from": [
+    0.3,
+    12.8,
+    6.2
+   ],
+   "to": [
+    1.7,
+    14.2,
+    7.6
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    }
+   },
+   "rotation": {
+    "angle": 22.5,
+    "axis": "y",
+    "origin": [
+     8,
+     8,
+     7.5
+    ]
+   },
+   "name": "cornerL"
+  },
+  {
+   "from": [
+    8.2,
+    2,
+    6.4
+   ],
+   "to": [
+    15.5,
+    14,
+    7.4
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#back"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather"
+    }
+   },
    "rotation": {
     "angle": -22.5,
-    "axis": "z",
+    "axis": "y",
     "origin": [
      8,
-     2,
-     8
+     8,
+     7.5
     ]
    },
+   "name": "boardR"
+  },
+  {
+   "from": [
+    8.6,
+    2.5,
+    7.4
+   ],
+   "to": [
+    15.25,
+    13.5,
+    8.9
+   ],
    "faces": {
     "north": {
      "uv": [
       0,
       0,
-      0,
-      0
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#edge"
     },
     "east": {
      "uv": [
-      3,
-      4,
-      5,
-      5.25
+      0,
+      0,
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#edge"
     },
     "south": {
      "uv": [
       0,
       0,
-      0,
-      0
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#pageR"
     },
     "west": {
      "uv": [
-      5.5,
-      4,
-      7.5,
-      5.25
+      0,
+      0,
+      16,
+      16
      ],
-     "rotation": 180,
-     "texture": "#book"
+     "texture": "#edge"
     },
     "up": {
      "uv": [
       0,
       0,
-      0,
-      0
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#edge"
     },
     "down": {
      "uv": [
       0,
       0,
-      0,
-      0
+      16,
+      16
      ],
-     "texture": "#book"
+     "texture": "#edge"
     }
-   }
+   },
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     8,
+     8,
+     7.5
+    ]
+   },
+   "name": "pagesR"
+  },
+  {
+   "from": [
+    8.399999999999999,
+    2.25,
+    7.4
+   ],
+   "to": [
+    15.5,
+    13.75,
+    8.2
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    }
+   },
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     8,
+     8,
+     7.5
+    ]
+   },
+   "name": "pages underR"
+  },
+  {
+   "from": [
+    14.3,
+    1.8,
+    6.2
+   ],
+   "to": [
+    15.7,
+    3.2,
+    7.6
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    }
+   },
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     8,
+     8,
+     7.5
+    ]
+   },
+   "name": "cornerR"
+  },
+  {
+   "from": [
+    14.3,
+    12.8,
+    6.2
+   ],
+   "to": [
+    15.7,
+    14.2,
+    7.6
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#trim"
+    }
+   },
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     8,
+     8,
+     7.5
+    ]
+   },
+   "name": "cornerR"
   }
  ]
 }
