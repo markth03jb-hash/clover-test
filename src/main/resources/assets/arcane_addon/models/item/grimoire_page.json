@@ -1,0 +1,78 @@
+{
+ "textures": {
+  "pageR": "arcane_addon:item/spell_book_models/black_grimoire_page_right",
+  "pageL": "arcane_addon:item/spell_book_models/black_grimoire_page_left",
+  "edge": "arcane_addon:item/spell_book_models/black_grimoire_edge",
+  "particle": "arcane_addon:item/spell_book_models/black_grimoire_edge"
+ },
+ "elements": [
+  {
+   "from": [
+    8.3,
+    2.9,
+    7.45
+   ],
+   "to": [
+    15.0,
+    13.1,
+    7.55
+   ],
+   "faces": {
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#pageR"
+    },
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#pageL"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#edge"
+    }
+   }
+  }
+ ]
+}

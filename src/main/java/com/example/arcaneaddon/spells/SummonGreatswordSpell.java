@@ -2,6 +2,7 @@ package com.example.arcaneaddon.spells;
 
 import com.example.arcaneaddon.ArcaneAddon;
 import com.example.arcaneaddon.item.BlackGrimoireItem;
+import com.example.arcaneaddon.registry.AddonItemRegistry;
 import com.example.arcaneaddon.server.SummonQueue;
 import io.redspace.ironsspellbooks.api.config.DefaultConfig;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
@@ -34,7 +35,7 @@ public class SummonGreatswordSpell extends AbstractSpell {
         this.baseSpellPower = 1;
         this.spellPowerPerLevel = 0;
         this.castTime = 0;
-        this.baseManaCost = 30;
+        this.baseManaCost = 0;   // free to cast
     }
 
     @Override public ResourceLocation getSpellResource() { return spellId; }
@@ -55,19 +56,36 @@ public class SummonGreatswordSpell extends AbstractSpell {
                     Component.translatable("ui.arcane_addon.grimoire_only").withStyle(ChatFormatting.RED));
         }
         if (SummonQueue.isPending(player)) return new CastResult(CastResult.Type.FAILURE, Component.empty());
-        // Main hand must be empty
-        if (!player.getMainHandItem().isEmpty()) {
+        // Empty main hand -> summon the Demon Slayer Sword. Holding it -> summon the Demon Dweller Sword into the off hand.
+        // Holding both -> swap them between the hands.
+        if (isPair(player)) return base;
+        if (player.getMainHandItem().is(AddonItemRegistry.DEMON_SLAYER_SWORD.get())) {
+            if (!player.getOffhandItem().isEmpty()) {
+                return new CastResult(CastResult.Type.FAILURE,
+                        Component.translatable("ui.arcane_addon.offhand_empty_required").withStyle(ChatFormatting.RED));
+            }
+        } else if (!player.getMainHandItem().isEmpty()) {
             return new CastResult(CastResult.Type.FAILURE,
                     Component.translatable("ui.arcane_addon.empty_hand_required").withStyle(ChatFormatting.RED));
         }
         return base;
     }
 
+    /** True when one hand holds the Slayer sword and the other the Dweller sword. */
+    private static boolean isPair(Player p) {
+        ItemStack m = p.getMainHandItem(), o = p.getOffhandItem();
+        var slayer = AddonItemRegistry.DEMON_SLAYER_SWORD.get();
+        var twin = AddonItemRegistry.DEMON_DWELLER_SWORD.get();
+        return (m.is(slayer) && o.is(twin)) || (m.is(twin) && o.is(slayer));
+    }
+
     @Override
     public void onCast(Level level, int spellLevel, LivingEntity caster, CastSource castSource, MagicData playerMagicData) {
         // Sword rises out of the grimoire (client animation) and is placed in your hand a moment later.
-        if (caster instanceof ServerPlayer sp && sp.getMainHandItem().isEmpty() && !SummonQueue.isPending(sp)) {
-            SummonQueue.start(sp);
+        if (caster instanceof ServerPlayer sp && !SummonQueue.isPending(sp)) {
+            if (isPair(sp)) SummonQueue.swap(sp);
+            else if (sp.getMainHandItem().isEmpty()) SummonQueue.start(sp, false);
+            else if (sp.getMainHandItem().is(AddonItemRegistry.DEMON_SLAYER_SWORD.get()) && sp.getOffhandItem().isEmpty()) SummonQueue.start(sp, true);
         }
         super.onCast(level, spellLevel, caster, castSource, playerMagicData);
     }

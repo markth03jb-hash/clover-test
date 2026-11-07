@@ -13,5 +13,6 @@ public class AddonNetwork {
 
     public static void init() {
         CHANNEL.registerMessage(0, SummonAnimPacket.class, SummonAnimPacket::encode, SummonAnimPacket::decode, SummonAnimPacket::handle);
+        CHANNEL.registerMessage(1, GrimoireOpenPacket.class, GrimoireOpenPacket::encode, GrimoireOpenPacket::decode, GrimoireOpenPacket::handle);
     }
 }
