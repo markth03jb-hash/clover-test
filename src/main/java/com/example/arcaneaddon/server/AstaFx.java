@@ -57,15 +57,21 @@ public class AstaFx {
             sl.sendParticles(o, c.x, c.y, c.z, 0, Math.cos(a), 0.0, Math.sin(a), speed);
         }
     }
-    private static void damage(ServerPlayer p, LivingEntity t, float dmg, String id) {
+    public static boolean isDweller(ServerPlayer p) { return p.getMainHandItem().is(com.example.arcaneaddon.registry.AddonItemRegistry.DEMON_DWELLER_SWORD.get()); }
+
+    static void damage(ServerPlayer p, LivingEntity t, float dmg, String id) {
         var spell = AddonSpellRegistry.SPELLS.getEntries().stream().filter(e -> e.getId().getPath().equals(id)).findFirst().map(e -> e.get()).orElse(null);
         if (spell != null) DamageSources.applyDamage(t, dmg, spell.getDamageSource(p));
         else t.hurt(p.damageSources().playerAttack(p), dmg);
     }
 
     // ------------------------------------------------------------------ Zetten: huge downward slash
-    public static void zetten(ServerPlayer p, float dmg) {
+    public static void zetten(ServerPlayer p, float dmg, boolean dw) {
         ServerLevel sl = p.serverLevel();
+        if (dw) {
+            dmg *= 0.85f;
+            p.displayClientMessage(Component.translatable("ui.arcane_addon.variant.dweller").withStyle(ChatFormatting.DARK_PURPLE), true);
+        }
         Vec3 eye = p.getEyePosition();
         Vec3 look = p.getLookAngle();
         Vec3 dir = new Vec3(look.x, 0, look.z).normalize();
@@ -79,7 +85,22 @@ public class AstaFx {
             burst(sl, CRIMSON, t.position().add(0, t.getBbHeight() * 0.5, 0), 25, 0.12, 0.4);
         }
         // the slash arc: a vertical crescent that sweeps from above your head down to the ground
-        for (int i = 0; i <= 28; i++) {
+        if (dw) {   // Dweller variant: a fast X of two diagonal dark slashes
+            Vec3 rt = dir.cross(new Vec3(0, 1, 0)).normalize();
+            Vec3 cx = eye.add(dir.scale(2.4)).add(0, -0.2, 0);
+            for (int dgn = 0; dgn < 2; dgn++) {
+                Vec3 u = rt.scale(dgn == 0 ? 0.7 : -0.7).add(0, 0.7, 0);
+                for (int i = -16; i <= 16; i++) {
+                    double t2 = i / 16.0;
+                    Vec3 pt = cx.add(u.scale(t2 * 2.9)).add(dir.scale((1 - t2 * t2) * 0.45));
+                    burst(sl, BLACK, pt, 1, 0, 0.03);
+                    burst(sl, EMBER, pt.add(dir.scale(-0.15)), 1, 0, 0.03);
+                    if (i % 4 == 0) burst(sl, ParticleTypes.SOUL_FIRE_FLAME, pt, 1, 0.02, 0.05);
+                }
+            }
+            burst(sl, ParticleTypes.SWEEP_ATTACK, cx, 2, 0.1, 0.4);
+        }
+        for (int i = 0; i <= 28 && !dw; i++) {
             double th = Math.toRadians(80 - 150.0 * i / 28);
             Vec3 pt = eye.add(dir.scale(Math.cos(th) * 3.4)).add(0, Math.sin(th) * 3.0 - 0.3, 0);
             burst(sl, EMBER, pt, 2, 0.01, 0.08);
@@ -98,8 +119,12 @@ public class AstaFx {
     }
 
     // ------------------------------------------------------------------ Sky Splitter: ranged beam that cleaves everything in a line
-    public static void skySplitter(ServerPlayer p, float dmg) {
+    public static void skySplitter(ServerPlayer p, float dmg, boolean dw) {
         ServerLevel sl = p.serverLevel();
+        if (dw) {
+            dmg *= 0.85f;
+            p.displayClientMessage(Component.translatable("ui.arcane_addon.variant.dweller").withStyle(ChatFormatting.DARK_PURPLE), true);
+        }
         Vec3 start = p.getEyePosition();
         Vec3 dir = p.getLookAngle();
         double len = 26;
@@ -114,7 +139,18 @@ public class AstaFx {
             burst(sl, ParticleTypes.EXPLOSION, t.position().add(0, t.getBbHeight() * 0.5, 0), 1, 0, 0);
             sound(sl, t.position(), SoundEvents.PLAYER_ATTACK_STRONG, 1f, 0.6f);
         }
-        for (int i = 0; i <= len; i++) {
+        if (dw) {   // Dweller variant: twin dark beams side by side
+            Vec3 rt = dir.cross(new Vec3(0, 1, 0)).normalize();
+            for (int side = -1; side <= 1; side += 2) {
+                for (int i = 0; i <= len; i++) {
+                    Vec3 c = start.add(dir.scale(i)).add(rt.scale(side * 0.9));
+                    for (int k = -1; k <= 1; k++) burst(sl, k == 0 ? ParticleTypes.SOUL_FIRE_FLAME : BLACK, c.add(0, k * 0.6, 0), 1, 0.01, 0.05);
+                    if (i % 2 == 0) burst(sl, EMBER, c, 1, 0.01, 0.1);
+                    if (i % 4 == 0) burst(sl, ParticleTypes.SWEEP_ATTACK, c, 1, 0, 0);
+                }
+            }
+        }
+        for (int i = 0; i <= len && !dw; i++) {
             Vec3 c = start.add(dir.scale(i));
             for (int k = -2; k <= 2; k++) burst(sl, k == 0 ? ParticleTypes.END_ROD : EMBER, c.add(0, k * 0.7, 0), 1, 0.01, 0.05);
             if (i % 2 == 0) burst(sl, ParticleTypes.SWEEP_ATTACK, c, 1, 0, 0);

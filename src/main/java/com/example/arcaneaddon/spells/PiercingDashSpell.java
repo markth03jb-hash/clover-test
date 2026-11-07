@@ -61,9 +61,9 @@ public class PiercingDashSpell extends AbstractSpell {
             return new CastResult(CastResult.Type.FAILURE,
                     Component.translatable("ui.arcane_addon.grimoire_only").withStyle(ChatFormatting.RED));
         }
-        if (!player.getMainHandItem().is(AddonItemRegistry.DEMON_SLAYER_SWORD.get())) {
+        if (!player.getMainHandItem().is(AddonItemRegistry.DEMON_SLAYER_SWORD.get()) && !player.getMainHandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get())) {
             return new CastResult(CastResult.Type.FAILURE,
-                    Component.translatable("ui.arcane_addon.sword_required").withStyle(ChatFormatting.RED));
+                    Component.translatable("ui.arcane_addon.any_sword_required").withStyle(ChatFormatting.RED));
         }
         if (DashQueue.isDashing(player)) return new CastResult(CastResult.Type.FAILURE, Component.empty());
         return base;
@@ -72,7 +72,7 @@ public class PiercingDashSpell extends AbstractSpell {
     @Override
     public void onCast(Level level, int spellLevel, LivingEntity caster, CastSource castSource, MagicData playerMagicData) {
         if (caster instanceof ServerPlayer sp && !DashQueue.isDashing(sp)) {
-            DashQueue.start(sp, this, getSpellPower(spellLevel, caster));
+            DashQueue.start(sp, this, getSpellPower(spellLevel, caster), sp.getMainHandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get()));
         }
         super.onCast(level, spellLevel, caster, castSource, playerMagicData);
     }

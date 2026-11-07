@@ -63,7 +63,12 @@ public class SummonQueue {
             sl.sendParticles(ParticleTypes.CRIT, p.getX() + fx * 0.6, y, p.getZ() + fz * 0.6, 12, 0.4, 0.2, 0.4, 0.3);
         }
         p.level().playSound(null, p.blockPosition(), SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.PLAYERS, 0.9f, 1.3f);
-        p.level().playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.8f, 1.5f);
+        float power = (float) p.getAttributeValue(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.SPELL_POWER.get());
+        if (p.getMainHandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get())) {
+            SlashProjectiles.horizontalSlash(p, 14f * power);   // Slayer (now off hand) cuts a wide horizontal slash with an aura
+        } else {
+            SlashProjectiles.darkShot(p, 15f * power);          // Dweller (now off hand) fires a dark slash projectile
+        }
     }
 
     @SubscribeEvent

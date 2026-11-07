@@ -24,7 +24,7 @@ import java.util.List;
 public abstract class GrimoireSpell extends AbstractSpell {
     private final ResourceLocation spellId;
     private final DefaultConfig config;
-    public enum Need { NONE, SLAYER_MAIN, DWELLER_ANY }
+    public enum Need { NONE, SLAYER_MAIN, ANY_MAIN, DWELLER_ANY }
     private final Need need;
     private final boolean showDamage;
 
@@ -76,6 +76,10 @@ public abstract class GrimoireSpell extends AbstractSpell {
         if (need == Need.DWELLER_ANY && !player.getMainHandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get())
                 && !player.getOffhandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get())) {
             return new CastResult(CastResult.Type.FAILURE, Component.translatable("ui.arcane_addon.dweller_required").withStyle(ChatFormatting.RED));
+        }
+        if (need == Need.ANY_MAIN && !player.getMainHandItem().is(AddonItemRegistry.DEMON_SLAYER_SWORD.get())
+                && !player.getMainHandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get())) {
+            return new CastResult(CastResult.Type.FAILURE, Component.translatable("ui.arcane_addon.any_sword_required").withStyle(ChatFormatting.RED));
         }
         if (need == Need.SLAYER_MAIN && !player.getMainHandItem().is(AddonItemRegistry.DEMON_SLAYER_SWORD.get())) {
             return new CastResult(CastResult.Type.FAILURE, Component.translatable("ui.arcane_addon.sword_required").withStyle(ChatFormatting.RED));

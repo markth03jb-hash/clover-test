@@ -37,17 +37,23 @@ public class DashQueue {
     public static final double SPEED = 1.55;   // ~11 blocks total
     private static final DustParticleOptions CRIMSON = new DustParticleOptions(new Vector3f(0.75f, 0.04f, 0.10f), 1.5f);
 
+    private static final DustParticleOptions BLACKTRAIL = new DustParticleOptions(new Vector3f(0.04f, 0.0f, 0.07f), 1.9f);
+
     private static class Dash {
-        int left = TICKS; Vec3 dir; float damage; AbstractSpell spell; final Set<UUID> hit = new HashSet<>();
+        int left = TICKS; double speed = SPEED; boolean dweller; Vec3 dir; float damage; AbstractSpell spell; final Set<UUID> hit = new HashSet<>();
     }
     private static final Map<UUID, Dash> ACTIVE = new HashMap<>();
 
     public static boolean isDashing(Player p) { return ACTIVE.containsKey(p.getUUID()); }
 
-    public static void start(ServerPlayer p, AbstractSpell spell, float damage) {
+    public static void start(ServerPlayer p, AbstractSpell spell, float damage, boolean dweller) {
         Vec3 look = p.getLookAngle();
         Vec3 dir = new Vec3(look.x, Mth.clamp(look.y, -0.5, 0.5), look.z).normalize();
         Dash d = new Dash(); d.dir = dir; d.damage = damage; d.spell = spell;
+        if (dweller) {   // Dweller variant: quicker, lighter, leaves a dark trail
+            d.speed = 1.95; d.left = 6; d.damage = damage * 0.7f; d.dweller = true;
+            p.displayClientMessage(net.minecraft.network.chat.Component.translatable("ui.arcane_addon.variant.dweller").withStyle(net.minecraft.ChatFormatting.DARK_PURPLE), true);
+        }
         ACTIVE.put(p.getUUID(), d);
         p.startAutoSpinAttack(TICKS + 2);   // vanilla riptide pose: whole body thrust forward, weapon out front
         p.level().playSound(null, p.blockPosition(), SoundEvents.TRIDENT_RIPTIDE_3, SoundSource.PLAYERS, 1.0f, 0.8f);
@@ -76,12 +82,12 @@ public class DashQueue {
         if (d == null) return;
         if (!p.isAlive()) { ACTIVE.remove(p.getUUID()); return; }
 
-        p.setDeltaMovement(d.dir.scale(SPEED));
+        p.setDeltaMovement(d.dir.scale(d.speed));
         p.hurtMarked = true;          // sync the velocity to the client
         p.resetFallDistance();
 
         ServerLevel sl = p.serverLevel();
-        AABB swept = p.getBoundingBox().expandTowards(d.dir.scale(SPEED)).inflate(0.6);
+        AABB swept = p.getBoundingBox().expandTowards(d.dir.scale(d.speed)).inflate(0.6);
         for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, swept, x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {
             if (!d.hit.add(t.getUUID())) continue;           // pierce: each target is hit once, dash keeps going
             DamageSources.applyDamage(t, d.damage, d.spell.getDamageSource(p));
@@ -101,6 +107,11 @@ public class DashQueue {
         sl.sendParticles(ParticleTypes.CRIT, p.getX() + d.dir.x, p.getY() + 1.0, p.getZ() + d.dir.z, 4, 0.2, 0.3, 0.2, 0.3);
         sl.sendParticles(ParticleTypes.SWEEP_ATTACK, p.getX() + d.dir.x * 0.8, p.getY() + 1.0, p.getZ() + d.dir.z * 0.8, 1, 0, 0, 0, 0);
 
+        if (d.dweller) {
+            sl.sendParticles(BLACKTRAIL, p.getX(), p.getY() + 1.0, p.getZ(), 12, 0.3, 0.5, 0.3, 0.02);
+            sl.sendParticles(ParticleTypes.LARGE_SMOKE, p.getX(), p.getY() + 0.8, p.getZ(), 3, 0.2, 0.4, 0.2, 0.02);
+            sl.sendParticles(ParticleTypes.SQUID_INK, p.getX(), p.getY() + 1.0, p.getZ(), 2, 0.2, 0.4, 0.2, 0.02);
+        }
         if (--d.left <= 0 || p.horizontalCollision) {
             ACTIVE.remove(p.getUUID());
             ring(sl, p.position().add(0, 0.1, 0), 28, 0.3);
