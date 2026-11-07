@@ -11,9 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.particles.DustColorTransitionOptions;
-import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -26,7 +23,6 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,24 +42,16 @@ public class GrimoireFloatRenderer {
     private static final double FORWARD = 1.7;       // open book: blocks in front of the player
     private static final double LEFT = 1.35;         // open book: blocks to the left
     private static final double HEIGHT = 0.70;       // open book: fraction of body height
-    private static final float BOOK_SCALE = 0.8f;    // open book size
+    private static final float BOOK_SCALE = 0.42f;   // open book size (outline hologram)
     private static final float TILT = 35f;           // open book lean-back (degrees)
     private static final int OPEN_TICKS = 60;        // stays open this long after the last cast
     private static final double HIP_SIDE = 0.40, HIP_BACK = 0.05, HIP_HEIGHT = 0.45;  // hip position
     private static final float HIP_SCALE = 0.7f;     // closed book size
-    private static final float DENSITY = 1.0f;     // particle density multiplier: lower it (0.5) if the effects hurt your FPS
     private static final int FLIP_CYCLE = 50;       // ticks between page-flip bursts
     private static final float SWORD_SCALE = 0.9f;
-    private static final float SWORD_CENTER = 0.278f; // sword model centre offset from its origin
+    private static final float SWORD_CENTER = 0.582f; // sword model centre offset from its origin
 
-    private static final DustParticleOptions CRIMSON = new DustParticleOptions(new Vector3f(0.75f, 0.04f, 0.10f), 1.4f);
-    private static final DustParticleOptions DARK_RED = new DustParticleOptions(new Vector3f(0.25f, 0.0f, 0.04f), 1.9f);
-
-    private static final DustColorTransitionOptions EMBER = new DustColorTransitionOptions(new Vector3f(1.0f, 0.15f, 0.1f), new Vector3f(0.1f, 0.0f, 0.05f), 1.3f);
     private static final Set<Integer> BURSTED = new HashSet<>();
-    private static long swordFxTick = -1;
-
-    private static int n(int base) { return Math.max(1, Math.round(base * DENSITY)); }
 
     private static final Map<Integer, Long> ANIMS = new HashMap<>();       // sword animation start times
     private static final Map<Integer, Long> OPEN_UNTIL = new HashMap<>();  // book stays open until this game time
@@ -128,99 +116,25 @@ public class GrimoireFloatRenderer {
             sy[1] += Mth.wrapDegrees(tgt - sy[1]) * 0.18f;   // the book glides after your view instead of snapping
 
             if (has && !p.isSpectator() && !p.isInvisible()) {
-                float yaw = sy[1];
-                Vec3 mv = p.getDeltaMovement();
                 if (pr[1] > 0.6f) {
-                    Vec3 c = floatPosition(p, 1f, yaw);
-                    double t = now * 0.22;
-                    // --- opening burst: shockwave rings + flash + sound ---
+                    Vec3 c = floatPosition(p, 1f, sy[1]);
+                    // opening: just a sound, the look is the 3D outline book (no particles on the book)
                     if (pr[0] <= 0.6f) {
-                        for (int ring = 0; ring < 3; ring++) {
-                            for (int i = 0; i < n(36); i++) {
-                                double a = i * Math.PI * 2 / n(36);
-                                double sp = 0.12 + ring * 0.09;
-                                mc.level.addParticle(ring == 1 ? DARK_RED : EMBER, c.x, c.y, c.z,
-                                        mv.x + Math.cos(a) * sp, mv.y + (ring - 1) * 0.04, mv.z + Math.sin(a) * sp);
-                            }
-                        }
-                        mc.level.addParticle(ParticleTypes.FLASH, c.x, c.y, c.z, 0, 0, 0);
-                        mc.level.playLocalSound(c.x, c.y, c.z, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.9f, 0.7f, false);
+                        mc.level.playLocalSound(c.x, c.y, c.z, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.6f, 0.7f, false);
                         mc.level.playLocalSound(c.x, c.y, c.z, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 0.8f, 0.8f, false);
                     }
-                    // --- two counter-rotating helices climbing off the book ---
-                    for (int hx = 0; hx < 2; hx++) {
-                        for (int i = 0; i < n(2); i++) {
-                            double ph = (now * 0.045 + hx * 0.5 + i * 0.5) % 1.0;
-                            double a = t * 1.6 * (hx == 0 ? 1 : -1) + hx * Math.PI + ph * 9;
-                            double rad = 0.25 + ph * 0.35;
-                            mc.level.addParticle(EMBER, c.x + Math.cos(a) * rad, c.y - 0.3 + ph * 1.5, c.z + Math.sin(a) * rad,
-                                    mv.x, mv.y + 0.01, mv.z);
-                        }
-                    }
-                    // --- two tilted orbit rings of dust ---
-                    for (int ring = 0; ring < 2; ring++) {
-                        for (int i = 0; i < n(4); i++) {
-                            double a = t * (ring == 0 ? 1 : -1.3) + i * Math.PI * 2 / n(4);
-                            double rad = ring == 0 ? 0.7 : 0.5, tilt = ring == 0 ? 0.35 : -0.5;
-                            mc.level.addParticle(ring == 0 ? CRIMSON : DARK_RED, c.x + Math.cos(a) * rad, c.y + Math.cos(a) * tilt, c.z + Math.sin(a) * rad,
-                                    mv.x - Math.sin(a) * 0.03, mv.y, mv.z + Math.cos(a) * 0.03);
-                        }
-                    }
-                    // --- wisps, spores, glyphs, sparkles, smoke ---
-                    for (int i = 0; i < n(3); i++) {
-                        mc.level.addParticle(CRIMSON, c.x + (rnd.nextDouble() - 0.5) * 0.8, c.y - 0.2, c.z + (rnd.nextDouble() - 0.5) * 0.8,
-                                mv.x, mv.y + 0.03 + rnd.nextDouble() * 0.03, mv.z);
-                    }
-                    for (int i = 0; i < n(2); i++) {
-                        mc.level.addParticle(ParticleTypes.CRIMSON_SPORE, c.x + (rnd.nextDouble() - 0.5) * 1.0, c.y + (rnd.nextDouble() - 0.5) * 0.8,
-                                c.z + (rnd.nextDouble() - 0.5) * 1.0, mv.x, mv.y - 0.01, mv.z);
-                    }
-                    for (int i = 0; i < n(2); i++) {
-                        mc.level.addParticle(ParticleTypes.ENCHANT, c.x, c.y + 0.1, c.z,
-                                (rnd.nextDouble() - 0.5) * 1.6, 0.8 + rnd.nextDouble() * 0.7, (rnd.nextDouble() - 0.5) * 1.6);
-                    }
-                    mc.level.addParticle(ParticleTypes.END_ROD, c.x + (rnd.nextDouble() - 0.5) * 0.9, c.y + (rnd.nextDouble() - 0.5) * 0.6,
-                            c.z + (rnd.nextDouble() - 0.5) * 0.9, mv.x * 0.9, mv.y + 0.01, mv.z * 0.9);
-                    if (now % 3 == 0) mc.level.addParticle(ParticleTypes.LARGE_SMOKE, c.x + (rnd.nextDouble() - 0.5) * 0.6,
-                            c.y - 0.3, c.z + (rnd.nextDouble() - 0.5) * 0.6, mv.x, mv.y + 0.02, mv.z);
-                    if (now % 5 == 0) mc.level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, c.x + (rnd.nextDouble() - 0.5) * 0.6,
-                            c.y - 0.2, c.z + (rnd.nextDouble() - 0.5) * 0.6, mv.x, mv.y + 0.03, mv.z);
-                    // --- rustle of pages each time a sheet starts to flip ---
                     long cyc = (now + p.getId() * 13L) % FLIP_CYCLE;
                     if (pr[1] >= 1f && (cyc == 4 || cyc == 9 || cyc == 14)) {
                         mc.level.playLocalSound(c.x, c.y, c.z, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 0.5f, 0.9f + rnd.nextFloat() * 0.3f, false);
                     }
-                } else if (pr[1] <= 0f && now % 8 == 0) {
-                    // embers leaking from the closed book on the hip
-                    Vec3 h = hipPosition(p, 1f, p.yBodyRot);
-                    mc.level.addParticle(ParticleTypes.CRIMSON_SPORE, h.x, h.y, h.z, mv.x, mv.y + 0.01, mv.z);
-                    if (now % 24 == 0) mc.level.addParticle(EMBER, h.x, h.y, h.z, mv.x, mv.y + 0.03, mv.z);
                 }
             }
 
-            // --- sword aura: embers and sparks around the Demon Slayer Sword while you hold it (more while dashing) ---
-            if (!p.isSpectator() && !p.isInvisible() && p.getMainHandItem().is(AddonItemRegistry.DEMON_SLAYER_SWORD.get())) {
-                double yr = Math.toRadians(p.getViewYRot(1f));
-                Vec3 fw = new Vec3(-Math.sin(yr), 0, Math.cos(yr)), lf = new Vec3(Math.cos(yr), 0, Math.sin(yr));
-                Vec3 hand = new Vec3(p.getX(), p.getY() + p.getEyeHeight() * 0.7, p.getZ()).add(fw.scale(0.6)).add(lf.scale(-0.45));
-                boolean dash = p.isAutoSpinAttack();
-                for (int i = 0; i < n(dash ? 8 : 2); i++) {
-                    mc.level.addParticle(i % 2 == 0 ? EMBER : DARK_RED, hand.x + (rnd.nextDouble() - 0.5) * 0.7, hand.y + (rnd.nextDouble() - 0.5) * 0.9,
-                            hand.z + (rnd.nextDouble() - 0.5) * 0.7, 0, 0.02 + rnd.nextDouble() * 0.02, 0);
-                }
-                if (dash) mc.level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, hand.x, hand.y, hand.z, 0, 0.01, 0);
-                else if (now % 6 == 0) mc.level.addParticle(ParticleTypes.CRIMSON_SPORE, hand.x, hand.y, hand.z, 0, 0.02, 0);
-            }
-
-            // --- summon burst: when the sword is called, flash + shockwave at the book ---
+            // --- summon: a dark ring flares where the sword is called from ---
             Long st = ANIMS.get(p.getId());
             if (has && st != null && now - st <= 1 && BURSTED.add(p.getId())) {
-                Vec3 c = floatPosition(p, 1f, sy[1]).add(0, 0.2, 0);
-                for (int i = 0; i < n(48); i++) {
-                    double a = i * Math.PI * 2 / n(48);
-                    mc.level.addParticle(EMBER, c.x, c.y, c.z, Math.cos(a) * 0.25, 0.02, Math.sin(a) * 0.25);
-                }
-                mc.level.addParticle(ParticleTypes.FLASH, c.x, c.y, c.z, 0, 0, 0);
+                Vec3 c = floatPosition(p, 1f, sy[1]).add(0, 0.1, 0);
+                FxRenderer.localRing(c, OFFHAND_ANIMS.contains(p.getId()) ? 1 : 0, 0.3f, 2.4f, 0.35f, 9);
                 mc.level.playLocalSound(c.x, c.y, c.z, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0f, 0.5f, false);
             }
         }
@@ -250,6 +164,7 @@ public class GrimoireFloatRenderer {
             float[] pr = PROGRESS.get(p.getId());
             if (pr == null) continue;
             float prog = ease(Mth.lerp(pt, pr[0], pr[1]));
+            boolean fp = p == mc.player && mc.options.getCameraType().isFirstPerson();   // the book is never drawn in first person
 
             float yaw = p.getViewYRot(pt);
             float[] sy = SMOOTH_YAW.get(p.getId());
@@ -262,7 +177,9 @@ public class GrimoireFloatRenderer {
 
             ps.pushPose();
             ps.translate(bookPos.x - cam.x, bookPos.y - cam.y, bookPos.z - cam.z);
-            if (prog < 0.5f) {
+            if (fp) {
+                // nothing: first person sees no book
+            } else if (prog < 0.5f) {
                 // ---- closed tome, strapped to the hip (and lifting off it) ----
                 float s = HIP_SCALE * (1f + 0.15f * prog);
                 ps.mulPose(Axis.YP.rotationDegrees(-bodyYaw));
@@ -276,37 +193,13 @@ public class GrimoireFloatRenderer {
                 mc.getItemRenderer().renderStatic(book, ItemDisplayContext.NONE, LightTexture.FULL_BRIGHT,
                         OverlayTexture.NO_OVERLAY, ps, buf, mc.level, p.getId());
             } else {
-                // ---- open tome, floating ----
+                // ---- open tome, floating: a see-through dark outline so it never blocks the view ----
                 float k = ease((prog - 0.5f) * 2f);
                 float kb = k - 1f;
                 float back = 1f + 2.70158f * kb * kb * kb + 1.70158f * kb * kb;   // ease-out-back: small overshoot, then settles
                 float s = BOOK_SCALE * (0.5f + 0.5f * back);
-                ps.mulPose(Axis.YP.rotationDegrees(-yawS));
-                ps.mulPose(Axis.YP.rotationDegrees(180f));          // pages face the player
-                ps.mulPose(Axis.XP.rotationDegrees(-TILT * k));     // lean back like a lectern
-                ps.scale(s, s, s);
-                mc.getItemRenderer().renderStatic(book, ItemDisplayContext.HEAD, LightTexture.FULL_BRIGHT,
-                        OverlayTexture.NO_OVERLAY, ps, buf, mc.level, p.getId());
-
-                // ---- pages riffling over from right to left, like thumbing through a real book ----
-                if (k > 0.95f) {
-                    float cyc = ((mc.level.getGameTime() + p.getId() * 13L) % FLIP_CYCLE) + pt;
-                    for (int i = 0; i < 3; i++) {
-                        float sP = (cyc - (4 + i * 5)) / 14f;          // 3 sheets, staggered 5 ticks, 14 ticks each
-                        if (sP <= 0f || sP >= 1f) continue;
-                        float m = 0.5f - 0.5f * (float) Math.cos(Math.PI * sP);   // sine ease in/out
-                        float alpha = -22.5f - 135f * m;               // right-hand rest -> straight up -> left-hand rest
-                        float lift = 1.5f * (1f - 2f * m);             // thickness offset so it lands on the left stack
-                        ps.pushPose();
-                        ps.translate(0, 0, -0.03125);                  // hinge = the spine (model z = 7.5)
-                        ps.mulPose(Axis.YP.rotationDegrees(alpha));
-                        ps.translate(0, 0, lift / 16f);
-                        ps.translate(0, 0, 0.03125);
-                        mc.getItemRenderer().renderStatic(page, ItemDisplayContext.NONE, LightTexture.FULL_BRIGHT,
-                                OverlayTexture.NO_OVERLAY, ps, buf, mc.level, p.getId());
-                        ps.popPose();
-                    }
-                }
+                float cyc = k > 0.95f ? ((mc.level.getGameTime() + p.getId() * 13L) % FLIP_CYCLE) + pt : -1f;
+                FxRenderer.queueBook(bookPos, yawS, TILT * k, s, k, cyc);
             }
             ps.popPose();
 
@@ -330,16 +223,11 @@ public class GrimoireFloatRenderer {
                     pos = top.scale((1 - m) * (1 - m)).add(ctrl.scale(2 * (1 - m) * m)).add(hand.scale(m * m));
                     scale = 1f; roll = 225f + (off ? -90f : 90f) * ease(Mth.clamp(u * 3f, 0f, 1f));
                 }
-                long gtNow = mc.level.getGameTime();
-                if (swordFxTick != gtNow) {   // once per tick, not once per frame
-                    swordFxTick = gtNow;
-                    for (int i = 0; i < n(6); i++) {
-                        double a = gtNow * 0.9 + i * Math.PI * 2 / n(6);
-                        mc.level.addParticle(i % 2 == 0 ? EMBER : CRIMSON, pos.x + Math.cos(a) * 0.32, pos.y + Math.sin(a * 0.5) * 0.12,
-                                pos.z + Math.sin(a) * 0.32, 0, 0.01, 0);
-                    }
-                    mc.level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, pos.x, pos.y, pos.z, 0, 0.01, 0);
-                    mc.level.addParticle(ParticleTypes.END_ROD, pos.x, pos.y, pos.z, 0, 0, 0);
+                {   // dark aura hugging the flying blade
+                    double ang = Math.toRadians(45f + roll), yr = Math.toRadians(yaw);
+                    Vec3 axis = new Vec3(Math.cos(ang) * Math.cos(yr), Math.sin(ang), Math.cos(ang) * Math.sin(yr));
+                    float half = (off ? 1.05f : 1.5f) * scale;
+                    FxRenderer.queueAura(pos.subtract(axis.scale(half)), pos.add(axis.scale(half)), (off ? 0.26f : 0.36f) * scale, off ? 1 : 0, 1f);
                 }
                 ps.pushPose();
                 ps.translate(pos.x - cam.x, pos.y - cam.y, pos.z - cam.z);

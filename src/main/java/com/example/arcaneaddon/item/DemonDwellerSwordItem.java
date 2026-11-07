@@ -43,8 +43,6 @@ public class DemonDwellerSwordItem extends SwordItem {
 
     @Override public boolean onEntityItemUpdate(ItemStack stack, ItemEntity entity) { entity.discard(); return true; }
     @Override public boolean isDamageable(ItemStack stack) { return false; }
-    @Override public boolean isFoil(ItemStack stack) { return true; }
-
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tip, flag);

@@ -29,9 +29,6 @@ public class DemonSlayerSwordItem extends SwordItem {
     }
 
     @Override
-    public boolean isFoil(ItemStack stack) { return true; }
-
-    @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tip, flag);
         tip.add(Component.translatable("tooltip.arcane_addon.demon_slayer_sword.1").withStyle(ChatFormatting.DARK_RED));

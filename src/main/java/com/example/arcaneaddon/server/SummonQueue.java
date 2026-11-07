@@ -53,14 +53,12 @@ public class SummonQueue {
             double yr = Math.toRadians(p.getYRot());
             double lx = Math.cos(yr), lz = Math.sin(yr), fx = -Math.sin(yr), fz = Math.cos(yr);
             double y = p.getY() + p.getEyeHeight() * 0.7;
-            for (int i = 0; i <= 10; i++) {   // two streaks of crimson crossing between the hands
-                double t = i / 10.0, k = -0.45 + 0.9 * t;
-                sl.sendParticles(CRIMSON, p.getX() + fx * 0.6 + lx * k, y + Math.sin(t * Math.PI) * 0.25, p.getZ() + fz * 0.6 + lz * k, 1, 0, 0, 0, 0);
-                sl.sendParticles(CRIMSON, p.getX() + fx * 0.6 - lx * k, y - Math.sin(t * Math.PI) * 0.25, p.getZ() + fz * 0.6 - lz * k, 1, 0, 0, 0, 0);
-            }
-            sl.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, p.getX() + fx * 0.6 + lx * 0.45, y, p.getZ() + fz * 0.6 + lz * 0.45, 8, 0.1, 0.2, 0.1, 0.03);
-            sl.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, p.getX() + fx * 0.6 - lx * 0.45, y, p.getZ() + fz * 0.6 - lz * 0.45, 8, 0.1, 0.2, 0.1, 0.03);
-            sl.sendParticles(ParticleTypes.CRIT, p.getX() + fx * 0.6, y, p.getZ() + fz * 0.6, 12, 0.4, 0.2, 0.4, 0.3);
+            net.minecraft.world.phys.Vec3 rh = new net.minecraft.world.phys.Vec3(p.getX() + fx * 0.6 - lx * 0.45, y, p.getZ() + fz * 0.6 - lz * 0.45);
+            net.minecraft.world.phys.Vec3 lh = new net.minecraft.world.phys.Vec3(p.getX() + fx * 0.6 + lx * 0.45, y, p.getZ() + fz * 0.6 + lz * 0.45);
+            FxSend.beam(sl, 0, rh, lh.add(0, 0.25, 0), 0.22f, 7);    // two blades crossing as they trade hands
+            FxSend.beam(sl, 1, lh, rh.add(0, 0.25, 0), 0.22f, 7);
+            FxSend.ring(sl, 0, rh, 0.1f, 1.0f, 0.35f, 7);
+            FxSend.ring(sl, 1, lh, 0.1f, 1.0f, 0.35f, 7);
         }
         p.level().playSound(null, p.blockPosition(), SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.PLAYERS, 0.9f, 1.3f);
         float power = (float) p.getAttributeValue(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.SPELL_POWER.get());
@@ -90,13 +88,10 @@ public class SummonQueue {
             p.level().playSound(null, p.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.8f, 0.6f);
             if (p.level() instanceof ServerLevel sl) {
                 double y = p.getY() + 1.1;
-                sl.sendParticles(ParticleTypes.FLASH, p.getX(), y, p.getZ(), 1, 0, 0, 0, 0);
-                sl.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, p.getX(), y, p.getZ(), 40, 0.45, 0.55, 0.45, 0.05);
-                sl.sendParticles(ParticleTypes.CRIT, p.getX(), y, p.getZ(), 25, 0.5, 0.5, 0.5, 0.3);
-                for (int i = 0; i < 40; i++) {
-                    double a = i * Math.PI * 2 / 40;
-                    sl.sendParticles(CRIMSON, p.getX() + Math.cos(a) * 0.5, y, p.getZ() + Math.sin(a) * 0.5, 0, Math.cos(a), 0.02, Math.sin(a), 0.35);
-                }
+                boolean twinGrab = p.getOffhandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get());
+                FxSend.ring(sl, twinGrab ? 1 : 0, new net.minecraft.world.phys.Vec3(p.getX(), y - 0.2, p.getZ()), 0.3f, 2.8f, 0.9f, 10);
+                FxSend.ring(sl, 6, new net.minecraft.world.phys.Vec3(p.getX(), y - 0.7, p.getZ()), 0.2f, 1.8f, 0.5f, 8);
+                sl.sendParticles(ParticleTypes.CRIT, p.getX(), y, p.getZ(), 14, 0.5, 0.5, 0.5, 0.3);
             }
         }
     }

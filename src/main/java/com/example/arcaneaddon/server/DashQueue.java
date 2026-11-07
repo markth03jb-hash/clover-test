@@ -60,10 +60,11 @@ public class DashQueue {
         p.level().playSound(null, p.blockPosition(), SoundEvents.SOUL_ESCAPE, SoundSource.PLAYERS, 0.8f, 0.5f);
         p.level().playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 0.6f);
         if (p.level() instanceof ServerLevel sl) {
-            ring(sl, p.position().add(0, 0.1, 0), 36, 0.45);
-            sl.sendParticles(ParticleTypes.FLASH, p.getX(), p.getY() + 1.0, p.getZ(), 1, 0, 0, 0, 0);
-            sl.sendParticles(ParticleTypes.CLOUD, p.getX(), p.getY() + 0.2, p.getZ(), 18, 0.4, 0.1, 0.4, 0.12);
-            sl.sendParticles(ParticleTypes.POOF, p.getX(), p.getY() + 0.5, p.getZ(), 10, 0.3, 0.3, 0.3, 0.08);
+            int pal = dweller ? 1 : 0;
+            Vec3 o = p.position().add(0, 1.0, 0);
+            FxSend.beam(sl, pal, o, o.add(dir.scale(d.speed * d.left)), dweller ? 0.8f : 1.1f, 12);   // the dash as a long 3D slash streak
+            FxSend.ring(sl, pal, p.position().add(0, 0.1, 0), 0.4f, 3.2f, 0.5f, 9);
+            sl.sendParticles(ParticleTypes.CLOUD, p.getX(), p.getY() + 0.2, p.getZ(), 12, 0.4, 0.1, 0.4, 0.12);
         }
     }
 
@@ -114,7 +115,7 @@ public class DashQueue {
         }
         if (--d.left <= 0 || p.horizontalCollision) {
             ACTIVE.remove(p.getUUID());
-            ring(sl, p.position().add(0, 0.1, 0), 28, 0.3);
+            FxSend.ring(sl, d.dweller ? 1 : 0, p.position().add(0, 0.1, 0), 0.4f, 3.0f, 0.5f, 8);
             sl.sendParticles(ParticleTypes.CLOUD, p.getX(), p.getY() + 0.3, p.getZ(), 14, 0.4, 0.2, 0.4, 0.1);
             sl.playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 0.8f, 0.6f);
             p.setDeltaMovement(d.dir.scale(0.3));   // brake

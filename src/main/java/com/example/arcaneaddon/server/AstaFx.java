@@ -65,66 +65,50 @@ public class AstaFx {
         else t.hurt(p.damageSources().playerAttack(p), dmg);
     }
 
-    // ------------------------------------------------------------------ Zetten: huge downward slash
+    private static void variantMsg(ServerPlayer p) {
+        p.displayClientMessage(Component.translatable("ui.arcane_addon.variant.dweller").withStyle(ChatFormatting.DARK_PURPLE), true);
+    }
+
+    // ------------------------------------------------------------------ Zetten: huge downward slash (Slayer) / fast X of two slashes (Dweller)
     public static void zetten(ServerPlayer p, float dmg, boolean dw) {
         ServerLevel sl = p.serverLevel();
-        if (dw) {
-            dmg *= 0.85f;
-            p.displayClientMessage(Component.translatable("ui.arcane_addon.variant.dweller").withStyle(ChatFormatting.DARK_PURPLE), true);
-        }
+        if (dw) { dmg *= 0.85f; variantMsg(p); }
         Vec3 eye = p.getEyePosition();
         Vec3 look = p.getLookAngle();
         Vec3 dir = new Vec3(look.x, 0, look.z).normalize();
         Vec3 center = p.position().add(dir.scale(2.6));
-        List<LivingEntity> targets = sl.getEntitiesOfClass(LivingEntity.class, new AABB(center, center).inflate(3.2, 2.5, 3.2),
+        List<LivingEntity> targets = sl.getEntitiesOfClass(LivingEntity.class, new AABB(center, center).inflate(dw ? 3.8 : 3.2, 2.5, dw ? 3.8 : 3.2),
                 t -> t != p && t.isAlive() && !t.isAlliedTo(p) && t.position().subtract(p.position()).multiply(1, 0, 1).normalize().dot(dir) > 0.2);
         for (LivingEntity t : targets) {
             damage(p, t, dmg, "zetten");
             t.knockback(1.2, -dir.x, -dir.z);
-            burst(sl, ParticleTypes.CRIT, t.position().add(0, t.getBbHeight() * 0.5, 0), 25, 0.5, 0.4);
-            burst(sl, CRIMSON, t.position().add(0, t.getBbHeight() * 0.5, 0), 25, 0.12, 0.4);
+            Vec3 m = t.position().add(0, t.getBbHeight() * 0.5, 0);
+            burst(sl, ParticleTypes.CRIT, m, 18, 0.5, 0.4);
+            burst(sl, ParticleTypes.EXPLOSION, m, 1, 0, 0);
         }
-        // the slash arc: a vertical crescent that sweeps from above your head down to the ground
-        if (dw) {   // Dweller variant: a fast X of two diagonal dark slashes
-            Vec3 rt = dir.cross(new Vec3(0, 1, 0)).normalize();
+        Vec3 rt = dir.cross(new Vec3(0, 1, 0)).normalize();
+        if (dw) {   // two diagonal dark blades crossing in an X
             Vec3 cx = eye.add(dir.scale(2.4)).add(0, -0.2, 0);
             for (int dgn = 0; dgn < 2; dgn++) {
-                Vec3 u = rt.scale(dgn == 0 ? 0.7 : -0.7).add(0, 0.7, 0);
-                for (int i = -16; i <= 16; i++) {
-                    double t2 = i / 16.0;
-                    Vec3 pt = cx.add(u.scale(t2 * 2.9)).add(dir.scale((1 - t2 * t2) * 0.45));
-                    burst(sl, BLACK, pt, 1, 0, 0.03);
-                    burst(sl, EMBER, pt.add(dir.scale(-0.15)), 1, 0, 0.03);
-                    if (i % 4 == 0) burst(sl, ParticleTypes.SOUL_FIRE_FLAME, pt, 1, 0.02, 0.05);
-                }
+                Vec3 u = rt.scale(dgn == 0 ? 0.7 : -0.7).add(0, 0.7, 0).scale(3.0);
+                FxSend.beam(sl, 1, cx.subtract(u), cx.add(u), 0.55f, 9);
             }
-            burst(sl, ParticleTypes.SWEEP_ATTACK, cx, 2, 0.1, 0.4);
+            FxSend.wall(sl, 1, p.position().add(0, 0.1, 0).add(dir.scale(0.2)), dir, rt, 3.4f, 3.4f, -70, 70, 0.8f, 8, 2, 0);
+        } else {    // the Slayer's vertical cleave, from above your head down to the ground
+            FxSend.wall(sl, 0, eye.add(0, -0.3, 0), dir, new Vec3(0, 1, 0), 3.4f, 3.4f, 80, -70, 1.5f, 13, 3, 0);
         }
-        for (int i = 0; i <= 28 && !dw; i++) {
-            double th = Math.toRadians(80 - 150.0 * i / 28);
-            Vec3 pt = eye.add(dir.scale(Math.cos(th) * 3.4)).add(0, Math.sin(th) * 3.0 - 0.3, 0);
-            burst(sl, EMBER, pt, 2, 0.01, 0.08);
-            if (i % 4 == 0) burst(sl, ParticleTypes.SWEEP_ATTACK, pt, 1, 0, 0);
-            if (i % 3 == 0) burst(sl, ParticleTypes.SOUL_FIRE_FLAME, pt, 1, 0.02, 0.05);
-        }
-        // impact: shockwave along the ground
         Vec3 hit = p.position().add(dir.scale(3.2)).add(0, 0.1, 0);
-        ring(sl, CRIMSON, hit, 32, 0.5);
+        FxSend.ring(sl, dw ? 1 : 0, hit, 0.4f, 4.5f, 0.45f, 10);
         burst(sl, ParticleTypes.EXPLOSION, hit.add(0, 0.4, 0), 2, 0, 0.5);
-        burst(sl, ParticleTypes.CLOUD, hit, 20, 0.15, 0.4);
-        burst(sl, ParticleTypes.FLASH, hit.add(0, 0.5, 0), 1, 0, 0);
         sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.5f);
         sound(sl, hit, SoundEvents.GENERIC_EXPLODE, 0.8f, 1.2f);
         sound(sl, hit, SoundEvents.PLAYER_ATTACK_CRIT, 1.0f, 0.6f);
     }
 
-    // ------------------------------------------------------------------ Sky Splitter: ranged beam that cleaves everything in a line
+    // ------------------------------------------------------------------ Sky Splitter: ranged beam that cleaves everything in a line (Dweller: twin beams)
     public static void skySplitter(ServerPlayer p, float dmg, boolean dw) {
         ServerLevel sl = p.serverLevel();
-        if (dw) {
-            dmg *= 0.85f;
-            p.displayClientMessage(Component.translatable("ui.arcane_addon.variant.dweller").withStyle(ChatFormatting.DARK_PURPLE), true);
-        }
+        if (dw) { dmg *= 0.85f; variantMsg(p); }
         Vec3 start = p.getEyePosition();
         Vec3 dir = p.getLookAngle();
         double len = 26;
@@ -135,29 +119,21 @@ public class AstaFx {
         }
         for (LivingEntity t : hit) {
             damage(p, t, dmg, "sky_splitter");
-            burst(sl, ParticleTypes.CRIT, t.position().add(0, t.getBbHeight() * 0.5, 0), 30, 0.6, 0.4);
-            burst(sl, ParticleTypes.EXPLOSION, t.position().add(0, t.getBbHeight() * 0.5, 0), 1, 0, 0);
+            Vec3 m = t.position().add(0, t.getBbHeight() * 0.5, 0);
+            burst(sl, ParticleTypes.CRIT, m, 24, 0.6, 0.4);
+            burst(sl, ParticleTypes.EXPLOSION, m, 1, 0, 0);
             sound(sl, t.position(), SoundEvents.PLAYER_ATTACK_STRONG, 1f, 0.6f);
         }
-        if (dw) {   // Dweller variant: twin dark beams side by side
-            Vec3 rt = dir.cross(new Vec3(0, 1, 0)).normalize();
-            for (int side = -1; side <= 1; side += 2) {
-                for (int i = 0; i <= len; i++) {
-                    Vec3 c = start.add(dir.scale(i)).add(rt.scale(side * 0.9));
-                    for (int k = -1; k <= 1; k++) burst(sl, k == 0 ? ParticleTypes.SOUL_FIRE_FLAME : BLACK, c.add(0, k * 0.6, 0), 1, 0.01, 0.05);
-                    if (i % 2 == 0) burst(sl, EMBER, c, 1, 0.01, 0.1);
-                    if (i % 4 == 0) burst(sl, ParticleTypes.SWEEP_ATTACK, c, 1, 0, 0);
-                }
-            }
+        Vec3 rt = dir.cross(new Vec3(0, 1, 0));
+        rt = rt.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : rt.normalize();
+        Vec3 from = start.add(dir.scale(1.0)).add(0, -0.25, 0);
+        if (dw) {
+            for (int side = -1; side <= 1; side += 2) FxSend.beam(sl, 1, from.add(rt.scale(side * 0.9)), end.add(rt.scale(side * 0.9)), 0.75f, 12);
+        } else {
+            FxSend.beam(sl, 0, from, end, 1.25f, 12);
+            FxSend.beam(sl, 6, from, end, 0.5f, 9);
         }
-        for (int i = 0; i <= len && !dw; i++) {
-            Vec3 c = start.add(dir.scale(i));
-            for (int k = -2; k <= 2; k++) burst(sl, k == 0 ? ParticleTypes.END_ROD : EMBER, c.add(0, k * 0.7, 0), 1, 0.01, 0.05);
-            if (i % 2 == 0) burst(sl, ParticleTypes.SWEEP_ATTACK, c, 1, 0, 0);
-            if (i % 3 == 0) burst(sl, ParticleTypes.SOUL_FIRE_FLAME, c, 2, 0.03, 0.2);
-        }
-        burst(sl, ParticleTypes.FLASH, start.add(dir), 1, 0, 0);
-        burst(sl, ParticleTypes.FLASH, end, 1, 0, 0);
+        FxSend.ring(sl, dw ? 1 : 0, start.add(dir.scale(1.2)), 0.2f, 1.6f, 0.3f, 6);
         sound(sl, p.position(), SoundEvents.LIGHTNING_BOLT_THUNDER, 0.6f, 1.6f);
         sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.4f);
         sound(sl, p.position(), SoundEvents.TRIDENT_THUNDER, 0.8f, 1.3f);
@@ -175,19 +151,13 @@ public class AstaFx {
         double len = 20;
         Vec3 end = start.add(look.scale(len));
         String el = borrowed ? ELEMENTS[RND.nextInt(ELEMENTS.length)] : null;
-        ParticleOptions col = el == null ? EMBER : switch (el) {
-            case "fire" -> new DustParticleOptions(new Vector3f(1f, 0.45f, 0.05f), 1.6f);
-            case "ice" -> new DustParticleOptions(new Vector3f(0.55f, 0.85f, 1f), 1.6f);
-            case "lightning" -> new DustParticleOptions(new Vector3f(1f, 0.95f, 0.3f), 1.6f);
-            default -> new DustParticleOptions(new Vector3f(0.8f, 1f, 0.85f), 1.6f);
-        };
+        int pal = el == null ? 1 : switch (el) { case "fire" -> 2; case "ice" -> 3; case "lightning" -> 4; default -> 5; };
         ParticleOptions spark = el == null ? ParticleTypes.SOUL_FIRE_FLAME : switch (el) {
             case "fire" -> ParticleTypes.FLAME;
             case "ice" -> ParticleTypes.SNOWFLAKE;
             case "lightning" -> ParticleTypes.ELECTRIC_SPARK;
             default -> ParticleTypes.CLOUD;
         };
-        // hit everything the slash passes through
         for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(start, end).inflate(2.5), x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {
             if (!t.getBoundingBox().inflate(1.3).clip(start, end).isPresent()) continue;
             float d = dmg;
@@ -201,28 +171,18 @@ public class AstaFx {
                 case "lightning" -> sound(sl, c, SoundEvents.LIGHTNING_BOLT_THUNDER, 0.5f, 1.8f);
                 default -> t.push(0, 0.9, 0);
             }
-            burst(sl, spark, c, 20, 0.15, 0.4);
-            burst(sl, col, c, 20, 0.12, 0.4);
-            burst(sl, ParticleTypes.CRIT, c, 20, 0.5, 0.4);
+            burst(sl, spark, c, 14, 0.15, 0.4);
+            burst(sl, ParticleTypes.CRIT, c, 16, 0.5, 0.4);
             sound(sl, c, SoundEvents.PLAYER_ATTACK_CRIT, 1f, 1.3f);
         }
-        // the visible slash: crescents (tilted 30 degrees) travelling away, growing as they fly
-        Vec3 right = look.cross(new Vec3(0, 1, 0)).normalize();
+        // the flying crescent blade: a real 3D mesh, tilted 30 degrees like a diagonal cut
+        Vec3 right = look.cross(new Vec3(0, 1, 0));
+        right = right.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : right.normalize();
         Vec3 up = right.cross(look).normalize();
         double tilt = Math.toRadians(30);
-        for (int k = 0; k < 6; k++) {
-            double dist = 1.5 + k * 3.2, rad = 0.9 + k * 0.25;
-            Vec3 c = start.add(look.scale(dist));
-            for (int i = 0; i <= 16; i++) {
-                double a = Math.toRadians(-70 + 140.0 * i / 16);
-                double ox = Math.sin(a) * rad, oy = Math.cos(a) * rad - rad * 0.55;
-                Vec3 pt = c.add(right.scale(ox * Math.cos(tilt) - oy * Math.sin(tilt))).add(up.scale(ox * Math.sin(tilt) + oy * Math.cos(tilt)));
-                burst(sl, col, pt, 1, 0.01, 0.03);
-                if (i % 4 == 0) burst(sl, spark, pt, 1, 0.02, 0.04);
-            }
-        }
-        burst(sl, ParticleTypes.SWEEP_ATTACK, start.add(look.scale(1.6)), 1, 0, 0);
-        burst(sl, ParticleTypes.FLASH, start.add(look.scale(1.2)), 1, 0, 0);
+        Vec3 u = right.scale(Math.cos(tilt)).add(up.scale(Math.sin(tilt)));
+        FxSend.crescent(sl, pal, start.add(look.scale(1.6)).add(0, -0.2, 0), look, u, 1.3f, 2.6f, 9, 2.4f);
+        FxSend.ring(sl, pal, start.add(look.scale(1.2)), 0.2f, 1.4f, 0.3f, 6);
         sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.7f);
         sound(sl, p.position(), SoundEvents.TRIDENT_RIPTIDE_1, 0.7f, 1.4f);
         if (el != null) {
@@ -234,17 +194,15 @@ public class AstaFx {
     // ------------------------------------------------------------------ Anti Magic: strips every magical effect around you
     public static void antiMagic(ServerPlayer p) {
         ServerLevel sl = p.serverLevel();
-        // cleanse harmful effects from yourself (you have no magic to drain)
         new ArrayList<>(p.getActiveEffects()).stream().filter(e -> !e.getEffect().isBeneficial()).forEach(e -> p.removeEffect(e.getEffect()));
-        int stripped = 0;
         for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(9), x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {
-            if (!t.getActiveEffects().isEmpty()) { t.removeAllEffects(); stripped++; }
-            burst(sl, ParticleTypes.ENCHANTED_HIT, t.position().add(0, t.getBbHeight() * 0.5, 0), 12, 0.3, 0.4);
+            if (!t.getActiveEffects().isEmpty()) t.removeAllEffects();
+            burst(sl, ParticleTypes.CRIT, t.position().add(0, t.getBbHeight() * 0.5, 0), 10, 0.3, 0.4);
         }
-        Vec3 c = p.position().add(0, 0.2, 0);
-        for (int r = 0; r < 4; r++) ring(sl, r % 2 == 0 ? BLACK : CRIMSON, c.add(0, r * 0.5, 0), 40, 0.25 + r * 0.1);
-        burst(sl, ParticleTypes.FLASH, p.position().add(0, 1, 0), 1, 0, 0);
-        burst(sl, ParticleTypes.REVERSE_PORTAL, p.position().add(0, 1, 0), 40, 0.15, 1.0);
+        Vec3 c = p.position().add(0, 0.1, 0);
+        FxSend.ring(sl, 6, c, 0.5f, 9.5f, 1.3f, 12);
+        FxSend.ring(sl, 1, c.add(0, 0.5, 0), 0.3f, 7f, 0.9f, 10);
+        FxSend.ring(sl, 0, c.add(0, 1.0, 0), 0.2f, 5f, 0.6f, 8);
         sound(sl, p.position(), SoundEvents.BEACON_DEACTIVATE, 1.2f, 0.6f);
         sound(sl, p.position(), SoundEvents.ENCHANTMENT_TABLE_USE, 1f, 0.5f);
     }
@@ -254,10 +212,10 @@ public class AstaFx {
         ServerLevel sl = p.serverLevel();
         for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(32), x -> x != p && x.isAlive())) {
             t.addEffect(new MobEffectInstance(MobEffects.GLOWING, 12 * 20, 0, false, false));
-            burst(sl, EMBER, t.position().add(0, t.getBbHeight() + 0.3, 0), 6, 0.02, 0.2);
         }
         Vec3 c = p.position().add(0, 0.1, 0);
-        for (int r = 0; r < 5; r++) ring(sl, r % 2 == 0 ? CRIMSON : ParticleTypes.END_ROD, c.add(0, 0.3, 0), 36, 0.35 + r * 0.25);
+        FxSend.ring(sl, 0, c, 0.5f, 32f, 0.7f, 16);
+        FxSend.ring(sl, 6, c.add(0, 0.4, 0), 0.3f, 22f, 0.5f, 12);
         sound(sl, p.position(), SoundEvents.BEACON_ACTIVATE, 1f, 1.6f);
         sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_RESONATE, 1f, 0.7f);
     }
@@ -266,8 +224,8 @@ public class AstaFx {
     public static void instinct(ServerPlayer p) {
         ServerLevel sl = p.serverLevel();
         GUARD.put(p.getUUID(), sl.getGameTime() + GUARD_TICKS);
-        burst(sl, ParticleTypes.FLASH, p.position().add(0, 1, 0), 1, 0, 0);
-        ring(sl, CRIMSON, p.position().add(0, 1, 0), 30, 0.3);
+        FxSend.ring(sl, 6, p.position().add(0, 0.9, 0), 0.4f, 2.4f, 1.0f, 9);
+        FxSend.ring(sl, 0, p.position().add(0, 0.2, 0), 0.4f, 2.0f, 0.5f, 8);
         sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.8f, 1.6f);
         sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 1.8f);
     }
@@ -282,11 +240,10 @@ public class AstaFx {
         p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, UNION_TICKS, 1, false, false));
         p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, UNION_TICKS, 1, false, false));
         Vec3 c = p.position();
-        for (int r = 0; r < 5; r++) ring(sl, r % 2 == 0 ? BLACK : CRIMSON, c.add(0, 0.1 + r * 0.4, 0), 44, 0.2 + r * 0.12);
-        burst(sl, ParticleTypes.FLASH, c.add(0, 1, 0), 2, 0, 0.1);
-        burst(sl, ParticleTypes.LARGE_SMOKE, c.add(0, 1, 0), 40, 0.08, 0.6);
-        burst(sl, ParticleTypes.SOUL_FIRE_FLAME, c.add(0, 1, 0), 40, 0.1, 0.5);
-        burst(sl, ParticleTypes.SCULK_SOUL, c.add(0, 1, 0), 20, 0.1, 0.5);
+        FxSend.ring(sl, 1, c.add(0, 0.1, 0), 0.4f, 7f, 1.6f, 16);
+        FxSend.ring(sl, 0, c.add(0, 0.6, 0), 0.3f, 5f, 1.2f, 14);
+        FxSend.ring(sl, 1, c.add(0, 1.2, 0), 0.2f, 4f, 0.9f, 12);
+        burst(sl, ParticleTypes.LARGE_SMOKE, c.add(0, 1, 0), 24, 0.08, 0.6);
         sound(sl, c, SoundEvents.WITHER_SPAWN, 0.5f, 1.6f);
         sound(sl, c, SoundEvents.ENDER_DRAGON_GROWL, 0.6f, 0.7f);
         sound(sl, c, SoundEvents.BEACON_POWER_SELECT, 1f, 0.5f);
@@ -302,7 +259,6 @@ public class AstaFx {
                     e.setCanceled(true);
                     if (p.level() instanceof ServerLevel sl) {
                         burst(sl, ParticleTypes.CRIT, p.position().add(0, 1, 0), 15, 0.5, 0.4);
-                        burst(sl, ParticleTypes.ENCHANTED_HIT, p.position().add(0, 1, 0), 10, 0.3, 0.4);
                         sound(sl, p.position(), SoundEvents.SHIELD_BLOCK, 0.8f, 1.5f);
                     }
                 } else GUARD.remove(p.getUUID());
@@ -318,7 +274,6 @@ public class AstaFx {
         Long g = GUARD.get(p.getUUID());
         if (g != null) {
             if (now > g) GUARD.remove(p.getUUID());
-            else burst(sl, ParticleTypes.ENCHANT, p.position().add(0, 1, 0), 3, 0.4, 0.6);
         }
         Long u = UNION.get(p.getUUID());
         if (u != null) {
@@ -327,11 +282,10 @@ public class AstaFx {
                 ring(sl, BLACK, p.position().add(0, 0.2, 0), 30, 0.3);
                 sound(sl, p.position(), SoundEvents.BEACON_DEACTIVATE, 1f, 0.8f);
             } else {
-                // devil aura: black smoke, crimson sparks, horns of flame
-                if (now % 2 == 0) {
-                    burst(sl, BLACK, p.position().add(0, 1, 0), 4, 0.01, 0.45);
-                    burst(sl, EMBER, p.position().add(0, 1, 0), 3, 0.02, 0.45);
-                }
+                // devil aura: a dark outline cylinder around the body, refreshed every few ticks
+                if (now % 6 == 0) FxSend.wall(sl, 1, p.position().add(0, 1.0, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.85f, 1.05f, -180, 180, 1.0f, 9, 0, 0);
+                if (now % 12 == 0) FxSend.wall(sl, 0, p.position().add(0, 0.9, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.7f, 1.3f, -180, 180, 0.5f, 9, 0, 0);
+                if (now % 4 == 0) burst(sl, BLACK, p.position().add(0, 1, 0), 2, 0.01, 0.45);
                 if (now % 6 == 0) {
                     burst(sl, ParticleTypes.SOUL_FIRE_FLAME, p.position().add(0, p.getBbHeight() + 0.1, 0), 2, 0.02, 0.15);
                     burst(sl, ParticleTypes.LARGE_SMOKE, p.position().add(0, 0.2, 0), 1, 0.01, 0.3);

@@ -51,9 +51,6 @@ public class BlackGrimoireItem extends SimpleAttributeSpellBook {
     }
 
     @Override
-    public boolean isFoil(ItemStack stack) { return true; }
-
-    @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tip, flag);
         tip.add(Component.translatable("tooltip.arcane_addon.black_grimoire.1").withStyle(ChatFormatting.DARK_RED));
