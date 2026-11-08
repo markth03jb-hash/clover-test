@@ -43,12 +43,14 @@ public class DemonDwellerSwordItem extends SwordItem {
 
     /** NBT: element glow (1 fire, 2 ice, 3 lightning, 4 wind) and the game time it fades. */
     public static final String GLOW = "ArcaneGlow", GLOW_UNTIL = "ArcaneGlowUntil";
+    /** The glow fades out over this many ticks at the end. */
+    public static final int FADE_TICKS = 30;
 
     /** Make the blade blaze in an element's colour for {@code ticks}. */
     public static void glow(ItemStack stack, String element, long until) {
         int v = switch (element) { case "fire" -> 1; case "ice" -> 2; case "lightning" -> 3; default -> 4; };
         stack.getOrCreateTag().putInt(GLOW, v);
-        stack.getOrCreateTag().putLong(GLOW_UNTIL, until);
+        stack.getOrCreateTag().putLong(GLOW_UNTIL, until + FADE_TICKS);   // full glow until `until`, then it fades
     }
 
     @Override

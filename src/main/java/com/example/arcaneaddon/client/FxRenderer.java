@@ -78,8 +78,8 @@ public class FxRenderer {
     * Black-flame outline and turning pages for an open grimoire drawn at {@code pos} with the same transform as its
     * 3D model. hw/hh = page width / half height and vDeg = how far the boards open from flat, in model blocks.
     */
-   public static void queueBook(Vec3 pos, float yawS, float tiltDeg, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg, int pal, int style) {
-      BOOKS.add(new FxRenderer.BookDraw(pos, yawS, tiltDeg, scale, alpha, flipCycle, hw, hh, vDeg, pal, style));
+   public static void queueBook(Vec3 pos, float yawS, float tiltDeg, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg, int pal, int style, int light) {
+      BOOKS.add(new FxRenderer.BookDraw(pos, yawS, tiltDeg, scale, alpha, flipCycle, hw, hh, vDeg, pal, style, light));
    }
 
    public static void queueAura(Vec3 a, Vec3 b, float width, int pal, float alpha) {
@@ -105,6 +105,14 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 9) {   // Black Meteorite cutscene: id = player, palette = phase (0 start, 1 impact), c = target
+         Cutscene.handle(p.id, p.palette, p.c);
+         return;
+      }
+      if (p.shape == 10) {  // screen shake: c = where, r = strength, life = ticks
+         Cutscene.shake(p.c, p.r, p.life);
+         return;
+      }
       if (p.shape == 5) {   // mid-move pose: id = player, palette = pose index
          ArcaneAnimations.play(p.id, p.palette);
          return;
@@ -124,6 +132,12 @@ public class FxRenderer {
             FX.add(fx);
          }
       }
+   }
+
+   /** True while the player with this entity id is in Devil Union (as far as this client knows). */
+   public static boolean inDevilForm(int entityId, double now) {
+      double[] f = DEVIL.get(entityId);
+      return f != null && now >= f[0] && now <= f[1];
    }
 
    public static void localRing(Vec3 c, int pal, float r0, float r1, float h, int life) {
@@ -320,6 +334,15 @@ public class FxRenderer {
             buf.endBatch(rt);
             GLOW_SRC.endBatch(GlowRenderType.GLOW);
             gv = null;
+            if (!PAGES.isEmpty()) {   // turning pages, drawn with the book's own page art (front = right page, back = left page)
+               for (int side = 0; side < 2; side++) {
+                  RenderType prt = RenderType.entityCutout(side == 0 ? PAGE_R : PAGE_L);
+                  VertexConsumer pv = buf.getBuffer(prt);
+                  for (PageDraw pd : PAGES) pageQuad(pv, pd, side == 1);
+                  buf.endBatch(prt);
+               }
+               PAGES.clear();
+            }
          }
       }
    }
@@ -954,7 +977,7 @@ public class FxRenderer {
                float mm = 0.5F - 0.5F * (float)Math.cos(Math.PI * (double)sP);
                double alpha = Math.toRadians((double)(-22.5F - 135.0F * mm));
                float lift = 0.07F + 0.03F * (1.0F - 2.0F * Math.abs(mm - 0.5F));
-               page(vc, m, n, (float)Math.cos(alpha), (float)(-Math.sin(alpha)), lift, HW * 0.95F, HH * 0.92F, al);
+               PAGES.add(new PageDraw(new Matrix4f(m), new Matrix3f(n), (float)Math.cos(alpha), (float)(-Math.sin(alpha)), lift, HW * 0.95F, HH * 0.92F, b.light));
             }
          }
       }
@@ -1249,7 +1272,26 @@ public class FxRenderer {
    private static record AuraDraw(Vec3 a, Vec3 b, float width, int pal, float alpha) {
    }
 
-   private static record BookDraw(Vec3 pos, float yaw, float tilt, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg, int pal, int style) {
+   private static final ResourceLocation PAGE_R = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/item/spell_book_models/black_grimoire_page_right.png");
+   private static final ResourceLocation PAGE_L = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/item/spell_book_models/black_grimoire_page_left.png");
+   private static final List<PageDraw> PAGES = new ArrayList<>();
+
+   private static record PageDraw(Matrix4f m, Matrix3f n, float dx, float dz, float lift, float w, float h, int light) {
+   }
+
+   /** One side of a turning page: wound so only the side facing you is drawn. */
+   private static void pageQuad(VertexConsumer vc, PageDraw p, boolean back) {
+      Vec3[] q = {pt(p.dx, p.dz, p.lift, 0.0F, -p.h), pt(p.dx, p.dz, p.lift, p.w, -p.h), pt(p.dx, p.dz, p.lift, p.w, p.h), pt(p.dx, p.dz, p.lift, 0.0F, p.h)};
+      float[][] uv = {{0, 1}, {1, 1}, {1, 0}, {0, 0}};
+      for (int i = 0; i < 4; i++) {
+         int k = back ? 3 - i : i;
+         float u = back ? 1.0F - uv[k][0] : uv[k][0];
+         vc.vertex(p.m, (float)q[k].x, (float)q[k].y, (float)q[k].z).color(1.0F, 1.0F, 1.0F, 1.0F).uv(u, uv[k][1])
+            .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(p.light).normal(p.n, 0.0F, 0.0F, back ? -1.0F : 1.0F).endVertex();
+      }
+   }
+
+   private static record BookDraw(Vec3 pos, float yaw, float tilt, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg, int pal, int style, int light) {
    }
 
    private static class Fx {

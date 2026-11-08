@@ -39,11 +39,23 @@ public class ArcaneAnimations {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent e) {
         PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(LAYER, PRIORITY, player -> new ModifierLayer<>());
-        // Demon Dweller Sword glows in the colour of the element it last borrowed (1 fire, 2 ice, 3 lightning, 4 wind)
-        e.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(
-                com.example.arcaneaddon.registry.AddonItemRegistry.DEMON_DWELLER_SWORD.get(),
-                ResourceLocation.fromNamespaceAndPath("arcane_addon", "element"),
-                (stack, level, entity, seed) -> stack.hasTag() ? (float) stack.getTag().getInt(com.example.arcaneaddon.item.DemonDwellerSwordItem.GLOW) : 0.0F));
+        // Demon Dweller Sword glows in the colour of the element it last borrowed (1 fire, 2 ice, 3 lightning, 4 wind),
+        // and "glow" (1 -> 0) lets the glow fade out over its last 1.5 s instead of switching off
+        e.enqueueWork(() -> {
+            var sword = com.example.arcaneaddon.registry.AddonItemRegistry.DEMON_DWELLER_SWORD.get();
+            net.minecraft.client.renderer.item.ItemProperties.register(sword, ResourceLocation.fromNamespaceAndPath("arcane_addon", "element"),
+                    (stack, level, entity, seed) -> glowLeft(stack, level, entity) > 0 ? 0.2F * stack.getTag().getInt(com.example.arcaneaddon.item.DemonDwellerSwordItem.GLOW) : 0.0F);   // property values are clamped to 0..1, so element n is 0.2*n
+            net.minecraft.client.renderer.item.ItemProperties.register(sword, ResourceLocation.fromNamespaceAndPath("arcane_addon", "glow"),
+                    (stack, level, entity, seed) -> Math.min(1.0F, glowLeft(stack, level, entity) / (float) com.example.arcaneaddon.item.DemonDwellerSwordItem.FADE_TICKS));
+        });
+    }
+
+    /** Ticks of element glow left on a Dweller sword (0 = none). */
+    private static long glowLeft(net.minecraft.world.item.ItemStack stack, net.minecraft.client.multiplayer.ClientLevel level, net.minecraft.world.entity.LivingEntity entity) {
+        if (!stack.hasTag() || !stack.getTag().contains(com.example.arcaneaddon.item.DemonDwellerSwordItem.GLOW)) return 0;
+        net.minecraft.world.level.Level lv = level != null ? level : entity != null ? entity.level() : Minecraft.getInstance().level;
+        if (lv == null) return 0;
+        return Math.max(0, stack.getTag().getLong(com.example.arcaneaddon.item.DemonDwellerSwordItem.GLOW_UNTIL) - lv.getGameTime());
     }
 
     @SuppressWarnings("unchecked")

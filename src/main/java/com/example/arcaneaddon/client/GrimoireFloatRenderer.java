@@ -259,7 +259,7 @@ public class GrimoireFloatRenderer {
             ps.scale(s, s, s);
             renderOpen(mc, ps, buf, book, p.getId(), light);
             float cyc = k > 0.95F ? (float)((mc.level.getGameTime() + (long)p.getId() * 13L) % 50L) + pt : -1.0F;
-            FxRenderer.queueBook(bookPos, yawS - turn, tilt, s, k, cyc, 0.46F, 0.375F, 22.5F, au[0], au[1]);
+            FxRenderer.queueBook(bookPos, yawS - turn, tilt, s, k, cyc, 0.46F, 0.375F, 22.5F, au[0], au[1], light);
          }
          ps.popPose();
 

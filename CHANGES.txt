@@ -1,7 +1,19 @@
-Arcane Addon v1.16.2 - all changed files since v1.0.0
+Arcane Addon v1.17.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.17.0
+  - NEW Devil Union move: Black Meteorite (takes Ki Sense's slot while the union lasts). A cutscene: letterbox bars and
+    cinematic camera - crouch as ember rings close in, blast 20 blocks up on a column of black flame, hang in the sky
+    while a shell of black flame forms around you, then fall on the spot you aimed at as a black meteor with a burning
+    tail. Impact: 9-block blast that flings everything away, shockwaves, a pillar of black flame, burning fissures,
+    a ring of black shards and a screen shake for everyone nearby. Your camera is restored afterwards.
+  - Devil Union flight: in the air hold Jump to glide on the wings (elytra style, diving builds speed), tap Jump again
+    for a wing beat that lifts you; no fall damage while the union lasts.
+  - Devil Union: the dark cylinder and the ring around you are gone (and the ring when it ends).
+  - Demon Dweller element glow fades out over 1.5 s instead of switching off.
+  - Turning pages of the floating grimoire now use the book's real page art.
 
 NEW IN 1.16.2
   - Open grimoire turned back so its pages face you.

@@ -9,7 +9,7 @@
   "tex1": "arcane_addon:item/spell_book_models/dweller_guard",
   "tex2": "arcane_addon:item/spell_book_models/dweller_handle",
   "particle": "arcane_addon:item/spell_book_models/dweller_blade",
-  "tex3": "arcane_addon:item/spell_book_models/dweller_glow_ice"
+  "tex3": "arcane_addon:item/spell_book_models/dweller_glow_ice_3"
  },
  "display": {
   "thirdperson_righthand": {

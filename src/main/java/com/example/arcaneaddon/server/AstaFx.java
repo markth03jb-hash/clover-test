@@ -689,17 +689,20 @@ public class AstaFx {
         if (u != null) {
             if (now > u) {
                 endUnion(p);
-                FxSend.ring(sl, Fx.DARK, p.position().add(0, 0.2, 0), 0.3f, 4f, 0.4f, 10);
                 sound(sl, p.position(), SoundEvents.BEACON_DEACTIVATE, 1f, 0.8f);
             } else {
                 if (now % UNION_HEAL_EVERY == 0 && p.getHealth() < p.getMaxHealth()) p.heal(1.0f);   // devil regeneration
                 if (now % 40 == 0) sendForm(p, (int) (u - now));   // keeps the form visible to players who arrive later
                 if (now % 20 == 0) DevilBook.apply(p, true);        // also covers a grimoire equipped mid-union
-                // devil aura: a dark outline cylinder around the body plus a crown of black flame
-                if (now % 8 == 0) FxSend.wall(sl, Fx.DARK, p.position().add(0, 1.0, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.85f, 1.0f, -180, 180, 1.0f, 10, 0, 0);
-                if (now % 16 == 0) FxSend.ring(sl, Fx.CRIMSON, p.position().add(0, p.getBbHeight() + 0.1, 0), 0.25f, 0.45f, 0.2f, 10);
+                p.resetFallDistance();   // devil wings: no fall damage during the union
             }
         }
+    }
+
+    /** Devil Union: the wings break every fall. */
+    @SubscribeEvent
+    public static void onFall(net.minecraftforge.event.entity.living.LivingFallEvent e) {
+        if (e.getEntity() instanceof ServerPlayer p && inDevilUnion(p)) e.setCanceled(true);
     }
 
     /** Clears a glow left on a mob by Ki Sense from an older version of the addon. */

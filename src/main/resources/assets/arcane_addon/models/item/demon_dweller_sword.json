@@ -134,27 +134,115 @@
  "overrides": [
   {
    "predicate": {
-    "arcane_addon:element": 1
+    "arcane_addon:element": 0.15,
+    "arcane_addon:glow": 0.01
    },
-   "model": "arcane_addon:item/demon_dweller_sword_fire"
+   "model": "arcane_addon:item/demon_dweller_sword_fire_1"
   },
   {
    "predicate": {
-    "arcane_addon:element": 2
+    "arcane_addon:element": 0.15,
+    "arcane_addon:glow": 0.3
    },
-   "model": "arcane_addon:item/demon_dweller_sword_ice"
+   "model": "arcane_addon:item/demon_dweller_sword_fire_2"
   },
   {
    "predicate": {
-    "arcane_addon:element": 3
+    "arcane_addon:element": 0.15,
+    "arcane_addon:glow": 0.55
    },
-   "model": "arcane_addon:item/demon_dweller_sword_lightning"
+   "model": "arcane_addon:item/demon_dweller_sword_fire_3"
   },
   {
    "predicate": {
-    "arcane_addon:element": 4
+    "arcane_addon:element": 0.15,
+    "arcane_addon:glow": 0.8
    },
-   "model": "arcane_addon:item/demon_dweller_sword_wind"
+   "model": "arcane_addon:item/demon_dweller_sword_fire_4"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.35,
+    "arcane_addon:glow": 0.01
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_ice_1"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.35,
+    "arcane_addon:glow": 0.3
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_ice_2"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.35,
+    "arcane_addon:glow": 0.55
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_ice_3"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.35,
+    "arcane_addon:glow": 0.8
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_ice_4"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.55,
+    "arcane_addon:glow": 0.01
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_lightning_1"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.55,
+    "arcane_addon:glow": 0.3
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_lightning_2"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.55,
+    "arcane_addon:glow": 0.55
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_lightning_3"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.55,
+    "arcane_addon:glow": 0.8
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_lightning_4"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.75,
+    "arcane_addon:glow": 0.01
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_wind_1"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.75,
+    "arcane_addon:glow": 0.3
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_wind_2"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.75,
+    "arcane_addon:glow": 0.55
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_wind_3"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 0.75,
+    "arcane_addon:glow": 0.8
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_wind_4"
   }
  ]
 }
