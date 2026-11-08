@@ -1,0 +1,13 @@
+{
+ "parent": "arcane_addon:item/black_grimoire_open",
+ "textures": {
+  "leather": "arcane_addon:item/spell_book_models/dark_grimoire_leather",
+  "trim": "arcane_addon:item/spell_book_models/dark_grimoire_trim",
+  "edge": "arcane_addon:item/spell_book_models/black_grimoire_edge",
+  "front": "arcane_addon:item/spell_book_models/dark_grimoire_front",
+  "back": "arcane_addon:item/spell_book_models/dark_grimoire_back",
+  "pageL": "arcane_addon:item/spell_book_models/black_grimoire_page_left",
+  "pageR": "arcane_addon:item/spell_book_models/black_grimoire_page_right",
+  "particle": "arcane_addon:item/spell_book_models/dark_grimoire_leather"
+ }
+}

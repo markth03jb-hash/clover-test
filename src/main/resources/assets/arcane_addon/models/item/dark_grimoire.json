@@ -1,26 +1,18 @@
 {
-  "parent": "minecraft:item/handheld",
-  "loader": "forge:separate_transforms",
-  "base": {
-    "textures": {
-      "book": "arcane_addon:item/spell_book_models/dark_grimoire",
-      "particle": "arcane_addon:item/spell_book_models/dark_grimoire"
-    },
-    "parent": "irons_spellbooks:item/template_spell_book_model"
+ "parent": "minecraft:item/handheld",
+ "loader": "forge:separate_transforms",
+ "base": {
+  "parent": "arcane_addon:item/dark_grimoire_model"
+ },
+ "perspectives": {
+  "gui": {
+   "parent": "item/generated",
+   "textures": {
+    "layer0": "arcane_addon:item/dark_grimoire"
+   }
   },
-  "perspectives": {
-    "gui": {
-      "parent": "item/generated",
-      "textures": {
-        "layer0": "arcane_addon:item/dark_grimoire"
-      }
-    },
-    "head": {
-      "textures": {
-        "book": "arcane_addon:item/spell_book_models/dark_grimoire",
-        "particle": "arcane_addon:item/spell_book_models/dark_grimoire"
-      },
-      "parent": "irons_spellbooks:item/template_spell_book_model_open"
-    }
+  "head": {
+   "parent": "arcane_addon:item/dark_grimoire_open"
   }
+ }
 }

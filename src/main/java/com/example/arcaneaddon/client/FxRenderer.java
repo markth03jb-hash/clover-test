@@ -78,8 +78,8 @@ public class FxRenderer {
     * Black-flame outline and turning pages for an open grimoire drawn at {@code pos} with the same transform as its
     * 3D model. hw/hh = page width / half height and vDeg = how far the boards open from flat, in model blocks.
     */
-   public static void queueBook(Vec3 pos, float yawS, float tiltDeg, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg, int pal) {
-      BOOKS.add(new FxRenderer.BookDraw(pos, yawS, tiltDeg, scale, alpha, flipCycle, hw, hh, vDeg, pal));
+   public static void queueBook(Vec3 pos, float yawS, float tiltDeg, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg, int pal, int style) {
+      BOOKS.add(new FxRenderer.BookDraw(pos, yawS, tiltDeg, scale, alpha, flipCycle, hw, hh, vDeg, pal, style));
    }
 
    public static void queueAura(Vec3 a, Vec3 b, float width, int pal, float alpha) {
@@ -403,38 +403,6 @@ public class FxRenderer {
          }
       }
 
-      // ---- ember sigil under the feet
-      if (!air) {
-         Vec3 c = base.add(0.0, 0.03, 0.0);
-         double rot = now * 0.03;
-         float sa = a * 0.4F;
-         Vec3 prevR = null;
-         for (int k = 0; k <= 20; k++) {
-            double an = Math.PI * 2.0 * k / 20.0 + rot;
-            Vec3 q = c.add(Math.cos(an) * 1.1 * grow, 0.0, Math.sin(an) * 1.1 * grow);
-            if (prevR != null) beam(vc, m, n, cam, prevR, q, 0.035F, EMBER, sa, 0.0);
-            prevR = q;
-         }
-         for (int k = 0; k < 5; k++) {
-            double a0 = -rot * 1.5 + Math.PI * 2.0 * k / 5.0, a1 = a0 + Math.PI * 4.0 / 5.0;
-            beam(vc, m, n, cam, c.add(Math.cos(a0) * 0.95 * grow, 0.0, Math.sin(a0) * 0.95 * grow),
-                                c.add(Math.cos(a1) * 0.95 * grow, 0.0, Math.sin(a1) * 0.95 * grow), 0.03F, EMBER, sa, 0.0);
-         }
-      }
-
-      // ---- burst the moment the form begins
-      if (age < 10.0) {
-         float bt = (float)(age / 10.0);
-         float br = 0.4F + bt * 4.0F;
-         Vec3 c = base.add(0.0, 0.1, 0.0);
-         Vec3 prevB = null;
-         for (int k = 0; k <= 24; k++) {
-            double an = Math.PI * 2.0 * k / 24.0;
-            Vec3 q = c.add(Math.cos(an) * br, 0.0, Math.sin(an) * br);
-            if (prevB != null) beam(vc, m, n, cam, prevB, q, 0.12F * (1.0F - bt), EMBER, fade * (1.0F - bt), 0.0);
-            prevB = q;
-         }
-      }
    }
 
    // indexes into the demon wing skeleton
@@ -976,22 +944,8 @@ public class FxRenderer {
       float V = (float)Math.toRadians((double)b.vDeg);
       float al = b.alpha;
 
-      // the book itself is the real 3D model (drawn by GrimoireFloatRenderer); here its flame aura:
-      // a wide soft underglow behind the book, then licking black flame with a coloured core around every outer edge
-      float[] glowC = RIM[b.pal];
-      int seg = 24;
-      for (int i = 0; i < seg; i++) {
-         double a0 = Math.PI * 2.0 * i / seg, a1 = Math.PI * 2.0 * (i + 1) / seg;
-         double wob0 = 1.0 + 0.12 * Math.sin(bookTime * 0.3 + i * 1.9), wob1 = 1.0 + 0.12 * Math.sin(bookTime * 0.3 + (i + 1) * 1.9);
-         Vec3 q0 = new Vec3(Math.cos(a0) * HW * 1.75 * wob0, Math.sin(a0) * HH * 1.6 * wob0, -0.06);
-         Vec3 q1 = new Vec3(Math.cos(a1) * HW * 1.75 * wob1, Math.sin(a1) * HH * 1.6 * wob1, -0.06);
-         Vec3 c0 = new Vec3(0.0, 0.0, -0.06);
-         gquad(m, Vec3.ZERO, c0, c0, q0, q1, glowC, 0.42F * al, 0.42F * al, 0.0F, 0.0F);
-      }
-      for (int s = -1; s <= 1; s += 2) {
-         float dx = (float)s * (float)Math.cos((double)V), dz = (float)Math.sin((double)V);
-         panelOutline(vc, m, n, dx, dz, -0.03F, HW, HH, al, s, b.pal);
-      }
+      // the book itself is the real 3D model (drawn by GrimoireFloatRenderer); here each grimoire's own aura
+      bookAura(vc, m, n, b, HW, HH, V, al);
 
       if (b.flipCycle >= 0.0F) {
          for (int i = 0; i < 3; i++) {
@@ -1006,6 +960,171 @@ public class FxRenderer {
       }
 
       ps.popPose();
+   }
+
+   /** A flat glowing ribbon in the book's plane (local frame, viewer roughly along +z). */
+   private static void lline(Matrix4f m, Vec3 p0, Vec3 p1, float w, int pal, float a0, float a1) {
+      Vec3 ax = p1.subtract(p0);
+      if (ax.lengthSqr() < 1.0E-8) return;
+      Vec3 side = ax.cross(new Vec3(0.0, 0.0, 1.0));
+      if (side.lengthSqr() < 1.0E-8) side = new Vec3(1.0, 0.0, 0.0);
+      side = side.normalize().scale(w);
+      float[] hc = hot(pal), rim = RIM[pal];
+      Vec3 c = side.scale(0.35);
+      gquad(m, Vec3.ZERO, p0.add(c), p1.add(c), p1.subtract(c), p0.subtract(c), hc, a0, a1, a1, a0);
+      gquad(m, Vec3.ZERO, p0.add(c), p1.add(c), p1.add(side), p0.add(side), rim, a0 * 0.55F, a1 * 0.55F, 0.0F, 0.0F);
+      gquad(m, Vec3.ZERO, p0.subtract(c), p1.subtract(c), p1.subtract(side), p0.subtract(side), rim, a0 * 0.55F, a1 * 0.55F, 0.0F, 0.0F);
+   }
+
+   /** A small four-pointed glint in the book's plane. */
+   private static void lstar(Matrix4f m, Vec3 c, float r, int pal, float a) {
+      lline(m, c.add(-r, 0.0, 0.0), c.add(r, 0.0, 0.0), r * 0.18F, pal, a, a);
+      lline(m, c.add(0.0, -r, 0.0), c.add(0.0, r, 0.0), r * 0.18F, pal, a, a);
+   }
+
+   /** Soft elliptical underglow behind the book. */
+   private static void underglow(Matrix4f m, float HW, float HH, int pal, float a) {
+      float[] glowC = RIM[pal];
+      int seg = 24;
+      for (int i = 0; i < seg; i++) {
+         double a0 = Math.PI * 2.0 * i / seg, a1 = Math.PI * 2.0 * (i + 1) / seg;
+         double wob0 = 1.0 + 0.12 * Math.sin(bookTime * 0.3 + i * 1.9), wob1 = 1.0 + 0.12 * Math.sin(bookTime * 0.3 + (i + 1) * 1.9);
+         Vec3 q0 = new Vec3(Math.cos(a0) * HW * 1.75 * wob0, Math.sin(a0) * HH * 1.6 * wob0, -0.06);
+         Vec3 q1 = new Vec3(Math.cos(a1) * HW * 1.75 * wob1, Math.sin(a1) * HH * 1.6 * wob1, -0.06);
+         Vec3 c0 = new Vec3(0.0, 0.0, -0.06);
+         gquad(m, Vec3.ZERO, c0, c0, q0, q1, glowC, a, a, 0.0F, 0.0F);
+      }
+   }
+
+   /**
+    * Each grimoire's own aura around the open book:
+    *  0 Black  - licking black flame with a red core and a red underglow (like the anime)
+    *  1 Dark   - violet-black flame, and three dark crescents circling the book
+    *  2 Steel  - six steel shards orbiting in a tilted ring, glinting
+    *  3 Four-leaf - green wind streaks spiralling around it, with leaves carried on the wind
+    *  4 Three-leaf - a turning golden halo behind it and motes of light rising (hope)
+    *  5 Mana Zone Codex - two cyan rune circles turning opposite ways behind it
+    *  6 Spirit-bound - three pale spirit wisps orbiting with comet tails
+    */
+   private static void bookAura(VertexConsumer vc, Matrix4f m, Matrix3f n, FxRenderer.BookDraw b, float HW, float HH, float V, float al) {
+      double t = bookTime;
+      int pal = b.pal;
+      switch (b.style) {
+         case 0 -> {
+            underglow(m, HW, HH, pal, 0.42F * al);
+            for (int s = -1; s <= 1; s += 2) panelOutline(vc, m, n, s * (float)Math.cos(V), (float)Math.sin(V), -0.03F, HW, HH, al, s, pal);
+         }
+         case 1 -> {
+            underglow(m, HW, HH, pal, 0.3F * al);
+            for (int s = -1; s <= 1; s += 2) panelOutline(vc, m, n, s * (float)Math.cos(V), (float)Math.sin(V), -0.03F, HW, HH, al * 0.8F, s, pal);
+            for (int k = 0; k < 3; k++) {
+               double c0 = t * 0.09 + k * Math.PI * 2.0 / 3.0;
+               Vec3 prev = null;
+               for (int i = 0; i <= 8; i++) {
+                  double a = c0 + i * 0.13;
+                  Vec3 q = new Vec3(Math.cos(a) * HW * 1.45, Math.sin(a) * HH * 1.45, 0.04);
+                  if (prev != null) {
+                     float f = (float)Math.sin(Math.PI * i / 8.0);
+                     lline(m, prev, q, 0.035F * f + 0.01F, pal, al * 0.8F * f, al * 0.8F * f);
+                     quad(vc, m, n, Vec3.ZERO, prev, q, q.scale(1.08), prev.scale(1.08), SMOKE, 0.7F * al * f, 0.7F * al * f, 0.0F, 0.0F);
+                  }
+                  prev = q;
+               }
+            }
+         }
+         case 2 -> {
+            underglow(m, HW, HH, pal, 0.18F * al);
+            float[] steel = new float[]{0.62F, 0.68F, 0.76F}, dark = new float[]{0.22F, 0.25F, 0.3F};
+            for (int k = 0; k < 6; k++) {
+               double a = t * 0.05 + k * Math.PI / 3.0;
+               Vec3 c = new Vec3(Math.cos(a) * HW * 1.5, Math.sin(a) * HH * 1.15, 0.12 * Math.sin(a + 0.6));
+               Vec3 tan = new Vec3(-Math.sin(a), Math.cos(a), 0.0).scale(0.11);
+               Vec3 nrm = new Vec3(Math.cos(a), Math.sin(a), 0.0).scale(0.04);
+               Vec3 tip0 = c.add(tan), tip1 = c.subtract(tan);
+               quad(vc, m, n, Vec3.ZERO, tip0, c.add(nrm), tip1, c.subtract(nrm), steel, al, al, al, al);
+               quad(vc, m, n, Vec3.ZERO, tip0, c.add(nrm).add(0.0, 0.0, -0.01), tip1, c.subtract(nrm).add(0.0, 0.0, -0.01), dark, al, al, al, al);
+               float g = 0.5F + 0.5F * (float)Math.sin(t * 0.4 + k * 1.3);
+               lline(m, tip0, tip1, 0.012F, pal, al * 0.6F * g, al * 0.6F * g);
+               if (g > 0.92F) lstar(m, tip0, 0.06F, pal, al * (g - 0.92F) * 10.0F);
+            }
+         }
+         case 3 -> {
+            underglow(m, HW, HH, pal, 0.2F * al);
+            for (int k = 0; k < 3; k++) {
+               Vec3 prev = null;
+               for (int i = 0; i <= 14; i++) {
+                  double u = i / 14.0;
+                  double a = t * 0.16 + k * 2.1 + u * 4.0;
+                  double r = 0.55 + 0.25 * u;
+                  Vec3 q = new Vec3(Math.cos(a) * r, -0.35 + u * 0.8 + 0.05 * Math.sin(t * 0.2 + k), 0.15 * Math.sin(a));
+                  if (prev != null) lline(m, prev, q, 0.018F, pal, al * (float)(u * 0.7), al * (float)(u * 0.7));
+                  prev = q;
+               }
+            }
+            float[] leaf = new float[]{0.3F, 0.85F, 0.4F};
+            for (int k = 0; k < 4; k++) {
+               double a = t * 0.11 + k * 1.57;
+               Vec3 c = new Vec3(Math.cos(a) * 0.7, 0.35 * Math.sin(t * 0.07 + k * 2.0), 0.18 * Math.sin(a));
+               double sp = t * 0.3 + k;
+               Vec3 l1 = new Vec3(Math.cos(sp) * 0.05, Math.sin(sp) * 0.05, 0.0), l2 = new Vec3(-Math.sin(sp) * 0.025, Math.cos(sp) * 0.025, 0.0);
+               quad(vc, m, n, Vec3.ZERO, c.add(l1), c.add(l2), c.subtract(l1), c.subtract(l2), leaf, al * 0.95F, al * 0.95F, al * 0.95F, al * 0.95F);
+            }
+         }
+         case 4 -> {
+            underglow(m, HW, HH, pal, 0.3F * al);
+            Vec3 prev = null;
+            for (int i = 0; i <= 32; i++) {
+               double a = Math.PI * 2.0 * i / 32.0;
+               Vec3 q = new Vec3(Math.cos(a) * 0.62, Math.sin(a) * 0.62, -0.09);
+               if (prev != null) lline(m, prev, q, 0.02F, pal, al * 0.7F, al * 0.7F);
+               prev = q;
+            }
+            for (int k = 0; k < 8; k++) {
+               double a = t * 0.03 + k * Math.PI / 4.0;
+               lline(m, new Vec3(Math.cos(a) * 0.66, Math.sin(a) * 0.66, -0.09), new Vec3(Math.cos(a) * 0.78, Math.sin(a) * 0.78, -0.09), 0.02F, pal, al * 0.8F, 0.0F);
+            }
+            for (int k = 0; k < 8; k++) {
+               double ph = (t * 0.015 + k / 8.0) % 1.0;
+               Vec3 c = new Vec3(Math.sin(k * 2.3) * 0.5, -0.4 + ph * 0.95, 0.1 + 0.05 * Math.cos(k * 1.7));
+               lstar(m, c, 0.035F, pal, al * (float)Math.sin(Math.PI * ph));
+            }
+         }
+         case 5 -> {
+            underglow(m, HW, HH, pal, 0.22F * al);
+            for (int ring = 0; ring < 2; ring++) {
+               double r = ring == 0 ? 0.6 : 0.78, rot = (ring == 0 ? 1 : -1) * t * 0.025;
+               Vec3 prev = null;
+               for (int i = 0; i <= 40; i++) {
+                  double a = Math.PI * 2.0 * i / 40.0 + rot;
+                  Vec3 q = new Vec3(Math.cos(a) * r, Math.sin(a) * r, -0.09);
+                  if (prev != null && (ring == 0 || i % 5 != 0)) lline(m, prev, q, 0.014F, pal, al * 0.75F, al * 0.75F);
+                  prev = q;
+               }
+               for (int k = 0; k < 12; k++) {   // rune ticks
+                  double a = Math.PI * 2.0 * k / 12.0 + rot;
+                  double l = k % 3 == 0 ? 0.1 : 0.05;
+                  lline(m, new Vec3(Math.cos(a) * r, Math.sin(a) * r, -0.09), new Vec3(Math.cos(a) * (r - l), Math.sin(a) * (r - l), -0.09), 0.012F, pal, al * 0.8F, al * 0.4F);
+               }
+            }
+            for (int k = 0; k < 6; k++) {   // a turning hexagram inside
+               double a0 = t * 0.02 + k * Math.PI / 3.0, a1 = a0 + Math.PI * 2.0 / 3.0;
+               lline(m, new Vec3(Math.cos(a0) * 0.6, Math.sin(a0) * 0.6, -0.1), new Vec3(Math.cos(a1) * 0.6, Math.sin(a1) * 0.6, -0.1), 0.01F, pal, al * 0.45F, al * 0.45F);
+            }
+         }
+         default -> {
+            underglow(m, HW, HH, pal, 0.25F * al);
+            for (int k = 0; k < 3; k++) {
+               Vec3 prev = null;
+               for (int i = 0; i <= 10; i++) {
+                  double a = t * 0.12 + k * Math.PI * 2.0 / 3.0 - i * 0.12;
+                  Vec3 q = new Vec3(Math.cos(a) * HW * 1.5, Math.sin(a) * HH * 1.4 + 0.05 * Math.sin(t * 0.3 + k), 0.15 * Math.sin(a * 2.0));
+                  if (prev != null) lline(m, prev, q, 0.03F * (1.0F - i / 11.0F), pal, al * (1.0F - i / 10.0F), al * (1.0F - (i - 1) / 10.0F));
+                  else lstar(m, q, 0.06F, pal, al);
+                  prev = q;
+               }
+            }
+         }
+      }
    }
 
    /** A turning parchment page with a few lines of ink. */
@@ -1130,7 +1249,7 @@ public class FxRenderer {
    private static record AuraDraw(Vec3 a, Vec3 b, float width, int pal, float alpha) {
    }
 
-   private static record BookDraw(Vec3 pos, float yaw, float tilt, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg, int pal) {
+   private static record BookDraw(Vec3 pos, float yaw, float tilt, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg, int pal, int style) {
    }
 
    private static class Fx {

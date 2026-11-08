@@ -186,55 +186,106 @@ public class DarkFx {
     }
 
     // ================================================================== 2. Dimension Slash
+    /** Ticks from the cast to the draw-cut in the dark_dimension_slash animation (stance, hold, then the swing). */
+    private static final int DIM_RELEASE = 12;
+
     /**
-     * One iaido draw: a hairline appears 40 blocks through space (walls don't stop it), then space splits open along it.
-     * Mana Zone: Dark Cloaked Dimension Slash - the cut simply appears on every enemy in the zone.
+     * Yami's iaido: he sinks into a draw stance while darkness gathers at the hilt and space goes still... then one
+     * horizontal draw-cut. A huge black-flame crescent tears forward 40 blocks, a white hairline runs through space ahead
+     * of it (walls don't stop it), and a moment later space itself splits open along the line.
+     * Mana Zone: Dark Cloaked Dimension Slash - after the draw, the cut simply appears on every enemy in the zone.
      */
     public static void dimensionSlash(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        if (inZone(p)) {
-            zoneMsg(p, "dimension_slash");
-            zonePulse(p, sl);
-            List<LivingEntity> ts = zoneEnemies(p);
-            for (int i = 0; i < Math.min(12, ts.size()); i++) {
-                final LivingEntity t = ts.get(i);
-                AstaFx.later(1 + i, () -> {
-                    if (!alive(p) || !t.isAlive()) return;
-                    ThreadLocalRandom r = ThreadLocalRandom.current();
-                    double a = r.nextDouble(Math.PI);
-                    AstaFx.damage(p, t, power, "mana_zone_dimension_slash");
-                    cutMark(sl, mid(t), new Vec3(Math.cos(a), r.nextDouble(-0.6, 0.6), Math.sin(a)), 1.6f);
-                    sound(sl, t.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 0.5f);
+        // the stance: darkness drawn into the sheath at your left hip, a pulse under your feet, then a glint on the edge
+        for (int k = 0; k < 4; k++) {
+            final int kk = k;
+            AstaFx.later(k * 2, () -> {
+                if (!alive(p)) return;
+                Vec3 hilt = hipHilt(p);
+                double a = kk * 1.7;
+                Vec3 from = hilt.add(Math.cos(a) * 1.8, 0.6 - kk * 0.3, Math.sin(a) * 1.8);
+                Vec3 d = hilt.subtract(from).normalize();
+                FxSend.crescent(sl, D, from, d, rightOf(d).cross(d).normalize(), 0.45f, 0.2f, 4, 0.45f);
+                FxSend.ring(sl, D, p.position().add(0, 0.05, 0), 1.6f - kk * 0.3f, 0.3f, 0.08f, 5);
+            });
+        }
+        AstaFx.later(DIM_RELEASE - 3, () -> {
+            if (!alive(p)) return;
+            Vec3 h = hipHilt(p);
+            FxSend.beam(sl, S, h, h.add(rightOf(p.getLookAngle()).scale(-0.6)), 0.05f, 3);   // the glint as the blade leaves the sheath
+            sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 0.7f, 1.6f);
+        });
+        sound(sl, p.position(), SoundEvents.SOUL_ESCAPE, 0.8f, 0.5f);
+        AstaFx.later(DIM_RELEASE, () -> {
+            if (!alive(p)) return;
+            if (inZone(p)) { zoneDimension(p, sl, power); return; }
+            Vec3 start = p.getEyePosition().add(0, -0.25, 0);
+            Vec3 dir = p.getLookAngle();
+            Vec3 end = start.add(dir.scale(40));
+            Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
+            Vec3 left = rt.scale(-1);
+            for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(2.0))) {
+                if (!t.getBoundingBox().inflate(1.3, 0.8, 1.3).clip(start, end).isPresent()) continue;
+                final LivingEntity tt = t;
+                AstaFx.later((int) (t.distanceTo(p) / 3.2), () -> {   // the cut reaches them as the crescent passes
+                    if (!tt.isAlive() || !alive(p)) return;
+                    AstaFx.damage(p, tt, power, "dimension_slash");
+                    cutMark(sl, mid(tt), rt, 1.8f);
                 });
             }
-            sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.7f, 0.4f);
-            return;
-        }
-        Vec3 start = p.getEyePosition().add(0, -0.2, 0);
-        Vec3 dir = p.getLookAngle();
-        Vec3 end = start.add(dir.scale(40));
-        Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
-        for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(1.2))) {
-            if (!t.getBoundingBox().inflate(0.6).clip(start, end).isPresent()) continue;
-            AstaFx.damage(p, t, power, "dimension_slash");
-            cutMark(sl, mid(t), rt, 1.5f);
-        }
-        Vec3 from = start.add(dir.scale(1.2));
-        // the draw: a flat arc in front of you, and the hairline running out through space
-        FxSend.wall(sl, D, start, dir, rt, 2.0f, 2.3f, -70, 70, 0.3f, 6, 2, 0);
-        FxSend.beam(sl, S, from, end, 0.05f, 5);
-        AstaFx.later(2, () -> {   // ...then space splits: a black sheet with burning edges, opening along the whole line
-            FxSend.beam(sl, D, from, end, 0.8f, 9);
-            FxSend.box(sl, D, from.add(end).scale(0.5), dir, up, (float) from.distanceTo(end) / 2f, 0.55f, 0.03f, 12, 2,
-                    com.example.arcaneaddon.network.FxPacket.EXTEND);
-            for (int k = 4; k < 40; k += 5) {
-                Vec3 c = start.add(dir.scale(k));
-                FxSend.beam(sl, D, c.subtract(up.scale(0.9)), c.add(up.scale(0.9)), 0.2f, 7);   // small tears across it
-            }
-            sound(sl, p.position(), SoundEvents.WITHER_SHOOT, 0.4f, 0.5f);
+            // the draw: a wide flat arc from your left hip across to your right
+            FxSend.wall(sl, D, start, dir, left, 2.4f, 2.8f, -110, 100, 0.35f, 7, 2, 0);
+            FxSend.wall(sl, S, start, dir, left, 2.6f, 2.7f, -100, 95, 0.05f, 5, 2, 0);
+            // the slash itself: a huge horizontal black-flame crescent tearing forward, with a pale echo behind it
+            FxSend.crescent(sl, D, start.add(dir.scale(1.5)), dir, rt, 2.6f, 5.5f, 13, 3.2f);
+            AstaFx.later(2, () -> FxSend.crescent(sl, S, start.add(dir.scale(1.5)), dir, rt, 2.0f, 4.2f, 10, 3.2f));
+            // the hairline through space, then space splits along it
+            Vec3 from = start.add(dir.scale(1.2));
+            FxSend.beam(sl, S, from, end, 0.04f, 6);
+            AstaFx.later(3, () -> {
+                FxSend.beam(sl, D, from, end, 0.7f, 12);
+                FxSend.box(sl, D, from.add(end).scale(0.5), dir, up, (float) from.distanceTo(end) / 2f, 0.6f, 0.03f, 16, 4,
+                        com.example.arcaneaddon.network.FxPacket.EXTEND);
+                for (int k = 4; k < 40; k += 4) {
+                    Vec3 c = start.add(dir.scale(k));
+                    FxSend.beam(sl, D, c.subtract(up.scale(1.1)).add(rt.scale(0.3)), c.add(up.scale(1.1)).subtract(rt.scale(0.3)), 0.18f, 8);
+                }
+                sound(sl, p.position(), SoundEvents.WITHER_SHOOT, 0.4f, 0.5f);
+            });
+            FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 0.9f);
+            sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.4f);
+            sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.7f, 0.5f);
+            sound(sl, p.position(), SoundEvents.TRIDENT_RIPTIDE_3, 0.6f, 0.6f);
         });
-        sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.45f);
-        sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.6f, 0.5f);
+    }
+
+    /** Where Yami's sheathed katana's hilt sits: at the left hip, slightly forward. */
+    private static Vec3 hipHilt(ServerPlayer p) {
+        double yr = Math.toRadians(p.getYRot());
+        double lx = Math.cos(yr), lz = Math.sin(yr), fx = -Math.sin(yr), fz = Math.cos(yr);
+        return new Vec3(p.getX() + fx * 0.35 + lx * 0.32, p.getY() + 0.95, p.getZ() + fz * 0.35 + lz * 0.32);
+    }
+
+    /** Mana Zone: Dark Cloaked Dimension Slash - the cut appears directly on every enemy in the zone. */
+    private static void zoneDimension(ServerPlayer p, ServerLevel sl, float power) {
+        zoneMsg(p, "dimension_slash");
+        zonePulse(p, sl);
+        Vec3 start = p.getEyePosition().add(0, -0.25, 0), dir = p.getLookAngle();
+        FxSend.wall(sl, D, start, dir, rightOf(dir).scale(-1), 2.4f, 2.8f, -110, 100, 0.35f, 7, 2, 0);
+        List<LivingEntity> ts = zoneEnemies(p);
+        for (int i = 0; i < Math.min(12, ts.size()); i++) {
+            final LivingEntity t = ts.get(i);
+            AstaFx.later(1 + i, () -> {
+                if (!alive(p) || !t.isAlive()) return;
+                ThreadLocalRandom r = ThreadLocalRandom.current();
+                double a = r.nextDouble(Math.PI);
+                AstaFx.damage(p, t, power, "mana_zone_dimension_slash");
+                cutMark(sl, mid(t), new Vec3(Math.cos(a), r.nextDouble(-0.6, 0.6), Math.sin(a)), 1.6f);
+                sound(sl, t.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 0.5f);
+            });
+        }
+        sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.7f, 0.4f);
     }
 
     // ================================================================== 3 + 4. Avidya Slash Raijin / Wild Slash (ki-guided)

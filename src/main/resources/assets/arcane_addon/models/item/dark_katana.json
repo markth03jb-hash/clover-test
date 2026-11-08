@@ -1,15 +1,3 @@
 {
- "parent": "minecraft:item/handheld",
- "loader": "forge:separate_transforms",
- "base": {
-  "parent": "arcane_addon:item/dark_katana_model"
- },
- "perspectives": {
-  "gui": {
-   "parent": "item/handheld",
-   "textures": {
-    "layer0": "arcane_addon:item/dark_katana"
-   }
-  }
- }
+ "parent": "arcane_addon:item/dark_katana_model"
 }

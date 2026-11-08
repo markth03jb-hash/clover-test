@@ -181,27 +181,32 @@ public class AstaFx {
         } else {    // the Slayer's vertical cleave, from above your head down to the ground, then the ground splits
             FxSend.wall(sl, Fx.CRIMSON, eye.add(0, -0.3, 0), dir, new Vec3(0, 1, 0), 3.4f, 3.4f, 80, -70, 1.5f, 13, 3, 0);
             Fx.flash(sl, hit.add(0, 0.6, 0), 1.8f);
-            Vec3 ground = new Vec3(hit.x, p.getY() + 0.05, hit.z);
-            for (int i = 1; i <= 4; i++) {
+            // the ground splits: a jagged glowing fissure runs ahead, with thin side cracks and small black shards
+            Vec3 ground = new Vec3(hit.x, p.getY() + 0.04, hit.z);
+            java.util.Random rr = new java.util.Random();
+            Vec3[] pts = new Vec3[7];
+            pts[0] = ground.subtract(dir.scale(0.6));
+            for (int i = 1; i < pts.length; i++) pts[i] = ground.add(dir.scale(i * 1.0)).add(rt.scale((rr.nextDouble() - 0.5) * 0.6));
+            for (int i = 1; i < pts.length; i++) {
+                final Vec3 a = pts[i - 1], b = pts[i];
                 final int seg = i;
-                later(seg, () -> {
-                    Vec3 a = ground.add(dir.scale((seg - 1) * 1.6)), b = ground.add(dir.scale(seg * 1.6));
-                    FxSend.beam(sl, Fx.CRIMSON, a, b, 0.35f, 14);
-                    FxSend.beam(sl, Fx.DARK, a.add(rt.scale(0.25)), b.subtract(rt.scale(0.25)), 0.15f, 12);
-                    Fx.pillar(sl, Fx.DARK, b, 0.9f, 0.3f, 6);
-                    // the ground splits: jagged black slabs heave up on both sides of the crack
-                    for (int sd = -1; sd <= 1; sd += 2) {
-                        Vec3 tiltUp = new Vec3(0, 1, 0).add(rt.scale(0.45 * sd)).normalize();
-                        float hgt = 0.35f + 0.12f * ((seg + sd + 2) % 3);
-                        FxSend.box(sl, Fx.DARK, b.subtract(dir.scale(0.8)).add(rt.scale(0.55 * sd)).add(0, hgt * 0.6, 0), dir, tiltUp,
-                                0.6f, 0.22f, hgt, 16, 2, com.example.arcaneaddon.network.FxPacket.GROUND);
+                final double side = rr.nextBoolean() ? 1 : -1;
+                later(seg / 2, () -> {
+                    FxSend.beam(sl, Fx.CRIMSON, a, b, 0.14f, 26);
+                    FxSend.beam(sl, Fx.SILVER, a, b, 0.03f, 18);
+                    if (seg % 2 == 0) FxSend.beam(sl, Fx.CRIMSON, b, b.add(rt.scale(0.75 * side)).add(dir.scale(0.35)), 0.07f, 20);
+                    if (seg % 2 == 1) {
+                        for (int sd = -1; sd <= 1; sd += 2) {
+                            FxSend.spike(sl, Fx.DARK, b.add(rt.scale(0.22 * sd)).add(0, -0.05, 0), new Vec3(0, 1, 0).add(rt.scale(0.7 * sd)),
+                                    0.4f + 0.15f * (seg % 3), 0.07f, 20, 2, com.example.arcaneaddon.network.FxPacket.GROUND);
+                        }
                     }
-                    sound(sl, b, SoundEvents.STONE_BREAK, 0.7f, 0.6f);
                 });
             }
+            sound(sl, hit, SoundEvents.STONE_BREAK, 0.9f, 0.6f);
         }
-        FxSend.ring(sl, dw ? Fx.DARK : Fx.CRIMSON, hit, 0.4f, 4.5f, 0.45f, 10);
-        later(3, () -> FxSend.ring(sl, Fx.SILVER, hit, 0.6f, 6.5f, 0.12f, 8));   // one thin shockwave rolling out
+        FxSend.ring(sl, dw ? Fx.DARK : Fx.CRIMSON, hit, 0.3f, 3.0f, 0.08f, 8);
+        later(2, () -> FxSend.ring(sl, Fx.SILVER, hit, 0.6f, 5.5f, 0.05f, 8));   // one thin shockwave rolling out
         sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.5f);
         sound(sl, hit, SoundEvents.GENERIC_EXPLODE, 0.8f, 1.2f);
         sound(sl, hit, SoundEvents.PLAYER_ATTACK_CRIT, 1.0f, 0.6f);
@@ -551,18 +556,8 @@ public class AstaFx {
         TimedModifiers.apply(p, Attributes.ATTACK_SPEED, TimedModifiers.UNION_ATTACK_SPEED, "Devil Union fury", 0.3, AttributeModifier.Operation.MULTIPLY_TOTAL, UNION_TICKS);
         TimedModifiers.apply(p, Attributes.KNOCKBACK_RESISTANCE, TimedModifiers.UNION_KNOCKBACK, "Devil Union weight", 0.5, AttributeModifier.Operation.ADDITION, UNION_TICKS);
         Vec3 c = p.position();
-        FxSend.ring(sl, Fx.DARK, c.add(0, 0.1, 0), 0.4f, 6f, 0.9f, 16);
-        FxSend.ring(sl, Fx.CRIMSON, c.add(0, 0.8, 0), 0.3f, 3.5f, 0.4f, 12);
-        // four black pillars rise around you, then the union bursts outward and shoves enemies back
-        later(4, () -> {
-            for (int k = 0; k < 4; k++) {
-                double a = k * Math.PI / 2 + Math.PI / 4;
-                Fx.pillar(sl, Fx.DARK, c.add(Math.cos(a) * 1.6, 0, Math.sin(a) * 1.6), 4.5f, 0.5f, 12);
-            }
-            sound(sl, c, SoundEvents.SOUL_ESCAPE, 1.2f, 0.5f);
-        });
+        // no rings or pillars around you any more - just the transformation itself, and a shove as the power bursts out
         later(8, () -> {
-            FxSend.ring(sl, Fx.DARK, c.add(0, 0.2, 0), 0.5f, 9f, 0.25f, 12);
             sound(sl, c, SoundEvents.GENERIC_EXPLODE, 0.9f, 0.5f);
             if (p.isAlive()) {
                 for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(6), x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {

@@ -40,7 +40,6 @@ public final class DevilFx {
         AstaFx.zetten(p, power * 1.15f, dw);
         Vec3 dir = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
         Vec3 hit = p.position().add(dir.scale(3.2));
-        FxLib.spikeRing(sl, EMBER, hit, 1.6f);
         FxLib.shockRing(sl, EMBER, hit.add(0, 0.1, 0), 2.2f);
         AstaFx.later(7, () -> { if (alive(p)) AstaFx.zetten(p, power * 0.75f, !dw); });   // the second sword follows
         sound(sl, hit, SoundEvents.GENERIC_EXPLODE, 0.6f, 0.7f);

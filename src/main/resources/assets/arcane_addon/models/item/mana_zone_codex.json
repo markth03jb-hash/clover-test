@@ -1,26 +1,18 @@
 {
-  "parent": "minecraft:item/handheld",
-  "loader": "forge:separate_transforms",
-  "base": {
-    "textures": {
-      "book": "arcane_addon:item/spell_book_models/mana_zone_codex",
-      "particle": "arcane_addon:item/spell_book_models/mana_zone_codex"
-    },
-    "parent": "irons_spellbooks:item/template_spell_book_model"
+ "parent": "minecraft:item/handheld",
+ "loader": "forge:separate_transforms",
+ "base": {
+  "parent": "arcane_addon:item/mana_zone_codex_model"
+ },
+ "perspectives": {
+  "gui": {
+   "parent": "item/generated",
+   "textures": {
+    "layer0": "arcane_addon:item/mana_zone_codex"
+   }
   },
-  "perspectives": {
-    "gui": {
-      "parent": "item/generated",
-      "textures": {
-        "layer0": "arcane_addon:item/mana_zone_codex"
-      }
-    },
-    "head": {
-      "textures": {
-        "book": "arcane_addon:item/spell_book_models/mana_zone_codex",
-        "particle": "arcane_addon:item/spell_book_models/mana_zone_codex"
-      },
-      "parent": "irons_spellbooks:item/template_spell_book_model_open"
-    }
+  "head": {
+   "parent": "arcane_addon:item/mana_zone_codex_open"
   }
+ }
 }

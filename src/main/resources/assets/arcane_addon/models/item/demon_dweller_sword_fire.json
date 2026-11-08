@@ -1,14 +1,15 @@
 {
  "loader": "forge:obj",
- "model": "arcane_addon:models/item/demon_dweller_sword.obj",
+ "model": "arcane_addon:models/item/demon_dweller_sword_glow.obj",
  "flip_v": true,
  "ambient_occlusion": false,
  "gui_light": "front",
  "textures": {
-  "tex0": "arcane_addon:item/spell_book_models/dweller_blade_fire",
+  "tex0": "arcane_addon:item/spell_book_models/dweller_blade",
   "tex1": "arcane_addon:item/spell_book_models/dweller_guard",
   "tex2": "arcane_addon:item/spell_book_models/dweller_handle",
-  "particle": "arcane_addon:item/spell_book_models/dweller_blade"
+  "particle": "arcane_addon:item/spell_book_models/dweller_blade",
+  "tex3": "arcane_addon:item/spell_book_models/dweller_glow_fire"
  },
  "display": {
   "thirdperson_righthand": {

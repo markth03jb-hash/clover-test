@@ -1,7 +1,31 @@
-Arcane Addon v1.15.0 - all changed files since v1.0.0
+Arcane Addon v1.16.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.16.0
+  Grimoires:
+  - The open book now shows its pages, not its cover.
+  - It follows your body instead of the screen, and trails a little behind as you move and turn (smoother).
+    In first person it hovers low at your left and no longer moves with your view's pitch.
+  - Every grimoire now uses the Black Grimoire's 3D book with its own covers and clover: Dark (violet), Steel (steel),
+    Four-Leaf (green, four leaves), Three-Leaf (gold), Mana Zone Codex (cyan), Spirit-Bound (pale teal).
+  - Every grimoire has its own aura: Black - black flame; Dark - violet flame and circling dark crescents;
+    Steel - orbiting steel shards; Four-Leaf - green wind spirals carrying leaves; Three-Leaf - a golden halo and
+    rising motes; Mana Zone Codex - turning cyan rune circles; Spirit-Bound - orbiting spirit wisps.
+  - Asta's sword now rises hilt-first out of the centre of the open pages.
+  Yami's katana: longer blade with a ridge line, held flat-side-correct in third person, and the hotbar icon is the
+  3D model.
+  Asta:
+  - Zetten: the crater is gone - a clean glowing fissure with thin side cracks and small black shards instead.
+  - Demon Dweller element glow: only the inner channel lights up (fire / ice / lightning / wind) and it glows.
+  - Devil Union: no more rings, pillars, sigil or shockwave around you when it activates.
+  - Demon Slayer slashes (twin swap / Four Elements follow-up): aim up and down with your view, and the slash that
+    flies on is now a huge black-flame crescent.
+  Yami:
+  - Dimension Slash: new iaido animation (sink into the draw stance, hold, one explosive draw-cut). Darkness gathers
+    into the sheath during the stance, then a huge horizontal black-flame crescent tears 40 blocks forward and space
+    splits open behind it. The cut lands exactly when the swing does.
 
 NEW IN 1.15.0 - YAMI REWORK + MANA ZONE
   - New spell 8: Mana Zone (replaces "Mana Zone: Dimension Slash" in the same slot). Spreads your mana 14 blocks around

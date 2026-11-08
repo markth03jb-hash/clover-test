@@ -80,7 +80,7 @@ public class AddonSpellRegistry {
     // katana = needs the Dark Katana in the main hand.  animation = the player pose played when it's cast.
     //                                                                                   id                          cd mana power katana  animation
     public static final RegistryObject<AbstractSpell> BLACK_BLADE = registerSpell(new DarkSpell("black_blade", 30, 40, 0, true, DarkSpell.anim("irons_spellbooks:sword_deflect_1"), DarkFx::blackBlade));
-    public static final RegistryObject<AbstractSpell> DIMENSION_SLASH = registerSpell(new DarkSpell("dimension_slash", 12, 80, 26, true, DarkSpell.anim("arcane_addon:dark_iaido"), DarkFx::dimensionSlash));
+    public static final RegistryObject<AbstractSpell> DIMENSION_SLASH = registerSpell(new DarkSpell("dimension_slash", 12, 80, 26, true, DarkSpell.anim("arcane_addon:dark_dimension_slash"), DarkFx::dimensionSlash));
     public static final RegistryObject<AbstractSpell> AVIDYA_SLASH = registerSpell(new DarkSpell("avidya_slash", 8, 50, 18, true, DarkSpell.anim("irons_spellbooks:katana_upslash"), DarkFx::avidyaSlash));
     public static final RegistryObject<AbstractSpell> WILD_SLASH = registerSpell(new DarkSpell("wild_slash", 16, 90, 12, true, DarkSpell.anim("arcane_addon:dark_wild_flurry"), DarkFx::wildSlash));
     public static final RegistryObject<AbstractSpell> DEATH_THRUST = registerSpell(new DarkSpell("death_thrust", 10, 60, 22, true, DarkSpell.anim("irons_spellbooks:simple_sword_lunge_stab"), DarkFx::deathThrust));

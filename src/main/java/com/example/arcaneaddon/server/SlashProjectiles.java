@@ -41,15 +41,23 @@ public class SlashProjectiles {
     private static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float v, float p) { sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, v, p); }
 
     // ------------------------------------------------------------------ entry points
-    /** Slayer swings horizontally from your right to your left; at the end the slash aura flies on. */
+    /** Left of {@code f}, kept level with the horizon even when {@code f} points up or down. */
+    private static Vec3 leftOf(Vec3 f) {
+        Vec3 l = new Vec3(0, 1, 0).cross(f);
+        return l.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : l.normalize();
+    }
+
+    /**
+     * Slayer swings from your right to your left along where you aim (up or down too); at the end a huge crescent of
+     * slash flies on in the same direction.
+     */
     public static void horizontalSlash(ServerPlayer p, float dmg) {
         ServerLevel sl = p.serverLevel();
-        Vec3 look = p.getLookAngle();
-        Vec3 f = new Vec3(look.x, 0, look.z).normalize();
+        Vec3 f = p.getLookAngle().normalize();
         S s = new S();
         s.level = sl; s.owner = p.getUUID(); s.kind = Kind.SWEEP; s.damage = dmg;
-        s.dir = f; s.left = new Vec3(f.z, 0, -f.x);
-        s.pos = p.position().add(0, p.getEyeHeight() * 0.75, 0).add(f.scale(0.3));
+        s.dir = f; s.left = leftOf(f);
+        s.pos = p.getEyePosition().add(0, -0.35, 0).add(f.scale(0.3));
         s.left_ = 4;
         LIST.add(s);
         FxSend.wall(sl, 0, s.pos, f, s.left, 3.4f, 3.4f, -105, 105, 1.1f, 14, 4, 0);   // the swing as a real 3D slash wall
@@ -61,10 +69,11 @@ public class SlashProjectiles {
     public static void whirlSlash(ServerPlayer p, float dmg) {
         ServerLevel sl = p.serverLevel();
         Vec3 look = p.getLookAngle();
-        Vec3 f = new Vec3(look.x, 0, look.z).normalize();
+        Vec3 flat = new Vec3(look.x, 0, look.z).normalize();
         S s = new S();
         s.level = sl; s.owner = p.getUUID(); s.kind = Kind.SWEEP; s.damage = dmg; s.full = true;
-        s.dir = f; s.left = new Vec3(f.z, 0, -f.x);
+        s.dir = look.normalize(); s.left = leftOf(look);   // the spin is level, the aura that leaves it flies where you aim
+        Vec3 f = flat;
         s.pos = p.position().add(0, p.getEyeHeight() * 0.75, 0);
         s.left_ = 4;
         LIST.add(s);
@@ -142,10 +151,10 @@ public class SlashProjectiles {
         if (s.age == 0) {                      // the blow lands on the first tick
             for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(4.2, 2.2, 4.2),
                     x -> x != owner && x.isAlive() && !x.isAlliedTo(owner))) {
-                Vec3 to = t.position().subtract(owner.position()).multiply(1, 0, 1);
+                Vec3 to = t.position().add(0, t.getBbHeight() * 0.5, 0).subtract(c);
                 double dist = to.length();
-                if (dist > 4.6) continue;
-                if (!s.full && dist > 0.5 && to.normalize().dot(f) < Math.cos(Math.toRadians(105))) continue;
+                if (dist > 4.8) continue;
+                if (!s.full && dist > 0.8 && to.normalize().dot(f) < Math.cos(Math.toRadians(100))) continue;
                 hurt(s, owner, t, s.damage);
                 Vec3 k = dist > 0.01 ? to.normalize() : f;
                 t.knockback(1.0, -k.x, -k.z);
@@ -157,10 +166,14 @@ public class SlashProjectiles {
         if (s.age == 2) {                      // the slash aura leaves the blade and flies on
             S a = new S();
             a.level = sl; a.owner = s.owner; a.kind = Kind.AURA; a.damage = s.damage * 0.6f;
-            a.dir = f; a.left = l; a.pos = c.add(f.scale(2.6)); a.speed = 1.35; a.left_ = 7;
+            a.dir = f; a.left = l; a.pos = c.add(f.scale(1.6)); a.speed = 1.7; a.left_ = 10;
             LIST.add(a);
-            a.fxId = FxSend.wall(sl, 0, c.add(f.scale(0.4)), f, l, 2.6f, 3.3f, -65, 65, 1.3f, 8, 0, 1.35f);   // aura: a dark wall of slash flying on
+            // the aura: a huge black-flame crescent, as wide as the swing, flying on where you aimed, with a pale echo
+            a.fxId = FxSend.crescent(sl, 0, c.add(f.scale(1.6)), f, l, 3.0f, 4.4f, 11, 1.7f);
+            AstaFx.later(2, () -> FxSend.crescent(sl, Fx.SILVER, c.add(f.scale(1.6)), f, l, 2.4f, 3.6f, 8, 1.7f));
+            FxSend.wall(sl, 0, c.add(f.scale(1.2)), l, l.cross(f).normalize(), 0.3f, 2.2f, -180, 180, 0.12f, 6, 0, 0);   // shock ring as it leaves
             sound(sl, c, SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.6f);
+            sound(sl, c, SoundEvents.TRIDENT_RIPTIDE_3, 0.7f, 0.8f);
         }
         return ++s.age >= s.left_;
     }
@@ -172,7 +185,7 @@ public class SlashProjectiles {
         var clip = sl.clip(new ClipContext(s.pos, next, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, owner));
         boolean blocked = clip.getType() != HitResult.Type.MISS;
         if (blocked) next = clip.getLocation();
-        double reach = (dark ? 1.4 : 1.7) + s.age * 0.05;
+        double reach = dark ? 1.4 + s.age * 0.05 : 2.6 + s.age * 0.15;   // the aura crescent grows as it flies
         for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(s.pos, next).inflate(reach),
                 x -> x != owner && x.isAlive() && !x.isAlliedTo(owner))) {
             if (!s.hit.add(t.getUUID())) continue;          // pierces: everything is hit once
