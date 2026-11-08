@@ -17,5 +17,6 @@ public class ArcaneAddon {
         AddonItemRegistry.ITEMS.register(modBus);
         AddonItemRegistry.TABS.register(modBus);
         AddonNetwork.init();
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.COMMON, AddonConfig.SPEC);
     }
 }

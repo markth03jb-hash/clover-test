@@ -187,6 +187,7 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 34) { MasteryClient.setEnabled(p.life > 0); return; }   // Grimoire Mastery on/off
       if (p.shape == 32) { ModeHudOverlay.set(p.palette, p.life); return; }   // mode timer on the HUD: palette = mode, life = ticks (0 = off)
       if (p.shape == 27) { DarkSmoke.hellfire(p.id, p.life); return; }   // Hellfire Incarnate body: id = player, life = ticks
       if (p.shape == 21) { DarkSmoke.burning(p.id, p.life); return; }    // burning: id = entity, life = ticks

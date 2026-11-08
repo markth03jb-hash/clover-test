@@ -1,7 +1,27 @@
-Arcane Addon v1.36.0 - all changed files since v1.0.0
+Arcane Addon v1.37.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.37.0
+- NEW: Grimoire Mastery. Every grimoire levels up from Mastery 1 to 5 as you fight with its magic, and its stronger
+  spells unlock as it does. Progress is stored on the book itself, so a book keeps its level if you trade it.
+  - XP: 1 per point of damage the book's spells deal (capped at the target's remaining health), +15 per kill,
+    +300 for a boss (Wither, Ender Dragon, Warden...), +3 per second while one of the book's modes is running.
+    Passive animals, villagers and armor stands give nothing. No diminishing returns. A book is mastered in about
+    an hour of fighting (800 / 2400 / 5200 / 9000 total XP for Mastery 2 / 3 / 4 / 5).
+  - unlocks: 3 spells at Mastery 1, then 2-3 more at 2 and 3, the big ones at 4 and the ultimate at 5 (e.g. Yami:
+    Mana Zone at 4, Event Horizon at 5; Luck: Thunder God Mode at 4, Thunder Fiend Rampage at 5; Zenon:
+    Beelzebub at 5; Asta: Devil Union at 5). Casting a locked spell shows what Mastery it needs.
+  - each Mastery level above 1 gives +4% spell power, +3% cooldown reduction and +50 max mana while equipped.
+  - level up: the grimoire flies open, rings of its magic burst around you, a halo forms, and you're told what
+    unlocked. Mastery 5 also shakes the screen, gives the floating grimoire a stronger aura and trims your mode
+    timers in gold.
+  - the grimoire tooltip shows its Mastery, an XP bar, the current bonus, what the next level unlocks and which
+    spells are still locked. Gaining XP pops up a small Mastery bar under the mode timers for a few seconds.
+  - ON / OFF: /arcane progression on|off (saved to config/arcane_addon-common.toml, "grimoire_mastery.enabled").
+    Off = every spell unlocked and no level bonuses - handy for testing a new grimoire. The config also has
+    xp_multiplier. Commands (op): /arcane mastery set <1-5> [player], /arcane mastery add <xp>.
 
 NEW IN 1.36.0
 - NEW: mode timers on the HUD, like vanilla effect timers. Every mode shows a panel in the top-right corner (under

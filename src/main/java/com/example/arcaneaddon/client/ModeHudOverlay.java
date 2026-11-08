@@ -41,10 +41,21 @@ public final class ModeHudOverlay {
     public static void onGui(RenderGuiEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) { ACTIVE.clear(); return; }
-        if (ACTIVE.isEmpty() || mc.options.hideGui) return;
+        if (mc.options.hideGui) return;
         double now = mc.level.getGameTime() + e.getPartialTick();
         ACTIVE.values().removeIf(f -> now >= f[1]);
-        if (ACTIVE.isEmpty()) return;
+        // the equipped grimoire's mastery: level 5 books get gold-trimmed timers; XP gains pop up a bar below them
+        net.minecraft.world.item.ItemStack book = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(mc.player);
+        com.example.arcaneaddon.server.GrimoireMastery.Book mb = book == null ? null : com.example.arcaneaddon.server.GrimoireMastery.bookOf(book);
+        boolean mastery = mb != null && MasteryClient.enabled();
+        int mxp = mastery ? com.example.arcaneaddon.server.GrimoireMastery.xp(book) : -1;
+        if (mxp != lastXp) {
+            if (lastXp >= 0 && mxp > lastXp && mb == lastBook) xpShownUntil = now + 100;
+            lastXp = mxp; lastBook = mb;
+        }
+        boolean gold = mastery && com.example.arcaneaddon.server.GrimoireMastery.levelFor(mxp) >= com.example.arcaneaddon.server.GrimoireMastery.MAX_LEVEL;
+        boolean showXp = mastery && now < xpShownUntil;
+        if (ACTIVE.isEmpty() && !showXp) return;
         GuiGraphics g = e.getGuiGraphics();
         Font font = mc.font;
         // start below the vanilla effect icons (good row at y 1, bad row at y 27)
@@ -66,6 +77,12 @@ public final class ModeHudOverlay {
             int x = right - w;
             boolean blink = left < 200 && ((int) (now / 4) % 2 == 0);   // last 10 s, like vanilla
             int accent = accent(id);
+            if (gold) {   // a mastered grimoire: gold trim round the whole panel
+                g.fill(x - 1, y - 1, right + 1, y, 0xFFE8B830);
+                g.fill(x - 1, y + 24, right + 1, y + 25, 0xFFE8B830);
+                g.fill(x - 1, y - 1, x, y + 25, 0xFFE8B830);
+                g.fill(right, y - 1, right + 1, y + 25, 0xFFE8B830);
+            }
             g.fill(x, y, right, y + 24, 0xB0100A16);
             g.fill(x, y, right, y + 1, accent);
             g.fill(x, y + 23, right, y + 24, 0x60000000);
@@ -80,7 +97,28 @@ public final class ModeHudOverlay {
             g.drawString(font, time, x + 24, y + 12, blink ? 0xFF5555 : 0xBBBBBB, true);
             y += 26;
         }
+        if (showXp) {   // mastery XP popup: level and progress to the next one
+            int lvl = com.example.arcaneaddon.server.GrimoireMastery.levelFor(mxp);
+            int[] th = com.example.arcaneaddon.server.GrimoireMastery.THRESHOLDS;
+            boolean max = lvl >= com.example.arcaneaddon.server.GrimoireMastery.MAX_LEVEL;
+            float frac = max ? 1f : (mxp - th[lvl]) / (float) Math.max(1, th[lvl + 1] - th[lvl]);
+            Component label = Component.translatable("ui.arcane_addon.mastery.hud", lvl);
+            String nums = max ? "MAX" : (mxp - th[lvl]) + " / " + (th[lvl + 1] - th[lvl]);
+            int w = Math.max(96, font.width(label) + font.width(nums) + 14);
+            int x = right - w;
+            float fade = (float) Mth.clamp((xpShownUntil - now) / 20.0, 0.0, 1.0);
+            int a = (int) (fade * 0xB0);
+            g.fill(x, y, right, y + 16, (a << 24) | 0x100A16);
+            g.drawString(font, label, x + 4, y + 2, ((int) (fade * 255) << 24) | 0xFFD860, true);
+            g.drawString(font, nums, right - 4 - font.width(nums), y + 2, ((int) (fade * 255) << 24) | 0xBBBBBB, true);
+            g.fill(x + 2, y + 12, right - 2, y + 14, (a << 24) | 0x302818);
+            g.fill(x + 2, y + 12, x + 2 + (int) ((w - 4) * frac), y + 14, ((int) (fade * 255) << 24) | 0xE8B830);
+        }
     }
+
+    private static int lastXp = -1;
+    private static Object lastBook;
+    private static double xpShownUntil = -1;
 
     private static int accent(String id) {
         return switch (id) {
