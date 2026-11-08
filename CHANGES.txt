@@ -1,7 +1,15 @@
-Arcane Addon v1.32.0 - all changed files since v1.0.0
+Arcane Addon v1.33.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.33.0
+- Yami's darkness remade: no more grainy soot. It is now smooth, ink-in-water darkness - deep indigo-black with
+  violet in its thinner parts and a faint violet aura - that hangs, curls and flows sideways in tendrils instead
+  of rising like smoke.
+- Mereoleona's fire is now clearly her own: it burns clean (no smoke - embers fly instead), her flames lick up in
+  sharp, narrow, swaying tongues instead of Magna's round billows, and her fireballs and blasts flare a mane of
+  sharp flame tongues around them.
 
 NEW IN 1.32.0
 - No more popping in and out: things re-sent every tick (projectiles, orbiting weapons, the tornado, the eagle,

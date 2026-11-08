@@ -30,6 +30,8 @@ public final class DarkSmoke {
     private DarkSmoke() {}
 
     private static final ResourceLocation SMOKE = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/dark_smoke.png");
+    /** Smooth, ink-in-water darkness (no grain, so it reads as darkness, not soot). */
+    private static final ResourceLocation WISP = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/dark_wisp.png");
     private static final ResourceLocation MOTE = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/dark_mote.png");
     /** Black-edged soft dot for the additive bloom pass (additive blending ignores alpha, so the falloff is in the colour). */
     private static final ResourceLocation GLOW = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/dark_glow.png");
@@ -220,7 +222,15 @@ public final class DarkSmoke {
             if (now - p.born > p.life) { it.remove(); continue; }
             p.x += p.vx; p.y += p.vy; p.z += p.vz;
             double drag = p.bead ? 0.98 : p.streak ? 0.93 : p.mote ? 0.96 : 0.88;
-            p.vx *= drag; p.vz *= drag; p.vy = p.vy * drag + (p.bead ? -0.04 : p.streak ? 0.0 : p.mote ? 0.0015 : p.flame ? 0.012 : 0.004);   // darkness rises slowly, mercury falls
+            boolean dark = isDark(p);
+            if (dark) {   // darkness doesn't rise like smoke: it hangs, curls and flows sideways like ink in water
+                double sw = 0.07 * (p.shade > 0.5 ? 1 : -1), cs = Math.cos(sw), sn = Math.sin(sw);
+                double nx = p.vx * cs - p.vz * sn, nz = p.vx * sn + p.vz * cs;
+                p.vx = nx; p.vz = nz;
+                drag = 0.9;
+            }
+            p.vx *= drag; p.vz *= drag;
+            p.vy = p.vy * drag + (p.bead ? -0.04 : p.streak ? 0.0 : p.mote ? 0.0015 : p.crimson ? 0.022 : p.flame ? 0.012 : dark ? 0.0008 : 0.004);
             p.rot += p.spin;
         }
         ThreadLocalRandom rr = ThreadLocalRandom.current();
@@ -292,9 +302,16 @@ public final class DarkSmoke {
         Matrix4f m = ps.last().pose();
         Matrix3f n = ps.last().normal();
         RenderType st = RenderType.entityTranslucentEmissive(SMOKE), mt = RenderType.entityTranslucentEmissive(MOTE);
+        RenderType wt = RenderType.entityTranslucentEmissive(WISP);
+        VertexConsumer vw = buf.getBuffer(wt);
+        for (Puff p : sorted) {
+            if (!isDark(p)) continue;
+            draw(vw, m, n, cam, L, U, p, now, pt);
+        }
+        buf.endBatch(wt);
         VertexConsumer vs = buf.getBuffer(st);
         for (Puff p : sorted) {
-            if (p.mote) continue;
+            if (p.mote || isDark(p)) continue;
             draw(vs, m, n, cam, L, U, p, now, pt);
         }
         buf.endBatch(st);
@@ -308,7 +325,7 @@ public final class DarkSmoke {
         RenderType gt = RenderType.eyes(GLOW);
         VertexConsumer vg = buf.getBuffer(gt);
         for (Puff p : sorted) {
-            boolean glow = (p.flame && now - p.born < p.life * 0.55) || (p.mote && !(p.bead && !p.tinted));
+            boolean glow = (p.flame && now - p.born < p.life * 0.55) || (p.mote && !(p.bead && !p.tinted)) || isDark(p);
             if (!glow) continue;
             bloom(vg, m, n, cam, L, U, p, now, pt);
         }
@@ -323,8 +340,11 @@ public final class DarkSmoke {
         float near = (float) Mth.clamp((c.distanceTo(cam) - 0.6) / 1.8, 0.0, 1.0);
         if (near <= 0.01F) return;
         float size = (float) (p.s0 + (p.s1 - p.s0) * t), a, cr, cg, cb;
-        if (p.flame) {
-            a = (float) (1.0 - t / 0.55) * 0.55F;
+        if (isDark(p)) {   // a faint violet aura around the darkness
+            a = (float) (Mth.clamp(age / 3.0, 0.0, 1.0) * Math.pow(1.0 - t, 1.5)) * 0.14F;
+            cr = 0.45F; cg = 0.12F; cb = 0.9F; size *= 1.35F;
+        } else if (p.flame) {
+            a = (float) (1.0 - t / 0.55) * (p.crimson ? 0.7F : 0.55F);
             if (p.crimson) { cr = 1.0F; cg = 0.15F; cb = 0.08F; } else if (p.tinted) { cr = 0.3F; cg = 0.6F; cb = 1.0F; } else { cr = 1.0F; cg = 0.6F; cb = 0.15F; }
             size *= 1.5F;
         } else if (p.tinted) {
@@ -353,6 +373,9 @@ public final class DarkSmoke {
         v(vc, m, n, cam, c.add(ax).add(ay), cr, cg, cb, 1F, 1, 0);
         v(vc, m, n, cam, c.subtract(ax).add(ay), cr, cg, cb, 1F, 0, 0);
     }
+
+    /** Yami's darkness (not a flame, not dust, not a mote). */
+    private static boolean isDark(Puff p) { return !p.mote && !p.flame && !p.tinted; }
 
     private static double d2(Puff p, Vec3 cam) {
         double dx = p.x - cam.x, dy = p.y - cam.y, dz = p.z - cam.z;
@@ -407,16 +430,33 @@ public final class DarkSmoke {
             a = (float) (Mth.clamp(age / 3.0, 0.0, 1.0) * Math.pow(1.0 - t, 0.7)) * (0.75F + 0.25F * (float) Math.sin(now * 0.8 + p.shade * 9));
             cr = 0.62F + 0.3F * p.shade; cg = 0.22F + 0.2F * p.shade; cb = 1.0F;
         } else {
-            a = (float) (Mth.clamp(age / 2.5, 0.0, 1.0) * Math.pow(1.0 - t, 1.3)) * 0.85F;
-            // near-black with a faint violet tint in the youngest puffs
-            float tint = (float) Math.max(0.0, 1.0 - t * 2.5) * 0.14F;
-            cr = 0.015F + tint * 0.55F; cg = 0.0F + tint * 0.12F; cb = 0.035F + tint;
+            a = (float) (Mth.clamp(age / 3.0, 0.0, 1.0) * Math.pow(1.0 - t, 1.6)) * 0.62F;
+            // deep indigo-black, violet in its younger, thinner parts - an absence of light, not ash
+            float tint = (float) Math.max(0.0, 1.0 - t * 1.6) * 0.22F;
+            cr = 0.02F + tint * 0.5F; cg = 0.0F + tint * 0.08F; cb = 0.06F + tint;
             if (p.tinted) { cr = p.tr; cg = p.tg; cb = p.tb; a *= 0.7F; }   // dust
         }
         a *= near;
         if (a <= 0.01F) return;
         float cs = Mth.cos(p.rot), sn = Mth.sin(p.rot);
         Vec3 ax = L.scale(cs).add(U.scale(sn)).scale(size), ay = L.scale(-sn).add(U.scale(cs)).scale(size);
+        if (p.crimson) {   // Mereoleona's fire licks upward in sharp, narrow tongues - not round billows like Magna's
+            float sway = 0.25F * Mth.sin((float) (now * 0.7 + p.shade * 9));
+            ax = L.scale(size * 0.45);
+            ay = U.scale(size * 1.7).add(L.scale(size * sway));
+        } else if (isDark(p)) {   // darkness stretches along the way it flows: tendrils, not puffs
+            Vec3 vel = new Vec3(p.vx, 0, p.vz);
+            double sp = vel.length();
+            if (sp > 0.01) {
+                Vec3 along = vel.normalize();
+                Vec3 sideV = along.cross(c.subtract(cam));
+                if (sideV.lengthSqr() > 1.0E-8) {
+                    double st = 1.0 + Math.min(1.2, sp * 12);
+                    ax = along.scale(size * st);
+                    ay = sideV.normalize().scale(size / Math.sqrt(st));
+                }
+            }
+        }
         v(vc, m, n, cam, c.subtract(ax).subtract(ay), cr, cg, cb, a, 0, 1);
         v(vc, m, n, cam, c.add(ax).subtract(ay), cr, cg, cb, a, 1, 1);
         v(vc, m, n, cam, c.add(ax).add(ay), cr, cg, cb, a, 1, 0);

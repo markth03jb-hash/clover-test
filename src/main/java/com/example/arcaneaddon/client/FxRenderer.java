@@ -600,7 +600,7 @@ public class FxRenderer {
                   }
                   for (int i = 0; i < k / 3; i++) {
                      Vec3 d = jit(r, 1.0).normalize();
-                     DarkSmoke.smoke(c.add(d.scale(p.r2 * 0.5)), d.scale(p.r2 * 0.04).add(0, 0.05, 0), (float)Mth.clamp(p.r2 * 0.3, 0.4, 2.0), r.nextInt(24, 40));
+                     smk(c.add(d.scale(p.r2 * 0.5)), d.scale(p.r2 * 0.04).add(0, 0.05, 0), (float)Mth.clamp(p.r2 * 0.3, 0.4, 2.0), r.nextInt(24, 40));
                   }
                }
                break;
@@ -611,7 +611,7 @@ public class FxRenderer {
                Vec3 d = jit(r, 1.0).normalize();
                fl(c.add(d.scale(p.r * 0.8)), p.v.scale(-0.15).add(d.scale(0.02)).add(0, 0.02, 0), p.r * (float)r.nextDouble(0.6, 1.0), r.nextInt(6, 12));
             }
-            if (p.v.lengthSqr() > 0.01 && r.nextInt(3) == 0) DarkSmoke.smoke(c.subtract(p.v.scale(0.6)), new Vec3(0, 0.03, 0), p.r * 1.2F, r.nextInt(16, 26));
+            if (p.v.lengthSqr() > 0.01 && r.nextInt(3) == 0) smk(c.subtract(p.v.scale(0.6)), new Vec3(0, 0.03, 0), p.r * 1.2F, r.nextInt(16, 26));
             break;
          }
          case 2: {
@@ -665,6 +665,12 @@ public class FxRenderer {
          }
          default:
       }
+   }
+
+   /** Smoke off fire - except Mereoleona's, which burns clean: embers fly instead. */
+   private static void smk(Vec3 at, Vec3 v, float size, int life) {
+      if (flamePal == CRIMSON) DarkSmoke.emberSpark(at, v.add(0, 0.08, 0), 0.04F, Math.max(8, life / 2));
+      else DarkSmoke.smoke(at, v, size, life);
    }
 
    private static void fl(Vec3 at, Vec3 v, float size, int life) {
@@ -815,6 +821,25 @@ public class FxRenderer {
       // the corona: the light the fire throws on the air around it (and a white flash when it explodes)
       halo(m, cam, c, R * (boom ? 1.7 : 2.4), rim, al * (boom ? 0.4F : 0.5F) * heat);
       if (boom && age < 3.0) halo(m, cam, c, R * 2.6, new float[]{1.0F, 0.95F, 0.8F}, (float)(1.0 - age / 3.0) * 0.55F);
+      if (p.palette == CRIMSON && gv != null) {   // Mereoleona's fire: a mane of sharp flame tongues flaring around it
+         Vec3 view = c.subtract(cam).normalize();
+         Vec3 u = view.cross(new Vec3(0, 1, 0));
+         if (u.lengthSqr() < 1.0E-4) u = new Vec3(1, 0, 0);
+         u = u.normalize();
+         Vec3 v = view.cross(u).normalize();
+         int N = 12;
+         for (int k = 0; k < N; k++) {
+            double a0 = Math.PI * 2 * k / N + fxTime * 0.15;
+            double len = R * (0.55 + 0.35 * Math.sin(fxTime * 1.7 + k * 2.3)) * (boom ? heat : 1.0);
+            Vec3 dirk = u.scale(Math.cos(a0)).add(v.scale(Math.sin(a0)));
+            Vec3 b1 = c.add(u.scale(Math.cos(a0 - 0.2) * R * 0.9)).add(v.scale(Math.sin(a0 - 0.2) * R * 0.9));
+            Vec3 b2 = c.add(u.scale(Math.cos(a0 + 0.2) * R * 0.9)).add(v.scale(Math.sin(a0 + 0.2) * R * 0.9));
+            Vec3 tip = c.add(dirk.scale(R * 0.9 + len)).add(0, len * 0.35, 0);
+            gquad(m, cam, b1, b2, tip, tip, rim, al * 0.85F, al * 0.85F, 0.0F, 0.0F);
+            gquad(m, cam, b1.add(dirk.scale(-0.02)), b2.add(dirk.scale(-0.02)), c.add(dirk.scale(R * 0.9 + len * 0.55)), c.add(dirk.scale(R * 0.9 + len * 0.55)),
+                  new float[]{1.0F, 0.75F, 0.45F}, al * 0.6F, al * 0.6F, 0.0F, 0.0F);
+         }
+      }
       for (int i = 0; i < LAT; i++) {
          for (int j = 0; j < LON; j++) {
             int[][] ij = {{i, j}, {i, j + 1}, {i + 1, j + 1}, {i + 1, j}};
