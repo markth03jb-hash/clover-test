@@ -105,6 +105,14 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 12) {  // impact frame: life = ticks
+         Cutscene.impactFrame(p.life);
+         return;
+      }
+      if (p.shape == 11) {  // Knight's Armor form: id = player, life = ticks left (0 = off)
+         KnightArmorLayer.set(p.id, p.life);
+         return;
+      }
       if (p.shape == 9) {   // Black Meteorite cutscene: id = player, palette = phase (0 start, 1 impact), c = target
          Cutscene.handle(p.id, p.palette, p.c);
          return;
@@ -638,12 +646,12 @@ public class FxRenderer {
          hl = Math.max(0.001, L);
          hw *= out;
          hh *= out;
-      } else {
+      } else if (p.speed != FxPacket.HOLD) {
          double k = backOut(in) * out;
          hl *= k; hw *= k; hh *= k;
       }
       if (hl < 0.002 || hw < 0.002 || hh < 0.002) return;
-      float al = 0.96F * (float)Mth.clamp(age * 2.0 + 0.3, 0.0, 1.0);
+      float al = p.speed == FxPacket.HOLD ? 0.96F : 0.96F * (float)Mth.clamp(age * 2.0 + 0.3, 0.0, 1.0);
       drawBox(vc, m, n, cam, c, ax, side, upv, hl, hw, hh, p.palette, al, 1.0F);
    }
 
@@ -685,11 +693,11 @@ public class FxRenderer {
       FxPacket p = f.p;
       double in = p.sweep > 0 ? Mth.clamp(age / (double)p.sweep, 0.0, 1.0) : 1.0;
       double out = smooth((life - age) / Math.min(6.0, Math.max(2.0, life * 0.3)));
-      double k = (p.speed == FxPacket.EXTEND ? in : backOut(in)) * out;
+      double k = p.speed == FxPacket.HOLD ? 1.0 : (p.speed == FxPacket.EXTEND ? in : backOut(in)) * out;
       double L = p.r * k;
       double R = p.r2 * (0.45 + 0.55 * Math.min(1.0, k));
       if (L < 0.01) return;
-      float al = 0.96F * (float)Mth.clamp(age * 2.0 + 0.3, 0.0, 1.0);
+      float al = p.speed == FxPacket.HOLD ? 0.96F : 0.96F * (float)Mth.clamp(age * 2.0 + 0.3, 0.0, 1.0);
       drawSpike(vc, m, n, cam, travelled(f, age), p.d, L, R, Math.toRadians((double)p.a0 * age), p.palette, al);
       // a glint off the tip right as it finishes erupting
       double g = age - (double)p.sweep;

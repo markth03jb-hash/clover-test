@@ -241,88 +241,149 @@ public class SteelFx {
     }
 
     // ================================================================== 4. White Steel Horse Cart
-    /** A white steel cart pulled by a steel horse forms around you and charges forward; allies close by ride in its wake. */
+    /**
+     * Steel plates fly in from all around and lock together into a white-steel chariot pulled by a steel horse.
+     * Then it charges: the horse gallops (legs swinging), the wheels spin, dust flies, and everything in front is
+     * trampled and thrown aside. Allies close by ride in its wake. At the end - or at a wall - it bursts apart
+     * into flying steel with a shockwave.
+     */
+    private static final int CART_ASSEMBLE = 6, CART_CHARGE = 16;
+    private static final double CART_SPEED = 1.3;
+
+    /** One piece of the chariot: offsets (forward, right, up) from your feet, its axis/up as (f, r, u), half sizes. */
+    private record Piece(int pal, double of, double or, double ou, double[] ax, double[] up, float hl, float hw, float hh, float spin) {}
+
+    private static java.util.List<Piece> cartPieces(double gallop) {
+        java.util.List<Piece> l = new java.util.ArrayList<>();
+        double[] F = {1, 0, 0}, R = {0, 1, 0}, U = {0, 0, 1};
+        // chariot body
+        l.add(new Piece(WHITE, -0.1, 0, 0.55, F, U, 1.0f, 0.7f, 0.08f, 0));
+        for (int s = -1; s <= 1; s += 2) {
+            l.add(new Piece(WHITE, -0.1, 0.68 * s, 0.85, F, U, 1.0f, 0.05f, 0.24f, 0));
+            l.add(new Piece(GD, -0.1, 0.68 * s, 1.11, F, U, 1.02f, 0.07f, 0.03f, 0));
+        }
+        l.add(new Piece(WHITE, -1.1, 0, 0.85, R, U, 0.7f, 0.05f, 0.24f, 0));
+        l.add(new Piece(WHITE, 0.9, 0, 1.0, R, U, 0.7f, 0.06f, 0.4f, 0));                 // breastwork
+        l.add(new Piece(GD, 0.94, 0, 1.12, new double[]{0, 0.7, 0.7}, F, 0.2f, 0.2f, 0.03f, 0));   // crest
+        l.add(new Piece(GD, 1.4, 0.3, 0.8, F, U, 0.5f, 0.025f, 0.025f, 0));             // shafts
+        l.add(new Piece(GD, 1.4, -0.3, 0.8, F, U, 0.5f, 0.025f, 0.025f, 0));
+        // the steel horse
+        double h = 2.35;
+        double bob = Math.abs(Math.sin(gallop)) * 0.12;
+        l.add(new Piece(WHITE, h, 0, 1.1 + bob, F, U, 0.58f, 0.22f, 0.26f, 0));         // body
+        l.add(new Piece(WHITE, h + 0.6, 0, 1.55 + bob, new double[]{0.64, 0, 0.77}, new double[]{-0.77, 0, 0.64}, 0.32f, 0.13f, 0.12f, 0));   // neck
+        l.add(new Piece(WHITE, h + 0.92, 0, 1.85 + bob, new double[]{0.86, 0, -0.5}, new double[]{0.5, 0, 0.86}, 0.24f, 0.11f, 0.1f, 0));    // head
+        l.add(new Piece(GD, h + 0.72, 0, 1.78 + bob, new double[]{0.6, 0, 0.8}, R, 0.3f, 0.03f, 0.06f, 0));                                    // mane
+        // galloping legs: front pair and back pair swing opposite ways
+        for (int a = -1; a <= 1; a += 2) for (int s = -1; s <= 1; s += 2) {
+            double swing = Math.sin(gallop + (a > 0 ? 0 : Math.PI) + (s > 0 ? 0.4 : 0)) * 0.55;
+            double[] legAx = {Math.sin(swing), 0, Math.cos(swing)};
+            l.add(new Piece(WHITE, h + 0.42 * a + Math.sin(swing) * 0.22, 0.14 * s, 0.5 + bob * 0.5, legAx, F, 0.45f, 0.06f, 0.06f, 0));
+        }
+        l.add(new Piece(ST, h - 0.7, 0, 1.15 + bob, new double[]{-0.8, 0, -0.6}, U, 0.32f, 0.05f, 0.05f, 0));   // tail
+        return l;
+    }
+
+    private static Vec3 vecOf(double[] v, Vec3 f, Vec3 r) { return f.scale(v[0]).add(r.scale(v[1])).add(UP.scale(v[2])); }
+
+    /** Send every piece: HOLD = following you this tick; vel = how it moves during its short life. */
+    private static void sendCart(ServerLevel sl, Vec3 feet, Vec3 f, double gallop, float mode, int life, Vec3 vel, boolean scatter) {
+        Vec3 r = FxLib.right(f);
+        java.util.Random rnd = new java.util.Random();
+        for (Piece pc : cartPieces(gallop)) {
+            Vec3 at = feet.add(f.scale(pc.of())).add(r.scale(pc.or())).add(UP.scale(pc.ou()));
+            Vec3 v = vel;
+            float spin = pc.spin();
+            if (scatter) {   // bursting apart: every piece flies off its own way, tumbling
+                Vec3 out = at.subtract(feet.add(f.scale(1.0)).add(0, 0.4, 0)).normalize();
+                v = out.scale(0.35 + rnd.nextDouble() * 0.35).add(0, 0.25 + rnd.nextDouble() * 0.2, 0).add(f.scale(0.3));
+                spin = 25 + rnd.nextFloat() * 35;
+            }
+            FxSend.box(sl, pc.pal(), at, vecOf(pc.ax(), f, r), vecOf(pc.up(), f, r), pc.hl(), pc.hw(), pc.hh(), life, 0, mode, spin, v, 0);
+        }
+    }
+
     public static void horseCart(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         Vec3 d = flat(p.getLookAngle());
         for (ServerPlayer ally : sl.getEntitiesOfClass(ServerPlayer.class, p.getBoundingBox().inflate(4), x -> x != p && x.isAlliedTo(p))) {
-            TimedModifiers.apply(ally, Attributes.MOVEMENT_SPEED, TimedModifiers.CART_RIDE, "White Steel Horse Cart", 0.5, AttributeModifier.Operation.MULTIPLY_TOTAL, 60);
+            TimedModifiers.apply(ally, Attributes.MOVEMENT_SPEED, TimedModifiers.CART_RIDE, "White Steel Horse Cart", 0.5, AttributeModifier.Operation.MULTIPLY_TOTAL, 80);
             FxLib.halo(sl, SV, ally.position().add(0, ally.getBbHeight() + 0.2, 0), 1f);
         }
-        int[] ids = buildCart(sl, p.position(), d, 12);
-        sound(sl, p.position(), SoundEvents.HORSE_GALLOP, 1.2f, 0.7f);
-        sound(sl, p.position(), SoundEvents.ANVIL_USE, 0.5f, 0.8f);
-        sound(sl, p.position(), SoundEvents.HORSE_ANGRY, 0.8f, 0.6f);
-        cartTick(p, sl, d, power, 0, new HashSet<>(), ids);
+        // assembly: every piece flies in from 4 blocks out and locks into place
+        Vec3 feet = p.position(), r = FxLib.right(d);
+        java.util.Random rnd = new java.util.Random();
+        for (Piece pc : cartPieces(0)) {
+            Vec3 at = feet.add(d.scale(pc.of())).add(r.scale(pc.or())).add(UP.scale(pc.ou()));
+            double a = rnd.nextDouble() * Math.PI * 2;
+            Vec3 from = at.add(Math.cos(a) * 4, 1.5 + rnd.nextDouble() * 2, Math.sin(a) * 4);
+            FxSend.box(sl, pc.pal(), from, vecOf(pc.ax(), d, r), vecOf(pc.up(), d, r), pc.hl(), pc.hw(), pc.hh(), CART_ASSEMBLE + 1, 1, POP, 0,
+                    at.subtract(from).scale(1.0 / CART_ASSEMBLE), CART_ASSEMBLE);
+        }
+        sound(sl, feet, SoundEvents.ANVIL_USE, 0.6f, 0.8f);
+        for (int k = 1; k < CART_ASSEMBLE; k += 2) {
+            final int kk = k;
+            AstaFx.later(k, () -> sound(sl, feet, SoundEvents.ANVIL_PLACE, 0.4f, 1.2f + kk * 0.08f));
+        }
+        cartTick(p, sl, d, power, -CART_ASSEMBLE, new HashSet<>());
     }
 
-    /** The cart and horse, all moving forward at the charge speed for {@code ticks}. */
-    private static int[] buildCart(ServerLevel sl, Vec3 feet, Vec3 d, int ticks) {
-        Vec3 r = FxLib.right(d), v = d.scale(1.15);
-        int life = ticks + 2, rise = 2;
-        java.util.List<Integer> ids = new java.util.ArrayList<>();
-        // cart body
-        ids.add(FxSend.box(sl, WHITE, feet.add(0, 0.55, 0), d, UP, 1.0f, 0.7f, 0.08f, life, rise, POP, 0, v, ticks));
-        for (int s = -1; s <= 1; s += 2) {
-            ids.add(FxSend.box(sl, WHITE, feet.add(r.scale(0.68 * s)).add(0, 0.85, 0), d, UP, 1.0f, 0.05f, 0.24f, life, rise, POP, 0, v, ticks));
-            ids.add(FxSend.box(sl, GD, feet.add(r.scale(0.68 * s)).add(0, 1.11, 0), d, UP, 1.02f, 0.07f, 0.03f, life, rise, POP, 0, v, ticks));
-        }
-        ids.add(FxSend.box(sl, WHITE, feet.add(d.scale(-1.0)).add(0, 0.85, 0), r, UP, 0.7f, 0.05f, 0.24f, life, rise, POP, 0, v, ticks));
-        ids.add(FxSend.box(sl, WHITE, feet.add(d.scale(1.0)).add(0, 0.95, 0), r, UP, 0.7f, 0.06f, 0.34f, life, rise, POP, 0, v, ticks));
-        ids.add(FxSend.box(sl, GD, feet.add(d.scale(1.03)).add(0, 1.0, 0), r.add(UP).normalize(), d, 0.18f, 0.18f, 0.03f, life, rise, POP, 0, v, ticks));   // crest
-        // wheels: a steel rim and two spinning spokes each
-        for (int a = -1; a <= 1; a += 2) for (int s = -1; s <= 1; s += 2) {
-            Vec3 w = feet.add(d.scale(0.62 * a)).add(r.scale(0.8 * s)).add(0, 0.42, 0);
-            FxSend.wall(sl, WHITE, w, d, UP, 0.4f, 0.4f, -180, 180, 0.07f, life, 0, 1.15f);
-            ids.add(FxSend.box(sl, ST, w, r, UP, 0.04f, 0.37f, 0.03f, life, rise, POP, 70f, v, ticks));
-            ids.add(FxSend.box(sl, ST, w, r, d, 0.04f, 0.37f, 0.03f, life, rise, POP, 70f, v, ticks));
-        }
-        // shafts to the horse
-        for (int s = -1; s <= 1; s += 2) {
-            ids.add(FxSend.box(sl, GD, feet.add(d.scale(1.45)).add(r.scale(0.3 * s)).add(0, 0.85, 0), d, UP, 0.45f, 0.025f, 0.025f, life, rise, POP, 0, v, ticks));
-        }
-        // the steel horse
-        Vec3 h = feet.add(d.scale(2.3));
-        ids.add(FxSend.box(sl, WHITE, h.add(0, 1.1, 0), d, UP, 0.55f, 0.22f, 0.25f, life, rise, POP, 0, v, ticks));                   // body
-        Vec3 neckAx = d.add(UP.scale(1.2)).normalize();
-        ids.add(FxSend.box(sl, WHITE, h.add(d.scale(0.58)).add(0, 1.5, 0), neckAx, r.cross(neckAx), 0.32f, 0.13f, 0.12f, life, rise, POP, 0, v, ticks));
-        Vec3 headAx = d.add(UP.scale(-0.6)).normalize();
-        ids.add(FxSend.box(sl, WHITE, h.add(d.scale(0.88)).add(0, 1.8, 0), headAx, r.cross(headAx), 0.24f, 0.11f, 0.1f, life, rise, POP, 0, v, ticks));
-        ids.add(FxSend.spike(sl, GD, h.add(d.scale(0.8)).add(0, 1.95, 0), d.scale(-0.3).add(UP).normalize(), 0.22f, 0.05f, life, rise, POP, 0, v, ticks));   // ear / plume
-        for (int a = -1; a <= 1; a += 2) for (int s = -1; s <= 1; s += 2) {
-            ids.add(FxSend.box(sl, WHITE, h.add(d.scale(0.4 * a)).add(r.scale(0.14 * s)).add(0, 0.45, 0), UP, d, 0.45f, 0.06f, 0.06f, life, rise, POP, 0, v, ticks));   // legs
-        }
-        ids.add(FxSend.spike(sl, ST, h.add(d.scale(-0.55)).add(0, 1.2, 0), d.scale(-1).add(UP.scale(-0.8)).normalize(), 0.6f, 0.07f, life, rise, POP, 0, v, ticks));   // tail
-        return ids.stream().mapToInt(Integer::intValue).toArray();
-    }
-
-    private static void cartTick(ServerPlayer p, ServerLevel sl, Vec3 d, float dmg, int step, Set<UUID> hit, int[] ids) {
-        if (!alive(p) || step >= 12 || (step > 0 && p.horizontalCollision)) {
-            if (alive(p)) {
-                p.setDeltaMovement(d.scale(0.2));
-                p.hurtMarked = true;
-                FxLib.groundPuff(sl, ST, p.position(), 2.0f);
+    private static void cartTick(ServerPlayer p, ServerLevel sl, Vec3 d, float dmg, int step, Set<UUID> hit) {
+        if (!alive(p)) return;
+        if (step < 0) {                                     // still assembling: stay put
+            p.setDeltaMovement(0, Math.min(0, p.getDeltaMovement().y), 0);
+            p.hurtMarked = true;
+            if (step == -1) {
+                sound(sl, p.position(), SoundEvents.HORSE_ANGRY, 0.9f, 0.6f);
+                sound(sl, p.position(), SoundEvents.HORSE_GALLOP, 1.2f, 0.7f);
+                FxLib.shockRing(sl, SV, p.position().add(0, 0.05, 0), 0.8f);
             }
-            if (step < 12) killAll(sl, ids, p.position());
+            AstaFx.later(1, () -> cartTick(p, sl, d, dmg, step + 1, hit));
             return;
         }
-        p.setDeltaMovement(d.x * 1.15, p.getDeltaMovement().y, d.z * 1.15);
+        if (step >= CART_CHARGE || (step > 1 && p.horizontalCollision)) {   // it bursts apart
+            sendCart(sl, p.position(), d, step * 0.9, POP, 14, Vec3.ZERO, true);
+            FxLib.shockRing(sl, ST, p.position().add(0, 0.05, 0), 1.4f);
+            FxLib.spikeBurst(sl, ST, p.position().add(d.scale(1.5)).add(0, 1, 0), 1.0f);
+            for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(3.5))) {
+                AstaFx.damage(p, t, dmg * 0.6f, "white_steel_horse_cart");
+                Vec3 k = t.position().subtract(p.position()).multiply(1, 0, 1);
+                k = k.lengthSqr() < 1.0E-4 ? d : k.normalize();
+                t.knockback(1.2, -k.x, -k.z);
+            }
+            p.setDeltaMovement(d.scale(0.2));
+            p.hurtMarked = true;
+            sound(sl, p.position(), SoundEvents.ANVIL_LAND, 1f, 0.6f);
+            sound(sl, p.position(), SoundEvents.GENERIC_EXPLODE, 0.6f, 1.3f);
+            return;
+        }
+        Vec3 v = d.scale(CART_SPEED);
+        p.setDeltaMovement(v.x, p.getDeltaMovement().y, v.z);
         p.hurtMarked = true;
         p.resetFallDistance();
+        double gallop = step * 0.9;
+        sendCart(sl, p.position(), d, gallop, FxPacket.HOLD, 2, v, false);
         Vec3 r = FxLib.right(d);
-        if (step % 3 == 0) FxLib.groundPuff(sl, SV, p.position().add(d.scale(-1.2)), 0.8f);   // dust kicked up behind
-        for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(1.2, 0.3, 1.2).expandTowards(d.scale(3.4)))) {
+        for (int a = -1; a <= 1; a += 2) for (int s = -1; s <= 1; s += 2) {   // wheels
+            Vec3 w = p.position().add(d.scale(-0.1 + 0.62 * a)).add(r.scale(0.8 * s)).add(0, 0.42, 0);
+            FxSend.wall(sl, WHITE, w, d, UP, 0.4f, 0.4f, -180, 180, 0.07f, 2, 0, (float) CART_SPEED);
+            FxSend.box(sl, ST, w, r, UP, 0.04f, 0.37f, 0.03f, 2, 0, FxPacket.HOLD, 75f, v, 0);
+            FxSend.box(sl, ST, w, r, d, 0.04f, 0.37f, 0.03f, 2, 0, FxPacket.HOLD, 75f, v, 0);
+        }
+        if (step % 2 == 0) FxLib.groundPuff(sl, SV, p.position().add(d.scale(-1.3)), 0.7f);
+        if (step % 3 == 0) FxLib.spark(sl, GD, p.position().add(d.scale(2.4)), 0.4f);    // sparks off the hooves
+        for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(1.2, 0.4, 1.2).expandTowards(d.scale(3.6)))) {
             if (!hit.add(t.getUUID())) continue;
             AstaFx.damage(p, t, dmg, "white_steel_horse_cart");
             Vec3 side = t.position().subtract(p.position()).multiply(1, 0, 1);
             Vec3 k = side.lengthSqr() < 1.0E-4 ? r : side.normalize();
-            t.knockback(1.3, -k.x, -k.z);
-            t.push(0, 0.35, 0);
+            t.knockback(1.4, -k.x, -k.z);
+            t.push(0, 0.45, 0);
             FxLib.impact(sl, ST, mid(t), 1.0f);
             sound(sl, t.position(), SoundEvents.ANVIL_LAND, 0.4f, 1.4f);
         }
-        if (step % 4 == 0) sound(sl, p.position(), SoundEvents.HORSE_STEP, 1f, 0.6f);
-        AstaFx.later(1, () -> cartTick(p, sl, d, dmg, step + 1, hit, ids));
+        if (step % 3 == 0) sound(sl, p.position(), SoundEvents.HORSE_STEP, 1f, 0.6f);
+        AstaFx.later(1, () -> cartTick(p, sl, d, dmg, step + 1, hit));
     }
 
     // ================================================================== 5. Thunder Arrow (steel railgun)
@@ -480,31 +541,41 @@ public class SteelFx {
     }
 
     // ================================================================== 8. Knight's Armor (addon original)
-    /** Steel plates fly in from all around and lock onto your body with a clang: heavy armor for 20 s. */
+    private static final int KNIGHT_TICKS = 40 * 20;
+
+    /** Tell everyone who can see {@code p} to draw (life > 0) or remove (0) the knight armor form. */
+    private static void sendKnight(ServerPlayer p, int life) {
+        com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
+        pkt.shape = 11; pkt.id = p.getId(); pkt.life = life;
+        com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+    }
+
+    /**
+     * Steel plates fly in from all around and lock onto your body: for 40 s you wear full knight's armor (helm with a
+     * red plume, breastplate, pauldrons, greaves) and a red cape. Heavy armor, toughness and footing.
+     * The cape is real: attacks that come from behind you deal half damage.
+     */
     public static void knightsArmor(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        int dur = 20 * 20;
+        int dur = KNIGHT_TICKS;
         ARMOR.put(p.getUUID(), sl.getGameTime() + dur);
-        TimedModifiers.apply(p, Attributes.ARMOR, TimedModifiers.KNIGHT_ARMOR, "Knight's Armor", 8, AttributeModifier.Operation.ADDITION, dur);
-        TimedModifiers.apply(p, Attributes.ARMOR_TOUGHNESS, TimedModifiers.KNIGHT_TOUGHNESS, "Knight's Armor", 4, AttributeModifier.Operation.ADDITION, dur);
-        TimedModifiers.apply(p, Attributes.KNOCKBACK_RESISTANCE, TimedModifiers.KNIGHT_FOOTING, "Knight's Armor", 0.6, AttributeModifier.Operation.ADDITION, dur);
-        TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, TimedModifiers.KNIGHT_WEIGHT, "Knight's Armor", -0.1, AttributeModifier.Operation.MULTIPLY_TOTAL, dur);
+        TimedModifiers.apply(p, Attributes.ARMOR, TimedModifiers.KNIGHT_ARMOR, "Knight's Armor", 10, AttributeModifier.Operation.ADDITION, dur);
+        TimedModifiers.apply(p, Attributes.ARMOR_TOUGHNESS, TimedModifiers.KNIGHT_TOUGHNESS, "Knight's Armor", 6, AttributeModifier.Operation.ADDITION, dur);
+        TimedModifiers.apply(p, Attributes.KNOCKBACK_RESISTANCE, TimedModifiers.KNIGHT_FOOTING, "Knight's Armor", 0.7, AttributeModifier.Operation.ADDITION, dur);
+        TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, TimedModifiers.KNIGHT_WEIGHT, "Knight's Armor", -0.05, AttributeModifier.Operation.MULTIPLY_TOTAL, dur);
         Vec3 f = flat(p.getLookAngle()), r = FxLib.right(f), o = p.position();
-        // {offset (right, up, forward), axis, up, half sizes, outward direction}
-        plate(sl, ST, o, r, f, 0, 1.15, 0.2, r, UP, 0.26f, 0.04f, 0.3f, f);                          // breastplate
-        plate(sl, GD, o, r, f, 0, 1.47, 0.24, r, UP, 0.27f, 0.045f, 0.04f, f.add(UP));              // its gold collar
-        plate(sl, ST, o, r, f, 0, 1.15, -0.2, r, UP, 0.26f, 0.04f, 0.3f, f.scale(-1));              // backplate
-        plate(sl, ST, o, r, f, 0, 1.78, 0.24, r, UP, 0.2f, 0.03f, 0.06f, f.add(UP));                // visor
+        plate(sl, ST, o, r, f, 0, 1.15, 0.2, r, UP, 0.26f, 0.04f, 0.3f, f);
+        plate(sl, ST, o, r, f, 0, 1.15, -0.2, r, UP, 0.26f, 0.04f, 0.3f, f.scale(-1));
+        plate(sl, ST, o, r, f, 0, 1.8, 0, r, UP, 0.28f, 0.28f, 0.28f, UP);
         for (int s = -1; s <= 1; s += 2) {
             Vec3 tilt = UP.add(r.scale(0.6 * s)).normalize();
-            plate(sl, ST, o, r, f, 0.38 * s, 1.45, 0, f, tilt, 0.18f, 0.2f, 0.05f, r.scale(s).add(UP.scale(0.5)));   // pauldrons
-            plate(sl, ST, o, r, f, 0.4 * s, 0.85, 0.05, UP, f, 0.12f, 0.1f, 0.1f, r.scale(s));                        // gauntlets
-            plate(sl, ST, o, r, f, 0.13 * s, 0.4, 0.13, r, UP, 0.1f, 0.03f, 0.25f, f.add(r.scale(0.4 * s)));          // greaves
+            plate(sl, ST, o, r, f, 0.38 * s, 1.45, 0, f, tilt, 0.18f, 0.2f, 0.05f, r.scale(s).add(UP.scale(0.5)));
+            plate(sl, ST, o, r, f, 0.13 * s, 0.4, 0.13, r, UP, 0.1f, 0.03f, 0.25f, f.add(r.scale(0.4 * s)));
         }
         AstaFx.later(5, () -> {
             if (!alive(p)) return;
+            sendKnight(p, KNIGHT_TICKS - 5);   // the armor appears on you as the plates arrive
             FxLib.flash(sl, ST, p.position().add(0, 1.1, 0), 0.9f);
-            FxLib.halo(sl, GD, p.position().add(0, p.getBbHeight() + 0.25, 0), 1.0f);
             FxLib.shockRing(sl, SV, p.position().add(0, 0.05, 0), 0.8f);
             sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 1f, 0.8f);
             sound(sl, p.position(), SoundEvents.ANVIL_LAND, 0.4f, 1.5f);
@@ -539,8 +610,12 @@ public class SteelFx {
         }
         Long a = ARMOR.get(p.getUUID());
         if (a != null) {
-            if (now > a) ARMOR.remove(p.getUUID());
-            else if (now % 40 == 0) FxLib.aura(sl, ST, p.position().add(0, 1, 0), 1.0f);   // faint glint of the plating
+            if (now > a) {
+                ARMOR.remove(p.getUUID());
+                sendKnight(p, 0);
+                FxLib.spikeBurst(sl, ST, p.position().add(0, 1, 0), 0.6f);   // the plates fall away
+                sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_IRON, 0.8f, 0.5f);
+            } else if (now % 40 == 0) sendKnight(p, (int) (a - now));   // so players who arrive later see it too
         }
     }
 
@@ -564,6 +639,23 @@ public class SteelFx {
         }
     }
 
+    /** Knight's Armor cape: attacks from behind deal half damage. */
+    @SubscribeEvent
+    public static void onCape(LivingHurtEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        Long a = ARMOR.get(p.getUUID());
+        if (a == null || p.serverLevel().getGameTime() > a) return;
+        Vec3 from = e.getSource().getSourcePosition();
+        if (from == null) return;
+        Vec3 to = from.subtract(p.position()).multiply(1, 0, 1);
+        if (to.lengthSqr() < 1.0E-4) return;
+        if (to.normalize().dot(flat(p.getLookAngle())) < -0.3) {
+            e.setAmount(e.getAmount() * 0.5f);
+            FxLib.spark(p.serverLevel(), FxLib.CRIMSON, p.position().add(0, 1.0, 0).subtract(flat(p.getLookAngle()).scale(0.4)), 0.7f);
+            sound(p.serverLevel(), p.position(), SoundEvents.ARMOR_EQUIP_LEATHER, 0.8f, 0.6f);
+        }
+    }
+
     /** Passive "Unbending Steel": projectiles deal 25% less damage. */
     @SubscribeEvent
     public static void onHurt(LivingHurtEvent e) {
@@ -575,7 +667,7 @@ public class SteelFx {
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {
         WALLS.remove(e.getEntity().getUUID());
-        ARMOR.remove(e.getEntity().getUUID());
+        if (ARMOR.remove(e.getEntity().getUUID()) != null && e.getEntity() instanceof ServerPlayer sp) sendKnight(sp, 0);
     }
 
     @SubscribeEvent

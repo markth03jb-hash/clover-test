@@ -801,8 +801,11 @@ public class DarkFx {
         }
         AstaFx.later(20, () -> {
             if (!alive(p)) return;
-            Vec3 start = p.getEyePosition().add(0, -0.3, 0), dir = p.getLookAngle();
-            Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
+            // the wave runs along the ground in the direction you face, rising out of it
+            Vec3 look0 = p.getLookAngle();
+            Vec3 dir = new Vec3(look0.x, 0, look0.z).lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : new Vec3(look0.x, 0, look0.z).normalize();
+            Vec3 start = FxLib.floor(sl, p.position());
+            Vec3 rt = rightOf(dir), up = new Vec3(0, 1, 0);
             // zone: everything bigger and it reaches much further
             final double reach = zone ? 90 : 55;
             final float scale = zone ? 1.7f : 1.0f;
@@ -822,7 +825,7 @@ public class DarkFx {
                 });
             }
             // the cut: a giant vertical arc in front of you
-            FxSend.wall(sl, D, start, dir, up, 4.0f * scale, 4.6f * scale, 85, -85, 1.2f * scale, 10, 3, 0);
+            FxSend.wall(sl, D, start.add(0, 1.2, 0), dir, up, 4.0f * scale, 4.6f * scale, 85, -85, 1.2f * scale, 10, 3, 0);
             // the release: a towering black wave of darkness - a tall arc front, a colossal vertical crescent inside it,
             // more crescents layered behind it, all growing as they roll forward
             Vec3 o = start.add(dir.scale(1.5));
@@ -839,12 +842,15 @@ public class DarkFx {
             }
             // in its wake: the horizon - a line through space left hanging open with tall tears along it
             AstaFx.later(4, () -> {
-                FxSend.beam(sl, D, start.add(dir), end, 1.2f * scale, 34);
-                FxSend.beam(sl, S, start.add(dir), end, 0.1f * scale, 30);
-                for (double k = 4; k < reach; k += 5) {
-                    Vec3 c = start.add(dir.scale(k));
+                // the horizon: a burning scar along the ground, with tall tears rising out of it wherever the ground is
+                Vec3 prev = start.add(dir);
+                for (double k = 4; k < reach; k += 4) {
+                    Vec3 c = FxLib.floor(sl, start.add(dir.scale(k)));
+                    FxSend.beam(sl, D, prev, c, 1.0f * scale, 34);
+                    FxSend.beam(sl, S, prev, c, 0.08f * scale, 30);
                     double h = (2.0 + k * 0.05) * scale;
-                    FxSend.beam(sl, D, c.subtract(up.scale(h)), c.add(up.scale(h)), 0.3f * scale, 24);
+                    if (((int) k) % 8 == 0) FxSend.beam(sl, D, c, c.add(up.scale(h * 2)), 0.3f * scale, 24);
+                    prev = c;
                 }
             });
             FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 1.8f * scale);
@@ -866,7 +872,7 @@ public class DarkFx {
                 });
             }
             AstaFx.later(40, () -> {
-                FxSend.beam(sl, S, start.add(dir), end, 0.9f * scale, 4);
+                FxSend.beam(sl, S, start.add(dir).add(0, 0.2, 0), end.add(0, 0.2, 0), 0.9f * scale, 4);
                 sound(sl, start, SoundEvents.ENDERMAN_TELEPORT, 0.8f, 0.4f);
             });
         });

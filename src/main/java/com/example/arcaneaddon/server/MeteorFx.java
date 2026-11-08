@@ -71,6 +71,13 @@ public final class MeteorFx {
         AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 48, sl.dimension())), pkt);
     }
 
+    /** Anime impact frames on the screens of everyone close to {@code at}. */
+    private static void impactFrame(ServerLevel sl, Vec3 at, int ticks) {
+        FxPacket pkt = new FxPacket();
+        pkt.shape = 12; pkt.life = ticks; pkt.c = at;
+        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 24, sl.dimension())), pkt);
+    }
+
     /** Put the caster at {@code pos}, facing {@code look}, motionless. */
     private static void place(ServerPlayer p, Vec3 pos, Vec3 look) {
         Vec3 d = look.subtract(pos.add(0, 1.5, 0));
@@ -163,6 +170,7 @@ public final class MeteorFx {
         AstaFx.damage(p, t, power * 0.3f, "devil_black_meteorite");
         sound(sl, base, SoundEvents.PLAYER_ATTACK_STRONG, 1.2f, 0.6f);
         sound(sl, base, SoundEvents.GENERIC_EXPLODE, 0.6f, 1.4f);
+        impactFrame(sl, base, 2);   // the uppercut connects
         cutscene(p, apex, 2);
         rise(p, sl, t, base, apex, power, 0);
     }
@@ -197,6 +205,7 @@ public final class MeteorFx {
             Vec3 cd = to.subtract(from).normalize();
             FxSend.crescent(sl, k % 4 == 0 ? DARK : EMBER, apex, cd, FxLib.up(cd), 1.0f, 1.6f, 4, 0f);
             AstaFx.damage(p, t, power * 0.12f, "devil_black_meteorite");
+            if (k % 6 == 0) impactFrame(sl, apex, 1);   // a flash frame every third cut
             sound(sl, apex, SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 1.2f + r.nextFloat() * 0.6f);
             sound(sl, apex, SoundEvents.PLAYER_ATTACK_CRIT, 0.7f, 1.0f + r.nextFloat() * 0.5f);
             final Vec3 now = to;
@@ -251,10 +260,11 @@ public final class MeteorFx {
         p.hurtMarked = true;
         p.resetFallDistance();
         cutscene(p, at, 1);
+        impactFrame(sl, at, 4);     // the finisher lands: white, black, white, black
         shake(sl, at, 1.0f, 22);
         // the finishing blow - this one can kill
         AstaFx.damage(p, victim, power * 1.5f, "devil_black_meteorite");
-        Vec3 g = new Vec3(at.x, at.y + 0.05, at.z);
+        Vec3 g = FxLib.floor(sl, at);
         double R = 8;
         for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(R, 5, R), x -> x != p && x != victim && x.isAlive() && !x.isAlliedTo(p))) {
             double dist = t.position().distanceTo(at);
@@ -275,10 +285,10 @@ public final class MeteorFx {
         Random rnd = new Random();
         for (int k = 0; k < 12; k++) {                         // burning fissures
             double a = Math.PI * 2 * k / 12 + rnd.nextDouble() * 0.3;
-            Vec3 prev = g.add(Math.cos(a) * 2.2, 0, Math.sin(a) * 2.2);
+            Vec3 prev = FxLib.floor(sl, g.add(Math.cos(a) * 2.2, 0, Math.sin(a) * 2.2));
             for (int s = 1; s <= 4; s++) {
                 double rr = 2.2 + s * 1.5, aa = a + (rnd.nextDouble() - 0.5) * 0.25;
-                Vec3 q = g.add(Math.cos(aa) * rr, 0, Math.sin(aa) * rr);
+                Vec3 q = FxLib.floor(sl, g.add(Math.cos(aa) * rr, 0, Math.sin(aa) * rr));   // the cracks follow the ground
                 final Vec3 pa = prev, pb = q;
                 AstaFx.later(s, () -> FxSend.beam(sl, EMBER, pa, pb, 0.16f, 40));
                 prev = q;
@@ -286,7 +296,7 @@ public final class MeteorFx {
         }
         for (int k = 0; k < 14; k++) {                         // crater rim of black shards
             double a = Math.PI * 2 * k / 14 + rnd.nextDouble() * 0.2;
-            Vec3 b = g.add(Math.cos(a) * 3.0, -0.2, Math.sin(a) * 3.0);
+            Vec3 b = FxLib.floor(sl, g.add(Math.cos(a) * 3.0, 0, Math.sin(a) * 3.0)).add(0, -0.2, 0);
             FxSend.spike(sl, k % 4 == 0 ? EMBER : DARK, b, new Vec3(Math.cos(a) * 0.8, 1, Math.sin(a) * 0.8), 1.3f + rnd.nextFloat() * 1.1f, 0.26f, 50, 2, FxPacket.GROUND);
         }
         FxLib.spikeBurst(sl, DARK, at.add(0, 1, 0), 1.8f);

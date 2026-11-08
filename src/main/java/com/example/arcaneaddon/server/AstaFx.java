@@ -185,8 +185,8 @@ public class AstaFx {
             Vec3 ground = new Vec3(hit.x, p.getY() + 0.04, hit.z);
             java.util.Random rr = new java.util.Random();
             Vec3[] pts = new Vec3[7];
-            pts[0] = ground.subtract(dir.scale(0.6));
-            for (int i = 1; i < pts.length; i++) pts[i] = ground.add(dir.scale(i * 1.0)).add(rt.scale((rr.nextDouble() - 0.5) * 0.6));
+            pts[0] = FxLib.floor(sl, ground.subtract(dir.scale(0.6)));
+            for (int i = 1; i < pts.length; i++) pts[i] = FxLib.floor(sl, ground.add(dir.scale(i * 1.0)).add(rt.scale((rr.nextDouble() - 0.5) * 0.6)));   // follows the ground
             for (int i = 1; i < pts.length; i++) {
                 final Vec3 a = pts[i - 1], b = pts[i];
                 final int seg = i;
@@ -348,6 +348,31 @@ public class AstaFx {
     // ================================================================== Demon Dweller Sword: projected slash of anti magic
     private static final Random RND = new Random();
     private static final String[] ELEMENTS = {"fire", "ice", "lightning", "wind"};
+
+    public static String randomElement() { return ELEMENTS[RND.nextInt(ELEMENTS.length)]; }
+
+    /**
+     * The wind-up before a Dweller slash: energy spirals into the blade at your hand (dark for the Dweller Slash, the
+     * element's colour for Borrowed Slash) and tightens until the release.
+     */
+    public static void dwellerWindup(ServerPlayer p, String element, int ticks) {
+        ServerLevel sl = p.serverLevel();
+        int pal = element == null ? Fx.DARK : switch (element) { case "fire" -> Fx.FIRE; case "ice" -> Fx.ICE; case "lightning" -> Fx.LIGHTNING; default -> Fx.WIND; };
+        for (int k = 0; k < ticks; k += 2) {
+            final int kk = k;
+            later(Math.max(1, k), () -> {
+                if (!p.isAlive()) return;
+                double yr = Math.toRadians(p.getYRot());
+                Vec3 hand = p.position().add(-Math.sin(yr) * 0.4 - Math.cos(yr) * 0.45, 0.9, Math.cos(yr) * 0.4 - Math.sin(yr) * 0.45);
+                float r = 1.4f - kk * 0.12f;
+                double a = kk * 1.1;
+                Vec3 from = hand.add(Math.cos(a) * r, 0.5 - kk * 0.05, Math.sin(a) * r);
+                FxSend.beam(sl, pal, from, hand, 0.12f, 3);
+                FxSend.ring(sl, pal, hand, r * 0.6f, 0.15f, 0.05f, 3);
+            });
+        }
+        if (element != null) p.displayClientMessage(Component.translatable("ui.arcane_addon.borrowed." + element).withStyle(ChatFormatting.DARK_RED), true);
+    }
 
     /** borrowed=false: pure anti magic crescent that also strips effects. borrowed=true: it takes on a random element. */
     public static void dwellerSlash(ServerPlayer p, float dmg, boolean borrowed) { dwellerSlash(p, dmg, borrowed, null); }

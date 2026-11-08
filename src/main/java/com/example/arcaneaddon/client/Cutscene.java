@@ -143,9 +143,56 @@ public final class Cutscene {
         e.setFOV(e.getFOV() * f);
     }
 
+    // ------------------------------------------------------------------ impact frames
+    private static double frameStart = -1, frameLen = 0;
+
+    /** Anime impact frames: a few ticks of hard white / black flashes with speed lines, for a hit that lands. */
+    public static void impactFrame(int ticks) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        frameStart = mc.level.getGameTime();
+        frameLen = Math.max(1, ticks);
+    }
+
+    private static void drawImpactFrame(GuiGraphics g, double k) {
+        int w = g.guiWidth(), h = g.guiHeight();
+        int phase = (int) k;
+        boolean white = phase % 2 == 0;
+        float fade = (float) Mth.clamp(frameLen - k, 0.0, 1.0);
+        int a = (int) (fade * (white ? 200 : 225));
+        g.fill(0, 0, w, h, (a << 24) | (white ? 0xFFFFFF : 0x000000));
+        // speed lines bursting out from the centre, in the opposite colour, with a red core on black frames
+        int line = (int) (fade * 255) << 24 | (white ? 0x000000 : 0xFFFFFF);
+        java.util.Random r = new java.util.Random(phase * 31L + 7);
+        g.pose().pushPose();
+        g.pose().translate(w / 2.0F, h / 2.0F, 0.0F);
+        float reach = (float) Math.hypot(w, h) * 0.6F;
+        for (int i = 0; i < 36; i++) {
+            g.pose().pushPose();
+            g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(i * 10.0F + r.nextFloat() * 8.0F));
+            int r0 = (int) (reach * (0.25F + r.nextFloat() * 0.25F));
+            int thick = 1 + r.nextInt(3);
+            g.fill(r0, -thick, (int) reach, thick, line);
+            g.pose().popPose();
+        }
+        g.pose().popPose();
+        if (!white) {
+            int c = (int) (fade * 200) << 24 | 0xC01010;
+            int s = Math.min(w, h) / 6;
+            g.fill(w / 2 - s, h / 2 - 2, w / 2 + s, h / 2 + 2, c);
+            g.fill(w / 2 - 2, h / 2 - s, w / 2 + 2, h / 2 + s, c);
+        }
+    }
+
     /** Letterbox bars slide in at the start and out at the end; they also cover the hotbar while it plays. */
     @SubscribeEvent
     public static void onGui(RenderGuiEvent.Post e) {
+        Minecraft mc0 = Minecraft.getInstance();
+        if (frameStart >= 0 && mc0.level != null) {
+            double k = mc0.level.getGameTime() + e.getPartialTick() - frameStart;
+            if (k >= 0 && k < frameLen) drawImpactFrame(e.getGuiGraphics(), k);
+            else if (k >= frameLen) frameStart = -1;
+        }
         double t = time(e.getPartialTick());
         if (t < 0) return;
         Minecraft mc = Minecraft.getInstance();

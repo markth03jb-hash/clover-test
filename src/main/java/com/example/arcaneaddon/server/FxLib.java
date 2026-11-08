@@ -100,6 +100,18 @@ public final class FxLib {
 
     static Vec3 up(Vec3 d) { return right(d).cross(d).normalize(); }
 
+    /**
+     * The floor under (x, z): searches from a little above {@code y} down to 6 below and returns the point on the
+     * surface (just above it), so ground effects follow slopes and steps instead of floating or sinking.
+     */
+    public static Vec3 floor(ServerLevel sl, double x, double y, double z) {
+        var hit = sl.clip(new net.minecraft.world.level.ClipContext(new Vec3(x, y + 2.0, z), new Vec3(x, y - 6.0, z),
+                net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, (net.minecraft.world.entity.Entity) null));
+        return new Vec3(x, (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? y : hit.getLocation().y) + 0.04, z);
+    }
+
+    public static Vec3 floor(ServerLevel sl, Vec3 near) { return floor(sl, near.x, near.y, near.z); }
+
     private static Vec3 randomUnit() {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         Vec3 v;
@@ -207,7 +219,8 @@ public final class FxLib {
         for (int i = 0; i < n; i++) {
             double a = Math.PI * 2 * i / n;
             Vec3 b = feet.add(Math.cos(a) * 1.8 * s, 0, Math.sin(a) * 1.8 * s);
-            FxSend.spike(sl, pal, b.add(0, -0.1, 0), new Vec3(Math.cos(a) * 0.25, 1.6, Math.sin(a) * 0.25), (1.5f + (i % 2) * 0.35f) * s, 0.2f * s, 14, 3,
+            b = floor(sl, b);
+            FxSend.spike(sl, pal, b.add(0, -0.12, 0), new Vec3(Math.cos(a) * 0.25, 1.6, Math.sin(a) * 0.25), (1.5f + (i % 2) * 0.35f) * s, 0.2f * s, 14, 3,
                     com.example.arcaneaddon.network.FxPacket.GROUND);   // solid spikes erupting from the floor
         }
     }

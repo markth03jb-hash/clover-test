@@ -1,7 +1,25 @@
-Arcane Addon v1.18.0 - all changed files since v1.0.0
+Arcane Addon v1.19.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.19.0
+  - Black Meteorite: anime impact frames - hard white/black flash frames with speed lines when the uppercut connects,
+    on every third blitz cut, and four frames when the finisher lands (everyone close by sees them).
+  - Ground-hugging effects: the Black Meteorite crater (rings, burning fissures, shard rim), Zetten's fissure and
+    every spike ring now follow the shape of the ground.
+  - Event Horizon now runs along the ground in the direction you face: the wave and its crescents rise out of the
+    ground, and the horizon is a burning scar along the terrain with tears rising from it.
+  - Dweller Slash: new animation - sink low while darkness spirals into the blade, then an explosive rising cut;
+    the slash leaves exactly with the swing.
+  - Borrowed Slash: new animation - draw the blade back while the borrowed element gathers on it (you see which one
+    is coming), then a fast wide sweep releases it.
+  - White Steel Horse Cart reworked: the chariot and horse are assembled from flying plates, then charge with a
+    galloping horse, spinning wheels, dust and hoof sparks, trampling everything; at the end it bursts apart into
+    tumbling steel with a shockwave.
+  - Knight's Armor reworked: real armor on your model for 40 s (helm with red plume, breastplate, pauldrons,
+    greaves, gold trim) and a red cape that swings like a real cape. The cape halves damage from behind.
+    +10 armor, +6 toughness. Cooldown 2 minutes.
 
 NEW IN 1.18.0
   - Black Meteorite reworked into a combo: rocket at the enemy you aim at; on contact a cutscene plays - an uppercut

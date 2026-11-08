@@ -101,7 +101,7 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> THUNDER_ARROW = registerSpell(new SteelSpell("thunder_arrow", 30, 120, 34, false, SteelSpell.anim("arcane_addon:klaus_railgun"), SteelFx::thunderArrow));
     public static final RegistryObject<AbstractSpell> ACIER_SILVA = registerSpell(new SteelSpell("acier_silva", 20, 100, 14, false, SteelSpell.anim("irons_spellbooks:stomp"), SteelFx::acierSilva));
     public static final RegistryObject<AbstractSpell> STEEL_PRISON = registerSpell(new SteelSpell("steel_prison", 22, 70, 18, false, SteelSpell.anim("arcane_addon:klaus_clench"), SteelFx::steelPrison));
-    public static final RegistryObject<AbstractSpell> KNIGHTS_ARMOR = registerSpell(new SteelSpell("knights_armor", 40, 60, 0, false, SteelSpell.anim("arcane_addon:klaus_glasses_push"), SteelFx::knightsArmor));
+    public static final RegistryObject<AbstractSpell> KNIGHTS_ARMOR = registerSpell(new SteelSpell("knights_armor", 120, 60, 0, false, SteelSpell.anim("arcane_addon:klaus_glasses_push"), SteelFx::knightsArmor));
 
     /** The eight Steel Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> STEEL_SPELLS = List.of(

@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 public class FxPacket {
     public static final byte WALL = 0, CRESCENT = 1, BEAM = 2, KILL = 3, BOX = 7, SPIKE = 8;
     /** BOX / SPIKE modes (sent in {@code speed}): pop in and out, rise out of / sink into the ground, extend along the axis. */
-    public static final float POP = 0, GROUND = 1, EXTEND = 2;
+    public static final float POP = 0, GROUND = 1, EXTEND = 2, HOLD = 3;   // HOLD: full size its whole (short) life - for pieces re-sent every tick
 
     public byte shape, palette;
     public int id, life, sweep;
