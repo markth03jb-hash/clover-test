@@ -536,6 +536,7 @@ public class FireFx {
 
     /** Pour everything into one giant fireball over your hands, then fire it: 1.6 blocks a tick, a 8-block explosion. */
     public static void fireCannon(ServerPlayer p, float power) {
+        if (LimitBreak.active(p)) { LimitFx.magnaFinal(p, power); return; }   // Surpassing Limits: the evolved ultimate
         ServerLevel sl = p.serverLevel();
         for (int t = 0; t < CANNON_RELEASE; t++) {
             final int tt = t;

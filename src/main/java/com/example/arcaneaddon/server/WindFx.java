@@ -718,6 +718,7 @@ public class WindFx {
      * Spirit Dive: Double Spirit Storm - two storms twisting around each other, wider and 70 blocks long.
      */
     public static void spiritStorm(ServerPlayer p, float power) {
+        if (LimitBreak.active(p)) { LimitFx.starStorm(p, power); return; }   // Surpassing Limits: the evolved ultimate
         ServerLevel sl = p.serverLevel();
         ThreadLocalRandom r = ThreadLocalRandom.current();
         for (int k = 0; k < STORM_RELEASE; k++) {

@@ -11,6 +11,8 @@ public final class AnimSend {
 
     // indexes into ArcaneAnimations.POSES
     public static final int TWIN_WHIRLWIND = 0, CROSS_CUT = 1, LUNGE_STAB = 2, DEFLECT = 3, HORIZONTAL_SLASH = 4;
+    /** Surpassing Limits awakenings: LIMIT_FIRST + book index (GrimoireMastery.BOOKS order). */
+    public static final int LIMIT_FIRST = 5;
 
     public static void play(ServerPlayer p, int pose) {
         FxPacket pkt = new FxPacket();

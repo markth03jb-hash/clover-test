@@ -1,7 +1,36 @@
-Arcane Addon v1.38.0 - all changed files since v1.0.0
+Arcane Addon v1.39.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.39.0
+- NEW: Surpassing Limits. When you're nearly dead in a hard fight, your grimoire can answer.
+  - trigger: under 25% health - or a hit that would kill you - with a boss or strong monster (60+ max health)
+    within 32 blocks, or another player hitting you. 35% chance (50% with a Mastery 5 book), then a 20-minute
+    cooldown (a failed roll waits 30 s). Command (op): /arcane limit [player] triggers it now,
+    /arcane limit reset [player] clears the cooldown.
+  - heals you to 50% health, you can't be hurt for the 1.5 s awakening, and it lasts 1 minute (with its own mode
+    timer on the HUD). A white-hot aura in the grimoire's colour burns round you, with that grimoire's magic rising
+    off you (kept light in first person).
+  - every grimoire has its own awakening animation and effect: Asta roars as an anti magic pillar erupts; Yami draws
+    his katana level and points it as darkness rolls out and space cracks; Yuno is lifted by a rising cyclone; Nozel
+    raises a ring of mercury spears; Magna punches the sky in a fireball blast; Luck uppercuts as lightning slams
+    down round him; Mereoleona roars in a crimson pillar; Zenon throws his arms wide as ribs of bone burst up;
+    Klaus pushes up his glasses and raises a circle of steel plates.
+  - for the whole minute each grimoire's ultimate becomes an evolved version (even if it isn't unlocked yet):
+    - Yami: Event Horizon -> Lunar Eclipse: two horizons cut in an X, 2.2x damage, a wider band, rifts crossing.
+    - Asta: Devil Union -> Full Devil Union: lasts the whole state, +6 more attack damage, an anti magic pillar.
+    - Yuno: Spirit Storm -> Zephyr Crown - Star Storm: wind blades rain on where you look for 3 s round a cyclone
+      that drags enemies in, then one great gust.
+    - Luck: Thunder Fiend Rampage -> Thunder God Overdrive: 24 flashes through every enemy within 24 blocks, then a
+      bolt from the sky on each of them.
+    - Mereoleona: Purgatory -> Hellfire Lion King: a giant crimson-fire lion charges 30 blocks and erupts.
+    - Nozel: Mercury Cage -> Ten Thousand Regal Spears: spears rain from a silver sky for 2 s, then all burst.
+    - Magna: Explosive Fire Cannon -> Super Magna Special - Final: a huge fireball swung like a homerun, a massive
+      blast with smaller explosions round it.
+    - Zenon: Beelzebub -> Full Spatial Release: a dome of bone and a spatial cube that crushes every enemy within 18.
+    - Klaus: Acier Silva -> Steel Fortress: a ring of steel walls for 10 s that stops projectiles, firing lances at
+      every enemy outside it.
 
 NEW IN 1.38.0
 - NEW: Mana Zone clash. When two players' Mana Zones overlap (Yami's or Mereoleona's), the stronger zone pushes its

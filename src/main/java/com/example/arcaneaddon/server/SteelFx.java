@@ -492,6 +492,7 @@ public class SteelFx {
     // ================================================================== 6. Acier Silva (forest of steel)
     /** A forest of solid steel spikes erupts around you in three widening rings, launching whoever stands in them. */
     public static void acierSilva(ServerPlayer p, float power) {
+        if (LimitBreak.active(p)) { LimitFx.fortress(p, power); return; }   // Surpassing Limits: the evolved ultimate
         ServerLevel sl = p.serverLevel();
         Vec3 c = p.position();
         Set<UUID> hit = new HashSet<>();

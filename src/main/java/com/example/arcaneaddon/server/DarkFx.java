@@ -874,7 +874,8 @@ public class DarkFx {
 
     public static void eventHorizon(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        final float dmg = power * 1.5f;   // the full charge
+        final boolean eclipse = LimitBreak.active(p);   // Surpassing Limits: Lunar Eclipse - two horizons cut in an X
+        final float dmg = power * (eclipse ? 2.2f : 1.5f);   // the full charge
         final boolean zone = inZone(p);
         final int seed0 = (int) (sl.getGameTime() * 31 + p.getId());
         if (zone) zoneMsg(p, "event_horizon");
@@ -949,7 +950,7 @@ public class DarkFx {
                 Vec3 m = mid(t), on = closestOnSegment(start, end, m);
                 Vec3 off = m.subtract(on);
                 double along = on.distanceTo(start);
-                if (Math.abs(off.dot(rt)) > (3.0 + along * 0.14) * scale || Math.abs(off.dot(up)) > 6.0 * scale) continue;
+                if (Math.abs(off.dot(rt)) > (3.0 + along * 0.14 + (eclipse ? 3 : 0)) * scale || Math.abs(off.dot(up)) > 6.0 * scale) continue;
                 final LivingEntity tt = t;
                 AstaFx.later((int) (along / speed), () -> {
                     if (!tt.isAlive() || !alive(p)) return;
@@ -962,7 +963,23 @@ public class DarkFx {
             }
             // ONE colossal blade of darkness, standing upright, rolling forward and growing as it goes
             int life = (int) (reach / speed) + 2;
-            FxSend.slash(sl, D, o, dir, up, 4.0f * scale, 16f * scale, life, speed, 1.4f);
+            if (!eclipse) FxSend.slash(sl, D, o, dir, up, 4.0f * scale, 16f * scale, life, speed, 1.4f);
+            else {
+                // Lunar Eclipse: two colossal blades crossing in an X, a pale eclipse ring burning where they meet
+                Vec3 upA = up.scale(0.7071).add(rt.scale(0.7071)), upB = up.scale(0.7071).subtract(rt.scale(0.7071));
+                FxSend.slash(sl, D, o, dir, upA, 4.4f * scale, 17f * scale, life, speed, 1.4f);
+                FxSend.slash(sl, D, o, dir, upB, 4.4f * scale, 17f * scale, life, speed, 1.4f);
+                FxSend.wall(sl, S, o.add(dir.scale(2)), dir, up, 3.0f * scale, 3.3f * scale, -180, 180, 0.08f, life, 0, speed);
+                FxSend.wall(sl, D, o.add(dir.scale(2)), dir, up, 3.3f * scale, 4.2f * scale, -180, 180, 0.3f, life, 0, speed);
+                for (double k = 8; k < reach; k += 10) {
+                    final double kk = k;
+                    AstaFx.later((int) (k / speed), () -> {
+                        Vec3 cc = start.add(dir.scale(kk)).add(aimed ? Vec3.ZERO : up.scale(2.4 * scale));
+                        FxSend.cracks(sl, D, cc, upA, upA.cross(dir).normalize(), 3.0f * scale, 56, true, seed0 + (int) kk * 3);
+                        FxSend.cracks(sl, D, cc, upB, upB.cross(dir).normalize(), 3.0f * scale, 56, true, seed0 + (int) kk * 5);
+                    });
+                }
+            }
             // space cut open along the whole path: rifts hang in the air where the wave passed
             int n = 0;
             for (double k = 5; k < reach; k += 6.5, n++) {

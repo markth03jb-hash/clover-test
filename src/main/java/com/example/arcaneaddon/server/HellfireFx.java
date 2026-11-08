@@ -519,6 +519,7 @@ public class HellfireFx {
      * Mana Zone / Hellfire Incarnate: 45 blocks, wider.
      */
     public static void purgatory(ServerPlayer p, float power) {
+        if (LimitBreak.active(p)) { LimitFx.lionKing(p, power); return; }   // Surpassing Limits: the evolved ultimate
         ServerLevel sl = p.serverLevel();
         for (int k = 0; k < PURGATORY_RELEASE; k += 2) {
             final int kk = k;

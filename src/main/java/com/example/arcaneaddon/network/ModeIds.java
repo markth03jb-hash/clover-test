@@ -8,7 +8,8 @@ public final class ModeIds {
             "devil_union", "mana_zone_dimension_slash", "black_blade", "black_cocoon", "ki_foresight",
             "knights_armor", "spirit_dive", "hushed_dance", "silver_guardian", "silver_mirror",
             "flame_knuckles", "soul_chain", "thunder_god_mode", "thunder_gloves", "mana_skin",
-            "lion_mana_zone", "hellfire_incarnate", "marrow_regeneration", "beelzebub_union"
+            "lion_mana_zone", "hellfire_incarnate", "marrow_regeneration", "beelzebub_union",
+            "surpassing_limits"
     };
 
     public static int index(String id) {

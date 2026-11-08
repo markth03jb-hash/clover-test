@@ -502,6 +502,7 @@ public class LightningFx {
      * (mode: 16) - then leap up and call down one great bolt on the spot where most of them are.
      */
     public static void rampage(ServerPlayer p, float power) {
+        if (LimitBreak.active(p)) { LimitFx.overdrive(p, power); return; }   // Surpassing Limits: the evolved ultimate
         ServerLevel sl = p.serverLevel();
         boolean mode = inMode(p);
         if (mode) modeMsg(p, "rampage");

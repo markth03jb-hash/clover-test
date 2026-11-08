@@ -561,6 +561,7 @@ public class BoneFx {
         sound(sl, p.position(), SoundEvents.WITHER_SPAWN, 0.4f, 1.4f);
         AstaFx.later(UNION_FORM, () -> {
             if (!alive(p)) return;
+            if (LimitBreak.active(p)) LimitFx.spatialRelease(p, power);   // Surpassing Limits: Full Spatial Release
             UNION.put(p.getUUID(), sl.getGameTime() + UNION_TICKS);
             sendForm(p, UNION_TICKS);
             var att = p.getAttribute(Attributes.MOVEMENT_SPEED);

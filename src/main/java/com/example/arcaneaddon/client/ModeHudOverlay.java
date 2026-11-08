@@ -130,6 +130,7 @@ public final class ModeHudOverlay {
             case "flame_knuckles", "soul_chain" -> 0xFFFF8A2A;
             case "thunder_god_mode", "thunder_gloves" -> 0xFF4FB8FF;
             case "mana_skin", "lion_mana_zone", "hellfire_incarnate" -> 0xFFE0302A;
+            case "surpassing_limits" -> 0xFFFFF4C0;
             default -> 0xFFE8DCC0;   // bone
         };
     }

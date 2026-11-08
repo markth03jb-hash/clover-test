@@ -579,6 +579,7 @@ public class MercuryFx {
      * 3 s, then the bars snap inward and crush it.
      */
     public static void mercuryCage(ServerPlayer p, float power) {
+        if (LimitBreak.active(p)) { LimitFx.tenThousand(p, power); return; }   // Surpassing Limits: the evolved ultimate
         ServerLevel sl = p.serverLevel();
         Vec3 eye = p.getEyePosition();
         LivingEntity t0 = aimed(p, 30, 12);

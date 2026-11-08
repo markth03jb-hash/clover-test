@@ -53,6 +53,7 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
     @Override
     public void render(PoseStack ps, MultiBufferSource buf, int light, AbstractClientPlayer p, float limbSwing, float limbSwingAmount,
                        float pt, float age, float netHeadYaw, float headPitch) {
+        if (!p.isInvisible()) limitShell(ps, buf, p, pt);
         double[] f = ACTIVE.get(p.getId());
         if (f == null || p.isInvisible()) return;
         double now = p.level().getGameTime() + pt;
@@ -105,5 +106,22 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
         ps.translate(0.0F, -0.75F, 0.0F);
         m.renderToBuffer(ps, vc, 15728880, OverlayTexture.NO_OVERLAY, r, g, b, a);
         ps.popPose();
+    }
+
+    /** Surpassing Limits: a thin white-hot skin and a breathing glow in the grimoire's colour. */
+    private void limitShell(PoseStack ps, MultiBufferSource buf, AbstractClientPlayer p, float pt) {
+        double[] f = LimitClient.ACTIVE.get(p.getId());
+        if (f == null) return;
+        double now = p.level().getGameTime() + pt;
+        if (now > f[1]) return;
+        float in = (float) Mth.clamp((now - f[0]) / 8.0, 0.0, 1.0), out = (float) Mth.clamp((f[1] - now) / 20.0, 0.0, 1.0);
+        float a = in * out;
+        if (a <= 0.01F) return;
+        float[] col = LimitClient.COLORS[Mth.clamp((int) f[2], 0, LimitClient.COLORS.length - 1)];
+        PlayerModel<AbstractClientPlayer> m = getParentModel();
+        VertexConsumer vc = buf.getBuffer(RenderType.entityTranslucentEmissive(WHITE));
+        float breathe = 0.8F + 0.2F * (float) Math.sin(now * 0.4);
+        shell(ps, m, vc, 1.035F, 1.0F, 0.97F, 0.9F, 0.16F * a * breathe);
+        shell(ps, m, vc, 1.14F + 0.02F * (float) Math.sin(now * 0.7), col[0], col[1], col[2], 0.14F * a * breathe);
     }
 }

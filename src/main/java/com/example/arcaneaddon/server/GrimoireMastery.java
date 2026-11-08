@@ -298,6 +298,7 @@ public final class GrimoireMastery {
         Book b = bookOf(book);
         int need = required(b, spell);
         if (need <= 1 || level(book) >= need) return;
+        if (need == MAX_LEVEL && LimitBreak.active(p)) return;   // surpassing your limits: the ultimate answers anyway
         e.setCanceled(true);
         p.displayClientMessage(Component.translatable("ui.arcane_addon.mastery.locked",
                 Component.translatable("spell.arcane_addon." + spell), need).withStyle(ChatFormatting.RED), true);

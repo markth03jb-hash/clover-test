@@ -34,6 +34,16 @@ public class ArcaneAnimations {
             ResourceLocation.fromNamespaceAndPath("irons_spellbooks", "simple_sword_lunge_stab"),
             ResourceLocation.fromNamespaceAndPath("irons_spellbooks", "sword_deflect_1"),
             ResourceLocation.fromNamespaceAndPath("irons_spellbooks", "horizontal_slash_one_handed"),
+            // Surpassing Limits awakenings, one per grimoire (AnimSend.LIMIT_FIRST + book index)
+            ResourceLocation.fromNamespaceAndPath("arcane_addon", "limit_black"),
+            ResourceLocation.fromNamespaceAndPath("arcane_addon", "limit_dark"),
+            ResourceLocation.fromNamespaceAndPath("arcane_addon", "limit_wind"),
+            ResourceLocation.fromNamespaceAndPath("arcane_addon", "limit_mercury"),
+            ResourceLocation.fromNamespaceAndPath("arcane_addon", "limit_fire"),
+            ResourceLocation.fromNamespaceAndPath("arcane_addon", "limit_lightning"),
+            ResourceLocation.fromNamespaceAndPath("arcane_addon", "limit_hellfire"),
+            ResourceLocation.fromNamespaceAndPath("arcane_addon", "limit_bone"),
+            ResourceLocation.fromNamespaceAndPath("arcane_addon", "limit_steel"),
     };
 
     @SubscribeEvent

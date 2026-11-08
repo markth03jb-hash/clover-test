@@ -342,5 +342,11 @@
   "spell.arcane_addon.devil_black_hurricane": "Black Hurricane",
   "spell.arcane_addon.devil_black_hurricane.guide": "Devil Union (takes Devil Instinct's slot). Spin with both swords out inside a vortex of black flame for 2 s, dragging enemies in and shredding them, then burst outward and launch them.",
   "ui.arcane_addon.zone_clash.losing": "%s's Mana Zone is overpowering yours!",
-  "ui.arcane_addon.zone_clash.winning": "Your Mana Zone is crushing %s's!"
+  "ui.arcane_addon.zone_clash.winning": "Your Mana Zone is crushing %s's!",
+  "spell.arcane_addon.surpassing_limits": "Surpassing Limits",
+  "ui.arcane_addon.limit.start": "SURPASSING LIMITS!",
+  "ui.arcane_addon.limit.evolved": "%s has evolved",
+  "ui.arcane_addon.limit.end": "Your limits settle back... for now.",
+  "ui.arcane_addon.limit.cmd": "%s surpassed their limits.",
+  "ui.arcane_addon.limit.reset": "Surpassing Limits cooldown cleared for %s."
 }

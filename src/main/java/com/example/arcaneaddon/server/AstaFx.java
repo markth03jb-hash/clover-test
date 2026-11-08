@@ -585,6 +585,8 @@ public class AstaFx {
     /** Liebe merges with you for 50 seconds. */
     public static void devilUnion(ServerPlayer p) {
         ServerLevel sl = p.serverLevel();
+        final boolean full = LimitBreak.active(p);   // Surpassing Limits: Full Devil Union - it holds for the whole state
+        final int UNION_TICKS = full ? Math.max(AstaFx.UNION_TICKS, LimitBreak.ticksLeft(p)) : AstaFx.UNION_TICKS;
         UNION.put(p.getUUID(), sl.getGameTime() + UNION_TICKS);
         // every grimoire spell becomes its devil version (new icons too) - one tick later, so the cast that started it finishes first
         later(1, () -> { if (!p.isRemoved()) DevilBook.apply(p, true); });
@@ -607,6 +609,7 @@ public class AstaFx {
                 }
             }
         });
+        if (full) LimitFx.fullUnion(p, UNION_TICKS);
         sound(sl, c, SoundEvents.WITHER_SPAWN, 0.5f, 1.6f);
         sound(sl, c, SoundEvents.ENDER_DRAGON_GROWL, 0.6f, 0.7f);
         sound(sl, c, SoundEvents.BEACON_POWER_SELECT, 1f, 0.5f);
