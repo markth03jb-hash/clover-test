@@ -68,7 +68,7 @@ public class BoneBladeLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
         if (g <= 0.01F) return;
         ps.pushPose();
         getParentModel().rightArm.translateAndRotate(ps);
-        ps.translate(-1.0F / 16.0F, 0.62F, 0.0F);   // the fist
+        ps.translate(-1.0F / 16.0F, 0.6F, -0.03F);   // in the fist
         drawSword(ps, buf, light, (float) f[2] * g, g, f[3] > 0.5);
         ps.popPose();
     }
@@ -106,7 +106,7 @@ public class BoneBladeLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
         float[] k = fpAt(now - f[0]);
         PoseStack ps = e.getPoseStack();
         ps.pushPose();
-        ps.translate(0.42F, -0.42F, -0.62F);              // the right hand, low in your view
+        ps.translate(0.56F, -0.5F, -0.7F);                // right where your hand is in first person
         ps.mulPose(Axis.YP.rotationDegrees(-k[1]));
         ps.mulPose(Axis.XP.rotationDegrees(-k[2]));
         ps.mulPose(Axis.ZP.rotationDegrees(k[3]));
@@ -122,10 +122,10 @@ public class BoneBladeLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
         Matrix3f n = ps.last().normal();
         VertexConsumer vc = buf.getBuffer(RenderType.entityCutoutNoCull(WHITE));
         // everything lies along the blade's line (-z), through the fist: pommel behind it, grip in it, guard in front
-        prism(vc, m, n, 0, 0, 0.2F, 0, 0, 0.27F, 0.05F, 0.065F, 8, KNOB, light);      // pommel knob
-        prism(vc, m, n, 0, 0, 0.27F, 0, 0, 0.31F, 0.065F, 0.025F, 8, KNOB, light);
-        for (int i = 0; i < 4; i++) {   // grip: stacked vertebrae
-            float z0 = 0.2F - i * 0.085F, z1 = z0 - 0.065F;
+        prism(vc, m, n, 0, 0, 0.12F, 0, 0, 0.18F, 0.05F, 0.065F, 8, KNOB, light);      // pommel knob, just behind the fist
+        prism(vc, m, n, 0, 0, 0.18F, 0, 0, 0.22F, 0.065F, 0.025F, 8, KNOB, light);
+        for (int i = 0; i < 3; i++) {   // grip: stacked vertebrae, inside the fist
+            float z0 = 0.12F - i * 0.085F, z1 = z0 - 0.065F;
             prism(vc, m, n, 0, 0, z0, 0, 0, z1, 0.042F, 0.042F, 8, IVORY, light);
             prism(vc, m, n, 0, 0, z1, 0, 0, z1 - 0.02F, 0.055F, 0.055F, 8, SHADOW, light);
         }

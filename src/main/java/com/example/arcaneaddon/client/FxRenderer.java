@@ -214,6 +214,7 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 41) { PixelFx.spawn(p); return; }   // the pixel-sprite effect style (Sky Splitter test)
       if (p.shape == 40) { Cutscene.cinematic(p.life, p.sweep); return; }   // a short cinematic (Equinox)
       if (p.shape == 39) { DarkSmoke.guardFists(p.id, p.life); return; }   // Burning Fists Guard: id = player, life = ticks
       if (p.shape == 38) {   // Zenon's bone whips: id = player, life, h = count, r = reach, a0 = lash period, palette 1 = Beelzebub
@@ -301,6 +302,7 @@ public class FxRenderer {
       Minecraft mc = Minecraft.getInstance();
       if (mc.level != null) {
          if (p.shape == 3) {
+            PixelFx.kill(p.id);
             for (FxRenderer.Fx f : FX) {
                if (f.p.id == p.id && f.killAge < 0.0) {
                   f.killAge = (double)mc.level.getGameTime() - f.born;
@@ -351,6 +353,7 @@ public class FxRenderer {
             double now = (double)mc.level.getGameTime();
             Iterator<FxRenderer.Fx> it = FX.iterator();
             DarkSmoke.tick();
+            PixelFx.tick();
             for (java.util.Map.Entry<Integer, double[]> ze : ZONES.entrySet()) {
                Double tgt = ZONE_TARGET.get(ze.getKey());
                if (tgt != null) ze.getValue()[2] += (tgt - ze.getValue()[2]) * 0.2;
@@ -1312,6 +1315,8 @@ public class FxRenderer {
     * colour - so wind is a bright, airy shimmer and fire a luminous blaze instead of dark see-through ribbons.
     */
    private static int lightPal = -1;
+   /** True while a slash is drawn in the Spirit of Zephyr style. */
+   private static boolean slashGlow = false;
    /** effect_opacity from the client config, read once per frame. */
    private static float OPACITY = 1F;
    /** Alpha multiplier for the effect being drawn right now (OPACITY, faded for an overdue per-tick copy). */
@@ -1322,9 +1327,10 @@ public class FxRenderer {
    private static void vtx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, float[] col, float a) {
       if (lightPal >= 0 && gv != null) {
          float[] rc = RIM[lightPal];
-         float k = lightPal == 5 ? 0.85F : 0.75F;
+         boolean zephyr = lightPal == 5 || slashGlow;   // the Spirit of Zephyr look: a soft, bright, see-through blade
+         float k = zephyr ? 0.85F : 0.75F;
          float[] lc = {col[0] + (rc[0] - col[0]) * k, col[1] + (rc[1] - col[1]) * k, col[2] + (rc[2] - col[2]) * k};
-         gvtx(m, cam, w, lc, a * (lightPal == 5 ? 0.28F : 0.6F));   // gvtx applies the opacity
+         gvtx(m, cam, w, lc, a * (zephyr ? 0.28F : 0.6F));   // gvtx applies the opacity
          return;
       }
       a *= ALPHA_NOW;
@@ -1698,7 +1704,10 @@ public class FxRenderer {
                   // a per-tick copy is normally replaced by the next one at age ~1; if that one is late, this one keeps
                   // gliding along its path and fades out gently instead of freezing and then jumping
                   ALPHA_NOW = perTick && age > 1.2 ? OPACITY * (float)Mth.clamp((2.5 - age) / 1.3, 0.0, 1.0) : OPACITY;
-                  lightPal = (sh == 0 || sh == 1 || sh == 2 || sh == 13) && isLight(f.p.palette) ? f.p.palette : -1;
+                  // slashes are all drawn like Spirit of Zephyr's - glowing, in their own colour - except Yami's and
+                  // Asta's darkness, which stays a black blade with a glowing edge
+                  slashGlow = sh == 13 && f.p.palette != 1 && f.p.palette != 10;
+                  lightPal = ((sh == 0 || sh == 1 || sh == 2 || sh == 13) && isLight(f.p.palette)) || slashGlow ? f.p.palette : -1;
                   switch (f.p.shape) {
                      case 0:
                         wall(vc, m, n, cam, f.p, age, env);
@@ -1740,6 +1749,7 @@ public class FxRenderer {
                         spaceCracks(vc, m, n, cam, f.p, age, life);
                   }
                   lightPal = -1;
+                  slashGlow = false;
                   ALPHA_NOW = OPACITY;
                }
             }
@@ -1793,6 +1803,7 @@ public class FxRenderer {
             GLOW_SRC.endBatch(GlowRenderType.GLOW);
             gv = null;
             DarkSmoke.render(ps, e.getCamera(), buf, pt);
+            PixelFx.render(ps, e.getCamera(), buf, pt);
             if (!PAGES.isEmpty()) {   // turning pages, drawn with the book's own page art (front = right page, back = left page)
                for (int side = 0; side < 2; side++) {
                   RenderType prt = RenderType.entityCutout(side == 0 ? PAGE_R : PAGE_L);

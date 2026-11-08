@@ -829,34 +829,49 @@ public class DarkFx {
         AstaFx.later(EQUINOX_CUT, () -> {
             TimedModifiers.remove(p, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED, TimedModifiers.HORIZON_CHARGE);
             if (!alive(p)) return;
-            Vec3 look = p.getLookAngle();
-            Vec3 dir = new Vec3(look.x, 0, look.z).lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : new Vec3(look.x, 0, look.z).normalize();
-            Vec3 up = new Vec3(0, 1, 0);
-            Vec3 c = p.position();
-            FxSend.shake(sl, c, 1.2f, 20, ZONE_R + 24);
-            // the dividing cut: one colossal slash standing across the whole zone
-            FxSend.slash(sl, D, c.add(0, 0.5, 0).subtract(dir.scale(ZONE_R * 0.4)), dir, up, (float) ZONE_R * 0.6f, (float) ZONE_R * 1.1f, 18, 0.6f, 1.5f);
-            FxSend.slash(sl, S, c.add(0, 0.5, 0).subtract(dir.scale(ZONE_R * 0.4)), dir, up, (float) ZONE_R * 0.55f, (float) ZONE_R * 1.0f, 12, 0.6f, 0.3f);
-            // the dividing line left hanging across the zone
-            Vec3 a0 = FxLib.floor(sl, c.subtract(dir.scale(ZONE_R))), a1 = FxLib.floor(sl, c.add(dir.scale(ZONE_R)));
-            FxSend.trail(sl, S, a0.add(0, 0.1, 0), a1.add(0, 0.1, 0), 0.08f, 80);
-            FxSend.trail(sl, D, a0.add(0, 0.08, 0), a1.add(0, 0.08, 0), 0.7f, 80);
-            // a ring of darkness sweeping the edge of the zone
-            FxSend.wall(sl, D, c.add(0, 1.2, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), (float) ZONE_R - 1f, (float) ZONE_R, -180, 180, 1.6f, 14, 4, 0);
-            // every enemy the zone read is cut at the same instant
-            for (LivingEntity e : zoneEnemies(p)) {
-                Vec3 m = mid(e);
-                Vec3 to = m.subtract(c.add(0, 1, 0));
-                Vec3 sd = to.lengthSqr() < 1.0E-4 ? dir : to.normalize();
-                FxSend.slash(sl, D, m.subtract(sd.scale(0.8)), sd, up, 1.4f, 2.4f, 7, 0.2f, 1.0f);
-                AstaFx.damage(p, e, dmg, "event_horizon");
-                FxLib.impact(sl, D, m, 1.6f);
+            // aimed: straight along your view (at the enemy under the crosshair if there is one), and it goes far -
+            // 140 blocks, further than Event Horizon ever reaches
+            final double reach = 140, band = 3.2;
+            Vec3 eye = p.getEyePosition(), look = p.getLookAngle();
+            net.minecraft.world.phys.EntityHitResult ehr = net.minecraft.world.entity.projectile.ProjectileUtil.getEntityHitResult(
+                    p, eye, eye.add(look.scale(reach)), p.getBoundingBox().expandTowards(look.scale(reach)).inflate(1.5),
+                    x -> x instanceof LivingEntity le && le.isAlive() && !x.isAlliedTo(p) && x != p, reach * reach);
+            if (ehr != null && ehr.getEntity() instanceof LivingEntity tg && p.hasLineOfSight(tg)) look = mid(tg).subtract(eye).normalize();
+            final Vec3 dir = look, start = eye, end = eye.add(look.scale(reach));
+            final Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
+            FxSend.shake(sl, p.position(), 1.0f, 16, 48);
+            // the cut itself is invisible: only a hairline of light along the line and a faint ripple at the blade
+            FxSend.trail(sl, S, start.add(dir.scale(1.5)), end, 0.015f, 6);
+            FxSend.ring(sl, S, start.add(dir.scale(1.6)), 0.2f, 1.6f, 0.03f, 5);
+            sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 1.8f);
+            // everything on the line is cut at the same instant - and a moment later it comes apart
+            for (LivingEntity e : enemies(sl, p, new AABB(start, end).inflate(band + 2))) {
+                Vec3 m = mid(e), on = closestOnSegment(start, end, m);
+                if (on.distanceTo(m) > band + e.getBbWidth() * 0.5) continue;
+                final LivingEntity tt = e;
+                // the instant: a razor-thin white line straight through the body, nothing else
+                FxSend.trail(sl, S, m.subtract(rt.scale(1.4)), m.add(rt.scale(1.4)), 0.02f, 8);
+                tt.setDeltaMovement(Vec3.ZERO);
+                tt.hurtMarked = true;
+                AstaFx.later(8, () -> {   // ...then it is cut in half: the line opens, darkness spills out both ways
+                    if (!tt.isAlive() || !alive(p)) return;
+                    Vec3 mm = mid(tt);
+                    float w = Math.max(0.8f, tt.getBbWidth() * 1.3f);
+                    FxSend.trail(sl, S, mm.subtract(rt.scale(w * 1.3)), mm.add(rt.scale(w * 1.3)), 0.05f, 6);
+                    FxSend.wall(sl, D, mm, up, rt, 0.1f, w * 1.4f, -180, 180, 0.05f, 8, 0, 0);   // the dividing plane
+                    FxLib.flash(sl, D, mm.add(up.scale(0.4)), 0.6f);
+                    FxLib.flash(sl, D, mm.subtract(up.scale(0.4)), 0.6f);
+                    AstaFx.damage(p, tt, dmg, "event_horizon");
+                    tt.setDeltaMovement(up.scale(0.25));
+                    tt.hurtMarked = true;
+                    sound(sl, mm, SoundEvents.PLAYER_ATTACK_CRIT, 1f, 0.5f);
+                });
             }
-            sound(sl, c, SoundEvents.WARDEN_SONIC_BOOM, 1.2f, 0.4f);
-            sound(sl, c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.4f);
-            sound(sl, c, SoundEvents.ENDERMAN_TELEPORT, 1f, 0.4f);
+            sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.8f, 0.4f);
+            AstaFx.later(8, () -> sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 1.0f, 0.5f));
         });
     }
+
 
     /**
      * Every 10 ticks while the zone is up, centred on you:

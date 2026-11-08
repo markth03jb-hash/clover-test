@@ -166,4 +166,16 @@ public class FxSend {
         p.a1 = phase; p.speed = bob; p.sweep = growTicks; p.d = new Vec3(stagger, 0, 0); p.life = life; p.c = e.position();
         send(sl, e.position(), p);
     }
+
+    /**
+     * A slash in the pixel-sprite style (FxPacket shape 41): hundreds of flat pixel-art flame streaks, shards and
+     * embers laid along a 3D crescent. Returns its id (a kill packet with it ends the slash early).
+     */
+    public static int pixelSlash(ServerLevel sl, int scheme, Vec3 c, Vec3 dir, Vec3 up, float r, float r2, int life, float speed) {
+        FxPacket p = new FxPacket();
+        p.shape = 41; p.id = IDS.getAndIncrement(); p.palette = (byte) scheme; p.life = life;
+        p.c = c; p.d = dir.normalize(); p.u = up.normalize(); p.r = r; p.r2 = r2; p.speed = speed;
+        send(sl, c, p);
+        return p.id;
+    }
 }

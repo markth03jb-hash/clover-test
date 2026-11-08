@@ -1,7 +1,26 @@
-Iron Spell Grimoire v1.43.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.44.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.44.0
+- REMOVED: the stance idles and sword combos (Yami's samurai guard, Luck's boxing guard and their swing animations) -
+  you're back to the normal idle and attack.
+- Bone Sword sits properly in the hand: the grip is inside the fist (third person) and in first person it's where
+  your hand is, not floating off to the side.
+- Equinox: the cut is now aimed (at the enemy under your crosshair, otherwise along your view, up or down too) and
+  reaches 140 blocks - further than Event Horizon. It's an invisible slash: a hairline of light along the line and
+  a thin white line through everyone it passes... then a moment later they're cut in half - the line opens and
+  darkness spills out both ways (that's when the damage lands). No ground trail.
+- Slashes now look like Spirit of Zephyr's: a soft, bright, see-through crescent in each grimoire's own colour (Yami's
+  and Asta's darkness stay a black blade with a glowing edge).
+- NEW: Mana Zone: Ignis Columna replaces Burning Fists Guard (same slot, so it stays in your book): Mereoleona raises
+  her burning fist and drives it into the ground - columns of crimson hellfire erupt under every enemy within 16 blocks
+  (burning them and throwing them up), then one great column bursts up where she's looking. New animation and icon.
+- TEST: a new effect style built from pixel-art sprites (flame streaks, shards and embers, each a flat 2D sprite
+  stretched along its own direction and laid out along a 3D arc, so together they read as a solid slash). First used
+  on Sky Splitter with the Demon Slayer: a crescent of black anti magic edged with white-hot and ember flame,
+  shedding flames and sparks as it flies.
 
 NEW IN 1.43.0
 Yami

@@ -34,6 +34,8 @@ public final class StanceAnimations {
     private StanceAnimations() {}
 
     public static final ResourceLocation LAYER = ResourceLocation.fromNamespaceAndPath("arcane_addon", "stance");
+    /** Off: Yami's samurai guard / Luck's boxing guard idles and their swing combos are no longer played. */
+    public static final boolean ENABLED = false;
     public static final int PRIORITY = 10;    // UNDER Iron's cast layer (42) and the addon's move layer, so spell poses always win
 
     private enum Style { NONE, SAMURAI, THUNDER }
@@ -52,6 +54,7 @@ public final class StanceAnimations {
     @SubscribeEvent
     @SuppressWarnings("unchecked")
     public static void onTick(TickEvent.ClientTickEvent e) {
+        if (!ENABLED) return;   // removed: the stance idles and sword combos didn't play well with everything else
         if (e.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) { STATES.clear(); return; }

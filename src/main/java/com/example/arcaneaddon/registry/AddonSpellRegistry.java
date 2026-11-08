@@ -208,7 +208,7 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> HELL_MANA_SKIN = registerSpell(new HellfireSpell("mana_skin", 40, 40, 0, HellfireSpell.anim("arcane_addon:mercury_guardian"), HellfireFx::manaSkin));
     public static final RegistryObject<AbstractSpell> HELL_MANA_ZONE = registerSpell(new HellfireSpell("lion_mana_zone", 60, 90, 0, HellfireSpell.anim("arcane_addon:dark_mana_zone"), HellfireFx::manaZone));
     public static final RegistryObject<AbstractSpell> GROUND_PUNCH = registerSpell(new HellfireSpell("ground_punch", 12, 40, 18, HellfireSpell.anim("arcane_addon:lion_ground_punch"), HellfireFx::groundPunch));
-    public static final RegistryObject<AbstractSpell> BURNING_GUARD = registerSpell(new HellfireSpell("burning_guard", 12, 25, 0, HellfireSpell.anim("arcane_addon:lion_guard"), HellfireFx::burningGuard));
+    public static final RegistryObject<AbstractSpell> BURNING_GUARD = registerSpell(new HellfireSpell("burning_guard", 14, 30, 18, HellfireSpell.anim("arcane_addon:lion_ignis"), HellfireFx::ignisColumna));
     public static final RegistryObject<AbstractSpell> HELLFIRE_INCARNATE = registerSpell(new HellfireSpell("hellfire_incarnate", 120, 105, 0, HellfireSpell.anim("arcane_addon:lightning_mode"), HellfireFx::hellfire));
     public static final RegistryObject<AbstractSpell> BRACHIUM_PURGATORY = registerSpell(new HellfireSpell("calidos_brachium_purgatory", 120, 65, 55, HellfireSpell.anim("arcane_addon:lion_purgatory"), HellfireFx::purgatory));
 

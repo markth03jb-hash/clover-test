@@ -34,6 +34,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -423,7 +424,87 @@ public class HellfireFx {
 
     // ================================================================== 8. Burning Fists Guard
     /** For 3 s your fists burn through magic: projectiles that come close are punched out of the air, spells from the front are blocked. */
-    public static void burningGuard(ServerPlayer p, float power) {
+    /**
+     * Mana Zone: Ignis Columna (replaces Burning Fists Guard - same slot). Mereoleona raises her fist, crimson fire
+     * gathering round it, and drives it into the ground: the shock spreads out, the ground glows red under every enemy
+     * within 16 blocks, and a moment later columns of crimson hellfire erupt beneath them, burning them and throwing
+     * them into the air - then one great column bursts up where she is looking.
+     */
+    public static void ignisColumna(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        final int SLAM = 10;
+        for (int t = 0; t < SLAM; t += 2) {   // fire gathering round the raised fist
+            final int tt = t;
+            AstaFx.later(t, () -> {
+                if (!alive(p)) return;
+                Vec3 fistAt = p.position().add(0, 2.4, 0).add(rightOf(p.getLookAngle()).scale(0.35));
+                ball(sl, F, fistAt, Vec3.ZERO, 0.3f + tt * 0.04f, 0.3f + tt * 0.04f, 1, false);
+                FxSend.ring(sl, F, p.position().add(0, 0.05, 0), 2.2f - tt * 0.15f, 0.2f, 0.3f, 4);
+            });
+        }
+        sound(sl, p.position(), SoundEvents.BLAZE_AMBIENT, 1f, 0.6f);
+        AstaFx.later(SLAM, () -> {
+            if (!alive(p)) return;
+            Vec3 c = p.position();
+            // the punch into the ground
+            ball(sl, F, c.add(0, 0.4, 0), Vec3.ZERO, 0.6f, 2.8f, 8, true);
+            FxLib.shockRing(sl, F, c.add(0, 0.1, 0), 3.2f);
+            shake(sl, c, 0.7f, 10);
+            sound(sl, c, SoundEvents.GENERIC_EXPLODE, 0.9f, 0.7f);
+            List<LivingEntity> foes = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(16)));
+            foes.removeIf(e -> e.distanceTo(p) > 16);
+            foes.sort(Comparator.comparingDouble(e -> e.distanceToSqr(p)));
+            List<Vec3> spots = new ArrayList<>();
+            for (int i = 0; i < Math.min(8, foes.size()); i++) spots.add(foes.get(i).position());
+            ThreadLocalRandom r = ThreadLocalRandom.current();
+            for (int i = 0; i < 4; i++) {   // and a few more round her, so it never looks empty
+                double a = r.nextDouble(Math.PI * 2), d = r.nextDouble(4, 10);
+                spots.add(c.add(Math.cos(a) * d, 0, Math.sin(a) * d));
+            }
+            for (Vec3 s0 : spots) {
+                Vec3 g0 = FxLib.ground(sl, s0.add(0, 2, 0), 6);
+                final Vec3 g = g0 != null ? g0 : s0;
+                FxSend.ring(sl, F, g.add(0, 0.05, 0), 0.4f, 1.8f, 0.5f, 8);   // the ground glows red first
+                AstaFx.later(6 + r.nextInt(4), () -> {
+                    if (!alive(p)) return;
+                    // the column: a pillar of crimson hellfire roaring up, flames climbing it, a blast at its foot
+                    FxSend.beam(sl, F, g.add(0, -0.5, 0), g.add(0, 10, 0), 1.3f, 16);
+                    ball(sl, F, g.add(0, 0.6, 0), Vec3.ZERO, 0.5f, 2.2f, 8, true);
+                    for (int k = 0; k < 3; k++)
+                        FxSend.wall(sl, F, g.add(0, 1.5 + k * 2.5, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.9f, 1.5f, k * 60f, k * 60f + 300, 1.2f, 10 + k * 2, 0, 0);
+                    for (LivingEntity e : enemies(sl, p, new AABB(g, g).inflate(1.8, 10, 1.8))) {
+                        hit(p, e, power, "burning_guard");
+                        FireFx.burn(p, e, 80);
+                        e.setDeltaMovement(e.getDeltaMovement().add(0, 1.0, 0));
+                        e.hurtMarked = true;
+                    }
+                    sound(sl, g, SoundEvents.BLAZE_SHOOT, 1f, 0.6f);
+                });
+            }
+            AstaFx.later(16, () -> {   // the great column where she is looking
+                if (!alive(p)) return;
+                Vec3 eye = p.getEyePosition();
+                Vec3 hitAt = clip(sl, p, eye, eye.add(p.getLookAngle().scale(18)));
+                Vec3 gg = FxLib.ground(sl, hitAt.add(0, 1, 0), 10);
+                Vec3 g = gg != null ? gg : hitAt;
+                FxSend.beam(sl, F, g.add(0, -1, 0), g.add(0, 16, 0), 3.0f, 20);
+                ball(sl, F, g.add(0, 1, 0), Vec3.ZERO, 1.0f, 4.0f, 10, true);
+                FxLib.shockRing(sl, F, g.add(0, 0.1, 0), 3.4f);
+                for (LivingEntity e : enemies(sl, p, new AABB(g, g).inflate(3.5, 16, 3.5))) {
+                    hit(p, e, power * 1.5f, "burning_guard");
+                    FireFx.burn(p, e, 120);
+                    e.setDeltaMovement(e.getDeltaMovement().add(0, 1.4, 0));
+                    e.hurtMarked = true;
+                }
+                shake(sl, g, 0.9f, 12);
+                sound(sl, g, SoundEvents.GENERIC_EXPLODE, 1.2f, 0.5f);
+                sound(sl, g, SoundEvents.RAVAGER_ROAR, 0.8f, 0.9f);
+            });
+        });
+    }
+
+    /** Burning Fists Guard (retired - Ignis Columna took its slot). */
+    static void burningGuardOld(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         final int T = 60;
         GUARD.put(p.getUUID(), sl.getGameTime() + T);

@@ -258,9 +258,8 @@ public class AstaFx {
                     Vec3 u = up.scale(Math.cos(Math.toRadians(45))).add(rt.scale(s * Math.sin(Math.toRadians(45))));
                     fxIds.add(FxSend.crescent(sl, Fx.DARK, start, dir, u, 1.6f, 3.4f, SKY_MAX_STEPS + 2, (float) SKY_SPEED));
                 }
-            } else {    // one towering vertical crescent with a silver inner edge
-                fxIds.add(FxSend.crescent(sl, Fx.CRIMSON, start, dir, up, 2.0f, 4.2f, SKY_MAX_STEPS + 2, (float) SKY_SPEED));
-                fxIds.add(FxSend.crescent(sl, Fx.SILVER, start.subtract(dir.scale(0.4)), dir, up, 0.8f, 3.4f, SKY_MAX_STEPS + 2, (float) SKY_SPEED));
+            } else {    // Demon Slayer: one towering crescent in the pixel-sprite style - black anti magic edged with flame
+                fxIds.add(FxSend.pixelSlash(sl, 0, start, dir, up, 2.0f, 4.2f, SKY_MAX_STEPS + 2, (float) SKY_SPEED));
             }
             FxSend.wall(sl, pal, p.position().add(0, 0.1, 0), dir, up, 2.4f, 2.8f, -60, 80, 0.9f, 7, 2, 0);   // the upward swing itself
             Fx.flash(sl, start, 1.4f);
