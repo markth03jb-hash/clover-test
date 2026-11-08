@@ -39,10 +39,11 @@ public class KiSenseRenderer {
             {0.36F, 0.62F, 1.00F},   // player
     };
     private static final float STRENGTH = 0.32F;   // overall opacity of the flames
+    private static final float STRONG = 0.85F;     // Mana Zone ki: much easier to see
     private static final int TONGUES = 9;           // flame licks around each creature
     private static final int FADE_TICKS = 20;
 
-    private record Mark(int type, long start, long until) {}
+    private record Mark(int type, long start, long until, boolean strong) {}
     private static final Map<Integer, Mark> MARKS = new HashMap<>();
 
     /** Called from the network (FxPacket shape 4). */
@@ -50,7 +51,10 @@ public class KiSenseRenderer {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         long now = mc.level.getGameTime();
-        MARKS.put(entityId, new Mark(Mth.clamp(type, 0, COLORS.length - 1), now, now + life));
+        boolean strong = type >= 8;   // Mana Zone ki: bright, with a foot ring and a beacon
+        Mark old = MARKS.get(entityId);
+        long start = old != null && old.until() >= now && old.strong() == strong ? old.start() : now;   // refreshing keeps it steady
+        MARKS.put(entityId, new Mark(Mth.clamp(type & 7, 0, COLORS.length - 1), start, now + life, strong));
     }
 
     @SubscribeEvent
@@ -87,10 +91,12 @@ public class KiSenseRenderer {
             Mark mk = en.getValue();
             float fadeIn = Mth.clamp((float) (now - mk.start()) / 8F, 0F, 1F);
             float fadeOut = Mth.clamp((float) (mk.until() - now) / FADE_TICKS, 0F, 1F);
-            float a = STRENGTH * fadeIn * fadeOut;
+            float a = (mk.strong() ? STRONG : STRENGTH) * fadeIn * fadeOut;
             if (a <= 0.01F) continue;
             Vec3 base = new Vec3(Mth.lerp(pt, ent.xo, ent.getX()), Mth.lerp(pt, ent.yo, ent.getY()), Mth.lerp(pt, ent.zo, ent.getZ())).subtract(cam);
-            flame(bb, m, base, ent.getBbWidth() * 0.5F + 0.12F, ent.getBbHeight(), COLORS[mk.type()], a, now, ent.getId());
+            float r = ent.getBbWidth() * 0.5F + 0.12F;
+            flame(bb, m, base, r, ent.getBbHeight(), COLORS[mk.type()], a, now, ent.getId());
+            if (mk.strong()) beacon(bb, m, base, r, ent.getBbHeight(), COLORS[mk.type()], a, now, ent.getId());
         }
 
         BufferUploader.drawWithShader(bb.end());
@@ -121,6 +127,40 @@ public class KiSenseRenderer {
             vtx(bb, m, c, am + sway, r * 0.35F, tipH, col, 0F);
             vtx(bb, m, c, am + sway, r * 0.35F, tipH, col, 0F);
         }
+    }
+
+    /**
+     * Mana Zone extras: a bright ring on the ground at its feet, a beacon of light rising over its head and a small
+     * diamond bobbing above it - visible from far away, through walls.
+     */
+    private static void beacon(BufferBuilder bb, Matrix4f m, Vec3 c, float r, float h, float[] col, float a, double t, int seed) {
+        int N = 16;
+        float rr = r + 0.25F;
+        for (int i = 0; i < N; i++) {
+            double a0 = Math.PI * 2 * i / N, a1 = Math.PI * 2 * (i + 1) / N;
+            vtx(bb, m, c, a0, rr, 0.03F, col, a);
+            vtx(bb, m, c, a1, rr, 0.03F, col, a);
+            vtx(bb, m, c, a1, rr + 0.18F, 0.03F, col, 0F);
+            vtx(bb, m, c, a0, rr + 0.18F, 0.03F, col, 0F);
+        }
+        // light pillar: two crossed planes rising 2.5 blocks over the head, fading upward
+        float y0 = h + 0.2F, y1 = h + 2.7F, w = 0.12F;
+        for (int k = 0; k < 2; k++) {
+            double ang = Math.PI / 2 * k + t * 0.05;
+            float dx = (float) Math.cos(ang) * w, dz = (float) Math.sin(ang) * w;
+            bb.vertex(m, (float) c.x - dx, (float) c.y + y0, (float) c.z - dz).color(col[0], col[1], col[2], a * 0.8F).endVertex();
+            bb.vertex(m, (float) c.x + dx, (float) c.y + y0, (float) c.z + dz).color(col[0], col[1], col[2], a * 0.8F).endVertex();
+            bb.vertex(m, (float) c.x + dx, (float) c.y + y1, (float) c.z + dz).color(col[0], col[1], col[2], 0F).endVertex();
+            bb.vertex(m, (float) c.x - dx, (float) c.y + y1, (float) c.z - dz).color(col[0], col[1], col[2], 0F).endVertex();
+        }
+        // a diamond bobbing over it
+        float yd = h + 0.55F + (float) Math.sin(t * 0.15 + seed) * 0.08F, s = 0.16F;
+        double spin = t * 0.08 + seed;
+        float sx = (float) Math.cos(spin) * s, sz = (float) Math.sin(spin) * s;
+        bb.vertex(m, (float) c.x, (float) c.y + yd + s * 1.4F, (float) c.z).color(col[0], col[1], col[2], a).endVertex();
+        bb.vertex(m, (float) c.x + sx, (float) c.y + yd, (float) c.z + sz).color(col[0], col[1], col[2], a).endVertex();
+        bb.vertex(m, (float) c.x, (float) c.y + yd - s * 1.4F, (float) c.z).color(col[0], col[1], col[2], a).endVertex();
+        bb.vertex(m, (float) c.x - sx, (float) c.y + yd, (float) c.z - sz).color(col[0], col[1], col[2], a).endVertex();
     }
 
     private static void vtx(BufferBuilder bb, Matrix4f m, Vec3 c, double ang, float r, float y, float[] col, float a) {

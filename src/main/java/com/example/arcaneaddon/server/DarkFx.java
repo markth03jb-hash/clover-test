@@ -719,11 +719,51 @@ public class DarkFx {
     private static final Map<UUID, Float> ZONE_POWER = new HashMap<>();
 
     /** Every 10 ticks while the zone is up: its burning edge and slow inner rings, centred on you. */
+    /**
+     * Every 10 ticks while the zone is up, centred on you:
+     *  - you read the ki of every creature inside it (bright marks, like Asta's Ki Sense but much easier to see)
+     *  - its edge burns with black flame, and a faint dome of mana arches over it
+     *  - a rune circle turns slowly on the ground, and motes of mana drift in toward you
+     */
     private static void zoneTick(ServerPlayer p, ServerLevel sl, long now) {
-        Vec3 c = p.position().add(0, 0.05, 0);
-        FxSend.ring(sl, D, c, (float) ZONE_R - 0.15f, (float) ZONE_R, 0.45f, 12);
-        if (now % 40 == 0) FxSend.ring(sl, S, c, (float) ZONE_R * 0.6f, (float) ZONE_R * 0.62f, 0.03f, 20);
-        if (now % 20 == 0) FxSend.ring(sl, D, c, 0.4f, (float) ZONE_R * 0.9f, 0.05f, 16);   // a slow pulse of mana running outward
+        Vec3 feet = p.position();
+        Vec3 c = FxLib.floor(sl, feet);
+        float R = (float) ZONE_R;
+        // ki of everything inside the zone
+        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(ZONE_R), x -> x != p && x.isAlive()
+                && !(x instanceof net.minecraft.world.entity.decoration.ArmorStand))) {
+            if (t.distanceTo(p) <= ZONE_R) AstaFx.sendKiMark(p, t, 30, true);
+        }
+        // the burning edge
+        FxSend.ring(sl, D, c, R - 0.15f, R, 0.45f, 12);
+        // the dome of mana: thin rings stacked up into a hemisphere, refreshed slowly
+        if (now % 20 == 0) {
+            for (int k = 1; k <= 4; k++) {
+                double el = Math.PI / 2 * k / 5.0;
+                float rr = (float) (R * Math.cos(el));
+                FxSend.ring(sl, D, c.add(0, R * Math.sin(el) * 0.55, 0), rr - 0.05f, rr, 0.03f, 22);
+            }
+        }
+        // the rune circle on the ground, slowly turning
+        double rot = now * 0.02;
+        for (int k = 0; k < 8; k++) {
+            double a0 = rot + Math.PI * 2 * k / 8, a1 = a0 + Math.PI * 2 / 8;
+            Vec3 q0 = c.add(Math.cos(a0) * R * 0.55, 0.02, Math.sin(a0) * R * 0.55), q1 = c.add(Math.cos(a1) * R * 0.55, 0.02, Math.sin(a1) * R * 0.55);
+            FxSend.beam(sl, D, q0, q1, 0.12f, 11);
+            Vec3 tick0 = c.add(Math.cos(a0) * R * 0.48, 0.02, Math.sin(a0) * R * 0.48), tick1 = c.add(Math.cos(a0) * R * 0.66, 0.02, Math.sin(a0) * R * 0.66);
+            FxSend.beam(sl, S, tick0, tick1, 0.05f, 11);
+            double b = -rot * 1.6 + Math.PI * 2 * k / 8, b1 = b + Math.PI * 3 / 8;   // an inner star turning the other way
+            FxSend.beam(sl, D, c.add(Math.cos(b) * R * 0.3, 0.02, Math.sin(b) * R * 0.3), c.add(Math.cos(b1) * R * 0.3, 0.02, Math.sin(b1) * R * 0.3), 0.06f, 11);
+        }
+        // motes of mana drifting in toward you
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        for (int k = 0; k < 3; k++) {
+            double a = r.nextDouble(Math.PI * 2), dist = r.nextDouble(R * 0.4, R);
+            Vec3 from = feet.add(Math.cos(a) * dist, r.nextDouble(0.3, 3.0), Math.sin(a) * dist);
+            Vec3 to = from.add(feet.add(0, 1, 0).subtract(from).normalize().scale(1.4));
+            FxSend.beam(sl, D, from, to, 0.08f, 8);
+        }
+        if (now % 40 == 0) FxSend.ring(sl, D, c, 0.4f, R * 0.95f, 0.05f, 16);   // a slow pulse of mana running outward
     }
 
     private static void zoneCollapse(ServerPlayer p, ServerLevel sl) {

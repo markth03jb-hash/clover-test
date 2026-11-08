@@ -90,7 +90,7 @@
   "spell.arcane_addon.black_hole": "Black Hole",
   "spell.arcane_addon.black_hole.guide": "Open a hole of darkness where you look. For 3 seconds it drags enemies in and grinds them, then collapses. Mana Zone: opens in the middle of the enemies in the zone, pulls from further and lasts longer.",
   "spell.arcane_addon.mana_zone_dimension_slash": "Mana Zone",
-  "spell.arcane_addon.mana_zone_dimension_slash.guide": "Spread your mana 14 blocks around you for 20 seconds. While the zone is up, every Dark Grimoire move becomes its Mana Zone variant (see each spell). When it ends the zone collapses and cuts every enemy still inside.",
+  "spell.arcane_addon.mana_zone_dimension_slash.guide": "Spread your mana 14 blocks around you for 20 seconds. Inside it you read the ki of every creature - bright flames, a ring at their feet and a beacon over their heads, visible through walls (red monsters, green passive, yellow neutral, blue players). While the zone is up, every Dark Grimoire move becomes its Mana Zone variant (see each spell). When it ends the zone collapses and cuts every enemy still inside.",
   "spell.arcane_addon.ki_foresight": "Ki Read: Foresight",
   "spell.arcane_addon.ki_foresight.guide": "Read the ki of everything around you. For 5 seconds the next 3 attacks miss as you sidestep them. Mana Zone: 5 dodges, and every attack you read is answered with a cut.",
   "spell.arcane_addon.event_horizon": "Dark Cloaked Dimension Slash: Event Horizon",

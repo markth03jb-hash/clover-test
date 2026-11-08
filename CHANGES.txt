@@ -1,7 +1,15 @@
-Arcane Addon v1.19.0 - all changed files since v1.0.0
+Arcane Addon v1.19.1 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.19.1
+  - Mana Zone: you read the ki of every creature inside it, like Asta's Ki Sense but much easier to see - bright
+    ki flames, a glowing ring at their feet, a beacon of light over their heads and a bobbing diamond, all visible
+    through walls (red monsters, green passive, yellow neutral, blue players).
+  - Mana Zone looks better: a faint dome of mana arches over the zone, a rune circle with an inner star turns slowly
+    on the ground (following the terrain under you), motes of mana drift in toward you, and the edge burns with
+    black flame.
 
 NEW IN 1.19.0
   - Black Meteorite: anime impact frames - hard white/black flash frames with speed lines when the uppercut connects,

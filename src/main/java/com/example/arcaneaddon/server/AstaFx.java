@@ -484,6 +484,19 @@ public class AstaFx {
      * Reveals every creature nearby, through walls, as a faint flame of ki coloured by what it is.
      * Only the caster sees it (sent to that player alone) - no glowing effect, nothing other players notice.
      */
+    /**
+     * Shows one creature's ki to {@code p} only. strong = the Mana Zone version: much brighter, with a ring at its
+     * feet and a beacon of light over its head so it reads at a glance, even far away or behind walls.
+     */
+    public static void sendKiMark(ServerPlayer p, LivingEntity t, int ticks, boolean strong) {
+        FxPacket pkt = new FxPacket();
+        pkt.shape = 4;
+        pkt.id = t.getId();
+        pkt.palette = (byte) (kiType(t) + (strong ? 8 : 0));
+        pkt.life = ticks;
+        AddonNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), pkt);
+    }
+
     public static void kiSense(ServerPlayer p) { kiSense(p, 32, KI_GLOW_TICKS); }
 
     public static void kiSense(ServerPlayer p, double range, int ticks) {
