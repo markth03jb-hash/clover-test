@@ -264,16 +264,11 @@ public class DarkFx {
             // the draw and the release: one clean, solid slash - a black blade of darkness with a white-hot edge,
             // drawn left to right as you cut, flying forward and growing as it goes
             Vec3 o = start.add(dir.scale(1.2));
-            FxSend.slash(sl, D, start.add(dir.scale(0.8)), dir, rt, 2.8f, 3.4f, 6, 0f, 2.0f);   // the swing itself, at your blade
-            FxSend.slash(sl, D, o, dir, rt, 4.5f, 13.0f, 18, SPEED, 2.4f);                       // the slash that flies: big and thick
-            // after it passes: a white hairline left through space, and the tears where space was cut
+            FxSend.slash(sl, D, start.add(dir.scale(0.8)), dir, rt, 2.8f, 3.4f, 6, 0f, 1.0f);   // the swing itself, at your blade
+            FxSend.slash(sl, D, o, dir, rt, 4.5f, 13.0f, 18, SPEED, 1.15f);                      // the slash that flies: big, blade-thin
+            // after it passes: one clean white hairline left through space, fading
             AstaFx.later(3, () -> {
-                FxSend.beam(sl, S, o, end, 0.05f, 10);
-                for (int k = 5; k < 40; k += 5) {
-                    Vec3 c = start.add(dir.scale(k));
-                    double h = 0.8 + k * 0.04;
-                    FxSend.beam(sl, D, c.subtract(up.scale(h)).add(rt.scale(0.4)), c.add(up.scale(h)).subtract(rt.scale(0.4)), 0.16f, 10);
-                }
+                FxSend.trail(sl, S, o, end, 0.03f, 14);
                 sound(sl, p.position(), SoundEvents.WITHER_SHOOT, 0.5f, 0.4f);
             });
             FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 1.2f);
@@ -903,32 +898,17 @@ public class DarkFx {
                     FxLib.impact(sl, D, mid(tt), 1.5f);
                 });
             }
-            // the cut: a giant vertical arc in front of you
-            FxSend.wall(sl, D, aimed ? start : start.add(0, 1.2, 0), dir, up, 4.0f * scale, 4.6f * scale, 85, -85, 1.2f * scale, 10, 3, 0);
-            // the release: a towering black wave of darkness - a tall arc front, a colossal vertical crescent inside it,
-            // more crescents layered behind it, all growing as they roll forward
-            Vec3 o = start.add(dir.scale(1.5));
+            // the release: ONE colossal blade of darkness, standing upright, rolling forward and growing as it goes
+            Vec3 o = start.add(dir.scale(1.5)).add(aimed ? Vec3.ZERO : up.scale(1.2));
             int life = (int) (reach / speed) + 2;
-            FxSend.wall(sl, D, o, dir, rt, 3.0f * scale, 14f * scale, -60, 60, 5.5f * scale, life, 0, speed);
-            FxSend.crescent(sl, D, o, dir, up, 5.0f * scale, 15f * scale, life, speed);
-            FxSend.crescent(sl, D, o, dir, rt, 4.0f * scale, 12f * scale, life, speed);
-            for (int k = 1; k <= 4; k++) {
-                final int kk = k;
-                AstaFx.later(k, () -> {
-                    Vec3 lift = rt.scale((kk % 2 == 0 ? 1 : -1) * 0.8 * kk * scale);
-                    FxSend.crescent(sl, kk == 2 ? S : D, o.add(lift), dir, up, (4.4f - kk * 0.4f) * scale, (13f - kk * 1.5f) * scale, life - kk, speed);
-                });
-            }
-            // in its wake: the horizon - a line through space left hanging open with tall tears along it
+            FxSend.slash(sl, D, o, dir, up, 4.0f * scale, 16f * scale, life, speed, 1.4f);
+            // in its wake: the horizon - one burning line through space, left hanging open
             AstaFx.later(4, () -> {
-                // the horizon: a burning scar along the ground, with tall tears rising out of it wherever the ground is
                 Vec3 prev = start.add(dir);
                 for (double k = 4; k < reach; k += 4) {
                     Vec3 c = aimed ? start.add(dir.scale(k)) : FxLib.floor(sl, start.add(dir.scale(k)));
-                    FxSend.beam(sl, D, prev, c, 1.0f * scale, 34);
-                    FxSend.beam(sl, S, prev, c, 0.08f * scale, 30);
-                    double h = (2.0 + k * 0.05) * scale;
-                    if (((int) k) % 8 == 0) FxSend.beam(sl, D, c, c.add(up.scale(h * 2)), 0.3f * scale, 24);
+                    FxSend.trail(sl, D, prev, c, 0.6f * scale, 34);
+                    FxSend.trail(sl, S, prev, c, 0.05f * scale, 30);
                     prev = c;
                 }
             });

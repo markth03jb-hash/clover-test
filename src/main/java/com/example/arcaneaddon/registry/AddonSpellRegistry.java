@@ -162,7 +162,7 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> FLAMING_BAT = registerSpell(new FireSpell("flaming_bat", 8, 45, 22, FireSpell.anim("arcane_addon:fire_bat_combo"), FireFx::flamingBat));
     public static final RegistryObject<AbstractSpell> FLAME_KNUCKLES = registerSpell(new FireSpell("flame_knuckles", 30, 50, 0, FireSpell.anim("arcane_addon:fire_knuckles"), FireFx::flameKnuckles));
     public static final RegistryObject<AbstractSpell> RING_OF_FIRE = registerSpell(new FireSpell("ring_of_fire", 18, 60, 10, FireSpell.anim("irons_spellbooks:stomp"), FireFx::ringOfFire));
-    public static final RegistryObject<AbstractSpell> CRAZY_CYCLONE = registerSpell(new FireSpell("crazy_cyclone", 12, 50, 14, FireSpell.anim("arcane_addon:klaus_cart_ride"), FireFx::crazyCyclone));
+    public static final RegistryObject<AbstractSpell> FIREBALL_BARRAGE = registerSpell(new FireSpell("fireball_barrage", 12, 70, 14, FireSpell.anim("arcane_addon:fire_barrage"), FireFx::fireballBarrage));
     public static final RegistryObject<AbstractSpell> FIREBALL_RAIN = registerSpell(new FireSpell("fireball_rain", 22, 90, 16, FireSpell.anim("arcane_addon:fire_rain"), FireFx::fireballRain));
     public static final RegistryObject<AbstractSpell> SOUL_CHAIN = registerSpell(new FireSpell("soul_chain", 45, 100, 8, FireSpell.anim("arcane_addon:fire_soul_chain"), FireFx::soulChain));
     public static final RegistryObject<AbstractSpell> FIRE_CANNON = registerSpell(new FireSpell("fire_cannon", 60, 180, 40, FireSpell.anim("arcane_addon:fire_cannon"), FireFx::fireCannon));
@@ -170,7 +170,7 @@ public class AddonSpellRegistry {
     /** The ten Fire Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> FIRE_SPELLS = List.of(
             EXPLODING_FIREBALL, EXPLOSIVE_SCATTERSHOT, MAGNA_SPECIAL, FLAMING_BAT, FLAME_KNUCKLES,
-            RING_OF_FIRE, CRAZY_CYCLONE, FIREBALL_RAIN, SOUL_CHAIN, FIRE_CANNON);
+            RING_OF_FIRE, FIREBALL_BARRAGE, FIREBALL_RAIN, SOUL_CHAIN, FIRE_CANNON);
 
     // ------------------------------------------------------------------ Lightning Grimoire (Luck Voltia's Lightning Magic)
     //                                                                                id                       cd mana power  animation

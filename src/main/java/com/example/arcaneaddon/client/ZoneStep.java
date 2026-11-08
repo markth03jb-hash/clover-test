@@ -29,7 +29,7 @@ public final class ZoneStep {
         if (p == null || mc.level == null || mc.isPaused()) return;
         boolean jump = mc.options.keyJump.isDown();
         if (p.onGround() || p.isInWater()) steps = 0;
-        boolean zone = FxRenderer.zonePalette(p.getId(), mc.level.getGameTime()) == 2;
+        boolean zone = FxRenderer.zonePalette(p.getId(), mc.level.getGameTime()) == 14;
         if (zone && jump && !wasJump && !p.onGround() && !p.isInWater() && !p.getAbilities().flying && steps < 2) {
             steps++;
             Vec3 look = p.getLookAngle();
@@ -43,7 +43,7 @@ public final class ZoneStep {
             // fire under your feet where you stepped
             for (int k = 0; k < 10; k++) {
                 double a = Math.PI * 2 * k / 10;
-                DarkSmoke.flame(p.position().add(Math.cos(a) * 0.4, 0, Math.sin(a) * 0.4), new Vec3(Math.cos(a) * 0.06, -0.02, Math.sin(a) * 0.06), 0.25F, 10);
+                DarkSmoke.crimsonFlame(p.position().add(Math.cos(a) * 0.4, 0, Math.sin(a) * 0.4), new Vec3(Math.cos(a) * 0.06, -0.02, Math.sin(a) * 0.06), 0.25F, 10);
             }
             mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 0.5F, 1.6F, false);
         }

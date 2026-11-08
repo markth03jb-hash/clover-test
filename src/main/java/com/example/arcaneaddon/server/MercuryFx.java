@@ -131,7 +131,7 @@ public class MercuryFx {
     /** A liquid mercury sphere (client draws a wobbling chrome ball): shape 19. */
     static void sphere(ServerLevel sl, Vec3 c, Vec3 vel, float r, int life, int grow) {
         FxPacket p = new FxPacket();
-        if (life == 2) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
+        if (life <= 3 && life > 0) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
         p.shape = 19; p.palette = (byte) M; p.life = life; p.sweep = grow; p.c = c; p.v = vel; p.r = r;
         AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 96, sl.dimension())), p);
     }
@@ -308,7 +308,8 @@ public class MercuryFx {
                 for (int i = 0; i < n; i++) {
                     double a = Math.PI * 2 * i / n + tt * 0.3;
                     Vec3 c = p.position().add(Math.cos(a) * 1.9, 1.3 + 0.25 * Math.sin(tt * 0.35 + i), Math.sin(a) * 1.9);
-                    sword(sl, c, new Vec3(0, -1, 0), new Vec3(-Math.sin(a), 0, Math.cos(a)), Math.min(1f, (tt + 1) / 5f));
+                    Vec3 orbit = new Vec3(-Math.sin(a), 0, Math.cos(a)).scale(1.9 * 0.3);   // smooth circling between ticks
+                    sword(sl, c, new Vec3(0, -1, 0), new Vec3(-Math.sin(a), 0, Math.cos(a)), Math.min(1f, (tt + 1) / 5f), orbit);
                 }
             });
         }
@@ -513,12 +514,19 @@ public class MercuryFx {
                 AstaFx.damage(p, t, power, "regal_spear");
                 splash(sl, mid(t), 1.0f);
             }
-            FxSend.beam(sl, M, start, end, 0.32f, 10);
-            FxSend.beam(sl, S, start, end, 0.07f, 12);
-            for (int k = 3; k < 45; k += 4) {
-                final Vec3 c = start.add(dir.scale(k));
-                Vec3 rt = rightOf(dir);
-                FxSend.wall(sl, M, c, rt, rt.cross(dir).normalize(), 0.3f, 0.9f, -180, 180, 0.04f, 6, 0, 0);
+            // the spear of light: a blinding silver-white beam with a mercury sheath, held for a moment, spiral rings
+            // of mercury racing down it and beads of mercury shed along its length
+            FxSend.trail(sl, S, start, end, 0.42f, 18);
+            FxSend.trail(sl, S, start, end, 0.12f, 20);
+            FxSend.trail(sl, M, start, end, 0.6f, 14);
+            Vec3 rt = rightOf(dir), upv = rt.cross(dir).normalize();
+            for (int k = 2; k < 45; k += 3) {
+                final int kk = k;
+                AstaFx.later(k / 6, () -> {
+                    Vec3 c = start.add(dir.scale(kk));
+                    FxSend.wall(sl, S, c, rt, upv, 0.5f, 1.3f, kk * 25f, kk * 25f + 300, 0.05f, 9, 0, 0);
+                    sphere(sl, c, dir.scale(0.05).add(0, -0.03, 0), 0.14f, 14, 2);
+                });
             }
             sphere(sl, start, Vec3.ZERO, 0.6f, 6, 0);
             FxLib.flash(sl, S, start, 1.0f);

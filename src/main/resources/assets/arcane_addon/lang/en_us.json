@@ -171,7 +171,7 @@
   "spell.arcane_addon.hushed_dance": "Spirit's Hushed Dance",
   "spell.arcane_addon.hushed_dance.guide": "Take the mana around you under your control and read every movement in it. For 6 s the next 3 attacks miss as the wind carries you aside, and each dodge refills 15 mana. Spirit Dive: 8 s, 5 dodges, and every dodge answers with a wind blade.",
   "spell.arcane_addon.spirit_of_zephyr": "Spirit of Zephyr",
-  "spell.arcane_addon.spirit_of_zephyr.guide": "A sword of wind in your hand: three fast cuts (across, down, rising), each throwing a blade of wind 8 blocks ahead and carrying you a step forward. Spirit Dive: Saint Spirit of Zephyr - the third cut becomes one colossal blade of wind that splits 30 blocks.",
+  "spell.arcane_addon.spirit_of_zephyr.guide": "A sword of wind in your hand: three fast cuts (across, down, rising), each throwing a thin blade of wind 22 blocks ahead and carrying you a step forward. Spirit Dive: Saint Spirit of Zephyr - the third cut becomes one colossal blade of wind that splits 30 blocks.",
   "spell.arcane_addon.spirit_of_boreas": "Spirit of Boreas",
   "spell.arcane_addon.spirit_of_boreas.guide": "Four halberds of wind form and circle you, then fly at your enemies one after another and pierce through them. Spirit Dive: eight halberds.",
   "spell.arcane_addon.spirit_of_euros": "Spirit of Euros",
@@ -235,9 +235,7 @@
   "spell.arcane_addon.flame_knuckles": "Flame Knuckles",
   "spell.arcane_addon.flame_knuckles.guide": "Knuckledusters of fire for 12 s: every punch explodes on what it hits for 5 extra damage, knocks it back and sets it burning.",
   "spell.arcane_addon.ring_of_fire": "Ring of Fire",
-  "spell.arcane_addon.ring_of_fire.guide": "Walls of fire spring up in a ring 5 blocks around you for 5 s. Anything that touches them burns and is thrown back.",
-  "spell.arcane_addon.crazy_cyclone": "Crazy Cyclone Rush",
-  "spell.arcane_addon.crazy_cyclone.guide": "Jump on your broom and tear forward where you look for 1.5 s, ramming through everything in your way and leaving a trail of fire.",
+  "spell.arcane_addon.ring_of_fire.guide": "Walls of fire spring up in a ring 7 blocks around you for 5 s. Anything that touches them burns and is thrown back.",
   "spell.arcane_addon.fireball_rain": "Fireball Rain",
   "spell.arcane_addon.fireball_rain.guide": "Throw a fireball high into the sky: it splits, and nine fireballs rain down on a 6-block circle where you aimed.",
   "spell.arcane_addon.soul_chain": "Soul Chain Deathmatch",
@@ -296,7 +294,7 @@
   "spell.arcane_addon.calidos_brachium": "Calidos Brachium",
   "spell.arcane_addon.calidos_brachium.guide": "Punch: an arm of fire shoots out of your fist, its burning fist flying 16 blocks into the first thing it meets and blowing it back. Mana Zone: three arms, one after another.",
   "spell.arcane_addon.calidos_brachium_barrage": "Calidos Brachium Barrage",
-  "spell.arcane_addon.calidos_brachium_barrage.guide": "Fists of fire appear all around the enemy you aim at and punch into it from every side: 8 punches in 1.5 s. Mana Zone: 16 punches, spread over every enemy in the zone.",
+  "spell.arcane_addon.calidos_brachium_barrage.guide": "Fists of fire appear all around the enemy you aim at and punch into it from every side - 8 punches in 1.5 s - then one huge fist from the front finishes it. Mana Zone: 16 punches, spread over every enemy in the zone.",
   "spell.arcane_addon.flame_lion_paws": "Flame Lion Paws",
   "spell.arcane_addon.flame_lion_paws.guide": "Two great paws of fire seize the enemy you aim at, lift it high, and slam it into the ground. Mana Zone: a bigger blast where it lands.",
   "spell.arcane_addon.lioness_charge": "Lioness Charge",
@@ -312,5 +310,7 @@
   "spell.arcane_addon.hellfire_incarnate": "Hellfire Incarnate",
   "spell.arcane_addon.hellfire_incarnate.guide": "Your body becomes fire for 20 s, as if it were mana itself. Flames pour off you, everything within 3 blocks burns, your fire hits 30% harder - rising to 70% as it burns hotter - and your punches explode. When it ends your body pays for it: you lose a quarter of your health.",
   "spell.arcane_addon.calidos_brachium_purgatory": "Calidos Brachium Purgatory",
-  "spell.arcane_addon.calidos_brachium_purgatory.guide": "Her strongest spell: blue flame gathers on your fist, then one punch releases a blast of blue fire that engulfs everything in front of you - a 30-block wave that widens as it goes. It burns away all of your remaining mana. In Mana Zone or Hellfire Incarnate: 45 blocks and wider."
+  "spell.arcane_addon.calidos_brachium_purgatory.guide": "Her strongest spell: blue flame gathers on your fist, then one punch releases a blast of blue fire that engulfs everything in front of you - a 30-block wave that widens as it goes. It burns away all of your remaining mana. In Mana Zone or Hellfire Incarnate: 45 blocks and wider.",
+  "spell.arcane_addon.fireball_barrage": "Fireball Barrage",
+  "spell.arcane_addon.fireball_barrage.guide": "Throw fireballs as fast as your arms can go: twelve in 1.2 s, alternating hands, each one flying where you look at that moment - sweep the stream across a crowd - and exploding where it lands."
 }

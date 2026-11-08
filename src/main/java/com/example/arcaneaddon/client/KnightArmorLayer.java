@@ -62,6 +62,7 @@ public class KnightArmorLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
                 if (r != null) {
                     r.addLayer(new KnightArmorLayer(r));
                     r.addLayer(new AuraOutlineLayer(r));
+                    r.addLayer(new FistFlameLayer(r));
                 }
             }
         }

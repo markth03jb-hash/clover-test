@@ -47,7 +47,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *  4 Flaming Bat             - three swings of a bat of fire
  *  5 Flame Knuckles          - knuckledusters of fire: your punches explode for 12 s
  *  6 Ring of Fire            - a ring of fire walls around you for 5 s
- *  7 Crazy Cyclone Rush      - ride your broom at full speed, ramming through everything
+ *  7 Fireball Barrage        - a stream of twelve fireballs thrown as fast as your arms can go
  *  8 Fireball Rain           - fireballs fall from the sky on the area you aim at
  *  9 Soul Chain Deathmatch   - a burning chain binds you and one enemy: they can't get away and take more damage from you
  * 10 Explosive Fire Cannon   - gather everything into one giant fireball and fire it
@@ -133,7 +133,7 @@ public class FireFx {
     /** A ball of fire (client draws a churning, glowing fireball): shape 20. explode = a blast that swells from r to r2. */
     static void fireball(ServerLevel sl, Vec3 c, Vec3 vel, float r, float r2, int life, boolean explode) {
         FxPacket p = new FxPacket();
-        if (life == 2) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
+        if (life <= 3 && life > 0) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
         p.shape = 20; p.palette = (byte) F; p.life = life; p.c = c; p.v = vel; p.r = r; p.r2 = r2; p.h = explode ? 1 : 0;
         AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
     }
@@ -233,24 +233,22 @@ public class FireFx {
      */
     public static void magnaSpecial(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        // the toss: the ball rises in front of you and hangs at the top of its arc
-        for (int t = 0; t < SPECIAL_HIT; t++) {
+        // the toss: straight up in front of your face, hanging at the top of its arc right where the bat will meet it
+        for (int t = 0; t <= SPECIAL_HIT; t++) {
             final int tt = t;
             AstaFx.later(t, () -> {
                 if (!alive(p)) return;
-                Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
-                double up = Math.sin(Math.PI * Math.min(1.0, tt / (double) SPECIAL_HIT)) * 1.2;
-                Vec3 at = p.position().add(look.scale(1.3)).add(rightOf(look).scale(0.3)).add(0, 1.0 + up, 0);
-                fireball(sl, at, Vec3.ZERO, 0.4f + tt * 0.025f, 0.4f + tt * 0.025f, 2, false);
-                bat(sl, p, tt / (double) SPECIAL_HIT * 0.15);   // bat drawn back while it rises
+                Vec3 at = tossPos(p, tt), next = tossPos(p, Math.min(SPECIAL_HIT, tt + 1));
+                fireball(sl, at, next.subtract(at), 0.4f + tt * 0.025f, 0.4f + tt * 0.025f, 2, false);
             });
         }
+        batSwing(p, SPECIAL_SWING, SPECIAL_HIT + 8);
         sound(sl, p.position(), SoundEvents.FIRECHARGE_USE, 1f, 0.8f);
         AstaFx.later(SPECIAL_HIT, () -> {
             if (!alive(p)) return;
             Vec3 look = p.getLookAngle();
-            Vec3 at = p.getEyePosition().add(look.scale(1.4)).add(0, -0.4, 0);
-            FxSend.slash(sl, F, at, look, rightOf(look), 1.4f, 1.9f, 4, 0f, 1.6f);   // the swing
+            Vec3 at = tossPos(p, SPECIAL_HIT);
+            FxSend.slash(sl, F, at.subtract(look.scale(0.4)), look, rightOf(look), 1.4f, 1.9f, 4, 0f, 0.9f);   // the swing connecting
             FxLib.flash(sl, F, at, 1.0f);
             Cutshake.send(sl, at, 0.35f, 4);
             shot(p, sl, at, look, 3.0f, 0.75f, 5.0, power, 0, 16, "magna_special");
@@ -259,15 +257,70 @@ public class FireFx {
         });
     }
 
-    /** Magna's flaming bat, held across the body: a thick shaft of fire with a fat burning end. swing 0..1 = how far round. */
-    private static void bat(ServerLevel sl, ServerPlayer p, double swing) {
+    /** Where the tossed ball is: centred in front of your face, rising and hanging. */
+    private static Vec3 tossPos(ServerPlayer p, int t) {
+        double k = Math.min(1.0, t / (double) SPECIAL_HIT);
+        double lift = Math.sin(Math.PI * 0.5 * Math.min(1.0, k * 1.4)) * 1.0;   // up fast, then hanging
+        return p.getEyePosition().add(p.getLookAngle().scale(1.7)).add(0, -0.7 + lift, 0);
+    }
+
+    // ------------------------------------------------------------------ the flaming bat
+    /** Bat keyframes: {tick, yaw (deg, + = to your right), pitch (deg, + = up)} - matched to the swing animations. */
+    private static final double[][] SPECIAL_SWING = {{0, 40, -50}, {4, 110, 25}, {12, 115, 30}, {14, -70, 10}, {17, -105, 0}, {22, -40, -50}};
+    private static final double[][] COMBO_SWING = {{0, 30, -50}, {3, 100, 10}, {5, -80, 10}, {9, -95, 10}, {12, 80, 10},
+            {17, 0, 85}, {20, 0, -40}, {26, 30, -55}};
+
+    private static double[] batAt(double[][] keys, double t) {
+        if (t <= keys[0][0]) return new double[]{keys[0][1], keys[0][2]};
+        for (int i = 1; i < keys.length; i++) {
+            if (t <= keys[i][0]) {
+                double f = (t - keys[i - 1][0]) / (keys[i][0] - keys[i - 1][0]);
+                f = f * f * (3 - 2 * f);
+                return new double[]{keys[i - 1][1] + (keys[i][1] - keys[i - 1][1]) * f, keys[i - 1][2] + (keys[i][2] - keys[i - 1][2]) * f};
+            }
+        }
+        double[] l = keys[keys.length - 1];
+        return new double[]{l[1], l[2]};
+    }
+
+    /** Grip and direction of the bat at a given yaw/pitch relative to where you face. */
+    private static Vec3[] batFrame(ServerPlayer p, double yaw, double pitch) {
         Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
         Vec3 rt = rightOf(look);
-        Vec3 grip = p.position().add(0, 1.15, 0).add(rt.scale(0.35)).add(look.scale(0.2));
-        double a = Math.PI * 0.75 - swing * Math.PI * 1.3;
-        Vec3 dir = rt.scale(Math.cos(a)).add(look.scale(Math.sin(a))).add(0, 0.6, 0).normalize();
-        FxSend.spike(sl, F, grip, dir, 1.3f, 0.09f, 2, 0, FxPacket.HOLD);
-        fireball(sl, grip.add(dir.scale(1.0)), Vec3.ZERO, 0.17f, 0.17f, 2, false);
+        double y = Math.toRadians(yaw), pt = Math.toRadians(pitch);
+        Vec3 flat = look.scale(Math.cos(y)).add(rt.scale(Math.sin(y)));
+        Vec3 dir = flat.scale(Math.cos(pt)).add(0, Math.sin(pt), 0).normalize();
+        Vec3 grip = p.position().add(0, 1.15, 0).add(look.scale(0.3)).add(dir.scale(0.25));
+        return new Vec3[]{grip, dir};
+    }
+
+    /** A baseball bat of fire in your hands, following the swing keyframes every tick for {@code ticks} ticks. */
+    private static void batSwing(ServerPlayer p, double[][] keys, int ticks) {
+        ServerLevel sl = p.serverLevel();
+        for (int t = 0; t <= ticks; t++) {
+            final int tt = t;
+            AstaFx.later(t, () -> {
+                if (!alive(p)) return;
+                double[] a = batAt(keys, tt), b = batAt(keys, tt + 1);
+                Vec3[] f0 = batFrame(p, a[0], a[1]), f1 = batFrame(p, b[0], b[1]);
+                drawBat(sl, f0[0], f0[1], f1[0], f1[1]);
+            });
+        }
+    }
+
+    /** The bat: a slim handle with a knob, swelling into a thick barrel, all burning. Moves toward the next tick's pose. */
+    private static void drawBat(ServerLevel sl, Vec3 grip, Vec3 dir, Vec3 grip1, Vec3 dir1) {
+        Vec3 up = rightOf(dir).cross(dir).normalize();
+        float[][] parts = {   // {centre along the bat, half length, half width}
+                {-0.05f, 0.05f, 0.06f},   // knob
+                {0.25f, 0.3f, 0.035f},    // handle
+                {0.75f, 0.22f, 0.07f},    // taper
+                {1.12f, 0.2f, 0.1f},      // barrel
+        };
+        for (float[] pt : parts) {
+            Vec3 c0 = grip.add(dir.scale(pt[0])), c1 = grip1.add(dir1.scale(pt[0]));
+            FxSend.box(sl, F, c0, dir, up, pt[1], pt[2], pt[2], 2, 0, FxPacket.HOLD, 0, c1.subtract(c0), 0);
+        }
     }
 
     // ================================================================== 4. Flaming Bat
@@ -276,6 +329,7 @@ public class FireFx {
     /** A bat of fire: three heavy swings - two sweeps and an overhead smash - each one an arc of fire 5 blocks ahead. */
     public static void flamingBat(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
+        batSwing(p, COMBO_SWING, 26);   // the bat itself, in your hands, following every swing
         sound(sl, p.position(), SoundEvents.FIRECHARGE_USE, 0.8f, 1.2f);
         for (int i = 0; i < 3; i++) {
             final int ii = i;
@@ -284,8 +338,7 @@ public class FireFx {
                 Vec3 look = p.getLookAngle(), rt = rightOf(look), up = rt.cross(look).normalize();
                 Vec3 span = ii == 2 ? up : rt.scale(ii == 0 ? 1 : -1).add(up.scale(0.2)).normalize();
                 Vec3 o = p.getEyePosition().add(0, -0.4, 0).add(look.scale(1.1));
-                FxSend.slash(sl, F, o, look, span, 1.8f, 2.6f, 5, 0.4f, 2.0f);
-                FxSend.wall(sl, F, o.subtract(look.scale(1.0)), look, span, 2.2f, 2.6f, -70, 70, 0.4f, 6, 2, 0);
+                FxSend.slash(sl, F, o, look, span, 1.8f, 2.6f, 5, 0.4f, 0.9f);   // the arc of fire the bat throws
                 for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(5))) {
                     Vec3 to = mid(t).subtract(p.getEyePosition());
                     if (to.length() > 5 || to.normalize().dot(look) < 0.35) continue;
@@ -328,12 +381,12 @@ public class FireFx {
         ServerLevel sl = p.serverLevel();
         Vec3 c0 = FxLib.floor(sl, p.position());
         final Vec3 c = c0 != null ? c0 : p.position();
-        final double R = 5;
+        final double R = 7;
         for (int t = 0; t < 100; t += 4) {
             final int tt = t;
             AstaFx.later(t, () -> {
                 if (!alive(p)) return;
-                float h = tt < 8 ? 0.6f + tt * 0.25f : 2.4f + 0.3f * (float) Math.sin(tt * 0.4);
+                float h = tt < 8 ? 0.8f + tt * 0.35f : 3.2f + 0.4f * (float) Math.sin(tt * 0.4);
                 FxSend.wall(sl, F, c.add(0, h * 0.5, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), (float) R, (float) R, -180, 180, h * 0.5f, 6, 0, 0);
                 for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(R + 1.5, 3, R + 1.5))) {
                     Vec3 off = new Vec3(e.getX() - c.x, 0, e.getZ() - c.z);
@@ -351,42 +404,29 @@ public class FireFx {
         sound(sl, c, SoundEvents.FIRECHARGE_USE, 1f, 0.6f);
     }
 
-    // ================================================================== 7. Crazy Cyclone Rush
-    private static final int RUSH_TICKS = 30;
+    // ================================================================== 7. Fireball Barrage
+    private static final int BARRAGE_START = 6, BARRAGE_SHOTS = 12;
 
-    /** Jump on your broom and tear forward where you look for 1.5 s, ramming through everything and leaving a trail of fire. */
-    public static void crazyCyclone(ServerPlayer p, float power) {
+    /**
+     * Throw fireballs as fast as your arms can go: twelve in 1.2 s, alternating hands, each one chasing where you look
+     * at that moment (so you can sweep the stream across a crowd), each exploding where it lands.
+     */
+    public static void fireballBarrage(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        Set<UUID> rammed = new HashSet<>();
-        sound(sl, p.position(), SoundEvents.FIRECHARGE_USE, 1f, 1.3f);
-        for (int t = 0; t < RUSH_TICKS; t++) {
-            final int tt = t;
-            AstaFx.later(t, () -> {
+        for (int i = 0; i < BARRAGE_SHOTS; i++) {
+            final int ii = i;
+            AstaFx.later(BARRAGE_START + i * 2, () -> {
                 if (!alive(p)) return;
                 Vec3 look = p.getLookAngle();
-                Vec3 v = look.scale(1.15).add(0, 0.04, 0);
-                if (tt == RUSH_TICKS - 1) v = v.scale(0.4);
-                Vec3 from = p.position();
-                p.setDeltaMovement(v);
-                p.hurtMarked = true;
-                p.fallDistance = 0;
-                // the broom under you and the fire pouring off its bristles
-                Vec3 flat = new Vec3(look.x, 0, look.z).normalize();
-                Vec3 seat = from.add(0, 0.55, 0);
-                FxSend.box(sl, Fx.STEEL, seat.add(flat.scale(0.4)), flat, new Vec3(0, 1, 0), 1.0f, 0.05f, 0.05f, 2, 0, FxPacket.HOLD, 0, v, 0);   // the handle
-                FxSend.spike(sl, F, seat.subtract(flat.scale(0.4)), flat.scale(-1), 0.9f, 0.28f, 2, 0, FxPacket.HOLD, 0, v, 0);                // the burning bristles
-                FxSend.trail(sl, F, seat.subtract(flat.scale(1.2)), seat.subtract(flat.scale(1.2)).subtract(v), 0.35f, 10);
-                for (LivingEntity e : enemies(sl, p, p.getBoundingBox().inflate(1.6))) {
-                    if (!rammed.add(e.getUUID())) continue;
-                    hit(p, e, power, "crazy_cyclone");
-                    e.setDeltaMovement(e.getDeltaMovement().add(look.scale(1.2)).add(0, 0.5, 0));
-                    e.hurtMarked = true;
-                    FxLib.impact(sl, F, mid(e), 1.0f);
-                    sound(sl, e.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1f, 0.8f);
-                }
-                if (tt % 6 == 0) sound(sl, p.position(), SoundEvents.BLAZE_BURN, 0.6f, 1.4f);
+                Vec3 side = rightOf(look).scale(ii % 2 == 0 ? 0.35 : -0.35);
+                Vec3 from = p.getEyePosition().add(look.scale(0.8)).add(side).add(0, -0.35, 0);
+                ThreadLocalRandom r = ThreadLocalRandom.current();
+                Vec3 d = look.add(r.nextDouble(-0.03, 0.03), r.nextDouble(-0.03, 0.03), r.nextDouble(-0.03, 0.03)).normalize();
+                shot(p, sl, from, d, 2.6f, 0.3f, 1.8, power * 0.3f, 0, 14, "fireball_barrage");
+                sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 0.6f, 1.2f + r.nextFloat() * 0.3f);
             });
         }
+        windup(p, BARRAGE_START, 1f);
     }
 
     // ================================================================== 8. Fireball Rain

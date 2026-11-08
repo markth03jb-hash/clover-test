@@ -38,7 +38,7 @@ public final class DarkSmoke {
     private static final class Puff {
         double x, y, z, vx, vy, vz, born, life;
         float s0, s1, rot, spin;
-        boolean mote, streak, bead, flame, tinted;
+        boolean mote, streak, bead, flame, tinted, crimson;
         float tr, tg, tb;
         float shade;
     }
@@ -74,6 +74,34 @@ public final class DarkSmoke {
         }
     }
 
+    /** A tongue of crimson flame (Mereoleona): white-gold at first, then deep red, then dark. */
+    public static void crimsonFlame(Vec3 at, Vec3 vel, float size, int life) {
+        int before = PUFFS.size();
+        add(at, vel, size * 0.7F, size * 1.3F, life, false);
+        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) { Puff p = PUFFS.get(PUFFS.size() - 1); p.flame = true; p.crimson = true; }
+    }
+
+    /** An ember: a red-gold fleck rising off fire. */
+    public static void emberSpark(Vec3 at, Vec3 vel, float size, int life) {
+        int before = PUFFS.size();
+        add(at, vel, size, size * 0.5F, life, true);
+        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) {
+            Puff p = PUFFS.get(PUFFS.size() - 1);
+            p.bead = true; p.tinted = true; p.tr = 1.0F; p.tg = 0.4F; p.tb = 0.15F;
+            p.vy = Math.abs(p.vy) + 0.05;
+        }
+    }
+
+    /** A spark of blue lightning (Luck). */
+    public static void blueSpark(Vec3 at, Vec3 vel, float size, int life) {
+        int before = PUFFS.size();
+        add(at, vel, size, size * 0.5F, life, true);
+        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) {
+            Puff p = PUFFS.get(PUFFS.size() - 1);
+            p.bead = true; p.tinted = true; p.tr = 0.6F; p.tg = 0.82F; p.tb = 1.0F;
+        }
+    }
+
     /** A tongue of blue flame (Calidos Brachium Purgatory): white-cyan, then deep blue, then gone. */
     public static void blueFlame(Vec3 at, Vec3 vel, float size, int life) {
         int before = PUFFS.size();
@@ -98,6 +126,14 @@ public final class DarkSmoke {
     private static final Map<Integer, Double> KNUCKLES = new HashMap<>();
 
     public static void burning(int id, int life) { track(BURNING, id, life); }
+
+    /** Fists on fire for this entity: 0 none, 1 Magna's Flame Knuckles, 2 Mereoleona's Hellfire Incarnate. */
+    public static int fistFire(int id, double now) {
+        double[] h = HELLFIRE.get(id);
+        if (h != null && now <= h[1]) return 2;
+        Double k = KNUCKLES.get(id);
+        return k != null && now <= k ? 1 : 0;
+    }
     public static void knuckles(int id, int life) { track(KNUCKLES, id, life); }
 
     private static void track(Map<Integer, Double> map, int id, int life) {
@@ -211,24 +247,27 @@ public final class DarkSmoke {
             for (int k = 0; k < n; k++) {
                 double a = rr.nextDouble(Math.PI * 2), w = e.getBbWidth() * 0.5;
                 Vec3 at = e.position().add(Math.cos(a) * w, rr.nextDouble(0.0, e.getBbHeight() * (self ? 0.4 : 1.05)), Math.sin(a) * w);
-                flame(at, new Vec3(Math.cos(a) * 0.02, 0.05 + grow * 0.03, Math.sin(a) * 0.02), (float) (rr.nextDouble(0.2, 0.32) * (1 + grow * 0.6)), rr.nextInt(8, 16));
+                crimsonFlame(at, new Vec3(Math.cos(a) * 0.02, 0.05 + grow * 0.03, Math.sin(a) * 0.02), (float) (rr.nextDouble(0.2, 0.32) * (1 + grow * 0.6)), rr.nextInt(8, 16));
             }
-            if (rr.nextInt(2) == 0) spark(e.position().add(rr.nextDouble(-0.5, 0.5), rr.nextDouble(0.2, 2.0), rr.nextDouble(-0.5, 0.5)),
+            if (!self) {   // a lion's mane of fire around the head, streaming back
+                double yaw = Math.toRadians(e instanceof net.minecraft.world.entity.LivingEntity le ? le.yHeadRot : e.getYRot());
+                Vec3 back = new Vec3(Math.sin(yaw), 0, -Math.cos(yaw));
+                Vec3 head = e.position().add(0, e.getBbHeight() * 0.88, 0);
+                for (int k = 0; k < 3; k++) {
+                    double a = rr.nextDouble(-Math.PI * 0.8, Math.PI * 0.8);
+                    Vec3 side = new Vec3(back.z, 0, -back.x);
+                    Vec3 at = head.add(back.scale(0.18)).add(side.scale(Math.sin(a) * 0.3)).add(0, Math.cos(a) * 0.25, 0);
+                    Vec3 v = back.scale(0.05).add(side.scale(Math.sin(a) * 0.04)).add(0, 0.04 + Math.cos(a) * 0.03, 0);
+                    crimsonFlame(at, v, (float) rr.nextDouble(0.16, 0.26) * (float) (1 + grow * 0.5), rr.nextInt(8, 13));
+                }
+            }
+            if (e.onGround() && e.getDeltaMovement().horizontalDistanceSqr() > 0.003) {   // burning footprints
+                crimsonFlame(e.position().add(rr.nextDouble(-0.25, 0.25), 0.05, rr.nextDouble(-0.25, 0.25)), new Vec3(0, 0.03, 0), 0.3F, rr.nextInt(14, 22));
+            }
+            if (rr.nextInt(2) == 0) emberSpark(e.position().add(rr.nextDouble(-0.5, 0.5), rr.nextDouble(0.2, 2.0), rr.nextDouble(-0.5, 0.5)),
                     new Vec3(rr.nextDouble(-0.05, 0.05), rr.nextDouble(0.1, 0.2), rr.nextDouble(-0.05, 0.05)), 0.03F, rr.nextInt(10, 18));
         }
-        Iterator<Map.Entry<Integer, Double>> ki = KNUCKLES.entrySet().iterator();
-        while (ki.hasNext()) {   // fists of fire
-            Map.Entry<Integer, Double> b = ki.next();
-            Entity e = mc.level.getEntity(b.getKey());
-            if (e == null || now > b.getValue()) { ki.remove(); continue; }
-            if (e == mc.player && mc.options.getCameraType().isFirstPerson()) continue;
-            double yaw = Math.toRadians(e instanceof net.minecraft.world.entity.LivingEntity le ? le.yBodyRot : e.getYRot());
-            Vec3 fw = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw)), lf = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
-            for (int s = -1; s <= 1; s += 2) {
-                Vec3 hand = e.position().add(0, e.getBbHeight() * 0.42, 0).add(lf.scale(0.38 * s)).add(fw.scale(0.1));
-                flame(hand.add(rr.nextDouble(-0.06, 0.06), 0, rr.nextDouble(-0.06, 0.06)), new Vec3(0, 0.025, 0), 0.12F, rr.nextInt(6, 10));
-            }
-        }
+        KNUCKLES.values().removeIf(v -> now > v);   // the flames themselves are drawn on the arms (FistFlameLayer)
         Iterator<Map.Entry<Integer, Double>> bi = BODY.entrySet().iterator();
         while (bi.hasNext()) {
             Map.Entry<Integer, Double> b = bi.next();
@@ -286,7 +325,7 @@ public final class DarkSmoke {
         float size = (float) (p.s0 + (p.s1 - p.s0) * t), a, cr, cg, cb;
         if (p.flame) {
             a = (float) (1.0 - t / 0.55) * 0.55F;
-            if (p.tinted) { cr = 0.3F; cg = 0.6F; cb = 1.0F; } else { cr = 1.0F; cg = 0.6F; cb = 0.15F; }
+            if (p.crimson) { cr = 1.0F; cg = 0.15F; cb = 0.08F; } else if (p.tinted) { cr = 0.3F; cg = 0.6F; cb = 1.0F; } else { cr = 1.0F; cg = 0.6F; cb = 0.15F; }
             size *= 1.5F;
         } else if (p.tinted) {
             a = (float) (1.0 - t) * 0.6F; cr = p.tr; cg = p.tg; cb = p.tb; size *= p.streak ? 1.0F : 3.0F;
@@ -348,7 +387,11 @@ public final class DarkSmoke {
         }
         if (p.flame) {
             a = (float) (Mth.clamp(age / 1.5, 0.0, 1.0) * Math.pow(1.0 - t, 0.9)) * 0.9F;
-            if (p.tinted) {   // blue flame
+            if (p.crimson) {   // crimson flame
+                if (t < 0.3) { float k = (float) (t / 0.3); cr = 1.0F; cg = 0.8F - 0.55F * k; cb = 0.55F - 0.45F * k; }
+                else if (t < 0.65) { float k = (float) ((t - 0.3) / 0.35); cr = 1.0F - 0.35F * k; cg = 0.25F - 0.22F * k; cb = 0.1F - 0.07F * k; }
+                else { float k = (float) ((t - 0.65) / 0.35); cr = 0.65F - 0.55F * k; cg = 0.03F; cb = 0.03F + 0.02F * k; a *= 0.75F; }
+            } else if (p.tinted) {   // blue flame
                 if (t < 0.35) { float k = (float) (t / 0.35); cr = 0.85F - 0.6F * k; cg = 0.97F - 0.37F * k; cb = 1.0F; }
                 else { float k = (float) ((t - 0.35) / 0.65); cr = 0.25F - 0.23F * k; cg = 0.6F - 0.55F * k; cb = 1.0F - 0.7F * k; a *= 1.0F - 0.5F * k; }
             } else

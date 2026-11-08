@@ -60,7 +60,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @Mod.EventBusSubscriber(modid = ArcaneAddon.MODID)
 public class HellfireFx {
-    private static final int F = Fx.FIRE, BLUE = 12;
+    private static final int F = 14, BLUE = 12;   // 14 = crimson flame: hers, not Magna's orange
 
     private static final Map<UUID, Long> SKIN = new HashMap<>();
     private static final Map<UUID, Long> ZONE = new HashMap<>();
@@ -144,7 +144,7 @@ public class HellfireFx {
     /** A ball of fire (shape 20) in a palette: 2 = orange fire, 12 = blue flame. */
     private static void ball(ServerLevel sl, int pal, Vec3 c, Vec3 vel, float r, float r2, int life, boolean explode) {
         FxPacket p = new FxPacket();
-        if (life == 2) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
+        if (life <= 3 && life > 0) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
         p.shape = 20; p.palette = (byte) pal; p.life = life; p.c = c; p.v = vel; p.r = r; p.r2 = r2; p.h = explode ? 1 : 0;
         AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
     }
@@ -262,6 +262,21 @@ public class HellfireFx {
             });
         }
         shake(sl, mid(targets.get(0)), 0.25f, 30);
+        // the finish: one huge fist of fire from the front, matching the haymaker at the end of the flurry
+        final LivingEntity main = targets.get(0);
+        AstaFx.later(27, () -> {
+            if (!alive(p) || !main.isAlive()) return;
+            Vec3 from = p.getEyePosition().add(0, -0.3, 0);
+            Vec3 in = mid(main).subtract(from).normalize();
+            FxSend.trail(sl, F, from, mid(main), 0.5f, 8);
+            fist(sl, F, mid(main).subtract(in.scale(0.8)), in, 2.2f, Vec3.ZERO);
+            hit(p, main, power * 0.5f, "calidos_brachium_barrage");
+            main.setDeltaMovement(main.getDeltaMovement().add(in.scale(1.4)).add(0, 0.6, 0));
+            main.hurtMarked = true;
+            ball(sl, F, mid(main), Vec3.ZERO, 0.6f, 3.2f, 10, true);
+            shake(sl, mid(main), 0.5f, 6);
+            sound(sl, main.position(), SoundEvents.GENERIC_EXPLODE, 0.8f, 1.0f);
+        });
     }
 
     // ================================================================== 3. Flame Lion Paws

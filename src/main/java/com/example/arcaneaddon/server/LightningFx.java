@@ -59,7 +59,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @Mod.EventBusSubscriber(modid = ArcaneAddon.MODID)
 public class LightningFx {
-    private static final int L = Fx.LIGHTNING;
+    private static final int L = 13;   // blue lightning
 
     private static final Map<UUID, Long> MODE = new HashMap<>();
     private static final Map<UUID, Long> GLOVES = new HashMap<>();

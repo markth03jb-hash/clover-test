@@ -29,9 +29,9 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             {0.55F, 0.18F, 0.95F},   // 0 dark violet (Black Blade)
             {1.0F, 0.08F, 0.06F},    // 1 devil red
             {0.86F, 0.9F, 0.97F},    // 2 liquid silver (Silver Guardian)
-            {1.0F, 0.9F, 0.3F},      // 3 lightning (Thunder God Mode)
-            {1.0F, 0.45F, 0.08F},    // 4 hellfire (Hellfire Incarnate)
-            {1.0F, 0.55F, 0.25F},    // 5 mana skin
+            {0.45F, 0.72F, 1.0F},    // 3 blue lightning (Thunder God Mode)
+            {1.0F, 0.14F, 0.08F},    // 4 crimson hellfire (Hellfire Incarnate)
+            {1.0F, 0.3F, 0.2F},      // 5 mana skin
     };
 
     public AuraOutlineLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
@@ -71,9 +71,9 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
         }
         if ((int) f[2] == 4) {   // Hellfire Incarnate: a body of fire - a white-hot skin inside a wide, pulsing orange glow
             float pulse = 0.8F + 0.2F * (float) Math.sin(now * 0.8);
-            shell(ps, m, vc, 1.03F + flick, 1.0F, 0.85F, 0.5F, 0.3F * a * pulse);
+            shell(ps, m, vc, 1.03F + flick, 1.0F, 0.75F, 0.55F, 0.3F * a * pulse);
             shell(ps, m, vc, 1.1F + flick * 1.5F, col[0], col[1], col[2], 0.22F * a * pulse);
-            shell(ps, m, vc, 1.2F + flick * 2F, 1.0F, 0.2F, 0.02F, 0.1F * a);
+            shell(ps, m, vc, 1.2F + flick * 2F, 0.7F, 0.02F, 0.02F, 0.12F * a);
             return;
         }
         if ((int) f[2] == 5) {   // Mana Skin: a thin, faint warm sheen
@@ -83,7 +83,7 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
         if ((int) f[2] == 3) {   // Thunder God Mode: a flickering skin of yellow light, no dark shell
             float zap = ((int) (now * 3) % 4 == 1) ? 0.5F : 1.0F;
             shell(ps, m, vc, 1.05F + flick, col[0], col[1], col[2], 0.22F * a * zap);
-            shell(ps, m, vc, 1.12F + flick * 1.5F, 1.0F, 1.0F, 0.85F, 0.08F * a * zap);
+            shell(ps, m, vc, 1.12F + flick * 1.5F, 0.85F, 0.95F, 1.0F, 0.08F * a * zap);
             return;
         }
         // black shell hugging the body

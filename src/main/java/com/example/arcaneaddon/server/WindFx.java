@@ -202,7 +202,7 @@ public class WindFx {
         Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
         Vec3 span = rt.scale(0.94).add(up.scale(0.34)).normalize();   // nearly flat, a little tilted
         float s = big ? 1.3f : 1.0f;
-        FxSend.slash(sl, W, from, dir, span, 0.8f * s, 1.5f * s, (int) Math.max(3, from.distanceTo(end) / SPEED) + 1, SPEED, 1.4f);
+        FxSend.slash(sl, W, from, dir, span, 1.0f * s, 1.9f * s, (int) Math.max(3, from.distanceTo(end) / SPEED) + 1, SPEED, 0.6f);
         for (LivingEntity t : enemies(sl, p, new AABB(from, end).inflate(1.6 * s))) {
             Vec3 on = closestOnSegment(from, end, mid(t));
             if (on.distanceTo(mid(t)) > 1.3 * s + t.getBbWidth() * 0.5) continue;
@@ -335,21 +335,12 @@ public class WindFx {
                     gust(sl, mid(tt), 0.6f);
                 });
             }
-            // the breath: three wide arcs of wind rolling forward, with streaks inside them
+            // the breath: a swirling cone of wind pouring out of your palm (drawn by the client: spiral streamlines
+            // racing forward, rings of air rolling out at the front, leaves and dust carried along)
             Vec3 o = eye.add(look.scale(0.8)).add(0, -0.2, 0);
-            float deg = (float) Math.toDegrees(half);
-            for (int k = 0; k < 3; k++) {
-                final int kk = k;
-                AstaFx.later(k * 2, () -> FxSend.wall(sl, kk == 1 ? S : W, o, look, rt, 0.6f, (float) range * 0.9f, -deg, deg, kk == 1 ? 0.06f : 0.9f - kk * 0.2f, 9, 0, 1.0f));
-            }
-            ThreadLocalRandom r = ThreadLocalRandom.current();
-            for (int k = 0; k < 9; k++) {
-                double a = r.nextDouble(-half, half), b = r.nextDouble(-half * 0.6, half * 0.6);
-                Vec3 d = look.scale(Math.cos(a)).add(rt.scale(Math.sin(a))).add(up.scale(Math.sin(b))).normalize();
-                double s0 = r.nextDouble(1, 4);
-                final Vec3 a0 = o.add(d.scale(s0)), a1 = o.add(d.scale(s0 + r.nextDouble(2, 4)));
-                AstaFx.later(r.nextInt(0, 4), () -> FxSend.trail(sl, W, a0, a1, 0.06f, 6));
-            }
+            FxPacket gp = new FxPacket();
+            gp.shape = 29; gp.palette = (byte) W; gp.life = 14; gp.c = o; gp.d = look; gp.r = (float) range; gp.h = (float) half;
+            AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(o.x, o.y, o.z, 96, sl.dimension())), gp);
             sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 1.2f, 1.3f);
             sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.4f);
         });
@@ -483,13 +474,18 @@ public class WindFx {
                 };
                 span = span.normalize();
                 Vec3 o = p.getEyePosition().add(0, -0.35, 0).add(look.scale(1.0));
-                FxSend.slash(sl, W, o, look, span, 1.6f, 2.0f, 4, 0f, 1.6f);           // the cut itself
-                FxSend.slash(sl, W, o.add(look.scale(0.6)), look, span, 2.0f, 3.6f, 6, 1.4f, 1.8f);   // the blade it throws
-                Vec3 end = clip(sl, p, o, o.add(look.scale(8)));
+                FxSend.slash(sl, W, o, look, span, 1.6f, 2.0f, 4, 0f, 0.8f);           // the cut itself
+                FxSend.slash(sl, W, o.add(look.scale(0.6)), look, span, 2.0f, 3.8f, 10, 2.4f, 0.75f);   // the blade it throws, thin and far
+                Vec3 end = clip(sl, p, o, o.add(look.scale(22)));
                 for (LivingEntity t : enemies(sl, p, new AABB(o, end).inflate(2.2))) {
-                    if (closestOnSegment(o, end, mid(t)).distanceTo(mid(t)) > 2.0 + t.getBbWidth() * 0.5) continue;
-                    AstaFx.damage(p, t, power * 0.55f, "spirit_of_zephyr");
-                    gust(sl, mid(t), 0.8f);
+                    Vec3 on = closestOnSegment(o, end, mid(t));
+                    if (on.distanceTo(mid(t)) > 2.0 + t.getBbWidth() * 0.5) continue;
+                    final LivingEntity tt = t;
+                    AstaFx.later((int) (on.distanceTo(o) / 2.4), () -> {   // when the thrown blade reaches them
+                        if (!tt.isAlive() || !alive(p)) return;
+                        AstaFx.damage(p, tt, power * 0.55f, "spirit_of_zephyr");
+                        gust(sl, mid(tt), 0.8f);
+                    });
                 }
                 p.setDeltaMovement(p.getDeltaMovement().add(new Vec3(look.x, 0, look.z).normalize().scale(0.45)));
                 p.hurtMarked = true;
@@ -544,7 +540,8 @@ public class WindFx {
                     double a = Math.PI * 2 * i / n + tt * 0.25;
                     float grow = Math.min(1f, (tt + 1) / 6f);
                     Vec3 c = p.position().add(Math.cos(a) * 1.8, 1.6 + 0.2 * Math.sin(tt * 0.4 + i), Math.sin(a) * 1.8);
-                    halberd(sl, c, new Vec3(0, 1, 0).add(Math.cos(a) * 0.3, 0, Math.sin(a) * 0.3).normalize(), grow);
+                    Vec3 orbit = new Vec3(-Math.sin(a), 0, Math.cos(a)).scale(1.8 * 0.25);   // how far it moves this tick: smooth circling
+                    halberd(sl, c, new Vec3(0, 1, 0).add(Math.cos(a) * 0.3, 0, Math.sin(a) * 0.3).normalize(), grow, orbit);
                 }
             });
         }

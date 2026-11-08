@@ -49,7 +49,9 @@ public class FxRenderer {
       {0.07F, 0.0F, 0.0F},     // 9 devil red (devil form)
       {0.015F, 0.0F, 0.035F},  // 10 Yami's darkness
       {0.42F, 0.45F, 0.5F},    // 11 mercury (liquid chrome)
-      {0.0F, 0.06F, 0.3F}      // 12 blue flame
+      {0.0F, 0.06F, 0.3F},     // 12 blue flame
+      {0.02F, 0.07F, 0.22F},   // 13 blue lightning (Luck)
+      {0.28F, 0.0F, 0.03F}     // 14 crimson flame (Mereoleona)
    };
    private static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
@@ -58,7 +60,9 @@ public class FxRenderer {
       {1.0F, 0.07F, 0.05F},    // 9 devil red (devil form)
       {0.6F, 0.2F, 1.0F},      // 10 Yami's darkness (smoke comes off everything drawn in it)
       {0.86F, 0.92F, 1.0F},    // 11 mercury
-      {0.35F, 0.65F, 1.0F}     // 12 blue flame (Calidos Brachium Purgatory)
+      {0.35F, 0.65F, 1.0F},    // 12 blue flame (Calidos Brachium Purgatory)
+      {0.45F, 0.72F, 1.0F},    // 13 blue lightning (Luck Voltia)
+      {1.0F, 0.16F, 0.1F}      // 14 crimson flame (Mereoleona Vermillion)
    };
    /** Overall strength of every world effect. Lower = subtler. */
    private static final float FX_ALPHA = 1.0F;
@@ -241,6 +245,7 @@ public class FxRenderer {
             FxRenderer.Fx fx = new FxRenderer.Fx();
             fx.p = p;
             fx.born = (double)mc.level.getGameTime();
+            if (p.life <= 1) replaceTrack(fx);
             FX.add(fx);
          }
       }
@@ -314,8 +319,8 @@ public class FxRenderer {
                if (f.p.palette == DARKNESS) emitDarkness(f, now - f.born);
                else if (f.p.palette == WIND) emitWind(f, now - f.born);
                else if (f.p.palette == MERCURY) emitMercury(f, now - f.born);
-               else if (f.p.palette == FIRE || f.p.palette == BLUE_FIRE) { blueFlames = f.p.palette == BLUE_FIRE; emitFire(f, now - f.born); blueFlames = false; }
-               else if (f.p.palette == LIGHTNING && f.p.shape != 23) emitLightning(f, now - f.born);
+               else if (f.p.palette == FIRE || f.p.palette == BLUE_FIRE || f.p.palette == CRIMSON) { flamePal = f.p.palette; emitFire(f, now - f.born); flamePal = FIRE; }
+               else if ((f.p.palette == LIGHTNING || f.p.palette == BLUE_LIGHTNING) && f.p.shape != 23) { boltPal = f.p.palette; emitLightning(f, now - f.born); }
                double life = f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life;
                if (now - f.born > life + 1.0) {
                   it.remove();
@@ -331,13 +336,24 @@ public class FxRenderer {
                boolean self = ent == mc.player && mc.options.getCameraType().isFirstPerson();
                if (ent.onGround() && mv.horizontalDistanceSqr() > 0.004) {
                   for (int k = 0; k < 2; k++) {
-                     DarkSmoke.spark(ent.position().add(tr.nextDouble(-0.3, 0.3), 0.05, tr.nextDouble(-0.3, 0.3)),
+                     DarkSmoke.blueSpark(ent.position().add(tr.nextDouble(-0.3, 0.3), 0.05, tr.nextDouble(-0.3, 0.3)),
                         new Vec3(tr.nextDouble(-0.12, 0.12) - mv.x * 0.4, tr.nextDouble(0.08, 0.22), tr.nextDouble(-0.12, 0.12) - mv.z * 0.4), 0.035F, tr.nextInt(8, 14));
                   }
                }
+               if (tr.nextInt(40) == 0) {   // now and then the sky answers: a bolt crashes down close by
+                  Vec3 land = ent.position().add(tr.nextDouble(-4, 4), 0, tr.nextDouble(-4, 4));
+                  boltPal = BLUE_LIGHTNING;
+                  localBolt(land.add(tr.nextDouble(-2, 2), 18, tr.nextDouble(-2, 2)), land, 0.16F, 7, 3);
+               }
+               if (ent.onGround() && mv.horizontalDistanceSqr() > 0.004 && tr.nextInt(3) == 0) {   // arcs crawling along the ground from your feet
+                  Vec3 f0 = ent.position().add(0, 0.05, 0);
+                  double a = tr.nextDouble(Math.PI * 2);
+                  boltPal = BLUE_LIGHTNING;
+                  localBolt(f0, f0.add(Math.cos(a) * 1.6, 0.02, Math.sin(a) * 1.6), 0.03F, 3, 1);
+               }
                if (!self && mv.horizontalDistanceSqr() > 0.01) {   // an afterimage of lightning behind you when you move fast
                   DarkSmoke.streakTinted(ent.position().add(tr.nextDouble(-0.3, 0.3), tr.nextDouble(0.2, ent.getBbHeight()), tr.nextDouble(-0.3, 0.3)),
-                     mv.scale(-0.4), 0.05F, tr.nextInt(5, 9), 1.0F, 0.94F, 0.45F);
+                     mv.scale(-0.4), 0.05F, tr.nextInt(5, 9), 0.55F, 0.8F, 1.0F);
                }
             }
          }
@@ -362,7 +378,7 @@ public class FxRenderer {
             double grow = 1.0 - Math.pow(1.0 - Mth.clamp(age / (life * 0.45), 0.0, 1.0), 3.0);
             double R = p.r + (p.r2 - p.r) * grow;
             Vec3 c = p.c.add(p.d.scale(p.speed * age));
-            int k = (int)Mth.clamp(R * 1.2, 3, 9) * burst;
+            int k = (int)Mth.clamp(R * 0.35, 1, 4) * burst;   // a light veil of darkness, not a smoke-screen
             for (int i = 0; i < k; i++) {
                double fd = Math.toRadians(r.nextDouble(-70, 70));
                Vec3 o = c.add(p.u.scale(Math.sin(fd) * R)).add(p.d.scale((Math.cos(fd) - 1.0) * R * 0.35 - R * 0.08));
@@ -417,8 +433,8 @@ public class FxRenderer {
       }
    }
 
-   private static final int WIND = 5, MERCURY = 11, FIRE = 2, LIGHTNING = 4, BLUE_FIRE = 12;
-   private static boolean blueFlames;
+   private static final int WIND = 5, MERCURY = 11, FIRE = 2, LIGHTNING = 4, BLUE_FIRE = 12, BLUE_LIGHTNING = 13, CRIMSON = 14;
+   private static int flamePal = 2, boltPal = 4;
    /** Packets made on this client while the effect list is being walked; spawned right after. */
    private static final List<FxPacket> PENDING = new ArrayList<>();
    /** Thunder God Mode: entity id -> {start, end}; gloves: entity id -> {start, end}. Fed by shapes 24 and 25. */
@@ -427,7 +443,7 @@ public class FxRenderer {
 
    private static void localBolt(Vec3 a, Vec3 b, float w, int life, int branches) {
       FxPacket q = new FxPacket();
-      q.shape = 23; q.palette = (byte)LIGHTNING; q.life = life; q.c = a; q.d = b.subtract(a); q.r = w; q.sweep = branches;
+      q.shape = 23; q.palette = (byte)boltPal; q.life = life; q.c = a; q.d = b.subtract(a); q.r = w; q.sweep = branches;
       q.id = java.util.concurrent.ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE);
       PENDING.add(q);
    }
@@ -529,15 +545,28 @@ public class FxRenderer {
       long frame = (long)(now * 1.5);
       java.util.Random rnd = new java.util.Random(p.getId() * 31L + frame * 977L);
       if (mode) {
+         // the eyes burn with lightning, and lightning stands up off the head like hair
+         double hy = Math.toRadians(Mth.rotLerp(pt, p.yHeadRotO, p.yHeadRot));
+         Vec3 face = new Vec3(-Math.sin(hy), 0, Math.cos(hy)), side = new Vec3(Math.cos(hy), 0, Math.sin(hy));
+         Vec3 eyes = base.add(0, p.getEyeHeight(), 0).add(face.scale(0.27));
+         if (p != Minecraft.getInstance().player || !Minecraft.getInstance().options.getCameraType().isFirstPerson()) {
+            for (int s = -1; s <= 1; s += 2) halo(m, cam, eyes.add(side.scale(0.11 * s)), 0.16, RIM[BLUE_LIGHTNING], 0.9F);
+            for (int k = 0; k < 3; k++) {
+               Vec3 a = base.add((rnd.nextDouble() - 0.5) * 0.4, h * 0.95, (rnd.nextDouble() - 0.5) * 0.4);
+               boltBranch(m, cam, a, a.add((rnd.nextDouble() - 0.5) * 0.4, 0.4 + rnd.nextDouble() * 0.4, (rnd.nextDouble() - 0.5) * 0.4), 0.025F, BLUE_LIGHTNING, 0.85F, rnd, 0, 2);
+            }
+         }
+         // a faint field of charge around the whole body
+         halo(m, cam, base.add(0, h * 0.5, 0), 1.6, RIM[BLUE_LIGHTNING], 0.07F + 0.05F * (float)Math.abs(Math.sin(now * 2.3)));
          for (int k = 0; k < 5; k++) {
             Vec3 a = base.add((rnd.nextDouble() - 0.5) * 0.7, rnd.nextDouble() * h, (rnd.nextDouble() - 0.5) * 0.7);
             Vec3 b = a.add((rnd.nextDouble() - 0.5) * 0.9, (rnd.nextDouble() - 0.3) * 0.9, (rnd.nextDouble() - 0.5) * 0.9);
-            boltBranch(m, cam, a, b, 0.03F, LIGHTNING, 0.8F, rnd, 1, 1);
+            boltBranch(m, cam, a, b, 0.03F, BLUE_LIGHTNING, 0.8F, rnd, 1, 1);
          }
          if (rnd.nextInt(5) == 0) {   // now and then a long arc to the ground
             Vec3 a = base.add(0, h * 0.5, 0);
             Vec3 b = base.add((rnd.nextDouble() - 0.5) * 3.0, 0.05, (rnd.nextDouble() - 0.5) * 3.0);
-            boltBranch(m, cam, a, b, 0.04F, LIGHTNING, 0.9F, rnd, 1, 1);
+            boltBranch(m, cam, a, b, 0.04F, BLUE_LIGHTNING, 0.9F, rnd, 1, 1);
          }
       }
       if (gloves || mode) {
@@ -547,7 +576,7 @@ public class FxRenderer {
             Vec3 hand = base.add(0, h * 0.4, 0).add(lf.scale(0.38 * s)).add(fw.scale(0.08));
             for (int k = 0; k < 2; k++) {
                Vec3 b = hand.add((rnd.nextDouble() - 0.5) * 0.5, (rnd.nextDouble() - 0.5) * 0.5, (rnd.nextDouble() - 0.5) * 0.5);
-               boltBranch(m, cam, hand, b, 0.025F, LIGHTNING, 0.85F, rnd, 0, 2);
+               boltBranch(m, cam, hand, b, 0.025F, BLUE_LIGHTNING, 0.85F, rnd, 0, 2);
             }
          }
       }
@@ -561,7 +590,7 @@ public class FxRenderer {
       java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
       switch (p.shape) {
          case 20: {
-            Vec3 c = p.c.add(p.v.scale(age));
+            Vec3 c = p.c.add(p.v.scale(mv(p, age)));
             if (p.h > 0.5F) {   // explosion: one big burst at the start, then rolling flames and smoke
                if (age < 1.0) {
                   int k = (int)Mth.clamp(p.r2 * 7, 10, 45);
@@ -577,7 +606,7 @@ public class FxRenderer {
                break;
             }
             if (p.r < 0.1F) break;
-            int k = p.r > 1.0F ? 3 : (p.r > 0.35F ? 2 : 1);
+            int k = p.r > 1.0F ? 5 : (p.r > 0.35F ? 3 : 2);
             for (int i = 0; i < k; i++) {
                Vec3 d = jit(r, 1.0).normalize();
                fl(c.add(d.scale(p.r * 0.8)), p.v.scale(-0.15).add(d.scale(0.02)).add(0, 0.02, 0), p.r * (float)r.nextDouble(0.6, 1.0), r.nextInt(6, 12));
@@ -620,6 +649,13 @@ public class FxRenderer {
             }
             break;
          }
+         case 7: {   // burning solids (Magna's bat): flames licking along it
+            if (r.nextInt(2) == 0) {
+               Vec3 o = travelledPos(f, age).add(p.d.scale(p.r * r.nextDouble(-1, 1)));
+               fl(o, new Vec3(0, 0.035, 0), (float)Mth.clamp(p.r2 * 2.6, 0.12, 0.45), r.nextInt(5, 9));
+            }
+            break;
+         }
          case 8: {
             if (p.speed != FxPacket.HOLD || r.nextInt(3) == 0) {
                Vec3 o = travelledPos(f, age).add(p.d.scale(p.r * r.nextDouble()));
@@ -632,7 +668,9 @@ public class FxRenderer {
    }
 
    private static void fl(Vec3 at, Vec3 v, float size, int life) {
-      if (blueFlames) DarkSmoke.blueFlame(at, v, size, life); else DarkSmoke.flame(at, v, size, life);
+      if (flamePal == BLUE_FIRE) DarkSmoke.blueFlame(at, v, size, life);
+      else if (flamePal == CRIMSON) DarkSmoke.crimsonFlame(at, v, size, life);
+      else DarkSmoke.flame(at, v, size, life);
    }
 
    private static Vec3 travelledPos(FxRenderer.Fx f, double age) { return travelled(f, age); }
@@ -649,7 +687,7 @@ public class FxRenderer {
    private static void tornadoFx(Matrix4f m, Vec3 cam, FxPacket p0, double age, double life) {
       if (gv == null) return;
       FxPacket p = new FxPacket();
-      p.c = p0.c.add(p0.v.scale(age)); p.r = p0.r; p.h = p0.h; p.a0 = p0.a0;   // glide between server updates
+      p.c = p0.c.add(p0.v.scale(mv(p0, age))); p.r = p0.r; p.h = p0.h; p.a0 = p0.a0;   // glide between server updates
       double R = p.r, H = p.h;
       double spin = (p.a0 + age) * 0.55;
       float[] rim = RIM[WIND], white = {0.95F, 1.0F, 0.97F};
@@ -681,6 +719,54 @@ public class FxRenderer {
          }
       }
       halo(m, cam, p.c.add(0, H * 0.5, 0), R * 1.3, white, 0.08F);
+   }
+
+   /**
+    * Sylph's Breath: a cone of wind pouring out of the palm. Spiral streamlines race forward along the cone (each one
+    * twisting round the axis as it goes), rings of air roll out at the moving front, everything fades as it passes.
+    * c = origin, d = direction, r = range, h = half-angle (radians).
+    */
+   private static void gustFx(Matrix4f m, Vec3 cam, FxPacket p, double age, double life) {
+      if (gv == null) return;
+      Vec3 d = p.d.normalize();
+      Vec3 s1 = d.cross(new Vec3(0, 1, 0));
+      if (s1.lengthSqr() < 1.0E-4) s1 = new Vec3(1, 0, 0);
+      s1 = s1.normalize();
+      Vec3 s2 = d.cross(s1).normalize();
+      double front = p.r * (1.0 - Math.pow(1.0 - Mth.clamp(age / (life * 0.55), 0.0, 1.0), 2.0));   // the gust's leading edge
+      float fade = (float)Mth.clamp((life - age) / (life * 0.45), 0.0, 1.0);
+      double tanH = Math.tan(p.h);
+      int LINES = 16, STEPS = 14;
+      java.util.Random rnd = new java.util.Random(p.id * 31L);
+      for (int i = 0; i < LINES; i++) {
+         double a0 = Math.PI * 2 * i / LINES + rnd.nextDouble() * 0.4, rf = 0.35 + rnd.nextDouble() * 0.65, tw = 0.18 + rnd.nextDouble() * 0.12;
+         Vec3 prev = null;
+         for (int k = 0; k <= STEPS; k++) {
+            double sd = front * k / STEPS;
+            double rad = sd * tanH * rf + 0.15;
+            double a = a0 + sd * tw + age * 0.25;
+            Vec3 q = p.c.add(d.scale(sd)).add(s1.scale(Math.cos(a) * rad)).add(s2.scale(Math.sin(a) * rad));
+            if (prev != null) {
+               float tail = (float)k / STEPS;   // brightest near the front
+               gline(m, cam, prev, q, (float)(0.035 + 0.05 * tail), WIND, fade * (0.15F + 0.6F * tail * tail));
+            }
+            prev = q;
+         }
+      }
+      // rings of air rolling out at the front
+      for (int j = 0; j < 3; j++) {
+         double sd = front - j * 1.6;
+         if (sd < 0.5) continue;
+         double rad = sd * tanH + 0.2;
+         Vec3 cc = p.c.add(d.scale(sd));
+         Vec3 prev = null;
+         for (int k = 0; k <= 24; k++) {
+            double a = Math.PI * 2 * k / 24 + age * 0.3;
+            Vec3 q = cc.add(s1.scale(Math.cos(a) * rad)).add(s2.scale(Math.sin(a) * rad));
+            if (prev != null) gline(m, cam, prev, q, (float)(0.06 + 0.04 * j), WIND, fade * (0.5F - j * 0.14F));
+            prev = q;
+         }
+      }
    }
 
    /** A soft round glow facing the camera: bright in the middle, fading to nothing at radius R (additive). */
@@ -716,18 +802,18 @@ public class FxRenderer {
          heat = (float)(1.0 - t);
       } else {
          R = p.r;
-         al = 0.95F;
+         al = 1.0F;   // a real ball of fire: solid, not see-through
          heat = 1.0F;
       }
       if (R < 0.02 || al <= 0.01F) return;
-      Vec3 c = p.c.add(p.v.scale(age));
+      Vec3 c = p.c.add(p.v.scale(mv(p, age)));
       boolean inside = cam.distanceTo(c) < R * 1.02;
       if (inside) al *= 0.25F;
       int LAT = R > 1.2 ? 14 : 8, LON = R > 1.2 ? 24 : 12;
       double t = fxTime;
-      float[] rim = RIM[p.palette == BLUE_FIRE ? BLUE_FIRE : FIRE];
+      float[] rim = RIM[p.palette == BLUE_FIRE ? BLUE_FIRE : (p.palette == CRIMSON ? CRIMSON : FIRE)];
       // the corona: the light the fire throws on the air around it (and a white flash when it explodes)
-      halo(m, cam, c, R * (boom ? 1.7 : 2.3), rim, al * (boom ? 0.4F : 0.32F) * heat);
+      halo(m, cam, c, R * (boom ? 1.7 : 2.4), rim, al * (boom ? 0.4F : 0.5F) * heat);
       if (boom && age < 3.0) halo(m, cam, c, R * 2.6, new float[]{1.0F, 0.95F, 0.8F}, (float)(1.0 - age / 3.0) * 0.55F);
       for (int i = 0; i < LAT; i++) {
          for (int j = 0; j < LON; j++) {
@@ -747,14 +833,17 @@ public class FxRenderer {
             if (!inside && !front) continue;
             for (int k = 0; k < 4; k++) {
                float e = fr[k];   // 0 = facing you (hot core), 1 = the edge (cooler rim)
-               float[] col = p.palette == BLUE_FIRE ? new float[]{
+               float[] col = p.palette == CRIMSON ? new float[]{
+                  Mth.clamp(1.0F * heat + 0.3F * (1 - heat), 0, 1),
+                  Mth.clamp((0.75F - 0.7F * e) * heat + 0.03F * (1 - heat), 0, 1),
+                  Mth.clamp((0.45F - 0.42F * e) * heat + 0.03F * (1 - heat), 0, 1)} : p.palette == BLUE_FIRE ? new float[]{
                   Mth.clamp((0.85F - 0.75F * e) * heat + 0.02F * (1 - heat), 0, 1),
                   Mth.clamp((0.95F - 0.5F * e) * heat + 0.06F * (1 - heat), 0, 1),
                   Mth.clamp(1.0F * heat + 0.3F * (1 - heat), 0, 1)} : new float[]{
                   Mth.clamp(1.0F * heat + 0.35F * (1 - heat), 0, 1),
                   Mth.clamp((0.92F - 0.62F * e) * heat + 0.08F * (1 - heat), 0, 1),
                   Mth.clamp((0.55F - 0.52F * e) * heat + 0.04F * (1 - heat), 0, 1)};
-               vtx(vc, m, n, cam, w[k], col, al * (1.0F - 0.35F * e));
+               vtx(vc, m, n, cam, w[k], col, al * (boom ? 1.0F - 0.35F * e : 1.0F - 0.08F * e));
             }
             if (gv != null) gquad(m, cam, w[0], w[1], w[2], w[3], rim, fr[0] * al * 0.5F * heat, fr[1] * al * 0.5F * heat, fr[2] * al * 0.5F * heat, fr[3] * al * 0.5F * heat);
          }
@@ -769,7 +858,7 @@ public class FxRenderer {
          Vec3 o = p.c.add(p.d.scale(r.nextDouble()));
          DarkSmoke.bead(o, new Vec3(r.nextDouble(-0.03, 0.03), r.nextDouble(0.0, 0.05), r.nextDouble(-0.03, 0.03)), (float)Mth.clamp(p.r * 0.5, 0.03, 0.08), r.nextInt(10, 18));
       } else if (p.shape == 19 && p.r > 0.3F && age < p.life && r.nextInt(p.r > 1.5F ? 2 : 4) == 0) {
-         Vec3 c = p.c.add(p.v.scale(age));
+         Vec3 c = p.c.add(p.v.scale(mv(p, age)));
          Vec3 nrm = new Vec3(r.nextDouble(-1, 1), r.nextDouble(-1, 0.2), r.nextDouble(-1, 1)).normalize();
          DarkSmoke.bead(c.add(nrm.scale(p.r)), p.v.scale(0.4).add(nrm.scale(0.04)), (float)Mth.clamp(p.r * 0.08, 0.03, 0.1), r.nextInt(10, 20));
       }
@@ -785,7 +874,7 @@ public class FxRenderer {
       double out = life <= 2 ? 1.0 : Mth.clamp((life - age) / 3.0, 0.0, 1.0);
       double R = p.r * in * (0.3 + 0.7 * out);
       if (R < 0.02) return;
-      Vec3 c = p.c.add(p.v.scale(age));
+      Vec3 c = p.c.add(p.v.scale(mv(p, age)));
       boolean inside = cam.distanceTo(c) < R * 1.02;
       int LAT = R > 1.5 ? 16 : 9, LON = R > 1.5 ? 28 : 14;
       float al = (float)(inside ? 0.25 : 0.98) * (float)Math.min(1.0, out * 1.5);
@@ -821,6 +910,18 @@ public class FxRenderer {
    /** Yuno's wind: every effect in the wind palette throws off thin streaks of air that race along with it. */
    private static void emitWind(FxRenderer.Fx f, double age) {
       FxPacket p = f.p;
+      if (p.shape == 29) {   // the breath: streaks and leaves carried forward in the cone
+         java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+         Vec3 d = p.d.normalize();
+         double front = p.r * Mth.clamp(age / (p.life * 0.55), 0.0, 1.0);
+         for (int i = 0; i < 6; i++) {
+            double sd = r.nextDouble() * front;
+            Vec3 o = p.c.add(d.scale(sd)).add(jit(r, sd * Math.tan(p.h) * 0.7 + 0.1));
+            DarkSmoke.streak(o, d.scale(r.nextDouble(0.7, 1.3)), 0.06F, r.nextInt(5, 9));
+         }
+         if (age < 4.0) for (int i = 0; i < 2; i++) DarkSmoke.dust(p.c.add(d.scale(r.nextDouble() * front)).add(jit(r, 0.8)), d.scale(0.5).add(0, 0.05, 0), (float)r.nextDouble(0.3, 0.6), r.nextInt(10, 16));
+         return;
+      }
       if (p.shape == 28) {   // tornado: streaks whipping round it, dust and debris thrown about its foot
          if (age > 1.0) return;
          java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
@@ -902,14 +1003,14 @@ public class FxRenderer {
     */
    private static int lightPal = -1;
 
-   private static boolean isLight(int pal) { return pal == 2 || pal == 4 || pal == 5 || pal == 12; }
+   private static boolean isLight(int pal) { return pal == 2 || pal == 4 || pal == 5 || pal == 6 || pal == 12 || pal == 13 || pal == 14; }
 
    private static void vtx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, float[] col, float a) {
       if (lightPal >= 0 && gv != null) {
          float[] rc = RIM[lightPal];
          float k = lightPal == 5 ? 0.85F : 0.75F;
          float[] lc = {col[0] + (rc[0] - col[0]) * k, col[1] + (rc[1] - col[1]) * k, col[2] + (rc[2] - col[2]) * k};
-         gvtx(m, cam, w, lc, a * (lightPal == 5 ? 0.42F : 0.6F));
+         gvtx(m, cam, w, lc, a * (lightPal == 5 ? 0.28F : 0.6F));
          return;
       }
       if (nearFade) {
@@ -1065,11 +1166,11 @@ public class FxRenderer {
     * Smoke for the zone, every tick: when it opens, a wall of black smoke rolls outward with the front; while it is up,
     * darkness drifts low over the ground swirling around you, curls up along the edge, and violet motes rise through it.
     */
-   private static boolean zoneFire(double[] f) { return f.length > 4 && ((int)f[4] == FIRE); }
+   private static boolean zoneFire(double[] f) { return f.length > 4 && ((int)f[4] == FIRE || (int)f[4] == CRIMSON); }
 
    /** One puff of the zone: darkness for Yami, a lick of heat-flame for Mereoleona. */
    private static void zPuff(double[] f, Vec3 at, Vec3 v, float size, int life) {
-      if (zoneFire(f)) DarkSmoke.flame(at, v.add(0, 0.02, 0), size * 0.5F, Math.max(8, life / 2));
+      if (zoneFire(f)) DarkSmoke.crimsonFlame(at, v.add(0, 0.02, 0), size * 0.5F, Math.max(8, life / 2));
       else DarkSmoke.smoke(at, v, size, life);
    }
 
@@ -1123,8 +1224,8 @@ public class FxRenderer {
       double gy = zoneGround(e, f);
       Vec3 c = new Vec3(ep.x, gy + 0.04, ep.z);
       boolean fireZone = zoneFire(f);
-      float[] rim = fireZone ? RIM[FIRE] : RIM[DARKNESS];
-      float[] sea = fireZone ? new float[]{0.35F, 0.06F, 0.0F} : new float[]{0.012F, 0.0F, 0.03F};
+      float[] rim = fireZone ? RIM[CRIMSON] : RIM[DARKNESS];
+      float[] sea = fireZone ? new float[]{0.4F, 0.02F, 0.02F} : new float[]{0.012F, 0.0F, 0.03F};
       float seaMul = fireZone ? 0.45F : 1.0F;   // her zone: a glowing heat-haze over the ground, not a sea of black
       int RINGS = ZR, SEG = ZS;
       double[] hs = zoneHeights(e, ep.x, gy, ep.z, R);
@@ -1160,23 +1261,36 @@ public class FxRenderer {
             }
          }
       }
-      // the dome of darkness: barely there, with a violet sheen at its silhouette
-      int LAT = 8, LON = 40;
+      // the dome: Yami's is a real dome of darkness over the zone like the Black Cocoon - a shaded, see-through shell
+      // with a violet rim; from inside it (first person) it is only a faint tint. Mereoleona's stays a heat-haze.
+      boolean insideDome = !fireZone && cam.distanceTo(c) < R;
+      float[] shell = {0.02F, 0.0F, 0.05F};
+      int LAT = 10, LON = 40;
       for (int i = 0; i < LAT; i++) {
          double e0 = Math.PI / 2 * i / LAT, e1 = Math.PI / 2 * (i + 1) / LAT;
          for (int j = 0; j < LON; j++) {
             double a0 = Math.PI * 2 * j / LON, a1 = Math.PI * 2 * (j + 1) / LON;
             Vec3[] q = {dome(a0, e0), dome(a1, e0), dome(a1, e1), dome(a0, e1)};
+            double hy = fireZone ? 0.6 : 0.85;
+            if (!fireZone && !insideDome) {   // from outside only the near side, so the shell doesn't double up
+               Vec3 qc = q[0].add(q[2]).scale(0.5);
+               if (qc.dot(cam.subtract(c.add(qc.x * R, qc.y * R * hy, qc.z * R))) < 0.0) continue;
+            }
             for (Vec3 nv : q) {
-               Vec3 w = c.add(nv.x * R, nv.y * R * 0.6, nv.z * R);
+               Vec3 w = c.add(nv.x * R, nv.y * R * hy, nv.z * R);
                float fres = (float)Math.pow(1.0 - Math.abs(nv.dot(cam.subtract(w).normalize())), 3.0);
-               vtx(vc, m, n, cam, w, sea, (0.05F + 0.22F * fres) * seaMul);
+               if (fireZone) vtx(vc, m, n, cam, w, sea, (0.05F + 0.22F * fres) * seaMul);
+               else {
+                  float a = insideDome ? 0.05F + 0.08F * fres : 0.26F + 0.38F * fres;
+                  float[] col = {shell[0] + rim[0] * fres * 0.4F, shell[1] + rim[1] * fres * 0.4F, shell[2] + rim[2] * fres * 0.4F};
+                  vtx(vc, m, n, cam, w, col, a);
+               }
             }
             if (gv != null) {
                for (Vec3 nv : q) {
-                  Vec3 w = c.add(nv.x * R, nv.y * R * 0.6, nv.z * R);
+                  Vec3 w = c.add(nv.x * R, nv.y * R * hy, nv.z * R);
                   float fres = (float)Math.pow(1.0 - Math.abs(nv.dot(cam.subtract(w).normalize())), 4.0);
-                  gvtx(m, cam, w, rim, fres * 0.22F * (float)(1.0 - nv.y * 0.6));
+                  gvtx(m, cam, w, rim, fres * (fireZone ? 0.22F : (insideDome ? 0.12F : 0.4F)) * (float)(1.0 - nv.y * 0.5));
                }
             }
          }
@@ -1258,7 +1372,7 @@ public class FxRenderer {
                // per-tick copies (HOLD solids, moving spheres, the tornado) get a quarter tick of slack so a late
                // packet never leaves a one-frame gap; they move along their velocity, so the overlap lines up
                boolean perTick = f.p.life <= 1 && f.killAge < 0.0;
-               if (!(age < 0.0) && !(age > life + (perTick ? 0.25 : 0.0))) {
+               if (!(age < 0.0) && !(age > life + (perTick ? 1.5 : 0.0))) {
                   float env = (float)(smooth(age / 1.5) * smooth((life - age) / Math.max(2.0, life * 0.45)));   // eased in and out, no hard edges
                   int sh = f.p.shape;
                   lightPal = (sh == 0 || sh == 1 || sh == 2 || sh == 13) && isLight(f.p.palette) ? f.p.palette : -1;
@@ -1292,6 +1406,9 @@ public class FxRenderer {
                         break;
                      case 28:
                         tornadoFx(m, cam, f.p, age, life);
+                        break;
+                     case 29:
+                        gustFx(m, cam, f.p, age, life);
                   }
                   lightPal = -1;
                }
@@ -1474,6 +1591,31 @@ public class FxRenderer {
             }
          }
       }
+      // the crown of wind: a thin circlet of light around the brow with five tall feathers of air rising from it,
+      // the middle one tallest, all swaying slightly
+      double hyr = Math.toRadians(Mth.rotLerp(pt, p.yHeadRotO, p.yHeadRot));
+      Vec3 hf = new Vec3(-Math.sin(hyr), 0, Math.cos(hyr)), hl = new Vec3(Math.cos(hyr), 0, Math.sin(hyr));
+      Vec3 crown = base.add(0, h * 0.97, 0);
+      Vec3 prevC = null;
+      for (int k = 0; k <= 16; k++) {
+         double t = Math.PI * 2 * k / 16;
+         Vec3 q = crown.add(hf.scale(Math.cos(t) * 0.3)).add(hl.scale(Math.sin(t) * 0.3));
+         if (prevC != null) gline(m, cam, prevC, q, 0.025F, WIND, a * 0.85F);
+         prevC = q;
+      }
+      for (int k = -2; k <= 2; k++) {
+         double t = k * 0.42;   // spread across the front of the circlet
+         Vec3 root = crown.add(hf.scale(Math.cos(t) * 0.3)).add(hl.scale(Math.sin(t) * 0.3));
+         double tall = (0.42 - Math.abs(k) * 0.09) * grow;
+         double sway = Math.sin(now * 0.25 + k) * 0.04;
+         Vec3 tip = root.add(0, tall, 0).add(hf.scale(-0.05 + sway)).add(hl.scale(Math.sin(t) * 0.08));
+         Vec3 w = hl.scale(0.045);
+         Vec3 midp = root.add(tip.subtract(root).scale(0.5));
+         quad(vc, m, n, cam, root, midp.add(w), tip, midp.subtract(w), white, a * 0.5F, a * 0.35F, 0.0F, a * 0.35F);
+         gquad(m, cam, root, midp.add(w), tip, midp.subtract(w), rim, a * 0.6F, a * 0.4F, a * 0.1F, a * 0.4F);
+         gline(m, cam, root, tip, 0.018F, WIND, a * 0.8F);
+      }
+      halo(m, cam, crown.add(hf.scale(0.3)).add(0, 0.05, 0), 0.12, white, a * 0.8F);   // a jewel of light at the front
       // two rings of wind turning around the body
       for (int ring = 0; ring < 2; ring++) {
          double tilt = ring == 0 ? 0.25 : -0.35, spin = now * (ring == 0 ? 0.22 : -0.17);
@@ -1637,8 +1779,36 @@ public class FxRenderer {
    }
 
    /** How far a moving solid has travelled: stops when its move time is up, or where it was killed. */
+   /**
+    * Things re-sent every tick (projectiles, orbiting weapons, the tornado...) are one object to the eye: a new copy
+    * replaces the copy it continues (same kind, same size, right where the old one has got to), so there is never a
+    * gap (the old copy waits in place until the next arrives) and never a doubled ghost.
+    */
+   private static void replaceTrack(FxRenderer.Fx nf) {
+      FxPacket np = nf.p;
+      FxRenderer.Fx best = null;
+      double bestD = Double.MAX_VALUE;
+      for (FxRenderer.Fx f : FX) {
+         FxPacket p = f.p;
+         if (p.life > 1 || f.killAge >= 0.0 || p.shape != np.shape || p.palette != np.palette) continue;
+         if (Math.abs(p.r - np.r) > Math.max(0.05, np.r * 0.25) || Math.abs(p.r2 - np.r2) > Math.max(0.05, Math.abs(np.r2) * 0.25)) continue;
+         double age = nf.born - f.born;
+         if (age < 0.5 || age > 3.0) continue;
+         Vec3 at = (p.shape == 7 || p.shape == 8) ? travelled(f, age) : p.c.add(p.v.scale(mv(p, age)));
+         double d = at.distanceTo(np.c);
+         double tol = 0.6 + np.v.length() * 0.6;
+         if (d < tol && d < bestD) { bestD = d; best = f; }
+      }
+      if (best != null) best.killAge = -2.0;   // marked: dropped below
+      FX.removeIf(f -> f.killAge == -2.0);
+   }
+
+   /** How long a packet has moved: per-tick copies (life 1) stop at the end of their own tick and wait for the next. */
+   private static double mv(FxPacket p, double age) { return p.life <= 1 ? Math.min(age, 1.0) : age; }
+
    private static Vec3 travelled(FxRenderer.Fx f, double age) {
       double mt = f.p.a1 > 0.0F ? Math.min(age, (double)f.p.a1) : age;
+      if (f.p.life <= 1) mt = Math.min(mt, 1.0);
       if (f.killAge >= 0.0) mt = Math.min(mt, f.killAge);
       return f.p.c.add(f.p.v.scale(mt));
    }

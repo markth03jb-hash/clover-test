@@ -1,7 +1,30 @@
-Arcane Addon v1.31.0 - all changed files since v1.0.0
+Arcane Addon v1.32.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.32.0
+- No more popping in and out: things re-sent every tick (projectiles, orbiting weapons, the tornado, the eagle,
+  bats, fists) are now tracked as one object - each new update replaces the one it continues, and the old one
+  waits in place if an update is late, so nothing blinks or doubles.
+- Yami: Dimension Slash is blade-thin again with one clean hairline after it (no more tears / heavy smoke);
+  Event Horizon releases ONE colossal slash and one line; Mana Zone is a dark see-through dome like the Black
+  Cocoon (only a faint tint from inside).
+- Wind: thinner, crisper Wind Blade Shower blades; Sylph's Breath is a swirling cone of wind with rings rolling
+  out and leaves/dust carried along; Spirit of Zephyr's blades are thinner and fly 22 blocks; Spirit Dive gets a
+  crown of wind (a circlet with five feathers of air and a jewel of light); smooth circling halberds.
+- Mercury: Storm of Blades circles smoothly; Silver Shining Regal Spear is a blinding held beam with spiral
+  rings and mercury beads.
+- Magna: fireballs are solid, glowing balls of fire with a stronger corona; Super Magna Special is centred (the
+  ball rises straight in front of your face and the bat meets it); Flaming Bat now puts a burning baseball bat
+  in your hands that follows every swing of the animation; Flame Knuckles burn on your actual fists and follow
+  every punch; Ring of Fire is bigger (7 blocks, taller). Crazy Cyclone Rush is replaced by Fireball Barrage.
+- Luck: everything is blue lightning now. Thunder God Mode: glowing eyes, lightning standing up off the head,
+  a field of charge around you, arcs crawling along the ground from your feet, and bolts from the sky crashing
+  down nearby. New Thunder God's Kick animation: snap kick, spinning roundhouse, leaping high kick.
+- Mereoleona: her fire is crimson (Magna's is orange) and her Mana Zone a crimson heat-haze. Hellfire Incarnate:
+  a lion's mane of fire streaming from the head, burning footprints, embers, fists on fire. New Calidos Brachium
+  Barrage animation (a boxer's flurry ending in a rising haymaker) with a matching finishing fist.
 
 NEW IN 1.31.0
 - Smoother effects: everything that flies (arrows, spears, halberds, swords, bullets, the eagle,
