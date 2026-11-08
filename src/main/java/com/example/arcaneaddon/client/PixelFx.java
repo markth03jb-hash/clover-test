@@ -68,7 +68,7 @@ public final class PixelFx {
         float scaleNow(float pt) {
             float t = age + pt;
             float s = grow == 1.0F ? 1.0F : (float) Math.pow(grow, t);
-            if (pop > 0) s *= Mth.clamp(0.35F + 0.65F * t / pop, 0.35F, 1.0F);
+            if (pop > 0) { float k = Mth.clamp(t / pop, 0.0F, 1.0F); s *= 0.35F + 0.65F * k * k * (3.0F - 2.0F * k); }   // smoothstep
             return s;
         }
     }
@@ -125,34 +125,35 @@ public final class PixelFx {
         };
     }
 
-    /** Glow colour of a palette at a given heat: white-hot at the top, the palette's own colour, then dying embers. */
+    /** Glow colour of a palette at a given heat: white-hot at the top, the palette's own colour, then dying embers -
+     *  blended smoothly between those stops, so a sprite cools without visible colour jumps. */
     private static float[] glow(int pal, float heat) {
         pal = Mth.clamp(pal, 0, 15);
-        if (pal == 2) return fire(heat);
-        if (pal == 0 || pal == 9 || pal == 14) return crimson(heat);
+        if (pal == 2) return ramp(FIRE_H, FIRE_C, heat);
+        if (pal == 0 || pal == 9 || pal == 14) return ramp(CRIM_H, CRIM_C, heat);
         float[] c = RIM[pal];
-        if (heat > 0.92F) return new float[]{0.92F + 0.08F * c[0], 0.92F + 0.08F * c[1], 0.92F + 0.08F * c[2]};
-        if (heat > 0.7F) return new float[]{0.55F + 0.45F * c[0], 0.55F + 0.45F * c[1], 0.55F + 0.45F * c[2]};
-        if (heat > 0.4F) return c;
-        if (heat > 0.2F) return new float[]{c[0] * 0.6F, c[1] * 0.6F, c[2] * 0.6F};
-        return new float[]{c[0] * 0.3F, c[1] * 0.3F, c[2] * 0.3F};
+        float[][] cs = {
+                {c[0] * 0.3F, c[1] * 0.3F, c[2] * 0.3F}, {c[0] * 0.6F, c[1] * 0.6F, c[2] * 0.6F}, c,
+                {0.55F + 0.45F * c[0], 0.55F + 0.45F * c[1], 0.55F + 0.45F * c[2]}, {0.92F + 0.08F * c[0], 0.92F + 0.08F * c[1], 0.92F + 0.08F * c[2]}};
+        return ramp(GEN_H, cs, heat);
     }
 
-    /** Anti magic's glow: crimson, from a hot pink-white down to a deep blood red. */
-    private static float[] crimson(float heat) {
-        if (heat > 0.92F) return new float[]{1.0F, 0.93F, 0.88F};
-        if (heat > 0.8F) return new float[]{1.0F, 0.75F, 0.7F};
-        if (heat > 0.55F) return new float[]{1.0F, 0.22F, 0.16F};
-        if (heat > 0.3F) return new float[]{0.75F, 0.04F, 0.04F};
-        return new float[]{0.35F, 0.0F, 0.02F};
-    }
+    private static final float[] GEN_H = {0.1F, 0.3F, 0.55F, 0.8F, 0.97F};
+    private static final float[] CRIM_H = {0.15F, 0.42F, 0.68F, 0.86F, 0.97F};
+    private static final float[][] CRIM_C = {{0.35F, 0.0F, 0.02F}, {0.75F, 0.04F, 0.04F}, {1.0F, 0.22F, 0.16F}, {1.0F, 0.75F, 0.7F}, {1.0F, 0.93F, 0.88F}};
+    private static final float[] FIRE_H = {0.1F, 0.3F, 0.5F, 0.7F, 0.9F};
+    private static final float[][] FIRE_C = {{0.45F, 0.06F, 0.03F}, {0.9F, 0.22F, 0.05F}, {1.0F, 0.55F, 0.12F}, {1.0F, 0.86F, 0.35F}, {1.0F, 0.97F, 0.85F}};
 
-    private static float[] fire(float heat) {
-        if (heat > 0.8F) return new float[]{1.0F, 0.97F, 0.85F};
-        if (heat > 0.6F) return new float[]{1.0F, 0.86F, 0.35F};
-        if (heat > 0.4F) return new float[]{1.0F, 0.55F, 0.12F};
-        if (heat > 0.2F) return new float[]{0.9F, 0.22F, 0.05F};
-        return new float[]{0.45F, 0.06F, 0.03F};
+    private static float[] ramp(float[] hs, float[][] cs, float h) {
+        if (h <= hs[0]) return cs[0];
+        for (int i = 1; i < hs.length; i++) {
+            if (h <= hs[i]) {
+                float t = (h - hs[i - 1]) / (hs[i] - hs[i - 1]);
+                float[] a = cs[i - 1], b = cs[i];
+                return new float[]{a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t};
+            }
+        }
+        return cs[cs.length - 1];
     }
 
     // ------------------------------------------------------------------ emitting
@@ -1086,6 +1087,11 @@ public final class PixelFx {
 
     private static void add(Spr p) {
         if (SPRITES.size() >= MAX) return;   // full: drop the newest instead of shifting the whole list
+        if (p.age == 0 && p.vel.lengthSqr() > 1.0E-4) {   // spread along the path it moved this tick, so no stepping
+            double u = ThreadLocalRandom.current().nextDouble();
+            p.pos = p.pos.subtract(p.vel.scale(u));
+            p.prev = p.pos;
+        }
         SPRITES.add(p);
     }
 
@@ -1183,6 +1189,7 @@ public final class PixelFx {
         double dc = pos.distanceTo(cam);
         if (dc < 2.2) fade *= (float) Mth.clamp((dc - 0.6) / 1.6, 0.0, 1.0);   // never smother the camera
         if (p.twinkle) fade *= 0.55F + 0.45F * (float) Math.abs(Math.sin((p.age + pt) * 1.3 + p.seed));
+        fade *= 0.35F + 0.65F * Mth.clamp(p.age + pt, 0.0F, 1.0F);   // eases in over its first tick instead of popping
         return fade;
     }
 
@@ -1208,6 +1215,7 @@ public final class PixelFx {
         float fade = fadeOf(p, pos, cam, pt, opacity);
         if (fade <= 0.01F) return;
         float life = (p.age + pt) / (float) p.life;
+        float heat = p.dark ? p.heat : Math.max(0.0F, p.heat - 0.9F / p.life * pt);   // keeps cooling between ticks
         Vec3 toCam = cam.subtract(pos);
         Vec3 ax, side;
         float scale = p.scaleNow(pt);
@@ -1241,9 +1249,9 @@ public final class PixelFx {
                 float[] c = glow(p.pal, 0.6F);
                 r = c[0] * k; g = c[1] * k; bl = c[2] * k;
             }
-            case L_CORE -> { float[] c = glow(p.pal, 1.0F); float k = fade * Mth.clamp((p.heat - 0.5F) * 2.5F, 0.0F, 1.0F); r = c[0] * k; g = c[1] * k; bl = c[2] * k; }
-            case L_GLOW_RIM -> { float[] c = glow(p.pal, Math.min(p.heat, 0.5F)); float k = 0.4F * fade; r = c[0] * k; g = c[1] * k; bl = c[2] * k; }
-            default -> { float[] c = glow(p.pal, Math.min(p.heat, 0.88F)); r = c[0] * fade; g = c[1] * fade; bl = c[2] * fade; }
+            case L_CORE -> { float[] c = glow(p.pal, 1.0F); float k = fade * Mth.clamp((heat - 0.5F) * 2.5F, 0.0F, 1.0F); r = c[0] * k; g = c[1] * k; bl = c[2] * k; }
+            case L_GLOW_RIM -> { float[] c = glow(p.pal, Math.min(heat, 0.5F)); float k = 0.4F * fade; r = c[0] * k; g = c[1] * k; bl = c[2] * k; }
+            default -> { float[] c = glow(p.pal, Math.min(heat, 0.88F)); r = c[0] * fade; g = c[1] * fade; bl = c[2] * fade; }
         }
         if (r + g + bl < 0.01F && layer != L_SOLID) return;
         int fr = frameOf(p, pt);

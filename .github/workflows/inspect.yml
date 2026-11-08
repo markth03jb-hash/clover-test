@@ -2,6 +2,8 @@ name: Inspect Iron's Spellbooks
 on:
   push:
     branches: [inspect-iron]
+permissions:
+  contents: write
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -20,8 +22,11 @@ jobs:
           mkdir -p x && cd x && unzip -q -o "$J" && cd ..
           find x -path "*gui*" -name "*.png" | head -100 > out/gui_pngs.txt
           cp -r x/assets/irons_spellbooks/textures/gui out/gui_tex || true
-          find x -name "*.class" | grep -i -E "wheel|SpellSelection|ClientInputEvents|KeyMappings|SpellBarOverlay|ClientMagicData" > out/classes.txt
+          find x -name "*.class" | grep -i -E "wheel|SpellSelection|ClientInputEvents|KeyMappings|SpellBarOverlay|ClientMagicData|ClientSpellCastHelper" > out/classes.txt
+          find x/assets/irons_spellbooks/textures/gui -name "*.png" > out/all_gui.txt || true
           for c in $(cat out/classes.txt); do n=$(echo $c | sed 's#^x/##; s#\.class$##'); javap -p -c -constants -cp x "$n" > "out/$(basename $n).javap.txt" 2>&1 || true; done
           ls x/assets/irons_spellbooks/player_animation | head -200 > out/anims.txt || true
-      - uses: actions/upload-artifact@v4
-        with: { name: iron-inspect, path: out }
+      - name: Commit findings
+        run: |
+          git config user.name "ci"; git config user.email "ci@example.com"
+          rm -rf inspect && mv out inspect && git add inspect && git commit -qm "inspect output [skip ci]" && git push
