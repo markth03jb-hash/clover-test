@@ -1,0 +1,482 @@
+Compiled from "BakedModelFactory.java"
+public interface software.bernie.geckolib.loading.object.BakedModelFactory {
+  public static final java.util.Map<java.lang.String, software.bernie.geckolib.loading.object.BakedModelFactory> FACTORIES;
+
+  public static final software.bernie.geckolib.loading.object.BakedModelFactory DEFAULT_FACTORY;
+
+  public abstract software.bernie.geckolib.cache.object.BakedGeoModel constructGeoModel(software.bernie.geckolib.loading.object.GeometryTree);
+
+  public abstract software.bernie.geckolib.cache.object.GeoBone constructBone(software.bernie.geckolib.loading.object.BoneStructure, software.bernie.geckolib.loading.json.raw.ModelProperties, software.bernie.geckolib.cache.object.GeoBone);
+
+  public abstract software.bernie.geckolib.cache.object.GeoCube constructCube(software.bernie.geckolib.loading.json.raw.Cube, software.bernie.geckolib.loading.json.raw.ModelProperties, software.bernie.geckolib.cache.object.GeoBone);
+
+  public default software.bernie.geckolib.cache.object.GeoQuad[] buildQuads(software.bernie.geckolib.loading.json.raw.UVUnion, software.bernie.geckolib.loading.object.BakedModelFactory$VertexSet, software.bernie.geckolib.loading.json.raw.Cube, float, float, boolean);
+    Code:
+       0: bipush        6
+       2: anewarray     #34                 // class software/bernie/geckolib/cache/object/GeoQuad
+       5: astore        7
+       7: aload         7
+       9: iconst_0
+      10: aload_0
+      11: aload_2
+      12: aload_3
+      13: aload_1
+      14: fload         4
+      16: fload         5
+      18: iload         6
+      20: getstatic     #40                 // Field net/minecraft/core/Direction.WEST:Lnet/minecraft/core/Direction;
+      23: invokeinterface #44,  8           // InterfaceMethod buildQuad:(Lsoftware/bernie/geckolib/loading/object/BakedModelFactory$VertexSet;Lsoftware/bernie/geckolib/loading/json/raw/Cube;Lsoftware/bernie/geckolib/loading/json/raw/UVUnion;FFZLnet/minecraft/core/Direction;)Lsoftware/bernie/geckolib/cache/object/GeoQuad;
+      28: aastore
+      29: aload         7
+      31: iconst_1
+      32: aload_0
+      33: aload_2
+      34: aload_3
+      35: aload_1
+      36: fload         4
+      38: fload         5
+      40: iload         6
+      42: getstatic     #47                 // Field net/minecraft/core/Direction.EAST:Lnet/minecraft/core/Direction;
+      45: invokeinterface #44,  8           // InterfaceMethod buildQuad:(Lsoftware/bernie/geckolib/loading/object/BakedModelFactory$VertexSet;Lsoftware/bernie/geckolib/loading/json/raw/Cube;Lsoftware/bernie/geckolib/loading/json/raw/UVUnion;FFZLnet/minecraft/core/Direction;)Lsoftware/bernie/geckolib/cache/object/GeoQuad;
+      50: aastore
+      51: aload         7
+      53: iconst_2
+      54: aload_0
+      55: aload_2
+      56: aload_3
+      57: aload_1
+      58: fload         4
+      60: fload         5
+      62: iload         6
+      64: getstatic     #50                 // Field net/minecraft/core/Direction.NORTH:Lnet/minecraft/core/Direction;
+      67: invokeinterface #44,  8           // InterfaceMethod buildQuad:(Lsoftware/bernie/geckolib/loading/object/BakedModelFactory$VertexSet;Lsoftware/bernie/geckolib/loading/json/raw/Cube;Lsoftware/bernie/geckolib/loading/json/raw/UVUnion;FFZLnet/minecraft/core/Direction;)Lsoftware/bernie/geckolib/cache/object/GeoQuad;
+      72: aastore
+      73: aload         7
+      75: iconst_3
+      76: aload_0
+      77: aload_2
+      78: aload_3
+      79: aload_1
+      80: fload         4
+      82: fload         5
+      84: iload         6
+      86: getstatic     #53                 // Field net/minecraft/core/Direction.SOUTH:Lnet/minecraft/core/Direction;
+      89: invokeinterface #44,  8           // InterfaceMethod buildQuad:(Lsoftware/bernie/geckolib/loading/object/BakedModelFactory$VertexSet;Lsoftware/bernie/geckolib/loading/json/raw/Cube;Lsoftware/bernie/geckolib/loading/json/raw/UVUnion;FFZLnet/minecraft/core/Direction;)Lsoftware/bernie/geckolib/cache/object/GeoQuad;
+      94: aastore
+      95: aload         7
+      97: iconst_4
+      98: aload_0
+      99: aload_2
+     100: aload_3
+     101: aload_1
+     102: fload         4
+     104: fload         5
+     106: iload         6
+     108: getstatic     #56                 // Field net/minecraft/core/Direction.UP:Lnet/minecraft/core/Direction;
+     111: invokeinterface #44,  8           // InterfaceMethod buildQuad:(Lsoftware/bernie/geckolib/loading/object/BakedModelFactory$VertexSet;Lsoftware/bernie/geckolib/loading/json/raw/Cube;Lsoftware/bernie/geckolib/loading/json/raw/UVUnion;FFZLnet/minecraft/core/Direction;)Lsoftware/bernie/geckolib/cache/object/GeoQuad;
+     116: aastore
+     117: aload         7
+     119: iconst_5
+     120: aload_0
+     121: aload_2
+     122: aload_3
+     123: aload_1
+     124: fload         4
+     126: fload         5
+     128: iload         6
+     130: getstatic     #59                 // Field net/minecraft/core/Direction.DOWN:Lnet/minecraft/core/Direction;
+     133: invokeinterface #44,  8           // InterfaceMethod buildQuad:(Lsoftware/bernie/geckolib/loading/object/BakedModelFactory$VertexSet;Lsoftware/bernie/geckolib/loading/json/raw/Cube;Lsoftware/bernie/geckolib/loading/json/raw/UVUnion;FFZLnet/minecraft/core/Direction;)Lsoftware/bernie/geckolib/cache/object/GeoQuad;
+     138: aastore
+     139: aload         7
+     141: areturn
+
+  public default software.bernie.geckolib.cache.object.GeoQuad buildQuad(software.bernie.geckolib.loading.object.BakedModelFactory$VertexSet, software.bernie.geckolib.loading.json.raw.Cube, software.bernie.geckolib.loading.json.raw.UVUnion, float, float, boolean, net.minecraft.core.Direction);
+    Code:
+       0: aload_3
+       1: invokevirtual #79                 // Method software/bernie/geckolib/loading/json/raw/UVUnion.isBoxUV:()Z
+       4: ifne          79
+       7: aload_3
+       8: invokevirtual #83                 // Method software/bernie/geckolib/loading/json/raw/UVUnion.faceUV:()Lsoftware/bernie/geckolib/loading/json/raw/UVFaces;
+      11: aload         7
+      13: invokevirtual #89                 // Method software/bernie/geckolib/loading/json/raw/UVFaces.fromDirection:(Lnet/minecraft/core/Direction;)Lsoftware/bernie/geckolib/loading/json/raw/FaceUV;
+      16: astore        8
+      18: aload         8
+      20: ifnonnull     25
+      23: aconst_null
+      24: areturn
+      25: aload_1
+      26: aload         7
+      28: iconst_0
+      29: iload         6
+      31: ifne          44
+      34: aload_2
+      35: invokevirtual #94                 // Method software/bernie/geckolib/loading/json/raw/Cube.mirror:()Ljava/lang/Boolean;
+      38: getstatic     #100                // Field java/lang/Boolean.TRUE:Ljava/lang/Boolean;
+      41: if_acmpne     48
+      44: iconst_1
+      45: goto          49
+      48: iconst_0
+      49: invokevirtual #104                // Method software/bernie/geckolib/loading/object/BakedModelFactory$VertexSet.verticesForQuad:(Lnet/minecraft/core/Direction;ZZ)[Lsoftware/bernie/geckolib/cache/object/GeoVertex;
+      52: aload         8
+      54: invokevirtual #108                // Method software/bernie/geckolib/loading/json/raw/FaceUV.uv:()[D
+      57: aload         8
+      59: invokevirtual #111                // Method software/bernie/geckolib/loading/json/raw/FaceUV.uvSize:()[D
+      62: aload         8
+      64: invokevirtual #115                // Method software/bernie/geckolib/loading/json/raw/FaceUV.uvRotation:()Lsoftware/bernie/geckolib/loading/json/raw/FaceUV$Rotation;
+      67: fload         4
+      69: fload         5
+      71: iload         6
+      73: aload         7
+      75: invokestatic  #119                // Method software/bernie/geckolib/cache/object/GeoQuad.build:([Lsoftware/bernie/geckolib/cache/object/GeoVertex;[D[DLsoftware/bernie/geckolib/loading/json/raw/FaceUV$Rotation;FFZLnet/minecraft/core/Direction;)Lsoftware/bernie/geckolib/cache/object/GeoQuad;
+      78: areturn
+      79: aload_2
+      80: invokevirtual #122                // Method software/bernie/geckolib/loading/json/raw/Cube.uv:()Lsoftware/bernie/geckolib/loading/json/raw/UVUnion;
+      83: invokevirtual #125                // Method software/bernie/geckolib/loading/json/raw/UVUnion.boxUVCoords:()[D
+      86: astore        8
+      88: aload_2
+      89: invokevirtual #128                // Method software/bernie/geckolib/loading/json/raw/Cube.size:()[D
+      92: astore        9
+      94: new           #130                // class net/minecraft/world/phys/Vec3
+      97: dup
+      98: aload         9
+     100: iconst_0
+     101: daload
+     102: invokestatic  #136                // Method java/lang/Math.floor:(D)D
+     105: aload         9
+     107: iconst_1
+     108: daload
+     109: invokestatic  #136                // Method java/lang/Math.floor:(D)D
+     112: aload         9
+     114: iconst_2
+     115: daload
+     116: invokestatic  #136                // Method java/lang/Math.floor:(D)D
+     119: invokespecial #140                // Method net/minecraft/world/phys/Vec3."<init>":(DDD)V
+     122: astore        10
+     124: getstatic     #144                // Field software/bernie/geckolib/loading/object/BakedModelFactory$1.$SwitchMap$net$minecraft$core$Direction:[I
+     127: aload         7
+     129: invokevirtual #148                // Method net/minecraft/core/Direction.ordinal:()I
+     132: iaload
+     133: tableswitch   { // 1 to 6
+                     1: 180
+                     2: 247
+                     3: 302
+                     4: 363
+                     5: 436
+                     6: 491
+               default: 172
+          }
+     172: new           #152                // class java/lang/IncompatibleClassChangeError
+     175: dup
+     176: invokespecial #155                // Method java/lang/IncompatibleClassChangeError."<init>":()V
+     179: athrow
+     180: iconst_2
+     181: anewarray     #150                // class "[D"
+     184: dup
+     185: iconst_0
+     186: iconst_2
+     187: newarray       double
+     189: dup
+     190: iconst_0
+     191: aload         8
+     193: iconst_0
+     194: daload
+     195: aload         10
+     197: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     200: dadd
+     201: aload         10
+     203: getfield      #162                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+     206: dadd
+     207: dastore
+     208: dup
+     209: iconst_1
+     210: aload         8
+     212: iconst_1
+     213: daload
+     214: aload         10
+     216: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     219: dadd
+     220: dastore
+     221: aastore
+     222: dup
+     223: iconst_1
+     224: iconst_2
+     225: newarray       double
+     227: dup
+     228: iconst_0
+     229: aload         10
+     231: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     234: dastore
+     235: dup
+     236: iconst_1
+     237: aload         10
+     239: getfield      #165                // Field net/minecraft/world/phys/Vec3.f_82480_:D
+     242: dastore
+     243: aastore
+     244: goto          556
+     247: iconst_2
+     248: anewarray     #150                // class "[D"
+     251: dup
+     252: iconst_0
+     253: iconst_2
+     254: newarray       double
+     256: dup
+     257: iconst_0
+     258: aload         8
+     260: iconst_0
+     261: daload
+     262: dastore
+     263: dup
+     264: iconst_1
+     265: aload         8
+     267: iconst_1
+     268: daload
+     269: aload         10
+     271: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     274: dadd
+     275: dastore
+     276: aastore
+     277: dup
+     278: iconst_1
+     279: iconst_2
+     280: newarray       double
+     282: dup
+     283: iconst_0
+     284: aload         10
+     286: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     289: dastore
+     290: dup
+     291: iconst_1
+     292: aload         10
+     294: getfield      #165                // Field net/minecraft/world/phys/Vec3.f_82480_:D
+     297: dastore
+     298: aastore
+     299: goto          556
+     302: iconst_2
+     303: anewarray     #150                // class "[D"
+     306: dup
+     307: iconst_0
+     308: iconst_2
+     309: newarray       double
+     311: dup
+     312: iconst_0
+     313: aload         8
+     315: iconst_0
+     316: daload
+     317: aload         10
+     319: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     322: dadd
+     323: dastore
+     324: dup
+     325: iconst_1
+     326: aload         8
+     328: iconst_1
+     329: daload
+     330: aload         10
+     332: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     335: dadd
+     336: dastore
+     337: aastore
+     338: dup
+     339: iconst_1
+     340: iconst_2
+     341: newarray       double
+     343: dup
+     344: iconst_0
+     345: aload         10
+     347: getfield      #162                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+     350: dastore
+     351: dup
+     352: iconst_1
+     353: aload         10
+     355: getfield      #165                // Field net/minecraft/world/phys/Vec3.f_82480_:D
+     358: dastore
+     359: aastore
+     360: goto          556
+     363: iconst_2
+     364: anewarray     #150                // class "[D"
+     367: dup
+     368: iconst_0
+     369: iconst_2
+     370: newarray       double
+     372: dup
+     373: iconst_0
+     374: aload         8
+     376: iconst_0
+     377: daload
+     378: aload         10
+     380: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     383: dadd
+     384: aload         10
+     386: getfield      #162                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+     389: dadd
+     390: aload         10
+     392: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     395: dadd
+     396: dastore
+     397: dup
+     398: iconst_1
+     399: aload         8
+     401: iconst_1
+     402: daload
+     403: aload         10
+     405: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     408: dadd
+     409: dastore
+     410: aastore
+     411: dup
+     412: iconst_1
+     413: iconst_2
+     414: newarray       double
+     416: dup
+     417: iconst_0
+     418: aload         10
+     420: getfield      #162                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+     423: dastore
+     424: dup
+     425: iconst_1
+     426: aload         10
+     428: getfield      #165                // Field net/minecraft/world/phys/Vec3.f_82480_:D
+     431: dastore
+     432: aastore
+     433: goto          556
+     436: iconst_2
+     437: anewarray     #150                // class "[D"
+     440: dup
+     441: iconst_0
+     442: iconst_2
+     443: newarray       double
+     445: dup
+     446: iconst_0
+     447: aload         8
+     449: iconst_0
+     450: daload
+     451: aload         10
+     453: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     456: dadd
+     457: dastore
+     458: dup
+     459: iconst_1
+     460: aload         8
+     462: iconst_1
+     463: daload
+     464: dastore
+     465: aastore
+     466: dup
+     467: iconst_1
+     468: iconst_2
+     469: newarray       double
+     471: dup
+     472: iconst_0
+     473: aload         10
+     475: getfield      #162                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+     478: dastore
+     479: dup
+     480: iconst_1
+     481: aload         10
+     483: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     486: dastore
+     487: aastore
+     488: goto          556
+     491: iconst_2
+     492: anewarray     #150                // class "[D"
+     495: dup
+     496: iconst_0
+     497: iconst_2
+     498: newarray       double
+     500: dup
+     501: iconst_0
+     502: aload         8
+     504: iconst_0
+     505: daload
+     506: aload         10
+     508: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     511: dadd
+     512: aload         10
+     514: getfield      #162                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+     517: dadd
+     518: dastore
+     519: dup
+     520: iconst_1
+     521: aload         8
+     523: iconst_1
+     524: daload
+     525: aload         10
+     527: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     530: dadd
+     531: dastore
+     532: aastore
+     533: dup
+     534: iconst_1
+     535: iconst_2
+     536: newarray       double
+     538: dup
+     539: iconst_0
+     540: aload         10
+     542: getfield      #162                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+     545: dastore
+     546: dup
+     547: iconst_1
+     548: aload         10
+     550: getfield      #159                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     553: dneg
+     554: dastore
+     555: aastore
+     556: astore        11
+     558: aload_1
+     559: aload         7
+     561: iconst_1
+     562: iload         6
+     564: ifne          577
+     567: aload_2
+     568: invokevirtual #94                 // Method software/bernie/geckolib/loading/json/raw/Cube.mirror:()Ljava/lang/Boolean;
+     571: getstatic     #100                // Field java/lang/Boolean.TRUE:Ljava/lang/Boolean;
+     574: if_acmpne     581
+     577: iconst_1
+     578: goto          582
+     581: iconst_0
+     582: invokevirtual #104                // Method software/bernie/geckolib/loading/object/BakedModelFactory$VertexSet.verticesForQuad:(Lnet/minecraft/core/Direction;ZZ)[Lsoftware/bernie/geckolib/cache/object/GeoVertex;
+     585: aload         11
+     587: iconst_0
+     588: aaload
+     589: aload         11
+     591: iconst_1
+     592: aaload
+     593: getstatic     #171                // Field software/bernie/geckolib/loading/json/raw/FaceUV$Rotation.NONE:Lsoftware/bernie/geckolib/loading/json/raw/FaceUV$Rotation;
+     596: fload         4
+     598: fload         5
+     600: iload         6
+     602: aload         7
+     604: invokestatic  #119                // Method software/bernie/geckolib/cache/object/GeoQuad.build:([Lsoftware/bernie/geckolib/cache/object/GeoVertex;[D[DLsoftware/bernie/geckolib/loading/json/raw/FaceUV$Rotation;FFZLnet/minecraft/core/Direction;)Lsoftware/bernie/geckolib/cache/object/GeoQuad;
+     607: areturn
+
+  public static software.bernie.geckolib.loading.object.BakedModelFactory getForNamespace(java.lang.String);
+    Code:
+       0: getstatic     #180                // Field FACTORIES:Ljava/util/Map;
+       3: aload_0
+       4: getstatic     #182                // Field DEFAULT_FACTORY:Lsoftware/bernie/geckolib/loading/object/BakedModelFactory;
+       7: invokeinterface #188,  3          // InterfaceMethod java/util/Map.getOrDefault:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      12: checkcast     #2                  // class software/bernie/geckolib/loading/object/BakedModelFactory
+      15: areturn
+
+  public static void register(java.lang.String, software.bernie.geckolib.loading.object.BakedModelFactory);
+    Code:
+       0: getstatic     #180                // Field FACTORIES:Ljava/util/Map;
+       3: aload_0
+       4: aload_1
+       5: invokeinterface #195,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      10: pop
+      11: return
+
+  static {};
+    Code:
+       0: new           #199                // class it/unimi/dsi/fastutil/objects/Object2ObjectOpenHashMap
+       3: dup
+       4: iconst_1
+       5: invokespecial #202                // Method it/unimi/dsi/fastutil/objects/Object2ObjectOpenHashMap."<init>":(I)V
+       8: putstatic     #180                // Field FACTORIES:Ljava/util/Map;
+      11: new           #11                 // class software/bernie/geckolib/loading/object/BakedModelFactory$Builtin
+      14: dup
+      15: invokespecial #203                // Method software/bernie/geckolib/loading/object/BakedModelFactory$Builtin."<init>":()V
+      18: putstatic     #182                // Field DEFAULT_FACTORY:Lsoftware/bernie/geckolib/loading/object/BakedModelFactory;
+      21: return
+}

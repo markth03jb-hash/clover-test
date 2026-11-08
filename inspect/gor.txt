@@ -1,0 +1,325 @@
+Compiled from "GeoObjectRenderer.java"
+public class software.bernie.geckolib.renderer.GeoObjectRenderer<T extends software.bernie.geckolib.core.animatable.GeoAnimatable> implements software.bernie.geckolib.renderer.GeoRenderer<T> {
+  protected final software.bernie.geckolib.renderer.layer.GeoRenderLayersContainer<T> renderLayers;
+
+  protected final software.bernie.geckolib.model.GeoModel<T> model;
+
+  protected T animatable;
+
+  protected float scaleWidth;
+
+  protected float scaleHeight;
+
+  protected org.joml.Matrix4f objectRenderTranslations;
+
+  protected org.joml.Matrix4f modelRenderTranslations;
+
+  public software.bernie.geckolib.renderer.GeoObjectRenderer(software.bernie.geckolib.model.GeoModel<T>);
+    Code:
+       0: aload_0
+       1: invokespecial #58                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: new           #60                 // class software/bernie/geckolib/renderer/layer/GeoRenderLayersContainer
+       8: dup
+       9: aload_0
+      10: invokespecial #63                 // Method software/bernie/geckolib/renderer/layer/GeoRenderLayersContainer."<init>":(Lsoftware/bernie/geckolib/renderer/GeoRenderer;)V
+      13: putfield      #65                 // Field renderLayers:Lsoftware/bernie/geckolib/renderer/layer/GeoRenderLayersContainer;
+      16: aload_0
+      17: fconst_1
+      18: putfield      #67                 // Field scaleWidth:F
+      21: aload_0
+      22: fconst_1
+      23: putfield      #69                 // Field scaleHeight:F
+      26: aload_0
+      27: new           #71                 // class org/joml/Matrix4f
+      30: dup
+      31: invokespecial #72                 // Method org/joml/Matrix4f."<init>":()V
+      34: putfield      #74                 // Field objectRenderTranslations:Lorg/joml/Matrix4f;
+      37: aload_0
+      38: new           #71                 // class org/joml/Matrix4f
+      41: dup
+      42: invokespecial #72                 // Method org/joml/Matrix4f."<init>":()V
+      45: putfield      #76                 // Field modelRenderTranslations:Lorg/joml/Matrix4f;
+      48: aload_0
+      49: aload_1
+      50: putfield      #78                 // Field model:Lsoftware/bernie/geckolib/model/GeoModel;
+      53: return
+
+  public software.bernie.geckolib.model.GeoModel<T> getGeoModel();
+    Code:
+       0: aload_0
+       1: getfield      #78                 // Field model:Lsoftware/bernie/geckolib/model/GeoModel;
+       4: areturn
+
+  public T getAnimatable();
+    Code:
+       0: aload_0
+       1: getfield      #89                 // Field animatable:Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;
+       4: areturn
+
+  public net.minecraft.resources.ResourceLocation getTextureLocation(T);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokespecial #94                 // InterfaceMethod software/bernie/geckolib/renderer/GeoRenderer.getTextureLocation:(Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;)Lnet/minecraft/resources/ResourceLocation;
+       5: areturn
+
+  public java.util.List<software.bernie.geckolib.renderer.layer.GeoRenderLayer<T>> getRenderLayers();
+    Code:
+       0: aload_0
+       1: getfield      #65                 // Field renderLayers:Lsoftware/bernie/geckolib/renderer/layer/GeoRenderLayersContainer;
+       4: invokevirtual #99                 // Method software/bernie/geckolib/renderer/layer/GeoRenderLayersContainer.getRenderLayers:()Ljava/util/List;
+       7: areturn
+
+  public software.bernie.geckolib.renderer.GeoObjectRenderer<T> addRenderLayer(software.bernie.geckolib.renderer.layer.GeoRenderLayer<T>);
+    Code:
+       0: aload_0
+       1: getfield      #65                 // Field renderLayers:Lsoftware/bernie/geckolib/renderer/layer/GeoRenderLayersContainer;
+       4: aload_1
+       5: invokevirtual #106                // Method software/bernie/geckolib/renderer/layer/GeoRenderLayersContainer.addLayer:(Lsoftware/bernie/geckolib/renderer/layer/GeoRenderLayer;)V
+       8: aload_0
+       9: areturn
+
+  public software.bernie.geckolib.renderer.GeoObjectRenderer<T> withScale(float);
+    Code:
+       0: aload_0
+       1: fload_1
+       2: fload_1
+       3: invokevirtual #115                // Method withScale:(FF)Lsoftware/bernie/geckolib/renderer/GeoObjectRenderer;
+       6: areturn
+
+  public software.bernie.geckolib.renderer.GeoObjectRenderer<T> withScale(float, float);
+    Code:
+       0: aload_0
+       1: fload_1
+       2: putfield      #67                 // Field scaleWidth:F
+       5: aload_0
+       6: fload_2
+       7: putfield      #69                 // Field scaleHeight:F
+      10: aload_0
+      11: areturn
+
+  public void render(com.mojang.blaze3d.vertex.PoseStack, T, net.minecraft.client.renderer.MultiBufferSource, net.minecraft.client.renderer.RenderType, com.mojang.blaze3d.vertex.VertexConsumer, int);
+    Code:
+       0: aload_0
+       1: aload_2
+       2: putfield      #89                 // Field animatable:Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;
+       5: invokestatic  #127                // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+       8: astore        7
+      10: aload         5
+      12: ifnonnull     27
+      15: aload         7
+      17: getfield      #131                // Field net/minecraft/client/Minecraft.f_91060_:Lnet/minecraft/client/renderer/LevelRenderer;
+      20: getfield      #137                // Field net/minecraft/client/renderer/LevelRenderer.f_109464_:Lnet/minecraft/client/renderer/RenderBuffers;
+      23: invokevirtual #143                // Method net/minecraft/client/renderer/RenderBuffers.m_110104_:()Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;
+      26: astore_3
+      27: aload_0
+      28: aload_1
+      29: aload_2
+      30: aload_3
+      31: aload         4
+      33: aload         5
+      35: fconst_0
+      36: aload         7
+      38: invokevirtual #147                // Method net/minecraft/client/Minecraft.m_91296_:()F
+      41: iload         6
+      43: invokevirtual #151                // Method defaultRender:(Lcom/mojang/blaze3d/vertex/PoseStack;Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/VertexConsumer;FFI)V
+      46: return
+
+  public void preRender(com.mojang.blaze3d.vertex.PoseStack, T, software.bernie.geckolib.cache.object.BakedGeoModel, net.minecraft.client.renderer.MultiBufferSource, com.mojang.blaze3d.vertex.VertexConsumer, boolean, float, int, int, float, float, float, float);
+    Code:
+       0: aload_0
+       1: new           #71                 // class org/joml/Matrix4f
+       4: dup
+       5: aload_1
+       6: invokevirtual #170                // Method com/mojang/blaze3d/vertex/PoseStack.m_85850_:()Lcom/mojang/blaze3d/vertex/PoseStack$Pose;
+       9: invokevirtual #174                // Method com/mojang/blaze3d/vertex/PoseStack$Pose.m_252922_:()Lorg/joml/Matrix4f;
+      12: invokespecial #177                // Method org/joml/Matrix4f."<init>":(Lorg/joml/Matrix4fc;)V
+      15: putfield      #74                 // Field objectRenderTranslations:Lorg/joml/Matrix4f;
+      18: aload_0
+      19: aload_0
+      20: getfield      #67                 // Field scaleWidth:F
+      23: aload_0
+      24: getfield      #69                 // Field scaleHeight:F
+      27: aload_1
+      28: aload_2
+      29: aload_3
+      30: iload         6
+      32: fload         7
+      34: iload         8
+      36: iload         9
+      38: invokevirtual #181                // Method scaleModelForRender:(FFLcom/mojang/blaze3d/vertex/PoseStack;Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;Lsoftware/bernie/geckolib/cache/object/BakedGeoModel;ZFII)V
+      41: aload_1
+      42: ldc           #182                // float 0.5f
+      44: ldc           #183                // float 0.51f
+      46: ldc           #182                // float 0.5f
+      48: invokevirtual #187                // Method com/mojang/blaze3d/vertex/PoseStack.m_252880_:(FFF)V
+      51: return
+
+  public void actuallyRender(com.mojang.blaze3d.vertex.PoseStack, T, software.bernie.geckolib.cache.object.BakedGeoModel, net.minecraft.client.renderer.RenderType, net.minecraft.client.renderer.MultiBufferSource, com.mojang.blaze3d.vertex.VertexConsumer, boolean, float, int, int, float, float, float, float);
+    Code:
+       0: aload_1
+       1: invokevirtual #202                // Method com/mojang/blaze3d/vertex/PoseStack.m_85836_:()V
+       4: iload         7
+       6: ifne          67
+       9: new           #204                // class software/bernie/geckolib/core/animation/AnimationState
+      12: dup
+      13: aload_2
+      14: fconst_0
+      15: fconst_0
+      16: fload         8
+      18: iconst_0
+      19: invokespecial #207                // Method software/bernie/geckolib/core/animation/AnimationState."<init>":(Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;FFFZ)V
+      22: astore        15
+      24: aload_0
+      25: aload_2
+      26: invokevirtual #211                // Method getInstanceId:(Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;)J
+      29: lstore        16
+      31: aload_0
+      32: invokevirtual #213                // Method getGeoModel:()Lsoftware/bernie/geckolib/model/GeoModel;
+      35: astore        18
+      37: aload         18
+      39: aload_2
+      40: lload         16
+      42: aload         15
+      44: dup
+      45: invokestatic  #219                // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;)Ljava/lang/Object;
+      48: pop
+      49: invokedynamic #239,  0            // InvokeDynamic #0:accept:(Lsoftware/bernie/geckolib/core/animation/AnimationState;)Ljava/util/function/BiConsumer;
+      54: invokevirtual #245                // Method software/bernie/geckolib/model/GeoModel.addAdditionalStateData:(Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;JLjava/util/function/BiConsumer;)V
+      57: aload         18
+      59: aload_2
+      60: lload         16
+      62: aload         15
+      64: invokevirtual #249                // Method software/bernie/geckolib/model/GeoModel.handleAnimations:(Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;JLsoftware/bernie/geckolib/core/animation/AnimationState;)V
+      67: aload_0
+      68: new           #71                 // class org/joml/Matrix4f
+      71: dup
+      72: aload_1
+      73: invokevirtual #170                // Method com/mojang/blaze3d/vertex/PoseStack.m_85850_:()Lcom/mojang/blaze3d/vertex/PoseStack$Pose;
+      76: invokevirtual #174                // Method com/mojang/blaze3d/vertex/PoseStack$Pose.m_252922_:()Lorg/joml/Matrix4f;
+      79: invokespecial #177                // Method org/joml/Matrix4f."<init>":(Lorg/joml/Matrix4fc;)V
+      82: putfield      #76                 // Field modelRenderTranslations:Lorg/joml/Matrix4f;
+      85: aload_0
+      86: aload_1
+      87: aload_2
+      88: aload_3
+      89: aload         4
+      91: aload         5
+      93: aload         6
+      95: iload         7
+      97: fload         8
+      99: iload         9
+     101: iload         10
+     103: fload         11
+     105: fload         12
+     107: fload         13
+     109: fload         14
+     111: invokespecial #251                // InterfaceMethod software/bernie/geckolib/renderer/GeoRenderer.actuallyRender:(Lcom/mojang/blaze3d/vertex/PoseStack;Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;Lsoftware/bernie/geckolib/cache/object/BakedGeoModel;Lnet/minecraft/client/renderer/RenderType;Lnet/minecraft/client/renderer/MultiBufferSource;Lcom/mojang/blaze3d/vertex/VertexConsumer;ZFIIFFFF)V
+     114: aload_1
+     115: invokevirtual #254                // Method com/mojang/blaze3d/vertex/PoseStack.m_85849_:()V
+     118: return
+
+  public void doPostRenderCleanup();
+    Code:
+       0: aload_0
+       1: aconst_null
+       2: putfield      #89                 // Field animatable:Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;
+       5: return
+
+  public void renderRecursively(com.mojang.blaze3d.vertex.PoseStack, T, software.bernie.geckolib.cache.object.GeoBone, net.minecraft.client.renderer.RenderType, net.minecraft.client.renderer.MultiBufferSource, com.mojang.blaze3d.vertex.VertexConsumer, boolean, float, int, int, float, float, float, float);
+    Code:
+       0: aload_3
+       1: invokevirtual #270                // Method software/bernie/geckolib/cache/object/GeoBone.isTrackingMatrices:()Z
+       4: ifeq          49
+       7: new           #71                 // class org/joml/Matrix4f
+      10: dup
+      11: aload_1
+      12: invokevirtual #170                // Method com/mojang/blaze3d/vertex/PoseStack.m_85850_:()Lcom/mojang/blaze3d/vertex/PoseStack$Pose;
+      15: invokevirtual #174                // Method com/mojang/blaze3d/vertex/PoseStack$Pose.m_252922_:()Lorg/joml/Matrix4f;
+      18: invokespecial #177                // Method org/joml/Matrix4f."<init>":(Lorg/joml/Matrix4fc;)V
+      21: astore        15
+      23: aload_3
+      24: aload         15
+      26: aload_0
+      27: getfield      #76                 // Field modelRenderTranslations:Lorg/joml/Matrix4f;
+      30: invokestatic  #276                // Method software/bernie/geckolib/util/RenderUtils.invertAndMultiplyMatrices:(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;)Lorg/joml/Matrix4f;
+      33: invokevirtual #280                // Method software/bernie/geckolib/cache/object/GeoBone.setModelSpaceMatrix:(Lorg/joml/Matrix4f;)V
+      36: aload_3
+      37: aload         15
+      39: aload_0
+      40: getfield      #74                 // Field objectRenderTranslations:Lorg/joml/Matrix4f;
+      43: invokestatic  #276                // Method software/bernie/geckolib/util/RenderUtils.invertAndMultiplyMatrices:(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;)Lorg/joml/Matrix4f;
+      46: invokevirtual #283                // Method software/bernie/geckolib/cache/object/GeoBone.setLocalSpaceMatrix:(Lorg/joml/Matrix4f;)V
+      49: aload_0
+      50: aload_1
+      51: aload_2
+      52: aload_3
+      53: aload         4
+      55: aload         5
+      57: aload         6
+      59: iload         7
+      61: fload         8
+      63: iload         9
+      65: iload         10
+      67: fload         11
+      69: fload         12
+      71: fload         13
+      73: fload         14
+      75: invokespecial #285                // InterfaceMethod software/bernie/geckolib/renderer/GeoRenderer.renderRecursively:(Lcom/mojang/blaze3d/vertex/PoseStack;Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;Lsoftware/bernie/geckolib/cache/object/GeoBone;Lnet/minecraft/client/renderer/RenderType;Lnet/minecraft/client/renderer/MultiBufferSource;Lcom/mojang/blaze3d/vertex/VertexConsumer;ZFIIFFFF)V
+      78: return
+
+  public void updateAnimatedTextureFrame(T);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #292                // Method getTextureLocation:(Lsoftware/bernie/geckolib/core/animatable/GeoAnimatable;)Lnet/minecraft/resources/ResourceLocation;
+       5: invokestatic  #298                // Method software/bernie/geckolib/cache/texture/AnimatableTexture.setAndUpdate:(Lnet/minecraft/resources/ResourceLocation;)V
+       8: return
+
+  public void fireCompileRenderLayersEvent();
+    Code:
+       0: getstatic     #305                // Field net/minecraftforge/common/MinecraftForge.EVENT_BUS:Lnet/minecraftforge/eventbus/api/IEventBus;
+       3: new           #25                 // class software/bernie/geckolib/event/GeoRenderEvent$Object$CompileRenderLayers
+       6: dup
+       7: aload_0
+       8: invokespecial #308                // Method software/bernie/geckolib/event/GeoRenderEvent$Object$CompileRenderLayers."<init>":(Lsoftware/bernie/geckolib/renderer/GeoObjectRenderer;)V
+      11: invokeinterface #314,  2          // InterfaceMethod net/minecraftforge/eventbus/api/IEventBus.post:(Lnet/minecraftforge/eventbus/api/Event;)Z
+      16: pop
+      17: return
+
+  public boolean firePreRenderEvent(com.mojang.blaze3d.vertex.PoseStack, software.bernie.geckolib.cache.object.BakedGeoModel, net.minecraft.client.renderer.MultiBufferSource, float, int);
+    Code:
+       0: getstatic     #305                // Field net/minecraftforge/common/MinecraftForge.EVENT_BUS:Lnet/minecraftforge/eventbus/api/IEventBus;
+       3: new           #28                 // class software/bernie/geckolib/event/GeoRenderEvent$Object$Pre
+       6: dup
+       7: aload_0
+       8: aload_1
+       9: aload_2
+      10: aload_3
+      11: fload         4
+      13: iload         5
+      15: invokespecial #319                // Method software/bernie/geckolib/event/GeoRenderEvent$Object$Pre."<init>":(Lsoftware/bernie/geckolib/renderer/GeoObjectRenderer;Lcom/mojang/blaze3d/vertex/PoseStack;Lsoftware/bernie/geckolib/cache/object/BakedGeoModel;Lnet/minecraft/client/renderer/MultiBufferSource;FI)V
+      18: invokeinterface #314,  2          // InterfaceMethod net/minecraftforge/eventbus/api/IEventBus.post:(Lnet/minecraftforge/eventbus/api/Event;)Z
+      23: ifne          30
+      26: iconst_1
+      27: goto          31
+      30: iconst_0
+      31: ireturn
+
+  public void firePostRenderEvent(com.mojang.blaze3d.vertex.PoseStack, software.bernie.geckolib.cache.object.BakedGeoModel, net.minecraft.client.renderer.MultiBufferSource, float, int);
+    Code:
+       0: getstatic     #305                // Field net/minecraftforge/common/MinecraftForge.EVENT_BUS:Lnet/minecraftforge/eventbus/api/IEventBus;
+       3: new           #31                 // class software/bernie/geckolib/event/GeoRenderEvent$Object$Post
+       6: dup
+       7: aload_0
+       8: aload_1
+       9: aload_2
+      10: aload_3
+      11: fload         4
+      13: iload         5
+      15: invokespecial #322                // Method software/bernie/geckolib/event/GeoRenderEvent$Object$Post."<init>":(Lsoftware/bernie/geckolib/renderer/GeoObjectRenderer;Lcom/mojang/blaze3d/vertex/PoseStack;Lsoftware/bernie/geckolib/cache/object/BakedGeoModel;Lnet/minecraft/client/renderer/MultiBufferSource;FI)V
+      18: invokeinterface #314,  2          // InterfaceMethod net/minecraftforge/eventbus/api/IEventBus.post:(Lnet/minecraftforge/eventbus/api/Event;)Z
+      23: pop
+      24: return
+}

@@ -1,0 +1,274 @@
+Compiled from "BakedModelFactory.java"
+public final class software.bernie.geckolib.loading.object.BakedModelFactory$Builtin implements software.bernie.geckolib.loading.object.BakedModelFactory {
+  public software.bernie.geckolib.loading.object.BakedModelFactory$Builtin();
+    Code:
+       0: aload_0
+       1: invokespecial #15                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public software.bernie.geckolib.cache.object.BakedGeoModel constructGeoModel(software.bernie.geckolib.loading.object.GeometryTree);
+    Code:
+       0: new           #21                 // class it/unimi/dsi/fastutil/objects/ObjectArrayList
+       3: dup
+       4: invokespecial #22                 // Method it/unimi/dsi/fastutil/objects/ObjectArrayList."<init>":()V
+       7: astore_2
+       8: aload_1
+       9: invokevirtual #28                 // Method software/bernie/geckolib/loading/object/GeometryTree.topLevelBones:()Ljava/util/Map;
+      12: invokeinterface #34,  1           // InterfaceMethod java/util/Map.values:()Ljava/util/Collection;
+      17: invokeinterface #40,  1           // InterfaceMethod java/util/Collection.iterator:()Ljava/util/Iterator;
+      22: astore_3
+      23: aload_3
+      24: invokeinterface #48,  1           // InterfaceMethod java/util/Iterator.hasNext:()Z
+      29: ifeq          64
+      32: aload_3
+      33: invokeinterface #52,  1           // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      38: checkcast     #54                 // class software/bernie/geckolib/loading/object/BoneStructure
+      41: astore        4
+      43: aload_2
+      44: aload_0
+      45: aload         4
+      47: aload_1
+      48: invokevirtual #58                 // Method software/bernie/geckolib/loading/object/GeometryTree.properties:()Lsoftware/bernie/geckolib/loading/json/raw/ModelProperties;
+      51: aconst_null
+      52: invokevirtual #62                 // Method constructBone:(Lsoftware/bernie/geckolib/loading/object/BoneStructure;Lsoftware/bernie/geckolib/loading/json/raw/ModelProperties;Lsoftware/bernie/geckolib/cache/object/GeoBone;)Lsoftware/bernie/geckolib/cache/object/GeoBone;
+      55: invokeinterface #66,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+      60: pop
+      61: goto          23
+      64: new           #68                 // class software/bernie/geckolib/cache/object/BakedGeoModel
+      67: dup
+      68: aload_2
+      69: aload_1
+      70: invokevirtual #58                 // Method software/bernie/geckolib/loading/object/GeometryTree.properties:()Lsoftware/bernie/geckolib/loading/json/raw/ModelProperties;
+      73: invokespecial #71                 // Method software/bernie/geckolib/cache/object/BakedGeoModel."<init>":(Ljava/util/List;Lsoftware/bernie/geckolib/loading/json/raw/ModelProperties;)V
+      76: areturn
+
+  public software.bernie.geckolib.cache.object.GeoBone constructBone(software.bernie.geckolib.loading.object.BoneStructure, software.bernie.geckolib.loading.json.raw.ModelProperties, software.bernie.geckolib.cache.object.GeoBone);
+    Code:
+       0: aload_1
+       1: invokevirtual #82                 // Method software/bernie/geckolib/loading/object/BoneStructure.self:()Lsoftware/bernie/geckolib/loading/json/raw/Bone;
+       4: astore        4
+       6: new           #84                 // class software/bernie/geckolib/cache/object/GeoBone
+       9: dup
+      10: aload_3
+      11: aload         4
+      13: invokevirtual #90                 // Method software/bernie/geckolib/loading/json/raw/Bone.name:()Ljava/lang/String;
+      16: aload         4
+      18: invokevirtual #94                 // Method software/bernie/geckolib/loading/json/raw/Bone.mirror:()Ljava/lang/Boolean;
+      21: aload         4
+      23: invokevirtual #98                 // Method software/bernie/geckolib/loading/json/raw/Bone.inflate:()Ljava/lang/Double;
+      26: aload         4
+      28: invokevirtual #101                // Method software/bernie/geckolib/loading/json/raw/Bone.neverRender:()Ljava/lang/Boolean;
+      31: aload         4
+      33: invokevirtual #104                // Method software/bernie/geckolib/loading/json/raw/Bone.reset:()Ljava/lang/Boolean;
+      36: invokespecial #107                // Method software/bernie/geckolib/cache/object/GeoBone."<init>":(Lsoftware/bernie/geckolib/cache/object/GeoBone;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Double;Ljava/lang/Boolean;Ljava/lang/Boolean;)V
+      39: astore        5
+      41: aload         4
+      43: invokevirtual #111                // Method software/bernie/geckolib/loading/json/raw/Bone.rotation:()[D
+      46: invokestatic  #117                // Method software/bernie/geckolib/util/RenderUtils.arrayToVec:([D)Lnet/minecraft/world/phys/Vec3;
+      49: astore        6
+      51: aload         4
+      53: invokevirtual #120                // Method software/bernie/geckolib/loading/json/raw/Bone.pivot:()[D
+      56: invokestatic  #117                // Method software/bernie/geckolib/util/RenderUtils.arrayToVec:([D)Lnet/minecraft/world/phys/Vec3;
+      59: astore        7
+      61: aload         5
+      63: aload         6
+      65: getfield      #126                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+      68: dneg
+      69: invokestatic  #132                // Method java/lang/Math.toRadians:(D)D
+      72: d2f
+      73: aload         6
+      75: getfield      #135                // Field net/minecraft/world/phys/Vec3.f_82480_:D
+      78: dneg
+      79: invokestatic  #132                // Method java/lang/Math.toRadians:(D)D
+      82: d2f
+      83: aload         6
+      85: getfield      #138                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+      88: invokestatic  #132                // Method java/lang/Math.toRadians:(D)D
+      91: d2f
+      92: invokevirtual #142                // Method software/bernie/geckolib/cache/object/GeoBone.updateRotation:(FFF)V
+      95: aload         5
+      97: aload         7
+      99: getfield      #126                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+     102: dneg
+     103: d2f
+     104: aload         7
+     106: getfield      #135                // Field net/minecraft/world/phys/Vec3.f_82480_:D
+     109: d2f
+     110: aload         7
+     112: getfield      #138                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     115: d2f
+     116: invokevirtual #145                // Method software/bernie/geckolib/cache/object/GeoBone.updatePivot:(FFF)V
+     119: aload         4
+     121: invokevirtual #149                // Method software/bernie/geckolib/loading/json/raw/Bone.cubes:()[Lsoftware/bernie/geckolib/loading/json/raw/Cube;
+     124: astore        8
+     126: aload         8
+     128: arraylength
+     129: istore        9
+     131: iconst_0
+     132: istore        10
+     134: iload         10
+     136: iload         9
+     138: if_icmpge     174
+     141: aload         8
+     143: iload         10
+     145: aaload
+     146: astore        11
+     148: aload         5
+     150: invokevirtual #157                // Method software/bernie/geckolib/cache/object/GeoBone.getCubes:()Ljava/util/List;
+     153: aload_0
+     154: aload         11
+     156: aload_2
+     157: aload         5
+     159: invokevirtual #161                // Method constructCube:(Lsoftware/bernie/geckolib/loading/json/raw/Cube;Lsoftware/bernie/geckolib/loading/json/raw/ModelProperties;Lsoftware/bernie/geckolib/cache/object/GeoBone;)Lsoftware/bernie/geckolib/cache/object/GeoCube;
+     162: invokeinterface #66,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     167: pop
+     168: iinc          10, 1
+     171: goto          134
+     174: aload_1
+     175: invokevirtual #164                // Method software/bernie/geckolib/loading/object/BoneStructure.children:()Ljava/util/Map;
+     178: invokeinterface #34,  1           // InterfaceMethod java/util/Map.values:()Ljava/util/Collection;
+     183: invokeinterface #40,  1           // InterfaceMethod java/util/Collection.iterator:()Ljava/util/Iterator;
+     188: astore        8
+     190: aload         8
+     192: invokeinterface #48,  1           // InterfaceMethod java/util/Iterator.hasNext:()Z
+     197: ifeq          235
+     200: aload         8
+     202: invokeinterface #52,  1           // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     207: checkcast     #54                 // class software/bernie/geckolib/loading/object/BoneStructure
+     210: astore        9
+     212: aload         5
+     214: invokevirtual #167                // Method software/bernie/geckolib/cache/object/GeoBone.getChildBones:()Ljava/util/List;
+     217: aload_0
+     218: aload         9
+     220: aload_2
+     221: aload         5
+     223: invokevirtual #62                 // Method constructBone:(Lsoftware/bernie/geckolib/loading/object/BoneStructure;Lsoftware/bernie/geckolib/loading/json/raw/ModelProperties;Lsoftware/bernie/geckolib/cache/object/GeoBone;)Lsoftware/bernie/geckolib/cache/object/GeoBone;
+     226: invokeinterface #66,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     231: pop
+     232: goto          190
+     235: aload         5
+     237: areturn
+
+  public software.bernie.geckolib.cache.object.GeoCube constructCube(software.bernie.geckolib.loading.json.raw.Cube, software.bernie.geckolib.loading.json.raw.ModelProperties, software.bernie.geckolib.cache.object.GeoBone);
+    Code:
+       0: aload_1
+       1: invokevirtual #180                // Method software/bernie/geckolib/loading/json/raw/Cube.mirror:()Ljava/lang/Boolean;
+       4: getstatic     #186                // Field java/lang/Boolean.TRUE:Ljava/lang/Boolean;
+       7: if_acmpne     14
+      10: iconst_1
+      11: goto          15
+      14: iconst_0
+      15: istore        4
+      17: aload_1
+      18: invokevirtual #187                // Method software/bernie/geckolib/loading/json/raw/Cube.inflate:()Ljava/lang/Double;
+      21: ifnull        38
+      24: aload_1
+      25: invokevirtual #187                // Method software/bernie/geckolib/loading/json/raw/Cube.inflate:()Ljava/lang/Double;
+      28: invokevirtual #193                // Method java/lang/Double.doubleValue:()D
+      31: ldc2_w        #194                // double 16.0d
+      34: ddiv
+      35: goto          60
+      38: aload_3
+      39: invokevirtual #198                // Method software/bernie/geckolib/cache/object/GeoBone.getInflate:()Ljava/lang/Double;
+      42: ifnonnull     49
+      45: dconst_0
+      46: goto          60
+      49: aload_3
+      50: invokevirtual #198                // Method software/bernie/geckolib/cache/object/GeoBone.getInflate:()Ljava/lang/Double;
+      53: invokevirtual #193                // Method java/lang/Double.doubleValue:()D
+      56: ldc2_w        #194                // double 16.0d
+      59: ddiv
+      60: dstore        5
+      62: aload_1
+      63: invokevirtual #201                // Method software/bernie/geckolib/loading/json/raw/Cube.size:()[D
+      66: invokestatic  #117                // Method software/bernie/geckolib/util/RenderUtils.arrayToVec:([D)Lnet/minecraft/world/phys/Vec3;
+      69: astore        7
+      71: aload_1
+      72: invokevirtual #204                // Method software/bernie/geckolib/loading/json/raw/Cube.origin:()[D
+      75: invokestatic  #117                // Method software/bernie/geckolib/util/RenderUtils.arrayToVec:([D)Lnet/minecraft/world/phys/Vec3;
+      78: astore        8
+      80: aload_1
+      81: invokevirtual #205                // Method software/bernie/geckolib/loading/json/raw/Cube.rotation:()[D
+      84: invokestatic  #117                // Method software/bernie/geckolib/util/RenderUtils.arrayToVec:([D)Lnet/minecraft/world/phys/Vec3;
+      87: astore        9
+      89: aload_1
+      90: invokevirtual #206                // Method software/bernie/geckolib/loading/json/raw/Cube.pivot:()[D
+      93: invokestatic  #117                // Method software/bernie/geckolib/util/RenderUtils.arrayToVec:([D)Lnet/minecraft/world/phys/Vec3;
+      96: astore        10
+      98: new           #122                // class net/minecraft/world/phys/Vec3
+     101: dup
+     102: aload         8
+     104: getfield      #126                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+     107: aload         7
+     109: getfield      #126                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+     112: dadd
+     113: dneg
+     114: ldc2_w        #194                // double 16.0d
+     117: ddiv
+     118: aload         8
+     120: getfield      #135                // Field net/minecraft/world/phys/Vec3.f_82480_:D
+     123: ldc2_w        #194                // double 16.0d
+     126: ddiv
+     127: aload         8
+     129: getfield      #138                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     132: ldc2_w        #194                // double 16.0d
+     135: ddiv
+     136: invokespecial #209                // Method net/minecraft/world/phys/Vec3."<init>":(DDD)V
+     139: astore        8
+     141: aload         7
+     143: ldc2_w        #210                // double 0.0625d
+     146: ldc2_w        #210                // double 0.0625d
+     149: ldc2_w        #210                // double 0.0625d
+     152: invokevirtual #215                // Method net/minecraft/world/phys/Vec3.m_82542_:(DDD)Lnet/minecraft/world/phys/Vec3;
+     155: astore        11
+     157: aload         10
+     159: ldc2_w        #216                // double -1.0d
+     162: dconst_1
+     163: dconst_1
+     164: invokevirtual #215                // Method net/minecraft/world/phys/Vec3.m_82542_:(DDD)Lnet/minecraft/world/phys/Vec3;
+     167: astore        10
+     169: new           #122                // class net/minecraft/world/phys/Vec3
+     172: dup
+     173: aload         9
+     175: getfield      #126                // Field net/minecraft/world/phys/Vec3.f_82479_:D
+     178: dneg
+     179: invokestatic  #132                // Method java/lang/Math.toRadians:(D)D
+     182: aload         9
+     184: getfield      #135                // Field net/minecraft/world/phys/Vec3.f_82480_:D
+     187: dneg
+     188: invokestatic  #132                // Method java/lang/Math.toRadians:(D)D
+     191: aload         9
+     193: getfield      #138                // Field net/minecraft/world/phys/Vec3.f_82481_:D
+     196: invokestatic  #132                // Method java/lang/Math.toRadians:(D)D
+     199: invokespecial #209                // Method net/minecraft/world/phys/Vec3."<init>":(DDD)V
+     202: astore        9
+     204: aload_0
+     205: aload_1
+     206: invokevirtual #221                // Method software/bernie/geckolib/loading/json/raw/Cube.uv:()Lsoftware/bernie/geckolib/loading/json/raw/UVUnion;
+     209: new           #10                 // class software/bernie/geckolib/loading/object/BakedModelFactory$VertexSet
+     212: dup
+     213: aload         8
+     215: aload         11
+     217: dload         5
+     219: invokespecial #224                // Method software/bernie/geckolib/loading/object/BakedModelFactory$VertexSet."<init>":(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;D)V
+     222: aload_1
+     223: aload_2
+     224: invokevirtual #227                // Method software/bernie/geckolib/loading/json/raw/ModelProperties.textureWidth:()D
+     227: d2f
+     228: aload_2
+     229: invokevirtual #230                // Method software/bernie/geckolib/loading/json/raw/ModelProperties.textureHeight:()D
+     232: d2f
+     233: iload         4
+     235: invokevirtual #234                // Method buildQuads:(Lsoftware/bernie/geckolib/loading/json/raw/UVUnion;Lsoftware/bernie/geckolib/loading/object/BakedModelFactory$VertexSet;Lsoftware/bernie/geckolib/loading/json/raw/Cube;FFZ)[Lsoftware/bernie/geckolib/cache/object/GeoQuad;
+     238: astore        12
+     240: new           #236                // class software/bernie/geckolib/cache/object/GeoCube
+     243: dup
+     244: aload         12
+     246: aload         10
+     248: aload         9
+     250: aload         7
+     252: dload         5
+     254: iload         4
+     256: invokespecial #239                // Method software/bernie/geckolib/cache/object/GeoCube."<init>":([Lsoftware/bernie/geckolib/cache/object/GeoQuad;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;DZ)V
+     259: areturn
+}
