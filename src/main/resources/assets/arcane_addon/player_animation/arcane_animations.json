@@ -16496,7 +16496,8 @@
       }
      }
     }
-   }
+   },
+   "loop": true
   },
   "samurai_kesa": {
    "animation_length": 0.62,
@@ -17272,7 +17273,8 @@
       }
      }
     }
-   }
+   },
+   "loop": true
   },
   "thunder_jab": {
    "animation_length": 0.4,

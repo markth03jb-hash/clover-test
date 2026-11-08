@@ -1,7 +1,12 @@
-Arcane Addon v1.34.0 - all changed files since v1.0.0
+Arcane Addon v1.34.1 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.34.1
+- Stance animations made seamless: the samurai and Thunder God idles now loop natively (no restart hitch at the
+  end of each cycle), and each attack cross-fades back into the stance a few ticks before it ends, so there is
+  never a frame where the player snaps to the normal pose.
 
 NEW IN 1.34.0
 - Yami with the Dark Katana in his main hand now stands like a samurai: a two-handed guard with the blade forward

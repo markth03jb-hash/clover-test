@@ -84,9 +84,13 @@ public final class StanceAnimations {
                 play(layer, id(combo[st.combo % combo.length]), 2);
                 st.combo++;
                 st.attacking = true;
-            } else if (changed || !active) {   // back into the stance, looping
-                if (!active) st.attacking = false;
-                if (!st.attacking) play(layer, id(style == Style.SAMURAI ? "samurai_idle" : "thunder_idle"), changed ? 5 : 0);
+            } else if (changed || !active) {   // into the stance (it loops by itself from then on)
+                st.attacking = false;
+                play(layer, id(style == Style.SAMURAI ? "samurai_idle" : "thunder_idle"), changed ? 5 : 3);
+            } else if (st.attacking && cur instanceof KeyframeAnimationPlayer kp && kp.getTick() >= kp.getData().endTick - 3) {
+                // an attack is finishing: cross-fade into the stance before it ends, so there is never a frame without a pose
+                st.attacking = false;
+                play(layer, id(style == Style.SAMURAI ? "samurai_idle" : "thunder_idle"), 3);
             }
         }
         STATES.keySet().removeIf(k -> mc.level.getEntity(k) == null);
