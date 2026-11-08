@@ -614,6 +614,7 @@ public class AstaFx {
 
     /** Tells everyone who can see {@code p} to draw (life > 0) or fade out (life = 0) the devil form. */
     private static void sendForm(ServerPlayer p, int life) {
+        ModeHud.show(p, "devil_union", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 6;   // 6 = Devil Union form, drawn by the client FxRenderer
         pkt.id = p.getId();

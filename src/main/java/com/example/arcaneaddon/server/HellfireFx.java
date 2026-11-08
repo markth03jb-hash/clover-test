@@ -379,6 +379,7 @@ public class HellfireFx {
     }
 
     private static void sendAura(ServerPlayer p, int pal, int life) {
+        if (pal == 5) ModeHud.show(p, "mana_skin", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 14; pkt.id = p.getId(); pkt.palette = (byte) pal; pkt.life = life;
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
@@ -399,6 +400,7 @@ public class HellfireFx {
     }
 
     private static void sendZone(ServerPlayer p, int life) {
+        ModeHud.show(p, "lion_mana_zone", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 17; pkt.id = p.getId(); pkt.palette = (byte) F; pkt.life = life; pkt.r = (float) ZONE_R;
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
@@ -494,6 +496,7 @@ public class HellfireFx {
     }
 
     private static void sendBody(ServerPlayer p, int life) {
+        ModeHud.show(p, "hellfire_incarnate", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 27; pkt.id = p.getId(); pkt.palette = (byte) F; pkt.life = life;
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);

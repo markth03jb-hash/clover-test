@@ -124,4 +124,25 @@ public class FxSend {
         p.shape = FxPacket.KILL; p.id = id;
         send(sl, near, p);
     }
+    /** Cracks in space: jagged white fractures with black void inside, in the plane (d, u). rift = a long tear along d. */
+    public static void cracks(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float size, int life, boolean rift, int seed) {
+        FxPacket p = new FxPacket();
+        p.shape = 33; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life; p.sweep = seed;
+        p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = size; p.h = rift ? 1 : 0;
+        send(sl, c, p);
+    }
+
+    /** Anime impact frame on the screens of everyone within {@code radius} (slash = one huge white slash across it). */
+    public static void impactFrame(ServerLevel sl, Vec3 at, int ticks, boolean slash, double radius) {
+        FxPacket p = new FxPacket();
+        p.shape = 12; p.life = ticks; p.c = at; p.palette = (byte) (slash ? 1 : 0);
+        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, radius, sl.dimension())), p);
+    }
+
+    /** Screen shake for everyone within {@code radius}. */
+    public static void shake(ServerLevel sl, Vec3 at, float strength, int ticks, double radius) {
+        FxPacket p = new FxPacket();
+        p.shape = 10; p.c = at; p.r = strength; p.life = ticks;
+        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, radius, sl.dimension())), p);
+    }
 }

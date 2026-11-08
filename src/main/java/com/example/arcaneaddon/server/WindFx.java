@@ -427,6 +427,7 @@ public class WindFx {
         d.charges = dive ? 5 : 3;
         d.counter = dive;
         DANCE.put(p.getUUID(), d);
+        ModeHud.show(p, "hushed_dance", dive ? 160 : 120);
         if (dive) diveMsg(p, "hushed_dance");
         // mana drawn in from all around: thin streams curling into you
         ThreadLocalRandom r = ThreadLocalRandom.current();
@@ -695,6 +696,7 @@ public class WindFx {
     }
 
     private static void sendDive(ServerPlayer p, int life) {
+        ModeHud.show(p, "spirit_dive", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 18; pkt.id = p.getId(); pkt.palette = (byte) W; pkt.life = life;
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
@@ -803,7 +805,7 @@ public class WindFx {
             }
         }
         Dance dc = DANCE.get(id);
-        if (dc != null && (now > dc.until || dc.charges <= 0)) DANCE.remove(id);
+        if (dc != null && (now > dc.until || dc.charges <= 0)) { DANCE.remove(id); ModeHud.hide(p, "hushed_dance"); }
     }
 
     /** Hushed Dance dodges; the passive cancels fall damage and blows some projectiles aside. */

@@ -441,6 +441,7 @@ public class MercuryFx {
         ServerLevel sl = p.serverLevel();
         long until = sl.getGameTime() + 80;
         MIRROR.put(p.getUUID(), until);
+        ModeHud.show(p, "silver_mirror", 80);
         Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z);
         look = look.lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : look.normalize();
         MIRROR_AT.put(p.getUUID(), look);
@@ -564,6 +565,7 @@ public class MercuryFx {
     }
 
     private static void sendGuardian(ServerPlayer p, int life) {
+        ModeHud.show(p, "silver_guardian", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 14; pkt.id = p.getId(); pkt.palette = 2; pkt.life = life;   // AuraOutlineLayer colour 2 = liquid silver
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);

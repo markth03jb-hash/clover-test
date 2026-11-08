@@ -1,7 +1,28 @@
-Arcane Addon v1.35.0 - all changed files since v1.0.0
+Arcane Addon v1.36.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.36.0
+- NEW: mode timers on the HUD, like vanilla effect timers. Every mode shows a panel in the top-right corner (under
+  the vanilla effect icons) with the spell's icon, the mode's name, the time left and a draining bar; it blinks in
+  the last 10 seconds and disappears when the mode ends early. Covers Devil Union, Mana Zone, Black Blade, Black
+  Cocoon, Ki Read: Foresight, Knight's Armor, Spirit Dive, Spirit's Hushed Dance, Silver Guardian, Silver Mirror,
+  Flame Knuckles, Soul Chain Deathmatch, Thunder God Mode, Thunder God's Gloves, Mana Skin, Mana Zone (Mereoleona),
+  Hellfire Incarnate, Marrow Regeneration and Devil Union: Beelzebub.
+- REMOVED: the four base grimoires with no spells (Three-Leaf Grimoire, Four-Leaf Grimoire, Mana Zone Codex,
+  Spirit-Bound Grimoire), with their recipes and passives.
+- Dimension Slash: Event Horizon, fully reworked:
+  - a full 3-second charge. Yami raises the katana straight overhead with both hands and HOLDS the pose (wide, sunk
+    stance, trembling harder as the charge fills); you are slowed to a crawl while charging.
+  - the sword: black flame wraps the blade with a white-hot edge, growing longer and wilder as it charges; rings of
+    darkness close in, crescents of darkness converge on the tip, black flame climbs your body, the ground cracks
+    under your feet and space starts fracturing around the sword.
+  - the cut: an anime impact frame, a heavy screen shake for everyone nearby, space shatters right in front of the
+    blade, and as the wave rolls forward it cuts space open along its whole path: jagged white rifts with the black
+    void showing through them hang in the air, then fade.
+  - fully charged: 1.5x damage and heavy knockback. Still one single slash with the burning horizon scar behind it.
+- FIX: Thunder God's Gloves no longer briefly shows the Thunder God Mode body.
 
 NEW IN 1.35.0
 - NEW: Bone Grimoire (Zenon Zogratis' Bone Magic, with Beelzebub's spatial magic). Bones are drawn as real bone:

@@ -381,7 +381,7 @@ public class LightningFx {
     public static void thunderGloves(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         GLOVES.put(p.getUUID(), sl.getGameTime() + 240);
-        sendGlow(p, 24, 240);
+        sendGlow(p, 25, 240);
         Vec3 h = p.position().add(0, 1.1, 0);
         for (int k = 0; k < 4; k++) {
             ThreadLocalRandom r = ThreadLocalRandom.current();
@@ -393,6 +393,7 @@ public class LightningFx {
 
     /** Client marks for an entity: shape 24 = Thunder God Mode body, shape 25 = glowing gloves. */
     private static void sendGlow(ServerPlayer p, int shape, int life) {
+        ModeHud.show(p, shape == 24 ? "thunder_god_mode" : "thunder_gloves", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = (byte) shape; pkt.id = p.getId(); pkt.palette = (byte) L; pkt.life = life;
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);

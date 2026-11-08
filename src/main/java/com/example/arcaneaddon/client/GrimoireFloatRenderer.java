@@ -92,10 +92,6 @@ public class GrimoireFloatRenderer {
       if (item == AddonItemRegistry.BONE_GRIMOIRE.get()) return new int[]{15, 2};
       String id = BuiltInRegistries.ITEM.getKey(item).getPath();
       return switch (id) {
-         case "four_leaf_grimoire" -> new int[]{5, 3};
-         case "three_leaf_grimoire" -> new int[]{8, 4};
-         case "mana_zone_codex" -> new int[]{3, 5};
-         case "spirit_bound_grimoire" -> new int[]{6, 6};
          default -> new int[]{8, 4};
       };
    }

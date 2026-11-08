@@ -370,6 +370,7 @@ public class FireFx {
     }
 
     private static void sendKnuckles(ServerPlayer p, int life) {
+        ModeHud.show(p, "flame_knuckles", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 22; pkt.id = p.getId(); pkt.palette = (byte) F; pkt.life = life;
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
@@ -499,6 +500,7 @@ public class FireFx {
             if (!alive(p) || !tg.isAlive()) return;
             Chain ch = new Chain(); ch.target = tg; ch.until = sl.getGameTime() + CHAIN_TICKS;
             CHAINS.put(p.getUUID(), ch);
+            ModeHud.show(p, "soul_chain", CHAIN_TICKS);
             hit(p, tg, power, "soul_chain");
             FxLib.impact(sl, F, mid(tg), 1.2f);
             p.displayClientMessage(Component.translatable("ui.arcane_addon.soul_chain.on").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
@@ -600,6 +602,7 @@ public class FireFx {
         if (ch != null) {
             if (now > ch.until || !ch.target.isAlive() || ch.target.level() != p.level()) {
                 CHAINS.remove(id);
+                ModeHud.hide(p, "soul_chain");
                 FxLib.flash(sl, F, mid(ch.target), 0.8f);
                 sound(sl, p.position(), SoundEvents.CHAIN_BREAK, 1f, 0.8f);
             } else chainTick(p, sl, ch, now);

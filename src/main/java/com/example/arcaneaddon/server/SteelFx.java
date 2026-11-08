@@ -603,6 +603,7 @@ public class SteelFx {
 
     /** Tell everyone who can see {@code p} to draw (life > 0) or remove (0) the knight armor form. */
     private static void sendKnight(ServerPlayer p, int life) {
+        ModeHud.show(p, "knights_armor", life);
         com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
         pkt.shape = 11; pkt.id = p.getId(); pkt.life = life;
         com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);

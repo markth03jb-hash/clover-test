@@ -1,18 +1,14 @@
 {
- "replace": false,
- "values": [
-  "arcane_addon:black_grimoire",
-  "arcane_addon:three_leaf_grimoire",
-  "arcane_addon:four_leaf_grimoire",
-  "arcane_addon:mana_zone_codex",
-  "arcane_addon:spirit_bound_grimoire",
-  "arcane_addon:dark_grimoire",
-  "arcane_addon:steel_grimoire",
-  "arcane_addon:wind_grimoire",
-  "arcane_addon:mercury_grimoire",
-  "arcane_addon:fire_grimoire",
-  "arcane_addon:lightning_grimoire",
-  "arcane_addon:hellfire_grimoire",
-  "arcane_addon:bone_grimoire"
- ]
+  "replace": false,
+  "values": [
+    "arcane_addon:black_grimoire",
+    "arcane_addon:dark_grimoire",
+    "arcane_addon:steel_grimoire",
+    "arcane_addon:wind_grimoire",
+    "arcane_addon:mercury_grimoire",
+    "arcane_addon:fire_grimoire",
+    "arcane_addon:lightning_grimoire",
+    "arcane_addon:hellfire_grimoire",
+    "arcane_addon:bone_grimoire"
+  ]
 }

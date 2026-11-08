@@ -456,6 +456,7 @@ public class BoneFx {
     }
 
     private static void sendPlates(ServerPlayer p, int life) {
+        ModeHud.show(p, "marrow_regeneration", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 14; pkt.id = p.getId(); pkt.palette = 6; pkt.life = life;   // AuraOutlineLayer 6 = bone plates
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
@@ -575,6 +576,7 @@ public class BoneFx {
 
     /** Client marker for the union form (shape 31): horns and bone wings are drawn on the player. */
     private static void sendForm(ServerPlayer p, int life) {
+        ModeHud.show(p, "beelzebub_union", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 31; pkt.id = p.getId(); pkt.palette = (byte) B; pkt.life = life;
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);

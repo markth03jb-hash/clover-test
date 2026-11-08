@@ -158,6 +158,7 @@ public class DarkFx {
 
     /** Black Blade's aura: small violet motes rising off your body (client DarkSmoke), for everyone who can see you. */
     private static void sendAura(ServerPlayer p, int life) {
+        ModeHud.show(p, "black_blade", life);
         com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
         pkt.shape = 16; pkt.id = p.getId(); pkt.palette = 0; pkt.life = life;
         com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
@@ -404,6 +405,7 @@ public class DarkFx {
     }
 
     private static void sendCocoon(ServerPlayer p, int life) {
+        ModeHud.show(p, "black_cocoon", life);
         com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
         pkt.shape = 15; pkt.id = p.getId(); pkt.palette = (byte) D; pkt.life = life; pkt.r = COCOON_R; pkt.sweep = COCOON_CLOSE;
         com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
@@ -793,6 +795,7 @@ public class DarkFx {
 
     /** Mana Zone field (FxPacket shape 17): id = player, life = ticks left (0 = collapse), r = radius. */
     private static void sendZone(ServerPlayer p, int life) {
+        ModeHud.show(p, "mana_zone_dimension_slash", life);
         com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
         pkt.shape = 17; pkt.id = p.getId(); pkt.palette = (byte) D; pkt.life = life; pkt.r = (float) ZONE_R;
         com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
@@ -826,6 +829,7 @@ public class DarkFx {
         f.charges = z ? 5 : 3;
         f.counter = z;
         FORESIGHT.put(p.getUUID(), f);
+        ModeHud.show(p, "ki_foresight", z ? 160 : 100);
         ServerLevel sl = p.serverLevel();
         FxSend.ring(sl, S, p.position().add(0, 0.05, 0), 0.3f, z ? (float) ZONE_R : 4f, 0.06f, 10);
         Vec3 eye = p.getEyePosition();
@@ -840,38 +844,78 @@ public class DarkFx {
 
     // ================================================================== 10. Dimension Slash: Event Horizon
     /**
-     * Darkness gathers into the blade and swells around you, then one cut releases a colossal wave of darkness: a
-     * towering black-flame front with giant crescents inside it, rolling 55 blocks forward and widening as it goes.
-     * It leaves the horizon hanging open behind it, pulling enemies back in and cutting them again before it seals.
+     * Yami's strongest cut, done like the anime: a full 3-second charge. He raises the katana straight overhead with
+     * both hands and HOLDS the pose (you are slowed to a crawl) while darkness pours into the blade - a black-flame
+     * blade with a white edge that grows longer and wilder, rings of darkness closing in, crescents converging on the
+     * tip, the ground cracking under his feet and space itself starting to fracture around the sword. Then one cut:
+     * an impact frame, the screen shakes, and a single colossal blade of darkness rolls forward, splitting space open
+     * along its whole path - jagged white rifts with the void showing through them hang in the air where it passed.
+     * The horizon keeps pulling and cutting before it seals. Fully charged: 1.5x damage and heavy knockback.
      * Mana Zone: the wave is 1.7x bigger, faster, and reaches 90 blocks.
      */
+    private static final int HORIZON_CHARGE = 60, HORIZON_CUT = 61;
+
+    /** Where the blade is while it is held overhead (hilt, tip): straight up, leaning back a little. */
+    private static Vec3[] overheadBlade(ServerPlayer p) {
+        double yr = Math.toRadians(p.getYRot());
+        Vec3 fw = new Vec3(-Math.sin(yr), 0, Math.cos(yr));
+        Vec3 hilt = p.position().add(0, 2.05, 0).add(fw.scale(0.12));
+        Vec3 tip = hilt.add(0, 1.55, 0).subtract(fw.scale(0.45));
+        return new Vec3[]{hilt, tip};
+    }
+
     public static void eventHorizon(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        final float dmg = power;
+        final float dmg = power * 1.5f;   // the full charge
         final boolean zone = inZone(p);
-        sound(sl, p.position(), SoundEvents.WARDEN_SONIC_CHARGE, 1f, 0.6f);
-        for (int k = 0; k < 5; k++) {   // darkness gathers into the blade: rings closing in, crescents converging on the hand
-            final int kk = k;
-            AstaFx.later(k * 4, () -> {
-                if (!alive(p)) return;
-                FxSend.ring(sl, D, p.position().add(0, 0.05 + kk * 0.35, 0), 5f - kk * 0.6f, 0.3f, 0.1f, 6);
-                Vec3 h = handPos(p);
-                double a = kk * 1.3;
-                Vec3 from = h.add(Math.cos(a) * 3, 1.0 - kk * 0.3, Math.sin(a) * 3);
-                Vec3 d = h.subtract(from).normalize();
-                FxSend.crescent(sl, D, from, d, rightOf(d).cross(d).normalize(), 0.6f, 0.4f, 4, 0.7f);
-            });
-        }
+        final int seed0 = (int) (sl.getGameTime() * 31 + p.getId());
         if (zone) zoneMsg(p, "event_horizon");
-        // the darkness swells around you as it gathers: black flame climbing your body
-        for (int k = 0; k < 4; k++) {
-            final int kk = k;
-            AstaFx.later(4 + k * 4, () -> {
+        // held in the pose: barely able to move while the darkness gathers
+        TimedModifiers.apply(p, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED, TimedModifiers.HORIZON_CHARGE,
+                "Event Horizon charge", -0.8, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL, HORIZON_CUT + 4);
+        sound(sl, p.position(), SoundEvents.WARDEN_SONIC_CHARGE, 1f, 0.5f);
+        sound(sl, p.position(), SoundEvents.BEACON_ACTIVATE, 0.8f, 0.5f);
+
+        // ---------------------------------------------------------------- the charge: darkness pours into the raised blade
+        for (int t = 6; t < HORIZON_CHARGE; t += 2) {
+            final int tt = t;
+            AstaFx.later(t, () -> {
                 if (!alive(p)) return;
-                FxSend.wall(sl, D, p.position().add(0, 1.0, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.9f + kk * 0.15f, 1.0f + kk * 0.2f, -180, 180, 1.1f + kk * 0.2f, 5, 0, 0);
+                float k = (tt - 6) / (float) (HORIZON_CHARGE - 6);   // 0 -> 1 as the charge fills
+                Vec3[] bl = overheadBlade(p);
+                Vec3 ax = bl[1].subtract(bl[0]);
+                Vec3 tip = bl[1].add(ax.normalize().scale(0.8 * k));   // the darkness runs past the tip as it builds
+                // the blade wrapped in black flame, a white-hot edge along it
+                FxSend.trail(sl, D, bl[0], tip, 0.28f + 0.5f * k, 3);
+                FxSend.trail(sl, S, bl[0].add(ax.scale(0.05)), tip, 0.03f + 0.03f * k, 3);
+                if (tt % 6 == 0) {   // darkness drawn in from all around, converging on the blade
+                    double a = tt * 0.9;
+                    Vec3 from = tip.add(Math.cos(a) * (3.5 + k * 2), -1.5 + Math.sin(tt) * 1.2, Math.sin(a) * (3.5 + k * 2));
+                    Vec3 d = tip.subtract(from).normalize();
+                    FxSend.crescent(sl, D, from, d, rightOf(d).cross(d).normalize(), 0.5f + k * 0.4f, 0.35f, 5, 0.8f);
+                    FxSend.ring(sl, D, p.position().add(0, 0.05, 0), 6f - k * 3f, 0.25f + k * 0.2f, 0.08f, 6);
+                }
+                if (tt % 10 == 0) {   // black flame climbing your body, taller and taller
+                    FxSend.wall(sl, D, p.position().add(0, 1.0, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.85f + k * 0.4f, 0.95f + k * 0.5f, -180, 180, 1.0f + k * 0.9f, 7, 0, 0);
+                    sound(sl, p.position(), SoundEvents.SOUL_ESCAPE, 0.8f, 0.4f + k * 0.3f);
+                }
+                if (tt == 20 || tt == 40 || tt == 54) {   // the ground under you gives way
+                    Vec3 g = FxLib.floor(sl, p.position()).add(0, 0.04, 0);
+                    FxSend.cracks(sl, D, g, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 1.8f + k * 2.6f, 80 - tt, false, seed0 + tt);
+                    FxSend.shake(sl, p.position(), 0.15f + k * 0.3f, 8, 16);
+                    sound(sl, p.position(), SoundEvents.DEEPSLATE_BREAK, 1f, 0.5f);
+                }
+                if (tt == 46 || tt == 56) {   // space around the blade starts to fracture
+                    Vec3 fw = new Vec3(-Math.sin(Math.toRadians(p.getYRot())), 0, Math.cos(Math.toRadians(p.getYRot())));
+                    FxSend.cracks(sl, D, tip.add(fw.scale(-0.2)), rightOf(fw), new Vec3(0, 1, 0), 0.9f + k * 0.6f, 14, false, seed0 + tt * 7);
+                    sound(sl, tip, SoundEvents.GLASS_BREAK, 0.7f, 0.5f);
+                }
             });
         }
-        AstaFx.later(20, () -> {
+
+        // ---------------------------------------------------------------- the cut
+        AstaFx.later(HORIZON_CUT, () -> {
+            TimedModifiers.remove(p, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED, TimedModifiers.HORIZON_CHARGE);
             if (!alive(p)) return;
             // aimed where you look; when you look roughly level it hugs the ground instead, rising out of it
             Vec3 look0 = p.getLookAngle();
@@ -880,11 +924,18 @@ public class DarkFx {
             Vec3 dir = aimed ? look0.normalize() : flatDir;
             Vec3 start = aimed ? p.getEyePosition().add(0, -0.3, 0) : FxLib.floor(sl, p.position());
             Vec3 rt = rightOf(dir), up = aimed ? rt.cross(dir).normalize() : new Vec3(0, 1, 0);
-            // zone: everything bigger and it reaches much further
             final double reach = zone ? 90 : 55;
             final float scale = zone ? 1.7f : 1.0f;
             final float speed = zone ? 4.2f : 3.2f;
             Vec3 end = start.add(dir.scale(reach));
+
+            // the impact frame and the shake, on everyone close enough to see it
+            FxSend.impactFrame(sl, p.position(), 7, true, 40);
+            FxSend.shake(sl, p.position(), 1.3f * scale, 20, 64);
+            // space shatters right in front of the blade the instant it cuts
+            Vec3 o = start.add(dir.scale(1.5)).add(aimed ? Vec3.ZERO : up.scale(1.2));
+            FxSend.cracks(sl, D, o.add(dir.scale(1.0)).add(up.scale(0.6)), rt, up, 4.5f * scale, 70, false, seed0 + 999);
+
             // the colossal wave cuts everything in a widening, towering band as it passes
             for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(10 * scale))) {
                 Vec3 m = mid(t), on = closestOnSegment(start, end, m);
@@ -895,26 +946,47 @@ public class DarkFx {
                 AstaFx.later((int) (along / speed), () -> {
                     if (!tt.isAlive() || !alive(p)) return;
                     AstaFx.damage(p, tt, dmg, "event_horizon");
-                    FxLib.impact(sl, D, mid(tt), 1.5f);
+                    FxLib.impact(sl, D, mid(tt), 1.8f);
+                    Vec3 kb = dir.add(0, 0.35, 0).normalize().scale(1.6);
+                    tt.setDeltaMovement(tt.getDeltaMovement().add(kb));
+                    tt.hurtMarked = true;
                 });
             }
-            // the release: ONE colossal blade of darkness, standing upright, rolling forward and growing as it goes
-            Vec3 o = start.add(dir.scale(1.5)).add(aimed ? Vec3.ZERO : up.scale(1.2));
+            // ONE colossal blade of darkness, standing upright, rolling forward and growing as it goes
             int life = (int) (reach / speed) + 2;
             FxSend.slash(sl, D, o, dir, up, 4.0f * scale, 16f * scale, life, speed, 1.4f);
-            // in its wake: the horizon - one burning line through space, left hanging open
+            // space cut open along the whole path: rifts hang in the air where the wave passed
+            int n = 0;
+            for (double k = 5; k < reach; k += 6.5, n++) {
+                final double kk = k;
+                final int nn = n;
+                AstaFx.later((int) (k / speed), () -> {
+                    Vec3 base = aimed ? start.add(dir.scale(kk)) : FxLib.floor(sl, start.add(dir.scale(kk)));
+                    float grow = (float) (1.0 + kk / reach * 0.8);
+                    Vec3 c = base.add(up.scale((aimed ? 0 : 2.2) * scale * grow));
+                    // the long tear runs along the cut, leaning a little each way so it reads as broken space
+                    Vec3 along = dir.add(up.scale((nn % 2 == 0 ? 0.25 : -0.25))).normalize();
+                    Vec3 across = along.cross(rt).normalize();
+                    FxSend.cracks(sl, D, c, along, across, 3.4f * scale * grow, 56, true, seed0 + nn * 13);
+                    if (nn % 2 == 0) FxSend.cracks(sl, D, c.add(up.scale(1.4 * scale)), rt, up, 1.4f * scale * grow, 44, false, seed0 + nn * 29);
+                    if (nn % 3 == 0) sound(sl, c, SoundEvents.GLASS_BREAK, 0.9f, 0.4f);
+                });
+            }
+            // and the horizon: one burning line through space, left hanging open
             AstaFx.later(4, () -> {
                 Vec3 prev = start.add(dir);
                 for (double k = 4; k < reach; k += 4) {
                     Vec3 c = aimed ? start.add(dir.scale(k)) : FxLib.floor(sl, start.add(dir.scale(k)));
-                    FxSend.trail(sl, D, prev, c, 0.6f * scale, 34);
-                    FxSend.trail(sl, S, prev, c, 0.05f * scale, 30);
+                    FxSend.trail(sl, D, prev, c, 0.6f * scale, 40);
+                    FxSend.trail(sl, S, prev, c, 0.05f * scale, 36);
                     prev = c;
                 }
             });
-            FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 1.8f * scale);
-            sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 1f, 0.5f);
-            sound(sl, p.position(), SoundEvents.GENERIC_EXPLODE, 0.8f, 0.5f);
+            FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 2.2f * scale);
+            FxSend.ring(sl, S, p.position().add(0, 0.06, 0), 0.5f, 7f * scale, 0.05f, 10);
+            sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 1f, 0.45f);
+            sound(sl, p.position(), SoundEvents.GENERIC_EXPLODE, 1f, 0.5f);
+            sound(sl, p.position(), SoundEvents.GLASS_BREAK, 1f, 0.3f);
             // the horizon keeps pulling and cutting, then seals with a flash
             for (int k = 1; k <= 3; k++) {
                 AstaFx.later(10 + k * 8, () -> {
@@ -930,7 +1002,7 @@ public class DarkFx {
                     sound(sl, start.add(dir.scale(10)), SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 0.4f);
                 });
             }
-            AstaFx.later(40, () -> {
+            AstaFx.later(44, () -> {
                 FxSend.beam(sl, S, start.add(dir).add(0, 0.2, 0), end.add(0, 0.2, 0), 0.9f * scale, 4);
                 sound(sl, start, SoundEvents.ENDERMAN_TELEPORT, 0.8f, 0.4f);
             });
@@ -978,7 +1050,7 @@ public class DarkFx {
         }
 
         Foresight f = FORESIGHT.get(id);
-        if (f != null && (now > f.until || f.charges <= 0)) FORESIGHT.remove(id);
+        if (f != null && (now > f.until || f.charges <= 0)) { FORESIGHT.remove(id); ModeHud.hide(p, "ki_foresight"); }
     }
 
     /** Black Blade: heavier melee hits that devour the target's mana. */

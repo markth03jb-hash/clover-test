@@ -187,6 +187,7 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 32) { ModeHudOverlay.set(p.palette, p.life); return; }   // mode timer on the HUD: palette = mode, life = ticks (0 = off)
       if (p.shape == 27) { DarkSmoke.hellfire(p.id, p.life); return; }   // Hellfire Incarnate body: id = player, life = ticks
       if (p.shape == 21) { DarkSmoke.burning(p.id, p.life); return; }    // burning: id = entity, life = ticks
       if (p.shape == 22) { DarkSmoke.knuckles(p.id, p.life); return; }   // Flame Knuckles: id = player, life = ticks
@@ -1666,6 +1667,9 @@ public class FxRenderer {
                         break;
                      case 30:
                         boneFx(vc, m, n, cam, f, age, life);
+                        break;
+                     case 33:
+                        spaceCracks(vc, m, n, cam, f.p, age, life);
                   }
                   lightPal = -1;
                }
@@ -2030,6 +2034,69 @@ public class FxRenderer {
    private static double backOut(double x) {
       x = Mth.clamp(x, 0.0, 1.0) - 1.0;
       return 1.0 + 2.2 * x * x * x + 1.2 * x * x;
+   }
+
+   // ------------------------------------------------------------------ cracks in space (Event Horizon)
+   private static final float[] VOID = new float[]{0.01F, 0.0F, 0.025F};
+
+   /**
+    * Space itself shattering: jagged fracture lines with white-hot edges and pure black void showing through them,
+    * spreading out from c in the plane (d, u). h = 0: a shatter (branches all round, a hole in the middle);
+    * h = 1: a rift (a long tear along d with short side fractures). r = size, sweep = seed. They crack open in
+    * a few ticks, hang there unmoving, then fade.
+    */
+   private static void spaceCracks(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, double life) {
+      java.util.Random rnd = new java.util.Random(p.sweep * 341873128712L + 132897987541L);
+      double grow = smooth(age / 3.0);
+      float fade = (float)smooth((life - age) / Math.max(4.0, life * 0.5));
+      if (fade <= 0.01F) return;
+      Vec3 d = p.d.normalize(), u = p.u.normalize();
+      double R = p.r;
+      boolean rift = p.h > 0.5F;
+      int branches = rift ? 2 : 6 + rnd.nextInt(3);
+      java.util.List<Vec3> inner = new java.util.ArrayList<>();
+      for (int b = 0; b < branches; b++) {
+         double ang = rift ? (b == 0 ? 0.0 : Math.PI) + rnd.nextGaussian() * 0.05 : b * Math.PI * 2.0 / branches + rnd.nextGaussian() * 0.25;
+         double len = R * (rift ? 1.0 : 0.6 + rnd.nextDouble() * 0.5) * grow;
+         crackLine(vc, m, n, cam, p.c, d, u, ang, len, R * (rift ? 0.05 : 0.07), rnd, rift ? 9 : 5, p.palette, fade, rift ? 3 : 2, inner);
+      }
+      if (!rift && inner.size() >= 3) {   // the hole in the middle: black void with a broken white rim
+         for (int k = 0; k < inner.size(); k++) {
+            Vec3 a = inner.get(k), b2 = inner.get((k + 1) % inner.size());
+            vtx(vc, m, n, cam, p.c, VOID, 0.97F * fade); vtx(vc, m, n, cam, a, VOID, 0.97F * fade);
+            vtx(vc, m, n, cam, b2, VOID, 0.97F * fade); vtx(vc, m, n, cam, p.c, VOID, 0.97F * fade);
+            vtx(vc, m, n, cam, p.c, VOID, 0.97F * fade); vtx(vc, m, n, cam, b2, VOID, 0.97F * fade);
+            vtx(vc, m, n, cam, a, VOID, 0.97F * fade); vtx(vc, m, n, cam, p.c, VOID, 0.97F * fade);
+            gline(m, cam, a, b2, (float)(R * 0.03), p.palette, 0.9F * fade);
+         }
+      }
+   }
+
+   private static void crackLine(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, Vec3 d, Vec3 u, double ang, double len,
+                                 double w, java.util.Random rnd, int segs, int pal, float fade, int depth, java.util.List<Vec3> inner) {
+      if (len < 0.05 || depth <= 0) return;
+      Vec3 pos = c;
+      double a = ang;
+      for (int s = 0; s < segs; s++) {
+         a += rnd.nextGaussian() * 0.45;   // jagged: every segment kinks
+         double seg = len / segs * (0.7 + rnd.nextDouble() * 0.6);
+         Vec3 dirv = d.scale(Math.cos(a)).add(u.scale(Math.sin(a)));
+         Vec3 next = pos.add(dirv.scale(seg));
+         double t0 = (double)s / segs, t1 = (double)(s + 1) / segs;
+         double w0 = w * (1.0 - t0 * 0.85), w1 = w * (1.0 - t1 * 0.85);
+         Vec3 side = d.scale(-Math.sin(a)).add(u.scale(Math.cos(a)));
+         // the void inside the fracture (both windings, so it reads from either side)
+         Vec3 a0 = pos.add(side.scale(w0)), a1 = next.add(side.scale(w1)), b0 = pos.subtract(side.scale(w0)), b1 = next.subtract(side.scale(w1));
+         quad(vc, m, n, cam, a0, a1, b1, b0, VOID, 0.95F * fade, 0.95F * fade, 0.95F * fade, 0.95F * fade);
+         quad(vc, m, n, cam, b0, b1, a1, a0, VOID, 0.95F * fade, 0.95F * fade, 0.95F * fade, 0.95F * fade);
+         // white-hot broken edges
+         gline(m, cam, a0, a1, (float)Math.max(0.02, w0 * 0.55), pal, 0.95F * fade);
+         gline(m, cam, b0, b1, (float)Math.max(0.02, w0 * 0.55), pal, 0.95F * fade);
+         if (s == 0 && inner != null) inner.add(next);
+         if (s > 0 && rnd.nextDouble() < 0.45)   // side fractures
+            crackLine(vc, m, n, cam, next, d, u, a + (rnd.nextBoolean() ? 1 : -1) * (0.6 + rnd.nextDouble() * 0.6), len * (1.0 - t1) * 0.55, w1 * 0.8, rnd, 3, pal, fade, depth - 1, null);
+         pos = next;
+      }
    }
 
    private static double smooth(double x) {
