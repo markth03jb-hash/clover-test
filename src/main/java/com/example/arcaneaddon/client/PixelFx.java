@@ -43,6 +43,13 @@ public final class PixelFx {
             tex("streak"), tex("shard"), tex("ember"), tex("tongue"), tex("blade"), tex("cross"), tex("bolt"), tex("feather"),
             tex("star"), tex("plate"), tex("ring"), tex("barb"), tex("puff"), tex("moon"), tex("drop"), tex("wisp"), tex("diamond"),
             tex("claw"), tex("bone"), tex("glow"), tex("shock")};
+    private static final ResourceLocation[] TEX_CORE = suffixed("_core"), TEX_RIM = suffixed("_rim");
+
+    private static ResourceLocation[] suffixed(String sfx) {
+        ResourceLocation[] out = new ResourceLocation[TEX.length];
+        for (int i = 0; i < TEX.length; i++) out[i] = ResourceLocation.fromNamespaceAndPath(TEX[i].getNamespace(), TEX[i].getPath().replace(".png", sfx + ".png"));
+        return out;
+    }
 
     private static ResourceLocation tex(String n) { return ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/pixel/" + n + ".png"); }
 
@@ -702,6 +709,7 @@ public final class PixelFx {
                         Vec3 dir = nz(rnd(r, 1.0), UP);
                         one(pal, at.add(dir.scale(R * (burst ? 0.3 : 1.0))), dir.scale(burst ? p.r2 * r.nextDouble(0.08, 0.16) : 0.03), dir, Mth.clamp(p.r2 * 0.12, 0.25, 0.9));
                     }
+                    variant(p, at, age, life, burst, perTick, pal, dn, un);
                     return;
                 }
                 if (p.r < 0.08F) return;
@@ -748,6 +756,214 @@ public final class PixelFx {
                     double ang = r.nextDouble(Math.PI * 2);
                     Vec3 out = dn.scale(Math.cos(ang)).add(un.scale(Math.sin(ang)));
                     one(pal, p.c.add(out.scale(R * r.nextDouble())), out.scale(burst ? 0.06 : 0.01), out, Mth.clamp(R * 0.1, 0.2, 0.6));
+                }
+            }
+            default -> {}
+        }
+        variant(p, at, age, life, burst, perTick, pal, dn, un);
+    }
+
+    /**
+     * Effect variants, so moves of the same kind don't all look alike. The variant (0-3) comes from the move's own
+     * numbers (shape, size, life, speed, palette), so a given move always gets the same look, but two different
+     * slashes - or beams, rings, orbs - usually get different ones:
+     *   slashes      0 plain, 1 twin edge, 2 afterimage trail left along its path, 3 shredding spiral
+     *   beams        0 plain, 1 double helix wound round it, 2 pulse rings along it, 3 crackling side-sparks
+     *   rings/walls  0 plain, 1 pillars of light rising off it, 2 an inner echo ring, 3 spikes thrown outward
+     *   orbs         0 plain, 1 comet tail, 2 two sprites orbiting it, 3 a pulsing shell
+     *   explosions   0 plain, 1 a second shockwave, 2 a rising column, 3 heavy debris
+     *   blocks       0 plain, 1 a dust burst at the base, 2 a glint running along it, 3 shards sprayed off the tip
+     *   lightning    0 plain, 1 a scorch ring where it lands, 2 extra forks of sparks, 3 static left hanging
+     *   tornadoes    0 plain, 1 debris circling the foot, 2 a crown ring at the top, 3 crackling flecks
+     */
+    private static int variantOf(FxPacket p) {
+        return Math.floorMod(p.shape * 31 + Math.round(p.r * 4) * 7 + Math.round(p.r2 * 4) * 13 + p.life * 3 + Math.round(p.speed * 10) * 5 + p.palette * 17, 4);
+    }
+
+    private static void variant(FxPacket p, Vec3 at, double age, double life, boolean burst, boolean perTick, int pal, Vec3 dn, Vec3 un) {
+        int var = variantOf(p);
+        if (var == 0) return;
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        double frac = Mth.clamp(age / Math.max(1.0, life), 0.0, 1.0);
+        Vec3 s1 = nz(dn.cross(UP), new Vec3(1, 0, 0)), s2 = dn.cross(s1);
+        int L = LONG[pal], B = BIT[pal];
+        switch (p.shape) {
+            case 13, 1 -> {
+                double R = p.shape == 13 ? p.r + (p.r2 - p.r) * (1.0 - Math.pow(1.0 - Mth.clamp(age / (life * 0.45), 0.0, 1.0), 3.0)) : p.r + (p.r2 - p.r) * frac;
+                if (R < 0.1) return;
+                Vec3 c = p.c.add(p.d.scale(p.speed * age));
+                double back = p.shape == 13 ? 0.35 : 0.55;
+                int n = cnt(Mth.clamp(R * 2.5, 3.0, 16.0));
+                for (int i = 0; i < n; i++) {
+                    double fd = Math.toRadians(r.nextDouble(-70, 70)), cf = Math.cos(fd);
+                    Vec3 tan = un.scale(cf).subtract(dn.scale(Math.sin(fd) * back));
+                    float sz = (float) Mth.clamp(R * 0.16 * Math.pow(cf, 0.8), 0.1, 0.8);
+                    if (var == 1) {          // twin edge: a second, thinner blade just behind the first
+                        double R2 = R * 0.8;
+                        Vec3 o = c.add(un.scale(Math.sin(fd) * R2)).add(dn.scale((cf - 1.0) * R2 * back - R * 0.18));
+                        Spr s = spr(o, dn.scale(p.speed * 0.9), tan, L, sz * 1.6F, sz * 0.35F, r.nextInt(2, 4));
+                        s.heat = 0.95F; s.pal = pal; add(s);
+                    } else if (var == 2) {   // afterimage: ghosts of the blade left hanging where it passed
+                        Vec3 o = c.add(un.scale(Math.sin(fd) * R)).add(dn.scale((cf - 1.0) * R * back));
+                        Spr s = spr(o, Vec3.ZERO, tan, L, sz * 1.8F, sz * 0.5F, r.nextInt(7, 11));
+                        s.pal = pal; s.drag = 0.5F;
+                        if (element(pal) == DARK || element(pal) == METAL || element(pal) == BONE) { s.dark = true; s.darkAlpha = 0.55F; } else s.heat = 0.55F;
+                        add(s);
+                    } else {                 // shredding spiral: slivers torn off the edge, corkscrewing along its path
+                        Vec3 o = c.add(un.scale(Math.sin(fd) * R)).add(dn.scale((cf - 1.0) * R * back));
+                        Vec3 rad = nz(o.subtract(c), un);
+                        Spr s = spr(o, dn.scale(p.speed * 0.5).add(rad.scale(0.12)), rad, K_STREAK, sz * 1.4F, sz * 0.12F, r.nextInt(5, 9));
+                        s.heat = 1.0F; s.pal = pal; s.curl = dn; s.curlRate = 0.35F * (r.nextBoolean() ? 1 : -1); s.drag = 0.95F; add(s);
+                    }
+                }
+            }
+            case 2 -> {
+                double len = p.d.length();
+                if (len < 0.3 || (age > 3.0 && var != 1)) return;
+                Vec3 bs1 = nz(dn.cross(UP), new Vec3(1, 0, 0)), bs2 = dn.cross(bs1);
+                if (var == 1) {              // a double helix wound round the beam
+                    int n = cnt(Mth.clamp(len * 0.8, 2.0, 14.0));
+                    for (int i = 0; i < n; i++) {
+                        double t = r.nextDouble(), ang = t * len * 2.2 + age * 0.8 + (r.nextBoolean() ? Math.PI : 0), rad = p.r + 0.25;
+                        Vec3 o = p.c.add(p.d.scale(t)).add(bs1.scale(Math.cos(ang) * rad)).add(bs2.scale(Math.sin(ang) * rad));
+                        Spr s = spr(o, Vec3.ZERO, dn, K_STREAK, 0.4F, 0.08F, 3);
+                        s.heat = 0.95F; s.pal = pal; add(s);
+                    }
+                } else if (var == 2) {       // pulse rings strung along it as it fires
+                    if (!burst) return;
+                    int k = (int) Math.min(6, len / 2.0);
+                    for (int i = 1; i <= k; i++) {
+                        Spr s = spr(p.c.add(p.d.scale(i / (double) (k + 1))), Vec3.ZERO, dn, K_SHOCK, p.r * 2.5F + 0.4F, p.r * 2.5F + 0.4F, 5);
+                        s.pal = pal; s.heat = 0.85F; s.grow = 1.15F; s.seed = 0; add(s);
+                    }
+                } else {                     // crackling sparks jumping off the sides
+                    int n = cnt(Mth.clamp(len * 0.4, 1.0, 6.0));
+                    for (int i = 0; i < n; i++) {
+                        double ang = r.nextDouble(Math.PI * 2);
+                        Vec3 out = bs1.scale(Math.cos(ang)).add(bs2.scale(Math.sin(ang)));
+                        Spr s = spr(p.c.add(p.d.scale(r.nextDouble())).add(out.scale(p.r + 0.1)), out.scale(0.08), out, K_STREAK, 0.45F, 0.06F, r.nextInt(2, 4));
+                        s.heat = 1.0F; s.pal = pal; add(s);
+                    }
+                }
+            }
+            case 0 -> {
+                float R = p.r + (p.r2 - p.r) * (float) frac;
+                if (R < 0.3F) return;
+                Vec3 c = p.c.add(p.d.scale(p.speed * age));
+                double span = p.a1 - p.a0;
+                int n = cnt(Mth.clamp(R * Math.abs(span) / 360.0 * 1.2, 1.0, 10.0));
+                for (int i = 0; i < n; i++) {
+                    double th = Math.toRadians(p.a0 + span * r.nextDouble());
+                    Vec3 out = dn.scale(Math.cos(th)).add(un.scale(Math.sin(th)));
+                    if (var == 1) {          // pillars of light rising off it
+                        Spr s = spr(c.add(out.scale(R)), new Vec3(0, r.nextDouble(0.12, 0.25), 0), UP, L, 0.9F, 0.18F, r.nextInt(5, 9));
+                        s.heat = 0.9F; s.pal = pal; s.drag = 0.9F; add(s);
+                    } else if (var == 2) {   // an inner echo ring
+                        one(pal, c.add(out.scale(R * 0.6)), out.scale(0.02), un.scale(Math.cos(th)).subtract(dn.scale(Math.sin(th))), 0.3);
+                    } else {                 // spikes thrown outward
+                        Spr s = spr(c.add(out.scale(R)), out.scale(r.nextDouble(0.2, 0.35)), out, element(pal) == DARK ? L : K_STREAK, 0.8F, 0.16F, r.nextInt(3, 6));
+                        s.pal = pal; s.drag = 0.8F;
+                        if (element(pal) == DARK) { s.dark = true; s.darkAlpha = 1.0F; } else s.heat = 1.0F;
+                        add(s);
+                    }
+                }
+            }
+            case 19, 20 -> {
+                if (p.shape == 20 && p.h > 0.5F) {   // explosions
+                    if (var == 1 && age >= 3.0 && age < 4.0) shockRing(pal, at, Mth.clamp(p.r2 * 0.4, 0.5, 3.0));
+                    else if (var == 2 && age < 8.0) {   // a rising column
+                        for (int i = 0; i < cnt(4.0); i++) {
+                            Spr s = spr(at.add(rnd(r, p.r2 * 0.15)), new Vec3(0, r.nextDouble(0.15, 0.3), 0), UP, L, (float) (p.r2 * 0.35), (float) (p.r2 * 0.12), r.nextInt(6, 10));
+                            s.heat = 0.9F; s.pal = pal; s.flicker = true; s.drag = 0.92F; add(s);
+                        }
+                    } else if (var == 3 && burst) {     // heavy debris
+                        for (int i = 0; i < cnt(Mth.clamp(p.r2 * 3.0, 6.0, 20.0)); i++) {
+                            Vec3 dir = nz(rnd(r, 1.0).add(0, 0.6, 0), UP);
+                            Spr s = spr(at, dir.scale(r.nextDouble(0.25, 0.5)), dir, element(pal) == FLAME ? K_SHARD : B, 0.35F, 0.35F, r.nextInt(12, 20));
+                            s.dark = true; s.darkAlpha = 1.0F; s.pal = pal; s.grav = -0.03F; s.drag = 0.97F; s.spin = 0.4F; add(s);
+                        }
+                    }
+                    return;
+                }
+                if (p.r < 0.08F) return;
+                if (var == 1 && p.v.lengthSqr() > 1.0E-3) {   // comet tail
+                    Vec3 back = p.v.scale(-1).normalize();
+                    for (int i = 0; i < cnt(2.0); i++) {
+                        Spr s = spr(at.add(back.scale(p.r)).add(rnd(r, p.r * 0.3)), p.v.scale(0.2), back, L, p.r * 2.5F, p.r * 0.6F, r.nextInt(5, 9));
+                        s.heat = 0.85F; s.pal = pal; s.flicker = true; add(s);
+                    }
+                } else if (var == 2) {       // two sprites orbiting it
+                    for (int k = 0; k < 2; k++) {
+                        double ang = age * 0.6 + k * Math.PI;
+                        Vec3 off = new Vec3(Math.cos(ang), Math.sin(ang * 0.7) * 0.4, Math.sin(ang)).scale(p.r * 1.4 + 0.2);
+                        Spr s = spr(at.add(off), p.v, new Vec3(-Math.sin(ang), 0, Math.cos(ang)), B, 0.22F, 0.22F, 4);
+                        s.heat = 1.0F; s.pal = pal; s.drag = 1.0F; add(s);
+                    }
+                } else if (var == 3 && ((int) age) % 4 == 0 && age - Math.floor(age) < 1.0 && !perTick) {   // a pulsing shell
+                    shockRing(pal, at, p.r * 1.6);
+                }
+            }
+            case 7, 8, 30 -> {
+                double hl = Math.max(0.1, p.r);
+                if (var == 1 && burst) {     // a dust burst where it rises from
+                    Vec3 base = p.shape == 8 ? at : at.subtract(dn.scale(hl));
+                    for (int i = 0; i < cnt(8.0); i++) {
+                        double ang = r.nextDouble(Math.PI * 2);
+                        Vec3 out = new Vec3(Math.cos(ang), 0.3, Math.sin(ang));
+                        Spr s = spr(base, out.scale(r.nextDouble(0.08, 0.18)), out, K_PUFF, 0.4F, 0.4F, r.nextInt(10, 16));
+                        s.dark = true; s.darkAlpha = 0.5F; s.pal = pal; s.grow = 1.05F; s.drag = 0.88F; add(s);
+                    }
+                } else if (var == 2 && !perTick && age < 6.0) {   // a glint running along it
+                    double t = (age / 6.0) * 2.0 - 1.0;
+                    Spr s = spr(at.add(dn.scale(hl * (p.shape == 8 ? (t + 1) * 0.5 : t))), Vec3.ZERO, dn, K_STAR, 0.5F, 0.5F, 2);
+                    s.heat = 1.0F; s.pal = pal; add(s);
+                } else if (var == 3 && burst) {   // shards sprayed off the tip
+                    Vec3 tip = at.add(dn.scale(hl));
+                    for (int i = 0; i < cnt(6.0); i++) {
+                        Vec3 v = dn.scale(0.2).add(rnd(r, 0.12));
+                        Spr s = spr(tip, v, v, K_SHARD, 0.25F, 0.25F, r.nextInt(8, 13));
+                        s.heat = 0.95F; s.pal = pal; s.grav = -0.012F; s.spin = 0.5F; add(s);
+                    }
+                }
+            }
+            case 23 -> {
+                if (!burst) return;
+                Vec3 land = p.c.add(p.d);
+                if (var == 1) shockRing(pal, land.add(0, 0.05, 0), Mth.clamp(p.r * 10.0, 0.6, 3.0));
+                else if (var == 2) {
+                    for (int i = 0; i < cnt(5.0); i++) {
+                        Vec3 a0 = p.c.add(p.d.scale(r.nextDouble(0.2, 0.9))), dir = nz(rnd(r, 1.0), UP);
+                        Spr s = spr(a0.add(dir.scale(0.3)), dir.scale(0.05), dir, K_BOLT, 0.7F, 0.35F, 3);
+                        s.heat = 1.0F; s.pal = pal; s.flicker = true; add(s);
+                    }
+                } else {
+                    for (int i = 0; i < cnt(5.0); i++) {
+                        Spr s = spr(land.add(rnd(r, 0.6)).add(0, 0.3, 0), new Vec3(0, 0.01, 0), UP, K_STAR, 0.3F, 0.3F, r.nextInt(10, 18));
+                        s.heat = 1.0F; s.pal = pal; s.twinkle = true; add(s);
+                    }
+                }
+            }
+            case 28 -> {
+                double R = p.r, H = Math.max(0.5, p.h);
+                int tp = pal == 0 ? 5 : pal;
+                if (var == 1) {
+                    for (int i = 0; i < cnt(2.0); i++) {
+                        double ang = r.nextDouble(Math.PI * 2), rr = R * 0.35;
+                        Vec3 tan = new Vec3(-Math.sin(ang), 0.1, Math.cos(ang));
+                        Spr s = spr(at.add(Math.cos(ang) * rr, 0.2, Math.sin(ang) * rr), tan.scale(0.4), tan, K_SHARD, 0.3F, 0.3F, r.nextInt(8, 12));
+                        s.dark = true; s.darkAlpha = 1.0F; s.pal = 15; s.curl = UP; s.curlRate = 0.45F; s.spin = 0.6F; s.drag = 0.97F; add(s);
+                    }
+                } else if (var == 2) {
+                    if (((int) age) % 6 == 0 && age - Math.floor(age) < 1.0) {
+                        Spr s = spr(at.add(0, H, 0), Vec3.ZERO, UP, K_SHOCK, (float) R, (float) R, 6);
+                        s.pal = tp; s.heat = 0.8F; s.grow = 1.12F; s.seed = 0; add(s);
+                    }
+                } else {
+                    for (int i = 0; i < cnt(1.5); i++) {
+                        double y = r.nextDouble() * H, ang = r.nextDouble(Math.PI * 2), rr = R * (0.18 + 0.82 * Math.pow(y / H, 0.85));
+                        Spr s = spr(at.add(Math.cos(ang) * rr, y, Math.sin(ang) * rr), Vec3.ZERO, rnd(r, 1.0), K_BOLT, 0.6F, 0.3F, 2);
+                        s.heat = 1.0F; s.pal = tp == 5 ? 13 : tp; s.flicker = true; add(s);
+                    }
                 }
             }
             default -> {}
@@ -905,13 +1121,30 @@ public final class PixelFx {
     }
 
     // ------------------------------------------------------------------ drawing
+    /*
+     * Every sprite texture is a 4-frame strip (top to bottom): whole, then dissolving away in an ordered dither -
+     * the classic pixel-art fade. Each kind also has a "core" strip (only its white-hot pixels) and a "rim" strip
+     * (a one-pixel outline just outside the shape). Layers, back to front:
+     *   bloom      a soft banded halo behind hot glowing sprites
+     *   solid      black / steel / bone sprites (normal blending)
+     *   rim        a glowing outline round the solid ones in the palette colour - anti magic's black with a red edge
+     *   glow       the glowing sprites in their palette colour
+     *   core       their white-hot pixels drawn over the top
+     *   soft rim   a faint coloured outline round the glowing ones
+     */
+    private static final int L_SOLID = 0, L_SOLID_RIM = 1, L_GLOW = 2, L_CORE = 3, L_GLOW_RIM = 4;
+    @SuppressWarnings("unchecked")
+    private static final List<Spr>[] BY_KIND = new List[TEX.length];
+    static { for (int i = 0; i < BY_KIND.length; i++) BY_KIND[i] = new ArrayList<>(); }
+
     public static void render(PoseStack ps, Camera camera, MultiBufferSource.BufferSource buf, float pt) {
         if (SPRITES.isEmpty()) return;
         Vec3 cam = camera.getPosition();
         Matrix4f m = ps.last().pose();
         Matrix3f n = ps.last().normal();
         float opacity = com.example.arcaneaddon.AddonClientConfig.effectOpacity();
-        // 1) a soft banded bloom behind every hot glowing sprite (additive) - the glow that makes them pop
+        for (List<Spr> l : BY_KIND) l.clear();
+        for (Spr p : SPRITES) BY_KIND[Mth.clamp(p.kind, 0, TEX.length - 1)].add(p);
         RenderType bt = RenderType.eyes(TEX[K_GLOW]);
         VertexConsumer bv = null;
         for (Spr p : SPRITES) {
@@ -920,16 +1153,19 @@ public final class PixelFx {
             bloom(bv, m, n, cam, p, pt, opacity);
         }
         if (bv != null) buf.endBatch(bt);
-        // 2) the solid sprites (normal blending), 3) the glowing ones on top (additive: eyes ignores alpha, so the
-        // fade is done by darkening the colour)
-        for (int pass = 0; pass < 2; pass++) {
+        for (int layer = 0; layer <= L_GLOW_RIM; layer++) {
             for (int kind = 0; kind < TEX.length; kind++) {
-                RenderType rt = pass == 0 ? RenderType.entityTranslucentEmissive(TEX[kind]) : RenderType.eyes(TEX[kind]);
+                List<Spr> list = BY_KIND[kind];
+                if (list.isEmpty()) continue;
+                ResourceLocation tx = layer == L_CORE ? TEX_CORE[kind] : (layer == L_SOLID_RIM || layer == L_GLOW_RIM ? TEX_RIM[kind] : TEX[kind]);
+                RenderType rt = layer == L_SOLID ? RenderType.entityTranslucentEmissive(tx) : RenderType.eyes(tx);
                 VertexConsumer vc = null;
-                for (Spr p : SPRITES) {
-                    if (p.kind != kind || p.dark != (pass == 0)) continue;
+                for (Spr p : list) {
+                    boolean solidLayer = layer == L_SOLID || layer == L_SOLID_RIM;
+                    if (p.dark != solidLayer) continue;
+                    if (layer == L_CORE && p.heat < 0.5F) continue;
                     if (vc == null) vc = buf.getBuffer(rt);
-                    draw(vc, m, n, cam, p, pt, pass == 0, opacity);
+                    draw(vc, m, n, cam, p, pt, layer, opacity);
                 }
                 if (vc != null) buf.endBatch(rt);
             }
@@ -943,11 +1179,17 @@ public final class PixelFx {
 
     private static float fadeOf(Spr p, Vec3 pos, Vec3 cam, float pt, float opacity) {
         float life = (p.age + pt) / (float) p.life;
-        float fade = Mth.clamp((1.0F - life) * 2.2F, 0.0F, 1.0F) * opacity;
+        float fade = Mth.clamp((1.0F - life) * 3.0F, 0.0F, 1.0F) * opacity;   // the dither dissolve does most of the fading
         double dc = pos.distanceTo(cam);
         if (dc < 2.2) fade *= (float) Mth.clamp((dc - 0.6) / 1.6, 0.0, 1.0);   // never smother the camera
         if (p.twinkle) fade *= 0.55F + 0.45F * (float) Math.abs(Math.sin((p.age + pt) * 1.3 + p.seed));
         return fade;
+    }
+
+    /** Which frame of the dissolve: whole for the first part of its life, then dithering away. */
+    private static int frameOf(Spr p, float pt) {
+        float life = (p.age + pt) / (float) p.life;
+        return life < 0.45F ? 0 : Math.min(3, 1 + (int) ((life - 0.45F) / 0.55F * 3.0F));
     }
 
     private static void bloom(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Spr p, float pt, float opacity) {
@@ -958,10 +1200,10 @@ public final class PixelFx {
         Vec3 sx = nz(toCam.cross(UP), new Vec3(1, 0, 0)), sy = sx.cross(toCam);
         double s = Math.max(p.len, p.wid) * (square(p.kind) ? 1.4 : 0.8) * p.scaleNow(pt);
         float[] c = glow(p.pal, Math.min(p.heat, 0.7F));
-        quad(vc, m, n, cam, pos, sy.scale(s), sx.scale(s), c[0] * fade, c[1] * fade, c[2] * fade, 1.0F, false);
+        quad(vc, m, n, cam, pos, sy.scale(s), sx.scale(s), c[0] * fade, c[1] * fade, c[2] * fade, 1.0F, false, 0.0F, 0.25F);
     }
 
-    private static void draw(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Spr p, float pt, boolean dark, float opacity) {
+    private static void draw(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Spr p, float pt, int layer, float opacity) {
         Vec3 pos = p.prev.add(p.pos.subtract(p.prev).scale(pt));
         float fade = fadeOf(p, pos, cam, pt, opacity);
         if (fade <= 0.01F) return;
@@ -991,28 +1233,37 @@ public final class PixelFx {
             float stretch = p.kind == K_STREAK || p.kind == K_TONGUE || p.kind == K_CLAW || p.kind == K_WISP ? 0.7F + 0.6F * (1.0F - life) : 1.0F;
             len = p.len * stretch * scale; wid = p.wid * scale;
         }
-        float r, g, bl, al;
-        if (dark) { float[] sc = SOLID[Mth.clamp(p.pal, 0, 15)]; r = sc[0]; g = sc[1]; bl = sc[2]; al = p.darkAlpha * fade; }
-        else {
-            float[] c = glow(p.pal, p.heat);
-            r = c[0] * fade; g = c[1] * fade; bl = c[2] * fade; al = 1.0F;
+        float r, g, bl, al = 1.0F;
+        switch (layer) {
+            case L_SOLID -> { float[] sc = SOLID[Mth.clamp(p.pal, 0, 15)]; r = sc[0]; g = sc[1]; bl = sc[2]; al = p.darkAlpha * fade; }
+            case L_SOLID_RIM -> {   // the glowing edge round a solid sprite: strong on black magic, a faint sheen on metal and bone
+                float k = (element(p.pal) == DARK ? 0.95F : 0.45F) * fade * Math.min(1.0F, p.darkAlpha + 0.2F);
+                float[] c = glow(p.pal, 0.6F);
+                r = c[0] * k; g = c[1] * k; bl = c[2] * k;
+            }
+            case L_CORE -> { float[] c = glow(p.pal, 1.0F); float k = fade * Mth.clamp((p.heat - 0.5F) * 2.5F, 0.0F, 1.0F); r = c[0] * k; g = c[1] * k; bl = c[2] * k; }
+            case L_GLOW_RIM -> { float[] c = glow(p.pal, Math.min(p.heat, 0.5F)); float k = 0.4F * fade; r = c[0] * k; g = c[1] * k; bl = c[2] * k; }
+            default -> { float[] c = glow(p.pal, Math.min(p.heat, 0.88F)); r = c[0] * fade; g = c[1] * fade; bl = c[2] * fade; }
         }
+        if (r + g + bl < 0.01F && layer != L_SOLID) return;
+        int fr = frameOf(p, pt);
         // flames flicker: mirrored every other couple of ticks, like a two-frame flip-book
         boolean flip = p.flicker && (((p.age + p.seed) >> 1) & 1) == 1;
-        quad(vc, m, n, cam, pos, ax.scale(len * 0.5), side.scale(wid * 0.5), r, g, bl, al, flip);
+        // the rim layers sit one pixel outside the shape, so they are drawn on the same quad (the strips are padded)
+        quad(vc, m, n, cam, pos, ax.scale(len * 0.5), side.scale(wid * 0.5), r, g, bl, al, flip, fr * 0.25F, fr * 0.25F + 0.25F);
     }
 
-    /** A double-faced quad: {@code a} = half its length (texture top = +a), {@code b} = half its width. */
-    private static void quad(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 pos, Vec3 a, Vec3 b, float r, float g, float bl, float al, boolean flip) {
+    /** A double-faced quad: {@code a} = half its length (texture top = +a), {@code b} = half its width; v0..v1 = the frame. */
+    private static void quad(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 pos, Vec3 a, Vec3 b, float r, float g, float bl, float al, boolean flip, float v0, float v1) {
         float u0 = flip ? 1 : 0, u1 = flip ? 0 : 1;
-        v(vc, m, n, cam, pos.subtract(a).subtract(b), r, g, bl, al, u0, 1);
-        v(vc, m, n, cam, pos.subtract(a).add(b), r, g, bl, al, u1, 1);
-        v(vc, m, n, cam, pos.add(a).add(b), r, g, bl, al, u1, 0);
-        v(vc, m, n, cam, pos.add(a).subtract(b), r, g, bl, al, u0, 0);
-        v(vc, m, n, cam, pos.add(a).subtract(b), r, g, bl, al, u0, 0);
-        v(vc, m, n, cam, pos.add(a).add(b), r, g, bl, al, u1, 0);
-        v(vc, m, n, cam, pos.subtract(a).add(b), r, g, bl, al, u1, 1);
-        v(vc, m, n, cam, pos.subtract(a).subtract(b), r, g, bl, al, u0, 1);
+        v(vc, m, n, cam, pos.subtract(a).subtract(b), r, g, bl, al, u0, v1);
+        v(vc, m, n, cam, pos.subtract(a).add(b), r, g, bl, al, u1, v1);
+        v(vc, m, n, cam, pos.add(a).add(b), r, g, bl, al, u1, v0);
+        v(vc, m, n, cam, pos.add(a).subtract(b), r, g, bl, al, u0, v0);
+        v(vc, m, n, cam, pos.add(a).subtract(b), r, g, bl, al, u0, v0);
+        v(vc, m, n, cam, pos.add(a).add(b), r, g, bl, al, u1, v0);
+        v(vc, m, n, cam, pos.subtract(a).add(b), r, g, bl, al, u1, v1);
+        v(vc, m, n, cam, pos.subtract(a).subtract(b), r, g, bl, al, u0, v1);
     }
 
     private static void v(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, float r, float g, float b, float a, float u, float t) {

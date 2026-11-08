@@ -63,7 +63,7 @@ public class SummonGreatswordSpell extends AbstractSpell {
 
    @Override
    public io.redspace.ironsspellbooks.api.util.AnimationHolder getCastStartAnimation() {
-      return new io.redspace.ironsspellbooks.api.util.AnimationHolder("irons_spellbooks:simple_sword_upward_swipe", true, true);   // draw the blade up out of the grimoire
+      return com.example.arcaneaddon.spells.AnimNames.holder("irons_spellbooks:simple_sword_upward_swipe");   // draw the blade up out of the grimoire
    }
 
    public boolean allowLooting() {

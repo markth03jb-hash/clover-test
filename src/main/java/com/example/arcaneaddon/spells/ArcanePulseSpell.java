@@ -51,7 +51,7 @@ public class ArcanePulseSpell extends AbstractSpell {
     public CastType getCastType() { return CastType.INSTANT; }
 
     @Override
-    public AnimationHolder getCastStartAnimation() { return new AnimationHolder("irons_spellbooks:stomp", true, true); }   // the shockwave comes from a stomp
+    public AnimationHolder getCastStartAnimation() { return com.example.arcaneaddon.spells.AnimNames.holder("irons_spellbooks:stomp"); }   // the shockwave comes from a stomp
 
     private float getRadius(int spellLevel) { return 3.0f + spellLevel * 0.5f; }
 
@@ -65,6 +65,7 @@ public class ArcanePulseSpell extends AbstractSpell {
 
     @Override
     public void onCast(Level level, int spellLevel, LivingEntity caster, CastSource castSource, MagicData playerMagicData) {
+        if (!level.isClientSide && caster instanceof net.minecraft.server.level.ServerPlayer sp0) com.example.arcaneaddon.server.CastSync.cast(sp0, getCastStartAnimation());
         float radius = getRadius(spellLevel);
         float damage = getSpellPower(spellLevel, caster);
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, caster.getBoundingBox().inflate(radius),

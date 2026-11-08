@@ -41,7 +41,7 @@ public class DarkSpell extends AbstractSpell {
     private final boolean needsKatana;
 
     /** Shorthand for an Iron's/addon player animation id such as "irons_spellbooks:katana_upslash". */
-    public static AnimationHolder anim(String id) { return new AnimationHolder(id, true, true); }
+    public static AnimationHolder anim(String id) { return com.example.arcaneaddon.spells.AnimNames.holder(id); }
 
     /**
      * @param needsKatana sword techniques (every slash, the thrust, the blade coating) need the Dark Katana in the main hand
@@ -96,7 +96,7 @@ public class DarkSpell extends AbstractSpell {
 
     @Override
     public void onCast(Level level, int spellLevel, LivingEntity caster, CastSource castSource, MagicData playerMagicData) {
-        if (!level.isClientSide && caster instanceof ServerPlayer sp) effect.perform(sp, getSpellPower(spellLevel, caster));
+        if (!level.isClientSide && caster instanceof ServerPlayer sp) { com.example.arcaneaddon.server.CastSync.cast(sp, getCastStartAnimation()); effect.perform(sp, getSpellPower(spellLevel, caster)); }
         super.onCast(level, spellLevel, caster, castSource, playerMagicData);
     }
 }

@@ -65,7 +65,7 @@ public class PiercingDashSpell extends AbstractSpell {
 
    @Override
    public io.redspace.ironsspellbooks.api.util.AnimationHolder getCastStartAnimation() {
-      return new io.redspace.ironsspellbooks.api.util.AnimationHolder("irons_spellbooks:simple_sword_lunge_stab", true, true);   // thrust forward into the dash
+      return com.example.arcaneaddon.spells.AnimNames.holder("irons_spellbooks:simple_sword_lunge_stab");   // thrust forward into the dash
    }
 
    public boolean allowLooting() {
@@ -101,6 +101,7 @@ public class PiercingDashSpell extends AbstractSpell {
 
    public void onCast(Level level, int spellLevel, LivingEntity caster, CastSource castSource, MagicData playerMagicData) {
       if (caster instanceof ServerPlayer sp && !DashQueue.isDashing(sp)) {
+         com.example.arcaneaddon.server.CastSync.cast(sp, getCastStartAnimation());
          DashQueue.start(sp, this, this.getSpellPower(spellLevel, caster), sp.getMainHandItem().is((Item)AddonItemRegistry.DEMON_DWELLER_SWORD.get()), devil);
       }
 

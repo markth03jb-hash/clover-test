@@ -81,7 +81,7 @@ public abstract class GrimoireSpell extends AbstractSpell {
             java.util.Map.entry("devil_borrowed_slash", pose("arcane_addon:dark_wild_flurry")));
 
     private static io.redspace.ironsspellbooks.api.util.AnimationHolder pose(String id) {
-        return new io.redspace.ironsspellbooks.api.util.AnimationHolder(id, true, true);
+        return com.example.arcaneaddon.spells.AnimNames.holder(id);
     }
 
     @Override
@@ -124,7 +124,7 @@ public abstract class GrimoireSpell extends AbstractSpell {
 
     @Override
     public void onCast(Level level, int spellLevel, LivingEntity caster, CastSource castSource, MagicData playerMagicData) {
-        if (!level.isClientSide && caster instanceof ServerPlayer sp) perform(sp, getSpellPower(spellLevel, caster));
+        if (!level.isClientSide && caster instanceof ServerPlayer sp) { com.example.arcaneaddon.server.CastSync.cast(sp, getCastStartAnimation()); perform(sp, getSpellPower(spellLevel, caster)); }
         super.onCast(level, spellLevel, caster, castSource, playerMagicData);
     }
 }

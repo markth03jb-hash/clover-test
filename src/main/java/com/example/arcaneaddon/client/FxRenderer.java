@@ -174,6 +174,8 @@ public class FxRenderer {
    }
 
    public static void spawn(FxPacket p) {
+      if (p.shape == 42) { FxSync.cast(p.id, p.sweep); return; }   // a move's cast animation started (effect timing)
+      if (FxSync.defer(p)) return;   // held back to land on the swing
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
       if (p.shape == 4) {   // Ki Sense mark: id = entity, palette = creature type, life = duration
          KiSenseRenderer.mark(p.id, p.palette, p.life);
@@ -346,6 +348,7 @@ public class FxRenderer {
       if (e.phase == Phase.END) {
          Minecraft mc = Minecraft.getInstance();
          if (mc.level == null) {
+            FxSync.tick();
             FX.clear();
             TRACK.clear();
             ORBITS.clear();
@@ -355,6 +358,7 @@ public class FxRenderer {
             Iterator<FxRenderer.Fx> it = FX.iterator();
             DarkSmoke.tick();
             PixelFx.tick();
+            FxSync.tick();
             for (java.util.Map.Entry<Integer, double[]> ze : ZONES.entrySet()) {
                Double tgt = ZONE_TARGET.get(ze.getKey());
                if (tgt != null) ze.getValue()[2] += (tgt - ze.getValue()[2]) * 0.2;

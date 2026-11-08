@@ -1,7 +1,28 @@
-Iron Spell Grimoire v1.46.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.47.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.47.0
+- Pixel art overhaul:
+    * every sprite is redrawn at double resolution (EPX pixel upscaling: smoother curves, still crisp pixels)
+    * every sprite now has a white-hot core layer and a one-pixel glowing outline: black anti magic, darkness and
+      devil sprites get a burning edge in their colour, metal and bone a faint sheen, glowing sprites a soft rim
+    * sprites no longer just fade - they dissolve in a 4-frame ordered dither, the classic pixel-art fade-out,
+      cooling as they go
+- Effect variants: each move picks one of four looks for its effect type (a given move always gets the same one):
+    slashes      plain / twin edge / afterimage trail / shredding spiral
+    beams        plain / double helix / pulse rings along it / crackling side-sparks
+    rings, walls plain / rising pillars / inner echo ring / spikes thrown outward
+    orbs         plain / comet tail / orbiting sprites / pulsing shell
+    explosions   plain / second shockwave / rising column / heavy debris
+    blocks       plain / dust burst at the base / glint running along / shards off the tip
+    lightning    plain / scorch ring / extra forks / static left hanging
+    tornadoes    plain / debris circling the foot / crown ring / crackling flecks
+- Animation sync for every move: when a move is cast, clients learn which animation started and find the frame
+  where the swing actually comes through (the fastest tick of its keyframes). If the move's first effect would
+  appear before that, it and the rest of the move's effects are held back by the same few ticks (max 8), so the
+  slash leaves the blade as it swings. Moves that were already timed to their swing are left as they were.
 
 NEW IN 1.46.0
 - New pixel art: 16 new hand-made sprites (blade slivers, cross-sparks, zigzag bolts, feathers, stars, steel
