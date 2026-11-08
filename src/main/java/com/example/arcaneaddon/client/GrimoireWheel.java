@@ -188,7 +188,7 @@ public final class GrimoireWheel {
         // the clover emblem in the centre
         int leaves = book == 0 ? 5 : 4;
         float[] leafDark = book == 0 ? new float[]{0.03F, 0.02F, 0.03F} : new float[]{0.05F, 0.16F, 0.08F};
-        double rl = (rIn - 4.0) * 0.62;
+        double rl = (rIn - 2.0) * 0.78;
         double spin = time * 0.25;
         for (int pass = 0; pass < 2; pass++) {   // gold outline first, the leaf over it
             double grow = pass == 0 ? 1.6 : 0.0;
@@ -220,7 +220,7 @@ public final class GrimoireWheel {
         // the chosen spell's icon in the clover's heart
         SpellData chosen = sm.getSpellData(sel);
         if (chosen != null && chosen.getSpell() != null) {
-            int s = 14;
+            int s = 10;
             g.blit(icon(chosen.getSpell()), cx - s / 2, cy - s / 2, 0, 0, s, s, s, s);
             infoPage(g, font, pl, sm, chosen, sel, cx, (int) (cy + rOut + 16 * ease), col, A);
         }
