@@ -2,6 +2,8 @@ package com.example.arcaneaddon.registry;
 
 import com.example.arcaneaddon.server.DarkFx;
 import com.example.arcaneaddon.server.WindFx;
+import com.example.arcaneaddon.server.MercuryFx;
+import com.example.arcaneaddon.spells.MercurySpell;
 import com.example.arcaneaddon.spells.WindSpell;
 import com.example.arcaneaddon.server.DevilFx;
 import com.example.arcaneaddon.spells.DevilSpell;
@@ -127,6 +129,24 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> WIND_SPELLS = List.of(
             WIND_BLADE_SHOWER, TORNADO_FANG, SYLPHS_BREATH, GALE_WHITE_BOW, HUSHED_DANCE,
             SPIRIT_OF_ZEPHYR, SPIRIT_OF_BOREAS, SPIRIT_OF_EUROS, SPIRIT_DIVE, SPIRIT_STORM);
+
+    // ------------------------------------------------------------------ Mercury Grimoire (Nozel Silva's Mercury Magic)
+    //                                                                                id                          cd mana power  animation
+    public static final RegistryObject<AbstractSpell> MERCURY_BULLETS = registerSpell(new MercurySpell("mercury_bullets", 5, 30, 10, MercurySpell.anim("arcane_addon:mercury_bullets"), MercuryFx::mercuryBullets));
+    public static final RegistryObject<AbstractSpell> MERCURY_SPEARS = registerSpell(new MercurySpell("mercury_spears", 9, 50, 16, MercurySpell.anim("arcane_addon:mercury_spears"), MercuryFx::mercurySpears));
+    public static final RegistryObject<AbstractSpell> SILVER_RAIN = registerSpell(new MercurySpell("silver_rain", 16, 70, 14, MercurySpell.anim("arcane_addon:mercury_silver_rain"), MercuryFx::silverRain));
+    public static final RegistryObject<AbstractSpell> STORM_OF_BLADES = registerSpell(new MercurySpell("storm_of_blades", 12, 60, 18, MercurySpell.anim("arcane_addon:mercury_storm_of_blades"), MercuryFx::stormOfBlades));
+    public static final RegistryObject<AbstractSpell> MERCURY_EAGLE = registerSpell(new MercurySpell("mercury_eagle", 14, 65, 24, MercurySpell.anim("arcane_addon:mercury_eagle"), MercuryFx::mercuryEagle));
+    public static final RegistryObject<AbstractSpell> SILVER_MIRROR = registerSpell(new MercurySpell("silver_mirror", 16, 40, 0, MercurySpell.anim("arcane_addon:mercury_mirror"), MercuryFx::silverMirror));
+    public static final RegistryObject<AbstractSpell> MERCURY_SPHERE = registerSpell(new MercurySpell("mercury_sphere", 24, 70, 0, MercurySpell.anim("arcane_addon:mercury_sphere"), MercuryFx::mercurySphere));
+    public static final RegistryObject<AbstractSpell> REGAL_SPEAR = registerSpell(new MercurySpell("regal_spear", 22, 100, 34, MercurySpell.anim("arcane_addon:mercury_regal_spear"), MercuryFx::regalSpear));
+    public static final RegistryObject<AbstractSpell> SILVER_GUARDIAN = registerSpell(new MercurySpell("silver_guardian", 60, 90, 0, MercurySpell.anim("arcane_addon:mercury_guardian"), MercuryFx::silverGuardian));
+    public static final RegistryObject<AbstractSpell> MERCURY_CAGE = registerSpell(new MercurySpell("mercury_cage", 40, 140, 30, MercurySpell.anim("arcane_addon:klaus_clench"), MercuryFx::mercuryCage));
+
+    /** The ten Mercury Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> MERCURY_SPELLS = List.of(
+            MERCURY_BULLETS, MERCURY_SPEARS, SILVER_RAIN, STORM_OF_BLADES, MERCURY_EAGLE,
+            SILVER_MIRROR, MERCURY_SPHERE, REGAL_SPEAR, SILVER_GUARDIAN, MERCURY_CAGE);
 
     /** The ten Dark Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> DARK_SPELLS = List.of(

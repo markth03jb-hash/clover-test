@@ -47,14 +47,16 @@ public class FxRenderer {
       {0.09F, 0.10F, 0.12F},   // 7 steel
       {0.16F, 0.10F, 0.02F},   // 8 gold
       {0.07F, 0.0F, 0.0F},     // 9 devil red (devil form)
-      {0.015F, 0.0F, 0.035F}   // 10 Yami's darkness
+      {0.015F, 0.0F, 0.035F},  // 10 Yami's darkness
+      {0.42F, 0.45F, 0.5F}     // 11 mercury (liquid chrome)
    };
    private static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
       {0.78F, 0.85F, 0.94F},   // 7 steel
       {1.0F, 0.84F, 0.36F},    // 8 gold
       {1.0F, 0.07F, 0.05F},    // 9 devil red (devil form)
-      {0.6F, 0.2F, 1.0F}       // 10 Yami's darkness (smoke comes off everything drawn in it)
+      {0.6F, 0.2F, 1.0F},      // 10 Yami's darkness (smoke comes off everything drawn in it)
+      {0.86F, 0.92F, 1.0F}     // 11 mercury
    };
    /** Overall strength of every world effect. Lower = subtler. */
    private static final float FX_ALPHA = 1.0F;
@@ -290,6 +292,7 @@ public class FxRenderer {
                FxRenderer.Fx f = it.next();
                if (f.p.palette == DARKNESS) emitDarkness(f, now - f.born);
                else if (f.p.palette == WIND) emitWind(f, now - f.born);
+               else if (f.p.palette == MERCURY) emitMercury(f, now - f.born);
                double life = f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life;
                if (now - f.born > life + 1.0) {
                   it.remove();
@@ -372,7 +375,64 @@ public class FxRenderer {
       }
    }
 
-   private static final int WIND = 5;
+   private static final int WIND = 5, MERCURY = 11;
+
+   /** Mercury drips: small silver beads fall off fresh mercury trails and moving mercury spheres. */
+   private static void emitMercury(FxRenderer.Fx f, double age) {
+      FxPacket p = f.p;
+      java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+      if (p.shape == 2 && age < 2.0 && r.nextInt(2) == 0) {
+         Vec3 o = p.c.add(p.d.scale(r.nextDouble()));
+         DarkSmoke.bead(o, new Vec3(r.nextDouble(-0.03, 0.03), r.nextDouble(0.0, 0.05), r.nextDouble(-0.03, 0.03)), (float)Mth.clamp(p.r * 0.5, 0.03, 0.08), r.nextInt(10, 18));
+      } else if (p.shape == 19 && p.r > 0.3F && age < p.life && r.nextInt(p.r > 1.5F ? 2 : 4) == 0) {
+         Vec3 c = p.c.add(p.v.scale(age));
+         Vec3 nrm = new Vec3(r.nextDouble(-1, 1), r.nextDouble(-1, 0.2), r.nextDouble(-1, 1)).normalize();
+         DarkSmoke.bead(c.add(nrm.scale(p.r)), p.v.scale(0.4).add(nrm.scale(0.04)), (float)Mth.clamp(p.r * 0.08, 0.03, 0.1), r.nextInt(10, 20));
+      }
+   }
+
+   /**
+    * A liquid mercury sphere: mirror-chrome (the sky reflected above, the ground's dark below, a hard highlight),
+    * its surface rippling, growing in over {@code sweep} ticks and moving with {@code v}.
+    */
+   private static void mercurySphere(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, double life) {
+      double in = p.sweep > 0 ? Mth.clamp(age / p.sweep, 0.0, 1.0) : 1.0;
+      in = 1.0 - Math.pow(1.0 - in, 3.0);
+      double out = Mth.clamp((life - age) / 3.0, 0.0, 1.0);
+      double R = p.r * in * (0.3 + 0.7 * out);
+      if (R < 0.02) return;
+      Vec3 c = p.c.add(p.v.scale(age));
+      boolean inside = cam.distanceTo(c) < R * 1.02;
+      int LAT = R > 1.5 ? 16 : 9, LON = R > 1.5 ? 28 : 14;
+      float al = (float)(inside ? 0.25 : 0.98) * (float)Math.min(1.0, out * 1.5);
+      double t = fxTime;
+      for (int i = 0; i < LAT; i++) {
+         for (int j = 0; j < LON; j++) {
+            Vec3[] q = new Vec3[4];
+            int[][] ij = {{i, j}, {i, j + 1}, {i + 1, j + 1}, {i + 1, j}};
+            for (int k = 0; k < 4; k++) {
+               double th = Math.PI * ij[k][0] / LAT, ph = Math.PI * 2 * ij[k][1] / LON;
+               q[k] = new Vec3(Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph));
+            }
+            Vec3 qc = q[0].add(q[2]).scale(0.5);
+            if (!inside && qc.dot(cam.subtract(c.add(qc.scale(R)))) < 0.0) continue;
+            for (int k = 0; k < 4; k++) {
+               double th = Math.PI * ij[k][0] / LAT, ph = Math.PI * 2 * ij[k][1] / LON;
+               double wob = 1.0 + 0.05 * Math.sin(3.0 * th + t * 0.55 + p.id) * Math.sin(2.0 * ph + t * 0.4);
+               Vec3 nv = q[k];
+               Vec3 w = c.add(nv.scale(R * wob));
+               Vec3 view = w.subtract(cam).normalize();
+               Vec3 refl = view.subtract(nv.scale(2.0 * view.dot(nv)));
+               float sky = (float)Math.pow(Mth.clamp(refl.y * 0.5 + 0.5, 0.0, 1.0), 1.4);
+               float spec = (float)Math.pow(Math.max(0.0, refl.dot(LIGHT)), 28.0);
+               float fres = (float)Math.pow(1.0 - Math.abs(nv.dot(view)), 3.0);
+               float v = 0.12F + 0.78F * sky + 0.6F * spec + 0.15F * fres;
+               float[] col = {Math.min(1F, v * 0.95F), Math.min(1F, v * 0.97F), Math.min(1F, v * 1.02F)};
+               vtx(vc, m, n, cam, w, col, al);
+            }
+         }
+      }
+   }
 
    /** Yuno's wind: every effect in the wind palette throws off thin streaks of air that race along with it. */
    private static void emitWind(FxRenderer.Fx f, double age) {
@@ -784,6 +844,9 @@ public class FxRenderer {
                         break;
                      case 13:
                         slashFx(vc, m, n, cam, f.p, age, life);
+                        break;
+                     case 19:
+                        mercurySphere(vc, m, n, cam, f.p, age, life);
                         break;
                      case 7:
                         boxFx(vc, m, n, cam, f, age, life);

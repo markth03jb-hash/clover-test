@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SIS",
+    "ABA",
+    "SIS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:iron_ingot"
+    },
+    "I": {
+      "item": "irons_spellbooks:arcane_ingot"
+    },
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "B": {
+      "item": "minecraft:enchanted_book"
+    }
+  },
+  "result": {
+    "item": "arcane_addon:mercury_grimoire",
+    "count": 1
+  }
+}

@@ -28,6 +28,7 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
     private static final float[][] COLORS = {
             {0.55F, 0.18F, 0.95F},   // 0 dark violet (Black Blade)
             {1.0F, 0.08F, 0.06F},    // 1 devil red
+            {0.86F, 0.9F, 0.97F},    // 2 liquid silver (Silver Guardian)
     };
 
     public AuraOutlineLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
@@ -59,6 +60,12 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
         PlayerModel<AbstractClientPlayer> m = getParentModel();
         VertexConsumer vc = buf.getBuffer(RenderType.entityTranslucentEmissive(WHITE));
         float flick = (float) (Math.sin(now * 0.9 + p.getId()) * 0.012 + Math.sin(now * 2.3) * 0.008);
+        if ((int) f[2] == 2) {   // Silver Guardian: a skin of liquid mercury, bright and rippling, hugging the body
+            float shine = 0.75F + 0.25F * (float) Math.sin(now * 0.5);
+            shell(ps, m, vc, 1.03F + flick * 0.3F, 0.62F * shine, 0.66F * shine, 0.72F * shine, 0.62F * a);
+            shell(ps, m, vc, 1.07F + flick * 0.5F, col[0], col[1], col[2], 0.16F * a);
+            return;
+        }
         // black shell hugging the body
         shell(ps, m, vc, 1.045F + flick * 0.5F, 0.02F, 0.0F, 0.03F, 0.55F * a);
         // coloured shell around it, breathing

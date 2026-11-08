@@ -36,7 +36,7 @@ public final class DarkSmoke {
     private static final class Puff {
         double x, y, z, vx, vy, vz, born, life;
         float s0, s1, rot, spin;
-        boolean mote, streak;
+        boolean mote, streak, bead;
         float shade;
     }
 
@@ -52,6 +52,13 @@ public final class DarkSmoke {
     /** One small violet mote. */
     public static void mote(Vec3 at, Vec3 vel, float size, int life) {
         add(at, vel, size, size * 0.4F, life, true);
+    }
+
+    /** A bead of mercury: a small silver droplet that falls. */
+    public static void bead(Vec3 at, Vec3 vel, float size, int life) {
+        int before = PUFFS.size();
+        add(at, vel, size, size, life, true);
+        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) PUFFS.get(PUFFS.size() - 1).bead = true;
     }
 
     /** A wind streak: a thin mint-white line of light stretched along its velocity (Yuno's wind). */
@@ -104,8 +111,8 @@ public final class DarkSmoke {
             Puff p = it.next();
             if (now - p.born > p.life) { it.remove(); continue; }
             p.x += p.vx; p.y += p.vy; p.z += p.vz;
-            double drag = p.streak ? 0.93 : p.mote ? 0.96 : 0.88;
-            p.vx *= drag; p.vz *= drag; p.vy = p.vy * drag + (p.streak ? 0.0 : p.mote ? 0.0015 : 0.004);   // darkness rises slowly
+            double drag = p.bead ? 0.98 : p.streak ? 0.93 : p.mote ? 0.96 : 0.88;
+            p.vx *= drag; p.vz *= drag; p.vy = p.vy * drag + (p.bead ? -0.04 : p.streak ? 0.0 : p.mote ? 0.0015 : 0.004);   // darkness rises slowly, mercury falls
             p.rot += p.spin;
         }
         Iterator<Map.Entry<Integer, Double>> bi = BODY.entrySet().iterator();
@@ -177,7 +184,11 @@ public final class DarkSmoke {
             v(vc, m, n, cam, c.subtract(ax).add(side), sr, sg, sb, a, 0, 0);
             return;
         }
-        if (p.mote) {
+        if (p.bead) {
+            a = (float) Math.pow(1.0 - t, 0.5) * 0.95F;
+            float sh = 0.75F + 0.25F * (float) Math.sin(now * 0.9 + p.shade * 7);
+            cr = 0.82F * sh; cg = 0.86F * sh; cb = 0.95F * sh;
+        } else if (p.mote) {
             a = (float) (Mth.clamp(age / 3.0, 0.0, 1.0) * Math.pow(1.0 - t, 0.7)) * (0.75F + 0.25F * (float) Math.sin(now * 0.8 + p.shade * 9));
             cr = 0.62F + 0.3F * p.shade; cg = 0.22F + 0.2F * p.shade; cb = 1.0F;
         } else {

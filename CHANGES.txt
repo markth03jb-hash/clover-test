@@ -1,7 +1,23 @@
-Arcane Addon v1.25.0 - all changed files since v1.0.0
+Arcane Addon v1.26.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.26.0
+- NEW: Mercury Grimoire (Nozel Silva's Mercury Magic) - ten spells of liquid mercury, each with
+  its own animation, drawn as real liquid chrome (mirror shine, rippling surface, dripping beads).
+  Crafting: iron, arcane ingot, iron / amethyst, enchanted book, amethyst / iron, arcane ingot, iron.
+  1 Mercury Bullets      - six curving mercury bullets
+  2 Mercury Spears       - three spears rise beside you and launch, piercing
+  3 Silver Rain          - mercury needles rain on an area for 2.5 s
+  4 Storm of Blades      - six mercury swords circle you, then cut into enemies
+  5 Mercury Eagle        - a beating-winged mercury eagle hunts your target, bursts into spikes
+  6 Silver Mirror        - a mirror wall that throws projectiles back
+  7 Mercury Sphere       - a barrier over you and your allies: nothing gets in
+  8 Silver Shining Regal Spear - a palm beam of mercury that cuts through walls
+  9 Silver Guardian      - mercury armour: 60% less damage, but it slowly poisons you
+  10 Mercury Cage        - a giant cage drops over enemies, holds them, then crushes them
+  Passive Royal Mercury: melee attackers get stabbed back by a spike of mercury.
 
 NEW IN 1.25.0
 - NEW: Wind Grimoire (Yuno Grinberryall's Wind Magic) - a four-leaf grimoire with ten spells,
