@@ -18,7 +18,6 @@ NEW IN 1.40.0
   - spell damage no longer searches the whole spell registry on every hit (looked up once, then cached).
   - per-tick effect copies are matched against a short list of their own instead of every effect on screen, and a
     replaced copy is removed directly instead of re-scanning the list.
-  - fewer allocations in the particle system.
 - Code cleanup: the helpers every grimoire's effect code had its own copy of (sound, mid, rightOf, flat, rotY, clip,
   enemies, closestOnSegment, aimed, alive) now live in one shared class. Only copies that were exactly identical
   were merged; the two classes with a different version of one keep their own, so behaviour is unchanged.
