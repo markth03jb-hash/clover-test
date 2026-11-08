@@ -19,6 +19,6 @@ public class GrimoireCastEvents {
         if (!(e.getEntity() instanceof ServerPlayer sp)) return;
         ItemStack book = Utils.getPlayerSpellbookStack(sp);
         if (book == null || book.isEmpty() || !ArcaneAddon.MODID.equals(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(book.getItem()).getNamespace())) return;
-        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> sp), new GrimoireOpenPacket(sp.getId()));
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> sp), new GrimoireOpenPacket(sp.getId()));
     }
 }

@@ -126,7 +126,7 @@ public final class ZoneClash {
         long now = z.p().serverLevel().getGameTime();
         FxPacket pkt = new FxPacket();
         pkt.shape = 17; pkt.id = z.p().getId(); pkt.palette = (byte) z.pal(); pkt.life = (int) Math.max(1, z.end() - now); pkt.r = (float) r;
-        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(z::p), pkt);
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(z::p), pkt);
     }
 
     /** Where the two zones grind together: sparks in both colours, and space cracking along the border. */

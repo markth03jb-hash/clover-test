@@ -59,13 +59,13 @@ public final class LimitFx {
         FxPacket p = new FxPacket();
         if (life <= 3 && life > 0) life = 1;
         p.shape = 20; p.palette = (byte) pal; p.life = life; p.c = c; p.v = vel; p.r = r; p.r2 = r2; p.h = explode ? 1 : 0;
-        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
+        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
     }
 
     private static void tornado(ServerLevel sl, int pal, Vec3 base, float r, float h, int age, Vec3 vel) {
         FxPacket p = new FxPacket();
         p.shape = 28; p.palette = (byte) pal; p.life = 1; p.c = base; p.v = vel; p.r = r; p.h = h; p.a0 = age;
-        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(base.x, base.y, base.z, 128, sl.dimension())), p);
+        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(base.x, base.y, base.z, 128, sl.dimension())), p);
     }
 
     private static void blast(ServerPlayer p, ServerLevel sl, int pal, Vec3 at, double R, float dmg, String id) {

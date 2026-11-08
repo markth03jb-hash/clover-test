@@ -174,7 +174,7 @@ public class FxRenderer {
    }
 
    public static void spawn(FxPacket p) {
-      if (p.shape == 42) { FxSync.cast(p.id, p.sweep); return; }   // a move's cast animation started (effect timing)
+      if (p.shape == 42) { FxSync.cast(p.id, p.sweep, p.life); return; }   // a move's cast animation started (effect timing)
       if (FxSync.defer(p)) return;   // held back to land on the swing
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
       if (p.shape == 4) {   // Ki Sense mark: id = entity, palette = creature type, life = duration

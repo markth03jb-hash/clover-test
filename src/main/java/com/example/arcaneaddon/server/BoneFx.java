@@ -93,7 +93,7 @@ public class BoneFx {
         if (mode == FxPacket.HOLD && life <= 2) life = 1;
         p.shape = 30; p.palette = (byte) B; p.life = life; p.sweep = rise; p.h = kind;
         p.c = c; p.d = axis.normalize(); p.u = bend; p.r = halfLen; p.r2 = radius; p.speed = mode; p.a0 = spin; p.v = vel; p.a1 = moveTicks;
-        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
+        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
     }
 
     /** A spike of bone bursting out of the ground at {@code base}, pointing {@code dir}. */
@@ -102,8 +102,8 @@ public class BoneFx {
     }
 
     private static void crack(ServerLevel sl, Vec3 at, float s) {
-        sound(sl, at, SoundEvents.SKELETON_HURT, 0.6f * s, 0.6f);
-        sound(sl, at, SoundEvents.BONE_BLOCK_BREAK, 0.9f * s, 0.8f);
+        sound(sl, at, Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.SKELETON_HURT), 0.6f * s, 0.6f);
+        sound(sl, at, Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.BONE_BLOCK_BREAK), 0.9f * s, 0.8f);
     }
 
     /** Beelzebub: every bone move hits 50% harder. */
@@ -113,7 +113,7 @@ public class BoneFx {
     private static void sendHeld(ServerPlayer p, int shape, int life, float r, float count, float period, boolean union) {
         FxPacket pkt = new FxPacket();
         pkt.shape = (byte) shape; pkt.id = p.getId(); pkt.life = life; pkt.r = r; pkt.h = count; pkt.a0 = period; pkt.palette = (byte) (union ? 1 : 0);
-        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
     /** A bone spear's whole flight, sent once: the client glides it (smooth, no per-tick re-sends). */
@@ -146,7 +146,7 @@ public class BoneFx {
                 }
             });
         }
-        sound(sl, p.position(), SoundEvents.SKELETON_AMBIENT, 0.8f, 0.6f);
+        sound(sl, p.position(), Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.SKELETON_AMBIENT), 0.8f, 0.6f);
         AstaFx.later(VOLLEY_RELEASE, () -> {
             if (!alive(p)) return;
             if (u) unionMsg(p, "spear_volley");
@@ -170,7 +170,7 @@ public class BoneFx {
                     AstaFx.later(3 + i, () -> spear(p, sl, from, d, power(p, power) * 0.4f, 0, new HashSet<>(), 0.9f));
                 }
             }
-            sound(sl, p.position(), SoundEvents.TRIDENT_THROW, 1f, 0.7f);
+            sound(sl, p.position(), Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.TRIDENT_THROW), 1f, 0.7f);
         });
     }
 
@@ -184,7 +184,7 @@ public class BoneFx {
             if (!t.getBoundingBox().inflate(0.35).clip(pos, next).isPresent()) continue;
             if (!hit.add(t.getUUID())) continue;
             AstaFx.damage(p, t, dmg, "bone_spear_volley");
-            sound(sl, t.position(), SoundEvents.TRIDENT_HIT, 0.9f, 1.2f);
+            sound(sl, t.position(), Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.TRIDENT_HIT), 0.9f, 1.2f);
         }
         if (next.distanceToSqr(want) > 1.0E-4) {   // stuck in the wall, shaking, then crumbling
             bone(sl, SPEAR, next.subtract(dir.scale(0.6 * size)), dir, rightOf(dir), 0.9f * size, 0.08f * size, 40, 0, FxPacket.POP, 0, Vec3.ZERO, 0);
@@ -245,7 +245,7 @@ public class BoneFx {
         if (u) unionMsg(p, "bone_sword");
         // the sword grows out of your hand and is drawn on your arm, so it follows the swing exactly, all one piece
         sendHeld(p, 37, 26, u ? 1.9f : 1.5f, 0, 0, u);
-        sound(sl, p.position(), SoundEvents.SKELETON_AMBIENT, 0.7f, 0.7f);
+        sound(sl, p.position(), Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.SKELETON_AMBIENT), 0.7f, 0.7f);
         crack(sl, p.position(), 0.5f);
         double[][] cutDir = {{1, 0.3}, {-1, 0.3}, {0, 1}};   // right-to-left, left-to-right, overhead
         for (int i = 0; i < 3; i++) {
@@ -275,7 +275,7 @@ public class BoneFx {
                         AstaFx.damage(p, t, power(p, power) * 0.3f, "bone_sword");
                     }
                 }
-                sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 0.8f);
+                sound(sl, p.position(), Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1f, 0.8f);
             });
         }
     }
@@ -349,7 +349,7 @@ public class BoneFx {
                     splinters(sl, mid(t0), kb);
                     if (u) cube(sl, mid(t0), 0.7f, 6);   // Beelzebub: space snaps shut round the hit
                 }
-                if (tt % 6 == 0) sound(sl, p.position(), SoundEvents.SKELETON_STEP, 0.9f, 0.7f);
+                if (tt % 6 == 0) sound(sl, p.position(), Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.SKELETON_STEP), 0.9f, 0.7f);
             });
         }
     }
@@ -413,8 +413,8 @@ public class BoneFx {
         }
         if (u) cube(sl, c.add(0, 2.2 * scale, 0), 2.8f * scale, 66);   // Beelzebub: the cage is sealed in a cube of space
         crack(sl, c, 1f);
-        sound(sl, c, SoundEvents.SKELETON_AMBIENT, 1f, 0.5f);
-        sound(sl, c, SoundEvents.BONE_BLOCK_PLACE, 1f, 0.5f);
+        sound(sl, c, Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.SKELETON_AMBIENT), 1f, 0.5f);
+        sound(sl, c, Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.BONE_BLOCK_PLACE), 1f, 0.5f);
         for (int k = 0; k < 60; k += 2) {
             AstaFx.later(5 + k, () -> {
                 if (!alive(p) || !t.isAlive()) return;
@@ -464,7 +464,7 @@ public class BoneFx {
             });
         }
         crack(sl, p.position(), 0.8f);
-        sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_TURTLE, 1f, 0.6f);
+        sound(sl, p.position(), Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_TURTLE), 1f, 0.6f);
         sendPlates(p, 200);
     }
 
@@ -472,7 +472,7 @@ public class BoneFx {
         ModeHud.show(p, "marrow_regeneration", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 14; pkt.id = p.getId(); pkt.palette = 6; pkt.life = life;   // AuraOutlineLayer 6 = bone plates
-        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
     // ================================================================== 7. Bone Thicket
@@ -541,8 +541,8 @@ public class BoneFx {
         Vec3 c = mid(t);
         float h = 1.6f;
         cube(sl, c, h, 60);
-        sound(sl, c, SoundEvents.ENDERMAN_TELEPORT, 1f, 0.5f);
-        sound(sl, c, SoundEvents.BEACON_POWER_SELECT, 0.6f, 0.5f);
+        sound(sl, c, Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT), 1f, 0.5f);
+        sound(sl, c, Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT), 0.6f, 0.5f);
         for (int k = 0; k < 60; k++) {
             AstaFx.later(k, () -> {
                 if (!t.isAlive()) return;
@@ -557,7 +557,7 @@ public class BoneFx {
             cube(sl, c, 0.4f, 6);   // the cube folds in
             AstaFx.damage(p, t, power(p, power), "spatial_cube");
             FxLib.implode(sl, SPACE, c, 1.2f);
-            sound(sl, c, SoundEvents.GENERIC_EXPLODE, 0.6f, 0.6f);
+            sound(sl, c, Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.6f, 0.6f);
         });
     }
 
@@ -589,7 +589,7 @@ public class BoneFx {
                 if (g != null) spikeUp(sl, g, new Vec3(-Math.cos(a) * 0.4, 1, -Math.sin(a) * 0.4), 1.4f, 0.14f, 20, 2);
             });
         }
-        sound(sl, p.position(), SoundEvents.WITHER_SPAWN, 0.4f, 1.4f);
+        sound(sl, p.position(), Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.WITHER_SPAWN), 0.4f, 1.4f);
         AstaFx.later(UNION_FORM, () -> {
             if (!alive(p)) return;
             UNION.put(p.getUUID(), sl.getGameTime() + UNION_TICKS);
@@ -610,7 +610,7 @@ public class BoneFx {
         ModeHud.show(p, "beelzebub_union", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 31; pkt.id = p.getId(); pkt.palette = (byte) B; pkt.life = life;
-        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
     // ================================================================== 10. Bone Spear Storm
@@ -627,7 +627,7 @@ public class BoneFx {
         final Vec3 sky = c.add(0, 16, 0);
         cube(sl, sky, (float) R * 0.6f, 70);
         FxSend.ring(sl, B, c.add(0, 0.05, 0), (float) R - 0.3f, (float) R, 0.06f, 70);   // where it will fall
-        sound(sl, sky, SoundEvents.ENDERMAN_TELEPORT, 1f, 0.4f);
+        sound(sl, sky, Sfx.of(Sfx.ZENON, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT), 1f, 0.4f);
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int perTick = u ? 3 : 2;
         for (int t = 0; t < 50; t++) {

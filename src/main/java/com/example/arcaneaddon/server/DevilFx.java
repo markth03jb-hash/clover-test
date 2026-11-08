@@ -37,7 +37,7 @@ public final class DevilFx {
         Vec3 hit = p.position().add(dir.scale(3.2));
         FxLib.shockRing(sl, EMBER, hit.add(0, 0.1, 0), 2.2f);
         AstaFx.later(7, () -> { if (alive(p)) AstaFx.zetten(p, power * 0.75f, !dw); });   // the second sword follows
-        sound(sl, hit, SoundEvents.GENERIC_EXPLODE, 0.6f, 0.7f);
+        sound(sl, hit, Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.6f, 0.7f);
     }
 
     /** Devil Sky Splitter: Twin Rift - two splitting cleaves, one per sword. */
@@ -78,7 +78,7 @@ public final class DevilFx {
                     FxLib.impact(sl, EMBER, t.position().add(0, t.getBbHeight() * 0.5, 0), 1.0f);
                 }
             }
-            sound(sl, c, SoundEvents.BEACON_DEACTIVATE, 1f, 0.4f);
+            sound(sl, c, Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE), 1f, 0.4f);
         });
     }
 
@@ -141,8 +141,8 @@ public final class DevilFx {
      */
     public static void blackDivider(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        sound(sl, p.position(), SoundEvents.WITHER_SHOOT, 0.7f, 0.5f);
-        sound(sl, p.position(), SoundEvents.BEACON_POWER_SELECT, 0.8f, 0.4f);
+        sound(sl, p.position(), Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.WITHER_SHOOT), 0.7f, 0.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT), 0.8f, 0.4f);
         for (int t = 0; t < DIVIDER_CUT; t += 2) {   // anti magic flooding the raised blade
             final int tt = t;
             AstaFx.later(t, () -> {
@@ -206,9 +206,9 @@ public final class DevilFx {
                 });
             }
             FxLib.shockRing(sl, EMBER, p.position().add(0, 0.05, 0), 1.6f);
-            sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 0.9f, 0.7f);
-            sound(sl, p.position(), SoundEvents.GENERIC_EXPLODE, 0.9f, 0.6f);
-            sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 0.5f);
+            sound(sl, p.position(), Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 0.9f, 0.7f);
+            sound(sl, p.position(), Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.9f, 0.6f);
+            sound(sl, p.position(), Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1f, 0.5f);
         });
     }
 
@@ -222,8 +222,8 @@ public final class DevilFx {
      */
     public static void blackHurricane(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 1f, 0.5f);
-        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.7f, 0.6f);
+        sound(sl, p.position(), Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 1f, 0.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.7f, 0.6f);
         for (int t = 0; t < HURRICANE_TICKS; t++) {
             final int tt = t;
             AstaFx.later(t, () -> {
@@ -245,7 +245,7 @@ public final class DevilFx {
                     t2.resetFallDistance();
                     if (tt % 5 == 0 && d < r + 1.5) AstaFx.damage(p, t2, power, "devil_black_hurricane");
                 }
-                if (tt % 10 == 0) sound(sl, base, SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 0.5f + tt * 0.01f);
+                if (tt % 10 == 0) sound(sl, base, Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 0.9f, 0.5f + tt * 0.01f);
             });
         }
         AstaFx.later(HURRICANE_TICKS, () -> {   // the burst
@@ -266,15 +266,15 @@ public final class DevilFx {
                 t.setDeltaMovement(away.scale(1.6).add(0, 0.9, 0));
                 t.hurtMarked = true;
             }
-            sound(sl, c, SoundEvents.GENERIC_EXPLODE, 1f, 0.6f);
-            sound(sl, c, SoundEvents.WITHER_SHOOT, 0.6f, 0.6f);
+            sound(sl, c, Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 1f, 0.6f);
+            sound(sl, c, Sfx.of(Sfx.DEVIL, net.minecraft.sounds.SoundEvents.WITHER_SHOOT), 0.6f, 0.6f);
         });
     }
 
     private static void hurricanePacket(ServerLevel sl, Vec3 base, float r, float h, int age, Vec3 vel) {
         com.example.arcaneaddon.network.FxPacket pk = new com.example.arcaneaddon.network.FxPacket();
         pk.shape = 28; pk.palette = (byte) EMBER; pk.life = 1; pk.c = base; pk.v = vel; pk.r = r; pk.h = h; pk.a0 = age;
-        com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.NEAR.with(
+        com.example.arcaneaddon.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.NEAR.with(
                 () -> new net.minecraftforge.network.PacketDistributor.TargetPoint(base.x, base.y, base.z, 128, sl.dimension())), pk);
     }
 }

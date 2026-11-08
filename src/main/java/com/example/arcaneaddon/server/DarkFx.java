@@ -153,7 +153,7 @@ public class DarkFx {
         ModeHud.show(p, "black_blade", life);
         com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
         pkt.shape = 16; pkt.id = p.getId(); pkt.palette = 0; pkt.life = life;
-        com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+        com.example.arcaneaddon.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
     /** Anticipation: thin wisps of darkness drawn into your sword hand while the animation winds up. */
@@ -169,7 +169,7 @@ public class DarkFx {
                 FxSend.trail(sl, D, from, from.add(h.subtract(from).scale(0.75)), 0.09f * size, 4);
             });
         }
-        sound(sl, p.position(), SoundEvents.SOUL_ESCAPE, 0.5f, 0.8f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.SOUL_ESCAPE), 0.5f, 0.8f);
     }
 
     private static Vec3 handPos(ServerPlayer p) {
@@ -192,10 +192,10 @@ public class DarkFx {
             Vec3 h = handPos(p).add(0, 0.6, 0), d = p.getLookAngle();
             FxSend.beam(sl, D, h, h.add(d.scale(0.3)).add(0, 1.2, 0), 0.12f, 6);   // a breath of darkness along the blade
             FxSend.beam(sl, S, h, h.add(d.scale(0.3)).add(0, 1.2, 0), 0.03f, 4);   // one glint along the edge as the coat settles
-            sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 0.8f, 0.6f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE), 0.8f, 0.6f);
         });
         if (inZone(p)) zoneMsg(p, "black_blade");
-        sound(sl, p.position(), SoundEvents.SOUL_ESCAPE, 1f, 0.6f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.SOUL_ESCAPE), 1f, 0.6f);
     }
 
     // ================================================================== 2. Dimension Slash
@@ -227,9 +227,9 @@ public class DarkFx {
             if (!alive(p)) return;
             Vec3 h = hipHilt(p);
             FxSend.beam(sl, S, h, h.add(rightOf(p.getLookAngle()).scale(-0.6)), 0.05f, 3);   // the glint as the blade leaves the sheath
-            sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 0.7f, 1.6f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE), 0.7f, 1.6f);
         });
-        sound(sl, p.position(), SoundEvents.SOUL_ESCAPE, 0.8f, 0.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.SOUL_ESCAPE), 0.8f, 0.5f);
         AstaFx.later(DIM_RELEASE, () -> {
             if (!alive(p)) return;
             if (inZone(p)) { zoneDimension(p, sl, power); return; }
@@ -251,7 +251,7 @@ public class DarkFx {
                     if (!tt.isAlive() || !alive(p)) return;
                     AstaFx.damage(p, tt, power, "dimension_slash");
                     FxLib.impact(sl, D, mid(tt), 1.3f);
-                    sound(sl, tt.position(), SoundEvents.PLAYER_ATTACK_CRIT, 1f, 0.6f);
+                    sound(sl, tt.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT), 1f, 0.6f);
                 });
             }
             // the draw and the release: one clean, solid slash - a black blade of darkness with a white-hot edge,
@@ -262,12 +262,12 @@ public class DarkFx {
             // after it passes: one clean white hairline left through space, fading
             AstaFx.later(3, () -> {
                 FxSend.trail(sl, S, o, end, 0.03f, 14);
-                sound(sl, p.position(), SoundEvents.WITHER_SHOOT, 0.5f, 0.4f);
+                sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.WITHER_SHOOT), 0.5f, 0.4f);
             });
             FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 1.2f);
-            sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.4f);
-            sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 0.5f, 0.7f);
-            sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.7f, 0.5f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.3f, 0.4f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 0.5f, 0.7f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT), 0.7f, 0.5f);
         });
     }
 
@@ -296,8 +296,8 @@ public class DarkFx {
                 FxLib.impact(sl, D, mid(tt), 1.1f);
             });
         }
-        sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.4f);
-        sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.7f, 0.4f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.3f, 0.4f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT), 0.7f, 0.4f);
     }
 
     // ================================================================== 3. Avidya Slash Raijin (ki-guided)
@@ -338,15 +338,15 @@ public class DarkFx {
                         guidedSlash(p, sl, from, mid(t).subtract(from).normalize(), t, power * 0.7f, 0, new HashSet<>());
                     });
                 }
-                sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 1.5f);
+                sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1f, 1.5f);
                 return;
             }
         }
         guidedSlash(p, sl, handPos(p), look, target, power, 0, new HashSet<>());
         Vec3 rt = rightOf(look);
         FxSend.wall(sl, D, handPos(p), look, rt.scale(-0.5).add(0, 0.87, 0), 1.2f, 1.6f, -80, 80, 0.25f, 6, 2, 0);   // the upward draw
-        sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 1.3f);
-        sound(sl, p.position(), SoundEvents.TRIDENT_RIPTIDE_1, 0.6f, 1.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1f, 1.3f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_1), 0.6f, 1.5f);
     }
 
     private static boolean t0in(ServerPlayer p, LivingEntity t) { return t.distanceTo(p) <= ZONE_R; }
@@ -389,18 +389,18 @@ public class DarkFx {
         }
         AstaFx.later(COCOON_CLOSE, () -> {
             if (!alive(p)) return;
-            sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 0.9f, 0.4f);
-            sound(sl, p.position(), SoundEvents.SCULK_SHRIEKER_SHRIEK, 0.25f, 0.5f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE), 0.9f, 0.4f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.SCULK_SHRIEKER_SHRIEK), 0.25f, 0.5f);
         });
         if (c.zone) zoneMsg(p, "black_cocoon");
-        sound(sl, p.position(), SoundEvents.SOUL_ESCAPE, 1f, 0.4f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.SOUL_ESCAPE), 1f, 0.4f);
     }
 
     private static void sendCocoon(ServerPlayer p, int life) {
         ModeHud.show(p, "black_cocoon", life);
         com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
         pkt.shape = 15; pkt.id = p.getId(); pkt.palette = (byte) D; pkt.life = life; pkt.r = COCOON_R; pkt.sweep = COCOON_CLOSE;
-        com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+        com.example.arcaneaddon.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
     private static void cocoonSpeed(ServerPlayer p, boolean on) {
@@ -462,9 +462,9 @@ public class DarkFx {
                 });
             }
         }
-        sound(sl, p.position(), SoundEvents.GLASS_BREAK, 1f, 0.4f);
-        sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.5f);
-        sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 0.3f, 1.2f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.GLASS_BREAK), 1f, 0.4f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.3f, 0.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 0.3f, 1.2f);
     }
 
     /** One ki-guided slash: a black-flame crescent flying 2.4 blocks a tick, steering toward its target, leaving a dark wake. */
@@ -485,7 +485,7 @@ public class DarkFx {
             if (!hit.add(t.getUUID())) continue;
             AstaFx.damage(p, t, dmg, "avidya_slash");
             cutMark(sl, mid(t), blade, 1.3f);
-            sound(sl, t.position(), SoundEvents.PLAYER_ATTACK_CRIT, 1f, 0.8f);
+            sound(sl, t.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT), 1f, 0.8f);
             if (t == target) return;
         }
         if (target == null && clip(sl, p, pos, next).distanceToSqr(next) > 1.0E-4) {
@@ -529,7 +529,7 @@ public class DarkFx {
                         AstaFx.damage(p, t, power, "death_thrust");
                         t.knockback(1.4, -d.x, -d.z);
                         FxLib.impact(sl, D, mid(t), 1.1f);
-                        sound(sl, t.position(), SoundEvents.TRIDENT_RIPTIDE_3, 0.7f, 0.9f);
+                        sound(sl, t.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_3), 0.7f, 0.9f);
                     });
                 }
                 return;
@@ -554,8 +554,8 @@ public class DarkFx {
             AstaFx.later(kk / 4, () -> FxSend.wall(sl, kk % 4 == 0 ? D : S, c, rt, up, 0.3f, 1.0f + kk * 0.05f, -180, 180, 0.08f, 6, 0, 0));
         }
         AstaFx.later(2, () -> FxLib.spikeBurst(sl, D, end, 0.7f));
-        sound(sl, p.position(), SoundEvents.TRIDENT_RIPTIDE_3, 0.8f, 0.8f);
-        sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_STRONG, 1.2f, 0.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_3), 0.8f, 0.8f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), 1.2f, 0.5f);
     }
 
     // ================================================================== 6. Black Moon
@@ -573,7 +573,7 @@ public class DarkFx {
         if (z) zoneMsg(p, "black_moon");
         FxLib.implode(p.serverLevel(), D, moonPos(p), 1.2f);
         FxSend.beam(p.serverLevel(), D, p.getEyePosition(), moonPos(p), 0.25f, 8);   // darkness rises from you into the moon
-        sound(p.serverLevel(), p.position(), SoundEvents.SOUL_ESCAPE, 1.0f, 0.5f);
+        sound(p.serverLevel(), p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.SOUL_ESCAPE), 1.0f, 0.5f);
     }
 
     /** The black moon hangs above you and a little ahead, like an eclipse in the sky. */
@@ -631,7 +631,7 @@ public class DarkFx {
         Vec3 c = moonPos(p);
         FxSend.ring(sl, D, c, 1.6f * grow, 0.1f, 0.5f, 5);   // collapse
         FxLib.implode(sl, S, c, 0.9f * grow);
-        sound(sl, c, SoundEvents.BEACON_DEACTIVATE, 0.8f, 0.6f);
+        sound(sl, c, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE), 0.8f, 0.6f);
         AstaFx.later(4, () -> {
             if (!alive(p)) return;
             Vec3 dir = p.getLookAngle();
@@ -665,8 +665,8 @@ public class DarkFx {
                 FxSend.beam(sl, D, c, end, 0.5f * grow, 10);                               // the dark wake
             }
             FxLib.shockRing(sl, D, c, 0.9f * grow);
-            sound(sl, c, SoundEvents.WITHER_SHOOT, 0.8f, 0.6f);
-            sound(sl, c, SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 0.5f);
+            sound(sl, c, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.WITHER_SHOOT), 0.8f, 0.6f);
+            sound(sl, c, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1f, 0.5f);
         });
         if (m.absorbed > 0) {
             p.displayClientMessage(Component.translatable("ui.arcane_addon.black_moon_return", (int) m.absorbed).withStyle(ChatFormatting.DARK_PURPLE), true);
@@ -703,7 +703,7 @@ public class DarkFx {
             c = hit.subtract(look.scale(0.8)).add(0, 0.6, 0);
         }
         FxLib.implode(sl, D, c, 1.2f);
-        sound(sl, c, SoundEvents.PORTAL_TRIGGER, 0.5f, 1.6f);
+        sound(sl, c, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PORTAL_TRIGGER), 0.5f, 1.6f);
         holeTick(p, sl, c, power, 0, z);
     }
 
@@ -733,7 +733,7 @@ public class DarkFx {
         }
         if (age % 6 == 0) FxSend.ring(sl, D, c.subtract(0, 0.5, 0), (float) R, 0.4f, 0.12f, 8);
         if (age % 5 == 0) drawMoon(sl, c, 0.7f);
-        if (age % 20 == 0) sound(sl, c, SoundEvents.BEACON_AMBIENT, 0.8f, 0.5f);
+        if (age % 20 == 0) sound(sl, c, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.BEACON_AMBIENT), 0.8f, 0.5f);
         if (age >= LIFE) {
             for (LivingEntity t : enemies(sl, p, new AABB(c, c).inflate(4.5))) {
                 if (t.position().distanceTo(c) > 4.5) continue;
@@ -745,7 +745,7 @@ public class DarkFx {
             FxLib.shockRing(sl, D, c, 1.6f);
             FxSend.ring(sl, S, c, 0.3f, 6f, 0.05f, 9);
             FxLib.flash(sl, S, c, 1.2f);
-            sound(sl, c, SoundEvents.GENERIC_EXPLODE, 0.9f, 0.6f);
+            sound(sl, c, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.9f, 0.6f);
             return;
         }
         AstaFx.later(1, () -> holeTick(p, sl, c, dmg, age + 1, zone));
@@ -762,9 +762,9 @@ public class DarkFx {
         ZONE_POWER.put(p.getUUID(), power);
         sendZone(p, 400);   // the dark mana pours out of you and fills the zone (drawn by the client: FxRenderer zone field)
         p.displayClientMessage(Component.translatable("ui.arcane_addon.zone.open").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), true);
-        sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_RESONATE, 1f, 0.5f);
-        sound(sl, p.position(), SoundEvents.BEACON_POWER_SELECT, 0.8f, 0.6f);
-        sound(sl, p.position(), SoundEvents.WARDEN_HEARTBEAT, 1f, 0.6f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_RESONATE), 1f, 0.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT), 0.8f, 0.6f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.WARDEN_HEARTBEAT), 1f, 0.6f);
     }
     private static final Map<UUID, Float> ZONE_POWER = new HashMap<>();
 
@@ -776,7 +776,7 @@ public class DarkFx {
         com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
         pkt.shape = 40; pkt.id = p.getId(); pkt.life = life; pkt.sweep = EQUINOX_CUT; pkt.c = p.position();
         Vec3 c = p.position();
-        com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.NEAR.with(
+        com.example.arcaneaddon.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.NEAR.with(
                 () -> new net.minecraftforge.network.PacketDistributor.TargetPoint(c.x, c.y, c.z, ZONE_R + 16, sl.dimension())), pkt);
     }
 
@@ -819,10 +819,10 @@ public class DarkFx {
                     FxSend.crescent(sl, D, from, d, rightOf(d).cross(d).normalize(), 0.7f, 0.4f, 6, (float) (from.distanceTo(tip) / 6));
                 }
                 if (tt % 10 == 0) FxSend.ring(sl, D, p.position().add(0, 0.06, 0), (float) ZONE_R * (1 - k), 0.3f, 0.06f, 8);
-                if (tt % 20 == 0) sound(sl, p.position(), SoundEvents.WARDEN_HEARTBEAT, 1.2f, 0.5f);
+                if (tt % 20 == 0) sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.WARDEN_HEARTBEAT), 1.2f, 0.5f);
             });
         }
-        sound(sl, c0, SoundEvents.WARDEN_SONIC_CHARGE, 1f, 0.4f);
+        sound(sl, c0, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_CHARGE), 1f, 0.4f);
         AstaFx.later(EQUINOX_CUT - 2, () -> {   // light and dark, split in two - when there is someone in the zone to cut
             if (alive(p) && !zoneEnemies(p).isEmpty()) FxSend.impactFrame(sl, p.position(), 6, FxSend.FRAME_EQUINOX, ZONE_R + 20);
         });
@@ -843,7 +843,7 @@ public class DarkFx {
             // the cut itself is invisible: only a hairline of light along the line and a faint ripple at the blade
             FxSend.trail(sl, S, start.add(dir.scale(1.5)), end, 0.015f, 6);
             FxSend.ring(sl, S, start.add(dir.scale(1.6)), 0.2f, 1.6f, 0.03f, 5);
-            sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 1.8f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.4f, 1.8f);
             // everything on the line is cut at the same instant - and a moment later it comes apart
             for (LivingEntity e : enemies(sl, p, new AABB(start, end).inflate(band + 2))) {
                 Vec3 m = mid(e), on = closestOnSegment(start, end, m);
@@ -864,11 +864,11 @@ public class DarkFx {
                     AstaFx.damage(p, tt, dmg, "event_horizon");
                     tt.setDeltaMovement(up.scale(0.25));
                     tt.hurtMarked = true;
-                    sound(sl, mm, SoundEvents.PLAYER_ATTACK_CRIT, 1f, 0.5f);
+                    sound(sl, mm, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT), 1f, 0.5f);
                 });
             }
-            sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.8f, 0.4f);
-            AstaFx.later(8, () -> sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 1.0f, 0.5f));
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT), 0.8f, 0.4f);
+            AstaFx.later(8, () -> sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 1.0f, 0.5f));
         });
     }
 
@@ -895,7 +895,7 @@ public class DarkFx {
         ModeHud.show(p, "mana_zone_dimension_slash", life);
         com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
         pkt.shape = 17; pkt.id = p.getId(); pkt.palette = (byte) D; pkt.life = life; pkt.r = (float) ZoneClash.radius(p, ZONE_R);
-        com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+        com.example.arcaneaddon.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
     private static void zoneCollapse(ServerPlayer p, ServerLevel sl) {
@@ -911,7 +911,7 @@ public class DarkFx {
             });
         }
         p.displayClientMessage(Component.translatable("ui.arcane_addon.zone.close").withStyle(ChatFormatting.DARK_PURPLE), true);
-        sound(sl, p.position(), SoundEvents.BEACON_DEACTIVATE, 1f, 0.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE), 1f, 0.5f);
     }
 
     // ================================================================== 9. Ki Read: Foresight
@@ -936,7 +936,7 @@ public class DarkFx {
             zoneMsg(p, "foresight");
             for (LivingEntity t : zoneEnemies(p)) FxLib.halo(sl, S, t.position().add(0, t.getBbHeight() + 0.2, 0), 0.6f);   // every ki read
         }
-        sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 0.6f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME), 1f, 0.6f);
     }
 
     // ================================================================== 10. Dimension Slash: Event Horizon
@@ -972,8 +972,8 @@ public class DarkFx {
         // held in the pose: barely able to move while the darkness gathers
         TimedModifiers.apply(p, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED, TimedModifiers.HORIZON_CHARGE,
                 "Event Horizon charge", -0.8, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL, HORIZON_CUT + 4);
-        sound(sl, p.position(), SoundEvents.WARDEN_SONIC_CHARGE, 1f, 0.5f);
-        sound(sl, p.position(), SoundEvents.BEACON_ACTIVATE, 0.8f, 0.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_CHARGE), 1f, 0.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE), 0.8f, 0.5f);
 
         // ---------------------------------------------------------------- the charge: darkness pours into the raised blade
         for (int t = 6; t < HORIZON_CHARGE; t += 2) {
@@ -996,18 +996,18 @@ public class DarkFx {
                 }
                 if (tt % 10 == 0) {   // black flame climbing your body, taller and taller
                     FxSend.wall(sl, D, p.position().add(0, 1.0, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.85f + k * 0.4f, 0.95f + k * 0.5f, -180, 180, 1.0f + k * 0.9f, 7, 0, 0);
-                    sound(sl, p.position(), SoundEvents.SOUL_ESCAPE, 0.8f, 0.4f + k * 0.3f);
+                    sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.SOUL_ESCAPE), 0.8f, 0.4f + k * 0.3f);
                 }
                 if (tt == 20 || tt == 40 || tt == 54) {   // the ground under you gives way
                     Vec3 g = FxLib.floor(sl, p.position()).add(0, 0.04, 0);
                     FxSend.cracks(sl, D, g, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 1.8f + k * 2.6f, 80 - tt, false, seed0 + tt);
                     FxSend.shake(sl, p.position(), 0.15f + k * 0.3f, 8, 16);
-                    sound(sl, p.position(), SoundEvents.DEEPSLATE_BREAK, 1f, 0.5f);
+                    sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.DEEPSLATE_BREAK), 1f, 0.5f);
                 }
                 if (tt == 46 || tt == 56) {   // space around the blade starts to fracture
                     Vec3 fw = new Vec3(-Math.sin(Math.toRadians(p.getYRot())), 0, Math.cos(Math.toRadians(p.getYRot())));
                     FxSend.cracks(sl, D, tip.add(fw.scale(-0.2)), rightOf(fw), new Vec3(0, 1, 0), 0.9f + k * 0.6f, 14, false, seed0 + tt * 7);
-                    sound(sl, tip, SoundEvents.GLASS_BREAK, 0.7f, 0.5f);
+                    sound(sl, tip, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.GLASS_BREAK), 0.7f, 0.5f);
                 }
             });
         }
@@ -1097,7 +1097,7 @@ public class DarkFx {
                     Vec3 across = along.cross(rt).normalize();
                     FxSend.cracks(sl, D, c, along, across, 3.4f * scale * grow, 56, true, seed0 + nn * 13);
                     if (nn % 2 == 0) FxSend.cracks(sl, D, c.add(up.scale(1.4 * scale)), rt, up, 1.4f * scale * grow, 44, false, seed0 + nn * 29);
-                    if (nn % 3 == 0) sound(sl, c, SoundEvents.GLASS_BREAK, 0.9f, 0.4f);
+                    if (nn % 3 == 0) sound(sl, c, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.GLASS_BREAK), 0.9f, 0.4f);
                 });
             }
             if (eclipse) AstaFx.later(4, () -> {   // Lunar Eclipse: the two crossing blades leave an X of scars along the whole path
@@ -1117,9 +1117,9 @@ public class DarkFx {
             });
             FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 2.2f * scale);
             FxSend.ring(sl, S, p.position().add(0, 0.06, 0), 0.5f, 7f * scale, 0.05f, 10);
-            sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 1f, 0.45f);
-            sound(sl, p.position(), SoundEvents.GENERIC_EXPLODE, 1f, 0.5f);
-            sound(sl, p.position(), SoundEvents.GLASS_BREAK, 1f, 0.3f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 1f, 0.45f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 1f, 0.5f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.GLASS_BREAK), 1f, 0.3f);
             // the horizon keeps pulling and cutting, then seals with a flash
             for (int k = 1; k <= 3; k++) {
                 AstaFx.later(10 + k * 8, () -> {
@@ -1132,12 +1132,12 @@ public class DarkFx {
                         t.hurtMarked = true;
                         AstaFx.damage(p, t, dmg * 0.25f, "event_horizon");
                     }
-                    sound(sl, start.add(dir.scale(10)), SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 0.4f);
+                    sound(sl, start.add(dir.scale(10)), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 0.9f, 0.4f);
                 });
             }
             AstaFx.later(44, () -> {
                 FxSend.beam(sl, S, start.add(dir).add(0, 0.2, 0), end.add(0, 0.2, 0), 0.9f * scale, 4);
-                sound(sl, start, SoundEvents.ENDERMAN_TELEPORT, 0.8f, 0.4f);
+                sound(sl, start, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT), 0.8f, 0.4f);
             });
         });
     }
@@ -1227,7 +1227,7 @@ public class DarkFx {
             Vec3 hit = src0 == null ? ctr.add(p.getLookAngle().scale(COCOON_R)) : ctr.add(src0.subtract(ctr).normalize().scale(COCOON_R));
             Vec3 n = hit.subtract(ctr).normalize();
             FxSend.wall(sl, D, hit, rightOf(n), rightOf(n).cross(n).normalize(), 0.1f, 0.9f, -180, 180, 0.05f, 6, 0, 0);
-            sound(sl, hit, SoundEvents.SCULK_CLICKING, 1f, 0.5f);
+            sound(sl, hit, Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.SCULK_CLICKING), 1f, 0.5f);
             return;
         }
 
@@ -1237,7 +1237,7 @@ public class DarkFx {
             m.absorbed = Math.min(40f, m.absorbed + e.getAmount());
             Vec3 src0 = e.getSource().getSourcePosition();
             swallow(sl, moonPos(p), src0 != null ? src0 : p.getEyePosition().add(p.getLookAngle().scale(3)));
-            sound(sl, p.position(), SoundEvents.SCULK_CLICKING, 1f, 0.6f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.SCULK_CLICKING), 1f, 0.6f);
             return;
         }
 
@@ -1264,7 +1264,7 @@ public class DarkFx {
                     cutMark(sl, mid(le), rightOf(p.getLookAngle()), 1.2f);
                 });
             }
-            sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.5f, 1.8f);
+            sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT), 0.5f, 1.8f);
         }
     }
 
@@ -1285,7 +1285,7 @@ public class DarkFx {
         ServerLevel sl = p.serverLevel();
         FxSend.ring(sl, D, p.position().add(0, 0.05, 0), 0.3f, 5f, 0.3f, 12);
         FxSend.wall(sl, D, p.position().add(0, 1, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.7f, 1.0f, -180, 180, 1.4f, 12, 0, 0);
-        sound(sl, p.position(), SoundEvents.TOTEM_USE, 0.4f, 0.6f);
+        sound(sl, p.position(), Sfx.of(Sfx.YAMI, net.minecraft.sounds.SoundEvents.TOTEM_USE), 0.4f, 0.6f);
         p.displayClientMessage(Component.translatable("ui.arcane_addon.surpass_limits").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), true);
     }
 

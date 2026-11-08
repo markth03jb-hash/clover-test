@@ -101,7 +101,7 @@ public final class LimitBreak {
     private static void sendAura(ServerPlayer p, int idx, int life) {
         FxPacket pkt = new FxPacket();
         pkt.shape = 35; pkt.id = p.getId(); pkt.palette = (byte) idx; pkt.life = life;
-        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
     // ------------------------------------------------------------------ the natural trigger

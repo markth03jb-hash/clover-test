@@ -40,11 +40,12 @@ public final class FxSync {
     private static final List<Object[]> QUEUE = new ArrayList<>();
     private static boolean releasing = false;
 
-    public static void cast(int playerId, int nameHash) {
+    public static void cast(int playerId, int nameHash, int serverImpact) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         String name = AnimNames.byHash(nameHash);
-        int impact = name == null ? 0 : impactOf(name);
+        // the server's impact tick (read from the same animation files) keeps both sides in step with each other
+        int impact = serverImpact > 0 ? serverImpact : (name == null ? 0 : impactOf(name));
         if (impact <= 0) { WIN.remove(playerId); return; }
         double now = mc.level.getGameTime();
         WIN.put(playerId, new double[]{now, impact, -1, now});

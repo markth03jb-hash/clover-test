@@ -56,13 +56,13 @@ public final class MeteorFx {
     private static void cutscene(ServerPlayer p, Vec3 look, int phase) {
         FxPacket pkt = new FxPacket();
         pkt.shape = 9; pkt.id = p.getId(); pkt.palette = (byte) phase; pkt.c = look;
-        AddonNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), pkt);
+        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), pkt);
     }
 
     private static void shake(ServerLevel sl, Vec3 at, float strength, int ticks) {
         FxPacket pkt = new FxPacket();
         pkt.shape = 10; pkt.c = at; pkt.r = strength; pkt.life = ticks;
-        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 48, sl.dimension())), pkt);
+        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 48, sl.dimension())), pkt);
     }
 
     /** Anime impact frames on the screens of everyone close to {@code at}. */
@@ -72,7 +72,7 @@ public final class MeteorFx {
     private static void impactFrame(ServerLevel sl, Vec3 at, int ticks, boolean slash) {
         FxPacket pkt = new FxPacket();
         pkt.shape = 12; pkt.life = ticks; pkt.c = at; pkt.palette = (byte) (slash ? 1 : 0);
-        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 24, sl.dimension())), pkt);
+        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 24, sl.dimension())), pkt);
     }
 
     /** Put the caster at {@code pos}, facing {@code look}, motionless. */
@@ -126,8 +126,8 @@ public final class MeteorFx {
         }
         Vec3 aim = target != null ? mid(target) : eye.add(look.scale(14));
         cutscene(p, aim, 0);
-        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 1f, 0.6f);
-        sound(sl, p.position(), SoundEvents.TRIDENT_RIPTIDE_3, 1f, 0.7f);
+        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 1f, 0.6f);
+        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_3), 1f, 0.7f);
         FxLib.shockRing(sl, EMBER, p.position().add(0, 0.05, 0), 1.0f);
         dash(p, sl, target, aim, power, 0, p.position().add(0, 1, 0));
     }
@@ -185,8 +185,8 @@ public final class MeteorFx {
         FxSend.wall(sl, EMBER, base.subtract(f.scale(0.5)), f, new Vec3(0, 1, 0), 2.0f, 2.4f, -60, 90, 0.4f, 7, 2, 0);
         FxLib.impact(sl, EMBER, base, 1.4f);
         AstaFx.damage(p, t, power * 0.3f, "devil_black_meteorite");
-        sound(sl, base, SoundEvents.PLAYER_ATTACK_STRONG, 1.2f, 0.6f);
-        sound(sl, base, SoundEvents.GENERIC_EXPLODE, 0.6f, 1.4f);
+        sound(sl, base, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), 1.2f, 0.6f);
+        sound(sl, base, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.6f, 1.4f);
         impactFrame(sl, base, 2);   // the uppercut connects
         cutscene(p, apex, 2);
         rise(p, sl, t, base, apex, power, 0);
@@ -227,10 +227,10 @@ public final class MeteorFx {
             FxSend.beam(sl, SILVER, from, to, 0.04f, 4);
             AstaFx.damage(p, t, power * 0.12f, "devil_black_meteorite");
             if (dash % 3 == 0) impactFrame(sl, apex, 1);
-            sound(sl, apex, SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 1.2f + r.nextFloat() * 0.6f);
-            sound(sl, apex, SoundEvents.PLAYER_ATTACK_CRIT, 0.7f, 1.0f + r.nextFloat() * 0.5f);
+            sound(sl, apex, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 0.9f, 1.2f + r.nextFloat() * 0.6f);
+            sound(sl, apex, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT), 0.7f, 1.0f + r.nextFloat() * 0.5f);
         }
-        if (step == 0) sound(sl, pos, SoundEvents.TRIDENT_RIPTIDE_1, 0.5f, 1.6f);
+        if (step == 0) sound(sl, pos, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_1), 0.5f, 1.6f);
         final Vec3 now = step == DASH_TICKS - 1 ? null : pos;
         AstaFx.later(1, () -> blitz(p, sl, t, apex, power, k + 1, now == null ? apexNext(apex, dash + 1) : now));
     }
@@ -263,7 +263,7 @@ public final class MeteorFx {
         Vec3 stand = apex.add(side.scale(5.0)).add(0, 0.6, 0);
         if (k == 0) {
             cutscene(p, apex, 3);
-            sound(sl, stand, SoundEvents.BEACON_POWER_SELECT, 1f, 0.5f);
+            sound(sl, stand, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT), 1f, 0.5f);
         }
         if (k < CHARGE) {                                    // the charge
             place(p, stand.subtract(0, 1.0, 0), apex);
@@ -313,11 +313,11 @@ public final class MeteorFx {
             FxSend.wall(sl, DARK, at, new Vec3(0, 1, 0), FxLib.right(new Vec3(0, 1, 0)), 0.5f, 7f, -180, 180, 0.4f, 12, 0, 0);
             FxLib.spikeBurst(sl, DARK, at, 1.8f);
             FxLib.dome(sl, EMBER, at.subtract(0, 1, 0), 1.6f);
-            sound(sl, at, SoundEvents.GENERIC_EXPLODE, 1.4f, 0.5f);
-            sound(sl, at, SoundEvents.WARDEN_SONIC_BOOM, 1f, 0.7f);
+            sound(sl, at, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 1.4f, 0.5f);
+            sound(sl, at, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 1f, 0.7f);
         });
-        sound(sl, at, SoundEvents.PLAYER_ATTACK_SWEEP, 1.5f, 0.4f);
-        sound(sl, at, SoundEvents.TRIDENT_THUNDER, 0.9f, 0.6f);
+        sound(sl, at, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.5f, 0.4f);
+        sound(sl, at, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.TRIDENT_THUNDER), 0.9f, 0.6f);
     }
 
     private static void impact(ServerPlayer p, ServerLevel sl, LivingEntity victim, Vec3 at, float power) {
@@ -387,11 +387,11 @@ public final class MeteorFx {
                 if (t.position().distanceTo(g) > 10) continue;
                 AstaFx.damage(p, t, power * 0.4f, "devil_black_meteorite");
             }
-            sound(sl, g, SoundEvents.GENERIC_EXPLODE, 1f, 0.4f);
+            sound(sl, g, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 1f, 0.4f);
         });
-        sound(sl, at, SoundEvents.GENERIC_EXPLODE, 1.6f, 0.5f);
-        sound(sl, at, SoundEvents.WARDEN_SONIC_BOOM, 1f, 0.6f);
-        sound(sl, at, SoundEvents.LIGHTNING_BOLT_THUNDER, 0.8f, 0.6f);
+        sound(sl, at, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 1.6f, 0.5f);
+        sound(sl, at, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 1f, 0.6f);
+        sound(sl, at, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER), 0.8f, 0.6f);
     }
 
     // ------------------------------------------------------------------ rules while it plays

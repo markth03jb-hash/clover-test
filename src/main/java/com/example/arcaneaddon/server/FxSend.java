@@ -13,7 +13,7 @@ public class FxSend {
     private static final AtomicInteger IDS = new AtomicInteger(1);
 
     private static void send(ServerLevel sl, Vec3 near, FxPacket p) {
-        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(near.x, near.y, near.z, 96, sl.dimension())), p);
+        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(near.x, near.y, near.z, 96, sl.dimension())), p);
     }
 
     /** Curved wall (arc of a circle in the plane d/u, extruded +-h along d x u). a0..a1 degrees; sweep = ticks to draw the swing. */
@@ -145,14 +145,14 @@ public class FxSend {
     public static void impactFrame(ServerLevel sl, Vec3 at, int ticks, int style, double radius) {
         FxPacket p = new FxPacket();
         p.shape = 12; p.life = ticks; p.c = at; p.palette = (byte) style;
-        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, radius, sl.dimension())), p);
+        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, radius, sl.dimension())), p);
     }
 
     /** Screen shake for everyone within {@code radius}. */
     public static void shake(ServerLevel sl, Vec3 at, float strength, int ticks, double radius) {
         FxPacket p = new FxPacket();
         p.shape = 10; p.c = at; p.r = strength; p.life = ticks;
-        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, radius, sl.dimension())), p);
+        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, radius, sl.dimension())), p);
     }
 
     /**

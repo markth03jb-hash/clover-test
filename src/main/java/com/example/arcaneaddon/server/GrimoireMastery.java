@@ -311,7 +311,7 @@ public final class GrimoireMastery {
         Vec3 at = p.position();
         int pal = b.palette();
         // the grimoire flies open, rings of its magic burst out around you and a halo forms overhead
-        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), new GrimoireOpenPacket(p.getId()));
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), new GrimoireOpenPacket(p.getId()));
         FxSend.ring(sl, pal, at.add(0, 0.05, 0), 0.3f, 4.5f, 0.12f, 16);
         FxSend.ring(sl, pal, at.add(0, 1.0, 0), 0.2f, 2.6f, 0.08f, 12);
         AstaFx.later(4, () -> FxSend.ring(sl, Fx.SILVER, p.position().add(0, 0.06, 0), 0.5f, 3.2f, 0.05f, 12));
@@ -332,7 +332,7 @@ public final class GrimoireMastery {
     private static void syncToggle(ServerPlayer p) {
         FxPacket pkt = new FxPacket();
         pkt.shape = 34; pkt.life = AddonConfig.progression() ? 1 : 0;
-        AddonNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), pkt);
+        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), pkt);
     }
 
     @SubscribeEvent

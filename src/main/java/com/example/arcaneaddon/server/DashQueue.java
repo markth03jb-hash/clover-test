@@ -55,9 +55,9 @@ public class DashQueue {
         if (devil) { d.devil = true; d.speed *= 1.3; d.left += 3; }
         ACTIVE.put(p.getUUID(), d);
         p.startAutoSpinAttack(TICKS + 2);   // vanilla riptide pose: whole body thrust forward, weapon out front
-        p.level().playSound(null, p.blockPosition(), SoundEvents.TRIDENT_RIPTIDE_3, SoundSource.PLAYERS, 1.0f, 0.8f);
-        p.level().playSound(null, p.blockPosition(), SoundEvents.SOUL_ESCAPE, SoundSource.PLAYERS, 0.8f, 0.5f);
-        p.level().playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 0.6f);
+        p.level().playSound(null, p.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_3), SoundSource.PLAYERS, 1.0f, 0.8f);
+        p.level().playSound(null, p.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.SOUL_ESCAPE), SoundSource.PLAYERS, 0.8f, 0.5f);
+        p.level().playSound(null, p.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), SoundSource.PLAYERS, 1.0f, 0.6f);
         if (p.level() instanceof ServerLevel sl) {
             int pal = dweller ? 1 : 0;
             Vec3 o = p.position().add(0, 1.0, 0);
@@ -88,8 +88,8 @@ public class DashQueue {
             Fx.impact(sl, d.dweller ? Fx.DARK : Fx.CRIMSON, tm, 1.3f);
             // a clean cut straight through them along the dash line
             FxSend.beam(sl, Fx.SILVER, tm.subtract(d.dir.scale(1.2)), tm.add(d.dir.scale(1.2)), 0.18f, 6);
-            sl.playSound(null, t.blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS, 1.0f, 0.7f);
-            sl.playSound(null, t.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 0.8f);
+            sl.playSound(null, t.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), SoundSource.PLAYERS, 1.0f, 0.7f);
+            sl.playSound(null, t.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT), SoundSource.PLAYERS, 1.0f, 0.8f);
         }
         // slash trail: a ring around the body each tick, plus a silver spear-tip ahead of you
         Vec3 body = p.position().add(0, 1.0, 0);
@@ -106,7 +106,7 @@ public class DashQueue {
             if (d.devil) detonate(p, d);
             FxSend.ring(sl, d.dweller ? 1 : 0, p.position().add(0, 0.1, 0), 0.4f, 3.0f, 0.5f, 8);
             Fx.groundPuff(sl, Fx.SILVER, p.position(), 2.4f);
-            sl.playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 0.8f, 0.6f);
+            sl.playSound(null, p.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT), SoundSource.PLAYERS, 0.8f, 0.6f);
             p.setDeltaMovement(d.dir.scale(0.3));   // brake
             p.hurtMarked = true;
         }
@@ -125,7 +125,7 @@ public class DashQueue {
                 for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(1.8, 1.5, 1.8), x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {
                     if (struck.add(t.getUUID())) DamageSources.applyDamage(t, d.damage * 0.6f, d.spell.getDamageSource(p));
                 }
-                sl.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.35f, 1.4f);
+                sl.playSound(null, at.x, at.y, at.z, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), SoundSource.PLAYERS, 0.35f, 1.4f);
             });
         }
     }

@@ -101,7 +101,7 @@ public class FireFx {
     private static void sendBurn(LivingEntity t, int life) {
         FxPacket pkt = new FxPacket();
         pkt.shape = 21; pkt.id = t.getId(); pkt.palette = (byte) F; pkt.life = life;
-        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> t), pkt);
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> t), pkt);
     }
 
     /** A ball of fire (client draws a churning, glowing fireball): shape 20. explode = a blast that swells from r to r2. */
@@ -109,7 +109,7 @@ public class FireFx {
         FxPacket p = new FxPacket();
         if (life <= 3 && life > 0) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
         p.shape = 20; p.palette = (byte) F; p.life = life; p.c = c; p.v = vel; p.r = r; p.r2 = r2; p.h = explode ? 1 : 0;
-        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
+        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
     }
 
     /** An explosion of fire: a swelling fireball, a shock ring on the ground, a hit on everything in range. */
@@ -126,8 +126,8 @@ public class FireFx {
             t.hurtMarked = true;
         }
         Cutshake.send(sl, at, (float) Math.min(1.0, R * 0.12), 6);
-        sound(sl, at, SoundEvents.GENERIC_EXPLODE, (float) Math.min(1.5, 0.5 + R * 0.12), 1.0f);
-        sound(sl, at, SoundEvents.FIRECHARGE_USE, 1f, 0.7f);
+        sound(sl, at, Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), (float) Math.min(1.5, 0.5 + R * 0.12), 1.0f);
+        sound(sl, at, Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.FIRECHARGE_USE), 1f, 0.7f);
     }
 
     /** Screen shake for players near an explosion (FxPacket shape 10). */
@@ -135,7 +135,7 @@ public class FireFx {
         static void send(ServerLevel sl, Vec3 at, float strength, int life) {
             FxPacket p = new FxPacket();
             p.shape = 10; p.c = at; p.r = strength; p.life = life;
-            AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 24, sl.dimension())), p);
+            AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 24, sl.dimension())), p);
         }
     }
 
@@ -164,7 +164,7 @@ public class FireFx {
                 if (alive(p)) fireball(sl, handPos(p), Vec3.ZERO, (0.12f + kk * 0.02f) * size, (0.12f + kk * 0.02f) * size, 3, false);
             });
         }
-        sound(sl, p.position(), SoundEvents.FIRECHARGE_USE, 0.5f, 1.4f);
+        sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.FIRECHARGE_USE), 0.5f, 1.4f);
     }
 
     // ================================================================== 1. Exploding Fireball
@@ -176,7 +176,7 @@ public class FireFx {
         AstaFx.later(FIREBALL_RELEASE, () -> {
             if (!alive(p)) return;
             shot(p, p.serverLevel(), handPos(p), p.getLookAngle(), 2.5f, 0.45f, 3.0, power, 0, 16, "exploding_fireball");
-            sound(p.serverLevel(), p.position(), SoundEvents.BLAZE_SHOOT, 1f, 0.9f);
+            sound(p.serverLevel(), p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 1f, 0.9f);
         });
     }
 
@@ -194,7 +194,7 @@ public class FireFx {
                 Vec3 d = rotY(look, Math.toRadians((i - 2) * 9)).add(0, (i % 2) * 0.05, 0).normalize();
                 AstaFx.later(i % 2, () -> shot(p, sl, handPos(p), d, 2.2f, 0.32f, 2.2, power * 0.55f, 0, 14, "explosive_scattershot"));
             }
-            sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 1f, 1.2f);
+            sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 1f, 1.2f);
         });
     }
 
@@ -217,7 +217,7 @@ public class FireFx {
             });
         }
         batSwing(p, SPECIAL_SWING, SPECIAL_HIT + 8);
-        sound(sl, p.position(), SoundEvents.FIRECHARGE_USE, 1f, 0.8f);
+        sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.FIRECHARGE_USE), 1f, 0.8f);
         AstaFx.later(SPECIAL_HIT, () -> {
             if (!alive(p)) return;
             Vec3 look = p.getLookAngle();
@@ -226,8 +226,8 @@ public class FireFx {
             FxLib.flash(sl, F, at, 1.0f);
             Cutshake.send(sl, at, 0.35f, 4);
             shot(p, sl, at, look, 3.0f, 0.75f, 5.0, power, 0, 16, "magna_special");
-            sound(sl, p.position(), SoundEvents.ANVIL_LAND, 0.4f, 1.8f);
-            sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 1.2f, 0.7f);
+            sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.4f, 1.8f);
+            sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 1.2f, 0.7f);
         });
     }
 
@@ -304,7 +304,7 @@ public class FireFx {
     public static void flamingBat(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         batSwing(p, COMBO_SWING, 26);   // the bat itself, in your hands, following every swing
-        sound(sl, p.position(), SoundEvents.FIRECHARGE_USE, 0.8f, 1.2f);
+        sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.FIRECHARGE_USE), 0.8f, 1.2f);
         for (int i = 0; i < 3; i++) {
             final int ii = i;
             AstaFx.later(BAT_SWINGS[i], () -> {
@@ -325,8 +325,8 @@ public class FireFx {
                     Vec3 g = FxLib.ground(sl, o.add(look.scale(2)), 4);
                     if (g != null) { FxLib.shockRing(sl, F, g.add(0, 0.05, 0), 1.0f); Cutshake.send(sl, g, 0.3f, 4); }
                 }
-                sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_STRONG, 1f, 0.8f);
-                sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 0.5f, 1.4f);
+                sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), 1f, 0.8f);
+                sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 0.5f, 1.4f);
             });
         }
     }
@@ -339,15 +339,15 @@ public class FireFx {
         sendKnuckles(p, 240);
         FxLib.flash(sl, F, handPos(p), 0.8f);
         FxSend.ring(sl, F, p.position().add(0, 0.05, 0), 0.4f, 2.4f, 0.1f, 8);
-        sound(sl, p.position(), SoundEvents.FIRECHARGE_USE, 1f, 1.0f);
-        sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_IRON, 1f, 0.8f);
+        sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.FIRECHARGE_USE), 1f, 1.0f);
+        sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON), 1f, 0.8f);
     }
 
     private static void sendKnuckles(ServerPlayer p, int life) {
         ModeHud.show(p, "flame_knuckles", life);
         FxPacket pkt = new FxPacket();
         pkt.shape = 22; pkt.id = p.getId(); pkt.palette = (byte) F; pkt.life = life;
-        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
     // ================================================================== 6. Ring of Fire
@@ -372,11 +372,11 @@ public class FireFx {
                     e.setDeltaMovement(e.getDeltaMovement().add(push).add(0, 0.25, 0));
                     e.hurtMarked = true;
                 }
-                if (tt % 20 == 0) sound(sl, c, SoundEvents.BLAZE_BURN, 1f, 0.8f);
+                if (tt % 20 == 0) sound(sl, c, Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.BLAZE_BURN), 1f, 0.8f);
             });
         }
         FxLib.shockRing(sl, F, c.add(0, 0.05, 0), 1.2f);
-        sound(sl, c, SoundEvents.FIRECHARGE_USE, 1f, 0.6f);
+        sound(sl, c, Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.FIRECHARGE_USE), 1f, 0.6f);
     }
 
     // ================================================================== 7. Fireball Barrage
@@ -400,7 +400,7 @@ public class FireFx {
                 ThreadLocalRandom r = ThreadLocalRandom.current();
                 Vec3 d = look.add(r.nextDouble(-0.04, 0.04), r.nextDouble(-0.03, 0.03), r.nextDouble(-0.04, 0.04)).normalize();
                 shot(p, sl, from, d, 2.6f, 0.3f, 1.8, power * 0.3f, 0, 14, "fireball_barrage");
-                if (ii % 2 == 0) sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 0.7f, 1.1f + r.nextFloat() * 0.3f);
+                if (ii % 2 == 0) sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 0.7f, 1.1f + r.nextFloat() * 0.3f);
             });
         }
         windup(p, BARRAGE_START, 1f);
@@ -437,7 +437,7 @@ public class FireFx {
             final int kk = k;
             AstaFx.later(k, () -> fireball(sl, h.add(0, kk * 3.5, 0), new Vec3(0, 3.5, 0), 0.5f, 0.5f, 2, false));
         }
-        sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 1f, 0.6f);
+        sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 1f, 0.6f);
     }
 
     // ================================================================== 9. Soul Chain Deathmatch
@@ -480,8 +480,8 @@ public class FireFx {
             hit(p, tg, power, "soul_chain");
             FxLib.impact(sl, F, mid(tg), 1.2f);
             p.displayClientMessage(Component.translatable("ui.arcane_addon.soul_chain.on").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
-            sound(sl, tg.position(), SoundEvents.CHAIN_PLACE, 1f, 0.6f);
-            sound(sl, tg.position(), SoundEvents.FIRECHARGE_USE, 1f, 0.6f);
+            sound(sl, tg.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.CHAIN_PLACE), 1f, 0.6f);
+            sound(sl, tg.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.FIRECHARGE_USE), 1f, 0.6f);
         });
     }
 
@@ -504,7 +504,7 @@ public class FireFx {
             Vec3 up = k % 2 == 0 ? new Vec3(0, 1, 0) : side;
             FxSend.box(sl, F, q, ab.normalize(), up, 0.2f, 0.03f, 0.1f, 2, 0, FxPacket.HOLD);
         }
-        if (now % 20 == 0) sound(sl, b, SoundEvents.CHAIN_STEP, 0.6f, 0.8f);
+        if (now % 20 == 0) sound(sl, b, Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.CHAIN_STEP), 0.6f, 0.8f);
     }
 
     // ================================================================== 10. Explosive Fire Cannon
@@ -529,8 +529,8 @@ public class FireFx {
                 }
             });
         }
-        sound(sl, p.position(), SoundEvents.BLAZE_AMBIENT, 1f, 0.5f);
-        sound(sl, p.position(), SoundEvents.FIRECHARGE_USE, 1f, 0.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.BLAZE_AMBIENT), 1f, 0.5f);
+        sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.FIRECHARGE_USE), 1f, 0.5f);
         AstaFx.later(CANNON_RELEASE, () -> {
             if (!alive(p)) return;
             Vec3 look = p.getLookAngle();
@@ -541,8 +541,8 @@ public class FireFx {
             FxLib.shockRing(sl, F, p.position().add(0, 0.05, 0), 1.2f);
             p.setDeltaMovement(p.getDeltaMovement().subtract(look.scale(0.5)));
             p.hurtMarked = true;
-            sound(sl, p.position(), SoundEvents.GENERIC_EXPLODE, 0.6f, 0.6f);
-            sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 1.4f, 0.5f);
+            sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.6f, 0.6f);
+            sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 1.4f, 0.5f);
         });
     }
 
@@ -581,7 +581,7 @@ public class FireFx {
                 CHAINS.remove(id);
                 ModeHud.hide(p, "soul_chain");
                 FxLib.flash(sl, F, mid(ch.target), 0.8f);
-                sound(sl, p.position(), SoundEvents.CHAIN_BREAK, 1f, 0.8f);
+                sound(sl, p.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.CHAIN_BREAK), 1f, 0.8f);
             } else chainTick(p, sl, ch, now);
         }
     }
@@ -604,7 +604,7 @@ public class FireFx {
         fireball(sl, mid(t), Vec3.ZERO, 0.4f, 1.6f, 7, true);
         Vec3 push = t.position().subtract(p.position()).multiply(1, 0, 1);
         if (push.lengthSqr() > 1.0E-4) t.setDeltaMovement(t.getDeltaMovement().add(push.normalize().scale(0.6)).add(0, 0.2, 0));
-        sound(sl, t.position(), SoundEvents.GENERIC_EXPLODE, 0.4f, 1.5f);
+        sound(sl, t.position(), Sfx.of(Sfx.MAGNA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.4f, 1.5f);
     }
 
     @SubscribeEvent

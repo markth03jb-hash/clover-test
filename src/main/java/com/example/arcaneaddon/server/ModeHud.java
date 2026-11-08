@@ -18,7 +18,7 @@ public final class ModeHud {
         if (ticks > 0) m.put(spellId, p.serverLevel().getGameTime() + ticks); else m.remove(spellId);
         FxPacket pkt = new FxPacket();
         pkt.shape = 32; pkt.id = p.getId(); pkt.palette = (byte) i; pkt.life = Math.max(0, ticks);
-        AddonNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), pkt);
+        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), pkt);
     }
 
     private static final java.util.Map<java.util.UUID, java.util.Map<String, Long>> ACTIVE = new java.util.concurrent.ConcurrentHashMap<>();

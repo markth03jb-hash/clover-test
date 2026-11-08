@@ -11,6 +11,12 @@ public class AddonNetwork {
             ResourceLocation.fromNamespaceAndPath(ArcaneAddon.MODID, "main"),
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
 
+    /** Send a packet; effect packets are also shown to CastSync so damage can follow the move's swing. */
+    public static <M> void send(net.minecraftforge.network.PacketDistributor.PacketTarget target, M msg) {
+        if (msg instanceof FxPacket fx) com.example.arcaneaddon.server.CastSync.onSend(fx);
+        CHANNEL.send(target, msg);
+    }
+
     public static void init() {
         CHANNEL.registerMessage(0, SummonAnimPacket.class, SummonAnimPacket::encode, SummonAnimPacket::decode, SummonAnimPacket::handle);
         CHANNEL.registerMessage(1, GrimoireOpenPacket.class, GrimoireOpenPacket::encode, GrimoireOpenPacket::decode, GrimoireOpenPacket::handle);

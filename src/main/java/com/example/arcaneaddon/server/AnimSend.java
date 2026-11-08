@@ -23,6 +23,6 @@ public final class AnimSend {
         pkt.shape = 5;              // 5 = play pose, handled in FxRenderer.spawn
         pkt.id = p.getId();
         pkt.palette = (byte) pose;
-        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 }
