@@ -31,6 +31,8 @@ public final class DarkSmoke {
 
     private static final ResourceLocation SMOKE = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/dark_smoke.png");
     private static final ResourceLocation MOTE = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/dark_mote.png");
+    /** Black-edged soft dot for the additive bloom pass (additive blending ignores alpha, so the falloff is in the colour). */
+    private static final ResourceLocation GLOW = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/dark_glow.png");
     private static final int MAX = 900;
 
     private static final class Puff {
@@ -60,6 +62,16 @@ public final class DarkSmoke {
         int before = PUFFS.size();
         add(at, vel, size * 0.7F, size * 1.3F, life, false);
         if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) PUFFS.get(PUFFS.size() - 1).flame = true;
+    }
+
+    /** A puff of dust kicked up off the ground (tornadoes, impacts). */
+    public static void dust(Vec3 at, Vec3 vel, float size, int life) {
+        int before = PUFFS.size();
+        add(at, vel, size * 0.6F, size * 1.4F, life, false);
+        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) {
+            Puff p = PUFFS.get(PUFFS.size() - 1);
+            p.tinted = true; p.tr = 0.42F; p.tg = 0.37F; p.tb = 0.3F;
+        }
     }
 
     /** A tongue of blue flame (Calidos Brachium Purgatory): white-cyan, then deep blue, then gone. */
@@ -253,6 +265,54 @@ public final class DarkSmoke {
             draw(vm, m, n, cam, L, U, p, now, pt);
         }
         buf.endBatch(mt);
+        // bloom: light adds onto the scene - the hot hearts of flames, sparks, wind streaks and motes glow
+        RenderType gt = RenderType.eyes(GLOW);
+        VertexConsumer vg = buf.getBuffer(gt);
+        for (Puff p : sorted) {
+            boolean glow = (p.flame && now - p.born < p.life * 0.55) || (p.mote && !(p.bead && !p.tinted));
+            if (!glow) continue;
+            bloom(vg, m, n, cam, L, U, p, now, pt);
+        }
+        buf.endBatch(gt);
+    }
+
+    private static void bloom(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 L, Vec3 U, Puff p, double now, float pt) {
+        double age = now - p.born;
+        if (age < 0 || age > p.life) return;
+        double t = age / p.life;
+        Vec3 c = new Vec3(p.x + p.vx * pt, p.y + p.vy * pt, p.z + p.vz * pt);
+        float near = (float) Mth.clamp((c.distanceTo(cam) - 0.6) / 1.8, 0.0, 1.0);
+        if (near <= 0.01F) return;
+        float size = (float) (p.s0 + (p.s1 - p.s0) * t), a, cr, cg, cb;
+        if (p.flame) {
+            a = (float) (1.0 - t / 0.55) * 0.55F;
+            if (p.tinted) { cr = 0.3F; cg = 0.6F; cb = 1.0F; } else { cr = 1.0F; cg = 0.6F; cb = 0.15F; }
+            size *= 1.5F;
+        } else if (p.tinted) {
+            a = (float) (1.0 - t) * 0.6F; cr = p.tr; cg = p.tg; cb = p.tb; size *= p.streak ? 1.0F : 3.0F;
+        } else if (p.streak) {
+            a = (float) (1.0 - t) * 0.35F; cr = 0.6F; cg = 1.0F; cb = 0.8F;
+        } else {
+            a = (float) (1.0 - t) * 0.5F; cr = 0.55F; cg = 0.25F; cb = 1.0F; size *= 2.2F;
+        }
+        a *= near;
+        if (a <= 0.01F) return;
+        cr *= a; cg *= a; cb *= a;   // additive: colour carries the strength
+        Vec3 ax, ay;
+        if (p.streak) {
+            Vec3 vel = new Vec3(p.vx, p.vy, p.vz);
+            if (vel.lengthSqr() < 1.0E-6) return;
+            ax = vel.normalize().scale(size * 3.5 + vel.length() * 2.5);
+            Vec3 side = ax.cross(c.subtract(cam));
+            if (side.lengthSqr() < 1.0E-8) return;
+            ay = side.normalize().scale(size * 0.9);
+        } else {
+            ax = L.scale(size); ay = U.scale(size);
+        }
+        v(vc, m, n, cam, c.subtract(ax).subtract(ay), cr, cg, cb, 1F, 0, 1);
+        v(vc, m, n, cam, c.add(ax).subtract(ay), cr, cg, cb, 1F, 1, 1);
+        v(vc, m, n, cam, c.add(ax).add(ay), cr, cg, cb, 1F, 1, 0);
+        v(vc, m, n, cam, c.subtract(ax).add(ay), cr, cg, cb, 1F, 0, 0);
     }
 
     private static double d2(Puff p, Vec3 cam) {
@@ -308,6 +368,7 @@ public final class DarkSmoke {
             // near-black with a faint violet tint in the youngest puffs
             float tint = (float) Math.max(0.0, 1.0 - t * 2.5) * 0.14F;
             cr = 0.015F + tint * 0.55F; cg = 0.0F + tint * 0.12F; cb = 0.035F + tint;
+            if (p.tinted) { cr = p.tr; cg = p.tg; cb = p.tb; a *= 0.7F; }   // dust
         }
         a *= near;
         if (a <= 0.01F) return;

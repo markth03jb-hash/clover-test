@@ -250,17 +250,8 @@ public class WindFx {
         if (!alive(p)) return;
         final int LIFE = big ? 80 : 50;
         final double R = big ? 4.5 : 3.0, H = big ? 11 : 7, PULL = big ? 10 : 6;
-        // the funnel: spinning arcs stacked up, wider at the top
-        if (age % 2 == 0) {
-            int levels = big ? 8 : 6;
-            for (int k = 0; k < levels; k++) {
-                double h = H * k / (levels - 1);
-                float r = (float) (R * (0.25 + 0.75 * h / H));
-                double spin = age * 38 + k * 47;
-                FxSend.wall(sl, k % 3 == 1 ? S : W, base.add(0, h + 0.2, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1),
-                        r, r * 1.04f, (float) spin, (float) spin + 250, k % 3 == 1 ? 0.04f : 0.18f + 0.04f * k, 3, 0, 0);
-            }
-        }
+        // the funnel: drawn by the client as a spinning tornado (spiral bands of wind, dust at its foot)
+        tornadoPacket(sl, base, (float) R * 1.25f, (float) H, age);
         if (age % 4 == 0) FxSend.ring(sl, W, base.add(0, 0.06, 0), (float) R * 0.5f, (float) R * 1.3f, 0.06f, 6);   // dust swirl at its foot
         // pull, spin, lift, cut
         for (LivingEntity t : enemies(sl, p, new AABB(base, base.add(0, H, 0)).inflate(PULL))) {
@@ -305,6 +296,12 @@ public class WindFx {
         Vec3 g = FxLib.ground(sl, next.add(0, 1.5, 0), 4);
         final Vec3 nb = g != null ? g : next;
         AstaFx.later(1, () -> tornadoTick(p, sl, nb, dir, dmg, age + 1, big, held));
+    }
+
+    private static void tornadoPacket(ServerLevel sl, Vec3 base, float r, float h, int age) {
+        FxPacket p = new FxPacket();
+        p.shape = 28; p.palette = (byte) W; p.life = 1; p.c = base; p.r = r; p.h = h; p.a0 = age;
+        AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(base.x, base.y, base.z, 128, sl.dimension())), p);
     }
 
     // ================================================================== 3. Sylph's Breath

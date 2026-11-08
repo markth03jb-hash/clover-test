@@ -1,7 +1,20 @@
-Arcane Addon v1.29.0 - all changed files since v1.0.0
+Arcane Addon v1.30.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.30.0 - visual upgrade for the Wind, Mercury, Fire, Lightning and Hellfire Grimoires
+- Energy is drawn as light: wind, fire, lightning and blue-flame slashes, crescents, walls and trails
+  now glow (additive light) in their own colour instead of being dark see-through ribbons. Wind is a
+  bright airy shimmer, fire a luminous blaze.
+- Bloom: the hot hearts of flames, sparks, wind streaks and mana motes now glow onto the scene.
+- Tornado Fang is a real tornado: spiral bands of wind spinning up a funnel that widens to the top,
+  a faint body of moving air, streaks whipping around it and dust thrown up at its foot.
+- Mercury solids (spears, swords, the eagle, the mirror, cage bars, rain needles) are now mirror chrome
+  like the mercury spheres: the sky reflected on top, dark below, a hard highlight.
+- Fireballs and explosions throw a glowing corona onto the air around them; explosions open with a
+  white flash.
+- Lightning lights up where it lands, and big bolts light the sky for an instant.
 
 NEW IN 1.29.0
 - NEW: Hellfire Grimoire (Mereoleona Vermillion's Flame Magic) - ten close-range fire spells, each with

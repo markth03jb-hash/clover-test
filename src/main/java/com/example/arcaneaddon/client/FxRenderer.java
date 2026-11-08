@@ -475,9 +475,10 @@ public class FxRenderer {
       java.util.Random rnd = new java.util.Random(p.id * 7919L + frame * 104729L);
       boltBranch(m, cam, p.c, p.c.add(p.d), p.r * first, p.palette, al, rnd, p.sweep, 0);
       // the light where it lands and where it leaves
-      float glow = (float)Math.min(2.5, p.r * 9.0);
+      float glow = (float)Math.min(3.5, p.r * 12.0 + 0.3);
       Vec3 end = p.c.add(p.d);
-      gline(m, cam, end.subtract(0, 0.01, 0), end.add(0, 0.01, 0), glow, p.palette, al * 0.35F);
+      halo(m, cam, end, glow, RIM[p.palette], al * 0.45F * first);
+      if (p.r > 0.15F && age < 2.0) halo(m, cam, p.c.add(p.d.scale(0.5)), Math.min(8.0, len * 0.35), new float[]{1.0F, 1.0F, 0.9F}, (float)(1.0 - age / 2.0) * 0.18F);   // the whole sky lights up for an instant
    }
 
    private static void boltBranch(Matrix4f m, Vec3 cam, Vec3 a, Vec3 b, float w, int pal, float al, java.util.Random rnd, int branches, int depth) {
@@ -640,6 +641,67 @@ public class FxRenderer {
     * A ball of fire: a white-hot core blooming out to orange and a deep red rim, its surface churning, with a soft
     * glowing halo. Explosions (h = 1) swell from r to r2 and darken as they burn out.
     */
+   /**
+    * A tornado: a funnel of wind spinning fast - spiral bands of bright, airy wind winding up it, wider at the top,
+    * a faint body of air between them, and a ring of dust whirling at its foot. c = base, r = radius at the top,
+    * h = height, a0 = how long it has been spinning (keeps the spin continuous between packets).
+    */
+   private static void tornadoFx(Matrix4f m, Vec3 cam, FxPacket p, double age, double life) {
+      if (gv == null) return;
+      double R = p.r, H = p.h;
+      double spin = (p.a0 + age) * 0.55;
+      float[] rim = RIM[WIND], white = {0.95F, 1.0F, 0.97F};
+      int BANDS = 7, STEPS = 28;
+      for (int b = 0; b < BANDS; b++) {
+         Vec3 prev = null;
+         for (int k = 0; k <= STEPS; k++) {
+            double y = H * k / STEPS;
+            double rr = R * (0.18 + 0.82 * Math.pow(y / H, 0.85)) * (1.0 + 0.06 * Math.sin(y * 1.7 + spin * 2 + b));
+            double a = y * 0.9 + spin * 2.2 + Math.PI * 2 * b / BANDS;
+            Vec3 q = p.c.add(Math.cos(a) * rr, y, Math.sin(a) * rr);
+            if (prev != null) {
+               float al = (float)(0.55 * Math.sin(Math.PI * k / STEPS) + 0.15);
+               gline(m, cam, prev, q, (float)(0.08 + 0.1 * y / H), WIND, al * (b % 2 == 0 ? 1.0F : 0.6F));
+            }
+            prev = q;
+         }
+      }
+      // the faint body of moving air: wide, see-through rings
+      for (int k = 0; k < 8; k++) {
+         double y = H * (k + 0.5) / 8;
+         double rr = R * (0.18 + 0.82 * Math.pow(y / H, 0.85));
+         Vec3 prev = null;
+         for (int j = 0; j <= 20; j++) {
+            double a = Math.PI * 2 * j / 20 + spin * 3 + k;
+            Vec3 q = p.c.add(Math.cos(a) * rr, y + 0.15 * Math.sin(a * 2 + spin), Math.sin(a) * rr);
+            if (prev != null) gline(m, cam, prev, q, (float)(0.25 + 0.3 * y / H), WIND, 0.07F);
+            prev = q;
+         }
+      }
+      halo(m, cam, p.c.add(0, H * 0.5, 0), R * 1.3, white, 0.08F);
+   }
+
+   /** A soft round glow facing the camera: bright in the middle, fading to nothing at radius R (additive). */
+   private static void halo(Matrix4f m, Vec3 cam, Vec3 c, double R, float[] col, float a) {
+      if (gv == null || a <= 0.01F) return;
+      Vec3 view = c.subtract(cam);
+      if (view.lengthSqr() < 1.0E-6) return;
+      view = view.normalize();
+      Vec3 u = view.cross(new Vec3(0, 1, 0));
+      if (u.lengthSqr() < 1.0E-4) u = new Vec3(1, 0, 0);
+      u = u.normalize();
+      Vec3 v = view.cross(u).normalize();
+      int N = 18;
+      for (int i = 0; i < N; i++) {
+         double a0 = Math.PI * 2 * i / N, a1 = Math.PI * 2 * (i + 1) / N;
+         Vec3 e0 = c.add(u.scale(Math.cos(a0) * R)).add(v.scale(Math.sin(a0) * R));
+         Vec3 e1 = c.add(u.scale(Math.cos(a1) * R)).add(v.scale(Math.sin(a1) * R));
+         Vec3 m0 = c.add(e0.subtract(c).scale(0.35)), m1 = c.add(e1.subtract(c).scale(0.35));
+         gquad(m, cam, c, m0, m1, c, col, a, a * 0.55F, a * 0.55F, a);
+         gquad(m, cam, m0, e0, e1, m1, col, a * 0.55F, 0.0F, 0.0F, a * 0.55F);
+      }
+   }
+
    private static void fireballFx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, double life) {
       boolean boom = p.h > 0.5F;
       double R;
@@ -662,6 +724,9 @@ public class FxRenderer {
       int LAT = R > 1.2 ? 14 : 8, LON = R > 1.2 ? 24 : 12;
       double t = fxTime;
       float[] rim = RIM[p.palette == BLUE_FIRE ? BLUE_FIRE : FIRE];
+      // the corona: the light the fire throws on the air around it (and a white flash when it explodes)
+      halo(m, cam, c, R * (boom ? 1.7 : 2.3), rim, al * (boom ? 0.4F : 0.32F) * heat);
+      if (boom && age < 3.0) halo(m, cam, c, R * 2.6, new float[]{1.0F, 0.95F, 0.8F}, (float)(1.0 - age / 3.0) * 0.55F);
       for (int i = 0; i < LAT; i++) {
          for (int j = 0; j < LON; j++) {
             int[][] ij = {{i, j}, {i, j + 1}, {i + 1, j + 1}, {i + 1, j}};
@@ -754,6 +819,20 @@ public class FxRenderer {
    /** Yuno's wind: every effect in the wind palette throws off thin streaks of air that race along with it. */
    private static void emitWind(FxRenderer.Fx f, double age) {
       FxPacket p = f.p;
+      if (p.shape == 28) {   // tornado: streaks whipping round it, dust and debris thrown about its foot
+         if (age > 1.0) return;
+         java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+         for (int i = 0; i < 4; i++) {
+            double y = r.nextDouble(p.h), rr = p.r * (0.18 + 0.82 * Math.pow(y / p.h, 0.85)), a = r.nextDouble(Math.PI * 2);
+            Vec3 at = p.c.add(Math.cos(a) * rr, y, Math.sin(a) * rr);
+            DarkSmoke.streak(at, new Vec3(-Math.sin(a), 0.15, Math.cos(a)).scale(0.6), 0.07F, r.nextInt(5, 9));
+         }
+         for (int i = 0; i < 2; i++) {
+            double a = r.nextDouble(Math.PI * 2), rr = p.r * r.nextDouble(0.2, 0.6);
+            DarkSmoke.dust(p.c.add(Math.cos(a) * rr, r.nextDouble(0.1, 1.2), Math.sin(a) * rr), new Vec3(-Math.sin(a) * 0.3, r.nextDouble(0.05, 0.25), Math.cos(a) * 0.3), (float)r.nextDouble(0.4, 0.9), r.nextInt(14, 24));
+         }
+         return;
+      }
       double life = f.killAge >= 0.0 ? f.killAge : (double)p.life;
       if (age < 0.0 || age > life) return;
       java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
@@ -814,7 +893,23 @@ public class FxRenderer {
       return new Vec3(r.nextDouble(-s, s), r.nextDouble(-s, s), r.nextDouble(-s, s));
    }
 
+   /**
+    * Energy palettes (fire, lightning, wind, blue flame) are made of light, not matter: while one of their slashes,
+    * crescents, walls or beams is drawn, its "body" goes into the additive glow layer, tinted toward the palette's
+    * colour - so wind is a bright, airy shimmer and fire a luminous blaze instead of dark see-through ribbons.
+    */
+   private static int lightPal = -1;
+
+   private static boolean isLight(int pal) { return pal == 2 || pal == 4 || pal == 5 || pal == 12; }
+
    private static void vtx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, float[] col, float a) {
+      if (lightPal >= 0 && gv != null) {
+         float[] rc = RIM[lightPal];
+         float k = lightPal == 5 ? 0.85F : 0.75F;
+         float[] lc = {col[0] + (rc[0] - col[0]) * k, col[1] + (rc[1] - col[1]) * k, col[2] + (rc[2] - col[2]) * k};
+         gvtx(m, cam, w, lc, a * (lightPal == 5 ? 0.42F : 0.6F));
+         return;
+      }
       if (nearFade) {
          double d = w.distanceTo(cam);
          a *= Mth.clamp((float)((d - NEAR_FADE_START) / NEAR_FADE_RANGE), NEAR_FADE_MIN, 1.0F) * FX_ALPHA;
@@ -1160,6 +1255,8 @@ public class FxRenderer {
                double life = f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life;
                if (!(age < 0.0) && !(age > life)) {
                   float env = (float)(Mth.clamp(age / 1.5, 0.0, 1.0) * Mth.clamp((life - age) / Math.max(2.0, life * 0.45), 0.0, 1.0));
+                  int sh = f.p.shape;
+                  lightPal = (sh == 0 || sh == 1 || sh == 2 || sh == 13) && isLight(f.p.palette) ? f.p.palette : -1;
                   switch (f.p.shape) {
                      case 0:
                         wall(vc, m, n, cam, f.p, age, env);
@@ -1187,7 +1284,11 @@ public class FxRenderer {
                         break;
                      case 8:
                         spikeFx(vc, m, n, cam, f, age, life);
+                        break;
+                     case 28:
+                        tornadoFx(m, cam, f.p, age, life);
                   }
+                  lightPal = -1;
                }
             }
 
@@ -1544,6 +1645,13 @@ public class FxRenderer {
 
    /** Lit colour of a face: lambert from the key light plus a fresnel rim toward the camera. */
    private static float[] shade(int pal, Vec3 nrm, Vec3 view, float mul) {
+      if (pal == 11) {   // mercury: a mirror - the sky reflected on top, dark below, a hard highlight
+         Vec3 refl = view.subtract(nrm.scale(2.0 * view.dot(nrm)));
+         float sky = (float)Math.pow(Mth.clamp(refl.y * 0.5 + 0.5, 0.0, 1.0), 1.4);
+         float spec = (float)Math.pow(Math.max(0.0, refl.dot(LIGHT)), 24.0);
+         float v = (0.12F + 0.78F * sky + 0.6F * spec) * (0.85F + 0.15F * mul);
+         return new float[]{Math.min(1F, v * 0.95F), Math.min(1F, v * 0.97F), Math.min(1F, v * 1.03F)};
+      }
       float lam = (float)Math.max(0.0, nrm.dot(LIGHT));
       float fres = 1.0F - (float)Math.abs(nrm.dot(view));
       float k = Mth.clamp(0.16F + 0.62F * lam + 0.3F * fres * fres, 0.0F, 1.0F) * mul;
