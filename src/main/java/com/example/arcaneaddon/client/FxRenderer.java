@@ -197,6 +197,7 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 39) { DarkSmoke.guardFists(p.id, p.life); return; }   // Burning Fists Guard: id = player, life = ticks
       if (p.shape == 38) {   // Zenon's bone whips: id = player, life, h = count, r = reach, a0 = lash period, palette 1 = Beelzebub
          Minecraft mc0 = Minecraft.getInstance();
          if (mc0.level != null) WHIPS.add(new double[]{p.id, mc0.level.getGameTime(), p.life, p.h, p.r, p.a0, p.palette});

@@ -183,7 +183,7 @@ public final class Cutscene {
     /** Anime impact frames: a few ticks of hard white / black flashes with speed lines, for a hit that lands. */
     public static void impactFrame(int ticks, boolean slash) { impactFrame(ticks, slash ? 1 : 0); }
 
-    /** style 0 = white / black with speed lines, 1 = plus the huge slash, 2 = Luck's lightning frame. */
+    /** style 0 = white / black with speed lines, 1 = plus the huge slash, 2 = Luck's lightning frame, 3 = Yami's Equinox. */
     public static void impactFrame(int ticks, int style) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || !com.example.arcaneaddon.AddonClientConfig.impactFrames()) return;
@@ -246,8 +246,23 @@ public final class Cutscene {
         }
     }
 
+    /** Yami's Equinox: the screen split down the middle into light and dark, swapping each tick, one line dividing it. */
+    private static void drawEquinoxFrame(GuiGraphics g, double k) {
+        int w = g.guiWidth(), h = g.guiHeight();
+        boolean swap = ((int) k) % 2 == 1;
+        float fade = (float) Mth.clamp(frameLen - k, 0.0, 1.0);
+        int a = (int) (fade * 225);
+        int light = (a << 24) | 0xF4F0FF, dark = (a << 24) | 0x07000F;
+        g.fill(0, 0, w / 2, h, swap ? dark : light);
+        g.fill(w / 2, 0, w, h, swap ? light : dark);
+        int line = ((int) (fade * 255) << 24) | 0x9A5CFF;
+        g.fill(w / 2 - 2, 0, w / 2 + 2, h, line);
+        g.fill(0, h / 2 - 1, w, h / 2 + 1, ((int) (fade * 120) << 24) | 0x9A5CFF);   // the horizon
+    }
+
     private static void drawImpactFrame(GuiGraphics g, double k) {
         if (frameStyle == 2) { drawLightningFrame(g, k); return; }
+        if (frameStyle == 3) { drawEquinoxFrame(g, k); return; }
         int w = g.guiWidth(), h = g.guiHeight();
         int phase = (int) k;
         boolean white = phase % 2 == 0;

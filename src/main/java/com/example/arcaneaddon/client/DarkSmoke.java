@@ -127,10 +127,15 @@ public final class DarkSmoke {
     public static int fistFire(int id, double now) {
         double[] h = HELLFIRE.get(id);
         if (h != null && now <= h[1]) return 2;
+        Double gf = GUARD_FISTS.get(id);
+        if (gf != null && now <= gf) return 2;
         Double k = KNUCKLES.get(id);
         return k != null && now <= k ? 1 : 0;
     }
     public static void knuckles(int id, int life) { track(KNUCKLES, id, life); }
+    /** Burning Fists Guard: crimson-burning fists for {@code life} ticks (shape 39). */
+    public static void guardFists(int id, int life) { track(GUARD_FISTS, id, life); }
+    private static final Map<Integer, Double> GUARD_FISTS = new HashMap<>();
 
     private static void track(Map<Integer, Double> map, int id, int life) {
         Minecraft mc = Minecraft.getInstance();

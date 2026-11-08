@@ -15,6 +15,8 @@ public final class AnimSend {
     public static final int LIMIT_FIRST = 5;
     /** Magna's batting swing (fire_magna_special), played over the cast pose. */
     public static final int MAGNA_SWING = 14;
+    /** Yami's Equinox: katana drawn level, held, one cut. */
+    public static final int EQUINOX = 15;
 
     public static void play(ServerPlayer p, int pose) {
         FxPacket pkt = new FxPacket();

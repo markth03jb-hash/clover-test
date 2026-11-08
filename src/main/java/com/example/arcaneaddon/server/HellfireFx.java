@@ -67,6 +67,8 @@ public class HellfireFx {
     private static final Map<UUID, Long> ZONE = new HashMap<>();
     private static final Map<UUID, Long> ZONE_DODGE = new HashMap<>();
     private static final Map<UUID, Long> GUARD = new HashMap<>();
+    private static final Map<UUID, Long> GUARD_COUNTER = new HashMap<>();
+    private static final Map<UUID, Float> GUARD_POWER = new HashMap<>();
     private static final Map<UUID, long[]> HELLFIRE = new HashMap<>();   // {start, end}
     private static final Map<UUID, Long> PUNCH_CD = new HashMap<>();
     private static final double ZONE_R = 12;
@@ -423,23 +425,55 @@ public class HellfireFx {
     /** For 3 s your fists burn through magic: projectiles that come close are punched out of the air, spells from the front are blocked. */
     public static void burningGuard(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        GUARD.put(p.getUUID(), sl.getGameTime() + 60);
-        for (int t = 0; t < 60; t += 2) {
+        final int T = 60;
+        GUARD.put(p.getUUID(), sl.getGameTime() + T);
+        GUARD_POWER.put(p.getUUID(), power);
+        // her fists catch fire (drawn on the arms by the client)
+        FxPacket fp = new FxPacket();
+        fp.shape = 39; fp.id = p.getId(); fp.life = T;
+        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), fp);
+        ball(sl, F, p.position().add(0, 1, 0), Vec3.ZERO, 0.6f, 2.6f, 8, true);   // the guard flares up
+        for (int t = 0; t < T; t += 2) {
+            final int tt = t;
             AstaFx.later(t, () -> {
                 if (!alive(p)) return;
-                for (Projectile pr : sl.getEntitiesOfClass(Projectile.class, p.getBoundingBox().inflate(3.5))) {
+                Vec3 look = p.getLookAngle(), rt = rightOf(look), up = rt.cross(look).normalize();
+                Vec3 eye = p.getEyePosition();
+                // a wall of blurring jabs in front of her: crimson fists punching out at different spots, all the time
+                ThreadLocalRandom r = ThreadLocalRandom.current();
+                Vec3 at = eye.add(look.scale(1.4)).add(rt.scale(r.nextDouble(-1.0, 1.0))).add(up.scale(r.nextDouble(-0.9, 0.6)));
+                fist(sl, F, at, look, 0.55f, look.scale(0.4));
+                if (tt % 6 == 0) FxSend.wall(sl, F, eye.add(look.scale(0.9)), look, up, 1.3f, 1.5f, -75, 75, 0.9f, 5, 0, 0);
+                // anything thrown at her is punched out of the air
+                for (Projectile pr : sl.getEntitiesOfClass(Projectile.class, p.getBoundingBox().inflate(4.0))) {
                     if (pr.getOwner() == p) continue;
-                    Vec3 at = pr.position();
-                    FxSend.trail(sl, F, handPos(p), at, 0.25f, 5);
-                    fist(sl, F, at, at.subtract(p.getEyePosition()).normalize(), 0.8f, Vec3.ZERO);
-                    ball(sl, F, at, Vec3.ZERO, 0.3f, 1.2f, 6, true);
+                    Vec3 pa = pr.position();
+                    FxSend.trail(sl, F, handPos(p), pa, 0.25f, 5);
+                    fist(sl, F, pa, pa.subtract(p.getEyePosition()).normalize(), 0.8f, Vec3.ZERO);
+                    ball(sl, F, pa, Vec3.ZERO, 0.3f, 1.2f, 6, true);
                     pr.discard();
-                    sound(sl, at, SoundEvents.PLAYER_ATTACK_STRONG, 0.8f, 1.2f);
+                    sound(sl, pa, SoundEvents.PLAYER_ATTACK_STRONG, 0.8f, 1.2f);
                 }
-                fist(sl, F, handPos(p), p.getLookAngle(), 0.7f, Vec3.ZERO);
+                if (tt % 6 == 0) sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_WEAK, 0.6f, 0.8f + r.nextFloat() * 0.3f);
             });
         }
+        AstaFx.later(T, () -> {   // the guard ends in one big punch that blasts everything in front of her away
+            if (!alive(p)) return;
+            Vec3 look = p.getLookAngle();
+            Vec3 c = p.getEyePosition().add(look.scale(2.2));
+            ball(sl, F, c, Vec3.ZERO, 0.8f, 3.2f, 10, true);
+            fist(sl, F, p.getEyePosition().add(look.scale(1.4)), look, 1.4f, look.scale(0.6));
+            for (LivingEntity t : enemies(sl, p, new AABB(c, c).inflate(3.5))) {
+                if (mid(t).distanceTo(c) > 3.5) continue;
+                hit(p, t, power * 0.8f, "burning_guard");
+                t.setDeltaMovement(look.scale(1.6).add(0, 0.5, 0));
+                t.hurtMarked = true;
+            }
+            shake(sl, c, 0.5f, 8);
+            sound(sl, c, SoundEvents.GENERIC_EXPLODE, 0.9f, 0.9f);
+        });
         sound(sl, p.position(), SoundEvents.FIRECHARGE_USE, 1f, 1.2f);
+        sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 0.8f, 0.7f);
     }
 
     // ================================================================== 9. Hellfire Incarnate
@@ -599,12 +633,25 @@ public class HellfireFx {
         long now = sl.getGameTime();
         Vec3 src = e.getSource().getSourcePosition();
         Long g = GUARD.get(p.getUUID());
-        if (g != null && now <= g && src != null && e.getSource() instanceof SpellDamageSource) {
+        if (g != null && now <= g && src != null) {
             Vec3 to = src.subtract(p.getEyePosition()).normalize();
-            if (to.dot(p.getLookAngle()) > 0.3) {
+            if (to.dot(p.getLookAngle()) > 0.2) {   // from the front: blocked, and the attacker eats a burning counter-punch
                 e.setCanceled(true);
                 ball(sl, F, p.getEyePosition().add(to.scale(1.2)), Vec3.ZERO, 0.3f, 1.4f, 6, true);
                 sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_STRONG, 1f, 1.1f);
+                if (e.getSource().getEntity() instanceof LivingEntity att && att != p && att.distanceTo(p) <= 5) {
+                    Long lc = GUARD_COUNTER.get(p.getUUID());
+                    if (lc == null || now - lc >= 6) {
+                        GUARD_COUNTER.put(p.getUUID(), now);
+                        Vec3 am = mid(att);
+                        FxSend.trail(sl, F, handPos(p), am, 0.3f, 5);
+                        fist(sl, F, am, to, 1.0f, Vec3.ZERO);
+                        ball(sl, F, am, Vec3.ZERO, 0.4f, 1.8f, 8, true);
+                        hit(p, att, GUARD_POWER.getOrDefault(p.getUUID(), 10f) * 0.6f, "burning_guard");
+                        att.setDeltaMovement(to.scale(1.3).add(0, 0.4, 0));
+                        att.hurtMarked = true;
+                    }
+                }
                 return;
             }
         }
@@ -631,6 +678,10 @@ public class HellfireFx {
         if (e.getEntity() instanceof ServerPlayer v) {
             Long s = SKIN.get(v.getUUID());
             if (s != null && v.serverLevel().getGameTime() <= s) e.setAmount(e.getAmount() * 0.65f);
+        }
+        if (e.getEntity() instanceof ServerPlayer v) {   // Burning Fists Guard: what gets past the fists is still halved
+            Long gd = GUARD.get(v.getUUID());
+            if (gd != null && v.serverLevel().getGameTime() <= gd) e.setAmount(e.getAmount() * 0.5f);
         }
         // Wild Lioness / Hellfire Incarnate: punches burn and blow up
         if (!(e.getSource().getEntity() instanceof ServerPlayer p) || e.getSource().getDirectEntity() != p) return;

@@ -32,7 +32,7 @@ public final class LimitFx {
     private LimitFx() {}
 
     private static final int EMBER = 9, DARK = 1, YAMI = 10, SILVER = 6, WIND = 5, MERC = 11, FIRE = 2,
-            BLUE_L = 13, CRIMSON = 14, BONE = 15, STEEL = 7;
+            BLUE_L = 13, CRIMSON = 14, BONE = 15, STEEL = 7, BLUE_FLAME = 12;
 
     // ------------------------------------------------------------------ helpers
 
@@ -318,51 +318,98 @@ public final class LimitFx {
     }
 
     // ---------------------------------------------------------------- Mereoleona: Hellfire Lion King
-    /** A giant lion of crimson hellfire charges 30 blocks forward, burning everything it runs through, then erupts. */
+    /**
+     * Mereoleona's evolved ultimate - bigger than Purgatory: blue hellfire gathers into her fist, she roars, and a
+     * colossal lion of crimson hellfire with a blue-white heart charges 48 blocks forward - its mane a whirl of fire,
+     * its paws blasting craters of flame as it runs - burning everything in its path, then it erupts in a huge
+     * explosion with pillars of fire all round.
+     */
     public static void lionKing(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        Vec3 dir = flat(p.getLookAngle()), rt = rightOf(dir);
-        Vec3 start = p.position().add(dir.scale(2)).add(0, 1.8, 0);
-        final double speed = 1.2;
-        final int ticks = 26;
-        sound(sl, p.position(), SoundEvents.RAVAGER_ROAR, 1.2f, 0.6f);
-        sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 1f, 0.5f);
-        Set<LivingEntity> hit = new HashSet<>();
-        for (int t = 0; t < ticks; t++) {
-            final int tt = t;
-            AstaFx.later(4 + t, () -> {
+        final int GATHER = 14;
+        for (int k = 0; k < GATHER; k += 2) {   // blue hellfire pulled into her fist, crimson streams spiralling in
+            final int kk = k;
+            AstaFx.later(k, () -> {
                 if (!alive(p)) return;
-                Vec3 head = start.add(dir.scale(tt * speed));
-                Vec3 g = FxLib.ground(sl, head, 6);
-                if (g != null) head = new Vec3(head.x, g.y + 1.8, head.z);   // it runs along the ground
-                Vec3 vel = dir.scale(speed);
-                fireball(sl, CRIMSON, head, vel, 1.6f, 1.6f, 1, false);                          // the head
-                fireball(sl, CRIMSON, head.subtract(dir.scale(2.4)).add(0, -0.3, 0), vel, 1.4f, 1.4f, 1, false);   // the body
-                if (tt % 3 == 0) {   // the mane flaring round the head
-                    FxSend.wall(sl, CRIMSON, head.subtract(dir.scale(0.4)), dir, rt.cross(dir).scale(-1), 1.6f, 2.6f, -180, 180, 0.4f, 5, 0, 0);
+                Vec3 h = p.getEyePosition().add(p.getLookAngle().scale(0.8)).add(0, -0.4, 0);
+                fireball(sl, BLUE_FLAME, h, Vec3.ZERO, 0.2f + kk * 0.05f, 0.2f + kk * 0.05f, 1, false);
+                for (int q = 0; q < 2; q++) {
+                    double a = kk * 0.9 + q * Math.PI;
+                    Vec3 from = h.add(Math.cos(a) * 4, 1.5 - kk * 0.1, Math.sin(a) * 4);
+                    FxSend.trail(sl, CRIMSON, from, from.add(h.subtract(from).scale(0.7)), 0.18f, 4);
                 }
-                if (tt % 2 == 0 && g != null) {   // paws leave burning prints
-                    Vec3 side = rt.scale(tt % 4 == 0 ? 1.2 : -1.2);
-                    FxSend.ring(sl, CRIMSON, g.add(side).add(0, 0.05, 0), 0.2f, 0.9f, 0.4f, 30);
-                }
-                for (LivingEntity f : foesNear(sl, p, head, 3.6)) {
-                    if (hit.add(f)) {
-                        AstaFx.damage(p, f, power * 0.9f, "calidos_brachium_purgatory");
-                        FireFx.burn(p, f, 100);
-                    }
-                    f.setDeltaMovement(dir.scale(1.0).add(0, 0.25, 0));
-                    f.hurtMarked = true;
-                }
-                if (tt % 6 == 0) sound(sl, head, SoundEvents.BLAZE_BURN, 1f, 0.6f);
             });
         }
-        AstaFx.later(4 + ticks, () -> {
+        sound(sl, p.position(), SoundEvents.BLAZE_AMBIENT, 1f, 0.4f);
+        AstaFx.later(GATHER, () -> {
             if (!alive(p)) return;
-            Vec3 end = start.add(dir.scale(ticks * speed));
-            FxSend.impactFrame(sl, end, 3, false, 40);
-            blast(p, sl, CRIMSON, end, 8, power * 1.6f, "calidos_brachium_purgatory");
-            FxSend.beam(sl, CRIMSON, end.add(0, -1.5, 0), end.add(0, 14, 0), 2.6f, 18);
-            sound(sl, end, SoundEvents.RAVAGER_ROAR, 1f, 0.8f);
+            Vec3 dir = flat(p.getLookAngle()), rt = rightOf(dir);
+            Vec3 start = p.position().add(dir.scale(3)).add(0, 2.6, 0);
+            final double speed = 1.6;
+            final int ticks = 30;
+            // the roar
+            FxSend.impactFrame(sl, p.position(), 3, false, 32);
+            FxSend.shake(sl, p.position(), 1.1f, 18, 48);
+            FxLib.shockRing(sl, CRIMSON, p.position().add(0, 0.1, 0), 4f);
+            fireball(sl, CRIMSON, start, Vec3.ZERO, 1.5f, 6f, 10, true);
+            sound(sl, p.position(), SoundEvents.RAVAGER_ROAR, 1.5f, 0.5f);
+            sound(sl, p.position(), SoundEvents.ENDER_DRAGON_GROWL, 0.8f, 0.8f);
+            Set<LivingEntity> hit = new HashSet<>();
+            for (int t = 0; t < ticks; t++) {
+                final int tt = t;
+                AstaFx.later(t, () -> {
+                    if (!alive(p)) return;
+                    Vec3 head = start.add(dir.scale(tt * speed));
+                    Vec3 g = FxLib.ground(sl, head, 8);
+                    if (g != null) head = new Vec3(head.x, g.y + 2.6, head.z);   // it runs along the ground
+                    Vec3 vel = dir.scale(speed);
+                    fireball(sl, CRIMSON, head, vel, 3.0f, 3.0f, 1, false);                                    // the head
+                    fireball(sl, BLUE_FLAME, head.subtract(dir.scale(1.2)), vel, 1.5f, 1.5f, 1, false);        // its blue-white heart
+                    fireball(sl, CRIMSON, head.subtract(dir.scale(4.2)).add(0, -0.5, 0), vel, 2.7f, 2.7f, 1, false);   // the body
+                    fireball(sl, CRIMSON, head.subtract(dir.scale(7.0)).add(0, -0.2, 0), vel, 1.6f, 1.6f, 1, false);   // the haunches
+                    // the mane: a whirl of fire round the head
+                    Vec3 upv = rt.cross(dir).normalize().scale(-1);
+                    FxSend.wall(sl, CRIMSON, head.subtract(dir.scale(0.8)), dir, upv, 3.0f, 4.4f, tt * 37f, tt * 37f + 300, 0.9f, 3, 0, 0);
+                    if (tt % 2 == 0) FxSend.trail(sl, CRIMSON, head.subtract(dir.scale(9)), head.subtract(dir.scale(5)), 1.2f, 8);   // the tail of flame
+                    if (tt % 3 == 0 && g != null) {   // paws: each footfall blasts a crater of flame
+                        Vec3 paw = g.add(rt.scale(tt % 6 == 0 ? 2.0 : -2.0)).add(dir.scale(tt % 6 == 0 ? 0 : -3));
+                        fireball(sl, CRIMSON, paw.add(0, 0.4, 0), Vec3.ZERO, 0.5f, 2.2f, 8, true);
+                        FxSend.ring(sl, CRIMSON, paw.add(0, 0.05, 0), 0.4f, 2.4f, 0.5f, 40);
+                    }
+                    for (LivingEntity f : foesNear(sl, p, head.add(0, -1, 0), 5.5)) {
+                        if (hit.add(f)) {
+                            AstaFx.damage(p, f, power * 1.4f, "calidos_brachium_purgatory");
+                            FireFx.burn(p, f, 140);
+                            FxSend.impactFrame(sl, mid(f), 1, false, 16);
+                        }
+                        f.setDeltaMovement(dir.scale(1.3).add(0, 0.35, 0));
+                        f.hurtMarked = true;
+                    }
+                    if (tt % 5 == 0) sound(sl, head, SoundEvents.BLAZE_SHOOT, 1.2f, 0.5f);
+                    if (tt % 10 == 0) sound(sl, head, SoundEvents.RAVAGER_ROAR, 0.8f, 0.7f);
+                });
+            }
+            AstaFx.later(ticks, () -> {   // the eruption
+                if (!alive(p)) return;
+                Vec3 end = start.add(dir.scale(ticks * speed));
+                Vec3 g = FxLib.ground(sl, end, 8);
+                Vec3 at = g != null ? g.add(0, 1.5, 0) : end;
+                FxSend.impactFrame(sl, at, 6, true, 48);
+                blast(p, sl, CRIMSON, at, 12, power * 2.5f, "calidos_brachium_purgatory");
+                fireball(sl, BLUE_FLAME, at, Vec3.ZERO, 1.2f, 6f, 14, true);
+                FxSend.beam(sl, CRIMSON, at.add(0, -2, 0), at.add(0, 22, 0), 4.0f, 24);
+                for (int k = 0; k < 6; k++) {
+                    double a = Math.PI * 2 * k / 6;
+                    Vec3 pil = at.add(Math.cos(a) * 8, -1.5, Math.sin(a) * 8);
+                    final int kk = k;
+                    AstaFx.later(2 + k, () -> {
+                        FxSend.beam(sl, CRIMSON, pil, pil.add(0, 12, 0), 1.6f, 18);
+                        blast(p, sl, CRIMSON, pil.add(0, 1, 0), 3.5, power * 0.6f, "calidos_brachium_purgatory");
+                    });
+                }
+                FxSend.shake(sl, at, 1.4f, 24, 64);
+                sound(sl, at, SoundEvents.RAVAGER_ROAR, 1.5f, 0.6f);
+            });
         });
     }
 

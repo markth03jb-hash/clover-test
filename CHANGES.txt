@@ -1,7 +1,25 @@
-Iron Spell Grimoire v1.41.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.42.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.42.0
+- Hellfire Lion King (Mereoleona's Surpassing Limits) is now bigger than Purgatory: blue hellfire gathers in her fist,
+  she roars (impact frame, heavy shake), and a colossal crimson lion with a blue-white heart charges 48 blocks - a
+  whirling mane of fire, a tail of flame, every footfall blasting a crater of fire - 1.4x damage and burning to all
+  it runs through, then it erupts: a 12-block blast (2.5x), a blue core explosion, a pillar of fire and six more
+  pillars exploding round it.
+- Hellfire Grimoire spell icons are recoloured crimson to match her flames (Purgatory's icon burns blue like its
+  flame), and the open book now burns crimson, with crimson flames licking up off the pages.
+- Burning Fists Guard reworked: her fists catch crimson fire, a wall of blurring jabs and a flaring arc of flame in
+  front of her for 3 s; projectiles are punched out of the air, any attack from the front is blocked and the
+  attacker eats an exploding counter-punch, hits from behind are halved, and it ends in one big punch that blasts
+  everything in front of her away.
+- NEW: Mana Zone: Dark Cloaked Dimension Slash - Equinox (Yami, Mana Zone while Surpassing Limits): the zone opens,
+  Yami draws the katana level across himself and the moment stretches - everyone in the zone is held still while
+  darkness gathers on the blade - the screen splits into light and dark, and one cut divides the zone: a colossal
+  dimension slash stands across it, every enemy in the zone is cut at once by its own rift in space (4.5x), a ring
+  of darkness sweeps the edge and a dividing line hangs across the zone. The zone stays up as normal afterward.
 
 NEW IN 1.41.0
 Animations

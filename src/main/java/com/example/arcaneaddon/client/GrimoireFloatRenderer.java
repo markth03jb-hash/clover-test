@@ -88,7 +88,7 @@ public class GrimoireFloatRenderer {
       if (item == AddonItemRegistry.MERCURY_GRIMOIRE.get()) return new int[]{11, 2};
       if (item == AddonItemRegistry.FIRE_GRIMOIRE.get()) return new int[]{2, 4};
       if (item == AddonItemRegistry.LIGHTNING_GRIMOIRE.get()) return new int[]{4, 4};
-      if (item == AddonItemRegistry.HELLFIRE_GRIMOIRE.get()) return new int[]{2, 0};
+      if (item == AddonItemRegistry.HELLFIRE_GRIMOIRE.get()) return new int[]{14, 0};   // crimson hellfire, like her flames
       if (item == AddonItemRegistry.BONE_GRIMOIRE.get()) return new int[]{15, 2};
       String id = BuiltInRegistries.ITEM.getKey(item).getPath();
       return switch (id) {
@@ -263,6 +263,12 @@ public class GrimoireFloatRenderer {
             float cyc = k > 0.95F ? (float)((mc.level.getGameTime() + (long)p.getId() * 13L) % 50L) + pt : -1.0F;
             boolean mastered = MasteryClient.enabled() && com.example.arcaneaddon.server.GrimoireMastery.bookOf(book) != null
                   && com.example.arcaneaddon.server.GrimoireMastery.level(book) >= com.example.arcaneaddon.server.GrimoireMastery.MAX_LEVEL;
+            if (book.is(AddonItemRegistry.HELLFIRE_GRIMOIRE.get()) && java.util.concurrent.ThreadLocalRandom.current().nextFloat() < 0.25F) {
+               // crimson flames licking up off the open pages
+               java.util.concurrent.ThreadLocalRandom fr = java.util.concurrent.ThreadLocalRandom.current();
+               Vec3 fp0 = bookPos.add(fr.nextDouble(-0.25, 0.25), 0.05, fr.nextDouble(-0.25, 0.25));
+               DarkSmoke.crimsonFlame(fp0, new Vec3(0, fr.nextDouble(0.03, 0.07), 0), (float) fr.nextDouble(0.08, 0.16), fr.nextInt(8, 14));
+            }
             FxRenderer.queueBook(bookPos, yawS - turn, tilt, s, k * (mastered ? 1.5F : 1.0F), cyc, 0.46F, 0.375F, 22.5F, au[0], au[1], light);
          }
          ps.popPose();

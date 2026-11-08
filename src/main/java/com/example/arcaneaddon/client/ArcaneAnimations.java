@@ -45,6 +45,7 @@ public class ArcaneAnimations {
             ResourceLocation.fromNamespaceAndPath("arcane_addon", "limit_bone"),
             ResourceLocation.fromNamespaceAndPath("arcane_addon", "limit_steel"),
             ResourceLocation.fromNamespaceAndPath("arcane_addon", "fire_magna_special"),   // 14: Magna's swing
+            ResourceLocation.fromNamespaceAndPath("arcane_addon", "dark_equinox"),         // 15: Yami's Equinox
     };
 
     @SubscribeEvent
