@@ -89,6 +89,7 @@ public class GrimoireFloatRenderer {
       if (item == AddonItemRegistry.FIRE_GRIMOIRE.get()) return new int[]{2, 4};
       if (item == AddonItemRegistry.LIGHTNING_GRIMOIRE.get()) return new int[]{4, 4};
       if (item == AddonItemRegistry.HELLFIRE_GRIMOIRE.get()) return new int[]{2, 0};
+      if (item == AddonItemRegistry.BONE_GRIMOIRE.get()) return new int[]{15, 2};
       String id = BuiltInRegistries.ITEM.getKey(item).getPath();
       return switch (id) {
          case "four_leaf_grimoire" -> new int[]{5, 3};

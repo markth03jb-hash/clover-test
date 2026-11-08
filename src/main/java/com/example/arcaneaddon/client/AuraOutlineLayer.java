@@ -32,6 +32,7 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             {0.45F, 0.72F, 1.0F},    // 3 blue lightning (Thunder God Mode)
             {1.0F, 0.14F, 0.08F},    // 4 crimson hellfire (Hellfire Incarnate)
             {1.0F, 0.3F, 0.2F},      // 5 mana skin
+            {0.93F, 0.89F, 0.8F},    // 6 bone plates (Marrow Regeneration)
     };
 
     public AuraOutlineLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
@@ -74,6 +75,10 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             shell(ps, m, vc, 1.03F + flick, 1.0F, 0.75F, 0.55F, 0.3F * a * pulse);
             shell(ps, m, vc, 1.1F + flick * 1.5F, col[0], col[1], col[2], 0.22F * a * pulse);
             shell(ps, m, vc, 1.2F + flick * 2F, 0.7F, 0.02F, 0.02F, 0.12F * a);
+            return;
+        }
+        if ((int) f[2] == 6) {   // bone plates: a hard ivory shell over the body
+            shell(ps, m, vc, 1.06F, 0.9F, 0.86F, 0.76F, 0.5F * a);
             return;
         }
         if ((int) f[2] == 5) {   // Mana Skin: a thin, faint warm sheen

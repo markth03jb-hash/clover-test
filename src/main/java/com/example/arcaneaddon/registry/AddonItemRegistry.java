@@ -8,6 +8,7 @@ import com.example.arcaneaddon.item.MercuryGrimoireItem;
 import com.example.arcaneaddon.item.FireGrimoireItem;
 import com.example.arcaneaddon.item.LightningGrimoireItem;
 import com.example.arcaneaddon.item.HellfireGrimoireItem;
+import com.example.arcaneaddon.item.BoneGrimoireItem;
 import com.example.arcaneaddon.item.SteelGrimoireItem;
 import com.example.arcaneaddon.item.DemonDwellerSwordItem;
 import com.example.arcaneaddon.item.DemonSlayerSwordItem;
@@ -53,6 +54,9 @@ public class AddonItemRegistry {
 
     // ------------------------------------------------------------------ Mereoleona Vermillion's Flame Magic
     public static final RegistryObject<Item> HELLFIRE_GRIMOIRE = ITEMS.register("hellfire_grimoire", HellfireGrimoireItem::new);
+
+    // ------------------------------------------------------------------ Zenon Zogratis' Bone Magic
+    public static final RegistryObject<Item> BONE_GRIMOIRE = ITEMS.register("bone_grimoire", BoneGrimoireItem::new);
 
     // ------------------------------------------------------------------ Klaus Lunettes' Steel Magic
     public static final RegistryObject<Item> STEEL_GRIMOIRE = ITEMS.register("steel_grimoire", SteelGrimoireItem::new);
@@ -120,6 +124,9 @@ public class AddonItemRegistry {
                 ItemStack hellfire = new ItemStack(HELLFIRE_GRIMOIRE.get());
                 ((IPresetSpellContainer) HELLFIRE_GRIMOIRE.get()).initializeSpellContainer(hellfire);
                 out.accept(hellfire);
+                ItemStack bone = new ItemStack(BONE_GRIMOIRE.get());
+                ((IPresetSpellContainer) BONE_GRIMOIRE.get()).initializeSpellContainer(bone);
+                out.accept(bone);
                 ItemStack steel = new ItemStack(STEEL_GRIMOIRE.get());
                 ((IPresetSpellContainer) STEEL_GRIMOIRE.get()).initializeSpellContainer(steel);
                 out.accept(steel);

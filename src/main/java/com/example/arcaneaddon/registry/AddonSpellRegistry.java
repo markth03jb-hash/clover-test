@@ -6,6 +6,8 @@ import com.example.arcaneaddon.server.MercuryFx;
 import com.example.arcaneaddon.server.FireFx;
 import com.example.arcaneaddon.server.LightningFx;
 import com.example.arcaneaddon.server.HellfireFx;
+import com.example.arcaneaddon.server.BoneFx;
+import com.example.arcaneaddon.spells.BoneSpell;
 import com.example.arcaneaddon.spells.HellfireSpell;
 import com.example.arcaneaddon.spells.LightningSpell;
 import com.example.arcaneaddon.spells.FireSpell;
@@ -207,6 +209,24 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> HELLFIRE_SPELLS = List.of(
             CALIDOS_BRACHIUM, BRACHIUM_BARRAGE, FLAME_LION_PAWS, LIONESS_CHARGE, HELL_MANA_SKIN,
             HELL_MANA_ZONE, GROUND_PUNCH, BURNING_GUARD, HELLFIRE_INCARNATE, BRACHIUM_PURGATORY);
+
+    // ------------------------------------------------------------------ Bone Grimoire (Zenon Zogratis' Bone Magic)
+    //                                                                             id                       cd mana power  animation
+    public static final RegistryObject<AbstractSpell> BONE_SPEAR_VOLLEY = registerSpell(new BoneSpell("bone_spear_volley", 6, 40, 14, BoneSpell.anim("arcane_addon:bone_volley"), BoneFx::spearVolley));
+    public static final RegistryObject<AbstractSpell> BONE_SPIKE_ERUPTION = registerSpell(new BoneSpell("bone_spike_eruption", 10, 55, 14, BoneSpell.anim("irons_spellbooks:stomp"), BoneFx::spikeEruption));
+    public static final RegistryObject<AbstractSpell> BONE_SWORD = registerSpell(new BoneSpell("bone_sword", 8, 40, 22, BoneSpell.anim("arcane_addon:fire_bat_combo"), BoneFx::boneSword));
+    public static final RegistryObject<AbstractSpell> BONE_WHIPS = registerSpell(new BoneSpell("bone_whips", 14, 70, 22, BoneSpell.anim("arcane_addon:mana_bone_whips"), BoneFx::boneWhips));
+    public static final RegistryObject<AbstractSpell> RIBCAGE_PRISON = registerSpell(new BoneSpell("ribcage_prison", 20, 70, 20, BoneSpell.anim("arcane_addon:klaus_clench"), BoneFx::ribcage));
+    public static final RegistryObject<AbstractSpell> MARROW_REGENERATION = registerSpell(new BoneSpell("marrow_regeneration", 40, 60, 0, BoneSpell.anim("arcane_addon:mercury_guardian"), BoneFx::regeneration));
+    public static final RegistryObject<AbstractSpell> BONE_THICKET = registerSpell(new BoneSpell("bone_thicket", 22, 90, 14, BoneSpell.anim("irons_spellbooks:touch_ground"), BoneFx::thicket));
+    public static final RegistryObject<AbstractSpell> SPATIAL_CUBE = registerSpell(new BoneSpell("spatial_cube", 26, 90, 26, BoneSpell.anim("arcane_addon:lightning_chain"), BoneFx::spatialCube));
+    public static final RegistryObject<AbstractSpell> BEELZEBUB_UNION = registerSpell(new BoneSpell("beelzebub_union", 100, 150, 0, BoneSpell.anim("arcane_addon:devil_union_awaken"), BoneFx::devilUnion));
+    public static final RegistryObject<AbstractSpell> BONE_SPEAR_STORM = registerSpell(new BoneSpell("bone_spear_storm", 60, 180, 30, BoneSpell.anim("arcane_addon:fire_rain"), BoneFx::spearStorm));
+
+    /** The ten Bone Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> BONE_SPELLS = List.of(
+            BONE_SPEAR_VOLLEY, BONE_SPIKE_ERUPTION, BONE_SWORD, BONE_WHIPS, RIBCAGE_PRISON,
+            MARROW_REGENERATION, BONE_THICKET, SPATIAL_CUBE, BEELZEBUB_UNION, BONE_SPEAR_STORM);
 
     /** The ten Dark Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> DARK_SPELLS = List.of(

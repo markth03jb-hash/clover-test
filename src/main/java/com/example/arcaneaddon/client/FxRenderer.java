@@ -51,7 +51,8 @@ public class FxRenderer {
       {0.42F, 0.45F, 0.5F},    // 11 mercury (liquid chrome)
       {0.0F, 0.06F, 0.3F},     // 12 blue flame
       {0.02F, 0.07F, 0.22F},   // 13 blue lightning (Luck)
-      {0.28F, 0.0F, 0.03F}     // 14 crimson flame (Mereoleona)
+      {0.28F, 0.0F, 0.03F},    // 14 crimson flame (Mereoleona)
+      {0.55F, 0.5F, 0.42F}     // 15 bone (Zenon)
    };
    private static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
@@ -62,7 +63,8 @@ public class FxRenderer {
       {0.86F, 0.92F, 1.0F},    // 11 mercury
       {0.35F, 0.65F, 1.0F},    // 12 blue flame (Calidos Brachium Purgatory)
       {0.45F, 0.72F, 1.0F},    // 13 blue lightning (Luck Voltia)
-      {1.0F, 0.16F, 0.1F}      // 14 crimson flame (Mereoleona Vermillion)
+      {1.0F, 0.16F, 0.1F},     // 14 crimson flame (Mereoleona Vermillion)
+      {0.95F, 0.92F, 0.84F}    // 15 bone (Zenon Zogratis)
    };
    /** Overall strength of every world effect. Lower = subtler. */
    private static final float FX_ALPHA = 1.0F;
@@ -77,6 +79,8 @@ public class FxRenderer {
    private static final java.util.Map<Integer, double[]> DEVIL = new java.util.HashMap<>();
    /** Black Cocoon shells: entity id -> {start, end, radius, close ticks}. Fed by FxPacket shape 15. */
    private static final java.util.Map<Integer, double[]> COCOON = new java.util.HashMap<>();
+   /** Devil Union: Beelzebub (Zenon): entity id -> {start, end}. Fed by shape 31. */
+   private static final java.util.Map<Integer, double[]> BONE_FORM = new java.util.HashMap<>();
    /** Spirit Dive: entity id -> {start, end}. Fed by FxPacket shape 18. */
    private static final java.util.Map<Integer, double[]> SPIRIT = new java.util.HashMap<>();
 
@@ -169,6 +173,17 @@ public class FxRenderer {
             if (p.life > 0) map.put(p.id, new double[]{now0, now0 + p.life});
             else map.remove(p.id);
             if (p.shape == 24) AuraOutlineLayer.set(p.id, 3, p.life);
+         }
+         return;
+      }
+      if (p.shape == 31) {   // Devil Union: Beelzebub - horns and bone wings. id = player, life = ticks left (0 = off)
+         Minecraft mc0 = Minecraft.getInstance();
+         if (mc0.level != null) {
+            double now0 = mc0.level.getGameTime();
+            if (p.life > 0) {
+               double[] f = BONE_FORM.get(p.id);
+               if (f == null || f[1] < now0) BONE_FORM.put(p.id, new double[]{now0, now0 + p.life}); else f[1] = now0 + p.life;
+            } else BONE_FORM.remove(p.id);
          }
          return;
       }
@@ -322,6 +337,7 @@ public class FxRenderer {
 
             while (it.hasNext()) {
                FxRenderer.Fx f = it.next();
+               if (f.p.shape == 30) emitBone(f, now - f.born);
                if (f.p.palette == DARKNESS) emitDarkness(f, now - f.born);
                else if (f.p.palette == WIND) emitWind(f, now - f.born);
                else if (f.p.palette == MERCURY) emitMercury(f, now - f.born);
@@ -779,6 +795,213 @@ public class FxRenderer {
             prev = q;
          }
       }
+   }
+
+   // ------------------------------------------------------------------ bones (Zenon)
+   private static final float[] IVORY = {0.93F, 0.89F, 0.8F}, MARROW = {0.55F, 0.47F, 0.38F};
+
+   /**
+    * BONE: real bone, not a glowing shape. A shaded tube of ivory along a (possibly curved) centre line with a radius
+    * profile for its kind, lit by the key light, darker in the creases and toward the ends.
+    * kinds (p.h): 0 long bone (knobbed condyles at both ends, slim waist), 1 spear (knobbed butt, sharpened point),
+    * 2 spike / horn (thick base, curving to a point), 3 vertebra (short spool with side wings), 4 rib (thin, curved).
+    * c = centre, d = axis, u = the way it bends, r = half length, r2 = radius. speed = mode like spikes (0 pop,
+    * 1 grows out of the ground from its base, 2 extends along its axis, 3 hold). a0 = spin (deg/tick), v / a1 = travel.
+    */
+   private static void boneFx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxRenderer.Fx f, double age, double life) {
+      FxPacket p = f.p;
+      double in = p.sweep > 0 ? Mth.clamp(age / (double)p.sweep, 0.0, 1.0) : 1.0;
+      double out = smooth((life - age) / Math.min(6.0, Math.max(2.0, life * 0.3)));
+      double k = p.speed == FxPacket.HOLD || p.life <= 1 ? 1.0 : (p.speed == FxPacket.POP ? backOut(in) * out : in * out);
+      if (k < 0.01) return;
+      int kind = (int)p.h;
+      Vec3 ax = p.d.normalize();
+      Vec3 bend = p.u.lengthSqr() < 1.0E-4 ? ax.cross(new Vec3(0, 1, 0)) : p.u.subtract(ax.scale(p.u.dot(ax)));
+      if (bend.lengthSqr() < 1.0E-4) bend = ax.cross(new Vec3(1, 0, 0));
+      bend = bend.normalize();
+      double spin = Math.toRadians(p.a0 * age);
+      if (spin != 0.0) {   // spin the bend direction (and everything with it) around the axis
+         Vec3 b2 = ax.cross(bend);
+         bend = bend.scale(Math.cos(spin)).add(b2.scale(Math.sin(spin)));
+      }
+      double L = p.r * 2.0 * (p.speed == FxPacket.POP ? k : (p.speed == FxPacket.HOLD || p.life <= 1 ? 1.0 : k));
+      double R = p.r2 * (p.speed == FxPacket.POP ? k : 1.0);
+      Vec3 c = travelled(f, age);
+      Vec3 start = (p.speed == FxPacket.GROUND || p.speed == FxPacket.EXTEND) ? c.subtract(ax.scale(p.r)) : c.subtract(ax.scale(L * 0.5));
+      int S = kind == 3 ? 6 : 12, SIDES = 8;
+      Vec3[] ctr = new Vec3[S + 1];
+      double[] rad = new double[S + 1];
+      for (int i = 0; i <= S; i++) {
+         double t = (double)i / S;
+         double curve = kind == 2 ? 0.28 * t * t : (kind == 4 ? 0.35 * Math.sin(Math.PI * t) : 0.0);
+         ctr[i] = start.add(ax.scale(L * t)).add(bend.scale(curve * L));
+         double w;
+         switch (kind) {
+            case 1 -> w = t < 0.12 ? 1.25 - t : (t > 0.82 ? Math.max(0.02, (1.0 - t) / 0.18 * 0.85) : 0.62);           // spear: knob butt, sharpened tip
+            case 2 -> w = Math.max(0.02, Math.pow(1.0 - t, 1.3));                                                      // horn: thick base to a point
+            case 3 -> w = 0.8 + 0.25 * Math.cos(Math.PI * 2 * t);                                                     // vertebra: spool
+            case 4 -> w = 0.55 + 0.1 * Math.sin(Math.PI * t);                                                         // rib
+            default -> w = 0.55 + 0.75 * Math.pow(Math.abs(2 * t - 1), 6) + 0.08 * Math.cos(Math.PI * 4 * t);         // long bone: waist and flared ends
+         }
+         rad[i] = R * w;
+      }
+      tube(vc, m, n, cam, ctr, rad, bend, SIDES, kind != 2 && kind != 1);
+      if (kind == 0) {   // the knobbed condyles: two lumps side by side at each end
+         Vec3 side = ax.cross(bend).normalize();
+         for (int e = 0; e <= 1; e++) {
+            Vec3 endC = e == 0 ? ctr[0] : ctr[S];
+            for (int s2 = -1; s2 <= 1; s2 += 2) knob(vc, m, n, cam, endC.add(side.scale(R * 0.55 * s2)).add(ax.scale((e == 0 ? -1 : 1) * R * 0.25)), R * 0.72);
+         }
+      } else if (kind == 1) {
+         knob(vc, m, n, cam, ctr[0].subtract(ax.scale(R * 0.3)), R * 0.85);
+      } else if (kind == 3) {   // the vertebra's wings and spine
+         Vec3 side = ax.cross(bend).normalize();
+         Vec3 mid = ctr[S / 2];
+         for (int s2 = -1; s2 <= 1; s2 += 2) {
+            Vec3[] w = {mid, mid.add(side.scale(R * 2.0 * s2))};
+            tube(vc, m, n, cam, w, new double[]{R * 0.35, R * 0.15}, ax, 6, false);
+         }
+         Vec3[] sp = {mid, mid.add(bend.scale(-R * 1.8)).add(ax.scale(-R * 0.4))};
+         tube(vc, m, n, cam, sp, new double[]{R * 0.32, R * 0.08}, ax, 6, false);
+      }
+   }
+
+   /** Bones bursting out of the ground throw up dust and chips of earth; flying bones shed a little bone dust. */
+   private static void emitBone(FxRenderer.Fx f, double age) {
+      FxPacket p = f.p;
+      java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+      if (p.speed == FxPacket.GROUND && age < 1.0) {
+         Vec3 base = p.c.subtract(p.d.normalize().scale(p.r));
+         for (int i = 0; i < 3; i++) DarkSmoke.dust(base.add(jit(r, p.r2 * 2)), new Vec3(r.nextDouble(-0.08, 0.08), r.nextDouble(0.05, 0.15), r.nextDouble(-0.08, 0.08)), (float)Mth.clamp(p.r2 * 3, 0.3, 0.8), r.nextInt(12, 20));
+      } else if (p.v.lengthSqr() > 0.25 && r.nextInt(4) == 0) {
+         DarkSmoke.dust(travelled(f, age), p.v.scale(-0.05), 0.2F, r.nextInt(8, 12));
+      }
+   }
+
+   /**
+    * Devil Union: Beelzebub - two curved horns of bone growing from the head, and a pair of skeletal wings: three long
+    * bones fanning out from each shoulder blade, joined by a knuckle, beating slowly. They grow in over the first ticks.
+    */
+   private static void boneForm(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Player p, float pt, double now, double[] f) {
+      float grow = (float)(1.0 - Math.pow(1.0 - Mth.clamp((now - f[0]) / 12.0, 0.0, 1.0), 3.0));
+      if (grow <= 0.02F) return;
+      Vec3 base = new Vec3(Mth.lerp((double)pt, p.xo, p.getX()), Mth.lerp((double)pt, p.yo, p.getY()), Mth.lerp((double)pt, p.zo, p.getZ()));
+      boolean self = p == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson();
+      double hy = Math.toRadians(Mth.rotLerp(pt, p.yHeadRotO, p.yHeadRot));
+      Vec3 hf = new Vec3(-Math.sin(hy), 0, Math.cos(hy)), hl = new Vec3(Math.cos(hy), 0, Math.sin(hy));
+      float h = p.getBbHeight();
+      if (!self) {   // horns: from the temples, sweeping back and up, curling forward at the tips
+         for (int s = -1; s <= 1; s += 2) {
+            Vec3 root = base.add(0, h * 0.93, 0).add(hl.scale(0.2 * s)).add(hf.scale(0.05));
+            int S = 8;
+            Vec3[] c = new Vec3[S + 1];
+            double[] r = new double[S + 1];
+            for (int i = 0; i <= S; i++) {
+               double t = (double)i / S * grow;
+               c[i] = root.add(hl.scale(s * 0.18 * t)).add(0, 0.5 * t, 0).add(hf.scale(-0.35 * t + 0.3 * t * t * t));
+               r[i] = 0.075 * Math.max(0.05, 1.0 - (double)i / S);
+            }
+            tube(vc, m, n, cam, c, r, hf, 7, false);
+         }
+      }
+      // skeletal wings from the shoulder blades
+      double by = Math.toRadians(Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot));
+      Vec3 fw = new Vec3(-Math.sin(by), 0.0, Math.cos(by)), lf = new Vec3(Math.cos(by), 0.0, Math.sin(by));
+      double beat = Math.sin(now * (p.onGround() ? 0.12 : 0.35)) * 0.25;
+      for (int s = -1; s <= 1; s += 2) {
+         Vec3 root = base.add(0, h * 0.75, 0).subtract(fw.scale(0.22)).add(lf.scale(0.15 * s));
+         Vec3 arm = lf.scale(s * Math.cos(beat)).add(0, 0.55 + Math.sin(beat), 0).subtract(fw.scale(0.4)).normalize();
+         Vec3 knuckle = root.add(arm.scale(0.8 * grow));
+         tube(vc, m, n, cam, new Vec3[]{root, knuckle}, new double[]{0.07, 0.06}, fw, 7, true);
+         knob(vc, m, n, cam, knuckle, 0.09);
+         for (int k = 0; k < 3; k++) {   // three long finger-bones fanning down and out
+            double fan = -0.2 - k * 0.55;
+            Vec3 d = arm.scale(Math.cos(fan)).add(new Vec3(0, -1, 0).scale(Math.sin(-fan) * 0.9)).subtract(fw.scale(0.2)).normalize();
+            Vec3 tip = knuckle.add(d.scale((1.5 - k * 0.25) * grow));
+            tube(vc, m, n, cam, new Vec3[]{knuckle, knuckle.add(tip.subtract(knuckle).scale(0.5)), tip}, new double[]{0.05, 0.04, 0.012}, fw, 6, false);
+         }
+      }
+   }
+
+   /** A shaded ivory tube along the centre points with the given radii (capped at the ends when caps is true). */
+   private static void tube(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3[] ctr, double[] rad, Vec3 ref, int sides, boolean caps) {
+      int S = ctr.length - 1;
+      Vec3[][] ring = new Vec3[S + 1][sides];
+      Vec3[][] nor = new Vec3[S + 1][sides];
+      for (int i = 0; i <= S; i++) {
+         Vec3 tg = (i < S ? ctr[i + 1].subtract(ctr[i]) : ctr[i].subtract(ctr[i - 1]));
+         if (tg.lengthSqr() < 1.0E-10) tg = new Vec3(0, 1, 0);
+         tg = tg.normalize();
+         Vec3 a = ref.subtract(tg.scale(ref.dot(tg)));
+         if (a.lengthSqr() < 1.0E-6) a = tg.cross(new Vec3(0, 1, 0));
+         if (a.lengthSqr() < 1.0E-6) a = tg.cross(new Vec3(1, 0, 0));
+         a = a.normalize();
+         Vec3 b = tg.cross(a).normalize();
+         for (int j = 0; j < sides; j++) {
+            double th = Math.PI * 2 * j / sides;
+            Vec3 dir = a.scale(Math.cos(th)).add(b.scale(Math.sin(th)));
+            ring[i][j] = ctr[i].add(dir.scale(rad[i]));
+            nor[i][j] = dir;
+         }
+      }
+      for (int i = 0; i < S; i++) {
+         for (int j = 0; j < sides; j++) {
+            int j1 = (j + 1) % sides;
+            Vec3 fc = ring[i][j].add(ring[i + 1][j1]).scale(0.5);
+            Vec3 fn = nor[i][j].add(nor[i + 1][j1]).normalize();
+            if (fn.dot(cam.subtract(fc)) < 0.0) continue;   // back face
+            boneV(vc, m, n, cam, ring[i][j], nor[i][j], (double)i / S);
+            boneV(vc, m, n, cam, ring[i][j1], nor[i][j1], (double)i / S);
+            boneV(vc, m, n, cam, ring[i + 1][j1], nor[i + 1][j1], (double)(i + 1) / S);
+            boneV(vc, m, n, cam, ring[i + 1][j], nor[i + 1][j], (double)(i + 1) / S);
+         }
+      }
+      if (caps) {
+         for (int e = 0; e <= 1; e++) {
+            int i = e == 0 ? 0 : S;
+            Vec3 cn = (e == 0 ? ctr[0].subtract(ctr[1]) : ctr[S].subtract(ctr[S - 1])).normalize();
+            for (int j = 0; j < sides; j++) {
+               int j1 = (j + 1) % sides;
+               boneV(vc, m, n, cam, ctr[i], cn, 0.5);
+               boneV(vc, m, n, cam, ring[i][j], cn, 0.5);
+               boneV(vc, m, n, cam, ring[i][j1], cn, 0.5);
+               boneV(vc, m, n, cam, ctr[i], cn, 0.5);
+            }
+         }
+      }
+   }
+
+   /** A knob of bone (a condyle): a small shaded lump. */
+   private static void knob(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, double R) {
+      int LAT = 5, LON = 8;
+      for (int i = 0; i < LAT; i++) {
+         for (int j = 0; j < LON; j++) {
+            Vec3[] q = new Vec3[4];
+            int[][] ij = {{i, j}, {i, j + 1}, {i + 1, j + 1}, {i + 1, j}};
+            for (int k = 0; k < 4; k++) {
+               double th = Math.PI * ij[k][0] / LAT, ph = Math.PI * 2 * ij[k][1] / LON;
+               q[k] = new Vec3(Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph));
+            }
+            Vec3 qc = q[0].add(q[2]).scale(0.5);
+            if (qc.dot(cam.subtract(c.add(qc.scale(R)))) < 0.0) continue;
+            for (Vec3 nv : q) boneV(vc, m, n, cam, c.add(nv.scale(R)), nv, 0.5);
+         }
+      }
+   }
+
+   /** One vertex of bone: ivory lit by the key light, with soft ambient, a hint of sheen, darker toward the very ends. */
+   private static void boneV(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, Vec3 nrm, double t) {
+      float lam = (float)Math.max(0.0, nrm.dot(LIGHT));
+      Vec3 view = cam.subtract(w).normalize();
+      float rimL = (float)Math.pow(1.0 - Math.max(0.0, nrm.dot(view)), 3.0);
+      float sheen = (float)Math.pow(Math.max(0.0, nrm.dot(LIGHT.add(view).normalize())), 18.0) * 0.18F;
+      float ao = (float)(0.85 + 0.15 * Math.sin(Math.PI * Mth.clamp(t, 0.0, 1.0)));
+      float k = (0.38F + 0.62F * lam) * ao;
+      float[] col = {
+         Mth.clamp(MARROW[0] + (IVORY[0] - MARROW[0]) * k + sheen - rimL * 0.12F, 0, 1),
+         Mth.clamp(MARROW[1] + (IVORY[1] - MARROW[1]) * k + sheen - rimL * 0.13F, 0, 1),
+         Mth.clamp(MARROW[2] + (IVORY[2] - MARROW[2]) * k + sheen - rimL * 0.14F, 0, 1)};
+      vtx(vc, m, n, cam, w, col, 1.0F);
    }
 
    /** A soft round glow facing the camera: bright in the middle, fading to nothing at radius R (additive). */
@@ -1440,6 +1663,9 @@ public class FxRenderer {
                         break;
                      case 29:
                         gustFx(m, cam, f.p, age, life);
+                        break;
+                     case 30:
+                        boneFx(vc, m, n, cam, f, age, life);
                   }
                   lightPal = -1;
                }
@@ -1455,6 +1681,8 @@ public class FxRenderer {
                   if (form != null) devilForm(vc, m, n, cam, p, pt, now, form);
                   double[] sp = SPIRIT.get(p.getId());
                   if (sp != null) spiritForm(vc, m, n, cam, p, pt, now, sp);
+                  double[] bf = BONE_FORM.get(p.getId());
+                  if (bf != null && now <= bf[1]) boneForm(vc, m, n, cam, p, pt, now, bf);
                   double[] th = THUNDER.get(p.getId()), gl = GLOVES.get(p.getId());
                   boolean thOn = th != null && now <= th[1], glOn = gl != null && now <= gl[1];
                   if (thOn || glOn) thunderBody(m, cam, p, pt, now, thOn, glOn);
@@ -1825,7 +2053,7 @@ public class FxRenderer {
          if (Math.abs(p.r - np.r) > Math.max(0.05, np.r * 0.25) || Math.abs(p.r2 - np.r2) > Math.max(0.05, Math.abs(np.r2) * 0.25)) continue;
          double age = nf.born - f.born;
          if (age < 0.5 || age > 3.0) continue;
-         Vec3 at = (p.shape == 7 || p.shape == 8) ? travelled(f, age) : p.c.add(p.v.scale(mv(p, age)));
+         Vec3 at = (p.shape == 7 || p.shape == 8 || p.shape == 30) ? travelled(f, age) : p.c.add(p.v.scale(mv(p, age)));
          double d = at.distanceTo(np.c);
          double tol = 0.6 + np.v.length() * 0.6;
          if (d < tol && d < bestD) { bestD = d; best = f; }

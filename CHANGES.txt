@@ -1,7 +1,24 @@
-Arcane Addon v1.34.1 - all changed files since v1.0.0
+Arcane Addon v1.35.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.35.0
+- NEW: Bone Grimoire (Zenon Zogratis' Bone Magic, with Beelzebub's spatial magic). Bones are drawn as real bone:
+  shaded ivory tubes with knobbed ends, sharpened spear points, curved spikes, ribs and vertebrae, lit by the
+  light, dust kicked up where they burst out of the ground. Crafting: bone block, skeleton skull, bone block /
+  arcane ingot, enchanted book, arcane ingot / bone block, ender pearl, bone block.
+  1 Bone Spear Volley     - a bunch of bone spears thrown at once
+  2 Bone Spike Eruption   - spikes of bone burst up in a line ahead
+  3 Bone Sword            - a sword of bone in your hand, three cuts
+  4 Bone Whips            - whips of vertebrae lash from your back
+  5 Ribcage Prison        - giant ribs close over your target
+  6 Marrow Regeneration   - bone plates and fast healing
+  7 Bone Thicket          - a tangle of bones catches everything in an area
+  8 Spatial Cube          - a cube of space holds your target, then folds in
+  9 Devil Union: Beelzebub - horns and skeletal wings; stronger bones
+  10 Bone Spear Storm     - bone spears pour from a cube of space in the sky
+  Passive Endless Bone: you regrow health while hurt.
 
 NEW IN 1.34.1
 - Stance animations made seamless: the samurai and Thunder God idles now loop natively (no restart hitch at the
