@@ -52,6 +52,15 @@ public class FxSend {
         return p.id;
     }
 
+    /** A slash with a chosen blade thickness ({@code thick} 1 = normal, 2 = twice as thick). */
+    public static int slash(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float r, float r2, int life, float speed, float thick) {
+        FxPacket p = new FxPacket();
+        p.shape = FxPacket.SLASH; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life;
+        p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = r2; p.speed = speed; p.h = thick;
+        send(sl, c, p);
+        return p.id;
+    }
+
     /** A trail segment: like a beam but the same width end to end, so per-tick segments join into one smooth streak. */
     public static void trail(ServerLevel sl, int pal, Vec3 p0, Vec3 p1, float width, int life) {
         FxPacket p = new FxPacket();

@@ -1,0 +1,181 @@
+package com.example.arcaneaddon.client;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
+/**
+ * Yami's darkness: the addon's own soft, billowing smoke (not Minecraft particles). Puffs of black smoke curl off every
+ * Dark Grimoire effect, swell and thin out as they rise, and small violet motes drift up through them.
+ * Also drives Black Blade's subtle aura: violet motes rising off the body (FxPacket shape 16).
+ */
+public final class DarkSmoke {
+    private DarkSmoke() {}
+
+    private static final ResourceLocation SMOKE = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/dark_smoke.png");
+    private static final ResourceLocation MOTE = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/dark_mote.png");
+    private static final int MAX = 900;
+
+    private static final class Puff {
+        double x, y, z, vx, vy, vz, born, life;
+        float s0, s1, rot, spin;
+        boolean mote;
+        float shade;
+    }
+
+    private static final List<Puff> PUFFS = new ArrayList<>();
+    /** Black Blade motes: entity id -> end tick. */
+    private static final Map<Integer, Double> BODY = new HashMap<>();
+
+    /** One puff of black smoke at {@code at}, drifting with {@code vel} (blocks per tick). */
+    public static void smoke(Vec3 at, Vec3 vel, float size, int life) {
+        add(at, vel, size * 0.6F, size * 1.5F, life, false);
+    }
+
+    /** One small violet mote. */
+    public static void mote(Vec3 at, Vec3 vel, float size, int life) {
+        add(at, vel, size, size * 0.4F, life, true);
+    }
+
+    private static void add(Vec3 at, Vec3 vel, float s0, float s1, int life, boolean mote) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        if (PUFFS.size() >= MAX) PUFFS.remove(0);
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        Puff p = new Puff();
+        p.x = at.x; p.y = at.y; p.z = at.z; p.vx = vel.x; p.vy = vel.y; p.vz = vel.z;
+        p.born = mc.level.getGameTime(); p.life = life; p.s0 = s0; p.s1 = s1;
+        p.rot = r.nextFloat() * 6.283F; p.spin = (r.nextFloat() - 0.5F) * 0.12F;
+        p.mote = mote; p.shade = r.nextFloat();
+        PUFFS.add(p);
+    }
+
+    /** Black Blade's aura: violet motes rising off the player for {@code life} ticks (0 = stop). */
+    public static void body(int id, int life) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        double now = mc.level.getGameTime();
+        if (life <= 0) { BODY.remove(id); return; }
+        boolean fresh = !BODY.containsKey(id);
+        BODY.put(id, now + life);
+        Entity e = mc.level.getEntity(id);
+        if (fresh && e != null) for (int k = 0; k < 14; k++) bodyMote(e, 1.6);   // a soft burst as the blade is coated
+    }
+
+    private static void bodyMote(Entity e, double push) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        double w = e.getBbWidth() * 0.5;
+        double a = r.nextDouble(Math.PI * 2);
+        Vec3 at = e.position().add(Math.cos(a) * w * r.nextDouble(0.6, 1.1), r.nextDouble(0.1, e.getBbHeight() * 0.95), Math.sin(a) * w * r.nextDouble(0.6, 1.1));
+        Vec3 v = new Vec3(Math.cos(a) * 0.012 * push, r.nextDouble(0.018, 0.045), Math.sin(a) * 0.012 * push);
+        mote(at, v, (float) r.nextDouble(0.05, 0.1), r.nextInt(18, 34));
+    }
+
+    public static void tick() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) { PUFFS.clear(); BODY.clear(); return; }
+        double now = mc.level.getGameTime();
+        Iterator<Puff> it = PUFFS.iterator();
+        while (it.hasNext()) {
+            Puff p = it.next();
+            if (now - p.born > p.life) { it.remove(); continue; }
+            p.x += p.vx; p.y += p.vy; p.z += p.vz;
+            double drag = p.mote ? 0.96 : 0.88;
+            p.vx *= drag; p.vz *= drag; p.vy = p.vy * drag + (p.mote ? 0.0015 : 0.004);   // darkness rises slowly
+            p.rot += p.spin;
+        }
+        Iterator<Map.Entry<Integer, Double>> bi = BODY.entrySet().iterator();
+        while (bi.hasNext()) {
+            Map.Entry<Integer, Double> b = bi.next();
+            Entity e = mc.level.getEntity(b.getKey());
+            if (e == null || now > b.getValue()) { bi.remove(); continue; }
+            if (e.isInvisible()) continue;
+            if (e == mc.player && mc.options.getCameraType().isFirstPerson() && ThreadLocalRandom.current().nextInt(3) != 0) continue;
+            bodyMote(e, 1.0);
+            if (ThreadLocalRandom.current().nextInt(4) == 0) bodyMote(e, 1.0);
+        }
+    }
+
+    public static void render(PoseStack ps, Camera camera, MultiBufferSource.BufferSource buf, float pt) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || PUFFS.isEmpty()) return;
+        Vec3 cam = camera.getPosition();
+        double now = mc.level.getGameTime() + pt;
+        Vector3f lf = camera.getLeftVector(), up = camera.getUpVector();
+        Vec3 L = new Vec3(lf.x(), lf.y(), lf.z()), U = new Vec3(up.x(), up.y(), up.z());
+        List<Puff> sorted = new ArrayList<>(PUFFS);
+        sorted.sort((a, b) -> Double.compare(d2(b, cam), d2(a, cam)));   // far to near
+        Matrix4f m = ps.last().pose();
+        Matrix3f n = ps.last().normal();
+        RenderType st = RenderType.entityTranslucentEmissive(SMOKE), mt = RenderType.entityTranslucentEmissive(MOTE);
+        VertexConsumer vs = buf.getBuffer(st);
+        for (Puff p : sorted) {
+            if (p.mote) continue;
+            draw(vs, m, n, cam, L, U, p, now, pt);
+        }
+        buf.endBatch(st);
+        VertexConsumer vm = buf.getBuffer(mt);
+        for (Puff p : sorted) {
+            if (!p.mote) continue;
+            draw(vm, m, n, cam, L, U, p, now, pt);
+        }
+        buf.endBatch(mt);
+    }
+
+    private static double d2(Puff p, Vec3 cam) {
+        double dx = p.x - cam.x, dy = p.y - cam.y, dz = p.z - cam.z;
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    private static void draw(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 L, Vec3 U, Puff p, double now, float pt) {
+        double age = now - p.born;
+        if (age < 0 || age > p.life) return;
+        double t = age / p.life;
+        Vec3 c = new Vec3(p.x + p.vx * pt, p.y + p.vy * pt, p.z + p.vz * pt);
+        double dist = c.distanceTo(cam);
+        float near = (float) Mth.clamp((dist - 0.6) / 1.8, 0.0, 1.0);   // never smother the camera
+        if (near <= 0.01F) return;
+        float size = (float) (p.s0 + (p.s1 - p.s0) * (1.0 - Math.pow(1.0 - t, 2.0)));
+        float a, cr, cg, cb;
+        if (p.mote) {
+            a = (float) (Mth.clamp(age / 3.0, 0.0, 1.0) * Math.pow(1.0 - t, 0.7)) * (0.75F + 0.25F * (float) Math.sin(now * 0.8 + p.shade * 9));
+            cr = 0.62F + 0.3F * p.shade; cg = 0.22F + 0.2F * p.shade; cb = 1.0F;
+        } else {
+            a = (float) (Mth.clamp(age / 2.5, 0.0, 1.0) * Math.pow(1.0 - t, 1.3)) * 0.85F;
+            // near-black with a faint violet tint in the youngest puffs
+            float tint = (float) Math.max(0.0, 1.0 - t * 2.5) * 0.14F;
+            cr = 0.015F + tint * 0.55F; cg = 0.0F + tint * 0.12F; cb = 0.035F + tint;
+        }
+        a *= near;
+        if (a <= 0.01F) return;
+        float cs = Mth.cos(p.rot), sn = Mth.sin(p.rot);
+        Vec3 ax = L.scale(cs).add(U.scale(sn)).scale(size), ay = L.scale(-sn).add(U.scale(cs)).scale(size);
+        v(vc, m, n, cam, c.subtract(ax).subtract(ay), cr, cg, cb, a, 0, 1);
+        v(vc, m, n, cam, c.add(ax).subtract(ay), cr, cg, cb, a, 1, 1);
+        v(vc, m, n, cam, c.add(ax).add(ay), cr, cg, cb, a, 1, 0);
+        v(vc, m, n, cam, c.subtract(ax).add(ay), cr, cg, cb, a, 0, 0);
+    }
+
+    private static void v(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, float r, float g, float b, float a, float u, float vv) {
+        vc.vertex(m, (float) (w.x - cam.x), (float) (w.y - cam.y), (float) (w.z - cam.z))
+                .color(r, g, b, Mth.clamp(a, 0.0F, 1.0F)).uv(u, vv).overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(15728880).normal(n, 0.0F, 1.0F, 0.0F).endVertex();
+    }
+}

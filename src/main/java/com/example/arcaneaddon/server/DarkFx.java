@@ -62,7 +62,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @Mod.EventBusSubscriber(modid = ArcaneAddon.MODID)
 public class DarkFx {
-    private static final int D = Fx.DARK, S = Fx.SILVER;
+    private static final int D = Fx.YAMI, S = Fx.SILVER;
 
     // ------------------------------------------------------------------ state
     private static final Map<UUID, Long> BLADE = new HashMap<>();          // Black Blade active until
@@ -156,10 +156,10 @@ public class DarkFx {
         FxSend.ring(sl, D, p.position().add(0, 0.05, 0), (float) ZONE_R - 0.2f, (float) ZONE_R, 0.7f, 10);
     }
 
-    /** Black Blade's aura outline around your body (client AuraOutlineLayer), for everyone who can see you. */
+    /** Black Blade's aura: small violet motes rising off your body (client DarkSmoke), for everyone who can see you. */
     private static void sendAura(ServerPlayer p, int life) {
         com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
-        pkt.shape = 14; pkt.id = p.getId(); pkt.palette = 0; pkt.life = life;
+        pkt.shape = 16; pkt.id = p.getId(); pkt.palette = 0; pkt.life = life;
         com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
@@ -193,19 +193,12 @@ public class DarkFx {
     public static void blackBlade(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         BLADE.put(p.getUUID(), sl.getGameTime() + 20 * 20);
-        sendAura(p, 20 * 20);
-        for (int k = 0; k < 6; k++) {
-            final int kk = k;
-            AstaFx.later(k * 2, () -> {
-                if (alive(p)) FxSend.ring(sl, D, p.position().add(0, 0.1 + kk * 0.36, 0), 1.0f - kk * 0.1f, 0.45f, 0.22f, 8);
-            });
-        }
-        AstaFx.later(10, () -> {   // the blade raised high: the coat settles over it
+        AstaFx.later(10, () -> {   // the blade raised high: darkness coats it, and violet motes start rising off you
             if (!alive(p)) return;
-            Vec3 h = handPos(p).add(0, 0.6, 0), d = p.getLookAngle(), rt = rightOf(d);
-            FxLib.flash(sl, D, h, 0.8f);
-            FxSend.wall(sl, D, h, rt, rt.cross(d).normalize(), 0.3f, 1.8f, -180, 180, 0.08f, 7, 0, 0);
-            FxSend.beam(sl, S, h, h.add(d.scale(0.3)).add(0, 1.2, 0), 0.06f, 4);   // one glint along the edge as the coat settles
+            sendAura(p, 20 * 20 - 10);
+            Vec3 h = handPos(p).add(0, 0.6, 0), d = p.getLookAngle();
+            FxSend.beam(sl, D, h, h.add(d.scale(0.3)).add(0, 1.2, 0), 0.12f, 6);   // a breath of darkness along the blade
+            FxSend.beam(sl, S, h, h.add(d.scale(0.3)).add(0, 1.2, 0), 0.03f, 4);   // one glint along the edge as the coat settles
             sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 0.8f, 0.6f);
         });
         if (inZone(p)) zoneMsg(p, "black_blade");
@@ -271,8 +264,8 @@ public class DarkFx {
             // the draw and the release: one clean, solid slash - a black blade of darkness with a white-hot edge,
             // drawn left to right as you cut, flying forward and growing as it goes
             Vec3 o = start.add(dir.scale(1.2));
-            FxSend.slash(sl, D, start.add(dir.scale(0.6)), dir, rt, 2.2f, 2.6f, 5, 0f);      // the swing itself, at your blade
-            FxSend.slash(sl, D, o, dir, rt, 3.0f, 8.5f, 16, SPEED);                          // the slash that flies
+            FxSend.slash(sl, D, start.add(dir.scale(0.8)), dir, rt, 2.8f, 3.4f, 6, 0f, 2.0f);   // the swing itself, at your blade
+            FxSend.slash(sl, D, o, dir, rt, 4.5f, 13.0f, 18, SPEED, 2.4f);                       // the slash that flies: big and thick
             // after it passes: a white hairline left through space, and the tears where space was cut
             AstaFx.later(3, () -> {
                 FxSend.beam(sl, S, o, end, 0.05f, 10);
@@ -1013,12 +1006,6 @@ public class DarkFx {
             if (now > blade) { BLADE.remove(id); sendAura(p, 0); }
             else {
                 if (now % 40 == 0) sendAura(p, (int) (blade - now));   // keep it showing for anyone who arrives later
-                if (now % 8 == 0) {   // wisps of darkness rising off the aura
-                    ThreadLocalRandom r = ThreadLocalRandom.current();
-                    double a = r.nextDouble(Math.PI * 2);
-                    Vec3 w0 = p.position().add(Math.cos(a) * 0.45, r.nextDouble(0.2, 1.5), Math.sin(a) * 0.45);
-                    FxSend.trail(sl, D, w0, w0.add(Math.cos(a) * 0.15, 0.6, Math.sin(a) * 0.15), 0.08f, 6);
-                }
             }
         }
 

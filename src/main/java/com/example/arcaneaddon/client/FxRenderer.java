@@ -46,13 +46,15 @@ public class FxRenderer {
       {0.07F, 0.07F, 0.09F},
       {0.09F, 0.10F, 0.12F},   // 7 steel
       {0.16F, 0.10F, 0.02F},   // 8 gold
-      {0.07F, 0.0F, 0.0F}      // 9 devil red (devil form)
+      {0.07F, 0.0F, 0.0F},     // 9 devil red (devil form)
+      {0.015F, 0.0F, 0.035F}   // 10 Yami's darkness
    };
    private static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
       {0.78F, 0.85F, 0.94F},   // 7 steel
       {1.0F, 0.84F, 0.36F},    // 8 gold
-      {1.0F, 0.07F, 0.05F}     // 9 devil red (devil form)
+      {1.0F, 0.07F, 0.05F},    // 9 devil red (devil form)
+      {0.6F, 0.2F, 1.0F}       // 10 Yami's darkness (smoke comes off everything drawn in it)
    };
    /** Overall strength of every world effect. Lower = subtler. */
    private static final float FX_ALPHA = 1.0F;
@@ -105,6 +107,10 @@ public class FxRenderer {
                f[1] = Math.min(f[1], now0);                                                         // start fading out
             }
          }
+         return;
+      }
+      if (p.shape == 16) {  // Black Blade: violet motes off the body. id = player, life = ticks left (0 = off)
+         DarkSmoke.body(p.id, p.life);
          return;
       }
       if (p.shape == 15) {  // Black Cocoon: id = player, life = ticks left (0 = burst now), r = radius, sweep = ticks to close
@@ -191,9 +197,22 @@ public class FxRenderer {
          } else {
             double now = (double)mc.level.getGameTime();
             Iterator<FxRenderer.Fx> it = FX.iterator();
+            DarkSmoke.tick();
+            for (java.util.Map.Entry<Integer, double[]> ce : COCOON.entrySet()) {   // darkness seeping off the cocoon
+               double[] cf = ce.getValue();
+               net.minecraft.world.entity.Entity ent = mc.level.getEntity(ce.getKey());
+               if (ent == null || now > cf[1] || now < cf[0] + cf[3]) continue;
+               java.util.concurrent.ThreadLocalRandom rr = java.util.concurrent.ThreadLocalRandom.current();
+               Vec3 cc = ent.position().add(0.0, ent.getBbHeight() * 0.5, 0.0);
+               for (int k = 0; k < 2; k++) {
+                  Vec3 nrm = jit(rr, 1.0).normalize();
+                  DarkSmoke.smoke(cc.add(nrm.scale(cf[2])), nrm.scale(0.03).add(0, 0.015, 0), 0.45F, rr.nextInt(14, 24));
+               }
+            }
 
             while (it.hasNext()) {
                FxRenderer.Fx f = it.next();
+               if (f.p.palette == DARKNESS) emitDarkness(f, now - f.born);
                double life = f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life;
                if (now - f.born > life + 1.0) {
                   it.remove();
@@ -201,6 +220,83 @@ public class FxRenderer {
             }
          }
       }
+   }
+
+   private static final int DARKNESS = 10;
+
+   /**
+    * Yami's darkness: every effect drawn in palette 10 sheds real smoke while it lives - black puffs curling off the
+    * blade edge of slashes and crescents, along beams and trails, around walls and spikes - plus the odd violet mote.
+    */
+   private static void emitDarkness(FxRenderer.Fx f, double age) {
+      FxPacket p = f.p;
+      double life = f.killAge >= 0.0 ? f.killAge : (double)p.life;
+      if (age < 0.0 || age > life) return;
+      java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+      double frac = Mth.clamp(age / Math.max(1.0, life), 0.0, 1.0);
+      int burst = age < 1.0 ? 2 : 1;
+      switch (p.shape) {
+         case 13: {   // slash: smoke streams off the back of the blade
+            double grow = 1.0 - Math.pow(1.0 - Mth.clamp(age / (life * 0.45), 0.0, 1.0), 3.0);
+            double R = p.r + (p.r2 - p.r) * grow;
+            Vec3 c = p.c.add(p.d.scale(p.speed * age));
+            int k = (int)Mth.clamp(R * 1.2, 3, 9) * burst;
+            for (int i = 0; i < k; i++) {
+               double fd = Math.toRadians(r.nextDouble(-70, 70));
+               Vec3 o = c.add(p.u.scale(Math.sin(fd) * R)).add(p.d.scale((Math.cos(fd) - 1.0) * R * 0.35 - R * 0.08));
+               float sz = (float)Mth.clamp(R * 0.14 * Math.cos(fd), 0.25, 1.6);
+               DarkSmoke.smoke(o, p.d.scale(p.speed * 0.25).add(jit(r, 0.04)), sz, r.nextInt(12, 22));
+            }
+            if (r.nextInt(2) == 0) DarkSmoke.mote(c.add(jit(r, R * 0.4)), jit(r, 0.05).add(0, 0.03, 0), 0.09F, 20);
+            break;
+         }
+         case 1: {    // crescent
+            float R = p.r + (p.r2 - p.r) * (float)frac;
+            Vec3 c = p.c.add(p.d.scale(p.speed * age));
+            int k = (int)Mth.clamp(R * 1.5, 2, 7) * burst;
+            for (int i = 0; i < k; i++) {
+               double fd = Math.toRadians(r.nextDouble(-70, 70));
+               Vec3 o = c.add(p.u.scale(Math.sin(fd) * R)).add(p.d.scale((Math.cos(fd) - 1.0) * R * 0.55 - R * 0.2));
+               DarkSmoke.smoke(o, p.d.scale(p.speed * 0.2).add(jit(r, 0.03)), (float)Mth.clamp(R * 0.2, 0.2, 1.4), r.nextInt(10, 18));
+            }
+            break;
+         }
+         case 2: {    // beam / trail: smoke along it, mostly while it's fresh
+            if (age > 3.0 && r.nextInt(3) != 0) break;
+            double len = p.d.length();
+            int k = (int)Mth.clamp(len * 0.6, 1, 6);
+            for (int i = 0; i < k; i++) {
+               Vec3 o = p.c.add(p.d.scale(r.nextDouble()));
+               DarkSmoke.smoke(o, jit(r, 0.02).add(0, 0.01, 0), (float)Mth.clamp(p.r * 2.2 + 0.15, 0.15, 1.3), r.nextInt(10, 20));
+            }
+            break;
+         }
+         case 0: {    // wall / ring: smoke rising off the arc
+            float R = p.r + (p.r2 - p.r) * (float)frac;
+            Vec3 c = p.c.add(p.d.scale(p.speed * age));
+            double span = p.a1 - p.a0;
+            double want = Mth.clamp(R * Math.abs(span) / 360.0 * Mth.clamp(p.h * 2.0, 0.1, 1.0), 0.0, 6.0);
+            int k = (int)want + (r.nextDouble() < want - (int)want ? 1 : 0);   // thin rings smoke only a little
+            for (int i = 0; i < k; i++) {
+               double th = Math.toRadians(p.a0 + span * r.nextDouble());
+               Vec3 o = c.add(p.d.scale(Math.cos(th) * R)).add(p.u.scale(Math.sin(th) * R));
+               DarkSmoke.smoke(o, o.subtract(c).normalize().scale(0.03).add(0, 0.02, 0), (float)Mth.clamp(p.h * 0.9 + 0.2, 0.2, 1.4), r.nextInt(10, 20));
+            }
+            break;
+         }
+         case 7:
+         case 8: {    // boxes / spikes: smoke off their length
+            Vec3 c = p.c.add(p.v.scale(Math.min(age, p.a1 > 0 ? p.a1 : age)));
+            Vec3 o = c.add(p.d.scale(p.r * (p.shape == 8 ? r.nextDouble() : r.nextDouble(-1, 1))));
+            DarkSmoke.smoke(o, jit(r, 0.03).add(0, 0.015, 0), (float)Mth.clamp(p.r2 * 2.0, 0.2, 1.0), r.nextInt(10, 18));
+            break;
+         }
+         default:
+      }
+   }
+
+   private static Vec3 jit(java.util.concurrent.ThreadLocalRandom r, double s) {
+      return new Vec3(r.nextDouble(-s, s), r.nextDouble(-s, s), r.nextDouble(-s, s));
    }
 
    private static void vtx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, float[] col, float a) {
@@ -444,6 +540,7 @@ public class FxRenderer {
             buf.endBatch(rt);
             GLOW_SRC.endBatch(GlowRenderType.GLOW);
             gv = null;
+            DarkSmoke.render(ps, e.getCamera(), buf, pt);
             if (!PAGES.isEmpty()) {   // turning pages, drawn with the book's own page art (front = right page, back = left page)
                for (int side = 0; side < 2; side++) {
                   RenderType prt = RenderType.entityCutout(side == 0 ? PAGE_R : PAGE_L);
@@ -975,6 +1072,7 @@ public class FxRenderer {
       Vec3 d = p.d, u = p.u;
       float[] black = new float[]{0.01F, 0.0F, 0.015F};
       float[] rim = RIM[p.palette], hc = new float[]{1.0F, 0.97F, 0.95F};
+      double thick = p.h > 0.0F ? p.h : 1.0;   // h = how thick the blade is (1 = normal)
       int N = 24;
       double a0deg = -80.0, span = 160.0 * reveal;
       for (int i = 0; i < N; i++) {
@@ -989,6 +1087,13 @@ public class FxRenderer {
          quad(vc, m, n, cam, o0, o1, i1, i0, black, 0.97F * fade, 0.97F * fade, 0.97F * fade, 0.97F * fade);
          // a short smoky wake behind it
          quad(vc, m, n, cam, i0, i1, i1.subtract(d.scale(w1 * 1.4)), i0.subtract(d.scale(w0 * 1.4)), black, 0.45F * fade, 0.45F * fade, 0.0F, 0.0F);
+         // depth: the blade is also wide across its own plane, so it reads as a thick cut from behind, not a hairline
+         Vec3 hx = d.cross(u).normalize();
+         double k0 = w0 * 0.55 * thick, k1 = w1 * 0.55 * thick;
+         Vec3 m0 = o0.subtract(d.scale(w0 * 0.3)), m1 = o1.subtract(d.scale(w1 * 0.3));
+         quad(vc, m, n, cam, m0.add(hx.scale(k0)), m1.add(hx.scale(k1)), m1.subtract(hx.scale(k1)), m0.subtract(hx.scale(k0)), black, 0.92F * fade, 0.92F * fade, 0.92F * fade, 0.92F * fade);
+         gquad(m, cam, m0.add(hx.scale(k0)), m1.add(hx.scale(k1)), m1.add(hx.scale(k0 * 1.6)), m0.add(hx.scale(k0 * 1.6)), rim, 0.4F * fade, 0.4F * fade, 0.0F, 0.0F);
+         gquad(m, cam, m0.subtract(hx.scale(k0)), m1.subtract(hx.scale(k1)), m1.subtract(hx.scale(k0 * 1.6)), m0.subtract(hx.scale(k0 * 1.6)), rim, 0.4F * fade, 0.4F * fade, 0.0F, 0.0F);
          // the white-hot cutting edge and a thin coloured glow ahead of it
          double e0 = Math.max(0.02, w0 * 0.16), e1 = Math.max(0.02, w1 * 0.16);
          gquad(m, cam, o0.add(d.scale(e0 * 0.5)), o1.add(d.scale(e1 * 0.5)), o1.subtract(d.scale(e1)), o0.subtract(d.scale(e0)), hc, fade, fade, fade, fade);

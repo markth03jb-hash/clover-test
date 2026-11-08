@@ -1,7 +1,15 @@
-Arcane Addon v1.22.0 - all changed files since v1.0.0
+Arcane Addon v1.23.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.23.0
+- Yami's moves are now real darkness: every Dark Grimoire effect sheds soft, billowing black
+  smoke with drifting violet motes (the addon's own smoke, not Minecraft particles), and
+  Black Cocoon seeps darkness while it's closed. Smoke near the camera fades so you can still see.
+- Dimension Slash: the slash is much bigger (up to 13 blocks) and has real thickness, so it reads
+  as a heavy cut from behind instead of a thin line
+- Black Blade: no more body outline - just small violet motes rising off your body
 
 NEW IN 1.22.0
 - Dark Grimoire: every move has its own animation, timed to its effect
