@@ -209,35 +209,91 @@ public class SteelFx {
     }
 
     // ================================================================== 3. Steel Castle's Armored Wall
-    /** Five steel slabs slam up out of the ground one after another, then a gold-trimmed battlement locks on top. */
+    private static final int WALL_TICKS = 240, WALL_SLABS = 3;   // 12 s; slabs from -3..3 (7 wide, ~6 blocks)
+    private static final double WALL_HALF = WALL_SLABS * 0.86 + 0.45;
+
+    /**
+     * Seven steel slabs slam up out of the ground one after another, then a gold-trimmed battlement locks on top.
+     * The slabs erupt under anyone standing in front of the wall (damage, thrown up and back). For 12 s the wall stops
+     * every attack and projectile from in front - for you and anyone behind it - throws arrows and spells back the way
+     * they came, and enemies can't walk through it.
+     */
     public static void armoredWall(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         Vec3 n = flat(p.getLookAngle());
         Vec3 c0 = p.position().add(n.scale(2.2));
         Vec3 c = new Vec3(c0.x, floorY(sl, c0.x, p.getY(), c0.z), c0.z);
-        WALLS.put(p.getUUID(), new Wall(c, n, sl.getGameTime() + 160));
+        WALLS.put(p.getUUID(), new Wall(c, n, sl.getGameTime() + WALL_TICKS));
         Vec3 r = FxLib.right(n);
-        for (int i = -2; i <= 2; i++) {
+        for (int i = -WALL_SLABS; i <= WALL_SLABS; i++) {
             final int k = i, delay = Math.abs(i);
             AstaFx.later(delay, () -> {
                 Vec3 b = c.add(r.scale(k * 0.86));
-                FxSend.box(sl, ST, b.add(0, 1.5, 0), r, UP, 0.42f, 0.17f, 1.5f, 160 - delay, 4, GROUND);
-                FxSend.box(sl, ST, b.add(n.scale(0.19)).add(0, 1.5, 0), UP, n, 1.35f, 0.05f, 0.025f, 156 - delay, 7, POP);   // raised rib down the slab
-                FxLib.groundPuff(sl, ST, b, 0.9f);
+                FxSend.box(sl, ST, b.add(0, 1.9, 0), r, UP, 0.42f, 0.2f, 1.9f, WALL_TICKS - delay, 4, GROUND);
+                FxSend.box(sl, ST, b.add(n.scale(0.22)).add(0, 1.9, 0), UP, n, 1.7f, 0.05f, 0.025f, WALL_TICKS - 4 - delay, 7, POP);   // raised rib down the slab
+                FxLib.groundPuff(sl, ST, b, 1.0f);
+                // the slab erupts under whoever stands in front of it
+                for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(b, b).inflate(1.4, 2.5, 1.4).move(n.scale(0.9)),
+                        x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {
+                    AstaFx.damage(p, t, power * 0.6f, "steel_castle_wall");
+                    t.setDeltaMovement(t.getDeltaMovement().add(n.scale(0.9)).add(0, 0.7, 0));
+                    t.hurtMarked = true;
+                    FxLib.spark(sl, ST, t.position().add(0, 0.5, 0), 0.9f);
+                }
                 sound(sl, b, SoundEvents.ANVIL_PLACE, 0.5f, 0.55f + delay * 0.08f);
             });
         }
         AstaFx.later(5, () -> {
-            FxSend.box(sl, GD, c.add(0, 3.06, 0), r, UP, 2.2f, 0.23f, 0.07f, 155, 3, POP);   // gold trim
-            for (int j = -2; j <= 2; j += 2) {                                                  // battlements
-                FxSend.box(sl, ST, c.add(r.scale(j * 0.86)).add(0, 3.38, 0), r, UP, 0.3f, 0.18f, 0.26f, 154, 3, POP);
+            FxSend.box(sl, GD, c.add(0, 3.86, 0), r, UP, (float) WALL_HALF, 0.25f, 0.08f, WALL_TICKS - 5, 3, POP);   // gold trim
+            for (int j = -WALL_SLABS; j <= WALL_SLABS; j += 2) {                                                       // battlements
+                FxSend.box(sl, ST, c.add(r.scale(j * 0.86)).add(0, 4.2, 0), r, UP, 0.3f, 0.2f, 0.28f, WALL_TICKS - 6, 3, POP);
             }
             // the castle crest: a gold diamond on the front
-            FxSend.box(sl, GD, c.add(n.scale(0.24)).add(0, 1.9, 0), r.add(UP).normalize(), n, 0.3f, 0.3f, 0.04f, 154, 4, POP);
+            FxSend.box(sl, GD, c.add(n.scale(0.27)).add(0, 2.3, 0), r.add(UP).normalize(), n, 0.36f, 0.36f, 0.04f, WALL_TICKS - 6, 4, POP);
             sound(sl, c, SoundEvents.IRON_DOOR_CLOSE, 1f, 0.6f);
         });
-        FxLib.shockRing(sl, ST, c.add(0, 0.05, 0), 1.2f);
+        FxLib.shockRing(sl, ST, c.add(0, 0.05, 0), 1.5f);
         sound(sl, c, SoundEvents.ANVIL_PLACE, 1f, 0.6f);
+    }
+
+    /** True when {@code at} is in front of the wall, within its width. */
+    private static boolean inFrontOf(Wall w, Vec3 at) {
+        Vec3 rel = at.subtract(w.center());
+        return rel.dot(w.normal()) > 0 && Math.abs(rel.dot(FxLib.right(w.normal()))) < WALL_HALF + 0.4 && rel.y < 4.6;
+    }
+
+    /** True when {@code at} is sheltered behind the wall. */
+    private static boolean behind(Wall w, Vec3 at) {
+        Vec3 rel = at.subtract(w.center());
+        return rel.dot(w.normal()) < 0.3 && rel.dot(w.normal()) > -12 && Math.abs(rel.dot(FxLib.right(w.normal()))) < WALL_HALF + 2.0;
+    }
+
+    /** Every tick: arrows and spells hitting the face are thrown back, enemies can't walk through it. */
+    private static void wallTick(ServerPlayer p, ServerLevel sl, Wall w) {
+        Vec3 c = w.center(), n = w.normal(), rt = FxLib.right(n);
+        AABB box = new AABB(c, c).inflate(WALL_HALF + 2, 5, WALL_HALF + 2).move(0, 2, 0);
+        for (net.minecraft.world.entity.projectile.Projectile pr : sl.getEntitiesOfClass(net.minecraft.world.entity.projectile.Projectile.class, box)) {
+            if (pr.getOwner() == p) continue;
+            Vec3 rel = pr.position().subtract(c);
+            double ahead = rel.dot(n);
+            if (ahead < -0.2 || ahead > 1.2 || Math.abs(rel.dot(rt)) > WALL_HALF || rel.y < -0.2 || rel.y > 4.2) continue;
+            Vec3 v = pr.getDeltaMovement();
+            if (v.dot(n) >= 0) continue;   // only things flying at the face
+            Vec3 bounced = v.subtract(n.scale(2 * v.dot(n))).scale(0.85);
+            pr.setDeltaMovement(bounced);
+            pr.setOwner(p);
+            pr.hurtMarked = true;
+            FxLib.spark(sl, ST, pr.position(), 0.8f);
+            sound(sl, pr.position(), SoundEvents.ANVIL_LAND, 0.35f, 1.8f);
+        }
+        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, box, x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {
+            Vec3 rel = t.position().subtract(c);
+            double ahead = rel.dot(n);
+            if (Math.abs(rel.dot(rt)) > WALL_HALF + 0.3 || rel.y > 4.0 || ahead > 0.9 || ahead < -0.6) continue;
+            Vec3 push = n.scale(0.9 - ahead);   // shoved back out in front of it
+            t.setDeltaMovement(push.x * 0.5, t.getDeltaMovement().y, push.z * 0.5);
+            t.hurtMarked = true;
+        }
     }
 
     // ================================================================== 4. White Steel Horse Cart
@@ -608,7 +664,7 @@ public class SteelFx {
                 WALLS.remove(p.getUUID());
                 FxLib.groundPuff(sl, ST, w.center(), 2.0f);
                 sound(sl, w.center(), SoundEvents.IRON_DOOR_OPEN, 0.8f, 0.6f);
-            }
+            } else wallTick(p, sl, w);
         }
         Long a = ARMOR.get(p.getUUID());
         if (a != null) {
@@ -621,23 +677,23 @@ public class SteelFx {
         }
     }
 
-    /** The wall stops anything that comes at you from in front of it. */
+    /** The wall stops anything that comes from in front of it - at you, or at any player sheltering behind it. */
     @SubscribeEvent
     public static void onAttacked(LivingAttackEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || e.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
-        Wall w = WALLS.get(p.getUUID());
-        if (w == null || p.serverLevel().getGameTime() > w.until()) return;
+        if (!(e.getEntity() instanceof ServerPlayer victim) || e.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY) || WALLS.isEmpty()) return;
         Vec3 from = e.getSource().getSourcePosition();
         if (from == null) return;
-        Vec3 rel = from.subtract(w.center());
-        double ahead = rel.dot(w.normal());
-        double side = Math.abs(rel.dot(FxLib.right(w.normal())));
-        boolean behindMe = p.position().subtract(w.center()).dot(w.normal()) < 0;
-        if (ahead > 0 && side < 3.0 && behindMe) {
+        long now = victim.serverLevel().getGameTime();
+        for (Map.Entry<UUID, Wall> en : WALLS.entrySet()) {
+            Wall w = en.getValue();
+            if (now > w.until() || w.center().distanceToSqr(victim.position()) > 400) continue;
+            if (!inFrontOf(w, from) || !behind(w, victim.position())) continue;
             e.setCanceled(true);
-            Vec3 hitAt = w.center().add(0, 1.5, 0).add(FxLib.right(w.normal()).scale(Math.max(-2, Math.min(2, rel.dot(FxLib.right(w.normal()))))));
-            FxLib.spark(p.serverLevel(), ST, hitAt, 1.0f);
-            sound(p.serverLevel(), hitAt, SoundEvents.ANVIL_LAND, 0.4f, 1.6f);
+            Vec3 rel = from.subtract(w.center());
+            Vec3 hitAt = w.center().add(0, 1.9, 0).add(FxLib.right(w.normal()).scale(Math.max(-WALL_HALF, Math.min(WALL_HALF, rel.dot(FxLib.right(w.normal()))))));
+            FxLib.spark(victim.serverLevel(), ST, hitAt, 1.0f);
+            sound(victim.serverLevel(), hitAt, SoundEvents.ANVIL_LAND, 0.4f, 1.6f);
+            return;
         }
     }
 

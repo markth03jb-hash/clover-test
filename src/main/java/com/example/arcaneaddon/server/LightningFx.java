@@ -223,7 +223,7 @@ public class LightningFx {
     }
 
     // ================================================================== 2. Thunder God's Kick
-    private static final int[] KICKS = {3, 8, 13};
+    private static final int[] KICKS = {5, 8, 13};
 
     /** Three kicks of the Thunder God's boots, each one a lightning-fast step forward; the third launches them skyward. */
     public static void thunderKick(ServerPlayer p, float power) {
@@ -254,7 +254,7 @@ public class LightningFx {
     }
 
     // ================================================================== 3. Thunder Crumbling Orb
-    private static final int ORB_RELEASE = 6;
+    private static final int ORB_RELEASE = 9;
 
     /** Three orbs of crackling lightning leave your hands and hunt the nearest enemies, bursting on contact (2.5 blocks). Mode: five. */
     public static void thunderOrb(ServerPlayer p, float power) {
@@ -450,7 +450,7 @@ public class LightningFx {
     }
 
     // ================================================================== 9. Thunder God Mode
-    private static final int MODE_FORM = 12;
+    private static final int MODE_FORM = 14;
 
     /**
      * Luck lets his lightning take over his whole body for 25 s: lightning crackles over every limb, sparks spray from

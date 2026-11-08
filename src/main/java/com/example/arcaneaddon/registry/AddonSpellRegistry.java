@@ -106,7 +106,7 @@ public class AddonSpellRegistry {
     //                                                                                          id                       cd mana power  animation
     public static final RegistryObject<AbstractSpell> VIOLENT_ROTATING_LANCE = registerSpell(new SteelSpell("violent_rotating_lance", 8, 45, 16, false, SteelSpell.anim("irons_spellbooks:instant_projectile"), SteelFx::violentLance));
     public static final RegistryObject<AbstractSpell> BLAZING_SPIRAL_LANCE = registerSpell(new SteelSpell("blazing_spiral_lance", 14, 70, 28, false, SteelSpell.anim("arcane_addon:klaus_lance_charge"), SteelFx::spiralLance));
-    public static final RegistryObject<AbstractSpell> STEEL_CASTLE_WALL = registerSpell(new SteelSpell("steel_castle_wall", 24, 80, 0, false, SteelSpell.anim("irons_spellbooks:touch_ground"), SteelFx::armoredWall));
+    public static final RegistryObject<AbstractSpell> STEEL_CASTLE_WALL = registerSpell(new SteelSpell("steel_castle_wall", 16, 70, 14, false, SteelSpell.anim("irons_spellbooks:touch_ground"), SteelFx::armoredWall));
     public static final RegistryObject<AbstractSpell> WHITE_STEEL_HORSE_CART = registerSpell(new SteelSpell("white_steel_horse_cart", 16, 60, 14, false, SteelSpell.anim("arcane_addon:klaus_cart_ride"), SteelFx::horseCart));
     public static final RegistryObject<AbstractSpell> THUNDER_ARROW = registerSpell(new SteelSpell("thunder_arrow", 30, 120, 34, false, SteelSpell.anim("arcane_addon:klaus_railgun"), SteelFx::thunderArrow));
     public static final RegistryObject<AbstractSpell> ACIER_SILVA = registerSpell(new SteelSpell("acier_silva", 20, 100, 14, false, SteelSpell.anim("irons_spellbooks:stomp"), SteelFx::acierSilva));

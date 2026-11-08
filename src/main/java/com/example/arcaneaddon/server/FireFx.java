@@ -133,6 +133,7 @@ public class FireFx {
     /** A ball of fire (client draws a churning, glowing fireball): shape 20. explode = a blast that swells from r to r2. */
     static void fireball(ServerLevel sl, Vec3 c, Vec3 vel, float r, float r2, int life, boolean explode) {
         FxPacket p = new FxPacket();
+        if (life == 2) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
         p.shape = 20; p.palette = (byte) F; p.life = life; p.c = c; p.v = vel; p.r = r; p.r2 = r2; p.h = explode ? 1 : 0;
         AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
     }
@@ -193,7 +194,7 @@ public class FireFx {
     }
 
     // ================================================================== 1. Exploding Fireball
-    private static final int FIREBALL_RELEASE = 6;
+    private static final int FIREBALL_RELEASE = 8;
 
     /** A fireball, 2.5 blocks a tick, that explodes (3 blocks) on whatever it hits. */
     public static void explodingFireball(ServerPlayer p, float power) {
@@ -206,7 +207,7 @@ public class FireFx {
     }
 
     // ================================================================== 2. Explosive Scattershot
-    private static final int SCATTER_RELEASE = 7;
+    private static final int SCATTER_RELEASE = 9;
 
     /** Five fireballs in a fan, each exploding where it lands. */
     public static void scattershot(ServerPlayer p, float power) {
@@ -372,8 +373,8 @@ public class FireFx {
                 // the broom under you and the fire pouring off its bristles
                 Vec3 flat = new Vec3(look.x, 0, look.z).normalize();
                 Vec3 seat = from.add(0, 0.55, 0);
-                FxSend.box(sl, Fx.STEEL, seat.add(flat.scale(0.4)), flat, new Vec3(0, 1, 0), 1.0f, 0.05f, 0.05f, 2, 0, FxPacket.HOLD);   // the handle
-                FxSend.spike(sl, F, seat.subtract(flat.scale(0.4)), flat.scale(-1), 0.9f, 0.28f, 2, 0, FxPacket.HOLD);                // the burning bristles
+                FxSend.box(sl, Fx.STEEL, seat.add(flat.scale(0.4)), flat, new Vec3(0, 1, 0), 1.0f, 0.05f, 0.05f, 2, 0, FxPacket.HOLD, 0, v, 0);   // the handle
+                FxSend.spike(sl, F, seat.subtract(flat.scale(0.4)), flat.scale(-1), 0.9f, 0.28f, 2, 0, FxPacket.HOLD, 0, v, 0);                // the burning bristles
                 FxSend.trail(sl, F, seat.subtract(flat.scale(1.2)), seat.subtract(flat.scale(1.2)).subtract(v), 0.35f, 10);
                 for (LivingEntity e : enemies(sl, p, p.getBoundingBox().inflate(1.6))) {
                     if (!rammed.add(e.getUUID())) continue;
@@ -389,7 +390,7 @@ public class FireFx {
     }
 
     // ================================================================== 8. Fireball Rain
-    private static final int RAIN_START = 6;
+    private static final int RAIN_START = 10;
 
     /** Throw a fireball high into the sky: it splits, and fireballs rain down for 2 s on a 6-block circle where you aimed. */
     public static void fireballRain(ServerPlayer p, float power) {
@@ -399,7 +400,7 @@ public class FireFx {
         Vec3 g = FxLib.ground(sl, hitAt.add(0, 0.5, 0), 12);
         final Vec3 c = g != null ? g : hitAt;
         FxSend.ring(sl, F, c.add(0, 0.05, 0), 5.8f, 6f, 0.05f, RAIN_START + 44);
-        shotUp(p, sl);
+        AstaFx.later(5, () -> { if (alive(p)) shotUp(p, sl); });   // thrown as the arm goes up
         ThreadLocalRandom r = ThreadLocalRandom.current();
         for (int i = 0; i < 9; i++) {
             AstaFx.later(RAIN_START + i * 4 + r.nextInt(3), () -> {

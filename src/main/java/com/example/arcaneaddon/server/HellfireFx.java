@@ -144,6 +144,7 @@ public class HellfireFx {
     /** A ball of fire (shape 20) in a palette: 2 = orange fire, 12 = blue flame. */
     private static void ball(ServerLevel sl, int pal, Vec3 c, Vec3 vel, float r, float r2, int life, boolean explode) {
         FxPacket p = new FxPacket();
+        if (life == 2) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
         p.shape = 20; p.palette = (byte) pal; p.life = life; p.c = c; p.v = vel; p.r = r; p.r2 = r2; p.h = explode ? 1 : 0;
         AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
     }
@@ -209,7 +210,7 @@ public class HellfireFx {
         Vec3 want = pos.add(dir.scale(2.6));
         Vec3 next = clip(sl, p, pos, want);
         FxSend.trail(sl, F, pos, next, 0.45f, 8);   // the arm
-        fist(sl, F, next, dir, 1.4f, dir.scale(1.3));
+        fist(sl, F, next, dir, 1.4f, dir.scale(2.6));
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.4))) {
             if (!t.getBoundingBox().inflate(0.8).clip(pos, next).isPresent()) continue;
             if (!hit.add(t.getUUID())) continue;

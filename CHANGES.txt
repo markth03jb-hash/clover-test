@@ -1,7 +1,25 @@
-Arcane Addon v1.30.0 - all changed files since v1.0.0
+Arcane Addon v1.31.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.31.0
+- Smoother effects: everything that flies (arrows, spears, halberds, swords, bullets, the eagle,
+  fireballs, fists of fire, the tornado, the broom) now glides between server updates instead of
+  stepping 20 times a second, and no longer draws a doubled copy of itself. Every effect fades in
+  and out on an eased curve, with no hard edges.
+- Every animation upgraded: smooth eased keyframes everywhere (snapping into strikes, gliding
+  elsewhere), plus secondary motion - the body dips into each strike, the torso turns with the
+  striking arm or leg, the head nods into the blow.
+- Every effect re-timed to land exactly on its animation's strike (measured from the animations):
+  Wind Blade Shower, Tornado Fang, Sylph's Breath, Spirit of Boreas, Mercury Bullets, Mercury Eagle,
+  Exploding Fireball, Explosive Scattershot, Fireball Rain (the ball now leaves as your arm goes up),
+  Thunder Crumbling Orb, Thunder God's Kick, Thunder God Mode, Avidya Slash, Death Thrust, Black Hole
+  and Borrowed Slash.
+- Steel Castle's Armored Wall buffed: 7 slabs wide and taller, lasts 12 s (was 8), cooldown 16 s
+  (was 24), 70 mana. The slabs erupt under enemies in front of it (damage, launched back). It now
+  shelters every player behind it, throws arrows and spells back the way they came, and enemies
+  can't walk through it.
 
 NEW IN 1.30.0 - visual upgrade for the Wind, Mercury, Fire, Lightning and Hellfire Grimoires
 - Energy is drawn as light: wind, fire, lightning and blue-flame slashes, crescents, walls and trails

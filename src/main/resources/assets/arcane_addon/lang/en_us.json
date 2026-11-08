@@ -107,7 +107,7 @@
   "spell.arcane_addon.blazing_spiral_lance": "Blazing Spiral Lance",
   "spell.arcane_addon.blazing_spiral_lance.guide": "Wind up, then drive a blazing lance spiralling into the first enemy ahead (10 blocks). Heavy damage, and it staggers them for 2 seconds.",
   "spell.arcane_addon.steel_castle_wall": "Steel Castle's Armored Wall",
-  "spell.arcane_addon.steel_castle_wall.guide": "Raise a wall of steel plates in front of you for 8 seconds. While you stand behind it, nothing from the other side can hurt you.",
+  "spell.arcane_addon.steel_castle_wall.guide": "Seven steel slabs slam up out of the ground in front of you, crowned with gold battlements, for 12 seconds. The slabs erupt under anyone standing there - damage, thrown up and back. While it stands, nothing from the other side can hurt you or any player sheltering behind it, arrows and spells that hit its face are thrown back the way they came (and count as yours), and enemies can't walk through it.",
   "spell.arcane_addon.white_steel_horse_cart": "White Steel Horse Cart",
   "spell.arcane_addon.white_steel_horse_cart.guide": "Steel plates fly in from all around and lock together into a white-steel chariot pulled by a steel horse, then it charges forward: the horse gallops, the wheels spin, and everything in front is trampled and thrown aside. Allies close by ride in its wake. At the end, or at a wall, it bursts apart into flying steel with a shockwave.",
   "spell.arcane_addon.thunder_arrow": "Thunder Arrow",

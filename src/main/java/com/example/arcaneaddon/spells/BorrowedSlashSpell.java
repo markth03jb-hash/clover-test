@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
  * while the borrowed element gathers on it (you can see which one is coming), then a fast wide sweep releases it.
  */
 public class BorrowedSlashSpell extends GrimoireSpell {
-    public static final int RELEASE = 9;
+    public static final int RELEASE = 11;
 
     public BorrowedSlashSpell() { super("borrowed_slash", 10, 20f, Need.DWELLER_MAIN); }
 

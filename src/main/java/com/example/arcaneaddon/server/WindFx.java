@@ -155,7 +155,7 @@ public class WindFx {
     }
 
     // ================================================================== 1. Wind Blade Shower
-    private static final int SHOWER_RELEASE = 7;
+    private static final int SHOWER_RELEASE = 10;
 
     /**
      * A sweep of the hand and a fan of wind blades leaves it, flying 26 blocks.
@@ -219,7 +219,7 @@ public class WindFx {
     }
 
     // ================================================================== 2. Tornado Fang
-    private static final int TORNADO_RELEASE = 10;
+    private static final int TORNADO_RELEASE = 11;
 
     /**
      * Throw out a tornado that rolls forward along the ground for 2.5 s: it drags enemies into its spin, cuts them,
@@ -251,7 +251,7 @@ public class WindFx {
         final int LIFE = big ? 80 : 50;
         final double R = big ? 4.5 : 3.0, H = big ? 11 : 7, PULL = big ? 10 : 6;
         // the funnel: drawn by the client as a spinning tornado (spiral bands of wind, dust at its foot)
-        tornadoPacket(sl, base, (float) R * 1.25f, (float) H, age);
+        tornadoPacket(sl, base, (float) R * 1.25f, (float) H, age, dir.scale(big ? 0.32 : 0.42));
         if (age % 4 == 0) FxSend.ring(sl, W, base.add(0, 0.06, 0), (float) R * 0.5f, (float) R * 1.3f, 0.06f, 6);   // dust swirl at its foot
         // pull, spin, lift, cut
         for (LivingEntity t : enemies(sl, p, new AABB(base, base.add(0, H, 0)).inflate(PULL))) {
@@ -298,14 +298,14 @@ public class WindFx {
         AstaFx.later(1, () -> tornadoTick(p, sl, nb, dir, dmg, age + 1, big, held));
     }
 
-    private static void tornadoPacket(ServerLevel sl, Vec3 base, float r, float h, int age) {
+    private static void tornadoPacket(ServerLevel sl, Vec3 base, float r, float h, int age, Vec3 vel) {
         FxPacket p = new FxPacket();
-        p.shape = 28; p.palette = (byte) W; p.life = 1; p.c = base; p.r = r; p.h = h; p.a0 = age;
+        p.shape = 28; p.palette = (byte) W; p.life = 1; p.c = base; p.v = vel; p.r = r; p.h = h; p.a0 = age;
         AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(base.x, base.y, base.z, 128, sl.dimension())), p);
     }
 
     // ================================================================== 3. Sylph's Breath
-    private static final int BREATH_RELEASE = 6;
+    private static final int BREATH_RELEASE = 8;
 
     /**
      * Bell blows: a great gust in a 60-degree cone, 10 blocks - everything in it is hit and thrown far back.
@@ -409,7 +409,7 @@ public class WindFx {
         Vec3 next = clip(sl, p, pos, want);
         FxSend.trail(sl, W, pos, next, width, 7);
         FxSend.trail(sl, S, pos, next, width * 0.25f, 5);
-        FxSend.spike(sl, S, next.subtract(dir.scale(0.6)), dir, 0.8f, width * 0.6f, 2, 0, FxPacket.HOLD);
+        FxSend.spike(sl, S, next.subtract(dir.scale(0.6)), dir, 0.8f, width * 0.6f, 2, 0, FxPacket.HOLD, 0, dir.scale(4), 0);
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.0))) {
             if (!t.getBoundingBox().inflate(0.4).clip(pos, next).isPresent()) continue;
             if (!hit.add(t.getUUID())) continue;
@@ -524,7 +524,7 @@ public class WindFx {
     }
 
     // ================================================================== 7. Spirit of Boreas
-    private static final int BOREAS_LAUNCH = 16;
+    private static final int BOREAS_LAUNCH = 17;
 
     /**
      * Wind halberds form and circle you, then fly at your enemies one after another, piercing through.
@@ -567,19 +567,21 @@ public class WindFx {
     }
 
     /** One halberd of wind: a long shaft and a crescent blade near its head. */
-    private static void halberd(ServerLevel sl, Vec3 c, Vec3 dir, float s) {
+    private static void halberd(ServerLevel sl, Vec3 c, Vec3 dir, float s) { halberd(sl, c, dir, s, Vec3.ZERO); }
+
+    private static void halberd(ServerLevel sl, Vec3 c, Vec3 dir, float s, Vec3 vel) {
         Vec3 back = c.subtract(dir.scale(1.4 * s));
-        FxSend.spike(sl, W, back, dir, 2.8f * s, 0.07f, 2, 0, FxPacket.HOLD);
+        FxSend.spike(sl, W, back, dir, 2.8f * s, 0.07f, 2, 0, FxPacket.HOLD, 0, vel, 0);
         Vec3 side = rightOf(dir);
-        FxSend.spike(sl, S, c.add(dir.scale(0.9 * s)), dir, 0.7f * s, 0.12f, 2, 0, FxPacket.HOLD);   // the spear point
-        FxSend.spike(sl, W, c.add(dir.scale(0.7 * s)), side.add(dir.scale(0.3)).normalize(), 0.55f * s, 0.16f, 2, 0, FxPacket.HOLD);   // the axe blade
+        FxSend.spike(sl, S, c.add(dir.scale(0.9 * s)), dir, 0.7f * s, 0.12f, 2, 0, FxPacket.HOLD, 0, vel, 0);   // the spear point
+        FxSend.spike(sl, W, c.add(dir.scale(0.7 * s)), side.add(dir.scale(0.3)).normalize(), 0.55f * s, 0.16f, 2, 0, FxPacket.HOLD, 0, vel, 0);   // the axe blade
     }
 
     private static void halberdFly(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float dmg, int step, Set<UUID> hit) {
         if (!alive(p) || step > 14) return;
         Vec3 want = pos.add(dir.scale(3));
         Vec3 next = clip(sl, p, pos, want);
-        halberd(sl, next, dir, 1f);
+        halberd(sl, next, dir, 1f, dir.scale(3));
         FxSend.trail(sl, W, pos, next, 0.12f, 6);
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.2))) {
             if (!t.getBoundingBox().inflate(0.6).clip(pos, next).isPresent()) continue;
@@ -633,7 +635,7 @@ public class WindFx {
         Vec3 next = clip(sl, p, pos, want);
         FxSend.trail(sl, W, pos, next, w, 10);
         FxSend.trail(sl, S, pos, next, w * 0.22f, 8);
-        FxSend.spike(sl, S, next.subtract(dir.scale(1.4)), dir, 1.8f, w * 0.7f, 2, 0, FxPacket.HOLD);
+        FxSend.spike(sl, S, next.subtract(dir.scale(1.4)), dir, 1.8f, w * 0.7f, 2, 0, FxPacket.HOLD, 0, dir.scale(5), 0);
         Vec3 rt = rightOf(dir);
         FxSend.wall(sl, W, next, rt, rt.cross(dir).normalize(), w * 1.6f, w * 3.2f, -180, 180, 0.08f, 6, 0, 0);   // rings of air peeled off it
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.8))) {

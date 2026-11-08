@@ -646,8 +646,10 @@ public class FxRenderer {
     * a faint body of air between them, and a ring of dust whirling at its foot. c = base, r = radius at the top,
     * h = height, a0 = how long it has been spinning (keeps the spin continuous between packets).
     */
-   private static void tornadoFx(Matrix4f m, Vec3 cam, FxPacket p, double age, double life) {
+   private static void tornadoFx(Matrix4f m, Vec3 cam, FxPacket p0, double age, double life) {
       if (gv == null) return;
+      FxPacket p = new FxPacket();
+      p.c = p0.c.add(p0.v.scale(age)); p.r = p0.r; p.h = p0.h; p.a0 = p0.a0;   // glide between server updates
       double R = p.r, H = p.h;
       double spin = (p.a0 + age) * 0.55;
       float[] rim = RIM[WIND], white = {0.95F, 1.0F, 0.97F};
@@ -780,7 +782,7 @@ public class FxRenderer {
    private static void mercurySphere(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, double life) {
       double in = p.sweep > 0 ? Mth.clamp(age / p.sweep, 0.0, 1.0) : 1.0;
       in = 1.0 - Math.pow(1.0 - in, 3.0);
-      double out = Mth.clamp((life - age) / 3.0, 0.0, 1.0);
+      double out = life <= 2 ? 1.0 : Mth.clamp((life - age) / 3.0, 0.0, 1.0);
       double R = p.r * in * (0.3 + 0.7 * out);
       if (R < 0.02) return;
       Vec3 c = p.c.add(p.v.scale(age));
@@ -1253,8 +1255,11 @@ public class FxRenderer {
             for (FxRenderer.Fx f : FX) {
                double age = now - f.born;
                double life = f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life;
-               if (!(age < 0.0) && !(age > life)) {
-                  float env = (float)(Mth.clamp(age / 1.5, 0.0, 1.0) * Mth.clamp((life - age) / Math.max(2.0, life * 0.45), 0.0, 1.0));
+               // per-tick copies (HOLD solids, moving spheres, the tornado) get a quarter tick of slack so a late
+               // packet never leaves a one-frame gap; they move along their velocity, so the overlap lines up
+               boolean perTick = f.p.life <= 1 && f.killAge < 0.0;
+               if (!(age < 0.0) && !(age > life + (perTick ? 0.25 : 0.0))) {
+                  float env = (float)(smooth(age / 1.5) * smooth((life - age) / Math.max(2.0, life * 0.45)));   // eased in and out, no hard edges
                   int sh = f.p.shape;
                   lightPal = (sh == 0 || sh == 1 || sh == 2 || sh == 13) && isLight(f.p.palette) ? f.p.palette : -1;
                   switch (f.p.shape) {

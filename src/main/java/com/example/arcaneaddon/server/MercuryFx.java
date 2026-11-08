@@ -131,6 +131,7 @@ public class MercuryFx {
     /** A liquid mercury sphere (client draws a wobbling chrome ball): shape 19. */
     static void sphere(ServerLevel sl, Vec3 c, Vec3 vel, float r, int life, int grow) {
         FxPacket p = new FxPacket();
+        if (life == 2) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
         p.shape = 19; p.palette = (byte) M; p.life = life; p.sweep = grow; p.c = c; p.v = vel; p.r = r;
         AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 96, sl.dimension())), p);
     }
@@ -159,7 +160,7 @@ public class MercuryFx {
     }
 
     // ================================================================== 1. Mercury Bullets
-    private static final int BULLET_RELEASE = 5;
+    private static final int BULLET_RELEASE = 7;
 
     /** Six bullets of mercury, fired one after another at 3.5 blocks a tick, curving slightly onto the target you aim at. */
     public static void mercuryBullets(ServerPlayer p, float power) {
@@ -185,7 +186,7 @@ public class MercuryFx {
         if (target != null && target.isAlive()) dir = dir.scale(0.75).add(mid(target).subtract(pos).normalize().scale(0.25)).normalize();
         Vec3 want = pos.add(dir.scale(3.5));
         Vec3 next = clip(sl, p, pos, want);
-        sphere(sl, next, dir.scale(0.6), 0.16f, 2, 0);
+        sphere(sl, next, dir.scale(3.5), 0.16f, 2, 0);
         FxSend.trail(sl, M, pos, next, 0.06f, 4);
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(0.8))) {
             if (!t.getBoundingBox().inflate(0.3).clip(pos, next).isPresent()) continue;
@@ -235,7 +236,7 @@ public class MercuryFx {
         if (!alive(p) || step > 13) return;
         Vec3 want = pos.add(dir.scale(3));
         Vec3 next = clip(sl, p, pos, want);
-        FxSend.spike(sl, M, next.subtract(dir.scale(2.4)), dir, 2.6f, 0.15f, 2, 0, FxPacket.HOLD);
+        FxSend.spike(sl, M, next.subtract(dir.scale(2.4)), dir, 2.6f, 0.15f, 2, 0, FxPacket.HOLD, 0, dir.scale(3), 0);
         FxSend.trail(sl, M, pos, next, 0.08f, 5);
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.0))) {
             if (!t.getBoundingBox().inflate(0.4).clip(pos, next).isPresent()) continue;
@@ -330,19 +331,21 @@ public class MercuryFx {
     }
 
     /** A sword of mercury: a long, thin blade and a cross-guard, pointing {@code dir}, flat side facing {@code flat}. */
-    private static void sword(ServerLevel sl, Vec3 c, Vec3 dir, Vec3 flat, float s) {
+    private static void sword(ServerLevel sl, Vec3 c, Vec3 dir, Vec3 flat, float s) { sword(sl, c, dir, flat, s, Vec3.ZERO); }
+
+    private static void sword(ServerLevel sl, Vec3 c, Vec3 dir, Vec3 flat, float s, Vec3 vel) {
         Vec3 up = dir.cross(flat).normalize();
         if (up.lengthSqr() < 1.0E-4) up = rightOf(dir);
-        FxSend.box(sl, M, c.add(dir.scale(0.35 * s)), dir, up, 0.75f * s, 0.02f, 0.09f, 2, 0, FxPacket.HOLD);   // blade
-        FxSend.box(sl, M, c.subtract(dir.scale(0.45 * s)), up, dir, 0.24f * s, 0.04f, 0.04f, 2, 0, FxPacket.HOLD);   // guard
-        FxSend.box(sl, M, c.subtract(dir.scale(0.65 * s)), dir, up, 0.18f * s, 0.035f, 0.035f, 2, 0, FxPacket.HOLD);   // grip
+        FxSend.box(sl, M, c.add(dir.scale(0.35 * s)), dir, up, 0.75f * s, 0.02f, 0.09f, 2, 0, FxPacket.HOLD, 0, vel, 0);   // blade
+        FxSend.box(sl, M, c.subtract(dir.scale(0.45 * s)), up, dir, 0.24f * s, 0.04f, 0.04f, 2, 0, FxPacket.HOLD, 0, vel, 0);   // guard
+        FxSend.box(sl, M, c.subtract(dir.scale(0.65 * s)), dir, up, 0.18f * s, 0.035f, 0.035f, 2, 0, FxPacket.HOLD, 0, vel, 0);   // grip
     }
 
     private static void swordFly(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float dmg, int step, Set<UUID> hit) {
         if (!alive(p) || step > 10) return;
         Vec3 want = pos.add(dir.scale(2.6));
         Vec3 next = clip(sl, p, pos, want);
-        sword(sl, next, dir, rightOf(dir), 1f);
+        sword(sl, next, dir, rightOf(dir), 1f, dir.scale(2.6));
         FxSend.trail(sl, M, pos, next, 0.05f, 5);
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.0))) {
             if (!t.getBoundingBox().inflate(0.4).clip(pos, next).isPresent()) continue;
@@ -356,7 +359,7 @@ public class MercuryFx {
     }
 
     // ================================================================== 5. Mercury Eagle
-    private static final int EAGLE_RELEASE = 11;
+    private static final int EAGLE_RELEASE = 12;
 
     /**
      * An eagle of liquid mercury, wings beating, flies from your hand and hunts the enemy you aim at (or the nearest one
@@ -386,7 +389,7 @@ public class MercuryFx {
         if (target != null) dir = dir.scale(0.8).add(mid(target).subtract(pos).normalize().scale(0.2)).normalize();
         Vec3 want = pos.add(dir.scale(1.6));
         Vec3 next = clip(sl, p, pos, want);
-        drawEagle(sl, next, dir, age);
+        drawEagle(sl, next, dir, age, dir.scale(1.6));
         FxSend.trail(sl, M, pos, next, 0.12f, 6);
         boolean strike = target != null && mid(target).distanceTo(next) < 1.6 + target.getBbWidth() * 0.5;
         if (strike || next.distanceToSqr(want) > 1.0E-4 || age == 60) {
@@ -412,20 +415,20 @@ public class MercuryFx {
     }
 
     /** The eagle: a body, a head with a beak, a fanned tail, and two long wings that beat. */
-    private static void drawEagle(ServerLevel sl, Vec3 c, Vec3 dir, int age) {
+    private static void drawEagle(ServerLevel sl, Vec3 c, Vec3 dir, int age, Vec3 vel) {
         Vec3 side = rightOf(dir), up = side.cross(dir).normalize();
         double beat = Math.sin(age * 0.9) * 0.6;
-        sphere(sl, c, dir.scale(1.2), 0.38f, 2, 0);                                                   // body
-        sphere(sl, c.add(dir.scale(0.55)).add(up.scale(0.12)), dir.scale(1.2), 0.2f, 2, 0);           // head
-        FxSend.spike(sl, M, c.add(dir.scale(0.7)).add(up.scale(0.1)), dir.add(up.scale(-0.3)).normalize(), 0.3f, 0.06f, 2, 0, FxPacket.HOLD);   // beak
+        sphere(sl, c, vel, 0.38f, 2, 0);                                                   // body
+        sphere(sl, c.add(dir.scale(0.55)).add(up.scale(0.12)), vel, 0.2f, 2, 0);           // head
+        FxSend.spike(sl, M, c.add(dir.scale(0.7)).add(up.scale(0.1)), dir.add(up.scale(-0.3)).normalize(), 0.3f, 0.06f, 2, 0, FxPacket.HOLD, 0, vel, 0);   // beak
         for (int s = -1; s <= 1; s += 2) {
             Vec3 wing = side.scale(s).scale(Math.cos(beat)).add(up.scale(Math.sin(beat))).normalize();
             Vec3 elbow = c.add(wing.scale(0.9)).subtract(dir.scale(0.15));
-            FxSend.box(sl, M, c.add(wing.scale(0.45)), wing, dir, 0.48f, 0.22f, 0.04f, 2, 0, FxPacket.HOLD);   // inner wing
+            FxSend.box(sl, M, c.add(wing.scale(0.45)), wing, dir, 0.48f, 0.22f, 0.04f, 2, 0, FxPacket.HOLD, 0, vel, 0);   // inner wing
             Vec3 outer = side.scale(s).scale(Math.cos(beat * 1.4)).add(up.scale(Math.sin(beat * 1.4))).subtract(dir.scale(0.35)).normalize();
-            FxSend.box(sl, M, elbow.add(outer.scale(0.55)), outer, dir, 0.6f, 0.16f, 0.03f, 2, 0, FxPacket.HOLD);   // outer wing
+            FxSend.box(sl, M, elbow.add(outer.scale(0.55)), outer, dir, 0.6f, 0.16f, 0.03f, 2, 0, FxPacket.HOLD, 0, vel, 0);   // outer wing
         }
-        FxSend.box(sl, M, c.subtract(dir.scale(0.6)), dir, up, 0.3f, 0.22f, 0.03f, 2, 0, FxPacket.HOLD);   // tail
+        FxSend.box(sl, M, c.subtract(dir.scale(0.6)), dir, up, 0.3f, 0.22f, 0.03f, 2, 0, FxPacket.HOLD, 0, vel, 0);   // tail
     }
 
     // ================================================================== 6. Silver Mirror

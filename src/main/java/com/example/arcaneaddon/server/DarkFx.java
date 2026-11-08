@@ -318,7 +318,7 @@ public class DarkFx {
      * Mana Zone: Raijin - three crescents tear out of the zone's edge around the target and converge on it.
      */
     /** Ticks from the cast to the upward cut in the dark_avidya animation (low crouch, then the rising draw). */
-    private static final int AVIDYA_RELEASE = 5;
+    private static final int AVIDYA_RELEASE = 7;
 
     public static void avidyaSlash(ServerPlayer p, float power) {
         windup(p, AVIDYA_RELEASE, 0.9f);
@@ -513,7 +513,7 @@ public class DarkFx {
      * Mana Zone: the thrust comes out of the dark behind the three nearest enemies and runs them through.
      */
     /** Ticks from the cast to the thrust in the dark_death_thrust animation (draw back, hold, then lunge). */
-    private static final int THRUST_RELEASE = 9;
+    private static final int THRUST_RELEASE = 10;
 
     public static void deathThrust(ServerPlayer p, float power) {
         windup(p, THRUST_RELEASE, 1.0f);
@@ -690,7 +690,7 @@ public class DarkFx {
      * Mana Zone: it opens in the middle of the enemies inside the zone, pulls harder from further away, and lasts 4 s.
      */
     /** Ticks from the cast to the throw in the dark_black_hole animation. */
-    private static final int HOLE_RELEASE = 6;
+    private static final int HOLE_RELEASE = 8;
 
     public static void blackHole(ServerPlayer p, float power) {
         windup(p, HOLE_RELEASE, 0.7f);
