@@ -105,6 +105,13 @@ public class FxRenderer {
    /** Mana Zones: entity id -> {start, end, radius, ground y (NaN = unknown)}. Fed by FxPacket shape 17. */
    private static final java.util.Map<Integer, double[]> ZONES = new java.util.HashMap<>();
    private static final java.util.Map<Integer, Double> ZONE_TARGET = new java.util.HashMap<>();
+   /**
+    * Weapon rings (FxPacket shape 36): {entity id, kind, count, radius, height, angular speed (rad/tick), phase,
+    * bob, grow ticks, stagger (ticks extra per piece), born, life}. kind 0 = wind halberds, 1 = mercury swords.
+    */
+   private static final List<double[]> ORBITS = new ArrayList<>();
+   /** Bone whips (shape 38): {entity id, born, life, count, reach, lash period, union}. */
+   private static final List<double[]> WHIPS = new ArrayList<>();
    private static final double ZONE_OPEN = 12.0, ZONE_CLOSE = 10.0;
    private static final int ZR = 10, ZS = 48;
    /** Terrain heights under each zone's sea: id -> {cx, cz, R, gy, heights...} so it lies on the ground, not over drops. */
@@ -190,6 +197,17 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 38) {   // Zenon's bone whips: id = player, life, h = count, r = reach, a0 = lash period, palette 1 = Beelzebub
+         Minecraft mc0 = Minecraft.getInstance();
+         if (mc0.level != null) WHIPS.add(new double[]{p.id, mc0.level.getGameTime(), p.life, p.h, p.r, p.a0, p.palette});
+         return;
+      }
+      if (p.shape == 37) { BoneBladeLayer.set(p.id, p.life, p.r, p.palette == 1); return; }   // Zenon's bone sword in the hand
+      if (p.shape == 36) {   // a ring of weapons circling a player, animated here every frame (smooth, one packet)
+         Minecraft mc0 = Minecraft.getInstance();
+         if (mc0.level != null) ORBITS.add(new double[]{p.id, p.palette, p.h, p.r, p.r2, p.a0, p.a1, p.speed, p.sweep, p.d.x, mc0.level.getGameTime(), p.life});
+         return;
+      }
       if (p.shape == 35) { LimitClient.set(p.id, p.palette, p.life); return; }   // Surpassing Limits aura: palette = book index
       if (p.shape == 34) { MasteryClient.setEnabled(p.life > 0); return; }   // Grimoire Mastery on/off
       if (p.shape == 32) { ModeHudOverlay.set(p.palette, p.life); return; }   // mode timer on the HUD: palette = mode, life = ticks (0 = off)
@@ -242,7 +260,7 @@ public class FxRenderer {
          return;
       }
       if (p.shape == 12) {  // impact frame: life = ticks
-         Cutscene.impactFrame(p.life, p.palette == 1);
+         Cutscene.impactFrame(p.life, (int) p.palette);
          return;
       }
       if (p.shape == 11) {  // Knight's Armor form: id = player, life = ticks left (0 = off)
@@ -308,6 +326,8 @@ public class FxRenderer {
          if (mc.level == null) {
             FX.clear();
             TRACK.clear();
+            ORBITS.clear();
+            WHIPS.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             Iterator<FxRenderer.Fx> it = FX.iterator();
@@ -1510,7 +1530,9 @@ public class FxRenderer {
             int j1 = (j + 1) % SEG;
             double y00 = hs[4 + i * SEG + j], y01 = hs[4 + i * SEG + j1], y11 = hs[4 + (i + 1) * SEG + j1], y10 = hs[4 + (i + 1) * SEG + j];
             if (Double.isNaN(y00) || Double.isNaN(y01) || Double.isNaN(y11) || Double.isNaN(y10)) continue;
-            if (Math.max(Math.max(y00, y01), Math.max(y11, y10)) - Math.min(Math.min(y00, y01), Math.min(y11, y10)) > 1.6) continue;   // no sheets over cliffs
+            double yHi = Math.max(Math.max(y00, y01), Math.max(y11, y10)), yLo = Math.min(Math.min(y00, y01), Math.min(y11, y10));
+            if (yHi - yLo > 1.6) continue;   // no sheets over cliffs
+            if (yHi - yLo > 0.02) { y00 = y01 = y11 = y10 = yHi; }   // a step (slab, path, stairs...): lie flat on the top, never sink into a block
             double a0 = Math.PI * 2 * j / SEG, a1 = Math.PI * 2 * (j + 1) / SEG;
             Vec3 p00 = new Vec3(c.x + Math.cos(a0) * r0, y00, c.z + Math.sin(a0) * r0), p01 = new Vec3(c.x + Math.cos(a1) * r0, y01, c.z + Math.sin(a1) * r0);
             Vec3 p11 = new Vec3(c.x + Math.cos(a1) * r1, y11, c.z + Math.sin(a1) * r1), p10 = new Vec3(c.x + Math.cos(a0) * r1, y10, c.z + Math.sin(a0) * r1);
@@ -1695,6 +1717,10 @@ public class FxRenderer {
                }
             }
 
+            ORBITS.removeIf(o -> now > o[10] + o[11] + o[9] * o[2] + 1.0);
+            WHIPS.removeIf(o -> now > o[1] + o[2] + 4.0);
+            for (double[] o : WHIPS) whipsFx(vc, m, n, cam, mc, o, now, pt);
+            for (double[] o : ORBITS) orbitFx(vc, m, n, cam, mc, o, now, pt);
             float pulse = 0.75F + 0.25F * (float)Math.sin(now * 0.35);
 
             for (Player p : mc.level.players()) {
@@ -2233,6 +2259,105 @@ public class FxRenderer {
       drawBox(vc, m, n, cam, c, ax, side, upv, hl, hw, hh, p.palette, al, 1.0F);
    }
 
+   /** One weapon ring: each piece's position and facing worked out for this exact frame, so the circling is smooth. */
+   private static void orbitFx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, double[] o, double now, float pt) {
+      net.minecraft.world.entity.Entity e = mc.level.getEntity((int) o[0]);
+      if (e == null) return;
+      Vec3 ep = e.getPosition(pt);
+      int kind = (int) o[1], count = (int) o[2];
+      double R = o[3], H = o[4], w = o[5], ph = o[6], bob = o[7], growT = Math.max(1.0, o[8]), stagger = o[9];
+      double age = now - o[10];
+      for (int i = 0; i < count; i++) {
+         if (age > o[11] + stagger * i) continue;   // this one has been launched
+         double a = Math.PI * 2 * i / count + ph + w * age;
+         float s = (float) Math.min(1.0, (age + 1.0) / growT);
+         Vec3 c = ep.add(Math.cos(a) * R, H + bob * Math.sin(age * 0.35 + i), Math.sin(a) * R);
+         if (kind == 0) {   // wind halberd: a long shaft, a silver spear point and an axe blade
+            Vec3 dir = new Vec3(Math.cos(a) * 0.3, 1.0, Math.sin(a) * 0.3).normalize();
+            Vec3 side = dir.cross(new Vec3(0, 1, 0));
+            side = side.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : side.normalize();
+            drawSpike(vc, m, n, cam, c.subtract(dir.scale(1.4 * s)), dir, 2.8 * s, 0.07, 0.0, 5, 0.96F);
+            drawSpike(vc, m, n, cam, c.add(dir.scale(0.9 * s)), dir, 0.7 * s, 0.12, 0.0, 6, 0.96F);
+            drawSpike(vc, m, n, cam, c.add(dir.scale(0.7 * s)), side.add(dir.scale(0.3)).normalize(), 0.55 * s, 0.16, 0.0, 5, 0.96F);
+         } else {           // mercury sword, point down, flat side along the circle: blade, guard and grip
+            Vec3 dir = new Vec3(0, -1, 0), flat = new Vec3(-Math.sin(a), 0, Math.cos(a));
+            Vec3 up = dir.cross(flat).normalize();
+            orbitBox(vc, m, n, cam, c.add(dir.scale(0.35 * s)), dir, up, 0.75 * s, 0.02, 0.09);
+            orbitBox(vc, m, n, cam, c.subtract(dir.scale(0.45 * s)), up, dir, 0.24 * s, 0.04, 0.04);
+            orbitBox(vc, m, n, cam, c.subtract(dir.scale(0.65 * s)), dir, up, 0.18 * s, 0.035, 0.035);
+         }
+      }
+   }
+
+   private static void orbitBox(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, Vec3 ax, Vec3 u, double hl, double hw, double hh) {
+      Vec3 s0 = ax.cross(u);
+      if (s0.lengthSqr() < 1.0E-6) s0 = ax.cross(new Vec3(1.0, 0.0, 0.0));
+      s0 = s0.normalize();
+      Vec3 u0 = s0.cross(ax).normalize();
+      drawBox(vc, m, n, cam, c, ax, s0, u0, hl, hw, hh, MERCURY, 0.96F, 1.0F);
+   }
+
+   /**
+    * Zenon's bone whips, worked out every frame so they move smoothly: each whip is a chain of vertebrae growing
+    * out of your back - knobbly, thicker at the root - that sways behind you and lashes out at the nearest enemies
+    * in turn, cracking at the end of each lash, with a hooked point at the tip. Beelzebub: six of them, longer,
+    * faster, with space glowing violet-black round the points.
+    */
+   private static void whipsFx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, double[] o, double now, float pt) {
+      net.minecraft.world.entity.Entity e = mc.level.getEntity((int) o[0]);
+      if (e == null) return;
+      double age = now - o[1], life = o[2];
+      int count = (int) o[3];
+      double reach = o[4], period = Math.max(4.0, o[5]);
+      boolean union = o[6] > 0.5;
+      double grow = Mth.clamp(age / 5.0, 0.0, 1.0) * Mth.clamp((life + 4.0 - age) / 4.0, 0.0, 1.0);
+      if (grow <= 0.01) return;
+      Vec3 ep = e.getPosition(pt);
+      float yaw = Mth.rotLerp(pt, e instanceof net.minecraft.world.entity.LivingEntity le0 ? le0.yBodyRotO : e.yRotO,
+                               e instanceof net.minecraft.world.entity.LivingEntity le1 ? le1.yBodyRot : e.getYRot());
+      double yr = Math.toRadians(yaw);
+      Vec3 look = new Vec3(-Math.sin(yr), 0, Math.cos(yr)), rt = new Vec3(-Math.cos(yr), 0, -Math.sin(yr));
+      Vec3 back = ep.add(0, 1.3, 0).subtract(look.scale(0.3));
+      List<net.minecraft.world.entity.LivingEntity> foes = new ArrayList<>(mc.level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
+            e.getBoundingBox().inflate(reach), x -> x != e && x.isAlive() && !(x instanceof net.minecraft.world.entity.decoration.ArmorStand) && x.distanceTo(e) <= reach));
+      foes.sort(java.util.Comparator.comparingDouble(x -> x.distanceToSqr(e)));
+      for (int i = 0; i < count; i++) {
+         double side = i - (count - 1) / 2.0;
+         Vec3 root = back.add(rt.scale(side * 0.25));
+         net.minecraft.world.entity.LivingEntity t0 = foes.isEmpty() ? null : foes.get(i % foes.size());
+         double phase = ((age + i * period * 0.4) % period) / period;
+         double lash = Math.sin(Math.PI * phase);
+         lash = lash * lash * (3 - 2 * lash);   // snap out, hang, snap back
+         Vec3 rest = root.add(rt.scale(side * 1.2)).add(0, 1.2 + 0.25 * Math.sin(age * 0.2 + i), 0).subtract(look.scale(1.2));
+         Vec3 tgt = t0 != null ? t0.getPosition(pt).add(0, t0.getBbHeight() * 0.5, 0) : rest.add(look.scale(4 + reach * 0.2));
+         Vec3 tip = rest.add(tgt.subtract(rest).scale(lash));
+         tip = root.add(tip.subtract(root).scale(grow));
+         Vec3 d = tip.subtract(root);
+         double len = d.length();
+         if (len < 0.05) continue;
+         int segs = 18;
+         Vec3 side0 = d.cross(new Vec3(0, 1, 0));
+         side0 = side0.lengthSqr() < 1.0E-6 ? rt : side0.normalize();
+         double sway = Math.sin(age * 0.45 + side * 1.7);
+         Vec3[] ctr = new Vec3[segs + 1];
+         double[] rad = new double[segs + 1];
+         double r0 = (union ? 0.11 : 0.09);
+         for (int k = 0; k <= segs; k++) {
+            double f = (double) k / segs;
+            // the chain sags and ripples: a travelling wave that lags behind the lash
+            double wave = Math.sin(Math.PI * f) * (0.12 * len * (1.0 - lash * 0.7)) ;
+            double ripple = Math.sin(f * 9.0 - age * 0.9 + i) * 0.08 * len * f * (1.0 - lash * 0.5);
+            ctr[k] = root.add(d.scale(f)).add(0, -wave, 0).add(side0.scale(sway * wave * 0.8 + ripple));
+            double bump = 1.0 + 0.35 * Math.abs(Math.sin(f * segs * Math.PI * 0.5));   // knobbly vertebrae
+            rad[k] = r0 * (1.0 - f * 0.55) * bump;
+         }
+         tube(vc, m, n, cam, ctr, rad, new Vec3(0, 1, 0), 6, true);
+         Vec3 tg = ctr[segs].subtract(ctr[segs - 1]).normalize();
+         drawSpike(vc, m, n, cam, ctr[segs], tg.add(side0.scale(0.35)).normalize(), 0.35, 0.06, 0.0, 15, 0.96F);   // the hooked point
+         if (union) gline(m, cam, ctr[segs].subtract(tg.scale(0.4)), ctr[segs].add(tg.scale(0.4)), 0.12F, 1, 0.5F);
+      }
+   }
+
    /** A shaded box with glowing visible edges (brighter along the top). */
    private static void drawBox(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, Vec3 ax, Vec3 side, Vec3 upv,
                                double hl, double hw, double hh, int pal, float al, float edgeGlow) {
@@ -2441,6 +2566,12 @@ public class FxRenderer {
     * SLASH: one clean blade slash. A solid black crescent (thickest in the middle, needle-sharp tips) with a white-hot
     * cutting edge and a thin coloured glow, drawn in from one tip to the other over two ticks, then it thins and fades.
     */
+   /**
+    * A slash: a crescent-moon blade - needle-thin at both tips, thickest in the middle, strongly curved with the tips
+    * trailing back - with a white-hot cutting edge along its front, a coloured glow ahead of the edge, and two fading
+    * after-images behind it so it reads as something moving fast. It sweeps open over its first 2 ticks, flies
+    * along d at {@code speed} and grows from r to r2. h = blade thickness (1 = normal).
+    */
    private static void slashFx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, double life) {
       double reveal = Mth.clamp(age / 2.0, 0.0, 1.0);
       double grow = 1.0 - Math.pow(1.0 - Mth.clamp(age / (life * 0.45), 0.0, 1.0), 3.0);
@@ -2449,34 +2580,43 @@ public class FxRenderer {
       double thin = Math.sqrt(fade);
       Vec3 c = p.c.add(p.d.scale(p.speed * age));
       Vec3 d = p.d, u = p.u;
+      Vec3 hx = d.cross(u).normalize();
       float[] black = new float[]{0.01F, 0.0F, 0.015F};
       float[] rim = RIM[p.palette], hc = new float[]{1.0F, 0.97F, 0.95F};
-      double thick = p.h > 0.0F ? p.h : 1.0;   // h = how thick the blade is (1 = normal)
-      int N = 24;
-      double a0deg = -80.0, span = 160.0 * reveal;
-      for (int i = 0; i < N; i++) {
-         double f0 = a0deg + span * i / N, f1 = a0deg + span * (i + 1) / N;
-         double r0 = Math.toRadians(f0), r1 = Math.toRadians(f1);
-         Vec3 o0 = c.add(u.scale(Math.sin(r0) * R)).add(d.scale((Math.cos(r0) - 1.0) * R * 0.35));
-         Vec3 o1 = c.add(u.scale(Math.sin(r1) * R)).add(d.scale((Math.cos(r1) - 1.0) * R * 0.35));
-         double w0 = R * 0.17 * thin * Math.pow(Math.cos(Math.toRadians(f0 / 80.0 * 88.0)), 1.4);
-         double w1 = R * 0.17 * thin * Math.pow(Math.cos(Math.toRadians(f1 / 80.0 * 88.0)), 1.4);
-         Vec3 i0 = o0.subtract(d.scale(w0)), i1 = o1.subtract(d.scale(w1));
-         // the solid black blade of the slash
-         quad(vc, m, n, cam, o0, o1, i1, i0, black, 0.97F * fade, 0.97F * fade, 0.97F * fade, 0.97F * fade);
-         // a short smoky wake behind it
-         quad(vc, m, n, cam, i0, i1, i1.subtract(d.scale(w1 * 1.4)), i0.subtract(d.scale(w0 * 1.4)), black, 0.45F * fade, 0.45F * fade, 0.0F, 0.0F);
-         // depth: the blade is also wide across its own plane, so it reads as a thick cut from behind, not a hairline
-         Vec3 hx = d.cross(u).normalize();
-         double k0 = w0 * 0.55 * thick, k1 = w1 * 0.55 * thick;
-         Vec3 m0 = o0.subtract(d.scale(w0 * 0.3)), m1 = o1.subtract(d.scale(w1 * 0.3));
-         quad(vc, m, n, cam, m0.add(hx.scale(k0)), m1.add(hx.scale(k1)), m1.subtract(hx.scale(k1)), m0.subtract(hx.scale(k0)), black, 0.92F * fade, 0.92F * fade, 0.92F * fade, 0.92F * fade);
-         gquad(m, cam, m0.add(hx.scale(k0)), m1.add(hx.scale(k1)), m1.add(hx.scale(k0 * 1.6)), m0.add(hx.scale(k0 * 1.6)), rim, 0.4F * fade, 0.4F * fade, 0.0F, 0.0F);
-         gquad(m, cam, m0.subtract(hx.scale(k0)), m1.subtract(hx.scale(k1)), m1.subtract(hx.scale(k0 * 1.6)), m0.subtract(hx.scale(k0 * 1.6)), rim, 0.4F * fade, 0.4F * fade, 0.0F, 0.0F);
-         // the white-hot cutting edge and a thin coloured glow ahead of it
-         double e0 = Math.max(0.02, w0 * 0.16), e1 = Math.max(0.02, w1 * 0.16);
-         gquad(m, cam, o0.add(d.scale(e0 * 0.5)), o1.add(d.scale(e1 * 0.5)), o1.subtract(d.scale(e1)), o0.subtract(d.scale(e0)), hc, fade, fade, fade, fade);
-         gquad(m, cam, o0.add(d.scale(e0 * 0.5)), o1.add(d.scale(e1 * 0.5)), o1.add(d.scale(e1 * 4.0)), o0.add(d.scale(e0 * 4.0)), rim, 0.55F * fade, 0.55F * fade, 0.0F, 0.0F);
+      double thick = p.h > 0.0F ? p.h : 1.0;
+      int N = 28;
+      double half = 76.0, span = 2.0 * half * reveal, from = -half;
+      // two after-images first (behind), then the blade
+      for (int ghost = 2; ghost >= 0; ghost--) {
+         double back = ghost * R * 0.16;
+         float ga = ghost == 0 ? 1.0F : (ghost == 1 ? 0.35F : 0.15F);
+         for (int i = 0; i < N; i++) {
+            double f0 = from + span * i / N, f1 = from + span * (i + 1) / N;
+            double r0 = Math.toRadians(f0), r1 = Math.toRadians(f1);
+            // outer (cutting) edge: a strong curve whose tips trail back
+            Vec3 o0 = c.add(u.scale(Math.sin(r0) * R)).add(d.scale((Math.cos(r0) - 1.0) * R * 0.55 - back));
+            Vec3 o1 = c.add(u.scale(Math.sin(r1) * R)).add(d.scale((Math.cos(r1) - 1.0) * R * 0.55 - back));
+            // crescent width: fat in the middle, a needle at the tips
+            double w0 = R * 0.2 * thick * thin * Math.pow(Math.max(0.0, Math.cos(Math.toRadians(f0 / half * 90.0))), 1.6);
+            double w1 = R * 0.2 * thick * thin * Math.pow(Math.max(0.0, Math.cos(Math.toRadians(f1 / half * 90.0))), 1.6);
+            Vec3 i0 = o0.subtract(d.scale(w0)), i1 = o1.subtract(d.scale(w1));
+            if (ghost > 0) {   // after-image: a faint smear of the blade's colour
+               quad(vc, m, n, cam, o0, o1, i1, i0, black, 0.5F * ga * fade, 0.5F * ga * fade, 0.0F, 0.0F);
+               gquad(m, cam, o0, o1, o1.subtract(d.scale(w1 * 0.5)), o0.subtract(d.scale(w0 * 0.5)), rim, 0.5F * ga * fade, 0.5F * ga * fade, 0.0F, 0.0F);
+               continue;
+            }
+            // the solid black crescent
+            quad(vc, m, n, cam, o0, o1, i1, i0, black, 0.97F * fade, 0.97F * fade, 0.9F * fade, 0.9F * fade);
+            // a little depth across its own plane, so it still reads edge-on - thin, so it never looks like a plank
+            double k0 = w0 * 0.22 * thick, k1 = w1 * 0.22 * thick;
+            Vec3 m0 = o0.subtract(d.scale(w0 * 0.35)), m1 = o1.subtract(d.scale(w1 * 0.35));
+            quad(vc, m, n, cam, m0.add(hx.scale(k0)), m1.add(hx.scale(k1)), m1.subtract(hx.scale(k1)), m0.subtract(hx.scale(k0)), black, 0.9F * fade, 0.9F * fade, 0.9F * fade, 0.9F * fade);
+            // the white-hot cutting edge, and the coloured glow it throws ahead
+            double e0 = Math.max(0.025, w0 * 0.2 + R * 0.006), e1 = Math.max(0.025, w1 * 0.2 + R * 0.006);
+            gquad(m, cam, o0.add(d.scale(e0 * 0.4)), o1.add(d.scale(e1 * 0.4)), o1.subtract(d.scale(e1)), o0.subtract(d.scale(e0)), hc, fade, fade, fade, fade);
+            gquad(m, cam, o0.add(d.scale(e0 * 0.4)), o1.add(d.scale(e1 * 0.4)), o1.add(d.scale(e1 * 4.5)), o0.add(d.scale(e0 * 4.5)), rim, 0.6F * fade, 0.6F * fade, 0.0F, 0.0F);
+            gquad(m, cam, i0, i1, i1.add(d.scale(w1 * 0.4)), i0.add(d.scale(w0 * 0.4)), rim, 0.0F, 0.0F, 0.25F * fade, 0.25F * fade);
+         }
       }
    }
 

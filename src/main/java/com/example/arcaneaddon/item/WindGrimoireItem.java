@@ -30,9 +30,9 @@ public class WindGrimoireItem extends SimpleAttributeSpellBook {
 
     private static Multimap<Attribute, AttributeModifier> modifiers() {
         ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        b.put(AttributeRegistry.MAX_MANA.get(), mod("a91c5e20-7b3d-4c6e-9f10-2b3c4d5e0f01", "Wind Grimoire mana", 350, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MAX_MANA.get(), mod("a91c5e20-7b3d-4c6e-9f10-2b3c4d5e0f01", "Wind Grimoire mana", 700, AttributeModifier.Operation.ADDITION));
         b.put(AttributeRegistry.EVOCATION_SPELL_POWER.get(), mod("a91c5e20-7b3d-4c6e-9f10-2b3c4d5e0f02", "Wind Grimoire wind", 0.15, AttributeModifier.Operation.MULTIPLY_BASE));
-        b.put(AttributeRegistry.MANA_REGEN.get(), mod("a91c5e20-7b3d-4c6e-9f10-2b3c4d5e0f03", "Wind Grimoire flow", 0.15, AttributeModifier.Operation.MULTIPLY_BASE));
+        b.put(AttributeRegistry.MANA_REGEN.get(), mod("a91c5e20-7b3d-4c6e-9f10-2b3c4d5e0f03", "Wind Grimoire flow", 0.65, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.COOLDOWN_REDUCTION.get(), mod("a91c5e20-7b3d-4c6e-9f10-2b3c4d5e0f04", "Wind Grimoire haste", 0.05, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(Attributes.MOVEMENT_SPEED, mod("a91c5e20-7b3d-4c6e-9f10-2b3c4d5e0f05", "Wind Grimoire tailwind", 0.08, AttributeModifier.Operation.MULTIPLY_BASE));
         return b.build();

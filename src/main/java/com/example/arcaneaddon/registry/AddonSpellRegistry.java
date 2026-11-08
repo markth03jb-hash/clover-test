@@ -100,27 +100,27 @@ public class AddonSpellRegistry {
     // ------------------------------------------------------------------ Dark Grimoire (Yami Sukehiro's Dark Magic)
     // katana = needs the Dark Katana in the main hand.  animation = the player pose played when it's cast.
     //                                                                                   id                          cd mana power katana  animation
-    public static final RegistryObject<AbstractSpell> BLACK_BLADE = registerSpell(new DarkSpell("black_blade", 30, 40, 0, true, DarkSpell.anim("arcane_addon:dark_black_blade"), DarkFx::blackBlade));
-    public static final RegistryObject<AbstractSpell> DIMENSION_SLASH = registerSpell(new DarkSpell("dimension_slash", 12, 80, 26, true, DarkSpell.anim("arcane_addon:dark_dimension_slash"), DarkFx::dimensionSlash));
-    public static final RegistryObject<AbstractSpell> AVIDYA_SLASH = registerSpell(new DarkSpell("avidya_slash", 8, 50, 18, true, DarkSpell.anim("arcane_addon:dark_avidya"), DarkFx::avidyaSlash));
-    public static final RegistryObject<AbstractSpell> BLACK_COCOON = registerSpell(new DarkSpell("black_cocoon", 20, 80, 14, false, DarkSpell.anim("arcane_addon:dark_black_cocoon"), DarkFx::blackCocoon));
-    public static final RegistryObject<AbstractSpell> DEATH_THRUST = registerSpell(new DarkSpell("death_thrust", 10, 60, 22, true, DarkSpell.anim("arcane_addon:dark_death_thrust"), DarkFx::deathThrust));
-    public static final RegistryObject<AbstractSpell> BLACK_MOON = registerSpell(new DarkSpell("black_moon", 20, 70, 16, false, DarkSpell.anim("arcane_addon:dark_black_moon"), DarkFx::blackMoon));
-    public static final RegistryObject<AbstractSpell> BLACK_HOLE = registerSpell(new DarkSpell("black_hole", 24, 100, 10, false, DarkSpell.anim("arcane_addon:dark_black_hole"), DarkFx::blackHole));
-    public static final RegistryObject<AbstractSpell> MANA_ZONE_DIMENSION_SLASH = registerSpell(new DarkSpell("mana_zone_dimension_slash", 45, 150, 10, false, DarkSpell.anim("arcane_addon:dark_mana_zone"), DarkFx::manaZone));
-    public static final RegistryObject<AbstractSpell> KI_FORESIGHT = registerSpell(new DarkSpell("ki_foresight", 18, 30, 0, false, DarkSpell.anim("arcane_addon:dark_ki_read"), DarkFx::foresight));
-    public static final RegistryObject<AbstractSpell> EVENT_HORIZON = registerSpell(new DarkSpell("event_horizon", 90, 300, 60, true, DarkSpell.anim("arcane_addon:dark_event_horizon"), DarkFx::eventHorizon));
+    public static final RegistryObject<AbstractSpell> BLACK_BLADE = registerSpell(new DarkSpell("black_blade", 30, 25, 0, true, DarkSpell.anim("arcane_addon:dark_black_blade"), DarkFx::blackBlade));
+    public static final RegistryObject<AbstractSpell> DIMENSION_SLASH = registerSpell(new DarkSpell("dimension_slash", 12, 50, 26, true, DarkSpell.anim("arcane_addon:dark_dimension_slash"), DarkFx::dimensionSlash));
+    public static final RegistryObject<AbstractSpell> AVIDYA_SLASH = registerSpell(new DarkSpell("avidya_slash", 8, 30, 18, true, DarkSpell.anim("arcane_addon:dark_avidya"), DarkFx::avidyaSlash));
+    public static final RegistryObject<AbstractSpell> BLACK_COCOON = registerSpell(new DarkSpell("black_cocoon", 20, 50, 14, false, DarkSpell.anim("arcane_addon:dark_black_cocoon"), DarkFx::blackCocoon));
+    public static final RegistryObject<AbstractSpell> DEATH_THRUST = registerSpell(new DarkSpell("death_thrust", 10, 40, 22, true, DarkSpell.anim("arcane_addon:dark_death_thrust"), DarkFx::deathThrust));
+    public static final RegistryObject<AbstractSpell> BLACK_MOON = registerSpell(new DarkSpell("black_moon", 20, 45, 16, false, DarkSpell.anim("arcane_addon:dark_black_moon"), DarkFx::blackMoon));
+    public static final RegistryObject<AbstractSpell> BLACK_HOLE = registerSpell(new DarkSpell("black_hole", 24, 65, 10, false, DarkSpell.anim("arcane_addon:dark_black_hole"), DarkFx::blackHole));
+    public static final RegistryObject<AbstractSpell> MANA_ZONE_DIMENSION_SLASH = registerSpell(new DarkSpell("mana_zone_dimension_slash", 45, 100, 10, false, DarkSpell.anim("arcane_addon:dark_mana_zone"), DarkFx::manaZone));
+    public static final RegistryObject<AbstractSpell> KI_FORESIGHT = registerSpell(new DarkSpell("ki_foresight", 18, 20, 0, false, DarkSpell.anim("arcane_addon:dark_ki_read"), DarkFx::foresight));
+    public static final RegistryObject<AbstractSpell> EVENT_HORIZON = registerSpell(new DarkSpell("event_horizon", 90, 195, 60, true, DarkSpell.anim("arcane_addon:dark_event_horizon"), DarkFx::eventHorizon));
 
     // ------------------------------------------------------------------ Steel Grimoire (Klaus Lunettes' Steel Magic)
     //                                                                                          id                       cd mana power  animation
-    public static final RegistryObject<AbstractSpell> VIOLENT_ROTATING_LANCE = registerSpell(new SteelSpell("violent_rotating_lance", 8, 45, 16, false, SteelSpell.anim("irons_spellbooks:instant_projectile"), SteelFx::violentLance));
-    public static final RegistryObject<AbstractSpell> BLAZING_SPIRAL_LANCE = registerSpell(new SteelSpell("blazing_spiral_lance", 14, 70, 28, false, SteelSpell.anim("arcane_addon:klaus_lance_charge"), SteelFx::spiralLance));
-    public static final RegistryObject<AbstractSpell> STEEL_CASTLE_WALL = registerSpell(new SteelSpell("steel_castle_wall", 16, 70, 14, false, SteelSpell.anim("irons_spellbooks:touch_ground"), SteelFx::armoredWall));
-    public static final RegistryObject<AbstractSpell> WHITE_STEEL_HORSE_CART = registerSpell(new SteelSpell("white_steel_horse_cart", 16, 60, 14, false, SteelSpell.anim("arcane_addon:klaus_cart_ride"), SteelFx::horseCart));
-    public static final RegistryObject<AbstractSpell> THUNDER_ARROW = registerSpell(new SteelSpell("thunder_arrow", 30, 120, 34, false, SteelSpell.anim("arcane_addon:klaus_railgun"), SteelFx::thunderArrow));
-    public static final RegistryObject<AbstractSpell> ACIER_SILVA = registerSpell(new SteelSpell("acier_silva", 20, 100, 14, false, SteelSpell.anim("irons_spellbooks:stomp"), SteelFx::acierSilva));
-    public static final RegistryObject<AbstractSpell> STEEL_PRISON = registerSpell(new SteelSpell("steel_prison", 22, 70, 18, false, SteelSpell.anim("arcane_addon:klaus_clench"), SteelFx::steelPrison));
-    public static final RegistryObject<AbstractSpell> KNIGHTS_ARMOR = registerSpell(new SteelSpell("knights_armor", 120, 60, 0, false, SteelSpell.anim("arcane_addon:klaus_glasses_push"), SteelFx::knightsArmor));
+    public static final RegistryObject<AbstractSpell> VIOLENT_ROTATING_LANCE = registerSpell(new SteelSpell("violent_rotating_lance", 8, 30, 16, false, SteelSpell.anim("irons_spellbooks:instant_projectile"), SteelFx::violentLance));
+    public static final RegistryObject<AbstractSpell> BLAZING_SPIRAL_LANCE = registerSpell(new SteelSpell("blazing_spiral_lance", 14, 45, 28, false, SteelSpell.anim("arcane_addon:klaus_lance_charge"), SteelFx::spiralLance));
+    public static final RegistryObject<AbstractSpell> STEEL_CASTLE_WALL = registerSpell(new SteelSpell("steel_castle_wall", 16, 45, 14, false, SteelSpell.anim("irons_spellbooks:touch_ground"), SteelFx::armoredWall));
+    public static final RegistryObject<AbstractSpell> WHITE_STEEL_HORSE_CART = registerSpell(new SteelSpell("white_steel_horse_cart", 16, 40, 14, false, SteelSpell.anim("arcane_addon:klaus_cart_ride"), SteelFx::horseCart));
+    public static final RegistryObject<AbstractSpell> THUNDER_ARROW = registerSpell(new SteelSpell("thunder_arrow", 30, 80, 34, false, SteelSpell.anim("arcane_addon:klaus_railgun"), SteelFx::thunderArrow));
+    public static final RegistryObject<AbstractSpell> ACIER_SILVA = registerSpell(new SteelSpell("acier_silva", 20, 65, 14, false, SteelSpell.anim("irons_spellbooks:stomp"), SteelFx::acierSilva));
+    public static final RegistryObject<AbstractSpell> STEEL_PRISON = registerSpell(new SteelSpell("steel_prison", 22, 45, 18, false, SteelSpell.anim("arcane_addon:klaus_clench"), SteelFx::steelPrison));
+    public static final RegistryObject<AbstractSpell> KNIGHTS_ARMOR = registerSpell(new SteelSpell("knights_armor", 120, 40, 0, false, SteelSpell.anim("arcane_addon:klaus_glasses_push"), SteelFx::knightsArmor));
 
     /** The eight Steel Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> STEEL_SPELLS = List.of(
@@ -129,16 +129,16 @@ public class AddonSpellRegistry {
 
     // ------------------------------------------------------------------ Wind Grimoire (Yuno Grinberryall's Wind Magic)
     //                                                                                id                       cd mana power  animation
-    public static final RegistryObject<AbstractSpell> WIND_BLADE_SHOWER = registerSpell(new WindSpell("wind_blade_shower", 6, 35, 9, WindSpell.anim("arcane_addon:wind_blade_shower"), WindFx::windBladeShower));
-    public static final RegistryObject<AbstractSpell> TORNADO_FANG = registerSpell(new WindSpell("tornado_fang", 14, 70, 14, WindSpell.anim("arcane_addon:wind_tornado_fang"), WindFx::tornadoFang));
-    public static final RegistryObject<AbstractSpell> SYLPHS_BREATH = registerSpell(new WindSpell("sylphs_breath", 8, 40, 8, WindSpell.anim("arcane_addon:wind_sylphs_breath"), WindFx::sylphsBreath));
-    public static final RegistryObject<AbstractSpell> GALE_WHITE_BOW = registerSpell(new WindSpell("gale_white_bow", 7, 45, 14, WindSpell.anim("arcane_addon:wind_gale_bow"), WindFx::galeWhiteBow));
-    public static final RegistryObject<AbstractSpell> HUSHED_DANCE = registerSpell(new WindSpell("hushed_dance", 18, 30, 0, WindSpell.anim("arcane_addon:wind_hushed_dance"), WindFx::hushedDance));
-    public static final RegistryObject<AbstractSpell> SPIRIT_OF_ZEPHYR = registerSpell(new WindSpell("spirit_of_zephyr", 10, 60, 20, WindSpell.anim("arcane_addon:wind_zephyr"), WindFx::spiritOfZephyr));
-    public static final RegistryObject<AbstractSpell> SPIRIT_OF_BOREAS = registerSpell(new WindSpell("spirit_of_boreas", 14, 70, 16, WindSpell.anim("arcane_addon:wind_boreas"), WindFx::spiritOfBoreas));
-    public static final RegistryObject<AbstractSpell> SPIRIT_OF_EUROS = registerSpell(new WindSpell("spirit_of_euros", 20, 90, 34, WindSpell.anim("arcane_addon:wind_euros"), WindFx::spiritOfEuros));
-    public static final RegistryObject<AbstractSpell> SPIRIT_DIVE = registerSpell(new WindSpell("spirit_dive", 90, 150, 0, WindSpell.anim("arcane_addon:wind_spirit_dive"), WindFx::spiritDive));
-    public static final RegistryObject<AbstractSpell> SPIRIT_STORM = registerSpell(new WindSpell("spirit_storm", 60, 200, 40, WindSpell.anim("arcane_addon:wind_spirit_storm"), WindFx::spiritStorm));
+    public static final RegistryObject<AbstractSpell> WIND_BLADE_SHOWER = registerSpell(new WindSpell("wind_blade_shower", 6, 25, 9, WindSpell.anim("arcane_addon:wind_blade_shower"), WindFx::windBladeShower));
+    public static final RegistryObject<AbstractSpell> TORNADO_FANG = registerSpell(new WindSpell("tornado_fang", 14, 45, 14, WindSpell.anim("arcane_addon:wind_tornado_fang"), WindFx::tornadoFang));
+    public static final RegistryObject<AbstractSpell> SYLPHS_BREATH = registerSpell(new WindSpell("sylphs_breath", 8, 25, 8, WindSpell.anim("arcane_addon:wind_sylphs_breath"), WindFx::sylphsBreath));
+    public static final RegistryObject<AbstractSpell> GALE_WHITE_BOW = registerSpell(new WindSpell("gale_white_bow", 7, 30, 14, WindSpell.anim("arcane_addon:wind_gale_bow"), WindFx::galeWhiteBow));
+    public static final RegistryObject<AbstractSpell> HUSHED_DANCE = registerSpell(new WindSpell("hushed_dance", 18, 20, 0, WindSpell.anim("arcane_addon:wind_hushed_dance"), WindFx::hushedDance));
+    public static final RegistryObject<AbstractSpell> SPIRIT_OF_ZEPHYR = registerSpell(new WindSpell("spirit_of_zephyr", 10, 40, 20, WindSpell.anim("arcane_addon:wind_zephyr"), WindFx::spiritOfZephyr));
+    public static final RegistryObject<AbstractSpell> SPIRIT_OF_BOREAS = registerSpell(new WindSpell("spirit_of_boreas", 14, 45, 16, WindSpell.anim("arcane_addon:wind_boreas"), WindFx::spiritOfBoreas));
+    public static final RegistryObject<AbstractSpell> SPIRIT_OF_EUROS = registerSpell(new WindSpell("spirit_of_euros", 20, 60, 34, WindSpell.anim("arcane_addon:wind_euros"), WindFx::spiritOfEuros));
+    public static final RegistryObject<AbstractSpell> SPIRIT_DIVE = registerSpell(new WindSpell("spirit_dive", 90, 100, 0, WindSpell.anim("arcane_addon:wind_spirit_dive"), WindFx::spiritDive));
+    public static final RegistryObject<AbstractSpell> SPIRIT_STORM = registerSpell(new WindSpell("spirit_storm", 60, 130, 40, WindSpell.anim("arcane_addon:wind_spirit_storm"), WindFx::spiritStorm));
 
     /** The ten Wind Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> WIND_SPELLS = List.of(
@@ -147,16 +147,16 @@ public class AddonSpellRegistry {
 
     // ------------------------------------------------------------------ Mercury Grimoire (Nozel Silva's Mercury Magic)
     //                                                                                id                          cd mana power  animation
-    public static final RegistryObject<AbstractSpell> MERCURY_BULLETS = registerSpell(new MercurySpell("mercury_bullets", 5, 30, 10, MercurySpell.anim("arcane_addon:mercury_bullets"), MercuryFx::mercuryBullets));
-    public static final RegistryObject<AbstractSpell> MERCURY_SPEARS = registerSpell(new MercurySpell("mercury_spears", 9, 50, 16, MercurySpell.anim("arcane_addon:mercury_spears"), MercuryFx::mercurySpears));
-    public static final RegistryObject<AbstractSpell> SILVER_RAIN = registerSpell(new MercurySpell("silver_rain", 16, 70, 14, MercurySpell.anim("arcane_addon:mercury_silver_rain"), MercuryFx::silverRain));
-    public static final RegistryObject<AbstractSpell> STORM_OF_BLADES = registerSpell(new MercurySpell("storm_of_blades", 12, 60, 18, MercurySpell.anim("arcane_addon:mercury_storm_of_blades"), MercuryFx::stormOfBlades));
-    public static final RegistryObject<AbstractSpell> MERCURY_EAGLE = registerSpell(new MercurySpell("mercury_eagle", 14, 65, 24, MercurySpell.anim("arcane_addon:mercury_eagle"), MercuryFx::mercuryEagle));
-    public static final RegistryObject<AbstractSpell> SILVER_MIRROR = registerSpell(new MercurySpell("silver_mirror", 16, 40, 0, MercurySpell.anim("arcane_addon:mercury_mirror"), MercuryFx::silverMirror));
-    public static final RegistryObject<AbstractSpell> MERCURY_SPHERE = registerSpell(new MercurySpell("mercury_sphere", 24, 70, 0, MercurySpell.anim("arcane_addon:mercury_sphere"), MercuryFx::mercurySphere));
-    public static final RegistryObject<AbstractSpell> REGAL_SPEAR = registerSpell(new MercurySpell("regal_spear", 22, 100, 34, MercurySpell.anim("arcane_addon:mercury_regal_spear"), MercuryFx::regalSpear));
-    public static final RegistryObject<AbstractSpell> SILVER_GUARDIAN = registerSpell(new MercurySpell("silver_guardian", 60, 90, 0, MercurySpell.anim("arcane_addon:mercury_guardian"), MercuryFx::silverGuardian));
-    public static final RegistryObject<AbstractSpell> MERCURY_CAGE = registerSpell(new MercurySpell("mercury_cage", 40, 140, 30, MercurySpell.anim("arcane_addon:klaus_clench"), MercuryFx::mercuryCage));
+    public static final RegistryObject<AbstractSpell> MERCURY_BULLETS = registerSpell(new MercurySpell("mercury_bullets", 5, 20, 10, MercurySpell.anim("arcane_addon:mercury_bullets"), MercuryFx::mercuryBullets));
+    public static final RegistryObject<AbstractSpell> MERCURY_SPEARS = registerSpell(new MercurySpell("mercury_spears", 9, 30, 16, MercurySpell.anim("arcane_addon:mercury_spears"), MercuryFx::mercurySpears));
+    public static final RegistryObject<AbstractSpell> SILVER_RAIN = registerSpell(new MercurySpell("silver_rain", 16, 45, 14, MercurySpell.anim("arcane_addon:mercury_silver_rain"), MercuryFx::silverRain));
+    public static final RegistryObject<AbstractSpell> STORM_OF_BLADES = registerSpell(new MercurySpell("storm_of_blades", 12, 40, 18, MercurySpell.anim("arcane_addon:mercury_storm_of_blades"), MercuryFx::stormOfBlades));
+    public static final RegistryObject<AbstractSpell> MERCURY_EAGLE = registerSpell(new MercurySpell("mercury_eagle", 14, 40, 24, MercurySpell.anim("arcane_addon:mercury_eagle"), MercuryFx::mercuryEagle));
+    public static final RegistryObject<AbstractSpell> SILVER_MIRROR = registerSpell(new MercurySpell("silver_mirror", 16, 25, 0, MercurySpell.anim("arcane_addon:mercury_mirror"), MercuryFx::silverMirror));
+    public static final RegistryObject<AbstractSpell> MERCURY_SPHERE = registerSpell(new MercurySpell("mercury_sphere", 24, 45, 0, MercurySpell.anim("arcane_addon:mercury_sphere"), MercuryFx::mercurySphere));
+    public static final RegistryObject<AbstractSpell> REGAL_SPEAR = registerSpell(new MercurySpell("regal_spear", 22, 65, 34, MercurySpell.anim("arcane_addon:mercury_regal_spear"), MercuryFx::regalSpear));
+    public static final RegistryObject<AbstractSpell> SILVER_GUARDIAN = registerSpell(new MercurySpell("silver_guardian", 60, 60, 0, MercurySpell.anim("arcane_addon:mercury_guardian"), MercuryFx::silverGuardian));
+    public static final RegistryObject<AbstractSpell> MERCURY_CAGE = registerSpell(new MercurySpell("mercury_cage", 40, 90, 30, MercurySpell.anim("arcane_addon:klaus_clench"), MercuryFx::mercuryCage));
 
     /** The ten Mercury Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> MERCURY_SPELLS = List.of(
@@ -165,16 +165,16 @@ public class AddonSpellRegistry {
 
     // ------------------------------------------------------------------ Fire Grimoire (Magna Swing's Flame Magic)
     //                                                                                id                        cd mana power  animation
-    public static final RegistryObject<AbstractSpell> EXPLODING_FIREBALL = registerSpell(new FireSpell("exploding_fireball", 4, 30, 12, FireSpell.anim("arcane_addon:fire_fireball"), FireFx::explodingFireball));
-    public static final RegistryObject<AbstractSpell> EXPLOSIVE_SCATTERSHOT = registerSpell(new FireSpell("explosive_scattershot", 9, 55, 14, FireSpell.anim("arcane_addon:fire_scattershot"), FireFx::scattershot));
-    public static final RegistryObject<AbstractSpell> MAGNA_SPECIAL = registerSpell(new FireSpell("magna_special", 14, 70, 26, FireSpell.anim("arcane_addon:fire_magna_special"), FireFx::magnaSpecial));
-    public static final RegistryObject<AbstractSpell> FLAMING_BAT = registerSpell(new FireSpell("flaming_bat", 8, 45, 22, FireSpell.anim("arcane_addon:fire_bat_combo"), FireFx::flamingBat));
-    public static final RegistryObject<AbstractSpell> FLAME_KNUCKLES = registerSpell(new FireSpell("flame_knuckles", 30, 50, 0, FireSpell.anim("arcane_addon:fire_knuckles"), FireFx::flameKnuckles));
-    public static final RegistryObject<AbstractSpell> RING_OF_FIRE = registerSpell(new FireSpell("ring_of_fire", 18, 60, 10, FireSpell.anim("irons_spellbooks:stomp"), FireFx::ringOfFire));
-    public static final RegistryObject<AbstractSpell> FIREBALL_BARRAGE = registerSpell(new FireSpell("fireball_barrage", 12, 70, 14, FireSpell.anim("arcane_addon:fire_barrage"), FireFx::fireballBarrage));
-    public static final RegistryObject<AbstractSpell> FIREBALL_RAIN = registerSpell(new FireSpell("fireball_rain", 22, 90, 16, FireSpell.anim("arcane_addon:fire_rain"), FireFx::fireballRain));
-    public static final RegistryObject<AbstractSpell> SOUL_CHAIN = registerSpell(new FireSpell("soul_chain", 45, 100, 8, FireSpell.anim("arcane_addon:fire_soul_chain"), FireFx::soulChain));
-    public static final RegistryObject<AbstractSpell> FIRE_CANNON = registerSpell(new FireSpell("fire_cannon", 60, 180, 40, FireSpell.anim("arcane_addon:fire_cannon"), FireFx::fireCannon));
+    public static final RegistryObject<AbstractSpell> EXPLODING_FIREBALL = registerSpell(new FireSpell("exploding_fireball", 4, 20, 12, FireSpell.anim("arcane_addon:fire_fireball"), FireFx::explodingFireball));
+    public static final RegistryObject<AbstractSpell> EXPLOSIVE_SCATTERSHOT = registerSpell(new FireSpell("explosive_scattershot", 9, 35, 14, FireSpell.anim("arcane_addon:fire_scattershot"), FireFx::scattershot));
+    public static final RegistryObject<AbstractSpell> MAGNA_SPECIAL = registerSpell(new FireSpell("magna_special", 14, 45, 26, FireSpell.anim("arcane_addon:fire_magna_special"), FireFx::magnaSpecial));
+    public static final RegistryObject<AbstractSpell> FLAMING_BAT = registerSpell(new FireSpell("flaming_bat", 8, 30, 22, FireSpell.anim("arcane_addon:fire_bat_combo"), FireFx::flamingBat));
+    public static final RegistryObject<AbstractSpell> FLAME_KNUCKLES = registerSpell(new FireSpell("flame_knuckles", 30, 30, 0, FireSpell.anim("arcane_addon:fire_knuckles"), FireFx::flameKnuckles));
+    public static final RegistryObject<AbstractSpell> RING_OF_FIRE = registerSpell(new FireSpell("ring_of_fire", 18, 40, 10, FireSpell.anim("irons_spellbooks:stomp"), FireFx::ringOfFire));
+    public static final RegistryObject<AbstractSpell> FIREBALL_BARRAGE = registerSpell(new FireSpell("fireball_barrage", 12, 45, 14, FireSpell.anim("arcane_addon:fire_barrage"), FireFx::fireballBarrage));
+    public static final RegistryObject<AbstractSpell> FIREBALL_RAIN = registerSpell(new FireSpell("fireball_rain", 22, 60, 16, FireSpell.anim("arcane_addon:fire_rain"), FireFx::fireballRain));
+    public static final RegistryObject<AbstractSpell> SOUL_CHAIN = registerSpell(new FireSpell("soul_chain", 45, 65, 8, FireSpell.anim("arcane_addon:fire_soul_chain"), FireFx::soulChain));
+    public static final RegistryObject<AbstractSpell> FIRE_CANNON = registerSpell(new FireSpell("fire_cannon", 60, 115, 40, FireSpell.anim("arcane_addon:fire_cannon"), FireFx::fireCannon));
 
     /** The ten Fire Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> FIRE_SPELLS = List.of(
@@ -183,16 +183,16 @@ public class AddonSpellRegistry {
 
     // ------------------------------------------------------------------ Lightning Grimoire (Luck Voltia's Lightning Magic)
     //                                                                                id                       cd mana power  animation
-    public static final RegistryObject<AbstractSpell> THUNDER_FIST = registerSpell(new LightningSpell("thunder_fist", 5, 35, 14, LightningSpell.anim("arcane_addon:lightning_fist"), LightningFx::thunderFist));
-    public static final RegistryObject<AbstractSpell> THUNDER_KICK = registerSpell(new LightningSpell("thunder_kick", 8, 45, 20, LightningSpell.anim("arcane_addon:lightning_kicks"), LightningFx::thunderKick));
-    public static final RegistryObject<AbstractSpell> THUNDER_ORB = registerSpell(new LightningSpell("thunder_orb", 10, 50, 14, LightningSpell.anim("arcane_addon:lightning_orb"), LightningFx::thunderOrb));
-    public static final RegistryObject<AbstractSpell> LIGHTNING_STEP = registerSpell(new LightningSpell("lightning_step", 4, 25, 8, LightningSpell.anim("irons_spellbooks:instant_self"), LightningFx::lightningStep));
-    public static final RegistryObject<AbstractSpell> CHAIN_LIGHTNING = registerSpell(new LightningSpell("chain_lightning", 10, 55, 14, LightningSpell.anim("arcane_addon:lightning_chain"), LightningFx::chainLightning));
-    public static final RegistryObject<AbstractSpell> THUNDER_GLOVES = registerSpell(new LightningSpell("thunder_gloves", 30, 50, 0, LightningSpell.anim("arcane_addon:fire_knuckles"), LightningFx::thunderGloves));
-    public static final RegistryObject<AbstractSpell> MANA_SENSE = registerSpell(new LightningSpell("mana_sense", 20, 20, 0, LightningSpell.anim("arcane_addon:dark_ki_read"), LightningFx::manaSense));
-    public static final RegistryObject<AbstractSpell> THUNDERFALL = registerSpell(new LightningSpell("thunderfall", 20, 90, 16, LightningSpell.anim("arcane_addon:fire_rain"), LightningFx::thunderfall));
-    public static final RegistryObject<AbstractSpell> THUNDER_GOD_MODE = registerSpell(new LightningSpell("thunder_god_mode", 90, 150, 0, LightningSpell.anim("arcane_addon:lightning_mode"), LightningFx::thunderMode));
-    public static final RegistryObject<AbstractSpell> THUNDER_RAMPAGE = registerSpell(new LightningSpell("thunder_rampage", 60, 180, 30, LightningSpell.anim("arcane_addon:lightning_rampage"), LightningFx::rampage));
+    public static final RegistryObject<AbstractSpell> THUNDER_FIST = registerSpell(new LightningSpell("thunder_fist", 5, 25, 14, LightningSpell.anim("arcane_addon:lightning_fist"), LightningFx::thunderFist));
+    public static final RegistryObject<AbstractSpell> THUNDER_KICK = registerSpell(new LightningSpell("thunder_kick", 8, 30, 20, LightningSpell.anim("arcane_addon:lightning_kicks"), LightningFx::thunderKick));
+    public static final RegistryObject<AbstractSpell> THUNDER_ORB = registerSpell(new LightningSpell("thunder_orb", 10, 30, 14, LightningSpell.anim("arcane_addon:lightning_orb"), LightningFx::thunderOrb));
+    public static final RegistryObject<AbstractSpell> LIGHTNING_STEP = registerSpell(new LightningSpell("lightning_step", 4, 15, 8, LightningSpell.anim("irons_spellbooks:instant_self"), LightningFx::lightningStep));
+    public static final RegistryObject<AbstractSpell> CHAIN_LIGHTNING = registerSpell(new LightningSpell("chain_lightning", 10, 35, 14, LightningSpell.anim("arcane_addon:lightning_chain"), LightningFx::chainLightning));
+    public static final RegistryObject<AbstractSpell> THUNDER_GLOVES = registerSpell(new LightningSpell("thunder_gloves", 30, 30, 0, LightningSpell.anim("arcane_addon:fire_knuckles"), LightningFx::thunderGloves));
+    public static final RegistryObject<AbstractSpell> MANA_SENSE = registerSpell(new LightningSpell("mana_sense", 20, 15, 0, LightningSpell.anim("arcane_addon:dark_ki_read"), LightningFx::manaSense));
+    public static final RegistryObject<AbstractSpell> THUNDERFALL = registerSpell(new LightningSpell("thunderfall", 20, 60, 16, LightningSpell.anim("arcane_addon:fire_rain"), LightningFx::thunderfall));
+    public static final RegistryObject<AbstractSpell> THUNDER_GOD_MODE = registerSpell(new LightningSpell("thunder_god_mode", 90, 100, 0, LightningSpell.anim("arcane_addon:lightning_mode"), LightningFx::thunderMode));
+    public static final RegistryObject<AbstractSpell> THUNDER_RAMPAGE = registerSpell(new LightningSpell("thunder_rampage", 60, 115, 30, LightningSpell.anim("arcane_addon:lightning_rampage"), LightningFx::rampage));
 
     /** The ten Lightning Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> LIGHTNING_SPELLS = List.of(
@@ -201,16 +201,16 @@ public class AddonSpellRegistry {
 
     // ------------------------------------------------------------------ Hellfire Grimoire (Mereoleona Vermillion's Flame Magic)
     //                                                                                  id                          cd mana power  animation
-    public static final RegistryObject<AbstractSpell> CALIDOS_BRACHIUM = registerSpell(new HellfireSpell("calidos_brachium", 5, 35, 16, HellfireSpell.anim("arcane_addon:lion_punch"), HellfireFx::calidosBrachium));
-    public static final RegistryObject<AbstractSpell> BRACHIUM_BARRAGE = registerSpell(new HellfireSpell("calidos_brachium_barrage", 14, 80, 30, HellfireSpell.anim("arcane_addon:lion_barrage"), HellfireFx::barrage));
-    public static final RegistryObject<AbstractSpell> FLAME_LION_PAWS = registerSpell(new HellfireSpell("flame_lion_paws", 16, 70, 24, HellfireSpell.anim("arcane_addon:klaus_clench"), HellfireFx::lionPaws));
-    public static final RegistryObject<AbstractSpell> LIONESS_CHARGE = registerSpell(new HellfireSpell("lioness_charge", 7, 40, 18, HellfireSpell.anim("arcane_addon:lightning_fist"), HellfireFx::lionessCharge));
-    public static final RegistryObject<AbstractSpell> HELL_MANA_SKIN = registerSpell(new HellfireSpell("mana_skin", 40, 60, 0, HellfireSpell.anim("arcane_addon:mercury_guardian"), HellfireFx::manaSkin));
-    public static final RegistryObject<AbstractSpell> HELL_MANA_ZONE = registerSpell(new HellfireSpell("lion_mana_zone", 60, 140, 0, HellfireSpell.anim("arcane_addon:dark_mana_zone"), HellfireFx::manaZone));
-    public static final RegistryObject<AbstractSpell> GROUND_PUNCH = registerSpell(new HellfireSpell("ground_punch", 12, 60, 18, HellfireSpell.anim("arcane_addon:lion_ground_punch"), HellfireFx::groundPunch));
-    public static final RegistryObject<AbstractSpell> BURNING_GUARD = registerSpell(new HellfireSpell("burning_guard", 12, 35, 0, HellfireSpell.anim("arcane_addon:lion_guard"), HellfireFx::burningGuard));
-    public static final RegistryObject<AbstractSpell> HELLFIRE_INCARNATE = registerSpell(new HellfireSpell("hellfire_incarnate", 120, 160, 0, HellfireSpell.anim("arcane_addon:lightning_mode"), HellfireFx::hellfire));
-    public static final RegistryObject<AbstractSpell> BRACHIUM_PURGATORY = registerSpell(new HellfireSpell("calidos_brachium_purgatory", 120, 100, 55, HellfireSpell.anim("arcane_addon:lion_purgatory"), HellfireFx::purgatory));
+    public static final RegistryObject<AbstractSpell> CALIDOS_BRACHIUM = registerSpell(new HellfireSpell("calidos_brachium", 5, 25, 16, HellfireSpell.anim("arcane_addon:lion_punch"), HellfireFx::calidosBrachium));
+    public static final RegistryObject<AbstractSpell> BRACHIUM_BARRAGE = registerSpell(new HellfireSpell("calidos_brachium_barrage", 14, 50, 30, HellfireSpell.anim("arcane_addon:lion_barrage"), HellfireFx::barrage));
+    public static final RegistryObject<AbstractSpell> FLAME_LION_PAWS = registerSpell(new HellfireSpell("flame_lion_paws", 16, 45, 24, HellfireSpell.anim("arcane_addon:klaus_clench"), HellfireFx::lionPaws));
+    public static final RegistryObject<AbstractSpell> LIONESS_CHARGE = registerSpell(new HellfireSpell("lioness_charge", 7, 25, 18, HellfireSpell.anim("arcane_addon:lightning_fist"), HellfireFx::lionessCharge));
+    public static final RegistryObject<AbstractSpell> HELL_MANA_SKIN = registerSpell(new HellfireSpell("mana_skin", 40, 40, 0, HellfireSpell.anim("arcane_addon:mercury_guardian"), HellfireFx::manaSkin));
+    public static final RegistryObject<AbstractSpell> HELL_MANA_ZONE = registerSpell(new HellfireSpell("lion_mana_zone", 60, 90, 0, HellfireSpell.anim("arcane_addon:dark_mana_zone"), HellfireFx::manaZone));
+    public static final RegistryObject<AbstractSpell> GROUND_PUNCH = registerSpell(new HellfireSpell("ground_punch", 12, 40, 18, HellfireSpell.anim("arcane_addon:lion_ground_punch"), HellfireFx::groundPunch));
+    public static final RegistryObject<AbstractSpell> BURNING_GUARD = registerSpell(new HellfireSpell("burning_guard", 12, 25, 0, HellfireSpell.anim("arcane_addon:lion_guard"), HellfireFx::burningGuard));
+    public static final RegistryObject<AbstractSpell> HELLFIRE_INCARNATE = registerSpell(new HellfireSpell("hellfire_incarnate", 120, 105, 0, HellfireSpell.anim("arcane_addon:lightning_mode"), HellfireFx::hellfire));
+    public static final RegistryObject<AbstractSpell> BRACHIUM_PURGATORY = registerSpell(new HellfireSpell("calidos_brachium_purgatory", 120, 65, 55, HellfireSpell.anim("arcane_addon:lion_purgatory"), HellfireFx::purgatory));
 
     /** The ten Hellfire Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> HELLFIRE_SPELLS = List.of(
@@ -219,16 +219,16 @@ public class AddonSpellRegistry {
 
     // ------------------------------------------------------------------ Bone Grimoire (Zenon Zogratis' Bone Magic)
     //                                                                             id                       cd mana power  animation
-    public static final RegistryObject<AbstractSpell> BONE_SPEAR_VOLLEY = registerSpell(new BoneSpell("bone_spear_volley", 6, 40, 14, BoneSpell.anim("arcane_addon:bone_volley"), BoneFx::spearVolley));
-    public static final RegistryObject<AbstractSpell> BONE_SPIKE_ERUPTION = registerSpell(new BoneSpell("bone_spike_eruption", 10, 55, 14, BoneSpell.anim("irons_spellbooks:stomp"), BoneFx::spikeEruption));
-    public static final RegistryObject<AbstractSpell> BONE_SWORD = registerSpell(new BoneSpell("bone_sword", 8, 40, 22, BoneSpell.anim("arcane_addon:fire_bat_combo"), BoneFx::boneSword));
-    public static final RegistryObject<AbstractSpell> BONE_WHIPS = registerSpell(new BoneSpell("bone_whips", 14, 70, 22, BoneSpell.anim("arcane_addon:mana_bone_whips"), BoneFx::boneWhips));
-    public static final RegistryObject<AbstractSpell> RIBCAGE_PRISON = registerSpell(new BoneSpell("ribcage_prison", 20, 70, 20, BoneSpell.anim("arcane_addon:klaus_clench"), BoneFx::ribcage));
-    public static final RegistryObject<AbstractSpell> MARROW_REGENERATION = registerSpell(new BoneSpell("marrow_regeneration", 40, 60, 0, BoneSpell.anim("arcane_addon:mercury_guardian"), BoneFx::regeneration));
-    public static final RegistryObject<AbstractSpell> BONE_THICKET = registerSpell(new BoneSpell("bone_thicket", 22, 90, 14, BoneSpell.anim("irons_spellbooks:touch_ground"), BoneFx::thicket));
-    public static final RegistryObject<AbstractSpell> SPATIAL_CUBE = registerSpell(new BoneSpell("spatial_cube", 26, 90, 26, BoneSpell.anim("arcane_addon:lightning_chain"), BoneFx::spatialCube));
-    public static final RegistryObject<AbstractSpell> BEELZEBUB_UNION = registerSpell(new BoneSpell("beelzebub_union", 100, 150, 0, BoneSpell.anim("arcane_addon:devil_union_awaken"), BoneFx::devilUnion));
-    public static final RegistryObject<AbstractSpell> BONE_SPEAR_STORM = registerSpell(new BoneSpell("bone_spear_storm", 60, 180, 30, BoneSpell.anim("arcane_addon:fire_rain"), BoneFx::spearStorm));
+    public static final RegistryObject<AbstractSpell> BONE_SPEAR_VOLLEY = registerSpell(new BoneSpell("bone_spear_volley", 6, 25, 14, BoneSpell.anim("arcane_addon:bone_volley"), BoneFx::spearVolley));
+    public static final RegistryObject<AbstractSpell> BONE_SPIKE_ERUPTION = registerSpell(new BoneSpell("bone_spike_eruption", 10, 35, 14, BoneSpell.anim("irons_spellbooks:stomp"), BoneFx::spikeEruption));
+    public static final RegistryObject<AbstractSpell> BONE_SWORD = registerSpell(new BoneSpell("bone_sword", 8, 25, 22, BoneSpell.anim("arcane_addon:fire_bat_combo"), BoneFx::boneSword));
+    public static final RegistryObject<AbstractSpell> BONE_WHIPS = registerSpell(new BoneSpell("bone_whips", 14, 45, 22, BoneSpell.anim("arcane_addon:mana_bone_whips"), BoneFx::boneWhips));
+    public static final RegistryObject<AbstractSpell> RIBCAGE_PRISON = registerSpell(new BoneSpell("ribcage_prison", 20, 45, 20, BoneSpell.anim("arcane_addon:klaus_clench"), BoneFx::ribcage));
+    public static final RegistryObject<AbstractSpell> MARROW_REGENERATION = registerSpell(new BoneSpell("marrow_regeneration", 40, 40, 0, BoneSpell.anim("arcane_addon:mercury_guardian"), BoneFx::regeneration));
+    public static final RegistryObject<AbstractSpell> BONE_THICKET = registerSpell(new BoneSpell("bone_thicket", 22, 60, 14, BoneSpell.anim("irons_spellbooks:touch_ground"), BoneFx::thicket));
+    public static final RegistryObject<AbstractSpell> SPATIAL_CUBE = registerSpell(new BoneSpell("spatial_cube", 26, 60, 26, BoneSpell.anim("arcane_addon:lightning_chain"), BoneFx::spatialCube));
+    public static final RegistryObject<AbstractSpell> BEELZEBUB_UNION = registerSpell(new BoneSpell("beelzebub_union", 100, 100, 0, BoneSpell.anim("arcane_addon:devil_union_awaken"), BoneFx::devilUnion));
+    public static final RegistryObject<AbstractSpell> BONE_SPEAR_STORM = registerSpell(new BoneSpell("bone_spear_storm", 60, 115, 30, BoneSpell.anim("arcane_addon:fire_rain"), BoneFx::spearStorm));
 
     /** The ten Bone Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> BONE_SPELLS = List.of(

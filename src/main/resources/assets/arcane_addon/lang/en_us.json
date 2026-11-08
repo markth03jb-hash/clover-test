@@ -348,5 +348,9 @@
   "ui.arcane_addon.limit.evolved": "%s has evolved",
   "ui.arcane_addon.limit.end": "Your limits settle back... for now.",
   "ui.arcane_addon.limit.cmd": "%s surpassed their limits.",
-  "ui.arcane_addon.limit.reset": "Surpassing Limits cooldown cleared for %s."
+  "ui.arcane_addon.limit.reset": "Surpassing Limits cooldown cleared for %s.",
+  "ui.arcane_addon.beelzebub.bone_sword": "Beelzebub: Bone Sword",
+  "ui.arcane_addon.beelzebub.ribcage": "Beelzebub: Ribcage Prison",
+  "ui.arcane_addon.beelzebub.spatial_cube": "Beelzebub: Spatial Cube",
+  "ui.arcane_addon.beelzebub.spear_storm": "Beelzebub: Bone Spear Storm"
 }

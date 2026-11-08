@@ -30,7 +30,8 @@ public class FireGrimoireItem extends SimpleAttributeSpellBook {
 
     private static Multimap<Attribute, AttributeModifier> modifiers() {
         ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        b.put(AttributeRegistry.MAX_MANA.get(), mod("c2f4a6b8-1d3e-4f50-8a1b-2c3d4e5f0b01", "Fire Grimoire mana", 250, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MAX_MANA.get(), mod("c2f4a6b8-1d3e-4f50-8a1b-2c3d4e5f0b01", "Fire Grimoire mana", 600, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MANA_REGEN.get(), mod("c2f4a6b8-1d3e-4f50-8a1b-2c3d4e5f0b99", "Fire Grimoire mana flow", 0.5, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.FIRE_SPELL_POWER.get(), mod("c2f4a6b8-1d3e-4f50-8a1b-2c3d4e5f0b02", "Fire Grimoire flame", 0.2, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.FIRE_MAGIC_RESIST.get(), mod("c2f4a6b8-1d3e-4f50-8a1b-2c3d4e5f0b03", "Fire Grimoire heat", 0.25, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(Attributes.ATTACK_DAMAGE, mod("c2f4a6b8-1d3e-4f50-8a1b-2c3d4e5f0b04", "Fire Grimoire fists", 2.0, AttributeModifier.Operation.ADDITION));

@@ -135,7 +135,7 @@ public final class DevilFx {
 
     /**
      * Black Divider: Asta raises the sword overhead with both hands while anti magic floods into it, then brings it
-     * down in one cut that releases a towering black blade with an ember core. It splits the ground and space along
+     * down in one cut that releases a towering black blade with an ember core. It splits the ground along
      * a 40-block line, cancels the magic of everything it passes (casts broken, magic projectiles erased) and
      * cuts every enemy in its path.
      */
@@ -187,7 +187,7 @@ public final class DevilFx {
                     tt.hurtMarked = true;
                 });
             }
-            // the cut splits the ground, erases magic and tears space as it passes
+            // the cut splits the ground and erases magic as it passes
             int n = 0;
             for (double k = 3; k < reach; k += 4, n++) {
                 final double kk = k;
@@ -201,10 +201,6 @@ public final class DevilFx {
                             new net.minecraft.world.phys.AABB(a1, a1).inflate(3.5, 6, 3.5), x -> x.getOwner() != p)) {
                         FxLib.spark(sl, EMBER, pr.position(), 0.6f);
                         pr.discard();
-                    }
-                    if (nn % 2 == 0) {
-                        Vec3 c = a1.add(up.scale(aimed ? 0 : 2.0));
-                        FxSend.cracks(sl, EMBER, c, dir.add(up.scale(nn % 4 == 0 ? 0.2 : -0.2)).normalize(), dir.cross(rt).normalize(), 2.6f, 36, true, (int) (sl.getGameTime() + nn * 17));
                     }
                 });
             }
@@ -226,7 +222,7 @@ public final class DevilFx {
     public static void blackHurricane(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 1f, 0.5f);
-        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.7f, 0.6f);
+        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.7f, 0.6f);
         for (int t = 0; t < HURRICANE_TICKS; t++) {
             final int tt = t;
             AstaFx.later(t, () -> {

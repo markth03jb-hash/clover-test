@@ -34,11 +34,11 @@ public final class StanceAnimations {
     private StanceAnimations() {}
 
     public static final ResourceLocation LAYER = ResourceLocation.fromNamespaceAndPath("arcane_addon", "stance");
-    public static final int PRIORITY = 500;   // under Iron's cast layer and the addon's move layer
+    public static final int PRIORITY = 10;    // UNDER Iron's cast layer (42) and the addon's move layer, so spell poses always win
 
     private enum Style { NONE, SAMURAI, THUNDER }
 
-    private static final class State { Style style = Style.NONE; boolean wasSwinging; int combo; boolean attacking; }
+    private static final class State { Style style = Style.NONE; boolean wasSwinging; int combo; boolean attacking; boolean walking; int still; }
     private static final Map<Integer, State> STATES = new HashMap<>();
 
     private static ResourceLocation id(String n) { return ResourceLocation.fromNamespaceAndPath("arcane_addon", n); }
@@ -76,6 +76,24 @@ public final class StanceAnimations {
             st.style = style;
             IAnimation cur = layer.getAnimation();
             boolean active = cur != null && cur.isActive();
+            // moving: the stance steps aside so the arms swing with the normal walk (no sword glued in place),
+            // and comes back once you have stood still for a moment
+            double dx = p.getX() - p.xo, dz = p.getZ() - p.zo;
+            boolean moving = dx * dx + dz * dz > 0.0004;
+            st.still = moving ? 0 : st.still + 1;
+            if (!swingStart && !st.attacking) {
+                if (moving && !st.walking) {
+                    st.walking = true;
+                    layer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(4, Ease.INOUTSINE), null);
+                    continue;
+                }
+                if (st.walking) {
+                    if (st.still < 4) continue;
+                    st.walking = false;
+                    play(layer, id(style == Style.SAMURAI ? "samurai_idle" : "thunder_idle"), 5);
+                    continue;
+                }
+            }
             if (swingStart) {   // an attack: the next cut / blow in the combo
                 String[] combo = style == Style.SAMURAI
                         ? new String[]{"samurai_kesa", "samurai_yoko", "samurai_kiriage"}
@@ -84,6 +102,7 @@ public final class StanceAnimations {
                 play(layer, id(combo[st.combo % combo.length]), 2);
                 st.combo++;
                 st.attacking = true;
+                st.walking = false;
             } else if (changed || !active) {   // into the stance (it loops by itself from then on)
                 st.attacking = false;
                 play(layer, id(style == Style.SAMURAI ? "samurai_idle" : "thunder_idle"), changed ? 5 : 3);

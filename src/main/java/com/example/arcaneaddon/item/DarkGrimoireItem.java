@@ -30,7 +30,8 @@ public class DarkGrimoireItem extends SimpleAttributeSpellBook {
 
     private static Multimap<Attribute, AttributeModifier> modifiers() {
         ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        b.put(AttributeRegistry.MAX_MANA.get(), mod("d4a7b9c0-1e2f-4a3b-8c4d-5e6f00000d01", "Dark Grimoire mana", 300, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MAX_MANA.get(), mod("d4a7b9c0-1e2f-4a3b-8c4d-5e6f00000d01", "Dark Grimoire mana", 650, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MANA_REGEN.get(), mod("d4a7b9c0-1e2f-4a3b-8c4d-5e6f00000d99", "Dark Grimoire mana flow", 0.5, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.ENDER_SPELL_POWER.get(), mod("d4a7b9c0-1e2f-4a3b-8c4d-5e6f00000d02", "Dark Grimoire darkness", 0.15, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.SPELL_RESIST.get(), mod("d4a7b9c0-1e2f-4a3b-8c4d-5e6f00000d03", "Dark Grimoire ward", 0.10, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(Attributes.ATTACK_DAMAGE, mod("d4a7b9c0-1e2f-4a3b-8c4d-5e6f00000d04", "Dark Grimoire strength", 2.0, AttributeModifier.Operation.ADDITION));

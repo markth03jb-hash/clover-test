@@ -30,7 +30,8 @@ public class LightningGrimoireItem extends SimpleAttributeSpellBook {
 
     private static Multimap<Attribute, AttributeModifier> modifiers() {
         ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        b.put(AttributeRegistry.MAX_MANA.get(), mod("d3a5b7c9-2e4f-4061-9b2c-3d4e5f6a0c01", "Lightning Grimoire mana", 250, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MAX_MANA.get(), mod("d3a5b7c9-2e4f-4061-9b2c-3d4e5f6a0c01", "Lightning Grimoire mana", 600, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MANA_REGEN.get(), mod("d3a5b7c9-2e4f-4061-9b2c-3d4e5f6a0c99", "Lightning Grimoire mana flow", 0.5, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.LIGHTNING_SPELL_POWER.get(), mod("d3a5b7c9-2e4f-4061-9b2c-3d4e5f6a0c02", "Lightning Grimoire thunder", 0.2, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.CAST_TIME_REDUCTION.get(), mod("d3a5b7c9-2e4f-4061-9b2c-3d4e5f6a0c03", "Lightning Grimoire speed", 0.15, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(Attributes.MOVEMENT_SPEED, mod("d3a5b7c9-2e4f-4061-9b2c-3d4e5f6a0c04", "Lightning Grimoire boots", 0.1, AttributeModifier.Operation.MULTIPLY_BASE));

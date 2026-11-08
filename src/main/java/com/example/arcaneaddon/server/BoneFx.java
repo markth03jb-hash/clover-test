@@ -108,6 +108,20 @@ public class BoneFx {
 
     private static float power(ServerPlayer p, float base) { return inUnion(p) ? base * 1.35f : base; }
 
+    /** Client-drawn effects tied to the caster: 37 = the bone sword in the hand, 38 = the bone whips. */
+    private static void sendHeld(ServerPlayer p, int shape, int life, float r, float count, float period, boolean union) {
+        FxPacket pkt = new FxPacket();
+        pkt.shape = (byte) shape; pkt.id = p.getId(); pkt.life = life; pkt.r = r; pkt.h = count; pkt.a0 = period; pkt.palette = (byte) (union ? 1 : 0);
+        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+    }
+
+    /** A bone spear's whole flight, sent once: the client glides it (smooth, no per-tick re-sends). */
+    private static void spearFlight(ServerLevel sl, ServerPlayer p, Vec3 pos, Vec3 dir, double speed, int maxSteps, float size) {
+        Vec3 far = clip(sl, p, pos, pos.add(dir.scale(speed * (maxSteps + 1))));
+        int ticks = (int) Math.max(1, Math.ceil(far.distanceTo(pos) / speed));
+        bone(sl, SPEAR, pos.add(dir.scale(speed - 0.9 * size)), dir, rightOf(dir), 0.9f * size, 0.08f * size, ticks + 1, 0, FxPacket.HOLD, 0, dir.scale(speed), ticks - 1);
+    }
+
     // ================================================================== 1. Bone Spear Volley
     private static final int VOLLEY_RELEASE = 8;
 
@@ -144,6 +158,17 @@ public class BoneFx {
                 Vec3 d = aim.add(rt.scale(Math.sin(a) * 1.5)).subtract(at).normalize();
                 AstaFx.later(i / 3, () -> spear(p, sl, at, d, power(p, power) * 0.4f, 0, new HashSet<>(), 0.9f));
             }
+            if (u) {   // Beelzebub: rifts open in space all round the target and more spears come out of them
+                LivingEntity tg = aimed(p, 40, 25);
+                Vec3 at0 = tg != null ? mid(tg) : aim;
+                for (int i = 0; i < 6; i++) {
+                    double a = Math.PI * 2 * i / 6;
+                    Vec3 from = at0.add(Math.cos(a) * 5, 2.5 + (i % 2) * 1.5, Math.sin(a) * 5);
+                    Vec3 d = at0.subtract(from).normalize();
+                    FxSend.cracks(sl, SPACE, from, rightOf(d), rightOf(d).cross(d).normalize(), 0.9f, 14, false, (int) sl.getGameTime() + i * 7);
+                    AstaFx.later(3 + i, () -> spear(p, sl, from, d, power(p, power) * 0.4f, 0, new HashSet<>(), 0.9f));
+                }
+            }
             sound(sl, p.position(), SoundEvents.TRIDENT_THROW, 1f, 0.7f);
         });
     }
@@ -151,9 +176,9 @@ public class BoneFx {
     /** One flying bone spear, piercing; it sticks where it hits a wall. */
     private static void spear(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float dmg, int step, Set<UUID> hit, float size) {
         if (!alive(p) || step > 14) return;
+        if (step == 0) spearFlight(sl, p, pos, dir, 3, 14, size);
         Vec3 want = pos.add(dir.scale(3));
         Vec3 next = clip(sl, p, pos, want);
-        bone(sl, SPEAR, next.subtract(dir.scale(0.9 * size)), dir, rightOf(dir), 0.9f * size, 0.08f * size, 2, 0, FxPacket.HOLD, 0, dir.scale(3), 0);
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.0))) {
             if (!t.getBoundingBox().inflate(0.35).clip(pos, next).isPresent()) continue;
             if (!hit.add(t.getUUID())) continue;
@@ -216,26 +241,21 @@ public class BoneFx {
     public static void boneSword(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         boolean u = inUnion(p);
-        // the sword itself, following the swings: {tick, yaw, pitch}
-        double[][] keys = {{0, 30, -50}, {3, 100, 10}, {5, -80, 10}, {9, -95, 10}, {12, 80, 10}, {17, 0, 85}, {20, 0, -40}, {26, 30, -55}};
-        for (int t = 0; t <= 26; t++) {
-            final int tt = t;
-            AstaFx.later(t, () -> {
-                if (!alive(p)) return;
-                Vec3[] a = swordFrame(p, keys, tt), b = swordFrame(p, keys, tt + 1);
-                float len = u ? 1.3f : 1.05f;
-                Vec3 c0 = a[0].add(a[1].scale(len)), c1 = b[0].add(b[1].scale(len));
-                bone(sl, SPEAR, c0, a[1], rightOf(a[1]), len, 0.09f, 2, 0, FxPacket.HOLD, 0, c1.subtract(c0), 0);   // the blade: a long sharpened bone
-                Vec3 g0 = a[0], g1 = b[0];
-                bone(sl, LONG, g0, rightOf(a[1]), a[1], 0.22f, 0.05f, 2, 0, FxPacket.HOLD, 0, g1.subtract(g0), 0);   // the guard: a cross-bone
-            });
-        }
+        if (u) unionMsg(p, "bone_sword");
+        // the sword grows out of your hand and is drawn on your arm, so it follows the swing exactly, all one piece
+        sendHeld(p, 37, 26, u ? 1.9f : 1.5f, 0, 0, u);
         sound(sl, p.position(), SoundEvents.SKELETON_AMBIENT, 0.7f, 0.7f);
+        crack(sl, p.position(), 0.5f);
+        double[][] cutDir = {{1, 0.3}, {-1, 0.3}, {0, 1}};   // right-to-left, left-to-right, overhead
         for (int i = 0; i < 3; i++) {
             final int ii = i;
             AstaFx.later(SWORD_CUTS[i], () -> {
                 if (!alive(p)) return;
                 Vec3 look = p.getLookAngle();
+                Vec3 rt = rightOf(look), up = rt.cross(look).normalize();
+                Vec3 sweep = ii == 2 ? up : rt.scale(cutDir[ii][0]).add(up.scale(cutDir[ii][1])).normalize();
+                Vec3 at = p.getEyePosition().add(look.scale(1.6)).add(0, -0.3, 0);
+                FxSend.slash(sl, B, at, look, sweep, 1.6f, 2.4f, 5, 0.3f, 0.9f);   // the cut, in bone-white
                 double reach = u ? 6 : 4.5;
                 for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(reach))) {
                     Vec3 to = mid(t).subtract(p.getEyePosition());
@@ -244,6 +264,15 @@ public class BoneFx {
                     t.setDeltaMovement(t.getDeltaMovement().add(look.scale(0.6)).add(0, ii == 2 ? -0.3 : 0.2, 0));
                     t.hurtMarked = true;
                     splinters(sl, mid(t), look);
+                }
+                if (u) {   // Beelzebub: the cut carries on through space - a violet-black wave 12 blocks long
+                    FxSend.slash(sl, SPACE, at.add(look.scale(0.5)), look, sweep, 2.0f, 4.5f, 8, 1.6f, 0.8f);
+                    Vec3 end = at.add(look.scale(12));
+                    for (LivingEntity t : enemies(sl, p, new AABB(at, end).inflate(2.5))) {
+                        Vec3 on = closestOnSegment(at, end, mid(t));
+                        if (on.distanceTo(mid(t)) > 2.5) continue;
+                        AstaFx.damage(p, t, power(p, power) * 0.3f, "bone_sword");
+                    }
                 }
                 sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 0.8f);
             });
@@ -291,6 +320,9 @@ public class BoneFx {
         if (u) unionMsg(p, "bone_whips");
         int n = u ? 6 : 4;
         double R = u ? 12 : 9;
+        double period = u ? 7 : 10;   // ticks per lash
+        sendHeld(p, 38, WHIP_TICKS, (float) R, n, (float) period, u);   // the client draws them, smoothly, every frame
+        crack(sl, p.position(), 0.8f);
         Map<UUID, Long> lastHit = new HashMap<>();
         for (int t = 0; t < WHIP_TICKS; t++) {
             final int tt = t;
@@ -299,29 +331,22 @@ public class BoneFx {
                 List<LivingEntity> foes = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(R)));
                 foes.removeIf(e -> e.distanceTo(p) > R);
                 foes.sort(Comparator.comparingDouble(e -> e.distanceToSqr(p)));
-                Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
-                Vec3 back = p.position().add(0, 1.3, 0).subtract(look.scale(0.3));
                 for (int i = 0; i < n; i++) {
-                    double side = (i - (n - 1) / 2.0);
-                    Vec3 root = back.add(rightOf(look).scale(side * 0.25));
                     LivingEntity t0 = foes.isEmpty() ? null : foes.get(i % foes.size());
-                    // the whip's tip: lashing out toward its target and back in a cycle, or swaying behind you
-                    double phase = (tt + i * 4) % 10 / 10.0;
-                    double lash = Math.sin(Math.PI * phase);
-                    Vec3 rest = root.add(rightOf(look).scale(side * 1.2)).add(0, 1.2, 0).subtract(look.scale(1.2));
-                    Vec3 tip = t0 != null ? rest.add(mid(t0).subtract(rest).scale(lash)) : rest.add(look.scale(lash * 4));
-                    whip(sl, root, tip, side, tt);
-                    if (t0 != null && lash > 0.92) {
-                        Long lh = lastHit.get(t0.getUUID());
-                        if (lh == null || tt - lh >= 6) {
-                            lastHit.put(t0.getUUID(), (long) tt);
-                            AstaFx.damage(p, t0, power(p, power) * 0.22f, "bone_whips");
-                            Vec3 kb = mid(t0).subtract(root).normalize();
-                            t0.setDeltaMovement(t0.getDeltaMovement().add(kb.scale(0.5)).add(0, 0.2, 0));
-                            t0.hurtMarked = true;
-                            crack(sl, mid(t0), 0.3f);
-                        }
-                    }
+                    double phase = ((tt + i * period * 0.4) % period) / period;
+                    if (t0 == null || Math.abs(phase - 0.5) > 0.5 / period + 1.0E-6) continue;   // the tick the lash is fully out
+                    Long lh = lastHit.get(t0.getUUID());
+                    if (lh != null && tt - lh < 5) continue;
+                    lastHit.put(t0.getUUID(), (long) tt);
+                    AstaFx.damage(p, t0, power(p, power) * 0.22f, "bone_whips");
+                    Vec3 kb = mid(t0).subtract(p.position().add(0, 1.3, 0)).normalize();
+                    t0.setDeltaMovement(t0.getDeltaMovement().add(kb.scale(0.5)).add(0, 0.2, 0));
+                    t0.hurtMarked = true;
+                    // the crack of the whip: a thin bone-white slash across the target and a burst of splinters
+                    Vec3 rt = rightOf(kb);
+                    FxSend.slash(sl, B, mid(t0).subtract(kb.scale(0.6)), kb, rt.cross(kb).normalize().add(rt.scale(i % 2 == 0 ? 0.6 : -0.6)).normalize(), 0.7f, 1.1f, 4, 0.2f, 0.6f);
+                    splinters(sl, mid(t0), kb);
+                    if (u) cube(sl, mid(t0), 0.7f, 6);   // Beelzebub: space snaps shut round the hit
                 }
                 if (tt % 6 == 0) sound(sl, p.position(), SoundEvents.SKELETON_STEP, 0.9f, 0.7f);
             });
@@ -355,38 +380,64 @@ public class BoneFx {
             p.displayClientMessage(Component.translatable("ui.arcane_addon.bone.no_target").withStyle(ChatFormatting.GRAY), true);
             return;
         }
+        boolean u = inUnion(p);
+        if (u) unionMsg(p, "ribcage");
         Vec3 g = FxLib.ground(sl, t.position().add(0, 1, 0), 6);
         final Vec3 c = g != null ? g : t.position();
-        int ribs = 10;
+        final float scale = (float) Math.max(1.0, t.getBbHeight() / 1.8);
+        // the ground splits and the ribs burst up - an outer row, then a shorter inner row between them
+        FxSend.ring(sl, B, c.add(0, 0.05, 0), 0.4f, 3.6f * scale, 0.1f, 10);
+        FxSend.shake(sl, c, 0.4f, 8, 20);
+        int ribs = 12;
         for (int i = 0; i < ribs; i++) {
             double a = Math.PI * 2 * i / ribs;
             Vec3 out = new Vec3(Math.cos(a), 0, Math.sin(a));
-            Vec3 base = c.add(out.scale(2.0));
-            Vec3 dir = new Vec3(0, 1, 0).subtract(out.scale(0.35)).normalize();
-            bone(sl, RIB, base.add(dir.scale(2.0)), dir, out.scale(-1), 2.0f, 0.13f, 70, 5, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+            Vec3 base = c.add(out.scale(2.2 * scale));
+            Vec3 dir = new Vec3(0, 1, 0).subtract(out.scale(0.45)).normalize();
+            bone(sl, RIB, base.add(dir.scale(2.2 * scale)), dir, out.scale(-1), 2.2f * scale, 0.14f, 72, 3 + i % 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+            double a2 = a + Math.PI / ribs;
+            Vec3 out2 = new Vec3(Math.cos(a2), 0, Math.sin(a2));
+            Vec3 dir2 = new Vec3(0, 1, 0).subtract(out2.scale(0.6)).normalize();
+            bone(sl, RIB, c.add(out2.scale(1.6 * scale)).add(dir2.scale(1.3 * scale)), dir2, out2.scale(-1), 1.3f * scale, 0.1f, 70, 6 + i % 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
         }
-        bone(sl, LONG, c.add(0, 4.0, 0), new Vec3(0, 1, 0), new Vec3(1, 0, 0), 0.5f, 0.25f, 64, 6, FxPacket.POP, 0, Vec3.ZERO, 0);   // the spine on top
+        // the spine arching over the top, vertebra by vertebra
+        for (int k = 0; k <= 8; k++) {
+            final int kk = k;
+            AstaFx.later(6 + k, () -> {
+                double f = kk / 8.0, ang = Math.PI * f;
+                Vec3 q = c.add(Math.cos(ang) * 2.0 * scale, (2.6 + Math.sin(ang) * 1.6) * scale, 0);
+                Vec3 tan = new Vec3(-Math.sin(ang), Math.cos(ang), 0);
+                bone(sl, VERTEBRA, q, tan, new Vec3(0, 1, 0), 0.22f * scale, 0.16f, 64 - kk, 2, FxPacket.POP, 0, Vec3.ZERO, 0);
+            });
+        }
+        if (u) cube(sl, c.add(0, 2.2 * scale, 0), 2.8f * scale, 66);   // Beelzebub: the cage is sealed in a cube of space
         crack(sl, c, 1f);
         sound(sl, c, SoundEvents.SKELETON_AMBIENT, 1f, 0.5f);
+        sound(sl, c, SoundEvents.BONE_BLOCK_PLACE, 1f, 0.5f);
         for (int k = 0; k < 60; k += 2) {
             AstaFx.later(5 + k, () -> {
                 if (!alive(p) || !t.isAlive()) return;
                 Vec3 off = new Vec3(t.getX() - c.x, 0, t.getZ() - c.z);
-                if (off.length() > 1.4) { t.setDeltaMovement(off.normalize().scale(-0.3).add(0, t.getDeltaMovement().y, 0)); t.hurtMarked = true; }
-                if (t.getY() > c.y + 3.2) { t.setDeltaMovement(t.getDeltaMovement().x, -0.3, t.getDeltaMovement().z); t.hurtMarked = true; }
+                if (u) { t.setDeltaMovement(Vec3.ZERO); t.hurtMarked = true; return; }   // held completely still in the cube
+                if (off.length() > 1.4 * scale) { t.setDeltaMovement(off.normalize().scale(-0.3).add(0, t.getDeltaMovement().y, 0)); t.hurtMarked = true; }
+                if (t.getY() > c.y + 3.2 * scale) { t.setDeltaMovement(t.getDeltaMovement().x, -0.3, t.getDeltaMovement().z); t.hurtMarked = true; }
             });
         }
-        AstaFx.later(66, () -> {
+        AstaFx.later(66, () -> {   // the cage snaps shut
             if (!alive(p) || !t.isAlive()) return;
-            AstaFx.damage(p, t, power(p, power), "ribcage_prison");
+            AstaFx.damage(p, t, power(p, power) * (u ? 1.5f : 1f), "ribcage_prison");
+            FxSend.impactFrame(sl, mid(t), 2, false, 20);
+            FxSend.shake(sl, c, 0.6f, 10, 24);
             for (int i = 0; i < ribs; i++) {
                 double a = Math.PI * 2 * i / ribs;
-                Vec3 from = c.add(Math.cos(a) * 2.2, 1.0 + (i % 3) * 0.7, Math.sin(a) * 2.2);
-                Vec3 d = c.add(0, 1.0, 0).subtract(from).normalize();
-                bone(sl, SPIKE, from.add(d.scale(0.9)), d, rightOf(d), 0.9f, 0.12f, 10, 2, FxPacket.EXTEND, 0, Vec3.ZERO, 0);
+                Vec3 from = c.add(Math.cos(a) * 2.4 * scale, (1.0 + (i % 3) * 0.7) * scale, Math.sin(a) * 2.4 * scale);
+                Vec3 d = c.add(0, 1.0 * scale, 0).subtract(from).normalize();
+                bone(sl, SPIKE, from.add(d.scale(0.9)), d, rightOf(d), 1.1f * scale, 0.13f, 10, 2, FxPacket.EXTEND, 0, Vec3.ZERO, 0);
             }
             splinters(sl, mid(t), new Vec3(0, 1, 0));
-            crack(sl, c, 1.2f);
+            splinters(sl, mid(t), new Vec3(0, -1, 0));
+            if (u) FxLib.implode(sl, SPACE, mid(t), 1.4f);
+            crack(sl, c, 1.4f);
         });
     }
 
@@ -469,6 +520,23 @@ public class BoneFx {
             p.displayClientMessage(Component.translatable("ui.arcane_addon.bone.no_target").withStyle(ChatFormatting.GRAY), true);
             return;
         }
+        if (inUnion(p)) {   // Beelzebub: up to two more enemies near the first are sealed in cubes too
+            unionMsg(p, "spatial_cube");
+            int extra = 0;
+            for (LivingEntity o : enemies(sl, p, t.getBoundingBox().inflate(10))) {
+                if (o == t || extra >= 2) continue;
+                extra++;
+                final LivingEntity oo = o;
+                final Vec3 oc = mid(o);
+                cube(sl, oc, 1.4f, 50);
+                for (int k = 0; k < 50; k++) AstaFx.later(k, () -> { if (oo.isAlive()) { oo.setDeltaMovement(Vec3.ZERO); oo.hurtMarked = true; } });
+                AstaFx.later(50, () -> {
+                    if (!alive(p) || !oo.isAlive()) return;
+                    AstaFx.damage(p, oo, power(p, power) * 0.8f, "spatial_cube");
+                    FxLib.implode(sl, SPACE, oc, 1.0f);
+                });
+            }
+        }
         Vec3 c = mid(t);
         float h = 1.6f;
         cube(sl, c, h, 60);
@@ -508,6 +576,7 @@ public class BoneFx {
 
     /** Beelzebub's power: horns and bone wings grow, your bones grow bigger and faster (+35% on every move), and you move faster, for 25 s. */
     public static void devilUnion(ServerPlayer p, float power) {
+        if (LimitBreak.active(p)) { LimitFx.spatialRelease(p, power); return; }   // Surpassing Limits: a different ultimate
         ServerLevel sl = p.serverLevel();
         for (int k = 0; k < UNION_FORM; k += 3) {
             final int kk = k;
@@ -522,7 +591,6 @@ public class BoneFx {
         sound(sl, p.position(), SoundEvents.WITHER_SPAWN, 0.4f, 1.4f);
         AstaFx.later(UNION_FORM, () -> {
             if (!alive(p)) return;
-            if (LimitBreak.active(p)) LimitFx.spatialRelease(p, power);   // Surpassing Limits: Full Spatial Release
             UNION.put(p.getUUID(), sl.getGameTime() + UNION_TICKS);
             sendForm(p, UNION_TICKS);
             var att = p.getAttribute(Attributes.MOVEMENT_SPEED);
@@ -548,46 +616,76 @@ public class BoneFx {
     /** A cube of space opens high over the spot you aim at and pours down bone spears for 3 s across an 8-block circle. */
     public static void spearStorm(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
+        boolean u = inUnion(p);
+        if (u) unionMsg(p, "spear_storm");
         Vec3 eye = p.getEyePosition();
         Vec3 hitAt = clip(sl, p, eye, eye.add(p.getLookAngle().scale(36)));
         Vec3 g = FxLib.ground(sl, hitAt.add(0, 0.5, 0), 14);
         final Vec3 c = g != null ? g : hitAt;
-        final double R = inUnion(p) ? 11 : 8;
+        final double R = u ? 12 : 9;
         final Vec3 sky = c.add(0, 16, 0);
         cube(sl, sky, (float) R * 0.6f, 70);
+        FxSend.ring(sl, B, c.add(0, 0.05, 0), (float) R - 0.3f, (float) R, 0.06f, 70);   // where it will fall
         sound(sl, sky, SoundEvents.ENDERMAN_TELEPORT, 1f, 0.4f);
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        for (int t = 0; t < 60; t++) {
+        int perTick = u ? 3 : 2;
+        for (int t = 0; t < 50; t++) {
             final int tt = t;
             AstaFx.later(8 + t, () -> {
                 if (!alive(p)) return;
-                for (int k = 0; k < 2; k++) {
-                    double a = r.nextDouble(Math.PI * 2), d = Math.sqrt(r.nextDouble()) * R;
-                    Vec3 land = c.add(Math.cos(a) * d, 0, Math.sin(a) * d);
-                    Vec3 top = sky.add(r.nextDouble(-R * 0.5, R * 0.5), 0, r.nextDouble(-R * 0.5, R * 0.5));
+                List<LivingEntity> foes = new ArrayList<>(enemies(sl, p, new AABB(c, c).inflate(R, 6, R)));
+                foes.removeIf(e -> new Vec3(e.getX() - c.x, 0, e.getZ() - c.z).length() > R);
+                for (int k = 0; k < perTick; k++) {
+                    Vec3 land;
+                    if (!foes.isEmpty() && k == 0) {   // one spear every tick goes for an enemy (aimed where it's heading)
+                        LivingEntity f = foes.get((tt + k) % foes.size());
+                        land = f.position().add(f.getDeltaMovement().scale(5)).add(0, f.getBbHeight() * 0.4, 0);
+                    } else {
+                        double a = r.nextDouble(Math.PI * 2), d = Math.sqrt(r.nextDouble()) * R;
+                        land = c.add(Math.cos(a) * d, 0, Math.sin(a) * d);
+                    }
+                    Vec3 top = sky.add(r.nextDouble(-R * 0.4, R * 0.4), 0, r.nextDouble(-R * 0.4, R * 0.4));
                     Vec3 dir = land.subtract(top).normalize();
-                    stormSpear(p, sl, top, dir, power(p, power) * 0.18f, 0);
+                    stormSpear(p, sl, top, dir, power(p, power) * 0.3f, 0, new HashSet<>());
                 }
                 if (tt % 10 == 0) crack(sl, c, 0.6f);
             });
         }
+        AstaFx.later(60, () -> {   // the last volley: a great spear for every enemy still in the circle
+            if (!alive(p)) return;
+            for (LivingEntity f : enemies(sl, p, new AABB(c, c).inflate(R, 6, R))) {
+                if (new Vec3(f.getX() - c.x, 0, f.getZ() - c.z).length() > R) continue;
+                Vec3 top = mid(f).add(0, 14, 0);
+                Vec3 dir = mid(f).subtract(top).normalize();
+                spearFlight(sl, p, top, dir, 4, 4, 1.6f);
+                final LivingEntity ff = f;
+                AstaFx.later(3, () -> {
+                    if (!ff.isAlive() || !alive(p)) return;
+                    AstaFx.damage(p, ff, power(p, power) * 0.9f, "bone_spear_storm");
+                    splinters(sl, mid(ff), new Vec3(0, 1, 0));
+                });
+            }
+            FxSend.shake(sl, c, 0.5f, 8, 24);
+            crack(sl, c, 1.2f);
+        });
     }
 
-    private static void stormSpear(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float dmg, int step) {
+    private static void stormSpear(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float dmg, int step, Set<UUID> hit) {
         if (!alive(p) || step > 12) return;
+        if (step == 0) spearFlight(sl, p, pos, dir, 3.2, 12, 0.9f);
         Vec3 want = pos.add(dir.scale(3.2));
         Vec3 next = clip(sl, p, pos, want);
-        bone(sl, SPEAR, next.subtract(dir.scale(0.8)), dir, rightOf(dir), 0.8f, 0.07f, 2, 0, FxPacket.HOLD, 0, dir.scale(3.2), 0);
-        for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(0.8))) {
-            if (!t.getBoundingBox().inflate(0.3).clip(pos, next).isPresent()) continue;
+        for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.4))) {   // pierces, and a wider hit
+            if (!t.getBoundingBox().inflate(0.7).clip(pos, next).isPresent()) continue;
+            if (!hit.add(t.getUUID())) continue;
             AstaFx.damage(p, t, dmg, "bone_spear_storm");
-            return;
         }
         if (next.distanceToSqr(want) > 1.0E-4) {   // stuck in the ground, then crumbles
             bone(sl, SPEAR, next.subtract(dir.scale(0.5)), dir, rightOf(dir), 0.8f, 0.07f, 30, 0, FxPacket.POP, 0, Vec3.ZERO, 0);
+            for (LivingEntity t : enemies(sl, p, new AABB(next, next).inflate(1.3))) if (hit.add(t.getUUID())) AstaFx.damage(p, t, dmg * 0.6f, "bone_spear_storm");
             return;
         }
-        AstaFx.later(1, () -> stormSpear(p, sl, next, dir, dmg, step + 1));
+        AstaFx.later(1, () -> stormSpear(p, sl, next, dir, dmg, step + 1, hit));
     }
 
     // ================================================================== events

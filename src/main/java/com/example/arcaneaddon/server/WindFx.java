@@ -119,7 +119,7 @@ public class WindFx {
                 FxSend.trail(sl, W, from, from.add(h.subtract(from).scale(0.7)), 0.05f, 4);
             });
         }
-        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.25f, 1.6f);
+        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.25f, 1.6f);
     }
 
     // ================================================================== 1. Wind Blade Shower
@@ -158,7 +158,7 @@ public class WindFx {
                 AstaFx.later(delay, () -> blade(p, sl, eye.add(d.scale(0.8)), d, power * (dive ? 0.55f : 0.5f), dive));
             }
             sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 1.6f);
-            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.5f, 1.8f);
+            sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.5f, 1.8f);
         });
     }
 
@@ -208,7 +208,7 @@ public class WindFx {
             Vec3 g = FxLib.ground(sl, start.add(0, 1, 0), 5);
             if (g != null) start = g;
             FxLib.shockRing(sl, W, start.add(0, 0.05, 0), dive ? 1.6f : 1.1f);
-            sound(sl, start, SoundEvents.ELYTRA_FLYING, 1.2f, 0.6f);
+            sound(sl, start, SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 0.6f);
             sound(sl, start, SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 0.6f);
             tornadoTick(p, sl, start, flat, power, 0, dive, new HashMap<>());
         });
@@ -245,7 +245,7 @@ public class WindFx {
             gust(sl, pr.position(), 0.5f);
             pr.discard();
         }
-        if (age % 10 == 0) sound(sl, base, SoundEvents.ELYTRA_FLYING, 0.6f, 0.5f + age * 0.004f);
+        if (age % 10 == 0) sound(sl, base, SoundEvents.PLAYER_ATTACK_SWEEP, 0.5f, 0.5f + age * 0.004f);
         if (age >= LIFE) {
             for (LivingEntity t : enemies(sl, p, new AABB(base, base.add(0, H, 0)).inflate(R + 1.5))) {
                 if (new Vec3(base.x, t.getY(), base.z).distanceTo(t.position()) > R + 1.5) continue;
@@ -309,7 +309,7 @@ public class WindFx {
             FxPacket gp = new FxPacket();
             gp.shape = 29; gp.palette = (byte) W; gp.life = 14; gp.c = o; gp.d = look; gp.r = (float) range; gp.h = (float) half;
             AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(o.x, o.y, o.z, 96, sl.dimension())), gp);
-            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 1.2f, 1.3f);
+            sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.3f);
             sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.4f);
         });
     }
@@ -412,7 +412,7 @@ public class WindFx {
         }
         FxSend.ring(sl, W, p.position().add(0, 0.05, 0), 4.5f, 0.6f, 0.05f, 10);
         sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 1.4f);
-        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.4f, 1.8f);
+        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.4f, 1.8f);
     }
 
     // ================================================================== 6. Spirit of Zephyr
@@ -429,7 +429,7 @@ public class WindFx {
         if (dive) diveMsg(p, "spirit_of_zephyr");
         // the sword of wind forming in your hand
         FxSend.ring(sl, W, handPos(p), 1.2f, 0.1f, 0.05f, 5);
-        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.4f, 2f);
+        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.4f, 2f);
         for (int i = 0; i < 3; i++) {
             final int ii = i;
             AstaFx.later(ZEPHYR_CUTS[i], () -> {
@@ -500,21 +500,9 @@ public class WindFx {
         boolean dive = diving(p);
         if (dive) diveMsg(p, "spirit_of_boreas");
         int n = dive ? 8 : 4;
-        // circling: re-sent each tick so they follow you
-        for (int t = 0; t < BOREAS_LAUNCH; t++) {
-            final int tt = t;
-            AstaFx.later(t, () -> {
-                if (!alive(p)) return;
-                for (int i = 0; i < n; i++) {
-                    double a = Math.PI * 2 * i / n + tt * 0.25;
-                    float grow = Math.min(1f, (tt + 1) / 6f);
-                    Vec3 c = p.position().add(Math.cos(a) * 1.8, 1.6 + 0.2 * Math.sin(tt * 0.4 + i), Math.sin(a) * 1.8);
-                    Vec3 orbit = new Vec3(-Math.sin(a), 0, Math.cos(a)).scale(1.8 * 0.25);   // how far it moves this tick: smooth circling
-                    halberd(sl, c, new Vec3(0, 1, 0).add(Math.cos(a) * 0.3, 0, Math.sin(a) * 0.3).normalize(), grow, orbit);
-                }
-            });
-        }
-        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.6f, 1.2f);
+        // circling you: one packet, animated by the client every frame so it is perfectly smooth
+        FxSend.orbit(sl, p, 0, n, 1.8f, 1.6f, 0.25f, 0f, 0.2f, 6, 2, BOREAS_LAUNCH);
+        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.6f, 1.2f);
         AstaFx.later(BOREAS_LAUNCH, () -> {
             if (!alive(p)) return;
             List<LivingEntity> foes = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(30)));
@@ -522,14 +510,29 @@ public class WindFx {
             foes.sort(Comparator.comparingDouble(t -> t.distanceToSqr(p)));
             Vec3 look = p.getLookAngle();
             for (int i = 0; i < n; i++) {
-                double a = Math.PI * 2 * i / n + BOREAS_LAUNCH * 0.25;
-                Vec3 c = p.position().add(Math.cos(a) * 1.8, 1.6, Math.sin(a) * 1.8);
+                final int ii = i;
                 LivingEntity target = foes.isEmpty() ? null : foes.get(i % foes.size());
-                Vec3 d = target != null ? mid(target).subtract(c).normalize() : rotY(look, (i - (n - 1) / 2.0) * 0.12).normalize();
-                AstaFx.later(i * 2, () -> halberdFly(p, sl, c, d, power * 0.6f, 0, new HashSet<>()));
+                AstaFx.later(i * 2, () -> {   // each leaves the ring from exactly where the client is drawing it
+                    if (!alive(p)) return;
+                    double age = BOREAS_LAUNCH + ii * 2;
+                    double a = Math.PI * 2 * ii / n + age * 0.25;
+                    Vec3 c = p.position().add(Math.cos(a) * 1.8, 1.6 + 0.2 * Math.sin(age * 0.35 + ii), Math.sin(a) * 1.8);
+                    Vec3 d = target != null && target.isAlive() ? mid(target).subtract(c).normalize() : rotY(p.getLookAngle(), (ii - (n - 1) / 2.0) * 0.12).normalize();
+                    halberdFly(p, sl, c, d, power * 0.6f, 0, new HashSet<>());
+                });
             }
             sound(sl, p.position(), SoundEvents.TRIDENT_THROW, 1f, 1.3f);
         });
+    }
+
+    /** A halberd flying along {@code vel} for {@code ticks} ticks, sent once (the client moves it smoothly). */
+    private static void halberdFlight(ServerLevel sl, Vec3 c, Vec3 dir, Vec3 vel, int ticks) {
+        Vec3 back = c.subtract(dir.scale(1.4));
+        int life = ticks + 1;
+        FxSend.spike(sl, W, back, dir, 2.8f, 0.07f, life, 0, FxPacket.HOLD, 0, vel, ticks);
+        Vec3 side = rightOf(dir);
+        FxSend.spike(sl, S, c.add(dir.scale(0.9)), dir, 0.7f, 0.12f, life, 0, FxPacket.HOLD, 0, vel, ticks);
+        FxSend.spike(sl, W, c.add(dir.scale(0.7)), side.add(dir.scale(0.3)).normalize(), 0.55f, 0.16f, life, 0, FxPacket.HOLD, 0, vel, ticks);
     }
 
     /** One halberd of wind: a long shaft and a crescent blade near its head. */
@@ -545,9 +548,13 @@ public class WindFx {
 
     private static void halberdFly(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float dmg, int step, Set<UUID> hit) {
         if (!alive(p) || step > 14) return;
+        if (step == 0) {   // the whole flight in one go: the client glides it, no per-tick re-sends
+            Vec3 far = clip(sl, p, pos, pos.add(dir.scale(3 * 15)));
+            int ticks = (int) Math.max(1, Math.ceil(far.distanceTo(pos) / 3.0));
+            halberdFlight(sl, pos, dir, dir.scale(3), ticks);
+        }
         Vec3 want = pos.add(dir.scale(3));
         Vec3 next = clip(sl, p, pos, want);
-        halberd(sl, next, dir, 1f, dir.scale(3));
         FxSend.trail(sl, W, pos, next, 0.12f, 6);
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.2))) {
             if (!t.getBoundingBox().inflate(0.6).clip(pos, next).isPresent()) continue;
@@ -601,7 +608,11 @@ public class WindFx {
         Vec3 next = clip(sl, p, pos, want);
         FxSend.trail(sl, W, pos, next, w, 10);
         FxSend.trail(sl, S, pos, next, w * 0.22f, 8);
-        FxSend.spike(sl, S, next.subtract(dir.scale(1.4)), dir, 1.8f, w * 0.7f, 2, 0, FxPacket.HOLD, 0, dir.scale(5), 0);
+        if (step == 0) {   // the arrowhead's whole flight, sent once: the client glides it (no per-tick re-sends)
+            Vec3 far = clip(sl, p, pos, pos.add(dir.scale(5 * (max + 1))));
+            int ticks = (int) Math.max(1, Math.ceil(far.distanceTo(pos) / 5.0));
+            FxSend.spike(sl, S, pos.add(dir.scale(3.6)), dir, 1.8f, w * 0.7f, ticks + 1, 0, FxPacket.HOLD, 0, dir.scale(5), ticks - 1);
+        }
         Vec3 rt = rightOf(dir);
         FxSend.wall(sl, W, next, rt, rt.cross(dir).normalize(), w * 1.6f, w * 3.2f, -180, 180, 0.08f, 6, 0, 0);   // rings of air peeled off it
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.8))) {
@@ -648,7 +659,7 @@ public class WindFx {
                 FxSend.ring(sl, W, p.position().add(0, 0.1 + kk * 0.13, 0), 3f - kk * 0.15f, 0.3f, 0.06f, 4);
             });
         }
-        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.8f, 1.0f);
+        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.0f);
         AstaFx.later(DIVE_FORM, () -> {
             if (!alive(p)) return;
             DIVE.put(p.getUUID(), sl.getGameTime() + DIVE_TICKS);
@@ -700,9 +711,13 @@ public class WindFx {
                 FxSend.trail(sl, W, from, bend, 0.06f, 6);
                 FxSend.trail(sl, W, bend, h, 0.05f, 5);
                 if (kk % 4 == 0) FxSend.ring(sl, W, h, 1.6f - kk * 0.05f, 0.15f, 0.04f, 5);
+                if (kk % 2 == 0) {   // stars twinkling in as the storm gathers
+                    double sa = r.nextDouble(Math.PI * 2);
+                    star(sl, h.add(Math.cos(sa) * r.nextDouble(0.8, 2.6), r.nextDouble(-0.6, 1.4), Math.sin(sa) * r.nextDouble(0.8, 2.6)), p.getLookAngle(), 0.25f + r.nextFloat() * 0.3f, 6);
+                }
             });
         }
-        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 1f, 0.7f);
+        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 0.7f);
         sound(sl, p.position(), SoundEvents.BEACON_ACTIVATE, 0.6f, 1.8f);
         AstaFx.later(STORM_RELEASE, () -> {
             if (!alive(p)) return;
@@ -741,17 +756,38 @@ public class WindFx {
                         FxSend.trail(sl, W, a0, a1, (float) R * (beams == 1 ? 0.75f : 0.5f), 14);
                         FxSend.trail(sl, S, a0, a1, 0.18f, 12);
                         if (kk % 6 == 0) FxSend.wall(sl, kk % 12 == 0 ? S : W, a0, rt, up, (float) R * 0.9f, (float) R * 1.5f, kk * 20f, kk * 20f + 240, 0.12f, 9, 0, 0);
+                        // a river of stars: four-pointed glints scattered through the column, a few big ones
+                        ThreadLocalRandom rr = ThreadLocalRandom.current();
+                        for (int q = 0; q < 2; q++) {
+                            double qa = rr.nextDouble(Math.PI * 2), qd = rr.nextDouble() * R * 1.1;
+                            Vec3 sc = a0.add(rt.scale(Math.cos(qa) * qd)).add(up.scale(Math.sin(qa) * qd)).add(dir.scale(rr.nextDouble(3)));
+                            star(sl, sc, dir, rr.nextInt(5) == 0 ? 0.9f : 0.3f + rr.nextFloat() * 0.3f, 8 + rr.nextInt(6));
+                        }
                     });
                 }
             }
-            AstaFx.later((int) (len / speed) + 1, () -> gust(sl, end, dive ? 2.2f : 1.6f));
+            AstaFx.later((int) (len / speed) + 1, () -> {
+                gust(sl, end, dive ? 2.2f : 1.6f);
+                star(sl, end.add(0, 0.8, 0), dir, dive ? 3.2f : 2.4f, 14);   // it ends in one great star
+            });
+            star(sl, start, dir, 1.6f, 8);   // a star flares in your hands as it leaves
             FxLib.shockRing(sl, W, p.position().add(0, 0.05, 0), 1.4f);
             p.setDeltaMovement(p.getDeltaMovement().subtract(dir.scale(0.4)));   // the recoil
             p.hurtMarked = true;
             sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 0.6f, 1.4f);
-            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 1.4f, 1.2f);
+            sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.2f);
             sound(sl, p.position(), SoundEvents.GENERIC_EXPLODE, 0.5f, 1.6f);
         });
+    }
+
+    /** A four-pointed star glint facing {@code view}: two long silver-white rays and two short diagonal ones. */
+    private static void star(ServerLevel sl, Vec3 c, Vec3 view, float size, int life) {
+        Vec3 a = rightOf(view), b = a.cross(view).normalize();
+        FxSend.trail(sl, S, c.subtract(a.scale(size)), c.add(a.scale(size)), size * 0.09f, life);
+        FxSend.trail(sl, S, c.subtract(b.scale(size)), c.add(b.scale(size)), size * 0.09f, life);
+        Vec3 d1 = a.add(b).normalize().scale(size * 0.4), d2 = a.subtract(b).normalize().scale(size * 0.4);
+        FxSend.trail(sl, W, c.subtract(d1), c.add(d1), size * 0.06f, life);
+        FxSend.trail(sl, W, c.subtract(d2), c.add(d2), size * 0.06f, life);
     }
 
     // ================================================================== events
@@ -787,7 +823,7 @@ public class WindFx {
         if (e.getSource().is(DamageTypeTags.IS_FALL) && (wears || diving(p))) {
             e.setCanceled(true);
             FxSend.ring(sl, W, p.position().add(0, 0.05, 0), 0.3f, 2.2f, 0.06f, 6);   // a gust catches you
-            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.3f, 2f);
+            sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.3f, 2f);
             return;
         }
         if (wears && e.getSource().is(DamageTypeTags.IS_PROJECTILE) && ThreadLocalRandom.current().nextFloat() < 0.25f) {
@@ -797,7 +833,7 @@ public class WindFx {
                 gust(sl, proj.position(), 0.6f);
                 proj.setDeltaMovement(proj.getDeltaMovement().scale(-0.3).add(0, 0.3, 0));
             }
-            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.4f, 1.8f);
+            sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.4f, 1.8f);
             return;
         }
         long now = sl.getGameTime();
@@ -825,7 +861,7 @@ public class WindFx {
                     blade(p, sl, from, mid(le).subtract(from).normalize(), 6f, false);
                 });
             }
-            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.5f, 2f);
+            sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.5f, 2f);
         }
     }
 

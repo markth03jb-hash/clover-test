@@ -134,8 +134,13 @@ public class FxSend {
 
     /** Anime impact frame on the screens of everyone within {@code radius} (slash = one huge white slash across it). */
     public static void impactFrame(ServerLevel sl, Vec3 at, int ticks, boolean slash, double radius) {
+        impactFrame(sl, at, ticks, slash ? 1 : 0, radius);
+    }
+
+    /** style 0 = white / black, 1 = with the huge slash, 2 = Luck's lightning frame. */
+    public static void impactFrame(ServerLevel sl, Vec3 at, int ticks, int style, double radius) {
         FxPacket p = new FxPacket();
-        p.shape = 12; p.life = ticks; p.c = at; p.palette = (byte) (slash ? 1 : 0);
+        p.shape = 12; p.life = ticks; p.c = at; p.palette = (byte) style;
         AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, radius, sl.dimension())), p);
     }
 
@@ -144,5 +149,17 @@ public class FxSend {
         FxPacket p = new FxPacket();
         p.shape = 10; p.c = at; p.r = strength; p.life = ticks;
         AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, radius, sl.dimension())), p);
+    }
+
+    /**
+     * A ring of weapons circling a player (FxPacket shape 36), animated by the client every frame. kind 0 = wind
+     * halberds, 1 = mercury swords. Piece i is launched (stops being drawn) at {@code life + stagger * i} ticks.
+     */
+    public static void orbit(ServerLevel sl, net.minecraft.world.entity.Entity e, int kind, int count, float radius, float height,
+                             float angSpeed, float phase, float bob, int growTicks, int stagger, int life) {
+        FxPacket p = new FxPacket();
+        p.shape = 36; p.id = e.getId(); p.palette = (byte) kind; p.h = count; p.r = radius; p.r2 = height; p.a0 = angSpeed;
+        p.a1 = phase; p.speed = bob; p.sweep = growTicks; p.d = new Vec3(stagger, 0, 0); p.life = life; p.c = e.position();
+        send(sl, e.position(), p);
     }
 }

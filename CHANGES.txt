@@ -1,7 +1,60 @@
-Iron Spell Grimoire v1.40.1 - all changed files since v1.0.0
+Iron Spell Grimoire v1.41.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.41.0
+Animations
+- The head is never locked by an animation any more: it always follows where you look.
+- Stances (Yami's samurai guard, Luck's boxing guard) now sit UNDER every spell animation, so casting a spell always
+  shows the spell's pose instead of fighting with the idle. They also step aside while you walk, so your arms swing
+  normally (no sword glued in place), and come back when you stop. Yami's guard is held lower and more relaxed.
+- Luck's Thunder God Mode stance is a real boxer's guard: side-on, lead hand out, rear fist at the chin, feet staggered.
+- Fireball Barrage: six full overhand pitches, right and left in turn with the body winding into each throw (two
+  fireballs per throw - same damage as before), instead of the hands flicking up and down.
+- Black Hurricane: the whole body spins (four turns), not just the chest.
+Yami
+- Every slash (Dimension Slash and all the others that use it) is now drawn as a real slash: a crescent blade, needle
+  thin at the tips and thick in the middle, curving back, with a white-hot cutting edge and after-images behind it.
+- Event Horizon fires exactly where you aim: at the enemy under your crosshair if there is one, otherwise along your
+  view (it only hugs the ground when you look almost level).
+- Mana Zone: the dark sea no longer breaks into shards on slabs, paths, stairs and other partial blocks.
+- Lunar Eclipse (Surpassing Limits): the scar it leaves is an X of four burning lines matching the two crossing blades.
+Asta
+- Instinct Guard: a thin skin of white ki shows round you while the stance holds, and a short impact frame when the
+  counter lands.
+- Devil Union: a faint demonic haze round the body (black inside, a dim red edge) for the whole union.
+- Black Divider: no more space cracks.
+Wind / Mercury
+- The stuck wind sound is gone (it was a long looping sample) - short gusts instead.
+- Spirit of Boreas and Storm of Blades: the circling weapons are now animated by the client every frame (perfectly
+  smooth, one packet instead of dozens per tick), and every flying halberd / sword / mercury spear / Euros arrowhead
+  is sent once and glided by the client instead of being re-sent every tick.
+- Spirit Storm: stars - four-pointed silver glints gather in your hands, stream through the column, and it ends in
+  one great star.
+Magna / Luck
+- Super Magna Special: Final (Surpassing Limits): Magna's real batting swing with the flaming bat, a fireball that
+  swells to twice his size, an impact frame and a cone of fire off the swing, rings of flame trailing the shot and a
+  huge blast with a pillar of fire and explosions all round the edge.
+- Luck's Surpassing Limits has its own impact frame: electric blue and navy with lightning cracking across the screen.
+Zenon (Bone Grimoire)
+- Bone Sword: drawn on your arm, so it is one solid piece that follows the swing exactly - knobbed grip, cross-bone
+  guard, a long sharpened blade with a ridge - and each cut shows a bone-white slash.
+- Bone Whips: drawn by the client every frame - knobbly vertebrae chains with hooked points that sway, ripple and lash
+  smoothly; each hit cracks with a slash and splinters.
+- Ribcage Prison: the ground splits, two rows of ribs burst up and curve in, a spine arches over the top, and it
+  snaps shut with an impact frame and a shake. Sized to the target.
+- Bone Spear Storm: much stronger and easier to hit with - a spear every tick goes for an enemy (aimed where it's
+  heading), spears pierce and hit a wider area, a 9-block circle, and a final great spear for every enemy left in it.
+- Beelzebub variants: in the union every bone move changes - Spear Volley opens rifts round the target that fire
+  more spears, Bone Sword cuts carry on through space as a 12-block wave, Bone Whips are six, longer and faster and
+  snap space shut on hits, Ribcage Prison is sealed in a cube of space (held still, 1.5x crush), Spatial Cube seals
+  up to two more enemies, Spear Storm is wider and pours harder (plus the existing bigger Spike Eruption / Thicket).
+- Surpassing Limits: Beelzebub becomes its own ultimate (no union) - Spatial Annihilation: a dome of bone, every enemy
+  within 18 blocks sealed in a cube, rifts pouring spears into each, then every cube collapses.
+Mana
+- Every elemental grimoire's spell costs about 35% less mana, each grimoire gives +350 more max mana and +50% mana
+  regeneration. (Asta's grimoire still uses no mana.)
 
 NEW IN 1.40.1
 - The mod is now called "Iron Spell Grimoire" (mod list, creative tab, jar name: iron_spell_grimoire-<version>.jar).

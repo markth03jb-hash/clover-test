@@ -24,7 +24,8 @@ import net.minecraft.util.Mth;
 public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
     private static final ResourceLocation WHITE = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/white.png");
     /** player id -> {start, end, palette} */
-    private static final Map<Integer, double[]> ACTIVE = new HashMap<>();
+    /** player id -> (palette -> {start, end, palette}): several auras can show at once (e.g. Devil Union + Instinct Guard). */
+    private static final Map<Integer, Map<Integer, double[]>> ACTIVE = new HashMap<>();
     private static final float[][] COLORS = {
             {0.55F, 0.18F, 0.95F},   // 0 dark violet (Black Blade)
             {1.0F, 0.08F, 0.06F},    // 1 devil red
@@ -33,6 +34,8 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             {1.0F, 0.14F, 0.08F},    // 4 crimson hellfire (Hellfire Incarnate)
             {1.0F, 0.3F, 0.2F},      // 5 mana skin
             {0.93F, 0.89F, 0.8F},    // 6 bone plates (Marrow Regeneration)
+            {0.88F, 0.95F, 1.0F},    // 7 ki (Instinct Guard)
+            {0.75F, 0.03F, 0.03F},   // 8 faint demonic (Devil Union)
     };
 
     public AuraOutlineLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
@@ -44,20 +47,29 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
         if (mc.level == null) return;
         double now = mc.level.getGameTime();
         if (life > 0) {
-            double[] f = ACTIVE.get(id);
-            if (f == null || f[1] < now) ACTIVE.put(id, new double[]{now, now + life, palette});
+            Map<Integer, double[]> m = ACTIVE.computeIfAbsent(id, k -> new HashMap<>());
+            double[] f = m.get(palette);
+            if (f == null || f[1] < now) m.put(palette, new double[]{now, now + life, palette});
             else { f[1] = now + life; f[2] = palette; }
-        } else ACTIVE.remove(id);
+        } else {
+            Map<Integer, double[]> m = ACTIVE.get(id);
+            if (m != null) { m.remove(palette); if (m.isEmpty()) ACTIVE.remove(id); }
+        }
     }
 
     @Override
     public void render(PoseStack ps, MultiBufferSource buf, int light, AbstractClientPlayer p, float limbSwing, float limbSwingAmount,
                        float pt, float age, float netHeadYaw, float headPitch) {
         if (!p.isInvisible()) limitShell(ps, buf, p, pt);
-        double[] f = ACTIVE.get(p.getId());
-        if (f == null || p.isInvisible()) return;
-        double now = p.level().getGameTime() + pt;
-        if (now > f[1]) { ACTIVE.remove(p.getId()); return; }
+        Map<Integer, double[]> all = ACTIVE.get(p.getId());
+        if (all == null || p.isInvisible()) return;
+        double now0 = p.level().getGameTime() + pt;
+        all.values().removeIf(x -> now0 > x[1]);
+        if (all.isEmpty()) { ACTIVE.remove(p.getId()); return; }
+        for (double[] f : all.values()) drawOne(ps, buf, p, pt, f, now0);
+    }
+
+    private void drawOne(PoseStack ps, MultiBufferSource buf, AbstractClientPlayer p, float pt, double[] f, double now) {
         float in = (float) Mth.clamp((now - f[0]) / 6.0, 0.0, 1.0), out = (float) Mth.clamp((f[1] - now) / 10.0, 0.0, 1.0);
         float a = in * out;
         if (a <= 0.01F) return;
@@ -76,6 +88,18 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             shell(ps, m, vc, 1.03F + flick, 1.0F, 0.75F, 0.55F, 0.3F * a * pulse);
             shell(ps, m, vc, 1.1F + flick * 1.5F, col[0], col[1], col[2], 0.22F * a * pulse);
             shell(ps, m, vc, 1.2F + flick * 2F, 0.7F, 0.02F, 0.02F, 0.12F * a);
+            return;
+        }
+        if ((int) f[2] == 7) {   // Instinct Guard: a thin, flickering skin of white ki - reading everything around you
+            float flickK = 0.7F + 0.3F * (float) Math.sin(now * 1.3 + p.getId());
+            shell(ps, m, vc, 1.04F + flick * 0.4F, col[0], col[1], col[2], 0.2F * a * flickK);
+            shell(ps, m, vc, 1.1F + flick, 1.0F, 1.0F, 1.0F, 0.06F * a);
+            return;
+        }
+        if ((int) f[2] == 8) {   // Devil Union: a faint, slow-breathing demonic haze - black inside, a dim red edge
+            float breathe = 0.7F + 0.3F * (float) Math.sin(now * 0.25);
+            shell(ps, m, vc, 1.05F + flick * 0.5F, 0.02F, 0.0F, 0.0F, 0.18F * a);
+            shell(ps, m, vc, 1.13F + flick * 1.4F, col[0], col[1], col[2], 0.09F * a * breathe);
             return;
         }
         if ((int) f[2] == 6) {   // bone plates: a hard ivory shell over the body

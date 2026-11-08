@@ -199,7 +199,7 @@ public class FireFx {
     }
 
     // ================================================================== 3. Super Magna Special
-    private static final int SPECIAL_HIT = 14;
+    static final int SPECIAL_HIT = 14;
 
     /**
      * A bat of fire in your hands, a huge fireball tossed up in front of you... and you bat it straight at them: it
@@ -232,7 +232,7 @@ public class FireFx {
     }
 
     /** Where the tossed ball is: centred in front of your face, rising and hanging. */
-    private static Vec3 tossPos(ServerPlayer p, int t) {
+    static Vec3 tossPos(ServerPlayer p, int t) {
         double k = Math.min(1.0, t / (double) SPECIAL_HIT);
         double lift = Math.sin(Math.PI * 0.5 * Math.min(1.0, k * 1.4)) * 1.0;   // up fast, then hanging
         return p.getEyePosition().add(p.getLookAngle().scale(1.7)).add(0, -0.7 + lift, 0);
@@ -240,7 +240,7 @@ public class FireFx {
 
     // ------------------------------------------------------------------ the flaming bat
     /** Bat keyframes: {tick, yaw (deg, + = to your right), pitch (deg, + = up)} - matched to the swing animations. */
-    private static final double[][] SPECIAL_SWING = {{0, 40, -50}, {4, 110, 25}, {12, 115, 30}, {14, -70, 10}, {17, -105, 0}, {22, -40, -50}};
+    static final double[][] SPECIAL_SWING = {{0, 40, -50}, {4, 110, 25}, {12, 115, 30}, {14, -70, 10}, {17, -105, 0}, {22, -40, -50}};
     private static final double[][] COMBO_SWING = {{0, 30, -50}, {3, 100, 10}, {5, -80, 10}, {9, -95, 10}, {12, 80, 10},
             {17, 0, 85}, {20, 0, -40}, {26, 30, -55}};
 
@@ -269,7 +269,7 @@ public class FireFx {
     }
 
     /** A baseball bat of fire in your hands, following the swing keyframes every tick for {@code ticks} ticks. */
-    private static void batSwing(ServerPlayer p, double[][] keys, int ticks) {
+    static void batSwing(ServerPlayer p, double[][] keys, int ticks) {
         ServerLevel sl = p.serverLevel();
         for (int t = 0; t <= ticks; t++) {
             final int tt = t;
@@ -388,17 +388,19 @@ public class FireFx {
      */
     public static void fireballBarrage(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
+        // six overhand pitches, right / left in turn every 4 ticks (matching the animation); each one lets two
+        // fireballs go - the same twelve shots and damage as before
         for (int i = 0; i < BARRAGE_SHOTS; i++) {
-            final int ii = i;
-            AstaFx.later(BARRAGE_START + i * 2, () -> {
+            final int ii = i, throwNo = i / 2;
+            AstaFx.later(BARRAGE_START + throwNo * 4 + (i % 2), () -> {
                 if (!alive(p)) return;
                 Vec3 look = p.getLookAngle();
-                Vec3 side = rightOf(look).scale(ii % 2 == 0 ? 0.35 : -0.35);
-                Vec3 from = p.getEyePosition().add(look.scale(0.8)).add(side).add(0, -0.35, 0);
+                Vec3 side = rightOf(look).scale(throwNo % 2 == 0 ? 0.4 : -0.4);
+                Vec3 from = p.getEyePosition().add(look.scale(0.8)).add(side).add(0, -0.15, 0);
                 ThreadLocalRandom r = ThreadLocalRandom.current();
-                Vec3 d = look.add(r.nextDouble(-0.03, 0.03), r.nextDouble(-0.03, 0.03), r.nextDouble(-0.03, 0.03)).normalize();
+                Vec3 d = look.add(r.nextDouble(-0.04, 0.04), r.nextDouble(-0.03, 0.03), r.nextDouble(-0.04, 0.04)).normalize();
                 shot(p, sl, from, d, 2.6f, 0.3f, 1.8, power * 0.3f, 0, 14, "fireball_barrage");
-                sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 0.6f, 1.2f + r.nextFloat() * 0.3f);
+                if (ii % 2 == 0) sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 0.7f, 1.1f + r.nextFloat() * 0.3f);
             });
         }
         windup(p, BARRAGE_START, 1f);

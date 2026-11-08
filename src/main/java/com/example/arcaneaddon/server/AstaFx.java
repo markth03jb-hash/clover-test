@@ -541,6 +541,7 @@ public class AstaFx {
         LAST_COUNTER.remove(p.getUUID());
         FxSend.ring(sl, Fx.SILVER, p.position().add(0, 0.9, 0), 0.4f, 1.6f, 0.5f, 9);
         FxSend.ring(sl, Fx.SILVER, p.position().add(0, 0.05, 0), 0.3f, 6.0f, 0.08f, 10);   // ki spreads out to read the next attack
+        sendOutline(p, 7, devil ? GUARD_TICKS + 20 : GUARD_TICKS);   // a thin skin of white ki while the stance holds
         sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.8f, 1.6f);
         sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 1.8f);
     }
@@ -563,6 +564,7 @@ public class AstaFx {
             FxSend.wall(sl, Fx.SILVER, from.add(0, 1.0, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.6f, 0.9f, -180, 180, 1.0f, 6, 0, 0);   // your ghost where you stood
         }
         AnimSend.play(p, AnimSend.LUNGE_STAB);   // the counter-thrust
+        FxSend.impactFrame(sl, mid(attacker), 2, false, 16);   // the instant the counter lands
         boolean devil = DEVIL_GUARD.contains(p.getUUID());
         damage(p, attacker, 12f * spellPower(p) * (devil ? 1.5f : 1f), devil ? "devil_instinct_guard" : "instinct_guard");
         if (devil) FxLib.impact(sl, 9, mid(attacker), 1.4f);   // ember
@@ -618,9 +620,17 @@ public class AstaFx {
         sound(sl, c, SoundEvents.BEACON_POWER_SELECT, 1f, 0.5f);
     }
 
+    /** Body aura outline (FxPacket shape 14) for everyone who can see {@code p}: palette = colour, life 0 = off. */
+    static void sendOutline(ServerPlayer p, int palette, int life) {
+        FxPacket pkt = new FxPacket();
+        pkt.shape = 14; pkt.id = p.getId(); pkt.palette = (byte) palette; pkt.life = life;
+        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+    }
+
     /** Tells everyone who can see {@code p} to draw (life > 0) or fade out (life = 0) the devil form. */
     private static void sendForm(ServerPlayer p, int life) {
         ModeHud.show(p, "devil_union", life);
+        sendOutline(p, 8, life);   // a faint demonic haze round the body for the whole union
         FxPacket pkt = new FxPacket();
         pkt.shape = 6;   // 6 = Devil Union form, drawn by the client FxRenderer
         pkt.id = p.getId();
@@ -724,10 +734,7 @@ public class AstaFx {
 
         Long g = GUARD.get(p.getUUID());
         if (g != null) {
-            if (now > g) GUARD.remove(p.getUUID());
-            else if (now % 6 == 0) {   // faint ki outline around the body while the stance is up
-                FxSend.wall(sl, Fx.SILVER, p.position().add(0, 1.0, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.8f, 0.85f, -180, 180, 0.9f, 7, 0, 0);
-            }
+            if (now > g) { GUARD.remove(p.getUUID()); sendOutline(p, 7, 0); }
         }
 
         Long u = UNION.get(p.getUUID());

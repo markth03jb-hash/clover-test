@@ -30,7 +30,8 @@ public class SteelGrimoireItem extends SimpleAttributeSpellBook {
 
     private static Multimap<Attribute, AttributeModifier> modifiers() {
         ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        b.put(AttributeRegistry.MAX_MANA.get(), mod("e5b8c0d1-2f3a-4b4c-9d5e-6f7a00000e01", "Steel Grimoire mana", 200, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MAX_MANA.get(), mod("e5b8c0d1-2f3a-4b4c-9d5e-6f7a00000e01", "Steel Grimoire mana", 550, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MANA_REGEN.get(), mod("e5b8c0d1-2f3a-4b4c-9d5e-6f7a00000e99", "Steel Grimoire mana flow", 0.5, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.EVOCATION_SPELL_POWER.get(), mod("e5b8c0d1-2f3a-4b4c-9d5e-6f7a00000e02", "Steel Grimoire forging", 0.15, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.SPELL_RESIST.get(), mod("e5b8c0d1-2f3a-4b4c-9d5e-6f7a00000e03", "Steel Grimoire plating", 0.05, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(Attributes.ARMOR, mod("e5b8c0d1-2f3a-4b4c-9d5e-6f7a00000e04", "Steel Grimoire armor", 4.0, AttributeModifier.Operation.ADDITION));

@@ -195,7 +195,11 @@ public class MercuryFx {
         if (!alive(p) || step > 13) return;
         Vec3 want = pos.add(dir.scale(3));
         Vec3 next = clip(sl, p, pos, want);
-        FxSend.spike(sl, M, next.subtract(dir.scale(2.4)), dir, 2.6f, 0.15f, 2, 0, FxPacket.HOLD, 0, dir.scale(3), 0);
+        if (step == 0) {   // the spear's whole flight, sent once: the client glides it (no per-tick re-sends)
+            Vec3 far = clip(sl, p, pos, pos.add(dir.scale(3 * 14)));
+            int ticks = (int) Math.max(1, Math.ceil(far.distanceTo(pos) / 3.0));
+            FxSend.spike(sl, M, pos.add(dir.scale(0.6)), dir, 2.6f, 0.15f, ticks + 1, 0, FxPacket.HOLD, 0, dir.scale(3), ticks - 1);
+        }
         FxSend.trail(sl, M, pos, next, 0.08f, 5);
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.0))) {
             if (!t.getBoundingBox().inflate(0.4).clip(pos, next).isPresent()) continue;
@@ -260,18 +264,7 @@ public class MercuryFx {
     public static void stormOfBlades(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         int n = 6;
-        for (int t = 0; t < BLADES_LAUNCH; t++) {
-            final int tt = t;
-            AstaFx.later(t, () -> {
-                if (!alive(p)) return;
-                for (int i = 0; i < n; i++) {
-                    double a = Math.PI * 2 * i / n + tt * 0.3;
-                    Vec3 c = p.position().add(Math.cos(a) * 1.9, 1.3 + 0.25 * Math.sin(tt * 0.35 + i), Math.sin(a) * 1.9);
-                    Vec3 orbit = new Vec3(-Math.sin(a), 0, Math.cos(a)).scale(1.9 * 0.3);   // smooth circling between ticks
-                    sword(sl, c, new Vec3(0, -1, 0), new Vec3(-Math.sin(a), 0, Math.cos(a)), Math.min(1f, (tt + 1) / 5f), orbit);
-                }
-            });
-        }
+        FxSend.orbit(sl, p, 1, n, 1.9f, 1.3f, 0.3f, 0f, 0.25f, 5, 1, BLADES_LAUNCH);   // circling you, drawn smoothly by the client
         sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_CHAIN, 1f, 1.4f);
         AstaFx.later(BLADES_LAUNCH, () -> {
             if (!alive(p)) return;
@@ -280,14 +273,30 @@ public class MercuryFx {
             foes.sort(Comparator.comparingDouble(t -> t.distanceToSqr(p)));
             Vec3 look = p.getLookAngle();
             for (int i = 0; i < n; i++) {
-                double a = Math.PI * 2 * i / n + BLADES_LAUNCH * 0.3;
-                Vec3 c = p.position().add(Math.cos(a) * 1.9, 1.3, Math.sin(a) * 1.9);
+                final int ii = i;
                 LivingEntity t = foes.isEmpty() ? null : foes.get(i % foes.size());
-                Vec3 d = t != null ? mid(t).subtract(c).normalize() : look.add(rightOf(look).scale((i - 2.5) * 0.08)).normalize();
-                AstaFx.later(i, () -> swordFly(p, sl, c, d, power * 0.4f, 0, new HashSet<>()));
+                AstaFx.later(i, () -> {   // each leaves the ring from exactly where the client is drawing it
+                    if (!alive(p)) return;
+                    double age = BLADES_LAUNCH + ii;
+                    double a = Math.PI * 2 * ii / n + age * 0.3;
+                    Vec3 c = p.position().add(Math.cos(a) * 1.9, 1.3 + 0.25 * Math.sin(age * 0.35 + ii), Math.sin(a) * 1.9);
+                    Vec3 lk = p.getLookAngle();
+                    Vec3 d = t != null && t.isAlive() ? mid(t).subtract(c).normalize() : lk.add(rightOf(lk).scale((ii - 2.5) * 0.08)).normalize();
+                    swordFly(p, sl, c, d, power * 0.4f, 0, new HashSet<>());
+                });
             }
             sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 1.5f);
         });
+    }
+
+    /** A mercury sword flying along {@code vel} for {@code ticks} ticks, sent once (the client moves it smoothly). */
+    private static void swordFlight(ServerLevel sl, Vec3 c, Vec3 dir, Vec3 flat, Vec3 vel, int ticks) {
+        Vec3 up = dir.cross(flat).normalize();
+        if (up.lengthSqr() < 1.0E-4) up = rightOf(dir);
+        int life = ticks + 1;
+        FxSend.box(sl, M, c.add(dir.scale(0.35)), dir, up, 0.75f, 0.02f, 0.09f, life, 0, FxPacket.HOLD, 0, vel, ticks);
+        FxSend.box(sl, M, c.subtract(dir.scale(0.45)), up, dir, 0.24f, 0.04f, 0.04f, life, 0, FxPacket.HOLD, 0, vel, ticks);
+        FxSend.box(sl, M, c.subtract(dir.scale(0.65)), dir, up, 0.18f, 0.035f, 0.035f, life, 0, FxPacket.HOLD, 0, vel, ticks);
     }
 
     /** A sword of mercury: a long, thin blade and a cross-guard, pointing {@code dir}, flat side facing {@code flat}. */
@@ -303,9 +312,13 @@ public class MercuryFx {
 
     private static void swordFly(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float dmg, int step, Set<UUID> hit) {
         if (!alive(p) || step > 10) return;
+        if (step == 0) {   // the whole flight in one go: the client glides it, no per-tick re-sends
+            Vec3 far = clip(sl, p, pos, pos.add(dir.scale(2.6 * 11)));
+            int ticks = (int) Math.max(1, Math.ceil(far.distanceTo(pos) / 2.6));
+            swordFlight(sl, pos, dir, rightOf(dir), dir.scale(2.6), ticks);
+        }
         Vec3 want = pos.add(dir.scale(2.6));
         Vec3 next = clip(sl, p, pos, want);
-        sword(sl, next, dir, rightOf(dir), 1f, dir.scale(2.6));
         FxSend.trail(sl, M, pos, next, 0.05f, 5);
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.0))) {
             if (!t.getBoundingBox().inflate(0.4).clip(pos, next).isPresent()) continue;

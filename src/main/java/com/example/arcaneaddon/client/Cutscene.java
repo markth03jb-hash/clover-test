@@ -178,17 +178,76 @@ public final class Cutscene {
     // ------------------------------------------------------------------ impact frames
     private static double frameStart = -1, frameLen = 0;
     private static boolean frameSlash;
+    private static int frameStyle;
 
     /** Anime impact frames: a few ticks of hard white / black flashes with speed lines, for a hit that lands. */
-    public static void impactFrame(int ticks, boolean slash) {
+    public static void impactFrame(int ticks, boolean slash) { impactFrame(ticks, slash ? 1 : 0); }
+
+    /** style 0 = white / black with speed lines, 1 = plus the huge slash, 2 = Luck's lightning frame. */
+    public static void impactFrame(int ticks, int style) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || !com.example.arcaneaddon.AddonClientConfig.impactFrames()) return;
         frameStart = mc.level.getGameTime();
         frameLen = Math.max(1, ticks);
-        frameSlash = slash;
+        frameSlash = style == 1;
+        frameStyle = style;
+    }
+
+    /** One straight piece of a bolt drawn on the screen. */
+    private static void seg(GuiGraphics g, float x0, float y0, float x1, float y1, int thick, int col) {
+        float dx = x1 - x0, dy = y1 - y0;
+        float len = (float) Math.sqrt(dx * dx + dy * dy);
+        if (len < 0.5F) return;
+        g.pose().pushPose();
+        g.pose().translate(x0, y0, 0.0F);
+        g.pose().mulPose(com.mojang.math.Axis.ZP.rotation((float) Math.atan2(dy, dx)));
+        g.fill(0, -thick, (int) Math.ceil(len), thick, col);
+        g.pose().popPose();
+    }
+
+    /**
+     * Luck's impact frame: no black and white - the screen flashes electric blue and deep navy in turn, and jagged
+     * bolts of lightning crack across it from the edges toward the middle, white-hot cores in a blue glow.
+     */
+    private static void drawLightningFrame(GuiGraphics g, double k) {
+        int w = g.guiWidth(), h = g.guiHeight();
+        int phase = (int) k;
+        boolean bright = phase % 2 == 0;
+        float fade = (float) Mth.clamp(frameLen - k, 0.0, 1.0);
+        g.fill(0, 0, w, h, ((int) (fade * (bright ? 170 : 215)) << 24) | (bright ? 0x9FD8FF : 0x040A2A));
+        java.util.Random r = new java.util.Random(phase * 977L + 13);
+        int glow = ((int) (fade * 200) << 24) | (bright ? 0x1E50C8 : 0x4FB8FF);
+        int core = ((int) (fade * 255) << 24) | (bright ? 0x0A1440 : 0xFFFFFF);
+        for (int b = 0; b < 6; b++) {
+            // from a random point on the edge toward somewhere near the middle, in jagged steps, with a fork or two
+            float x, y;
+            switch (r.nextInt(4)) {
+                case 0 -> { x = r.nextFloat() * w; y = 0; }
+                case 1 -> { x = r.nextFloat() * w; y = h; }
+                case 2 -> { x = 0; y = r.nextFloat() * h; }
+                default -> { x = w; y = r.nextFloat() * h; }
+            }
+            float tx = w * (0.35F + r.nextFloat() * 0.3F), ty = h * (0.35F + r.nextFloat() * 0.3F);
+            int steps = 9;
+            for (int s = 0; s < steps; s++) {
+                float f = (s + 1) / (float) steps;
+                float nx = x + (tx - x) / (steps - s) + (r.nextFloat() - 0.5F) * w * 0.07F;
+                float ny = y + (ty - y) / (steps - s) + (r.nextFloat() - 0.5F) * h * 0.07F;
+                int th = Math.max(1, (int) (4 * (1.2F - f)));
+                seg(g, x, y, nx, ny, th + 3, glow);
+                seg(g, x, y, nx, ny, th, core);
+                if (r.nextInt(4) == 0) {   // a fork
+                    float fx = nx + (r.nextFloat() - 0.5F) * w * 0.12F, fy = ny + (r.nextFloat() - 0.5F) * h * 0.12F;
+                    seg(g, nx, ny, fx, fy, 3, glow);
+                    seg(g, nx, ny, fx, fy, 1, core);
+                }
+                x = nx; y = ny;
+            }
+        }
     }
 
     private static void drawImpactFrame(GuiGraphics g, double k) {
+        if (frameStyle == 2) { drawLightningFrame(g, k); return; }
         int w = g.guiWidth(), h = g.guiHeight();
         int phase = (int) k;
         boolean white = phase % 2 == 0;

@@ -30,7 +30,8 @@ public class HellfireGrimoireItem extends SimpleAttributeSpellBook {
 
     private static Multimap<Attribute, AttributeModifier> modifiers() {
         ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        b.put(AttributeRegistry.MAX_MANA.get(), mod("e4b6c8d0-3f5a-4172-8c3d-4e5f6a7b0d01", "Hellfire Grimoire mana", 400, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MAX_MANA.get(), mod("e4b6c8d0-3f5a-4172-8c3d-4e5f6a7b0d01", "Hellfire Grimoire mana", 750, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MANA_REGEN.get(), mod("e4b6c8d0-3f5a-4172-8c3d-4e5f6a7b0d99", "Hellfire Grimoire mana flow", 0.5, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.FIRE_SPELL_POWER.get(), mod("e4b6c8d0-3f5a-4172-8c3d-4e5f6a7b0d02", "Hellfire Grimoire flame", 0.25, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.FIRE_MAGIC_RESIST.get(), mod("e4b6c8d0-3f5a-4172-8c3d-4e5f6a7b0d03", "Hellfire Grimoire heat", 0.35, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(Attributes.ATTACK_DAMAGE, mod("e4b6c8d0-3f5a-4172-8c3d-4e5f6a7b0d04", "Hellfire Grimoire fists", 4.0, AttributeModifier.Operation.ADDITION));

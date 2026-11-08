@@ -30,7 +30,8 @@ public class MercuryGrimoireItem extends SimpleAttributeSpellBook {
 
     private static Multimap<Attribute, AttributeModifier> modifiers() {
         ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        b.put(AttributeRegistry.MAX_MANA.get(), mod("b7e3d1a4-5c2f-4e8d-a6b9-1c0d2e3f0a01", "Mercury Grimoire mana", 400, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MAX_MANA.get(), mod("b7e3d1a4-5c2f-4e8d-a6b9-1c0d2e3f0a01", "Mercury Grimoire mana", 750, AttributeModifier.Operation.ADDITION));
+        b.put(AttributeRegistry.MANA_REGEN.get(), mod("b7e3d1a4-5c2f-4e8d-a6b9-1c0d2e3f0a99", "Mercury Grimoire mana flow", 0.5, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.EVOCATION_SPELL_POWER.get(), mod("b7e3d1a4-5c2f-4e8d-a6b9-1c0d2e3f0a02", "Mercury Grimoire mercury", 0.15, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.SPELL_RESIST.get(), mod("b7e3d1a4-5c2f-4e8d-a6b9-1c0d2e3f0a03", "Mercury Grimoire royal ward", 0.12, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(Attributes.ARMOR, mod("b7e3d1a4-5c2f-4e8d-a6b9-1c0d2e3f0a04", "Mercury Grimoire silver", 4.0, AttributeModifier.Operation.ADDITION));

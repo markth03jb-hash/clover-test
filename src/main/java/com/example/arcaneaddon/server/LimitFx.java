@@ -87,8 +87,8 @@ public final class LimitFx {
     public static void awaken(ServerPlayer p, int idx) {
         ServerLevel sl = p.serverLevel();
         Vec3 c = p.position();
-        // shared beat: the world goes white for an instant, the ground shakes, the grimoire's power erupts
-        FxSend.impactFrame(sl, c, 4, false, 24);
+        // shared beat: the world goes white for an instant (Luck: his lightning frame), the ground shakes, the power erupts
+        FxSend.impactFrame(sl, c, 4, idx == 5 ? 2 : 0, 24);
         FxSend.shake(sl, c, 0.7f, 18, 32);
         sound(sl, c, SoundEvents.BEACON_ACTIVATE, 1f, 0.6f);
         sound(sl, c, SoundEvents.TOTEM_USE, 0.6f, 0.8f);
@@ -229,7 +229,7 @@ public final class LimitFx {
         FxLib.halo(sl, WIND, p.position().add(0, p.getBbHeight() + 0.5, 0), 1.4f);   // the crown
         FxSend.ring(sl, WIND, c.add(0, 0.1, 0), (float) R - 0.3f, (float) R, 0.2f, 70);
         FxSend.ring(sl, SILVER, c.add(0, 16, 0), 2f, (float) R, 0.06f, 70);
-        sound(sl, c, SoundEvents.ELYTRA_FLYING, 1f, 1.4f);
+        sound(sl, c, SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.4f);
         ThreadLocalRandom r = ThreadLocalRandom.current();
         for (int t = 0; t < 60; t++) {
             final int tt = t;
@@ -297,7 +297,7 @@ public final class LimitFx {
                 t.hurtMarked = true;
                 struck.add(t);
                 FxLib.impact(sl, BLUE_L, mid(t), 1.0f);
-                if (ii % 6 == 0) FxSend.impactFrame(sl, mid(t), 1, false, 24);
+                if (ii % 6 == 0) FxSend.impactFrame(sl, mid(t), 1, 2, 24);
                 sound(sl, t.position(), SoundEvents.PLAYER_ATTACK_CRIT, 0.9f, 1.6f);
             });
         }
@@ -305,7 +305,7 @@ public final class LimitFx {
             if (!alive(p)) return;
             p.teleportTo(home.x, home.y, home.z);
             p.resetFallDistance();
-            FxSend.impactFrame(sl, home, 4, true, 40);
+            FxSend.impactFrame(sl, home, 5, 2, 40);   // Luck's own frame: electric blue, lightning across the screen
             FxSend.shake(sl, home, 1.0f, 16, 48);
             for (LivingEntity t : struck) {
                 if (!t.isAlive()) continue;
@@ -407,21 +407,42 @@ public final class LimitFx {
     }
 
     // ---------------------------------------------------------------- Magna: Super Magna Special - Final
-    /** One huge fireball, swung like a homerun: it flies until it hits something and goes up in a massive blast. */
+    /**
+     * Magna's finisher, done properly: he tosses a fireball that swells to twice his size, plants his feet and swings
+     * the flaming bat - impact frame, a cone of fire blasting out of the swing - and the giant fireball rockets away
+     * trailing rings of flame until it hits, then goes up in a huge blast with a pillar of fire and explosions all
+     * round the edge.
+     */
     public static void magnaFinal(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        Vec3 hand = p.getEyePosition().add(0, 1.6, 0);
-        for (int t = 0; t < 10; t++) {   // tossed up, swelling
+        final int HIT = FireFx.SPECIAL_HIT;
+        AnimSend.play(p, AnimSend.MAGNA_SWING);                     // the batting swing, over the cast pose
+        FireFx.batSwing(p, FireFx.SPECIAL_SWING, HIT + 8);          // the flaming bat in his hands
+        for (int t = 0; t <= HIT; t++) {   // the toss: a fireball rising in front of him, swelling as it goes
             final int tt = t;
-            AstaFx.later(t, () -> { if (alive(p)) fireball(sl, FIRE, p.getEyePosition().add(0, 1.2 + tt * 0.08, 0), Vec3.ZERO, 0.6f + tt * 0.12f, 0.6f + tt * 0.12f, 1, false); });
+            AstaFx.later(t, () -> {
+                if (!alive(p)) return;
+                Vec3 at = FireFx.tossPos(p, tt).add(0, 0.3, 0), next = FireFx.tossPos(p, Math.min(HIT, tt + 1)).add(0, 0.3, 0);
+                float r = 0.4f + tt * 0.07f;
+                fireball(sl, FIRE, at, next.subtract(at), r, r, 1, false);
+                if (tt % 3 == 0) FxSend.ring(sl, FIRE, at, r + 0.2f, r + 0.9f, 0.05f, 5);
+            });
         }
-        sound(sl, hand, SoundEvents.FIRECHARGE_USE, 1f, 0.5f);
-        AstaFx.later(10, () -> {
+        sound(sl, p.position(), SoundEvents.FIRECHARGE_USE, 1f, 0.5f);
+        sound(sl, p.position(), SoundEvents.BLAZE_SHOOT, 0.8f, 0.6f);
+        AstaFx.later(HIT, () -> {   // the swing connects
             if (!alive(p)) return;
-            Vec3 dir = p.getLookAngle().normalize();
-            sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.2f, 0.6f);
-            FxSend.impactFrame(sl, p.position(), 2, false, 24);
-            fly(p, sl, p.getEyePosition().add(dir.scale(1.5)), dir.scale(1.6), power, 0);
+            Vec3 look = p.getLookAngle().normalize();
+            Vec3 at = FireFx.tossPos(p, HIT).add(0, 0.3, 0);
+            FxSend.impactFrame(sl, at, 4, false, 32);
+            FxSend.shake(sl, at, 0.9f, 12, 32);
+            FxSend.slash(sl, FIRE, at.subtract(look.scale(0.4)), look, rightOf(look), 1.8f, 2.6f, 5, 0f, 1.0f);
+            for (int k = 0; k < 3; k++)   // a cone of fire blasting out of the swing
+                FxSend.wall(sl, FIRE, at.add(look.scale(1 + k * 1.2)), look, rightOf(look).cross(look).normalize(), 0.8f + k * 0.6f, 1.4f + k * 0.9f, -180, 180, 0.4f, 6 + k, 0, 0.6f);
+            FxLib.flash(sl, FIRE, at, 1.4f);
+            sound(sl, at, SoundEvents.ANVIL_LAND, 0.6f, 1.6f);
+            sound(sl, at, SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.2f, 0.5f);
+            fly(p, sl, at.add(look.scale(1.2)), look.scale(1.8), power, 0);
         });
     }
 
@@ -430,24 +451,33 @@ public final class LimitFx {
         Vec3 next = pos.add(vel);
         HitResult hr = sl.clip(new ClipContext(pos, next, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
         boolean wall = hr.getType() != HitResult.Type.MISS;
-        boolean foe = !foesNear(sl, p, next, 2.2).isEmpty();
+        boolean foe = !foesNear(sl, p, next, 2.6).isEmpty();
         if (wall || foe || step >= 40) {
             Vec3 at = wall ? hr.getLocation() : next;
             FxSend.impactFrame(sl, at, 5, false, 48);
-            blast(p, sl, FIRE, at, 9, power * 2.5f, "fire_cannon");
-            for (int k = 0; k < 6; k++) {   // the blast throws fire everywhere: smaller explosions round the edge
-                final double a = Math.PI * 2 * k / 6;
-                AstaFx.later(4 + k, () -> blast(p, sl, FIRE, at.add(Math.cos(a) * 6, 0, Math.sin(a) * 6), 3, power * 0.6f, "fire_cannon"));
+            blast(p, sl, FIRE, at, 10, power * 2.5f, "fire_cannon");
+            FxSend.beam(sl, FIRE, at.add(0, -1, 0), at.add(0, 16, 0), 3.0f, 20);   // a pillar of fire goes up
+            for (int k = 0; k < 8; k++) {   // and the blast throws fire everywhere: explosions all round the edge
+                final double a = Math.PI * 2 * k / 8;
+                AstaFx.later(3 + k, () -> blast(p, sl, FIRE, at.add(Math.cos(a) * 7, 0, Math.sin(a) * 7), 3.2, power * 0.6f, "fire_cannon"));
             }
             return;
         }
-        fireball(sl, FIRE, pos, vel, 2.0f, 2.0f, 1, false);
-        if (step % 3 == 0) FxSend.trail(sl, FIRE, pos.subtract(vel.scale(2)), pos, 1.2f, 8);
+        fireball(sl, FIRE, pos, vel, 2.2f, 2.2f, 1, false);
+        FxSend.trail(sl, FIRE, pos.subtract(vel), pos, 1.4f, 10);
+        if (step % 2 == 0) {   // rings of flame peeling off it
+            Vec3 d = vel.normalize();
+            FxSend.wall(sl, FIRE, pos.subtract(d.scale(1.5)), d, rightOf(d).cross(d).normalize(), 2.0f, 2.6f, -180, 180, 0.12f, 7, 0, 0);
+        }
         AstaFx.later(1, () -> fly(p, sl, next, vel, power, step + 1));
     }
 
     // ---------------------------------------------------------------- Zenon: Beelzebub - Full Spatial Release
-    /** With the union on, bones close in a dome around you and every enemy within 18 blocks is sealed in a spatial cube that crushes it. */
+    /**
+     * Beelzebub: Spatial Annihilation - Zenon's evolved ultimate (it replaces the union while surpassing limits): a dome
+     * of bone closes over the battlefield, every enemy within 18 blocks is sealed in a cube of space, rifts open over
+     * each of them and pour bone spears in, and then every cube collapses at once.
+     */
     public static void spatialRelease(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         Vec3 c = p.position();
@@ -476,6 +506,17 @@ public final class LimitFx {
                     tt.setDeltaMovement(Vec3.ZERO);
                     tt.hurtMarked = true;
                 });
+                for (int q = 0; q < 6; q++) {   // a rift opens above it and spears of bone pour through
+                    final int qq = q;
+                    AstaFx.later(4 + q * 2, () -> {
+                        if (!tt.isAlive()) return;
+                        Vec3 top = m.add(Math.cos(qq * 1.1) * 1.2, 6, Math.sin(qq * 1.1) * 1.2);
+                        Vec3 d = m.subtract(top).normalize();
+                        BoneFx.bone(sl, BoneFx.SPEAR, top.add(d.scale(1.5)), d, rightOf(d), 0.9f, 0.08f, 5, 0, FxPacket.HOLD, 0, d.scale(1.6), 3);
+                        if (qq == 0) FxSend.cracks(sl, DARK, top, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 1.2f, 16, false, (int) sl.getGameTime() + qq);
+                        AstaFx.damage(p, tt, power * 0.15f, "beelzebub_union");
+                    });
+                }
                 AstaFx.later(22, () -> {   // the cube collapses on it
                     if (!tt.isAlive() || !alive(p)) return;
                     FxLib.implode(sl, SILVER, m, 1.2f);

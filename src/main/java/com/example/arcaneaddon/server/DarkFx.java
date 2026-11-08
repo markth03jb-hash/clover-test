@@ -910,9 +910,16 @@ public class DarkFx {
         AstaFx.later(HORIZON_CUT, () -> {
             TimedModifiers.remove(p, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED, TimedModifiers.HORIZON_CHARGE);
             if (!alive(p)) return;
-            // aimed where you look; when you look roughly level it hugs the ground instead, rising out of it
+            // aimed exactly where you look: at the enemy under your crosshair if there is one, otherwise along your
+            // view; only when you look (almost) level does it hug the ground instead, rising out of it
             Vec3 look0 = p.getLookAngle();
-            final boolean aimed = Math.abs(look0.y) > 0.25;
+            Vec3 eye0 = p.getEyePosition();
+            final double reach0 = zone ? 90 : 55;
+            net.minecraft.world.phys.EntityHitResult ehr = net.minecraft.world.entity.projectile.ProjectileUtil.getEntityHitResult(
+                    p, eye0, eye0.add(look0.scale(reach0)), p.getBoundingBox().expandTowards(look0.scale(reach0)).inflate(1.5),
+                    x -> x instanceof LivingEntity le && le.isAlive() && !x.isAlliedTo(p) && x != p, reach0 * reach0);
+            if (ehr != null && ehr.getEntity() instanceof LivingEntity tgt && p.hasLineOfSight(tgt)) look0 = mid(tgt).subtract(eye0.add(0, -0.3, 0)).normalize();
+            final boolean aimed = Math.abs(look0.y) > 0.12;
             Vec3 flatDir = new Vec3(look0.x, 0, look0.z).lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : new Vec3(look0.x, 0, look0.z).normalize();
             Vec3 dir = aimed ? look0.normalize() : flatDir;
             Vec3 start = aimed ? p.getEyePosition().add(0, -0.3, 0) : FxLib.floor(sl, p.position());
@@ -989,6 +996,21 @@ public class DarkFx {
                     FxSend.trail(sl, D, prev, c, 0.6f * scale, 40);
                     FxSend.trail(sl, S, prev, c, 0.05f * scale, 36);
                     prev = c;
+                }
+            });
+            if (eclipse) AstaFx.later(4, () -> {   // Lunar Eclipse: the two crossing blades leave an X of scars along the whole path
+                Vec3 mid0 = start.add(aimed ? Vec3.ZERO : up.scale(2.4 * scale));
+                Vec3 xa = up.scale(0.7071).add(rt.scale(0.7071)), xb = up.scale(0.7071).subtract(rt.scale(0.7071));
+                double arm = 2.2 * scale;
+                for (Vec3 off : new Vec3[]{xa.scale(arm), xa.scale(-arm), xb.scale(arm), xb.scale(-arm)}) {
+                    Vec3 prev = mid0.add(dir).add(off.scale(0.2));
+                    for (double k = 4; k < reach; k += 4) {
+                        double spread = Math.min(1.0, k / 12.0);   // the X opens out as it leaves you
+                        Vec3 c = mid0.add(dir.scale(k)).add(off.scale(spread));
+                        FxSend.trail(sl, D, prev, c, 0.4f * scale, 40);
+                        FxSend.trail(sl, S, prev, c, 0.04f * scale, 36);
+                        prev = c;
+                    }
                 }
             });
             FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 2.2f * scale);

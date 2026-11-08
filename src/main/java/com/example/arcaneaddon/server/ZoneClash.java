@@ -146,7 +146,6 @@ public final class ZoneClash {
         }
         if (tick % 20 == 0) {
             sl.playSound(null, c.x, c.y, c.z, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1f, 0.5f);
-            sl.playSound(null, c.x, c.y, c.z, SoundEvents.BEACON_AMBIENT, SoundSource.PLAYERS, 1f, 0.6f);
         }
     }
 
