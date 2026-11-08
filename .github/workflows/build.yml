@@ -1,5 +1,7 @@
 name: Build jar
 on: [push, workflow_dispatch]
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,3 +14,11 @@ jobs:
       - run: gradle build
       - uses: actions/upload-artifact@v4
         with: { name: arcane_addon-jar, path: build/libs/*.jar }
+      # Also publish the jar as the "latest" release, so there is always one stable download link
+      - name: Publish latest release
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest build/libs/*.jar --title "Latest build ($(git rev-parse --short HEAD))" --notes "Built automatically from main." --latest
