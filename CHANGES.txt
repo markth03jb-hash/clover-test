@@ -20,7 +20,7 @@ NEW IN 1.46.0
     Devil       black thorns and claws; thorns lashing out
     Gold / light: spinning coin rings / twinkling stars
 - Every glowing sprite now has a soft pixel bloom behind it; shards and plates spin, sparks twinkle, flames
-  flicker like a two-frame flip-book, pieces pop in, and big moves open with an expanding pixel shock ring.
+  flicker like a two-frame flip-book, pieces pop in, and big moves open with a crisp expanding pixel shock ring.
 - Sky Splitter: jagged blade slivers and twinkling crimson cross-sparks on the blade, and the star burst
   as it's released.
 

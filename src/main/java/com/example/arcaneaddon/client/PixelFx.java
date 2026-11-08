@@ -38,11 +38,11 @@ public final class PixelFx {
     /** The pixel-art sprites (grey-scale, tinted per palette). Long ones point up: the top row leads. */
     static final int K_STREAK = 0, K_SHARD = 1, K_EMBER = 2, K_TONGUE = 3, K_BLADE = 4, K_CROSS = 5, K_BOLT = 6, K_FEATHER = 7,
             K_STAR = 8, K_PLATE = 9, K_RING = 10, K_BARB = 11, K_PUFF = 12, K_MOON = 13, K_DROP = 14, K_WISP = 15, K_DIAMOND = 16,
-            K_CLAW = 17, K_BONE = 18, K_GLOW = 19;
+            K_CLAW = 17, K_BONE = 18, K_GLOW = 19, K_SHOCK = 20;
     private static final ResourceLocation[] TEX = {
             tex("streak"), tex("shard"), tex("ember"), tex("tongue"), tex("blade"), tex("cross"), tex("bolt"), tex("feather"),
             tex("star"), tex("plate"), tex("ring"), tex("barb"), tex("puff"), tex("moon"), tex("drop"), tex("wisp"), tex("diamond"),
-            tex("claw"), tex("bone"), tex("glow")};
+            tex("claw"), tex("bone"), tex("glow"), tex("shock")};
 
     private static ResourceLocation tex(String n) { return ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/pixel/" + n + ".png"); }
 
@@ -535,8 +535,8 @@ public final class PixelFx {
 
     /** A shock ring: a pixel ring that bursts outward from {@code at} and fades. */
     private static void shockRing(int pal, Vec3 at, double size) {
-        Spr p = spr(at, Vec3.ZERO, UP, K_RING, (float) size, (float) size, 6);
-        p.pal = pal; p.heat = 0.9F; p.grow = 1.28F;
+        Spr p = spr(at, Vec3.ZERO, UP, K_SHOCK, (float) size, (float) size, 6);
+        p.pal = pal; p.heat = 0.9F; p.grow = 1.22F; p.seed = 0;   // upright: a ring never spins
         add(p);
     }
 
@@ -915,7 +915,7 @@ public final class PixelFx {
         RenderType bt = RenderType.eyes(TEX[K_GLOW]);
         VertexConsumer bv = null;
         for (Spr p : SPRITES) {
-            if (p.dark || p.heat < 0.45F || p.kind == K_GLOW) continue;
+            if (p.dark || p.heat < 0.45F || p.kind == K_GLOW || p.kind == K_SHOCK) continue;
             if (bv == null) bv = buf.getBuffer(bt);
             bloom(bv, m, n, cam, p, pt, opacity);
         }
@@ -938,7 +938,7 @@ public final class PixelFx {
 
     /** Sprites drawn as a square (not stretched along their travel). */
     private static boolean square(int k) {
-        return k == K_SHARD || k == K_EMBER || k == K_CROSS || k == K_STAR || k == K_PLATE || k == K_RING || k == K_PUFF || k == K_DIAMOND || k == K_GLOW;
+        return k == K_SHARD || k == K_EMBER || k == K_CROSS || k == K_STAR || k == K_PLATE || k == K_RING || k == K_PUFF || k == K_DIAMOND || k == K_GLOW || k == K_SHOCK;
     }
 
     private static float fadeOf(Spr p, Vec3 pos, Vec3 cam, float pt, float opacity) {
