@@ -128,8 +128,16 @@ public class DarkFx {
 
     public static boolean inZone(ServerPlayer p) {
         Long z = ZONE.get(p.getUUID());
-        return z != null && p.serverLevel().getGameTime() <= z;
+        return z != null && p.serverLevel().getGameTime() <= z && !ZoneClash.suppressed(p);   // a stronger zone over you smothers yours
     }
+
+    /** When this player's Mana Zone ends (game time), or -1 if they have none. Ignores clashes. */
+    public static long zoneEnd(ServerPlayer p) {
+        Long z = ZONE.get(p.getUUID());
+        return z == null || p.serverLevel().getGameTime() > z ? -1 : z;
+    }
+
+    public static final double ZONE_RADIUS = ZONE_R;
 
     /** Enemies inside the zone, nearest first. */
     private static List<LivingEntity> zoneEnemies(ServerPlayer p) {
@@ -797,7 +805,7 @@ public class DarkFx {
     private static void sendZone(ServerPlayer p, int life) {
         ModeHud.show(p, "mana_zone_dimension_slash", life);
         com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
-        pkt.shape = 17; pkt.id = p.getId(); pkt.palette = (byte) D; pkt.life = life; pkt.r = (float) ZONE_R;
+        pkt.shape = 17; pkt.id = p.getId(); pkt.palette = (byte) D; pkt.life = life; pkt.r = (float) ZoneClash.radius(p, ZONE_R);
         com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
@@ -1040,7 +1048,7 @@ public class DarkFx {
         Long z = ZONE.get(id);
         if (z != null) {
             if (now > z) { zoneCollapse(p, sl); ZONE.remove(id); ZONE_POWER.remove(id); }
-            else if (now % 10 == 0) zoneTick(p, sl, now);
+            else if (now % 10 == 0 && !ZoneClash.suppressed(p)) zoneTick(p, sl, now);
         }
 
         Cocoon cc = COCOON.get(id);

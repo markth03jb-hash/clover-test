@@ -332,10 +332,10 @@ public final class MeteorFx {
         p.hurtMarked = true;
         p.resetFallDistance();
         cutscene(p, at, 1);
-        impactFrame(sl, at, 4);     // the finisher lands: white, black, white, black
-        shake(sl, at, 1.0f, 22);
+        impactFrame(sl, at, 6, true);   // the finisher lands: white, black, white, black - and the slash across the screen
+        shake(sl, at, 1.4f, 26);
         // the finishing blow - this one can kill
-        AstaFx.damage(p, victim, power * 1.5f, "devil_black_meteorite");
+        AstaFx.damage(p, victim, power * 2.0f, "devil_black_meteorite");
         Vec3 gg = FxLib.ground(sl, at, 2.5);
         boolean crater = gg != null;   // no ground close below (it hit in mid-air): no crater
         Vec3 g = crater ? gg : at;
@@ -380,6 +380,20 @@ public final class MeteorFx {
             FxSend.spike(sl, k % 4 == 0 ? EMBER : DARK, b, new Vec3(Math.cos(a) * 0.8, 1, Math.sin(a) * 0.8), 1.3f + rnd.nextFloat() * 1.1f, 0.26f, 50, 2, FxPacket.GROUND);
         }
         FxLib.spikeBurst(sl, DARK, at.add(0, 1, 0), 1.8f);
+        // the impact breaks space itself: the ground shatters into void, and a rift tears up through the column
+        FxSend.cracks(sl, EMBER, g.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), crater ? 7.5f : 4f, 70, false, (int) sl.getGameTime());
+        Vec3 view = p.getLookAngle();
+        Vec3 side = new Vec3(-view.z, 0, view.x);
+        side = side.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : side.normalize();
+        FxSend.cracks(sl, EMBER, g.add(0, 3.5, 0), new Vec3(0, 1, 0), side, 4.5f, 50, true, (int) sl.getGameTime() + 7);
+        AstaFx.later(6, () -> {   // a black-flame aftershock rolls out across the crater
+            FxSend.ring(sl, DARK, g.add(0, 0.08, 0), 2f, 10f, 0.9f, 12);
+            for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(g, g).inflate(10, 4, 10), x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {
+                if (t.position().distanceTo(g) > 10) continue;
+                AstaFx.damage(p, t, power * 0.4f, "devil_black_meteorite");
+            }
+            sound(sl, g, SoundEvents.GENERIC_EXPLODE, 1f, 0.4f);
+        });
         sound(sl, at, SoundEvents.GENERIC_EXPLODE, 1.6f, 0.5f);
         sound(sl, at, SoundEvents.WARDEN_SONIC_BOOM, 1f, 0.6f);
         sound(sl, at, SoundEvents.LIGHTNING_BOLT_THUNDER, 0.8f, 0.6f);

@@ -1,7 +1,26 @@
-Arcane Addon v1.37.0 - all changed files since v1.0.0
+Arcane Addon v1.38.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.38.0
+- NEW: Mana Zone clash. When two players' Mana Zones overlap (Yami's or Mereoleona's), the stronger zone pushes its
+  border into the other: higher Grimoire Mastery wins, then whoever has more mana left. The weaker dome is shoved
+  back and shrinks smoothly so the two never overlap, and while its owner stands inside the stronger zone their own
+  zone is smothered (no zone versions of their spells, no zone effects). A seam of sparks in both colours and
+  cracking space marks where they grind together; both players are told who is winning. Allies don't clash.
+- Devil Union rework (Asta):
+  - NEW: Black Divider (takes Twin Rift's slot). Asta raises the sword overhead with both hands while anti magic
+    floods into it, then one crushing cut: impact frame, screen shake, and a towering black blade with an ember core
+    rolls 40 blocks forward, splitting the ground and tearing space along its path, erasing magic projectiles and
+    breaking the casts of everyone it hits.
+  - NEW: Black Hurricane (takes Devil Instinct's slot). Asta spins four times with both swords out, the eye of a
+    vortex of black flame and embers that drags enemies in and shreds them for 2 seconds (it moves with you), then
+    bursts outward, launching everyone in eight crescents of black and ember.
+  - Black Meteorite: a harder finisher (2x damage instead of 1.5x), a longer impact frame with the slash across the
+    screen, a heavier shake, the ground shattering into void around the crater, a rift tearing up through the column,
+    and a black-flame aftershock that hits everything within 10 blocks.
+  - new animations and icons for both new moves.
 
 NEW IN 1.37.0
 - NEW: Grimoire Mastery. Every grimoire levels up from Mastery 1 to 5 as you fight with its magic, and its stronger

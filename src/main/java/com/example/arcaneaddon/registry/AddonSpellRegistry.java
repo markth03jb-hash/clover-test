@@ -65,6 +65,10 @@ public class AddonSpellRegistry {
     /** Devil Union: Black Meteorite - takes Ki Sense's slot during the union (cutscene move, see MeteorFx). */
     public static final RegistryObject<AbstractSpell> DEVIL_BLACK_METEORITE = registerSpell(new DevilSpell("devil_black_meteorite", 40, 45, Need.ANY_MAIN, com.example.arcaneaddon.server.MeteorFx::cast));
     public static final RegistryObject<AbstractSpell> DEVIL_INSTINCT_GUARD = registerSpell(new DevilSpell("devil_instinct_guard", 12, 0, Need.NONE, DevilFx::instinct));
+    /** Black Divider: takes Twin Rift's slot (Sky Splitter) during the union. */
+    public static final RegistryObject<AbstractSpell> DEVIL_BLACK_DIVIDER = registerSpell(new DevilSpell("devil_black_divider", 10, 32, Need.ANY_MAIN, DevilFx::blackDivider));
+    /** Black Hurricane: takes Devil Instinct's slot (Instinct Guard) during the union. */
+    public static final RegistryObject<AbstractSpell> DEVIL_BLACK_HURRICANE = registerSpell(new DevilSpell("devil_black_hurricane", 16, 7, Need.ANY_MAIN, DevilFx::blackHurricane));
     public static final RegistryObject<AbstractSpell> DEVIL_UNION_RELEASE = registerSpell(new DevilSpell("devil_union_release", 5, 30, Need.NONE, DevilFx::release));
     public static final RegistryObject<AbstractSpell> DEVIL_DWELLER_SLASH = registerSpell(new DevilSpell("devil_dweller_slash", 7, 18, Need.DWELLER_ANY, DevilFx::dwellerSlash));
     public static final RegistryObject<AbstractSpell> DEVIL_BORROWED_SLASH = registerSpell(new DevilSpell("devil_borrowed_slash", 12, 18, Need.DWELLER_MAIN, DevilFx::borrowedSlash));
@@ -73,9 +77,9 @@ public class AddonSpellRegistry {
     private record DevilPair(RegistryObject<AbstractSpell> normal, RegistryObject<AbstractSpell> devil) {}
     private static final List<DevilPair> DEVIL_PAIRS = List.of(
             new DevilPair(SUMMON_GREATSWORD, DEVIL_SUMMON), new DevilPair(PIERCING_DASH, DEVIL_PIERCING_DASH),
-            new DevilPair(ZETTEN, DEVIL_ZETTEN), new DevilPair(SKY_SPLITTER, DEVIL_SKY_SPLITTER),
+            new DevilPair(ZETTEN, DEVIL_ZETTEN), new DevilPair(SKY_SPLITTER, DEVIL_BLACK_DIVIDER),
             new DevilPair(ANTI_MAGIC, DEVIL_ANTI_MAGIC), new DevilPair(KI_SENSE, DEVIL_BLACK_METEORITE),
-            new DevilPair(INSTINCT_GUARD, DEVIL_INSTINCT_GUARD), new DevilPair(DEVIL_UNION, DEVIL_UNION_RELEASE),
+            new DevilPair(INSTINCT_GUARD, DEVIL_BLACK_HURRICANE), new DevilPair(DEVIL_UNION, DEVIL_UNION_RELEASE),
             new DevilPair(DWELLER_SLASH, DEVIL_DWELLER_SLASH), new DevilPair(BORROWED_SLASH, DEVIL_BORROWED_SLASH));
 
     /** The devil version of a Black Grimoire spell, or null if it has none. */
@@ -87,6 +91,9 @@ public class AddonSpellRegistry {
     /** The normal version of a devil spell, or null if it isn't one. */
     public static AbstractSpell normalVersionOf(AbstractSpell spell) {
         for (DevilPair pair : DEVIL_PAIRS) if (pair.devil().get() == spell) return pair.normal().get();
+        // retired devil moves still sitting in a book from before the rework go back to their normal spell too
+        if (spell == DEVIL_SKY_SPLITTER.get()) return SKY_SPLITTER.get();
+        if (spell == DEVIL_INSTINCT_GUARD.get()) return INSTINCT_GUARD.get();
         return null;
     }
 

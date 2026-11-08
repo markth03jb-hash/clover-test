@@ -102,6 +102,7 @@ public class FxRenderer {
    }
    /** Mana Zones: entity id -> {start, end, radius, ground y (NaN = unknown)}. Fed by FxPacket shape 17. */
    private static final java.util.Map<Integer, double[]> ZONES = new java.util.HashMap<>();
+   private static final java.util.Map<Integer, Double> ZONE_TARGET = new java.util.HashMap<>();
    private static final double ZONE_OPEN = 12.0, ZONE_CLOSE = 10.0;
    private static final int ZR = 10, ZS = 48;
    /** Terrain heights under each zone's sea: id -> {cx, cz, R, gy, heights...} so it lies on the ground, not over drops. */
@@ -212,6 +213,7 @@ public class FxRenderer {
             if (p.life > 0) {
                if (f == null || f[1] < now0) ZONES.put(p.id, new double[]{now0, now0 + p.life, p.r, Double.NaN, p.palette});
                else f[1] = now0 + p.life;
+               ZONE_TARGET.put(p.id, (double) p.r);   // a clash pushes the dome back: it glides to the new radius
             } else if (f != null) f[1] = Math.min(f[1], now0);
          }
          return;
@@ -307,6 +309,8 @@ public class FxRenderer {
             Iterator<FxRenderer.Fx> it = FX.iterator();
             DarkSmoke.tick();
             for (java.util.Map.Entry<Integer, double[]> ze : ZONES.entrySet()) {
+               Double tgt = ZONE_TARGET.get(ze.getKey());
+               if (tgt != null) ze.getValue()[2] += (tgt - ze.getValue()[2]) * 0.2;
                net.minecraft.world.entity.Entity ent = mc.level.getEntity(ze.getKey());
                if (ent != null) zoneTick(mc, ent, ze.getValue(), now);
             }
@@ -325,6 +329,7 @@ public class FxRenderer {
             SPIRIT.values().removeIf(sf -> now > sf[1] + 20.0);
             ZONES.values().removeIf(zf -> now > zf[1] + ZONE_CLOSE + 2.0);
             ZONE_H.keySet().removeIf(id -> !ZONES.containsKey(id));
+            ZONE_TARGET.keySet().removeIf(id -> !ZONES.containsKey(id));
             for (java.util.Map.Entry<Integer, double[]> ce : COCOON.entrySet()) {   // darkness seeping off the cocoon
                double[] cf = ce.getValue();
                net.minecraft.world.entity.Entity ent = mc.level.getEntity(ce.getKey());
@@ -720,7 +725,8 @@ public class FxRenderer {
       p.c = p0.c.add(p0.v.scale(mv(p0, age))); p.r = p0.r; p.h = p0.h; p.a0 = p0.a0;   // glide between server updates
       double R = p.r, H = p.h;
       double spin = (p.a0 + age) * 0.55;
-      float[] rim = RIM[WIND], white = {0.95F, 1.0F, 0.97F};
+      int tp = p0.palette == 0 ? WIND : p0.palette;   // 0 = old packets: wind
+      float[] rim = RIM[tp], white = tp == WIND ? new float[]{0.95F, 1.0F, 0.97F} : hot(tp);
       int BANDS = 7, STEPS = 28;
       for (int b = 0; b < BANDS; b++) {
          Vec3 prev = null;
@@ -731,7 +737,7 @@ public class FxRenderer {
             Vec3 q = p.c.add(Math.cos(a) * rr, y, Math.sin(a) * rr);
             if (prev != null) {
                float al = (float)(0.55 * Math.sin(Math.PI * k / STEPS) + 0.15);
-               gline(m, cam, prev, q, (float)(0.08 + 0.1 * y / H), WIND, al * (b % 2 == 0 ? 1.0F : 0.6F));
+               gline(m, cam, prev, q, (float)(0.08 + 0.1 * y / H), tp, al * (b % 2 == 0 ? 1.0F : 0.6F));
             }
             prev = q;
          }
@@ -744,7 +750,7 @@ public class FxRenderer {
          for (int j = 0; j <= 20; j++) {
             double a = Math.PI * 2 * j / 20 + spin * 3 + k;
             Vec3 q = p.c.add(Math.cos(a) * rr, y + 0.15 * Math.sin(a * 2 + spin), Math.sin(a) * rr);
-            if (prev != null) gline(m, cam, prev, q, (float)(0.25 + 0.3 * y / H), WIND, 0.07F);
+            if (prev != null) gline(m, cam, prev, q, (float)(0.25 + 0.3 * y / H), tp, tp == WIND ? 0.07F : 0.16F);
             prev = q;
          }
       }
@@ -1184,7 +1190,10 @@ public class FxRenderer {
          for (int i = 0; i < 4; i++) {
             double y = r.nextDouble(p.h), rr = p.r * (0.18 + 0.82 * Math.pow(y / p.h, 0.85)), a = r.nextDouble(Math.PI * 2);
             Vec3 at = p.c.add(Math.cos(a) * rr, y, Math.sin(a) * rr);
-            DarkSmoke.streak(at, new Vec3(-Math.sin(a), 0.15, Math.cos(a)).scale(0.6), 0.07F, r.nextInt(5, 9));
+            if (p.palette == 9) {   // Black Hurricane: black flame and embers whipped round instead of air
+               DarkSmoke.smoke(at, new Vec3(-Math.sin(a), 0.12, Math.cos(a)).scale(0.5), 0.5F, r.nextInt(10, 16));
+               if (i % 2 == 0) DarkSmoke.emberSpark(at, new Vec3(-Math.sin(a), 0.2, Math.cos(a)).scale(0.7), 0.06F, r.nextInt(6, 10));
+            } else DarkSmoke.streak(at, new Vec3(-Math.sin(a), 0.15, Math.cos(a)).scale(0.6), 0.07F, r.nextInt(5, 9));
          }
          for (int i = 0; i < 2; i++) {
             double a = r.nextDouble(Math.PI * 2), rr = p.r * r.nextDouble(0.2, 0.6);

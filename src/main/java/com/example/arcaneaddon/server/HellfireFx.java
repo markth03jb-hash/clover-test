@@ -108,8 +108,16 @@ public class HellfireFx {
 
     public static boolean inZone(ServerPlayer p) {
         Long z = ZONE.get(p.getUUID());
-        return z != null && p.serverLevel().getGameTime() <= z;
+        return z != null && p.serverLevel().getGameTime() <= z && !ZoneClash.suppressed(p);   // a stronger zone over you smothers yours
     }
+
+    /** When this player's Mana Zone ends (game time), or -1 if they have none. Ignores clashes. */
+    public static long zoneEnd(ServerPlayer p) {
+        Long z = ZONE.get(p.getUUID());
+        return z == null || p.serverLevel().getGameTime() > z ? -1 : z;
+    }
+
+    public static final double ZONE_RADIUS = ZONE_R;
 
     /** Hellfire Incarnate's heat: from x1.3 at the start up to x1.7 at the end. 1 when not active. */
     private static float heat(ServerPlayer p) {
@@ -402,7 +410,7 @@ public class HellfireFx {
     private static void sendZone(ServerPlayer p, int life) {
         ModeHud.show(p, "lion_mana_zone", life);
         FxPacket pkt = new FxPacket();
-        pkt.shape = 17; pkt.id = p.getId(); pkt.palette = (byte) F; pkt.life = life; pkt.r = (float) ZONE_R;
+        pkt.shape = 17; pkt.id = p.getId(); pkt.palette = (byte) F; pkt.life = life; pkt.r = (float) ZoneClash.radius(p, ZONE_R);
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 

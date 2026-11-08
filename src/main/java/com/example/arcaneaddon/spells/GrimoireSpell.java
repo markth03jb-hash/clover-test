@@ -74,6 +74,8 @@ public abstract class GrimoireSpell extends AbstractSpell {
             java.util.Map.entry("devil_ki_sense", pose("irons_spellbooks:cross_arms")),
             java.util.Map.entry("devil_black_meteorite", pose("arcane_addon:asta_sky_splitter")),
             java.util.Map.entry("devil_instinct_guard", pose("irons_spellbooks:sword_deflect_1")),
+            java.util.Map.entry("devil_black_divider", pose("arcane_addon:asta_black_divider")),
+            java.util.Map.entry("devil_black_hurricane", pose("arcane_addon:asta_black_hurricane")),
             java.util.Map.entry("devil_union_release", pose("irons_spellbooks:cast_t_pose")),
             java.util.Map.entry("devil_dweller_slash", pose("arcane_addon:dark_wild_flurry")),
             java.util.Map.entry("devil_borrowed_slash", pose("arcane_addon:dark_wild_flurry")));

@@ -336,5 +336,11 @@
   "tooltip.arcane_addon.mastery.bonus": "Mastery bonus: +%s%% spell power, +%s%% cooldown reduction, +%s max mana",
   "tooltip.arcane_addon.mastery.next": "Mastery %s unlocks: %s",
   "tooltip.arcane_addon.mastery.locked": "Locked: %s",
-  "tooltip.arcane_addon.mastery.off": "Grimoire Mastery off - every spell unlocked"
+  "tooltip.arcane_addon.mastery.off": "Grimoire Mastery off - every spell unlocked",
+  "spell.arcane_addon.devil_black_divider": "Black Divider",
+  "spell.arcane_addon.devil_black_divider.guide": "Devil Union (takes Twin Rift's slot). Raise the sword overhead, then one cut releases a towering black blade 40 blocks forward that splits the ground and space, erases magic projectiles and breaks casts along its path.",
+  "spell.arcane_addon.devil_black_hurricane": "Black Hurricane",
+  "spell.arcane_addon.devil_black_hurricane.guide": "Devil Union (takes Devil Instinct's slot). Spin with both swords out inside a vortex of black flame for 2 s, dragging enemies in and shredding them, then burst outward and launch them.",
+  "ui.arcane_addon.zone_clash.losing": "%s's Mana Zone is overpowering yours!",
+  "ui.arcane_addon.zone_clash.winning": "Your Mana Zone is crushing %s's!"
 }
