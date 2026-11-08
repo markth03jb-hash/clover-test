@@ -391,6 +391,12 @@ public class AstaFx {
         sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.7f);
         sound(sl, p.position(), SoundEvents.TRIDENT_RIPTIDE_1, 0.7f, 1.4f);
         if (el != null) {
+            // the Dweller blade blazes in the borrowed element's colour for 4 seconds
+            for (net.minecraft.world.item.ItemStack st : new net.minecraft.world.item.ItemStack[]{p.getMainHandItem(), p.getOffhandItem()}) {
+                if (st.getItem() instanceof com.example.arcaneaddon.item.DemonDwellerSwordItem) {
+                    com.example.arcaneaddon.item.DemonDwellerSwordItem.glow(st, el, sl.getGameTime() + 80);
+                }
+            }
             sound(sl, p.position(), SoundEvents.ENCHANTMENT_TABLE_USE, 0.8f, 1.4f);
             p.displayClientMessage(Component.translatable("ui.arcane_addon.borrowed." + el).withStyle(ChatFormatting.DARK_RED), true);
         }

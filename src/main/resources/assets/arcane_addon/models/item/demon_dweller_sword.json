@@ -130,5 +130,31 @@
     0.42
    ]
   }
- }
+ },
+ "overrides": [
+  {
+   "predicate": {
+    "arcane_addon:element": 1
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_fire"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 2
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_ice"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 3
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_lightning"
+  },
+  {
+   "predicate": {
+    "arcane_addon:element": 4
+   },
+   "model": "arcane_addon:item/demon_dweller_sword_wind"
+  }
+ ]
 }

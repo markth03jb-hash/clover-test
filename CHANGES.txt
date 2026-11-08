@@ -1,7 +1,15 @@
-Arcane Addon v1.13.0 - all changed files since v1.0.0
+Arcane Addon v1.14.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.14.0 - BLACK FLAME
+  - Asta's effects (Slayer crimson, Dweller dark, Devil ember) now burn with black flame: licking black tongues along
+    every slash, crescent and thick beam, with a red glow underneath. The Slayer red is deeper and redder.
+  - The open grimoire burns in a big flame aura: a soft glow behind the book and black flame licking around its edges.
+    Black Grimoire = red, Dark = violet, Steel = steel, the others gold.
+  - Borrowed Slash / Four Elements: the Demon Dweller Sword's blade glows in the element's colour
+    (fire orange, ice blue, lightning yellow, wind green) with a white-hot fuller, for 4 seconds after each slash.
 
 NEW IN 1.13.0 - 3D STEEL, BRIGHTER EFFECTS, REAL 3D BOOK
   Effects (everything):

@@ -39,6 +39,11 @@ public class ArcaneAnimations {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent e) {
         PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(LAYER, PRIORITY, player -> new ModifierLayer<>());
+        // Demon Dweller Sword glows in the colour of the element it last borrowed (1 fire, 2 ice, 3 lightning, 4 wind)
+        e.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(
+                com.example.arcaneaddon.registry.AddonItemRegistry.DEMON_DWELLER_SWORD.get(),
+                ResourceLocation.fromNamespaceAndPath("arcane_addon", "element"),
+                (stack, level, entity, seed) -> stack.hasTag() ? (float) stack.getTag().getInt(com.example.arcaneaddon.item.DemonDwellerSwordItem.GLOW) : 0.0F));
     }
 
     @SuppressWarnings("unchecked")

@@ -109,9 +109,18 @@ public class GrimoireFloatRenderer {
       mc.getItemRenderer().renderStatic(book, ItemDisplayContext.HEAD, light, OverlayTexture.NO_OVERLAY, ps, buf, mc.level, seed);
    }
 
+   /** Aura colour per grimoire: Black = red black-flame (like the anime), Dark = violet, Steel = steel, others gold. */
+   private static int auraPalette(Item item) {
+      if (item == AddonItemRegistry.BLACK_GRIMOIRE.get()) return 0;
+      if (item == AddonItemRegistry.DARK_GRIMOIRE.get()) return 1;
+      if (item == AddonItemRegistry.STEEL_GRIMOIRE.get()) return 7;
+      return 8;
+   }
+
    private static void queueOutline(ItemStack book, Vec3 pos, float yaw, float tilt, float scale, float alpha, float cyc) {
-      if (customModel(book.getItem())) FxRenderer.queueBook(pos, yaw, tilt, scale, alpha, cyc, 0.46F, 0.375F, 22.5F);
-      else FxRenderer.queueBook(pos, yaw, tilt, scale, alpha, cyc, 0.44F, 0.31F, 0.0F);
+      int pal = auraPalette(book.getItem());
+      if (customModel(book.getItem())) FxRenderer.queueBook(pos, yaw, tilt, scale, alpha, cyc, 0.46F, 0.375F, 22.5F, pal);
+      else FxRenderer.queueBook(pos, yaw, tilt, scale, alpha, cyc, 0.44F, 0.31F, 0.0F, pal);
    }
 
    private static float ease(float x) {

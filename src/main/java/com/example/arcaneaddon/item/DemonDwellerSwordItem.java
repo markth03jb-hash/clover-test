@@ -41,6 +41,30 @@ public class DemonDwellerSwordItem extends SwordItem {
         return super.getDefaultAttributeModifiers(slot);
     }
 
+    /** NBT: element glow (1 fire, 2 ice, 3 lightning, 4 wind) and the game time it fades. */
+    public static final String GLOW = "ArcaneGlow", GLOW_UNTIL = "ArcaneGlowUntil";
+
+    /** Make the blade blaze in an element's colour for {@code ticks}. */
+    public static void glow(ItemStack stack, String element, long until) {
+        int v = switch (element) { case "fire" -> 1; case "ice" -> 2; case "lightning" -> 3; default -> 4; };
+        stack.getOrCreateTag().putInt(GLOW, v);
+        stack.getOrCreateTag().putLong(GLOW_UNTIL, until);
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, net.minecraft.world.entity.Entity holder, int slot, boolean selected) {
+        if (!level.isClientSide && stack.hasTag() && stack.getTag().contains(GLOW) && level.getGameTime() > stack.getTag().getLong(GLOW_UNTIL)) {
+            stack.getTag().remove(GLOW);
+            stack.getTag().remove(GLOW_UNTIL);
+        }
+    }
+
+    /** The glow switching on and off must not replay the "pull out the sword" animation. */
+    @Override
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+        return slotChanged || oldStack.getItem() != newStack.getItem();
+    }
+
     @Override public boolean onEntityItemUpdate(ItemStack stack, ItemEntity entity) { entity.discard(); return true; }
     @Override public boolean isDamageable(ItemStack stack) { return false; }
     @Override

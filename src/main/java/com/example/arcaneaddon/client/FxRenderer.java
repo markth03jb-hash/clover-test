@@ -49,7 +49,7 @@ public class FxRenderer {
       {0.05F, 0.0F, 0.01F}     // 9 ember (devil form)
    };
    private static final float[][] RIM = new float[][]{
-      {1.0F, 0.16F, 0.24F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
+      {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
       {0.78F, 0.85F, 0.94F},   // 7 steel
       {1.0F, 0.84F, 0.36F},    // 8 gold
       {1.0F, 0.30F, 0.07F}     // 9 ember (devil form)
@@ -78,8 +78,8 @@ public class FxRenderer {
     * Black-flame outline and turning pages for an open grimoire drawn at {@code pos} with the same transform as its
     * 3D model. hw/hh = page width / half height and vDeg = how far the boards open from flat, in model blocks.
     */
-   public static void queueBook(Vec3 pos, float yawS, float tiltDeg, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg) {
-      BOOKS.add(new FxRenderer.BookDraw(pos, yawS, tiltDeg, scale, alpha, flipCycle, hw, hh, vDeg));
+   public static void queueBook(Vec3 pos, float yawS, float tiltDeg, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg, int pal) {
+      BOOKS.add(new FxRenderer.BookDraw(pos, yawS, tiltDeg, scale, alpha, flipCycle, hw, hh, vDeg, pal));
    }
 
    public static void queueAura(Vec3 a, Vec3 b, float width, int pal, float alpha) {
@@ -219,7 +219,33 @@ public class FxRenderer {
 
    private static float[] hot(int pal) {
       float[] r = RIM[pal];
-      return new float[]{r[0] + (1.0F - r[0]) * 0.55F, r[1] + (1.0F - r[1]) * 0.55F, r[2] + (1.0F - r[2]) * 0.55F};
+      float w = isFlame(pal) ? 0.3F : 0.55F;   // black-flame palettes keep a red-orange core instead of white
+      return new float[]{r[0] + (1.0F - r[0]) * w, r[1] + (1.0F - r[1]) * w, r[2] + (1.0F - r[2]) * w};
+   }
+
+   // ------------------------------------------------------------------ black flame (Asta's anti magic look)
+   private static double fxTime;
+   private static final float[] SMOKE = new float[]{0.015F, 0.0F, 0.008F};
+
+   /** Asta's palettes (slayer crimson, dweller dark, devil ember) burn with black flame and a red underglow. */
+   private static boolean isFlame(int pal) {
+      return pal == 0 || pal == 1 || pal == 9;
+   }
+
+   /**
+    * One licking tongue of black flame on the edge a-b, leaning along {@code out} and rising: a black smoke tongue in
+    * front of a larger red glow tongue, flickering over time.
+    */
+   private static void flameTongue(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 a, Vec3 b, Vec3 out, double height, int pal, float al, int seed) {
+      if (al <= 0.01F || height <= 0.0) return;
+      Vec3 mid = a.add(b).scale(0.5), along = b.subtract(a);
+      double t = fxTime;
+      double hg = height * (0.5 + 0.5 * Math.abs(Math.sin(t * 0.45 + seed * 1.71)) + 0.15 * Math.sin(t * 1.3 + seed * 0.37));
+      Vec3 tip = mid.add(out.scale(hg)).add(0.0, hg * 0.45, 0.0).add(along.scale(0.35 * Math.sin(t * 0.33 + seed * 2.3)));
+      Vec3 tipG = mid.add(tip.subtract(mid).scale(1.35));
+      float[] rim = RIM[pal];
+      gquad(m, cam, a.subtract(along.scale(0.2)), b.add(along.scale(0.2)), tipG, tipG, rim, al * 0.6F, al * 0.6F, 0.0F, 0.0F);
+      quad(vc, m, n, cam, a, b, tip, tip, SMOKE, al * 0.85F, al * 0.85F, 0.0F, 0.0F);
    }
 
    @SubscribeEvent
@@ -242,6 +268,7 @@ public class FxRenderer {
             Matrix3f n = ps.last().normal();
             nearFade = true;
             bookTime = now;
+            fxTime = now;
 
             for (FxRenderer.Fx f : FX) {
                double age = now - f.born;
@@ -285,19 +312,14 @@ public class FxRenderer {
 
             AURAS.clear();
             nearFade = false;
+            // open grimoires: black-flame aura (smoke in the translucent pass, red underglow in the glow pass)
+            for (FxRenderer.BookDraw b : BOOKS) {
+               book(ps, vc, cam, b);
+            }
+            BOOKS.clear();
             buf.endBatch(rt);
             GLOW_SRC.endBatch(GlowRenderType.GLOW);
             gv = null;
-            if (!BOOKS.isEmpty()) {
-               VertexConsumer bv = buf.getBuffer(rt);
-
-               for (FxRenderer.BookDraw b : BOOKS) {
-                  book(ps, bv, cam, b);
-               }
-
-               buf.endBatch(rt);
-               BOOKS.clear();
-            }
          }
       }
    }
@@ -808,6 +830,7 @@ public class FxRenderer {
             Vec3 i1 = p1.add(h.scale(hh1 * (double)sgn * 0.9));
             quad(vc, m, n, cam, e0, e1, i1, i0, rim, 0.55F * env, 0.55F * env, 0.1F * env, 0.1F * env);
             gquad(m, cam, e0, e1, i1, i0, rim, 0.35F * env, 0.35F * env, 0.0F, 0.0F);
+            if (isFlame(p.palette)) flameTongue(vc, m, n, cam, e0, e1, h.scale(sgn), p.h * 0.6 + 0.12, p.palette, env, ix * 2 + sgn + p.id);
          }
       }
    }
@@ -824,6 +847,17 @@ public class FxRenderer {
       }
 
       crescent(vc, m, n, cam, c.add(p.d.scale(0.05)), p.d, h, (double)(R * 0.5F), p.palette, env * 0.55F);
+      if (isFlame(p.palette)) {
+         int N = 12;
+         for (int i = 0; i < N; i++) {
+            double r0 = Math.toRadians(-78.0 + 156.0 * i / N), r1 = Math.toRadians(-78.0 + 156.0 * (i + 1) / N);
+            Vec3 o0 = c.add(p.u.scale(Math.sin(r0) * R)).add(p.d.scale((Math.cos(r0) - 1.0) * R * 0.55));
+            Vec3 o1 = c.add(p.u.scale(Math.sin(r1) * R)).add(p.d.scale((Math.cos(r1) - 1.0) * R * 0.55));
+            double rm = (r0 + r1) * 0.5;
+            Vec3 out = p.u.scale(Math.sin(rm)).add(p.d.scale(Math.cos(rm) * 0.55)).subtract(p.d.scale(0.6)).normalize();   // outward, trailing behind
+            flameTongue(vc, m, n, cam, o0, o1, out, R * 0.28, p.palette, env, i + p.id * 7);
+         }
+      }
    }
 
    private static void crescent(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, Vec3 d, Vec3 u, double R, int pal, float env) {
@@ -879,6 +913,15 @@ public class FxRenderer {
          float[] body = BODY[pal];
          float[] rim = RIM[pal];
          int K = Math.max(4, Math.min(24, (int)(len * 2.0)));
+         if (isFlame(pal) && width > 0.15F) {
+            Vec3 rise = new Vec3(0.0, 1.0, 0.0).subtract(d.scale(d.y));
+            rise = rise.lengthSqr() < 1.0E-4 ? n1 : rise.normalize();
+            for (int k = 0; k < K; k++) {
+               double t0 = (double)k / K, t1 = (double)(k + 1) / K;
+               double wf = width * Math.pow(Math.sin(Math.PI * (0.03 + 0.94 * (t0 + t1) * 0.5)), endTaper);
+               flameTongue(vc, m, n, cam, p0.add(axis.scale(t0)).add(rise.scale(wf * 0.3)), p0.add(axis.scale(t1)).add(rise.scale(wf * 0.3)), rise, wf * 1.3, pal, env * 0.9F, k * 3 + (int)(p0.x * 7.0));
+            }
+         }
 
          for (Vec3 nn : new Vec3[]{n1, n2}) {
             for (int k = 0; k < K; k++) {
@@ -933,10 +976,21 @@ public class FxRenderer {
       float V = (float)Math.toRadians((double)b.vDeg);
       float al = b.alpha;
 
-      // the book itself is the real 3D model (drawn by GrimoireFloatRenderer); here only its black-flame outline
+      // the book itself is the real 3D model (drawn by GrimoireFloatRenderer); here its flame aura:
+      // a wide soft underglow behind the book, then licking black flame with a coloured core around every outer edge
+      float[] glowC = RIM[b.pal];
+      int seg = 24;
+      for (int i = 0; i < seg; i++) {
+         double a0 = Math.PI * 2.0 * i / seg, a1 = Math.PI * 2.0 * (i + 1) / seg;
+         double wob0 = 1.0 + 0.12 * Math.sin(bookTime * 0.3 + i * 1.9), wob1 = 1.0 + 0.12 * Math.sin(bookTime * 0.3 + (i + 1) * 1.9);
+         Vec3 q0 = new Vec3(Math.cos(a0) * HW * 1.75 * wob0, Math.sin(a0) * HH * 1.6 * wob0, -0.06);
+         Vec3 q1 = new Vec3(Math.cos(a1) * HW * 1.75 * wob1, Math.sin(a1) * HH * 1.6 * wob1, -0.06);
+         Vec3 c0 = new Vec3(0.0, 0.0, -0.06);
+         gquad(m, Vec3.ZERO, c0, c0, q0, q1, glowC, 0.42F * al, 0.42F * al, 0.0F, 0.0F);
+      }
       for (int s = -1; s <= 1; s += 2) {
          float dx = (float)s * (float)Math.cos((double)V), dz = (float)Math.sin((double)V);
-         panelOutline(vc, m, n, dx, dz, -0.03F, HW, HH, al, s);
+         panelOutline(vc, m, n, dx, dz, -0.03F, HW, HH, al, s, b.pal);
       }
 
       if (b.flipCycle >= 0.0F) {
@@ -1011,9 +1065,9 @@ public class FxRenderer {
     * (the spine edge is skipped), whose width flickers along its length like licking flame. Kept thin and
     * translucent so the book stays readable.
     */
-   private static void panelOutline(VertexConsumer vc, Matrix4f m, Matrix3f n, float dx, float dz, float lift, float w, float h, float al, int seed) {
-      float[] core = new float[]{0.42F, 0.03F, 0.08F};
-      float[] smoke = new float[]{0.05F, 0.0F, 0.04F};
+   private static void panelOutline(VertexConsumer vc, Matrix4f m, Matrix3f n, float dx, float dz, float lift, float w, float h, float al, int seed, int pal) {
+      float[] core = RIM[pal];
+      float[] smoke = new float[]{0.02F, 0.0F, 0.015F};
       // outer three edges as (start u,y) -> (end u,y) with outward normal (nu,ny); top edge gets taller flames
       float[][] edges = new float[][]{
          {0.0F, -h, w, -h, 0.0F, -1.0F, 0.7F},
@@ -1029,15 +1083,23 @@ public class FxRenderer {
             float u0 = E[0] + (E[2] - E[0]) * f0, y0 = E[1] + (E[3] - E[1]) * f0;
             float u1 = E[0] + (E[2] - E[0]) * f1, y1 = E[1] + (E[3] - E[1]) * f1;
             int k0 = e * N + i, k1 = k0 + 1;
-            float x0 = (float)(0.035 + 0.03 * Math.sin(t + k0 * 1.37) + 0.015 * Math.sin(t * 2.3 + k0 * 0.71)) * E[6];
-            float x1 = (float)(0.035 + 0.03 * Math.sin(t + k1 * 1.37) + 0.015 * Math.sin(t * 2.3 + k1 * 0.71)) * E[6];
+            float x0 = (float)(0.07 + 0.055 * Math.sin(t + k0 * 1.37) + 0.03 * Math.sin(t * 2.3 + k0 * 0.71)) * E[6];
+            float x1 = (float)(0.07 + 0.055 * Math.sin(t + k1 * 1.37) + 0.03 * Math.sin(t * 2.3 + k1 * 0.71)) * E[6];
             x0 = Math.max(0.012F, x0);
             x1 = Math.max(0.012F, x1);
             Vec3 a = pt(dx, dz, lift, u0, y0), b = pt(dx, dz, lift, u1, y1);
             Vec3 ao = pt(dx, dz, lift, u0 + E[4] * x0, y0 + E[5] * x0), bo = pt(dx, dz, lift, u1 + E[4] * x1, y1 + E[5] * x1);
             Vec3 ao2 = pt(dx, dz, lift, u0 + E[4] * x0 * 1.9F, y0 + E[5] * x0 * 1.9F), bo2 = pt(dx, dz, lift, u1 + E[4] * x1 * 1.9F, y1 + E[5] * x1 * 1.9F);
-            quad(vc, m, n, Vec3.ZERO, a, b, bo, ao, core, 0.55F * al, 0.55F * al, 0.12F * al, 0.12F * al);    // crimson inner glow
-            quad(vc, m, n, Vec3.ZERO, ao, bo, bo2, ao2, smoke, 0.35F * al, 0.35F * al, 0.0F, 0.0F);          // dark smoky fringe
+            gquad(m, Vec3.ZERO, a, b, bo2, ao2, core, 0.75F * al, 0.75F * al, 0.0F, 0.0F);                    // glowing core of the flame
+            quad(vc, m, n, Vec3.ZERO, ao, bo, bo2, ao2, smoke, 0.7F * al, 0.7F * al, 0.0F, 0.0F);            // black flame licking outward
+            // a tall flickering tongue every few segments
+            if ((k0 + seed) % 3 == 0) {
+               float tl = (float)(0.12 + 0.1 * Math.abs(Math.sin(t * 0.8 + k0 * 2.1))) * E[6];
+               float um = (u0 + u1) * 0.5F, ym = (y0 + y1) * 0.5F;
+               Vec3 tip = pt(dx, dz, lift, um + E[4] * (x0 + tl), ym + E[5] * (x0 + tl) + tl * 0.4F);
+               gquad(m, Vec3.ZERO, ao, bo, tip, tip, core, 0.55F * al, 0.55F * al, 0.0F, 0.0F);
+               quad(vc, m, n, Vec3.ZERO, ao, bo, tip, tip, smoke, 0.75F * al, 0.75F * al, 0.0F, 0.0F);
+            }
          }
       }
    }
@@ -1068,7 +1130,7 @@ public class FxRenderer {
    private static record AuraDraw(Vec3 a, Vec3 b, float width, int pal, float alpha) {
    }
 
-   private static record BookDraw(Vec3 pos, float yaw, float tilt, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg) {
+   private static record BookDraw(Vec3 pos, float yaw, float tilt, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg, int pal) {
    }
 
    private static class Fx {
