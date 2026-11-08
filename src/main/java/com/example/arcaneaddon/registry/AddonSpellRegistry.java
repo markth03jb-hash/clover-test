@@ -86,7 +86,7 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> DEATH_THRUST = registerSpell(new DarkSpell("death_thrust", 10, 60, 22, true, DarkSpell.anim("irons_spellbooks:simple_sword_lunge_stab"), DarkFx::deathThrust));
     public static final RegistryObject<AbstractSpell> BLACK_MOON = registerSpell(new DarkSpell("black_moon", 20, 70, 16, false, DarkSpell.anim("irons_spellbooks:instant_projectile"), DarkFx::blackMoon));
     public static final RegistryObject<AbstractSpell> BLACK_HOLE = registerSpell(new DarkSpell("black_hole", 24, 100, 10, false, DarkSpell.anim("irons_spellbooks:cast_t_pose"), DarkFx::blackHole));
-    public static final RegistryObject<AbstractSpell> MANA_ZONE_DIMENSION_SLASH = registerSpell(new DarkSpell("mana_zone_dimension_slash", 40, 150, 10, true, DarkSpell.anim("irons_spellbooks:cross_arms"), DarkFx::manaZone));
+    public static final RegistryObject<AbstractSpell> MANA_ZONE_DIMENSION_SLASH = registerSpell(new DarkSpell("mana_zone_dimension_slash", 45, 150, 10, false, DarkSpell.anim("irons_spellbooks:cross_arms"), DarkFx::manaZone));
     public static final RegistryObject<AbstractSpell> KI_FORESIGHT = registerSpell(new DarkSpell("ki_foresight", 18, 30, 0, false, SpellAnimations.SELF_CAST_ANIMATION, DarkFx::foresight));
     public static final RegistryObject<AbstractSpell> EVENT_HORIZON = registerSpell(new DarkSpell("event_horizon", 90, 300, 60, true, DarkSpell.anim("arcane_addon:dark_event_horizon"), DarkFx::eventHorizon));
 

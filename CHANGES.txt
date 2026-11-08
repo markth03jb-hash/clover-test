@@ -1,7 +1,27 @@
-Arcane Addon v1.14.0 - all changed files since v1.0.0
+Arcane Addon v1.15.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.15.0 - YAMI REWORK + MANA ZONE
+  - New spell 8: Mana Zone (replaces "Mana Zone: Dimension Slash" in the same slot). Spreads your mana 14 blocks around
+    you for 20 s with a burning edge that follows you. While it is up, every Dark Grimoire move uses its Mana Zone
+    variant; when it ends the zone collapses and cuts everyone still inside. No katana needed.
+  - Every dark cut now shows a white hairline first, then space tears open along it (black crescent, burning edge).
+  - Black Blade: darkness climbs your body in rings. Zone: each hit also cuts the next enemy in the zone.
+  - Dimension Slash: flat iaido arc, hairline through space, then a black sheet splits open along 40 blocks.
+    Zone: the cut appears directly on every enemy in the zone (the old Mana Zone: Dimension Slash).
+  - Avidya Slash Raijin / Wild Slash: guided black-flame crescents. Zone: slashes tear out of the zone's edge -
+    three converge on one target (Raijin) or one for every enemy in the zone (Wild Slash).
+  - Death Thrust: a solid spike of darkness drives out 12 blocks punching rings of air. Zone: the thrust comes out of
+    the dark behind the three nearest enemies.
+  - Black Moon: a sphere of black-flame rings with a pale crescent. Zone: lasts 6 s and breaks into a crescent at
+    every enemy in the zone.
+  - Black Hole: four spiral arms wind into it; it implodes in solid shards. Zone: opens among the enemies in the zone,
+    pulls harder and lasts 4 s.
+  - Ki Read: Foresight: an eye opens. Zone: 5 dodges and every read attack is answered with a cut.
+  - Event Horizon: crescents gather into the blade, then a tall black sheet splits space 50 blocks ahead behind a
+    giant vertical arc. Zone: eight horizons split the whole zone like a star.
 
 NEW IN 1.14.0 - BLACK FLAME
   - Asta's effects (Slayer crimson, Dweller dark, Devil ember) now burn with black flame: licking black tongues along
