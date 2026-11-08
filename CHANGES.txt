@@ -1,7 +1,13 @@
-Iron Spell Grimoire v1.42.1 - all changed files since v1.0.0
+Iron Spell Grimoire v1.42.2 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.42.2
+- The sword in your hand moves with the animation instead of being glued to the hand: every swing animation now
+  drives the held item too (PlayerAnimator's item bone) - the blade trails behind a fast swing, whips through past
+  the hand as the swing stops, and settles back. Yami's samurai guard also lets the katana's tip rise and fall a
+  little as he breathes. Works for the katana and the demon swords, in every addon animation that swings an arm.
 
 NEW IN 1.42.1 - smoothness pass
 - Effects that follow something every tick (homing arrows and eagles, the flaming bat, the horse cart, the lion,
