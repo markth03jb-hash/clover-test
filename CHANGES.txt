@@ -1,7 +1,12 @@
-Arcane Addon v1.16.0 - all changed files since v1.0.0
+Arcane Addon v1.16.1 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.16.1
+  - Dark Grimoire: new original cover - indigo-black leather with silver-violet crescent moons, stars and thin
+    "dimension cut" lines inside a double frame; three-leaf clover with a violet glow on the front, a large crescent
+    moon on the back, silver-violet trim.
 
 NEW IN 1.16.0
   Grimoires:
