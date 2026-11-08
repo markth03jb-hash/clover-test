@@ -174,6 +174,7 @@ public class FxRenderer {
    }
 
    public static void spawn(FxPacket p) {
+      PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
       if (p.shape == 4) {   // Ki Sense mark: id = entity, palette = creature type, life = duration
          KiSenseRenderer.mark(p.id, p.palette, p.life);
          return;
@@ -392,6 +393,12 @@ public class FxRenderer {
             while (it.hasNext()) {
                FxRenderer.Fx f = it.next();
                if (f.p.shape == 30) emitBone(f, now - f.born);
+               {   // every effect also sheds pixel sprites in its own palette (PixelFx)
+                  double pa = now - f.born, pl = f.killAge >= 0.0 ? f.killAge : (double)f.p.life;
+                  boolean pTick = f.p.life <= 1 && f.killAge < 0.0;
+                  Vec3 pat = (f.p.shape == 7 || f.p.shape == 8 || f.p.shape == 30) ? travelled(f, pa) : f.p.c.add(f.p.v.scale(mv(f.p, pa)));
+                  PixelFx.fromFx(f.p, pat, pa, Math.max(pl, pTick ? 1.0 : pl), pTick);
+               }
                if (f.p.palette == DARKNESS) emitDarkness(f, now - f.born);
                else if (f.p.palette == WIND) emitWind(f, now - f.born);
                else if (f.p.palette == MERCURY) emitMercury(f, now - f.born);

@@ -1,7 +1,24 @@
-Iron Spell Grimoire v1.44.1 - all changed files since v1.0.0
+Iron Spell Grimoire v1.45.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.45.0
+- The pixel-sprite effect style (from Sky Splitter) is now on EVERY move. Every effect in the game - slashes,
+  crescents, beams and trails, walls and rings, steel blocks, spikes, bones, mercury spheres, fireballs and
+  explosions, lightning, tornadoes, gusts, space cracks - sheds pixel sprites in its own colour, and so does
+  every form, aura and held weapon: Devil Union, Knight's Armor, aura outlines, Black Cocoon, Black Blade,
+  Mana Zones, Spirit Dive, burning, Flame Knuckles, Thunder God Mode and gloves, Hellfire Incarnate,
+  Beelzebub, Surpassing Limits, weapon rings, bone sword, bone whips, Ignis Columna fists and Ki Sense marks.
+- Each kind of magic has its own look:
+    anti magic / darkness / devil - black blade streaks, a coloured glow, white edges, flakes, curling smoke
+    fire / blue fire / crimson     - rising flame tongues, hot streaks, embers (Mereoleona's fire: no smoke)
+    lightning                      - white zigzags with a coloured glow, fast sparks
+    wind                           - long thin swirling streaks and glinting leaves
+    steel / gold / mercury         - falling metal shards, white glints, sparks
+    bone                           - ivory splinters and bone dust
+- Sprites fade out near the camera so they never cover your view; the "particle_density" client setting
+  scales how many there are (0 turns the sprites off).
 
 NEW IN 1.44.1
 - Sky Splitter (Asta) pixel slash restyled to look like the anime's anti-magic:
