@@ -1,7 +1,26 @@
-Iron Spell Grimoire v1.48.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.49.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.49.0
+- Every grimoire has its own spell wheel:
+    Asta        pitch-black pages, blood-red glow, iron trim, jagged black flames, a five-leaf black clover
+    Yami        violet-black pages, silver trim, darkness drifting round it, crescent marks
+    Yuno        deep jade pages, pale gold trim, wind arcs racing round both ways, a four-leaf clover
+    Nozel       steel-blue pages, chrome trim, mercury drops hanging and swaying off the ring
+    Magna       scorched pages, brass trim, roaring orange flames
+    Luck        midnight-blue pages, white-gold trim, lightning crackling off the ring
+    Mereoleona  crimson pages, gold trim, a lion's mane of flame claws
+    Zenon       dark red-black pages, bone trim, ribs of bone standing round the ring
+    Klaus       grey steel plates, gold trim, a riveted steel band
+  The info page under the wheel uses the grimoire's colours too.
+- Review fixes:
+    * pixel effects: dead sprites are cleared in one pass (removing them one by one from a list of thousands
+      could stutter in big fights), and sprite drawing no longer creates temporary vectors per vertex
+    * spell wheel: its text no longer flashes solid while the wheel fades in (Minecraft draws almost-transparent
+      text fully opaque), the centre icon fades in with the wheel, and if the wheel ever fails it now logs why
+      before falling back to Iron's wheel
 
 NEW IN 1.48.0
 - Grimoire spell wheel: with one of the addon's grimoires equipped, Iron's spell wheel is redrawn as a grimoire

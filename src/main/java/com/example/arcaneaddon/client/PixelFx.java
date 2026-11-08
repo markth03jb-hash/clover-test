@@ -1102,9 +1102,12 @@ public final class PixelFx {
             if (s.dead || age > s.life) { it.remove(); continue; }
             emit(s, age, false);
         }
-        for (Iterator<Spr> it = SPRITES.iterator(); it.hasNext(); ) {
-            Spr p = it.next();
-            if (++p.age > p.life) { it.remove(); continue; }
+        // compact in place (one pass) instead of removing one at a time - thousands of sprites die every second
+        int keep = 0;
+        for (int idx = 0, size = SPRITES.size(); idx < size; idx++) {
+            Spr p = SPRITES.get(idx);
+            if (++p.age > p.life) continue;
+            SPRITES.set(keep++, p);
             p.prev = p.pos;
             p.pos = p.pos.add(p.vel);
             p.vel = p.vel.scale(p.drag);
@@ -1118,6 +1121,7 @@ public final class PixelFx {
             }
             if (!p.dark) p.heat = Math.max(0.0F, p.heat - 0.9F / p.life);
         }
+        if (keep < SPRITES.size()) SPRITES.subList(keep, SPRITES.size()).clear();
     }
 
     // ------------------------------------------------------------------ drawing
@@ -1253,17 +1257,23 @@ public final class PixelFx {
         quad(vc, m, n, cam, pos, ax.scale(len * 0.5), side.scale(wid * 0.5), r, g, bl, al, flip, fr * 0.25F, fr * 0.25F + 0.25F);
     }
 
-    /** A double-faced quad: {@code a} = half its length (texture top = +a), {@code b} = half its width; v0..v1 = the frame. */
+    /** A double-faced quad: {@code a} = half its length (texture top = +a), {@code b} = half its width; v0..v1 = the frame.
+     *  Done in plain numbers (no temporary vectors): this runs for thousands of sprites every frame. */
     private static void quad(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 pos, Vec3 a, Vec3 b, float r, float g, float bl, float al, boolean flip, float v0, float v1) {
         float u0 = flip ? 1 : 0, u1 = flip ? 0 : 1;
-        v(vc, m, n, cam, pos.subtract(a).subtract(b), r, g, bl, al, u0, v1);
-        v(vc, m, n, cam, pos.subtract(a).add(b), r, g, bl, al, u1, v1);
-        v(vc, m, n, cam, pos.add(a).add(b), r, g, bl, al, u1, v0);
-        v(vc, m, n, cam, pos.add(a).subtract(b), r, g, bl, al, u0, v0);
-        v(vc, m, n, cam, pos.add(a).subtract(b), r, g, bl, al, u0, v0);
-        v(vc, m, n, cam, pos.add(a).add(b), r, g, bl, al, u1, v0);
-        v(vc, m, n, cam, pos.subtract(a).add(b), r, g, bl, al, u1, v1);
-        v(vc, m, n, cam, pos.subtract(a).subtract(b), r, g, bl, al, u0, v1);
+        double px = pos.x - cam.x, py = pos.y - cam.y, pz = pos.z - cam.z;
+        float x0 = (float) (px - a.x - b.x), y0 = (float) (py - a.y - b.y), z0 = (float) (pz - a.z - b.z);   // back, left
+        float x1 = (float) (px - a.x + b.x), y1 = (float) (py - a.y + b.y), z1 = (float) (pz - a.z + b.z);   // back, right
+        float x2 = (float) (px + a.x + b.x), y2 = (float) (py + a.y + b.y), z2 = (float) (pz + a.z + b.z);   // front, right
+        float x3 = (float) (px + a.x - b.x), y3 = (float) (py + a.y - b.y), z3 = (float) (pz + a.z - b.z);   // front, left
+        vf(vc, m, n, x0, y0, z0, r, g, bl, al, u0, v1); vf(vc, m, n, x1, y1, z1, r, g, bl, al, u1, v1);
+        vf(vc, m, n, x2, y2, z2, r, g, bl, al, u1, v0); vf(vc, m, n, x3, y3, z3, r, g, bl, al, u0, v0);
+        vf(vc, m, n, x3, y3, z3, r, g, bl, al, u0, v0); vf(vc, m, n, x2, y2, z2, r, g, bl, al, u1, v0);
+        vf(vc, m, n, x1, y1, z1, r, g, bl, al, u1, v1); vf(vc, m, n, x0, y0, z0, r, g, bl, al, u0, v1);
+    }
+
+    private static void vf(VertexConsumer vc, Matrix4f m, Matrix3f n, float x, float y, float z, float r, float g, float b, float a, float u, float t) {
+        vc.vertex(m, x, y, z).color(r, g, b, a).uv(u, t).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT).normal(n, 0, 1, 0).endVertex();
     }
 
     private static void v(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, float r, float g, float b, float a, float u, float t) {
