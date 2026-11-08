@@ -1,0 +1,12 @@
+x/io/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay.class
+x/io/redspace/ironsspellbooks/gui/overlays/SpellSelection.class
+x/io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.class
+x/io/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor.class
+x/io/redspace/ironsspellbooks/player/ClientInputEvents.class
+x/io/redspace/ironsspellbooks/player/ClientSpellCastHelper.class
+x/io/redspace/ironsspellbooks/player/ClientMagicData.class
+x/io/redspace/ironsspellbooks/player/KeyMappings.class
+x/io/redspace/ironsspellbooks/command/ClearSpellSelectionCommand.class
+x/io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.class
+x/io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SpellSelectionEvent.class
+x/io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.class

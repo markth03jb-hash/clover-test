@@ -1,0 +1,88 @@
+Compiled from "SpellSelectionManager.java"
+public class io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SpellSelectionEvent extends net.minecraftforge.event.entity.player.PlayerEvent {
+  io.redspace.ironsspellbooks.api.magic.SpellSelectionManager manager;
+
+  public io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SpellSelectionEvent(net.minecraft.world.entity.player.Player, io.redspace.ironsspellbooks.api.magic.SpellSelectionManager);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokespecial #18                 // Method net/minecraftforge/event/entity/player/PlayerEvent."<init>":(Lnet/minecraft/world/entity/player/Player;)V
+       5: aload_0
+       6: aload_2
+       7: putfield      #20                 // Field manager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+      10: return
+
+  public void addSelectionOption(io.redspace.ironsspellbooks.api.spells.SpellData, java.lang.String, int);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: iload_3
+       4: aload_0
+       5: getfield      #20                 // Field manager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+       8: getfield      #30                 // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.selectionOptionList:Ljava/util/List;
+      11: invokeinterface #36,  1           // InterfaceMethod java/util/List.size:()I
+      16: invokevirtual #39                 // Method addSelectionOption:(Lio/redspace/ironsspellbooks/api/spells/SpellData;Ljava/lang/String;II)V
+      19: return
+
+  public void addSelectionOption(io.redspace.ironsspellbooks.api.spells.SpellData, java.lang.String, int, int);
+    Code:
+       0: aload_0
+       1: getfield      #20                 // Field manager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+       4: getfield      #30                 // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.selectionOptionList:Ljava/util/List;
+       7: invokeinterface #36,  1           // InterfaceMethod java/util/List.size:()I
+      12: istore        4
+      14: iload         4
+      16: iflt          122
+      19: iload         4
+      21: aload_0
+      22: getfield      #20                 // Field manager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+      25: getfield      #30                 // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.selectionOptionList:Ljava/util/List;
+      28: invokeinterface #36,  1           // InterfaceMethod java/util/List.size:()I
+      33: if_icmpgt     122
+      36: aload_0
+      37: getfield      #20                 // Field manager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+      40: getfield      #30                 // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.selectionOptionList:Ljava/util/List;
+      43: iload         4
+      45: new           #10                 // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+      48: dup
+      49: aload_1
+      50: aload_2
+      51: iload_3
+      52: iload         4
+      54: invokespecial #47                 // Method io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption."<init>":(Lio/redspace/ironsspellbooks/api/spells/SpellData;Ljava/lang/String;II)V
+      57: invokeinterface #51,  3           // InterfaceMethod java/util/List.add:(ILjava/lang/Object;)V
+      62: aload_0
+      63: getfield      #20                 // Field manager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+      66: getfield      #55                 // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      69: getfield      #60                 // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.index:I
+      72: iload_3
+      73: if_icmpne     122
+      76: aload_0
+      77: getfield      #20                 // Field manager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+      80: getfield      #55                 // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      83: getfield      #63                 // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.equipmentSlot:Ljava/lang/String;
+      86: aload_2
+      87: invokevirtual #69                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      90: ifeq          122
+      93: aload_0
+      94: getfield      #20                 // Field manager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+      97: aload_0
+      98: getfield      #20                 // Field manager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+     101: getfield      #30                 // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.selectionOptionList:Ljava/util/List;
+     104: invokeinterface #36,  1           // InterfaceMethod java/util/List.size:()I
+     109: iconst_1
+     110: isub
+     111: putfield      #72                 // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.selectionIndex:I
+     114: aload_0
+     115: getfield      #20                 // Field manager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+     118: iconst_1
+     119: putfield      #76                 // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.selectionValid:Z
+     122: return
+
+  public io.redspace.ironsspellbooks.api.magic.SpellSelectionManager getManager();
+    Code:
+       0: aload_0
+       1: getfield      #20                 // Field manager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+       4: areturn
+}

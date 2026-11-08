@@ -1,0 +1,302 @@
+Compiled from "ClientInputEvents.java"
+public final class io.redspace.ironsspellbooks.player.ClientInputEvents {
+  public static boolean hasReleasedSinceCasting;
+
+  private static boolean showExpandedTooltip;
+
+  private static boolean wasSpellWheelDown;
+
+  private static boolean wasUseDown;
+
+  public io.redspace.ironsspellbooks.player.ClientInputEvents();
+    Code:
+       0: aload_0
+       1: invokespecial #67                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static void clientMouseScrolled(net.minecraftforge.client.event.InputEvent$MouseScrollingEvent);
+    Code:
+       0: invokestatic  #78                 // Method io/redspace/ironsspellbooks/util/MinecraftInstanceHelper.getPlayer:()Lnet/minecraft/world/entity/player/Player;
+       3: astore_1
+       4: aload_1
+       5: ifnonnull     9
+       8: return
+       9: getstatic     #86                 // Field io/redspace/ironsspellbooks/player/KeyMappings.SPELLBAR_SCROLL_MODIFIER_KEYMAP:Lio/redspace/ironsspellbooks/player/ExtendedKeyMapping;
+      12: invokevirtual #92                 // Method io/redspace/ironsspellbooks/player/ExtendedKeyMapping.m_90857_:()Z
+      15: ifeq          41
+      18: aload_0
+      19: invokevirtual #96                 // Method net/minecraftforge/client/event/InputEvent$MouseScrollingEvent.getScrollDelta:()D
+      22: d2i
+      23: iconst_m1
+      24: iconst_1
+      25: invokestatic  #102                // Method net/minecraft/util/Mth.m_14045_:(III)I
+      28: istore_2
+      29: iload_2
+      30: invokestatic  #106                // Method handleSpellBarScrollModifier:(I)Z
+      33: ifeq          41
+      36: aload_0
+      37: iconst_1
+      38: invokevirtual #110                // Method net/minecraftforge/client/event/InputEvent$MouseScrollingEvent.setCanceled:(Z)V
+      41: return
+
+  public static boolean handleSpellBarScrollModifier(int);
+    Code:
+       0: invokestatic  #122                // Method io/redspace/ironsspellbooks/player/ClientMagicData.getSpellSelectionManager:()Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+       3: astore_1
+       4: aload_1
+       5: invokevirtual #126                // Method io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.getSpellCount:()I
+       8: ifgt          13
+      11: iconst_0
+      12: ireturn
+      13: aload_1
+      14: invokevirtual #130                // Method io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.getAllSpells:()Ljava/util/List;
+      17: astore_2
+      18: aload_2
+      19: invokeinterface #135,  1          // InterfaceMethod java/util/List.size:()I
+      24: istore_3
+      25: aload_1
+      26: invokevirtual #138                // Method io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.getSelectionIndex:()I
+      29: iconst_0
+      30: iload_3
+      31: invokestatic  #102                // Method net/minecraft/util/Mth.m_14045_:(III)I
+      34: iload_0
+      35: isub
+      36: istore        4
+      38: iload         4
+      40: iconst_m1
+      41: iload_3
+      42: iconst_1
+      43: iadd
+      44: invokestatic  #102                // Method net/minecraft/util/Mth.m_14045_:(III)I
+      47: iload_3
+      48: iadd
+      49: iload_3
+      50: irem
+      51: istore        5
+      53: aload_1
+      54: iload         5
+      56: invokevirtual #142                // Method io/redspace/ironsspellbooks/api/magic/SpellSelectionManager.makeSelection:(I)V
+      59: iconst_1
+      60: ireturn
+
+  public static void onUseInput(net.minecraftforge.client.event.InputEvent$InteractionKeyMappingTriggered);
+    Code:
+       0: aload_0
+       1: invokevirtual #155                // Method net/minecraftforge/client/event/InputEvent$InteractionKeyMappingTriggered.isUseItem:()Z
+       4: ifeq          26
+       7: invokestatic  #160                // Method io/redspace/ironsspellbooks/player/ClientSpellCastHelper.shouldSuppressRightClicks:()Z
+      10: ifeq          49
+      13: aload_0
+      14: iconst_0
+      15: invokevirtual #163                // Method net/minecraftforge/client/event/InputEvent$InteractionKeyMappingTriggered.setSwingHand:(Z)V
+      18: aload_0
+      19: iconst_1
+      20: invokevirtual #164                // Method net/minecraftforge/client/event/InputEvent$InteractionKeyMappingTriggered.setCanceled:(Z)V
+      23: goto          49
+      26: aload_0
+      27: invokevirtual #167                // Method net/minecraftforge/client/event/InputEvent$InteractionKeyMappingTriggered.isAttack:()Z
+      30: ifeq          49
+      33: invokestatic  #170                // Method io/redspace/ironsspellbooks/player/ClientMagicData.isCasting:()Z
+      36: ifeq          49
+      39: aload_0
+      40: iconst_0
+      41: invokevirtual #163                // Method net/minecraftforge/client/event/InputEvent$InteractionKeyMappingTriggered.setSwingHand:(Z)V
+      44: aload_0
+      45: iconst_1
+      46: invokevirtual #164                // Method net/minecraftforge/client/event/InputEvent$InteractionKeyMappingTriggered.setCanceled:(Z)V
+      49: return
+
+  public static void onClientTick(net.minecraftforge.event.TickEvent$ClientTickEvent);
+    Code:
+       0: invokestatic  #176                // Method handleKeybinds:()V
+       3: return
+
+  private static void handleKeybinds();
+    Code:
+       0: getstatic     #180                // Field io/redspace/ironsspellbooks/player/KeyMappings.SPELLBOOK_CAST_ACTIVE_KEYMAP:Lio/redspace/ironsspellbooks/player/ExtendedKeyMapping;
+       3: invokevirtual #183                // Method io/redspace/ironsspellbooks/player/ExtendedKeyMapping.consume:()Z
+       6: ifeq          22
+       9: new           #185                // class io/redspace/ironsspellbooks/network/casting/CastPacket
+      12: dup
+      13: invokespecial #186                // Method io/redspace/ironsspellbooks/network/casting/CastPacket."<init>":()V
+      16: invokestatic  #192                // Method io/redspace/ironsspellbooks/setup/PacketDistributor.sendToServer:(Ljava/lang/Object;)V
+      19: goto          0
+      22: getstatic     #195                // Field io/redspace/ironsspellbooks/player/KeyMappings.SPELL_WHEEL_KEYMAP:Lio/redspace/ironsspellbooks/player/ExtendedKeyMapping;
+      25: invokevirtual #183                // Method io/redspace/ironsspellbooks/player/ExtendedKeyMapping.consume:()Z
+      28: ifeq          46
+      31: getstatic     #197                // Field wasSpellWheelDown:Z
+      34: ifne          22
+      37: getstatic     #203                // Field io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.instance:Lio/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay;
+      40: invokevirtual #206                // Method io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.open:()V
+      43: goto          22
+      46: invokestatic  #209                // Method handleSpellWheelRelease:()V
+      49: getstatic     #212                // Field io/redspace/ironsspellbooks/player/KeyMappings.SPELL_WHEEL_TOGGLE_KEYMAP:Lio/redspace/ironsspellbooks/player/ExtendedKeyMapping;
+      52: invokevirtual #183                // Method io/redspace/ironsspellbooks/player/ExtendedKeyMapping.consume:()Z
+      55: ifeq          85
+      58: getstatic     #203                // Field io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.instance:Lio/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay;
+      61: getfield      #215                // Field io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.active:Z
+      64: ifeq          76
+      67: getstatic     #203                // Field io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.instance:Lio/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay;
+      70: invokevirtual #218                // Method io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.close:()V
+      73: goto          49
+      76: getstatic     #203                // Field io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.instance:Lio/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay;
+      79: invokevirtual #206                // Method io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.open:()V
+      82: goto          49
+      85: iconst_0
+      86: istore_0
+      87: iload_0
+      88: getstatic     #221                // Field io/redspace/ironsspellbooks/player/KeyMappings.QUICK_CAST_MAPPINGS:Ljava/util/List;
+      91: invokeinterface #135,  1          // InterfaceMethod java/util/List.size:()I
+      96: if_icmpge     137
+      99: getstatic     #221                // Field io/redspace/ironsspellbooks/player/KeyMappings.QUICK_CAST_MAPPINGS:Ljava/util/List;
+     102: iload_0
+     103: invokeinterface #225,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     108: checkcast     #88                 // class io/redspace/ironsspellbooks/player/ExtendedKeyMapping
+     111: invokevirtual #183                // Method io/redspace/ironsspellbooks/player/ExtendedKeyMapping.consume:()Z
+     114: ifeq          131
+     117: new           #227                // class io/redspace/ironsspellbooks/network/casting/QuickCastPacket
+     120: dup
+     121: iload_0
+     122: invokespecial #229                // Method io/redspace/ironsspellbooks/network/casting/QuickCastPacket."<init>":(I)V
+     125: invokestatic  #192                // Method io/redspace/ironsspellbooks/setup/PacketDistributor.sendToServer:(Ljava/lang/Object;)V
+     128: goto          137
+     131: iinc          0, 1
+     134: goto          87
+     137: getstatic     #86                 // Field io/redspace/ironsspellbooks/player/KeyMappings.SPELLBAR_SCROLL_MODIFIER_KEYMAP:Lio/redspace/ironsspellbooks/player/ExtendedKeyMapping;
+     140: invokevirtual #92                 // Method io/redspace/ironsspellbooks/player/ExtendedKeyMapping.m_90857_:()Z
+     143: ifeq          169
+     146: getstatic     #235                // Field io/redspace/ironsspellbooks/config/ClientConfigs.SPELL_BAR_DISPLAY:Lnet/minecraftforge/common/ForgeConfigSpec$ConfigValue;
+     149: invokevirtual #238                // Method net/minecraftforge/common/ForgeConfigSpec$ConfigValue.get:()Ljava/lang/Object;
+     152: checkcast     #29                 // class io/redspace/ironsspellbooks/gui/overlays/ManaBarOverlay$Display
+     155: getstatic     #242                // Field io/redspace/ironsspellbooks/gui/overlays/ManaBarOverlay$Display.Contextual:Lio/redspace/ironsspellbooks/gui/overlays/ManaBarOverlay$Display;
+     158: invokevirtual #246                // Method io/redspace/ironsspellbooks/gui/overlays/ManaBarOverlay$Display.equals:(Ljava/lang/Object;)Z
+     161: ifeq          169
+     164: bipush        40
+     166: putstatic     #251                // Field io/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay.fadeoutDelay:I
+     169: invokestatic  #254                // Method updateShowExpandedTooltip:()V
+     172: invokestatic  #257                // Method handleUseRelease:()V
+     175: return
+
+  private static void handleSpellWheelRelease();
+    Code:
+       0: getstatic     #195                // Field io/redspace/ironsspellbooks/player/KeyMappings.SPELL_WHEEL_KEYMAP:Lio/redspace/ironsspellbooks/player/ExtendedKeyMapping;
+       3: invokevirtual #92                 // Method io/redspace/ironsspellbooks/player/ExtendedKeyMapping.m_90857_:()Z
+       6: istore_0
+       7: getstatic     #197                // Field wasSpellWheelDown:Z
+      10: ifeq          21
+      13: iload_0
+      14: ifne          21
+      17: iconst_1
+      18: goto          22
+      21: iconst_0
+      22: istore_1
+      23: iload_1
+      24: ifeq          42
+      27: getstatic     #203                // Field io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.instance:Lio/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay;
+      30: getfield      #215                // Field io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.active:Z
+      33: ifeq          42
+      36: getstatic     #203                // Field io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.instance:Lio/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay;
+      39: invokevirtual #218                // Method io/redspace/ironsspellbooks/gui/overlays/SpellWheelOverlay.close:()V
+      42: iload_0
+      43: putstatic     #197                // Field wasSpellWheelDown:Z
+      46: return
+
+  private static void updateShowExpandedTooltip();
+    Code:
+       0: invokestatic  #266                // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+       3: getfield      #270                // Field net/minecraft/client/Minecraft.f_91066_:Lnet/minecraft/client/Options;
+       6: getfield      #276                // Field net/minecraft/client/Options.f_92090_:Lnet/minecraft/client/KeyMapping;
+       9: invokevirtual #282                // Method net/minecraft/client/KeyMapping.m_90861_:()Lcom/mojang/blaze3d/platform/InputConstants$Key;
+      12: invokestatic  #286                // Method isKeyboardMouseInputDown:(Lcom/mojang/blaze3d/platform/InputConstants$Key;)Z
+      15: putstatic     #288                // Field showExpandedTooltip:Z
+      18: return
+
+  private static void handleUseRelease();
+    Code:
+       0: invokestatic  #266                // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+       3: getfield      #270                // Field net/minecraft/client/Minecraft.f_91066_:Lnet/minecraft/client/Options;
+       6: getfield      #291                // Field net/minecraft/client/Options.f_92095_:Lnet/minecraft/client/KeyMapping;
+       9: invokevirtual #292                // Method net/minecraft/client/KeyMapping.m_90857_:()Z
+      12: istore_0
+      13: getstatic     #294                // Field wasUseDown:Z
+      16: ifeq          27
+      19: iload_0
+      20: ifne          27
+      23: iconst_1
+      24: goto          28
+      27: iconst_0
+      28: istore_1
+      29: iload_1
+      30: ifeq          41
+      33: iconst_0
+      34: invokestatic  #297                // Method io/redspace/ironsspellbooks/player/ClientSpellCastHelper.setSuppressRightClicks:(Z)V
+      37: iconst_1
+      38: putstatic     #299                // Field hasReleasedSinceCasting:Z
+      41: iload_0
+      42: putstatic     #294                // Field wasUseDown:Z
+      45: return
+
+  public static boolean isShowExpandedTooltip();
+    Code:
+       0: getstatic     #288                // Field showExpandedTooltip:Z
+       3: ireturn
+
+  public static void setShowExpandedTooltip(boolean);
+    Code:
+       0: iload_0
+       1: putstatic     #288                // Field showExpandedTooltip:Z
+       4: return
+
+  public static boolean isUseKeyDown();
+    Code:
+       0: invokestatic  #266                // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+       3: getfield      #270                // Field net/minecraft/client/Minecraft.f_91066_:Lnet/minecraft/client/Options;
+       6: getfield      #291                // Field net/minecraft/client/Options.f_92095_:Lnet/minecraft/client/KeyMapping;
+       9: invokevirtual #305                // Method net/minecraft/client/KeyMapping.getKey:()Lcom/mojang/blaze3d/platform/InputConstants$Key;
+      12: invokestatic  #286                // Method isKeyboardMouseInputDown:(Lcom/mojang/blaze3d/platform/InputConstants$Key;)Z
+      15: ireturn
+
+  private static boolean isKeyboardMouseInputDown(com.mojang.blaze3d.platform.InputConstants$Key);
+    Code:
+       0: aload_0
+       1: invokevirtual #308                // Method com/mojang/blaze3d/platform/InputConstants$Key.m_84873_:()I
+       4: istore_1
+       5: invokestatic  #266                // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+       8: invokevirtual #312                // Method net/minecraft/client/Minecraft.m_91268_:()Lcom/mojang/blaze3d/platform/Window;
+      11: invokevirtual #318                // Method com/mojang/blaze3d/platform/Window.m_85439_:()J
+      14: lstore_2
+      15: aload_0
+      16: invokevirtual #322                // Method com/mojang/blaze3d/platform/InputConstants$Key.m_84868_:()Lcom/mojang/blaze3d/platform/InputConstants$Type;
+      19: getstatic     #326                // Field com/mojang/blaze3d/platform/InputConstants$Type.KEYSYM:Lcom/mojang/blaze3d/platform/InputConstants$Type;
+      22: if_acmpne     39
+      25: lload_2
+      26: iload_1
+      27: invokestatic  #332                // Method org/lwjgl/glfw/GLFW.glfwGetKey:(JI)I
+      30: ifle          37
+      33: iconst_1
+      34: goto          38
+      37: iconst_0
+      38: ireturn
+      39: aload_0
+      40: invokevirtual #322                // Method com/mojang/blaze3d/platform/InputConstants$Key.m_84868_:()Lcom/mojang/blaze3d/platform/InputConstants$Type;
+      43: getstatic     #335                // Field com/mojang/blaze3d/platform/InputConstants$Type.MOUSE:Lcom/mojang/blaze3d/platform/InputConstants$Type;
+      46: if_acmpne     63
+      49: lload_2
+      50: iload_1
+      51: invokestatic  #338                // Method org/lwjgl/glfw/GLFW.glfwGetMouseButton:(JI)I
+      54: ifle          61
+      57: iconst_1
+      58: goto          62
+      61: iconst_0
+      62: ireturn
+      63: iconst_0
+      64: ireturn
+
+  static {};
+    Code:
+       0: iconst_0
+       1: putstatic     #197                // Field wasSpellWheelDown:Z
+       4: iconst_0
+       5: putstatic     #294                // Field wasUseDown:Z
+       8: return
+}

@@ -1,0 +1,119 @@
+Compiled from "SpellBarOverlay.java"
+public final class io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor extends java.lang.Enum<io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor> {
+  public static final io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor Hotbar;
+
+  public static final io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor TopLeft;
+
+  public static final io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor TopRight;
+
+  public static final io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor BottomLeft;
+
+  public static final io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor BottomRight;
+
+  final int m1;
+
+  final int m2;
+
+  private static final io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor[] $VALUES;
+
+  public static io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor[] values();
+    Code:
+       0: getstatic     #24                 // Field $VALUES:[Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+       3: invokevirtual #29                 // Method "[Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;".clone:()Ljava/lang/Object;
+       6: checkcast     #25                 // class "[Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;"
+       9: areturn
+
+  public static io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor valueOf(java.lang.String);
+    Code:
+       0: ldc           #2                  // class io/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor
+       2: aload_0
+       3: invokestatic  #34                 // Method java/lang/Enum.valueOf:(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;
+       6: checkcast     #2                  // class io/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor
+       9: areturn
+
+  private io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor(int, int);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iload_2
+       3: invokespecial #42                 // Method java/lang/Enum."<init>":(Ljava/lang/String;I)V
+       6: aload_0
+       7: iload_3
+       8: putfield      #44                 // Field m1:I
+      11: aload_0
+      12: iload         4
+      14: putfield      #46                 // Field m2:I
+      17: return
+
+  private static io.redspace.ironsspellbooks.gui.overlays.SpellBarOverlay$Anchor[] $values();
+    Code:
+       0: iconst_5
+       1: anewarray     #2                  // class io/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor
+       4: dup
+       5: iconst_0
+       6: getstatic     #52                 // Field Hotbar:Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+       9: aastore
+      10: dup
+      11: iconst_1
+      12: getstatic     #54                 // Field TopLeft:Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+      15: aastore
+      16: dup
+      17: iconst_2
+      18: getstatic     #56                 // Field TopRight:Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+      21: aastore
+      22: dup
+      23: iconst_3
+      24: getstatic     #58                 // Field BottomLeft:Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+      27: aastore
+      28: dup
+      29: iconst_4
+      30: getstatic     #60                 // Field BottomRight:Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+      33: aastore
+      34: areturn
+
+  static {};
+    Code:
+       0: new           #2                  // class io/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor
+       3: dup
+       4: ldc           #63                 // String Hotbar
+       6: iconst_0
+       7: iconst_0
+       8: iconst_0
+       9: invokespecial #65                 // Method "<init>":(Ljava/lang/String;III)V
+      12: putstatic     #52                 // Field Hotbar:Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+      15: new           #2                  // class io/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor
+      18: dup
+      19: ldc           #66                 // String TopLeft
+      21: iconst_1
+      22: iconst_0
+      23: iconst_0
+      24: invokespecial #65                 // Method "<init>":(Ljava/lang/String;III)V
+      27: putstatic     #54                 // Field TopLeft:Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+      30: new           #2                  // class io/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor
+      33: dup
+      34: ldc           #67                 // String TopRight
+      36: iconst_2
+      37: iconst_0
+      38: iconst_1
+      39: invokespecial #65                 // Method "<init>":(Ljava/lang/String;III)V
+      42: putstatic     #56                 // Field TopRight:Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+      45: new           #2                  // class io/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor
+      48: dup
+      49: ldc           #68                 // String BottomLeft
+      51: iconst_3
+      52: iconst_0
+      53: iconst_1
+      54: invokespecial #65                 // Method "<init>":(Ljava/lang/String;III)V
+      57: putstatic     #58                 // Field BottomLeft:Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+      60: new           #2                  // class io/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor
+      63: dup
+      64: ldc           #69                 // String BottomRight
+      66: iconst_4
+      67: iconst_1
+      68: iconst_1
+      69: invokespecial #65                 // Method "<init>":(Ljava/lang/String;III)V
+      72: putstatic     #60                 // Field BottomRight:Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+      75: invokestatic  #71                 // Method $values:()[Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+      78: putstatic     #24                 // Field $VALUES:[Lio/redspace/ironsspellbooks/gui/overlays/SpellBarOverlay$Anchor;
+      81: return
+}

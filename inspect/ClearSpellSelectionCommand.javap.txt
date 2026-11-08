@@ -1,0 +1,71 @@
+Compiled from "ClearSpellSelectionCommand.java"
+public class io.redspace.ironsspellbooks.command.ClearSpellSelectionCommand {
+  public io.redspace.ironsspellbooks.command.ClearSpellSelectionCommand();
+    Code:
+       0: aload_0
+       1: invokespecial #14                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static void register(com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack>);
+    Code:
+       0: aload_0
+       1: ldc           #21                 // String clearSpellSelection
+       3: invokestatic  #27                 // Method net/minecraft/commands/Commands.m_82127_:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+       6: invokedynamic #46,  0             // InvokeDynamic #0:test:()Ljava/util/function/Predicate;
+      11: invokevirtual #52                 // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.requires:(Ljava/util/function/Predicate;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+      14: checkcast     #48                 // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+      17: invokedynamic #62,  0             // InvokeDynamic #1:run:()Lcom/mojang/brigadier/Command;
+      22: invokevirtual #66                 // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.executes:(Lcom/mojang/brigadier/Command;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+      25: checkcast     #48                 // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+      28: invokevirtual #71                 // Method com/mojang/brigadier/CommandDispatcher.register:(Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;)Lcom/mojang/brigadier/tree/LiteralCommandNode;
+      31: astore_1
+      32: return
+
+  private static int clearCooldowns(net.minecraft.commands.CommandSourceStack);
+    Code:
+       0: aload_0
+       1: invokevirtual #85                 // Method net/minecraft/commands/CommandSourceStack.m_230896_:()Lnet/minecraft/server/level/ServerPlayer;
+       4: invokestatic  #91                 // Method io/redspace/ironsspellbooks/api/magic/MagicData.getPlayerMagicData:(Lnet/minecraft/world/entity/LivingEntity;)Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       7: invokevirtual #95                 // Method io/redspace/ironsspellbooks/api/magic/MagicData.getSyncedData:()Lio/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData;
+      10: new           #97                 // class io/redspace/ironsspellbooks/gui/overlays/SpellSelection
+      13: dup
+      14: invokespecial #98                 // Method io/redspace/ironsspellbooks/gui/overlays/SpellSelection."<init>":()V
+      17: invokevirtual #104                // Method io/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData.setSpellSelection:(Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;)V
+      20: aload_0
+      21: aload_0
+      22: invokedynamic #117,  0            // InvokeDynamic #2:get:(Lnet/minecraft/commands/CommandSourceStack;)Ljava/util/function/Supplier;
+      27: iconst_1
+      28: invokevirtual #121                // Method net/minecraft/commands/CommandSourceStack.m_288197_:(Ljava/util/function/Supplier;Z)V
+      31: iconst_1
+      32: ireturn
+
+  private static net.minecraft.network.chat.Component lambda$clearCooldowns$2(net.minecraft.commands.CommandSourceStack);
+    Code:
+       0: ldc           #125                // String Spell selection cleared for %s
+       2: iconst_1
+       3: anewarray     #4                  // class java/lang/Object
+       6: dup
+       7: iconst_0
+       8: aload_0
+       9: invokevirtual #85                 // Method net/minecraft/commands/CommandSourceStack.m_230896_:()Lnet/minecraft/server/level/ServerPlayer;
+      12: invokevirtual #131                // Method net/minecraft/server/level/ServerPlayer.toString:()Ljava/lang/String;
+      15: aastore
+      16: invokestatic  #137                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      19: invokestatic  #143                // InterfaceMethod net/minecraft/network/chat/Component.m_237113_:(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;
+      22: areturn
+
+  private static int lambda$register$1(com.mojang.brigadier.context.CommandContext) throws com.mojang.brigadier.exceptions.CommandSyntaxException;
+    Code:
+       0: aload_0
+       1: invokevirtual #150                // Method com/mojang/brigadier/context/CommandContext.getSource:()Ljava/lang/Object;
+       4: checkcast     #81                 // class net/minecraft/commands/CommandSourceStack
+       7: invokestatic  #152                // Method clearCooldowns:(Lnet/minecraft/commands/CommandSourceStack;)I
+      10: ireturn
+
+  private static boolean lambda$register$0(net.minecraft.commands.CommandSourceStack);
+    Code:
+       0: aload_0
+       1: iconst_2
+       2: invokevirtual #158                // Method net/minecraft/commands/CommandSourceStack.m_6761_:(I)Z
+       5: ireturn
+}

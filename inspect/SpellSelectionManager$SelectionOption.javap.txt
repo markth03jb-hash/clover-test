@@ -1,0 +1,40 @@
+Compiled from "SpellSelectionManager.java"
+public class io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SelectionOption {
+  public io.redspace.ironsspellbooks.api.spells.SpellData spellData;
+
+  public java.lang.String slot;
+
+  public int slotIndex;
+
+  public int globalIndex;
+
+  public io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SelectionOption(io.redspace.ironsspellbooks.api.spells.SpellData, java.lang.String, int, int);
+    Code:
+       0: aload_0
+       1: invokespecial #20                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #22                 // Field spellData:Lio/redspace/ironsspellbooks/api/spells/SpellData;
+       9: aload_0
+      10: aload_2
+      11: putfield      #24                 // Field slot:Ljava/lang/String;
+      14: aload_0
+      15: iload_3
+      16: putfield      #26                 // Field slotIndex:I
+      19: aload_0
+      20: iload         4
+      22: putfield      #28                 // Field globalIndex:I
+      25: return
+
+  public io.redspace.ironsspellbooks.api.spells.CastSource getCastSource();
+    Code:
+       0: aload_0
+       1: getfield      #24                 // Field slot:Ljava/lang/String;
+       4: getstatic     #37                 // Field io/redspace/ironsspellbooks/compat/Curios.SPELLBOOK_SLOT:Ljava/lang/String;
+       7: invokevirtual #43                 // Method java/lang/String.startsWith:(Ljava/lang/String;)Z
+      10: ifeq          19
+      13: getstatic     #49                 // Field io/redspace/ironsspellbooks/api/spells/CastSource.SPELLBOOK:Lio/redspace/ironsspellbooks/api/spells/CastSource;
+      16: goto          22
+      19: getstatic     #52                 // Field io/redspace/ironsspellbooks/api/spells/CastSource.SWORD:Lio/redspace/ironsspellbooks/api/spells/CastSource;
+      22: areturn
+}

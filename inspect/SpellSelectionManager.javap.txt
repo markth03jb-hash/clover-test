@@ -1,0 +1,715 @@
+Compiled from "SpellSelectionManager.java"
+public class io.redspace.ironsspellbooks.api.magic.SpellSelectionManager {
+  public static final java.lang.String MAINHAND;
+
+  public static final java.lang.String OFFHAND;
+
+  private final java.util.List<io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SelectionOption> selectionOptionList;
+
+  private io.redspace.ironsspellbooks.gui.overlays.SpellSelection spellSelection;
+
+  private int selectionIndex;
+
+  private boolean selectionValid;
+
+  private final net.minecraft.world.entity.player.Player player;
+
+  public io.redspace.ironsspellbooks.api.magic.SpellSelectionManager(net.minecraft.world.entity.player.Player);
+    Code:
+       0: aload_0
+       1: invokespecial #36                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: aconst_null
+       6: putfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+       9: aload_0
+      10: iconst_m1
+      11: putfield      #40                 // Field selectionIndex:I
+      14: aload_0
+      15: iconst_0
+      16: putfield      #42                 // Field selectionValid:Z
+      19: aload_0
+      20: new           #44                 // class java/util/ArrayList
+      23: dup
+      24: invokespecial #45                 // Method java/util/ArrayList."<init>":()V
+      27: putfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      30: aload_0
+      31: aload_1
+      32: putfield      #49                 // Field player:Lnet/minecraft/world/entity/player/Player;
+      35: aload_0
+      36: aload_1
+      37: invokevirtual #52                 // Method init:(Lnet/minecraft/world/entity/player/Player;)V
+      40: return
+
+  private void init(net.minecraft.world.entity.player.Player);
+    Code:
+       0: aload_1
+       1: ifnonnull     5
+       4: return
+       5: aload_1
+       6: getfield      #60                 // Field net/minecraft/world/entity/player/Player.f_19853_:Lnet/minecraft/world/level/Level;
+       9: getfield      #65                 // Field net/minecraft/world/level/Level.f_46443_:Z
+      12: ifeq          29
+      15: aload_0
+      16: aload_1
+      17: invokestatic  #71                 // Method io/redspace/ironsspellbooks/player/ClientMagicData.getSyncedSpellData:(Lnet/minecraft/world/entity/LivingEntity;)Lio/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData;
+      20: invokevirtual #77                 // Method io/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData.getSpellSelection:()Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      23: putfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      26: goto          43
+      29: aload_0
+      30: aload_1
+      31: invokestatic  #83                 // Method io/redspace/ironsspellbooks/api/magic/MagicData.getPlayerMagicData:(Lnet/minecraft/world/entity/LivingEntity;)Lio/redspace/ironsspellbooks/api/magic/MagicData;
+      34: invokevirtual #87                 // Method io/redspace/ironsspellbooks/api/magic/MagicData.getSyncedData:()Lio/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData;
+      37: invokevirtual #77                 // Method io/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData.getSpellSelection:()Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      40: putfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      43: aload_0
+      44: aload_1
+      45: invokevirtual #90                 // Method initCurioItems:(Lnet/minecraft/world/entity/player/Player;)V
+      48: aload_0
+      49: aload_1
+      50: getstatic     #96                 // Field net/minecraft/world/entity/EquipmentSlot.HEAD:Lnet/minecraft/world/entity/EquipmentSlot;
+      53: invokevirtual #100                // Method net/minecraft/world/entity/player/Player.m_6844_:(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;
+      56: getstatic     #96                 // Field net/minecraft/world/entity/EquipmentSlot.HEAD:Lnet/minecraft/world/entity/EquipmentSlot;
+      59: invokevirtual #104                // Method net/minecraft/world/entity/EquipmentSlot.m_20751_:()Ljava/lang/String;
+      62: invokevirtual #108                // Method initItem:(Lnet/minecraft/world/item/ItemStack;Ljava/lang/String;)V
+      65: aload_0
+      66: aload_1
+      67: getstatic     #111                // Field net/minecraft/world/entity/EquipmentSlot.CHEST:Lnet/minecraft/world/entity/EquipmentSlot;
+      70: invokevirtual #100                // Method net/minecraft/world/entity/player/Player.m_6844_:(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;
+      73: getstatic     #111                // Field net/minecraft/world/entity/EquipmentSlot.CHEST:Lnet/minecraft/world/entity/EquipmentSlot;
+      76: invokevirtual #104                // Method net/minecraft/world/entity/EquipmentSlot.m_20751_:()Ljava/lang/String;
+      79: invokevirtual #108                // Method initItem:(Lnet/minecraft/world/item/ItemStack;Ljava/lang/String;)V
+      82: aload_0
+      83: aload_1
+      84: getstatic     #114                // Field net/minecraft/world/entity/EquipmentSlot.LEGS:Lnet/minecraft/world/entity/EquipmentSlot;
+      87: invokevirtual #100                // Method net/minecraft/world/entity/player/Player.m_6844_:(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;
+      90: getstatic     #114                // Field net/minecraft/world/entity/EquipmentSlot.LEGS:Lnet/minecraft/world/entity/EquipmentSlot;
+      93: invokevirtual #104                // Method net/minecraft/world/entity/EquipmentSlot.m_20751_:()Ljava/lang/String;
+      96: invokevirtual #108                // Method initItem:(Lnet/minecraft/world/item/ItemStack;Ljava/lang/String;)V
+      99: aload_0
+     100: aload_1
+     101: getstatic     #117                // Field net/minecraft/world/entity/EquipmentSlot.FEET:Lnet/minecraft/world/entity/EquipmentSlot;
+     104: invokevirtual #100                // Method net/minecraft/world/entity/player/Player.m_6844_:(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;
+     107: getstatic     #117                // Field net/minecraft/world/entity/EquipmentSlot.FEET:Lnet/minecraft/world/entity/EquipmentSlot;
+     110: invokevirtual #104                // Method net/minecraft/world/entity/EquipmentSlot.m_20751_:()Ljava/lang/String;
+     113: invokevirtual #108                // Method initItem:(Lnet/minecraft/world/item/ItemStack;Ljava/lang/String;)V
+     116: aload_0
+     117: aload_1
+     118: getstatic     #119                // Field net/minecraft/world/entity/EquipmentSlot.MAINHAND:Lnet/minecraft/world/entity/EquipmentSlot;
+     121: invokevirtual #100                // Method net/minecraft/world/entity/player/Player.m_6844_:(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;
+     124: getstatic     #121                // Field MAINHAND:Ljava/lang/String;
+     127: invokevirtual #108                // Method initItem:(Lnet/minecraft/world/item/ItemStack;Ljava/lang/String;)V
+     130: aload_0
+     131: aload_1
+     132: getstatic     #123                // Field net/minecraft/world/entity/EquipmentSlot.OFFHAND:Lnet/minecraft/world/entity/EquipmentSlot;
+     135: invokevirtual #100                // Method net/minecraft/world/entity/player/Player.m_6844_:(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;
+     138: getstatic     #125                // Field OFFHAND:Ljava/lang/String;
+     141: invokevirtual #108                // Method initItem:(Lnet/minecraft/world/item/ItemStack;Ljava/lang/String;)V
+     144: getstatic     #131                // Field net/minecraftforge/common/MinecraftForge.EVENT_BUS:Lnet/minecraftforge/eventbus/api/IEventBus;
+     147: new           #7                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SpellSelectionEvent
+     150: dup
+     151: aload_0
+     152: getfield      #49                 // Field player:Lnet/minecraft/world/entity/player/Player;
+     155: aload_0
+     156: invokespecial #134                // Method io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SpellSelectionEvent."<init>":(Lnet/minecraft/world/entity/player/Player;Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;)V
+     159: invokeinterface #140,  2          // InterfaceMethod net/minecraftforge/eventbus/api/IEventBus.post:(Lnet/minecraftforge/eventbus/api/Event;)Z
+     164: pop
+     165: aload_0
+     166: getfield      #42                 // Field selectionValid:Z
+     169: ifne          188
+     172: aload_0
+     173: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+     176: invokeinterface #146,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+     181: ifne          188
+     184: aload_0
+     185: invokevirtual #149                // Method tryLastSelectionOrDefault:()V
+     188: aload_0
+     189: getfield      #40                 // Field selectionIndex:I
+     192: iconst_m1
+     193: if_icmpne     213
+     196: aload_0
+     197: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+     200: invokeinterface #146,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+     205: ifne          213
+     208: aload_0
+     209: iconst_0
+     210: putfield      #40                 // Field selectionIndex:I
+     213: return
+
+  private void initCurioItems(net.minecraft.world.entity.player.Player);
+    Code:
+       0: aload_1
+       1: invokestatic  #155                // Method top/theillusivec4/curios/api/CuriosApi.getCuriosInventory:(Lnet/minecraft/world/entity/LivingEntity;)Lnet/minecraftforge/common/util/LazyOptional;
+       4: aload_0
+       5: aload_1
+       6: invokedynamic #175,  0            // InvokeDynamic #0:accept:(Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraftforge/common/util/NonNullConsumer;
+      11: invokevirtual #181                // Method net/minecraftforge/common/util/LazyOptional.ifPresent:(Lnet/minecraftforge/common/util/NonNullConsumer;)V
+      14: return
+
+  private int sortSpellbookSlot(top.theillusivec4.curios.api.SlotResult, top.theillusivec4.curios.api.SlotResult);
+    Code:
+       0: aload_1
+       1: invokevirtual #189                // Method top/theillusivec4/curios/api/SlotResult.slotContext:()Ltop/theillusivec4/curios/api/SlotContext;
+       4: invokevirtual #194                // Method top/theillusivec4/curios/api/SlotContext.identifier:()Ljava/lang/String;
+       7: getstatic     #199                // Field io/redspace/ironsspellbooks/compat/Curios.SPELLBOOK_SLOT:Ljava/lang/String;
+      10: invokevirtual #205                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      13: ifeq          18
+      16: iconst_m1
+      17: ireturn
+      18: aload_2
+      19: invokevirtual #189                // Method top/theillusivec4/curios/api/SlotResult.slotContext:()Ltop/theillusivec4/curios/api/SlotContext;
+      22: invokevirtual #194                // Method top/theillusivec4/curios/api/SlotContext.identifier:()Ljava/lang/String;
+      25: getstatic     #199                // Field io/redspace/ironsspellbooks/compat/Curios.SPELLBOOK_SLOT:Ljava/lang/String;
+      28: invokevirtual #205                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      31: ifeq          36
+      34: iconst_1
+      35: ireturn
+      36: aload_1
+      37: invokevirtual #189                // Method top/theillusivec4/curios/api/SlotResult.slotContext:()Ltop/theillusivec4/curios/api/SlotContext;
+      40: invokevirtual #194                // Method top/theillusivec4/curios/api/SlotContext.identifier:()Ljava/lang/String;
+      43: aload_2
+      44: invokevirtual #189                // Method top/theillusivec4/curios/api/SlotResult.slotContext:()Ltop/theillusivec4/curios/api/SlotContext;
+      47: invokevirtual #194                // Method top/theillusivec4/curios/api/SlotContext.identifier:()Ljava/lang/String;
+      50: invokevirtual #209                // Method java/lang/String.compareTo:(Ljava/lang/String;)I
+      53: ireturn
+
+  private void initItem(net.minecraft.world.item.ItemStack, java.lang.String);
+    Code:
+       0: aload_1
+       1: invokestatic  #219                // InterfaceMethod io/redspace/ironsspellbooks/api/spells/ISpellContainer.isSpellContainer:(Lnet/minecraft/world/item/ItemStack;)Z
+       4: ifeq          160
+       7: aload_1
+       8: invokestatic  #223                // InterfaceMethod io/redspace/ironsspellbooks/api/spells/ISpellContainer.get:(Lnet/minecraft/world/item/ItemStack;)Lio/redspace/ironsspellbooks/api/spells/ISpellContainer;
+      11: astore_3
+      12: aload_3
+      13: invokeinterface #226,  1          // InterfaceMethod io/redspace/ironsspellbooks/api/spells/ISpellContainer.isSpellWheel:()Z
+      18: ifeq          160
+      21: aload_3
+      22: invokeinterface #229,  1          // InterfaceMethod io/redspace/ironsspellbooks/api/spells/ISpellContainer.mustEquip:()Z
+      27: ifeq          50
+      30: aload_2
+      31: getstatic     #121                // Field MAINHAND:Ljava/lang/String;
+      34: invokevirtual #205                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      37: ifne          160
+      40: aload_2
+      41: getstatic     #125                // Field OFFHAND:Ljava/lang/String;
+      44: invokevirtual #205                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      47: ifne          160
+      50: aload_3
+      51: invokeinterface #233,  1          // InterfaceMethod io/redspace/ironsspellbooks/api/spells/ISpellContainer.getActiveSpells:()Ljava/util/List;
+      56: astore        4
+      58: iconst_0
+      59: istore        5
+      61: iload         5
+      63: aload         4
+      65: invokeinterface #237,  1          // InterfaceMethod java/util/List.size:()I
+      70: if_icmpge     160
+      73: aload         4
+      75: iload         5
+      77: invokeinterface #240,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      82: checkcast     #242                // class io/redspace/ironsspellbooks/api/spells/SpellSlot
+      85: astore        6
+      87: aload_0
+      88: new           #9                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+      91: dup
+      92: aload         6
+      94: invokevirtual #246                // Method io/redspace/ironsspellbooks/api/spells/SpellSlot.spellData:()Lio/redspace/ironsspellbooks/api/spells/SpellData;
+      97: aload_2
+      98: iload         5
+     100: aload_0
+     101: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+     104: invokeinterface #237,  1          // InterfaceMethod java/util/List.size:()I
+     109: invokespecial #249                // Method io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption."<init>":(Lio/redspace/ironsspellbooks/api/spells/SpellData;Ljava/lang/String;II)V
+     112: invokevirtual #253                // Method addOrMergeSelectionOption:(Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption;)I
+     115: istore        7
+     117: aload_0
+     118: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+     121: getfield      #258                // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.index:I
+     124: iload         5
+     126: if_icmpne     154
+     129: aload_0
+     130: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+     133: getfield      #261                // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.equipmentSlot:Ljava/lang/String;
+     136: aload_2
+     137: invokevirtual #205                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     140: ifeq          154
+     143: aload_0
+     144: iload         7
+     146: putfield      #40                 // Field selectionIndex:I
+     149: aload_0
+     150: iconst_1
+     151: putfield      #42                 // Field selectionValid:Z
+     154: iinc          5, 1
+     157: goto          61
+     160: return
+
+  private int addOrMergeSelectionOption(io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SelectionOption);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: getfield      #274                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.spellData:Lio/redspace/ironsspellbooks/api/spells/SpellData;
+       5: invokevirtual #280                // Method io/redspace/ironsspellbooks/api/spells/SpellData.getSpell:()Lio/redspace/ironsspellbooks/api/spells/AbstractSpell;
+       8: invokevirtual #284                // Method findExistingSpell:(Lio/redspace/ironsspellbooks/api/spells/AbstractSpell;)Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption;
+      11: astore_2
+      12: aload_2
+      13: ifnull        61
+      16: aload_1
+      17: getfield      #274                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.spellData:Lio/redspace/ironsspellbooks/api/spells/SpellData;
+      20: invokevirtual #287                // Method io/redspace/ironsspellbooks/api/spells/SpellData.getLevel:()I
+      23: aload_2
+      24: getfield      #274                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.spellData:Lio/redspace/ironsspellbooks/api/spells/SpellData;
+      27: invokevirtual #287                // Method io/redspace/ironsspellbooks/api/spells/SpellData.getLevel:()I
+      30: if_icmple     84
+      33: aload_1
+      34: aload_2
+      35: getfield      #289                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.globalIndex:I
+      38: putfield      #289                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.globalIndex:I
+      41: aload_0
+      42: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      45: aload_2
+      46: getfield      #289                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.globalIndex:I
+      49: aload_1
+      50: invokeinterface #293,  3          // InterfaceMethod java/util/List.set:(ILjava/lang/Object;)Ljava/lang/Object;
+      55: pop
+      56: aload_2
+      57: getfield      #289                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.globalIndex:I
+      60: ireturn
+      61: aload_0
+      62: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      65: aload_1
+      66: invokeinterface #296,  2          // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+      71: pop
+      72: aload_0
+      73: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      76: invokeinterface #237,  1          // InterfaceMethod java/util/List.size:()I
+      81: iconst_1
+      82: isub
+      83: ireturn
+      84: iconst_m1
+      85: ireturn
+
+  private io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SelectionOption findExistingSpell(io.redspace.ironsspellbooks.api.spells.AbstractSpell);
+    Code:
+       0: aload_0
+       1: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+       4: invokeinterface #303,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+       9: astore_2
+      10: aload_2
+      11: invokeinterface #308,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      16: ifeq          48
+      19: aload_2
+      20: invokeinterface #312,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      25: checkcast     #9                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+      28: astore_3
+      29: aload_3
+      30: getfield      #274                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.spellData:Lio/redspace/ironsspellbooks/api/spells/SpellData;
+      33: invokevirtual #280                // Method io/redspace/ironsspellbooks/api/spells/SpellData.getSpell:()Lio/redspace/ironsspellbooks/api/spells/AbstractSpell;
+      36: aload_1
+      37: invokevirtual #315                // Method io/redspace/ironsspellbooks/api/spells/AbstractSpell.equals:(Ljava/lang/Object;)Z
+      40: ifeq          45
+      43: aload_3
+      44: areturn
+      45: goto          10
+      48: aconst_null
+      49: areturn
+
+  private void tryLastSelectionOrDefault();
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+       4: getfield      #321                // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.lastEquipmentSlot:Ljava/lang/String;
+       7: invokevirtual #322                // Method java/lang/String.isEmpty:()Z
+      10: ifeq          41
+      13: aload_0
+      14: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      17: invokeinterface #326,  1          // InterfaceMethod java/util/List.stream:()Ljava/util/stream/Stream;
+      22: invokeinterface #332,  1          // InterfaceMethod java/util/stream/Stream.findFirst:()Ljava/util/Optional;
+      27: astore_1
+      28: aload_1
+      29: aload_0
+      30: invokedynamic #341,  0            // InvokeDynamic #1:accept:(Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;)Ljava/util/function/Consumer;
+      35: invokevirtual #346                // Method java/util/Optional.ifPresent:(Ljava/util/function/Consumer;)V
+      38: goto          156
+      41: aload_0
+      42: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      45: getfield      #349                // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.lastIndex:I
+      48: iconst_m1
+      49: if_icmpeq     156
+      52: aload_0
+      53: aload_0
+      54: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      57: getfield      #321                // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.lastEquipmentSlot:Ljava/lang/String;
+      60: invokevirtual #353                // Method getSpellsForSlot:(Ljava/lang/String;)Ljava/util/List;
+      63: astore_1
+      64: aload_1
+      65: invokeinterface #146,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+      70: ifne          156
+      73: aload_0
+      74: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      77: getfield      #349                // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.lastIndex:I
+      80: aload_1
+      81: invokeinterface #237,  1          // InterfaceMethod java/util/List.size:()I
+      86: if_icmpge     130
+      89: aload_0
+      90: aload_0
+      91: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      94: getfield      #321                // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.lastEquipmentSlot:Ljava/lang/String;
+      97: aload_0
+      98: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+     101: getfield      #349                // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.lastIndex:I
+     104: aload_1
+     105: aload_0
+     106: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+     109: getfield      #349                // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.lastIndex:I
+     112: invokeinterface #240,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     117: checkcast     #9                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+     120: getfield      #289                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.globalIndex:I
+     123: iconst_0
+     124: invokevirtual #357                // Method makeLocalSelection:(Ljava/lang/String;IIZ)V
+     127: goto          156
+     130: aload_0
+     131: aload_0
+     132: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+     135: getfield      #321                // Field io/redspace/ironsspellbooks/gui/overlays/SpellSelection.lastEquipmentSlot:Ljava/lang/String;
+     138: iconst_0
+     139: aload_1
+     140: iconst_0
+     141: invokeinterface #240,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     146: checkcast     #9                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+     149: getfield      #289                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.globalIndex:I
+     152: iconst_0
+     153: invokevirtual #357                // Method makeLocalSelection:(Ljava/lang/String;IIZ)V
+     156: return
+
+  public void makeSelection(int);
+    Code:
+       0: iload_1
+       1: aload_0
+       2: getfield      #40                 // Field selectionIndex:I
+       5: if_icmpeq     53
+       8: iload_1
+       9: iflt          53
+      12: iload_1
+      13: aload_0
+      14: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      17: invokeinterface #237,  1          // InterfaceMethod java/util/List.size:()I
+      22: if_icmpge     53
+      25: aload_0
+      26: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      29: iload_1
+      30: invokeinterface #240,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      35: checkcast     #9                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+      38: astore_2
+      39: aload_0
+      40: aload_2
+      41: getfield      #370                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.slot:Ljava/lang/String;
+      44: aload_2
+      45: getfield      #373                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.slotIndex:I
+      48: iload_1
+      49: iconst_1
+      50: invokevirtual #357                // Method makeLocalSelection:(Ljava/lang/String;IIZ)V
+      53: return
+
+  private void makeLocalSelection(java.lang.String, int, int, boolean);
+    Code:
+       0: aload_0
+       1: iload_3
+       2: putfield      #40                 // Field selectionIndex:I
+       5: aload_0
+       6: iconst_1
+       7: putfield      #42                 // Field selectionValid:Z
+      10: iload         4
+      12: ifeq          51
+      15: aload_0
+      16: getfield      #49                 // Field player:Lnet/minecraft/world/entity/player/Player;
+      19: getfield      #60                 // Field net/minecraft/world/entity/player/Player.f_19853_:Lnet/minecraft/world/level/Level;
+      22: getfield      #65                 // Field net/minecraft/world/level/Level.f_46443_:Z
+      25: ifeq          51
+      28: aload_0
+      29: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      32: aload_1
+      33: iload_2
+      34: invokevirtual #377                // Method io/redspace/ironsspellbooks/gui/overlays/SpellSelection.makeSelection:(Ljava/lang/String;I)V
+      37: new           #379                // class io/redspace/ironsspellbooks/network/gui/SelectSpellPacket
+      40: dup
+      41: aload_0
+      42: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+      45: invokespecial #382                // Method io/redspace/ironsspellbooks/network/gui/SelectSpellPacket."<init>":(Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;)V
+      48: invokestatic  #387                // Method io/redspace/ironsspellbooks/setup/PacketDistributor.sendToServer:(Ljava/lang/Object;)V
+      51: return
+
+  private void setSpellSelection(io.redspace.ironsspellbooks.gui.overlays.SpellSelection);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+       5: aload_0
+       6: getfield      #49                 // Field player:Lnet/minecraft/world/entity/player/Player;
+       9: getfield      #60                 // Field net/minecraft/world/entity/player/Player.f_19853_:Lnet/minecraft/world/level/Level;
+      12: getfield      #65                 // Field net/minecraft/world/level/Level.f_46443_:Z
+      15: ifeq          32
+      18: new           #379                // class io/redspace/ironsspellbooks/network/gui/SelectSpellPacket
+      21: dup
+      22: aload_1
+      23: invokespecial #382                // Method io/redspace/ironsspellbooks/network/gui/SelectSpellPacket."<init>":(Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;)V
+      26: invokestatic  #387                // Method io/redspace/ironsspellbooks/setup/PacketDistributor.sendToServer:(Ljava/lang/Object;)V
+      29: goto          46
+      32: aload_0
+      33: getfield      #49                 // Field player:Lnet/minecraft/world/entity/player/Player;
+      36: invokestatic  #83                 // Method io/redspace/ironsspellbooks/api/magic/MagicData.getPlayerMagicData:(Lnet/minecraft/world/entity/LivingEntity;)Lio/redspace/ironsspellbooks/api/magic/MagicData;
+      39: invokevirtual #87                 // Method io/redspace/ironsspellbooks/api/magic/MagicData.getSyncedData:()Lio/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData;
+      42: aload_1
+      43: invokevirtual #391                // Method io/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData.setSpellSelection:(Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;)V
+      46: return
+
+  public io.redspace.ironsspellbooks.gui.overlays.SpellSelection getCurrentSelection();
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field spellSelection:Lio/redspace/ironsspellbooks/gui/overlays/SpellSelection;
+       4: areturn
+
+  public io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SelectionOption getSpellSlot(int);
+    Code:
+       0: iload_1
+       1: iflt          31
+       4: iload_1
+       5: aload_0
+       6: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+       9: invokeinterface #237,  1          // InterfaceMethod java/util/List.size:()I
+      14: if_icmpge     31
+      17: aload_0
+      18: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      21: iload_1
+      22: invokeinterface #240,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      27: checkcast     #9                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+      30: areturn
+      31: aconst_null
+      32: areturn
+
+  public io.redspace.ironsspellbooks.api.spells.SpellData getSpellData(int);
+    Code:
+       0: iload_1
+       1: iflt          34
+       4: iload_1
+       5: aload_0
+       6: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+       9: invokeinterface #237,  1          // InterfaceMethod java/util/List.size:()I
+      14: if_icmpge     34
+      17: aload_0
+      18: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      21: iload_1
+      22: invokeinterface #240,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      27: checkcast     #9                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+      30: getfield      #274                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.spellData:Lio/redspace/ironsspellbooks/api/spells/SpellData;
+      33: areturn
+      34: getstatic     #399                // Field io/redspace/ironsspellbooks/api/spells/SpellData.EMPTY:Lio/redspace/ironsspellbooks/api/spells/SpellData;
+      37: areturn
+
+  public int getSelectionIndex();
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field selectionIndex:I
+       4: ireturn
+
+  public int getGlobalSelectionIndex();
+    Code:
+       0: aload_0
+       1: invokevirtual #405                // Method getSelection:()Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption;
+       4: astore_1
+       5: aload_1
+       6: ifnonnull     11
+       9: iconst_m1
+      10: ireturn
+      11: aload_0
+      12: invokevirtual #405                // Method getSelection:()Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption;
+      15: getfield      #289                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.globalIndex:I
+      18: ireturn
+
+  public io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SelectionOption getSelection();
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field selectionIndex:I
+       4: iflt          40
+       7: aload_0
+       8: getfield      #40                 // Field selectionIndex:I
+      11: aload_0
+      12: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      15: invokeinterface #237,  1          // InterfaceMethod java/util/List.size:()I
+      20: if_icmpge     40
+      23: aload_0
+      24: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      27: aload_0
+      28: getfield      #40                 // Field selectionIndex:I
+      31: invokeinterface #240,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      36: checkcast     #9                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+      39: areturn
+      40: aload_0
+      41: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      44: invokeinterface #146,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+      49: ifne          66
+      52: aload_0
+      53: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      56: iconst_0
+      57: invokeinterface #240,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      62: checkcast     #9                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+      65: areturn
+      66: aconst_null
+      67: areturn
+
+  public io.redspace.ironsspellbooks.api.spells.SpellData getSelectedSpellData();
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field selectionIndex:I
+       4: iflt          45
+       7: aload_0
+       8: getfield      #40                 // Field selectionIndex:I
+      11: aload_0
+      12: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      15: invokeinterface #237,  1          // InterfaceMethod java/util/List.size:()I
+      20: if_icmpge     45
+      23: aload_0
+      24: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+      27: aload_0
+      28: getfield      #40                 // Field selectionIndex:I
+      31: invokeinterface #240,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      36: checkcast     #9                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+      39: getfield      #274                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.spellData:Lio/redspace/ironsspellbooks/api/spells/SpellData;
+      42: goto          48
+      45: getstatic     #399                // Field io/redspace/ironsspellbooks/api/spells/SpellData.EMPTY:Lio/redspace/ironsspellbooks/api/spells/SpellData;
+      48: areturn
+
+  public java.util.List<io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SelectionOption> getSpellsForSlot(java.lang.String);
+    Code:
+       0: aload_0
+       1: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+       4: invokeinterface #326,  1          // InterfaceMethod java/util/List.stream:()Ljava/util/stream/Stream;
+       9: aload_1
+      10: invokedynamic #420,  0            // InvokeDynamic #2:test:(Ljava/lang/String;)Ljava/util/function/Predicate;
+      15: invokeinterface #424,  2          // InterfaceMethod java/util/stream/Stream.filter:(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;
+      20: invokeinterface #427,  1          // InterfaceMethod java/util/stream/Stream.toList:()Ljava/util/List;
+      25: areturn
+
+  public java.util.List<io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SelectionOption> getAllSpells();
+    Code:
+       0: aload_0
+       1: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+       4: areturn
+
+  public io.redspace.ironsspellbooks.api.spells.SpellData getSpellForSlot(java.lang.String, int);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #353                // Method getSpellsForSlot:(Ljava/lang/String;)Ljava/util/List;
+       5: astore_3
+       6: iload_2
+       7: iflt          34
+      10: iload_2
+      11: aload_3
+      12: invokeinterface #237,  1          // InterfaceMethod java/util/List.size:()I
+      17: if_icmpge     34
+      20: aload_3
+      21: iload_2
+      22: invokeinterface #240,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      27: checkcast     #9                  // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption
+      30: getfield      #274                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.spellData:Lio/redspace/ironsspellbooks/api/spells/SpellData;
+      33: areturn
+      34: getstatic     #399                // Field io/redspace/ironsspellbooks/api/spells/SpellData.EMPTY:Lio/redspace/ironsspellbooks/api/spells/SpellData;
+      37: areturn
+
+  public int getSpellCount();
+    Code:
+       0: aload_0
+       1: getfield      #47                 // Field selectionOptionList:Ljava/util/List;
+       4: invokeinterface #237,  1          // InterfaceMethod java/util/List.size:()I
+       9: ireturn
+
+  private static boolean lambda$getSpellsForSlot$4(java.lang.String, io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SelectionOption);
+    Code:
+       0: aload_1
+       1: getfield      #370                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.slot:Ljava/lang/String;
+       4: aload_0
+       5: invokevirtual #205                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+       8: ireturn
+
+  private void lambda$tryLastSelectionOrDefault$3(io.redspace.ironsspellbooks.api.magic.SpellSelectionManager$SelectionOption);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: getfield      #370                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.slot:Ljava/lang/String;
+       5: aload_1
+       6: getfield      #373                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.slotIndex:I
+       9: aload_1
+      10: getfield      #289                // Field io/redspace/ironsspellbooks/api/magic/SpellSelectionManager$SelectionOption.globalIndex:I
+      13: iconst_0
+      14: invokevirtual #357                // Method makeLocalSelection:(Ljava/lang/String;IIZ)V
+      17: return
+
+  private void lambda$initCurioItems$2(net.minecraft.world.entity.player.Player, top.theillusivec4.curios.api.type.capability.ICuriosItemHandler);
+    Code:
+       0: aload_1
+       1: invokestatic  #439                // Method io/redspace/ironsspellbooks/api/util/Utils.getPlayerSpellbookStack:(Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/item/ItemStack;
+       4: astore_3
+       5: aload_3
+       6: ifnull        17
+       9: aload_0
+      10: aload_3
+      11: getstatic     #199                // Field io/redspace/ironsspellbooks/compat/Curios.SPELLBOOK_SLOT:Ljava/lang/String;
+      14: invokevirtual #108                // Method initItem:(Lnet/minecraft/world/item/ItemStack;Ljava/lang/String;)V
+      17: aload_2
+      18: invokedynamic #446,  0            // InvokeDynamic #3:test:()Ljava/util/function/Predicate;
+      23: invokeinterface #452,  2          // InterfaceMethod top/theillusivec4/curios/api/type/capability/ICuriosItemHandler.findCurios:(Ljava/util/function/Predicate;)Ljava/util/List;
+      28: invokeinterface #326,  1          // InterfaceMethod java/util/List.stream:()Ljava/util/stream/Stream;
+      33: invokedynamic #459,  0            // InvokeDynamic #4:test:()Ljava/util/function/Predicate;
+      38: invokeinterface #424,  2          // InterfaceMethod java/util/stream/Stream.filter:(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;
+      43: aload_0
+      44: invokedynamic #466,  0            // InvokeDynamic #5:accept:(Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;)Ljava/util/function/Consumer;
+      49: invokeinterface #469,  2          // InterfaceMethod java/util/stream/Stream.forEach:(Ljava/util/function/Consumer;)V
+      54: return
+
+  private void lambda$initCurioItems$1(top.theillusivec4.curios.api.SlotResult);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #476                // Method top/theillusivec4/curios/api/SlotResult.stack:()Lnet/minecraft/world/item/ItemStack;
+       5: ldc_w         #478                // String %s_%s
+       8: iconst_2
+       9: anewarray     #4                  // class java/lang/Object
+      12: dup
+      13: iconst_0
+      14: aload_1
+      15: invokevirtual #189                // Method top/theillusivec4/curios/api/SlotResult.slotContext:()Ltop/theillusivec4/curios/api/SlotContext;
+      18: invokevirtual #194                // Method top/theillusivec4/curios/api/SlotContext.identifier:()Ljava/lang/String;
+      21: aastore
+      22: dup
+      23: iconst_1
+      24: aload_1
+      25: invokevirtual #189                // Method top/theillusivec4/curios/api/SlotResult.slotContext:()Ltop/theillusivec4/curios/api/SlotContext;
+      28: invokevirtual #480                // Method top/theillusivec4/curios/api/SlotContext.index:()I
+      31: invokestatic  #486                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      34: aastore
+      35: invokestatic  #490                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      38: invokevirtual #108                // Method initItem:(Lnet/minecraft/world/item/ItemStack;Ljava/lang/String;)V
+      41: return
+
+  private static boolean lambda$initCurioItems$0(top.theillusivec4.curios.api.SlotResult);
+    Code:
+       0: aload_0
+       1: invokevirtual #189                // Method top/theillusivec4/curios/api/SlotResult.slotContext:()Ltop/theillusivec4/curios/api/SlotContext;
+       4: invokevirtual #194                // Method top/theillusivec4/curios/api/SlotContext.identifier:()Ljava/lang/String;
+       7: getstatic     #199                // Field io/redspace/ironsspellbooks/compat/Curios.SPELLBOOK_SLOT:Ljava/lang/String;
+      10: invokevirtual #205                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      13: ifne          20
+      16: iconst_1
+      17: goto          21
+      20: iconst_0
+      21: ireturn
+
+  static {};
+    Code:
+       0: getstatic     #119                // Field net/minecraft/world/entity/EquipmentSlot.MAINHAND:Lnet/minecraft/world/entity/EquipmentSlot;
+       3: invokevirtual #104                // Method net/minecraft/world/entity/EquipmentSlot.m_20751_:()Ljava/lang/String;
+       6: putstatic     #121                // Field MAINHAND:Ljava/lang/String;
+       9: getstatic     #123                // Field net/minecraft/world/entity/EquipmentSlot.OFFHAND:Lnet/minecraft/world/entity/EquipmentSlot;
+      12: invokevirtual #104                // Method net/minecraft/world/entity/EquipmentSlot.m_20751_:()Ljava/lang/String;
+      15: putstatic     #125                // Field OFFHAND:Ljava/lang/String;
+      18: return
+}

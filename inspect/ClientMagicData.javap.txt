@@ -1,0 +1,334 @@
+Compiled from "ClientMagicData.java"
+public class io.redspace.ironsspellbooks.player.ClientMagicData {
+  private static final io.redspace.ironsspellbooks.api.magic.MagicData playerMagicData;
+
+  private static final java.util.Set<java.util.UUID> activeSummons;
+
+  private static final java.util.HashMap<java.lang.Integer, io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData> playerSyncedDataLookup;
+
+  private static final io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData emptySyncedData;
+
+  static io.redspace.ironsspellbooks.api.magic.SpellSelectionManager spellSelectionManager;
+
+  private static io.redspace.ironsspellbooks.capabilities.magic.ClientSpellTargetingData spellTargetingData;
+
+  public io.redspace.ironsspellbooks.player.ClientMagicData();
+    Code:
+       0: aload_0
+       1: invokespecial #28                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static io.redspace.ironsspellbooks.api.magic.SpellSelectionManager getSpellSelectionManager();
+    Code:
+       0: getstatic     #34                 // Field spellSelectionManager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+       3: ifnonnull     25
+       6: invokestatic  #40                 // Method io/redspace/ironsspellbooks/util/MinecraftInstanceHelper.getPlayer:()Lnet/minecraft/world/entity/player/Player;
+       9: astore_0
+      10: aload_0
+      11: ifnull        25
+      14: new           #42                 // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager
+      17: dup
+      18: aload_0
+      19: invokespecial #45                 // Method io/redspace/ironsspellbooks/api/magic/SpellSelectionManager."<init>":(Lnet/minecraft/world/entity/player/Player;)V
+      22: putstatic     #34                 // Field spellSelectionManager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+      25: getstatic     #34                 // Field spellSelectionManager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+      28: areturn
+
+  public static void updateSpellSelectionManager(net.minecraft.server.level.ServerPlayer);
+    Code:
+       0: new           #42                 // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager
+       3: dup
+       4: aload_0
+       5: invokespecial #45                 // Method io/redspace/ironsspellbooks/api/magic/SpellSelectionManager."<init>":(Lnet/minecraft/world/entity/player/Player;)V
+       8: putstatic     #34                 // Field spellSelectionManager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+      11: return
+
+  public static void updateSpellSelectionManager();
+    Code:
+       0: invokestatic  #57                 // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+       3: getfield      #61                 // Field net/minecraft/client/Minecraft.f_91074_:Lnet/minecraft/client/player/LocalPlayer;
+       6: astore_0
+       7: aload_0
+       8: ifnull        27
+      11: new           #42                 // class io/redspace/ironsspellbooks/api/magic/SpellSelectionManager
+      14: dup
+      15: invokestatic  #57                 // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+      18: getfield      #61                 // Field net/minecraft/client/Minecraft.f_91074_:Lnet/minecraft/client/player/LocalPlayer;
+      21: invokespecial #45                 // Method io/redspace/ironsspellbooks/api/magic/SpellSelectionManager."<init>":(Lnet/minecraft/world/entity/player/Player;)V
+      24: putstatic     #34                 // Field spellSelectionManager:Lio/redspace/ironsspellbooks/api/magic/SpellSelectionManager;
+      27: return
+
+  public static void setTargetingData(io.redspace.ironsspellbooks.capabilities.magic.ClientSpellTargetingData);
+    Code:
+       0: aload_0
+       1: putstatic     #67                 // Field spellTargetingData:Lio/redspace/ironsspellbooks/capabilities/magic/ClientSpellTargetingData;
+       4: return
+
+  public static io.redspace.ironsspellbooks.capabilities.magic.ClientSpellTargetingData getTargetingData();
+    Code:
+       0: getstatic     #67                 // Field spellTargetingData:Lio/redspace/ironsspellbooks/capabilities/magic/ClientSpellTargetingData;
+       3: ifnonnull     16
+       6: new           #71                 // class io/redspace/ironsspellbooks/capabilities/magic/ClientSpellTargetingData
+       9: dup
+      10: invokespecial #72                 // Method io/redspace/ironsspellbooks/capabilities/magic/ClientSpellTargetingData."<init>":()V
+      13: invokestatic  #74                 // Method setTargetingData:(Lio/redspace/ironsspellbooks/capabilities/magic/ClientSpellTargetingData;)V
+      16: getstatic     #67                 // Field spellTargetingData:Lio/redspace/ironsspellbooks/capabilities/magic/ClientSpellTargetingData;
+      19: areturn
+
+  public static void resetTargetingData();
+    Code:
+       0: aconst_null
+       1: putstatic     #67                 // Field spellTargetingData:Lio/redspace/ironsspellbooks/capabilities/magic/ClientSpellTargetingData;
+       4: return
+
+  public static io.redspace.ironsspellbooks.capabilities.magic.PlayerCooldowns getCooldowns();
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #84                 // Method io/redspace/ironsspellbooks/api/magic/MagicData.getPlayerCooldowns:()Lio/redspace/ironsspellbooks/capabilities/magic/PlayerCooldowns;
+       6: areturn
+
+  public static io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts getRecasts();
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #89                 // Method io/redspace/ironsspellbooks/api/magic/MagicData.getPlayerRecasts:()Lio/redspace/ironsspellbooks/capabilities/magic/PlayerRecasts;
+       6: areturn
+
+  public static void cacheClientSummons();
+    Code:
+       0: invokestatic  #92                 // Method getRecasts:()Lio/redspace/ironsspellbooks/capabilities/magic/PlayerRecasts;
+       3: astore_0
+       4: getstatic     #94                 // Field activeSummons:Ljava/util/Set;
+       7: invokeinterface #99,  1           // InterfaceMethod java/util/Set.clear:()V
+      12: aload_0
+      13: invokevirtual #105                // Method io/redspace/ironsspellbooks/capabilities/magic/PlayerRecasts.getActiveRecasts:()Ljava/util/List;
+      16: invokedynamic #124,  0            // InvokeDynamic #0:accept:()Ljava/util/function/Consumer;
+      21: invokeinterface #130,  2          // InterfaceMethod java/util/List.forEach:(Ljava/util/function/Consumer;)V
+      26: return
+
+  public static void setRecasts(io.redspace.ironsspellbooks.capabilities.magic.PlayerRecasts);
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: aload_0
+       4: invokevirtual #137                // Method io/redspace/ironsspellbooks/api/magic/MagicData.setPlayerRecasts:(Lio/redspace/ironsspellbooks/capabilities/magic/PlayerRecasts;)V
+       7: invokestatic  #139                // Method cacheClientSummons:()V
+      10: return
+
+  public static java.util.Set<java.util.UUID> getActiveSummons();
+    Code:
+       0: getstatic     #94                 // Field activeSummons:Ljava/util/Set;
+       3: areturn
+
+  public static float getCooldownPercent(io.redspace.ironsspellbooks.api.spells.AbstractSpell);
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #84                 // Method io/redspace/ironsspellbooks/api/magic/MagicData.getPlayerCooldowns:()Lio/redspace/ironsspellbooks/capabilities/magic/PlayerCooldowns;
+       6: aload_0
+       7: invokevirtual #149                // Method io/redspace/ironsspellbooks/capabilities/magic/PlayerCooldowns.getCooldownPercent:(Lio/redspace/ironsspellbooks/api/spells/AbstractSpell;)F
+      10: freturn
+
+  public static int getPlayerMana();
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #157                // Method io/redspace/ironsspellbooks/api/magic/MagicData.getMana:()F
+       6: f2i
+       7: ireturn
+
+  public static void setMana(int);
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: iload_0
+       4: i2f
+       5: invokevirtual #162                // Method io/redspace/ironsspellbooks/api/magic/MagicData.setMana:(F)V
+       8: return
+
+  public static io.redspace.ironsspellbooks.api.spells.CastType getCastType();
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #168                // Method io/redspace/ironsspellbooks/api/magic/MagicData.getCastType:()Lio/redspace/ironsspellbooks/api/spells/CastType;
+       6: areturn
+
+  public static java.lang.String getCastingSpellId();
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #172                // Method io/redspace/ironsspellbooks/api/magic/MagicData.getCastingSpellId:()Ljava/lang/String;
+       6: areturn
+
+  public static int getCastingSpellLevel();
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #175                // Method io/redspace/ironsspellbooks/api/magic/MagicData.getCastingSpellLevel:()I
+       6: ireturn
+
+  public static int getCastDurationRemaining();
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #178                // Method io/redspace/ironsspellbooks/api/magic/MagicData.getCastDurationRemaining:()I
+       6: ireturn
+
+  public static int getCastDuration();
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #181                // Method io/redspace/ironsspellbooks/api/magic/MagicData.getCastDuration:()I
+       6: ireturn
+
+  public static boolean isCasting();
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #185                // Method io/redspace/ironsspellbooks/api/magic/MagicData.isCasting:()Z
+       6: ireturn
+
+  public static void handleCastDuration();
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #188                // Method io/redspace/ironsspellbooks/api/magic/MagicData.handleCastDuration:()V
+       6: return
+
+  public static float getCastCompletionPercent();
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: invokevirtual #191                // Method io/redspace/ironsspellbooks/api/magic/MagicData.getCastCompletionPercent:()F
+       6: freturn
+
+  public static void setClientCastState(java.lang.String, int, int, io.redspace.ironsspellbooks.api.spells.CastSource, java.lang.String);
+    Code:
+       0: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+       3: aload_0
+       4: invokestatic  #199                // Method io/redspace/ironsspellbooks/api/registry/SpellRegistry.getSpell:(Ljava/lang/String;)Lio/redspace/ironsspellbooks/api/spells/AbstractSpell;
+       7: iload_1
+       8: iload_2
+       9: aload_3
+      10: aload         4
+      12: invokevirtual #203                // Method io/redspace/ironsspellbooks/api/magic/MagicData.initiateCast:(Lio/redspace/ironsspellbooks/api/spells/AbstractSpell;IILio/redspace/ironsspellbooks/api/spells/CastSource;Ljava/lang/String;)V
+      15: return
+
+  public static void resetClientCastState(java.util.UUID);
+    Code:
+       0: invokestatic  #57                 // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+       3: getfield      #61                 // Field net/minecraft/client/Minecraft.f_91074_:Lnet/minecraft/client/player/LocalPlayer;
+       6: invokevirtual #216                // Method net/minecraft/client/player/LocalPlayer.m_20148_:()Ljava/util/UUID;
+       9: aload_0
+      10: invokevirtual #222                // Method java/util/UUID.equals:(Ljava/lang/Object;)Z
+      13: ifeq          25
+      16: getstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+      19: invokevirtual #225                // Method io/redspace/ironsspellbooks/api/magic/MagicData.resetCastingState:()V
+      22: invokestatic  #227                // Method resetTargetingData:()V
+      25: invokestatic  #57                 // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+      28: getfield      #61                 // Field net/minecraft/client/Minecraft.f_91074_:Lnet/minecraft/client/player/LocalPlayer;
+      31: ifnull        71
+      34: invokestatic  #57                 // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+      37: getfield      #61                 // Field net/minecraft/client/Minecraft.f_91074_:Lnet/minecraft/client/player/LocalPlayer;
+      40: invokevirtual #230                // Method net/minecraft/client/player/LocalPlayer.m_6117_:()Z
+      43: ifeq          71
+      46: invokestatic  #57                 // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+      49: getfield      #61                 // Field net/minecraft/client/Minecraft.f_91074_:Lnet/minecraft/client/player/LocalPlayer;
+      52: invokevirtual #216                // Method net/minecraft/client/player/LocalPlayer.m_20148_:()Ljava/util/UUID;
+      55: aload_0
+      56: invokevirtual #222                // Method java/util/UUID.equals:(Ljava/lang/Object;)Z
+      59: ifeq          71
+      62: invokestatic  #57                 // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+      65: getfield      #61                 // Field net/minecraft/client/Minecraft.f_91074_:Lnet/minecraft/client/player/LocalPlayer;
+      68: invokevirtual #233                // Method net/minecraft/client/player/LocalPlayer.m_5810_:()V
+      71: return
+
+  public static io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData getSyncedSpellData(net.minecraft.world.entity.LivingEntity);
+    Code:
+       0: aload_0
+       1: instanceof    #239                // class net/minecraft/world/entity/player/Player
+       4: ifeq          27
+       7: getstatic     #241                // Field playerSyncedDataLookup:Ljava/util/HashMap;
+      10: aload_0
+      11: invokevirtual #246                // Method net/minecraft/world/entity/LivingEntity.m_19879_:()I
+      14: invokestatic  #252                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      17: getstatic     #254                // Field emptySyncedData:Lio/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData;
+      20: invokevirtual #260                // Method java/util/HashMap.getOrDefault:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      23: checkcast     #262                // class io/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData
+      26: areturn
+      27: aload_0
+      28: instanceof    #264                // class io/redspace/ironsspellbooks/api/entity/IMagicEntity
+      31: ifeq          49
+      34: aload_0
+      35: checkcast     #264                // class io/redspace/ironsspellbooks/api/entity/IMagicEntity
+      38: astore_1
+      39: aload_1
+      40: invokeinterface #268,  1          // InterfaceMethod io/redspace/ironsspellbooks/api/entity/IMagicEntity.getMagicData:()Lio/redspace/ironsspellbooks/api/magic/MagicData;
+      45: invokevirtual #272                // Method io/redspace/ironsspellbooks/api/magic/MagicData.getSyncedData:()Lio/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData;
+      48: areturn
+      49: new           #262                // class io/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData
+      52: dup
+      53: aconst_null
+      54: invokespecial #275                // Method io/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData."<init>":(Lnet/minecraft/world/entity/LivingEntity;)V
+      57: areturn
+
+  public static void handlePlayerSyncedData(io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData);
+    Code:
+       0: getstatic     #241                // Field playerSyncedDataLookup:Ljava/util/HashMap;
+       3: aload_0
+       4: invokevirtual #284                // Method io/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData.getServerPlayerId:()I
+       7: invokestatic  #252                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      10: aload_0
+      11: invokevirtual #287                // Method java/util/HashMap.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      14: pop
+      15: return
+
+  public static void handleAbstractCastingMobSyncedData(int, io.redspace.ironsspellbooks.capabilities.magic.SyncedSpellData);
+    Code:
+       0: invokestatic  #57                 // Method net/minecraft/client/Minecraft.m_91087_:()Lnet/minecraft/client/Minecraft;
+       3: getfield      #294                // Field net/minecraft/client/Minecraft.f_91073_:Lnet/minecraft/client/multiplayer/ClientLevel;
+       6: astore_2
+       7: aload_2
+       8: ifnonnull     12
+      11: return
+      12: aload_2
+      13: iload_0
+      14: invokevirtual #300                // Method net/minecraft/client/multiplayer/ClientLevel.m_6815_:(I)Lnet/minecraft/world/entity/Entity;
+      17: astore_3
+      18: aload_3
+      19: instanceof    #264                // class io/redspace/ironsspellbooks/api/entity/IMagicEntity
+      22: ifeq          39
+      25: aload_3
+      26: checkcast     #264                // class io/redspace/ironsspellbooks/api/entity/IMagicEntity
+      29: astore        4
+      31: aload         4
+      33: aload_1
+      34: invokeinterface #303,  2          // InterfaceMethod io/redspace/ironsspellbooks/api/entity/IMagicEntity.setSyncedSpellData:(Lio/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData;)V
+      39: return
+
+  private static void lambda$cacheClientSummons$0(io.redspace.ironsspellbooks.capabilities.magic.RecastInstance);
+    Code:
+       0: aload_0
+       1: invokevirtual #316                // Method io/redspace/ironsspellbooks/capabilities/magic/RecastInstance.getCastData:()Lio/redspace/ironsspellbooks/api/spells/ICastDataSerializable;
+       4: astore_2
+       5: aload_2
+       6: instanceof    #318                // class io/redspace/ironsspellbooks/capabilities/magic/SummonedEntitiesCastData
+       9: ifeq          30
+      12: aload_2
+      13: checkcast     #318                // class io/redspace/ironsspellbooks/capabilities/magic/SummonedEntitiesCastData
+      16: astore_1
+      17: getstatic     #94                 // Field activeSummons:Ljava/util/Set;
+      20: aload_1
+      21: invokevirtual #321                // Method io/redspace/ironsspellbooks/capabilities/magic/SummonedEntitiesCastData.getSummons:()Ljava/util/Set;
+      24: invokeinterface #325,  2          // InterfaceMethod java/util/Set.addAll:(Ljava/util/Collection;)Z
+      29: pop
+      30: return
+
+  static {};
+    Code:
+       0: new           #81                 // class io/redspace/ironsspellbooks/api/magic/MagicData
+       3: dup
+       4: invokespecial #333                // Method io/redspace/ironsspellbooks/api/magic/MagicData."<init>":()V
+       7: putstatic     #79                 // Field playerMagicData:Lio/redspace/ironsspellbooks/api/magic/MagicData;
+      10: new           #335                // class java/util/HashSet
+      13: dup
+      14: invokespecial #336                // Method java/util/HashSet."<init>":()V
+      17: putstatic     #94                 // Field activeSummons:Ljava/util/Set;
+      20: new           #256                // class java/util/HashMap
+      23: dup
+      24: invokespecial #337                // Method java/util/HashMap."<init>":()V
+      27: putstatic     #241                // Field playerSyncedDataLookup:Ljava/util/HashMap;
+      30: new           #262                // class io/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData
+      33: dup
+      34: sipush        -999
+      37: invokespecial #339                // Method io/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData."<init>":(I)V
+      40: putstatic     #254                // Field emptySyncedData:Lio/redspace/ironsspellbooks/capabilities/magic/SyncedSpellData;
+      43: return
+}
