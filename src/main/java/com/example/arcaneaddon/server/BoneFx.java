@@ -106,7 +106,8 @@ public class BoneFx {
         sound(sl, at, SoundEvents.BONE_BLOCK_BREAK, 0.9f * s, 0.8f);
     }
 
-    private static float power(ServerPlayer p, float base) { return inUnion(p) ? base * 1.5f : base;   // Beelzebub: every bone move hits 50% harder }
+    /** Beelzebub: every bone move hits 50% harder. */
+    private static float power(ServerPlayer p, float base) { return inUnion(p) ? base * 1.5f : base; }
 
     /** Client-drawn effects tied to the caster: 37 = the bone sword in the hand, 38 = the bone whips. */
     private static void sendHeld(ServerPlayer p, int shape, int life, float r, float count, float period, boolean union) {
