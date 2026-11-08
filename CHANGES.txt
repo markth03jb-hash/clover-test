@@ -1,7 +1,41 @@
-Iron Spell Grimoire v1.49.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.50.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.50.0
+- Damage lands on the swing: the server now reads each move's animation, finds the frame where the swing comes
+  through, and when a move's effects are held back to land on that frame, its damage, hit and knockback are held
+  back by exactly the same amount - the blade, the slash and the hit all arrive together. Both sides use the
+  server's swing timing, so they always agree. Moves already timed to their swing are untouched.
+- Original sounds for every grimoire (made from scratch, no samples): each grimoire has its own slash, blast,
+  whoosh, impact, charge and - where it fits - fire, thunder and roar, two takes each.
+    Asta        gritty, crushed anti magic with a low rumble and crackling static
+    Devil       the same, darker, with a demonic growl under it
+    Yami        swallowed highs, a reversed swell before each hit, a deep void
+    Yuno        airy whistling wind
+    Nozel       liquid metal: bell tones and bubbling
+    Magna       roaring, crackling fire
+    Luck        buzzing, zapping electricity
+    Mereoleona  heavy fire with a beast's roar inside it
+    Zenon       dry bone clacks and rattles
+    Klaus       ringing steel clangs
+  Sounds have subtitles. (Incidental sounds - armour clanks, buckets - stay vanilla.)
+- Animated 3D models (GeckoLib) replace the hand-drawn shapes:
+    Devil Union wings   burst open, slow idle beats, swept back while running, hard flaps in the air,
+                        spread wide to glide when falling, folded in when crouching
+    Beelzebub           skeletal wings (open, idle beats, flapping in the air) and horns that grow from the
+                        temples and slowly curl
+    Bone sword          grows out of the hand vertebra by vertebra, then its ridges pulse along the blade
+                        (violet-edged in Beelzebub), in third and first person
+    Knight's Armor      helm, breastplate, pauldrons, vambraces and greaves slam on and breathe gently; the plume
+                        sways (harder while running); the cape swings with your movement and flutters on top of it -
+                        softly standing, hard while running, wildly in the air
+  All states blend smoothly into each other.
+- Code clean-up: the 3,100-line effect renderer is split into focused files (shared drawing primitives,
+  per-tick emitters, shapes, forms, Mana Zones, the open grimoire); the disabled stance system, the old Burning
+  Fists Guard, the hand-drawn wings/horns/armour and their helpers are removed. GeckoLib is now a declared
+  dependency (Iron's Spellbooks already requires it).
 
 NEW IN 1.49.0
 - Every grimoire has its own spell wheel:
