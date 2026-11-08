@@ -1,7 +1,20 @@
-Arcane Addon v1.16.1 - all changed files since v1.0.0
+Arcane Addon v1.16.2 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.16.2
+  - Open grimoire turned back so its pages face you.
+  - Yami's katana turned so the edge faces forward, not at you.
+  - Dimension Slash: no more block - after the draw, a towering wave of black flame (a tall arc front with a huge
+    crescent inside and layered crescents behind) rolls 40 blocks forward, widening as it goes, then the tears of
+    cut space are left behind.
+  - Mana Zone Dimension Slash: one huge ring-shaped slash sweeps out through the whole zone instead of separate cuts.
+  - Avidya Wild Slash Raijin: jagged bolts of black lightning race to every enemy you sense (up to 10) at once and
+    land as cuts with bursts of dark shards; with nobody around, eight bolts tear outward.
+  - Black Moon: now an eclipse hanging above you - turning black-flame rings, a pale corona, a bright crescent rim and
+    orbiting motes. Swallowed spells spiral into it. When it breaks it collapses, then dives out as two crossed black
+    crescents with a dark wake, bigger the more it swallowed.
 
 NEW IN 1.16.1
   - Dark Grimoire: new original cover - indigo-black leather with silver-violet crescent moons, stars and thin

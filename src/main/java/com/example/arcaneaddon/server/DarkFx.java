@@ -225,38 +225,51 @@ public class DarkFx {
             Vec3 end = start.add(dir.scale(40));
             Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
             Vec3 left = rt.scale(-1);
-            for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(2.0))) {
-                if (!t.getBoundingBox().inflate(1.3, 0.8, 1.3).clip(start, end).isPresent()) continue;
+            final float SPEED = 2.6f;
+            // everything the wave of darkness passes through is cut as it arrives (a wide, tall path)
+            for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(4.5))) {
+                Vec3 m = mid(t), on = closestOnSegment(start, end, m);
+                Vec3 off = m.subtract(on);
+                double side = Math.abs(off.dot(rt)), high = Math.abs(off.dot(up));
+                double along = on.distanceTo(start);
+                if (side > 2.5 + along * 0.12 || high > 2.4) continue;   // the wave widens as it travels
                 final LivingEntity tt = t;
-                AstaFx.later((int) (t.distanceTo(p) / 3.2), () -> {   // the cut reaches them as the crescent passes
+                AstaFx.later((int) (along / SPEED), () -> {
                     if (!tt.isAlive() || !alive(p)) return;
                     AstaFx.damage(p, tt, power, "dimension_slash");
-                    cutMark(sl, mid(tt), rt, 1.8f);
+                    FxLib.impact(sl, D, mid(tt), 1.3f);
+                    sound(sl, tt.position(), SoundEvents.PLAYER_ATTACK_CRIT, 1f, 0.6f);
                 });
             }
             // the draw: a wide flat arc from your left hip across to your right
             FxSend.wall(sl, D, start, dir, left, 2.4f, 2.8f, -110, 100, 0.35f, 7, 2, 0);
             FxSend.wall(sl, S, start, dir, left, 2.6f, 2.7f, -100, 95, 0.05f, 5, 2, 0);
-            // the slash itself: a huge horizontal black-flame crescent tearing forward, with a pale echo behind it
-            FxSend.crescent(sl, D, start.add(dir.scale(1.5)), dir, rt, 2.6f, 5.5f, 13, 3.2f);
-            AstaFx.later(2, () -> FxSend.crescent(sl, S, start.add(dir.scale(1.5)), dir, rt, 2.0f, 4.2f, 10, 3.2f));
-            // the hairline through space, then space splits along it
-            Vec3 from = start.add(dir.scale(1.2));
-            FxSend.beam(sl, S, from, end, 0.04f, 6);
+            // the release: a towering black wave of darkness rolls forward and grows as it goes -
+            // a tall arc of black flame (the wave front), a huge crescent inside it, and thinner crescents layered behind
+            Vec3 o = start.add(dir.scale(1.2));
+            FxSend.wall(sl, D, o, dir, rt, 2.2f, 9.0f, -55, 55, 2.4f, 16, 0, SPEED);          // the wave front, 4.8 tall
+            FxSend.crescent(sl, D, o, dir, rt, 3.4f, 8.5f, 16, SPEED);                        // the main black crescent
+            for (int k = 1; k <= 3; k++) {
+                final int kk = k;
+                AstaFx.later(k, () -> {
+                    Vec3 lift = up.scale((kk % 2 == 0 ? 1 : -1) * 0.5 * kk);
+                    FxSend.crescent(sl, kk == 2 ? S : D, o.add(lift), dir, rt, 3.0f - kk * 0.3f, 7.5f - kk * 0.8f, 14 - kk * 2, SPEED);
+                });
+            }
+            // after it passes: a white hairline left through space, and the tears where space was cut
             AstaFx.later(3, () -> {
-                FxSend.beam(sl, D, from, end, 0.7f, 12);
-                FxSend.box(sl, D, from.add(end).scale(0.5), dir, up, (float) from.distanceTo(end) / 2f, 0.6f, 0.03f, 16, 4,
-                        com.example.arcaneaddon.network.FxPacket.EXTEND);
-                for (int k = 4; k < 40; k += 4) {
+                FxSend.beam(sl, S, o, end, 0.05f, 10);
+                for (int k = 5; k < 40; k += 5) {
                     Vec3 c = start.add(dir.scale(k));
-                    FxSend.beam(sl, D, c.subtract(up.scale(1.1)).add(rt.scale(0.3)), c.add(up.scale(1.1)).subtract(rt.scale(0.3)), 0.18f, 8);
+                    double h = 0.8 + k * 0.04;
+                    FxSend.beam(sl, D, c.subtract(up.scale(h)).add(rt.scale(0.4)), c.add(up.scale(h)).subtract(rt.scale(0.4)), 0.16f, 10);
                 }
-                sound(sl, p.position(), SoundEvents.WITHER_SHOOT, 0.4f, 0.5f);
+                sound(sl, p.position(), SoundEvents.WITHER_SHOOT, 0.5f, 0.4f);
             });
-            FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 0.9f);
+            FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 1.2f);
             sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.4f);
+            sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 0.5f, 0.7f);
             sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.7f, 0.5f);
-            sound(sl, p.position(), SoundEvents.TRIDENT_RIPTIDE_3, 0.6f, 0.6f);
         });
     }
 
@@ -267,24 +280,25 @@ public class DarkFx {
         return new Vec3(p.getX() + fx * 0.35 + lx * 0.32, p.getY() + 0.95, p.getZ() + fz * 0.35 + lz * 0.32);
     }
 
-    /** Mana Zone: Dark Cloaked Dimension Slash - the cut appears directly on every enemy in the zone. */
+    /**
+     * Mana Zone: Dark Cloaked Dimension Slash - ONE huge slash: a ring of black flame sweeps out from you through the
+     * whole zone, and every enemy inside is cut the moment it reaches them.
+     */
     private static void zoneDimension(ServerPlayer p, ServerLevel sl, float power) {
         zoneMsg(p, "dimension_slash");
-        zonePulse(p, sl);
-        Vec3 start = p.getEyePosition().add(0, -0.25, 0), dir = p.getLookAngle();
-        FxSend.wall(sl, D, start, dir, rightOf(dir).scale(-1), 2.4f, 2.8f, -110, 100, 0.35f, 7, 2, 0);
-        List<LivingEntity> ts = zoneEnemies(p);
-        for (int i = 0; i < Math.min(12, ts.size()); i++) {
-            final LivingEntity t = ts.get(i);
-            AstaFx.later(1 + i, () -> {
-                if (!alive(p) || !t.isAlive()) return;
-                ThreadLocalRandom r = ThreadLocalRandom.current();
-                double a = r.nextDouble(Math.PI);
-                AstaFx.damage(p, t, power, "mana_zone_dimension_slash");
-                cutMark(sl, mid(t), new Vec3(Math.cos(a), r.nextDouble(-0.6, 0.6), Math.sin(a)), 1.6f);
-                sound(sl, t.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 0.5f);
+        Vec3 c = p.position().add(0, 1.0, 0);
+        int travel = 7;   // ticks for the slash to reach the zone's edge
+        FxSend.wall(sl, D, c, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 1.0f, (float) ZONE_R, -180, 180, 0.9f, travel + 1, 0, 0);
+        FxSend.wall(sl, S, c, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 1.0f, (float) ZONE_R, -180, 180, 0.05f, travel + 1, 0, 0);
+        for (LivingEntity t : zoneEnemies(p)) {
+            final LivingEntity tt = t;
+            AstaFx.later((int) Math.round(t.distanceTo(p) / ZONE_R * travel), () -> {
+                if (!tt.isAlive() || !alive(p)) return;
+                AstaFx.damage(p, tt, power, "mana_zone_dimension_slash");
+                FxLib.impact(sl, D, mid(tt), 1.1f);
             });
         }
+        sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.4f);
         sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.7f, 0.4f);
     }
 
@@ -361,20 +375,54 @@ public class DarkFx {
             sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.8f);
             return;
         }
-        List<LivingEntity> targets = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(14)));
-        targets.removeIf(t -> t.distanceTo(p) > 14 || !p.hasLineOfSight(t));
+        // Raijin: the slashes move like black lightning - a jagged bolt of darkness to every enemy whose ki you sense,
+        // all at once, each landing as a cut and a burst of dark shards
+        List<LivingEntity> targets = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(16)));
+        targets.removeIf(t -> t.distanceTo(p) > 16 || !p.hasLineOfSight(t));
         targets.sort(Comparator.comparingDouble(t -> t.distanceToSqr(p)));
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        int n = Math.max(6, Math.min(8, targets.size()));
+        Vec3 from = p.getEyePosition().add(0, -0.4, 0);
+        FxLib.flash(sl, D, from, 1.0f);
+        int n = targets.isEmpty() ? 8 : Math.min(10, targets.size());
         for (int i = 0; i < n; i++) {
-            final LivingEntity t = i < targets.size() ? targets.get(i) : null;
-            double ang = Math.PI * 2 * i / n + r.nextDouble(-0.3, 0.3);
-            final Vec3 heading = new Vec3(Math.cos(ang), r.nextDouble(-0.2, 0.4), Math.sin(ang)).normalize();
-            AstaFx.later(1 + i * 2, () -> {
-                if (alive(p)) guidedSlash(p, sl, p.getEyePosition().add(0, -0.3, 0), heading, t, power, 0, new HashSet<>());
+            final LivingEntity t = targets.isEmpty() ? null : targets.get(i);
+            Vec3 goal;
+            if (t != null) goal = mid(t);
+            else {
+                double ang = Math.PI * 2 * i / n + r.nextDouble(-0.2, 0.2);
+                goal = from.add(Math.cos(ang) * 12, r.nextDouble(-1.0, 2.0), Math.sin(ang) * 12);
+            }
+            // a jagged path: kinks pushed sideways, sharper in the middle
+            Vec3 d = goal.subtract(from);
+            Vec3 sideA = rightOf(d.normalize()), sideB = sideA.cross(d.normalize()).normalize();
+            int K = 6;
+            Vec3[] pts = new Vec3[K + 1];
+            pts[0] = from; pts[K] = goal;
+            for (int k = 1; k < K; k++) {
+                double amp = Math.sin(Math.PI * k / K) * Math.min(1.6, d.length() * 0.12);
+                pts[k] = from.add(d.scale((double) k / K)).add(sideA.scale(r.nextDouble(-amp, amp))).add(sideB.scale(r.nextDouble(-amp, amp) * 0.6));
+            }
+            final int delay = i / 3;
+            for (int k = 1; k <= K; k++) {
+                final Vec3 a = pts[k - 1], b = pts[k];
+                AstaFx.later(delay + (k - 1) / 3, () -> {   // the bolt races out in two ticks
+                    FxSend.beam(sl, D, a, b, 0.34f, 8);
+                    FxSend.beam(sl, S, a, b, 0.05f, 6);
+                });
+            }
+            final Vec3 g = goal, dd = d.normalize();
+            AstaFx.later(delay + 2, () -> {
+                if (!alive(p)) return;
+                if (t != null && t.isAlive()) {
+                    AstaFx.damage(p, t, power, "wild_slash");
+                    cutMark(sl, mid(t), rightOf(dd).add(0, 0.6, 0), 1.4f);
+                }
+                FxLib.spikeBurst(sl, D, g, 0.6f);
+                sound(sl, g, SoundEvents.LIGHTNING_BOLT_IMPACT, 0.35f, 1.4f);
             });
         }
         sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.8f);
+        sound(sl, p.position(), SoundEvents.LIGHTNING_BOLT_THUNDER, 0.3f, 1.6f);
         sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.6f, 1.6f);
     }
 
@@ -474,50 +522,103 @@ public class DarkFx {
         m.zone = z;
         MOON.put(p.getUUID(), m);
         if (z) zoneMsg(p, "black_moon");
-        FxLib.implode(p.serverLevel(), D, moonPos(p), 0.8f);
+        FxLib.implode(p.serverLevel(), D, moonPos(p), 1.2f);
+        FxSend.beam(p.serverLevel(), D, p.getEyePosition(), moonPos(p), 0.25f, 8);   // darkness rises from you into the moon
         sound(p.serverLevel(), p.position(), SoundEvents.SOUL_ESCAPE, 1.0f, 0.5f);
     }
 
-    private static Vec3 moonPos(ServerPlayer p) { return p.getEyePosition().add(p.getLookAngle().scale(1.8)).add(0, -0.2, 0); }
-
-    /** A sphere of darkness: rings at four angles burning with black flame, and a pale crescent along one side. */
-    private static void drawMoon(ServerLevel sl, Vec3 c, float r) {
-        for (int k = 0; k < 4; k++) {
-            double a = Math.PI * k / 4;
-            FxSend.wall(sl, D, c, new Vec3(Math.cos(a), 0, Math.sin(a)), new Vec3(0, 1, 0), r * 0.9f, r, -180, 180, r * 0.5f, 7, 0, 0);
-        }
-        FxSend.ring(sl, D, c, r * 0.9f, r, r * 0.5f, 7);
-        FxSend.wall(sl, S, c, new Vec3(1, 0, 0), new Vec3(0, 1, 0), r * 1.08f, r * 1.1f, -60, 60, 0.04f, 7, 0, 0);
+    /** The black moon hangs above you and a little ahead, like an eclipse in the sky. */
+    private static Vec3 moonPos(ServerPlayer p) {
+        Vec3 f = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z);
+        f = f.lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : f.normalize();
+        return p.position().add(0, p.getBbHeight() + 1.3, 0).add(f.scale(0.9));
     }
 
+    /**
+     * An eclipse of darkness: a sphere of slowly turning black-flame rings, a pale corona around it and a bright
+     * crescent rim along one side, with motes of darkness orbiting it.
+     */
+    private static void drawMoon(ServerLevel sl, Vec3 c, float r) {
+        double t = sl.getGameTime() * 0.08;
+        for (int k = 0; k < 3; k++) {
+            double a = t + Math.PI * k / 3;
+            FxSend.wall(sl, D, c, new Vec3(Math.cos(a), 0, Math.sin(a)), new Vec3(0, 1, 0), r * 0.92f, r, -180, 180, r * 0.45f, 6, 0, 0);
+        }
+        FxSend.ring(sl, D, c, r * 0.92f, r, r * 0.45f, 6);
+        FxSend.ring(sl, S, c, r * 1.25f, r * 1.3f, 0.03f, 6);   // corona
+        FxSend.wall(sl, S, c, new Vec3(Math.cos(t * 0.5), 0, Math.sin(t * 0.5)), new Vec3(0, 1, 0), r * 1.05f, r * 1.08f, -70, 70, 0.06f, 6, 0, 0);   // crescent rim
+        for (int k = 0; k < 3; k++) {   // orbiting motes
+            double a = t * 2.2 + k * 2.1;
+            Vec3 q = c.add(Math.cos(a) * r * 1.7, Math.sin(a * 1.3) * r * 0.6, Math.sin(a) * r * 1.7);
+            Vec3 q2 = c.add(Math.cos(a - 0.35) * r * 1.7, Math.sin((a - 0.35) * 1.3) * r * 0.6, Math.sin(a - 0.35) * r * 1.7);
+            FxSend.beam(sl, D, q2, q, 0.14f, 5);
+        }
+    }
+
+    /** A spell swallowed by the moon: a spiral of darkness from where it came, pulled into the moon. */
+    private static void swallow(ServerLevel sl, Vec3 moon, Vec3 from) {
+        Vec3 d = moon.subtract(from);
+        if (d.lengthSqr() < 1.0E-4) return;
+        Vec3 sa = rightOf(d.normalize()), sb = sa.cross(d.normalize()).normalize();
+        Vec3 prev = from;
+        for (int k = 1; k <= 8; k++) {
+            double u = k / 8.0, rad = (1 - u) * 0.8;
+            Vec3 q = from.add(d.scale(u)).add(sa.scale(Math.cos(u * 9) * rad)).add(sb.scale(Math.sin(u * 9) * rad));
+            FxSend.beam(sl, D, prev, q, 0.12f + 0.1f * (float) u, 6);
+            prev = q;
+        }
+        FxLib.implode(sl, D, moon, 0.7f);
+    }
+
+    /**
+     * The moon breaks: it collapses into a point for a moment, then dives out as two crossed black crescents (one
+     * upright, one level) with a dark wake - bigger the more it swallowed.
+     * Mana Zone: it splits into one crescent for every enemy in the zone.
+     */
     private static void releaseMoon(ServerPlayer p, Moon m) {
         ServerLevel sl = p.serverLevel();
         float dmg = m.power + m.absorbed * 0.5f;
-        Vec3 c = moonPos(p), dir = p.getLookAngle();
-        Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
-        if (m.zone && inZone(p)) {
-            for (LivingEntity t : zoneEnemies(p)) {
-                Vec3 to = mid(t).subtract(c).normalize();
-                Vec3 trt = rightOf(to);
-                FxSend.crescent(sl, D, c, to, trt.cross(to).normalize(), 1.0f, 1.6f, (int) Math.min(12, t.distanceTo(p) / 2.2 + 3), 2.2f);
-                AstaFx.later((int) (t.distanceTo(p) / 2.2), () -> {
-                    if (!t.isAlive() || !alive(p)) return;
-                    AstaFx.damage(p, t, dmg * 0.8f, "black_moon");
-                    cutMark(sl, mid(t), trt, 1.3f);
-                });
+        float grow = 1.0f + Math.min(1.0f, m.absorbed / 30f);
+        Vec3 c = moonPos(p);
+        FxSend.ring(sl, D, c, 1.6f * grow, 0.1f, 0.5f, 5);   // collapse
+        FxLib.implode(sl, S, c, 0.9f * grow);
+        sound(sl, c, SoundEvents.BEACON_DEACTIVATE, 0.8f, 0.6f);
+        AstaFx.later(4, () -> {
+            if (!alive(p)) return;
+            Vec3 dir = p.getLookAngle();
+            Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
+            if (m.zone && inZone(p)) {
+                for (LivingEntity t : zoneEnemies(p)) {
+                    Vec3 to = mid(t).subtract(c).normalize();
+                    Vec3 trt = rightOf(to);
+                    FxSend.crescent(sl, D, c, to, trt.cross(to).normalize(), 1.0f, 1.8f, (int) Math.min(12, t.distanceTo(p) / 2.4 + 3), 2.4f);
+                    FxSend.beam(sl, D, c, mid(t), 0.08f, 6);
+                    AstaFx.later((int) (t.distanceTo(p) / 2.4), () -> {
+                        if (!t.isAlive() || !alive(p)) return;
+                        AstaFx.damage(p, t, dmg * 0.8f, "black_moon");
+                        cutMark(sl, mid(t), trt, 1.3f);
+                    });
+                }
+            } else {
+                Vec3 end = clip(sl, p, c, c.add(dir.scale(24)));
+                for (LivingEntity t : enemies(sl, p, new AABB(c, end).inflate(2.2 * grow))) {
+                    if (!t.getBoundingBox().inflate(1.4 * grow).clip(c, end).isPresent()) continue;
+                    final LivingEntity tt = t;
+                    AstaFx.later((int) (t.distanceTo(p) / 2.4), () -> {
+                        if (!tt.isAlive() || !alive(p)) return;
+                        AstaFx.damage(p, tt, dmg, "black_moon");
+                        FxLib.impact(sl, D, mid(tt), 1.3f);
+                    });
+                }
+                FxSend.crescent(sl, D, c, dir, up, 1.8f * grow, 3.4f * grow, 11, 2.4f);   // upright
+                FxSend.crescent(sl, D, c, dir, rt, 1.6f * grow, 3.0f * grow, 11, 2.4f);   // level - together a cross
+                AstaFx.later(2, () -> FxSend.crescent(sl, S, c, dir, up, 1.3f * grow, 2.6f * grow, 8, 2.4f));
+                FxSend.beam(sl, D, c, end, 0.5f * grow, 10);                               // the dark wake
             }
-        } else {
-            Vec3 end = clip(sl, p, c, c.add(dir.scale(22)));
-            for (LivingEntity t : enemies(sl, p, new AABB(c, end).inflate(1.8))) {
-                if (!t.getBoundingBox().inflate(1.2).clip(c, end).isPresent()) continue;
-                AstaFx.damage(p, t, dmg, "black_moon");
-                FxLib.impact(sl, D, mid(t), 1.2f);
-            }
-            FxSend.crescent(sl, D, c, dir, up, 1.6f, 3.0f, 10, 2.2f);
-            AstaFx.later(2, () -> FxSend.crescent(sl, S, c, dir, up, 1.2f, 2.4f, 8, 2.2f));
-        }
-        FxLib.shockRing(sl, D, c, 0.8f);
-        sound(sl, c, SoundEvents.WITHER_SHOOT, 0.7f, 0.7f);
+            FxLib.shockRing(sl, D, c, 0.9f * grow);
+            sound(sl, c, SoundEvents.WITHER_SHOOT, 0.8f, 0.6f);
+            sound(sl, c, SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 0.5f);
+        });
         if (m.absorbed > 0) {
             p.displayClientMessage(Component.translatable("ui.arcane_addon.black_moon_return", (int) m.absorbed).withStyle(ChatFormatting.DARK_PURPLE), true);
         }
@@ -772,7 +873,7 @@ public class DarkFx {
         Moon m = MOON.get(id);
         if (m != null) {
             if (now >= m.until) { MOON.remove(id); releaseMoon(p, m); }
-            else if (now % 5 == 0) drawMoon(sl, moonPos(p), 0.6f);
+            else if (now % 5 == 0) drawMoon(sl, moonPos(p), 0.9f);
         }
 
         Long z = ZONE.get(id);
@@ -821,7 +922,8 @@ public class DarkFx {
         if (m != null && now < m.until && e.getSource() instanceof SpellDamageSource) {
             e.setCanceled(true);
             m.absorbed = Math.min(40f, m.absorbed + e.getAmount());
-            Fx.spark(sl, D, moonPos(p), 0.7f);
+            Vec3 src0 = e.getSource().getSourcePosition();
+            swallow(sl, moonPos(p), src0 != null ? src0 : p.getEyePosition().add(p.getLookAngle().scale(3)));
             sound(sl, p.position(), SoundEvents.SCULK_CLICKING, 1f, 0.6f);
             return;
         }

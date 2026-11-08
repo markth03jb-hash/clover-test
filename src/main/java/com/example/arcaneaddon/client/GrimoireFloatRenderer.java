@@ -95,11 +95,10 @@ public class GrimoireFloatRenderer {
    }
 
    /**
-    * The open 3D book, centred, in the frame FxRenderer.book draws its aura in: local +z faces the viewer.
-    * The open model's pages face its own -z, so it is turned around to show its pages, not its cover.
+    * The open 3D book, centred, in the frame FxRenderer.book draws its aura in: local +z (the open model's page
+    * side) faces you.
     */
    private static void renderOpen(Minecraft mc, PoseStack ps, BufferSource buf, ItemStack book, int seed, int light) {
-      ps.mulPose(Axis.YP.rotationDegrees(180.0F));
       mc.getItemRenderer().renderStatic(book, ItemDisplayContext.HEAD, light, OverlayTexture.NO_OVERLAY, ps, buf, mc.level, seed);
    }
 
