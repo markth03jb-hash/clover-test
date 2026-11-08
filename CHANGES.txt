@@ -1,7 +1,14 @@
-Iron Spell Grimoire v1.44.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.44.1 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.44.1
+- Sky Splitter (Asta) pixel slash restyled to look like the anime's anti-magic:
+  a thick black blade crescent with a blood-red glow inside, a white-hot cutting edge,
+  crackling black-and-red lightning arcing off the blade, curling black smoke tongues
+  and red embers / black flakes falling behind it. The cast opens with a red-and-white
+  burst ring. Flame (other schemes) look unchanged.
 
 NEW IN 1.44.0
 - REMOVED: the stance idles and sword combos (Yami's samurai guard, Luck's boxing guard and their swing animations) -

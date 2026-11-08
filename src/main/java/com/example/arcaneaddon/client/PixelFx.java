@@ -47,6 +47,7 @@ public final class PixelFx {
     /** One sprite. kind: 0 streak, 1 shard, 2 ember, 3 tongue. dark = drawn black (anti magic), else glowing. */
     private static final class Spr {
         Vec3 pos, prev, vel, axis; float len, wid; int life, age, kind; boolean dark; float heat; float drag;
+        boolean red; Vec3 curl; float curlRate; float darkAlpha = 0.92F;
     }
 
     private static final List<Slash> SLASHES = new ArrayList<>();
@@ -69,6 +70,14 @@ public final class PixelFx {
     }
 
     // ------------------------------------------------------------------ colours (by heat: 1 = white-hot ... 0 = dying)
+    /** Anti magic's glow: crimson, from a hot pink-white down to a deep blood red. */
+    private static float[] crimson(float heat) {
+        if (heat > 0.8F) return new float[]{1.0F, 0.75F, 0.7F};
+        if (heat > 0.55F) return new float[]{1.0F, 0.22F, 0.16F};
+        if (heat > 0.3F) return new float[]{0.75F, 0.04F, 0.04F};
+        return new float[]{0.35F, 0.0F, 0.02F};
+    }
+
     private static float[] fire(float heat) {
         if (heat > 0.8F) return new float[]{1.0F, 0.97F, 0.85F};
         if (heat > 0.6F) return new float[]{1.0F, 0.86F, 0.35F};
@@ -89,7 +98,118 @@ public final class PixelFx {
         return s.u.scale(Math.cos(ang)).add(s.d.scale(-Math.sin(ang) * 0.5)).normalize();
     }
 
+    private static Spr spr(Vec3 at, Vec3 vel, Vec3 axis, int kind, float len, float wid, int life) {
+        Spr p = new Spr();
+        p.pos = at; p.prev = at; p.vel = vel; p.axis = axis.lengthSqr() > 1.0E-8 ? axis.normalize() : new Vec3(0, 1, 0);
+        p.kind = kind; p.len = len; p.wid = wid; p.life = life; p.drag = 0.86F;
+        return p;
+    }
+
+    /**
+     * Asta's anti magic as the anime draws it: a thick crescent of pure black, a thin white-hot cutting edge, a
+     * blood-red glow bleeding off it, black lightning crackling out from the blade, black smoke curling in its wake,
+     * and red embers and black flakes falling away. The moment it's released, a ring of shards bursts outward.
+     */
     private static void emit(Slash s, double age, boolean burst) {
+        if (s.pal != 0) { emitFlame(s, age, burst); return; }
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        double grow = 1.0 - Math.pow(1.0 - Mth.clamp(age / (s.life * 0.5), 0.0, 1.0), 2.0);
+        double R = s.r0 + (s.r1 - s.r0) * grow;
+        double centre = s.speed * age;
+        Vec3 mid = s.c.add(s.d.scale(centre - R * 0.5));
+        // the black blade: thick, chunky streaks packed along the arc
+        for (int i = 0; i < (burst ? 170 : 100); i++) {
+            double a = r.nextDouble(-1, 1), edge = Math.pow(Math.cos(a * Math.PI * 0.5), 1.2);
+            Vec3 tan = arcTangent(s, a, R);
+            double depth = R * (0.03 + r.nextDouble() * 0.3) * edge;
+            Vec3 at = arcPoint(s, centre, a, R).subtract(s.d.scale(depth)).add(s.side.scale(r.nextGaussian() * 0.04 * R * edge));
+            Spr p = spr(at, s.d.scale(s.speed * 0.93), tan.subtract(s.d.scale(0.1)), r.nextFloat() < 0.75F ? 0 : 3,
+                    (float) (R * r.nextDouble(0.18, 0.34)), (float) (0.14 + 0.2 * edge), r.nextInt(3, 6));
+            p.dark = true;
+            add(p);
+        }
+        // the blood-red glow bleeding off it (wide, faint, a little behind and to the sides)
+        for (int i = 0; i < (burst ? 50 : 32); i++) {
+            double a = r.nextDouble(-1, 1), edge = Math.pow(Math.cos(a * Math.PI * 0.5), 1.2);
+            Vec3 tan = arcTangent(s, a, R);
+            double depth = R * (0.1 + r.nextDouble() * 0.3) * edge;
+            Vec3 at = arcPoint(s, centre, a, R).subtract(s.d.scale(depth)).add(s.side.scale((r.nextBoolean() ? 1 : -1) * R * 0.1 * edge));
+            Spr p = spr(at, s.d.scale(s.speed * 0.85), tan.subtract(s.d.scale(0.3)), 0,
+                    (float) (R * r.nextDouble(0.2, 0.36)), (float) (0.25 + 0.25 * edge), r.nextInt(2, 5));
+            p.red = true; p.heat = 0.6F;
+            add(p);
+        }
+        // the white-hot cutting edge: thin and crisp, right on the arc
+        for (int i = 0; i < (burst ? 40 : 28); i++) {
+            double a = r.nextDouble(-1, 1), edge = Math.pow(Math.cos(a * Math.PI * 0.5), 1.2);
+            Vec3 tan = arcTangent(s, a, R);
+            Vec3 at = arcPoint(s, centre, a, R).add(s.d.scale(r.nextDouble() * R * 0.02));
+            Spr p = spr(at, s.d.scale(s.speed * 0.97), tan, 0, (float) (R * r.nextDouble(0.12, 0.2) * (0.5 + 0.5 * edge)),
+                    (float) (0.05 + 0.04 * edge), r.nextInt(2, 4));
+            p.heat = 1.0F;
+            add(p);
+        }
+        // black lightning crackling out of the blade, each bolt with a red glow
+        for (int b = 0; b < (burst ? 6 : 2); b++) {
+            double a = r.nextDouble(-0.9, 0.9);
+            Vec3 at = arcPoint(s, centre, a, R).subtract(s.d.scale(R * 0.1));
+            Vec3 dir = at.subtract(mid).normalize().add(s.side.scale(r.nextGaussian() * 0.6)).normalize();
+            int segs = r.nextInt(4, 8);
+            for (int k = 0; k < segs; k++) {
+                Vec3 next = at.add(dir.scale(R * r.nextDouble(0.08, 0.16))).add(new Vec3(r.nextGaussian(), r.nextGaussian(), r.nextGaussian()).scale(R * 0.05));
+                Vec3 m0 = at.add(next).scale(0.5), ax = next.subtract(at);
+                Spr bolt = spr(m0, s.d.scale(s.speed * 0.9), ax, 0, (float) ax.length() * 1.1F, 0.05F, r.nextInt(2, 4));
+                bolt.dark = true; bolt.darkAlpha = 1.0F;
+                add(bolt);
+                Spr glow = spr(m0, s.d.scale(s.speed * 0.9), ax, 0, (float) ax.length() * 1.2F, 0.16F, 2);
+                glow.red = true; glow.heat = 0.7F;
+                add(glow);
+                at = next;
+                if (r.nextInt(4) == 0) dir = dir.add(new Vec3(r.nextGaussian(), r.nextGaussian(), r.nextGaussian()).scale(0.5)).normalize();
+            }
+        }
+        // black smoke curling round the path behind it
+        for (int i = 0; i < (burst ? 14 : 8); i++) {
+            double a = r.nextDouble(-1, 1);
+            Vec3 at = arcPoint(s, centre, a, R * 0.85).subtract(s.d.scale(R * r.nextDouble(0.2, 0.5)));
+            Vec3 radial = at.subtract(mid).normalize();
+            Spr p = spr(at, s.d.scale(s.speed * 0.2).add(radial.scale(0.05)), radial.cross(s.d), 3,
+                    (float) r.nextDouble(0.5, 1.0), (float) r.nextDouble(0.3, 0.55), r.nextInt(10, 17));
+            p.dark = true; p.darkAlpha = 0.7F; p.curl = s.d; p.curlRate = (float) r.nextDouble(0.2, 0.4) * (r.nextBoolean() ? 1 : -1); p.drag = 0.9F;
+            add(p);
+        }
+        // red embers and black flakes falling away
+        for (int i = 0; i < (burst ? 22 : 12); i++) {
+            double a = r.nextDouble(-1, 1);
+            Vec3 at = arcPoint(s, centre, a, R);
+            Vec3 out = at.subtract(mid).normalize();
+            Vec3 vel = out.scale(r.nextDouble(0.06, 0.25)).add(s.d.scale(s.speed * 0.35)).add(0, r.nextDouble(0.0, 0.06), 0);
+            float sz = (float) r.nextDouble(0.06, 0.15);
+            Spr p = spr(at, vel, vel, r.nextFloat() < 0.6F ? 2 : 1, sz, sz, r.nextInt(8, 16));
+            if (r.nextBoolean()) { p.red = true; p.heat = 0.9F; } else { p.dark = true; p.darkAlpha = 1.0F; }
+            p.drag = 0.92F;
+            add(p);
+        }
+        if (burst) {   // released: a ring of shards bursting outward round the blade, and white flash streaks
+            for (int i = 0; i < 40; i++) {
+                double ang = Math.PI * 2 * i / 40;
+                Vec3 out = s.u.scale(Math.cos(ang)).add(s.side.scale(Math.sin(ang)));
+                Spr p = spr(s.c.add(out.scale(0.6)), out.scale(r.nextDouble(0.45, 0.7)), out, 0, 0.45F, 0.08F, r.nextInt(4, 7));
+                p.heat = 1.0F; p.drag = 0.8F;
+                if (i % 2 == 0) { p.red = true; p.heat = 0.85F; }
+                add(p);
+            }
+            for (int i = 0; i < 12; i++) {
+                Vec3 out = new Vec3(r.nextGaussian(), r.nextGaussian(), r.nextGaussian()).normalize();
+                Spr p = spr(s.c, out.scale(0.25), out, 0, 1.2F, 0.1F, 3);
+                p.heat = 1.0F;
+                add(p);
+            }
+        }
+    }
+
+    /** The plain flame version (other schemes). */
+    private static void emitFlame(Slash s, double age, boolean burst) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         double grow = 1.0 - Math.pow(1.0 - Mth.clamp(age / (s.life * 0.5), 0.0, 1.0), 2.0);
         double R = s.r0 + (s.r1 - s.r0) * grow;
@@ -170,6 +290,12 @@ public final class PixelFx {
             p.pos = p.pos.add(p.vel);
             p.vel = p.vel.scale(p.drag);
             if (p.kind == 2 || p.kind == 1) p.vel = p.vel.add(0, -0.012, 0);   // sparks fall a little
+            if (p.curl != null) {   // smoke curling round the path: turn its velocity about the travel axis
+                double ca = Math.cos(p.curlRate), sa = Math.sin(p.curlRate);
+                Vec3 k = p.curl, v = p.vel;
+                p.vel = v.scale(ca).add(k.cross(v).scale(sa)).add(k.scale(k.dot(v) * (1 - ca)));
+                p.axis = p.vel.lengthSqr() > 1.0E-8 ? p.vel.normalize() : p.axis;
+            }
             if (!p.dark) p.heat = Math.max(0.0F, p.heat - 0.9F / p.life);
         }
     }
@@ -213,9 +339,9 @@ public final class PixelFx {
         float len = p.len * (p.kind == 0 || p.kind == 3 ? (0.7F + 0.6F * (1.0F - life)) : 1.0F);
         Vec3 a = ax.scale(len * 0.5), b = side.scale(p.wid * 0.5);
         float r, g, bl, al;
-        if (dark) { r = 0.02F; g = 0.0F; bl = 0.01F; al = 0.92F * fade; }
+        if (dark) { r = 0.02F; g = 0.0F; bl = 0.01F; al = p.darkAlpha * fade; }
         else {
-            float[] c = fire(p.heat);
+            float[] c = p.red ? crimson(p.heat) : fire(p.heat);
             r = c[0] * fade; g = c[1] * fade; bl = c[2] * fade; al = 1.0F;
         }
         v(vc, m, n, cam, pos.subtract(a).subtract(b), r, g, bl, al, 0, 1);
