@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ECE",
+    "GBG",
+    "ERE"
+  ],
+  "key": {
+    "E": {
+      "item": "minecraft:emerald"
+    },
+    "C": {
+      "item": "irons_spellbooks:magic_cloth"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "B": {
+      "item": "minecraft:enchanted_book"
+    },
+    "R": {
+      "item": "minecraft:rabbit_foot"
+    }
+  },
+  "result": {
+    "item": "arcane_addon:four_leaf_grimoire",
+    "count": 1
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "FPF",
+    "IBI",
+    "FEF"
+  ],
+  "key": {
+    "F": {
+      "item": "minecraft:feather"
+    },
+    "P": {
+      "item": "minecraft:phantom_membrane"
+    },
+    "I": {
+      "item": "irons_spellbooks:arcane_ingot"
+    },
+    "B": {
+      "item": "minecraft:enchanted_book"
+    },
+    "E": {
+      "item": "irons_spellbooks:energized_core"
+    }
+  },
+  "result": {
+    "item": "arcane_addon:spirit_bound_grimoire",
+    "count": 1
+  }
+}

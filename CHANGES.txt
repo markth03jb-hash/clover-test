@@ -1,0 +1,160 @@
+Arcane Addon v1.12.1 - all changed files since v1.0.0
+
+HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+and let it overwrite. Then build as usual.
+
+NEW IN 1.12.1 - POLISH / BUILD-SAFETY PASS
+  - Fixed a compile error: DarkKatanaItem used Properties without importing it (now Item.Properties).
+  - Devil Union now swaps the grimoire's spells one tick after the cast instead of during it, so Iron's spell bar
+    never sees its contents change mid-cast (same for Release / the union ending).
+  - Added the missing display name for grimoire_page.
+  - Checked: every cross-class call resolves, no missing imports, no lambda captures of changing variables,
+    every event handler class is registered, client-only code is never reached from the server,
+    all 39 spells and 11 items have names / descriptions / icons / models, no vanilla particles or status effects.
+
+NEW IN 1.12.0 - DEVIL UNION MOVESET
+  When Devil Union starts, every spell in the Black Grimoire is swapped for its devil version (new name, icon and move);
+  when it ends (timeout, Release, death, logout) the normal spells come back. Slots, levels and locks are kept.
+  Devil moves use BOTH swords: the main-hand sword strikes first, the other follows.
+    Summon        -> Devil Twin Swap: every swap strike = Slayer whirlwind + Dweller volley together
+    Piercing Dash -> Devil Rush: faster, longer, the ember trail bursts behind you
+    Zetten        -> Devil Zetten: Twin Cleave (main sword, ember crater, then the other sword)
+    Sky Splitter  -> Devil Sky Splitter: Twin Rift (two rifts, one per sword)
+    Anti Magic    -> Anti-Magic Domain (16-block domain, cuts magic users; Slayer dome / Dweller 8 crescents)
+    Ki Sense      -> Devil's Eye (48 blocks, 20 s)
+    Instinct Guard-> Devil Instinct (3 s, counters every attack, +50%)
+    Devil Union   -> Devil Union: Release (end it in one blast, up to 3x damage; Slayer meteor / Dweller vortex)
+    Dweller Slash -> Devil Dweller: Triple Slash (+ sweeping cut if the Slayer is held too)
+    Borrowed Slash-> Devil Borrowed: Four Elements (fire, ice, lightning, wind in a row)
+  Devil icons: the originals re-forged in ember with a crown of black flame.
+  NEW FILES: server/DevilBook.java, server/DevilFx.java, spells/DevilSpell.java, 10 devil spell icons
+  CHANGED:   AstaFx, SummonQueue, DashQueue, SummonGreatswordSpell, PiercingDashSpell, GrimoireSpell, AddonSpellRegistry, en_us.json
+
+NEW IN 1.11.0 - REAL DEMON WINGS
+  The devil form's wings are rebuilt like real bat-style demon wings:
+    - an arm (shoulder -> elbow -> wrist) that rises so the wrist sits up high, with a bone-white hooked claw at the wrist
+    - four long finger bones of two joints each, fanning from the wrist (outward-up to down)
+    - a leathery membrane stretched between the fingers with a scalloped trailing edge that sags between the tips,
+      plus the last section running down to the waist; faint veins and a glowing ember edge
+    - real wing motion: the arm swings from the shoulder, the elbow flexes a beat later, the fingers spread on the
+      downstroke and close on the upstroke; folding tucks the fingers down along the arm; gliding spreads it flat
+  Same movement states as before (standing / running / jumping / gliding / crouching), ~25% larger.
+  CHANGED: client/FxRenderer.java
+
+NEW IN 1.10.0 - DEVIL FORM, MORE ALIVE
+  Wings: 5 blades per side, each bent in 3 joints; the flap is a wave travelling shoulder -> tip (tips lag behind).
+    They react to movement: slow beat standing, swept back running, hard flaps in the air, spread flat to glide
+    when falling, folded in when crouching. They burst open with an overshoot and a few big beats on transforming.
+    Ember trails follow the wingtips and a glow pulse runs out along every blade.
+  Crown: 10 black-flame tongues with 3 taller pulsing ones, leaning back as you run.
+  Mantle: rippling shadow streams that get blown back by movement.
+  Sigil: a slowly turning ember circle + star under your feet while on the ground.
+  Burst: an ember shockwave the moment the form begins.
+  CHANGED: client/FxRenderer.java
+
+NEW IN 1.9.0 - DEVIL UNION FORM (original design)
+  While Devil Union is active (50 s) the player is drawn with a devil form over their own skin:
+    - shadow wings: 4 ember-edged blades per side with a dark membrane, unfolding over 0.75 s and beating slowly
+    - a crown of black flame flickering above the head
+    - a mantle of shadow streaming down the back
+  It fades out over 1 s when the union ends (also on death / logout), and players who walk into range later see it too.
+  New transformation pose "devil_union_awaken": power gathers (arms crossed, hunched), then bursts out
+  (arms flung wide, head back) as the wings unfold.
+  New colour: ember (9). CHANGED: client/FxRenderer.java, server/AstaFx.java, spells/GrimoireSpell.java,
+  player_animation/arcane_animations.json
+
+FROM 1.8.0 - STEEL GRIMOIRE (Klaus Lunettes' Steel Magic) + EFFECT LIBRARY
+  Steel Grimoire: Epic, 8 slots, Evocation school, normal mana. +200 mana, +15% evocation power, +5% spell resist,
+  +4 armor, +0.2 knockback resist. Passive UNBENDING STEEL: projectiles deal 25% less damage.
+    1 Violent Rotating Lance      spinning lance that drills through everything until it hits a wall   (pose: thrust forward)
+    2 Blazing Spiral Lance        wind-up, then a blazing spiral thrust into one target + 2 s stagger  (pose: charge + lunge, new)
+    3 Steel Castle's Armored Wall 8 s steel wall: nothing from the far side can hurt you behind it     (pose: hand to ground)
+    4 White Steel Horse Cart      steel cart charge that tramples; nearby allies get a speed burst     (pose: leaning on the reins, new)
+    5 Thunder Arrow               1 s steel-rail charge, then a 48-block railgun bolt with recoil      (pose: 1 s charge + release, new)
+    6 Acier Silva                 forest of steel spikes erupting in 3 widening rings                  (pose: stomp)
+    7 Steel Prison                cage the enemy you look at for 3 s, then crush (addon original)      (pose: point + clench, new)
+    8 Knight's Armor              20 s steel plating: +8 armor, +4 toughness, steady, a little slower  (pose: pushing up the glasses, new)
+  Spells 1-6 are named after Klaus's spells in Black Clover; 7 and 8 are the addon's own additions.
+  Recipe: iron blocks, gold ingot, arcane cloth, enchanted book, arcane ingot.
+
+  EFFECT LIBRARY server/FxLib.java: 25 recipes x 8 colours = 200 named effects (see EFFECTS.txt).
+  Two new colours were added to the renderer: steel (7) and gold (8).
+
+  NEW FILES: server/FxLib.java, server/SteelFx.java, spells/SteelSpell.java, item/SteelGrimoireItem.java, EFFECTS.txt,
+             steel grimoire model/textures, 8 spell icons, recipe
+  CHANGED:   client/FxRenderer.java (palettes), server/Fx.java, server/TimedModifiers.java, registries, curios tag,
+             en_us.json, player_animation/arcane_animations.json
+
+FROM 1.7.0 - KATANA TECHNIQUES + ANIMATIONS
+  Dark Katana is now REQUIRED (main hand) for: Black Blade, Dimension Slash, Avidya Slash Raijin,
+  Avidya Wild Slash, Death Thrust, Mana Zone: Dimension Slash, Event Horizon. (The old +20% bonus is gone.)
+  Black Moon, Black Hole and Ki Read: Foresight work without it.
+
+  Every move now has its own player animation:
+    Yami:  Black Blade = blade deflect pose, Dimension Slash = fast iaido draw-cut (new), Avidya Slash = katana upslash,
+           Wild Slash = three-cut flurry (new), Death Thrust = lunge stab, Black Moon = forward push,
+           Black Hole = arms-spread, Mana Zone = crossed arms, Foresight = self cast,
+           Event Horizon = 1 s gathering hold then the cut (new, timed to the spell's charge)
+    Asta:  Summon = upward draw, Piercing Dash = lunge stab, Zetten = two-handed overhead cleave,
+           Sky Splitter = wind-up then upward cleave (new), Anti Magic = cross swipe, Ki Sense = crossed arms,
+           Instinct Guard = deflect, Devil Union = arms-spread, Dweller Slash = upward swipe,
+           Borrowed Slash = horizontal slash, Arcane Pulse = stomp
+  Mid-move poses: Twin Swap whirlwind spin (new) / volley throw / quick blade flip, Zetten Dweller X cross-cut (new),
+    Instinct Guard counter-thrust, Foresight blade deflect on each dodge.
+  New poses are in assets/arcane_addon/player_animation/arcane_animations.json, built from Iron's own keyframes.
+
+  NEW FILES: client/ArcaneAnimations.java, server/AnimSend.java, player_animation/arcane_animations.json
+  CHANGED:   build.gradle (compileOnly player-animation-lib), spells/DarkSpell.java, spells/GrimoireSpell.java,
+             spells/PiercingDashSpell.java + spells/SummonGreatswordSpell.java (rebuilt from the v1.0.0 jar),
+             spells/ArcanePulseSpell.java, registry/AddonSpellRegistry.java, server/DarkFx.java, server/AstaFx.java,
+             server/SummonQueue.java, client/FxRenderer.java, en_us.json
+
+FROM 1.6.0 - DARK GRIMOIRE (Yami Sukehiro's Dark Magic, Ender school, uses normal mana)
+  10 preset spells (Legendary, 10 slots; +300 mana, +15% ender spell power, +10% spell resist, +2 attack, +4 health):
+    1 Dark Cloaked Black Blade        20 s: melee +6 damage, each hit swallows 20 enemy mana
+    2 Dark Cloaked Dimension Slash    instant 40-block cut through space (passes through walls)
+    3 Dark Cloaked Avidya Slash Raijin  ki-guided slash that bends toward the enemy you look at
+    4 Dark Cloaked Avidya Wild Slash   6-8 guided slashes, one per nearby enemy
+    5 Dark Cloaked Death Thrust       12-block piercing thrust with heavy knockback
+    6 Black Moon                      4 s: swallows enemy spells, then hurls them back as a crescent
+    7 Black Hole                      3 s: drags enemies in, grinds them, then implodes
+    8 Mana Zone: Dimension Slash      8 s: a cut appears on every enemy within 12 blocks each second
+    9 Ki Read: Foresight              5 s: the next 3 attacks miss - you sidestep them
+   10 Dimension Slash: Event Horizon  ultimate: 1 s charge, 50-block cut that stays open, pulls and cuts again
+  Passive SURPASS YOUR LIMITS: first drop below 25% health resets all cooldowns (once per 90 s)
+  Dark Katana: holding it makes every Dark Grimoire cut 20% stronger
+  Recipes: Dark Grimoire = obsidian, eyes of ender, arcane ingots, enchanted book, echo shard
+           Dark Katana   = arcane ingot, netherite scrap, stick (diagonal)
+  NEW FILES: spells/DarkSpell.java, server/DarkFx.java, item/DarkGrimoireItem.java, item/DarkKatanaItem.java,
+             10 spell icons, grimoire + katana textures/models, 2 recipes
+  CHANGED:   registry/AddonSpellRegistry.java (rebuilt from the v1.0.0 jar + 10 spells),
+             registry/AddonItemRegistry.java, curios tag, en_us.json
+
+FROM 1.5.0
+  Four new grimoires (inscribable spell books, like Iron's own):
+    Three-Leaf Grimoire   (Rare, 8 slots)       +100 mana, +5% cooldown reduction, +5% spell resist
+                          Passive HOPE: below 35% health, +20% spell power
+    Four-Leaf Grimoire    (Epic, 10 slots)      +150 mana, +10% spell power, +2 luck
+                          Passive FORTUNE: 15% chance a spell's cooldown is refunded
+    Mana Zone Codex       (Epic, 10 slots)      +250 mana, +15% mana regen
+                          Passive MANA ZONE: stand still 2 s -> +25% spell power, +75% mana regen
+    Spirit-Bound Grimoire (Legendary, 12 slots) +200 mana, +15% cast time reduction,
+                          +25% casting move speed, +5% move speed
+                          Passive SPIRIT WARD: blocks one spell hit completely, recharges in 20 s
+  Each has a 3D book model (uses Iron's book template) + hotbar icon in Iron's style,
+  a crafting recipe, a curios spellbook-slot tag entry and tooltips.
+
+  Ki Sense reworked: no glowing effect. Every creature within 32 blocks shows through walls
+  as a faint flame of ki for 12 s, only for the caster:
+    red = monsters, green = passive, yellow = neutral, blue = players.
+
+FILES
+  NEW  item/ThemedGrimoireItem.java, server/GrimoirePassives.java, client/KiSenseRenderer.java,
+       server/Fx.java, server/TimedModifiers.java, models + textures + recipes for the 4 books
+  CHANGED  registry/AddonItemRegistry.java (new books + creative tab), server/AstaFx.java (Ki Sense),
+       client/FxRenderer.java (routes Ki Sense marks), curios spellbook tag, en_us.json,
+       plus everything from 1.1 - 1.4 (Sky Splitter, Twin Swap, Instinct Guard, effect rework,
+       summon animation, book outline, grimoire icon, survival recipe)
+
+NOTE: spells/PiercingDashSpell.java, spells/SummonGreatswordSpell.java, registry/AddonSpellRegistry.java, registry/AddonItemRegistry.java, client/FxRenderer.java and client/GrimoireFloatRenderer.java
+were rebuilt from the v1.0.0 jar. If you edited them in your repo after that build, compare first.

@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LAL",
+    "CBC",
+    "LIL"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:lapis_block"
+    },
+    "A": {
+      "item": "minecraft:amethyst_cluster"
+    },
+    "C": {
+      "item": "irons_spellbooks:magic_cloth"
+    },
+    "B": {
+      "item": "minecraft:enchanted_book"
+    },
+    "I": {
+      "item": "irons_spellbooks:arcane_ingot"
+    }
+  },
+  "result": {
+    "item": "arcane_addon:mana_zone_codex",
+    "count": 1
+  }
+}

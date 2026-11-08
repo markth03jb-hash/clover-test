@@ -4,13 +4,13 @@ import com.example.arcaneaddon.ArcaneAddon;
 import com.example.arcaneaddon.network.AddonNetwork;
 import com.example.arcaneaddon.network.SummonAnimPacket;
 import com.example.arcaneaddon.registry.AddonItemRegistry;
-import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
-import org.joml.Vector3f;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +31,6 @@ import java.util.UUID;
 @Mod.EventBusSubscriber(modid = ArcaneAddon.MODID)
 public class SummonQueue {
     public static final int DELAY_TICKS = 16;
-    private static final DustParticleOptions CRIMSON = new DustParticleOptions(new Vector3f(0.8f, 0.05f, 0.1f), 1.6f);
     private static final Map<UUID, Integer> PENDING = new HashMap<>();
     private static final Map<UUID, Boolean> OFFHAND = new HashMap<>();   // true = the twin Demon Dweller Sword goes to the off hand
 
@@ -44,28 +43,69 @@ public class SummonQueue {
         p.level().playSound(null, p.blockPosition(), SoundEvents.SOUL_ESCAPE, SoundSource.PLAYERS, 1.0f, 0.6f);
     }
 
-    /** Both swords out: trade them between the main hand and the off hand. */
-    public static void swap(ServerPlayer p) {
+    /** Swap attacks can fire at most every 4 s; swapping itself stays instant so you can still change stance. */
+    public static final int SWAP_ATTACK_COOLDOWN = 80;
+    private static final Map<UUID, Long> LAST_SWAP_ATTACK = new HashMap<>();
+
+    /**
+     * Twin Swap: flip the swords between your hands. The blade that lands in your off hand strikes as it passes:
+     * <ul>
+     *   <li>Dweller to main hand: the Slayer spins a full 360 degree <b>Whirlwind</b> cut, then the slash aura flies ahead.</li>
+     *   <li>Slayer to main hand: the Dweller looses a <b>Volley</b> of three dark crescents in a fan.</li>
+     * </ul>
+     * Every swap also gives a short burst of speed (Twin Momentum).
+     */
+    public static void swap(ServerPlayer p) { swap(p, false); }
+
+    /** devil = Devil Twin Swap: the strike uses both swords at once (whirlwind AND volley), in ember. */
+    public static void swap(ServerPlayer p, boolean devil) {
         ItemStack main = p.getMainHandItem().copy(), off = p.getOffhandItem().copy();
         p.setItemInHand(InteractionHand.MAIN_HAND, off);
         p.setItemInHand(InteractionHand.OFF_HAND, main);
-        if (p.level() instanceof ServerLevel sl) {
-            double yr = Math.toRadians(p.getYRot());
-            double lx = Math.cos(yr), lz = Math.sin(yr), fx = -Math.sin(yr), fz = Math.cos(yr);
-            double y = p.getY() + p.getEyeHeight() * 0.7;
-            net.minecraft.world.phys.Vec3 rh = new net.minecraft.world.phys.Vec3(p.getX() + fx * 0.6 - lx * 0.45, y, p.getZ() + fz * 0.6 - lz * 0.45);
-            net.minecraft.world.phys.Vec3 lh = new net.minecraft.world.phys.Vec3(p.getX() + fx * 0.6 + lx * 0.45, y, p.getZ() + fz * 0.6 + lz * 0.45);
-            FxSend.beam(sl, 0, rh, lh.add(0, 0.25, 0), 0.22f, 7);    // two blades crossing as they trade hands
-            FxSend.beam(sl, 1, lh, rh.add(0, 0.25, 0), 0.22f, 7);
-            FxSend.ring(sl, 0, rh, 0.1f, 1.0f, 0.35f, 7);
-            FxSend.ring(sl, 1, lh, 0.1f, 1.0f, 0.35f, 7);
-        }
+        ServerLevel sl = p.serverLevel();
+        boolean toDweller = p.getMainHandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get());
+
+        // the swap itself: both blades flash across your body in an X, with a ring per hand
+        double yr = Math.toRadians(p.getYRot());
+        double lx = Math.cos(yr), lz = Math.sin(yr), fx = -Math.sin(yr), fz = Math.cos(yr);
+        double y = p.getY() + p.getEyeHeight() * 0.7;
+        Vec3 rh = new Vec3(p.getX() + fx * 0.6 - lx * 0.45, y, p.getZ() + fz * 0.6 - lz * 0.45);
+        Vec3 lh = new Vec3(p.getX() + fx * 0.6 + lx * 0.45, y, p.getZ() + fz * 0.6 + lz * 0.45);
+        FxSend.beam(sl, 0, rh.add(0, -0.4, 0), lh.add(0, 0.6, 0), 0.26f, 8);
+        FxSend.beam(sl, 1, lh.add(0, -0.4, 0), rh.add(0, 0.6, 0), 0.26f, 8);
+        FxSend.ring(sl, toDweller ? 1 : 0, rh, 0.1f, 1.1f, 0.35f, 7);
+        FxSend.ring(sl, toDweller ? 0 : 1, lh, 0.1f, 1.1f, 0.35f, 7);
+        Fx.flash(sl, new Vec3(p.getX(), y, p.getZ()), 0.9f);
         p.level().playSound(null, p.blockPosition(), SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.PLAYERS, 0.9f, 1.3f);
+        p.level().playSound(null, p.blockPosition(), SoundEvents.CHAIN_PLACE, SoundSource.PLAYERS, 1.0f, 0.7f);
+
+        // Twin Momentum
+        TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, TimedModifiers.MOMENTUM_SPEED, "Twin Momentum", 0.4, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
+
+        long now = sl.getGameTime();
+        Long last = LAST_SWAP_ATTACK.get(p.getUUID());
+        if (last != null && now - last < (devil ? SWAP_ATTACK_COOLDOWN * 3 / 4 : SWAP_ATTACK_COOLDOWN)) {   // swap only, no strike yet: a quick flip of the blades
+            AnimSend.play(p, AnimSend.DEFLECT);
+            return;
+        }
+        LAST_SWAP_ATTACK.put(p.getUUID(), now);
+
         float power = (float) p.getAttributeValue(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.SPELL_POWER.get());
-        if (p.getMainHandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get())) {
-            SlashProjectiles.horizontalSlash(p, 14f * power);   // Slayer (now off hand) cuts a wide horizontal slash with an aura
+        AnimSend.play(p, toDweller ? AnimSend.TWIN_WHIRLWIND : AnimSend.HORIZONTAL_SLASH);   // spin / sweeping volley throw
+        if (devil) {   // both swords strike: the Slayer spins, the Dweller fires
+            SlashProjectiles.whirlSlash(p, 14f * power);
+            SlashProjectiles.darkShot(p, 15f * power, 0);
+            SlashProjectiles.darkShot(p, 9f * power, -16);
+            SlashProjectiles.darkShot(p, 9f * power, 16);
+            FxLib.spinSlash(sl, 9, p.position().add(0, 1, 0), p.getLookAngle(), 1.3f);
+            return;
+        }
+        if (toDweller) {
+            SlashProjectiles.whirlSlash(p, 14f * power);           // Slayer Whirlwind
         } else {
-            SlashProjectiles.darkShot(p, 15f * power);          // Dweller (now off hand) fires a dark slash projectile
+            SlashProjectiles.darkShot(p, 15f * power, 0);          // Dweller Volley: centre blade at full damage...
+            SlashProjectiles.darkShot(p, 9f * power, -16);         // ...and two side blades
+            SlashProjectiles.darkShot(p, 9f * power, 16);
         }
     }
 
@@ -89,13 +129,12 @@ public class SummonQueue {
             if (p.level() instanceof ServerLevel sl) {
                 double y = p.getY() + 1.1;
                 boolean twinGrab = p.getOffhandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get());
-                FxSend.ring(sl, twinGrab ? 1 : 0, new net.minecraft.world.phys.Vec3(p.getX(), y - 0.2, p.getZ()), 0.3f, 2.8f, 0.9f, 10);
-                FxSend.ring(sl, 6, new net.minecraft.world.phys.Vec3(p.getX(), y - 0.7, p.getZ()), 0.2f, 1.8f, 0.5f, 8);
-                sl.sendParticles(ParticleTypes.CRIT, p.getX(), y, p.getZ(), 14, 0.5, 0.5, 0.5, 0.3);
+                // a small, tight ring where the hand closes on the grip - the client already animated the sword's flight
+                FxSend.ring(sl, twinGrab ? Fx.DARK : Fx.CRIMSON, new Vec3(p.getX(), y - 0.2, p.getZ()), 0.2f, 1.2f, 0.2f, 8);
             }
         }
     }
 
     @SubscribeEvent
-    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) { PENDING.remove(e.getEntity().getUUID()); OFFHAND.remove(e.getEntity().getUUID()); }
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) { PENDING.remove(e.getEntity().getUUID()); OFFHAND.remove(e.getEntity().getUUID()); LAST_SWAP_ATTACK.remove(e.getEntity().getUUID()); }
 }

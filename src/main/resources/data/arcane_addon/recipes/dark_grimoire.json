@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "OEO",
+    "IBI",
+    "OSO"
+  ],
+  "key": {
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "I": {
+      "item": "irons_spellbooks:arcane_ingot"
+    },
+    "B": {
+      "item": "minecraft:enchanted_book"
+    },
+    "S": {
+      "item": "minecraft:echo_shard"
+    }
+  },
+  "result": {
+    "item": "arcane_addon:dark_grimoire",
+    "count": 1
+  }
+}

@@ -1,6 +1,12 @@
 {
  "replace": false,
  "values": [
-  "arcane_addon:black_grimoire"
+  "arcane_addon:black_grimoire",
+  "arcane_addon:three_leaf_grimoire",
+  "arcane_addon:four_leaf_grimoire",
+  "arcane_addon:mana_zone_codex",
+  "arcane_addon:spirit_bound_grimoire",
+  "arcane_addon:dark_grimoire",
+  "arcane_addon:steel_grimoire"
  ]
 }

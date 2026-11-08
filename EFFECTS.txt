@@ -1,0 +1,261 @@
+ARCANE ADDON - EFFECT LIBRARY (server/FxLib.java)
+
+25 recipes x 8 colours = 200 effects. Built only from the addon's own 3D shapes (no vanilla particles).
+Total: 200 effects.
+
+Use by name:   FxLib.play("spike_ring_steel", level, pos, dir, 1.0f);
+Use by parts:  FxLib.play(FxLib.Recipe.SPIKE_RING, FxLib.STEEL, level, pos, dir, 1.0f);
+  pos = centre (or feet / ground point where noted), dir = facing for directional recipes, scale 1.0 ~ player-sized
+
+Colours: crimson, dark, fire, ice, lightning, wind, steel, gold
+
+SPARK - short X of two thin blades
+    1. spark_crimson
+    2. spark_dark
+    3. spark_fire
+    4. spark_ice
+    5. spark_lightning
+    6. spark_wind
+    7. spark_steel
+    8. spark_gold
+
+IMPACT - spark + thin tilted shock ring
+    9. impact_crimson
+   10. impact_dark
+   11. impact_fire
+   12. impact_ice
+   13. impact_lightning
+   14. impact_wind
+   15. impact_steel
+   16. impact_gold
+
+FLASH - quick vertical pop
+   17. flash_crimson
+   18. flash_dark
+   19. flash_fire
+   20. flash_ice
+   21. flash_lightning
+   22. flash_wind
+   23. flash_steel
+   24. flash_gold
+
+GROUND_PUFF - low wide ring on the ground (pos = feet)
+   25. ground_puff_crimson
+   26. ground_puff_dark
+   27. ground_puff_fire
+   28. ground_puff_ice
+   29. ground_puff_lightning
+   30. ground_puff_wind
+   31. ground_puff_steel
+   32. ground_puff_gold
+
+PILLAR - vertical column with a bright core
+   33. pillar_crimson
+   34. pillar_dark
+   35. pillar_fire
+   36. pillar_ice
+   37. pillar_lightning
+   38. pillar_wind
+   39. pillar_steel
+   40. pillar_gold
+
+SHOCK_RING - expanding horizontal ring
+   41. shock_ring_crimson
+   42. shock_ring_dark
+   43. shock_ring_fire
+   44. shock_ring_ice
+   45. shock_ring_lightning
+   46. shock_ring_wind
+   47. shock_ring_steel
+   48. shock_ring_gold
+
+IMPLODE - ring collapsing inward
+   49. implode_crimson
+   50. implode_dark
+   51. implode_fire
+   52. implode_ice
+   53. implode_lightning
+   54. implode_wind
+   55. implode_steel
+   56. implode_gold
+
+DOUBLE_RING - two rings a beat apart
+   57. double_ring_crimson
+   58. double_ring_dark
+   59. double_ring_fire
+   60. double_ring_ice
+   61. double_ring_lightning
+   62. double_ring_wind
+   63. double_ring_steel
+   64. double_ring_gold
+
+CROSS_SLASH - two diagonal blades crossing in front of dir
+   65. cross_slash_crimson
+   66. cross_slash_dark
+   67. cross_slash_fire
+   68. cross_slash_ice
+   69. cross_slash_lightning
+   70. cross_slash_wind
+   71. cross_slash_steel
+   72. cross_slash_gold
+
+VERTICAL_SLASH - overhead-to-ground arc along dir
+   73. vertical_slash_crimson
+   74. vertical_slash_dark
+   75. vertical_slash_fire
+   76. vertical_slash_ice
+   77. vertical_slash_lightning
+   78. vertical_slash_wind
+   79. vertical_slash_steel
+   80. vertical_slash_gold
+
+HORIZONTAL_SLASH - wide sideways arc along dir
+   81. horizontal_slash_crimson
+   82. horizontal_slash_dark
+   83. horizontal_slash_fire
+   84. horizontal_slash_ice
+   85. horizontal_slash_lightning
+   86. horizontal_slash_wind
+   87. horizontal_slash_steel
+   88. horizontal_slash_gold
+
+SPIN_SLASH - full 360 cut around pos
+   89. spin_slash_crimson
+   90. spin_slash_dark
+   91. spin_slash_fire
+   92. spin_slash_ice
+   93. spin_slash_lightning
+   94. spin_slash_wind
+   95. spin_slash_steel
+   96. spin_slash_gold
+
+CRESCENT_SHOT - crescent that flies along dir
+   97. crescent_shot_crimson
+   98. crescent_shot_dark
+   99. crescent_shot_fire
+  100. crescent_shot_ice
+  101. crescent_shot_lightning
+  102. crescent_shot_wind
+  103. crescent_shot_steel
+  104. crescent_shot_gold
+
+BEAM_LINE - straight beam 6 blocks along dir
+  105. beam_line_crimson
+  106. beam_line_dark
+  107. beam_line_fire
+  108. beam_line_ice
+  109. beam_line_lightning
+  110. beam_line_wind
+  111. beam_line_steel
+  112. beam_line_gold
+
+SPIKE_BURST - thorns bursting out in every direction
+  113. spike_burst_crimson
+  114. spike_burst_dark
+  115. spike_burst_fire
+  116. spike_burst_ice
+  117. spike_burst_lightning
+  118. spike_burst_wind
+  119. spike_burst_steel
+  120. spike_burst_gold
+
+SPIKE_RING - spikes erupting from the ground in a circle (pos = feet)
+  121. spike_ring_crimson
+  122. spike_ring_dark
+  123. spike_ring_fire
+  124. spike_ring_ice
+  125. spike_ring_lightning
+  126. spike_ring_wind
+  127. spike_ring_steel
+  128. spike_ring_gold
+
+SPIRAL - helix wound along dir
+  129. spiral_crimson
+  130. spiral_dark
+  131. spiral_fire
+  132. spiral_ice
+  133. spiral_lightning
+  134. spiral_wind
+  135. spiral_steel
+  136. spiral_gold
+
+ORB - small sphere of three rings
+  137. orb_crimson
+  138. orb_dark
+  139. orb_fire
+  140. orb_ice
+  141. orb_lightning
+  142. orb_wind
+  143. orb_steel
+  144. orb_gold
+
+CAGE - bars around a point with top and bottom rings (pos = feet)
+  145. cage_crimson
+  146. cage_dark
+  147. cage_fire
+  148. cage_ice
+  149. cage_lightning
+  150. cage_wind
+  151. cage_steel
+  152. cage_gold
+
+SHIELD - round shield of rings facing dir
+  153. shield_crimson
+  154. shield_dark
+  155. shield_fire
+  156. shield_ice
+  157. shield_lightning
+  158. shield_wind
+  159. shield_steel
+  160. shield_gold
+
+DOME - dome of stacked rings (pos = feet)
+  161. dome_crimson
+  162. dome_dark
+  163. dome_fire
+  164. dome_ice
+  165. dome_lightning
+  166. dome_wind
+  167. dome_steel
+  168. dome_gold
+
+RAIN - streaks falling around a point (pos = feet)
+  169. rain_crimson
+  170. rain_dark
+  171. rain_fire
+  172. rain_ice
+  173. rain_lightning
+  174. rain_wind
+  175. rain_steel
+  176. rain_gold
+
+HALO - thin ring hovering (pos above the head)
+  177. halo_crimson
+  178. halo_dark
+  179. halo_fire
+  180. halo_ice
+  181. halo_lightning
+  182. halo_wind
+  183. halo_steel
+  184. halo_gold
+
+AURA - body-hugging cylinder (pos = body middle)
+  185. aura_crimson
+  186. aura_dark
+  187. aura_fire
+  188. aura_ice
+  189. aura_lightning
+  190. aura_wind
+  191. aura_steel
+  192. aura_gold
+
+STARBURST - six rays in the plane facing dir, plus a ring
+  193. starburst_crimson
+  194. starburst_dark
+  195. starburst_fire
+  196. starburst_ice
+  197. starburst_lightning
+  198. starburst_wind
+  199. starburst_steel
+  200. starburst_gold
+

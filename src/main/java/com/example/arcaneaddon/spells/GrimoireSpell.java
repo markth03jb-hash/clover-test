@@ -56,6 +56,35 @@ public abstract class GrimoireSpell extends AbstractSpell {
     @Override public ResourceLocation getSpellResource() { return spellId; }
     @Override public DefaultConfig getDefaultConfig() { return config; }
     @Override public CastType getCastType() { return CastType.INSTANT; }
+
+    /** The player pose each Black Grimoire spell plays when cast (Iron's animations + the addon's own). */
+    private static final java.util.Map<String, io.redspace.ironsspellbooks.api.util.AnimationHolder> POSES = java.util.Map.ofEntries(
+            java.util.Map.entry("zetten", pose("irons_spellbooks:overhead_two_handed_swing")),          // huge vertical cleave
+            java.util.Map.entry("sky_splitter", pose("arcane_addon:asta_sky_splitter")),               // wind-up, then upward cleave
+            java.util.Map.entry("anti_magic", pose("irons_spellbooks:simple_sword_horizontal_cross_swipe")),
+            java.util.Map.entry("ki_sense", pose("irons_spellbooks:cross_arms")),                      // stillness, reading ki
+            java.util.Map.entry("instinct_guard", pose("irons_spellbooks:sword_deflect_1")),
+            java.util.Map.entry("devil_union", pose("arcane_addon:devil_union_awaken")),               // the transformation pose
+            java.util.Map.entry("dweller_slash", pose("irons_spellbooks:simple_sword_upward_swipe")),
+            java.util.Map.entry("borrowed_slash", pose("irons_spellbooks:horizontal_slash_one_handed")),
+            // Devil Union versions
+            java.util.Map.entry("devil_zetten", pose("irons_spellbooks:overhead_two_handed_swing")),
+            java.util.Map.entry("devil_sky_splitter", pose("arcane_addon:asta_sky_splitter")),
+            java.util.Map.entry("devil_anti_magic", pose("irons_spellbooks:stomp")),
+            java.util.Map.entry("devil_ki_sense", pose("irons_spellbooks:cross_arms")),
+            java.util.Map.entry("devil_instinct_guard", pose("irons_spellbooks:sword_deflect_1")),
+            java.util.Map.entry("devil_union_release", pose("irons_spellbooks:cast_t_pose")),
+            java.util.Map.entry("devil_dweller_slash", pose("arcane_addon:dark_wild_flurry")),
+            java.util.Map.entry("devil_borrowed_slash", pose("arcane_addon:dark_wild_flurry")));
+
+    private static io.redspace.ironsspellbooks.api.util.AnimationHolder pose(String id) {
+        return new io.redspace.ironsspellbooks.api.util.AnimationHolder(id, true, true);
+    }
+
+    @Override
+    public io.redspace.ironsspellbooks.api.util.AnimationHolder getCastStartAnimation() {
+        return POSES.getOrDefault(getSpellResource().getPath(), super.getCastStartAnimation());
+    }
     @Override public boolean allowLooting() { return false; }
     @Override public boolean canBeCraftedBy(Player player) { return false; }
 
