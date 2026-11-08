@@ -40,29 +40,29 @@ final class FxBooks extends FxBase {
 
    static void book(PoseStack ps, VertexConsumer vc, Vec3 cam, FxRenderer.BookDraw b) {
       ps.pushPose();
-      ps.translate(b.pos.x - cam.x, b.pos.y - cam.y, b.pos.z - cam.z);
-      ps.mulPose(Axis.YP.rotationDegrees(-b.yaw));
+      ps.translate(b.pos().x - cam.x, b.pos().y - cam.y, b.pos().z - cam.z);
+      ps.mulPose(Axis.YP.rotationDegrees(-b.yaw()));
       ps.mulPose(Axis.YP.rotationDegrees(180.0F));
-      ps.mulPose(Axis.XP.rotationDegrees(-b.tilt));
-      ps.scale(b.scale, b.scale, b.scale);
+      ps.mulPose(Axis.XP.rotationDegrees(-b.tilt()));
+      ps.scale(b.scale(), b.scale(), b.scale());
       Matrix4f m = ps.last().pose();
       Matrix3f n = ps.last().normal();
-      float HW = b.hw;
-      float HH = b.hh;
-      float V = (float)Math.toRadians((double)b.vDeg);
-      float al = b.alpha;
+      float HW = b.hw();
+      float HH = b.hh();
+      float V = (float)Math.toRadians((double)b.vDeg());
+      float al = b.alpha();
 
       // the book itself is the real 3D model (drawn by GrimoireFloatRenderer); here each grimoire's own aura
       bookAura(vc, m, n, b, HW, HH, V, al);
 
-      if (b.flipCycle >= 0.0F) {
+      if (b.flipCycle() >= 0.0F) {
          for (int i = 0; i < 3; i++) {
-            float sP = (b.flipCycle - (float)(4 + i * 5)) / 14.0F;
+            float sP = (b.flipCycle() - (float)(4 + i * 5)) / 14.0F;
             if (!(sP <= 0.0F) && !(sP >= 1.0F)) {
                float mm = 0.5F - 0.5F * (float)Math.cos(Math.PI * (double)sP);
                double alpha = Math.toRadians((double)(-22.5F - 135.0F * mm));
                float lift = 0.07F + 0.03F * (1.0F - 2.0F * Math.abs(mm - 0.5F));
-               PAGES.add(new PageDraw(new Matrix4f(m), new Matrix3f(n), (float)Math.cos(alpha), (float)(-Math.sin(alpha)), lift, HW * 0.95F, HH * 0.92F, b.light));
+               PAGES.add(new PageDraw(new Matrix4f(m), new Matrix3f(n), (float)Math.cos(alpha), (float)(-Math.sin(alpha)), lift, HW * 0.95F, HH * 0.92F, b.light()));
             }
          }
       }
@@ -116,8 +116,8 @@ final class FxBooks extends FxBase {
     */
    static void bookAura(VertexConsumer vc, Matrix4f m, Matrix3f n, FxRenderer.BookDraw b, float HW, float HH, float V, float al) {
       double t = bookTime;
-      int pal = b.pal;
-      switch (b.style) {
+      int pal = b.pal();
+      switch (b.style()) {
          case 0 -> {
             underglow(m, HW, HH, pal, 0.42F * al);
             for (int s = -1; s <= 1; s += 2) panelOutline(vc, m, n, s * (float)Math.cos(V), (float)Math.sin(V), -0.03F, HW, HH, al, s, pal);

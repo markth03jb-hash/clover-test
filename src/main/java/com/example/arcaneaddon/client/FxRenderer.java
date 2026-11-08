@@ -302,7 +302,7 @@ public class FxRenderer extends FxBase {
             ZONES.values().removeIf(zf -> now > zf[1] + FxZones.ZONE_CLOSE + 2.0);
             FxZones.ZONE_H.keySet().removeIf(id -> !ZONES.containsKey(id));
             ZONE_TARGET.keySet().removeIf(id -> !ZONES.containsKey(id));
-            if (ZONES.isEmpty() || now - columnTopAge > 100.0) { FxZones.COLUMN_TOP.clear(); FxZones.ZONE_H.clear(); columnTopAge = now; }
+            if (ZONES.isEmpty() || now - FxZones.columnTopAge > 100.0) { FxZones.COLUMN_TOP.clear(); FxZones.ZONE_H.clear(); FxZones.columnTopAge = now; }
             for (java.util.Map.Entry<Integer, double[]> ce : COCOON.entrySet()) {   // darkness seeping off the cocoon
                double[] cf = ce.getValue();
                net.minecraft.world.entity.Entity ent = mc.level.getEntity(ce.getKey());
