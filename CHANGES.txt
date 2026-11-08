@@ -1,7 +1,21 @@
-Arcane Addon v1.19.1 - all changed files since v1.0.0
+Arcane Addon v1.20.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.20.0
+  - No more floating ground effects: Acier Silva spikes, spike rings, Zetten's fissure and the Black Meteorite
+    crater only appear where there is ground close below; over a drop (or a mid-air impact) they are skipped.
+  - Mana Zone: you read ki out to 80 blocks while the zone is up.
+  - Event Horizon is aimable: look up or down and the wave goes there; look roughly level and it hugs the ground.
+  - Black Blade: a black-flame aura burns around you while the blade is coated.
+  - Wild Slash Raijin: new animation - wind back as dark lightning crackles around you, then one explosive spinning
+    cut; the bolts leave exactly with the spin.
+  - Devil Union flight is now fully controlled: Jump in the air spreads the wings and you hover; W flies where you
+    look, S brakes, A/D drift, hold Jump to rise, hold Sneak to sink, land to fold.
+  - Black Meteorite: the blitz is now ten piercing dashes straight through them from every side, and the cutscene
+    camera is a free cinematic camera (chase from the side, orbit around them, low angle for the finisher, wide
+    shot of the crater) instead of being stuck to you.
 
 NEW IN 1.19.1
   - Mana Zone: you read the ki of every creature inside it, like Asta's Ki Sense but much easier to see - bright

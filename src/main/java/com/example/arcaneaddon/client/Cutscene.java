@@ -14,8 +14,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 /**
- * The Black Meteorite cutscene on the caster's screen: letterbox bars, a cinematic third-person camera for each
- * phase (dash, blitz, finisher, crater), FOV changes and a screen shake on impact. Your camera mode and view angles are put back when it ends.
+ * The Black Meteorite cutscene on the caster's screen: letterbox bars, a free cinematic camera (not attached to you)
+ * for each phase (dash, blitz, finisher, crater), FOV changes, impact frames and a screen shake on impact. Your camera mode and view angles are put back when it ends.
  * Also plays the impact shake for anyone nearby (no camera takeover for them).
  */
 @EventBusSubscriber(modid = "arcane_addon", value = {Dist.CLIENT})
@@ -29,7 +29,6 @@ public final class Cutscene {
     private static double start = -1, phaseStart = -1, impact = -1;
     private static Vec3 look = Vec3.ZERO;
     private static CameraType savedCamera;
-    private static float savedYaw, savedPitch;
     private static double shakeUntil = -1, shakeStart, shakeStrength;
 
     public static boolean running() { return running; }
@@ -43,8 +42,8 @@ public final class Cutscene {
         if (ph == 0) {
             if (!running) {
                 savedCamera = mc.options.getCameraType();
-                savedYaw = p.getYRot();
-                savedPitch = p.getXRot();
+                camEntity = null;
+                camPos = null;
             }
             running = true;
             start = now;
@@ -69,17 +68,20 @@ public final class Cutscene {
         shakeStrength = s;
     }
 
+    // the free cinematic camera: an invisible marker the view is attached to while the cutscene plays
+    private static net.minecraft.world.entity.Marker camEntity;
+    private static Vec3 camPos;
+    private static double orbit0;
+
     private static void stop() {
         Minecraft mc = Minecraft.getInstance();
         running = false;
+        if (mc.player != null) mc.setCameraEntity(mc.player);
+        mc.gameRenderer.setRenderHand(true);
         if (savedCamera != null) mc.options.setCameraType(savedCamera);
-        if (mc.player != null) {
-            mc.player.setYRot(savedYaw);
-            mc.player.setXRot(savedPitch);
-            mc.player.yRotO = savedYaw;
-            mc.player.xRotO = savedPitch;
-        }
         savedCamera = null;
+        camEntity = null;
+        camPos = null;
     }
 
     /** Elapsed cutscene time, or -1. */
@@ -90,9 +92,9 @@ public final class Cutscene {
     }
 
     /**
-     * Drives your view each frame so the third-person camera frames the shot: behind you rushing at them, behind you
-     * locked onto them while you blink around (every blink is a new camera cut), high above for the finisher, then
-     * pulled back circling the crater.
+     * A free camera, not attached to you: it is placed in the world each frame to frame the shot - a chase from the
+     * side while you dash in, a slow orbit around them during the blitz, a low angle looking up for the finisher, then a
+     * wide shot circling the crater. It never goes through walls (pulled in in front of them).
      */
     @SubscribeEvent
     public static void onRenderTick(TickEvent.RenderTickEvent e) {
@@ -103,23 +105,53 @@ public final class Cutscene {
         double now = mc.level.getGameTime() + e.renderTickTime;
         if (impact >= 0 && now - impact > AFTER) { stop(); return; }
         if (now - start > 220) { stop(); return; }   // safety net
-        Vec3 eye = p.getEyePosition(e.renderTickTime);
-        Vec3 d = look.subtract(eye);
-        float yawTo = (float)Math.toDegrees(Math.atan2(-d.x, d.z));
-        float pitchTo = (float)-Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z)));
-        float yaw, pitch;
-        switch (phase) {
-            case 2 -> { yaw = yawTo; pitch = Mth.clamp(pitchTo, -70.0F, 70.0F); }          // blitz: locked on them
-            case 3 -> { yaw = yawTo + (float)((now - phaseStart) * 3.0); pitch = 75.0F; }  // finisher: from high above
-            case 1 -> { yaw = yawTo + (float)((now - phaseStart) * 2.0); pitch = 38.0F; }  // the crater
-            default -> { yaw = yawTo; pitch = Mth.clamp(pitchTo + 8.0F, -60.0F, 60.0F); } // the dash
+        if (camEntity == null || camEntity.level() != mc.level) {
+            camEntity = new net.minecraft.world.entity.Marker(net.minecraft.world.entity.EntityType.MARKER, mc.level);
+            orbit0 = Math.atan2(p.getZ() - look.z, p.getX() - look.x);
         }
-        if (mc.options.getCameraType() != CameraType.THIRD_PERSON_BACK) mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-        p.setYRot(yaw);
-        p.setXRot(pitch);
-        p.yRotO = yaw;
-        p.xRotO = pitch;
-        p.setYHeadRot(yaw);
+        Vec3 eye = p.getEyePosition(e.renderTickTime);
+        Vec3 toT = new Vec3(look.x - eye.x, 0, look.z - eye.z);
+        Vec3 d = toT.lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : toT.normalize();
+        Vec3 side = new Vec3(d.z, 0, -d.x);
+        double ph = now - phaseStart;
+        Vec3 want, at;
+        switch (phase) {
+            case 2 -> {                                   // blitz: a slow orbit around them
+                double a = orbit0 + ph * 0.05;
+                want = look.add(Math.cos(a) * 8.5, 2.2, Math.sin(a) * 8.5);
+                at = look;
+            }
+            case 3 -> {                                   // finisher: low, looking up at you above them
+                double a = orbit0 + 0.6;
+                want = look.add(Math.cos(a) * 6.5, -2.5, Math.sin(a) * 6.5);
+                at = look.add(0, 2.5, 0);
+            }
+            case 1 -> {                                   // the crater: wide, slowly circling
+                double a = orbit0 + 1.2 + ph * 0.03;
+                want = look.add(Math.cos(a) * 10, 6.5, Math.sin(a) * 10);
+                at = look;
+            }
+            default -> {                                  // the dash: a chase from the side
+                want = eye.subtract(d.scale(2.5)).add(side.scale(3.8)).add(0, 1.0, 0);
+                at = eye.add(d.scale(4));
+            }
+        }
+        // keep it out of walls
+        var hit = mc.level.clip(new net.minecraft.world.level.ClipContext(at, want, net.minecraft.world.level.ClipContext.Block.VISUAL,
+                net.minecraft.world.level.ClipContext.Fluid.NONE, p));
+        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.MISS) want = hit.getLocation().add(at.subtract(want).normalize().scale(0.4));
+        camPos = camPos == null ? want : camPos.add(want.subtract(camPos).scale(0.18));   // glide between shots
+        Vec3 v = at.subtract(camPos);
+        float yaw = (float) Math.toDegrees(Math.atan2(-v.x, v.z));
+        float pitch = (float) -Math.toDegrees(Math.atan2(v.y, Math.sqrt(v.x * v.x + v.z * v.z)));
+        camEntity.setPos(camPos.x, camPos.y, camPos.z);
+        camEntity.xo = camPos.x; camEntity.yo = camPos.y; camEntity.zo = camPos.z;
+        camEntity.xOld = camPos.x; camEntity.yOld = camPos.y; camEntity.zOld = camPos.z;
+        camEntity.setYRot(yaw); camEntity.setXRot(pitch);
+        camEntity.yRotO = yaw; camEntity.xRotO = pitch;
+        if (mc.options.getCameraType() != CameraType.FIRST_PERSON) mc.options.setCameraType(CameraType.FIRST_PERSON);
+        if (mc.getCameraEntity() != camEntity) mc.setCameraEntity(camEntity);
+        mc.gameRenderer.setRenderHand(false);
     }
 
     @SubscribeEvent

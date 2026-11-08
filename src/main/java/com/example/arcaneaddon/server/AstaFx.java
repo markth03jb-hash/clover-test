@@ -185,9 +185,10 @@ public class AstaFx {
             Vec3 ground = new Vec3(hit.x, p.getY() + 0.04, hit.z);
             java.util.Random rr = new java.util.Random();
             Vec3[] pts = new Vec3[7];
-            pts[0] = FxLib.floor(sl, ground.subtract(dir.scale(0.6)));
-            for (int i = 1; i < pts.length; i++) pts[i] = FxLib.floor(sl, ground.add(dir.scale(i * 1.0)).add(rt.scale((rr.nextDouble() - 0.5) * 0.6)));   // follows the ground
+            pts[0] = FxLib.ground(sl, ground.subtract(dir.scale(0.6)), 2.0);
+            for (int i = 1; i < pts.length; i++) pts[i] = FxLib.ground(sl, ground.add(dir.scale(i * 1.0)).add(rt.scale((rr.nextDouble() - 0.5) * 0.6)), 2.0);   // follows the ground
             for (int i = 1; i < pts.length; i++) {
+                if (pts[i - 1] == null || pts[i] == null) break;   // the crack stops where the ground drops away
                 final Vec3 a = pts[i - 1], b = pts[i];
                 final int seg = i;
                 final double side = rr.nextBoolean() ? 1 : -1;

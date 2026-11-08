@@ -123,6 +123,8 @@ public class DarkFx {
     // ------------------------------------------------------------------ Mana Zone
     /** Radius of Yami's Mana Zone. While it is up every Dark Grimoire move turns into its Mana Zone variant. */
     private static final double ZONE_R = 14;
+    /** How far you read ki while the zone is up. */
+    private static final double KI_RANGE = 80;
 
     public static boolean inZone(ServerPlayer p) {
         Long z = ZONE.get(p.getUUID());
@@ -350,9 +352,34 @@ public class DarkFx {
      * Six to eight crescents leave in every direction and bend onto everyone around you.
      * Mana Zone: a crescent tears out of the zone's edge for EVERY enemy inside it (up to 16).
      */
+    /** Ticks from the cast to the spin cut in the dark_raijin animation (wind back, then the spin). */
+    private static final int RAIJIN_RELEASE = 5;
+
+    /** Wind back while black lightning crackles around you, then everything leaves at once with the spin cut. */
     public static void wildSlash(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        // three spinning arcs around you as you draw
+        for (int k = 0; k < RAIJIN_RELEASE; k++) {
+            final int kk = k;
+            AstaFx.later(Math.max(1, k), () -> {
+                if (!alive(p)) return;
+                ThreadLocalRandom r = ThreadLocalRandom.current();
+                Vec3 c = p.position().add(0, 1.0, 0);
+                for (int j = 0; j < 2; j++) {   // short jagged sparks of dark lightning around the body
+                    Vec3 a0 = c.add(r.nextDouble(-0.9, 0.9), r.nextDouble(-0.8, 0.9), r.nextDouble(-0.9, 0.9));
+                    Vec3 a1 = a0.add(r.nextDouble(-0.5, 0.5), r.nextDouble(-0.5, 0.5), r.nextDouble(-0.5, 0.5));
+                    FxSend.beam(sl, D, a0, a1, 0.1f, 3);
+                    FxSend.beam(sl, S, a0, a1, 0.02f, 2);
+                }
+                FxSend.ring(sl, D, p.position().add(0, 0.05, 0), 2.2f - kk * 0.35f, 0.4f, 0.06f, 3);
+            });
+        }
+        sound(sl, p.position(), SoundEvents.LIGHTNING_BOLT_IMPACT, 0.25f, 1.8f);
+        AstaFx.later(RAIJIN_RELEASE, () -> { if (alive(p)) wildSlashRelease(p, power); });
+    }
+
+    private static void wildSlashRelease(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        // three spinning arcs around you as you spin
         for (int k = 0; k < 3; k++) {
             final int kk = k;
             AstaFx.later(k, () -> {
@@ -729,10 +756,10 @@ public class DarkFx {
         Vec3 feet = p.position();
         Vec3 c = FxLib.floor(sl, feet);
         float R = (float) ZONE_R;
-        // ki of everything inside the zone
-        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(ZONE_R), x -> x != p && x.isAlive()
+        // ki: your mana spreads your senses far beyond the zone itself - every creature within 80 blocks
+        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(KI_RANGE), x -> x != p && x.isAlive()
                 && !(x instanceof net.minecraft.world.entity.decoration.ArmorStand))) {
-            if (t.distanceTo(p) <= ZONE_R) AstaFx.sendKiMark(p, t, 30, true);
+            if (t.distanceTo(p) <= KI_RANGE) AstaFx.sendKiMark(p, t, 30, true);
         }
         // the burning edge
         FxSend.ring(sl, D, c, R - 0.15f, R, 0.45f, 12);
@@ -841,11 +868,13 @@ public class DarkFx {
         }
         AstaFx.later(20, () -> {
             if (!alive(p)) return;
-            // the wave runs along the ground in the direction you face, rising out of it
+            // aimed where you look; when you look roughly level it hugs the ground instead, rising out of it
             Vec3 look0 = p.getLookAngle();
-            Vec3 dir = new Vec3(look0.x, 0, look0.z).lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : new Vec3(look0.x, 0, look0.z).normalize();
-            Vec3 start = FxLib.floor(sl, p.position());
-            Vec3 rt = rightOf(dir), up = new Vec3(0, 1, 0);
+            final boolean aimed = Math.abs(look0.y) > 0.25;
+            Vec3 flatDir = new Vec3(look0.x, 0, look0.z).lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : new Vec3(look0.x, 0, look0.z).normalize();
+            Vec3 dir = aimed ? look0.normalize() : flatDir;
+            Vec3 start = aimed ? p.getEyePosition().add(0, -0.3, 0) : FxLib.floor(sl, p.position());
+            Vec3 rt = rightOf(dir), up = aimed ? rt.cross(dir).normalize() : new Vec3(0, 1, 0);
             // zone: everything bigger and it reaches much further
             final double reach = zone ? 90 : 55;
             final float scale = zone ? 1.7f : 1.0f;
@@ -865,7 +894,7 @@ public class DarkFx {
                 });
             }
             // the cut: a giant vertical arc in front of you
-            FxSend.wall(sl, D, start.add(0, 1.2, 0), dir, up, 4.0f * scale, 4.6f * scale, 85, -85, 1.2f * scale, 10, 3, 0);
+            FxSend.wall(sl, D, aimed ? start : start.add(0, 1.2, 0), dir, up, 4.0f * scale, 4.6f * scale, 85, -85, 1.2f * scale, 10, 3, 0);
             // the release: a towering black wave of darkness - a tall arc front, a colossal vertical crescent inside it,
             // more crescents layered behind it, all growing as they roll forward
             Vec3 o = start.add(dir.scale(1.5));
@@ -885,7 +914,7 @@ public class DarkFx {
                 // the horizon: a burning scar along the ground, with tall tears rising out of it wherever the ground is
                 Vec3 prev = start.add(dir);
                 for (double k = 4; k < reach; k += 4) {
-                    Vec3 c = FxLib.floor(sl, start.add(dir.scale(k)));
+                    Vec3 c = aimed ? start.add(dir.scale(k)) : FxLib.floor(sl, start.add(dir.scale(k)));
                     FxSend.beam(sl, D, prev, c, 1.0f * scale, 34);
                     FxSend.beam(sl, S, prev, c, 0.08f * scale, 30);
                     double h = (2.0 + k * 0.05) * scale;
@@ -934,7 +963,17 @@ public class DarkFx {
 
         Long blade = BLADE.get(id);
         if (blade != null) {
-            if (now > blade) BLADE.remove(id);   // (no effect stuck to the sword - the coating shows on each hit)
+            if (now > blade) BLADE.remove(id);
+            else if (now % 5 == 0) {   // the darkness coating you: a black-flame aura around your body with wisps rising off it
+                Vec3 body = p.position().add(0, 0.95, 0);
+                FxSend.wall(sl, D, body, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.52f, 0.6f, -180, 180, 0.95f, 7, 0, 0);
+                ThreadLocalRandom r = ThreadLocalRandom.current();
+                for (int k = 0; k < 2; k++) {
+                    double a = r.nextDouble(Math.PI * 2);
+                    Vec3 w0 = p.position().add(Math.cos(a) * 0.5, r.nextDouble(0.2, 1.4), Math.sin(a) * 0.5);
+                    FxSend.beam(sl, D, w0, w0.add(Math.cos(a) * 0.2, 0.7, Math.sin(a) * 0.2), 0.12f, 7);
+                }
+            }
         }
 
         Moon m = MOON.get(id);

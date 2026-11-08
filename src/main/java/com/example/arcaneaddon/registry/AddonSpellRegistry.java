@@ -84,7 +84,7 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> BLACK_BLADE = registerSpell(new DarkSpell("black_blade", 30, 40, 0, true, DarkSpell.anim("irons_spellbooks:sword_deflect_1"), DarkFx::blackBlade));
     public static final RegistryObject<AbstractSpell> DIMENSION_SLASH = registerSpell(new DarkSpell("dimension_slash", 12, 80, 26, true, DarkSpell.anim("arcane_addon:dark_dimension_slash"), DarkFx::dimensionSlash));
     public static final RegistryObject<AbstractSpell> AVIDYA_SLASH = registerSpell(new DarkSpell("avidya_slash", 8, 50, 18, true, DarkSpell.anim("irons_spellbooks:katana_upslash"), DarkFx::avidyaSlash));
-    public static final RegistryObject<AbstractSpell> WILD_SLASH = registerSpell(new DarkSpell("wild_slash", 16, 90, 12, true, DarkSpell.anim("arcane_addon:dark_wild_flurry"), DarkFx::wildSlash));
+    public static final RegistryObject<AbstractSpell> WILD_SLASH = registerSpell(new DarkSpell("wild_slash", 16, 90, 12, true, DarkSpell.anim("arcane_addon:dark_raijin"), DarkFx::wildSlash));
     public static final RegistryObject<AbstractSpell> DEATH_THRUST = registerSpell(new DarkSpell("death_thrust", 10, 60, 22, true, DarkSpell.anim("irons_spellbooks:simple_sword_lunge_stab"), DarkFx::deathThrust));
     public static final RegistryObject<AbstractSpell> BLACK_MOON = registerSpell(new DarkSpell("black_moon", 20, 70, 16, false, DarkSpell.anim("irons_spellbooks:instant_projectile"), DarkFx::blackMoon));
     public static final RegistryObject<AbstractSpell> BLACK_HOLE = registerSpell(new DarkSpell("black_hole", 24, 100, 10, false, DarkSpell.anim("irons_spellbooks:cast_t_pose"), DarkFx::blackHole));

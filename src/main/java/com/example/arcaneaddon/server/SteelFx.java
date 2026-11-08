@@ -451,7 +451,9 @@ public class SteelFx {
                     double a = Math.PI * 2 * i / n + r + (sl.random.nextDouble() - 0.5) * 0.2;
                     double rx = r + (sl.random.nextDouble() - 0.5) * 0.6;
                     double x = c.x + Math.cos(a) * rx, z = c.z + Math.sin(a) * rx;
-                    Vec3 b = new Vec3(x, floorY(sl, x, c.y, z) - 0.15, z);
+                    Vec3 gnd = FxLib.ground(sl, x, c.y, z, 2.5);
+                    if (gnd == null) continue;   // no ground close below: no spike floating in the air
+                    Vec3 b = gnd.add(0, -0.15, 0);
                     Vec3 dir = new Vec3(Math.cos(a) * 0.28, 1, Math.sin(a) * 0.28).add(sl.random.nextDouble() * 0.16 - 0.08, 0, sl.random.nextDouble() * 0.16 - 0.08);
                     float h = 1.7f + (i % 3) * 0.5f + sl.random.nextFloat() * 0.3f;
                     FxSend.spike(sl, i % 4 == 0 ? GD : ST, b, dir, h, 0.2f + h * 0.05f, 34 - rr * 3, 3, GROUND);

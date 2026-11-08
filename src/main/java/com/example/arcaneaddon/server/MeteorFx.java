@@ -33,7 +33,7 @@ import java.util.UUID;
  *
  *  DASH      you rocket at the enemy you aim at, trailing black flame. Miss and it ends there.
  *  LAUNCH    on contact an uppercut slash throws them high into the air
- *  BLITZ     you blink around them, cutting through them from every side, a dozen times in a heartbeat
+ *  BLITZ     piercing dashes straight through them, ten times from every side
  *  FINISHER  you appear above them, black flame gathers on the blade, and you come down like a meteor with one huge
  *            slash, driving them into the ground
  *  IMPACT    a crater of black flame: shockwaves, a pillar of fire, burning fissures, a ring of shards
@@ -47,7 +47,7 @@ public final class MeteorFx {
     private MeteorFx() {}
 
     private static final int EMBER = 9, DARK = 1, SILVER = 6;
-    private static final int MAX_DASH = 12, LAUNCH = 5, STRIKES = 12, GATHER = 6, MAX_FALL = 12;
+    private static final int MAX_DASH = 12, LAUNCH = 5, GATHER = 6, MAX_FALL = 12;
     private static final Set<UUID> ACTIVE = new HashSet<>();      // casters in the combo
     private static final Set<UUID> PROTECTED = new HashSet<>();   // victims who can't die yet
 
@@ -186,33 +186,44 @@ public final class MeteorFx {
         AstaFx.later(1, () -> rise(p, sl, t, from, apex, power, k + 1));
     }
 
-    /** One blink-strike every 2 ticks: appear somewhere around them and cut straight through to the other side. */
+    /**
+     * The blitz: piercing dashes straight through them, again and again from every side - each dash starts a few
+     * blocks out, tears through the middle of them and out the other side in three ticks, leaving a black-flame streak.
+     */
+    private static final int DASHES = 10, DASH_TICKS = 3;
+
     private static void blitz(ServerPlayer p, ServerLevel sl, LivingEntity t, Vec3 apex, float power, int k, Vec3 prevPos) {
         if (!ok(p) || !t.isAlive()) { abort(p, t); return; }
         hold(t, apex);
-        if (k >= STRIKES * 2) { finisher(p, sl, t, apex, power, 0); return; }
-        if (k % 2 == 0) {
-            Random r = new Random();
-            double a = r.nextDouble() * Math.PI * 2, el = (r.nextDouble() - 0.35) * 1.2;
-            Vec3 off = new Vec3(Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el)).scale(3.2);
-            Vec3 from = apex.add(off), to = apex.subtract(off);
-            // afterimage from where you were, then you are already on the other side
-            FxSend.beam(sl, DARK, prevPos, from, 0.12f, 4);
-            place(p, to.subtract(0, 1.0, 0), apex);
-            FxSend.beam(sl, DARK, from, to, 0.55f, 6);
-            FxSend.beam(sl, EMBER, from, to, 0.18f, 5);
-            FxSend.beam(sl, SILVER, from, to, 0.04f, 4);
+        if (k >= DASHES * DASH_TICKS) { finisher(p, sl, t, apex, power, 0); return; }
+        int dash = k / DASH_TICKS, step = k % DASH_TICKS;
+        Random r = new Random(apex.hashCode() * 31L + dash);
+        double a = r.nextDouble() * Math.PI * 2, el = (r.nextDouble() - 0.35) * 1.1;
+        Vec3 off = new Vec3(Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el)).scale(4.0);
+        Vec3 from = apex.add(off), to = apex.subtract(off);
+        Vec3 pos = from.add(to.subtract(from).scale(step / (double) (DASH_TICKS - 1)));
+        place(p, pos.subtract(0, 1.0, 0), to.add(to.subtract(from).normalize().scale(3)));
+        FxSend.beam(sl, EMBER, prevPos, pos, 0.5f, 6);       // the streak of the dash
+        FxSend.beam(sl, DARK, prevPos, pos, 0.25f, 5);
+        if (step == 1) {                                     // tearing through them
             Vec3 cd = to.subtract(from).normalize();
-            FxSend.crescent(sl, k % 4 == 0 ? DARK : EMBER, apex, cd, FxLib.up(cd), 1.0f, 1.6f, 4, 0f);
+            FxSend.crescent(sl, dash % 2 == 0 ? DARK : EMBER, apex, cd, FxLib.up(cd), 1.1f, 1.8f, 4, 0f);
+            FxSend.beam(sl, SILVER, from, to, 0.04f, 4);
             AstaFx.damage(p, t, power * 0.12f, "devil_black_meteorite");
-            if (k % 6 == 0) impactFrame(sl, apex, 1);   // a flash frame every third cut
+            if (dash % 3 == 0) impactFrame(sl, apex, 1);
             sound(sl, apex, SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 1.2f + r.nextFloat() * 0.6f);
             sound(sl, apex, SoundEvents.PLAYER_ATTACK_CRIT, 0.7f, 1.0f + r.nextFloat() * 0.5f);
-            final Vec3 now = to;
-            AstaFx.later(1, () -> blitz(p, sl, t, apex, power, k + 1, now));
-            return;
         }
-        AstaFx.later(1, () -> blitz(p, sl, t, apex, power, k + 1, prevPos));
+        if (step == 0) sound(sl, pos, SoundEvents.TRIDENT_RIPTIDE_1, 0.5f, 1.6f);
+        final Vec3 now = step == DASH_TICKS - 1 ? null : pos;
+        AstaFx.later(1, () -> blitz(p, sl, t, apex, power, k + 1, now == null ? apexNext(apex, dash + 1) : now));
+    }
+
+    /** Where the next dash will start (so the streak links up as a blink). */
+    private static Vec3 apexNext(Vec3 apex, int dash) {
+        Random r = new Random(apex.hashCode() * 31L + dash);
+        double a = r.nextDouble() * Math.PI * 2, el = (r.nextDouble() - 0.35) * 1.1;
+        return apex.add(new Vec3(Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el)).scale(4.0));
     }
 
     // ------------------------------------------------------------------ finisher
@@ -264,7 +275,9 @@ public final class MeteorFx {
         shake(sl, at, 1.0f, 22);
         // the finishing blow - this one can kill
         AstaFx.damage(p, victim, power * 1.5f, "devil_black_meteorite");
-        Vec3 g = FxLib.floor(sl, at);
+        Vec3 gg = FxLib.ground(sl, at, 2.5);
+        boolean crater = gg != null;   // no ground close below (it hit in mid-air): no crater
+        Vec3 g = crater ? gg : at;
         double R = 8;
         for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(R, 5, R), x -> x != p && x != victim && x.isAlive() && !x.isAlliedTo(p))) {
             double dist = t.position().distanceTo(at);
@@ -276,27 +289,33 @@ public final class MeteorFx {
             t.hurtMarked = true;
         }
         FxLib.flash(sl, SILVER, at.add(0, 1, 0), 2.0f);
-        FxSend.ring(sl, EMBER, g, 0.5f, 12f, 0.35f, 14);
-        FxSend.ring(sl, DARK, g, 0.5f, 8f, 0.6f, 12);
+        if (crater) {
+            FxSend.ring(sl, EMBER, g, 0.5f, 12f, 0.35f, 14);
+            FxSend.ring(sl, DARK, g, 0.5f, 8f, 0.6f, 12);
+        }
         AstaFx.later(3, () -> FxSend.ring(sl, SILVER, g, 1f, 16f, 0.06f, 12));
         FxLib.dome(sl, EMBER, g, 2.0f);
         FxSend.beam(sl, EMBER, g, g.add(0, 14, 0), 2.8f, 20);
         FxSend.beam(sl, DARK, g, g.add(0, 10, 0), 1.6f, 18);
         Random rnd = new Random();
-        for (int k = 0; k < 12; k++) {                         // burning fissures
+        if (crater) for (int k = 0; k < 12; k++) {             // burning fissures
             double a = Math.PI * 2 * k / 12 + rnd.nextDouble() * 0.3;
-            Vec3 prev = FxLib.floor(sl, g.add(Math.cos(a) * 2.2, 0, Math.sin(a) * 2.2));
+            Vec3 prev = FxLib.ground(sl, g.add(Math.cos(a) * 2.2, 0, Math.sin(a) * 2.2), 2.5);
+            if (prev == null) continue;
             for (int s = 1; s <= 4; s++) {
                 double rr = 2.2 + s * 1.5, aa = a + (rnd.nextDouble() - 0.5) * 0.25;
-                Vec3 q = FxLib.floor(sl, g.add(Math.cos(aa) * rr, 0, Math.sin(aa) * rr));   // the cracks follow the ground
+                Vec3 q = FxLib.ground(sl, g.add(Math.cos(aa) * rr, 0, Math.sin(aa) * rr), 2.5);   // the cracks follow the ground
+                if (q == null) break;                          // ...and stop at a drop
                 final Vec3 pa = prev, pb = q;
                 AstaFx.later(s, () -> FxSend.beam(sl, EMBER, pa, pb, 0.16f, 40));
                 prev = q;
             }
         }
-        for (int k = 0; k < 14; k++) {                         // crater rim of black shards
+        if (crater) for (int k = 0; k < 14; k++) {             // crater rim of black shards
             double a = Math.PI * 2 * k / 14 + rnd.nextDouble() * 0.2;
-            Vec3 b = FxLib.floor(sl, g.add(Math.cos(a) * 3.0, 0, Math.sin(a) * 3.0)).add(0, -0.2, 0);
+            Vec3 b0 = FxLib.ground(sl, g.add(Math.cos(a) * 3.0, 0, Math.sin(a) * 3.0), 2.5);
+            if (b0 == null) continue;
+            Vec3 b = b0.add(0, -0.2, 0);
             FxSend.spike(sl, k % 4 == 0 ? EMBER : DARK, b, new Vec3(Math.cos(a) * 0.8, 1, Math.sin(a) * 0.8), 1.3f + rnd.nextFloat() * 1.1f, 0.26f, 50, 2, FxPacket.GROUND);
         }
         FxLib.spikeBurst(sl, DARK, at.add(0, 1, 0), 1.8f);

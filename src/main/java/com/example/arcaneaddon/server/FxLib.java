@@ -112,6 +112,18 @@ public final class FxLib {
 
     public static Vec3 floor(ServerLevel sl, Vec3 near) { return floor(sl, near.x, near.y, near.z); }
 
+    /**
+     * The ground under (x, z) within {@code maxDown} blocks below {@code y} (and up to 1.5 above it), or null when
+     * there is none that close - so crater pieces, cracks and spikes are skipped instead of hanging in the air.
+     */
+    public static Vec3 ground(ServerLevel sl, double x, double y, double z, double maxDown) {
+        var hit = sl.clip(new net.minecraft.world.level.ClipContext(new Vec3(x, y + 1.5, z), new Vec3(x, y - maxDown, z),
+                net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, (net.minecraft.world.entity.Entity) null));
+        return hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? null : hit.getLocation().add(0, 0.04, 0);
+    }
+
+    public static Vec3 ground(ServerLevel sl, Vec3 near, double maxDown) { return ground(sl, near.x, near.y, near.z, maxDown); }
+
     private static Vec3 randomUnit() {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         Vec3 v;
@@ -219,7 +231,8 @@ public final class FxLib {
         for (int i = 0; i < n; i++) {
             double a = Math.PI * 2 * i / n;
             Vec3 b = feet.add(Math.cos(a) * 1.8 * s, 0, Math.sin(a) * 1.8 * s);
-            b = floor(sl, b);
+            b = ground(sl, b, 1.5);
+            if (b == null) continue;   // no ground there: no spike
             FxSend.spike(sl, pal, b.add(0, -0.12, 0), new Vec3(Math.cos(a) * 0.25, 1.6, Math.sin(a) * 0.25), (1.5f + (i % 2) * 0.35f) * s, 0.2f * s, 14, 3,
                     com.example.arcaneaddon.network.FxPacket.GROUND);   // solid spikes erupting from the floor
         }
