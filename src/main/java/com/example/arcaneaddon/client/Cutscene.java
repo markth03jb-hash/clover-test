@@ -14,33 +14,33 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 /**
- * The Black Meteorite cutscene on the caster's screen: letterbox bars, cinematic camera angles for each phase
- * (front shot while charging, from below as you launch, slowly circling you at the apex, from above as you dive),
- * a narrowing FOV and a screen shake on impact. Your camera mode and view angles are put back when it ends.
+ * The Black Meteorite cutscene on the caster's screen: letterbox bars, a cinematic third-person camera for each
+ * phase (dash, blitz, finisher, crater), FOV changes and a screen shake on impact. Your camera mode and view angles are put back when it ends.
  * Also plays the impact shake for anyone nearby (no camera takeover for them).
  */
 @EventBusSubscriber(modid = "arcane_addon", value = {Dist.CLIENT})
 public final class Cutscene {
     private Cutscene() {}
 
-    private static final int CHARGE = 10, LAUNCH = 8, APEX = 12, AFTER = 26;
+    private static final int AFTER = 26;
 
     private static boolean running;
-    private static double start = -1, impact = -1;
-    private static Vec3 target = Vec3.ZERO;
+    private static int phase;                 // 0 dash, 2 blitz, 3 finisher, 1 after the impact
+    private static double start = -1, phaseStart = -1, impact = -1;
+    private static Vec3 look = Vec3.ZERO;
     private static CameraType savedCamera;
-    private static float savedYaw, savedPitch, baseYaw;
+    private static float savedYaw, savedPitch;
     private static double shakeUntil = -1, shakeStart, shakeStrength;
 
     public static boolean running() { return running; }
 
-    /** phase 0 = start, 1 = impact. */
-    public static void handle(int entityId, int phase, Vec3 tgt) {
+    /** phase 0 = dash (start), 2 = blitz, 3 = finisher, 1 = impact / end. {@code at} = where the camera should look. */
+    public static void handle(int entityId, int ph, Vec3 at) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer p = mc.player;
         if (p == null || mc.level == null || p.getId() != entityId) return;
         double now = mc.level.getGameTime();
-        if (phase == 0) {
+        if (ph == 0) {
             if (!running) {
                 savedCamera = mc.options.getCameraType();
                 savedYaw = p.getYRot();
@@ -49,11 +49,13 @@ public final class Cutscene {
             running = true;
             start = now;
             impact = -1;
-            target = tgt;
-            baseYaw = p.getYRot();
-        } else if (running) {
-            impact = now;
+        } else if (!running) {
+            return;
         }
+        if (ph == 1) impact = now;
+        phase = ph;
+        phaseStart = now;
+        look = at;
     }
 
     public static void shake(Vec3 at, float strength, int ticks) {
@@ -87,44 +89,32 @@ public final class Cutscene {
         return mc.level.getGameTime() + pt - start;
     }
 
-    /** Drives the player's view each frame so the third-person camera lands where the shot needs it. */
+    /**
+     * Drives your view each frame so the third-person camera frames the shot: behind you rushing at them, behind you
+     * locked onto them while you blink around (every blink is a new camera cut), high above for the finisher, then
+     * pulled back circling the crater.
+     */
     @SubscribeEvent
     public static void onRenderTick(TickEvent.RenderTickEvent e) {
         if (e.phase != TickEvent.Phase.START || !running) return;
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer p = mc.player;
         if (p == null || mc.level == null) { running = false; return; }
-        double t = time(e.renderTickTime);
-        if (impact >= 0 && mc.level.getGameTime() - impact > AFTER) { stop(); return; }
-        if (t > 120) { stop(); return; }   // safety net
+        double now = mc.level.getGameTime() + e.renderTickTime;
+        if (impact >= 0 && now - impact > AFTER) { stop(); return; }
+        if (now - start > 220) { stop(); return; }   // safety net
+        Vec3 eye = p.getEyePosition(e.renderTickTime);
+        Vec3 d = look.subtract(eye);
+        float yawTo = (float)Math.toDegrees(Math.atan2(-d.x, d.z));
+        float pitchTo = (float)-Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z)));
         float yaw, pitch;
-        CameraType cam;
-        Vec3 toT = target.subtract(p.position());
-        float yawToTarget = (float)(Math.toDegrees(Math.atan2(-toT.x, toT.z)));
-        if (impact >= 0) {                                   // after the impact: pulled back, looking down at the crater
-            double a = mc.level.getGameTime() + e.renderTickTime - impact;
-            cam = CameraType.THIRD_PERSON_BACK;
-            yaw = yawToTarget + (float)(a * 2.0);
-            pitch = 40.0F;
-        } else if (t < CHARGE) {                             // charge: from the front, low
-            cam = CameraType.THIRD_PERSON_FRONT;
-            yaw = baseYaw + (float)(t * 1.5);
-            pitch = 12.0F - (float)t;
-        } else if (t < CHARGE + LAUNCH) {                    // launch: from below, looking up as you shoot into the sky
-            cam = CameraType.THIRD_PERSON_BACK;
-            yaw = baseYaw + 20.0F;
-            pitch = -60.0F;
-        } else if (t < CHARGE + LAUNCH + APEX) {             // apex: circling you against the sky
-            double a = t - CHARGE - LAUNCH;
-            cam = CameraType.THIRD_PERSON_FRONT;
-            yaw = baseYaw + 160.0F + (float)(a * 9.0);
-            pitch = -15.0F;
-        } else {                                             // dive: from above and behind, the target rushing up
-            cam = CameraType.THIRD_PERSON_BACK;
-            yaw = yawToTarget;
-            pitch = 65.0F;
+        switch (phase) {
+            case 2 -> { yaw = yawTo; pitch = Mth.clamp(pitchTo, -70.0F, 70.0F); }          // blitz: locked on them
+            case 3 -> { yaw = yawTo + (float)((now - phaseStart) * 3.0); pitch = 75.0F; }  // finisher: from high above
+            case 1 -> { yaw = yawTo + (float)((now - phaseStart) * 2.0); pitch = 38.0F; }  // the crater
+            default -> { yaw = yawTo; pitch = Mth.clamp(pitchTo + 8.0F, -60.0F, 60.0F); } // the dash
         }
-        if (mc.options.getCameraType() != cam) mc.options.setCameraType(cam);
+        if (mc.options.getCameraType() != CameraType.THIRD_PERSON_BACK) mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
         p.setYRot(yaw);
         p.setXRot(pitch);
         p.yRotO = yaw;
@@ -148,14 +138,8 @@ public final class Cutscene {
 
     @SubscribeEvent
     public static void onFov(ViewportEvent.ComputeFov e) {
-        double t = time((float)e.getPartialTick());
-        if (t < 0) return;
-        double f;
-        if (impact >= 0) f = 1.12;
-        else if (t < CHARGE) f = 1.0 - 0.15 * (t / CHARGE);
-        else if (t < CHARGE + LAUNCH) f = 1.15;
-        else if (t < CHARGE + LAUNCH + APEX) f = 0.85;
-        else f = 1.25;                                       // the rush of the dive
+        if (!running) return;
+        double f = switch (phase) { case 0 -> 1.25; case 2 -> 1.1; case 3 -> 0.9; default -> 1.12; };
         e.setFOV(e.getFOV() * f);
     }
 

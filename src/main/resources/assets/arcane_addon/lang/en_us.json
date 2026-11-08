@@ -26,7 +26,7 @@
   "spell.arcane_addon.instinct_guard": "Instinct Guard",
   "spell.arcane_addon.instinct_guard.guide": "Enter a 2 second ki stance: no attack can hurt you, and the first enemy to strike you within 6 blocks gets countered - you blink behind them and cut them down, leaving them slowed and weakened. Costs no mana.",
   "spell.arcane_addon.devil_union": "Devil Union",
-  "spell.arcane_addon.devil_union.guide": "Liebe merges with you for 50 seconds: more attack damage, speed, attack speed and knockback resistance, devil regeneration, 35% less damage and 70% less spell damage, wrapped in black devil flame. Costs no mana. While it lasts, every spell in the grimoire becomes its devil version. While the union lasts you can fly on the devil's wings: in the air hold Jump to glide, tap Jump again for a wing beat; no fall damage.",
+  "spell.arcane_addon.devil_union.guide": "Liebe merges with you for 50 seconds: more attack damage, speed, attack speed and knockback resistance, devil regeneration, 35% less damage and 70% less spell damage, wrapped in black devil flame. Costs no mana. While it lasts, every spell in the grimoire becomes its devil version. While the union lasts you can fly: in the air press Jump to spread the wings, steer by looking, hold Jump to beat your wings and climb, Sneak to drop. No fall damage.",
   "item.arcane_addon.demon_dweller_sword": "Demon Dweller Sword",
   "ui.arcane_addon.offhand_empty_required": "Your off hand must be empty to summon the Demon Dweller Sword.",
   "ui.arcane_addon.both_swords": "Both swords are already summoned.",
@@ -67,7 +67,7 @@
   "ui.arcane_addon.spirit_ward": "The spirit turns the spell aside",
   "item.arcane_addon.dark_grimoire": "Dark Grimoire",
   "tooltip.arcane_addon.dark_grimoire.passive": "Passive - Surpass Your Limits",
-  "tooltip.arcane_addon.dark_grimoire.desc": "The first time you fall below 25% health, every spell cooldown resets. Once every 90 seconds.",
+  "tooltip.arcane_addon.dark_grimoire.desc": "The first time you fall below 25% health, every spell cooldown resets and you heal 25% of your health. Once every 90 seconds.",
   "tooltip.arcane_addon.dark_grimoire.lore": "A three-leaf grimoire of Dark Magic from the Land of the Sun.",
   "item.arcane_addon.dark_katana": "Dark Katana",
   "tooltip.arcane_addon.dark_katana.1": "Required for the Dark Grimoire's sword techniques.",
@@ -94,7 +94,7 @@
   "spell.arcane_addon.ki_foresight": "Ki Read: Foresight",
   "spell.arcane_addon.ki_foresight.guide": "Read the ki of everything around you. For 5 seconds the next 3 attacks miss as you sidestep them. Mana Zone: 5 dodges, and every attack you read is answered with a cut.",
   "spell.arcane_addon.event_horizon": "Dark Cloaked Dimension Slash: Event Horizon",
-  "spell.arcane_addon.event_horizon.guide": "Gather darkness for one second, then cut space open 50 blocks ahead. The horizon stays open for 2 seconds, pulling enemies back in and cutting them again before it seals. Needs the Dark Katana in your main hand. Mana Zone: eight horizons split the whole zone like a star and every enemy inside is cut.",
+  "spell.arcane_addon.event_horizon.guide": "Gather darkness for one second as it swells around you, then release a colossal wave of darkness: a towering black-flame front with giant crescents inside, rolling 55 blocks forward and widening as it goes. The horizon stays open behind it for 2 seconds, pulling enemies back in and cutting them again. Needs the Dark Katana in your main hand. Mana Zone: the wave is much bigger and reaches 90 blocks.",
   "ui.arcane_addon.katana_required": "Hold the Dark Katana in your main hand to use this technique.",
   "item.arcane_addon.steel_grimoire": "Steel Grimoire",
   "tooltip.arcane_addon.steel_grimoire.passive": "Passive - Unbending Steel",
@@ -153,5 +153,6 @@
   "ui.arcane_addon.zone.foresight": "Mana Zone: Ki Read",
   "ui.arcane_addon.zone.event_horizon": "Mana Zone: Event Horizon",
   "spell.arcane_addon.devil_black_meteorite": "Devil Union: Black Meteorite",
-  "spell.arcane_addon.devil_black_meteorite.guide": "Devil Union only (takes Ki Sense's place). A cutscene move: crouch as ember closes in, blast 20 blocks into the sky on a column of black flame, gather a shell of black flame at the top, then fall on the spot you aimed at as a black meteor. The impact cuts everything within 9 blocks, flings it away and leaves a burning crater. Needs a sword in your main hand."
+  "spell.arcane_addon.devil_black_meteorite.guide": "Devil Union only (takes Ki Sense's place). Rocket at the enemy you aim at (28 blocks). On contact a cutscene plays: an uppercut throws them into the air, you blink around them cutting through them a dozen times, then come down from above like a black meteor with one huge slash, driving them into the ground in a burning crater. They can't die until the final blow, and you can't be hurt while it plays. Miss and it ends. Needs a sword in your main hand.",
+  "ui.arcane_addon.meteorite_miss": "Black Meteorite missed"
 }

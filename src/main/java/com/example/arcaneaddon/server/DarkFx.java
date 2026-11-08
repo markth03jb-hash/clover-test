@@ -54,7 +54,8 @@ import java.util.concurrent.ThreadLocalRandom;
  *  9 Ki Read: Foresight              - read their ki: the next 3 attacks simply miss
  * 10 Dimension Slash: Event Horizon  - the ultimate cut that splits space open and leaves the horizon behind
  *
- * Passive "Surpass Your Limits": the first time you fall below 25% health (once per 90 s), every spell cooldown resets.
+ * Passive "Surpass Your Limits": the first time you fall below 25% health (once per 90 s), every spell cooldown resets
+ * and you heal 25% of your health.
  * Sword techniques (every slash, the thrust, Black Blade, Mana Zone and Event Horizon) need the Dark Katana in the main hand.
  *
  * All visuals use the addon's own 3D shapes (black body, violet rim) and are kept thin so the screen stays readable.
@@ -767,9 +768,10 @@ public class DarkFx {
 
     // ================================================================== 10. Dimension Slash: Event Horizon
     /**
-     * Darkness gathers into the blade, then one cut splits space 50 blocks ahead: a black horizon with burning edges that
-     * hangs open, pulling enemies back in and cutting them again before it seals.
-     * Mana Zone: eight horizons split the whole zone like a star around you and every enemy inside is cut.
+     * Darkness gathers into the blade and swells around you, then one cut releases a colossal wave of darkness: a
+     * towering black-flame front with giant crescents inside it, rolling 55 blocks forward and widening as it goes.
+     * It leaves the horizon hanging open behind it, pulling enemies back in and cutting them again before it seals.
+     * Mana Zone: the wave is 1.7x bigger, faster, and reaches 90 blocks.
      */
     public static void eventHorizon(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
@@ -789,63 +791,82 @@ public class DarkFx {
             });
         }
         if (zone) zoneMsg(p, "event_horizon");
+        // the darkness swells around you as it gathers: black flame climbing your body
+        for (int k = 0; k < 4; k++) {
+            final int kk = k;
+            AstaFx.later(4 + k * 4, () -> {
+                if (!alive(p)) return;
+                FxSend.wall(sl, D, p.position().add(0, 1.0, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.9f + kk * 0.15f, 1.0f + kk * 0.2f, -180, 180, 1.1f + kk * 0.2f, 5, 0, 0);
+            });
+        }
         AstaFx.later(20, () -> {
             if (!alive(p)) return;
             Vec3 start = p.getEyePosition().add(0, -0.3, 0), dir = p.getLookAngle();
-            Vec3 flat = new Vec3(dir.x, 0, dir.z).normalize();
-            List<Vec3[]> lines = new ArrayList<>();
-            if (zone) {
-                for (int k = 0; k < 8; k++) {
-                    double a = Math.atan2(flat.z, flat.x) + Math.PI * 2 * k / 8;
-                    Vec3 d = new Vec3(Math.cos(a), 0, Math.sin(a));
-                    lines.add(new Vec3[]{start.add(d), start.add(d.scale(ZONE_R))});
-                }
-                for (LivingEntity t : zoneEnemies(p)) {
-                    AstaFx.damage(p, t, dmg, "event_horizon");
-                    cutMark(sl, mid(t), new Vec3(0.3, 1, 0.2), 1.8f);
-                }
-            } else {
-                Vec3 end = start.add(dir.scale(50));
-                lines.add(new Vec3[]{start.add(dir), end});
-                for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(2.5))) {
-                    if (!t.getBoundingBox().inflate(1.0, 2.5, 1.0).clip(start, end).isPresent()) continue;
-                    AstaFx.damage(p, t, dmg, "event_horizon");
-                    FxLib.impact(sl, D, mid(t), 1.5f);
-                }
+            Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
+            // zone: everything bigger and it reaches much further
+            final double reach = zone ? 90 : 55;
+            final float scale = zone ? 1.7f : 1.0f;
+            final float speed = zone ? 4.2f : 3.2f;
+            Vec3 end = start.add(dir.scale(reach));
+            // the colossal wave cuts everything in a widening, towering band as it passes
+            for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(10 * scale))) {
+                Vec3 m = mid(t), on = closestOnSegment(start, end, m);
+                Vec3 off = m.subtract(on);
+                double along = on.distanceTo(start);
+                if (Math.abs(off.dot(rt)) > (3.0 + along * 0.14) * scale || Math.abs(off.dot(up)) > 6.0 * scale) continue;
+                final LivingEntity tt = t;
+                AstaFx.later((int) (along / speed), () -> {
+                    if (!tt.isAlive() || !alive(p)) return;
+                    AstaFx.damage(p, tt, dmg, "event_horizon");
+                    FxLib.impact(sl, D, mid(tt), 1.5f);
+                });
             }
-            Vec3 up = new Vec3(0, 1, 0);
-            for (Vec3[] ln : lines) {
-                Vec3 a = ln[0], b = ln[1], d = b.subtract(a).normalize();
-                float half = (float) a.distanceTo(b) / 2f;
-                // the horizon: a tall black sheet splitting space, opening out along the line, with hairline and dark core
-                FxSend.box(sl, D, a.add(b).scale(0.5), d, Math.abs(d.y) > 0.95 ? new Vec3(1, 0, 0) : up, half, 0.035f, 2.6f, 40, 3,
-                        com.example.arcaneaddon.network.FxPacket.EXTEND);
-                FxSend.beam(sl, D, a, b, 1.2f, 30);
-                FxSend.beam(sl, S, a, b, 0.1f, 28);
+            // the cut: a giant vertical arc in front of you
+            FxSend.wall(sl, D, start, dir, up, 4.0f * scale, 4.6f * scale, 85, -85, 1.2f * scale, 10, 3, 0);
+            // the release: a towering black wave of darkness - a tall arc front, a colossal vertical crescent inside it,
+            // more crescents layered behind it, all growing as they roll forward
+            Vec3 o = start.add(dir.scale(1.5));
+            int life = (int) (reach / speed) + 2;
+            FxSend.wall(sl, D, o, dir, rt, 3.0f * scale, 14f * scale, -60, 60, 5.5f * scale, life, 0, speed);
+            FxSend.crescent(sl, D, o, dir, up, 5.0f * scale, 15f * scale, life, speed);
+            FxSend.crescent(sl, D, o, dir, rt, 4.0f * scale, 12f * scale, life, speed);
+            for (int k = 1; k <= 4; k++) {
+                final int kk = k;
+                AstaFx.later(k, () -> {
+                    Vec3 lift = rt.scale((kk % 2 == 0 ? 1 : -1) * 0.8 * kk * scale);
+                    FxSend.crescent(sl, kk == 2 ? S : D, o.add(lift), dir, up, (4.4f - kk * 0.4f) * scale, (13f - kk * 1.5f) * scale, life - kk, speed);
+                });
             }
-            // the cut itself: a giant vertical arc in front of you
-            FxSend.wall(sl, D, start, flat, up, 3.6f, 4.2f, 80, -80, 1.1f, 10, 3, 0);
-            FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 1.6f);
+            // in its wake: the horizon - a line through space left hanging open with tall tears along it
+            AstaFx.later(4, () -> {
+                FxSend.beam(sl, D, start.add(dir), end, 1.2f * scale, 34);
+                FxSend.beam(sl, S, start.add(dir), end, 0.1f * scale, 30);
+                for (double k = 4; k < reach; k += 5) {
+                    Vec3 c = start.add(dir.scale(k));
+                    double h = (2.0 + k * 0.05) * scale;
+                    FxSend.beam(sl, D, c.subtract(up.scale(h)), c.add(up.scale(h)), 0.3f * scale, 24);
+                }
+            });
+            FxLib.shockRing(sl, D, p.position().add(0, 0.05, 0), 1.8f * scale);
             sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 1f, 0.5f);
             sound(sl, p.position(), SoundEvents.GENERIC_EXPLODE, 0.8f, 0.5f);
+            // the horizon keeps pulling and cutting, then seals with a flash
             for (int k = 1; k <= 3; k++) {
-                AstaFx.later(k * 10, () -> {
+                AstaFx.later(10 + k * 8, () -> {
                     if (!alive(p)) return;
-                    for (Vec3[] ln : lines) {
-                        for (LivingEntity t : enemies(sl, p, new AABB(ln[0], ln[1]).inflate(5))) {
-                            Vec3 onLine = closestOnSegment(ln[0], ln[1], mid(t));
-                            Vec3 pull = onLine.subtract(mid(t));
-                            if (pull.length() > 5) continue;
-                            if (pull.lengthSqr() > 1.0E-4) t.setDeltaMovement(t.getDeltaMovement().add(pull.normalize().scale(0.35)));
-                            t.hurtMarked = true;
-                            AstaFx.damage(p, t, dmg * 0.25f, "event_horizon");
-                        }
+                    for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(5 * scale))) {
+                        Vec3 onLine = closestOnSegment(start, end, mid(t));
+                        Vec3 pull = onLine.subtract(mid(t));
+                        if (pull.length() > 5 * scale) continue;
+                        if (pull.lengthSqr() > 1.0E-4) t.setDeltaMovement(t.getDeltaMovement().add(pull.normalize().scale(0.35)));
+                        t.hurtMarked = true;
+                        AstaFx.damage(p, t, dmg * 0.25f, "event_horizon");
                     }
                     sound(sl, start.add(dir.scale(10)), SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 0.4f);
                 });
             }
             AstaFx.later(40, () -> {
-                for (Vec3[] ln : lines) FxSend.beam(sl, S, ln[0], ln[1], 0.9f, 4);   // it seals with a flash
+                FxSend.beam(sl, S, start.add(dir), end, 0.9f * scale, 4);
                 sound(sl, start, SoundEvents.ENDERMAN_TELEPORT, 0.8f, 0.4f);
             });
         });
@@ -965,6 +986,7 @@ public class DarkFx {
         Long used = LIMITS_USED.get(p.getUUID());
         if (used != null && now - used < 90 * 20) return;
         LIMITS_USED.put(p.getUUID(), now);
+        AstaFx.later(1, () -> { if (p.isAlive()) p.heal(p.getMaxHealth() * 0.25f); });   // and heal a quarter of your health
         MagicData data = MagicData.getPlayerMagicData(p);
         data.getPlayerCooldowns().clearCooldowns();
         data.getPlayerCooldowns().syncToPlayer(p);

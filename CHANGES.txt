@@ -1,7 +1,18 @@
-Arcane Addon v1.17.0 - all changed files since v1.0.0
+Arcane Addon v1.18.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.18.0
+  - Black Meteorite reworked into a combo: rocket at the enemy you aim at; on contact a cutscene plays - an uppercut
+    throws them into the air, you blink around them cutting through them 12 times, then come down from above like a
+    black meteor with one huge slash into a burning crater. They can't die before the final blow; you can't be hurt
+    while it plays. Missing ends it.
+  - Devil Union flight rebuilt: press Jump in the air to take off (no holding), steer by looking with smooth turns,
+    hold Jump to beat your wings and climb, Sneak to drop. Speed is kept properly (dive to speed up).
+  - Event Horizon: a colossal wave of darkness - a towering black-flame front with giant crescents inside, rolling
+    55 blocks and widening as it goes, leaving the horizon open behind it. Mana Zone: 1.7x bigger, reaches 90 blocks.
+  - Dark Grimoire passive "Surpass Your Limits" now also heals 25% of your health.
 
 NEW IN 1.17.0
   - NEW Devil Union move: Black Meteorite (takes Ki Sense's slot while the union lasts). A cutscene: letterbox bars and

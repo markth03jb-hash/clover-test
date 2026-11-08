@@ -12,20 +12,25 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 /**
- * Devil Union wings: elytra-style flight without an elytra.
- *  - In the air, HOLD JUMP to spread the wings and glide where you look. Diving builds speed, pulling up bleeds it.
- *  - Each new PRESS of jump while gliding is a wing beat: a boost up and forward (every half second), so you can keep
- *    your height for as long as you like.
- *  - Let go of jump to drop; there is no fall damage while the union lasts (server side).
- * Runs on your own client (movement is client-side), so it is smooth. Between wing beats you always sink a little,
- * which keeps the server's anti-flight check happy.
+ * Devil Union wings - smooth flight, no elytra needed:
+ *  - In the air, PRESS JUMP once to spread the wings (with a push to get going). You keep flying - no need to hold it.
+ *  - Steer by looking. Your speed eases toward where you look, so turns are smooth arcs instead of snaps.
+ *    Diving builds speed, climbing trades it away, level flight holds it.
+ *  - HOLD JUMP to beat your wings: steady thrust forward and up (climb as long as you like).
+ *  - SNEAK to fold the wings and drop. Landing or touching water also folds them. No fall damage in the union.
+ * Runs on your own client (movement is client-side), so it is smooth even on a server.
  */
 @EventBusSubscriber(modid = "arcane_addon", value = {Dist.CLIENT})
 public final class DevilFlight {
     private DevilFlight() {}
 
-    private static boolean gliding, wasJump;
-    private static int flapCooldown, rising;
+    private static boolean flying, wasJump;
+    private static int flyTicks, beatSound;
+    /** Our own flight state - the game's air drag and gravity would otherwise eat the speed every tick. */
+    private static double flySpeed;
+    private static Vec3 flyDir = new Vec3(0, 0, 1);
+
+    public static boolean flying() { return flying; }
 
     @SubscribeEvent
     public static void onTick(TickEvent.ClientTickEvent e) {
@@ -33,37 +38,47 @@ public final class DevilFlight {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer p = mc.player;
         if (p == null || mc.level == null || mc.isPaused()) return;
-        if (flapCooldown > 0) flapCooldown--;
-        if (rising > 0) rising--;
         boolean jump = mc.options.keyJump.isDown();
-        boolean canFly = FxRenderer.inDevilForm(p.getId(), mc.level.getGameTime()) && !Cutscene.running()
-                && !p.onGround() && !p.isInWater() && !p.isInLava() && !p.isPassenger() && !p.getAbilities().flying && !p.isFallFlying();
-        if (!canFly || !jump) {
-            gliding = false;
+        boolean union = FxRenderer.inDevilForm(p.getId(), mc.level.getGameTime()) && !Cutscene.running();
+        boolean airborne = !p.onGround() && !p.isInWater() && !p.isInLava() && !p.isPassenger() && !p.getAbilities().flying && !p.isFallFlying();
+        if (!union || !airborne || p.isShiftKeyDown()) {
+            if (flying && p.isShiftKeyDown()) mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.ARMOR_EQUIP_ELYTRA, SoundSource.PLAYERS, 0.6F, 0.7F, false);
+            flying = false;
             wasJump = jump;
             return;
         }
         Vec3 look = p.getLookAngle();
         Vec3 v = p.getDeltaMovement();
-        double speed = v.length();
-        if (!gliding) {                                   // spreading the wings gives a small push to get going
-            speed = Math.max(speed, 0.85);
-            mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.PLAYERS, 0.6F, 1.3F, false);
+        if (!flying) {
+            if (!(jump && !wasJump)) { wasJump = jump; return; }   // a fresh jump press in the air takes off
+            flying = true;
+            flyTicks = 0;
+            Vec3 push = v.add(look.scale(0.6)).add(0.0, 0.45, 0.0);
+            flySpeed = Math.max(0.8, push.length());
+            flyDir = push.normalize();
+            mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.PLAYERS, 0.9F, 1.1F, false);
         }
-        gliding = true;
-        speed += -look.y * 0.06 - 0.004;                  // diving gains speed, climbing loses it
-        speed = Mth.clamp(speed, 0.55, 2.2);
-        Vec3 dir = v.lengthSqr() > 1.0E-4 ? v.normalize().scale(0.82).add(look.scale(0.18)).normalize() : look;
+        flyTicks++;
+        if (p.horizontalCollision) flySpeed *= 0.5;      // bumping into a wall slows you right down
+        double speed = flySpeed;
+        speed += -look.y * 0.045;                        // dive to gain speed, climb to spend it
+        if (jump) speed += 0.035;                        // wing beats push you along
+        speed -= 0.006;                                  // a little drag
+        speed = Mth.clamp(speed, 0.45, 2.0);
+        flySpeed = speed;
+        // ease the flight direction toward where you look: smooth turns
+        Vec3 dir = flyDir.add(look.subtract(flyDir).scale(0.12)).normalize();
+        flyDir = dir;
         Vec3 nv = dir.scale(speed);
-        if (jump && !wasJump && flapCooldown <= 0) {      // a wing beat
-            nv = nv.add(look.scale(0.35)).add(0.0, 0.7, 0.0);
-            flapCooldown = 10;
-            rising = 5;
-            mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.PLAYERS, 0.9F, 0.9F, false);
-        }
-        if (rising <= 0) nv = new Vec3(nv.x, Math.min(nv.y, -0.05), nv.z);   // between beats you always sink a little
+        if (jump) nv = nv.add(0.0, 0.05, 0.0);           // beating wings give lift
+        else nv = nv.add(0.0, -0.035, 0.0);              // gliding sinks gently
+        // a moment of sinking every 3 s, so servers that don't allow flight never mistake this for flying
+        if (flyTicks % 60 == 0) nv = new Vec3(nv.x, Math.min(nv.y, -0.06), nv.z);
         p.setDeltaMovement(nv);
         p.fallDistance = 0.0F;
+        if (jump && ++beatSound % 12 == 0) {
+            mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.PLAYERS, 0.5F, 1.2F, false);
+        }
         wasJump = jump;
     }
 }
