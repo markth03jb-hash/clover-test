@@ -1,7 +1,19 @@
-Arcane Addon v1.21.0 - all changed files since v1.0.0
+Arcane Addon v1.22.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.22.0
+- Dark Grimoire: every move has its own animation, timed to its effect
+  - Black Blade: raise the blade high while darkness climbs you; the coat settles at the peak
+  - Avidya Slash: low crouch, then the rising draw-cut fires as the blade comes up
+  - Death Thrust: draw back, hold, then the spike of darkness leaves with the lunge
+  - Black Moon, Black Hole (throw), Mana Zone (arms spread), Ki Read (guard stance)
+  - darkness is drawn into your sword hand during each wind-up
+- Removed Dark Cloaked Avidya Wild Slash Raijin
+- New: Black Cocoon - a solid sphere of darkness swallows every hit and spell for 4 s,
+  carries you (no falling, 60% faster), then bursts and cuts everything within 4 blocks.
+  Mana Zone: lasts 6 s and the burst cuts every enemy in the zone.
 
 NEW IN 1.21.0
   - Black Meteorite: much easier to land - the dash now checks the whole path it covered each tick (no more passing

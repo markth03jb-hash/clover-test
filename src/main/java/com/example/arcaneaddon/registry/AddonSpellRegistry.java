@@ -81,15 +81,15 @@ public class AddonSpellRegistry {
     // ------------------------------------------------------------------ Dark Grimoire (Yami Sukehiro's Dark Magic)
     // katana = needs the Dark Katana in the main hand.  animation = the player pose played when it's cast.
     //                                                                                   id                          cd mana power katana  animation
-    public static final RegistryObject<AbstractSpell> BLACK_BLADE = registerSpell(new DarkSpell("black_blade", 30, 40, 0, true, DarkSpell.anim("irons_spellbooks:sword_deflect_1"), DarkFx::blackBlade));
+    public static final RegistryObject<AbstractSpell> BLACK_BLADE = registerSpell(new DarkSpell("black_blade", 30, 40, 0, true, DarkSpell.anim("arcane_addon:dark_black_blade"), DarkFx::blackBlade));
     public static final RegistryObject<AbstractSpell> DIMENSION_SLASH = registerSpell(new DarkSpell("dimension_slash", 12, 80, 26, true, DarkSpell.anim("arcane_addon:dark_dimension_slash"), DarkFx::dimensionSlash));
-    public static final RegistryObject<AbstractSpell> AVIDYA_SLASH = registerSpell(new DarkSpell("avidya_slash", 8, 50, 18, true, DarkSpell.anim("irons_spellbooks:katana_upslash"), DarkFx::avidyaSlash));
-    public static final RegistryObject<AbstractSpell> WILD_SLASH = registerSpell(new DarkSpell("wild_slash", 16, 90, 12, true, DarkSpell.anim("arcane_addon:dark_raijin"), DarkFx::wildSlash));
-    public static final RegistryObject<AbstractSpell> DEATH_THRUST = registerSpell(new DarkSpell("death_thrust", 10, 60, 22, true, DarkSpell.anim("irons_spellbooks:simple_sword_lunge_stab"), DarkFx::deathThrust));
-    public static final RegistryObject<AbstractSpell> BLACK_MOON = registerSpell(new DarkSpell("black_moon", 20, 70, 16, false, DarkSpell.anim("irons_spellbooks:instant_projectile"), DarkFx::blackMoon));
-    public static final RegistryObject<AbstractSpell> BLACK_HOLE = registerSpell(new DarkSpell("black_hole", 24, 100, 10, false, DarkSpell.anim("irons_spellbooks:cast_t_pose"), DarkFx::blackHole));
-    public static final RegistryObject<AbstractSpell> MANA_ZONE_DIMENSION_SLASH = registerSpell(new DarkSpell("mana_zone_dimension_slash", 45, 150, 10, false, DarkSpell.anim("irons_spellbooks:cross_arms"), DarkFx::manaZone));
-    public static final RegistryObject<AbstractSpell> KI_FORESIGHT = registerSpell(new DarkSpell("ki_foresight", 18, 30, 0, false, SpellAnimations.SELF_CAST_ANIMATION, DarkFx::foresight));
+    public static final RegistryObject<AbstractSpell> AVIDYA_SLASH = registerSpell(new DarkSpell("avidya_slash", 8, 50, 18, true, DarkSpell.anim("arcane_addon:dark_avidya"), DarkFx::avidyaSlash));
+    public static final RegistryObject<AbstractSpell> BLACK_COCOON = registerSpell(new DarkSpell("black_cocoon", 20, 80, 14, false, DarkSpell.anim("arcane_addon:dark_black_cocoon"), DarkFx::blackCocoon));
+    public static final RegistryObject<AbstractSpell> DEATH_THRUST = registerSpell(new DarkSpell("death_thrust", 10, 60, 22, true, DarkSpell.anim("arcane_addon:dark_death_thrust"), DarkFx::deathThrust));
+    public static final RegistryObject<AbstractSpell> BLACK_MOON = registerSpell(new DarkSpell("black_moon", 20, 70, 16, false, DarkSpell.anim("arcane_addon:dark_black_moon"), DarkFx::blackMoon));
+    public static final RegistryObject<AbstractSpell> BLACK_HOLE = registerSpell(new DarkSpell("black_hole", 24, 100, 10, false, DarkSpell.anim("arcane_addon:dark_black_hole"), DarkFx::blackHole));
+    public static final RegistryObject<AbstractSpell> MANA_ZONE_DIMENSION_SLASH = registerSpell(new DarkSpell("mana_zone_dimension_slash", 45, 150, 10, false, DarkSpell.anim("arcane_addon:dark_mana_zone"), DarkFx::manaZone));
+    public static final RegistryObject<AbstractSpell> KI_FORESIGHT = registerSpell(new DarkSpell("ki_foresight", 18, 30, 0, false, DarkSpell.anim("arcane_addon:dark_ki_read"), DarkFx::foresight));
     public static final RegistryObject<AbstractSpell> EVENT_HORIZON = registerSpell(new DarkSpell("event_horizon", 90, 300, 60, true, DarkSpell.anim("arcane_addon:dark_event_horizon"), DarkFx::eventHorizon));
 
     // ------------------------------------------------------------------ Steel Grimoire (Klaus Lunettes' Steel Magic)
@@ -110,7 +110,7 @@ public class AddonSpellRegistry {
 
     /** The ten Dark Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> DARK_SPELLS = List.of(
-            BLACK_BLADE, DIMENSION_SLASH, AVIDYA_SLASH, WILD_SLASH, DEATH_THRUST,
+            BLACK_BLADE, DIMENSION_SLASH, AVIDYA_SLASH, BLACK_COCOON, DEATH_THRUST,
             BLACK_MOON, BLACK_HOLE, MANA_ZONE_DIMENSION_SLASH, KI_FORESIGHT, EVENT_HORIZON);
 
     private static RegistryObject<AbstractSpell> registerSpell(AbstractSpell spell) {

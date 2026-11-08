@@ -46,7 +46,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *  1 Dark Cloaked Black Blade        - coat your blade in darkness: heavier melee hits that devour the target's mana
  *  2 Dark Cloaked Dimension Slash    - a cut through space itself: instant, 40 blocks, passes through walls
  *  3 Dark Cloaked Avidya Slash Raijin - a ki-guided slash that bends toward the enemy you're looking at
- *  4 Dark Cloaked Avidya Wild Slash   - a ki-guided slash for every enemy around you
+ *  4 Black Cocoon                    - a sphere of darkness that swallows every blow and carries you, then bursts
  *  5 Dark Cloaked Death Thrust       - a piercing thrust of darkness straight ahead
  *  6 Black Moon                      - a moon of darkness that swallows enemy spells, then hurls them back
  *  7 Black Hole                      - a hole of darkness that drags enemies in and crushes them
@@ -163,6 +163,22 @@ public class DarkFx {
         com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
+    /** Anticipation: thin wisps of darkness drawn into your sword hand while the animation winds up. */
+    private static void windup(ServerPlayer p, int ticks, float size) {
+        ServerLevel sl = p.serverLevel();
+        for (int k = 0; k < ticks; k += 2) {
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                Vec3 h = handPos(p);
+                double a = kk * 2.3 + p.getYRot() * 0.017;
+                Vec3 from = h.add(Math.cos(a) * 1.4 * size, 0.5 - kk * 0.12, Math.sin(a) * 1.4 * size);
+                FxSend.trail(sl, D, from, from.add(h.subtract(from).scale(0.75)), 0.09f * size, 4);
+            });
+        }
+        sound(sl, p.position(), SoundEvents.SOUL_ESCAPE, 0.5f, 0.8f);
+    }
+
     private static Vec3 handPos(ServerPlayer p) {
         double yr = Math.toRadians(p.getYRot());
         double lx = Math.cos(yr), lz = Math.sin(yr), fx = -Math.sin(yr), fz = Math.cos(yr);
@@ -180,13 +196,13 @@ public class DarkFx {
         sendAura(p, 20 * 20);
         for (int k = 0; k < 6; k++) {
             final int kk = k;
-            AstaFx.later(k, () -> {
+            AstaFx.later(k * 2, () -> {
                 if (alive(p)) FxSend.ring(sl, D, p.position().add(0, 0.1 + kk * 0.36, 0), 1.0f - kk * 0.1f, 0.45f, 0.22f, 8);
             });
         }
-        AstaFx.later(6, () -> {
+        AstaFx.later(10, () -> {   // the blade raised high: the coat settles over it
             if (!alive(p)) return;
-            Vec3 h = handPos(p), d = p.getLookAngle(), rt = rightOf(d);
+            Vec3 h = handPos(p).add(0, 0.6, 0), d = p.getLookAngle(), rt = rightOf(d);
             FxLib.flash(sl, D, h, 0.8f);
             FxSend.wall(sl, D, h, rt, rt.cross(d).normalize(), 0.3f, 1.8f, -180, 180, 0.08f, 7, 0, 0);
             FxSend.beam(sl, S, h, h.add(d.scale(0.3)).add(0, 1.2, 0), 0.06f, 4);   // one glint along the edge as the coat settles
@@ -303,12 +319,20 @@ public class DarkFx {
         sound(sl, p.position(), SoundEvents.ENDERMAN_TELEPORT, 0.7f, 0.4f);
     }
 
-    // ================================================================== 3 + 4. Avidya Slash Raijin / Wild Slash (ki-guided)
+    // ================================================================== 3. Avidya Slash Raijin (ki-guided)
     /**
      * A ki-guided crescent that bends toward the enemy you look at.
      * Mana Zone: Raijin - three crescents tear out of the zone's edge around the target and converge on it.
      */
+    /** Ticks from the cast to the upward cut in the dark_avidya animation (low crouch, then the rising draw). */
+    private static final int AVIDYA_RELEASE = 5;
+
     public static void avidyaSlash(ServerPlayer p, float power) {
+        windup(p, AVIDYA_RELEASE, 0.9f);
+        AstaFx.later(AVIDYA_RELEASE, () -> { if (alive(p)) avidyaRelease(p, power); });
+    }
+
+    private static void avidyaRelease(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         Vec3 eye = p.getEyePosition(), look = p.getLookAngle();
         LivingEntity target = null;
@@ -346,110 +370,119 @@ public class DarkFx {
 
     private static boolean t0in(ServerPlayer p, LivingEntity t) { return t.distanceTo(p) <= ZONE_R; }
 
-    /**
-     * Six to eight crescents leave in every direction and bend onto everyone around you.
-     * Mana Zone: a crescent tears out of the zone's edge for EVERY enemy inside it (up to 16).
-     */
-    /** Ticks from the cast to the spin cut in the dark_raijin animation (wind back, then the spin). */
-    private static final int RAIJIN_RELEASE = 5;
+    // ================================================================== 4. Black Cocoon
+    /** Ticks for the shell to close around you (the dark_black_cocoon animation crosses the arms over this time). */
+    private static final int COCOON_CLOSE = 8;
+    private static final float COCOON_R = 1.6f;
+    private static final java.util.UUID COCOON_SPEED_ID = java.util.UUID.fromString("6b1c3a52-9d0e-4f7e-a1c4-2f3b8e7d9c10");
+    private static final Map<UUID, Cocoon> COCOON = new HashMap<>();
+    private static final class Cocoon { long start, until; float power; boolean zone; float absorbed; }
 
-    /** Wind back while black lightning crackles around you, then everything leaves at once with the spin cut. */
-    public static void wildSlash(ServerPlayer p, float power) {
+    /**
+     * Yami's Black Cocoon: darkness wraps you in a solid black sphere. Nothing gets through it for 4 s - every hit and
+     * every spell is swallowed - and you can drift inside it, faster, without falling (it carries you, like the cocoon
+     * he travels in). When it opens it bursts: everything within 4 blocks is cut and thrown back, harder for every blow it
+     * swallowed. Mana Zone: it lasts 6 s and when it opens every enemy in the zone is cut.
+     */
+    public static void blackCocoon(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        for (int k = 0; k < RAIJIN_RELEASE; k++) {
+        long now = sl.getGameTime();
+        Cocoon c = new Cocoon();
+        c.zone = inZone(p);
+        c.start = now;
+        c.until = now + COCOON_CLOSE + (c.zone ? 120 : 80);
+        c.power = power;
+        COCOON.put(p.getUUID(), c);
+        sendCocoon(p, (int) (c.until - now));
+        // darkness pulled in from around you as the shell closes
+        for (int k = 0; k < 4; k++) {
             final int kk = k;
-            AstaFx.later(Math.max(1, k), () -> {
+            AstaFx.later(k * 2, () -> {
                 if (!alive(p)) return;
-                ThreadLocalRandom r = ThreadLocalRandom.current();
-                Vec3 c = p.position().add(0, 1.0, 0);
-                for (int j = 0; j < 2; j++) {   // short jagged sparks of dark lightning around the body
-                    Vec3 a0 = c.add(r.nextDouble(-0.9, 0.9), r.nextDouble(-0.8, 0.9), r.nextDouble(-0.9, 0.9));
-                    Vec3 a1 = a0.add(r.nextDouble(-0.5, 0.5), r.nextDouble(-0.5, 0.5), r.nextDouble(-0.5, 0.5));
-                    FxSend.beam(sl, D, a0, a1, 0.1f, 3);
-                    FxSend.beam(sl, S, a0, a1, 0.02f, 2);
-                }
-                FxSend.ring(sl, D, p.position().add(0, 0.05, 0), 2.2f - kk * 0.35f, 0.4f, 0.06f, 3);
+                FxSend.ring(sl, D, p.position().add(0, 0.05, 0), 3.2f - kk * 0.6f, 0.35f, 0.1f, 5);
+                double a = kk * 1.9;
+                Vec3 ctr = p.position().add(0, 1.0, 0);
+                Vec3 from = ctr.add(Math.cos(a) * 3, 0.8 - kk * 0.5, Math.sin(a) * 3);
+                FxSend.trail(sl, D, from, from.add(ctr.subtract(from).scale(0.7)), 0.12f, 5);
             });
         }
-        sound(sl, p.position(), SoundEvents.LIGHTNING_BOLT_IMPACT, 0.25f, 1.8f);
-        AstaFx.later(RAIJIN_RELEASE, () -> { if (alive(p)) wildSlashRelease(p, power); });
+        AstaFx.later(COCOON_CLOSE, () -> {
+            if (!alive(p)) return;
+            sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 0.9f, 0.4f);
+            sound(sl, p.position(), SoundEvents.SCULK_SHRIEKER_SHRIEK, 0.25f, 0.5f);
+        });
+        if (c.zone) zoneMsg(p, "black_cocoon");
+        sound(sl, p.position(), SoundEvents.SOUL_ESCAPE, 1f, 0.4f);
     }
 
-    private static void wildSlashRelease(ServerPlayer p, float power) {
-        ServerLevel sl = p.serverLevel();
-        // three spinning arcs around you as you spin
-        for (int k = 0; k < 3; k++) {
-            final int kk = k;
-            AstaFx.later(k, () -> {
-                if (alive(p)) FxSend.wall(sl, D, p.position().add(0, 0.6 + kk * 0.55, 0), new Vec3(Math.cos(kk * 2.1), 0, Math.sin(kk * 2.1)), new Vec3(-Math.sin(kk * 2.1), 0, Math.cos(kk * 2.1)),
-                        2.4f, 2.6f, 0, 330, 0.18f, 7, 4, 0);
-            });
+    private static void sendCocoon(ServerPlayer p, int life) {
+        com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
+        pkt.shape = 15; pkt.id = p.getId(); pkt.palette = (byte) D; pkt.life = life; pkt.r = COCOON_R; pkt.sweep = COCOON_CLOSE;
+        com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+    }
+
+    private static void cocoonSpeed(ServerPlayer p, boolean on) {
+        var att = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        if (att == null) return;
+        att.removeModifier(COCOON_SPEED_ID);
+        if (on) att.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(COCOON_SPEED_ID, "black_cocoon",
+                0.6, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL));
+    }
+
+    private static void cocoonTick(ServerPlayer p, ServerLevel sl, Cocoon c, long now) {
+        boolean closed = now >= c.start + COCOON_CLOSE;
+        if (closed) {
+            cocoonSpeed(p, true);
+            Vec3 v = p.getDeltaMovement();
+            if (v.y < -0.06) { p.setDeltaMovement(v.x, -0.06, v.z); p.hurtMarked = true; }   // it carries you: no falling
+            p.fallDistance = 0;
+            if (now % 40 == 0) sendCocoon(p, (int) (c.until - now));
+            if (now % 6 == 0) {   // a slow ripple of darkness around its foot
+                Vec3 g = FxLib.ground(sl, p.position(), 3);
+                if (g != null) FxSend.ring(sl, D, g.add(0, 0.04, 0), COCOON_R * 0.8f, COCOON_R * 1.4f, 0.05f, 8);
+            }
         }
-        if (inZone(p)) {
-            zoneMsg(p, "wild_slash");
+    }
+
+    /** The shell bursts open: a sphere of cuts, everything near is thrown back. */
+    private static void cocoonBurst(ServerPlayer p, ServerLevel sl, Cocoon c) {
+        cocoonSpeed(p, false);
+        sendCocoon(p, 0);
+        Vec3 ctr = p.position().add(0, 1.0, 0);
+        float dmg = c.power + c.absorbed * 0.5f;
+        for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(4.5))) {
+            if (t.distanceTo(p) > 4.5) continue;
+            AstaFx.damage(p, t, dmg, "black_cocoon");
+            Vec3 away = t.position().subtract(p.position()).multiply(1, 0, 1);
+            if (away.lengthSqr() > 1.0E-4) t.knockback(1.6, -away.x, -away.z);
+            cutMark(sl, mid(t), rightOf(away.lengthSqr() > 1.0E-4 ? away.normalize() : p.getLookAngle()).add(0, 0.6, 0), 1.2f);
+        }
+        // the shell splits along three great circles and flies apart as crescents
+        for (int k = 0; k < 6; k++) {
+            double a = Math.PI * 2 * k / 6;
+            Vec3 d = new Vec3(Math.cos(a), 0.25, Math.sin(a)).normalize();
+            FxSend.slash(sl, D, ctr.add(d.scale(COCOON_R)), d, new Vec3(0, 1, 0).add(d.scale(-0.25)), 1.2f, 2.6f, 7, 0.55f);
+        }
+        FxSend.wall(sl, D, ctr, new Vec3(1, 0, 0), new Vec3(0, 0, 1), COCOON_R, 5.0f, -180, 180, 0.9f, 8, 0, 0);
+        FxSend.ring(sl, S, ctr, COCOON_R, 5.5f, 0.04f, 7);
+        Vec3 g = FxLib.ground(sl, p.position(), 3);
+        if (g != null) FxLib.shockRing(sl, D, g.add(0, 0.05, 0), 1.3f);
+        if (c.zone) {
             zonePulse(p, sl);
-            List<LivingEntity> zs = zoneEnemies(p);
-            for (int i = 0; i < Math.min(16, zs.size()); i++) {
-                final LivingEntity t = zs.get(i);
-                final double spread = ThreadLocalRandom.current().nextDouble(-0.9, 0.9);
-                AstaFx.later(2 + i, () -> {
-                    if (!alive(p) || !t.isAlive()) return;
-                    Vec3 from = edgeBehind(p, t, spread);
-                    guidedSlash(p, sl, from, mid(t).subtract(from).normalize(), t, power, 0, new HashSet<>());
+            int i = 0;
+            for (LivingEntity t : zoneEnemies(p)) {
+                if (t.distanceTo(p) <= 4.5) continue;
+                final LivingEntity tt = t;
+                AstaFx.later(2 + (i++ % 8), () -> {
+                    if (!tt.isAlive() || !alive(p)) return;
+                    AstaFx.damage(p, tt, c.power * 0.8f, "black_cocoon");
+                    cutMark(sl, mid(tt), new Vec3(0.4, 1, 0.3), 1.3f);
                 });
             }
-            sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.8f);
-            return;
         }
-        // Raijin: the slashes move like black lightning - a jagged bolt of darkness to every enemy whose ki you sense,
-        // all at once, each landing as a cut and a burst of dark shards
-        List<LivingEntity> targets = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(16)));
-        targets.removeIf(t -> t.distanceTo(p) > 16 || !p.hasLineOfSight(t));
-        targets.sort(Comparator.comparingDouble(t -> t.distanceToSqr(p)));
-        ThreadLocalRandom r = ThreadLocalRandom.current();
-        Vec3 from = p.getEyePosition().add(0, -0.4, 0);
-        FxLib.flash(sl, D, from, 1.0f);
-        int n = targets.isEmpty() ? 8 : Math.min(10, targets.size());
-        for (int i = 0; i < n; i++) {
-            final LivingEntity t = targets.isEmpty() ? null : targets.get(i);
-            Vec3 goal;
-            if (t != null) goal = mid(t);
-            else {
-                double ang = Math.PI * 2 * i / n + r.nextDouble(-0.2, 0.2);
-                goal = from.add(Math.cos(ang) * 12, r.nextDouble(-1.0, 2.0), Math.sin(ang) * 12);
-            }
-            // a jagged path: kinks pushed sideways, sharper in the middle
-            Vec3 d = goal.subtract(from);
-            Vec3 sideA = rightOf(d.normalize()), sideB = sideA.cross(d.normalize()).normalize();
-            int K = 6;
-            Vec3[] pts = new Vec3[K + 1];
-            pts[0] = from; pts[K] = goal;
-            for (int k = 1; k < K; k++) {
-                double amp = Math.sin(Math.PI * k / K) * Math.min(1.6, d.length() * 0.12);
-                pts[k] = from.add(d.scale((double) k / K)).add(sideA.scale(r.nextDouble(-amp, amp))).add(sideB.scale(r.nextDouble(-amp, amp) * 0.6));
-            }
-            final int delay = i / 3;
-            for (int k = 1; k <= K; k++) {
-                final Vec3 a = pts[k - 1], b = pts[k];
-                AstaFx.later(delay + (k - 1) / 3, () -> {   // the bolt races out in two ticks
-                    FxSend.trail(sl, D, a, b, 0.34f, 8);
-                    FxSend.trail(sl, S, a, b, 0.05f, 6);
-                });
-            }
-            final Vec3 g = goal, dd = d.normalize();
-            AstaFx.later(delay + 2, () -> {
-                if (!alive(p)) return;
-                if (t != null && t.isAlive()) {
-                    AstaFx.damage(p, t, power, "wild_slash");
-                    cutMark(sl, mid(t), rightOf(dd).add(0, 0.6, 0), 1.4f);
-                }
-                FxLib.spikeBurst(sl, D, g, 0.6f);
-                sound(sl, g, SoundEvents.LIGHTNING_BOLT_IMPACT, 0.35f, 1.4f);
-            });
-        }
-        sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.8f);
-        sound(sl, p.position(), SoundEvents.LIGHTNING_BOLT_THUNDER, 0.3f, 1.6f);
-        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.6f, 1.6f);
+        sound(sl, p.position(), SoundEvents.GLASS_BREAK, 1f, 0.4f);
+        sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.5f);
+        sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 0.3f, 1.2f);
     }
 
     /** One ki-guided slash: a black-flame crescent flying 2.4 blocks a tick, steering toward its target, leaving a dark wake. */
@@ -486,7 +519,15 @@ public class DarkFx {
      * A thrust that drives a solid spike of darkness 12 blocks straight through everything, punching rings of air out.
      * Mana Zone: the thrust comes out of the dark behind the three nearest enemies and runs them through.
      */
+    /** Ticks from the cast to the thrust in the dark_death_thrust animation (draw back, hold, then lunge). */
+    private static final int THRUST_RELEASE = 9;
+
     public static void deathThrust(ServerPlayer p, float power) {
+        windup(p, THRUST_RELEASE, 1.0f);
+        AstaFx.later(THRUST_RELEASE, () -> { if (alive(p)) thrustRelease(p, power); });
+    }
+
+    private static void thrustRelease(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         if (inZone(p)) {
             List<LivingEntity> zs = zoneEnemies(p);
@@ -655,7 +696,15 @@ public class DarkFx {
      * A hole of darkness with spiralling arms that drags enemies in for 3 s, then implodes.
      * Mana Zone: it opens in the middle of the enemies inside the zone, pulls harder from further away, and lasts 4 s.
      */
+    /** Ticks from the cast to the throw in the dark_black_hole animation. */
+    private static final int HOLE_RELEASE = 6;
+
     public static void blackHole(ServerPlayer p, float power) {
+        windup(p, HOLE_RELEASE, 0.7f);
+        AstaFx.later(HOLE_RELEASE, () -> { if (alive(p)) holeRelease(p, power); });
+    }
+
+    private static void holeRelease(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         Vec3 eye = p.getEyePosition(), look = p.getLookAngle();
         Vec3 c;
@@ -985,6 +1034,12 @@ public class DarkFx {
             else if (now % 10 == 0) zoneTick(p, sl, now);
         }
 
+        Cocoon cc = COCOON.get(id);
+        if (cc != null) {
+            if (now >= cc.until) { COCOON.remove(id); cocoonBurst(p, sl, cc); }
+            else cocoonTick(p, sl, cc, now);
+        }
+
         Foresight f = FORESIGHT.get(id);
         if (f != null && (now > f.until || f.charges <= 0)) FORESIGHT.remove(id);
     }
@@ -1020,6 +1075,19 @@ public class DarkFx {
         if (e.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
         ServerLevel sl = p.serverLevel();
         long now = sl.getGameTime();
+
+        Cocoon cc = COCOON.get(p.getUUID());
+        if (cc != null && now >= cc.start + COCOON_CLOSE / 2 && now < cc.until && !e.getSource().is(DamageTypeTags.IS_FALL)) {
+            e.setCanceled(true);   // the shell swallows it
+            cc.absorbed = Math.min(30f, cc.absorbed + e.getAmount());
+            Vec3 src0 = e.getSource().getSourcePosition();
+            Vec3 ctr = p.position().add(0, 1.0, 0);
+            Vec3 hit = src0 == null ? ctr.add(p.getLookAngle().scale(COCOON_R)) : ctr.add(src0.subtract(ctr).normalize().scale(COCOON_R));
+            Vec3 n = hit.subtract(ctr).normalize();
+            FxSend.wall(sl, D, hit, rightOf(n), rightOf(n).cross(n).normalize(), 0.1f, 0.9f, -180, 180, 0.05f, 6, 0, 0);
+            sound(sl, hit, SoundEvents.SCULK_CLICKING, 1f, 0.5f);
+            return;
+        }
 
         Moon m = MOON.get(p.getUUID());
         if (m != null && now < m.until && e.getSource() instanceof SpellDamageSource) {
@@ -1082,11 +1150,11 @@ public class DarkFx {
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {
         UUID id = e.getEntity().getUUID();
-        BLADE.remove(id); MOON.remove(id); ZONE.remove(id); ZONE_POWER.remove(id); FORESIGHT.remove(id); LIMITS_USED.remove(id);
+        BLADE.remove(id); MOON.remove(id); COCOON.remove(id); ZONE.remove(id); ZONE_POWER.remove(id); FORESIGHT.remove(id); LIMITS_USED.remove(id);
     }
 
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent e) {
-        BLADE.clear(); MOON.clear(); ZONE.clear(); ZONE_POWER.clear(); FORESIGHT.clear(); LIMITS_USED.clear();
+        BLADE.clear(); MOON.clear(); COCOON.clear(); ZONE.clear(); ZONE_POWER.clear(); FORESIGHT.clear(); LIMITS_USED.clear();
     }
 }

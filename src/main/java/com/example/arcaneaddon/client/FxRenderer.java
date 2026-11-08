@@ -65,6 +65,8 @@ public class FxRenderer {
    private static final List<FxRenderer.Fx> FX = new ArrayList<>();
    /** Players in Devil Union: entity id -> {start tick, end tick}. Fed by FxPacket shape 6. */
    private static final java.util.Map<Integer, double[]> DEVIL = new java.util.HashMap<>();
+   /** Black Cocoon shells: entity id -> {start, end, radius, close ticks}. Fed by FxPacket shape 15. */
+   private static final java.util.Map<Integer, double[]> COCOON = new java.util.HashMap<>();
    private static final int EMBER = 9;
    private static final List<FxRenderer.BookDraw> BOOKS = new ArrayList<>();
    private static final List<FxRenderer.AuraDraw> AURAS = new ArrayList<>();
@@ -102,6 +104,18 @@ public class FxRenderer {
             } else if (f != null) {
                f[1] = Math.min(f[1], now0);                                                         // start fading out
             }
+         }
+         return;
+      }
+      if (p.shape == 15) {  // Black Cocoon: id = player, life = ticks left (0 = burst now), r = radius, sweep = ticks to close
+         Minecraft mc0 = Minecraft.getInstance();
+         if (mc0.level != null) {
+            double now0 = mc0.level.getGameTime();
+            double[] f = COCOON.get(p.id);
+            if (p.life > 0) {
+               if (f == null || f[1] < now0) COCOON.put(p.id, new double[]{now0, now0 + p.life, p.r, Math.max(1, p.sweep)});
+               else f[1] = now0 + p.life;
+            } else if (f != null) f[1] = Math.min(f[1], now0);
          }
          return;
       }
@@ -243,6 +257,80 @@ public class FxRenderer {
       gquad(m, cam, p0.subtract(c0), p1.subtract(c0), p1.subtract(o0), p0.subtract(o0), rim, a * 0.6F, a * 0.6F, 0.0F, 0.0F);
    }
 
+   /**
+    * Black Cocoon: a solid, shaded sphere of darkness around the entity. Near-black body, a violet fresnel rim that
+    * glows at the silhouette, and three slow bands of light winding over it. It closes in over the first ticks and,
+    * when it bursts, swells and fades in a few ticks. Seen from inside (first person) it is only a faint tint.
+    */
+   private static void cocoon(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, net.minecraft.world.entity.Entity e, float pt, double now, double[] f) {
+      double age = now - f[0];
+      if (age < 0.0) return;
+      float R = (float)f[2];
+      double grow = Mth.clamp(age / f[3], 0.0, 1.0);
+      grow = 1.0 - Math.pow(1.0 - grow, 3.0);
+      float a = 1.0F;
+      double rr = R * grow;
+      if (now > f[1]) {   // bursting
+         double b = (now - f[1]) / 6.0;
+         rr = R * (1.0 + b * 1.6);
+         a = (float)Math.max(0.0, 1.0 - b);
+      }
+      if (a <= 0.01F || rr < 0.05) return;
+      rr *= 1.0 + 0.015 * Math.sin(now * 0.6);   // breathing
+      Vec3 c = e.getPosition(pt).add(0.0, e.getBbHeight() * 0.5, 0.0);
+      boolean inside = cam.distanceTo(c) < rr * 1.02;
+      float bodyA = (inside ? 0.16F : 0.94F) * a, glowA = (inside ? 0.22F : 0.85F) * a;
+      int LAT = 14, LON = 24;
+      Vec3[][] pts = new Vec3[LAT + 1][LON + 1];
+      for (int i = 0; i <= LAT; i++) {
+         double th = Math.PI * i / LAT;
+         for (int j = 0; j <= LON; j++) {
+            double ph = Math.PI * 2 * j / LON;
+            pts[i][j] = new Vec3(Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph));
+         }
+      }
+      float[] body = BODY[1], rim = RIM[1];
+      for (int i = 0; i < LAT; i++) {
+         for (int j = 0; j < LON; j++) {
+            Vec3[] q = {pts[i][j], pts[i][j + 1], pts[i + 1][j + 1], pts[i + 1][j]};
+            Vec3 qc = q[0].add(q[2]).scale(0.5);
+            Vec3 toCam = cam.subtract(c.add(qc.scale(rr)));
+            if (!inside && qc.dot(toCam) < 0.0) continue;   // only the side facing you (keeps the translucent shell clean)
+            for (Vec3 nv : q) {
+               Vec3 w = c.add(nv.scale(rr));
+               Vec3 v = cam.subtract(w).normalize();
+               float fres = (float)Math.pow(1.0 - Math.abs(nv.dot(v)), 3.0);
+               float lit = (float)Math.max(0.0, nv.dot(LIGHT)) * 0.08F;
+               float[] col = {body[0] + rim[0] * fres * 0.5F + lit, body[1] + rim[1] * fres * 0.5F + lit, body[2] + rim[2] * fres * 0.5F + lit};
+               vtx(vc, m, n, cam, w, col, bodyA);
+            }
+            if (gv != null) {
+               for (Vec3 nv : q) {
+                  Vec3 w = c.add(nv.scale(rr * 1.01));
+                  float fres = (float)Math.pow(1.0 - Math.abs(nv.dot(cam.subtract(w).normalize())), 2.5);
+                  gvtx(m, cam, w, rim, fres * glowA * (inside ? 1.0F : 0.9F));
+               }
+            }
+         }
+      }
+      // three slow bands of light winding over the shell
+      for (int b = 0; b < 3; b++) {
+         double tilt = b * Math.PI / 3 + now * 0.012, spin = now * 0.05 * (b % 2 == 0 ? 1 : -1) + b * 2.1;
+         Vec3 ax = new Vec3(Math.cos(tilt), 0.6, Math.sin(tilt)).normalize();
+         Vec3 u0 = ax.cross(new Vec3(0, 1, 0)).normalize(), u1 = ax.cross(u0).normalize();
+         Vec3 prev = null;
+         for (int k = 0; k <= 10; k++) {
+            double t = spin + k * 0.16;
+            Vec3 w = c.add(u0.scale(Math.cos(t) * rr * 1.015).add(u1.scale(Math.sin(t) * rr * 1.015)));
+            if (prev != null) {
+               boolean front = inside || w.subtract(c).dot(cam.subtract(w)) > 0.0;
+               if (front) gline(m, cam, prev, w, 0.05F, 1, glowA * 0.7F * (float)Math.sin(Math.PI * k / 10.0));
+            }
+            prev = w;
+         }
+      }
+   }
+
    private static float[] hot(int pal) {
       float[] r = RIM[pal];
       float w = isFlame(pal) ? 0.3F : 0.55F;   // black-flame palettes keep a red-orange core instead of white
@@ -334,6 +422,13 @@ public class FxRenderer {
                }
             }
             DEVIL.values().removeIf(f -> now > f[1] + 20.0);
+            nearFade = false;
+            for (java.util.Map.Entry<Integer, double[]> ce : COCOON.entrySet()) {
+               net.minecraft.world.entity.Entity ent = mc.level.getEntity(ce.getKey());
+               if (ent != null) cocoon(vc, m, n, cam, ent, pt, now, ce.getValue());
+            }
+            COCOON.values().removeIf(f -> now > f[1] + 6.0);
+            nearFade = true;
 
             for (FxRenderer.AuraDraw a : AURAS) {
                beam(vc, m, n, cam, a.a, a.b, a.width, a.pal, a.alpha * pulse, 0.5);
