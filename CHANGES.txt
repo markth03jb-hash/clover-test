@@ -1,7 +1,15 @@
-Arcane Addon v1.23.0 - all changed files since v1.0.0
+Arcane Addon v1.24.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.24.0
+- Mana Zone looks like the anime: dark mana pours out of you in a rolling wave of black smoke
+  with a violet shock front, the ground of the whole zone sinks into a sea of darkness that
+  swirls slowly around you (it lies on the terrain, never floating over drops), darkness drifts
+  low over the ground and curls up at the edge, and a faint dome of darkness arches over it.
+  When it ends the darkness rolls back into you. Replaces the old rings and rune circle.
+  (Visual only - range, timing and every Mana Zone variant are unchanged.)
 
 NEW IN 1.23.0
 - Yami's moves are now real darkness: every Dark Grimoire effect sheds soft, billowing black

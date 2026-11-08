@@ -69,6 +69,31 @@ public class FxRenderer {
    private static final java.util.Map<Integer, double[]> DEVIL = new java.util.HashMap<>();
    /** Black Cocoon shells: entity id -> {start, end, radius, close ticks}. Fed by FxPacket shape 15. */
    private static final java.util.Map<Integer, double[]> COCOON = new java.util.HashMap<>();
+   /** Mana Zones: entity id -> {start, end, radius, ground y (NaN = unknown)}. Fed by FxPacket shape 17. */
+   private static final java.util.Map<Integer, double[]> ZONES = new java.util.HashMap<>();
+   private static final double ZONE_OPEN = 12.0, ZONE_CLOSE = 10.0;
+   private static final int ZR = 10, ZS = 48;
+   /** Terrain heights under each zone's sea: id -> {cx, cz, R, gy, heights...} so it lies on the ground, not over drops. */
+   private static final java.util.Map<Integer, double[]> ZONE_H = new java.util.HashMap<>();
+
+   private static double[] zoneHeights(net.minecraft.world.entity.Entity e, double cx, double gy, double cz, double R) {
+      double[] h = ZONE_H.get(e.getId());
+      if (h != null && Math.abs(h[0] - cx) < 0.35 && Math.abs(h[1] - cz) < 0.35 && Math.abs(h[2] - R) < 0.35 && Math.abs(h[3] - gy) < 0.2) return h;
+      h = new double[4 + (ZR + 1) * ZS];
+      h[0] = cx; h[1] = cz; h[2] = R; h[3] = gy;
+      for (int i = 0; i <= ZR; i++) {
+         double rr = R * i / ZR;
+         for (int j = 0; j < ZS; j++) {
+            double a = Math.PI * 2 * j / ZS;
+            Vec3 top = new Vec3(cx + Math.cos(a) * rr, gy + 2.5, cz + Math.sin(a) * rr);
+            net.minecraft.world.phys.BlockHitResult hit = e.level().clip(new net.minecraft.world.level.ClipContext(top, top.subtract(0.0, 6.0, 0.0),
+                  net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.ANY, e));
+            h[4 + i * ZS + j] = hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? Double.NaN : hit.getLocation().y + 0.04;
+         }
+      }
+      ZONE_H.put(e.getId(), h);
+      return h;
+   }
    private static final int EMBER = 9;
    private static final List<FxRenderer.BookDraw> BOOKS = new ArrayList<>();
    private static final List<FxRenderer.AuraDraw> AURAS = new ArrayList<>();
@@ -106,6 +131,18 @@ public class FxRenderer {
             } else if (f != null) {
                f[1] = Math.min(f[1], now0);                                                         // start fading out
             }
+         }
+         return;
+      }
+      if (p.shape == 17) {  // Mana Zone field: id = player, life = ticks left (0 = collapse), r = radius
+         Minecraft mc0 = Minecraft.getInstance();
+         if (mc0.level != null) {
+            double now0 = mc0.level.getGameTime();
+            double[] f = ZONES.get(p.id);
+            if (p.life > 0) {
+               if (f == null || f[1] < now0) ZONES.put(p.id, new double[]{now0, now0 + p.life, p.r, Double.NaN});
+               else f[1] = now0 + p.life;
+            } else if (f != null) f[1] = Math.min(f[1], now0);
          }
          return;
       }
@@ -198,6 +235,12 @@ public class FxRenderer {
             double now = (double)mc.level.getGameTime();
             Iterator<FxRenderer.Fx> it = FX.iterator();
             DarkSmoke.tick();
+            for (java.util.Map.Entry<Integer, double[]> ze : ZONES.entrySet()) {
+               net.minecraft.world.entity.Entity ent = mc.level.getEntity(ze.getKey());
+               if (ent != null) zoneTick(mc, ent, ze.getValue(), now);
+            }
+            ZONES.values().removeIf(zf -> now > zf[1] + ZONE_CLOSE + 2.0);
+            ZONE_H.keySet().removeIf(id -> !ZONES.containsKey(id));
             for (java.util.Map.Entry<Integer, double[]> ce : COCOON.entrySet()) {   // darkness seeping off the cocoon
                double[] cf = ce.getValue();
                net.minecraft.world.entity.Entity ent = mc.level.getEntity(ce.getKey());
@@ -427,6 +470,155 @@ public class FxRenderer {
       }
    }
 
+   // ------------------------------------------------------------------ Mana Zone (Yami)
+   /** How far the zone has spread: grows out over ZONE_OPEN ticks, folds back in over ZONE_CLOSE after it ends. */
+   private static double zoneReach(double[] f, double now) {
+      double age = now - f[0];
+      if (age < 0.0) return 0.0;
+      double open = Mth.clamp(age / ZONE_OPEN, 0.0, 1.0);
+      open = 1.0 - Math.pow(1.0 - open, 3.0);
+      if (now > f[1]) open *= 1.0 - Mth.clamp((now - f[1]) / ZONE_CLOSE, 0.0, 1.0);
+      return f[2] * open;
+   }
+
+   /** Ground under the zone's owner: their feet when standing, else the first block below (kept while airborne). */
+   private static double zoneGround(net.minecraft.world.entity.Entity e, double[] f) {
+      if (e.onGround() || Double.isNaN(f[3])) {
+         Vec3 a = e.position().add(0.0, 0.2, 0.0);
+         net.minecraft.world.phys.BlockHitResult h = e.level().clip(new net.minecraft.world.level.ClipContext(a, a.subtract(0.0, 8.0, 0.0),
+               net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, e));
+         f[3] = h.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? e.getY() : h.getLocation().y;
+      }
+      return f[3];
+   }
+
+   /**
+    * Smoke for the zone, every tick: when it opens, a wall of black smoke rolls outward with the front; while it is up,
+    * darkness drifts low over the ground swirling around you, curls up along the edge, and violet motes rise through it.
+    */
+   private static void zoneTick(Minecraft mc, net.minecraft.world.entity.Entity e, double[] f, double now) {
+      java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+      double R = zoneReach(f, now), age = now - f[0];
+      if (R < 0.3) return;
+      double gy = zoneGround(e, f);
+      Vec3 c = new Vec3(e.getX(), gy, e.getZ());
+      boolean closing = now > f[1];
+      if (age < ZONE_OPEN || closing) {   // the front: a rolling wave of darkness
+         for (int k = 0; k < 10; k++) {
+            double a = r.nextDouble(Math.PI * 2);
+            Vec3 dir = new Vec3(Math.cos(a), 0.0, Math.sin(a));
+            Vec3 at = c.add(dir.scale(R)).add(0.0, r.nextDouble(0.2, 1.6), 0.0);
+            Vec3 v = closing ? dir.scale(-0.25) : dir.scale(0.22);
+            DarkSmoke.smoke(at, v.add(0, 0.02, 0), (float)r.nextDouble(0.9, 1.6), r.nextInt(14, 24));
+         }
+         if (closing) return;
+      }
+      // low darkness flowing over the ground, turning slowly around you
+      for (int k = 0; k < 3; k++) {
+         double a = r.nextDouble(Math.PI * 2), d = Math.sqrt(r.nextDouble(0.08, 1.0)) * R;
+         Vec3 at = c.add(Math.cos(a) * d, r.nextDouble(0.1, 0.5), Math.sin(a) * d);
+         Vec3 tan = new Vec3(-Math.sin(a), 0.0, Math.cos(a)).scale(0.05);
+         DarkSmoke.smoke(at, tan.add(0, 0.006, 0), (float)r.nextDouble(0.7, 1.3), r.nextInt(26, 40));
+      }
+      // darkness curling up the edge of the zone
+      for (int k = 0; k < 2; k++) {
+         double a = r.nextDouble(Math.PI * 2);
+         Vec3 at = c.add(Math.cos(a) * R, r.nextDouble(0.1, 1.2), Math.sin(a) * R);
+         DarkSmoke.smoke(at, new Vec3(-Math.cos(a) * 0.01, 0.05, -Math.sin(a) * 0.01), (float)r.nextDouble(0.6, 1.1), r.nextInt(22, 34));
+      }
+      if (r.nextInt(2) == 0) {
+         double a = r.nextDouble(Math.PI * 2), d = r.nextDouble(R);
+         DarkSmoke.mote(c.add(Math.cos(a) * d, r.nextDouble(0.1, 1.0), Math.sin(a) * d), new Vec3(0, r.nextDouble(0.02, 0.05), 0), 0.08F, r.nextInt(30, 50));
+      }
+   }
+
+   /**
+    * Yami's Mana Zone: the ground under the whole zone is drowned in dark mana (a near-black sea, rippling and turning
+    * in slow swirls, thinning toward the edge), a faint dome of darkness arches over it with a violet sheen only at its
+    * silhouette, and when it opens a violet shock front runs out from you to the edge.
+    */
+   private static void zoneField(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, net.minecraft.world.entity.Entity e, float pt, double now, double[] f) {
+      double R = zoneReach(f, now);
+      if (R < 0.3) return;
+      double age = now - f[0];
+      Vec3 ep = e.getPosition(pt);
+      double gy = zoneGround(e, f);
+      Vec3 c = new Vec3(ep.x, gy + 0.04, ep.z);
+      float[] rim = RIM[DARKNESS];
+      float[] sea = {0.012F, 0.0F, 0.03F};
+      int RINGS = ZR, SEG = ZS;
+      double[] hs = zoneHeights(e, ep.x, gy, ep.z, R);
+      // the sea of dark mana on the ground, lying on the terrain (nothing drawn where there's no ground)
+      for (int i = 0; i < RINGS; i++) {
+         double r0 = R * i / RINGS, r1 = R * (i + 1) / RINGS;
+         for (int j = 0; j < SEG; j++) {
+            int j1 = (j + 1) % SEG;
+            double y00 = hs[4 + i * SEG + j], y01 = hs[4 + i * SEG + j1], y11 = hs[4 + (i + 1) * SEG + j1], y10 = hs[4 + (i + 1) * SEG + j];
+            if (Double.isNaN(y00) || Double.isNaN(y01) || Double.isNaN(y11) || Double.isNaN(y10)) continue;
+            if (Math.max(Math.max(y00, y01), Math.max(y11, y10)) - Math.min(Math.min(y00, y01), Math.min(y11, y10)) > 1.6) continue;   // no sheets over cliffs
+            double a0 = Math.PI * 2 * j / SEG, a1 = Math.PI * 2 * (j + 1) / SEG;
+            Vec3 p00 = new Vec3(c.x + Math.cos(a0) * r0, y00, c.z + Math.sin(a0) * r0), p01 = new Vec3(c.x + Math.cos(a1) * r0, y01, c.z + Math.sin(a1) * r0);
+            Vec3 p11 = new Vec3(c.x + Math.cos(a1) * r1, y11, c.z + Math.sin(a1) * r1), p10 = new Vec3(c.x + Math.cos(a0) * r1, y10, c.z + Math.sin(a0) * r1);
+            vtx(vc, m, n, cam, p00, sea, seaA(r0 / R, a0, now));
+            vtx(vc, m, n, cam, p01, sea, seaA(r0 / R, a1, now));
+            vtx(vc, m, n, cam, p11, sea, seaA(r1 / R, a1, now));
+            vtx(vc, m, n, cam, p10, sea, seaA(r1 / R, a0, now));
+            if (gv != null) {   // faint violet veins in the swirl
+               gquad(m, cam, p00.add(0, 0.01, 0), p01.add(0, 0.01, 0), p11.add(0, 0.01, 0), p10.add(0, 0.01, 0), rim,
+                  vein(r0 / R, a0, now), vein(r0 / R, a1, now), vein(r1 / R, a1, now), vein(r1 / R, a0, now));
+            }
+            if (i == RINGS - 1) {   // the edge: a soft violet band glowing on the ground
+               float flick = 0.8F + 0.2F * (float)Math.sin(now * 0.7 + j);
+               Vec3 q0 = new Vec3(c.x + Math.cos(a0) * (R - 0.6), y10 + 0.02, c.z + Math.sin(a0) * (R - 0.6));
+               Vec3 q1 = new Vec3(c.x + Math.cos(a1) * (R - 0.6), y11 + 0.02, c.z + Math.sin(a1) * (R - 0.6));
+               gquad(m, cam, q0, q1, p11.add(0, 0.02, 0), p10.add(0, 0.02, 0), rim, 0.0F, 0.0F, 0.45F * flick, 0.45F * flick);
+               // opening: a violet shock front rising off the edge as it races out
+               if (age < ZONE_OPEN + 2.0) {
+                  float sa = (float)(1.0 - Mth.clamp(age / (ZONE_OPEN + 2.0), 0.0, 1.0));
+                  gquad(m, cam, p10.add(0, 0.02, 0), p11.add(0, 0.02, 0), p11.add(0, 1.4 * sa, 0), p10.add(0, 1.4 * sa, 0), rim, sa * 0.7F, sa * 0.7F, 0.0F, 0.0F);
+               }
+            }
+         }
+      }
+      // the dome of darkness: barely there, with a violet sheen at its silhouette
+      int LAT = 8, LON = 40;
+      for (int i = 0; i < LAT; i++) {
+         double e0 = Math.PI / 2 * i / LAT, e1 = Math.PI / 2 * (i + 1) / LAT;
+         for (int j = 0; j < LON; j++) {
+            double a0 = Math.PI * 2 * j / LON, a1 = Math.PI * 2 * (j + 1) / LON;
+            Vec3[] q = {dome(a0, e0), dome(a1, e0), dome(a1, e1), dome(a0, e1)};
+            for (Vec3 nv : q) {
+               Vec3 w = c.add(nv.x * R, nv.y * R * 0.6, nv.z * R);
+               float fres = (float)Math.pow(1.0 - Math.abs(nv.dot(cam.subtract(w).normalize())), 3.0);
+               vtx(vc, m, n, cam, w, sea, 0.05F + 0.22F * fres);
+            }
+            if (gv != null) {
+               for (Vec3 nv : q) {
+                  Vec3 w = c.add(nv.x * R, nv.y * R * 0.6, nv.z * R);
+                  float fres = (float)Math.pow(1.0 - Math.abs(nv.dot(cam.subtract(w).normalize())), 4.0);
+                  gvtx(m, cam, w, rim, fres * 0.22F * (float)(1.0 - nv.y * 0.6));
+               }
+            }
+         }
+      }
+   }
+
+   private static Vec3 dome(double a, double el) {
+      return new Vec3(Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el));
+   }
+
+   /** Opacity of the dark sea: deep near you, thinning toward the edge, rippling in turning spiral swirls. */
+   private static float seaA(double t, double a, double now) {
+      double swirl = 0.5 + 0.5 * Math.sin(a * 3.0 + t * 9.0 - now * 0.06);
+      double base = 0.62 - 0.32 * t;
+      return (float)Mth.clamp(base * (0.8 + 0.3 * swirl), 0.0, 0.85) * (t >= 0.999 ? 0.4F : 1.0F);
+   }
+
+   private static float vein(double t, double a, double now) {
+      double s = Math.sin(a * 3.0 + t * 9.0 - now * 0.06);
+      return (float)(Math.max(0.0, s - 0.85) / 0.15 * 0.18 * (0.4 + 0.6 * t));
+   }
+
    private static float[] hot(int pal) {
       float[] r = RIM[pal];
       float w = isFlame(pal) ? 0.3F : 0.55F;   // black-flame palettes keep a red-orange core instead of white
@@ -524,6 +716,10 @@ public class FxRenderer {
                if (ent != null) cocoon(vc, m, n, cam, ent, pt, now, ce.getValue());
             }
             COCOON.values().removeIf(f -> now > f[1] + 6.0);
+            for (java.util.Map.Entry<Integer, double[]> ze : ZONES.entrySet()) {
+               net.minecraft.world.entity.Entity ent = mc.level.getEntity(ze.getKey());
+               if (ent != null) zoneField(vc, m, n, cam, ent, pt, now, ze.getValue());
+            }
             nearFade = true;
 
             for (FxRenderer.AuraDraw a : AURAS) {

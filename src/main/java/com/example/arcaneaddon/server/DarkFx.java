@@ -771,13 +771,7 @@ public class DarkFx {
         ServerLevel sl = p.serverLevel();
         ZONE.put(p.getUUID(), sl.getGameTime() + 400);
         ZONE_POWER.put(p.getUUID(), power);
-        for (int k = 0; k < 4; k++) {
-            final int kk = k;
-            AstaFx.later(k * 2, () -> {
-                if (alive(p)) FxSend.ring(sl, D, p.position().add(0, 0.05 + kk * 0.02, 0), 0.5f, (float) ZONE_R, 0.25f - kk * 0.05f, 12);
-            });
-        }
-        FxLib.dome(sl, D, p.position(), 1.4f);
+        sendZone(p, 400);   // the dark mana pours out of you and fills the zone (drawn by the client: FxRenderer zone field)
         p.displayClientMessage(Component.translatable("ui.arcane_addon.zone.open").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), true);
         sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_RESONATE, 1f, 0.5f);
         sound(sl, p.position(), SoundEvents.BEACON_POWER_SELECT, 0.8f, 0.6f);
@@ -785,57 +779,33 @@ public class DarkFx {
     }
     private static final Map<UUID, Float> ZONE_POWER = new HashMap<>();
 
-    /** Every 10 ticks while the zone is up: its burning edge and slow inner rings, centred on you. */
     /**
      * Every 10 ticks while the zone is up, centred on you:
      *  - you read the ki of every creature inside it (bright marks, like Asta's Ki Sense but much easier to see)
-     *  - its edge burns with black flame, and a faint dome of mana arches over it
-     *  - a rune circle turns slowly on the ground, and motes of mana drift in toward you
+     *  - the field itself (a sea of dark mana over the ground, a faint dome, smoke swirling around you) is drawn by
+     *    the client from one packet, so it moves smoothly with you
      */
     private static void zoneTick(ServerPlayer p, ServerLevel sl, long now) {
-        Vec3 feet = p.position();
-        Vec3 c = FxLib.floor(sl, feet);
-        float R = (float) ZONE_R;
         // ki: your mana spreads your senses far beyond the zone itself - every creature within 80 blocks
         for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(KI_RANGE), x -> x != p && x.isAlive()
                 && !(x instanceof net.minecraft.world.entity.decoration.ArmorStand))) {
             if (t.distanceTo(p) <= KI_RANGE) AstaFx.sendKiMark(p, t, 30, true);
         }
-        // the burning edge
-        FxSend.ring(sl, D, c, R - 0.15f, R, 0.45f, 12);
-        // the dome of mana: thin rings stacked up into a hemisphere, refreshed slowly
-        if (now % 20 == 0) {
-            for (int k = 1; k <= 4; k++) {
-                double el = Math.PI / 2 * k / 5.0;
-                float rr = (float) (R * Math.cos(el));
-                FxSend.ring(sl, D, c.add(0, R * Math.sin(el) * 0.55, 0), rr - 0.05f, rr, 0.03f, 22);
-            }
-        }
-        // the rune circle on the ground, slowly turning
-        double rot = now * 0.02;
-        for (int k = 0; k < 8; k++) {
-            double a0 = rot + Math.PI * 2 * k / 8, a1 = a0 + Math.PI * 2 / 8;
-            Vec3 q0 = c.add(Math.cos(a0) * R * 0.55, 0.02, Math.sin(a0) * R * 0.55), q1 = c.add(Math.cos(a1) * R * 0.55, 0.02, Math.sin(a1) * R * 0.55);
-            FxSend.beam(sl, D, q0, q1, 0.12f, 11);
-            Vec3 tick0 = c.add(Math.cos(a0) * R * 0.48, 0.02, Math.sin(a0) * R * 0.48), tick1 = c.add(Math.cos(a0) * R * 0.66, 0.02, Math.sin(a0) * R * 0.66);
-            FxSend.beam(sl, S, tick0, tick1, 0.05f, 11);
-            double b = -rot * 1.6 + Math.PI * 2 * k / 8, b1 = b + Math.PI * 3 / 8;   // an inner star turning the other way
-            FxSend.beam(sl, D, c.add(Math.cos(b) * R * 0.3, 0.02, Math.sin(b) * R * 0.3), c.add(Math.cos(b1) * R * 0.3, 0.02, Math.sin(b1) * R * 0.3), 0.06f, 11);
-        }
-        // motes of mana drifting in toward you
-        ThreadLocalRandom r = ThreadLocalRandom.current();
-        for (int k = 0; k < 3; k++) {
-            double a = r.nextDouble(Math.PI * 2), dist = r.nextDouble(R * 0.4, R);
-            Vec3 from = feet.add(Math.cos(a) * dist, r.nextDouble(0.3, 3.0), Math.sin(a) * dist);
-            Vec3 to = from.add(feet.add(0, 1, 0).subtract(from).normalize().scale(1.4));
-            FxSend.beam(sl, D, from, to, 0.08f, 8);
-        }
-        if (now % 40 == 0) FxSend.ring(sl, D, c, 0.4f, R * 0.95f, 0.05f, 16);   // a slow pulse of mana running outward
+        // keep the field showing for anyone who walks up later
+        Long z = ZONE.get(p.getUUID());
+        if (now % 40 == 0 && z != null) sendZone(p, (int) (z - now));
+    }
+
+    /** Mana Zone field (FxPacket shape 17): id = player, life = ticks left (0 = collapse), r = radius. */
+    private static void sendZone(ServerPlayer p, int life) {
+        com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
+        pkt.shape = 17; pkt.id = p.getId(); pkt.palette = (byte) D; pkt.life = life; pkt.r = (float) ZONE_R;
+        com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
     private static void zoneCollapse(ServerPlayer p, ServerLevel sl) {
         float dmg = ZONE_POWER.getOrDefault(p.getUUID(), 10f);
-        FxSend.ring(sl, D, p.position().add(0, 0.05, 0), (float) ZONE_R, 0.4f, 0.4f, 10);   // the zone folds back into you
+        sendZone(p, 0);   // the darkness folds back into you
         int i = 0;
         for (LivingEntity t : zoneEnemies(p)) {
             final LivingEntity tt = t;
