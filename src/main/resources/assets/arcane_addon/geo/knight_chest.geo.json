@@ -1,0 +1,130 @@
+{
+ "format_version": "1.12.0",
+ "minecraft:geometry": [
+  {
+   "description": {
+    "identifier": "geometry.knight_chest",
+    "texture_width": 64,
+    "texture_height": 64,
+    "visible_bounds_width": 8,
+    "visible_bounds_height": 6,
+    "visible_bounds_offset": [
+     0,
+     1,
+     0
+    ]
+   },
+   "bones": [
+    {
+     "name": "root",
+     "pivot": [
+      0,
+      0,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -5,
+        -8.5,
+        -3
+       ],
+       "size": [
+        10,
+        9,
+        6
+       ],
+       "inflate": 0.1,
+       "uv": [
+        0,
+        0
+       ]
+      },
+      {
+       "origin": [
+        -5,
+        -9.5,
+        -3
+       ],
+       "size": [
+        10,
+        1,
+        6
+       ],
+       "inflate": 0.15,
+       "uv": [
+        0,
+        15
+       ]
+      },
+      {
+       "origin": [
+        -4.5,
+        -12.5,
+        -2.75
+       ],
+       "size": [
+        9,
+        3,
+        5
+       ],
+       "inflate": 0.05,
+       "uv": [
+        32,
+        0
+       ]
+      },
+      {
+       "origin": [
+        -0.5,
+        -7,
+        -3.5
+       ],
+       "size": [
+        1,
+        6,
+        1
+       ],
+       "uv": [
+        32,
+        15
+       ]
+      },
+      {
+       "origin": [
+        -3.5,
+        -2,
+        -3.4
+       ],
+       "size": [
+        2,
+        2,
+        1
+       ],
+       "uv": [
+        36,
+        15
+       ]
+      },
+      {
+       "origin": [
+        1.5,
+        -2,
+        -3.4
+       ],
+       "size": [
+        2,
+        2,
+        1
+       ],
+       "uv": [
+        42,
+        15
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

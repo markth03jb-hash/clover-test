@@ -321,6 +321,12 @@ public class FxRenderer {
       }
    }
 
+   /** {start, end} of this player's Devil Union (the wings are a GeckoLib model: GeoFormLayer), or null. */
+   static double[] devilFormTimes(int id) { return DEVIL.get(id); }
+
+   /** {start, end} of this player's Beelzebub form (GeoFormLayer), or null. */
+   static double[] boneFormTimes(int id) { return BONE_FORM.get(id); }
+
    /** True while the player with this entity id is in Devil Union (as far as this client knows). */
    public static boolean inDevilForm(int entityId, double now) {
       double[] f = DEVIL.get(entityId);
@@ -945,50 +951,6 @@ public class FxRenderer {
       }
    }
 
-   /**
-    * Devil Union: Beelzebub - two curved horns of bone growing from the head, and a pair of skeletal wings: three long
-    * bones fanning out from each shoulder blade, joined by a knuckle, beating slowly. They grow in over the first ticks.
-    */
-   private static void boneForm(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Player p, float pt, double now, double[] f) {
-      float grow = (float)(1.0 - Math.pow(1.0 - Mth.clamp((now - f[0]) / 12.0, 0.0, 1.0), 3.0));
-      if (grow <= 0.02F) return;
-      Vec3 base = new Vec3(Mth.lerp((double)pt, p.xo, p.getX()), Mth.lerp((double)pt, p.yo, p.getY()), Mth.lerp((double)pt, p.zo, p.getZ()));
-      boolean self = p == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson();
-      double hy = Math.toRadians(Mth.rotLerp(pt, p.yHeadRotO, p.yHeadRot));
-      Vec3 hf = new Vec3(-Math.sin(hy), 0, Math.cos(hy)), hl = new Vec3(Math.cos(hy), 0, Math.sin(hy));
-      float h = p.getBbHeight();
-      if (!self) {   // horns: from the temples, sweeping back and up, curling forward at the tips
-         for (int s = -1; s <= 1; s += 2) {
-            Vec3 root = base.add(0, h * 0.93, 0).add(hl.scale(0.2 * s)).add(hf.scale(0.05));
-            int S = 8;
-            Vec3[] c = new Vec3[S + 1];
-            double[] r = new double[S + 1];
-            for (int i = 0; i <= S; i++) {
-               double t = (double)i / S * grow;
-               c[i] = root.add(hl.scale(s * 0.18 * t)).add(0, 0.5 * t, 0).add(hf.scale(-0.35 * t + 0.3 * t * t * t));
-               r[i] = 0.075 * Math.max(0.05, 1.0 - (double)i / S);
-            }
-            tube(vc, m, n, cam, c, r, hf, 7, false);
-         }
-      }
-      // skeletal wings from the shoulder blades
-      double by = Math.toRadians(Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot) - animYawDeg(p, pt));
-      Vec3 fw = new Vec3(-Math.sin(by), 0.0, Math.cos(by)), lf = new Vec3(Math.cos(by), 0.0, Math.sin(by));
-      double beat = Math.sin(now * (p.onGround() ? 0.12 : 0.35)) * 0.25;
-      for (int s = -1; s <= 1; s += 2) {
-         Vec3 root = base.add(0, h * 0.75, 0).subtract(fw.scale(0.22)).add(lf.scale(0.15 * s));
-         Vec3 arm = lf.scale(s * Math.cos(beat)).add(0, 0.55 + Math.sin(beat), 0).subtract(fw.scale(0.4)).normalize();
-         Vec3 knuckle = root.add(arm.scale(0.8 * grow));
-         tube(vc, m, n, cam, new Vec3[]{root, knuckle}, new double[]{0.07, 0.06}, fw, 7, true);
-         knob(vc, m, n, cam, knuckle, 0.09);
-         for (int k = 0; k < 3; k++) {   // three long finger-bones fanning down and out
-            double fan = -0.2 - k * 0.55;
-            Vec3 d = arm.scale(Math.cos(fan)).add(new Vec3(0, -1, 0).scale(Math.sin(-fan) * 0.9)).subtract(fw.scale(0.2)).normalize();
-            Vec3 tip = knuckle.add(d.scale((1.5 - k * 0.25) * grow));
-            tube(vc, m, n, cam, new Vec3[]{knuckle, knuckle.add(tip.subtract(knuckle).scale(0.5)), tip}, new double[]{0.05, 0.04, 0.012}, fw, 6, false);
-         }
-      }
-   }
 
    /** A shaded ivory tube along the centre points with the given radii (capped at the ends when caps is true). */
    private static void tube(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3[] ctr, double[] rad, Vec3 ref, int sides, boolean caps) {
@@ -1779,8 +1741,6 @@ public class FxRenderer {
                   if (form != null) devilForm(vc, m, n, cam, p, pt, now, form);
                   double[] sp = SPIRIT.get(p.getId());
                   if (sp != null) spiritForm(vc, m, n, cam, p, pt, now, sp);
-                  double[] bf = BONE_FORM.get(p.getId());
-                  if (bf != null && now <= bf[1]) boneForm(vc, m, n, cam, p, pt, now, bf);
                   double[] th = THUNDER.get(p.getId()), gl = GLOVES.get(p.getId());
                   boolean thOn = th != null && now <= th[1], glOn = gl != null && now <= gl[1];
                   if (thOn || glOn) thunderBody(m, cam, p, pt, now, thOn, glOn);
@@ -1860,24 +1820,10 @@ public class FxRenderer {
 
       // ---- how the body is moving drives the wings
       double speed = Math.sqrt((p.getX() - p.xo) * (p.getX() - p.xo) + (p.getZ() - p.zo) * (p.getZ() - p.zo));
-      double vy = p.getY() - p.yo;
-      boolean air = !p.onGround();
-      boolean falling = air && vy < -0.08;
-      boolean crouch = p.isCrouching();
-      double opening = Mth.clamp(1.0 - age / 18.0, 0.0, 1.0);               // a few big beats as the wings burst open
-      double freq = air && !falling ? 0.34 : (speed > 0.05 ? 0.18 : 0.09);
-      double amp = falling ? 0.06 : (air ? 0.5 : (speed > 0.05 ? 0.2 : 0.11)) + opening * 0.45;
       double sweep = Mth.clamp(speed * 3.0, 0.0, 0.7);
-      double fold = crouch ? 0.65 : 0.0;
-      double glide = falling ? 1.0 : 0.0;
 
       Vec3 back = base.add(0.0, h * 0.76, 0.0).subtract(fw.scale(0.2));
-      for (int side = -1; side <= 1; side += 2) {
-         Vec3 root = back.add(lf.scale(0.16 * side));
-         Vec3[] w = demonWing(root, fw, lf, side, now, grow, freq, amp, sweep, fold, glide);
-         Vec3[] wPrev = demonWing(root, fw, lf, side, now - 2.5, grow, freq, amp, sweep, fold, glide);
-         drawDemonWing(vc, m, n, cam, w, wPrev, a, now, dark);
-      }
+      // (the wings themselves are the animated GeckoLib model - GeoFormLayer)
 
       // ---- crown of black flame
       Vec3 crown = base.add(0.0, h + 0.02, 0.0);
@@ -1991,103 +1937,9 @@ public class FxRenderer {
    // indexes into the demon wing skeleton
    private static final int WS = 0, WE = 1, WW = 2, WF = 3, WC0 = 11, WC1 = 12, WWAIST = 13;
 
-   /**
-    * Skeleton of one bat-like demon wing at time {@code t}: shoulder, elbow, wrist (with a hooked claw), four finger
-    * bones of two joints each, and the waist anchor of the membrane. The arm swings from the shoulder, the elbow flexes a
-    * beat later and the fingers spread on the downstroke / close on the upstroke; {@code fold} tucks the fingers down
-    * along the arm, {@code glide} spreads everything flat and wide.
-    * Result: [S, E, W, M0, T0, M1, T1, M2, T2, M3, T3, claw0, claw1, waist].
-    */
-   private static Vec3[] demonWing(Vec3 root, Vec3 fw, Vec3 lf, int side, double t, float grow,
-                                   double freq, double amp, double sweep, double fold, double glide) {
-      Vec3 out = lf.scale(side), up = new Vec3(0.0, 1.0, 0.0), back = fw.scale(-1.0);
-      double ph = freq * t;
-      double beat = Math.sin(ph);
-      double elev = 1.12 * (1.0 - glide) + 0.55 * glide + amp * beat;
-      elev = elev * (1.0 - fold) + 1.35 * fold;
-      double tilt = 0.3 + sweep + fold * 0.6;
-      double s = Math.max(0.05F, grow) * 1.25;
-      Vec3[] r = new Vec3[14];
-      r[WS] = root;
-      r[WE] = root.add(wdir(out, up, back, elev, tilt).scale(0.55 * s));
-      double bend = (0.6 + 0.25 * Math.sin(ph - 0.6)) * (1.0 - glide) + 0.35 * glide;
-      bend = bend * (1.0 - fold) + 2.3 * fold;
-      double fore = elev - bend;
-      r[WW] = r[WE].add(wdir(out, up, back, fore, tilt + 0.1).scale(0.75 * s));
-      double spread = (0.9 + 0.12 * Math.sin(ph + 1.2)) * (1.0 - glide) + 1.1 * glide;
-      spread = spread * (1.0 - fold) + 0.25 * fold;
-      double[] design = {0.35, -0.3, -0.85, -1.3};   // finger angles when fully open: outward-up ... down
-      double[] lens = {1.1, 1.5, 1.45, 1.15};
-      for (int j = 0; j < 4; j++) {
-         double a1 = fore + (design[j] - 0.4) * spread;
-         double len = lens[j] * s * (0.6 + 0.4 * (1.0 - fold));
-         double b = tilt + 0.2 + j * 0.1;
-         Vec3 mid = r[WW].add(wdir(out, up, back, a1, b).scale(len * 0.55));
-         double curl = -0.15 + amp * 0.5 * Math.sin(ph - 0.9 - j * 0.25);   // finger tips lag the beat
-         r[WF + j * 2] = mid;
-         r[WF + j * 2 + 1] = mid.add(wdir(out, up, back, a1 + curl, b + 0.1).scale(len * 0.45));
-      }
-      r[WC0] = r[WW].add(wdir(out, up, back, fore + 1.3, tilt - 0.2).scale(0.18 * s));
-      r[WC1] = r[WC0].add(wdir(out, up, back, fore + 2.3, tilt - 0.4).scale(0.1 * s));
-      r[WWAIST] = root.add(0.0, -0.55, 0.0).add(out.scale(0.1));
-      return r;
-   }
 
-   private static Vec3 wdir(Vec3 out, Vec3 up, Vec3 back, double ang, double tilt) {
-      return out.scale(Math.cos(ang)).add(up.scale(Math.sin(ang))).add(back.scale(tilt)).normalize();
-   }
 
-   private static Vec3 sag(Vec3 a, Vec3 b, Vec3 toward, double k) {
-      Vec3 midp = a.add(b).scale(0.5);
-      return midp.add(toward.subtract(midp).scale(k));
-   }
 
-   /** Leathery membrane with a scalloped trailing edge, faint veins, glowing bones, a bone claw and tip trails. */
-   private static void drawDemonWing(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3[] w, Vec3[] wPrev, float a, double now, float[] dark) {
-      Vec3 S = w[WS], E = w[WE], W = w[WW], waist = w[WWAIST];
-      float in = a * 0.62F, edge = a * 0.38F;
-      // membrane: leading edge (shoulder-elbow-wrist-first finger)
-      quad(vc, m, n, cam, S, E, W, w[WF], dark, in, in, in, edge);
-      // membrane between fingers, sagging inward between the tips
-      for (int j = 0; j < 3; j++) {
-         Vec3 m0 = w[WF + j * 2], t0 = w[WF + j * 2 + 1], m1 = w[WF + j * 2 + 2], t1 = w[WF + j * 2 + 3];
-         Vec3 sg = sag(t0, t1, W, 0.22);
-         quad(vc, m, n, cam, W, m0, m1, W, dark, in, in, in, in);
-         quad(vc, m, n, cam, m0, t0, sg, m1, dark, in, edge, edge, in);
-         quad(vc, m, n, cam, sg, t1, m1, sg, dark, edge, edge, in, edge);
-         beam(vc, m, n, cam, W, sg, 0.02F, EMBER, a * 0.25F, 0.5);   // faint vein
-      }
-      // membrane from the last finger down to the waist
-      Vec3 m3 = w[WF + 6], t3 = w[WF + 7];
-      Vec3 sgw = sag(t3, waist, W, 0.15);
-      quad(vc, m, n, cam, m3, t3, sgw, waist, dark, in, edge, edge, in);
-      quad(vc, m, n, cam, W, m3, waist, S, dark, in, in, in, in);
-      quad(vc, m, n, cam, S, E, W, S, dark, in, in, in, in);
-      // glowing trailing edge
-      Vec3 prev = w[WF + 1];
-      for (int j = 0; j < 3; j++) {
-         Vec3 t0 = w[WF + j * 2 + 1], t1 = w[WF + j * 2 + 3], sg = sag(t0, t1, W, 0.22);
-         beam(vc, m, n, cam, prev, sg, 0.035F, EMBER, a * 0.6F, 0.2);
-         beam(vc, m, n, cam, sg, t1, 0.035F, EMBER, a * 0.6F, 0.2);
-         prev = t1;
-      }
-      beam(vc, m, n, cam, t3, sgw, 0.035F, EMBER, a * 0.6F, 0.2);
-      beam(vc, m, n, cam, sgw, waist, 0.035F, EMBER, a * 0.5F, 0.2);
-      // bones: arm, then fingers, with a glow pulse running outward
-      float pulse = 1.0F + 0.35F * (float)Math.sin(now * 0.3);
-      beam(vc, m, n, cam, S, E, 0.13F * pulse, EMBER, a * 0.95F, 0.4);
-      beam(vc, m, n, cam, E, W, 0.11F * pulse, EMBER, a * 0.95F, 0.4);
-      for (int j = 0; j < 4; j++) {
-         float fp = 1.0F + 0.4F * (float)Math.sin(now * 0.3 - 1.0 - j * 0.4);
-         beam(vc, m, n, cam, W, w[WF + j * 2], 0.07F * fp, EMBER, a * 0.9F, 0.5);
-         beam(vc, m, n, cam, w[WF + j * 2], w[WF + j * 2 + 1], 0.05F * fp, EMBER, a * 0.85F, 0.6);
-      }
-      // bone-white hooked claw at the wrist
-      beam(vc, m, n, cam, W, w[WC0], 0.05F, 6, a, 0.3);
-      beam(vc, m, n, cam, w[WC0], w[WC1], 0.035F, 6, a, 0.8);
-      // ember trails off the two longest finger tips
-      for (int j = 1; j <= 2; j++) beam(vc, m, n, cam, wPrev[WF + j * 2 + 1], w[WF + j * 2 + 1], 0.04F, EMBER, a * 0.4F, 0.8);
-   }
 
    private static void heldAura(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Player p, float pt, float pulse, Item item, boolean main) {
       int pal;

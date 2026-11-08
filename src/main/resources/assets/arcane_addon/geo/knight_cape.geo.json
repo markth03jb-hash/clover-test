@@ -1,0 +1,182 @@
+{
+ "format_version": "1.12.0",
+ "minecraft:geometry": [
+  {
+   "description": {
+    "identifier": "geometry.knight_cape",
+    "texture_width": 64,
+    "texture_height": 64,
+    "visible_bounds_width": 8,
+    "visible_bounds_height": 6,
+    "visible_bounds_offset": [
+     0,
+     1,
+     0
+    ]
+   },
+   "bones": [
+    {
+     "name": "root",
+     "pivot": [
+      0,
+      0,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -6,
+        -0.5,
+        -0.8
+       ],
+       "size": [
+        12,
+        1,
+        1
+       ],
+       "uv": [
+        24,
+        10
+       ]
+      }
+     ]
+    },
+    {
+     "name": "cape0",
+     "pivot": [
+      0,
+      -0.0,
+      0
+     ],
+     "parent": "root",
+     "cubes": [
+      {
+       "origin": [
+        -5.5,
+        -4.0,
+        -0.5
+       ],
+       "size": [
+        11,
+        4,
+        1
+       ],
+       "uv": [
+        0,
+        0
+       ]
+      }
+     ]
+    },
+    {
+     "name": "cape1",
+     "pivot": [
+      0,
+      -4.0,
+      0
+     ],
+     "parent": "cape0",
+     "cubes": [
+      {
+       "origin": [
+        -5.5,
+        -8.0,
+        -0.5
+       ],
+       "size": [
+        11,
+        4,
+        1
+       ],
+       "uv": [
+        24,
+        0
+       ]
+      }
+     ]
+    },
+    {
+     "name": "cape2",
+     "pivot": [
+      0,
+      -8.0,
+      0
+     ],
+     "parent": "cape1",
+     "cubes": [
+      {
+       "origin": [
+        -5.5,
+        -12.0,
+        -0.5
+       ],
+       "size": [
+        11,
+        4,
+        1
+       ],
+       "uv": [
+        0,
+        5
+       ]
+      }
+     ]
+    },
+    {
+     "name": "cape3",
+     "pivot": [
+      0,
+      -12.0,
+      0
+     ],
+     "parent": "cape2",
+     "cubes": [
+      {
+       "origin": [
+        -5.5,
+        -16.0,
+        -0.5
+       ],
+       "size": [
+        11,
+        4,
+        1
+       ],
+       "uv": [
+        24,
+        5
+       ]
+      }
+     ]
+    },
+    {
+     "name": "cape4",
+     "pivot": [
+      0,
+      -16.0,
+      0
+     ],
+     "parent": "cape3",
+     "cubes": [
+      {
+       "origin": [
+        -5.5,
+        -20.0,
+        -0.5
+       ],
+       "size": [
+        11,
+        4,
+        1
+       ],
+       "uv": [
+        0,
+        10
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
