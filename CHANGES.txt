@@ -5,7 +5,11 @@ and let it overwrite. Then build as usual.
 
 NEW IN 1.40.1
 - The mod is now called "Iron Spell Grimoire" (mod list, creative tab, jar name: iron_spell_grimoire-<version>.jar).
-  Its internal id stays arcane_addon on purpose, so existing worlds keep every grimoire, item, spell and config.
+  Its internal id stays arcane_addon on purpose, so existing worlds keep every grimoire, item and spell.
+- Commands are now /grimoire instead of /arcane: /grimoire progression on|off, /grimoire mastery set <1-5> [player],
+  /grimoire mastery add <xp>, /grimoire limit [player], /grimoire limit reset [player].
+- Config files are now config/iron_spell_grimoire-common.toml and config/iron_spell_grimoire-client.toml. The old
+  arcane_addon-*.toml files are no longer read (settings start from the defaults; the old files can be deleted).
 
 NEW IN 1.40.0
 - NEW: client effect settings (config/arcane_addon-client.toml, each player sets their own; the defaults are exactly

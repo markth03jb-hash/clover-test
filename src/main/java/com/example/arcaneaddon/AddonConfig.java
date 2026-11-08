@@ -2,7 +2,7 @@ package com.example.arcaneaddon;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
-/** config/arcane_addon-common.toml */
+/** config/iron_spell_grimoire-common.toml */
 public final class AddonConfig {
     private AddonConfig() {}
 
@@ -14,7 +14,7 @@ public final class AddonConfig {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.push("grimoire_mastery");
         PROGRESSION = b.comment("Grimoire Mastery: spells unlock as the book levels up (1-5). Off = every spell unlocked, no level bonuses.",
-                        "Can also be switched in game with /arcane progression on|off")
+                        "Can also be switched in game with /grimoire progression on|off")
                 .define("enabled", true);
         XP_MULTIPLIER = b.comment("Multiplies all mastery XP gained (1.0 = about one hour of fighting to master a book).")
                 .defineInRange("xp_multiplier", 1.0, 0.0, 100.0);

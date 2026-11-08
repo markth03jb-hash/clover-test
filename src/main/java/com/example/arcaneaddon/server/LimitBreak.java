@@ -39,7 +39,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  *  Trigger:  under 25% health (or a hit that would kill you) in a hard fight - a boss or strong monster within 32
  *            blocks, or another player hitting you. 35% chance (50% with a Mastery 5 book), then 20 minutes cooldown.
- *  Command:  /arcane limit [player] - trigger it now; /arcane limit reset [player] - clear the cooldown.
+ *  Command:  /grimoire limit [player] - trigger it now; /grimoire limit reset [player] - clear the cooldown.
  */
 @Mod.EventBusSubscriber(modid = ArcaneAddon.MODID)
 public final class LimitBreak {
@@ -162,10 +162,10 @@ public final class LimitBreak {
     @SubscribeEvent
     public static void onStop(ServerStoppingEvent e) { ACTIVE.clear(); }
 
-    // ------------------------------------------------------------------ /arcane limit
+    // ------------------------------------------------------------------ /grimoire limit
     @SubscribeEvent
     public static void onCommands(RegisterCommandsEvent e) {
-        e.getDispatcher().register(Commands.literal("arcane").requires(s -> s.hasPermission(2))
+        e.getDispatcher().register(Commands.literal("grimoire").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("limit")
                         .executes(c -> fire(c.getSource(), c.getSource().getPlayerOrException()))
                         .then(Commands.argument("player", EntityArgument.player())

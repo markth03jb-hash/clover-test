@@ -61,7 +61,7 @@ import java.util.function.Supplier;
  *           +300 for a boss, +3 per second while one of the book's modes is active. Passive animals, villagers and
  *           armor stands give nothing. No diminishing returns. Tuned so a book is mastered in about an hour of fighting.
  *  Levels:  each level above 1 also gives +4% spell power, +3% cooldown reduction and +50 max mana while equipped.
- *  Toggle:  config "grimoire_mastery.enabled" or /arcane progression on|off (off = everything unlocked, no bonuses).
+ *  Toggle:  config "grimoire_mastery.enabled" or /grimoire progression on|off (off = everything unlocked, no bonuses).
  */
 @Mod.EventBusSubscriber(modid = ArcaneAddon.MODID)
 public final class GrimoireMastery {
@@ -346,7 +346,7 @@ public final class GrimoireMastery {
     // ------------------------------------------------------------------ commands
     @SubscribeEvent
     public static void onCommands(RegisterCommandsEvent e) {
-        e.getDispatcher().register(Commands.literal("arcane").requires(s -> s.hasPermission(2))
+        e.getDispatcher().register(Commands.literal("grimoire").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("progression")
                         .then(Commands.literal("on").executes(c -> toggle(c, true)))
                         .then(Commands.literal("off").executes(c -> toggle(c, false)))

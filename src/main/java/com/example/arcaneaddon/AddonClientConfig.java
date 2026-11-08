@@ -3,7 +3,7 @@ package com.example.arcaneaddon;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
- * config/arcane_addon-client.toml - how strong the addon's effects look on YOUR screen. Each player sets their own;
+ * config/iron_spell_grimoire-client.toml - how strong the addon's effects look on YOUR screen. Each player sets their own;
  * nothing here changes what a spell does. The defaults are the full effects.
  */
 public final class AddonClientConfig {

@@ -17,8 +17,8 @@ public class ArcaneAddon {
         AddonItemRegistry.ITEMS.register(modBus);
         AddonItemRegistry.TABS.register(modBus);
         AddonNetwork.init();
-        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.COMMON, AddonConfig.SPEC);
-        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.CLIENT, AddonClientConfig.SPEC);
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.COMMON, AddonConfig.SPEC, "iron_spell_grimoire-common.toml");
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.CLIENT, AddonClientConfig.SPEC, "iron_spell_grimoire-client.toml");
         modBus.addListener((net.minecraftforge.fml.event.config.ModConfigEvent.Loading ev) -> { if (ev.getConfig().getSpec() == AddonClientConfig.SPEC) AddonClientConfig.refresh(); });
         modBus.addListener((net.minecraftforge.fml.event.config.ModConfigEvent.Reloading ev) -> { if (ev.getConfig().getSpec() == AddonClientConfig.SPEC) AddonClientConfig.refresh(); });
     }
