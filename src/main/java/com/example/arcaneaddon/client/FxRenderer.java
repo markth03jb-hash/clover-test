@@ -117,6 +117,26 @@ public class FxRenderer {
    /** Terrain heights under each zone's sea: id -> {cx, cz, R, gy, heights...} so it lies on the ground, not over drops. */
    private static final java.util.Map<Integer, double[]> ZONE_H = new java.util.HashMap<>();
 
+   /**
+    * Ground height of the block column at (x, z) near height gy - one raycast per column, cached, so a moving or
+    * opening zone never re-casts hundreds of rays a frame (that was a stutter while walking in a zone).
+    */
+   private static final java.util.Map<Long, Double> COLUMN_TOP = new java.util.HashMap<>();
+   private static double columnTopAge = -1;
+
+   private static double columnTop(net.minecraft.world.entity.Entity e, double x, double gy, double z) {
+      int bx = Mth.floor(x), bz = Mth.floor(z), by = Mth.floor(gy);
+      long key = ((long) bx & 0x1FFFFFL) << 42 | ((long) bz & 0x1FFFFFL) << 21 | ((long) by & 0x1FFFFFL);
+      Double v = COLUMN_TOP.get(key);
+      if (v != null) return v;
+      Vec3 top = new Vec3(bx + 0.5, gy + 2.5, bz + 0.5);
+      net.minecraft.world.phys.BlockHitResult hit = e.level().clip(new net.minecraft.world.level.ClipContext(top, top.subtract(0.0, 6.0, 0.0),
+            net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.ANY, e));
+      double y = hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? Double.NaN : hit.getLocation().y + 0.04;
+      COLUMN_TOP.put(key, y);
+      return y;
+   }
+
    private static double[] zoneHeights(net.minecraft.world.entity.Entity e, double cx, double gy, double cz, double R) {
       double[] h = ZONE_H.get(e.getId());
       if (h != null && Math.abs(h[0] - cx) < 0.35 && Math.abs(h[1] - cz) < 0.35 && Math.abs(h[2] - R) < 0.35 && Math.abs(h[3] - gy) < 0.2) return h;
@@ -126,10 +146,7 @@ public class FxRenderer {
          double rr = R * i / ZR;
          for (int j = 0; j < ZS; j++) {
             double a = Math.PI * 2 * j / ZS;
-            Vec3 top = new Vec3(cx + Math.cos(a) * rr, gy + 2.5, cz + Math.sin(a) * rr);
-            net.minecraft.world.phys.BlockHitResult hit = e.level().clip(new net.minecraft.world.level.ClipContext(top, top.subtract(0.0, 6.0, 0.0),
-                  net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.ANY, e));
-            h[4 + i * ZS + j] = hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? Double.NaN : hit.getLocation().y + 0.04;
+            h[4 + i * ZS + j] = columnTop(e, cx + Math.cos(a) * rr, gy, cz + Math.sin(a) * rr);
          }
       }
       ZONE_H.put(e.getId(), h);
@@ -355,6 +372,7 @@ public class FxRenderer {
             ZONES.values().removeIf(zf -> now > zf[1] + ZONE_CLOSE + 2.0);
             ZONE_H.keySet().removeIf(id -> !ZONES.containsKey(id));
             ZONE_TARGET.keySet().removeIf(id -> !ZONES.containsKey(id));
+            if (ZONES.isEmpty() || now - columnTopAge > 100.0) { COLUMN_TOP.clear(); ZONE_H.clear(); columnTopAge = now; }
             for (java.util.Map.Entry<Integer, double[]> ce : COCOON.entrySet()) {   // darkness seeping off the cocoon
                double[] cf = ce.getValue();
                net.minecraft.world.entity.Entity ent = mc.level.getEntity(ce.getKey());
@@ -376,11 +394,11 @@ public class FxRenderer {
                else if (f.p.palette == FIRE || f.p.palette == BLUE_FIRE || f.p.palette == CRIMSON) { flamePal = f.p.palette; emitFire(f, now - f.born); flamePal = FIRE; }
                else if ((f.p.palette == LIGHTNING || f.p.palette == BLUE_LIGHTNING) && f.p.shape != 23) { boltPal = f.p.palette; emitLightning(f, now - f.born); }
                double life = f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life;
-               if (now - f.born > life + 1.0) {
+               if (now - f.born > life + (f.p.life <= 1 && f.killAge < 0.0 ? 1.6 : 1.0)) {   // per-tick copies: room to fade out
                   it.remove();
                }
             }
-            TRACK.removeIf(f -> now - f.born > (f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life) + 1.0);   // same rule as FX above
+            TRACK.removeIf(f -> now - f.born > (f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life) + (f.p.life <= 1 && f.killAge < 0.0 ? 1.6 : 1.0));   // same rule as FX above
             if (!PENDING.isEmpty()) { for (FxPacket q : PENDING) spawn(q); PENDING.clear(); }
             // Thunder God Mode / gloves: sparks off the feet when running, crackle around the hands
             java.util.concurrent.ThreadLocalRandom tr = java.util.concurrent.ThreadLocalRandom.current();
@@ -1295,6 +1313,8 @@ public class FxRenderer {
    private static int lightPal = -1;
    /** effect_opacity from the client config, read once per frame. */
    private static float OPACITY = 1F;
+   /** Alpha multiplier for the effect being drawn right now (OPACITY, faded for an overdue per-tick copy). */
+   private static float ALPHA_NOW = 1F;
 
    private static boolean isLight(int pal) { return pal == 2 || pal == 4 || pal == 5 || pal == 6 || pal == 12 || pal == 13 || pal == 14; }
 
@@ -1306,7 +1326,7 @@ public class FxRenderer {
          gvtx(m, cam, w, lc, a * (lightPal == 5 ? 0.28F : 0.6F));   // gvtx applies the opacity
          return;
       }
-      a *= OPACITY;
+      a *= ALPHA_NOW;
       if (nearFade) {
          double d = w.distanceTo(cam);
          a *= Mth.clamp((float)((d - NEAR_FADE_START) / NEAR_FADE_RANGE), NEAR_FADE_MIN, 1.0F) * FX_ALPHA;
@@ -1332,7 +1352,7 @@ public class FxRenderer {
    // ------------------------------------------------------------------ additive glow layer
    private static void gvtx(Matrix4f m, Vec3 cam, Vec3 w, float[] col, float a) {
       if (gv == null) return;
-      a *= OPACITY;
+      a *= ALPHA_NOW;
       if (nearFade) {
          double d = w.distanceTo(cam);
          a *= Mth.clamp((float)((d - NEAR_FADE_START) / NEAR_FADE_RANGE), NEAR_FADE_MIN, 1.0F) * FX_ALPHA;
@@ -1657,6 +1677,7 @@ public class FxRenderer {
             VertexConsumer vc = buf.getBuffer(rt);
             gv = GLOW_SRC.getBuffer(GlowRenderType.GLOW);
             OPACITY = com.example.arcaneaddon.AddonClientConfig.effectOpacity();
+            ALPHA_NOW = OPACITY;
             double now = (double)((float)mc.level.getGameTime() + pt);
             Matrix4f m = ps.last().pose();
             Matrix3f n = ps.last().normal();
@@ -1673,6 +1694,9 @@ public class FxRenderer {
                if (!(age < 0.0) && !(age > life + (perTick ? 1.5 : 0.0))) {
                   float env = (float)(smooth(age / 1.5) * smooth((life - age) / Math.max(2.0, life * 0.45)));   // eased in and out, no hard edges
                   int sh = f.p.shape;
+                  // a per-tick copy is normally replaced by the next one at age ~1; if that one is late, this one keeps
+                  // gliding along its path and fades out gently instead of freezing and then jumping
+                  ALPHA_NOW = perTick && age > 1.2 ? OPACITY * (float)Mth.clamp((2.5 - age) / 1.3, 0.0, 1.0) : OPACITY;
                   lightPal = (sh == 0 || sh == 1 || sh == 2 || sh == 13) && isLight(f.p.palette) ? f.p.palette : -1;
                   switch (f.p.shape) {
                      case 0:
@@ -1715,6 +1739,7 @@ public class FxRenderer {
                         spaceCracks(vc, m, n, cam, f.p, age, life);
                   }
                   lightPal = -1;
+                  ALPHA_NOW = OPACITY;
                }
             }
 
@@ -2180,11 +2205,13 @@ public class FxRenderer {
    }
 
    /** How long a packet has moved: per-tick copies (life 1) stop at the end of their own tick and wait for the next. */
-   private static double mv(FxPacket p, double age) { return p.life <= 1 ? Math.min(age, 1.0) : age; }
+   private static double mv(FxPacket p, double age) { return p.life <= 1 ? Math.min(age, PER_TICK_GLIDE) : age; }
+   /** How far (in ticks) a per-tick copy keeps moving along its velocity while waiting for the next one. */
+   private static final double PER_TICK_GLIDE = 2.0;
 
    private static Vec3 travelled(FxRenderer.Fx f, double age) {
       double mt = f.p.a1 > 0.0F ? Math.min(age, (double)f.p.a1) : age;
-      if (f.p.life <= 1) mt = Math.min(mt, 1.0);
+      if (f.p.life <= 1) mt = Math.min(mt, PER_TICK_GLIDE);
       if (f.killAge >= 0.0) mt = Math.min(mt, f.killAge);
       return f.p.c.add(f.p.v.scale(mt));
    }

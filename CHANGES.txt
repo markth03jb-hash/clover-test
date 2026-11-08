@@ -1,7 +1,18 @@
-Iron Spell Grimoire v1.42.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.42.1 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.42.1 - smoothness pass
+- Effects that follow something every tick (homing arrows and eagles, the flaming bat, the horse cart, the lion,
+  fireballs in hand, tornadoes...) no longer freeze and jump when a network update arrives a little late: each
+  piece keeps gliding along its path for up to 2 ticks while it waits, and if the next one is really late it fades
+  out gently instead of popping. When updates arrive on time nothing looks different.
+- Mana Zone: the ground under the zone is measured once per block and remembered, instead of hundreds of raycasts
+  every time you moved or while the zone was opening - no more stutter walking around inside a zone.
+- (From 1.41.0/1.42.0, for reference: Spirit of Boreas, Storm of Blades, Bone Whips and the Bone Sword are drawn by
+  the client every frame, and halberds, mercury swords and spears, Euros arrowheads and bone spears are sent once
+  per flight and glided by the client.)
 
 NEW IN 1.42.0
 - Hellfire Lion King (Mereoleona's Surpassing Limits) is now bigger than Purgatory: blue hellfire gathers in her fist,
