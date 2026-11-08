@@ -36,7 +36,7 @@ public final class DarkSmoke {
     private static final class Puff {
         double x, y, z, vx, vy, vz, born, life;
         float s0, s1, rot, spin;
-        boolean mote, streak, bead;
+        boolean mote, streak, bead, flame;
         float shade;
     }
 
@@ -52,6 +52,27 @@ public final class DarkSmoke {
     /** One small violet mote. */
     public static void mote(Vec3 at, Vec3 vel, float size, int life) {
         add(at, vel, size, size * 0.4F, life, true);
+    }
+
+    /** A tongue of fire: white-yellow at first, then orange, red, and finally a wisp of dark smoke, rising. */
+    public static void flame(Vec3 at, Vec3 vel, float size, int life) {
+        int before = PUFFS.size();
+        add(at, vel, size * 0.7F, size * 1.3F, life, false);
+        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) PUFFS.get(PUFFS.size() - 1).flame = true;
+    }
+
+    /** Something burning (Magna's fire): entity id -> end tick. */
+    private static final Map<Integer, Double> BURNING = new HashMap<>();
+    /** Flame Knuckles: entity id -> end tick. */
+    private static final Map<Integer, Double> KNUCKLES = new HashMap<>();
+
+    public static void burning(int id, int life) { track(BURNING, id, life); }
+    public static void knuckles(int id, int life) { track(KNUCKLES, id, life); }
+
+    private static void track(Map<Integer, Double> map, int id, int life) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        if (life <= 0) map.remove(id); else map.put(id, mc.level.getGameTime() + (double) life);
     }
 
     /** A bead of mercury: a small silver droplet that falls. */
@@ -104,7 +125,7 @@ public final class DarkSmoke {
 
     public static void tick() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) { PUFFS.clear(); BODY.clear(); return; }
+        if (mc.level == null) { PUFFS.clear(); BODY.clear(); BURNING.clear(); KNUCKLES.clear(); return; }
         double now = mc.level.getGameTime();
         Iterator<Puff> it = PUFFS.iterator();
         while (it.hasNext()) {
@@ -112,8 +133,34 @@ public final class DarkSmoke {
             if (now - p.born > p.life) { it.remove(); continue; }
             p.x += p.vx; p.y += p.vy; p.z += p.vz;
             double drag = p.bead ? 0.98 : p.streak ? 0.93 : p.mote ? 0.96 : 0.88;
-            p.vx *= drag; p.vz *= drag; p.vy = p.vy * drag + (p.bead ? -0.04 : p.streak ? 0.0 : p.mote ? 0.0015 : 0.004);   // darkness rises slowly, mercury falls
+            p.vx *= drag; p.vz *= drag; p.vy = p.vy * drag + (p.bead ? -0.04 : p.streak ? 0.0 : p.mote ? 0.0015 : p.flame ? 0.012 : 0.004);   // darkness rises slowly, mercury falls
             p.rot += p.spin;
+        }
+        ThreadLocalRandom rr = ThreadLocalRandom.current();
+        Iterator<Map.Entry<Integer, Double>> fi = BURNING.entrySet().iterator();
+        while (fi.hasNext()) {   // flames licking up the body
+            Map.Entry<Integer, Double> b = fi.next();
+            Entity e = mc.level.getEntity(b.getKey());
+            if (e == null || now > b.getValue() || !e.isAlive()) { fi.remove(); continue; }
+            boolean self = e == mc.player && mc.options.getCameraType().isFirstPerson();
+            for (int k = 0; k < (self ? 1 : 2); k++) {
+                double a = rr.nextDouble(Math.PI * 2), w = e.getBbWidth() * 0.45;
+                Vec3 at = e.position().add(Math.cos(a) * w, rr.nextDouble(0.0, e.getBbHeight() * (self ? 0.5 : 0.9)), Math.sin(a) * w);
+                flame(at, new Vec3(0, 0.03, 0), (float) rr.nextDouble(0.12, 0.22), rr.nextInt(8, 14));
+            }
+        }
+        Iterator<Map.Entry<Integer, Double>> ki = KNUCKLES.entrySet().iterator();
+        while (ki.hasNext()) {   // fists of fire
+            Map.Entry<Integer, Double> b = ki.next();
+            Entity e = mc.level.getEntity(b.getKey());
+            if (e == null || now > b.getValue()) { ki.remove(); continue; }
+            if (e == mc.player && mc.options.getCameraType().isFirstPerson()) continue;
+            double yaw = Math.toRadians(e instanceof net.minecraft.world.entity.LivingEntity le ? le.yBodyRot : e.getYRot());
+            Vec3 fw = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw)), lf = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
+            for (int s = -1; s <= 1; s += 2) {
+                Vec3 hand = e.position().add(0, e.getBbHeight() * 0.42, 0).add(lf.scale(0.38 * s)).add(fw.scale(0.1));
+                flame(hand.add(rr.nextDouble(-0.06, 0.06), 0, rr.nextDouble(-0.06, 0.06)), new Vec3(0, 0.025, 0), 0.12F, rr.nextInt(6, 10));
+            }
         }
         Iterator<Map.Entry<Integer, Double>> bi = BODY.entrySet().iterator();
         while (bi.hasNext()) {
@@ -184,7 +231,12 @@ public final class DarkSmoke {
             v(vc, m, n, cam, c.subtract(ax).add(side), sr, sg, sb, a, 0, 0);
             return;
         }
-        if (p.bead) {
+        if (p.flame) {
+            a = (float) (Mth.clamp(age / 1.5, 0.0, 1.0) * Math.pow(1.0 - t, 0.9)) * 0.9F;
+            if (t < 0.3) { float k = (float) (t / 0.3); cr = 1.0F; cg = 0.95F - 0.4F * k; cb = 0.6F - 0.48F * k; }
+            else if (t < 0.65) { float k = (float) ((t - 0.3) / 0.35); cr = 1.0F - 0.45F * k; cg = 0.55F - 0.45F * k; cb = 0.12F - 0.1F * k; }
+            else { float k = (float) ((t - 0.65) / 0.35); cr = 0.55F - 0.47F * k; cg = 0.1F - 0.04F * k; cb = 0.02F + 0.03F * k; a *= 0.75F; }
+        } else if (p.bead) {
             a = (float) Math.pow(1.0 - t, 0.5) * 0.95F;
             float sh = 0.75F + 0.25F * (float) Math.sin(now * 0.9 + p.shade * 7);
             cr = 0.82F * sh; cg = 0.86F * sh; cb = 0.95F * sh;

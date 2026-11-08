@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BFB",
+    "IKI",
+    "BFB"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:blaze_powder"
+    },
+    "F": {
+      "item": "minecraft:fire_charge"
+    },
+    "I": {
+      "item": "irons_spellbooks:arcane_ingot"
+    },
+    "K": {
+      "item": "minecraft:enchanted_book"
+    }
+  },
+  "result": {
+    "item": "arcane_addon:fire_grimoire",
+    "count": 1
+  }
+}

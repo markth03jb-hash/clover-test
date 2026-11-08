@@ -144,6 +144,8 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 21) { DarkSmoke.burning(p.id, p.life); return; }    // burning: id = entity, life = ticks
+      if (p.shape == 22) { DarkSmoke.knuckles(p.id, p.life); return; }   // Flame Knuckles: id = player, life = ticks
       if (p.shape == 18) {  // Spirit Dive form (Yuno + Sylph): id = player, life = ticks left (0 = end)
          Minecraft mc0 = Minecraft.getInstance();
          if (mc0.level != null) {
@@ -293,6 +295,7 @@ public class FxRenderer {
                if (f.p.palette == DARKNESS) emitDarkness(f, now - f.born);
                else if (f.p.palette == WIND) emitWind(f, now - f.born);
                else if (f.p.palette == MERCURY) emitMercury(f, now - f.born);
+               else if (f.p.palette == FIRE) emitFire(f, now - f.born);
                double life = f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life;
                if (now - f.born > life + 1.0) {
                   it.remove();
@@ -375,7 +378,142 @@ public class FxRenderer {
       }
    }
 
-   private static final int WIND = 5, MERCURY = 11;
+   private static final int WIND = 5, MERCURY = 11, FIRE = 2;
+
+   /** Real fire: flames pour off fireballs, explosions burst into a ball of flame and smoke, fire walls and trails burn. */
+   private static void emitFire(FxRenderer.Fx f, double age) {
+      FxPacket p = f.p;
+      double life = f.killAge >= 0.0 ? f.killAge : (double)p.life;
+      if (age < 0.0 || age > life) return;
+      java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+      switch (p.shape) {
+         case 20: {
+            Vec3 c = p.c.add(p.v.scale(age));
+            if (p.h > 0.5F) {   // explosion: one big burst at the start, then rolling flames and smoke
+               if (age < 1.0) {
+                  int k = (int)Mth.clamp(p.r2 * 7, 10, 45);
+                  for (int i = 0; i < k; i++) {
+                     Vec3 d = jit(r, 1.0).normalize();
+                     DarkSmoke.flame(c.add(d.scale(p.r2 * 0.25)), d.scale(p.r2 * r.nextDouble(0.06, 0.13)).add(0, 0.03, 0), (float)Mth.clamp(p.r2 * 0.28, 0.35, 1.8), r.nextInt(12, 22));
+                  }
+                  for (int i = 0; i < k / 3; i++) {
+                     Vec3 d = jit(r, 1.0).normalize();
+                     DarkSmoke.smoke(c.add(d.scale(p.r2 * 0.5)), d.scale(p.r2 * 0.04).add(0, 0.05, 0), (float)Mth.clamp(p.r2 * 0.3, 0.4, 2.0), r.nextInt(24, 40));
+                  }
+               }
+               break;
+            }
+            if (p.r < 0.1F) break;
+            int k = p.r > 1.0F ? 3 : (p.r > 0.35F ? 2 : 1);
+            for (int i = 0; i < k; i++) {
+               Vec3 d = jit(r, 1.0).normalize();
+               DarkSmoke.flame(c.add(d.scale(p.r * 0.8)), p.v.scale(-0.15).add(d.scale(0.02)).add(0, 0.02, 0), p.r * (float)r.nextDouble(0.6, 1.0), r.nextInt(6, 12));
+            }
+            if (p.v.lengthSqr() > 0.01 && r.nextInt(3) == 0) DarkSmoke.smoke(c.subtract(p.v.scale(0.6)), new Vec3(0, 0.03, 0), p.r * 1.2F, r.nextInt(16, 26));
+            break;
+         }
+         case 2: {
+            if (age > 3.0 && r.nextInt(3) != 0) break;
+            double len = p.d.length();
+            int k = (int)Mth.clamp(len * 0.5, 1, 5);
+            for (int i = 0; i < k; i++) {
+               DarkSmoke.flame(p.c.add(p.d.scale(r.nextDouble())).add(jit(r, p.r)), new Vec3(0, 0.03, 0), (float)Mth.clamp(p.r * 1.6 + 0.12, 0.15, 1.0), r.nextInt(8, 14));
+            }
+            break;
+         }
+         case 0: {
+            double frac = Mth.clamp(age / Math.max(1.0, life), 0.0, 1.0);
+            float R = p.r + (p.r2 - p.r) * (float)frac;
+            Vec3 c = p.c.add(p.d.scale(p.speed * age));
+            double span = p.a1 - p.a0;
+            double want = Mth.clamp(R * Math.abs(span) / 360.0 * Mth.clamp(p.h * 2.0, 0.15, 1.6), 0.0, 10.0);
+            int k = (int)want + (r.nextDouble() < want - (int)want ? 1 : 0);
+            Vec3 hx = p.d.cross(p.u).normalize();
+            for (int i = 0; i < k; i++) {
+               double th = Math.toRadians(p.a0 + span * r.nextDouble());
+               Vec3 o = c.add(p.d.scale(Math.cos(th) * R)).add(p.u.scale(Math.sin(th) * R)).add(hx.scale(r.nextDouble(-p.h, p.h)));
+               DarkSmoke.flame(o, new Vec3(0, 0.035, 0), (float)Mth.clamp(p.h * 0.6 + 0.2, 0.2, 1.0), r.nextInt(8, 14));
+            }
+            break;
+         }
+         case 13: {
+            double grow = 1.0 - Math.pow(1.0 - Mth.clamp(age / (life * 0.45), 0.0, 1.0), 3.0);
+            double R = p.r + (p.r2 - p.r) * grow;
+            Vec3 c = p.c.add(p.d.scale(p.speed * age));
+            for (int i = 0; i < (int)Mth.clamp(R * 1.5, 2, 7); i++) {
+               double fd = Math.toRadians(r.nextDouble(-70, 70));
+               Vec3 o = c.add(p.u.scale(Math.sin(fd) * R)).add(p.d.scale((Math.cos(fd) - 1.0) * R * 0.35));
+               DarkSmoke.flame(o, p.d.scale(p.speed * 0.3).add(0, 0.03, 0), (float)Mth.clamp(R * 0.12, 0.2, 0.8), r.nextInt(6, 12));
+            }
+            break;
+         }
+         case 8: {
+            if (p.speed != FxPacket.HOLD || r.nextInt(3) == 0) {
+               Vec3 o = travelledPos(f, age).add(p.d.scale(p.r * r.nextDouble()));
+               DarkSmoke.flame(o, new Vec3(0, 0.03, 0), (float)Mth.clamp(p.r2 * 2.0, 0.12, 0.6), r.nextInt(6, 10));
+            }
+            break;
+         }
+         default:
+      }
+   }
+
+   private static Vec3 travelledPos(FxRenderer.Fx f, double age) { return travelled(f, age); }
+
+   /**
+    * A ball of fire: a white-hot core blooming out to orange and a deep red rim, its surface churning, with a soft
+    * glowing halo. Explosions (h = 1) swell from r to r2 and darken as they burn out.
+    */
+   private static void fireballFx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, double life) {
+      boolean boom = p.h > 0.5F;
+      double R;
+      float al, heat;
+      if (boom) {
+         double g = 1.0 - Math.pow(1.0 - Mth.clamp(age / (life * 0.45), 0.0, 1.0), 3.0);
+         R = p.r + (p.r2 - p.r) * g;
+         double t = Mth.clamp(age / life, 0.0, 1.0);
+         al = (float)(1.0 - Math.pow(t, 2.0)) * 0.85F;
+         heat = (float)(1.0 - t);
+      } else {
+         R = p.r;
+         al = 0.95F;
+         heat = 1.0F;
+      }
+      if (R < 0.02 || al <= 0.01F) return;
+      Vec3 c = p.c.add(p.v.scale(age));
+      boolean inside = cam.distanceTo(c) < R * 1.02;
+      if (inside) al *= 0.25F;
+      int LAT = R > 1.2 ? 14 : 8, LON = R > 1.2 ? 24 : 12;
+      double t = fxTime;
+      float[] rim = RIM[FIRE];
+      for (int i = 0; i < LAT; i++) {
+         for (int j = 0; j < LON; j++) {
+            int[][] ij = {{i, j}, {i, j + 1}, {i + 1, j + 1}, {i + 1, j}};
+            Vec3[] w = new Vec3[4];
+            float[] fr = new float[4];
+            boolean front = false;
+            for (int k = 0; k < 4; k++) {
+               double th = Math.PI * ij[k][0] / LAT, ph = Math.PI * 2 * ij[k][1] / LON;
+               Vec3 nv = new Vec3(Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph));
+               double churn = 1.0 + 0.11 * Math.sin(4.0 * th + t * 0.9 + p.id) * Math.sin(3.0 * ph - t * 0.7) + 0.05 * Math.sin(7.0 * ph + t * 1.3);
+               w[k] = c.add(nv.scale(R * churn));
+               Vec3 view = cam.subtract(w[k]).normalize();
+               fr[k] = (float)(1.0 - Math.abs(nv.dot(view)));
+               if (nv.dot(view) > 0.0) front = true;
+            }
+            if (!inside && !front) continue;
+            for (int k = 0; k < 4; k++) {
+               float e = fr[k];   // 0 = facing you (hot core), 1 = the edge (cooler rim)
+               float[] col = {
+                  Mth.clamp(1.0F * heat + 0.35F * (1 - heat), 0, 1),
+                  Mth.clamp((0.92F - 0.62F * e) * heat + 0.08F * (1 - heat), 0, 1),
+                  Mth.clamp((0.55F - 0.52F * e) * heat + 0.04F * (1 - heat), 0, 1)};
+               vtx(vc, m, n, cam, w[k], col, al * (1.0F - 0.35F * e));
+            }
+            if (gv != null) gquad(m, cam, w[0], w[1], w[2], w[3], rim, fr[0] * al * 0.5F * heat, fr[1] * al * 0.5F * heat, fr[2] * al * 0.5F * heat, fr[3] * al * 0.5F * heat);
+         }
+      }
+   }
 
    /** Mercury drips: small silver beads fall off fresh mercury trails and moving mercury spheres. */
    private static void emitMercury(FxRenderer.Fx f, double age) {
@@ -847,6 +985,9 @@ public class FxRenderer {
                         break;
                      case 19:
                         mercurySphere(vc, m, n, cam, f.p, age, life);
+                        break;
+                     case 20:
+                        fireballFx(vc, m, n, cam, f.p, age, life);
                         break;
                      case 7:
                         boxFx(vc, m, n, cam, f, age, life);

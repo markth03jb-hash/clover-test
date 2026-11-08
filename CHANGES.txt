@@ -1,7 +1,25 @@
-Arcane Addon v1.26.0 - all changed files since v1.0.0
+Arcane Addon v1.27.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.27.0
+- NEW: Fire Grimoire (Magna Swing's Flame Magic) - ten fire spells, each with its own animation,
+  with real fire: glowing, churning fireballs, flames that burn from white-yellow to red to smoke,
+  and explosions that burst into fire and smoke. Burning is the addon's own (no vanilla fire effect).
+  Crafting: blaze powder, fire charge, blaze powder / arcane ingot, enchanted book, arcane ingot /
+  blaze powder, fire charge, blaze powder.
+  1 Exploding Fireball   - a fireball that explodes on impact
+  2 Explosive Scattershot - five fireballs in a spread
+  3 Super Magna Special  - toss up a huge fireball and bat it at them
+  4 Flaming Bat          - three swings of a bat of fire
+  5 Flame Knuckles       - your punches explode for 12 s
+  6 Ring of Fire         - a ring of fire walls around you for 5 s
+  7 Crazy Cyclone Rush   - ride your broom at full speed, ramming everything
+  8 Fireball Rain        - fireballs fall from the sky on an area
+  9 Soul Chain Deathmatch - a burning chain binds you and one enemy for 10 s
+  10 Explosive Fire Cannon - one giant fireball, an 8-block explosion
+  Passive Delinquent's Guts: hits burn for 3 s; below 30% health your fire hits 25% harder.
 
 NEW IN 1.26.0
 - NEW: Mercury Grimoire (Nozel Silva's Mercury Magic) - ten spells of liquid mercury, each with
