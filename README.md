@@ -1,4 +1,4 @@
-# Arcane Addon — Black Grimoire + Arcane Pulse (Iron's Spells 'n Spellbooks, Forge 1.20.1)
+# Iron Spell Grimoire (formerly Arcane Addon) — Black Grimoire + Arcane Pulse (Iron's Spells 'n Spellbooks, Forge 1.20.1)
 
 Needs Iron's Spells 'n Spellbooks 3.16.3+ installed alongside it (the book is an Iron's spellbook).
 

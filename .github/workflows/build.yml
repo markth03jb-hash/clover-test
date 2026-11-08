@@ -13,7 +13,7 @@ jobs:
         with: { gradle-version: 8.1.1 }
       - run: gradle build
       - uses: actions/upload-artifact@v4
-        with: { name: arcane_addon-jar, path: build/libs/*.jar }
+        with: { name: iron_spell_grimoire-jar, path: build/libs/*.jar }
       # Also publish the jar as the "latest" release, so there is always one stable download link
       - name: Publish latest release
         if: github.ref == 'refs/heads/main'

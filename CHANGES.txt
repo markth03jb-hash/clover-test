@@ -1,7 +1,11 @@
-Arcane Addon v1.40.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.40.1 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.40.1
+- The mod is now called "Iron Spell Grimoire" (mod list, creative tab, jar name: iron_spell_grimoire-<version>.jar).
+  Its internal id stays arcane_addon on purpose, so existing worlds keep every grimoire, item, spell and config.
 
 NEW IN 1.40.0
 - NEW: client effect settings (config/arcane_addon-client.toml, each player sets their own; the defaults are exactly

@@ -111,7 +111,7 @@ public class AstaFx {
         List<Runnable> due = new ArrayList<>();
         while (!TASKS.isEmpty() && TASKS.firstKey() <= serverTicks) due.addAll(TASKS.pollFirstEntry().getValue());
         for (Runnable t : due) {
-            try { t.run(); } catch (Exception ex) { LOGGER.warn("Arcane Addon staged effect failed", ex); }
+            try { t.run(); } catch (Exception ex) { LOGGER.warn("Iron Spell Grimoire staged effect failed", ex); }
         }
     }
 
