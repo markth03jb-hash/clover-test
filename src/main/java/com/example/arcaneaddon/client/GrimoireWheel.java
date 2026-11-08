@@ -77,6 +77,7 @@ public final class GrimoireWheel {
     }
 
     private static boolean failed = false;
+    private static double leafLobe = 0.3;
 
     private static int grimoireIndex() {
         if (failed) return -1;
@@ -179,6 +180,7 @@ public final class GrimoireWheel {
         // the clover in the centre (three leaves; Yuno's four; Asta's five black leaves)
         double rl = (rIn - 2.0) * 0.78;
         double spin = time * (book == 0 ? -0.25 : 0.25);
+        leafLobe = th.leaves >= 5 ? 0.24 : 0.3;
         for (int pass = 0; pass < 2; pass++) {   // the trim colour as an outline first, the leaf over it
             for (int l = 0; l < th.leaves; l++) {
                 double a = spin + l * TAU / th.leaves;
@@ -456,15 +458,15 @@ public final class GrimoireWheel {
 
     /** One heart-shaped clover leaf pointing out at angle a: two lobes and a point at the centre. */
     private static void leaf(BufferBuilder bb, Matrix4f m, int cx, int cy, double a, double rl, double grow, float r, float g, float b, float al) {
-        double lobe = rl * 0.42 + grow;
-        double off = rl * 0.36;
-        double dist = rl * 0.62;
+        double lobe = rl * leafLobe + grow;   // separate heart-shaped leaves, not one blob
+        double off = rl * 0.27;
+        double dist = rl * 0.74;
         double fx = Math.sin(a), fy = -Math.cos(a), sx = Math.cos(a), sy = Math.sin(a);
         double lx = cx + fx * dist, ly = cy + fy * dist;
         disc(bb, m, lx + sx * off, ly + sy * off, lobe, r, g, b, al);
         disc(bb, m, lx - sx * off, ly - sy * off, lobe, r, g, b, al);
         double tipX = cx - fx * grow, tipY = cy - fy * grow;
-        double w = off + lobe * 0.8;
+        double w = off + lobe * 0.75;
         v(bb, m, (float) tipX, (float) tipY, r, g, b, al);
         v(bb, m, (float) (lx + sx * w), (float) (ly + sy * w), r, g, b, al);
         v(bb, m, (float) (lx - sx * w), (float) (ly - sy * w), r, g, b, al);
