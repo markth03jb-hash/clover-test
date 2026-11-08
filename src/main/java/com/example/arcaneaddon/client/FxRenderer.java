@@ -2,6 +2,7 @@ package com.example.arcaneaddon.client;
 
 import com.example.arcaneaddon.network.FxPacket;
 import com.example.arcaneaddon.registry.AddonItemRegistry;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -53,11 +55,11 @@ public class FxRenderer {
       {1.0F, 0.30F, 0.07F}     // 9 ember (devil form)
    };
    /** Overall strength of every world effect. Lower = subtler. */
-   private static final float FX_ALPHA = 0.85F;
+   private static final float FX_ALPHA = 1.0F;
    /** Effects closer than this to the camera fade out so they never cover the screen (first person). */
    private static final double NEAR_FADE_START = 0.8;
    private static final double NEAR_FADE_RANGE = 2.4;
-   private static final float NEAR_FADE_MIN = 0.08F;
+   private static final float NEAR_FADE_MIN = 0.15F;
    private static boolean nearFade = false;
    private static double bookTime = 0.0;
    private static final List<FxRenderer.Fx> FX = new ArrayList<>();
@@ -66,9 +68,18 @@ public class FxRenderer {
    private static final int EMBER = 9;
    private static final List<FxRenderer.BookDraw> BOOKS = new ArrayList<>();
    private static final List<FxRenderer.AuraDraw> AURAS = new ArrayList<>();
+   /** Separate buffer for the additive glow layer (cores, rims, metal highlights). */
+   private static final MultiBufferSource.BufferSource GLOW_SRC = MultiBufferSource.immediate(new BufferBuilder(262144));
+   private static VertexConsumer gv;
+   /** Key light for the shaded 3D solids. */
+   private static final Vec3 LIGHT = new Vec3(0.35, 1.0, 0.25).normalize();
 
-   public static void queueBook(Vec3 pos, float yawS, float tiltDeg, float scale, float alpha, float flipCycle) {
-      BOOKS.add(new FxRenderer.BookDraw(pos, yawS, tiltDeg, scale, alpha, flipCycle));
+   /**
+    * Black-flame outline and turning pages for an open grimoire drawn at {@code pos} with the same transform as its
+    * 3D model. hw/hh = page width / half height and vDeg = how far the boards open from flat, in model blocks.
+    */
+   public static void queueBook(Vec3 pos, float yawS, float tiltDeg, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg) {
+      BOOKS.add(new FxRenderer.BookDraw(pos, yawS, tiltDeg, scale, alpha, flipCycle, hw, hh, vDeg));
    }
 
    public static void queueAura(Vec3 a, Vec3 b, float width, int pal, float alpha) {
@@ -175,6 +186,42 @@ public class FxRenderer {
       vtx(vc, m, n, cam, d, col, ad);
    }
 
+   // ------------------------------------------------------------------ additive glow layer
+   private static void gvtx(Matrix4f m, Vec3 cam, Vec3 w, float[] col, float a) {
+      if (gv == null) return;
+      if (nearFade) {
+         double d = w.distanceTo(cam);
+         a *= Mth.clamp((float)((d - NEAR_FADE_START) / NEAR_FADE_RANGE), NEAR_FADE_MIN, 1.0F) * FX_ALPHA;
+      }
+      gv.vertex(m, (float)(w.x - cam.x), (float)(w.y - cam.y), (float)(w.z - cam.z)).color(col[0], col[1], col[2], Mth.clamp(a, 0.0F, 1.0F)).endVertex();
+   }
+
+   private static void gquad(Matrix4f m, Vec3 cam, Vec3 a, Vec3 b, Vec3 c, Vec3 d, float[] col, float aa, float ab, float ac, float ad) {
+      gvtx(m, cam, a, col, aa);
+      gvtx(m, cam, b, col, ab);
+      gvtx(m, cam, c, col, ac);
+      gvtx(m, cam, d, col, ad);
+   }
+
+   /** A camera-facing glowing line: white-hot core with a soft coloured falloff. */
+   private static void gline(Matrix4f m, Vec3 cam, Vec3 p0, Vec3 p1, float w, int pal, float a) {
+      Vec3 ax = p1.subtract(p0);
+      if (ax.lengthSqr() < 1.0E-8) return;
+      Vec3 side = ax.cross(p0.add(p1).scale(0.5).subtract(cam));
+      if (side.lengthSqr() < 1.0E-8) return;
+      side = side.normalize();
+      float[] rim = RIM[pal], hot = hot(pal);
+      Vec3 c0 = side.scale(w * 0.35), o0 = side.scale(w);
+      gquad(m, cam, p0.add(c0), p1.add(c0), p1.subtract(c0), p0.subtract(c0), hot, a, a, a, a);
+      gquad(m, cam, p0.add(c0), p1.add(c0), p1.add(o0), p0.add(o0), rim, a * 0.6F, a * 0.6F, 0.0F, 0.0F);
+      gquad(m, cam, p0.subtract(c0), p1.subtract(c0), p1.subtract(o0), p0.subtract(o0), rim, a * 0.6F, a * 0.6F, 0.0F, 0.0F);
+   }
+
+   private static float[] hot(int pal) {
+      float[] r = RIM[pal];
+      return new float[]{r[0] + (1.0F - r[0]) * 0.55F, r[1] + (1.0F - r[1]) * 0.55F, r[2] + (1.0F - r[2]) * 0.55F};
+   }
+
    @SubscribeEvent
    public static void onRender(RenderLevelStageEvent e) {
       if (e.getStage() == Stage.AFTER_PARTICLES) {
@@ -189,6 +236,7 @@ public class FxRenderer {
             BufferSource buf = mc.renderBuffers().bufferSource();
             RenderType rt = RenderType.entityTranslucentEmissive(WHITE);
             VertexConsumer vc = buf.getBuffer(rt);
+            gv = GLOW_SRC.getBuffer(GlowRenderType.GLOW);
             double now = (double)((float)mc.level.getGameTime() + pt);
             Matrix4f m = ps.last().pose();
             Matrix3f n = ps.last().normal();
@@ -209,6 +257,12 @@ public class FxRenderer {
                         break;
                      case 2:
                         beam(vc, m, n, cam, f.p.c, f.p.c.add(f.p.d), f.p.r * (1.0F - 0.55F * (float)(age / life)), f.p.palette, env, 0.35);
+                        break;
+                     case 7:
+                        boxFx(vc, m, n, cam, f, age, life);
+                        break;
+                     case 8:
+                        spikeFx(vc, m, n, cam, f, age, life);
                   }
                }
             }
@@ -232,6 +286,8 @@ public class FxRenderer {
             AURAS.clear();
             nearFade = false;
             buf.endBatch(rt);
+            GLOW_SRC.endBatch(GlowRenderType.GLOW);
+            gv = null;
             if (!BOOKS.isEmpty()) {
                VertexConsumer bv = buf.getBuffer(rt);
 
@@ -489,10 +545,189 @@ public class FxRenderer {
       );
       Vec3 hand = base.add(0.0, (double)p.getEyeHeight() * 0.62, 0.0).add(fw.scale(0.35)).add(lf.scale(rightHand ? -0.42 : 0.42));
       boolean dash = p.isAutoSpinAttack();
+      if (!dash) return;   // no glow stuck on the sword at rest - only the dash streak
       Vec3 dir = dash ? p.getViewVector(pt).normalize() : fw.scale(0.5).add(0.0, 0.85, 0.0).normalize();
       // idle: a faint edge-glow along the blade; dashing: a stronger streak
       float a = (dash ? 0.9F : 0.4F) * pulse;
       beam(vc, m, n, cam, hand.subtract(dir.scale(0.25)), hand.add(dir.scale((double)len)), width * (dash ? 1.4F : 0.75F), pal, a, 0.5);
+   }
+
+   // ------------------------------------------------------------------ 3D solids (steel plates, bars, spikes...)
+   private static double backOut(double x) {
+      x = Mth.clamp(x, 0.0, 1.0) - 1.0;
+      return 1.0 + 2.2 * x * x * x + 1.2 * x * x;
+   }
+
+   private static double smooth(double x) {
+      x = Mth.clamp(x, 0.0, 1.0);
+      return x * x * (3.0 - 2.0 * x);
+   }
+
+   /** How far a moving solid has travelled: stops when its move time is up, or where it was killed. */
+   private static Vec3 travelled(FxRenderer.Fx f, double age) {
+      double mt = f.p.a1 > 0.0F ? Math.min(age, (double)f.p.a1) : age;
+      if (f.killAge >= 0.0) mt = Math.min(mt, f.killAge);
+      return f.p.c.add(f.p.v.scale(mt));
+   }
+
+   private static float[] solidLo(int pal) {
+      float[] b = BODY[pal];
+      return new float[]{b[0] * 1.6F + 0.06F, b[1] * 1.6F + 0.06F, b[2] * 1.6F + 0.07F};
+   }
+
+   /** Lit colour of a face: lambert from the key light plus a fresnel rim toward the camera. */
+   private static float[] shade(int pal, Vec3 nrm, Vec3 view, float mul) {
+      float lam = (float)Math.max(0.0, nrm.dot(LIGHT));
+      float fres = 1.0F - (float)Math.abs(nrm.dot(view));
+      float k = Mth.clamp(0.16F + 0.62F * lam + 0.3F * fres * fres, 0.0F, 1.0F) * mul;
+      float[] lo = solidLo(pal), hi = RIM[pal];
+      return new float[]{lo[0] + (hi[0] - lo[0]) * k, lo[1] + (hi[1] - lo[1]) * k, lo[2] + (hi[2] - lo[2]) * k};
+   }
+
+   /** One flat-shaded face (quad, or triangle with d == c). Returns false when it faces away and was skipped. */
+   private static boolean face(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 a, Vec3 b, Vec3 c, Vec3 d, Vec3 nrm, int pal, float al, Vec3 up, Vec3 ctr) {
+      Vec3 mid = a.add(b).add(c).add(d).scale(0.25);
+      Vec3 view = mid.subtract(cam);
+      double vl = view.length();
+      if (vl < 1.0E-6 || nrm.dot(view) > 0.0) return false;
+      view = view.scale(1.0 / vl);
+      float[] ca = shade(pal, nrm, view, a.subtract(ctr).dot(up) > 0.0 ? 1.0F : 0.78F);
+      float[] cb = shade(pal, nrm, view, b.subtract(ctr).dot(up) > 0.0 ? 1.0F : 0.78F);
+      float[] cc = shade(pal, nrm, view, c.subtract(ctr).dot(up) > 0.0 ? 1.0F : 0.78F);
+      float[] cd = shade(pal, nrm, view, d.subtract(ctr).dot(up) > 0.0 ? 1.0F : 0.78F);
+      vtx(vc, m, n, cam, a, ca, al);
+      vtx(vc, m, n, cam, b, cb, al);
+      vtx(vc, m, n, cam, c, cc, al);
+      vtx(vc, m, n, cam, d, cd, al);
+      return true;
+   }
+
+   /** BOX: a shaded block that pops in, rises out of the ground, or extends along its axis; can spin and travel. */
+   private static void boxFx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxRenderer.Fx f, double age, double life) {
+      FxPacket p = f.p;
+      Vec3 ax = p.d;
+      Vec3 s0 = ax.cross(p.u);
+      if (s0.lengthSqr() < 1.0E-6) s0 = ax.cross(new Vec3(1.0, 0.0, 0.0));
+      s0 = s0.normalize();
+      Vec3 u0 = s0.cross(ax).normalize();
+      double th = Math.toRadians((double)p.a0 * age);
+      Vec3 side = s0.scale(Math.cos(th)).add(u0.scale(Math.sin(th)));
+      Vec3 upv = u0.scale(Math.cos(th)).subtract(s0.scale(Math.sin(th)));
+      double in = p.sweep > 0 ? Mth.clamp(age / (double)p.sweep, 0.0, 1.0) : 1.0;
+      double out = smooth((life - age) / Math.min(6.0, Math.max(2.0, life * 0.3)));
+      double hl = p.r, hw = p.r2, hh = p.h;
+      Vec3 c = travelled(f, age);
+      if (p.speed == FxPacket.GROUND) {
+         c = c.subtract(u0.scale(2.0 * hh * (1.0 - backOut(in)) + 2.0 * hh * (1.0 - out)));
+      } else if (p.speed == FxPacket.EXTEND) {
+         double L = hl * in;
+         c = c.subtract(ax.scale(hl - L));
+         hl = Math.max(0.001, L);
+         hw *= out;
+         hh *= out;
+      } else {
+         double k = backOut(in) * out;
+         hl *= k; hw *= k; hh *= k;
+      }
+      if (hl < 0.002 || hw < 0.002 || hh < 0.002) return;
+      float al = 0.96F * (float)Mth.clamp(age * 2.0 + 0.3, 0.0, 1.0);
+      drawBox(vc, m, n, cam, c, ax, side, upv, hl, hw, hh, p.palette, al, 1.0F);
+   }
+
+   /** A shaded box with glowing visible edges (brighter along the top). */
+   private static void drawBox(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, Vec3 ax, Vec3 side, Vec3 upv,
+                               double hl, double hw, double hh, int pal, float al, float edgeGlow) {
+      Vec3[] k = new Vec3[8];
+      for (int i = 0; i < 8; i++) {
+         k[i] = c.add(ax.scale((i & 1) != 0 ? hl : -hl)).add(side.scale((i & 2) != 0 ? hw : -hw)).add(upv.scale((i & 4) != 0 ? hh : -hh));
+      }
+      Vec3 wup = new Vec3(0.0, 1.0, 0.0);
+      // visible[bit index][sign]
+      boolean[][] vis = new boolean[3][2];
+      vis[0][1] = face(vc, m, n, cam, k[1], k[3], k[7], k[5], ax, pal, al, wup, c);
+      vis[0][0] = face(vc, m, n, cam, k[0], k[4], k[6], k[2], ax.scale(-1.0), pal, al, wup, c);
+      vis[1][1] = face(vc, m, n, cam, k[2], k[6], k[7], k[3], side, pal, al, wup, c);
+      vis[1][0] = face(vc, m, n, cam, k[0], k[1], k[5], k[4], side.scale(-1.0), pal, al, wup, c);
+      vis[2][1] = face(vc, m, n, cam, k[4], k[5], k[7], k[6], upv, pal, al, wup, c);
+      vis[2][0] = face(vc, m, n, cam, k[0], k[2], k[3], k[1], upv.scale(-1.0), pal, al, wup, c);
+      if (edgeGlow <= 0.0F) return;
+      float lw = (float)Mth.clamp(Math.min(hw, hh) * 0.35, 0.012, 0.06);
+      for (int i = 0; i < 8; i++) {
+         for (int b = 0; b < 3; b++) {
+            int bit = 1 << b;
+            if ((i & bit) != 0) continue;
+            int j = i | bit;
+            int b1 = (b + 1) % 3, b2 = (b + 2) % 3;
+            boolean v1 = vis[b1][(i >> b1) & 1], v2 = vis[b2][(i >> b2) & 1];
+            if (!v1 && !v2) continue;
+            boolean top = b != 2 && (i & 4) != 0;
+            boolean sil = v1 != v2;   // silhouette edges glow a little stronger
+            gline(m, cam, k[i], k[j], lw, pal, al * edgeGlow * (top ? 0.55F : (sil ? 0.32F : 0.18F)));
+         }
+      }
+   }
+
+   /** SPIKE: a faceted six-sided steel spike with a collar; erupts (overshooting), can spin and travel, retracts at the end. */
+   private static void spikeFx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxRenderer.Fx f, double age, double life) {
+      FxPacket p = f.p;
+      double in = p.sweep > 0 ? Mth.clamp(age / (double)p.sweep, 0.0, 1.0) : 1.0;
+      double out = smooth((life - age) / Math.min(6.0, Math.max(2.0, life * 0.3)));
+      double k = (p.speed == FxPacket.EXTEND ? in : backOut(in)) * out;
+      double L = p.r * k;
+      double R = p.r2 * (0.45 + 0.55 * Math.min(1.0, k));
+      if (L < 0.01) return;
+      float al = 0.96F * (float)Mth.clamp(age * 2.0 + 0.3, 0.0, 1.0);
+      drawSpike(vc, m, n, cam, travelled(f, age), p.d, L, R, Math.toRadians((double)p.a0 * age), p.palette, al);
+      // a glint off the tip right as it finishes erupting
+      double g = age - (double)p.sweep;
+      if (g > -1.0 && g < 6.0) {
+         Vec3 tip = travelled(f, age).add(p.d.scale(L));
+         float ga = al * (float)(1.0 - Math.abs(g - 1.0) / 5.0);
+         double gs = Math.max(0.25, R * 2.4);
+         Vec3 view = tip.subtract(cam).normalize();
+         Vec3 g1 = view.cross(new Vec3(0.0, 1.0, 0.0));
+         if (g1.lengthSqr() < 1.0E-4) g1 = new Vec3(1.0, 0.0, 0.0);
+         g1 = g1.normalize();
+         Vec3 g2 = view.cross(g1).normalize();
+         gline(m, cam, tip.subtract(g1.scale(gs)), tip.add(g1.scale(gs)), 0.04F, p.palette, ga);
+         gline(m, cam, tip.subtract(g2.scale(gs)), tip.add(g2.scale(gs)), 0.04F, p.palette, ga);
+      }
+   }
+
+   private static void drawSpike(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 base, Vec3 d, double L, double R, double spin, int pal, float al) {
+      Vec3 ref = Math.abs(d.y) > 0.95 ? new Vec3(1.0, 0.0, 0.0) : new Vec3(0.0, 1.0, 0.0);
+      Vec3 e1 = d.cross(ref).normalize(), e2 = d.cross(e1).normalize();
+      int N = 6;
+      Vec3[] r0 = new Vec3[N], r1 = new Vec3[N];
+      Vec3 collar = base.add(d.scale(L * 0.3));
+      for (int j = 0; j < N; j++) {
+         double a0 = spin + Math.PI * 2.0 * j / N, a1 = a0 + Math.PI / N;
+         r0[j] = base.add(e1.scale(Math.cos(a0) * R)).add(e2.scale(Math.sin(a0) * R));
+         r1[j] = collar.add(e1.scale(Math.cos(a1) * R * 0.72)).add(e2.scale(Math.sin(a1) * R * 0.72));
+      }
+      Vec3 tip = base.add(d.scale(L));
+      Vec3 ctr = base.add(d.scale(L * 0.4));
+      boolean[] tipVis = new boolean[N];
+      for (int j = 0; j < N; j++) {
+         int jn = (j + 1) % N;
+         tri(vc, m, n, cam, r0[j], r0[jn], r1[j], base, d, pal, al, ctr);
+         tri(vc, m, n, cam, r1[j], r0[jn], r1[jn], base, d, pal, al, ctr);
+         tipVis[j] = tri(vc, m, n, cam, r1[j], r1[jn], tip, base, d, pal, al, ctr);
+      }
+      float lw = (float)Mth.clamp(R * 0.18, 0.012, 0.05);
+      for (int j = 0; j < N; j++) {
+         if (tipVis[j] || tipVis[(j + N - 1) % N]) gline(m, cam, r1[j], tip, lw, pal, al * 0.4F);
+      }
+   }
+
+   private static boolean tri(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 a, Vec3 b, Vec3 c, Vec3 base, Vec3 d, int pal, float al, Vec3 ctr) {
+      Vec3 nrm = b.subtract(a).cross(c.subtract(a));
+      if (nrm.lengthSqr() < 1.0E-10) return false;
+      nrm = nrm.normalize();
+      Vec3 mid = a.add(b).add(c).scale(1.0 / 3.0);
+      Vec3 axisPt = base.add(d.scale(mid.subtract(base).dot(d)));
+      if (nrm.dot(mid.subtract(axisPt)) < 0.0) nrm = nrm.scale(-1.0);
+      return face(vc, m, n, cam, a, b, c, c, nrm, pal, al, d, ctr);
    }
 
    private static void wall(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, float env) {
@@ -529,7 +764,7 @@ public class FxRenderer {
             quad(vc, m, n, cam, p0.add(h.scale(hh0)), p1.add(h.scale(hh1)), p1, p0, body, 0.0F, 0.0F, A1, A0);
             quad(vc, m, n, cam, p0, p1, p1.subtract(h.scale(hh1)), p0.subtract(h.scale(hh0)), body, A0, A1, 0.0F, 0.0F);
             if (layer == 1) {
-               double lw = (double)p.h * 0.05;
+               double lw = (double)p.h * 0.07;
                quad(
                   vc,
                   m,
@@ -545,6 +780,13 @@ public class FxRenderer {
                   0.95F * env * lead1,
                   0.95F * env * lead0
                );
+               // glow: white-hot cutting edge plus a soft bloom either side
+               float[] hc = hot(p.palette);
+               double bw = (double)p.h * 0.32;
+               gquad(m, cam, p0.add(h.scale(lw)), p1.add(h.scale(lw)), p1.subtract(h.scale(lw)), p0.subtract(h.scale(lw)), hc,
+                  0.9F * env * lead0, 0.9F * env * lead1, 0.9F * env * lead1, 0.9F * env * lead0);
+               gquad(m, cam, p0.add(h.scale(lw)), p1.add(h.scale(lw)), p1.add(h.scale(bw)), p0.add(h.scale(bw)), rim, 0.45F * env * lead0, 0.45F * env * lead1, 0.0F, 0.0F);
+               gquad(m, cam, p0.subtract(h.scale(lw)), p1.subtract(h.scale(lw)), p1.subtract(h.scale(bw)), p0.subtract(h.scale(bw)), rim, 0.45F * env * lead0, 0.45F * env * lead1, 0.0F, 0.0F);
             }
          }
       }
@@ -565,6 +807,7 @@ public class FxRenderer {
             Vec3 i0 = p0.add(h.scale(hh0 * (double)sgn * 0.9));
             Vec3 i1 = p1.add(h.scale(hh1 * (double)sgn * 0.9));
             quad(vc, m, n, cam, e0, e1, i1, i0, rim, 0.55F * env, 0.55F * env, 0.1F * env, 0.1F * env);
+            gquad(m, cam, e0, e1, i1, i0, rim, 0.35F * env, 0.35F * env, 0.0F, 0.0F);
          }
       }
    }
@@ -617,6 +860,11 @@ public class FxRenderer {
             0.7F * env,
             0.7F * env
          );
+         // glow: white-hot blade edge and a bloom ahead of it, so the slash reads from far away
+         float[] hc = hot(pal);
+         gquad(m, cam, o0.add(d.scale(w0 * 0.3)), o1.add(d.scale(w1 * 0.3)), o1.subtract(d.scale(w1 * 0.6)), o0.subtract(d.scale(w0 * 0.6)), hc, env, env, 0.8F * env, 0.8F * env);
+         gquad(m, cam, o0.add(d.scale(w0 * 0.3)), o1.add(d.scale(w1 * 0.3)), o1.add(d.scale(w1 * 2.6)), o0.add(d.scale(w0 * 2.6)), rim, 0.5F * env, 0.5F * env, 0.0F, 0.0F);
+         gquad(m, cam, o0.subtract(d.scale(w0 * 0.6)), o1.subtract(d.scale(w1 * 0.6)), i1, i0, rim, 0.45F * env, 0.45F * env, 0.0F, 0.0F);
       }
    }
 
@@ -660,6 +908,12 @@ public class FxRenderer {
                   0.95F * env,
                   0.95F * env
                );
+               // glow: hot core and bloom
+               float[] hc = hot(pal);
+               double gc0 = w0 * 0.16, gc1 = w1 * 0.16, gb0 = w0 * 0.75, gb1 = w1 * 0.75;
+               gquad(m, cam, a.add(nn.scale(gc0)), b.add(nn.scale(gc1)), b.subtract(nn.scale(gc1)), a.subtract(nn.scale(gc0)), hc, 0.8F * env, 0.8F * env, 0.8F * env, 0.8F * env);
+               gquad(m, cam, a.add(nn.scale(gc0)), b.add(nn.scale(gc1)), b.add(nn.scale(gb1)), a.add(nn.scale(gb0)), rim, 0.35F * env, 0.35F * env, 0.0F, 0.0F);
+               gquad(m, cam, a.subtract(nn.scale(gc0)), b.subtract(nn.scale(gc1)), b.subtract(nn.scale(gb1)), a.subtract(nn.scale(gb0)), rim, 0.35F * env, 0.35F * env, 0.0F, 0.0F);
             }
          }
       }
@@ -674,15 +928,15 @@ public class FxRenderer {
       ps.scale(b.scale, b.scale, b.scale);
       Matrix4f m = ps.last().pose();
       Matrix3f n = ps.last().normal();
-      float HW = 0.5F;
-      float HH = 0.36F;
-      float V = (float)Math.toRadians(12.0);
+      float HW = b.hw;
+      float HH = b.hh;
+      float V = (float)Math.toRadians((double)b.vDeg);
       float al = b.alpha;
 
+      // the book itself is the real 3D model (drawn by GrimoireFloatRenderer); here only its black-flame outline
       for (int s = -1; s <= 1; s += 2) {
          float dx = (float)s * (float)Math.cos((double)V), dz = (float)Math.sin((double)V);
-         panelOutline(vc, m, n, dx, dz, -0.004F, 0.5F, 0.36F, al, s);
-         panel(vc, m, n, dx, dz, 0.0F, 0.5F, 0.36F, al);
+         panelOutline(vc, m, n, dx, dz, -0.03F, HW, HH, al, s);
       }
 
       if (b.flipCycle >= 0.0F) {
@@ -691,13 +945,27 @@ public class FxRenderer {
             if (!(sP <= 0.0F) && !(sP >= 1.0F)) {
                float mm = 0.5F - 0.5F * (float)Math.cos(Math.PI * (double)sP);
                double alpha = Math.toRadians((double)(-22.5F - 135.0F * mm));
-               float lift = 0.015F * (1.0F - 2.0F * mm);
-               panel(vc, m, n, (float)Math.cos(alpha), (float)(-Math.sin(alpha)), lift, 0.48F, 0.3456F, al * 0.9F);
+               float lift = 0.07F + 0.03F * (1.0F - 2.0F * Math.abs(mm - 0.5F));
+               page(vc, m, n, (float)Math.cos(alpha), (float)(-Math.sin(alpha)), lift, HW * 0.95F, HH * 0.92F, al);
             }
          }
       }
 
       ps.popPose();
+   }
+
+   /** A turning parchment page with a few lines of ink. */
+   private static void page(VertexConsumer vc, Matrix4f m, Matrix3f n, float dx, float dz, float lift, float w, float h, float al) {
+      float[] paper = new float[]{0.86F, 0.8F, 0.64F};
+      float[] ink = new float[]{0.22F, 0.12F, 0.1F};
+      Vec3 z = Vec3.ZERO;
+      quad(vc, m, n, z, pt(dx, dz, lift, 0.0F, -h), pt(dx, dz, lift, w, -h), pt(dx, dz, lift, w, h), pt(dx, dz, lift, 0.0F, h), paper, 0.97F * al, 0.97F * al, 0.97F * al, 0.97F * al);
+      for (int i = 1; i <= 6; i++) {
+         float y = -h + 2.0F * h * (float)i / 7.0F;
+         float len = w * (i % 3 == 0 ? 0.5F : 0.78F);
+         float l2 = lift + 0.002F;
+         quad(vc, m, n, z, pt(dx, dz, l2, w * 0.1F, y - 0.007F), pt(dx, dz, l2, w * 0.1F + len, y - 0.007F), pt(dx, dz, l2, w * 0.1F + len, y + 0.007F), pt(dx, dz, l2, w * 0.1F, y + 0.007F), ink, 0.7F * al, 0.7F * al, 0.7F * al, 0.7F * al);
+      }
    }
 
    private static void panel(VertexConsumer vc, Matrix4f m, Matrix3f n, float dx, float dz, float lift, float w, float h, float al) {
@@ -800,7 +1068,7 @@ public class FxRenderer {
    private static record AuraDraw(Vec3 a, Vec3 b, float width, int pal, float alpha) {
    }
 
-   private static record BookDraw(Vec3 pos, float yaw, float tilt, float scale, float alpha, float flipCycle) {
+   private static record BookDraw(Vec3 pos, float yaw, float tilt, float scale, float alpha, float flipCycle, float hw, float hh, float vDeg) {
    }
 
    private static class Fx {

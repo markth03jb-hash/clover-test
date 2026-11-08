@@ -189,6 +189,13 @@ public class AstaFx {
                     FxSend.beam(sl, Fx.CRIMSON, a, b, 0.35f, 14);
                     FxSend.beam(sl, Fx.DARK, a.add(rt.scale(0.25)), b.subtract(rt.scale(0.25)), 0.15f, 12);
                     Fx.pillar(sl, Fx.DARK, b, 0.9f, 0.3f, 6);
+                    // the ground splits: jagged black slabs heave up on both sides of the crack
+                    for (int sd = -1; sd <= 1; sd += 2) {
+                        Vec3 tiltUp = new Vec3(0, 1, 0).add(rt.scale(0.45 * sd)).normalize();
+                        float hgt = 0.35f + 0.12f * ((seg + sd + 2) % 3);
+                        FxSend.box(sl, Fx.DARK, b.subtract(dir.scale(0.8)).add(rt.scale(0.55 * sd)).add(0, hgt * 0.6, 0), dir, tiltUp,
+                                0.6f, 0.22f, hgt, 16, 2, com.example.arcaneaddon.network.FxPacket.GROUND);
+                    }
                     sound(sl, b, SoundEvents.STONE_BREAK, 0.7f, 0.6f);
                 });
             }
@@ -303,8 +310,9 @@ public class AstaFx {
             Vec3 c = path.get(i);
             double s = (rnd.nextDouble() - 0.5) * 0.9;
             Vec3 shard = up.scale(0.8 + rnd.nextDouble() * 0.9).add(rt.scale(s));
-            FxSend.beam(sl, riftPal, c, c.add(shard), 0.18f, 12);
-            FxSend.beam(sl, riftPal, c, c.subtract(shard.scale(0.7)), 0.14f, 12);
+            FxSend.beam(sl, riftPal, c, c.add(shard), 0.12f, 12);
+            FxSend.spike(sl, riftPal, c, shard, (float) shard.length(), 0.09f, 12, 2, com.example.arcaneaddon.network.FxPacket.POP);   // solid shard
+            FxSend.spike(sl, riftPal, c, shard.scale(-1), (float) shard.length() * 0.7f, 0.07f, 12, 2, com.example.arcaneaddon.network.FxPacket.POP);
         }
         sound(sl, a, SoundEvents.ENDER_DRAGON_FLAP, 0.9f, 0.5f);
         sound(sl, b, SoundEvents.ILLUSIONER_CAST_SPELL, 0.9f, 0.5f);

@@ -1,7 +1,39 @@
-Arcane Addon v1.12.1 - all changed files since v1.0.0
+Arcane Addon v1.13.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.13.0 - 3D STEEL, BRIGHTER EFFECTS, REAL 3D BOOK
+  Effects (everything):
+  - New additive glow layer: every slash, crescent, wall and beam now has a white-hot core and a soft bloom,
+    so slashes are easy to see by day and by night. Near the camera they still fade so they never cover the screen.
+  - New solid 3D shapes: shaded boxes (plates, bars, rails) and faceted spikes, lit with a key light and glowing edges.
+    They pop in, rise out of / sink into the ground, extend along their length, spin and travel.
+  - Spike rings, shard bursts and cages from the effect library are now solid 3D; Sky Splitter's rift has solid shards;
+    Zetten's crack heaves up black slabs on both sides.
+  Steel Grimoire - all 8 moves rebuilt in 3D steel:
+  - Violent Rotating Lance: a solid spinning lance (shaft, gold collar, drill tip) that drills forward and sticks in walls.
+  - Blazing Spiral Lance: the lance forms and spins up in your hand, then extends to full length in an instant.
+  - Armored Wall: five steel slabs slam up one after another, then gold trim, battlements and a crest lock on top.
+  - White Steel Horse Cart: a white-steel cart with spinning wheels pulled by a steel horse charges with you.
+  - Thunder Arrow: solid rails and a breech, coils lighting up as it charges, shock rings along the shot,
+    and the bolt stays buried where it hit.
+  - Acier Silva: a forest of solid steel and gold spikes erupts in three rings (they follow the ground).
+  - Steel Prison: solid bars shoot up, rings lock them together, then the bars slam inward.
+  - Knight's Armor: plates fly in from all around and lock onto your body with a clang.
+  Grimoire:
+  - The open floating book is now the real 3D book model (no longer see-through), lit by the world, with the
+    black-flame outline and turning pages. Works for every grimoire of the addon, not just the Black Grimoire.
+  - The book on your hip is much smaller.
+  - First person: the open grimoire rises into view at the lower left while you cast.
+  Swords:
+  - Removed the glow that stayed stuck on Asta's swords (it only shows during a dash now) and the Black Blade beam on
+    Yami's katana.
+  - Yami's katana is now a 3D model (curved stepped blade with hamon, habaki, tsuba, wrapped handle, pommel).
+  Asta:
+  - Zetten plays a much faster cleave animation.
+  - Borrowed Slash and Devil Borrowed: Four Elements need the Demon Dweller Sword in your MAIN hand.
+  - Four Elements uses all four elements in a new random order every cast.
 
 NEW IN 1.12.1 - POLISH / BUILD-SAFETY PASS
   - Fixed a compile error: DarkKatanaItem used Properties without importing it (now Item.Properties).

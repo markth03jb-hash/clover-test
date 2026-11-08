@@ -116,9 +116,11 @@ public final class DevilFx {
         FxLib.crossSlash(p.serverLevel(), EMBER, p.getEyePosition().add(p.getLookAngle().scale(1.5)), p.getLookAngle(), 1.0f);
     }
 
-    /** Devil Borrowed: Four Elements - fire, ice, lightning and wind slashes back to back. */
+    /** Devil Borrowed: Four Elements - fire, ice, lightning and wind slashes back to back, in a random order. */
     public static void borrowedSlash(ServerPlayer p, float power) {
-        String[] els = {"fire", "ice", "lightning", "wind"};
+        java.util.List<String> order = new java.util.ArrayList<>(java.util.List.of("fire", "ice", "lightning", "wind"));
+        java.util.Collections.shuffle(order, new java.util.Random(p.getRandom().nextLong()));   // all four, in a new order each cast
+        String[] els = order.toArray(new String[0]);
         for (int k = 0; k < 4; k++) {
             final String el = els[k];
             AstaFx.later(1 + k * 4, () -> { if (alive(p)) AstaFx.dwellerSlash(p, power * 0.75f, true, el); });

@@ -11,23 +11,25 @@ import java.util.function.Supplier;
 
 /** Server -> client: spawn (or kill) one 3D slash effect. See FxRenderer for the shapes. */
 public class FxPacket {
-    public static final byte WALL = 0, CRESCENT = 1, BEAM = 2, KILL = 3;
+    public static final byte WALL = 0, CRESCENT = 1, BEAM = 2, KILL = 3, BOX = 7, SPIKE = 8;
+    /** BOX / SPIKE modes (sent in {@code speed}): pop in and out, rise out of / sink into the ground, extend along the axis. */
+    public static final float POP = 0, GROUND = 1, EXTEND = 2;
 
     public byte shape, palette;
     public int id, life, sweep;
-    public Vec3 c = Vec3.ZERO, d = Vec3.ZERO, u = Vec3.ZERO;
+    public Vec3 c = Vec3.ZERO, d = Vec3.ZERO, u = Vec3.ZERO, v = Vec3.ZERO;   // v = velocity per tick (BOX / SPIKE)
     public float r, r2, a0, a1, h, speed;
 
     public static void encode(FxPacket p, FriendlyByteBuf b) {
         b.writeByte(p.shape); b.writeByte(p.palette); b.writeVarInt(p.id); b.writeVarInt(p.life); b.writeVarInt(p.sweep);
-        vec(b, p.c); vec(b, p.d); vec(b, p.u);
+        vec(b, p.c); vec(b, p.d); vec(b, p.u); vec(b, p.v);
         b.writeFloat(p.r); b.writeFloat(p.r2); b.writeFloat(p.a0); b.writeFloat(p.a1); b.writeFloat(p.h); b.writeFloat(p.speed);
     }
 
     public static FxPacket decode(FriendlyByteBuf b) {
         FxPacket p = new FxPacket();
         p.shape = b.readByte(); p.palette = b.readByte(); p.id = b.readVarInt(); p.life = b.readVarInt(); p.sweep = b.readVarInt();
-        p.c = vec(b); p.d = vec(b); p.u = vec(b);
+        p.c = vec(b); p.d = vec(b); p.u = vec(b); p.v = vec(b);
         p.r = b.readFloat(); p.r2 = b.readFloat(); p.a0 = b.readFloat(); p.a1 = b.readFloat(); p.h = b.readFloat(); p.speed = b.readFloat();
         return p;
     }

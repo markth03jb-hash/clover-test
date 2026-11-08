@@ -194,9 +194,10 @@ public final class FxLib {
 
     /** Thorns bursting out in every direction. */
     public static void spikeBurst(ServerLevel sl, int pal, Vec3 c, float s) {
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++) {   // solid 3D shards, with a glowing streak along each
             Vec3 v = randomUnit();
-            FxSend.beam(sl, pal, c.add(v.scale(0.2 * s)), c.add(v.scale(1.3 * s)), 0.16f * s, 7);
+            FxSend.spike(sl, pal, c.add(v.scale(0.15 * s)), v, 1.2f * s, 0.11f * s, 9, 2, com.example.arcaneaddon.network.FxPacket.POP);
+            if (i % 2 == 0) FxSend.beam(sl, pal, c.add(v.scale(0.2 * s)), c.add(v.scale(1.6 * s)), 0.1f * s, 6);
         }
     }
 
@@ -206,7 +207,8 @@ public final class FxLib {
         for (int i = 0; i < n; i++) {
             double a = Math.PI * 2 * i / n;
             Vec3 b = feet.add(Math.cos(a) * 1.8 * s, 0, Math.sin(a) * 1.8 * s);
-            FxSend.beam(sl, pal, b, b.add(Math.cos(a) * 0.25 * s, 1.6 * s, Math.sin(a) * 0.25 * s), 0.3f * s, 12);
+            FxSend.spike(sl, pal, b.add(0, -0.1, 0), new Vec3(Math.cos(a) * 0.25, 1.6, Math.sin(a) * 0.25), (1.5f + (i % 2) * 0.35f) * s, 0.2f * s, 14, 3,
+                    com.example.arcaneaddon.network.FxPacket.GROUND);   // solid spikes erupting from the floor
         }
     }
 
@@ -236,7 +238,8 @@ public final class FxLib {
         for (int i = 0; i < n; i++) {
             double a = Math.PI * 2 * i / n;
             Vec3 b = feet.add(Math.cos(a) * 0.9 * s, 0, Math.sin(a) * 0.9 * s);
-            FxSend.beam(sl, pal, b, b.add(0, 2.4 * s, 0), 0.14f * s, 12);
+            FxSend.box(sl, pal, b.add(0, 1.2 * s, 0), new Vec3(Math.cos(a), 0, Math.sin(a)), UP, 0.06f * s, 0.06f * s, 1.2f * s, 14, 3,
+                    com.example.arcaneaddon.network.FxPacket.GROUND);   // solid bars
         }
         FxSend.ring(sl, pal, feet.add(0, 0.05, 0), 0.85f * s, 0.95f * s, 0.08f * s, 12);
         FxSend.ring(sl, pal, feet.add(0, 2.4 * s, 0), 0.85f * s, 0.95f * s, 0.08f * s, 12);

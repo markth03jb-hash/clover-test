@@ -12,12 +12,18 @@ import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
+import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -29,6 +35,7 @@ import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import org.joml.Vector3f;
 
 @EventBusSubscriber(
    modid = "arcane_addon",
@@ -44,7 +51,11 @@ public class GrimoireFloatRenderer {
    private static final double HIP_SIDE = 0.4;
    private static final double HIP_BACK = 0.05;
    private static final double HIP_HEIGHT = 0.45;
-   private static final float HIP_SCALE = 0.7F;
+   private static final float HIP_SCALE = 0.4F;
+   /** Open book: scale of the 3D model when floating beside you, and when held in view in first person. */
+   private static final float OPEN_SCALE = 0.6F;
+   private static final float FP_SCALE = 0.34F;
+   private static final Map<Integer, ItemStack> BOOK_STACK = new HashMap<>();
    private static final int FLIP_CYCLE = 50;
    private static final float SWORD_SCALE = 0.9F;
    private static final float SWORD_CENTER = 0.582F;
@@ -75,6 +86,32 @@ public class GrimoireFloatRenderer {
       if (level != null) {
          OPEN_UNTIL.put(entityId, level.getGameTime() + 60L);
       }
+   }
+
+   /** Every grimoire of this addon floats open while you cast (Black, Dark, Steel and the themed ones). */
+   public static boolean isAddonGrimoire(ItemStack s) {
+      return s != null && !s.isEmpty() && "arcane_addon".equals(BuiltInRegistries.ITEM.getKey(s.getItem()).getNamespace());
+   }
+
+   private static boolean customModel(Item item) {
+      return item == AddonItemRegistry.BLACK_GRIMOIRE.get();
+   }
+
+   /**
+    * Draws the real 3D open-book model, centred, pages facing local +z (matches FxRenderer.book's frame).
+    * The Black Grimoire has its own upright open model; the others use Iron's flat open template, turned to match.
+    */
+   private static void renderOpen(Minecraft mc, PoseStack ps, BufferSource buf, ItemStack book, int seed, int light) {
+      if (!customModel(book.getItem())) {
+         ps.mulPose(Axis.XP.rotationDegrees(90.0F));
+         ps.translate(0.125, -0.594, 0.0);
+      }
+      mc.getItemRenderer().renderStatic(book, ItemDisplayContext.HEAD, light, OverlayTexture.NO_OVERLAY, ps, buf, mc.level, seed);
+   }
+
+   private static void queueOutline(ItemStack book, Vec3 pos, float yaw, float tilt, float scale, float alpha, float cyc) {
+      if (customModel(book.getItem())) FxRenderer.queueBook(pos, yaw, tilt, scale, alpha, cyc, 0.46F, 0.375F, 22.5F);
+      else FxRenderer.queueBook(pos, yaw, tilt, scale, alpha, cyc, 0.44F, 0.31F, 0.0F);
    }
 
    private static float ease(float x) {
@@ -120,7 +157,8 @@ public class GrimoireFloatRenderer {
 
             for (Player p : mc.level.players()) {
                ItemStack equipped = Utils.getPlayerSpellbookStack(p);
-               boolean has = equipped != null && equipped.getItem() instanceof BlackGrimoireItem;
+               boolean has = isAddonGrimoire(equipped);
+               if (has) BOOK_STACK.put(p.getId(), equipped.copyWithCount(1));
                float[] pr = PROGRESS.computeIfAbsent(p.getId(), k -> new float[]{0.0F, 0.0F});
                pr[0] = pr[1];
                boolean open = has && (OPEN_UNTIL.getOrDefault(p.getId(), 0L) > now || ANIMS.containsKey(p.getId()));
@@ -159,6 +197,7 @@ public class GrimoireFloatRenderer {
             ANIMS.values().removeIf(s -> now - s > 18L);
             PROGRESS.keySet().removeIf(id -> !HOLDERS.contains(id) && PROGRESS.get(id)[1] <= 0.0F);
             SMOOTH_YAW.keySet().retainAll(PROGRESS.keySet());
+            BOOK_STACK.keySet().retainAll(HOLDERS);
          }
       }
    }
@@ -172,7 +211,8 @@ public class GrimoireFloatRenderer {
             PoseStack ps = e.getPoseStack();
             Vec3 cam = e.getCamera().getPosition();
             BufferSource buf = mc.renderBuffers().bufferSource();
-            ItemStack book = new ItemStack((ItemLike)AddonItemRegistry.BLACK_GRIMOIRE.get());
+            ItemStack fallback = new ItemStack((ItemLike)AddonItemRegistry.BLACK_GRIMOIRE.get());
+            Camera camera = e.getCamera();
             ItemStack sword = new ItemStack((ItemLike)AddonItemRegistry.DEMON_SLAYER_SWORD.get());
             ItemStack twin = new ItemStack((ItemLike)AddonItemRegistry.DEMON_DWELLER_SWORD.get());
             new ItemStack((ItemLike)AddonItemRegistry.GRIMOIRE_PAGE.get());
@@ -181,6 +221,7 @@ public class GrimoireFloatRenderer {
                if (HOLDERS.contains(p.getId()) && !p.isSpectator() && !p.isInvisible()) {
                   float[] pr = PROGRESS.get(p.getId());
                   if (pr != null) {
+                     ItemStack book = BOOK_STACK.getOrDefault(p.getId(), fallback);
                      float prog = ease(Mth.lerp(pt, pr[0], pr[1]));
                      boolean fp = p == mc.player && mc.options.getCameraType().isFirstPerson();
                      float yaw = p.getViewYRot(pt);
@@ -193,11 +234,15 @@ public class GrimoireFloatRenderer {
                      Vec3 hip = hipPosition(p, pt, bodyYaw);
                      Vec3 open = floatPosition(p, pt, yawS);
                      Vec3 bookPos = hip.add(open.subtract(hip).scale((double)prog));
+                     // lit by the world like a real object (a touch brighter so the cover art still reads in the dark)
+                     int wl = LevelRenderer.getLightColor(mc.level, BlockPos.containing(bookPos));
+                     int light = LightTexture.pack(Math.max(LightTexture.block(wl), 5), Math.max(LightTexture.sky(wl), 2));
                      ps.pushPose();
                      ps.translate(bookPos.x - cam.x, bookPos.y - cam.y, bookPos.z - cam.z);
                      if (!fp) {
                         if (prog < 0.5F) {
-                           float s = 0.7F * (1.0F + 0.15F * prog);
+                           // closed on the hip, small enough to sit against the leg; it swings as you walk
+                           float s = HIP_SCALE * (1.0F + 0.25F * prog);
                            ps.mulPose(Axis.YP.rotationDegrees(-bodyYaw));
                            float sway = (float)Math.sin((double)((float)mc.level.getGameTime() + pt) * 0.12 + (double)p.getId()) * 2.0F
                               + (float)Math.min(p.getDeltaMovement().horizontalDistance() * 40.0, 14.0);
@@ -205,16 +250,45 @@ public class GrimoireFloatRenderer {
                            ps.mulPose(Axis.XP.rotationDegrees(90.0F));
                            ps.mulPose(Axis.YP.rotationDegrees(prog * 120.0F));
                            ps.scale(s, s, s);
-                           ps.translate(-0.0625, 0.21875, 0.0);
-                           mc.getItemRenderer().renderStatic(book, ItemDisplayContext.NONE, 15728880, OverlayTexture.NO_OVERLAY, ps, buf, mc.level, p.getId());
+                           if (customModel(book.getItem())) ps.translate(-0.0625, 0.21875, 0.0);
+                           else ps.translate(0.0, 0.28125, 0.0);
+                           mc.getItemRenderer().renderStatic(book, ItemDisplayContext.NONE, light, OverlayTexture.NO_OVERLAY, ps, buf, mc.level, p.getId());
                         } else {
+                           // floating open beside you: the solid 3D open-book model, plus the black-flame outline
                            float k = ease((prog - 0.5F) * 2.0F);
                            float kb = k - 1.0F;
                            float back = 1.0F + 2.70158F * kb * kb * kb + 1.70158F * kb * kb;
-                           float s = 0.42F * (0.5F + 0.5F * back);
+                           float s = OPEN_SCALE * (0.5F + 0.5F * back);
+                           float tilt = 35.0F * k;
+                           ps.mulPose(Axis.YP.rotationDegrees(-yawS));
+                           ps.mulPose(Axis.YP.rotationDegrees(180.0F));
+                           ps.mulPose(Axis.XP.rotationDegrees(-tilt));
+                           ps.scale(s, s, s);
+                           renderOpen(mc, ps, buf, book, p.getId(), light);
                            float cyc = k > 0.95F ? (float)((mc.level.getGameTime() + (long)p.getId() * 13L) % 50L) + pt : -1.0F;
-                           FxRenderer.queueBook(bookPos, yawS, 35.0F * k, s, k, cyc);
+                           queueOutline(book, bookPos, yawS, tilt, s, k, cyc);
                         }
+                     } else if (prog > 0.02F) {
+                        // first person: the grimoire comes up into view at the lower left while you cast
+                        ps.popPose();
+                        ps.pushPose();
+                        Vector3f lk = camera.getLookVector(), up = camera.getUpVector(), lf = camera.getLeftVector();
+                        float k = ease(prog);
+                        double fwdD = 0.62 + 0.24 * k, leftD = 0.44, downD = 0.62 - 0.36 * k;
+                        double bob = Math.sin((double)((float)mc.level.getGameTime() + pt) * 0.1) * 0.008;
+                        Vec3 fpPos = cam.add(lk.x() * fwdD + lf.x() * leftD - up.x() * (downD + bob),
+                                             lk.y() * fwdD + lf.y() * leftD - up.y() * (downD + bob),
+                                             lk.z() * fwdD + lf.z() * leftD - up.z() * (downD + bob));
+                        float camYaw = camera.getYRot(), tilt = camera.getXRot() + 22.0F;
+                        float s = FP_SCALE * (0.55F + 0.45F * k);
+                        ps.translate(fpPos.x - cam.x, fpPos.y - cam.y, fpPos.z - cam.z);
+                        ps.mulPose(Axis.YP.rotationDegrees(-camYaw + 14.0F));
+                        ps.mulPose(Axis.YP.rotationDegrees(180.0F));
+                        ps.mulPose(Axis.XP.rotationDegrees(-tilt));
+                        ps.scale(s, s, s);
+                        renderOpen(mc, ps, buf, book, p.getId(), light);
+                        float cyc = k > 0.95F ? (float)((mc.level.getGameTime() + (long)p.getId() * 13L) % 50L) + pt : -1.0F;
+                        queueOutline(book, fpPos, camYaw - 14.0F, tilt, s, k, cyc);
                      }
 
                      ps.popPose();

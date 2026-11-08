@@ -420,11 +420,7 @@ public class DarkFx {
 
         Long blade = BLADE.get(id);
         if (blade != null) {
-            if (now > blade) BLADE.remove(id);
-            else if (now % 8 == 0) {   // a thin black edge along the coated blade
-                Vec3 h = handPos(p);
-                FxSend.beam(sl, D, h, h.add(p.getLookAngle().scale(0.5)).add(0, 1.1, 0), 0.16f, 9);
-            }
+            if (now > blade) BLADE.remove(id);   // (no effect stuck to the sword - the coating shows on each hit)
         }
 
         Moon m = MOON.get(id);

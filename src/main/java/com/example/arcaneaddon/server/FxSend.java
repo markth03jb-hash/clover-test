@@ -47,6 +47,46 @@ public class FxSend {
         send(sl, p0, p);
     }
 
+    /**
+     * A solid, shaded 3D block of metal (or any palette): centre {@code c}, long axis {@code axis} (half length hl),
+     * {@code up} (half height hh), and their cross product (half width hw).
+     * mode: FxPacket.POP scales in/out, GROUND rises out of the floor along up and sinks back at the end,
+     * EXTEND grows along the axis from its back end. rise = ticks to appear, spin = degrees per tick around the axis,
+     * vel = blocks per tick it travels, moveTicks = how long it travels (0 = whole life).
+     */
+    public static int box(ServerLevel sl, int pal, Vec3 c, Vec3 axis, Vec3 up, float hl, float hw, float hh,
+                          int life, int rise, float mode, float spin, Vec3 vel, int moveTicks) {
+        FxPacket p = new FxPacket();
+        p.shape = FxPacket.BOX; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life; p.sweep = rise;
+        p.c = c; p.d = axis.normalize(); p.u = up.normalize(); p.r = hl; p.r2 = hw; p.h = hh; p.speed = mode; p.a0 = spin;
+        p.v = vel; p.a1 = moveTicks;
+        send(sl, c, p);
+        return p.id;
+    }
+
+    /** Still box (no travel). */
+    public static int box(ServerLevel sl, int pal, Vec3 c, Vec3 axis, Vec3 up, float hl, float hw, float hh, int life, int rise, float mode) {
+        return box(sl, pal, c, axis, up, hl, hw, hh, life, rise, mode, 0, Vec3.ZERO, 0);
+    }
+
+    /**
+     * A faceted 3D spike (six-sided, with a collar) from {@code base} toward {@code dir}: length len, base radius rad.
+     * Same mode / rise / spin / vel / moveTicks meaning as {@link #box}.
+     */
+    public static int spike(ServerLevel sl, int pal, Vec3 base, Vec3 dir, float len, float rad,
+                            int life, int rise, float mode, float spin, Vec3 vel, int moveTicks) {
+        FxPacket p = new FxPacket();
+        p.shape = FxPacket.SPIKE; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life; p.sweep = rise;
+        p.c = base; p.d = dir.normalize(); p.r = len; p.r2 = rad; p.speed = mode; p.a0 = spin; p.v = vel; p.a1 = moveTicks;
+        send(sl, base, p);
+        return p.id;
+    }
+
+    /** Still spike (no travel). */
+    public static int spike(ServerLevel sl, int pal, Vec3 base, Vec3 dir, float len, float rad, int life, int rise, float mode) {
+        return spike(sl, pal, base, dir, len, rad, life, rise, mode, 0, Vec3.ZERO, 0);
+    }
+
     public static void kill(ServerLevel sl, int id, Vec3 near) {
         FxPacket p = new FxPacket();
         p.shape = FxPacket.KILL; p.id = id;

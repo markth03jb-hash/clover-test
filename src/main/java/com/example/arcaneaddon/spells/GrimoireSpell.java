@@ -24,7 +24,7 @@ import java.util.List;
 public abstract class GrimoireSpell extends AbstractSpell {
     private final ResourceLocation spellId;
     private final DefaultConfig config;
-    public enum Need { NONE, SLAYER_MAIN, ANY_MAIN, DWELLER_ANY }
+    public enum Need { NONE, SLAYER_MAIN, ANY_MAIN, DWELLER_ANY, DWELLER_MAIN }
     private final Need need;
     private final boolean showDamage;
 
@@ -59,7 +59,7 @@ public abstract class GrimoireSpell extends AbstractSpell {
 
     /** The player pose each Black Grimoire spell plays when cast (Iron's animations + the addon's own). */
     private static final java.util.Map<String, io.redspace.ironsspellbooks.api.util.AnimationHolder> POSES = java.util.Map.ofEntries(
-            java.util.Map.entry("zetten", pose("irons_spellbooks:overhead_two_handed_swing")),          // huge vertical cleave
+            java.util.Map.entry("zetten", pose("arcane_addon:asta_zetten_fast")),                                // huge vertical cleave
             java.util.Map.entry("sky_splitter", pose("arcane_addon:asta_sky_splitter")),               // wind-up, then upward cleave
             java.util.Map.entry("anti_magic", pose("irons_spellbooks:simple_sword_horizontal_cross_swipe")),
             java.util.Map.entry("ki_sense", pose("irons_spellbooks:cross_arms")),                      // stillness, reading ki
@@ -68,7 +68,7 @@ public abstract class GrimoireSpell extends AbstractSpell {
             java.util.Map.entry("dweller_slash", pose("irons_spellbooks:simple_sword_upward_swipe")),
             java.util.Map.entry("borrowed_slash", pose("irons_spellbooks:horizontal_slash_one_handed")),
             // Devil Union versions
-            java.util.Map.entry("devil_zetten", pose("irons_spellbooks:overhead_two_handed_swing")),
+            java.util.Map.entry("devil_zetten", pose("arcane_addon:asta_zetten_fast")),
             java.util.Map.entry("devil_sky_splitter", pose("arcane_addon:asta_sky_splitter")),
             java.util.Map.entry("devil_anti_magic", pose("irons_spellbooks:stomp")),
             java.util.Map.entry("devil_ki_sense", pose("irons_spellbooks:cross_arms")),
@@ -105,6 +105,9 @@ public abstract class GrimoireSpell extends AbstractSpell {
         if (need == Need.DWELLER_ANY && !player.getMainHandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get())
                 && !player.getOffhandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get())) {
             return new CastResult(CastResult.Type.FAILURE, Component.translatable("ui.arcane_addon.dweller_required").withStyle(ChatFormatting.RED));
+        }
+        if (need == Need.DWELLER_MAIN && !player.getMainHandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get())) {
+            return new CastResult(CastResult.Type.FAILURE, Component.translatable("ui.arcane_addon.dweller_main_required").withStyle(ChatFormatting.RED));
         }
         if (need == Need.ANY_MAIN && !player.getMainHandItem().is(AddonItemRegistry.DEMON_SLAYER_SWORD.get())
                 && !player.getMainHandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get())) {

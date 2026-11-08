@@ -35,7 +35,7 @@
   "spell.arcane_addon.dweller_slash": "Dweller Slash",
   "spell.arcane_addon.dweller_slash.guide": "Send a projected slash of Anti Magic flying out of the Demon Dweller Sword. It cuts everything in its path, stops at walls and strips their magical effects. Needs the Demon Dweller Sword in either hand. Costs no mana.",
   "spell.arcane_addon.borrowed_slash": "Borrowed Slash",
-  "spell.arcane_addon.borrowed_slash.guide": "The Demon Dweller Sword borrows magic from the world around you: the projected slash takes on a random element - fire, ice, lightning or wind. Needs the Demon Dweller Sword in either hand. Costs no mana.",
+  "spell.arcane_addon.borrowed_slash.guide": "The Demon Dweller Sword borrows magic from the world around you: the projected slash takes on a random element - fire, ice, lightning or wind. Needs the Demon Dweller Sword in your main hand. Costs no mana.",
   "ui.arcane_addon.dweller_required": "Hold the Demon Dweller Sword to use this spell.",
   "ui.arcane_addon.borrowed.fire": "Borrowed magic: Fire",
   "ui.arcane_addon.borrowed.ice": "Borrowed magic: Ice",
@@ -138,6 +138,7 @@
   "spell.arcane_addon.devil_dweller_slash": "Devil Dweller: Triple Slash",
   "spell.arcane_addon.devil_dweller_slash.guide": "Devil Union: three anti magic crescents in a row. With the Demon Slayer Sword also in hand, it finishes with a sweeping cut.",
   "spell.arcane_addon.devil_borrowed_slash": "Devil Borrowed: Four Elements",
-  "spell.arcane_addon.devil_borrowed_slash.guide": "Devil Union: fire, ice, lightning and wind slashes, one after another.",
-  "item.arcane_addon.grimoire_page": "Grimoire Page"
+  "spell.arcane_addon.devil_borrowed_slash.guide": "Devil Union: fire, ice, lightning and wind slashes, one after another in a different order every cast. Needs the Demon Dweller Sword in your main hand.",
+  "item.arcane_addon.grimoire_page": "Grimoire Page",
+  "ui.arcane_addon.dweller_main_required": "Hold the Demon-Dweller Sword in your main hand."
 }
