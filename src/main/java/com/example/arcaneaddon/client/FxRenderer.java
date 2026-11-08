@@ -144,6 +144,17 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 24 || p.shape == 25) {   // Thunder God Mode (24) / gloves (25): id = player, life = ticks left (0 = off)
+         Minecraft mc0 = Minecraft.getInstance();
+         if (mc0.level != null) {
+            java.util.Map<Integer, double[]> map = p.shape == 24 ? THUNDER : GLOVES;
+            double now0 = mc0.level.getGameTime();
+            if (p.life > 0) map.put(p.id, new double[]{now0, now0 + p.life});
+            else map.remove(p.id);
+            if (p.shape == 24) AuraOutlineLayer.set(p.id, 3, p.life);
+         }
+         return;
+      }
       if (p.shape == 21) { DarkSmoke.burning(p.id, p.life); return; }    // burning: id = entity, life = ticks
       if (p.shape == 22) { DarkSmoke.knuckles(p.id, p.life); return; }   // Flame Knuckles: id = player, life = ticks
       if (p.shape == 18) {  // Spirit Dive form (Yuno + Sylph): id = player, life = ticks left (0 = end)
@@ -296,9 +307,29 @@ public class FxRenderer {
                else if (f.p.palette == WIND) emitWind(f, now - f.born);
                else if (f.p.palette == MERCURY) emitMercury(f, now - f.born);
                else if (f.p.palette == FIRE) emitFire(f, now - f.born);
+               else if (f.p.palette == LIGHTNING && f.p.shape != 23) emitLightning(f, now - f.born);
                double life = f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life;
                if (now - f.born > life + 1.0) {
                   it.remove();
+               }
+            }
+            if (!PENDING.isEmpty()) { for (FxPacket q : PENDING) spawn(q); PENDING.clear(); }
+            // Thunder God Mode / gloves: sparks off the feet when running, crackle around the hands
+            java.util.concurrent.ThreadLocalRandom tr = java.util.concurrent.ThreadLocalRandom.current();
+            for (java.util.Map.Entry<Integer, double[]> te : THUNDER.entrySet()) {
+               net.minecraft.world.entity.Entity ent = mc.level.getEntity(te.getKey());
+               if (ent == null || now > te.getValue()[1]) continue;
+               Vec3 mv = ent.getDeltaMovement();
+               boolean self = ent == mc.player && mc.options.getCameraType().isFirstPerson();
+               if (ent.onGround() && mv.horizontalDistanceSqr() > 0.004) {
+                  for (int k = 0; k < 2; k++) {
+                     DarkSmoke.spark(ent.position().add(tr.nextDouble(-0.3, 0.3), 0.05, tr.nextDouble(-0.3, 0.3)),
+                        new Vec3(tr.nextDouble(-0.12, 0.12) - mv.x * 0.4, tr.nextDouble(0.08, 0.22), tr.nextDouble(-0.12, 0.12) - mv.z * 0.4), 0.035F, tr.nextInt(8, 14));
+                  }
+               }
+               if (!self && mv.horizontalDistanceSqr() > 0.01) {   // an afterimage of lightning behind you when you move fast
+                  DarkSmoke.streakTinted(ent.position().add(tr.nextDouble(-0.3, 0.3), tr.nextDouble(0.2, ent.getBbHeight()), tr.nextDouble(-0.3, 0.3)),
+                     mv.scale(-0.4), 0.05F, tr.nextInt(5, 9), 1.0F, 0.94F, 0.45F);
                }
             }
          }
@@ -378,7 +409,139 @@ public class FxRenderer {
       }
    }
 
-   private static final int WIND = 5, MERCURY = 11, FIRE = 2;
+   private static final int WIND = 5, MERCURY = 11, FIRE = 2, LIGHTNING = 4;
+   /** Packets made on this client while the effect list is being walked; spawned right after. */
+   private static final List<FxPacket> PENDING = new ArrayList<>();
+   /** Thunder God Mode: entity id -> {start, end}; gloves: entity id -> {start, end}. Fed by shapes 24 and 25. */
+   private static final java.util.Map<Integer, double[]> THUNDER = new java.util.HashMap<>();
+   private static final java.util.Map<Integer, double[]> GLOVES = new java.util.HashMap<>();
+
+   private static void localBolt(Vec3 a, Vec3 b, float w, int life, int branches) {
+      FxPacket q = new FxPacket();
+      q.shape = 23; q.palette = (byte)LIGHTNING; q.life = life; q.c = a; q.d = b.subtract(a); q.r = w; q.sweep = branches;
+      q.id = java.util.concurrent.ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE);
+      PENDING.add(q);
+   }
+
+   /** Every lightning-coloured effect crackles: small live arcs jump off beams, slashes, crescents and walls. */
+   private static void emitLightning(FxRenderer.Fx f, double age) {
+      FxPacket p = f.p;
+      double life = f.killAge >= 0.0 ? f.killAge : (double)p.life;
+      if (age < 0.0 || age > life) return;
+      java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+      if (r.nextInt(2) != 0) return;
+      Vec3 at;
+      switch (p.shape) {
+         case 2 -> at = p.c.add(p.d.scale(r.nextDouble()));
+         case 13, 1 -> {
+            double fd = Math.toRadians(r.nextDouble(-70, 70));
+            double R = p.r + (p.r2 - p.r) * Mth.clamp(age / Math.max(1.0, life), 0.0, 1.0);
+            at = p.c.add(p.d.scale(p.speed * age)).add(p.u.scale(Math.sin(fd) * R));
+         }
+         case 0 -> {
+            double th = Math.toRadians(p.a0 + (p.a1 - p.a0) * r.nextDouble());
+            double R = p.r + (p.r2 - p.r) * Mth.clamp(age / Math.max(1.0, life), 0.0, 1.0);
+            at = p.c.add(p.d.scale(p.speed * age)).add(p.d.scale(Math.cos(th) * R)).add(p.u.scale(Math.sin(th) * R));
+         }
+         default -> { return; }
+      }
+      localBolt(at, at.add(jit(r, 0.9)), 0.035F, 3, 0);
+   }
+
+   /**
+    * Real lightning: a jagged channel made by midpoint displacement, with forks splitting off it, drawn as light
+    * (a white-hot core in a coloured glow). It re-forks every two ticks and flickers - bright, dim, bright - the way a
+    * real strike pulses, the first instant brightest and widest, then fades.
+    */
+   private static void boltFx(Matrix4f m, Vec3 cam, FxPacket p, double age, double life) {
+      if (gv == null) return;
+      double len = p.d.length();
+      if (len < 0.05) return;
+      int frame = (int)(age / 2.0);
+      float flick = switch ((int)(age * 3.0) % 4) { case 1 -> 0.45F; case 3 -> 0.75F; default -> 1.0F; };
+      float fade = (float)Mth.clamp((life - age) / Math.min(4.0, life * 0.6), 0.0, 1.0);
+      float first = age < 1.0 ? 1.6F : 1.0F;
+      float al = flick * fade;
+      if (al <= 0.02F) return;
+      java.util.Random rnd = new java.util.Random(p.id * 7919L + frame * 104729L);
+      boltBranch(m, cam, p.c, p.c.add(p.d), p.r * first, p.palette, al, rnd, p.sweep, 0);
+      // the light where it lands and where it leaves
+      float glow = (float)Math.min(2.5, p.r * 9.0);
+      Vec3 end = p.c.add(p.d);
+      gline(m, cam, end.subtract(0, 0.01, 0), end.add(0, 0.01, 0), glow, p.palette, al * 0.35F);
+   }
+
+   private static void boltBranch(Matrix4f m, Vec3 cam, Vec3 a, Vec3 b, float w, int pal, float al, java.util.Random rnd, int branches, int depth) {
+      Vec3 ab = b.subtract(a);
+      double len = ab.length();
+      int iters = len > 12 ? 6 : (len > 4 ? 5 : (len > 1.5 ? 4 : 3));
+      List<Vec3> pts = new ArrayList<>();
+      pts.add(a); pts.add(b);
+      double amp = len * 0.16;
+      Vec3 dir = ab.scale(1.0 / len);
+      Vec3 s1 = dir.cross(new Vec3(0, 1, 0));
+      if (s1.lengthSqr() < 1.0E-4) s1 = dir.cross(new Vec3(1, 0, 0));
+      s1 = s1.normalize();
+      Vec3 s2 = dir.cross(s1).normalize();
+      for (int it = 0; it < iters; it++) {
+         List<Vec3> nx = new ArrayList<>();
+         for (int i = 0; i < pts.size() - 1; i++) {
+            Vec3 p0 = pts.get(i), p1 = pts.get(i + 1);
+            Vec3 midp = p0.add(p1).scale(0.5).add(s1.scale((rnd.nextDouble() - 0.5) * 2 * amp)).add(s2.scale((rnd.nextDouble() - 0.5) * 2 * amp));
+            nx.add(p0); nx.add(midp);
+         }
+         nx.add(pts.get(pts.size() - 1));
+         pts = nx;
+         amp *= 0.52;
+      }
+      for (int i = 0; i < pts.size() - 1; i++) {
+         Vec3 p0 = pts.get(i), p1 = pts.get(i + 1);
+         gline(m, cam, p0, p1, w * 3.2F, pal, al * 0.18F);   // the wide glow of the air around it
+         gline(m, cam, p0, p1, w, pal, al);                  // the channel itself, white-hot in the middle
+      }
+      if (depth < 2) {
+         for (int k = 0; k < branches; k++) {
+            int i = (int)(pts.size() * (0.15 + rnd.nextDouble() * 0.65));
+            Vec3 from = pts.get(Math.min(i, pts.size() - 1));
+            Vec3 rest = b.subtract(from);
+            double bl = Math.max(0.3, rest.length() * (0.25 + rnd.nextDouble() * 0.35));
+            Vec3 bd = rest.normalize().add(s1.scale((rnd.nextDouble() - 0.5) * 1.6)).add(s2.scale((rnd.nextDouble() - 0.5) * 1.6)).normalize();
+            boltBranch(m, cam, from, from.add(bd.scale(bl)), w * 0.5F, pal, al * 0.7F, rnd, Math.max(0, branches / 2), depth + 1);
+         }
+      }
+   }
+
+   /** Thunder God Mode: lightning crackling over the whole body. Gloves: crackling around the fists. */
+   private static void thunderBody(Matrix4f m, Vec3 cam, Player p, float pt, double now, boolean mode, boolean gloves) {
+      if (gv == null) return;
+      Vec3 base = new Vec3(Mth.lerp((double)pt, p.xo, p.getX()), Mth.lerp((double)pt, p.yo, p.getY()), Mth.lerp((double)pt, p.zo, p.getZ()));
+      float h = p.getBbHeight();
+      long frame = (long)(now * 1.5);
+      java.util.Random rnd = new java.util.Random(p.getId() * 31L + frame * 977L);
+      if (mode) {
+         for (int k = 0; k < 5; k++) {
+            Vec3 a = base.add((rnd.nextDouble() - 0.5) * 0.7, rnd.nextDouble() * h, (rnd.nextDouble() - 0.5) * 0.7);
+            Vec3 b = a.add((rnd.nextDouble() - 0.5) * 0.9, (rnd.nextDouble() - 0.3) * 0.9, (rnd.nextDouble() - 0.5) * 0.9);
+            boltBranch(m, cam, a, b, 0.03F, LIGHTNING, 0.8F, rnd, 1, 1);
+         }
+         if (rnd.nextInt(5) == 0) {   // now and then a long arc to the ground
+            Vec3 a = base.add(0, h * 0.5, 0);
+            Vec3 b = base.add((rnd.nextDouble() - 0.5) * 3.0, 0.05, (rnd.nextDouble() - 0.5) * 3.0);
+            boltBranch(m, cam, a, b, 0.04F, LIGHTNING, 0.9F, rnd, 1, 1);
+         }
+      }
+      if (gloves || mode) {
+         double by = Math.toRadians((double)Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot));
+         Vec3 fw = new Vec3(-Math.sin(by), 0.0, Math.cos(by)), lf = new Vec3(Math.cos(by), 0.0, Math.sin(by));
+         for (int s = -1; s <= 1; s += 2) {
+            Vec3 hand = base.add(0, h * 0.4, 0).add(lf.scale(0.38 * s)).add(fw.scale(0.08));
+            for (int k = 0; k < 2; k++) {
+               Vec3 b = hand.add((rnd.nextDouble() - 0.5) * 0.5, (rnd.nextDouble() - 0.5) * 0.5, (rnd.nextDouble() - 0.5) * 0.5);
+               boltBranch(m, cam, hand, b, 0.025F, LIGHTNING, 0.85F, rnd, 0, 2);
+            }
+         }
+      }
+   }
 
    /** Real fire: flames pour off fireballs, explosions burst into a ball of flame and smoke, fire walls and trails burn. */
    private static void emitFire(FxRenderer.Fx f, double age) {
@@ -989,6 +1152,9 @@ public class FxRenderer {
                      case 20:
                         fireballFx(vc, m, n, cam, f.p, age, life);
                         break;
+                     case 23:
+                        boltFx(m, cam, f.p, age, life);
+                        break;
                      case 7:
                         boxFx(vc, m, n, cam, f, age, life);
                         break;
@@ -1008,6 +1174,9 @@ public class FxRenderer {
                   if (form != null) devilForm(vc, m, n, cam, p, pt, now, form);
                   double[] sp = SPIRIT.get(p.getId());
                   if (sp != null) spiritForm(vc, m, n, cam, p, pt, now, sp);
+                  double[] th = THUNDER.get(p.getId()), gl = GLOVES.get(p.getId());
+                  boolean thOn = th != null && now <= th[1], glOn = gl != null && now <= gl[1];
+                  if (thOn || glOn) thunderBody(m, cam, p, pt, now, thOn, glOn);
                }
             }
             DEVIL.values().removeIf(f -> now > f[1] + 20.0);

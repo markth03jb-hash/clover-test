@@ -36,7 +36,8 @@ public final class DarkSmoke {
     private static final class Puff {
         double x, y, z, vx, vy, vz, born, life;
         float s0, s1, rot, spin;
-        boolean mote, streak, bead, flame;
+        boolean mote, streak, bead, flame, tinted;
+        float tr, tg, tb;
         float shade;
     }
 
@@ -73,6 +74,26 @@ public final class DarkSmoke {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         if (life <= 0) map.remove(id); else map.put(id, mc.level.getGameTime() + (double) life);
+    }
+
+    /** A spark of lightning: a bright yellow-white fleck that jumps and falls. */
+    public static void spark(Vec3 at, Vec3 vel, float size, int life) {
+        int before = PUFFS.size();
+        add(at, vel, size, size * 0.5F, life, true);
+        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) {
+            Puff p = PUFFS.get(PUFFS.size() - 1);
+            p.bead = true; p.tinted = true; p.tr = 1.0F; p.tg = 0.95F; p.tb = 0.55F;
+        }
+    }
+
+    /** A streak in a chosen colour. */
+    public static void streakTinted(Vec3 at, Vec3 vel, float size, int life, float r, float g, float b) {
+        int before = PUFFS.size();
+        add(at, vel, size, size * 0.6F, life, true);
+        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) {
+            Puff p = PUFFS.get(PUFFS.size() - 1);
+            p.streak = true; p.tinted = true; p.tr = r; p.tg = g; p.tb = b;
+        }
     }
 
     /** A bead of mercury: a small silver droplet that falls. */
@@ -224,7 +245,7 @@ public final class DarkSmoke {
             Vec3 side = ax.cross(c.subtract(cam));
             if (side.lengthSqr() < 1.0E-8) return;
             side = side.normalize().scale(size * 0.35);
-            float sr = 0.78F + 0.2F * p.shade, sg = 1.0F, sb = 0.88F + 0.1F * p.shade;
+            float sr = p.tinted ? p.tr : 0.78F + 0.2F * p.shade, sg = p.tinted ? p.tg : 1.0F, sb = p.tinted ? p.tb : 0.88F + 0.1F * p.shade;
             v(vc, m, n, cam, c.subtract(ax).subtract(side), sr, sg, sb, a, 0, 1);
             v(vc, m, n, cam, c.add(ax).subtract(side), sr, sg, sb, a, 1, 1);
             v(vc, m, n, cam, c.add(ax).add(side), sr, sg, sb, a, 1, 0);
@@ -240,6 +261,7 @@ public final class DarkSmoke {
             a = (float) Math.pow(1.0 - t, 0.5) * 0.95F;
             float sh = 0.75F + 0.25F * (float) Math.sin(now * 0.9 + p.shade * 7);
             cr = 0.82F * sh; cg = 0.86F * sh; cb = 0.95F * sh;
+            if (p.tinted) { cr = p.tr; cg = p.tg; cb = p.tb; a = (float) Math.pow(1.0 - t, 0.8); }
         } else if (p.mote) {
             a = (float) (Mth.clamp(age / 3.0, 0.0, 1.0) * Math.pow(1.0 - t, 0.7)) * (0.75F + 0.25F * (float) Math.sin(now * 0.8 + p.shade * 9));
             cr = 0.62F + 0.3F * p.shade; cg = 0.22F + 0.2F * p.shade; cb = 1.0F;

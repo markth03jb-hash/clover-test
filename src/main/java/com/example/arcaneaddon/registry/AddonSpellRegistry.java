@@ -4,6 +4,8 @@ import com.example.arcaneaddon.server.DarkFx;
 import com.example.arcaneaddon.server.WindFx;
 import com.example.arcaneaddon.server.MercuryFx;
 import com.example.arcaneaddon.server.FireFx;
+import com.example.arcaneaddon.server.LightningFx;
+import com.example.arcaneaddon.spells.LightningSpell;
 import com.example.arcaneaddon.spells.FireSpell;
 import com.example.arcaneaddon.spells.MercurySpell;
 import com.example.arcaneaddon.spells.WindSpell;
@@ -167,6 +169,24 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> FIRE_SPELLS = List.of(
             EXPLODING_FIREBALL, EXPLOSIVE_SCATTERSHOT, MAGNA_SPECIAL, FLAMING_BAT, FLAME_KNUCKLES,
             RING_OF_FIRE, CRAZY_CYCLONE, FIREBALL_RAIN, SOUL_CHAIN, FIRE_CANNON);
+
+    // ------------------------------------------------------------------ Lightning Grimoire (Luck Voltia's Lightning Magic)
+    //                                                                                id                       cd mana power  animation
+    public static final RegistryObject<AbstractSpell> THUNDER_FIST = registerSpell(new LightningSpell("thunder_fist", 5, 35, 14, LightningSpell.anim("arcane_addon:lightning_fist"), LightningFx::thunderFist));
+    public static final RegistryObject<AbstractSpell> THUNDER_KICK = registerSpell(new LightningSpell("thunder_kick", 8, 45, 20, LightningSpell.anim("arcane_addon:lightning_kicks"), LightningFx::thunderKick));
+    public static final RegistryObject<AbstractSpell> THUNDER_ORB = registerSpell(new LightningSpell("thunder_orb", 10, 50, 14, LightningSpell.anim("arcane_addon:lightning_orb"), LightningFx::thunderOrb));
+    public static final RegistryObject<AbstractSpell> LIGHTNING_STEP = registerSpell(new LightningSpell("lightning_step", 4, 25, 8, LightningSpell.anim("irons_spellbooks:instant_self"), LightningFx::lightningStep));
+    public static final RegistryObject<AbstractSpell> CHAIN_LIGHTNING = registerSpell(new LightningSpell("chain_lightning", 10, 55, 14, LightningSpell.anim("arcane_addon:lightning_chain"), LightningFx::chainLightning));
+    public static final RegistryObject<AbstractSpell> THUNDER_GLOVES = registerSpell(new LightningSpell("thunder_gloves", 30, 50, 0, LightningSpell.anim("arcane_addon:fire_knuckles"), LightningFx::thunderGloves));
+    public static final RegistryObject<AbstractSpell> MANA_SENSE = registerSpell(new LightningSpell("mana_sense", 20, 20, 0, LightningSpell.anim("arcane_addon:dark_ki_read"), LightningFx::manaSense));
+    public static final RegistryObject<AbstractSpell> THUNDERFALL = registerSpell(new LightningSpell("thunderfall", 20, 90, 16, LightningSpell.anim("arcane_addon:fire_rain"), LightningFx::thunderfall));
+    public static final RegistryObject<AbstractSpell> THUNDER_GOD_MODE = registerSpell(new LightningSpell("thunder_god_mode", 90, 150, 0, LightningSpell.anim("arcane_addon:lightning_mode"), LightningFx::thunderMode));
+    public static final RegistryObject<AbstractSpell> THUNDER_RAMPAGE = registerSpell(new LightningSpell("thunder_rampage", 60, 180, 30, LightningSpell.anim("arcane_addon:lightning_rampage"), LightningFx::rampage));
+
+    /** The ten Lightning Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> LIGHTNING_SPELLS = List.of(
+            THUNDER_FIST, THUNDER_KICK, THUNDER_ORB, LIGHTNING_STEP, CHAIN_LIGHTNING,
+            THUNDER_GLOVES, MANA_SENSE, THUNDERFALL, THUNDER_GOD_MODE, THUNDER_RAMPAGE);
 
     /** The ten Dark Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> DARK_SPELLS = List.of(

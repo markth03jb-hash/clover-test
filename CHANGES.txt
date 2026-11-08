@@ -1,7 +1,28 @@
-Arcane Addon v1.27.0 - all changed files since v1.0.0
+Arcane Addon v1.28.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.28.0
+- NEW: Lightning Grimoire (Luck Voltia's Lightning Magic) - ten spells, each with its own animation.
+  Crafting: glowstone, copper ingot, glowstone / arcane ingot, enchanted book, arcane ingot /
+  glowstone, lightning rod, glowstone.
+  1 Thunder Fist        - flash to your target and punch
+  2 Thunder God's Kick  - three lightning kicks on the move, the last launches
+  3 Thunder Crumbling Orb - orbs of lightning that hunt enemies and burst
+  4 Lightning Step      - blink 12 blocks in a flash
+  5 Chain Lightning     - a bolt that jumps from enemy to enemy
+  6 Thunder God's Gloves - punches discharge and arc on for 12 s
+  7 Mana Sense          - every creature within 64 blocks is marked
+  8 Thunderfall         - bolts strike from the sky around you
+  9 Thunder God Mode    - 25 s: your body is lightning (crackling arcs over every limb, a flickering
+                          glow, sparks off your feet, afterimages), faster, every hit calls a bolt,
+                          every move gets stronger
+  10 Thunder Fiend Rampage - flash between every enemy, then a great bolt from the sky
+  Passive Battle Maniac: hits make you faster (stacks 3 times).
+- Real lightning: every bolt is now a jagged, branching channel that re-forks and flickers like a
+  real strike, white-hot inside a yellow glow. Every lightning-coloured effect in the mod crackles
+  with small live arcs.
 
 NEW IN 1.27.0
 - NEW: Fire Grimoire (Magna Swing's Flame Magic) - ten fire spells, each with its own animation,

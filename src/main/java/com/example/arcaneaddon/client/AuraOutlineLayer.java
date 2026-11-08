@@ -29,6 +29,7 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             {0.55F, 0.18F, 0.95F},   // 0 dark violet (Black Blade)
             {1.0F, 0.08F, 0.06F},    // 1 devil red
             {0.86F, 0.9F, 0.97F},    // 2 liquid silver (Silver Guardian)
+            {1.0F, 0.9F, 0.3F},      // 3 lightning (Thunder God Mode)
     };
 
     public AuraOutlineLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
@@ -64,6 +65,12 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             float shine = 0.75F + 0.25F * (float) Math.sin(now * 0.5);
             shell(ps, m, vc, 1.03F + flick * 0.3F, 0.62F * shine, 0.66F * shine, 0.72F * shine, 0.62F * a);
             shell(ps, m, vc, 1.07F + flick * 0.5F, col[0], col[1], col[2], 0.16F * a);
+            return;
+        }
+        if ((int) f[2] == 3) {   // Thunder God Mode: a flickering skin of yellow light, no dark shell
+            float zap = ((int) (now * 3) % 4 == 1) ? 0.5F : 1.0F;
+            shell(ps, m, vc, 1.05F + flick, col[0], col[1], col[2], 0.22F * a * zap);
+            shell(ps, m, vc, 1.12F + flick * 1.5F, 1.0F, 1.0F, 0.85F, 0.08F * a * zap);
             return;
         }
         // black shell hugging the body

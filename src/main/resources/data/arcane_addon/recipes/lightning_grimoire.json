@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "IBI",
+    "GRG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "I": {
+      "item": "irons_spellbooks:arcane_ingot"
+    },
+    "B": {
+      "item": "minecraft:enchanted_book"
+    },
+    "R": {
+      "item": "minecraft:lightning_rod"
+    }
+  },
+  "result": {
+    "item": "arcane_addon:lightning_grimoire",
+    "count": 1
+  }
+}
