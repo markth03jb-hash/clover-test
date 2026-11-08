@@ -1,7 +1,19 @@
-Iron Spell Grimoire v1.47.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.48.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.48.0
+- Grimoire spell wheel: with one of the addon's grimoires equipped, Iron's spell wheel is redrawn as a grimoire
+  (any other spellbook keeps Iron's own wheel). Dark worn-leather pages with gold filigree, an outer double gold
+  ring with slowly turning rune ticks and black-flame wisps flickering along it, a clover emblem at the centre
+  (five black leaves for Asta's grimoire, four for the others) behind the chosen spell's icon. The page under the
+  mouse lifts out and glows in the grimoire's colour; the wheel unfolds with an eased pop. Below it, a gold-edged
+  page shows the spell's name, level, mana cost and cooldown, and icons dim while a spell is cooling down.
+  Choosing works exactly like before (hold the key, point, release).
+- Smoother effects: sprite colours now blend continuously as they cool (no more colour steps), sprites keep
+  cooling between ticks, new sprites spread along the path a fast effect moved that tick (no gaps or stepping
+  on fast slashes), sprites ease in over their first tick instead of popping, and the pop-in uses a smoothstep.
 
 NEW IN 1.47.0
 - Pixel art overhaul:
