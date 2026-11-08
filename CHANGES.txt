@@ -1,7 +1,46 @@
-Iron Spell Grimoire v1.42.2 - all changed files since v1.0.0
+Iron Spell Grimoire v1.43.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.43.0
+Yami
+- Mana Zone: Dark Cloaked Dimension Slash - Equinox is now what Event Horizon becomes when you cast it INSIDE your
+  Mana Zone (it no longer comes from Mana Zone + Surpassing Limits). It plays like a scene: black bars close in, the
+  view pushes in slowly and the edges darken while Yami draws the katana level and the moment stretches - everyone
+  the zone has read is held still and the zone's darkness is drawn into the blade - then the screen splits into
+  light and dark and one cut divides the zone: a colossal slash across it, every enemy inside cut at the same
+  instant, a ring of darkness round the edge and a pale dividing line left on the ground. No cracks in space - one
+  clean cut. Its animation now lasts the whole cast, cutting at the same moment as Event Horizon.
+- Event Horizon: no more zoom while charging (being slowed used to change your FOV), no ground trail, and in Lunar
+  Eclipse the rifts ride out along the two crossing blades instead of sitting in the middle.
+Impact frames
+- Every grimoire has its own impact frame now: Asta (white / black, red), Yami (violet with diagonal cuts), Yuno
+  (mint wind spiralling in), Nozel (silver spikes stabbing in), Magna (orange flame tongues), Luck (blue lightning),
+  Mereoleona (crimson roaring rays), Zenon (bone-white cracks with violet), Klaus (steel plates).
+- They only fire when something is actually hit: Event Horizon and Black Divider flash on the first enemy they cut,
+  Luck's Overdrive finisher, Star Storm, the Lion King eruption, Magna's final blast and Spatial Annihilation only if
+  there is an enemy in range; the Lion King roar and Magna's swing no longer flash at all.
+Moves that need a target
+- Ribcage Prison, Spatial Cube, Soul Chain Deathmatch, Calidos Brachium Barrage, Flame Lion Paws and Steel Prison
+  don't start at all without a target: no animation, no mana, no cooldown - just the "no target" message.
+Asta
+- Devil Union's wings, crown and mantle turn with Black Hurricane's spin (and any animation that turns the body).
+Zenon
+- Bone Sword: a new model - a pommel knob, a grip of stacked vertebrae, a guard of two curved rib-prongs and a long
+  bone blade with a ridge and jagged teeth down its back - visible in first person too, cutting with the same three
+  swings, and a new one-handed animation (sweep, backhand, overhead chop) instead of the two-handed bat swing.
+- Beelzebub makes every bone move hit 50% harder (was 35%) and reach further: Spear Volley 12 spears, Spike Eruption
+  26 blocks, Bone Thicket 11, Bone Whips 14, Spear Storm a 14-block circle, Bone Sword 7.
+- Endless Bone passive nerfed: 1 health every 4 s (was every 2 s), and only once nothing has hit you for 5 s. The
+  grimoire's armor is 3 (was 4) and toughness 1 (was 2).
+Mereoleona
+- Burning Fists Guard: a new animation - 3 s of blurring left-right jabs at different heights and a huge haymaker -
+  with afterimage fists from both hands, a ring of crimson fire whirling round her, the ground heating under her,
+  and the final punch roaring out as a lion's head of fire.
+Items
+- Every grimoire's hotbar icon is centred, and Asta's grimoire now matches the others: the same book, black with a
+  dark blood-red trim and a pale anti-magic emblem.
 
 NEW IN 1.42.2
 - The sword in your hand moves with the animation instead of being glued to the hand: every swing animation now

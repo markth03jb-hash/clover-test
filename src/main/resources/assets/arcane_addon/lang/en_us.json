@@ -295,7 +295,7 @@
   "spell.arcane_addon.fireball_barrage.guide": "Throw fireballs as fast as your arms can go: twelve in 1.2 s, alternating hands, each one flying where you look at that moment - sweep the stream across a crowd - and exploding where it lands.",
   "item.arcane_addon.bone_grimoire": "Bone Grimoire",
   "tooltip.arcane_addon.bone_grimoire.passive": "Passive - Endless Bone",
-  "tooltip.arcane_addon.bone_grimoire.desc": "You regrow: 1 health every 2 s while you're hurt.",
+  "tooltip.arcane_addon.bone_grimoire.desc": "You regrow: 1 health every 4 s while you're hurt, once nothing has hit you for 5 s.",
   "tooltip.arcane_addon.bone_grimoire.lore": "Its bones grow back faster than anything can break them.",
   "ui.arcane_addon.bone_grimoire_only": "Only the Bone Grimoire can cast this.",
   "ui.arcane_addon.bone.no_target": "No one to hold - aim at an enemy",

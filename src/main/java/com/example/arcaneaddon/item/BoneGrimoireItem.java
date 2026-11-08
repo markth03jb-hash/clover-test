@@ -33,8 +33,8 @@ public class BoneGrimoireItem extends SimpleAttributeSpellBook {
         b.put(AttributeRegistry.MAX_MANA.get(), mod("a8b9c0d1-e2f3-4a5b-9c6d-7e8f9a0b0e01", "Bone Grimoire mana", 700, AttributeModifier.Operation.ADDITION));
         b.put(AttributeRegistry.MANA_REGEN.get(), mod("a8b9c0d1-e2f3-4a5b-9c6d-7e8f9a0b0e99", "Bone Grimoire mana flow", 0.5, AttributeModifier.Operation.MULTIPLY_BASE));
         b.put(AttributeRegistry.BLOOD_SPELL_POWER.get(), mod("a8b9c0d1-e2f3-4a5b-9c6d-7e8f9a0b0e02", "Bone Grimoire marrow", 0.2, AttributeModifier.Operation.MULTIPLY_BASE));
-        b.put(Attributes.ARMOR, mod("a8b9c0d1-e2f3-4a5b-9c6d-7e8f9a0b0e03", "Bone Grimoire plates", 4.0, AttributeModifier.Operation.ADDITION));
-        b.put(Attributes.ARMOR_TOUGHNESS, mod("a8b9c0d1-e2f3-4a5b-9c6d-7e8f9a0b0e04", "Bone Grimoire hard bone", 2.0, AttributeModifier.Operation.ADDITION));
+        b.put(Attributes.ARMOR, mod("a8b9c0d1-e2f3-4a5b-9c6d-7e8f9a0b0e03", "Bone Grimoire plates", 3.0, AttributeModifier.Operation.ADDITION));
+        b.put(Attributes.ARMOR_TOUGHNESS, mod("a8b9c0d1-e2f3-4a5b-9c6d-7e8f9a0b0e04", "Bone Grimoire hard bone", 1.0, AttributeModifier.Operation.ADDITION));
         b.put(Attributes.MAX_HEALTH, mod("a8b9c0d1-e2f3-4a5b-9c6d-7e8f9a0b0e05", "Bone Grimoire regrowth", 4.0, AttributeModifier.Operation.ADDITION));
         return b.build();
     }

@@ -221,7 +221,7 @@ public class AddonSpellRegistry {
     //                                                                             id                       cd mana power  animation
     public static final RegistryObject<AbstractSpell> BONE_SPEAR_VOLLEY = registerSpell(new BoneSpell("bone_spear_volley", 6, 25, 14, BoneSpell.anim("arcane_addon:bone_volley"), BoneFx::spearVolley));
     public static final RegistryObject<AbstractSpell> BONE_SPIKE_ERUPTION = registerSpell(new BoneSpell("bone_spike_eruption", 10, 35, 14, BoneSpell.anim("irons_spellbooks:stomp"), BoneFx::spikeEruption));
-    public static final RegistryObject<AbstractSpell> BONE_SWORD = registerSpell(new BoneSpell("bone_sword", 8, 25, 22, BoneSpell.anim("arcane_addon:fire_bat_combo"), BoneFx::boneSword));
+    public static final RegistryObject<AbstractSpell> BONE_SWORD = registerSpell(new BoneSpell("bone_sword", 8, 25, 22, BoneSpell.anim("arcane_addon:bone_sword_combo"), BoneFx::boneSword));
     public static final RegistryObject<AbstractSpell> BONE_WHIPS = registerSpell(new BoneSpell("bone_whips", 14, 45, 22, BoneSpell.anim("arcane_addon:mana_bone_whips"), BoneFx::boneWhips));
     public static final RegistryObject<AbstractSpell> RIBCAGE_PRISON = registerSpell(new BoneSpell("ribcage_prison", 20, 45, 20, BoneSpell.anim("arcane_addon:klaus_clench"), BoneFx::ribcage));
     public static final RegistryObject<AbstractSpell> MARROW_REGENERATION = registerSpell(new BoneSpell("marrow_regeneration", 40, 40, 0, BoneSpell.anim("arcane_addon:mercury_guardian"), BoneFx::regeneration));

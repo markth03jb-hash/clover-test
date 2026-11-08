@@ -167,8 +167,8 @@ public final class DevilFx {
             final double reach = 40;
             final float speed = 3.6f;
             Vec3 end = start.add(dir.scale(reach));
-            FxSend.impactFrame(sl, p.position(), 3, true, 32);
             FxSend.shake(sl, p.position(), 0.8f, 12, 40);
+            final boolean[] framed = {false};
             Vec3 o = start.add(dir.scale(1.2)).add(aimed ? Vec3.ZERO : up.scale(1.0));
             int life = (int) (reach / speed) + 2;
             FxSend.slash(sl, DARK, o, dir, up, 3.0f, 12f, life, speed, 1.2f);          // the black blade
@@ -180,6 +180,7 @@ public final class DevilFx {
                 AstaFx.later((int) (on.distanceTo(start) / speed), () -> {
                     if (!tt.isAlive() || !alive(p)) return;
                     AstaFx.damage(p, tt, power, "devil_black_divider");
+                    if (!framed[0]) { framed[0] = true; FxSend.impactFrame(sl, tt.position().add(0, tt.getBbHeight() * 0.5, 0), 3, FxSend.FRAME_ASTA_SLASH, 32); }
                     if (tt instanceof ServerPlayer sp && MagicData.getPlayerMagicData(sp).isCasting()) Utils.serverSideCancelCast(sp);   // anti magic
                     if (tt instanceof IMagicEntity mage && mage.isCasting()) mage.cancelCast();
                     FxLib.impact(sl, EMBER, tt.position().add(0, tt.getBbHeight() * 0.5, 0), 1.3f);

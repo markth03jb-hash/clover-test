@@ -765,73 +765,95 @@ public class DarkFx {
         sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_RESONATE, 1f, 0.5f);
         sound(sl, p.position(), SoundEvents.BEACON_POWER_SELECT, 0.8f, 0.6f);
         sound(sl, p.position(), SoundEvents.WARDEN_HEARTBEAT, 1f, 0.6f);
-        if (LimitBreak.active(p)) equinox(p, sl, power);   // Surpassing Limits: the zone opens with Equinox
     }
     private static final Map<UUID, Float> ZONE_POWER = new HashMap<>();
 
-    // ------------------------------------------------------------------ Surpassing Limits: Equinox
-    private static final int EQUINOX_CUT = 22;
+    // ------------------------------------------------------------------ Event Horizon in the Mana Zone: Equinox
+    private static final int EQUINOX_CUT = 61;   // the cut lands with the cast animation, like Event Horizon's
+
+    /** Cinematic for everyone close (FxPacket shape 40): letterbox bars, a slow push-in, the split frame at the cut. */
+    private static void equinoxCinematic(ServerPlayer p, ServerLevel sl, int life) {
+        com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
+        pkt.shape = 40; pkt.id = p.getId(); pkt.life = life; pkt.sweep = EQUINOX_CUT; pkt.c = p.position();
+        Vec3 c = p.position();
+        com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.NEAR.with(
+                () -> new net.minecraftforge.network.PacketDistributor.TargetPoint(c.x, c.y, c.z, ZONE_R + 16, sl.dimension())), pkt);
+    }
 
     /**
-     * Mana Zone: Dark Cloaked Dimension Slash - Equinox. The zone spreads and reads the ki of everyone in it; Yami
-     * draws the katana level across himself and the moment stretches - everything inside the zone is held still while
-     * darkness gathers on the blade. The world splits into equal halves of light and dark, and one cut divides the
-     * zone: a colossal dimension slash stands across it, every enemy the zone read is cut at once by its own rift in
-     * space, and a ring of darkness sweeps the zone's edge. A pale dividing line hangs across the zone afterward.
+     * Mana Zone: Dark Cloaked Dimension Slash - Equinox: Event Horizon cast inside the Mana Zone. Played like a scene
+     * from the anime: black bars close in, the view pushes in slowly, and the moment stretches - Yami draws the
+     * katana level across himself while everyone the zone has read is held still, the darkness of the zone drawn
+     * into the blade. Then the world splits into light and dark and one cut divides the zone: a colossal slash stands
+     * across it, every enemy inside is cut at the same instant, a ring of darkness sweeps the edge and a pale
+     * dividing line hangs across the ground. (No cracks in space here - it is one clean cut.)
      */
     private static void equinox(ServerPlayer p, ServerLevel sl, float power) {
         zoneMsg(p, "equinox");
         AnimSend.play(p, AnimSend.EQUINOX);
+        equinoxCinematic(p, sl, EQUINOX_CUT + 26);
+        TimedModifiers.apply(p, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED, TimedModifiers.HORIZON_CHARGE,
+                "Equinox", -0.9, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL, EQUINOX_CUT + 2);
         final Vec3 c0 = p.position();
-        final float dmg = power * 4.5f;
+        final float dmg = power * 1.8f;
         for (int t = 0; t < EQUINOX_CUT; t++) {
             final int tt = t;
             AstaFx.later(t, () -> {
                 if (!alive(p)) return;
                 // the moment stretches: everyone the zone holds is frozen where they stand
-                for (LivingEntity e : zoneEnemies(p)) { e.setDeltaMovement(Vec3.ZERO); e.hurtMarked = true; }
-                // darkness gathering on the level blade, a white edge growing along it
+                if (tt > 8) for (LivingEntity e : zoneEnemies(p)) { e.setDeltaMovement(Vec3.ZERO); e.hurtMarked = true; }
+                if (tt % 2 != 0) return;
                 double yr = Math.toRadians(p.getYRot());
                 Vec3 fw = new Vec3(-Math.sin(yr), 0, Math.cos(yr)), rt = new Vec3(-Math.cos(yr), 0, -Math.sin(yr));
+                float k = tt / (float) EQUINOX_CUT;
+                // the level blade: darkness gathering on it, a white edge growing
                 Vec3 hilt = p.position().add(0, 1.3, 0).add(fw.scale(0.5)).subtract(rt.scale(0.45));
-                Vec3 tip = hilt.add(rt.scale(1.3 + tt * 0.02));
-                FxSend.trail(sl, D, hilt, tip, 0.3f + tt * 0.02f, 3);
-                FxSend.trail(sl, S, hilt, tip, 0.03f, 3);
-                if (tt % 6 == 0) FxSend.ring(sl, D, p.position().add(0, 0.06, 0), (float) ZONE_R - tt * 0.4f, 0.3f, 0.06f, 6);
+                Vec3 tip = hilt.add(rt.scale(1.3 + k * 0.9));
+                FxSend.trail(sl, D, hilt, tip, 0.25f + k * 0.45f, 3);
+                FxSend.trail(sl, S, hilt, tip, 0.02f + k * 0.03f, 3);
+                // the zone's darkness drawn in from its edge toward the blade
+                if (tt % 4 == 0) {
+                    double a = tt * 0.7;
+                    Vec3 from = p.position().add(Math.cos(a) * ZONE_R * 0.9, 1.2 + Math.sin(tt) * 1.5, Math.sin(a) * ZONE_R * 0.9);
+                    Vec3 d = tip.subtract(from).normalize();
+                    FxSend.crescent(sl, D, from, d, rightOf(d).cross(d).normalize(), 0.7f, 0.4f, 6, (float) (from.distanceTo(tip) / 6));
+                }
+                if (tt % 10 == 0) FxSend.ring(sl, D, p.position().add(0, 0.06, 0), (float) ZONE_R * (1 - k), 0.3f, 0.06f, 8);
+                if (tt % 20 == 0) sound(sl, p.position(), SoundEvents.WARDEN_HEARTBEAT, 1.2f, 0.5f);
             });
         }
-        sound(sl, c0, SoundEvents.WARDEN_SONIC_CHARGE, 1f, 0.45f);
-        AstaFx.later(EQUINOX_CUT - 2, () -> FxSend.impactFrame(sl, p.position(), 5, 3, ZONE_R + 20));   // light and dark, split in two
+        sound(sl, c0, SoundEvents.WARDEN_SONIC_CHARGE, 1f, 0.4f);
+        AstaFx.later(EQUINOX_CUT - 2, () -> {   // light and dark, split in two - when there is someone in the zone to cut
+            if (alive(p) && !zoneEnemies(p).isEmpty()) FxSend.impactFrame(sl, p.position(), 6, FxSend.FRAME_EQUINOX, ZONE_R + 20);
+        });
         AstaFx.later(EQUINOX_CUT, () -> {
+            TimedModifiers.remove(p, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED, TimedModifiers.HORIZON_CHARGE);
             if (!alive(p)) return;
             Vec3 look = p.getLookAngle();
             Vec3 dir = new Vec3(look.x, 0, look.z).lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : new Vec3(look.x, 0, look.z).normalize();
-            Vec3 rt = rightOf(dir), up = new Vec3(0, 1, 0);
+            Vec3 up = new Vec3(0, 1, 0);
             Vec3 c = p.position();
             FxSend.shake(sl, c, 1.2f, 20, ZONE_R + 24);
-            // the dividing cut: one colossal slash standing across the whole zone, rising out of the ground
-            FxSend.slash(sl, D, c.add(0, 0.5, 0).subtract(dir.scale(ZONE_R * 0.4)), dir, up, (float) ZONE_R * 0.6f, (float) ZONE_R * 1.1f, 16, 0.6f, 1.5f);
-            FxSend.cracks(sl, D, c.add(0, ZONE_R * 0.45, 0).add(dir.scale(ZONE_R * 0.3)), up, rt, (float) ZONE_R * 0.7f, 70, true, (int) sl.getGameTime());
+            // the dividing cut: one colossal slash standing across the whole zone
+            FxSend.slash(sl, D, c.add(0, 0.5, 0).subtract(dir.scale(ZONE_R * 0.4)), dir, up, (float) ZONE_R * 0.6f, (float) ZONE_R * 1.1f, 18, 0.6f, 1.5f);
+            FxSend.slash(sl, S, c.add(0, 0.5, 0).subtract(dir.scale(ZONE_R * 0.4)), dir, up, (float) ZONE_R * 0.55f, (float) ZONE_R * 1.0f, 12, 0.6f, 0.3f);
             // the dividing line left hanging across the zone
             Vec3 a0 = FxLib.floor(sl, c.subtract(dir.scale(ZONE_R))), a1 = FxLib.floor(sl, c.add(dir.scale(ZONE_R)));
             FxSend.trail(sl, S, a0.add(0, 0.1, 0), a1.add(0, 0.1, 0), 0.08f, 80);
             FxSend.trail(sl, D, a0.add(0, 0.08, 0), a1.add(0, 0.08, 0), 0.7f, 80);
             // a ring of darkness sweeping the edge of the zone
             FxSend.wall(sl, D, c.add(0, 1.2, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), (float) ZONE_R - 1f, (float) ZONE_R, -180, 180, 1.6f, 14, 4, 0);
-            // every enemy the zone read is cut at once, each by its own rift
-            int k = 0;
+            // every enemy the zone read is cut at the same instant
             for (LivingEntity e : zoneEnemies(p)) {
                 Vec3 m = mid(e);
                 Vec3 to = m.subtract(c.add(0, 1, 0));
                 Vec3 sd = to.lengthSqr() < 1.0E-4 ? dir : to.normalize();
-                FxSend.cracks(sl, D, m, up.add(rightOf(sd).scale(k % 2 == 0 ? 0.4 : -0.4)).normalize(), rightOf(sd), 1.6f, 40, true, (int) sl.getGameTime() + k * 11);
-                FxSend.slash(sl, D, m.subtract(sd.scale(0.8)), sd, up, 1.4f, 2.2f, 6, 0.2f, 1.0f);
-                AstaFx.damage(p, e, dmg, "mana_zone_dimension_slash");
+                FxSend.slash(sl, D, m.subtract(sd.scale(0.8)), sd, up, 1.4f, 2.4f, 7, 0.2f, 1.0f);
+                AstaFx.damage(p, e, dmg, "event_horizon");
                 FxLib.impact(sl, D, m, 1.6f);
-                k++;
             }
             sound(sl, c, SoundEvents.WARDEN_SONIC_BOOM, 1.2f, 0.4f);
-            sound(sl, c, SoundEvents.GLASS_BREAK, 1f, 0.3f);
+            sound(sl, c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.4f);
             sound(sl, c, SoundEvents.ENDERMAN_TELEPORT, 1f, 0.4f);
         });
     }
@@ -926,6 +948,7 @@ public class DarkFx {
 
     public static void eventHorizon(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
+        if (inZone(p)) { equinox(p, sl, power); return; }   // in the Mana Zone the ultimate becomes Equinox
         final boolean eclipse = LimitBreak.active(p);   // Surpassing Limits: Lunar Eclipse - two horizons cut in an X
         final float dmg = power * (eclipse ? 2.2f : 1.5f);   // the full charge
         final boolean zone = inZone(p);
@@ -997,9 +1020,9 @@ public class DarkFx {
             final float speed = zone ? 4.2f : 3.2f;
             Vec3 end = start.add(dir.scale(reach));
 
-            // the impact frame and the shake, on everyone close enough to see it
-            FxSend.impactFrame(sl, p.position(), 7, true, 40);
+            // the shake on everyone close enough to feel it (the impact frame comes only when the cut actually lands)
             FxSend.shake(sl, p.position(), 1.3f * scale, 20, 64);
+            final boolean[] framed = {false};
             // space shatters right in front of the blade the instant it cuts
             Vec3 o = start.add(dir.scale(1.5)).add(aimed ? Vec3.ZERO : up.scale(1.2));
             FxSend.cracks(sl, D, o.add(dir.scale(1.0)).add(up.scale(0.6)), rt, up, 4.5f * scale, 70, false, seed0 + 999);
@@ -1015,6 +1038,7 @@ public class DarkFx {
                     if (!tt.isAlive() || !alive(p)) return;
                     AstaFx.damage(p, tt, dmg, "event_horizon");
                     FxLib.impact(sl, D, mid(tt), 1.8f);
+                    if (!framed[0]) { framed[0] = true; FxSend.impactFrame(sl, mid(tt), 6, FxSend.FRAME_YAMI, 48); }   // the first thing it cuts
                     Vec3 kb = dir.add(0, 0.35, 0).normalize().scale(1.6);
                     tt.setDeltaMovement(tt.getDeltaMovement().add(kb));
                     tt.hurtMarked = true;
@@ -1033,9 +1057,14 @@ public class DarkFx {
                 for (double k = 8; k < reach; k += 10) {
                     final double kk = k;
                     AstaFx.later((int) (k / speed), () -> {
+                        // the rifts ride on the two blades themselves, out along each arm of the X, not in the middle
                         Vec3 cc = start.add(dir.scale(kk)).add(aimed ? Vec3.ZERO : up.scale(2.4 * scale));
-                        FxSend.cracks(sl, D, cc, upA, upA.cross(dir).normalize(), 3.0f * scale, 56, true, seed0 + (int) kk * 3);
-                        FxSend.cracks(sl, D, cc, upB, upB.cross(dir).normalize(), 3.0f * scale, 56, true, seed0 + (int) kk * 5);
+                        double arm = (4.4 + (17 - 4.4) * Math.min(1.0, kk / reach * 2.2)) * scale * 0.55;
+                        int q = 0;
+                        for (Vec3 off : new Vec3[]{upA.scale(arm), upA.scale(-arm), upB.scale(arm), upB.scale(-arm)}) {
+                            Vec3 along = off.normalize();
+                            FxSend.cracks(sl, D, cc.add(off), along, along.cross(dir).normalize(), 1.8f * scale, 50, true, seed0 + (int) kk * 7 + q++);
+                        }
                     });
                 }
             }
@@ -1056,16 +1085,6 @@ public class DarkFx {
                     if (nn % 3 == 0) sound(sl, c, SoundEvents.GLASS_BREAK, 0.9f, 0.4f);
                 });
             }
-            // and the horizon: one burning line through space, left hanging open
-            AstaFx.later(4, () -> {
-                Vec3 prev = start.add(dir);
-                for (double k = 4; k < reach; k += 4) {
-                    Vec3 c = aimed ? start.add(dir.scale(k)) : FxLib.floor(sl, start.add(dir.scale(k)));
-                    FxSend.trail(sl, D, prev, c, 0.6f * scale, 40);
-                    FxSend.trail(sl, S, prev, c, 0.05f * scale, 36);
-                    prev = c;
-                }
-            });
             if (eclipse) AstaFx.later(4, () -> {   // Lunar Eclipse: the two crossing blades leave an X of scars along the whole path
                 Vec3 mid0 = start.add(aimed ? Vec3.ZERO : up.scale(2.4 * scale));
                 Vec3 xa = up.scale(0.7071).add(rt.scale(0.7071)), xb = up.scale(0.7071).subtract(rt.scale(0.7071));

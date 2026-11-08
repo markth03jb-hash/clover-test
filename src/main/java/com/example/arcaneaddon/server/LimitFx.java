@@ -88,7 +88,8 @@ public final class LimitFx {
         ServerLevel sl = p.serverLevel();
         Vec3 c = p.position();
         // shared beat: the world goes white for an instant (Luck: his lightning frame), the ground shakes, the power erupts
-        FxSend.impactFrame(sl, c, 4, idx == 5 ? 2 : 0, 24);
+        FxSend.impactFrame(sl, c, 4, new int[]{FxSend.FRAME_ASTA, FxSend.FRAME_YAMI, FxSend.FRAME_YUNO, FxSend.FRAME_NOZEL, FxSend.FRAME_MAGNA,
+                FxSend.FRAME_LUCK, FxSend.FRAME_MEREOLEONA, FxSend.FRAME_ZENON, FxSend.FRAME_KLAUS}[Math.max(0, Math.min(8, idx))], 24);   // each grimoire's own frame
         FxSend.shake(sl, c, 0.7f, 18, 32);
         sound(sl, c, SoundEvents.BEACON_ACTIVATE, 1f, 0.6f);
         sound(sl, c, SoundEvents.TOTEM_USE, 0.6f, 0.8f);
@@ -207,7 +208,7 @@ public final class LimitFx {
         ServerLevel sl = p.serverLevel();
         TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, FULL_UNION_DMG, "Full Devil Union", 6.0, AttributeModifier.Operation.ADDITION, ticks);
         Vec3 c = p.position();
-        FxSend.impactFrame(sl, c, 4, true, 24);
+        FxSend.impactFrame(sl, c, 4, FxSend.FRAME_ASTA_SLASH, 24);
         FxSend.beam(sl, DARK, c, c.add(0, 24, 0), 3.0f, 30);
         FxSend.beam(sl, EMBER, c, c.add(0, 22, 0), 1.2f, 28);
         FxLib.shockRing(sl, EMBER, c.add(0, 0.1, 0), 4f);
@@ -257,7 +258,7 @@ public final class LimitFx {
         }
         AstaFx.later(62, () -> {
             if (!alive(p)) return;
-            FxSend.impactFrame(sl, c, 3, false, 40);
+            if (!foesNear(sl, p, c.add(0, 1, 0), R + 1).isEmpty()) FxSend.impactFrame(sl, c, 3, FxSend.FRAME_YUNO, 40);
             FxLib.shockRing(sl, WIND, c.add(0, 0.1, 0), 4f);
             for (LivingEntity f : foesNear(sl, p, c.add(0, 1, 0), R + 1)) {
                 AstaFx.damage(p, f, power * 1.6f, "spirit_storm");
@@ -297,7 +298,7 @@ public final class LimitFx {
                 t.hurtMarked = true;
                 struck.add(t);
                 FxLib.impact(sl, BLUE_L, mid(t), 1.0f);
-                if (ii % 6 == 0) FxSend.impactFrame(sl, mid(t), 1, 2, 24);
+                if (ii % 6 == 0) FxSend.impactFrame(sl, mid(t), 1, FxSend.FRAME_LUCK, 24);
                 sound(sl, t.position(), SoundEvents.PLAYER_ATTACK_CRIT, 0.9f, 1.6f);
             });
         }
@@ -305,7 +306,7 @@ public final class LimitFx {
             if (!alive(p)) return;
             p.teleportTo(home.x, home.y, home.z);
             p.resetFallDistance();
-            FxSend.impactFrame(sl, home, 5, 2, 40);   // Luck's own frame: electric blue, lightning across the screen
+            if (!struck.isEmpty()) FxSend.impactFrame(sl, home, 5, FxSend.FRAME_LUCK, 40);   // only if he actually hit someone
             FxSend.shake(sl, home, 1.0f, 16, 48);
             for (LivingEntity t : struck) {
                 if (!t.isAlive()) continue;
@@ -348,7 +349,6 @@ public final class LimitFx {
             final double speed = 1.6;
             final int ticks = 30;
             // the roar
-            FxSend.impactFrame(sl, p.position(), 3, false, 32);
             FxSend.shake(sl, p.position(), 1.1f, 18, 48);
             FxLib.shockRing(sl, CRIMSON, p.position().add(0, 0.1, 0), 4f);
             fireball(sl, CRIMSON, start, Vec3.ZERO, 1.5f, 6f, 10, true);
@@ -380,7 +380,7 @@ public final class LimitFx {
                         if (hit.add(f)) {
                             AstaFx.damage(p, f, power * 1.4f, "calidos_brachium_purgatory");
                             FireFx.burn(p, f, 140);
-                            FxSend.impactFrame(sl, mid(f), 1, false, 16);
+                            FxSend.impactFrame(sl, mid(f), 1, FxSend.FRAME_MEREOLEONA, 16);
                         }
                         f.setDeltaMovement(dir.scale(1.3).add(0, 0.35, 0));
                         f.hurtMarked = true;
@@ -394,7 +394,7 @@ public final class LimitFx {
                 Vec3 end = start.add(dir.scale(ticks * speed));
                 Vec3 g = FxLib.ground(sl, end, 8);
                 Vec3 at = g != null ? g.add(0, 1.5, 0) : end;
-                FxSend.impactFrame(sl, at, 6, true, 48);
+                if (!foesNear(sl, p, at, 12).isEmpty()) FxSend.impactFrame(sl, at, 6, FxSend.FRAME_MEREOLEONA, 48);
                 blast(p, sl, CRIMSON, at, 12, power * 2.5f, "calidos_brachium_purgatory");
                 fireball(sl, BLUE_FLAME, at, Vec3.ZERO, 1.2f, 6f, 14, true);
                 FxSend.beam(sl, CRIMSON, at.add(0, -2, 0), at.add(0, 22, 0), 4.0f, 24);
@@ -481,7 +481,6 @@ public final class LimitFx {
             if (!alive(p)) return;
             Vec3 look = p.getLookAngle().normalize();
             Vec3 at = FireFx.tossPos(p, HIT).add(0, 0.3, 0);
-            FxSend.impactFrame(sl, at, 4, false, 32);
             FxSend.shake(sl, at, 0.9f, 12, 32);
             FxSend.slash(sl, FIRE, at.subtract(look.scale(0.4)), look, rightOf(look), 1.8f, 2.6f, 5, 0f, 1.0f);
             for (int k = 0; k < 3; k++)   // a cone of fire blasting out of the swing
@@ -501,7 +500,7 @@ public final class LimitFx {
         boolean foe = !foesNear(sl, p, next, 2.6).isEmpty();
         if (wall || foe || step >= 40) {
             Vec3 at = wall ? hr.getLocation() : next;
-            FxSend.impactFrame(sl, at, 5, false, 48);
+            if (!foesNear(sl, p, at, 10).isEmpty()) FxSend.impactFrame(sl, at, 5, FxSend.FRAME_MAGNA, 48);
             blast(p, sl, FIRE, at, 10, power * 2.5f, "fire_cannon");
             FxSend.beam(sl, FIRE, at.add(0, -1, 0), at.add(0, 16, 0), 3.0f, 20);   // a pillar of fire goes up
             for (int k = 0; k < 8; k++) {   // and the blast throws fire everywhere: explosions all round the edge
@@ -535,7 +534,7 @@ public final class LimitFx {
             Vec3 axis = new Vec3(-Math.cos(a) * 0.7, 1, -Math.sin(a) * 0.7).normalize();
             BoneFx.bone(sl, BoneFx.LONG, g.add(axis.scale(3)), axis, new Vec3(-Math.cos(a), 0, -Math.sin(a)), 3f, 0.28f, 120, 4 + k % 4, FxPacket.GROUND, 0, Vec3.ZERO, 0);
         }
-        FxSend.impactFrame(sl, c, 3, false, 32);
+        if (!foesNear(sl, p, c, 18).isEmpty()) FxSend.impactFrame(sl, c, 3, FxSend.FRAME_ZENON, 32);
         sound(sl, c, SoundEvents.BONE_BLOCK_PLACE, 1f, 0.4f);
         int k = 0;
         for (LivingEntity t : foesNear(sl, p, c, 18)) {

@@ -214,6 +214,7 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 40) { Cutscene.cinematic(p.life, p.sweep); return; }   // a short cinematic (Equinox)
       if (p.shape == 39) { DarkSmoke.guardFists(p.id, p.life); return; }   // Burning Fists Guard: id = player, life = ticks
       if (p.shape == 38) {   // Zenon's bone whips: id = player, life, h = count, r = reach, a0 = lash period, palette 1 = Beelzebub
          Minecraft mc0 = Minecraft.getInstance();
@@ -643,7 +644,7 @@ public class FxRenderer {
          }
       }
       if (gloves || mode) {
-         double by = Math.toRadians((double)Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot));
+         double by = Math.toRadians((double)Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot) - animYawDeg(p, pt));
          Vec3 fw = new Vec3(-Math.sin(by), 0.0, Math.cos(by)), lf = new Vec3(Math.cos(by), 0.0, Math.sin(by));
          for (int s = -1; s <= 1; s += 2) {
             Vec3 hand = base.add(0, h * 0.4, 0).add(lf.scale(0.38 * s)).add(fw.scale(0.08));
@@ -957,7 +958,7 @@ public class FxRenderer {
          }
       }
       // skeletal wings from the shoulder blades
-      double by = Math.toRadians(Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot));
+      double by = Math.toRadians(Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot) - animYawDeg(p, pt));
       Vec3 fw = new Vec3(-Math.sin(by), 0.0, Math.cos(by)), lf = new Vec3(Math.cos(by), 0.0, Math.sin(by));
       double beat = Math.sin(now * (p.onGround() ? 0.12 : 0.35)) * 0.25;
       for (int s = -1; s <= 1; s += 2) {
@@ -1828,7 +1829,7 @@ public class FxRenderer {
       float a = fade * Mth.clamp(0.35F + 0.65F * (float)Mth.clamp(age / 14.0, 0.0, 1.0), 0.0F, 1.0F);
       if (a <= 0.01F) return;
 
-      double by = Math.toRadians((double)Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot));
+      double by = Math.toRadians((double)Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot) - animYawDeg(p, pt));
       Vec3 fw = new Vec3(-Math.sin(by), 0.0, Math.cos(by));
       Vec3 lf = new Vec3(Math.cos(by), 0.0, Math.sin(by));
       Vec3 base = new Vec3(Mth.lerp((double)pt, p.xo, p.getX()), Mth.lerp((double)pt, p.yo, p.getY()), Mth.lerp((double)pt, p.zo, p.getZ()));
@@ -1897,7 +1898,7 @@ public class FxRenderer {
       float grow = (float)(1.0 - Math.pow(1.0 - Mth.clamp(age / 12.0, 0.0, 1.0), 3.0));
       float a = fade * grow;
       if (a <= 0.01F) return;
-      double by = Math.toRadians((double)Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot));
+      double by = Math.toRadians((double)Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot) - animYawDeg(p, pt));
       Vec3 fw = new Vec3(-Math.sin(by), 0.0, Math.cos(by));
       Vec3 lf = new Vec3(Math.cos(by), 0.0, Math.sin(by));
       Vec3 base = new Vec3(Mth.lerp((double)pt, p.xo, p.getX()), Mth.lerp((double)pt, p.yo, p.getY()), Mth.lerp((double)pt, p.zo, p.getZ()));
@@ -2084,7 +2085,7 @@ public class FxRenderer {
          width = 0.24F;
       }
 
-      double by = Math.toRadians((double)Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot));
+      double by = Math.toRadians((double)Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot) - animYawDeg(p, pt));
       Vec3 fw = new Vec3(-Math.sin(by), 0.0, Math.cos(by));
       Vec3 lf = new Vec3(Math.cos(by), 0.0, Math.sin(by));
       boolean rightHand = p.getMainArm() == HumanoidArm.RIGHT == main;
@@ -2383,6 +2384,22 @@ public class FxRenderer {
          Vec3 tg = ctr[segs].subtract(ctr[segs - 1]).normalize();
          drawSpike(vc, m, n, cam, ctr[segs], tg.add(side0.scale(0.35)).normalize(), 0.35, 0.06, 0.0, 15, 0.96F);   // the hooked point
          if (union) gline(m, cam, ctr[segs].subtract(tg.scale(0.4)), ctr[segs].add(tg.scale(0.4)), 0.12F, 1, 0.5F);
+      }
+   }
+
+   /**
+    * How far an animation is turning the whole body right now (PlayerAnimator's body bone, e.g. Black Hurricane's
+    * spin), in degrees of body yaw - so forms drawn round the player (devil wings, bone wings, the spirit) turn with it.
+    */
+   static double animYawDeg(net.minecraft.world.entity.player.Player p, float pt) {
+      if (!(p instanceof net.minecraft.client.player.AbstractClientPlayer acp)) return 0.0;
+      try {
+         var stack = dev.kosmx.playerAnim.minecraftApi.PlayerAnimationAccess.getPlayerAnimLayer(acp);
+         if (stack == null || !stack.isActive()) return 0.0;
+         var v = stack.get3DTransform("body", dev.kosmx.playerAnim.api.TransformType.ROTATION, pt, dev.kosmx.playerAnim.core.util.Vec3f.ZERO);
+         return Math.toDegrees(v.getY().doubleValue());
+      } catch (RuntimeException ex) {
+         return 0.0;
       }
    }
 

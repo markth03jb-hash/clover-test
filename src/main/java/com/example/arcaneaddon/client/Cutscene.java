@@ -168,8 +168,42 @@ public final class Cutscene {
         }
     }
 
+    // ------------------------------------------------------------------ short cinematics (Equinox)
+    private static double cineStart = -1, cineEnd = -1, cineCut = -1;
+
+    /** A cinematic for {@code life} ticks with its key moment {@code cut} ticks in: bars, a slow push-in, a snap out. */
+    public static void cinematic(int life, int cut) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        cineStart = mc.level.getGameTime();
+        cineEnd = cineStart + life;
+        cineCut = cineStart + cut;
+    }
+
+    private static double cineTime(float pt) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || cineStart < 0) return -1;
+        double now = mc.level.getGameTime() + pt;
+        if (now > cineEnd) { cineStart = -1; return -1; }
+        return now;
+    }
+
+    /** No zoom from being slowed while charging Event Horizon / Equinox - the view stays steady. */
+    @SubscribeEvent
+    public static void onFovModifier(net.minecraftforge.client.event.ComputeFovModifierEvent e) {
+        var att = e.getPlayer().getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        if (att != null && att.getModifier(com.example.arcaneaddon.server.TimedModifiers.HORIZON_CHARGE) != null) e.setNewFovModifier(1.0F);
+    }
+
     @SubscribeEvent
     public static void onFov(ViewportEvent.ComputeFov e) {
+        double ct = cineTime((float) e.getPartialTick());
+        if (ct >= 0) {   // push in slowly through the held moment, snap back out on the cut, settle
+            double f;
+            if (ct < cineCut) f = 1.0 - 0.16 * Mth.clamp((ct - cineStart) / Math.max(1.0, cineCut - cineStart), 0.0, 1.0);
+            else f = 1.06 - 0.06 * Mth.clamp((ct - cineCut) / 12.0, 0.0, 1.0);
+            e.setFOV(e.getFOV() * f);
+        }
         if (!running) return;
         double f = switch (phase) { case 0 -> 1.25; case 2 -> 1.1; case 3 -> 0.9; default -> 1.12; };
         e.setFOV(e.getFOV() * f);
@@ -183,7 +217,7 @@ public final class Cutscene {
     /** Anime impact frames: a few ticks of hard white / black flashes with speed lines, for a hit that lands. */
     public static void impactFrame(int ticks, boolean slash) { impactFrame(ticks, slash ? 1 : 0); }
 
-    /** style 0 = white / black with speed lines, 1 = plus the huge slash, 2 = Luck's lightning frame, 3 = Yami's Equinox. */
+    /** style 0 = Asta (white / black, speed lines), 1 = Asta with the huge slash, 2 = Luck, 3 = Equinox, 4..10 = Yami, Yuno, Nozel, Magna, Mereoleona, Zenon, Klaus. */
     public static void impactFrame(int ticks, int style) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || !com.example.arcaneaddon.AddonClientConfig.impactFrames()) return;
@@ -260,9 +294,107 @@ public final class Cutscene {
         g.fill(0, h / 2 - 1, w, h / 2 + 1, ((int) (fade * 120) << 24) | 0x9A5CFF);   // the horizon
     }
 
+    /**
+     * Each grimoire's own impact frame: its colours flashing light / dark tick by tick, and its own pattern across
+     * the screen - Yami's diagonal cuts, Yuno's spiralling wind, Nozel's mercury spikes, Magna's flames,
+     * Mereoleona's roaring crimson rays, Zenon's cracking bone, Klaus's steel plates.
+     */
+    private static void drawThemedFrame(GuiGraphics g, double k, int style) {
+        int w = g.guiWidth(), h = g.guiHeight();
+        int phase = (int) k;
+        boolean bright = phase % 2 == 0;
+        float fade = (float) Mth.clamp(frameLen - k, 0.0, 1.0);
+        int[][] pal = {   // light, dark, lines, accent
+                {0xD8C8FF, 0x07000F, 0x9A5CFF, 0xFFFFFF},   // 4 Yami
+                {0xE8FFF2, 0x02261C, 0x6BE09A, 0xFFFFFF},   // 5 Yuno
+                {0xF0F4FA, 0x10141C, 0xB8C4D8, 0x5A6A80},   // 6 Nozel
+                {0xFFE2B0, 0x2A0800, 0xFF8A2A, 0xFFF0C0},   // 7 Magna
+                {0xFFC8C0, 0x200000, 0xE0302A, 0xFFE0D0},   // 8 Mereoleona
+                {0xF4EEDC, 0x0A0610, 0xE8DCC0, 0x7A3CC8},   // 9 Zenon
+                {0xE6ECF2, 0x0E1420, 0x9AA8B8, 0xFFFFFF}};  // 10 Klaus
+        int[] c = pal[Mth.clamp(style - 4, 0, pal.length - 1)];
+        g.fill(0, 0, w, h, ((int) (fade * (bright ? 190 : 220)) << 24) | (bright ? c[0] : c[1]));
+        int line = ((int) (fade * 255) << 24) | (bright ? c[1] : c[2]);
+        int acc = ((int) (fade * 230) << 24) | (bright ? c[2] : c[3]);
+        java.util.Random r = new java.util.Random(phase * 131L + style * 17L);
+        float cx = w / 2f, cy = h / 2f, reach = (float) Math.hypot(w, h) * 0.6F;
+        switch (style) {
+            case 4 -> {   // Yami: long diagonal cuts across the frame, one bright one through the middle
+                for (int i = 0; i < 7; i++) {
+                    float off = (i - 3) * h * 0.14F + (r.nextFloat() - 0.5F) * 10;
+                    seg(g, -20, cy + off - h * 0.5F, w + 20, cy + off + h * 0.5F, 1 + r.nextInt(2), line);
+                }
+                seg(g, -20, cy - h * 0.55F, w + 20, cy + h * 0.55F, Math.max(3, h / 60), acc);
+            }
+            case 5 -> {   // Yuno: wind spiralling in to the middle
+                for (int a = 0; a < 5; a++) {
+                    double a0 = a * Math.PI * 2 / 5 + r.nextDouble() * 0.3;
+                    float px = cx + (float) Math.cos(a0) * reach, py = cy + (float) Math.sin(a0) * reach;
+                    for (int s = 1; s <= 14; s++) {
+                        double rr = reach * (1 - s / 15.0), aa = a0 + s * 0.22;
+                        float nx = cx + (float) (Math.cos(aa) * rr), ny = cy + (float) (Math.sin(aa) * rr);
+                        seg(g, px, py, nx, ny, Math.max(1, 3 - s / 6), s % 3 == 0 ? acc : line);
+                        px = nx; py = ny;
+                    }
+                }
+            }
+            case 6 -> {   // Nozel: sharp silver spikes stabbing in from every edge
+                for (int i = 0; i < 18; i++) {
+                    double a = i * Math.PI * 2 / 18 + r.nextDouble() * 0.2;
+                    float ex = cx + (float) Math.cos(a) * reach, ey = cy + (float) Math.sin(a) * reach;
+                    float len = reach * (0.45F + r.nextFloat() * 0.25F);
+                    for (int t = 0; t < 4; t++) {   // a tapering spike: thick at the edge, a needle at the tip
+                        float f0 = t / 4f, f1 = (t + 1) / 4f;
+                        seg(g, ex + (cx - ex) * f0 * len / reach, ey + (cy - ey) * f0 * len / reach,
+                               ex + (cx - ex) * f1 * len / reach, ey + (cy - ey) * f1 * len / reach, 4 - t, t == 3 ? acc : line);
+                    }
+                }
+            }
+            case 7, 8 -> {   // Magna / Mereoleona: tongues of flame roaring out from the middle
+                int n = style == 7 ? 22 : 30;
+                for (int i = 0; i < n; i++) {
+                    double a = i * Math.PI * 2 / n + r.nextDouble() * 0.15;
+                    float px = cx + (float) Math.cos(a) * reach * 0.15F, py = cy + (float) Math.sin(a) * reach * 0.15F;
+                    for (int s = 1; s <= 6; s++) {
+                        double rr = reach * (0.15 + s * 0.14), wob = (r.nextDouble() - 0.5) * 0.18;
+                        float nx = cx + (float) (Math.cos(a + wob) * rr), ny = cy + (float) (Math.sin(a + wob) * rr);
+                        seg(g, px, py, nx, ny, Math.max(1, (style == 8 ? 5 : 4) - s / 2), s < 3 ? acc : line);
+                        px = nx; py = ny;
+                    }
+                }
+            }
+            case 9 -> {   // Zenon: the frame cracks like bone from the middle out, a violet edge in the cracks
+                for (int b = 0; b < 8; b++) {
+                    double a = b * Math.PI * 2 / 8 + r.nextDouble() * 0.4;
+                    float px = cx, py = cy;
+                    for (int s = 0; s < 8; s++) {
+                        a += (r.nextDouble() - 0.5) * 0.7;
+                        float nx = px + (float) Math.cos(a) * reach * 0.12F, ny = py + (float) Math.sin(a) * reach * 0.12F;
+                        seg(g, px, py, nx, ny, 3, acc);
+                        seg(g, px, py, nx, ny, 1, line);
+                        if (r.nextInt(3) == 0) {
+                            double fa = a + (r.nextBoolean() ? 0.8 : -0.8);
+                            seg(g, nx, ny, nx + (float) Math.cos(fa) * reach * 0.08F, ny + (float) Math.sin(fa) * reach * 0.08F, 1, line);
+                        }
+                        px = nx; py = ny;
+                    }
+                }
+            }
+            default -> {  // Klaus: steel plates - a grid of heavy bars slamming across the frame
+                for (int i = 1; i < 6; i++) {
+                    int x = w * i / 6 + r.nextInt(9) - 4, y = h * i / 6 + r.nextInt(9) - 4;
+                    g.fill(x - 2, 0, x + 2, h, line);
+                    g.fill(0, y - 2, w, y + 2, line);
+                }
+                g.fill(0, (int) cy - 4, w, (int) cy + 4, acc);
+            }
+        }
+    }
+
     private static void drawImpactFrame(GuiGraphics g, double k) {
         if (frameStyle == 2) { drawLightningFrame(g, k); return; }
         if (frameStyle == 3) { drawEquinoxFrame(g, k); return; }
+        if (frameStyle >= 4) { drawThemedFrame(g, k, frameStyle); return; }
         int w = g.guiWidth(), h = g.guiHeight();
         int phase = (int) k;
         boolean white = phase % 2 == 0;
@@ -308,6 +440,23 @@ public final class Cutscene {
     @SubscribeEvent
     public static void onGui(RenderGuiEvent.Post e) {
         Minecraft mc0 = Minecraft.getInstance();
+        double ct = cineTime(e.getPartialTick());
+        if (ct >= 0) {   // letterbox bars and a darkening at the edges while the moment stretches
+            GuiGraphics g = e.getGuiGraphics();
+            int w = g.guiWidth(), h = g.guiHeight();
+            double in = Mth.clamp((ct - cineStart) / 8.0, 0.0, 1.0), out = Mth.clamp((cineEnd - ct) / 8.0, 0.0, 1.0);
+            int bar = (int) (h * 0.12 * Math.min(in, out));
+            g.fill(0, 0, w, bar, 0xFF000000);
+            g.fill(0, h - bar, w, h, 0xFF000000);
+            double hold = ct < cineCut ? Mth.clamp((ct - cineStart) / Math.max(1.0, cineCut - cineStart), 0.0, 1.0) : Math.max(0.0, 1.0 - (ct - cineCut) / 6.0);
+            int edge = (int) (hold * 110 * Math.min(in, out));
+            for (int k = 0; k < 6; k++) {   // a soft vignette: bands growing fainter toward the middle
+                int a = (int) (edge * (1.0 - k / 6.0)) << 24;
+                int bw = w / 28;
+                g.fill(k * bw, 0, (k + 1) * bw, h, a);
+                g.fill(w - (k + 1) * bw, 0, w - k * bw, h, a);
+            }
+        }
         if (frameStart >= 0 && mc0.level != null) {
             double k = mc0.level.getGameTime() + e.getPartialTick() - frameStart;
             if (k >= 0 && k < frameLen) drawImpactFrame(e.getGuiGraphics(), k);

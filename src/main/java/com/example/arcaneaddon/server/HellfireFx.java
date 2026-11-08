@@ -444,6 +444,12 @@ public class HellfireFx {
                 Vec3 at = eye.add(look.scale(1.4)).add(rt.scale(r.nextDouble(-1.0, 1.0))).add(up.scale(r.nextDouble(-0.9, 0.6)));
                 fist(sl, F, at, look, 0.55f, look.scale(0.4));
                 if (tt % 6 == 0) FxSend.wall(sl, F, eye.add(look.scale(0.9)), look, up, 1.3f, 1.5f, -75, 75, 0.9f, 5, 0, 0);
+                // a second fist of afterimage on the other side, so the jabs read as a blur of both hands
+                Vec3 at2 = eye.add(look.scale(1.2)).add(rt.scale(r.nextDouble(-1.0, 1.0))).add(up.scale(r.nextDouble(-0.8, 0.5)));
+                fist(sl, F, at2, look, 0.4f, look.scale(0.5));
+                // a ring of crimson fire whirling round her, and the ground heating under her feet
+                FxSend.wall(sl, F, p.position().add(0, 1.0, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 1.3f, 1.55f, tt * 24f, tt * 24f + 120, 0.5f, 3, 0, 0);
+                if (tt % 10 == 0) FxSend.ring(sl, F, p.position().add(0, 0.05, 0), 0.6f, 2.8f, 0.25f, 10);
                 // anything thrown at her is punched out of the air
                 for (Projectile pr : sl.getEntitiesOfClass(Projectile.class, p.getBoundingBox().inflate(4.0))) {
                     if (pr.getOwner() == p) continue;
@@ -461,6 +467,16 @@ public class HellfireFx {
             if (!alive(p)) return;
             Vec3 look = p.getLookAngle();
             Vec3 c = p.getEyePosition().add(look.scale(2.2));
+            // the haymaker: a lion's head of fire roars out of the punch
+            Vec3 rt = rightOf(look), up = rt.cross(look).normalize();
+            for (int k = 0; k < 4; k++) {
+                final int kk = k;
+                AstaFx.later(k, () -> {
+                    Vec3 h = p.getEyePosition().add(look.scale(1.6 + kk * 1.5));
+                    ball(sl, F, h, look.scale(1.5), 0.9f + kk * 0.15f, 0.9f + kk * 0.15f, 1, false);
+                    FxSend.wall(sl, F, h.subtract(look.scale(0.5)), look, up, 1.1f + kk * 0.2f, 1.8f + kk * 0.25f, -180, 180, 0.5f, 4, 0, 0);   // the mane
+                });
+            }
             ball(sl, F, c, Vec3.ZERO, 0.8f, 3.2f, 10, true);
             fist(sl, F, p.getEyePosition().add(look.scale(1.4)), look, 1.4f, look.scale(0.6));
             for (LivingEntity t : enemies(sl, p, new AABB(c, c).inflate(3.5))) {

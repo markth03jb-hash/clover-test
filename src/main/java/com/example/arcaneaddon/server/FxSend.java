@@ -137,7 +137,11 @@ public class FxSend {
         impactFrame(sl, at, ticks, slash ? 1 : 0, radius);
     }
 
-    /** style 0 = white / black, 1 = with the huge slash, 2 = Luck's lightning frame. */
+    /** Impact frame styles: each grimoire has its own. */
+    public static final int FRAME_ASTA = 0, FRAME_ASTA_SLASH = 1, FRAME_LUCK = 2, FRAME_EQUINOX = 3, FRAME_YAMI = 4, FRAME_YUNO = 5,
+            FRAME_NOZEL = 6, FRAME_MAGNA = 7, FRAME_MEREOLEONA = 8, FRAME_ZENON = 9, FRAME_KLAUS = 10;
+
+    /** style: one of the FRAME_ constants. */
     public static void impactFrame(ServerLevel sl, Vec3 at, int ticks, int style, double radius) {
         FxPacket p = new FxPacket();
         p.shape = 12; p.life = ticks; p.c = at; p.palette = (byte) style;

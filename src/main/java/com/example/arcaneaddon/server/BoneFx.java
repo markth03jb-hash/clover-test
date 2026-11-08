@@ -106,7 +106,7 @@ public class BoneFx {
         sound(sl, at, SoundEvents.BONE_BLOCK_BREAK, 0.9f * s, 0.8f);
     }
 
-    private static float power(ServerPlayer p, float base) { return inUnion(p) ? base * 1.35f : base; }
+    private static float power(ServerPlayer p, float base) { return inUnion(p) ? base * 1.5f : base;   // Beelzebub: every bone move hits 50% harder }
 
     /** Client-drawn effects tied to the caster: 37 = the bone sword in the hand, 38 = the bone whips. */
     private static void sendHeld(ServerPlayer p, int shape, int life, float r, float count, float period, boolean union) {
@@ -129,7 +129,7 @@ public class BoneFx {
     public static void spearVolley(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         boolean u = inUnion(p);
-        int n = u ? 10 : 6;
+        int n = u ? 12 : 6;
         // the spears grow out in a fan behind your hand, then turn and fly
         for (int t = 0; t < VOLLEY_RELEASE; t++) {
             final int tt = t;
@@ -206,7 +206,7 @@ public class BoneFx {
             Vec3 look = p.getLookAngle();
             Vec3 flat = new Vec3(look.x, 0, look.z).normalize(), rt = rightOf(flat);
             ThreadLocalRandom r = ThreadLocalRandom.current();
-            double reach = u ? 22 : 16;
+            double reach = u ? 26 : 16;
             Set<UUID> hit = new HashSet<>();
             for (int k = 1; k <= (int) (reach / 1.4); k++) {
                 final int kk = k;
@@ -256,7 +256,7 @@ public class BoneFx {
                 Vec3 sweep = ii == 2 ? up : rt.scale(cutDir[ii][0]).add(up.scale(cutDir[ii][1])).normalize();
                 Vec3 at = p.getEyePosition().add(look.scale(1.6)).add(0, -0.3, 0);
                 FxSend.slash(sl, B, at, look, sweep, 1.6f, 2.4f, 5, 0.3f, 0.9f);   // the cut, in bone-white
-                double reach = u ? 6 : 4.5;
+                double reach = u ? 7 : 4.5;
                 for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(reach))) {
                     Vec3 to = mid(t).subtract(p.getEyePosition());
                     if (to.length() > reach || to.normalize().dot(look) < 0.3) continue;
@@ -319,7 +319,7 @@ public class BoneFx {
         boolean u = inUnion(p);
         if (u) unionMsg(p, "bone_whips");
         int n = u ? 6 : 4;
-        double R = u ? 12 : 9;
+        double R = u ? 14 : 9;
         double period = u ? 7 : 10;   // ticks per lash
         sendHeld(p, 38, WHIP_TICKS, (float) R, n, (float) period, u);   // the client draws them, smoothly, every frame
         crack(sl, p.position(), 0.8f);
@@ -426,7 +426,7 @@ public class BoneFx {
         AstaFx.later(66, () -> {   // the cage snaps shut
             if (!alive(p) || !t.isAlive()) return;
             AstaFx.damage(p, t, power(p, power) * (u ? 1.5f : 1f), "ribcage_prison");
-            FxSend.impactFrame(sl, mid(t), 2, false, 20);
+            FxSend.impactFrame(sl, mid(t), 2, FxSend.FRAME_ZENON, 20);
             FxSend.shake(sl, c, 0.6f, 10, 24);
             for (int i = 0; i < ribs; i++) {
                 double a = Math.PI * 2 * i / ribs;
@@ -482,7 +482,7 @@ public class BoneFx {
         Vec3 hitAt = clip(sl, p, eye, eye.add(p.getLookAngle().scale(28)));
         Vec3 g = FxLib.ground(sl, hitAt.add(0, 0.5, 0), 10);
         final Vec3 c = g != null ? g : hitAt;
-        final double R = inUnion(p) ? 9 : 7;
+        final double R = inUnion(p) ? 11 : 7;
         ThreadLocalRandom r = ThreadLocalRandom.current();
         for (int i = 0; i < 46; i++) {
             final int ii = i;
@@ -622,7 +622,7 @@ public class BoneFx {
         Vec3 hitAt = clip(sl, p, eye, eye.add(p.getLookAngle().scale(36)));
         Vec3 g = FxLib.ground(sl, hitAt.add(0, 0.5, 0), 14);
         final Vec3 c = g != null ? g : hitAt;
-        final double R = u ? 12 : 9;
+        final double R = u ? 14 : 9;
         final Vec3 sky = c.add(0, 16, 0);
         cube(sl, sky, (float) R * 0.6f, 70);
         FxSend.ring(sl, B, c.add(0, 0.05, 0), (float) R - 0.3f, (float) R, 0.06f, 70);   // where it will fall
@@ -706,8 +706,9 @@ public class BoneFx {
         }
         Long pl = PLATES.get(id);
         if (pl != null && now > pl) PLATES.remove(id);
-        // passive: Endless Bone - you regrow
-        if (now % 40 == 0 && p.getHealth() < p.getMaxHealth() && wearsBoneGrimoire(p)) p.heal(1f);
+        // passive: Endless Bone - you regrow, slowly, and not while you're being hit (nerfed: was 1 health every 2 s, always)
+        if (now % 80 == 0 && p.getHealth() < p.getMaxHealth() && p.tickCount - p.getLastHurtByMobTimestamp() > 100
+                && p.hurtTime == 0 && wearsBoneGrimoire(p)) p.heal(1f);
     }
 
     @SubscribeEvent
