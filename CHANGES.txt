@@ -1,7 +1,22 @@
-Arcane Addon v1.20.0 - all changed files since v1.0.0
+Arcane Addon v1.21.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.21.0
+  - Black Meteorite: much easier to land - the dash now checks the whole path it covered each tick (no more passing
+    through mobs) and stops right in front of the target when it's about to overshoot. The ten blitz dashes now come
+    from evenly spread directions (high, low, every side). New finisher: you stop beside them in mid-air, charge
+    (black flame and red light pour into the blade), then one huge slash straight through them on an impact frame -
+    a single white slash across the whole screen - and the final blow bursts in the air.
+  - Devil Union is red instead of orange (wings, crown, trails, Black Meteorite).
+  - Black Blade: a real aura outline around your body - a black shell and a breathing violet glow that follow every
+    movement, with wisps of darkness rising off it.
+  - Dimension Slash redone as one clean, solid slash: a black blade with a white-hot edge, drawn left to right as you
+    cut, flying forward and growing, then the hairline and tears of cut space behind it.
+  - Smoother trails: dash trails, Black Meteorite streaks, Wild Slash bolts and guided slashes join into one
+    continuous streak instead of a row of stitches.
+  - Wild Slash Raijin: the whole body spins now, not just the upper body.
 
 NEW IN 1.20.0
   - No more floating ground effects: Acier Silva spikes, spike rings, Zetten's fissure and the Black Meteorite

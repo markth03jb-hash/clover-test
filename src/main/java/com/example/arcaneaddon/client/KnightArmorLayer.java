@@ -59,7 +59,10 @@ public class KnightArmorLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
         public static void addLayers(EntityRenderersEvent.AddLayers e) {
             for (String skin : e.getSkins()) {
                 PlayerRenderer r = e.getSkin(skin);
-                if (r != null) r.addLayer(new KnightArmorLayer(r));
+                if (r != null) {
+                    r.addLayer(new KnightArmorLayer(r));
+                    r.addLayer(new AuraOutlineLayer(r));
+                }
             }
         }
     }

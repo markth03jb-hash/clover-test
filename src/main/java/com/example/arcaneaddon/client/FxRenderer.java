@@ -46,13 +46,13 @@ public class FxRenderer {
       {0.07F, 0.07F, 0.09F},
       {0.09F, 0.10F, 0.12F},   // 7 steel
       {0.16F, 0.10F, 0.02F},   // 8 gold
-      {0.05F, 0.0F, 0.01F}     // 9 ember (devil form)
+      {0.07F, 0.0F, 0.0F}      // 9 devil red (devil form)
    };
    private static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
       {0.78F, 0.85F, 0.94F},   // 7 steel
       {1.0F, 0.84F, 0.36F},    // 8 gold
-      {1.0F, 0.30F, 0.07F}     // 9 ember (devil form)
+      {1.0F, 0.07F, 0.05F}     // 9 devil red (devil form)
    };
    /** Overall strength of every world effect. Lower = subtler. */
    private static final float FX_ALPHA = 1.0F;
@@ -105,8 +105,12 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 14) {  // aura outline: id = player, palette = colour, life = ticks left (0 = off)
+         AuraOutlineLayer.set(p.id, p.palette, p.life);
+         return;
+      }
       if (p.shape == 12) {  // impact frame: life = ticks
-         Cutscene.impactFrame(p.life);
+         Cutscene.impactFrame(p.life, p.palette == 1);
          return;
       }
       if (p.shape == 11) {  // Knight's Armor form: id = player, life = ticks left (0 = off)
@@ -305,7 +309,10 @@ public class FxRenderer {
                         crescentFx(vc, m, n, cam, f.p, age, env);
                         break;
                      case 2:
-                        beam(vc, m, n, cam, f.p.c, f.p.c.add(f.p.d), f.p.r * (1.0F - 0.55F * (float)(age / life)), f.p.palette, env, 0.35);
+                        beam(vc, m, n, cam, f.p.c, f.p.c.add(f.p.d), f.p.r * (1.0F - 0.55F * (float)(age / life)), f.p.palette, env, f.p.h > 0.5F ? 0.0 : 0.35);
+                        break;
+                     case 13:
+                        slashFx(vc, m, n, cam, f.p, age, life);
                         break;
                      case 7:
                         boxFx(vc, m, n, cam, f, age, life);
@@ -856,6 +863,41 @@ public class FxRenderer {
             Vec3 out = p.u.scale(Math.sin(rm)).add(p.d.scale(Math.cos(rm) * 0.55)).subtract(p.d.scale(0.6)).normalize();   // outward, trailing behind
             flameTongue(vc, m, n, cam, o0, o1, out, R * 0.28, p.palette, env, i + p.id * 7);
          }
+      }
+   }
+
+   /**
+    * SLASH: one clean blade slash. A solid black crescent (thickest in the middle, needle-sharp tips) with a white-hot
+    * cutting edge and a thin coloured glow, drawn in from one tip to the other over two ticks, then it thins and fades.
+    */
+   private static void slashFx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, double life) {
+      double reveal = Mth.clamp(age / 2.0, 0.0, 1.0);
+      double grow = 1.0 - Math.pow(1.0 - Mth.clamp(age / (life * 0.45), 0.0, 1.0), 3.0);
+      double R = p.r + (p.r2 - p.r) * grow;
+      float fade = (float)Mth.clamp((life - age) / (life * 0.45), 0.0, 1.0);
+      double thin = Math.sqrt(fade);
+      Vec3 c = p.c.add(p.d.scale(p.speed * age));
+      Vec3 d = p.d, u = p.u;
+      float[] black = new float[]{0.01F, 0.0F, 0.015F};
+      float[] rim = RIM[p.palette], hc = new float[]{1.0F, 0.97F, 0.95F};
+      int N = 24;
+      double a0deg = -80.0, span = 160.0 * reveal;
+      for (int i = 0; i < N; i++) {
+         double f0 = a0deg + span * i / N, f1 = a0deg + span * (i + 1) / N;
+         double r0 = Math.toRadians(f0), r1 = Math.toRadians(f1);
+         Vec3 o0 = c.add(u.scale(Math.sin(r0) * R)).add(d.scale((Math.cos(r0) - 1.0) * R * 0.35));
+         Vec3 o1 = c.add(u.scale(Math.sin(r1) * R)).add(d.scale((Math.cos(r1) - 1.0) * R * 0.35));
+         double w0 = R * 0.17 * thin * Math.pow(Math.cos(Math.toRadians(f0 / 80.0 * 88.0)), 1.4);
+         double w1 = R * 0.17 * thin * Math.pow(Math.cos(Math.toRadians(f1 / 80.0 * 88.0)), 1.4);
+         Vec3 i0 = o0.subtract(d.scale(w0)), i1 = o1.subtract(d.scale(w1));
+         // the solid black blade of the slash
+         quad(vc, m, n, cam, o0, o1, i1, i0, black, 0.97F * fade, 0.97F * fade, 0.97F * fade, 0.97F * fade);
+         // a short smoky wake behind it
+         quad(vc, m, n, cam, i0, i1, i1.subtract(d.scale(w1 * 1.4)), i0.subtract(d.scale(w0 * 1.4)), black, 0.45F * fade, 0.45F * fade, 0.0F, 0.0F);
+         // the white-hot cutting edge and a thin coloured glow ahead of it
+         double e0 = Math.max(0.02, w0 * 0.16), e1 = Math.max(0.02, w1 * 0.16);
+         gquad(m, cam, o0.add(d.scale(e0 * 0.5)), o1.add(d.scale(e1 * 0.5)), o1.subtract(d.scale(e1)), o0.subtract(d.scale(e0)), hc, fade, fade, fade, fade);
+         gquad(m, cam, o0.add(d.scale(e0 * 0.5)), o1.add(d.scale(e1 * 0.5)), o1.add(d.scale(e1 * 4.0)), o0.add(d.scale(e0 * 4.0)), rim, 0.55F * fade, 0.55F * fade, 0.0F, 0.0F);
       }
    }
 

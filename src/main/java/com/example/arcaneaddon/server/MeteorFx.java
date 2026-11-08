@@ -34,9 +34,8 @@ import java.util.UUID;
  *  DASH      you rocket at the enemy you aim at, trailing black flame. Miss and it ends there.
  *  LAUNCH    on contact an uppercut slash throws them high into the air
  *  BLITZ     piercing dashes straight through them, ten times from every side
- *  FINISHER  you appear above them, black flame gathers on the blade, and you come down like a meteor with one huge
- *            slash, driving them into the ground
- *  IMPACT    a crater of black flame: shockwaves, a pillar of fire, burning fissures, a ring of shards
+ *  FINISHER  you stop beside them in mid-air and charge, then one huge slash straight through them, on an impact frame
+ *  FINALE    the final blow lands in the air with a burst of black flame and red light
  *
  * The victim cannot die until the finisher lands (the finishing blow can kill). You can't be hurt while it plays.
  * The caster's client plays it as a cutscene - see client/Cutscene. Packet shape 9 = cutscene (palette = phase:
@@ -72,9 +71,12 @@ public final class MeteorFx {
     }
 
     /** Anime impact frames on the screens of everyone close to {@code at}. */
-    private static void impactFrame(ServerLevel sl, Vec3 at, int ticks) {
+    private static void impactFrame(ServerLevel sl, Vec3 at, int ticks) { impactFrame(sl, at, ticks, false); }
+
+    /** slash = the finisher's frame: one huge white slash across the screen. */
+    private static void impactFrame(ServerLevel sl, Vec3 at, int ticks, boolean slash) {
         FxPacket pkt = new FxPacket();
-        pkt.shape = 12; pkt.life = ticks; pkt.c = at;
+        pkt.shape = 12; pkt.life = ticks; pkt.c = at; pkt.palette = (byte) (slash ? 1 : 0);
         AddonNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 24, sl.dimension())), pkt);
     }
 
@@ -95,6 +97,14 @@ public final class MeteorFx {
         t.setDeltaMovement(Vec3.ZERO);
         t.hurtMarked = true;
         t.resetFallDistance();
+    }
+
+    private static Vec3 closest(Vec3 a, Vec3 b, Vec3 q) {
+        Vec3 ab = b.subtract(a);
+        double l = ab.lengthSqr();
+        if (l < 1.0E-6) return a;
+        double t = Math.max(0, Math.min(1, q.subtract(a).dot(ab) / l));
+        return a.add(ab.scale(t));
     }
 
     private static boolean ok(ServerPlayer p) { return p.isAlive() && !p.isRemoved(); }
@@ -131,7 +141,19 @@ public final class MeteorFx {
         if (!ok(p) || !AstaFx.inDevilUnion(p)) { abort(p, null); return; }
         Vec3 me = p.position().add(0, 1, 0);
         Vec3 goal = t != null && t.isAlive() ? mid(t) : aim;
-        if (t != null && t.isAlive() && me.distanceTo(goal) < 2.6) { launch(p, sl, t, power); return; }
+        if (t != null && t.isAlive()) {
+            // a hit if the target is close, or if the last tick of the dash swept past it (no more passing through)
+            double swept = closest(last, me, goal).distanceTo(goal);
+            if (me.distanceTo(goal) < 3.0 || swept < 2.4 + t.getBbWidth() * 0.5) { launch(p, sl, t, power); return; }
+            // close enough that the next step would overshoot: stop right in front of them instead
+            if (me.distanceTo(goal) < 5.6) {
+                Vec3 dd = goal.subtract(me).normalize();
+                place(p, goal.subtract(dd.scale(1.6)).subtract(0, 1.0, 0), goal);
+                FxSend.trail(sl, EMBER, me, goal.subtract(dd.scale(1.6)), 0.9f, 8);
+                launch(p, sl, t, power);
+                return;
+            }
+        }
         if (step >= MAX_DASH || (t == null && me.distanceTo(goal) < 2.0) || (step > 1 && p.horizontalCollision)) {
             // missed: skid to a stop
             p.setDeltaMovement(Vec3.ZERO);
@@ -145,8 +167,8 @@ public final class MeteorFx {
         p.setDeltaMovement(dir.scale(2.6));
         p.hurtMarked = true;
         p.resetFallDistance();
-        FxSend.beam(sl, EMBER, last, me, 0.9f, 8);
-        FxSend.beam(sl, DARK, last, me, 0.45f, 7);
+        FxSend.trail(sl, EMBER, last, me, 0.9f, 8);
+        FxSend.trail(sl, DARK, last, me, 0.45f, 7);
         FxSend.wall(sl, DARK, me, FxLib.right(dir), FxLib.up(dir), 0.6f, 1.2f, -180, 180, 0.1f, 4, 0, 0);
         AstaFx.later(1, () -> dash(p, sl, t, aim, power, step + 1, me));
     }
@@ -198,13 +220,12 @@ public final class MeteorFx {
         if (k >= DASHES * DASH_TICKS) { finisher(p, sl, t, apex, power, 0); return; }
         int dash = k / DASH_TICKS, step = k % DASH_TICKS;
         Random r = new Random(apex.hashCode() * 31L + dash);
-        double a = r.nextDouble() * Math.PI * 2, el = (r.nextDouble() - 0.35) * 1.1;
-        Vec3 off = new Vec3(Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el)).scale(4.0);
+        Vec3 off = dashDir(dash).scale(4.0);
         Vec3 from = apex.add(off), to = apex.subtract(off);
         Vec3 pos = from.add(to.subtract(from).scale(step / (double) (DASH_TICKS - 1)));
         place(p, pos.subtract(0, 1.0, 0), to.add(to.subtract(from).normalize().scale(3)));
-        FxSend.beam(sl, EMBER, prevPos, pos, 0.5f, 6);       // the streak of the dash
-        FxSend.beam(sl, DARK, prevPos, pos, 0.25f, 5);
+        FxSend.trail(sl, EMBER, prevPos, pos, 0.5f, 6);       // the streak of the dash
+        FxSend.trail(sl, DARK, prevPos, pos, 0.25f, 5);
         if (step == 1) {                                     // tearing through them
             Vec3 cd = to.subtract(from).normalize();
             FxSend.crescent(sl, dash % 2 == 0 ? DARK : EMBER, apex, cd, FxLib.up(cd), 1.1f, 1.8f, 4, 0f);
@@ -221,47 +242,87 @@ public final class MeteorFx {
 
     /** Where the next dash will start (so the streak links up as a blink). */
     private static Vec3 apexNext(Vec3 apex, int dash) {
-        Random r = new Random(apex.hashCode() * 31L + dash);
-        double a = r.nextDouble() * Math.PI * 2, el = (r.nextDouble() - 0.35) * 1.1;
-        return apex.add(new Vec3(Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el)).scale(4.0));
+        return apex.add(dashDir(dash).scale(4.0));
+    }
+
+    /** Dash directions spread evenly around them (golden-angle spiral): high, low, left, right - never the same twice. */
+    private static Vec3 dashDir(int dash) {
+        double y = 0.75 - 1.5 * ((dash * 0.618034) % 1.0);       // from steeply above to steeply below
+        double a = dash * 2.39996;                               // golden angle around them
+        double rr = Math.sqrt(Math.max(0, 1 - y * y));
+        return new Vec3(Math.cos(a) * rr, y, Math.sin(a) * rr);
     }
 
     // ------------------------------------------------------------------ finisher
+    private static final int CHARGE = 10;
+
+    /**
+     * The finisher: you stop a few blocks from them, still in the air, and charge - black flame and red light pour into
+     * the blade - then one huge slash straight through them, frozen on an impact frame, and the sky behind them splits.
+     */
     private static void finisher(ServerPlayer p, ServerLevel sl, LivingEntity t, Vec3 apex, float power, int k) {
         if (!ok(p) || !t.isAlive()) { abort(p, t); return; }
-        Vec3 above = apex.add(0, 4.0, 0);
+        hold(t, apex);
+        Vec3 side = new Vec3(p.getX() - apex.x, 0, p.getZ() - apex.z);
+        side = side.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : side.normalize();
+        Vec3 stand = apex.add(side.scale(5.0)).add(0, 0.6, 0);
         if (k == 0) {
-            place(p, above.subtract(0, 1.0, 0), apex);
             cutscene(p, apex, 3);
-            FxLib.flash(sl, EMBER, above, 1.2f);
-            sound(sl, above, SoundEvents.WITHER_SHOOT, 1f, 0.5f);
+            sound(sl, stand, SoundEvents.BEACON_POWER_SELECT, 1f, 0.5f);
         }
-        if (k < GATHER) {                                     // black flame gathers on the blade above them
-            hold(t, apex);
-            place(p, above.subtract(0, 1.0, 0), apex);
-            FxSend.ring(sl, EMBER, above, 3.0f - k * 0.4f, 0.4f, 0.1f, 4);
-            FxSend.wall(sl, DARK, above, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.8f + k * 0.1f, 1.0f + k * 0.12f, -180, 180, 1.0f, 3, 0, 0);
+        if (k < CHARGE) {                                    // the charge
+            place(p, stand.subtract(0, 1.0, 0), apex);
+            Vec3 blade = stand.add(0, 0.3, 0);
+            FxSend.ring(sl, EMBER, blade, 3.2f - k * 0.3f, 0.3f, 0.08f, 3);
+            FxSend.wall(sl, DARK, stand.subtract(0, 0.4, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.6f + k * 0.06f, 0.7f + k * 0.08f, -180, 180, 1.0f, 3, 0, 0);
+            if (k % 3 == 0) {
+                Random r = new Random();
+                Vec3 from = blade.add(r.nextDouble() * 4 - 2, r.nextDouble() * 3 - 1, r.nextDouble() * 4 - 2);
+                FxSend.trail(sl, EMBER, from, blade, 0.12f, 4);
+            }
+            if (k == CHARGE - 2) FxLib.flash(sl, EMBER, blade, 1.4f);
             AstaFx.later(1, () -> finisher(p, sl, t, apex, power, k + 1));
             return;
         }
-        // the meteor: one huge vertical slash, and you both come down
-        if (k == GATHER) {
-            FxSend.crescent(sl, DARK, above, new Vec3(0, -1, 0), FxLib.right(new Vec3(0, -1, 0)), 3.0f, 6.0f, 10, 0.8f);
-            FxSend.wall(sl, EMBER, above, new Vec3(0, -1, 0), p.getLookAngle().multiply(1, 0, 1).normalize(), 3.0f, 3.6f, -80, 80, 1.2f, 8, 2, 0);
-            sound(sl, above, SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.4f);
-            sound(sl, above, SoundEvents.TRIDENT_THUNDER, 0.8f, 0.6f);
+        // the slash: you are through them and out the other side in an instant
+        Vec3 out = apex.subtract(side.scale(5.0)).add(0, 0.6, 0);
+        place(p, out.subtract(0, 1.0, 0), out.subtract(side.scale(3)));
+        Vec3 cut = side.scale(-1);
+        Vec3 diag = new Vec3(0, 1, 0).add(FxLib.right(cut).scale(0.6)).normalize();
+        FxSend.slash(sl, DARK, apex, cut, diag, 3.0f, 6.5f, 14, 0.15f);
+        FxSend.trail(sl, EMBER, stand, out, 0.7f, 10);
+        FxSend.trail(sl, SILVER, stand, out, 0.06f, 8);
+        impactFrame(sl, apex, 6, true);
+        finale(p, sl, t, apex, power);
+    }
+
+    /** The finisher lands in mid-air: the final blow (this one can kill), a burst of black flame and red light. */
+    private static void finale(ServerPlayer p, ServerLevel sl, LivingEntity victim, Vec3 at, float power) {
+        ACTIVE.remove(p.getUUID());
+        PROTECTED.remove(victim.getUUID());
+        p.setDeltaMovement(Vec3.ZERO);
+        p.hurtMarked = true;
+        p.resetFallDistance();
+        cutscene(p, at, 1);
+        shake(sl, at, 1.0f, 20);
+        AstaFx.damage(p, victim, power * 1.6f, "devil_black_meteorite");
+        victim.setDeltaMovement(0, -0.6, 0);
+        victim.hurtMarked = true;
+        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(6), x -> x != p && x != victim && x.isAlive() && !x.isAlliedTo(p))) {
+            if (t.position().distanceTo(at) > 6) continue;
+            AstaFx.damage(p, t, power * 0.6f, "devil_black_meteorite");
         }
-        int f = k - GATHER;
-        var floor = sl.clip(new ClipContext(apex, apex.add(0, -48, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
-        Vec3 ground = floor.getType() == HitResult.Type.MISS ? apex.add(0, -6, 0) : floor.getLocation();
-        double fallY = apex.y - (f + 1) * 2.6;
-        Vec3 tAt = new Vec3(apex.x, Math.max(ground.y + t.getBbHeight() * 0.5, fallY), apex.z);
-        hold(t, tAt);
-        place(p, tAt.add(0, 1.4, 0), tAt.subtract(0, 2, 0));
-        FxSend.beam(sl, EMBER, tAt.add(0, 7, 0), tAt.add(0, 1.4, 0), 1.6f, 6);   // burning meteor tail
-        FxSend.beam(sl, DARK, tAt.add(0, 5, 0), tAt.add(0, 1.4, 0), 0.9f, 5);
-        if (tAt.y <= ground.y + t.getBbHeight() * 0.5 + 0.01 || f >= MAX_FALL) { impact(p, sl, t, ground, power); return; }
-        AstaFx.later(1, () -> finisher(p, sl, t, apex, power, k + 1));
+        AstaFx.later(2, () -> {
+            FxLib.flash(sl, SILVER, at, 2.0f);
+            FxSend.ring(sl, EMBER, at, 0.5f, 9f, 0.3f, 12);
+            FxSend.wall(sl, DARK, at, new Vec3(0, 1, 0), FxLib.right(new Vec3(0, 1, 0)), 0.5f, 7f, -180, 180, 0.4f, 12, 0, 0);
+            FxLib.spikeBurst(sl, DARK, at, 1.8f);
+            FxLib.dome(sl, EMBER, at.subtract(0, 1, 0), 1.6f);
+            sound(sl, at, SoundEvents.GENERIC_EXPLODE, 1.4f, 0.5f);
+            sound(sl, at, SoundEvents.WARDEN_SONIC_BOOM, 1f, 0.7f);
+        });
+        sound(sl, at, SoundEvents.PLAYER_ATTACK_SWEEP, 1.5f, 0.4f);
+        sound(sl, at, SoundEvents.TRIDENT_THUNDER, 0.9f, 0.6f);
     }
 
     private static void impact(ServerPlayer p, ServerLevel sl, LivingEntity victim, Vec3 at, float power) {

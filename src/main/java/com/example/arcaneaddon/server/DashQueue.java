@@ -99,7 +99,7 @@ public class DashQueue {
         if (d.dweller) FxSend.ring(sl, Fx.DARK, p.position().add(0, 0.6, 0), 0.4f, 1.0f, 0.5f, 6);   // dark wake
         if (d.devil) {
             d.path.add(p.position());
-            FxSend.beam(sl, 9, p.position().add(0, 0.3, 0), p.position().add(0, 0.3, 0).subtract(d.dir.scale(d.speed)), 0.35f, 12);   // ember trail
+            FxSend.trail(sl, 9, p.position().add(0, 0.3, 0), p.position().add(0, 0.3, 0).subtract(d.dir.scale(d.speed)), 0.35f, 12);   // ember trail
         }
         if (--d.left <= 0 || p.horizontalCollision) {
             ACTIVE.remove(p.getUUID());

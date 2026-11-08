@@ -39,6 +39,27 @@ public class FxSend {
         return p.id;
     }
 
+    /**
+     * One clean, solid blade slash: a crisp black crescent with a white-hot cutting edge, drawn in from one tip to the
+     * other in two ticks, growing from radius r to r2 and moving along {@code d} at {@code speed}. {@code u} = the
+     * direction the blade spans (its tips point that way).
+     */
+    public static int slash(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float r, float r2, int life, float speed) {
+        FxPacket p = new FxPacket();
+        p.shape = FxPacket.SLASH; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life;
+        p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = r2; p.speed = speed;
+        send(sl, c, p);
+        return p.id;
+    }
+
+    /** A trail segment: like a beam but the same width end to end, so per-tick segments join into one smooth streak. */
+    public static void trail(ServerLevel sl, int pal, Vec3 p0, Vec3 p1, float width, int life) {
+        FxPacket p = new FxPacket();
+        p.shape = FxPacket.BEAM; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life;
+        p.c = p0; p.d = p1.subtract(p0); p.r = width; p.h = 1;
+        send(sl, p0.add(p1).scale(0.5), p);
+    }
+
     /** Ribbon-cross beam from p0 to p1. */
     public static void beam(ServerLevel sl, int pal, Vec3 p0, Vec3 p1, float width, int life) {
         FxPacket p = new FxPacket();

@@ -156,6 +156,13 @@ public class DarkFx {
         FxSend.ring(sl, D, p.position().add(0, 0.05, 0), (float) ZONE_R - 0.2f, (float) ZONE_R, 0.7f, 10);
     }
 
+    /** Black Blade's aura outline around your body (client AuraOutlineLayer), for everyone who can see you. */
+    private static void sendAura(ServerPlayer p, int life) {
+        com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
+        pkt.shape = 14; pkt.id = p.getId(); pkt.palette = 0; pkt.life = life;
+        com.example.arcaneaddon.network.AddonNetwork.CHANNEL.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+    }
+
     private static Vec3 handPos(ServerPlayer p) {
         double yr = Math.toRadians(p.getYRot());
         double lx = Math.cos(yr), lz = Math.sin(yr), fx = -Math.sin(yr), fz = Math.cos(yr);
@@ -170,6 +177,7 @@ public class DarkFx {
     public static void blackBlade(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         BLADE.put(p.getUUID(), sl.getGameTime() + 20 * 20);
+        sendAura(p, 20 * 20);
         for (int k = 0; k < 6; k++) {
             final int kk = k;
             AstaFx.later(k, () -> {
@@ -244,21 +252,11 @@ public class DarkFx {
                     sound(sl, tt.position(), SoundEvents.PLAYER_ATTACK_CRIT, 1f, 0.6f);
                 });
             }
-            // the draw: a wide flat arc from your left hip across to your right
-            FxSend.wall(sl, D, start, dir, left, 2.4f, 2.8f, -110, 100, 0.35f, 7, 2, 0);
-            FxSend.wall(sl, S, start, dir, left, 2.6f, 2.7f, -100, 95, 0.05f, 5, 2, 0);
-            // the release: a towering black wave of darkness rolls forward and grows as it goes -
-            // a tall arc of black flame (the wave front), a huge crescent inside it, and thinner crescents layered behind
+            // the draw and the release: one clean, solid slash - a black blade of darkness with a white-hot edge,
+            // drawn left to right as you cut, flying forward and growing as it goes
             Vec3 o = start.add(dir.scale(1.2));
-            FxSend.wall(sl, D, o, dir, rt, 2.2f, 9.0f, -55, 55, 2.4f, 16, 0, SPEED);          // the wave front, 4.8 tall
-            FxSend.crescent(sl, D, o, dir, rt, 3.4f, 8.5f, 16, SPEED);                        // the main black crescent
-            for (int k = 1; k <= 3; k++) {
-                final int kk = k;
-                AstaFx.later(k, () -> {
-                    Vec3 lift = up.scale((kk % 2 == 0 ? 1 : -1) * 0.5 * kk);
-                    FxSend.crescent(sl, kk == 2 ? S : D, o.add(lift), dir, rt, 3.0f - kk * 0.3f, 7.5f - kk * 0.8f, 14 - kk * 2, SPEED);
-                });
-            }
+            FxSend.slash(sl, D, start.add(dir.scale(0.6)), dir, rt, 2.2f, 2.6f, 5, 0f);      // the swing itself, at your blade
+            FxSend.slash(sl, D, o, dir, rt, 3.0f, 8.5f, 16, SPEED);                          // the slash that flies
             // after it passes: a white hairline left through space, and the tears where space was cut
             AstaFx.later(3, () -> {
                 FxSend.beam(sl, S, o, end, 0.05f, 10);
@@ -434,8 +432,8 @@ public class DarkFx {
             for (int k = 1; k <= K; k++) {
                 final Vec3 a = pts[k - 1], b = pts[k];
                 AstaFx.later(delay + (k - 1) / 3, () -> {   // the bolt races out in two ticks
-                    FxSend.beam(sl, D, a, b, 0.34f, 8);
-                    FxSend.beam(sl, S, a, b, 0.05f, 6);
+                    FxSend.trail(sl, D, a, b, 0.34f, 8);
+                    FxSend.trail(sl, S, a, b, 0.05f, 6);
                 });
             }
             final Vec3 g = goal, dd = d.normalize();
@@ -465,8 +463,8 @@ public class DarkFx {
         Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
         Vec3 blade = rt.scale(0.5).add(up.scale(0.87));   // tilted like a diagonal cut
         FxSend.crescent(sl, D, next, dir, blade, 0.95f, 1.05f, 3, 0f);
-        FxSend.beam(sl, D, pos, next, 0.28f, 6);
-        FxSend.beam(sl, S, pos, next, 0.04f, 4);
+        FxSend.trail(sl, D, pos, next, 0.28f, 6);
+        FxSend.trail(sl, S, pos, next, 0.04f, 4);
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.0))) {
             if (!t.getBoundingBox().inflate(0.5).clip(pos, next).isPresent() && t.distanceToSqr(next) > 1.6) continue;
             if (!hit.add(t.getUUID())) continue;
@@ -963,15 +961,14 @@ public class DarkFx {
 
         Long blade = BLADE.get(id);
         if (blade != null) {
-            if (now > blade) BLADE.remove(id);
-            else if (now % 5 == 0) {   // the darkness coating you: a black-flame aura around your body with wisps rising off it
-                Vec3 body = p.position().add(0, 0.95, 0);
-                FxSend.wall(sl, D, body, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.52f, 0.6f, -180, 180, 0.95f, 7, 0, 0);
-                ThreadLocalRandom r = ThreadLocalRandom.current();
-                for (int k = 0; k < 2; k++) {
+            if (now > blade) { BLADE.remove(id); sendAura(p, 0); }
+            else {
+                if (now % 40 == 0) sendAura(p, (int) (blade - now));   // keep it showing for anyone who arrives later
+                if (now % 8 == 0) {   // wisps of darkness rising off the aura
+                    ThreadLocalRandom r = ThreadLocalRandom.current();
                     double a = r.nextDouble(Math.PI * 2);
-                    Vec3 w0 = p.position().add(Math.cos(a) * 0.5, r.nextDouble(0.2, 1.4), Math.sin(a) * 0.5);
-                    FxSend.beam(sl, D, w0, w0.add(Math.cos(a) * 0.2, 0.7, Math.sin(a) * 0.2), 0.12f, 7);
+                    Vec3 w0 = p.position().add(Math.cos(a) * 0.45, r.nextDouble(0.2, 1.5), Math.sin(a) * 0.45);
+                    FxSend.trail(sl, D, w0, w0.add(Math.cos(a) * 0.15, 0.6, Math.sin(a) * 0.15), 0.08f, 6);
                 }
             }
         }

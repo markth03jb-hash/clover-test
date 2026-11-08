@@ -4174,7 +4174,7 @@
   "dark_raijin": {
    "animation_length": 0.78,
    "bones": {
-    "torso": {
+    "body": {
      "rotation": {
       "0": {
        "vector": [
@@ -4254,6 +4254,71 @@
         0
        ]
       }
+     },
+     "position": {
+      "0": {
+       "vector": [
+        0,
+        0,
+        0
+       ]
+      },
+      "0.25": {
+       "vector": [
+        0,
+        -1.6,
+        0
+       ],
+       "easing": "easeOutSine"
+      },
+      "0.6": {
+       "vector": [
+        0,
+        -0.8,
+        0
+       ]
+      },
+      "0.78": {
+       "vector": [
+        0,
+        0,
+        0
+       ],
+       "easing": "easeInOutSine"
+      }
+     }
+    },
+    "torso": {
+     "rotation": {
+      "0": {
+       "vector": [
+        0,
+        0,
+        0
+       ]
+      },
+      "0.25": {
+       "vector": [
+        0,
+        15,
+        0
+       ]
+      },
+      "0.425": {
+       "vector": [
+        0,
+        -20,
+        0
+       ]
+      },
+      "0.78": {
+       "vector": [
+        0,
+        0,
+        0
+       ],
+       "easing": "easeInOutSine"
+      }
      }
     },
     "right_arm": {
@@ -4312,40 +4377,6 @@
         0,
         0
        ]
-      }
-     }
-    },
-    "body": {
-     "position": {
-      "0": {
-       "vector": [
-        0,
-        0,
-        0
-       ]
-      },
-      "0.25": {
-       "vector": [
-        0,
-        -1.6,
-        0
-       ],
-       "easing": "easeOutSine"
-      },
-      "0.6": {
-       "vector": [
-        0,
-        -0.8,
-        0
-       ]
-      },
-      "0.78": {
-       "vector": [
-        0,
-        0,
-        0
-       ],
-       "easing": "easeInOutSine"
       }
      }
     }

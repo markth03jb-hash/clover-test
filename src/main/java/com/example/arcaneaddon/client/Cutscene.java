@@ -177,13 +177,15 @@ public final class Cutscene {
 
     // ------------------------------------------------------------------ impact frames
     private static double frameStart = -1, frameLen = 0;
+    private static boolean frameSlash;
 
     /** Anime impact frames: a few ticks of hard white / black flashes with speed lines, for a hit that lands. */
-    public static void impactFrame(int ticks) {
+    public static void impactFrame(int ticks, boolean slash) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         frameStart = mc.level.getGameTime();
         frameLen = Math.max(1, ticks);
+        frameSlash = slash;
     }
 
     private static void drawImpactFrame(GuiGraphics g, double k) {
@@ -208,6 +210,18 @@ public final class Cutscene {
             g.pose().popPose();
         }
         g.pose().popPose();
+        if (frameSlash) {   // the finisher: one huge white slash cutting across the whole frame, red bleeding off it
+            g.pose().pushPose();
+            g.pose().translate(w / 2.0F, h / 2.0F, 0.0F);
+            g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-28.0F));
+            int len = (int) (Math.hypot(w, h) * 0.6 * Math.min(1.0, (k + 0.4) * 1.5));
+            int band = Math.max(3, h / 40);
+            int red = (int) (fade * 230) << 24 | 0xD01010, core = (int) (fade * 255) << 24 | (white ? 0x000000 : 0xFFFFFF);
+            g.fill(-len, -band * 3, len, band * 3, red);
+            g.fill(-len, -band, len, band, core);
+            g.pose().popPose();
+            return;
+        }
         if (!white) {
             int c = (int) (fade * 200) << 24 | 0xC01010;
             int s = Math.min(w, h) / 6;
