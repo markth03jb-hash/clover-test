@@ -1,6 +1,8 @@
 package com.example.arcaneaddon.registry;
 
 import com.example.arcaneaddon.server.DarkFx;
+import com.example.arcaneaddon.server.WindFx;
+import com.example.arcaneaddon.spells.WindSpell;
 import com.example.arcaneaddon.server.DevilFx;
 import com.example.arcaneaddon.spells.DevilSpell;
 import com.example.arcaneaddon.spells.GrimoireSpell.Need;
@@ -107,6 +109,24 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> STEEL_SPELLS = List.of(
             VIOLENT_ROTATING_LANCE, BLAZING_SPIRAL_LANCE, STEEL_CASTLE_WALL, WHITE_STEEL_HORSE_CART,
             THUNDER_ARROW, ACIER_SILVA, STEEL_PRISON, KNIGHTS_ARMOR);
+
+    // ------------------------------------------------------------------ Wind Grimoire (Yuno Grinberryall's Wind Magic)
+    //                                                                                id                       cd mana power  animation
+    public static final RegistryObject<AbstractSpell> WIND_BLADE_SHOWER = registerSpell(new WindSpell("wind_blade_shower", 6, 35, 9, WindSpell.anim("arcane_addon:wind_blade_shower"), WindFx::windBladeShower));
+    public static final RegistryObject<AbstractSpell> TORNADO_FANG = registerSpell(new WindSpell("tornado_fang", 14, 70, 14, WindSpell.anim("arcane_addon:wind_tornado_fang"), WindFx::tornadoFang));
+    public static final RegistryObject<AbstractSpell> SYLPHS_BREATH = registerSpell(new WindSpell("sylphs_breath", 8, 40, 8, WindSpell.anim("arcane_addon:wind_sylphs_breath"), WindFx::sylphsBreath));
+    public static final RegistryObject<AbstractSpell> GALE_WHITE_BOW = registerSpell(new WindSpell("gale_white_bow", 7, 45, 14, WindSpell.anim("arcane_addon:wind_gale_bow"), WindFx::galeWhiteBow));
+    public static final RegistryObject<AbstractSpell> HUSHED_DANCE = registerSpell(new WindSpell("hushed_dance", 18, 30, 0, WindSpell.anim("arcane_addon:wind_hushed_dance"), WindFx::hushedDance));
+    public static final RegistryObject<AbstractSpell> SPIRIT_OF_ZEPHYR = registerSpell(new WindSpell("spirit_of_zephyr", 10, 60, 20, WindSpell.anim("arcane_addon:wind_zephyr"), WindFx::spiritOfZephyr));
+    public static final RegistryObject<AbstractSpell> SPIRIT_OF_BOREAS = registerSpell(new WindSpell("spirit_of_boreas", 14, 70, 16, WindSpell.anim("arcane_addon:wind_boreas"), WindFx::spiritOfBoreas));
+    public static final RegistryObject<AbstractSpell> SPIRIT_OF_EUROS = registerSpell(new WindSpell("spirit_of_euros", 20, 90, 34, WindSpell.anim("arcane_addon:wind_euros"), WindFx::spiritOfEuros));
+    public static final RegistryObject<AbstractSpell> SPIRIT_DIVE = registerSpell(new WindSpell("spirit_dive", 90, 150, 0, WindSpell.anim("arcane_addon:wind_spirit_dive"), WindFx::spiritDive));
+    public static final RegistryObject<AbstractSpell> SPIRIT_STORM = registerSpell(new WindSpell("spirit_storm", 60, 200, 40, WindSpell.anim("arcane_addon:wind_spirit_storm"), WindFx::spiritStorm));
+
+    /** The ten Wind Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> WIND_SPELLS = List.of(
+            WIND_BLADE_SHOWER, TORNADO_FANG, SYLPHS_BREATH, GALE_WHITE_BOW, HUSHED_DANCE,
+            SPIRIT_OF_ZEPHYR, SPIRIT_OF_BOREAS, SPIRIT_OF_EUROS, SPIRIT_DIVE, SPIRIT_STORM);
 
     /** The ten Dark Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> DARK_SPELLS = List.of(

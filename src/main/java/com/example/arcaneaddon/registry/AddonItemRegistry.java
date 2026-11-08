@@ -3,6 +3,7 @@ package com.example.arcaneaddon.registry;
 import com.example.arcaneaddon.item.BlackGrimoireItem;
 import com.example.arcaneaddon.item.DarkGrimoireItem;
 import com.example.arcaneaddon.item.DarkKatanaItem;
+import com.example.arcaneaddon.item.WindGrimoireItem;
 import com.example.arcaneaddon.item.SteelGrimoireItem;
 import com.example.arcaneaddon.item.DemonDwellerSwordItem;
 import com.example.arcaneaddon.item.DemonSlayerSwordItem;
@@ -33,6 +34,9 @@ public class AddonItemRegistry {
     // ------------------------------------------------------------------ Yami Sukehiro's Dark Magic
     public static final RegistryObject<Item> DARK_GRIMOIRE = ITEMS.register("dark_grimoire", DarkGrimoireItem::new);
     public static final RegistryObject<Item> DARK_KATANA = ITEMS.register("dark_katana", DarkKatanaItem::new);
+
+    // ------------------------------------------------------------------ Yuno Grinberryall's Wind Magic
+    public static final RegistryObject<Item> WIND_GRIMOIRE = ITEMS.register("wind_grimoire", WindGrimoireItem::new);
 
     // ------------------------------------------------------------------ Klaus Lunettes' Steel Magic
     public static final RegistryObject<Item> STEEL_GRIMOIRE = ITEMS.register("steel_grimoire", SteelGrimoireItem::new);
@@ -85,6 +89,9 @@ public class AddonItemRegistry {
                 ((IPresetSpellContainer) DARK_GRIMOIRE.get()).initializeSpellContainer(dark);
                 out.accept(dark);
                 out.accept(DARK_KATANA.get());
+                ItemStack wind = new ItemStack(WIND_GRIMOIRE.get());
+                ((IPresetSpellContainer) WIND_GRIMOIRE.get()).initializeSpellContainer(wind);
+                out.accept(wind);
                 ItemStack steel = new ItemStack(STEEL_GRIMOIRE.get());
                 ((IPresetSpellContainer) STEEL_GRIMOIRE.get()).initializeSpellContainer(steel);
                 out.accept(steel);

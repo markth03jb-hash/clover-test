@@ -36,7 +36,7 @@ public final class DevilFlight {
         LocalPlayer p = mc.player;
         if (p == null || mc.level == null || mc.isPaused()) return;
         boolean jump = mc.options.keyJump.isDown();
-        boolean union = FxRenderer.inDevilForm(p.getId(), mc.level.getGameTime()) && !Cutscene.running();
+        boolean union = (FxRenderer.inDevilForm(p.getId(), mc.level.getGameTime()) || FxRenderer.inSpiritDive(p.getId(), mc.level.getGameTime())) && !Cutscene.running();
         boolean airborne = !p.onGround() && !p.isInWater() && !p.isInLava() && !p.isPassenger() && !p.getAbilities().flying && !p.isFallFlying();
         if (!union || !airborne) {
             flying = false;

@@ -1,7 +1,25 @@
-Arcane Addon v1.24.0 - all changed files since v1.0.0
+Arcane Addon v1.25.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.25.0
+- NEW: Wind Grimoire (Yuno Grinberryall's Wind Magic) - a four-leaf grimoire with ten spells,
+  each with its own animation, plus a passive. Crafting: feather, emerald, feather /
+  arcane ingot, enchanted book, arcane ingot / feather, phantom membrane, feather.
+  1 Wind Blade Shower   - a fan of seven wind blades
+  2 Tornado Fang        - a rolling tornado that drags enemies in, shreds projectiles, then flings them up
+  3 Sylph's Breath      - a huge gust that throws everything in front of you back
+  4 Gale White Bow      - a bow of wind: three piercing arrows
+  5 Spirit's Hushed Dance - the next 3 attacks miss, each dodge refills mana
+  6 Spirit of Zephyr    - a sword of wind: three fast cuts
+  7 Spirit of Boreas    - wind halberds circle you, then fly at your enemies
+  8 Spirit of Euros     - a great bow of mana: one tremendous piercing arrow
+  9 Spirit Dive         - merge with Sylph for 30 s: four wings of wind, free flight, every move
+                          turns into its Spirit Dive form (Saint Spirit of Zephyr, Double Spirit Storm...)
+  10 Spirit Storm       - gather the mana around you and release it as a storm of wind
+  Passive Sylph's Favour: no fall damage, 25% of projectiles are blown aside.
+- Wind effects (also Dweller's wind slash) now throw off thin streaks of air.
 
 NEW IN 1.24.0
 - Mana Zone looks like the anime: dark mana pours out of you in a rolling wave of black smoke

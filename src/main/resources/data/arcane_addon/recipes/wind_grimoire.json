@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "FEF",
+    "IBI",
+    "FSF"
+  ],
+  "key": {
+    "F": {
+      "item": "minecraft:feather"
+    },
+    "E": {
+      "item": "minecraft:emerald"
+    },
+    "I": {
+      "item": "irons_spellbooks:arcane_ingot"
+    },
+    "B": {
+      "item": "minecraft:enchanted_book"
+    },
+    "S": {
+      "item": "minecraft:phantom_membrane"
+    }
+  },
+  "result": {
+    "item": "arcane_addon:wind_grimoire",
+    "count": 1
+  }
+}

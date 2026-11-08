@@ -1,0 +1,875 @@
+package com.example.arcaneaddon.server;
+
+import com.example.arcaneaddon.ArcaneAddon;
+import com.example.arcaneaddon.item.WindGrimoireItem;
+import com.example.arcaneaddon.network.AddonNetwork;
+import com.example.arcaneaddon.network.FxPacket;
+import io.redspace.ironsspellbooks.api.magic.MagicData;
+import io.redspace.ironsspellbooks.api.util.Utils;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+
+/**
+ * Yuno Grinberryall's Wind Magic - the ten spells of the Wind Grimoire (his four-leaf grimoire) and its passive.
+ *
+ *  1 Wind Blade Shower        - a fan of wind blades
+ *  2 Tornado Fang             - a travelling tornado that drags enemies in, shreds projectiles, then flings them
+ *  3 Sylph's Breath           - Bell blows everything in front of you away
+ *  4 Gale White Bow           - a bow of wind: three piercing arrows
+ *  5 Spirit's Hushed Dance    - take the mana around you into your control: the next attacks miss, and refill your mana
+ *  6 Spirit of Zephyr         - a sword of wind: three fast cuts
+ *  7 Spirit of Boreas         - wind halberds circle you, then fly at your enemies
+ *  8 Spirit of Euros          - draw a great bow of condensed mana and loose one tremendous piercing arrow
+ *  9 Spirit Dive              - merge with Sylph for 30 s: four wings of wind, free flight, every move turns into its Spirit Dive form
+ * 10 Spirit Storm             - gather the mana around you and release it as a storm of wind
+ *
+ * Passive "Sylph's Favour": no fall damage (a gust always catches you), and 25% of arrows and projectiles aimed at
+ * you are blown aside.
+ * All visuals are the addon's own 3D shapes in the wind palette (mint green / white), plus wind streaks on the client.
+ */
+@Mod.EventBusSubscriber(modid = ArcaneAddon.MODID)
+public class WindFx {
+    private static final int W = Fx.WIND, S = Fx.SILVER;
+
+    // ------------------------------------------------------------------ state
+    private static final Map<UUID, Long> DIVE = new HashMap<>();
+    private static final Map<UUID, Dance> DANCE = new HashMap<>();
+    private static final class Dance { long until; int charges; boolean counter; }
+    private static final UUID DIVE_SPEED = UUID.fromString("7c2d4b63-ae1f-4a8b-b2d5-3a4c9f8eaa21");
+    private static final int DIVE_TICKS = 30 * 20;
+
+    // ------------------------------------------------------------------ helpers
+    private static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float v, float pitch) {
+        sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, v, pitch);
+    }
+
+    private static Vec3 mid(LivingEntity t) { return t.position().add(0, t.getBbHeight() * 0.5, 0); }
+
+    private static Vec3 rightOf(Vec3 dir) {
+        Vec3 r = dir.cross(new Vec3(0, 1, 0));
+        return r.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : r.normalize();
+    }
+
+    private static Vec3 rotY(Vec3 v, double a) {
+        double c = Math.cos(a), s = Math.sin(a);
+        return new Vec3(v.x * c - v.z * s, v.y, v.x * s + v.z * c);
+    }
+
+    private static Vec3 clip(ServerLevel sl, Entity p, Vec3 a, Vec3 b) {
+        var hit = sl.clip(new ClipContext(a, b, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
+        return hit.getType() == HitResult.Type.MISS ? b : hit.getLocation();
+    }
+
+    private static List<LivingEntity> enemies(ServerLevel sl, ServerPlayer p, AABB box) {
+        return sl.getEntitiesOfClass(LivingEntity.class, box, x -> x != p && x.isAlive() && !x.isAlliedTo(p)
+                && !(x instanceof net.minecraft.world.entity.decoration.ArmorStand));
+    }
+
+    private static boolean alive(ServerPlayer p) { return p.isAlive() && !p.isRemoved(); }
+
+    private static boolean wearsWindGrimoire(ServerPlayer p) {
+        ItemStack s = Utils.getPlayerSpellbookStack(p);
+        return s != null && s.getItem() instanceof WindGrimoireItem;
+    }
+
+    private static Vec3 closestOnSegment(Vec3 a, Vec3 b, Vec3 q) {
+        Vec3 ab = b.subtract(a);
+        double t = ab.lengthSqr() < 1.0E-6 ? 0 : Math.max(0, Math.min(1, q.subtract(a).dot(ab) / ab.lengthSqr()));
+        return a.add(ab.scale(t));
+    }
+
+    /** Right hand, in front of the shoulder. */
+    private static Vec3 handPos(ServerPlayer p) {
+        double yr = Math.toRadians(p.getYRot());
+        double lx = Math.cos(yr), lz = Math.sin(yr), fx = -Math.sin(yr), fz = Math.cos(yr);
+        return new Vec3(p.getX() + fx * 0.55 - lx * 0.35, p.getY() + p.getEyeHeight() * 0.78, p.getZ() + fz * 0.55 - lz * 0.35);
+    }
+
+    /** Left hand held out in front (the bow hand). */
+    private static Vec3 bowHand(ServerPlayer p) {
+        return p.getEyePosition().add(p.getLookAngle().scale(0.9)).add(0, -0.25, 0);
+    }
+
+    public static boolean diving(ServerPlayer p) {
+        Long d = DIVE.get(p.getUUID());
+        return d != null && p.serverLevel().getGameTime() <= d;
+    }
+
+    private static void diveMsg(ServerPlayer p, String key) {
+        p.displayClientMessage(Component.translatable("ui.arcane_addon.dive." + key).withStyle(ChatFormatting.GREEN), true);
+    }
+
+    /** A wind impact: a burst ring and a puff of light. */
+    private static void gust(ServerLevel sl, Vec3 at, float s) {
+        FxLib.impact(sl, W, at, s);
+        FxSend.ring(sl, W, at, 0.2f * s, 1.6f * s, 0.05f, 6);
+    }
+
+    /** Anticipation: wind spiralling into your hand while the animation winds up. */
+    private static void windup(ServerPlayer p, int ticks, boolean bow) {
+        ServerLevel sl = p.serverLevel();
+        for (int k = 0; k < ticks; k += 2) {
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                Vec3 h = bow ? bowHand(p) : handPos(p);
+                double a = kk * 1.9 + p.getYRot() * 0.017;
+                Vec3 from = h.add(Math.cos(a) * 1.6, 0.6 - kk * 0.1, Math.sin(a) * 1.6);
+                FxSend.trail(sl, W, from, from.add(h.subtract(from).scale(0.7)), 0.05f, 4);
+            });
+        }
+        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.25f, 1.6f);
+    }
+
+    // ================================================================== 1. Wind Blade Shower
+    private static final int SHOWER_RELEASE = 7;
+
+    /**
+     * A sweep of the hand and a fan of wind blades leaves it, flying 26 blocks.
+     * Spirit Dive: thirteen blades in a wider fan, and each one bends toward an enemy in front of it.
+     */
+    public static void windBladeShower(ServerPlayer p, float power) {
+        windup(p, SHOWER_RELEASE, false);
+        AstaFx.later(SHOWER_RELEASE, () -> {
+            if (!alive(p)) return;
+            ServerLevel sl = p.serverLevel();
+            boolean dive = diving(p);
+            if (dive) diveMsg(p, "wind_blade_shower");
+            int n = dive ? 13 : 7;
+            double spread = Math.toRadians(dive ? 50 : 34);
+            Vec3 look = p.getLookAngle(), eye = p.getEyePosition().add(0, -0.3, 0);
+            List<LivingEntity> foes = enemies(sl, p, p.getBoundingBox().inflate(28));
+            for (int i = 0; i < n; i++) {
+                double a = -spread + 2 * spread * i / (n - 1);
+                Vec3 dir = rotY(look, a).normalize();
+                if (dive) {   // bend toward whoever is closest to the blade's line
+                    LivingEntity best = null; double bd = Math.cos(Math.toRadians(14));
+                    for (LivingEntity t : foes) {
+                        Vec3 to = mid(t).subtract(eye);
+                        if (to.length() > 28) continue;
+                        double d = to.normalize().dot(dir);
+                        if (d > bd) { bd = d; best = t; }
+                    }
+                    if (best != null) dir = mid(best).subtract(eye).normalize();
+                }
+                final Vec3 d = dir;
+                final int delay = Math.abs(i - n / 2) / 2;   // the middle leaves first: a sweeping fan
+                AstaFx.later(delay, () -> blade(p, sl, eye.add(d.scale(0.8)), d, power * (dive ? 0.55f : 0.5f), dive));
+            }
+            sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 1.6f);
+            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.5f, 1.8f);
+        });
+    }
+
+    private static void blade(ServerPlayer p, ServerLevel sl, Vec3 from, Vec3 dir, float dmg, boolean big) {
+        if (!alive(p)) return;
+        final float SPEED = 2.2f;
+        int life = 12;
+        Vec3 end = clip(sl, p, from, from.add(dir.scale(SPEED * life)));
+        Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
+        Vec3 span = rt.scale(0.94).add(up.scale(0.34)).normalize();   // nearly flat, a little tilted
+        float s = big ? 1.3f : 1.0f;
+        FxSend.slash(sl, W, from, dir, span, 0.8f * s, 1.5f * s, (int) Math.max(3, from.distanceTo(end) / SPEED) + 1, SPEED, 1.4f);
+        for (LivingEntity t : enemies(sl, p, new AABB(from, end).inflate(1.6 * s))) {
+            Vec3 on = closestOnSegment(from, end, mid(t));
+            if (on.distanceTo(mid(t)) > 1.3 * s + t.getBbWidth() * 0.5) continue;
+            final LivingEntity tt = t;
+            AstaFx.later((int) (on.distanceTo(from) / SPEED), () -> {
+                if (!tt.isAlive() || !alive(p)) return;
+                AstaFx.damage(p, tt, dmg, "wind_blade_shower");
+                gust(sl, mid(tt), 0.7f);
+            });
+        }
+        if (end.distanceToSqr(from.add(dir.scale(SPEED * life))) > 0.5) {
+            AstaFx.later((int) (from.distanceTo(end) / SPEED), () -> gust(sl, end, 0.6f));
+        }
+    }
+
+    // ================================================================== 2. Tornado Fang
+    private static final int TORNADO_RELEASE = 10;
+
+    /**
+     * Throw out a tornado that rolls forward along the ground for 2.5 s: it drags enemies into its spin, cuts them,
+     * tears apart any projectile it touches, and at the end flings everything inside it into the sky.
+     * Spirit Dive: a huge tornado that lasts 4 s and pulls from twice as far.
+     */
+    public static void tornadoFang(ServerPlayer p, float power) {
+        windup(p, TORNADO_RELEASE, false);
+        AstaFx.later(TORNADO_RELEASE, () -> {
+            if (!alive(p)) return;
+            ServerLevel sl = p.serverLevel();
+            boolean dive = diving(p);
+            if (dive) diveMsg(p, "tornado_fang");
+            Vec3 look = p.getLookAngle();
+            Vec3 flat = new Vec3(look.x, 0, look.z);
+            flat = flat.lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : flat.normalize();
+            Vec3 start = p.position().add(flat.scale(2.5));
+            Vec3 g = FxLib.ground(sl, start.add(0, 1, 0), 5);
+            if (g != null) start = g;
+            FxLib.shockRing(sl, W, start.add(0, 0.05, 0), dive ? 1.6f : 1.1f);
+            sound(sl, start, SoundEvents.ELYTRA_FLYING, 1.2f, 0.6f);
+            sound(sl, start, SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 0.6f);
+            tornadoTick(p, sl, start, flat, power, 0, dive, new HashMap<>());
+        });
+    }
+
+    private static void tornadoTick(ServerPlayer p, ServerLevel sl, Vec3 base, Vec3 dir, float dmg, int age, boolean big, Map<UUID, Integer> held) {
+        if (!alive(p)) return;
+        final int LIFE = big ? 80 : 50;
+        final double R = big ? 4.5 : 3.0, H = big ? 11 : 7, PULL = big ? 10 : 6;
+        // the funnel: spinning arcs stacked up, wider at the top
+        if (age % 2 == 0) {
+            int levels = big ? 8 : 6;
+            for (int k = 0; k < levels; k++) {
+                double h = H * k / (levels - 1);
+                float r = (float) (R * (0.25 + 0.75 * h / H));
+                double spin = age * 38 + k * 47;
+                FxSend.wall(sl, k % 3 == 1 ? S : W, base.add(0, h + 0.2, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1),
+                        r, r * 1.04f, (float) spin, (float) spin + 250, k % 3 == 1 ? 0.04f : 0.18f + 0.04f * k, 3, 0, 0);
+            }
+        }
+        if (age % 4 == 0) FxSend.ring(sl, W, base.add(0, 0.06, 0), (float) R * 0.5f, (float) R * 1.3f, 0.06f, 6);   // dust swirl at its foot
+        // pull, spin, lift, cut
+        for (LivingEntity t : enemies(sl, p, new AABB(base, base.add(0, H, 0)).inflate(PULL))) {
+            Vec3 axis = new Vec3(base.x, t.getY(), base.z);
+            Vec3 in = axis.subtract(t.position());
+            double d = in.length();
+            if (d > PULL || t.getY() > base.y + H + 2) continue;
+            Vec3 tan = d < 1.0E-3 ? Vec3.ZERO : new Vec3(-in.z, 0, in.x).normalize();
+            Vec3 v = t.getDeltaMovement().scale(0.5)
+                    .add(d < 1.0E-3 ? Vec3.ZERO : in.normalize().scale(Math.min(0.35, 0.1 + 0.6 / Math.max(1, d))))
+                    .add(tan.scale(d < R + 1 ? 0.45 : 0.15))
+                    .add(0, d < R + 1 ? 0.12 : 0.0, 0)
+                    .add(dir.scale(0.45));
+            t.setDeltaMovement(v.x, Math.min(v.y, 0.5), v.z);
+            t.hurtMarked = true;
+            t.fallDistance = 0;
+            if (d < R + 1) held.put(t.getUUID(), 1);
+            if (d < R + 1 && age % 10 == 0) AstaFx.damage(p, t, dmg * 0.25f, "tornado_fang");
+        }
+        // shred projectiles: the fang tears enemy magic apart
+        for (Projectile pr : sl.getEntitiesOfClass(Projectile.class, new AABB(base, base.add(0, H, 0)).inflate(R + 0.5))) {
+            if (pr.getOwner() == p) continue;
+            gust(sl, pr.position(), 0.5f);
+            pr.discard();
+        }
+        if (age % 10 == 0) sound(sl, base, SoundEvents.ELYTRA_FLYING, 0.6f, 0.5f + age * 0.004f);
+        if (age >= LIFE) {
+            for (LivingEntity t : enemies(sl, p, new AABB(base, base.add(0, H, 0)).inflate(R + 1.5))) {
+                if (new Vec3(base.x, t.getY(), base.z).distanceTo(t.position()) > R + 1.5) continue;
+                AstaFx.damage(p, t, dmg, "tornado_fang");
+                t.setDeltaMovement(t.getDeltaMovement().add(0, big ? 1.4 : 1.0, 0));
+                t.hurtMarked = true;
+            }
+            FxSend.wall(sl, W, base.add(0, 0.3, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), (float) R, (float) R * 2.4f, -180, 180, 0.5f, 10, 0, 0);
+            FxSend.beam(sl, W, base, base.add(0, H + 3, 0), (float) R * 0.4f, 8);
+            FxSend.beam(sl, S, base, base.add(0, H + 3, 0), 0.08f, 6);
+            sound(sl, base, SoundEvents.GENERIC_EXPLODE, 0.6f, 1.4f);
+            return;
+        }
+        // roll forward along the ground (climb or step down with it)
+        Vec3 next = base.add(dir.scale(big ? 0.32 : 0.42));
+        Vec3 g = FxLib.ground(sl, next.add(0, 1.5, 0), 4);
+        final Vec3 nb = g != null ? g : next;
+        AstaFx.later(1, () -> tornadoTick(p, sl, nb, dir, dmg, age + 1, big, held));
+    }
+
+    // ================================================================== 3. Sylph's Breath
+    private static final int BREATH_RELEASE = 6;
+
+    /**
+     * Bell blows: a great gust in a 60-degree cone, 10 blocks - everything in it is hit and thrown far back.
+     * Spirit Dive: 80 degrees, 14 blocks, and it throws them into the air.
+     */
+    public static void sylphsBreath(ServerPlayer p, float power) {
+        windup(p, BREATH_RELEASE, false);
+        AstaFx.later(BREATH_RELEASE, () -> {
+            if (!alive(p)) return;
+            ServerLevel sl = p.serverLevel();
+            boolean dive = diving(p);
+            if (dive) diveMsg(p, "sylphs_breath");
+            double range = dive ? 14 : 10, half = Math.toRadians(dive ? 40 : 30);
+            Vec3 eye = p.getEyePosition(), look = p.getLookAngle();
+            Vec3 rt = rightOf(look), up = rt.cross(look).normalize();
+            for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(range))) {
+                Vec3 to = mid(t).subtract(eye);
+                double d = to.length();
+                if (d > range || to.normalize().dot(look) < Math.cos(half)) continue;
+                final LivingEntity tt = t;
+                AstaFx.later((int) (d / 2.5), () -> {
+                    if (!tt.isAlive() || !alive(p)) return;
+                    AstaFx.damage(p, tt, power, "sylphs_breath");
+                    Vec3 push = new Vec3(look.x, 0, look.z).normalize().scale(dive ? 2.6 : 2.0);
+                    tt.setDeltaMovement(tt.getDeltaMovement().add(push.x, dive ? 0.9 : 0.4, push.z));
+                    tt.hurtMarked = true;
+                    gust(sl, mid(tt), 0.6f);
+                });
+            }
+            // the breath: three wide arcs of wind rolling forward, with streaks inside them
+            Vec3 o = eye.add(look.scale(0.8)).add(0, -0.2, 0);
+            float deg = (float) Math.toDegrees(half);
+            for (int k = 0; k < 3; k++) {
+                final int kk = k;
+                AstaFx.later(k * 2, () -> FxSend.wall(sl, kk == 1 ? S : W, o, look, rt, 0.6f, (float) range * 0.9f, -deg, deg, kk == 1 ? 0.06f : 0.9f - kk * 0.2f, 9, 0, 1.0f));
+            }
+            ThreadLocalRandom r = ThreadLocalRandom.current();
+            for (int k = 0; k < 9; k++) {
+                double a = r.nextDouble(-half, half), b = r.nextDouble(-half * 0.6, half * 0.6);
+                Vec3 d = look.scale(Math.cos(a)).add(rt.scale(Math.sin(a))).add(up.scale(Math.sin(b))).normalize();
+                double s0 = r.nextDouble(1, 4);
+                final Vec3 a0 = o.add(d.scale(s0)), a1 = o.add(d.scale(s0 + r.nextDouble(2, 4)));
+                AstaFx.later(r.nextInt(0, 4), () -> FxSend.trail(sl, W, a0, a1, 0.06f, 6));
+            }
+            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 1.2f, 1.3f);
+            sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.4f);
+        });
+    }
+
+    // ================================================================== 4. Gale White Bow
+    private static final int BOW_RELEASE = 10;
+
+    /**
+     * A bow of wind forms in your hand: three arrows of wind, 60 blocks, piercing everything they pass through.
+     * Spirit Dive: five arrows that seek out enemies.
+     */
+    public static void galeWhiteBow(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        windup(p, BOW_RELEASE, true);
+        // the bow: a tall arc of wind in front of your hand, held while you draw
+        for (int k = 0; k <= BOW_RELEASE; k += 3) {
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                Vec3 look = p.getLookAngle(), rt = rightOf(look), up = rt.cross(look).normalize();
+                FxSend.wall(sl, W, bowHand(p).subtract(look.scale(0.55)), look, up, 0.75f, 0.75f, -62, 62, 0.04f, 4, 0, 0);
+                FxSend.beam(sl, S, bowHand(p).add(up.scale(0.65)).subtract(look.scale(0.15)), bowHand(p).subtract(up.scale(0.65)).subtract(look.scale(0.15)), 0.015f, 4);   // the string
+            });
+        }
+        AstaFx.later(BOW_RELEASE, () -> {
+            if (!alive(p)) return;
+            boolean dive = diving(p);
+            if (dive) diveMsg(p, "gale_white_bow");
+            int n = dive ? 5 : 3;
+            Vec3 look = p.getLookAngle();
+            for (int i = 0; i < n; i++) {
+                double a = Math.toRadians((i - (n - 1) / 2.0) * (dive ? 6 : 4));
+                Vec3 d = rotY(look, a).normalize();
+                AstaFx.later(i / 2, () -> arrow(p, sl, bowHand(p), d, null, power * 0.7f, 0, dive, new HashSet<>(), 0.18f));
+            }
+            sound(sl, p.position(), SoundEvents.ARROW_SHOOT, 1f, 1.4f);
+            sound(sl, p.position(), SoundEvents.TRIDENT_RIPTIDE_1, 0.6f, 1.6f);
+        });
+    }
+
+    /** One wind arrow, 4 blocks a tick, piercing; seeking = steer toward the nearest enemy ahead. */
+    private static void arrow(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, LivingEntity target, float dmg, int step, boolean seeking, Set<UUID> hit, float width) {
+        if (!alive(p) || step > 15) return;
+        if (seeking) {
+            if (target == null || !target.isAlive()) {
+                double best = Math.cos(Math.toRadians(30));
+                for (LivingEntity t : enemies(sl, p, new AABB(pos, pos).inflate(30))) {
+                    if (hit.contains(t.getUUID())) continue;
+                    Vec3 to = mid(t).subtract(pos);
+                    double d = to.normalize().dot(dir);
+                    if (d > best) { best = d; target = t; }
+                }
+            }
+            if (target != null && target.isAlive()) dir = dir.scale(0.6).add(mid(target).subtract(pos).normalize().scale(0.4)).normalize();
+        }
+        Vec3 want = pos.add(dir.scale(4));
+        Vec3 next = clip(sl, p, pos, want);
+        FxSend.trail(sl, W, pos, next, width, 7);
+        FxSend.trail(sl, S, pos, next, width * 0.25f, 5);
+        FxSend.spike(sl, S, next.subtract(dir.scale(0.6)), dir, 0.8f, width * 0.6f, 2, 0, FxPacket.HOLD);
+        for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.0))) {
+            if (!t.getBoundingBox().inflate(0.4).clip(pos, next).isPresent()) continue;
+            if (!hit.add(t.getUUID())) continue;
+            AstaFx.damage(p, t, dmg, "gale_white_bow");
+            gust(sl, mid(t), 0.7f);
+            sound(sl, t.position(), SoundEvents.ARROW_HIT, 1f, 1.2f);
+        }
+        if (next.distanceToSqr(want) > 1.0E-4) { gust(sl, next, 0.7f); return; }
+        final Vec3 nd = dir; final LivingEntity tg = target;
+        AstaFx.later(1, () -> arrow(p, sl, next, nd, tg, dmg, step + 1, seeking, hit, width));
+    }
+
+    // ================================================================== 5. Spirit's Hushed Dance
+    /**
+     * You take the mana around you under your control and read every movement in it: for 6 s the next 3 attacks
+     * miss as the wind carries you aside, and each one you dodge refills 15 mana.
+     * Spirit Dive: 8 s, 5 dodges, and every dodge answers with a wind blade.
+     */
+    public static void hushedDance(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        boolean dive = diving(p);
+        Dance d = new Dance();
+        d.until = sl.getGameTime() + (dive ? 160 : 120);
+        d.charges = dive ? 5 : 3;
+        d.counter = dive;
+        DANCE.put(p.getUUID(), d);
+        if (dive) diveMsg(p, "hushed_dance");
+        // mana drawn in from all around: thin streams curling into you
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        for (int k = 0; k < 8; k++) {
+            final double a = Math.PI * 2 * k / 8 + r.nextDouble(0.3);
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                Vec3 c = p.position().add(0, 1, 0);
+                Vec3 from = c.add(Math.cos(a) * 5, r.nextDouble(-0.5, 1.5), Math.sin(a) * 5);
+                Vec3 mid = c.add(Math.cos(a + 0.6) * 2.4, 0.3, Math.sin(a + 0.6) * 2.4);
+                FxSend.trail(sl, W, from, mid, 0.05f, 7);
+                FxSend.trail(sl, W, mid, c.add(Math.cos(a + 1.2) * 0.6, 0, Math.sin(a + 1.2) * 0.6), 0.04f, 6);
+            });
+        }
+        FxSend.ring(sl, W, p.position().add(0, 0.05, 0), 4.5f, 0.6f, 0.05f, 10);
+        sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 1.4f);
+        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.4f, 1.8f);
+    }
+
+    // ================================================================== 6. Spirit of Zephyr
+    private static final int[] ZEPHYR_CUTS = {4, 11, 19};
+
+    /**
+     * A sword of wind in your hand: three fast cuts - across, down, and rising - each one throwing a blade of wind
+     * 8 blocks ahead and carrying you a step forward.
+     * Spirit Dive: Saint Spirit of Zephyr - the third cut is one colossal blade of wind that splits 30 blocks.
+     */
+    public static void spiritOfZephyr(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        boolean dive = diving(p);
+        if (dive) diveMsg(p, "spirit_of_zephyr");
+        // the sword of wind forming in your hand
+        FxSend.ring(sl, W, handPos(p), 1.2f, 0.1f, 0.05f, 5);
+        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.4f, 2f);
+        for (int i = 0; i < 3; i++) {
+            final int ii = i;
+            AstaFx.later(ZEPHYR_CUTS[i], () -> {
+                if (!alive(p)) return;
+                if (ii == 2 && dive) { saintZephyr(p, sl, power); return; }
+                Vec3 look = p.getLookAngle(), rt = rightOf(look), up = rt.cross(look).normalize();
+                Vec3 span = switch (ii) {
+                    case 0 -> rt.scale(0.97).add(up.scale(0.25));          // across
+                    case 1 -> up.scale(0.95).add(rt.scale(0.3));           // down
+                    default -> rt.scale(-0.6).add(up.scale(0.8));          // rising diagonal
+                };
+                span = span.normalize();
+                Vec3 o = p.getEyePosition().add(0, -0.35, 0).add(look.scale(1.0));
+                FxSend.slash(sl, W, o, look, span, 1.6f, 2.0f, 4, 0f, 1.6f);           // the cut itself
+                FxSend.slash(sl, W, o.add(look.scale(0.6)), look, span, 2.0f, 3.6f, 6, 1.4f, 1.8f);   // the blade it throws
+                Vec3 end = clip(sl, p, o, o.add(look.scale(8)));
+                for (LivingEntity t : enemies(sl, p, new AABB(o, end).inflate(2.2))) {
+                    if (closestOnSegment(o, end, mid(t)).distanceTo(mid(t)) > 2.0 + t.getBbWidth() * 0.5) continue;
+                    AstaFx.damage(p, t, power * 0.55f, "spirit_of_zephyr");
+                    gust(sl, mid(t), 0.8f);
+                }
+                p.setDeltaMovement(p.getDeltaMovement().add(new Vec3(look.x, 0, look.z).normalize().scale(0.45)));
+                p.hurtMarked = true;
+                sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.1f, 1.3f + ii * 0.15f);
+            });
+        }
+    }
+
+    private static void saintZephyr(ServerPlayer p, ServerLevel sl, float power) {
+        Vec3 look = p.getLookAngle(), rt = rightOf(look), up = rt.cross(look).normalize();
+        Vec3 span = rt.scale(-0.55).add(up.scale(0.83)).normalize();
+        Vec3 o = p.getEyePosition().add(0, -0.3, 0).add(look.scale(1.2));
+        final float SPEED = 3.0f;
+        Vec3 end = o.add(look.scale(30));
+        FxSend.slash(sl, W, o, look, span, 3.0f, 3.6f, 5, 0f, 2.2f);
+        FxSend.slash(sl, W, o.add(look.scale(1)), look, span, 4.0f, 13f, 12, SPEED, 2.4f);
+        FxSend.slash(sl, S, o.add(look.scale(1)), look, span, 3.6f, 12f, 10, SPEED, 0.6f);
+        for (LivingEntity t : enemies(sl, p, new AABB(o, end).inflate(7))) {
+            Vec3 on = closestOnSegment(o, end, mid(t));
+            double along = on.distanceTo(o);
+            if (on.distanceTo(mid(t)) > 2.5 + along * 0.15) continue;
+            final LivingEntity tt = t;
+            AstaFx.later((int) (along / SPEED), () -> {
+                if (!tt.isAlive() || !alive(p)) return;
+                AstaFx.damage(p, tt, power * 1.6f, "spirit_of_zephyr");
+                gust(sl, mid(tt), 1.4f);
+            });
+        }
+        FxLib.shockRing(sl, W, p.position().add(0, 0.05, 0), 1.4f);
+        sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.7f);
+        sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 0.35f, 1.6f);
+    }
+
+    // ================================================================== 7. Spirit of Boreas
+    private static final int BOREAS_LAUNCH = 16;
+
+    /**
+     * Wind halberds form and circle you, then fly at your enemies one after another, piercing through.
+     * Spirit Dive: eight halberds.
+     */
+    public static void spiritOfBoreas(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        boolean dive = diving(p);
+        if (dive) diveMsg(p, "spirit_of_boreas");
+        int n = dive ? 8 : 4;
+        // circling: re-sent each tick so they follow you
+        for (int t = 0; t < BOREAS_LAUNCH; t++) {
+            final int tt = t;
+            AstaFx.later(t, () -> {
+                if (!alive(p)) return;
+                for (int i = 0; i < n; i++) {
+                    double a = Math.PI * 2 * i / n + tt * 0.25;
+                    float grow = Math.min(1f, (tt + 1) / 6f);
+                    Vec3 c = p.position().add(Math.cos(a) * 1.8, 1.6 + 0.2 * Math.sin(tt * 0.4 + i), Math.sin(a) * 1.8);
+                    halberd(sl, c, new Vec3(0, 1, 0).add(Math.cos(a) * 0.3, 0, Math.sin(a) * 0.3).normalize(), grow);
+                }
+            });
+        }
+        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.6f, 1.2f);
+        AstaFx.later(BOREAS_LAUNCH, () -> {
+            if (!alive(p)) return;
+            List<LivingEntity> foes = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(30)));
+            foes.removeIf(t -> t.distanceTo(p) > 30 || !p.hasLineOfSight(t));
+            foes.sort(Comparator.comparingDouble(t -> t.distanceToSqr(p)));
+            Vec3 look = p.getLookAngle();
+            for (int i = 0; i < n; i++) {
+                double a = Math.PI * 2 * i / n + BOREAS_LAUNCH * 0.25;
+                Vec3 c = p.position().add(Math.cos(a) * 1.8, 1.6, Math.sin(a) * 1.8);
+                LivingEntity target = foes.isEmpty() ? null : foes.get(i % foes.size());
+                Vec3 d = target != null ? mid(target).subtract(c).normalize() : rotY(look, (i - (n - 1) / 2.0) * 0.12).normalize();
+                AstaFx.later(i * 2, () -> halberdFly(p, sl, c, d, power * 0.6f, 0, new HashSet<>()));
+            }
+            sound(sl, p.position(), SoundEvents.TRIDENT_THROW, 1f, 1.3f);
+        });
+    }
+
+    /** One halberd of wind: a long shaft and a crescent blade near its head. */
+    private static void halberd(ServerLevel sl, Vec3 c, Vec3 dir, float s) {
+        Vec3 back = c.subtract(dir.scale(1.4 * s));
+        FxSend.spike(sl, W, back, dir, 2.8f * s, 0.07f, 2, 0, FxPacket.HOLD);
+        Vec3 side = rightOf(dir);
+        FxSend.spike(sl, S, c.add(dir.scale(0.9 * s)), dir, 0.7f * s, 0.12f, 2, 0, FxPacket.HOLD);   // the spear point
+        FxSend.spike(sl, W, c.add(dir.scale(0.7 * s)), side.add(dir.scale(0.3)).normalize(), 0.55f * s, 0.16f, 2, 0, FxPacket.HOLD);   // the axe blade
+    }
+
+    private static void halberdFly(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float dmg, int step, Set<UUID> hit) {
+        if (!alive(p) || step > 14) return;
+        Vec3 want = pos.add(dir.scale(3));
+        Vec3 next = clip(sl, p, pos, want);
+        halberd(sl, next, dir, 1f);
+        FxSend.trail(sl, W, pos, next, 0.12f, 6);
+        for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.2))) {
+            if (!t.getBoundingBox().inflate(0.6).clip(pos, next).isPresent()) continue;
+            if (!hit.add(t.getUUID())) continue;
+            AstaFx.damage(p, t, dmg, "spirit_of_boreas");
+            gust(sl, mid(t), 0.9f);
+            sound(sl, t.position(), SoundEvents.TRIDENT_HIT, 1f, 1.2f);
+        }
+        if (next.distanceToSqr(want) > 1.0E-4) { gust(sl, next, 0.9f); return; }
+        AstaFx.later(1, () -> halberdFly(p, sl, next, dir, dmg, step + 1, hit));
+    }
+
+    // ================================================================== 8. Spirit of Euros
+    private static final int EUROS_RELEASE = 24;
+
+    /**
+     * Draw a great bow of condensed mana for a moment while the arrow gathers, then loose it: one tremendous arrow
+     * that pierces everything for 80 blocks.
+     * Spirit Dive: the arrow is bigger and bursts into a storm of wind where it ends.
+     */
+    public static void spiritOfEuros(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        for (int k = 0; k < EUROS_RELEASE; k += 3) {
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                Vec3 look = p.getLookAngle(), rt = rightOf(look), up = rt.cross(look).normalize();
+                Vec3 h = bowHand(p);
+                FxSend.wall(sl, W, h.subtract(look.scale(0.8)), look, up, 1.1f, 1.1f, -65, 65, 0.06f, 4, 0, 0);   // the great bow
+                FxSend.ring(sl, W, h.add(look.scale(0.4)), 1.4f - kk * 0.04f, 0.1f, 0.04f, 4);                   // mana gathering on the arrow
+                FxSend.beam(sl, S, h.subtract(look.scale(0.9)), h.add(look.scale(0.6)), 0.03f + kk * 0.002f, 4);  // the arrow growing
+            });
+        }
+        windup(p, EUROS_RELEASE, true);
+        AstaFx.later(EUROS_RELEASE, () -> {
+            if (!alive(p)) return;
+            boolean dive = diving(p);
+            if (dive) diveMsg(p, "spirit_of_euros");
+            eurosArrow(p, sl, bowHand(p), p.getLookAngle(), power, 0, dive, new HashSet<>());
+            FxLib.shockRing(sl, W, bowHand(p), 0.9f);
+            sound(sl, p.position(), SoundEvents.ARROW_SHOOT, 1f, 0.6f);
+            sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 0.3f, 1.8f);
+        });
+    }
+
+    private static void eurosArrow(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float dmg, int step, boolean big, Set<UUID> hit) {
+        if (!alive(p)) return;
+        int max = 16;
+        float w = big ? 0.75f : 0.5f;
+        Vec3 want = pos.add(dir.scale(5));
+        Vec3 next = clip(sl, p, pos, want);
+        FxSend.trail(sl, W, pos, next, w, 10);
+        FxSend.trail(sl, S, pos, next, w * 0.22f, 8);
+        FxSend.spike(sl, S, next.subtract(dir.scale(1.4)), dir, 1.8f, w * 0.7f, 2, 0, FxPacket.HOLD);
+        Vec3 rt = rightOf(dir);
+        FxSend.wall(sl, W, next, rt, rt.cross(dir).normalize(), w * 1.6f, w * 3.2f, -180, 180, 0.08f, 6, 0, 0);   // rings of air peeled off it
+        for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.8))) {
+            if (!t.getBoundingBox().inflate(w + 0.4).clip(pos, next).isPresent()) continue;
+            if (!hit.add(t.getUUID())) continue;
+            AstaFx.damage(p, t, dmg, "spirit_of_euros");
+            t.setDeltaMovement(t.getDeltaMovement().add(dir.scale(0.8)));
+            t.hurtMarked = true;
+            gust(sl, mid(t), 1.2f);
+        }
+        boolean blocked = next.distanceToSqr(want) > 1.0E-4;
+        if (blocked || step >= max) {
+            gust(sl, next, big ? 2.0f : 1.2f);
+            if (big) {
+                for (LivingEntity t : enemies(sl, p, new AABB(next, next).inflate(5))) {
+                    if (t.position().distanceTo(next) > 5) continue;
+                    AstaFx.damage(p, t, dmg * 0.6f, "spirit_of_euros");
+                    t.setDeltaMovement(t.getDeltaMovement().add(t.position().subtract(next).normalize().scale(1.2)).add(0, 0.5, 0));
+                    t.hurtMarked = true;
+                }
+                FxSend.wall(sl, W, next, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.5f, 6f, -180, 180, 0.6f, 9, 0, 0);
+                sound(sl, next, SoundEvents.GENERIC_EXPLODE, 0.6f, 1.5f);
+            }
+            return;
+        }
+        AstaFx.later(1, () -> eurosArrow(p, sl, next, dir, dmg, step + 1, big, hit));
+    }
+
+    // ================================================================== 9. Spirit Dive
+    private static final int DIVE_FORM = 15;   // ticks into the transformation animation when Sylph merges with you
+
+    /**
+     * Sylph merges with you: four wings of wind open on your back, you fly freely (jump in the air to take off, then
+     * fly where you look - the same controls as Devil Union), you move faster, and for 30 s every other move of the
+     * grimoire turns into its Spirit Dive form.
+     */
+    public static void spiritDive(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        // Sylph gathers: wind spirals in around you
+        for (int k = 0; k < DIVE_FORM; k += 2) {
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                FxSend.ring(sl, W, p.position().add(0, 0.1 + kk * 0.13, 0), 3f - kk * 0.15f, 0.3f, 0.06f, 4);
+            });
+        }
+        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.8f, 1.0f);
+        AstaFx.later(DIVE_FORM, () -> {
+            if (!alive(p)) return;
+            DIVE.put(p.getUUID(), sl.getGameTime() + DIVE_TICKS);
+            sendDive(p, DIVE_TICKS);
+            speed(p, true);
+            FxLib.shockRing(sl, W, p.position().add(0, 0.05, 0), 1.6f);
+            FxSend.wall(sl, W, p.position().add(0, 1, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.5f, 7f, -180, 180, 1.2f, 10, 0, 0);
+            FxSend.beam(sl, S, p.position(), p.position().add(0, 9, 0), 0.4f, 8);
+            p.displayClientMessage(Component.translatable("ui.arcane_addon.dive.open").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
+            sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 1f, 1.6f);
+            sound(sl, p.position(), SoundEvents.BEACON_POWER_SELECT, 0.7f, 1.6f);
+        });
+    }
+
+    private static void sendDive(ServerPlayer p, int life) {
+        FxPacket pkt = new FxPacket();
+        pkt.shape = 18; pkt.id = p.getId(); pkt.palette = (byte) W; pkt.life = life;
+        AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+    }
+
+    private static void speed(ServerPlayer p, boolean on) {
+        var att = p.getAttribute(Attributes.MOVEMENT_SPEED);
+        if (att == null) return;
+        att.removeModifier(DIVE_SPEED);
+        if (on) att.addTransientModifier(new AttributeModifier(DIVE_SPEED, "spirit_dive", 0.3, AttributeModifier.Operation.MULTIPLY_TOTAL));
+    }
+
+    // ================================================================== 10. Spirit Storm
+    private static final int STORM_RELEASE = 21;
+
+    /**
+     * Gather the mana around you - streams of wind pour in from every side into your hands - then release it as one
+     * vast storm of wind, 50 blocks long, that hits everything in it and drives it away.
+     * Spirit Dive: Double Spirit Storm - two storms twisting around each other, wider and 70 blocks long.
+     */
+    public static void spiritStorm(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        for (int k = 0; k < STORM_RELEASE; k++) {
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                Vec3 h = p.getEyePosition().add(p.getLookAngle().scale(0.8)).add(0, -0.3, 0);
+                double a = r.nextDouble(Math.PI * 2), el = r.nextDouble(-0.3, 0.9);
+                Vec3 from = h.add(Math.cos(a) * Math.cos(el) * 7, Math.sin(el) * 5, Math.sin(a) * Math.cos(el) * 7);
+                Vec3 bend = h.add(from.subtract(h).scale(0.45)).add(Math.cos(a + 1.5) * 1.2, 0.3, Math.sin(a + 1.5) * 1.2);
+                FxSend.trail(sl, W, from, bend, 0.06f, 6);
+                FxSend.trail(sl, W, bend, h, 0.05f, 5);
+                if (kk % 4 == 0) FxSend.ring(sl, W, h, 1.6f - kk * 0.05f, 0.15f, 0.04f, 5);
+            });
+        }
+        sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 1f, 0.7f);
+        sound(sl, p.position(), SoundEvents.BEACON_ACTIVATE, 0.6f, 1.8f);
+        AstaFx.later(STORM_RELEASE, () -> {
+            if (!alive(p)) return;
+            boolean dive = diving(p);
+            if (dive) diveMsg(p, "spirit_storm");
+            Vec3 dir = p.getLookAngle();
+            Vec3 start = p.getEyePosition().add(0, -0.3, 0).add(dir.scale(0.9));
+            double reach = dive ? 70 : 50;
+            Vec3 end = clip(sl, p, start, start.add(dir.scale(reach)));
+            double len = start.distanceTo(end);
+            double R = dive ? 3.2 : 2.2;
+            float speed = 5f;
+            Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
+            for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(R + 1))) {
+                Vec3 on = closestOnSegment(start, end, mid(t));
+                if (on.distanceTo(mid(t)) > R + t.getBbWidth() * 0.5) continue;
+                final LivingEntity tt = t;
+                AstaFx.later((int) (on.distanceTo(start) / speed), () -> {
+                    if (!tt.isAlive() || !alive(p)) return;
+                    AstaFx.damage(p, tt, power * (dive ? 1.3f : 1f), "spirit_storm");
+                    tt.setDeltaMovement(tt.getDeltaMovement().add(dir.scale(2.0)).add(0, 0.3, 0));
+                    tt.hurtMarked = true;
+                    gust(sl, mid(tt), 1.2f);
+                });
+            }
+            // the storm: travels out from your hands - a thick column of wind with rings of air spinning along it
+            int beams = dive ? 2 : 1;
+            for (int b = 0; b < beams; b++) {
+                final int bb = b;
+                for (int k = 0; k < (int) len; k += 3) {
+                    final int kk = k;
+                    AstaFx.later((int) (k / speed), () -> {
+                        double tw = kk * 0.35 + bb * Math.PI;
+                        Vec3 off = beams == 1 ? Vec3.ZERO : rt.scale(Math.cos(tw) * 1.2).add(up.scale(Math.sin(tw) * 1.2));
+                        Vec3 a0 = start.add(dir.scale(kk)).add(off), a1 = start.add(dir.scale(Math.min(len, kk + 3))).add(off);
+                        FxSend.trail(sl, W, a0, a1, (float) R * (beams == 1 ? 0.75f : 0.5f), 14);
+                        FxSend.trail(sl, S, a0, a1, 0.18f, 12);
+                        if (kk % 6 == 0) FxSend.wall(sl, kk % 12 == 0 ? S : W, a0, rt, up, (float) R * 0.9f, (float) R * 1.5f, kk * 20f, kk * 20f + 240, 0.12f, 9, 0, 0);
+                    });
+                }
+            }
+            AstaFx.later((int) (len / speed) + 1, () -> gust(sl, end, dive ? 2.2f : 1.6f));
+            FxLib.shockRing(sl, W, p.position().add(0, 0.05, 0), 1.4f);
+            p.setDeltaMovement(p.getDeltaMovement().subtract(dir.scale(0.4)));   // the recoil
+            p.hurtMarked = true;
+            sound(sl, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 0.6f, 1.4f);
+            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 1.4f, 1.2f);
+            sound(sl, p.position(), SoundEvents.GENERIC_EXPLODE, 0.5f, 1.6f);
+        });
+    }
+
+    // ================================================================== events
+    @SubscribeEvent
+    public static void onPlayerTick(TickEvent.PlayerTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p)) return;
+        long now = p.serverLevel().getGameTime();
+        UUID id = p.getUUID();
+        Long d = DIVE.get(id);
+        if (d != null) {
+            if (now > d) {
+                DIVE.remove(id);
+                sendDive(p, 0);
+                speed(p, false);
+                FxSend.ring(p.serverLevel(), W, p.position().add(0, 0.05, 0), 3f, 0.3f, 0.05f, 8);
+                p.displayClientMessage(Component.translatable("ui.arcane_addon.dive.close").withStyle(ChatFormatting.GREEN), true);
+            } else {
+                p.fallDistance = 0;
+                if (now % 40 == 0) sendDive(p, (int) (d - now));
+            }
+        }
+        Dance dc = DANCE.get(id);
+        if (dc != null && (now > dc.until || dc.charges <= 0)) DANCE.remove(id);
+    }
+
+    /** Hushed Dance dodges; the passive cancels fall damage and blows some projectiles aside. */
+    @SubscribeEvent
+    public static void onAttacked(LivingAttackEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        if (e.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
+        ServerLevel sl = p.serverLevel();
+        boolean wears = wearsWindGrimoire(p);
+        if (e.getSource().is(DamageTypeTags.IS_FALL) && (wears || diving(p))) {
+            e.setCanceled(true);
+            FxSend.ring(sl, W, p.position().add(0, 0.05, 0), 0.3f, 2.2f, 0.06f, 6);   // a gust catches you
+            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.3f, 2f);
+            return;
+        }
+        if (wears && e.getSource().is(DamageTypeTags.IS_PROJECTILE) && ThreadLocalRandom.current().nextFloat() < 0.25f) {
+            e.setCanceled(true);
+            Entity proj = e.getSource().getDirectEntity();
+            if (proj != null) {
+                gust(sl, proj.position(), 0.6f);
+                proj.setDeltaMovement(proj.getDeltaMovement().scale(-0.3).add(0, 0.3, 0));
+            }
+            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.4f, 1.8f);
+            return;
+        }
+        long now = sl.getGameTime();
+        Dance d = DANCE.get(p.getUUID());
+        Entity src = e.getSource().getEntity();
+        if (d != null && now <= d.until && d.charges > 0 && src != null && src != p) {
+            e.setCanceled(true);
+            d.charges--;
+            Vec3 away = p.position().subtract(src.position()).multiply(1, 0, 1);
+            Vec3 side = rightOf(away.lengthSqr() < 1.0E-4 ? p.getLookAngle() : away.normalize());
+            for (int s = 1; s >= -1; s -= 2) {   // the wind carries you aside, left or right, whichever is free
+                Vec3 dest = p.position().add(side.scale(1.8 * s));
+                if (sl.noCollision(p, p.getBoundingBox().move(dest.subtract(p.position())))) {
+                    FxSend.trail(sl, W, p.position().add(0, 1, 0), dest.add(0, 1, 0), 0.25f, 7);
+                    p.connection.teleport(dest.x, dest.y, dest.z, p.getYRot(), p.getXRot());
+                    break;
+                }
+            }
+            MagicData data = MagicData.getPlayerMagicData(p);
+            data.setMana((float) Math.min(p.getAttributeValue(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA.get()), data.getMana() + 15));
+            if (d.counter && src instanceof LivingEntity le && le.isAlive()) {
+                AstaFx.later(3, () -> {
+                    if (!le.isAlive() || !alive(p)) return;
+                    Vec3 from = p.getEyePosition().add(0, -0.3, 0);
+                    blade(p, sl, from, mid(le).subtract(from).normalize(), 6f, false);
+                });
+            }
+            sound(sl, p.position(), SoundEvents.ELYTRA_FLYING, 0.5f, 2f);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {
+        UUID id = e.getEntity().getUUID();
+        DIVE.remove(id); DANCE.remove(id);
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent e) {
+        DIVE.clear(); DANCE.clear();
+    }
+}

@@ -69,6 +69,14 @@ public class FxRenderer {
    private static final java.util.Map<Integer, double[]> DEVIL = new java.util.HashMap<>();
    /** Black Cocoon shells: entity id -> {start, end, radius, close ticks}. Fed by FxPacket shape 15. */
    private static final java.util.Map<Integer, double[]> COCOON = new java.util.HashMap<>();
+   /** Spirit Dive: entity id -> {start, end}. Fed by FxPacket shape 18. */
+   private static final java.util.Map<Integer, double[]> SPIRIT = new java.util.HashMap<>();
+
+   /** True while the player with this entity id is in Spirit Dive (as far as this client knows). */
+   public static boolean inSpiritDive(int entityId, double now) {
+      double[] f = SPIRIT.get(entityId);
+      return f != null && now >= f[0] && now <= f[1];
+   }
    /** Mana Zones: entity id -> {start, end, radius, ground y (NaN = unknown)}. Fed by FxPacket shape 17. */
    private static final java.util.Map<Integer, double[]> ZONES = new java.util.HashMap<>();
    private static final double ZONE_OPEN = 12.0, ZONE_CLOSE = 10.0;
@@ -131,6 +139,18 @@ public class FxRenderer {
             } else if (f != null) {
                f[1] = Math.min(f[1], now0);                                                         // start fading out
             }
+         }
+         return;
+      }
+      if (p.shape == 18) {  // Spirit Dive form (Yuno + Sylph): id = player, life = ticks left (0 = end)
+         Minecraft mc0 = Minecraft.getInstance();
+         if (mc0.level != null) {
+            double now0 = mc0.level.getGameTime();
+            double[] f = SPIRIT.get(p.id);
+            if (p.life > 0) {
+               if (f == null || f[1] < now0) SPIRIT.put(p.id, new double[]{now0, now0 + p.life});
+               else f[1] = now0 + p.life;
+            } else if (f != null) f[1] = Math.min(f[1], now0);
          }
          return;
       }
@@ -239,6 +259,19 @@ public class FxRenderer {
                net.minecraft.world.entity.Entity ent = mc.level.getEntity(ze.getKey());
                if (ent != null) zoneTick(mc, ent, ze.getValue(), now);
             }
+            for (java.util.Map.Entry<Integer, double[]> se : SPIRIT.entrySet()) {   // wind streaming around Spirit Dive
+               net.minecraft.world.entity.Entity ent = mc.level.getEntity(se.getKey());
+               if (ent == null || now > se.getValue()[1]) continue;
+               java.util.concurrent.ThreadLocalRandom rr = java.util.concurrent.ThreadLocalRandom.current();
+               boolean self = ent == mc.player && mc.options.getCameraType().isFirstPerson();
+               for (int k = 0; k < (self ? 1 : 2); k++) {
+                  double a = rr.nextDouble(Math.PI * 2), y = rr.nextDouble(0.1, ent.getBbHeight());
+                  Vec3 at = ent.position().add(Math.cos(a) * 0.7, y, Math.sin(a) * 0.7);
+                  Vec3 tan = new Vec3(-Math.sin(a), 0.04, Math.cos(a)).scale(0.22);
+                  DarkSmoke.streak(at, tan.add(ent.getDeltaMovement().scale(0.8)), 0.06F, rr.nextInt(8, 14));
+               }
+            }
+            SPIRIT.values().removeIf(sf -> now > sf[1] + 20.0);
             ZONES.values().removeIf(zf -> now > zf[1] + ZONE_CLOSE + 2.0);
             ZONE_H.keySet().removeIf(id -> !ZONES.containsKey(id));
             for (java.util.Map.Entry<Integer, double[]> ce : COCOON.entrySet()) {   // darkness seeping off the cocoon
@@ -256,6 +289,7 @@ public class FxRenderer {
             while (it.hasNext()) {
                FxRenderer.Fx f = it.next();
                if (f.p.palette == DARKNESS) emitDarkness(f, now - f.born);
+               else if (f.p.palette == WIND) emitWind(f, now - f.born);
                double life = f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life;
                if (now - f.born > life + 1.0) {
                   it.remove();
@@ -332,6 +366,67 @@ public class FxRenderer {
             Vec3 c = p.c.add(p.v.scale(Math.min(age, p.a1 > 0 ? p.a1 : age)));
             Vec3 o = c.add(p.d.scale(p.r * (p.shape == 8 ? r.nextDouble() : r.nextDouble(-1, 1))));
             DarkSmoke.smoke(o, jit(r, 0.03).add(0, 0.015, 0), (float)Mth.clamp(p.r2 * 2.0, 0.2, 1.0), r.nextInt(10, 18));
+            break;
+         }
+         default:
+      }
+   }
+
+   private static final int WIND = 5;
+
+   /** Yuno's wind: every effect in the wind palette throws off thin streaks of air that race along with it. */
+   private static void emitWind(FxRenderer.Fx f, double age) {
+      FxPacket p = f.p;
+      double life = f.killAge >= 0.0 ? f.killAge : (double)p.life;
+      if (age < 0.0 || age > life) return;
+      java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+      double frac = Mth.clamp(age / Math.max(1.0, life), 0.0, 1.0);
+      switch (p.shape) {
+         case 13: {
+            double grow = 1.0 - Math.pow(1.0 - Mth.clamp(age / (life * 0.45), 0.0, 1.0), 3.0);
+            double R = p.r + (p.r2 - p.r) * grow;
+            Vec3 c = p.c.add(p.d.scale(p.speed * age));
+            int k = (int)Mth.clamp(R, 2, 6);
+            for (int i = 0; i < k; i++) {
+               double fd = Math.toRadians(r.nextDouble(-70, 70));
+               Vec3 o = c.add(p.u.scale(Math.sin(fd) * R)).add(p.d.scale((Math.cos(fd) - 1.0) * R * 0.35));
+               DarkSmoke.streak(o, p.d.scale(Math.max(0.3, p.speed * 0.6)).add(jit(r, 0.05)), (float)Mth.clamp(R * 0.04, 0.04, 0.14), r.nextInt(5, 10));
+            }
+            break;
+         }
+         case 1: {
+            float R = p.r + (p.r2 - p.r) * (float)frac;
+            Vec3 c = p.c.add(p.d.scale(p.speed * age));
+            for (int i = 0; i < 2; i++) {
+               double fd = Math.toRadians(r.nextDouble(-70, 70));
+               DarkSmoke.streak(c.add(p.u.scale(Math.sin(fd) * R)), p.d.scale(Math.max(0.3, p.speed * 0.6)), 0.06F, r.nextInt(5, 9));
+            }
+            break;
+         }
+         case 2: {
+            if (age > 2.0) break;
+            double len = p.d.length();
+            if (len < 1.0E-3) break;
+            Vec3 dir = p.d.scale(1.0 / len);
+            int k = (int)Mth.clamp(len * 0.4, 1, 4);
+            for (int i = 0; i < k; i++) {
+               Vec3 o = p.c.add(p.d.scale(r.nextDouble())).add(jit(r, p.r * 1.5));
+               DarkSmoke.streak(o, dir.scale(r.nextDouble(0.3, 0.8)), (float)Mth.clamp(p.r * 0.4 + 0.03, 0.03, 0.14), r.nextInt(5, 10));
+            }
+            break;
+         }
+         case 0: {
+            float R = p.r + (p.r2 - p.r) * (float)frac;
+            Vec3 c = p.c.add(p.d.scale(p.speed * age));
+            double span = p.a1 - p.a0;
+            double want = Mth.clamp(R * Math.abs(span) / 360.0 * Mth.clamp(p.h * 3.0, 0.15, 1.0), 0.0, 5.0);
+            int k = (int)want + (r.nextDouble() < want - (int)want ? 1 : 0);
+            for (int i = 0; i < k; i++) {
+               double th = Math.toRadians(p.a0 + span * r.nextDouble());
+               Vec3 rad = p.d.scale(Math.cos(th)).add(p.u.scale(Math.sin(th)));
+               Vec3 tan = p.d.scale(-Math.sin(th)).add(p.u.scale(Math.cos(th)));
+               DarkSmoke.streak(c.add(rad.scale(R)), tan.scale(0.35).add(p.d.scale(p.speed * 0.5)), 0.06F, r.nextInt(5, 10));
+            }
             break;
          }
          default:
@@ -707,6 +802,8 @@ public class FxRenderer {
                   heldAura(vc, m, n, cam, p, pt, pulse, p.getOffhandItem().getItem(), false);
                   double[] form = DEVIL.get(p.getId());
                   if (form != null) devilForm(vc, m, n, cam, p, pt, now, form);
+                  double[] sp = SPIRIT.get(p.getId());
+                  if (sp != null) spiritForm(vc, m, n, cam, p, pt, now, sp);
                }
             }
             DEVIL.values().removeIf(f -> now > f[1] + 20.0);
@@ -829,6 +926,60 @@ public class FxRenderer {
          }
       }
 
+   }
+
+   /**
+    * Spirit Dive (Yuno merged with Sylph): four wings of wind on the back - two large upper wings and two smaller
+    * lower ones - made of long, glowing, half-transparent feathers of air that flutter, plus two rings of wind turning
+    * around the body.
+    */
+   private static void spiritForm(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Player p, float pt, double now, double[] f) {
+      double age = now - f[0];
+      float fade = (float)Mth.clamp((f[1] + 12.0 - now) / 12.0, 0.0, 1.0);
+      float grow = (float)(1.0 - Math.pow(1.0 - Mth.clamp(age / 12.0, 0.0, 1.0), 3.0));
+      float a = fade * grow;
+      if (a <= 0.01F) return;
+      double by = Math.toRadians((double)Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot));
+      Vec3 fw = new Vec3(-Math.sin(by), 0.0, Math.cos(by));
+      Vec3 lf = new Vec3(Math.cos(by), 0.0, Math.sin(by));
+      Vec3 base = new Vec3(Mth.lerp((double)pt, p.xo, p.getX()), Mth.lerp((double)pt, p.yo, p.getY()), Mth.lerp((double)pt, p.zo, p.getZ()));
+      float h = p.getBbHeight();
+      boolean air = !p.onGround();
+      double flap = Math.sin(now * (air ? 0.45 : 0.18)) * (air ? 0.35 : 0.12);
+      float[] rim = RIM[WIND], white = {0.92F, 1.0F, 0.96F};
+      Vec3 back = base.add(0.0, h * 0.74, 0.0).subtract(fw.scale(0.22));
+      Vec3 up = new Vec3(0, 1, 0);
+      // {root height offset, base angle up from horizontal (deg), length, feathers}
+      double[][] wings = {{0.08, 38, 1.9, 6}, {-0.35, -22, 1.1, 4}};
+      for (double[] wg : wings) {
+         for (int side = -1; side <= 1; side += 2) {
+            Vec3 root = back.add(0, wg[0], 0).add(lf.scale(0.12 * side));
+            for (int k = 0; k < (int)wg[3]; k++) {
+               double spread = Math.toRadians(wg[1] - k * (wg[1] > 0 ? 14 : 12) + Math.toDegrees(flap) * (1.0 - k * 0.1));
+               double sweepBack = 0.35 + k * 0.08;
+               Vec3 dir = lf.scale(side * Math.cos(spread)).add(up.scale(Math.sin(spread))).subtract(fw.scale(sweepBack)).normalize();
+               double len = wg[2] * (1.0 - k * 0.09) * grow;
+               Vec3 tip = root.add(dir.scale(len));
+               Vec3 wdt = dir.cross(fw).normalize().scale(0.09 + 0.02 * (wg[3] - k));
+               Vec3 midp = root.add(dir.scale(len * 0.55));
+               quad(vc, m, n, cam, root, midp.add(wdt), tip, midp.subtract(wdt), white, a * 0.32F, a * 0.22F, 0.0F, a * 0.22F);
+               gquad(m, cam, root, midp.add(wdt), tip, midp.subtract(wdt), rim, a * 0.45F, a * 0.3F, a * 0.05F, a * 0.3F);
+               gline(m, cam, root, tip, 0.025F, WIND, a * 0.6F);
+            }
+         }
+      }
+      // two rings of wind turning around the body
+      for (int ring = 0; ring < 2; ring++) {
+         double tilt = ring == 0 ? 0.25 : -0.35, spin = now * (ring == 0 ? 0.22 : -0.17);
+         double yc = h * (ring == 0 ? 0.35 : 0.7), R = 0.75 + ring * 0.12;
+         Vec3 prev = null;
+         for (int k = 0; k <= 14; k++) {
+            double t = spin + k * 0.32;
+            Vec3 q = base.add(Math.cos(t) * R, yc + Math.sin(t) * R * tilt, Math.sin(t) * R);
+            if (prev != null) gline(m, cam, prev, q, 0.03F, WIND, a * 0.55F * (float)Math.sin(Math.PI * k / 14.0));
+            prev = q;
+         }
+      }
    }
 
    // indexes into the demon wing skeleton
