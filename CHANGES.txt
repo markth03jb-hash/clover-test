@@ -1,7 +1,15 @@
-Arcane Addon v1.33.0 - all changed files since v1.0.0
+Arcane Addon v1.34.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.34.0
+- Yami with the Dark Katana in his main hand now stands like a samurai: a two-handed guard with the blade forward
+  at chest height, breathing slowly. His attacks are samurai cuts in turn: a diagonal cut from high right, a
+  horizontal cut, a rising cut - each flowing back into the guard.
+- Luck in Thunder God Mode bounces on his toes in a boxer's guard, fists up. His attacks go jab, hook, high kick.
+- Stances blend in and out smoothly, sit under every spell animation (casting still plays its own pose), and
+  leave the legs to the normal walk so they work while moving.
 
 NEW IN 1.33.0
 - Yami's darkness remade: no more grainy soot. It is now smooth, ink-in-water darkness - deep indigo-black with

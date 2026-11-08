@@ -39,6 +39,8 @@ public class ArcaneAnimations {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent e) {
         PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(LAYER, PRIORITY, player -> new ModifierLayer<>());
+        // idle stances and melee attacks (Yami with his katana, Luck in Thunder God Mode) - below every cast pose
+        PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(StanceAnimations.LAYER, StanceAnimations.PRIORITY, player -> new ModifierLayer<>());
         // Demon Dweller Sword glows in the colour of the element it last borrowed (1 fire, 2 ice, 3 lightning, 4 wind),
         // and "glow" (1 -> 0) lets the glow fade out over its last 1.5 s instead of switching off
         e.enqueueWork(() -> {

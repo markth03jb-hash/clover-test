@@ -80,6 +80,12 @@ public class FxRenderer {
    /** Spirit Dive: entity id -> {start, end}. Fed by FxPacket shape 18. */
    private static final java.util.Map<Integer, double[]> SPIRIT = new java.util.HashMap<>();
 
+   /** True while the player with this entity id is in Thunder God Mode (as far as this client knows). */
+   public static boolean inThunderMode(int entityId, double now) {
+      double[] f = THUNDER.get(entityId);
+      return f != null && now >= f[0] && now <= f[1];
+   }
+
    /** True while the player with this entity id is in Spirit Dive (as far as this client knows). */
    public static boolean inSpiritDive(int entityId, double now) {
       double[] f = SPIRIT.get(entityId);
