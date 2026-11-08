@@ -1,5 +1,6 @@
 package com.example.arcaneaddon.server;
 
+import static com.example.arcaneaddon.server.FxUtil.*;
 import com.example.arcaneaddon.registry.AddonItemRegistry;
 import io.redspace.ironsspellbooks.api.entity.IMagicEntity;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
@@ -22,12 +23,6 @@ public final class DevilFx {
     private DevilFx() {}
 
     private static final int EMBER = 9, DARK = 1;
-
-    private static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float v, float pitch) {
-        sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, v, pitch);
-    }
-
-    private static boolean alive(ServerPlayer p) { return p.isAlive() && !p.isRemoved(); }
 
     private static boolean holds(ServerPlayer p, Item item) {
         return p.getMainHandItem().is(item) || p.getOffhandItem().is(item);
@@ -127,11 +122,6 @@ public final class DevilFx {
     }
     // ================================================================== Black Divider
     private static final int DIVIDER_CUT = 9;
-
-    private static Vec3 rightOf(Vec3 d) {
-        Vec3 r = d.cross(new Vec3(0, 1, 0));
-        return r.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : r.normalize();
-    }
 
     private static Vec3 onSegment(Vec3 a, Vec3 b, Vec3 q) {
         Vec3 ab = b.subtract(a);

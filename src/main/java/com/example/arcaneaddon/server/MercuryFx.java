@@ -1,5 +1,6 @@
 package com.example.arcaneaddon.server;
 
+import static com.example.arcaneaddon.server.FxUtil.*;
 import com.example.arcaneaddon.ArcaneAddon;
 import com.example.arcaneaddon.item.MercuryGrimoireItem;
 import com.example.arcaneaddon.network.AddonNetwork;
@@ -74,58 +75,16 @@ public class MercuryFx {
     private static final double SPHERE_R = 3.2;
 
     // ------------------------------------------------------------------ helpers
-    private static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float v, float pitch) {
-        sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, v, pitch);
-    }
-
-    private static Vec3 mid(LivingEntity t) { return t.position().add(0, t.getBbHeight() * 0.5, 0); }
-
-    private static Vec3 rightOf(Vec3 dir) {
-        Vec3 r = dir.cross(new Vec3(0, 1, 0));
-        return r.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : r.normalize();
-    }
-
-    private static Vec3 clip(ServerLevel sl, Entity p, Vec3 a, Vec3 b) {
-        var hit = sl.clip(new ClipContext(a, b, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
-        return hit.getType() == HitResult.Type.MISS ? b : hit.getLocation();
-    }
-
-    private static List<LivingEntity> enemies(ServerLevel sl, ServerPlayer p, AABB box) {
-        return sl.getEntitiesOfClass(LivingEntity.class, box, x -> x != p && x.isAlive() && !x.isAlliedTo(p)
-                && !(x instanceof net.minecraft.world.entity.decoration.ArmorStand));
-    }
-
-    private static boolean alive(ServerPlayer p) { return p.isAlive() && !p.isRemoved(); }
 
     private static boolean wearsMercuryGrimoire(ServerPlayer p) {
         ItemStack s = Utils.getPlayerSpellbookStack(p);
         return s != null && s.getItem() instanceof MercuryGrimoireItem;
     }
 
-    private static Vec3 closestOnSegment(Vec3 a, Vec3 b, Vec3 q) {
-        Vec3 ab = b.subtract(a);
-        double t = ab.lengthSqr() < 1.0E-6 ? 0 : Math.max(0, Math.min(1, q.subtract(a).dot(ab) / ab.lengthSqr()));
-        return a.add(ab.scale(t));
-    }
-
     private static Vec3 handPos(ServerPlayer p) {
         double yr = Math.toRadians(p.getYRot());
         double lx = Math.cos(yr), lz = Math.sin(yr), fx = -Math.sin(yr), fz = Math.cos(yr);
         return new Vec3(p.getX() + fx * 0.6 - lx * 0.35, p.getY() + p.getEyeHeight() * 0.8, p.getZ() + fz * 0.6 - lz * 0.35);
-    }
-
-    /** The nearest enemy roughly where you're looking (within {@code deg} degrees), or null. */
-    private static LivingEntity aimed(ServerPlayer p, double range, double deg) {
-        Vec3 eye = p.getEyePosition(), look = p.getLookAngle();
-        LivingEntity best = null;
-        double bd = Math.cos(Math.toRadians(deg));
-        for (LivingEntity t : enemies(p.serverLevel(), p, p.getBoundingBox().inflate(range))) {
-            Vec3 to = mid(t).subtract(eye);
-            if (to.length() > range || !p.hasLineOfSight(t)) continue;
-            double d = to.normalize().dot(look);
-            if (d > bd) { bd = d; best = t; }
-        }
-        return best;
     }
 
     /** A liquid mercury sphere (client draws a wobbling chrome ball): shape 19. */

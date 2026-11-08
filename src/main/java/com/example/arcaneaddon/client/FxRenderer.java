@@ -75,6 +75,8 @@ public class FxRenderer {
    private static boolean nearFade = false;
    private static double bookTime = 0.0;
    private static final List<FxRenderer.Fx> FX = new ArrayList<>();
+   /** The per-tick copies (life <= 1) in FX, in the same order - all replaceTrack ever needs to look at. */
+   private static final List<FxRenderer.Fx> TRACK = new ArrayList<>();
    /** Players in Devil Union: entity id -> {start tick, end tick}. Fed by FxPacket shape 6. */
    private static final java.util.Map<Integer, double[]> DEVIL = new java.util.HashMap<>();
    /** Black Cocoon shells: entity id -> {start, end, radius, close ticks}. Fed by FxPacket shape 15. */
@@ -271,7 +273,7 @@ public class FxRenderer {
             FxRenderer.Fx fx = new FxRenderer.Fx();
             fx.p = p;
             fx.born = (double)mc.level.getGameTime();
-            if (p.life <= 1) replaceTrack(fx);
+            if (p.life <= 1) { replaceTrack(fx); TRACK.add(fx); }
             FX.add(fx);
          }
       }
@@ -305,6 +307,7 @@ public class FxRenderer {
          Minecraft mc = Minecraft.getInstance();
          if (mc.level == null) {
             FX.clear();
+            TRACK.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             Iterator<FxRenderer.Fx> it = FX.iterator();
@@ -356,6 +359,7 @@ public class FxRenderer {
                   it.remove();
                }
             }
+            TRACK.removeIf(f -> now - f.born > (f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life) + 1.0);   // same rule as FX above
             if (!PENDING.isEmpty()) { for (FxPacket q : PENDING) spawn(q); PENDING.clear(); }
             // Thunder God Mode / gloves: sparks off the feet when running, crackle around the hands
             java.util.concurrent.ThreadLocalRandom tr = java.util.concurrent.ThreadLocalRandom.current();
@@ -1268,6 +1272,8 @@ public class FxRenderer {
     * colour - so wind is a bright, airy shimmer and fire a luminous blaze instead of dark see-through ribbons.
     */
    private static int lightPal = -1;
+   /** effect_opacity from the client config, read once per frame. */
+   private static float OPACITY = 1F;
 
    private static boolean isLight(int pal) { return pal == 2 || pal == 4 || pal == 5 || pal == 6 || pal == 12 || pal == 13 || pal == 14; }
 
@@ -1276,9 +1282,10 @@ public class FxRenderer {
          float[] rc = RIM[lightPal];
          float k = lightPal == 5 ? 0.85F : 0.75F;
          float[] lc = {col[0] + (rc[0] - col[0]) * k, col[1] + (rc[1] - col[1]) * k, col[2] + (rc[2] - col[2]) * k};
-         gvtx(m, cam, w, lc, a * (lightPal == 5 ? 0.28F : 0.6F));
+         gvtx(m, cam, w, lc, a * (lightPal == 5 ? 0.28F : 0.6F));   // gvtx applies the opacity
          return;
       }
+      a *= OPACITY;
       if (nearFade) {
          double d = w.distanceTo(cam);
          a *= Mth.clamp((float)((d - NEAR_FADE_START) / NEAR_FADE_RANGE), NEAR_FADE_MIN, 1.0F) * FX_ALPHA;
@@ -1304,6 +1311,7 @@ public class FxRenderer {
    // ------------------------------------------------------------------ additive glow layer
    private static void gvtx(Matrix4f m, Vec3 cam, Vec3 w, float[] col, float a) {
       if (gv == null) return;
+      a *= OPACITY;
       if (nearFade) {
          double d = w.distanceTo(cam);
          a *= Mth.clamp((float)((d - NEAR_FADE_START) / NEAR_FADE_RANGE), NEAR_FADE_MIN, 1.0F) * FX_ALPHA;
@@ -1625,6 +1633,7 @@ public class FxRenderer {
             RenderType rt = RenderType.entityTranslucentEmissive(WHITE);
             VertexConsumer vc = buf.getBuffer(rt);
             gv = GLOW_SRC.getBuffer(GlowRenderType.GLOW);
+            OPACITY = com.example.arcaneaddon.AddonClientConfig.effectOpacity();
             double now = (double)((float)mc.level.getGameTime() + pt);
             Matrix4f m = ps.last().pose();
             Matrix3f n = ps.last().normal();
@@ -2125,7 +2134,7 @@ public class FxRenderer {
       FxPacket np = nf.p;
       FxRenderer.Fx best = null;
       double bestD = Double.MAX_VALUE;
-      for (FxRenderer.Fx f : FX) {
+      for (FxRenderer.Fx f : TRACK) {
          FxPacket p = f.p;
          if (p.life > 1 || f.killAge >= 0.0 || p.shape != np.shape || p.palette != np.palette) continue;
          if (Math.abs(p.r - np.r) > Math.max(0.05, np.r * 0.25) || Math.abs(p.r2 - np.r2) > Math.max(0.05, Math.abs(np.r2) * 0.25)) continue;
@@ -2136,8 +2145,11 @@ public class FxRenderer {
          double tol = 0.6 + np.v.length() * 0.6;
          if (d < tol && d < bestD) { bestD = d; best = f; }
       }
-      if (best != null) best.killAge = -2.0;   // marked: dropped below
-      FX.removeIf(f -> f.killAge == -2.0);
+      if (best != null) {   // dropped: the new copy takes over
+         best.killAge = -2.0;
+         FX.remove(best);
+         TRACK.remove(best);
+      }
    }
 
    /** How long a packet has moved: per-tick copies (life 1) stop at the end of their own tick and wait for the next. */

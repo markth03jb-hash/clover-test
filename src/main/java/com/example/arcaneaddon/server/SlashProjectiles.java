@@ -1,5 +1,6 @@
 package com.example.arcaneaddon.server;
 
+import static com.example.arcaneaddon.server.FxUtil.*;
 import com.example.arcaneaddon.ArcaneAddon;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -37,8 +38,6 @@ public class SlashProjectiles {
         ServerLevel level; UUID owner; Kind kind; Vec3 pos, dir, left; int fxId; float damage; int left_, age; double speed; boolean full; final Set<UUID> hit = new HashSet<>();
     }
     private static final List<S> LIST = new ArrayList<>();
-
-    private static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float v, float p) { sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, v, p); }
 
     // ------------------------------------------------------------------ entry points
     /** Left of {@code f}, kept level with the horizon even when {@code f} points up or down. */

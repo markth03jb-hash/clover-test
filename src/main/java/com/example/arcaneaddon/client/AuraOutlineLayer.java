@@ -100,6 +100,7 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
     }
 
     private static void shell(PoseStack ps, PlayerModel<AbstractClientPlayer> m, VertexConsumer vc, float scale, float r, float g, float b, float a) {
+        a *= com.example.arcaneaddon.AddonClientConfig.effectOpacity();
         ps.pushPose();
         ps.translate(0.0F, 0.75F, 0.0F);   // grow around the middle of the body, not the neck
         ps.scale(scale, scale, scale);

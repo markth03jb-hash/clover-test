@@ -1,5 +1,6 @@
 package com.example.arcaneaddon.server;
 
+import static com.example.arcaneaddon.server.FxUtil.*;
 import com.example.arcaneaddon.ArcaneAddon;
 import com.example.arcaneaddon.network.AddonNetwork;
 import com.example.arcaneaddon.network.FxPacket;
@@ -51,12 +52,6 @@ public final class MeteorFx {
     private static final Set<UUID> PROTECTED = new HashSet<>();   // victims who can't die yet
 
     public static boolean active(ServerPlayer p) { return ACTIVE.contains(p.getUUID()); }
-
-    private static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float v, float pitch) {
-        sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, v, pitch);
-    }
-
-    private static Vec3 mid(LivingEntity t) { return t.position().add(0, t.getBbHeight() * 0.5, 0); }
 
     private static void cutscene(ServerPlayer p, Vec3 look, int phase) {
         FxPacket pkt = new FxPacket();

@@ -1,5 +1,6 @@
 package com.example.arcaneaddon.server;
 
+import static com.example.arcaneaddon.server.FxUtil.*;
 import com.example.arcaneaddon.ArcaneAddon;
 import com.example.arcaneaddon.registry.AddonItemRegistry;
 import com.example.arcaneaddon.registry.AddonSpellRegistry;
@@ -81,16 +82,6 @@ public class AstaFx {
     private static final Map<UUID, Long> LAST_COUNTER = new HashMap<>();
 
     // ------------------------------------------------------------------ helpers
-    private static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float vol, float pitch) {
-        sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
-    private static Vec3 mid(LivingEntity t) { return t.position().add(0, t.getBbHeight() * 0.5, 0); }
-
-    private static Vec3 rightOf(Vec3 dir) {
-        Vec3 r = dir.cross(new Vec3(0, 1, 0));
-        return r.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : r.normalize();
-    }
 
     /** Cuts a ranged attack short at the first solid block, so beams and slashes don't pass through walls. */
     private static Vec3 clipToBlocks(ServerLevel sl, Entity p, Vec3 start, Vec3 end) {
@@ -103,22 +94,24 @@ public class AstaFx {
     }
 
     // ------------------------------------------------------------------ tiny scheduler for staged effects
-    private record Task(long due, Runnable run) {}
-    private static final List<Task> TASKS = new ArrayList<>();
+    /** due tick -> tasks in the order they were scheduled. Only the due tick's bucket is touched each tick. */
+    private static final java.util.TreeMap<Long, List<Runnable>> TASKS = new java.util.TreeMap<>();
     private static long serverTicks = 0;
 
     /** Runs {@code r} on the server thread {@code ticks} ticks from now. Used to stage effects over time. */
-    public static void later(int ticks, Runnable r) { TASKS.add(new Task(serverTicks + Math.max(1, ticks), r)); }
+    public static void later(int ticks, Runnable r) {
+        TASKS.computeIfAbsent(serverTicks + Math.max(1, ticks), k -> new ArrayList<>()).add(r);
+    }
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END) return;
         serverTicks++;
         if (TASKS.isEmpty()) return;
-        List<Task> due = new ArrayList<>();
-        TASKS.removeIf(t -> { if (t.due() <= serverTicks) { due.add(t); return true; } return false; });
-        for (Task t : due) {
-            try { t.run().run(); } catch (Exception ex) { LOGGER.warn("Arcane Addon staged effect failed", ex); }
+        List<Runnable> due = new ArrayList<>();
+        while (!TASKS.isEmpty() && TASKS.firstKey() <= serverTicks) due.addAll(TASKS.pollFirstEntry().getValue());
+        for (Runnable t : due) {
+            try { t.run(); } catch (Exception ex) { LOGGER.warn("Arcane Addon staged effect failed", ex); }
         }
     }
 
@@ -137,8 +130,18 @@ public class AstaFx {
 
     public static boolean isDweller(ServerPlayer p) { return p.getMainHandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get()); }
 
-    static void damage(ServerPlayer p, LivingEntity t, float dmg, String id) {
+    private static final Map<String, io.redspace.ironsspellbooks.api.spells.AbstractSpell> SPELL_CACHE = new HashMap<>();
+
+    /** The addon spell with this id (path), looked up once and then cached. Same result as scanning the registry. */
+    private static io.redspace.ironsspellbooks.api.spells.AbstractSpell spellById(String id) {
+        if (SPELL_CACHE.containsKey(id)) return SPELL_CACHE.get(id);
         var spell = AddonSpellRegistry.SPELLS.getEntries().stream().filter(e -> e.getId().getPath().equals(id)).findFirst().map(e -> e.get()).orElse(null);
+        SPELL_CACHE.put(id, spell);
+        return spell;
+    }
+
+    static void damage(ServerPlayer p, LivingEntity t, float dmg, String id) {
+        var spell = spellById(id);
         if (spell != null) DamageSources.applyDamage(t, dmg, spell.getDamageSource(p));
         else t.hurt(p.damageSources().playerAttack(p), dmg);
     }

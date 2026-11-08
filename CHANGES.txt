@@ -1,7 +1,27 @@
-Arcane Addon v1.39.0 - all changed files since v1.0.0
+Arcane Addon v1.40.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.40.0
+- NEW: client effect settings (config/arcane_addon-client.toml, each player sets their own; the defaults are exactly
+  the current look, and nothing here changes what a spell does):
+  - particle_density (0-1): how many smoke / flame / spark / dust particles spells make.
+  - effect_opacity (0.1-1): how solid the 3D effects look (slashes, walls, beams, domes, body auras).
+  - screen_shake (0-2): screen shake strength, 0 = off.
+  - impact_frames (true/false): the flashing anime impact frames on big hits.
+- Performance (nothing looks or plays differently):
+  - effect packets are encoded compactly: vectors and numbers that are zero are no longer sent. Lossless - the
+    client gets exactly the same data, in far fewer bytes. (Network protocol bumped: server and client must both
+    run this version.)
+  - the staged-effect scheduler only touches what is due this tick instead of scanning every pending step.
+  - spell damage no longer searches the whole spell registry on every hit (looked up once, then cached).
+  - per-tick effect copies are matched against a short list of their own instead of every effect on screen, and a
+    replaced copy is removed directly instead of re-scanning the list.
+  - fewer allocations in the particle system.
+- Code cleanup: the helpers every grimoire's effect code had its own copy of (sound, mid, rightOf, flat, rotY, clip,
+  enemies, closestOnSegment, aimed, alive) now live in one shared class. Only copies that were exactly identical
+  were merged; the two classes with a different version of one keep their own, so behaviour is unchanged.
 
 NEW IN 1.39.0
 - NEW: Surpassing Limits. When you're nearly dead in a hard fight, your grimoire can answer.

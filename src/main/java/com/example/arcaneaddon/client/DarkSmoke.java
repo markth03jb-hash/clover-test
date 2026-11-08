@@ -61,34 +61,30 @@ public final class DarkSmoke {
 
     /** A tongue of fire: white-yellow at first, then orange, red, and finally a wisp of dark smoke, rising. */
     public static void flame(Vec3 at, Vec3 vel, float size, int life) {
-        int before = PUFFS.size();
         add(at, vel, size * 0.7F, size * 1.3F, life, false);
-        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) PUFFS.get(PUFFS.size() - 1).flame = true;
+        if (last != null) last.flame = true;
     }
 
     /** A puff of dust kicked up off the ground (tornadoes, impacts). */
     public static void dust(Vec3 at, Vec3 vel, float size, int life) {
-        int before = PUFFS.size();
         add(at, vel, size * 0.6F, size * 1.4F, life, false);
-        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) {
-            Puff p = PUFFS.get(PUFFS.size() - 1);
+        if (last != null) {
+            Puff p = last;
             p.tinted = true; p.tr = 0.42F; p.tg = 0.37F; p.tb = 0.3F;
         }
     }
 
     /** A tongue of crimson flame (Mereoleona): white-gold at first, then deep red, then dark. */
     public static void crimsonFlame(Vec3 at, Vec3 vel, float size, int life) {
-        int before = PUFFS.size();
         add(at, vel, size * 0.7F, size * 1.3F, life, false);
-        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) { Puff p = PUFFS.get(PUFFS.size() - 1); p.flame = true; p.crimson = true; }
+        if (last != null) { Puff p = last; p.flame = true; p.crimson = true; }
     }
 
     /** An ember: a red-gold fleck rising off fire. */
     public static void emberSpark(Vec3 at, Vec3 vel, float size, int life) {
-        int before = PUFFS.size();
         add(at, vel, size, size * 0.5F, life, true);
-        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) {
-            Puff p = PUFFS.get(PUFFS.size() - 1);
+        if (last != null) {
+            Puff p = last;
             p.bead = true; p.tinted = true; p.tr = 1.0F; p.tg = 0.4F; p.tb = 0.15F;
             p.vy = Math.abs(p.vy) + 0.05;
         }
@@ -96,19 +92,17 @@ public final class DarkSmoke {
 
     /** A spark of blue lightning (Luck). */
     public static void blueSpark(Vec3 at, Vec3 vel, float size, int life) {
-        int before = PUFFS.size();
         add(at, vel, size, size * 0.5F, life, true);
-        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) {
-            Puff p = PUFFS.get(PUFFS.size() - 1);
+        if (last != null) {
+            Puff p = last;
             p.bead = true; p.tinted = true; p.tr = 0.6F; p.tg = 0.82F; p.tb = 1.0F;
         }
     }
 
     /** A tongue of blue flame (Calidos Brachium Purgatory): white-cyan, then deep blue, then gone. */
     public static void blueFlame(Vec3 at, Vec3 vel, float size, int life) {
-        int before = PUFFS.size();
         add(at, vel, size * 0.7F, size * 1.3F, life, false);
-        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) { Puff p = PUFFS.get(PUFFS.size() - 1); p.flame = true; p.tinted = true; }
+        if (last != null) { Puff p = last; p.flame = true; p.tinted = true; }
     }
 
     /** Hellfire Incarnate: entity id -> {start, end}. */
@@ -146,49 +140,52 @@ public final class DarkSmoke {
 
     /** A spark of lightning: a bright yellow-white fleck that jumps and falls. */
     public static void spark(Vec3 at, Vec3 vel, float size, int life) {
-        int before = PUFFS.size();
         add(at, vel, size, size * 0.5F, life, true);
-        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) {
-            Puff p = PUFFS.get(PUFFS.size() - 1);
+        if (last != null) {
+            Puff p = last;
             p.bead = true; p.tinted = true; p.tr = 1.0F; p.tg = 0.95F; p.tb = 0.55F;
         }
     }
 
     /** A streak in a chosen colour. */
     public static void streakTinted(Vec3 at, Vec3 vel, float size, int life, float r, float g, float b) {
-        int before = PUFFS.size();
         add(at, vel, size, size * 0.6F, life, true);
-        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) {
-            Puff p = PUFFS.get(PUFFS.size() - 1);
+        if (last != null) {
+            Puff p = last;
             p.streak = true; p.tinted = true; p.tr = r; p.tg = g; p.tb = b;
         }
     }
 
     /** A bead of mercury: a small silver droplet that falls. */
     public static void bead(Vec3 at, Vec3 vel, float size, int life) {
-        int before = PUFFS.size();
         add(at, vel, size, size, life, true);
-        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) PUFFS.get(PUFFS.size() - 1).bead = true;
+        if (last != null) last.bead = true;
     }
 
     /** A wind streak: a thin mint-white line of light stretched along its velocity (Yuno's wind). */
     public static void streak(Vec3 at, Vec3 vel, float size, int life) {
-        int before = PUFFS.size();
         add(at, vel, size, size * 0.6F, life, true);
-        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) PUFFS.get(PUFFS.size() - 1).streak = true;
+        if (last != null) last.streak = true;
     }
 
+    /** The puff the last add() made, or null if it made none (so callers can mark its kind). */
+    private static Puff last;
+
     private static void add(Vec3 at, Vec3 vel, float s0, float s1, int life, boolean mote) {
+        last = null;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
-        if (PUFFS.size() >= MAX) PUFFS.remove(0);
         ThreadLocalRandom r = ThreadLocalRandom.current();
+        float density = com.example.arcaneaddon.AddonClientConfig.particleDensity();
+        if (density < 1F && r.nextFloat() >= density) return;   // fewer particles, from the client config
+        if (PUFFS.size() >= MAX) PUFFS.remove(0);
         Puff p = new Puff();
         p.x = at.x; p.y = at.y; p.z = at.z; p.vx = vel.x; p.vy = vel.y; p.vz = vel.z;
         p.born = mc.level.getGameTime(); p.life = life; p.s0 = s0; p.s1 = s1;
         p.rot = r.nextFloat() * 6.283F; p.spin = (r.nextFloat() - 0.5F) * 0.12F;
         p.mote = mote; p.shade = r.nextFloat();
         PUFFS.add(p);
+        last = p;
     }
 
     /** Black Blade's aura: violet motes rising off the player for {@code life} ticks (0 = stop). */

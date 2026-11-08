@@ -1,5 +1,6 @@
 package com.example.arcaneaddon.server;
 
+import static com.example.arcaneaddon.server.FxUtil.*;
 import com.example.arcaneaddon.network.AddonNetwork;
 import com.example.arcaneaddon.network.FxPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -34,13 +35,6 @@ public final class LimitFx {
             BLUE_L = 13, CRIMSON = 14, BONE = 15, STEEL = 7;
 
     // ------------------------------------------------------------------ helpers
-    private static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float v, float pitch) {
-        sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, v, pitch);
-    }
-
-    private static boolean alive(ServerPlayer p) { return p.isAlive() && !p.isRemoved(); }
-
-    private static Vec3 mid(LivingEntity t) { return t.position().add(0, t.getBbHeight() * 0.5, 0); }
 
     private static List<LivingEntity> foes(ServerLevel sl, ServerPlayer p, AABB box) {
         return sl.getEntitiesOfClass(LivingEntity.class, box, x -> x != p && x.isAlive() && !x.isAlliedTo(p));
@@ -50,16 +44,6 @@ public final class LimitFx {
         List<LivingEntity> l = new ArrayList<>(foes(sl, p, new AABB(c, c).inflate(r)));
         l.removeIf(t -> mid(t).distanceTo(c) > r + t.getBbWidth() * 0.5);
         return l;
-    }
-
-    private static Vec3 flat(Vec3 v) {
-        Vec3 f = new Vec3(v.x, 0, v.z);
-        return f.lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : f.normalize();
-    }
-
-    private static Vec3 rightOf(Vec3 d) {
-        Vec3 r = d.cross(new Vec3(0, 1, 0));
-        return r.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : r.normalize();
     }
 
     /** Where the player is looking: the first block hit within {@code range}, else that far ahead, on the ground. */

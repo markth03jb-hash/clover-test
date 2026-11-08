@@ -1,5 +1,6 @@
 package com.example.arcaneaddon.server;
 
+import static com.example.arcaneaddon.server.FxUtil.*;
 import com.example.arcaneaddon.ArcaneAddon;
 import com.example.arcaneaddon.item.SteelGrimoireItem;
 import com.example.arcaneaddon.network.FxPacket;
@@ -61,27 +62,10 @@ public class SteelFx {
     private static final Map<UUID, Long> ARMOR = new HashMap<>();
 
     // ------------------------------------------------------------------ helpers
-    private static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float v, float pitch) {
-        sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, v, pitch);
-    }
-
-    private static Vec3 mid(LivingEntity t) { return t.position().add(0, t.getBbHeight() * 0.5, 0); }
-
-    private static Vec3 flat(Vec3 d) {
-        Vec3 f = new Vec3(d.x, 0, d.z);
-        return f.lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : f.normalize();
-    }
-
-    private static Vec3 clip(ServerLevel sl, Entity p, Vec3 a, Vec3 b) {
-        var hit = sl.clip(new ClipContext(a, b, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
-        return hit.getType() == HitResult.Type.MISS ? b : hit.getLocation();
-    }
 
     private static List<LivingEntity> enemies(ServerLevel sl, ServerPlayer p, AABB box) {
         return sl.getEntitiesOfClass(LivingEntity.class, box, x -> x != p && x.isAlive() && !x.isAlliedTo(p));
     }
-
-    private static boolean alive(ServerPlayer p) { return p.isAlive() && !p.isRemoved(); }
 
     private static Vec3 handPos(ServerPlayer p) {
         double yr = Math.toRadians(p.getYRot());

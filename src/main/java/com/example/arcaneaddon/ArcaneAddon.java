@@ -18,5 +18,8 @@ public class ArcaneAddon {
         AddonItemRegistry.TABS.register(modBus);
         AddonNetwork.init();
         net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.COMMON, AddonConfig.SPEC);
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.CLIENT, AddonClientConfig.SPEC);
+        modBus.addListener((net.minecraftforge.fml.event.config.ModConfigEvent.Loading ev) -> { if (ev.getConfig().getSpec() == AddonClientConfig.SPEC) AddonClientConfig.refresh(); });
+        modBus.addListener((net.minecraftforge.fml.event.config.ModConfigEvent.Reloading ev) -> { if (ev.getConfig().getSpec() == AddonClientConfig.SPEC) AddonClientConfig.refresh(); });
     }
 }

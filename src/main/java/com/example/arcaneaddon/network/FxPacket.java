@@ -20,17 +20,40 @@ public class FxPacket {
     public Vec3 c = Vec3.ZERO, d = Vec3.ZERO, u = Vec3.ZERO, v = Vec3.ZERO;   // v = velocity per tick (BOX / SPIKE)
     public float r, r2, a0, a1, h, speed;
 
+    /*
+     * Wire format: the header, then a bitmask saying which vectors / floats are non-zero, then only those.
+     * Lossless: a value is skipped only when its bits are exactly 0 (so -0.0 is still sent), and a skipped value
+     * decodes to exactly 0 - the client gets the very same packet, in far fewer bytes (most packets leave several
+     * of the 4 vectors and 6 floats at zero).
+     */
+    private static boolean zero(Vec3 v) {
+        return Double.doubleToRawLongBits(v.x) == 0L && Double.doubleToRawLongBits(v.y) == 0L && Double.doubleToRawLongBits(v.z) == 0L;
+    }
+
+    private static boolean zero(float f) { return Float.floatToRawIntBits(f) == 0; }
+
     public static void encode(FxPacket p, FriendlyByteBuf b) {
         b.writeByte(p.shape); b.writeByte(p.palette); b.writeVarInt(p.id); b.writeVarInt(p.life); b.writeVarInt(p.sweep);
-        vec(b, p.c); vec(b, p.d); vec(b, p.u); vec(b, p.v);
-        b.writeFloat(p.r); b.writeFloat(p.r2); b.writeFloat(p.a0); b.writeFloat(p.a1); b.writeFloat(p.h); b.writeFloat(p.speed);
+        Vec3[] vs = {p.c, p.d, p.u, p.v};
+        float[] fs = {p.r, p.r2, p.a0, p.a1, p.h, p.speed};
+        int mask = 0;
+        for (int i = 0; i < 4; i++) if (!zero(vs[i])) mask |= 1 << i;
+        for (int i = 0; i < 6; i++) if (!zero(fs[i])) mask |= 1 << (4 + i);
+        b.writeShort(mask);
+        for (int i = 0; i < 4; i++) if ((mask & (1 << i)) != 0) vec(b, vs[i]);
+        for (int i = 0; i < 6; i++) if ((mask & (1 << (4 + i))) != 0) b.writeFloat(fs[i]);
     }
 
     public static FxPacket decode(FriendlyByteBuf b) {
         FxPacket p = new FxPacket();
         p.shape = b.readByte(); p.palette = b.readByte(); p.id = b.readVarInt(); p.life = b.readVarInt(); p.sweep = b.readVarInt();
-        p.c = vec(b); p.d = vec(b); p.u = vec(b); p.v = vec(b);
-        p.r = b.readFloat(); p.r2 = b.readFloat(); p.a0 = b.readFloat(); p.a1 = b.readFloat(); p.h = b.readFloat(); p.speed = b.readFloat();
+        int mask = b.readShort() & 0xFFFF;
+        Vec3[] vs = new Vec3[4];
+        for (int i = 0; i < 4; i++) vs[i] = (mask & (1 << i)) != 0 ? vec(b) : Vec3.ZERO;
+        p.c = vs[0]; p.d = vs[1]; p.u = vs[2]; p.v = vs[3];
+        float[] fs = new float[6];
+        for (int i = 0; i < 6; i++) fs[i] = (mask & (1 << (4 + i))) != 0 ? b.readFloat() : 0f;
+        p.r = fs[0]; p.r2 = fs[1]; p.a0 = fs[2]; p.a1 = fs[3]; p.h = fs[4]; p.speed = fs[5];
         return p;
     }
 

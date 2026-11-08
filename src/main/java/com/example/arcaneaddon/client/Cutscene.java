@@ -61,7 +61,7 @@ public final class Cutscene {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
         double d = mc.player.position().distanceTo(at);
-        float s = (float)(strength * Mth.clamp(1.0 - d / 40.0, 0.0, 1.0));
+        float s = (float)(strength * Mth.clamp(1.0 - d / 40.0, 0.0, 1.0)) * com.example.arcaneaddon.AddonClientConfig.screenShake();
         if (s <= 0.02F) return;
         shakeStart = mc.level.getGameTime();
         shakeUntil = shakeStart + ticks;
@@ -182,7 +182,7 @@ public final class Cutscene {
     /** Anime impact frames: a few ticks of hard white / black flashes with speed lines, for a hit that lands. */
     public static void impactFrame(int ticks, boolean slash) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) return;
+        if (mc.level == null || !com.example.arcaneaddon.AddonClientConfig.impactFrames()) return;
         frameStart = mc.level.getGameTime();
         frameLen = Math.max(1, ticks);
         frameSlash = slash;

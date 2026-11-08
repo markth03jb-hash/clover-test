@@ -1,5 +1,6 @@
 package com.example.arcaneaddon.server;
 
+import static com.example.arcaneaddon.server.FxUtil.*;
 import com.example.arcaneaddon.ArcaneAddon;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.damage.DamageSources;
@@ -67,7 +68,6 @@ public class DashQueue {
         }
     }
 
-
     @SubscribeEvent
     public static void onTick(TickEvent.PlayerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p)) return;
@@ -128,11 +128,6 @@ public class DashQueue {
                 sl.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.35f, 1.4f);
             });
         }
-    }
-
-    private static Vec3 rightOf(Vec3 dir) {
-        Vec3 r = dir.cross(new Vec3(0, 1, 0));
-        return r.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : r.normalize();
     }
 
     @SubscribeEvent
