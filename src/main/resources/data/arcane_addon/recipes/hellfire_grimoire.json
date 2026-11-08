@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "MRM",
+    "IBI",
+    "MLM"
+  ],
+  "key": {
+    "M": {
+      "item": "minecraft:magma_cream"
+    },
+    "R": {
+      "item": "minecraft:blaze_rod"
+    },
+    "I": {
+      "item": "irons_spellbooks:arcane_ingot"
+    },
+    "B": {
+      "item": "minecraft:enchanted_book"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    }
+  },
+  "result": {
+    "item": "arcane_addon:hellfire_grimoire",
+    "count": 1
+  }
+}

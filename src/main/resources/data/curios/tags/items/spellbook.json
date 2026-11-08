@@ -11,6 +11,7 @@
   "arcane_addon:wind_grimoire",
   "arcane_addon:mercury_grimoire",
   "arcane_addon:fire_grimoire",
-  "arcane_addon:lightning_grimoire"
+  "arcane_addon:lightning_grimoire",
+  "arcane_addon:hellfire_grimoire"
  ]
 }

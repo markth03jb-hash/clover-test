@@ -48,7 +48,8 @@ public class FxRenderer {
       {0.16F, 0.10F, 0.02F},   // 8 gold
       {0.07F, 0.0F, 0.0F},     // 9 devil red (devil form)
       {0.015F, 0.0F, 0.035F},  // 10 Yami's darkness
-      {0.42F, 0.45F, 0.5F}     // 11 mercury (liquid chrome)
+      {0.42F, 0.45F, 0.5F},    // 11 mercury (liquid chrome)
+      {0.0F, 0.06F, 0.3F}      // 12 blue flame
    };
    private static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
@@ -56,7 +57,8 @@ public class FxRenderer {
       {1.0F, 0.84F, 0.36F},    // 8 gold
       {1.0F, 0.07F, 0.05F},    // 9 devil red (devil form)
       {0.6F, 0.2F, 1.0F},      // 10 Yami's darkness (smoke comes off everything drawn in it)
-      {0.86F, 0.92F, 1.0F}     // 11 mercury
+      {0.86F, 0.92F, 1.0F},    // 11 mercury
+      {0.35F, 0.65F, 1.0F}     // 12 blue flame (Calidos Brachium Purgatory)
    };
    /** Overall strength of every world effect. Lower = subtler. */
    private static final float FX_ALPHA = 1.0F;
@@ -78,6 +80,11 @@ public class FxRenderer {
    public static boolean inSpiritDive(int entityId, double now) {
       double[] f = SPIRIT.get(entityId);
       return f != null && now >= f[0] && now <= f[1];
+   }
+   /** The Mana Zone palette (2 = Mereoleona's fire zone, 10 = Yami's) of this entity, or -1 when none is up. */
+   public static int zonePalette(int entityId, double now) {
+      double[] f = ZONES.get(entityId);
+      return f != null && now >= f[0] && now <= f[1] && f.length > 4 ? (int)f[4] : -1;
    }
    /** Mana Zones: entity id -> {start, end, radius, ground y (NaN = unknown)}. Fed by FxPacket shape 17. */
    private static final java.util.Map<Integer, double[]> ZONES = new java.util.HashMap<>();
@@ -155,6 +162,7 @@ public class FxRenderer {
          }
          return;
       }
+      if (p.shape == 27) { DarkSmoke.hellfire(p.id, p.life); return; }   // Hellfire Incarnate body: id = player, life = ticks
       if (p.shape == 21) { DarkSmoke.burning(p.id, p.life); return; }    // burning: id = entity, life = ticks
       if (p.shape == 22) { DarkSmoke.knuckles(p.id, p.life); return; }   // Flame Knuckles: id = player, life = ticks
       if (p.shape == 18) {  // Spirit Dive form (Yuno + Sylph): id = player, life = ticks left (0 = end)
@@ -175,7 +183,7 @@ public class FxRenderer {
             double now0 = mc0.level.getGameTime();
             double[] f = ZONES.get(p.id);
             if (p.life > 0) {
-               if (f == null || f[1] < now0) ZONES.put(p.id, new double[]{now0, now0 + p.life, p.r, Double.NaN});
+               if (f == null || f[1] < now0) ZONES.put(p.id, new double[]{now0, now0 + p.life, p.r, Double.NaN, p.palette});
                else f[1] = now0 + p.life;
             } else if (f != null) f[1] = Math.min(f[1], now0);
          }
@@ -306,7 +314,7 @@ public class FxRenderer {
                if (f.p.palette == DARKNESS) emitDarkness(f, now - f.born);
                else if (f.p.palette == WIND) emitWind(f, now - f.born);
                else if (f.p.palette == MERCURY) emitMercury(f, now - f.born);
-               else if (f.p.palette == FIRE) emitFire(f, now - f.born);
+               else if (f.p.palette == FIRE || f.p.palette == BLUE_FIRE) { blueFlames = f.p.palette == BLUE_FIRE; emitFire(f, now - f.born); blueFlames = false; }
                else if (f.p.palette == LIGHTNING && f.p.shape != 23) emitLightning(f, now - f.born);
                double life = f.killAge >= 0.0 ? f.killAge + 4.0 : (double)f.p.life;
                if (now - f.born > life + 1.0) {
@@ -409,7 +417,8 @@ public class FxRenderer {
       }
    }
 
-   private static final int WIND = 5, MERCURY = 11, FIRE = 2, LIGHTNING = 4;
+   private static final int WIND = 5, MERCURY = 11, FIRE = 2, LIGHTNING = 4, BLUE_FIRE = 12;
+   private static boolean blueFlames;
    /** Packets made on this client while the effect list is being walked; spawned right after. */
    private static final List<FxPacket> PENDING = new ArrayList<>();
    /** Thunder God Mode: entity id -> {start, end}; gloves: entity id -> {start, end}. Fed by shapes 24 and 25. */
@@ -557,7 +566,7 @@ public class FxRenderer {
                   int k = (int)Mth.clamp(p.r2 * 7, 10, 45);
                   for (int i = 0; i < k; i++) {
                      Vec3 d = jit(r, 1.0).normalize();
-                     DarkSmoke.flame(c.add(d.scale(p.r2 * 0.25)), d.scale(p.r2 * r.nextDouble(0.06, 0.13)).add(0, 0.03, 0), (float)Mth.clamp(p.r2 * 0.28, 0.35, 1.8), r.nextInt(12, 22));
+                     fl(c.add(d.scale(p.r2 * 0.25)), d.scale(p.r2 * r.nextDouble(0.06, 0.13)).add(0, 0.03, 0), (float)Mth.clamp(p.r2 * 0.28, 0.35, 1.8), r.nextInt(12, 22));
                   }
                   for (int i = 0; i < k / 3; i++) {
                      Vec3 d = jit(r, 1.0).normalize();
@@ -570,7 +579,7 @@ public class FxRenderer {
             int k = p.r > 1.0F ? 3 : (p.r > 0.35F ? 2 : 1);
             for (int i = 0; i < k; i++) {
                Vec3 d = jit(r, 1.0).normalize();
-               DarkSmoke.flame(c.add(d.scale(p.r * 0.8)), p.v.scale(-0.15).add(d.scale(0.02)).add(0, 0.02, 0), p.r * (float)r.nextDouble(0.6, 1.0), r.nextInt(6, 12));
+               fl(c.add(d.scale(p.r * 0.8)), p.v.scale(-0.15).add(d.scale(0.02)).add(0, 0.02, 0), p.r * (float)r.nextDouble(0.6, 1.0), r.nextInt(6, 12));
             }
             if (p.v.lengthSqr() > 0.01 && r.nextInt(3) == 0) DarkSmoke.smoke(c.subtract(p.v.scale(0.6)), new Vec3(0, 0.03, 0), p.r * 1.2F, r.nextInt(16, 26));
             break;
@@ -580,7 +589,7 @@ public class FxRenderer {
             double len = p.d.length();
             int k = (int)Mth.clamp(len * 0.5, 1, 5);
             for (int i = 0; i < k; i++) {
-               DarkSmoke.flame(p.c.add(p.d.scale(r.nextDouble())).add(jit(r, p.r)), new Vec3(0, 0.03, 0), (float)Mth.clamp(p.r * 1.6 + 0.12, 0.15, 1.0), r.nextInt(8, 14));
+               fl(p.c.add(p.d.scale(r.nextDouble())).add(jit(r, p.r)), new Vec3(0, 0.03, 0), (float)Mth.clamp(p.r * 1.6 + 0.12, 0.15, 1.0), r.nextInt(8, 14));
             }
             break;
          }
@@ -595,7 +604,7 @@ public class FxRenderer {
             for (int i = 0; i < k; i++) {
                double th = Math.toRadians(p.a0 + span * r.nextDouble());
                Vec3 o = c.add(p.d.scale(Math.cos(th) * R)).add(p.u.scale(Math.sin(th) * R)).add(hx.scale(r.nextDouble(-p.h, p.h)));
-               DarkSmoke.flame(o, new Vec3(0, 0.035, 0), (float)Mth.clamp(p.h * 0.6 + 0.2, 0.2, 1.0), r.nextInt(8, 14));
+               fl(o, new Vec3(0, 0.035, 0), (float)Mth.clamp(p.h * 0.6 + 0.2, 0.2, 1.0), r.nextInt(8, 14));
             }
             break;
          }
@@ -606,19 +615,23 @@ public class FxRenderer {
             for (int i = 0; i < (int)Mth.clamp(R * 1.5, 2, 7); i++) {
                double fd = Math.toRadians(r.nextDouble(-70, 70));
                Vec3 o = c.add(p.u.scale(Math.sin(fd) * R)).add(p.d.scale((Math.cos(fd) - 1.0) * R * 0.35));
-               DarkSmoke.flame(o, p.d.scale(p.speed * 0.3).add(0, 0.03, 0), (float)Mth.clamp(R * 0.12, 0.2, 0.8), r.nextInt(6, 12));
+               fl(o, p.d.scale(p.speed * 0.3).add(0, 0.03, 0), (float)Mth.clamp(R * 0.12, 0.2, 0.8), r.nextInt(6, 12));
             }
             break;
          }
          case 8: {
             if (p.speed != FxPacket.HOLD || r.nextInt(3) == 0) {
                Vec3 o = travelledPos(f, age).add(p.d.scale(p.r * r.nextDouble()));
-               DarkSmoke.flame(o, new Vec3(0, 0.03, 0), (float)Mth.clamp(p.r2 * 2.0, 0.12, 0.6), r.nextInt(6, 10));
+               fl(o, new Vec3(0, 0.03, 0), (float)Mth.clamp(p.r2 * 2.0, 0.12, 0.6), r.nextInt(6, 10));
             }
             break;
          }
          default:
       }
+   }
+
+   private static void fl(Vec3 at, Vec3 v, float size, int life) {
+      if (blueFlames) DarkSmoke.blueFlame(at, v, size, life); else DarkSmoke.flame(at, v, size, life);
    }
 
    private static Vec3 travelledPos(FxRenderer.Fx f, double age) { return travelled(f, age); }
@@ -648,7 +661,7 @@ public class FxRenderer {
       if (inside) al *= 0.25F;
       int LAT = R > 1.2 ? 14 : 8, LON = R > 1.2 ? 24 : 12;
       double t = fxTime;
-      float[] rim = RIM[FIRE];
+      float[] rim = RIM[p.palette == BLUE_FIRE ? BLUE_FIRE : FIRE];
       for (int i = 0; i < LAT; i++) {
          for (int j = 0; j < LON; j++) {
             int[][] ij = {{i, j}, {i, j + 1}, {i + 1, j + 1}, {i + 1, j}};
@@ -667,7 +680,10 @@ public class FxRenderer {
             if (!inside && !front) continue;
             for (int k = 0; k < 4; k++) {
                float e = fr[k];   // 0 = facing you (hot core), 1 = the edge (cooler rim)
-               float[] col = {
+               float[] col = p.palette == BLUE_FIRE ? new float[]{
+                  Mth.clamp((0.85F - 0.75F * e) * heat + 0.02F * (1 - heat), 0, 1),
+                  Mth.clamp((0.95F - 0.5F * e) * heat + 0.06F * (1 - heat), 0, 1),
+                  Mth.clamp(1.0F * heat + 0.3F * (1 - heat), 0, 1)} : new float[]{
                   Mth.clamp(1.0F * heat + 0.35F * (1 - heat), 0, 1),
                   Mth.clamp((0.92F - 0.62F * e) * heat + 0.08F * (1 - heat), 0, 1),
                   Mth.clamp((0.55F - 0.52F * e) * heat + 0.04F * (1 - heat), 0, 1)};
@@ -952,6 +968,14 @@ public class FxRenderer {
     * Smoke for the zone, every tick: when it opens, a wall of black smoke rolls outward with the front; while it is up,
     * darkness drifts low over the ground swirling around you, curls up along the edge, and violet motes rise through it.
     */
+   private static boolean zoneFire(double[] f) { return f.length > 4 && ((int)f[4] == FIRE); }
+
+   /** One puff of the zone: darkness for Yami, a lick of heat-flame for Mereoleona. */
+   private static void zPuff(double[] f, Vec3 at, Vec3 v, float size, int life) {
+      if (zoneFire(f)) DarkSmoke.flame(at, v.add(0, 0.02, 0), size * 0.5F, Math.max(8, life / 2));
+      else DarkSmoke.smoke(at, v, size, life);
+   }
+
    private static void zoneTick(Minecraft mc, net.minecraft.world.entity.Entity e, double[] f, double now) {
       java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
       double R = zoneReach(f, now), age = now - f[0];
@@ -965,7 +989,7 @@ public class FxRenderer {
             Vec3 dir = new Vec3(Math.cos(a), 0.0, Math.sin(a));
             Vec3 at = c.add(dir.scale(R)).add(0.0, r.nextDouble(0.2, 1.6), 0.0);
             Vec3 v = closing ? dir.scale(-0.25) : dir.scale(0.22);
-            DarkSmoke.smoke(at, v.add(0, 0.02, 0), (float)r.nextDouble(0.9, 1.6), r.nextInt(14, 24));
+            zPuff(f, at, v.add(0, 0.02, 0), (float)r.nextDouble(0.9, 1.6), r.nextInt(14, 24));
          }
          if (closing) return;
       }
@@ -974,17 +998,18 @@ public class FxRenderer {
          double a = r.nextDouble(Math.PI * 2), d = Math.sqrt(r.nextDouble(0.08, 1.0)) * R;
          Vec3 at = c.add(Math.cos(a) * d, r.nextDouble(0.1, 0.5), Math.sin(a) * d);
          Vec3 tan = new Vec3(-Math.sin(a), 0.0, Math.cos(a)).scale(0.05);
-         DarkSmoke.smoke(at, tan.add(0, 0.006, 0), (float)r.nextDouble(0.7, 1.3), r.nextInt(26, 40));
+         zPuff(f, at, tan.add(0, 0.006, 0), (float)r.nextDouble(0.7, 1.3), r.nextInt(26, 40));
       }
       // darkness curling up the edge of the zone
       for (int k = 0; k < 2; k++) {
          double a = r.nextDouble(Math.PI * 2);
          Vec3 at = c.add(Math.cos(a) * R, r.nextDouble(0.1, 1.2), Math.sin(a) * R);
-         DarkSmoke.smoke(at, new Vec3(-Math.cos(a) * 0.01, 0.05, -Math.sin(a) * 0.01), (float)r.nextDouble(0.6, 1.1), r.nextInt(22, 34));
+         zPuff(f, at, new Vec3(-Math.cos(a) * 0.01, 0.05, -Math.sin(a) * 0.01), (float)r.nextDouble(0.6, 1.1), r.nextInt(22, 34));
       }
       if (r.nextInt(2) == 0) {
          double a = r.nextDouble(Math.PI * 2), d = r.nextDouble(R);
-         DarkSmoke.mote(c.add(Math.cos(a) * d, r.nextDouble(0.1, 1.0), Math.sin(a) * d), new Vec3(0, r.nextDouble(0.02, 0.05), 0), 0.08F, r.nextInt(30, 50));
+         if (zoneFire(f)) DarkSmoke.spark(c.add(Math.cos(a) * d, r.nextDouble(0.1, 1.0), Math.sin(a) * d), new Vec3(0, r.nextDouble(0.05, 0.12), 0), 0.04F, r.nextInt(14, 24));
+         else DarkSmoke.mote(c.add(Math.cos(a) * d, r.nextDouble(0.1, 1.0), Math.sin(a) * d), new Vec3(0, r.nextDouble(0.02, 0.05), 0), 0.08F, r.nextInt(30, 50));
       }
    }
 
@@ -1000,8 +1025,10 @@ public class FxRenderer {
       Vec3 ep = e.getPosition(pt);
       double gy = zoneGround(e, f);
       Vec3 c = new Vec3(ep.x, gy + 0.04, ep.z);
-      float[] rim = RIM[DARKNESS];
-      float[] sea = {0.012F, 0.0F, 0.03F};
+      boolean fireZone = zoneFire(f);
+      float[] rim = fireZone ? RIM[FIRE] : RIM[DARKNESS];
+      float[] sea = fireZone ? new float[]{0.35F, 0.06F, 0.0F} : new float[]{0.012F, 0.0F, 0.03F};
+      float seaMul = fireZone ? 0.45F : 1.0F;   // her zone: a glowing heat-haze over the ground, not a sea of black
       int RINGS = ZR, SEG = ZS;
       double[] hs = zoneHeights(e, ep.x, gy, ep.z, R);
       // the sea of dark mana on the ground, lying on the terrain (nothing drawn where there's no ground)
@@ -1015,10 +1042,10 @@ public class FxRenderer {
             double a0 = Math.PI * 2 * j / SEG, a1 = Math.PI * 2 * (j + 1) / SEG;
             Vec3 p00 = new Vec3(c.x + Math.cos(a0) * r0, y00, c.z + Math.sin(a0) * r0), p01 = new Vec3(c.x + Math.cos(a1) * r0, y01, c.z + Math.sin(a1) * r0);
             Vec3 p11 = new Vec3(c.x + Math.cos(a1) * r1, y11, c.z + Math.sin(a1) * r1), p10 = new Vec3(c.x + Math.cos(a0) * r1, y10, c.z + Math.sin(a0) * r1);
-            vtx(vc, m, n, cam, p00, sea, seaA(r0 / R, a0, now));
-            vtx(vc, m, n, cam, p01, sea, seaA(r0 / R, a1, now));
-            vtx(vc, m, n, cam, p11, sea, seaA(r1 / R, a1, now));
-            vtx(vc, m, n, cam, p10, sea, seaA(r1 / R, a0, now));
+            vtx(vc, m, n, cam, p00, sea, seaMul * seaA(r0 / R, a0, now));
+            vtx(vc, m, n, cam, p01, sea, seaMul * seaA(r0 / R, a1, now));
+            vtx(vc, m, n, cam, p11, sea, seaMul * seaA(r1 / R, a1, now));
+            vtx(vc, m, n, cam, p10, sea, seaMul * seaA(r1 / R, a0, now));
             if (gv != null) {   // faint violet veins in the swirl
                gquad(m, cam, p00.add(0, 0.01, 0), p01.add(0, 0.01, 0), p11.add(0, 0.01, 0), p10.add(0, 0.01, 0), rim,
                   vein(r0 / R, a0, now), vein(r0 / R, a1, now), vein(r1 / R, a1, now), vein(r1 / R, a0, now));
@@ -1046,7 +1073,7 @@ public class FxRenderer {
             for (Vec3 nv : q) {
                Vec3 w = c.add(nv.x * R, nv.y * R * 0.6, nv.z * R);
                float fres = (float)Math.pow(1.0 - Math.abs(nv.dot(cam.subtract(w).normalize())), 3.0);
-               vtx(vc, m, n, cam, w, sea, 0.05F + 0.22F * fres);
+               vtx(vc, m, n, cam, w, sea, (0.05F + 0.22F * fres) * seaMul);
             }
             if (gv != null) {
                for (Vec3 nv : q) {

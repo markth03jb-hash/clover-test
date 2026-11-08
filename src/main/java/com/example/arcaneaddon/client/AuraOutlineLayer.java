@@ -30,6 +30,8 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             {1.0F, 0.08F, 0.06F},    // 1 devil red
             {0.86F, 0.9F, 0.97F},    // 2 liquid silver (Silver Guardian)
             {1.0F, 0.9F, 0.3F},      // 3 lightning (Thunder God Mode)
+            {1.0F, 0.45F, 0.08F},    // 4 hellfire (Hellfire Incarnate)
+            {1.0F, 0.55F, 0.25F},    // 5 mana skin
     };
 
     public AuraOutlineLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
@@ -65,6 +67,17 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             float shine = 0.75F + 0.25F * (float) Math.sin(now * 0.5);
             shell(ps, m, vc, 1.03F + flick * 0.3F, 0.62F * shine, 0.66F * shine, 0.72F * shine, 0.62F * a);
             shell(ps, m, vc, 1.07F + flick * 0.5F, col[0], col[1], col[2], 0.16F * a);
+            return;
+        }
+        if ((int) f[2] == 4) {   // Hellfire Incarnate: a body of fire - a white-hot skin inside a wide, pulsing orange glow
+            float pulse = 0.8F + 0.2F * (float) Math.sin(now * 0.8);
+            shell(ps, m, vc, 1.03F + flick, 1.0F, 0.85F, 0.5F, 0.3F * a * pulse);
+            shell(ps, m, vc, 1.1F + flick * 1.5F, col[0], col[1], col[2], 0.22F * a * pulse);
+            shell(ps, m, vc, 1.2F + flick * 2F, 1.0F, 0.2F, 0.02F, 0.1F * a);
+            return;
+        }
+        if ((int) f[2] == 5) {   // Mana Skin: a thin, faint warm sheen
+            shell(ps, m, vc, 1.025F, col[0], col[1], col[2], 0.14F * a);
             return;
         }
         if ((int) f[2] == 3) {   // Thunder God Mode: a flickering skin of yellow light, no dark shell

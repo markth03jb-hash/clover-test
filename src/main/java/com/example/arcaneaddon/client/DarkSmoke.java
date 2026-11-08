@@ -62,6 +62,24 @@ public final class DarkSmoke {
         if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) PUFFS.get(PUFFS.size() - 1).flame = true;
     }
 
+    /** A tongue of blue flame (Calidos Brachium Purgatory): white-cyan, then deep blue, then gone. */
+    public static void blueFlame(Vec3 at, Vec3 vel, float size, int life) {
+        int before = PUFFS.size();
+        add(at, vel, size * 0.7F, size * 1.3F, life, false);
+        if (!PUFFS.isEmpty() && (PUFFS.size() != before || before >= MAX)) { Puff p = PUFFS.get(PUFFS.size() - 1); p.flame = true; p.tinted = true; }
+    }
+
+    /** Hellfire Incarnate: entity id -> {start, end}. */
+    private static final Map<Integer, double[]> HELLFIRE = new HashMap<>();
+
+    public static void hellfire(int id, int life) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        double now = mc.level.getGameTime();
+        if (life <= 0) HELLFIRE.remove(id);
+        else { double[] f = HELLFIRE.get(id); if (f == null) HELLFIRE.put(id, new double[]{now, now + life}); else f[1] = now + life; }
+    }
+
     /** Something burning (Magna's fire): entity id -> end tick. */
     private static final Map<Integer, Double> BURNING = new HashMap<>();
     /** Flame Knuckles: entity id -> end tick. */
@@ -146,7 +164,7 @@ public final class DarkSmoke {
 
     public static void tick() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) { PUFFS.clear(); BODY.clear(); BURNING.clear(); KNUCKLES.clear(); return; }
+        if (mc.level == null) { PUFFS.clear(); BODY.clear(); BURNING.clear(); KNUCKLES.clear(); HELLFIRE.clear(); return; }
         double now = mc.level.getGameTime();
         Iterator<Puff> it = PUFFS.iterator();
         while (it.hasNext()) {
@@ -169,6 +187,22 @@ public final class DarkSmoke {
                 Vec3 at = e.position().add(Math.cos(a) * w, rr.nextDouble(0.0, e.getBbHeight() * (self ? 0.5 : 0.9)), Math.sin(a) * w);
                 flame(at, new Vec3(0, 0.03, 0), (float) rr.nextDouble(0.12, 0.22), rr.nextInt(8, 14));
             }
+        }
+        Iterator<Map.Entry<Integer, double[]>> hi = HELLFIRE.entrySet().iterator();
+        while (hi.hasNext()) {   // Hellfire Incarnate: the body pours fire, more and bigger the longer it lasts
+            Map.Entry<Integer, double[]> b = hi.next();
+            Entity e = mc.level.getEntity(b.getKey());
+            if (e == null || now > b.getValue()[1]) { hi.remove(); continue; }
+            double grow = Math.min(1.0, (now - b.getValue()[0]) / 400.0);
+            boolean self = e == mc.player && mc.options.getCameraType().isFirstPerson();
+            int n = self ? 1 : 3 + (int) (grow * 3);
+            for (int k = 0; k < n; k++) {
+                double a = rr.nextDouble(Math.PI * 2), w = e.getBbWidth() * 0.5;
+                Vec3 at = e.position().add(Math.cos(a) * w, rr.nextDouble(0.0, e.getBbHeight() * (self ? 0.4 : 1.05)), Math.sin(a) * w);
+                flame(at, new Vec3(Math.cos(a) * 0.02, 0.05 + grow * 0.03, Math.sin(a) * 0.02), (float) (rr.nextDouble(0.2, 0.32) * (1 + grow * 0.6)), rr.nextInt(8, 16));
+            }
+            if (rr.nextInt(2) == 0) spark(e.position().add(rr.nextDouble(-0.5, 0.5), rr.nextDouble(0.2, 2.0), rr.nextDouble(-0.5, 0.5)),
+                    new Vec3(rr.nextDouble(-0.05, 0.05), rr.nextDouble(0.1, 0.2), rr.nextDouble(-0.05, 0.05)), 0.03F, rr.nextInt(10, 18));
         }
         Iterator<Map.Entry<Integer, Double>> ki = KNUCKLES.entrySet().iterator();
         while (ki.hasNext()) {   // fists of fire
@@ -254,6 +288,10 @@ public final class DarkSmoke {
         }
         if (p.flame) {
             a = (float) (Mth.clamp(age / 1.5, 0.0, 1.0) * Math.pow(1.0 - t, 0.9)) * 0.9F;
+            if (p.tinted) {   // blue flame
+                if (t < 0.35) { float k = (float) (t / 0.35); cr = 0.85F - 0.6F * k; cg = 0.97F - 0.37F * k; cb = 1.0F; }
+                else { float k = (float) ((t - 0.35) / 0.65); cr = 0.25F - 0.23F * k; cg = 0.6F - 0.55F * k; cb = 1.0F - 0.7F * k; a *= 1.0F - 0.5F * k; }
+            } else
             if (t < 0.3) { float k = (float) (t / 0.3); cr = 1.0F; cg = 0.95F - 0.4F * k; cb = 0.6F - 0.48F * k; }
             else if (t < 0.65) { float k = (float) ((t - 0.3) / 0.35); cr = 1.0F - 0.45F * k; cg = 0.55F - 0.45F * k; cb = 0.12F - 0.1F * k; }
             else { float k = (float) ((t - 0.65) / 0.35); cr = 0.55F - 0.47F * k; cg = 0.1F - 0.04F * k; cb = 0.02F + 0.03F * k; a *= 0.75F; }

@@ -116,7 +116,7 @@ public class FireFx {
     }
 
     /** Our own burning (not the vanilla fire effect): 1 damage a second, drawn as flames licking the body. */
-    private static void burn(ServerPlayer src, LivingEntity t, int ticks) {
+    static void burn(ServerPlayer src, LivingEntity t, int ticks) {
         long until = t.level().getGameTime() + ticks;
         for (Burn b : BURNS) if (b.e == t) { b.until = Math.max(b.until, until); b.src = src; sendBurn(t, ticks); return; }
         Burn b = new Burn(); b.e = t; b.src = src; b.until = until;

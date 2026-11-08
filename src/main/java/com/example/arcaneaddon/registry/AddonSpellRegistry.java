@@ -5,6 +5,8 @@ import com.example.arcaneaddon.server.WindFx;
 import com.example.arcaneaddon.server.MercuryFx;
 import com.example.arcaneaddon.server.FireFx;
 import com.example.arcaneaddon.server.LightningFx;
+import com.example.arcaneaddon.server.HellfireFx;
+import com.example.arcaneaddon.spells.HellfireSpell;
 import com.example.arcaneaddon.spells.LightningSpell;
 import com.example.arcaneaddon.spells.FireSpell;
 import com.example.arcaneaddon.spells.MercurySpell;
@@ -187,6 +189,24 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> LIGHTNING_SPELLS = List.of(
             THUNDER_FIST, THUNDER_KICK, THUNDER_ORB, LIGHTNING_STEP, CHAIN_LIGHTNING,
             THUNDER_GLOVES, MANA_SENSE, THUNDERFALL, THUNDER_GOD_MODE, THUNDER_RAMPAGE);
+
+    // ------------------------------------------------------------------ Hellfire Grimoire (Mereoleona Vermillion's Flame Magic)
+    //                                                                                  id                          cd mana power  animation
+    public static final RegistryObject<AbstractSpell> CALIDOS_BRACHIUM = registerSpell(new HellfireSpell("calidos_brachium", 5, 35, 16, HellfireSpell.anim("arcane_addon:lion_punch"), HellfireFx::calidosBrachium));
+    public static final RegistryObject<AbstractSpell> BRACHIUM_BARRAGE = registerSpell(new HellfireSpell("calidos_brachium_barrage", 14, 80, 30, HellfireSpell.anim("arcane_addon:lion_barrage"), HellfireFx::barrage));
+    public static final RegistryObject<AbstractSpell> FLAME_LION_PAWS = registerSpell(new HellfireSpell("flame_lion_paws", 16, 70, 24, HellfireSpell.anim("arcane_addon:klaus_clench"), HellfireFx::lionPaws));
+    public static final RegistryObject<AbstractSpell> LIONESS_CHARGE = registerSpell(new HellfireSpell("lioness_charge", 7, 40, 18, HellfireSpell.anim("arcane_addon:lightning_fist"), HellfireFx::lionessCharge));
+    public static final RegistryObject<AbstractSpell> HELL_MANA_SKIN = registerSpell(new HellfireSpell("mana_skin", 40, 60, 0, HellfireSpell.anim("arcane_addon:mercury_guardian"), HellfireFx::manaSkin));
+    public static final RegistryObject<AbstractSpell> HELL_MANA_ZONE = registerSpell(new HellfireSpell("lion_mana_zone", 60, 140, 0, HellfireSpell.anim("arcane_addon:dark_mana_zone"), HellfireFx::manaZone));
+    public static final RegistryObject<AbstractSpell> GROUND_PUNCH = registerSpell(new HellfireSpell("ground_punch", 12, 60, 18, HellfireSpell.anim("arcane_addon:lion_ground_punch"), HellfireFx::groundPunch));
+    public static final RegistryObject<AbstractSpell> BURNING_GUARD = registerSpell(new HellfireSpell("burning_guard", 12, 35, 0, HellfireSpell.anim("arcane_addon:lion_guard"), HellfireFx::burningGuard));
+    public static final RegistryObject<AbstractSpell> HELLFIRE_INCARNATE = registerSpell(new HellfireSpell("hellfire_incarnate", 120, 160, 0, HellfireSpell.anim("arcane_addon:lightning_mode"), HellfireFx::hellfire));
+    public static final RegistryObject<AbstractSpell> BRACHIUM_PURGATORY = registerSpell(new HellfireSpell("calidos_brachium_purgatory", 120, 100, 55, HellfireSpell.anim("arcane_addon:lion_purgatory"), HellfireFx::purgatory));
+
+    /** The ten Hellfire Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> HELLFIRE_SPELLS = List.of(
+            CALIDOS_BRACHIUM, BRACHIUM_BARRAGE, FLAME_LION_PAWS, LIONESS_CHARGE, HELL_MANA_SKIN,
+            HELL_MANA_ZONE, GROUND_PUNCH, BURNING_GUARD, HELLFIRE_INCARNATE, BRACHIUM_PURGATORY);
 
     /** The ten Dark Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> DARK_SPELLS = List.of(

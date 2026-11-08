@@ -1,7 +1,23 @@
-Arcane Addon v1.28.0 - all changed files since v1.0.0
+Arcane Addon v1.29.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.29.0
+- NEW: Hellfire Grimoire (Mereoleona Vermillion's Flame Magic) - ten close-range fire spells, each with
+  its own animation. Crafting: magma cream, blaze rod, magma cream / arcane ingot, enchanted book,
+  arcane ingot / magma cream, leather, magma cream.
+  1 Calidos Brachium         - an arm of fire punches 16 blocks out
+  2 Calidos Brachium Barrage - fists of fire from every side at once
+  3 Flame Lion Paws          - paws of fire lift your target and slam it down
+  4 Lioness Charge           - a burning charge and punch
+  5 Mana Skin                - 35% less damage, no knockback for 20 s
+  6 Mana Zone                - a glowing heat field; step through the air, slip attacks, stronger moves
+  7 Ground-Burning Punch     - fire erupts in rings around you
+  8 Burning Fists Guard      - punch projectiles and spells out of the air
+  9 Hellfire Incarnate       - your body becomes fire for 20 s, hotter over time; costs a quarter of your health
+  10 Calidos Brachium Purgatory - a punch of blue flame engulfing everything ahead; burns all your mana
+  Passive Wild Lioness: your bare punches burn.
 
 NEW IN 1.28.0
 - NEW: Lightning Grimoire (Luck Voltia's Lightning Magic) - ten spells, each with its own animation.
