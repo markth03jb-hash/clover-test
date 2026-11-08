@@ -1,7 +1,28 @@
-Iron Spell Grimoire v1.45.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.46.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.46.0
+- New pixel art: 16 new hand-made sprites (blade slivers, cross-sparks, zigzag bolts, feathers, stars, steel
+  plates, coin rings, thorns, smoke puffs, dark crescents, mercury drops, flame wisps, diamonds, lion-mane
+  flame claws, little bones, and a banded bloom halo). The streak and flame tongue were redrawn too.
+- Every grimoire has its own look now:
+    Asta        jagged black blade slivers, crimson cross-sparks; a star of blade slivers when a move starts
+    Yami        black crescents and smoke puffs, violet glow; a ring of turning crescents
+    Yuno        swirling air streaks, drifting feathers, crescent gusts; a spiral of feathers
+    Nozel       falling mercury drops, glints; a splash of drops
+    Magna       chunky flame tongues, embers, hot cross-bursts; a fountain of fire
+    Luck        zigzag bolts, spinning diamonds, twinkling stars; diamonds and bolts shot out
+    Mereoleona  curved lion-mane flame claws, embers (no smoke); a flaring mane of claws
+    Zenon       tumbling little bones, splinters, bone dust; a scatter of bones
+    Klaus       spinning steel plates and glints; plates bursting out like a breaking shield
+    Devil       black thorns and claws; thorns lashing out
+    Gold / light: spinning coin rings / twinkling stars
+- Every glowing sprite now has a soft pixel bloom behind it; shards and plates spin, sparks twinkle, flames
+  flicker like a two-frame flip-book, pieces pop in, and big moves open with an expanding pixel shock ring.
+- Sky Splitter: jagged blade slivers and twinkling crimson cross-sparks on the blade, and the star burst
+  as it's released.
 
 NEW IN 1.45.0
 - The pixel-sprite effect style (from Sky Splitter) is now on EVERY move. Every effect in the game - slashes,

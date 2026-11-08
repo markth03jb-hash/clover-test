@@ -35,7 +35,14 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class PixelFx {
     private PixelFx() {}
 
-    private static final ResourceLocation STREAK = tex("streak"), SHARD = tex("shard"), EMBER = tex("ember"), TONGUE = tex("tongue");
+    /** The pixel-art sprites (grey-scale, tinted per palette). Long ones point up: the top row leads. */
+    static final int K_STREAK = 0, K_SHARD = 1, K_EMBER = 2, K_TONGUE = 3, K_BLADE = 4, K_CROSS = 5, K_BOLT = 6, K_FEATHER = 7,
+            K_STAR = 8, K_PLATE = 9, K_RING = 10, K_BARB = 11, K_PUFF = 12, K_MOON = 13, K_DROP = 14, K_WISP = 15, K_DIAMOND = 16,
+            K_CLAW = 17, K_BONE = 18, K_GLOW = 19;
+    private static final ResourceLocation[] TEX = {
+            tex("streak"), tex("shard"), tex("ember"), tex("tongue"), tex("blade"), tex("cross"), tex("bolt"), tex("feather"),
+            tex("star"), tex("plate"), tex("ring"), tex("barb"), tex("puff"), tex("moon"), tex("drop"), tex("wisp"), tex("diamond"),
+            tex("claw"), tex("bone"), tex("glow")};
 
     private static ResourceLocation tex(String n) { return ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/effect/pixel/" + n + ".png"); }
 
@@ -48,11 +55,21 @@ public final class PixelFx {
     private static final class Spr {
         Vec3 pos, prev, vel, axis; float len, wid; int life, age, kind; boolean dark; float heat; float drag;
         int pal = 2; Vec3 curl; float curlRate; float darkAlpha = 0.92F; float grav;
+        float spin; float grow = 1.0F; float pop; boolean twinkle, flicker; int seed = ThreadLocalRandom.current().nextInt(64);
+
+        /** Size multiplier now: shock rings grow, popped sprites burst in from small. */
+        float scaleNow(float pt) {
+            float t = age + pt;
+            float s = grow == 1.0F ? 1.0F : (float) Math.pow(grow, t);
+            if (pop > 0) s *= Mth.clamp(0.35F + 0.65F * t / pop, 0.35F, 1.0F);
+            return s;
+        }
     }
 
     private static final List<Slash> SLASHES = new ArrayList<>();
     private static final List<Spr> SPRITES = new ArrayList<>();
     private static final int MAX = 6000;
+    private static int sigsThisTick = 0;
 
     public static void spawn(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
@@ -63,6 +80,7 @@ public final class PixelFx {
         s.born = mc.level.getGameTime();
         SLASHES.add(s);
         emit(s, 0, true);   // the first frame is already a full blade
+        if (s.pal == 0) signature(0, s.c, s.d, s.r1);   // anti magic's star of blade slivers as it's released
     }
 
     public static void kill(int id) {
@@ -167,7 +185,7 @@ public final class PixelFx {
             Vec3 tan = arcTangent(s, a, R);
             double depth = R * (0.03 + r.nextDouble() * 0.3) * edge;
             Vec3 at = arcPoint(s, centre, a, R).subtract(s.d.scale(depth)).add(s.side.scale(r.nextGaussian() * 0.04 * R * edge));
-            Spr p = spr(at, s.d.scale(s.speed * 0.93), tan.subtract(s.d.scale(0.1)), r.nextFloat() < 0.75F ? 0 : 3,
+            Spr p = spr(at, s.d.scale(s.speed * 0.93), tan.subtract(s.d.scale(0.1)), r.nextFloat() < 0.6F ? K_BLADE : (r.nextBoolean() ? K_STREAK : K_TONGUE),
                     (float) (R * r.nextDouble(0.18, 0.34)), (float) (0.14 + 0.2 * edge), r.nextInt(3, 6));
             p.dark = true; p.pal = 0;
             add(p);
@@ -211,6 +229,13 @@ public final class PixelFx {
                 at = next;
                 if (r.nextInt(4) == 0) dir = dir.add(new Vec3(r.nextGaussian(), r.nextGaussian(), r.nextGaussian()).scale(0.5)).normalize();
             }
+        }
+        // crimson cross-sparks twinkling along the edge
+        for (int i = 0; i < (burst ? 8 : 3); i++) {
+            double a = r.nextDouble(-0.9, 0.9);
+            Spr x = spr(arcPoint(s, centre, a, R).add(s.d.scale(R * 0.03)), s.d.scale(s.speed * 0.8), s.u, K_CROSS, (float) (R * 0.16), (float) (R * 0.16), r.nextInt(3, 6));
+            x.pal = 0; x.heat = 0.95F; x.twinkle = true; x.pop = 1;
+            add(x);
         }
         // black smoke curling round the path behind it
         for (int i = 0; i < (burst ? 14 : 8); i++) {
@@ -340,132 +365,256 @@ public final class PixelFx {
 
     private static final Vec3 UP = new Vec3(0, 1, 0);
 
-    /** One sprite of a palette's kind of magic at {@code at}, carried by {@code drift}, lying along {@code axis}. */
+    /*
+     * Each grimoire's own sprite set: LONG = the streak its magic is drawn in, BIT = the little pieces it sheds,
+     * SPEC = its signature piece. (0 Asta's anti magic: jagged black blade slivers and crimson cross-sparks;
+     * 5 Yuno's wind: feathers and crescent gusts; 7 Klaus: steel plates; 8 gold: coin rings; 9 devil: black thorns
+     * and claws; 10 Yami: dark crescents and smoke puffs; 11 Nozel: mercury drops; 12 blue fire: wisps;
+     * 13 Luck: zigzag bolts and diamonds; 14 Mereoleona: curved lion-mane flame claws; 15 Zenon: little bones.)
+     */
+    private static final int[] LONG = {K_BLADE, K_MOON, K_TONGUE, K_STREAK, K_BOLT, K_STREAK, K_STREAK, K_STREAK, K_STREAK, K_BARB, K_MOON, K_STREAK, K_WISP, K_BOLT, K_CLAW, K_STREAK};
+    private static final int[] BIT = {K_SHARD, K_SHARD, K_EMBER, K_DIAMOND, K_CROSS, K_FEATHER, K_STAR, K_PLATE, K_RING, K_CROSS, K_PUFF, K_DROP, K_EMBER, K_DIAMOND, K_EMBER, K_BONE};
+    private static final int[] SPEC = {K_CROSS, K_PUFF, K_CROSS, K_STAR, K_STAR, K_MOON, K_CROSS, K_CROSS, K_STAR, K_CLAW, K_WISP, K_STAR, K_TONGUE, K_STAR, K_TONGUE, K_SHARD};
+
+    /** One sprite of a palette's own kind of magic at {@code at}, carried by {@code drift}, lying along {@code axis}. */
     static void one(int pal, Vec3 at, Vec3 drift, Vec3 axis, double size) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
+        pal = Mth.clamp(pal, 0, 15);
         axis = nz(axis, UP);
         float sz = (float) size;
+        int L = LONG[pal], B = BIT[pal], X = SPEC[pal];
         double q = r.nextDouble();
         Spr p;
         switch (element(pal)) {
             case DARK -> {
-                if (q < 0.45) {        // the black of the blade
-                    p = spr(at, drift.scale(0.95), axis.add(rnd(r, 0.12)), r.nextFloat() < 0.75F ? 0 : 3, sz * (float) r.nextDouble(1.0, 1.8), sz * (float) r.nextDouble(0.3, 0.45), r.nextInt(3, 6));
+                if (q < 0.42) {        // the black of the blade, in its own shape (blades, crescents, thorns)
+                    p = spr(at, drift.scale(0.95), axis.add(rnd(r, 0.12)), r.nextFloat() < 0.75F ? L : K_TONGUE, sz * (float) r.nextDouble(1.0, 1.8), sz * (float) r.nextDouble(0.35, 0.55), r.nextInt(3, 6));
                     p.dark = true;
-                } else if (q < 0.7) {  // its coloured glow
-                    p = spr(at.add(rnd(r, size * 0.15)), drift.scale(0.85), axis, 0, sz * 1.5F, sz * 0.5F, r.nextInt(2, 5));
+                } else if (q < 0.62) { // its coloured glow, the same shape
+                    p = spr(at.add(rnd(r, size * 0.15)), drift.scale(0.85), axis, L, sz * 1.5F, sz * 0.6F, r.nextInt(2, 5));
                     p.heat = 0.6F;
-                } else if (q < 0.8) {  // a white-hot edge
-                    p = spr(at, drift.scale(0.97), axis, 0, sz * 1.1F, sz * 0.12F, r.nextInt(2, 4));
+                } else if (q < 0.72) { // a white-hot edge
+                    p = spr(at, drift.scale(0.97), axis, K_STREAK, sz * 1.2F, sz * 0.14F, r.nextInt(2, 4));
                     p.heat = 1.0F;
-                } else if (q < 0.92) { // embers and black flakes flung away
+                } else if (q < 0.86) { // pieces flung away, tumbling
                     Vec3 v = drift.scale(0.3).add(rnd(r, 0.08)).add(0, 0.03, 0);
-                    p = spr(at, v, v, r.nextFloat() < 0.6F ? 2 : 1, sz * 0.25F, sz * 0.25F, r.nextInt(8, 15));
-                    p.drag = 0.92F;
-                    if (r.nextBoolean()) p.heat = 0.9F; else { p.dark = true; p.darkAlpha = 1.0F; }
-                } else {               // a tongue of smoke curling away
+                    p = spr(at, v, v, B, sz * 0.32F, sz * 0.32F, r.nextInt(8, 15));
+                    p.drag = 0.92F; p.spin = (float) r.nextDouble(-0.5, 0.5); p.pop = 2;
+                    if (r.nextBoolean() || B == K_PUFF) { p.dark = true; p.darkAlpha = 1.0F; } else p.heat = 0.9F;
+                } else if (q < 0.93) { // the signature piece
+                    p = spr(at, drift.scale(0.6).add(rnd(r, 0.03)), axis, X, sz * 0.7F, sz * 0.7F, r.nextInt(4, 8));
+                    p.heat = 0.95F; p.pop = 1.5F; p.spin = (float) r.nextDouble(-0.25, 0.25); p.twinkle = X == K_CROSS;
+                    if (X == K_CLAW || X == K_PUFF) { p.dark = true; p.darkAlpha = 0.85F; p.len = sz * 1.4F; p.wid = sz * 0.9F; }
+                } else {               // smoke curling away
                     Vec3 v = drift.scale(0.2).add(rnd(r, 0.03));
-                    p = spr(at, v, axis.cross(UP).lengthSqr() > 1.0E-6 ? axis.cross(UP) : axis, 3, sz * 2.0F, sz * 1.1F, r.nextInt(10, 17));
-                    p.dark = true; p.darkAlpha = 0.6F; p.drag = 0.9F; p.grav = 0.004F;
+                    p = spr(at, v, axis.cross(UP).lengthSqr() > 1.0E-6 ? axis.cross(UP) : axis, pal == 10 ? K_PUFF : K_TONGUE, sz * 2.0F, sz * 1.2F, r.nextInt(10, 17));
+                    p.dark = true; p.darkAlpha = 0.6F; p.drag = 0.9F; p.grav = 0.004F; p.grow = 1.03F;
                     p.curl = nz(drift, UP); p.curlRate = (float) r.nextDouble(0.2, 0.4) * (r.nextBoolean() ? 1 : -1);
                 }
             }
             case FLAME -> {
-                if (q < 0.55) {        // flame tongues licking upward
-                    p = spr(at, drift.scale(0.5).add(0, 0.05, 0).add(rnd(r, 0.015)), UP.add(axis.scale(0.3)).add(rnd(r, 0.15)), 3,
-                            sz * 1.6F, sz * 0.7F, r.nextInt(5, 10));
-                    p.heat = (float) r.nextDouble(0.75, 1.0); p.grav = 0.006F;
-                } else if (q < 0.75) { // hot streaks along the shape
-                    p = spr(at, drift.scale(0.9), axis, 0, sz * 1.6F, sz * 0.25F, r.nextInt(3, 6));
+                if (q < 0.5) {         // flames in the grimoire's shape (tongues, mane claws, wisps), licking upward
+                    p = spr(at, drift.scale(0.5).add(0, 0.05, 0).add(rnd(r, 0.015)), UP.add(axis.scale(0.3)).add(rnd(r, 0.15)), L,
+                            sz * 1.7F, sz * (L == K_TONGUE ? 0.8F : 0.6F), r.nextInt(5, 10));
+                    p.heat = (float) r.nextDouble(0.75, 1.0); p.grav = 0.006F; p.flicker = true;
+                    if (L == K_WISP) { p.curl = UP; p.curlRate = 0.3F * (r.nextBoolean() ? 1 : -1); }
+                } else if (q < 0.66) { // hot streaks along the shape
+                    p = spr(at, drift.scale(0.9), axis, K_STREAK, sz * 1.6F, sz * 0.25F, r.nextInt(3, 6));
                     p.heat = 0.9F;
-                } else if (q < 0.95 || pal == 14) {   // embers (Mereoleona's fire burns clean: embers, never smoke)
+                } else if (q < 0.88 || (pal == 14 && q < 0.95)) {   // embers
                     Vec3 v = drift.scale(0.3).add(rnd(r, 0.08)).add(0, 0.06, 0);
-                    p = spr(at, v, v, 2, sz * 0.25F, sz * 0.25F, r.nextInt(10, 19));
-                    p.heat = 1.0F; p.drag = 0.93F;
-                } else {               // a curl of smoke
-                    p = spr(at, drift.scale(0.2).add(0, 0.03, 0), UP, 3, sz * 1.8F, sz * 1.0F, r.nextInt(14, 21));
-                    p.dark = true; p.darkAlpha = 0.5F; p.drag = 0.9F; p.grav = 0.003F;
+                    p = spr(at, v, v, B, sz * 0.25F, sz * 0.25F, r.nextInt(10, 19));
+                    p.heat = 1.0F; p.drag = 0.93F; p.twinkle = true;
+                } else if (q < 0.95 || pal == 14) {   // the signature (Magna: hot cross-bursts; blue fire / Mereoleona: a big tongue)
+                    p = spr(at, drift.scale(0.5).add(0, 0.04, 0), X == K_CROSS ? axis : UP, X, sz * (X == K_CROSS ? 0.8F : 2.4F), sz * (X == K_CROSS ? 0.8F : 1.0F), r.nextInt(4, 8));
+                    p.heat = 1.0F; p.pop = 1.5F; p.flicker = X != K_CROSS; p.grav = X == K_CROSS ? 0 : 0.004F;
+                } else {               // a curl of smoke (Mereoleona's fire burns clean: never reaches here)
+                    p = spr(at, drift.scale(0.2).add(0, 0.03, 0), UP, K_PUFF, sz * 1.4F, sz * 1.4F, r.nextInt(14, 21));
+                    p.dark = true; p.darkAlpha = 0.45F; p.drag = 0.9F; p.grav = 0.003F; p.grow = 1.04F;
                 }
             }
             case BOLT -> {
-                if (q < 0.5) {         // a little zigzag of lightning
+                if (q < 0.45) {        // a zigzag bolt sprite with a little forked tail of streaks
+                    Spr b0 = spr(at, drift.scale(0.9), axis.add(rnd(r, 0.4)), L, sz * 1.6F, sz * 0.8F, r.nextInt(2, 4));
+                    b0.heat = 1.0F; b0.pal = pal; b0.flicker = true; add(b0);
                     Vec3 a0 = at, dir = nz(axis.add(rnd(r, 0.6)), UP);
-                    for (int k = 0; k < 3; k++) {
-                        Vec3 a1 = a0.add(dir.scale(size * 0.8)).add(rnd(r, size * 0.25));
+                    for (int k = 0; k < 2; k++) {
+                        Vec3 a1 = a0.add(dir.scale(size * 0.7)).add(rnd(r, size * 0.25));
                         Vec3 mid = a0.add(a1).scale(0.5), ax = a1.subtract(a0);
-                        Spr core = spr(mid, drift.scale(0.9), ax, 0, (float) ax.length() * 1.1F, sz * 0.12F, r.nextInt(2, 4));
+                        Spr core = spr(mid, drift.scale(0.9), ax, K_STREAK, (float) ax.length() * 1.1F, sz * 0.12F, r.nextInt(2, 4));
                         core.heat = 1.0F; core.pal = pal; add(core);
-                        Spr gl = spr(mid, drift.scale(0.9), ax, 0, (float) ax.length() * 1.2F, sz * 0.4F, 2);
-                        gl.heat = 0.6F; gl.pal = pal; add(gl);
                         a0 = a1;
                         dir = nz(dir.add(rnd(r, 0.7)), UP);
                     }
                     return;
                 }
-                Vec3 v = drift.scale(0.5).add(rnd(r, 0.2));   // fast sparks
-                p = spr(at, v, v, 2, sz * 0.2F, sz * 0.2F, r.nextInt(4, 9));
-                p.heat = 1.0F; p.drag = 0.85F;
+                if (q < 0.82) {        // fast sparks in the grimoire's shape (crosses, diamonds), spinning
+                    Vec3 v = drift.scale(0.5).add(rnd(r, 0.2));
+                    p = spr(at, v, v, B, sz * 0.3F, sz * 0.3F, r.nextInt(4, 9));
+                    p.heat = 1.0F; p.drag = 0.85F; p.spin = (float) r.nextDouble(-0.8, 0.8);
+                } else {               // a twinkling star where the charge hangs in the air
+                    p = spr(at, drift.scale(0.2), axis, X, sz * 0.9F, sz * 0.9F, r.nextInt(5, 10));
+                    p.heat = 1.0F; p.twinkle = true; p.pop = 1;
+                }
             }
             case WIND -> {
-                if (q < 0.7) {         // long thin streaks of air, swirling
-                    p = spr(at, drift.add(axis.scale(0.15)), axis, 0, sz * 2.5F, sz * 0.12F, r.nextInt(4, 8));
+                if (q < 0.55) {        // long thin streaks of air, swirling
+                    p = spr(at, drift.add(axis.scale(0.15)), axis, K_STREAK, sz * 2.5F, sz * 0.12F, r.nextInt(4, 8));
                     p.heat = 0.75F;
                     if (r.nextBoolean()) { p.curl = UP; p.curlRate = 0.25F * (r.nextBoolean() ? 1 : -1); }
-                } else if (q < 0.9) {
-                    p = spr(at, drift.add(axis.scale(0.2)), axis, 0, sz * 1.8F, sz * 0.07F, r.nextInt(3, 6));
+                } else if (q < 0.72) {
+                    p = spr(at, drift.add(axis.scale(0.2)), axis, K_STREAK, sz * 1.8F, sz * 0.07F, r.nextInt(3, 6));
                     p.heat = 1.0F;
-                } else {               // a glinting leaf
-                    Vec3 v = drift.scale(0.5).add(rnd(r, 0.06));
-                    p = spr(at, v, v, 1, sz * 0.25F, sz * 0.25F, r.nextInt(10, 17));
-                    p.heat = 0.7F; p.drag = 0.94F; p.curl = UP; p.curlRate = 0.3F;
+                } else if (q < 0.92) { // feathers drifting and turning on the wind
+                    Vec3 v = drift.scale(0.5).add(rnd(r, 0.05)).add(0, 0.01, 0);
+                    p = spr(at, v, axis.add(rnd(r, 0.6)), B, sz * 0.6F, sz * 0.35F, r.nextInt(12, 20));
+                    p.heat = 0.8F; p.drag = 0.94F; p.curl = UP; p.curlRate = 0.25F; p.spin = (float) r.nextDouble(-0.2, 0.2);
+                } else {               // a crescent gust
+                    p = spr(at, drift.add(axis.scale(0.25)), axis.cross(UP).lengthSqr() > 1.0E-6 ? axis.cross(UP) : axis, X, sz * 1.8F, sz * 0.8F, r.nextInt(3, 6));
+                    p.heat = 0.9F; p.pop = 1;
                 }
             }
             case METAL -> {
-                if (q < 0.4) {         // solid shards of metal, falling
+                if (q < 0.38) {        // solid pieces (Klaus: plates, Nozel: mercury drops, gold: coins), falling and spinning
                     Vec3 v = drift.scale(0.6).add(rnd(r, 0.08));
                     float s2 = sz * (float) r.nextDouble(0.35, 0.6);
-                    p = spr(at, v, v.add(rnd(r, 0.5)), 1, s2, s2, r.nextInt(6, 13));
-                    p.dark = true; p.darkAlpha = 1.0F; p.drag = 0.9F; p.grav = -0.01F;
-                } else if (q < 0.75) { // a white glint
-                    p = spr(at, drift.scale(0.9), axis, 0, sz * 0.9F, sz * 0.1F, r.nextInt(2, 4));
+                    p = spr(at, v, B == K_DROP ? new Vec3(0, -1, 0).subtract(v) : v.add(rnd(r, 0.5)), B, s2, B == K_DROP ? s2 * 0.7F : s2, r.nextInt(6, 13));
+                    p.dark = B != K_RING; p.darkAlpha = 1.0F; p.drag = 0.9F; p.grav = -0.01F; p.heat = 0.9F;
+                    p.spin = B == K_DROP ? 0 : (float) r.nextDouble(-0.6, 0.6); p.pop = 1.5F;
+                } else if (q < 0.7) {  // a white glint running along it
+                    p = spr(at, drift.scale(0.9), axis, K_STREAK, sz * 0.9F, sz * 0.1F, r.nextInt(2, 4));
                     p.heat = 1.0F;
+                } else if (q < 0.86) { // the flash of light off the metal
+                    p = spr(at.add(rnd(r, size * 0.2)), drift.scale(0.8), axis, X, sz * 0.7F, sz * 0.7F, r.nextInt(3, 7));
+                    p.heat = 1.0F; p.twinkle = true; p.spin = 0.15F;
                 } else {
                     Vec3 v = drift.scale(0.4).add(rnd(r, 0.15));
-                    p = spr(at, v, v, 2, sz * 0.15F, sz * 0.15F, r.nextInt(5, 10));
+                    p = spr(at, v, v, K_EMBER, sz * 0.15F, sz * 0.15F, r.nextInt(5, 10));
                     p.heat = 0.95F; p.drag = 0.88F;
                 }
             }
             case BONE -> {
-                if (q < 0.5) {         // ivory splinters
+                if (q < 0.42) {        // little bones, tumbling down
                     Vec3 v = drift.scale(0.6).add(rnd(r, 0.07));
-                    float s2 = sz * (float) r.nextDouble(0.3, 0.5);
-                    p = spr(at, v, v.add(rnd(r, 0.5)), 1, s2, s2 * 0.6F, r.nextInt(8, 15));
-                    p.dark = true; p.darkAlpha = 1.0F; p.drag = 0.9F; p.grav = -0.012F;
-                } else if (q < 0.8) {  // bone dust
+                    float s2 = sz * (float) r.nextDouble(0.45, 0.7);
+                    p = spr(at, v, v.add(rnd(r, 0.5)), B, s2, s2 * 0.45F, r.nextInt(8, 15));
+                    p.dark = true; p.darkAlpha = 1.0F; p.drag = 0.9F; p.grav = -0.012F; p.spin = (float) r.nextDouble(-0.5, 0.5); p.pop = 1.5F;
+                } else if (q < 0.7) {  // bone dust
                     Vec3 v = drift.scale(0.3).add(rnd(r, 0.03));
-                    p = spr(at, v, v, 2, sz * 0.2F, sz * 0.2F, r.nextInt(10, 17));
+                    p = spr(at, v, v, K_EMBER, sz * 0.2F, sz * 0.2F, r.nextInt(10, 17));
                     p.dark = true; p.darkAlpha = 0.7F; p.drag = 0.92F; p.grav = -0.004F;
-                } else {
-                    p = spr(at, drift.scale(0.9), axis, 0, sz * 1.2F, sz * 0.12F, r.nextInt(2, 4));
+                } else if (q < 0.88) { // splinters
+                    Vec3 v = drift.scale(0.5).add(rnd(r, 0.1));
+                    p = spr(at, v, v, X, sz * 0.3F, sz * 0.3F, r.nextInt(6, 11));
+                    p.dark = true; p.darkAlpha = 1.0F; p.grav = -0.01F; p.spin = 0.4F;
+                } else {               // a pale marrow-glow streak
+                    p = spr(at, drift.scale(0.9), axis, K_STREAK, sz * 1.2F, sz * 0.14F, r.nextInt(2, 4));
                     p.heat = 0.8F;
                 }
             }
             default -> {
-                if (q < 0.5) {
-                    p = spr(at, drift.scale(0.9), axis, 0, sz * 1.5F, sz * 0.3F, r.nextInt(3, 6));
+                if (q < 0.45) {
+                    p = spr(at, drift.scale(0.9), axis, L, sz * 1.5F, sz * 0.3F, r.nextInt(3, 6));
                     p.heat = 0.8F;
-                } else if (q < 0.8) {
-                    p = spr(at, drift.scale(0.95), axis, 0, sz * 1.1F, sz * 0.1F, r.nextInt(2, 4));
+                } else if (q < 0.68) {
+                    p = spr(at, drift.scale(0.95), axis, K_STREAK, sz * 1.1F, sz * 0.1F, r.nextInt(2, 4));
                     p.heat = 1.0F;
-                } else {
+                } else if (q < 0.88) {
                     Vec3 v = drift.scale(0.4).add(rnd(r, 0.08));
-                    p = spr(at, v, v, 1, sz * 0.3F, sz * 0.3F, r.nextInt(6, 12));
-                    p.heat = 0.9F; p.drag = 0.92F;
+                    p = spr(at, v, v, B, sz * 0.3F, sz * 0.3F, r.nextInt(6, 12));
+                    p.heat = 0.9F; p.drag = 0.92F; p.spin = 0.3F;
+                } else {
+                    p = spr(at, drift.scale(0.5), axis, X, sz * 0.8F, sz * 0.8F, r.nextInt(4, 9));
+                    p.heat = 1.0F; p.twinkle = true; p.pop = 1;
                 }
             }
         }
         p.pal = pal;
         add(p);
+    }
+
+    /** A shock ring: a pixel ring that bursts outward from {@code at} and fades. */
+    private static void shockRing(int pal, Vec3 at, double size) {
+        Spr p = spr(at, Vec3.ZERO, UP, K_RING, (float) size, (float) size, 6);
+        p.pal = pal; p.heat = 0.9F; p.grow = 1.28F;
+        add(p);
+    }
+
+    /**
+     * The signature moment when an effect appears - a different burst for every grimoire, so each one's moves are
+     * recognisable at a glance. {@code d} = its direction, {@code s} = how big it is.
+     */
+    static void signature(int pal, Vec3 at, Vec3 d, double s) {
+        if (density() <= 0.0F) return;
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        pal = Mth.clamp(pal, 0, 15);
+        d = nz(d, UP);
+        Vec3 s1 = nz(d.cross(UP), new Vec3(1, 0, 0)), s2 = d.cross(s1);
+        double sz = Mth.clamp(s * 0.25, 0.25, 1.2);
+        shockRing(pal, at, sz * 1.2);
+        int n = cnt(Mth.clamp(s * 6.0, 8.0, 28.0));
+        for (int i = 0; i < n; i++) {
+            double ang = Math.PI * 2 * i / Math.max(1, n) + r.nextDouble(-0.15, 0.15);
+            Vec3 out = s1.scale(Math.cos(ang)).add(s2.scale(Math.sin(ang)));
+            Spr p;
+            switch (pal) {
+                case 0 -> {   // Asta: black blade slivers flung out in a star, crimson cross-sparks between them
+                    p = spr(at.add(out.scale(sz * 0.4)), out.scale(r.nextDouble(0.3, 0.5)), out, i % 3 == 0 ? K_CROSS : K_BLADE, (float) sz * 1.4F, (float) sz * 0.5F, r.nextInt(4, 7));
+                    p.drag = 0.78F;
+                    if (i % 3 == 0) { p.heat = 1.0F; p.twinkle = true; p.len = p.wid = (float) sz * 0.9F; } else { p.dark = true; p.darkAlpha = 1.0F; }
+                }
+                case 1, 10 -> {   // darkness: a ring of black crescents turning outward, violet glow between
+                    p = spr(at.add(out.scale(sz * 0.5)), out.scale(0.2), out.cross(d), K_MOON, (float) sz * 1.6F, (float) sz * 0.7F, r.nextInt(6, 10));
+                    p.drag = 0.85F; p.spin = 0.25F;
+                    if (i % 2 == 0) { p.dark = true; p.darkAlpha = 1.0F; } else p.heat = 0.7F;
+                }
+                case 9 -> {   // devil: black thorns lashing out
+                    p = spr(at, out.scale(r.nextDouble(0.35, 0.6)), out, K_BARB, (float) sz * 1.6F, (float) sz * 0.7F, r.nextInt(5, 8));
+                    p.dark = true; p.darkAlpha = 1.0F; p.drag = 0.75F;
+                }
+                case 2, 12 -> {   // fire: a fountain of embers and tongues
+                    Vec3 v = out.scale(r.nextDouble(0.1, 0.25)).add(0, r.nextDouble(0.1, 0.3), 0);
+                    p = spr(at, v, v, i % 2 == 0 ? K_TONGUE : K_EMBER, (float) sz * (i % 2 == 0 ? 1.4F : 0.3F), (float) sz * (i % 2 == 0 ? 0.6F : 0.3F), r.nextInt(8, 14));
+                    p.heat = 1.0F; p.drag = 0.9F; p.grav = -0.008F; p.flicker = true;
+                }
+                case 14 -> {   // Mereoleona: a lion's mane of curved flame claws flaring round
+                    p = spr(at.add(out.scale(sz * 0.6)), out.scale(0.12).add(0, 0.03, 0), out, K_CLAW, (float) sz * 2.0F, (float) sz * 0.8F, r.nextInt(6, 10));
+                    p.heat = 1.0F; p.flicker = true; p.pop = 2;
+                }
+                case 4, 13 -> {   // lightning: diamonds and crosses shot out, crackling
+                    p = spr(at, out.scale(r.nextDouble(0.4, 0.8)), out, i % 2 == 0 ? K_BOLT : BIT[pal], (float) sz * (i % 2 == 0 ? 1.2F : 0.4F), (float) sz * (i % 2 == 0 ? 0.6F : 0.4F), r.nextInt(3, 6));
+                    p.heat = 1.0F; p.drag = 0.7F; p.spin = 0.6F; p.flicker = true;
+                }
+                case 5 -> {   // Yuno: a spiral of feathers swept round by the wind
+                    p = spr(at.add(out.scale(sz * 0.5)), out.cross(d).scale(0.25).add(out.scale(0.08)), out.cross(d), K_FEATHER, (float) sz * 0.8F, (float) sz * 0.45F, r.nextInt(12, 20));
+                    p.heat = 0.85F; p.drag = 0.93F; p.curl = d; p.curlRate = 0.2F; p.spin = 0.15F;
+                }
+                case 7 -> {   // Klaus: steel plates bursting out like a shield breaking
+                    p = spr(at.add(out.scale(sz * 0.3)), out.scale(r.nextDouble(0.15, 0.3)), out, K_PLATE, (float) sz * 0.5F, (float) sz * 0.5F, r.nextInt(8, 14));
+                    p.dark = true; p.darkAlpha = 1.0F; p.drag = 0.88F; p.grav = -0.012F; p.spin = (float) r.nextDouble(-0.5, 0.5);
+                }
+                case 8 -> {   // gold: spinning coins
+                    p = spr(at, out.scale(r.nextDouble(0.12, 0.25)).add(0, 0.12, 0), out, K_RING, (float) sz * 0.4F, (float) sz * 0.4F, r.nextInt(10, 16));
+                    p.heat = 1.0F; p.grav = -0.015F; p.spin = 0.5F; p.twinkle = true;
+                }
+                case 11 -> {   // Nozel: a splash of mercury drops
+                    Vec3 v = out.scale(r.nextDouble(0.1, 0.25)).add(0, r.nextDouble(0.08, 0.2), 0);
+                    p = spr(at, v, new Vec3(0, -1, 0), K_DROP, (float) sz * 0.5F, (float) sz * 0.35F, r.nextInt(10, 16));
+                    p.dark = true; p.darkAlpha = 1.0F; p.grav = -0.02F; p.drag = 0.95F;
+                }
+                case 15 -> {   // Zenon: a scatter of little bones
+                    Vec3 v = out.scale(r.nextDouble(0.12, 0.3)).add(0, r.nextDouble(0.05, 0.18), 0);
+                    p = spr(at, v, v, K_BONE, (float) sz * 0.7F, (float) sz * 0.32F, r.nextInt(10, 16));
+                    p.dark = true; p.darkAlpha = 1.0F; p.grav = -0.018F; p.spin = (float) r.nextDouble(-0.6, 0.6);
+                }
+                default -> {   // light: a burst of twinkling stars
+                    p = spr(at, out.scale(r.nextDouble(0.2, 0.4)), out, i % 2 == 0 ? K_STAR : K_STREAK, (float) sz * (i % 2 == 0 ? 0.8F : 1.4F), (float) sz * (i % 2 == 0 ? 0.8F : 0.12F), r.nextInt(4, 8));
+                    p.heat = 1.0F; p.drag = 0.8F; p.twinkle = true;
+                }
+            }
+            p.pal = pal;
+            add(p);
+        }
     }
 
     /**
@@ -481,6 +630,21 @@ public final class PixelFx {
         boolean burst = !perTick && age < 1.0;
         double frac = Mth.clamp(age / Math.max(1.0, life), 0.0, 1.0);
         Vec3 dn = nz(p.d, new Vec3(1, 0, 0)), un = nz(p.u, UP);
+        if (burst && sigsThisTick < 6) {   // the moment it appears: this grimoire's own burst (a few a tick at most)
+            Vec3 sat = null; Vec3 sd = dn; double ss = 0;
+            switch (p.shape) {
+                case 13, 1 -> { sat = p.c; ss = Math.max(p.r, p.r2); sd = dn; }
+                case 0 -> { if (Math.max(p.r, p.r2) >= 1.5F) { sat = p.c; ss = Math.max(p.r, p.r2) * 0.6; sd = nz(dn.cross(un), UP); } }
+                case 7, 8, 30 -> { if (p.r >= 0.8F && !perTick) { sat = at; ss = p.r; } }
+                case 19, 20 -> { sat = at; ss = p.h > 0.5F ? p.r2 : p.r * 2.0; sd = nz(p.v, UP); }
+                case 23 -> { if (p.r >= 0.08F) { sat = p.c.add(p.d); ss = Mth.clamp(p.r * 12.0, 1.0, 5.0); sd = UP; } }
+                case 28 -> { sat = at; ss = p.r; sd = UP; }
+                case 29 -> { sat = p.c; ss = p.r * 0.3; }
+                case 33 -> { sat = p.c; ss = p.r; sd = nz(dn.cross(un), UP); }
+                default -> {}
+            }
+            if (sat != null && ss > 0.2) { signature(pal, sat, sd, ss); sigsThisTick++; }
+        }
         switch (p.shape) {
             case 13, 1 -> {   // slashes and crescents: sprites along the blade's arc, flying with it
                 double R = p.shape == 13 ? p.r + (p.r2 - p.r) * (1.0 - Math.pow(1.0 - Mth.clamp(age / (life * 0.45), 0.0, 1.0), 3.0))
@@ -713,6 +877,7 @@ public final class PixelFx {
     public static void tick() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) { SLASHES.clear(); SPRITES.clear(); ATTACH.clear(); return; }
+        sigsThisTick = 0;
         tickAttached(mc);
         double now = mc.level.getGameTime();
         for (Iterator<Slash> it = SLASHES.iterator(); it.hasNext(); ) {
@@ -746,12 +911,20 @@ public final class PixelFx {
         Matrix4f m = ps.last().pose();
         Matrix3f n = ps.last().normal();
         float opacity = com.example.arcaneaddon.AddonClientConfig.effectOpacity();
-        // the black core first (normal blending), then the glowing flame on top (additive: eyes ignores alpha,
-        // so the fade is done by darkening the colour)
-        ResourceLocation[] texs = {STREAK, SHARD, EMBER, TONGUE};
+        // 1) a soft banded bloom behind every hot glowing sprite (additive) - the glow that makes them pop
+        RenderType bt = RenderType.eyes(TEX[K_GLOW]);
+        VertexConsumer bv = null;
+        for (Spr p : SPRITES) {
+            if (p.dark || p.heat < 0.45F || p.kind == K_GLOW) continue;
+            if (bv == null) bv = buf.getBuffer(bt);
+            bloom(bv, m, n, cam, p, pt, opacity);
+        }
+        if (bv != null) buf.endBatch(bt);
+        // 2) the solid sprites (normal blending), 3) the glowing ones on top (additive: eyes ignores alpha, so the
+        // fade is done by darkening the colour)
         for (int pass = 0; pass < 2; pass++) {
-            for (int kind = 0; kind < 4; kind++) {
-                RenderType rt = pass == 0 ? RenderType.entityTranslucentEmissive(texs[kind]) : RenderType.eyes(texs[kind]);
+            for (int kind = 0; kind < TEX.length; kind++) {
+                RenderType rt = pass == 0 ? RenderType.entityTranslucentEmissive(TEX[kind]) : RenderType.eyes(TEX[kind]);
                 VertexConsumer vc = null;
                 for (Spr p : SPRITES) {
                     if (p.kind != kind || p.dark != (pass == 0)) continue;
@@ -763,37 +936,83 @@ public final class PixelFx {
         }
     }
 
-    private static void draw(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Spr p, float pt, boolean dark, float opacity) {
-        Vec3 pos = p.prev.add(p.pos.subtract(p.prev).scale(pt));
+    /** Sprites drawn as a square (not stretched along their travel). */
+    private static boolean square(int k) {
+        return k == K_SHARD || k == K_EMBER || k == K_CROSS || k == K_STAR || k == K_PLATE || k == K_RING || k == K_PUFF || k == K_DIAMOND || k == K_GLOW;
+    }
+
+    private static float fadeOf(Spr p, Vec3 pos, Vec3 cam, float pt, float opacity) {
         float life = (p.age + pt) / (float) p.life;
         float fade = Mth.clamp((1.0F - life) * 2.2F, 0.0F, 1.0F) * opacity;
         double dc = pos.distanceTo(cam);
         if (dc < 2.2) fade *= (float) Mth.clamp((dc - 0.6) / 1.6, 0.0, 1.0);   // never smother the camera
+        if (p.twinkle) fade *= 0.55F + 0.45F * (float) Math.abs(Math.sin((p.age + pt) * 1.3 + p.seed));
+        return fade;
+    }
+
+    private static void bloom(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Spr p, float pt, float opacity) {
+        Vec3 pos = p.prev.add(p.pos.subtract(p.prev).scale(pt));
+        float fade = fadeOf(p, pos, cam, pt, opacity) * 0.32F * Mth.clamp((p.heat - 0.35F) * 2.0F, 0.0F, 1.0F);
         if (fade <= 0.01F) return;
-        // stretched along its own direction, turned to face the camera around that direction
+        Vec3 toCam = cam.subtract(pos).normalize();
+        Vec3 sx = nz(toCam.cross(UP), new Vec3(1, 0, 0)), sy = sx.cross(toCam);
+        double s = Math.max(p.len, p.wid) * (square(p.kind) ? 1.4 : 0.8) * p.scaleNow(pt);
+        float[] c = glow(p.pal, Math.min(p.heat, 0.7F));
+        quad(vc, m, n, cam, pos, sy.scale(s), sx.scale(s), c[0] * fade, c[1] * fade, c[2] * fade, 1.0F, false);
+    }
+
+    private static void draw(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Spr p, float pt, boolean dark, float opacity) {
+        Vec3 pos = p.prev.add(p.pos.subtract(p.prev).scale(pt));
+        float fade = fadeOf(p, pos, cam, pt, opacity);
+        if (fade <= 0.01F) return;
+        float life = (p.age + pt) / (float) p.life;
         Vec3 toCam = cam.subtract(pos);
-        Vec3 ax = p.axis;
-        Vec3 side = ax.cross(toCam);
-        if (side.lengthSqr() < 1.0E-8) side = ax.cross(new Vec3(0, 1, 0));
-        if (side.lengthSqr() < 1.0E-8) side = new Vec3(1, 0, 0);
-        side = side.normalize();
-        float len = p.len * (p.kind == 0 || p.kind == 3 ? (0.7F + 0.6F * (1.0F - life)) : 1.0F);
-        Vec3 a = ax.scale(len * 0.5), b = side.scale(p.wid * 0.5);
+        Vec3 ax, side;
+        float scale = p.scaleNow(pt);
+        float len, wid;
+        if (square(p.kind)) {   // squares face the camera and spin about the view direction
+            Vec3 tc = toCam.normalize();
+            Vec3 sx = nz(tc.cross(UP), new Vec3(1, 0, 0)), sy = sx.cross(tc);
+            double ang = p.spin * (p.age + pt) + p.seed;
+            ax = sy.scale(Math.cos(ang)).add(sx.scale(Math.sin(ang)));
+            side = sx.scale(Math.cos(ang)).subtract(sy.scale(Math.sin(ang)));
+            len = p.len * scale; wid = p.wid * scale;
+        } else {                // stretched along its own direction, turned to face the camera around it
+            ax = p.axis;
+            if (p.spin != 0) {   // tumbling: the long axis turns round the view direction
+                Vec3 k = toCam.normalize();
+                double a0 = p.spin * (p.age + pt), ca = Math.cos(a0), sa = Math.sin(a0);
+                ax = ax.scale(ca).add(k.cross(ax).scale(sa)).add(k.scale(k.dot(ax) * (1 - ca)));
+            }
+            side = ax.cross(toCam);
+            if (side.lengthSqr() < 1.0E-8) side = ax.cross(UP);
+            if (side.lengthSqr() < 1.0E-8) side = new Vec3(1, 0, 0);
+            side = side.normalize();
+            float stretch = p.kind == K_STREAK || p.kind == K_TONGUE || p.kind == K_CLAW || p.kind == K_WISP ? 0.7F + 0.6F * (1.0F - life) : 1.0F;
+            len = p.len * stretch * scale; wid = p.wid * scale;
+        }
         float r, g, bl, al;
         if (dark) { float[] sc = SOLID[Mth.clamp(p.pal, 0, 15)]; r = sc[0]; g = sc[1]; bl = sc[2]; al = p.darkAlpha * fade; }
         else {
             float[] c = glow(p.pal, p.heat);
             r = c[0] * fade; g = c[1] * fade; bl = c[2] * fade; al = 1.0F;
         }
-        v(vc, m, n, cam, pos.subtract(a).subtract(b), r, g, bl, al, 0, 1);
-        v(vc, m, n, cam, pos.subtract(a).add(b), r, g, bl, al, 1, 1);
-        v(vc, m, n, cam, pos.add(a).add(b), r, g, bl, al, 1, 0);
-        v(vc, m, n, cam, pos.add(a).subtract(b), r, g, bl, al, 0, 0);
-        // and the back face, so no render state can cull it away
-        v(vc, m, n, cam, pos.add(a).subtract(b), r, g, bl, al, 0, 0);
-        v(vc, m, n, cam, pos.add(a).add(b), r, g, bl, al, 1, 0);
-        v(vc, m, n, cam, pos.subtract(a).add(b), r, g, bl, al, 1, 1);
-        v(vc, m, n, cam, pos.subtract(a).subtract(b), r, g, bl, al, 0, 1);
+        // flames flicker: mirrored every other couple of ticks, like a two-frame flip-book
+        boolean flip = p.flicker && (((p.age + p.seed) >> 1) & 1) == 1;
+        quad(vc, m, n, cam, pos, ax.scale(len * 0.5), side.scale(wid * 0.5), r, g, bl, al, flip);
+    }
+
+    /** A double-faced quad: {@code a} = half its length (texture top = +a), {@code b} = half its width. */
+    private static void quad(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 pos, Vec3 a, Vec3 b, float r, float g, float bl, float al, boolean flip) {
+        float u0 = flip ? 1 : 0, u1 = flip ? 0 : 1;
+        v(vc, m, n, cam, pos.subtract(a).subtract(b), r, g, bl, al, u0, 1);
+        v(vc, m, n, cam, pos.subtract(a).add(b), r, g, bl, al, u1, 1);
+        v(vc, m, n, cam, pos.add(a).add(b), r, g, bl, al, u1, 0);
+        v(vc, m, n, cam, pos.add(a).subtract(b), r, g, bl, al, u0, 0);
+        v(vc, m, n, cam, pos.add(a).subtract(b), r, g, bl, al, u0, 0);
+        v(vc, m, n, cam, pos.add(a).add(b), r, g, bl, al, u1, 0);
+        v(vc, m, n, cam, pos.subtract(a).add(b), r, g, bl, al, u1, 1);
+        v(vc, m, n, cam, pos.subtract(a).subtract(b), r, g, bl, al, u0, 1);
     }
 
     private static void v(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, float r, float g, float b, float a, float u, float t) {
