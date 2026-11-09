@@ -1,7 +1,12 @@
-Iron Spell Grimoire v1.62.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.63.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.63.0
+- Moves you have not unlocked by mastery yet are scribbled out (book, wheel, tooltips) until you earn them.
+- Every grimoire item description is up to date, with the colour passive/description/lore lines on all 11 grimoires.
+- Magna's fireball is physical: it keeps momentum, arcs with gravity and bursts on any block, body or the ground.
 
 NEW IN 1.62.0
 - The new grimoires are the String Grimoire and the Spatial Grimoire, and both can be equipped like the others.

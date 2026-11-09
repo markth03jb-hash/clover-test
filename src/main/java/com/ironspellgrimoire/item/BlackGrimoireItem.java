@@ -53,8 +53,7 @@ public class BlackGrimoireItem extends SimpleAttributeSpellBook {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tip, flag);
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.black_grimoire.1").withStyle(ChatFormatting.DARK_RED));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.black_grimoire.2").withStyle(ChatFormatting.GRAY));
+        GrimoireTooltip.add(tip, "black_grimoire", ChatFormatting.DARK_RED);
     }
 
     /** Called by Iron's to fill the book; pre-inscribes the grimoire's exclusive spell (locked). */

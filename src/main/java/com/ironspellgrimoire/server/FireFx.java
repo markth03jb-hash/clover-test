@@ -141,18 +141,29 @@ public class FireFx {
 
     /** A flying fireball: moves {@code speed} a tick, explodes on the first enemy or block it meets. */
     private static void shot(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float speed, float r, double blast, float dmg, int step, int max, String id) {
+        fly(p, sl, pos, dir.normalize().scale(speed), r, blast, dmg, step, max + 6, id);
+    }
+
+    /**
+     * A fireball with real physics: it keeps its momentum, gravity pulls it into an arc (heavier balls drop faster),
+     * the air slows it a little, it tumbles as it flies, and it bursts on the first thing it touches - a block, the
+     * ground, a body.
+     */
+    private static void fly(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 vel, float r, double blast, float dmg, int step, int max, String id) {
         if (!alive(p)) return;
-        Vec3 want = pos.add(dir.scale(speed));
+        Vec3 want = pos.add(vel);
         Vec3 next = clip(sl, p, pos, want);
-        fireball(sl, next, dir.scale(speed), r, r, 2, false);
+        fireball(sl, next, vel, r, r, 2, false);
         FxSend.trail(sl, F, pos, next, r * 0.7f, 6);
         for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(r + 0.5))) {
             if (!t.getBoundingBox().inflate(r).clip(pos, next).isPresent()) continue;
-            explode(p, sl, mid(t), blast, dmg, id);
+            explode(p, sl, next.add(mid(t)).scale(0.5), blast, dmg, id);
             return;
         }
-        if (next.distanceToSqr(want) > 1.0E-4 || step >= max) { explode(p, sl, next, blast, dmg, id); return; }
-        AstaFx.later(1, () -> shot(p, sl, next, dir, speed, r, blast, dmg, step + 1, max, id));
+        if (next.distanceToSqr(want) > 1.0E-4 || step >= max || next.y < sl.getMinBuildHeight()) { explode(p, sl, next, blast, dmg, id); return; }
+        double gravity = 0.03 + r * 0.03;                       // a bigger ball is heavier
+        Vec3 nv = vel.scale(0.99).add(0, -gravity, 0);          // air drag and gravity
+        AstaFx.later(1, () -> fly(p, sl, next, nv, r, blast, dmg, step + 1, max, id));
     }
 
     /** Fire gathering in your hand while the animation winds up. */

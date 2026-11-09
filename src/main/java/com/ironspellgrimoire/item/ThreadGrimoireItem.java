@@ -43,9 +43,7 @@ public class ThreadGrimoireItem extends SimpleAttributeSpellBook {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tip, flag);
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.string_grimoire.passive").withStyle(ChatFormatting.GRAY));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.string_grimoire.desc").withStyle(ChatFormatting.GRAY));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.string_grimoire.lore").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        GrimoireTooltip.add(tip, "string_grimoire", ChatFormatting.LIGHT_PURPLE);
     }
 
     @Override

@@ -46,9 +46,7 @@ public class HellfireGrimoireItem extends SimpleAttributeSpellBook {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tip, flag);
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.hellfire_grimoire.passive").withStyle(ChatFormatting.RED));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.hellfire_grimoire.desc").withStyle(ChatFormatting.RED));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.hellfire_grimoire.lore").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        GrimoireTooltip.add(tip, "hellfire_grimoire", ChatFormatting.RED);
     }
 
     @Override

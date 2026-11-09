@@ -44,9 +44,7 @@ public class SpaceGrimoireItem extends SimpleAttributeSpellBook {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tip, flag);
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.spatial_grimoire.passive").withStyle(ChatFormatting.GRAY));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.spatial_grimoire.desc").withStyle(ChatFormatting.GRAY));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.spatial_grimoire.lore").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        GrimoireTooltip.add(tip, "spatial_grimoire", ChatFormatting.BLUE);
     }
 
     @Override

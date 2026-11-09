@@ -47,6 +47,12 @@ public class GrimoireBookScreen extends Screen {
     private double flipAt = -100;
     private int flipDir = 1;
     private int ticks = 0;
+    private boolean hidden = false;
+
+    /** Text on a page: readable, or scribbled out when the spell isn't unlocked yet. */
+    private Component ink(Component c) {
+        return hidden ? c.copy().withStyle(ChatFormatting.OBFUSCATED) : c;
+    }
 
     public GrimoireBookScreen(ItemStack stack) {
         super(stack.getHoverName());
@@ -137,12 +143,12 @@ public class GrimoireBookScreen extends Screen {
         if (page > 0) g.drawString(f, "<", x0 + 6, y0 + BH - 15, inside(mx, my, x0 - 2, y0 + BH - 20, 22, 16) ? RED_INK : INK, false);
         if (page < ids.size() - 1) g.drawString(f, ">", x0 + BW - 12, y0 + BH - 15, inside(mx, my, x0 + BW - 20, y0 + BH - 20, 22, 16) ? RED_INK : INK, false);
 
-        if (unlocked(page)) {
-            AbstractSpell sp = spell(page);
-            if (sp != null) {
-                drawLeft(g, f, sp, x0 + 16, y0 + 14, BW / 2 - 30, BH - 34, c);
-                drawRight(g, f, sp, page, mid + 14, y0 + 14, BW / 2 - 30, BH - 34);
-            }
+        AbstractSpell sp = spell(page);
+        if (sp != null) {
+            hidden = !unlocked(page);   // not unlocked yet: the page is written, but scribbled - you can't read it
+            drawLeft(g, f, sp, x0 + 16, y0 + 14, BW / 2 - 30, BH - 34, c);
+            drawRight(g, f, sp, page, mid + 14, y0 + 14, BW / 2 - 30, BH - 34);
+            hidden = false;
         }
         if (flip > 0F) {   // a page turning over
             float k = 1F - flip;
@@ -159,12 +165,14 @@ public class GrimoireBookScreen extends Screen {
     private void drawLeft(GuiGraphics g, Font f, AbstractSpell sp, int x, int y, int w, int h, int[] c) {
         Minecraft mc = Minecraft.getInstance();
         int yy = y;
-        for (FormattedCharSequence l : f.split(sp.getDisplayName(mc.player).copy().withStyle(ChatFormatting.BOLD), w)) {
+        for (FormattedCharSequence l : f.split(ink(sp.getDisplayName(mc.player).copy().withStyle(ChatFormatting.BOLD)), w)) {
             g.drawString(f, l, x + (w - f.width(l)) / 2, yy, RED_INK, false);
             yy += 10;
         }
         yy += 2;
-        try {   // the spell's icon, like an illustration on the page
+        if (hidden) {   // no picture yet: a smudge of ink where it will be
+            g.drawCenteredString(f, Component.literal("?").withStyle(ChatFormatting.BOLD), x + w / 2, yy + 8, INK_SOFT);
+        } else try {   // the spell's icon, like an illustration on the page
             g.blit(sp.getSpellIconResource(), x + w / 2 - 12, yy, 24, 24, 0, 0, 16, 16, 16, 16);
         } catch (Throwable ignored) {}
         yy += 28;
@@ -172,7 +180,7 @@ public class GrimoireBookScreen extends Screen {
         yy += 5;
         String key = "spell.iron_spell_grimoire." + ids.get(page) + ".guide";
         if (I18n.exists(key)) {
-            for (FormattedCharSequence l : f.split(Component.translatable(key), w)) {
+            for (FormattedCharSequence l : f.split(ink(Component.translatable(key)), w)) {
                 if (yy > y + h - 8) break;
                 g.drawString(f, l, x, yy, INK, false);
                 yy += 9;
@@ -199,7 +207,8 @@ public class GrimoireBookScreen extends Screen {
         g.drawString(f, Component.literal("Spell").withStyle(ChatFormatting.BOLD), x, yy, RED_INK, false);
         yy += 12;
         for (Component cmp : info) {
-            for (FormattedCharSequence l : f.split(cmp, w)) {
+            boolean always = cmp.getString().startsWith("Unlocks at");   // when you'll get it stays readable
+            for (FormattedCharSequence l : f.split(always ? cmp : ink(cmp), w)) {
                 if (yy > y + h - 8) return;
                 g.drawString(f, l, x, yy, INK, false);
                 yy += 10;
@@ -214,7 +223,7 @@ public class GrimoireBookScreen extends Screen {
             Component line = Component.literal(cb.name() + ": ").withStyle(ChatFormatting.BOLD)
                     .append(Component.literal(cb.first().equals(id) ? "then " : "after ").withStyle(ChatFormatting.RESET))
                     .append(Component.translatable("spell.iron_spell_grimoire." + other).withStyle(ChatFormatting.RESET));
-            for (FormattedCharSequence l : f.split(line, w)) {
+            for (FormattedCharSequence l : f.split(ink(line), w)) {
                 if (yy > y + h - 8) return;
                 g.drawString(f, l, x, yy, INK, false);
                 yy += 10;

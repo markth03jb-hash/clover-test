@@ -201,6 +201,24 @@ public final class GrimoireMastery {
         return out;
     }
 
+    /** The names scribbled out (unreadable, shifting letters): spells you have not unlocked yet stay a secret. */
+    public static MutableComponent hiddenNames(List<String> ids) {
+        MutableComponent c = Component.empty();
+        for (int i = 0; i < ids.size(); i++) {
+            if (i > 0) c.append(", ");
+            c.append(Component.translatable("spell.iron_spell_grimoire." + ids.get(i)).withStyle(net.minecraft.ChatFormatting.OBFUSCATED));
+        }
+        return c;
+    }
+
+    /** True if this spell of the grimoire is still locked by mastery (progression on and level too low). */
+    public static boolean lockedFor(ItemStack stack, String spell) {
+        Book b = bookOf(stack);
+        if (b == null) return false;
+        int need = required(b, spell);
+        return need > 1 && level(stack) < need;
+    }
+
     public static MutableComponent spellNames(List<String> ids) {
         MutableComponent c = Component.empty();
         for (int i = 0; i < ids.size(); i++) {

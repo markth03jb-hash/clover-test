@@ -46,9 +46,7 @@ public class FireGrimoireItem extends SimpleAttributeSpellBook {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tip, flag);
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.fire_grimoire.passive").withStyle(ChatFormatting.GOLD));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.fire_grimoire.desc").withStyle(ChatFormatting.GOLD));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.fire_grimoire.lore").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        GrimoireTooltip.add(tip, "fire_grimoire", ChatFormatting.GOLD);
     }
 
     @Override

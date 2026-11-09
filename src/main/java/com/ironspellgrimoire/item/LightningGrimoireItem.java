@@ -46,9 +46,7 @@ public class LightningGrimoireItem extends SimpleAttributeSpellBook {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tip, flag);
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.lightning_grimoire.passive").withStyle(ChatFormatting.YELLOW));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.lightning_grimoire.desc").withStyle(ChatFormatting.YELLOW));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.lightning_grimoire.lore").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        GrimoireTooltip.add(tip, "lightning_grimoire", ChatFormatting.AQUA);
     }
 
     @Override

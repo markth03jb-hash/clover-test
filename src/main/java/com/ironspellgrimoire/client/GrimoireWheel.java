@@ -387,7 +387,12 @@ public final class GrimoireWheel {
     private static void infoPage(GuiGraphics g, Font font, LocalPlayer pl, SpellSelectionManager sm, SpellData sd, int sel, int cx, int top, Theme th, float A) {
         AbstractSpell sp = sd.getSpell();
         int lvl = sp.getLevelFor(sd.getLevel(), pl);
-        Component name = sp.getDisplayName(pl);
+        boolean hidden = false;
+        try {
+            ItemStack bk = Utils.getPlayerSpellbookStack(pl);
+            hidden = MasteryClient.enabled() && bk != null && GrimoireMastery.lockedFor(bk, sp.getSpellResource().getPath());
+        } catch (Throwable ignored) {}
+        Component name = hidden ? sp.getDisplayName(pl).copy().withStyle(net.minecraft.ChatFormatting.OBFUSCATED) : sp.getDisplayName(pl);   // not unlocked yet: scribbled
         Component level = Component.translatable("ui.irons_spellbooks.level", lvl);
         Component mana = Component.translatable("ui.irons_spellbooks.mana_cost", sp.getManaCost(lvl)).withStyle(net.minecraft.ChatFormatting.AQUA);
         Component cool = null;

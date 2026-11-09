@@ -47,10 +47,24 @@ public final class MasteryClient {
         if (lvl > 1) tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.bonus", 4 * (lvl - 1), 3 * (lvl - 1), 50 * (lvl - 1)).withStyle(ChatFormatting.DARK_GREEN));
         if (!max) {
             List<String> next = GrimoireMastery.unlockedAt(b, lvl + 1);
-            if (!next.isEmpty()) tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.next", lvl + 1, GrimoireMastery.spellNames(next)).withStyle(ChatFormatting.AQUA));
+            if (!next.isEmpty()) tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.next", lvl + 1, GrimoireMastery.hiddenNames(next)).withStyle(ChatFormatting.AQUA));
             List<String> locked = new ArrayList<>();
             for (Map.Entry<String, Integer> en : b.unlocks().entrySet()) if (en.getValue() > lvl) locked.add(en.getKey());
-            if (!locked.isEmpty()) tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.locked", GrimoireMastery.spellNames(locked)).withStyle(ChatFormatting.RED));
+            if (!locked.isEmpty()) tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.locked", GrimoireMastery.hiddenNames(locked)).withStyle(ChatFormatting.RED));
+            // Iron's spell list in the tooltip: the spells not unlocked yet are scribbled out there too
+            List<String> names = new ArrayList<>();
+            for (String id : locked) names.add(Component.translatable("spell.iron_spell_grimoire." + id).getString());
+            for (int i = 0; i < tip.size(); i++) {
+                String line = tip.get(i).getString();
+                for (String n : names) {
+                    if (n.isEmpty() || !line.contains(n)) continue;
+                    int at = line.indexOf(n);
+                    tip.set(i, Component.literal(line.substring(0, at)).withStyle(ChatFormatting.GRAY)
+                            .append(Component.literal(n).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.OBFUSCATED))
+                            .append(Component.literal(line.substring(at + n.length())).withStyle(ChatFormatting.DARK_GRAY)));
+                    break;
+                }
+            }
         }
     }
 }

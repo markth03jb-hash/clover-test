@@ -45,9 +45,7 @@ public class WindGrimoireItem extends SimpleAttributeSpellBook {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tip, flag);
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.wind_grimoire.passive").withStyle(ChatFormatting.GREEN));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.wind_grimoire.desc").withStyle(ChatFormatting.GRAY));
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.wind_grimoire.lore").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        GrimoireTooltip.add(tip, "wind_grimoire", ChatFormatting.GREEN);
     }
 
     @Override
