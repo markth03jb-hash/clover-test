@@ -1,8 +1,24 @@
 {
   "replace": false,
   "values": [
-    "minecraft:plains", "minecraft:sunflower_plains", "minecraft:meadow", "minecraft:snowy_plains",
-    "minecraft:forest", "minecraft:flower_forest", "minecraft:birch_forest", "minecraft:old_growth_birch_forest",
-    "minecraft:taiga", "minecraft:snowy_taiga", "minecraft:savanna", "minecraft:cherry_grove", "minecraft:dark_forest"
+    "minecraft:plains",
+    "minecraft:sunflower_plains",
+    "minecraft:meadow",
+    "minecraft:snowy_plains",
+    "minecraft:forest",
+    "minecraft:flower_forest",
+    "minecraft:birch_forest",
+    "minecraft:old_growth_birch_forest",
+    "minecraft:taiga",
+    "minecraft:snowy_taiga",
+    "minecraft:savanna",
+    "minecraft:cherry_grove",
+    "minecraft:dark_forest",
+    "minecraft:old_growth_pine_taiga",
+    "minecraft:old_growth_spruce_taiga",
+    "minecraft:windswept_forest",
+    "minecraft:windswept_savanna",
+    "minecraft:savanna_plateau",
+    "minecraft:sparse_jungle"
   ]
 }
