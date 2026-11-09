@@ -10,6 +10,9 @@ NEW IN 1.58.0
   HIGH   everything (2400 sprites, 900 puffs, 4-tick impact frames)
 - Grimoire page-turn: every cast flips your floating grimoire open (fast) and riffles three pages over in quick
   succession to the spell, with the sound of the pages - seen by everyone around you.
+- Grimoire mana bar: while one of this addon's grimoires is equipped, Iron's mana bar makes way for the grimoire's
+  own - framed in its trim colour with its clover at the end, mana in its colour with a sheen running through,
+  easing to the new value, numbers above it. Asta's has no mana: a black bar with a flickering blood-red edge.
 
 NEW IN 1.57.0
 - Equinox: an invisible sword. While it charges you see only its outline - faint pale edges tapering to a point, a

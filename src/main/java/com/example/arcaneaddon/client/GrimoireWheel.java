@@ -79,7 +79,7 @@ public final class GrimoireWheel {
     private static boolean failed = false;
     private static double leafLobe = 0.3;
 
-    private static int grimoireIndex() {
+    static int grimoireIndex() {
         if (failed) return -1;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return -1;
