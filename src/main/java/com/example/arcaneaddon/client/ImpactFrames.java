@@ -67,7 +67,7 @@ public final class ImpactFrames {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || !com.example.arcaneaddon.AddonClientConfig.impactFrames()) return;
         start = mc.level.getGameTime();
-        len = Mth.clamp(ticks, 1, 4);   // never long enough to blind you
+        len = Mth.clamp(ticks, 1, com.example.arcaneaddon.AddonClientConfig.maxFrameTicks());   // never long enough to blind you
         style = Mth.clamp(st, 0, PAL.length - 1);
         at = where == null || where.equals(Vec3.ZERO) ? null : where;
     }

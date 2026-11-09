@@ -183,7 +183,7 @@ public final class DarkSmoke {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         float density = com.example.arcaneaddon.AddonClientConfig.particleDensity();
         if (density < 1F && r.nextFloat() >= density) return;   // fewer particles, from the client config
-        if (PUFFS.size() >= MAX) PUFFS.remove(0);
+        if (PUFFS.size() >= com.example.arcaneaddon.AddonClientConfig.smokeCap()) PUFFS.remove(0);
         Puff p = new Puff();
         p.x = at.x; p.y = at.y; p.z = at.z; p.vx = vel.x; p.vy = vel.y; p.vz = vel.z;
         p.born = mc.level.getGameTime(); p.life = life; p.s0 = s0; p.s1 = s1;
@@ -324,6 +324,7 @@ public final class DarkSmoke {
         }
         buf.endBatch(mt);
         // bloom: light adds onto the scene - the hot hearts of flames, sparks, wind streaks and motes glow
+        if (!com.example.arcaneaddon.AddonClientConfig.glowPass()) return;   // LOW quality: no glow pass
         RenderType gt = RenderType.eyes(GLOW);
         VertexConsumer vg = buf.getBuffer(gt);
         for (Puff p : sorted) {

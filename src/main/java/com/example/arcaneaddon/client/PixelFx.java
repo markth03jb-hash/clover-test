@@ -78,7 +78,8 @@ public final class PixelFx {
 
     private static final List<Slash> SLASHES = new ArrayList<>();
     private static final List<Spr> SPRITES = new ArrayList<>();
-    private static final int MAX = 2400;   // a hard cap that keeps big fights smooth
+    /** A hard cap that keeps big fights smooth - set by the effect quality. */
+    private static int max() { return com.example.arcaneaddon.AddonClientConfig.spriteCap(); }
     private static int sigsThisTick = 0;
     /** True while a slash (a move's main blade) emits: it may go past the cap, so the blade is never dropped. */
     private static boolean priority = false;
@@ -375,7 +376,8 @@ public final class PixelFx {
     private static int cnt(double want) {
         double w = want * density() * boost;
         int busy = SPRITES.size();
-        if (busy > 900) w *= 900.0 / busy;   // the busier the screen, the fewer new sprites per emission
+        int calm = max() * 3 / 8;
+        if (busy > calm) w *= (double) calm / busy;   // the busier the screen, the fewer new sprites per emission
         int n = (int) w;
         return n + (ThreadLocalRandom.current().nextDouble() < w - n ? 1 : 0);
     }
@@ -1322,7 +1324,7 @@ public final class PixelFx {
     private static void add(Spr p) {
         if (p.heat > maxHeat(p.pal)) p.heat = maxHeat(p.pal);
         if (p.pop == 0 && p.grow == 1.0F) p.pop = 1.5F;   // every sprite scales in smoothly - nothing pops into being
-        if (SPRITES.size() >= (priority ? MAX + 1600 : MAX)) return;   // full: drop the newest (a move's blade gets extra room)
+        if (SPRITES.size() >= (priority ? max() * 5 / 3 : max())) return;   // full: drop the newest (a move's blade gets extra room)
         if (p.age == 0 && p.vel.lengthSqr() > 1.0E-4) {   // spread along the path it moved this tick, so no stepping
             double u = ThreadLocalRandom.current().nextDouble();
             p.pos = p.pos.subtract(p.vel.scale(u));
@@ -1397,11 +1399,12 @@ public final class PixelFx {
         RenderType bt = RenderType.eyes(TEX[K_GLOW]);
         VertexConsumer bv = null;
         for (Spr p : SPRITES) {
+            if (!com.example.arcaneaddon.AddonClientConfig.glowPass()) break;
             if (p.dark || p.heat < 0.45F || p.kind == K_GLOW || p.kind == K_SHOCK) continue;
             if (bv == null) bv = buf.getBuffer(bt);
             bloom(bv, m, n, cam, p, pt, opacity);
         }
-        if (bv != null) buf.endBatch(bt);
+        if (bv != null) buf.endBatch(bt);   // (skipped entirely on LOW quality)
         for (int layer = 0; layer <= L_GLOW_RIM; layer++) {
             for (int kind = 0; kind < TEX.length; kind++) {
                 List<Spr> list = BY_KIND[kind];
