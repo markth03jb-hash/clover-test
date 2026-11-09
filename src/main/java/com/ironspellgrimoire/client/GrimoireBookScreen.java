@@ -80,9 +80,14 @@ public class GrimoireBookScreen extends Screen {
         try { return SpellRegistry.getSpell(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", ids.get(i))); } catch (Throwable t) { return null; }
     }
 
+    /** One page per spell, then the combo page. */
+    private int pages() { return ids.size() + 1; }
+
+    private boolean onCombos() { return page == ids.size(); }
+
     private void turn(int dir) {
         if (ids.isEmpty()) return;
-        int np = Mth.clamp(page + dir, 0, ids.size() - 1);
+        int np = Mth.clamp(page + dir, 0, pages() - 1);
         if (np == page) return;
         page = np; flipAt = ticks; flipDir = dir;
         Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.9F + 0.2F * (float) Math.random());
@@ -105,6 +110,11 @@ public class GrimoireBookScreen extends Screen {
         int x0 = (width - BW) / 2, y0 = (height - BH) / 2;
         if (inside(mx, my, x0 - 2, y0 + BH - 20, 22, 16)) { turn(-1); return true; }
         if (inside(mx, my, x0 + BW - 20, y0 + BH - 20, 22, 16)) { turn(1); return true; }
+        if (inside(mx, my, x0 + BW + 7, y0 + 24, 46, 16)) {   // the ribbon tab on the edge of the book: jump to the combos (or back to the spells)
+            int to = onCombos() ? 0 : ids.size();
+            if (to != page) { flipDir = to > page ? 1 : -1; page = to; flipAt = ticks; Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.8F); }
+            return true;
+        }
         if (inside(mx, my, x0 + BW - 92, y0 - 16, 92, 12)) {
             AddonClientConfig.Quality[] q = AddonClientConfig.Quality.values();
             AddonClientConfig.setQuality(q[(AddonClientConfig.quality().ordinal() + 1) % q.length]);
@@ -138,13 +148,22 @@ public class GrimoireBookScreen extends Screen {
         g.drawString(f, getTitle(), x0, y0 - 15, 0xFF000000 | c[5], true);
 
         if (ids.isEmpty()) return;
-        String num = (page + 1) + " / " + ids.size();
+        String num = (page + 1) + " / " + pages();
         g.drawString(f, num, mid - f.width(num) / 2, y0 + BH - 13, INK_SOFT, false);
         if (page > 0) g.drawString(f, "<", x0 + 6, y0 + BH - 15, inside(mx, my, x0 - 2, y0 + BH - 20, 22, 16) ? RED_INK : INK, false);
-        if (page < ids.size() - 1) g.drawString(f, ">", x0 + BW - 12, y0 + BH - 15, inside(mx, my, x0 + BW - 20, y0 + BH - 20, 22, 16) ? RED_INK : INK, false);
+        if (page < pages() - 1) g.drawString(f, ">", x0 + BW - 12, y0 + BH - 15, inside(mx, my, x0 + BW - 20, y0 + BH - 20, 22, 16) ? RED_INK : INK, false);
 
-        AbstractSpell sp = spell(page);
-        if (sp != null) {
+        // the ribbon tab on the book's edge: Combos (or back to the Spells)
+        boolean tabHot = inside(mx, my, x0 + BW + 7, y0 + 24, 46, 16);
+        g.fill(x0 + BW + 5, y0 + 24, x0 + BW + 54, y0 + 40, 0xFF000000 | dark(c[2], 0.35F));
+        g.fill(x0 + BW + 6, y0 + 25, x0 + BW + 53, y0 + 39, 0xFF000000 | (tabHot ? c[2] : c[4]));
+        String tab = onCombos() ? "Spells" : "Combos";
+        g.drawString(f, tab, x0 + BW + 30 - f.width(tab) / 2, y0 + 29, tabHot ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
+        AbstractSpell sp = onCombos() ? null : spell(page);
+        if (onCombos()) {
+            hidden = false;
+            drawCombos(g, f, x0 + 16, mid + 14, y0 + 14, BW / 2 - 30, BH - 34);
+        } else if (sp != null) {
             hidden = !unlocked(page);   // not unlocked yet: the page is written, but scribbled - you can't read it
             drawLeft(g, f, sp, x0 + 16, y0 + 14, BW / 2 - 30, BH - 34, c);
             drawRight(g, f, sp, page, mid + 14, y0 + 14, BW / 2 - 30, BH - 34);
@@ -214,21 +233,39 @@ public class GrimoireBookScreen extends Screen {
                 yy += 10;
             }
         }
-        String id = ids.get(i);
-        boolean header = false;
+    }
+
+    /** The combo page: this grimoire's combos - the name and the two spells on the left, what it does on the right. */
+    private void drawCombos(GuiGraphics g, Font f, int lx, int rx, int y, int w, int h) {
+        g.drawString(f, Component.literal("Combos").withStyle(ChatFormatting.BOLD), lx, y, RED_INK, false);
+        g.drawString(f, Component.literal("What they do").withStyle(ChatFormatting.BOLD), rx, y, RED_INK, false);
+        int ly = y + 14, ry = y + 14;
+        int lvl = GrimoireMastery.level(stack);
+        boolean any = false;
         for (ComboChain.Combo cb : ComboChain.COMBOS) {
-            if (!cb.first().equals(id) && !cb.second().equals(id)) continue;
-            if (!header) { yy += 4; g.drawString(f, Component.literal("Combos").withStyle(ChatFormatting.BOLD), x, yy, RED_INK, false); yy += 12; header = true; }
-            String other = cb.first().equals(id) ? cb.second() : cb.first();
-            Component line = Component.literal(cb.name() + ": ").withStyle(ChatFormatting.BOLD)
-                    .append(Component.literal(cb.first().equals(id) ? "then " : "after ").withStyle(ChatFormatting.RESET))
-                    .append(Component.translatable("spell.iron_spell_grimoire." + other).withStyle(ChatFormatting.RESET));
-            for (FormattedCharSequence l : f.split(ink(line), w)) {
-                if (yy > y + h - 8) return;
-                g.drawString(f, l, x, yy, INK, false);
-                yy += 10;
-            }
+            int a = ids.indexOf(cb.first()), b = ids.indexOf(cb.second());
+            if (a < 0 || b < 0) continue;
+            any = true;
+            int need = Math.max(unlockAt.get(a), unlockAt.get(b));
+            hidden = MasteryClient.enabled() && lvl < need;   // a combo whose spells you haven't earned yet stays scribbled
+            Component name = Component.literal(cb.name()).withStyle(ChatFormatting.BOLD);
+            Component seq = Component.translatable("spell.iron_spell_grimoire." + cb.first()).append(Component.literal("  >  "))
+                    .append(Component.translatable("spell.iron_spell_grimoire." + cb.second()));
+            int before = ly;
+            for (FormattedCharSequence l : f.split(ink(name), w)) { g.drawString(f, l, lx, ly, INK, false); ly += 10; }
+            for (FormattedCharSequence l : f.split(ink(seq), w)) { g.drawString(f, l, lx, ly, INK_SOFT, false); ly += 10; }
+            if (hidden) { g.drawString(f, "Needs mastery " + need, lx, ly, RED_INK, false); ly += 10; }
+            for (FormattedCharSequence l : f.split(ink(Component.literal(cb.what())), w)) { g.drawString(f, l, rx, ry, INK, false); ry += 10; }
+            ly += 6; ry += 6;
+            int used = Math.max(ly, ry);
+            ly = ry = used;   // keep both pages' rows lined up
+            if (ly > y + h - 12) break;
         }
+        hidden = false;
+        if (!any) g.drawString(f, "This grimoire has no combos.", lx, ly, INK_SOFT, false);
+        String hint = "Cast the second spell within 4 seconds of the first.";
+        int hy = y + h - 12;
+        for (FormattedCharSequence l : f.split(Component.literal(hint), w)) { g.drawString(f, l, rx, hy, INK_SOFT, false); hy += 9; }
     }
 
     private static String pretty(String s) {

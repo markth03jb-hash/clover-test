@@ -1,7 +1,13 @@
-Iron Spell Grimoire v1.68.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.69.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.69.0
+- The grimoire book has its own combo page now (the combo lines hidden at the bottom of each spell page are gone):
+  the last page of the book lists every combo of that grimoire - its name and the two spells on the left, what it
+  does on the right - and a ribbon tab on the edge of the book (Combos / Spells) jumps straight there and back.
+  Combos you haven't earned yet are scribbled out, with the mastery level they need.
 
 NEW IN 1.68.0
 - The spell wheel is much more distinct per grimoire - beyond colours, every page is cut to that grimoire's own shape:
