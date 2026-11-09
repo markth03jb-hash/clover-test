@@ -1,7 +1,17 @@
-Iron Spell Grimoire v1.63.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.64.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.64.0
+- Moonlight is now a required library (libs/moonlight-1.20-2.16.39-forge.jar is bundled for building).
+- Real projectiles: Magna's Exploding Fireball and Scattershot are now actual projectile entities (Moonlight's
+  ImprovedProjectileEntity) - real velocity, gravity and drag, and real collision with blocks and bodies.
+- Swinging physics: the closed grimoire on your hip hangs from a real damped pendulum (Moonlight PendulumAnimation) -
+  stopping, starting and turning kick it and it swings back and settles, instead of a fake sine wave.
+- Mana bar redrawn in Iron's Spellbooks style (steel pill casing above the XP bar, ten segments, gem marker riding the
+  fill, Iron's own position offsets honoured) while keeping each grimoire's colours and its own clover as the gem;
+  Asta's anti-magic bar stays pitch black with the blood-red edge.
 
 NEW IN 1.63.0
 - Moves you have not unlocked by mastery yet are scribbled out (book, wheel, tooltips) until you earn them.

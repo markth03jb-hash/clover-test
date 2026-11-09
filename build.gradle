@@ -51,6 +51,8 @@ dependencies {
     // compile against PlayerAnimator too: client/ArcaneAnimations plays mid-move poses with it (Iron's already requires it at runtime)
     compileOnly fg.deobf("dev.kosmx.player-anim:player-animation-lib-forge:${playeranimator_version}")
     runtimeOnly fg.deobf("dev.kosmx.player-anim:player-animation-lib-forge:${playeranimator_version}")
+    // Moonlight (real projectiles + swinging physics); the jar lives in libs/
+    implementation fg.deobf("local:moonlight-1.20:2.16.39-forge")
     // Full mod + lib at runtime so runClient works.
     // If you use classes outside .api (e.g. damage.DamageSources, used in the example spell),
     // switch the compileOnly line above to: implementation fg.deobf("io.redspace:irons_spellbooks:${irons_spells_version}")

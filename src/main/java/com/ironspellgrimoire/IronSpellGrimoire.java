@@ -14,6 +14,7 @@ public class IronSpellGrimoire {
     public IronSpellGrimoire() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         AddonSpellRegistry.SPELLS.register(modBus);
+        com.ironspellgrimoire.registry.AddonEntities.ENTITIES.register(modBus);
         com.ironspellgrimoire.registry.AddonBlocks.init();
         com.ironspellgrimoire.registry.AddonBlocks.BLOCKS.register(modBus);
         AddonItemRegistry.ITEMS.register(modBus);

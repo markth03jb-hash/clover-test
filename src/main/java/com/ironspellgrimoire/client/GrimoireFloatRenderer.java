@@ -295,6 +295,7 @@ public class GrimoireFloatRenderer {
       HOLDERS.clear();
       if (mc.level == null) {
          ANIMS.clear();
+         Swing.clear();
          OPEN_UNTIL.clear();
          PROGRESS.clear();
          SMOOTH_POS.clear();
@@ -312,7 +313,7 @@ public class GrimoireFloatRenderer {
          boolean open = has && (OPEN_UNTIL.getOrDefault(p.getId(), 0L) > now || ANIMS.containsKey(p.getId()));
          boolean quick = ANIMS.containsKey(p.getId()) || (FLIP.containsKey(p.getId()) && now - FLIP.get(p.getId()) < FLIP_TICKS);
          pr[1] = Mth.clamp(pr[1] + (open ? (quick ? 0.3F : 0.12F) : -0.08F), 0.0F, 1.0F);   // a cast flips it open fast   // a summon flips it open fast
-         if (has) HOLDERS.add(p.getId());
+         if (has) { HOLDERS.add(p.getId()); Swing.tick(p, p.yBodyRot); }
 
          // the book turns after you and floats after you, a little behind
          float tgt = p.getYRot();
@@ -358,6 +359,7 @@ public class GrimoireFloatRenderer {
       SMOOTH_YAW.keySet().retainAll(PROGRESS.keySet());
       SMOOTH_POS.keySet().retainAll(PROGRESS.keySet());
       BOOK_STACK.keySet().retainAll(HOLDERS);
+      Swing.retain(HOLDERS);
    }
 
    @SubscribeEvent
@@ -401,7 +403,7 @@ public class GrimoireFloatRenderer {
             // closed on the hip, small enough to sit against the leg; it swings as you walk
             float s = HIP_SCALE * (1.0F + 0.25F * prog);
             ps.mulPose(Axis.YP.rotationDegrees(-bodyYaw));
-            float sway = (float)Math.sin(time * 0.12 + (double)p.getId()) * 2.0F + (float)Math.min(p.getDeltaMovement().horizontalDistance() * 40.0, 14.0);
+            float sway = (float)Math.sin(time * 0.05 + (double)p.getId()) * 0.8F + Swing.angle(p.getId(), pt);   // Moonlight pendulum
             ps.mulPose(Axis.ZP.rotationDegrees(sway));
             ps.mulPose(Axis.XP.rotationDegrees(90.0F));
             ps.mulPose(Axis.YP.rotationDegrees(prog * 120.0F));

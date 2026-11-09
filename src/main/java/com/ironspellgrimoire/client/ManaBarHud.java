@@ -83,46 +83,65 @@ public final class ManaBarHud {
         double time = mc.level.getGameTime() + pt;
 
         int W = g.guiWidth(), H = g.guiHeight();
-        int bw = 81, bh = 5;
-        int x = W / 2 + 10, y = H - 49 - (mc.player.getArmorValue() > 0 && !mc.player.isCreative() ? 0 : 0);
-        if (mc.player.isCreative()) y = H - 32;
-        // the frame: trim colour, with a dark inside
-        g.fill(x - 2, y - 2, x + bw + 2, y + bh + 2, 0xFF000000 | darker(c[0], 0.45F));
-        g.fill(x - 1, y - 1, x + bw + 1, y + bh + 1, 0xFF000000 | c[0]);
-        g.fill(x, y, x + bw, y + bh, 0xFF000000 | c[3]);
+        // Iron's layout: a long steel pill centred above the experience bar (its own offsets are honoured)
+        int bw = 90, bh = 7, ox = 0, oy = 0;
+        try {
+            ox = io.redspace.ironsspellbooks.config.ClientConfigs.MANA_BAR_X_OFFSET.get();
+            oy = io.redspace.ironsspellbooks.config.ClientConfigs.MANA_BAR_Y_OFFSET.get();
+        } catch (Throwable ignored) { }
+        int x = W / 2 - bw / 2 + ox, y = H - 39 + oy - (mc.player.isCreative() ? 0 : 0);
+        int steel = c[0], dk = darker(c[0], 0.40F), lt = mix(c[0], 0xFFFFFF, 0.45F);
+        // steel casing with rounded ends (corner pixels cut), a bright top edge and a dark inside - Iron's bar shape
+        g.fill(x - 3, y - 2, x + bw + 3, y + bh + 2, 0xFF000000);
+        g.fill(x - 2, y - 3, x + bw + 2, y + bh + 3, 0xFF000000);
+        g.fill(x - 2, y - 2, x + bw + 2, y + bh + 2, 0xFF000000 | dk);
+        g.fill(x - 1, y - 2, x + bw + 1, y - 1, 0xFF000000 | lt);                       // bright upper edge
+        g.fill(x - 2, y - 1, x - 1, y + bh + 1, 0xFF000000 | steel);                    // left rim
+        g.fill(x + bw + 1, y - 1, x + bw + 2, y + bh + 1, 0xFF000000 | steel);         // right rim
+        g.fill(x - 1, y + bh + 1, x + bw + 1, y + bh + 2, 0xFF000000 | steel);          // lower rim
+        g.fill(x - 1, y - 1, x + bw + 1, y + bh + 1, 0xFF000000 | steel);
+        g.fill(x, y, x + bw, y + bh, 0xFF000000 | c[3]);                                // dark well
+        // ten segments, like Iron's mana: gaps between them, each filled in the grimoire's colour
+        int segs = 10, sw = bw / segs;
+        float fillW = bw * Mth.clamp(shown, 0F, 1F);
         if (anti) {
-            // anti magic: no mana at all - a black bar with a blood-red edge flickering along it
+            // anti magic: nothing to fill - the segments stay black and a blood-red edge flickers along the well
+            for (int i = 0; i < segs; i++) g.fill(x + i * sw + 1, y + 1, x + (i + 1) * sw, y + bh - 1, 0xFF000000 | mix(c[3], 0x000000, 0.4F));
             for (int i = 0; i < bw; i += 3) {
                 float f = (float) (0.5 + 0.5 * Math.sin(time * 0.35 + i * 0.7) * Math.sin(time * 0.13 + i * 0.31));
-                int a = (int) (90 + 140 * f);
-                g.fill(x + i, y + bh - 1, Math.min(x + bw, x + i + 3), y + bh, (a << 24) | c[2]);
-                if (f > 0.75F) g.fill(x + i, y, Math.min(x + bw, x + i + 2), y + 1, ((int) (a * 0.6F) << 24) | c[2]);
+                int al = (int) (90 + 140 * f);
+                g.fill(x + i, y + bh - 1, Math.min(x + bw, x + i + 3), y + bh, (al << 24) | c[2]);
+                if (f > 0.75F) g.fill(x + i, y, Math.min(x + bw, x + i + 2), y + 1, ((int) (al * 0.6F) << 24) | c[2]);
             }
         } else {
-            int fw = Math.round(bw * Mth.clamp(shown, 0F, 1F));
-            if (fw > 0) {
-                g.fill(x, y, x + fw, y + bh, 0xFF000000 | c[1]);
-                g.fill(x, y, x + fw, y + 1, 0xFF000000 | mix(c[1], c[2], 0.55F));      // light along the top
-                g.fill(x, y + bh - 1, x + fw, y + bh, 0xFF000000 | darker(c[1], 0.6F)); // shade along the bottom
-                // a sheen sliding through the mana
-                int sx = (int) ((time * 1.6) % (bw + 30)) - 15;
-                for (int k = 0; k < 10; k++) {
-                    int px = x + sx + k;
-                    if (px < x || px >= x + fw) continue;
-                    int a = (int) (120 * (1F - Math.abs(k - 5) / 5F));
-                    g.fill(px, y, px + 1, y + bh, (a << 24) | c[2]);
+            for (int i = 0; i < segs; i++) {
+                int sx0 = x + i * sw, sx1 = sx0 + sw - 1;
+                int full = (int) Math.min(sx1 - sx0, Math.max(0F, x + fillW - sx0));
+                g.fill(sx0, y + 1, sx1, y + bh - 1, 0xFF000000 | mix(c[3], c[1], 0.12F));       // empty segment
+                if (full > 0) {
+                    g.fill(sx0, y + 1, sx0 + full, y + bh - 1, 0xFF000000 | c[1]);
+                    g.fill(sx0, y + 1, sx0 + full, y + 2, 0xFF000000 | mix(c[1], c[2], 0.65F));   // lit top of the segment
+                    g.fill(sx0, y + bh - 2, sx0 + full, y + bh - 1, 0xFF000000 | darker(c[1], 0.65F));
                 }
             }
-            // tick marks every quarter
-            for (int q = 1; q < 4; q++) g.fill(x + bw * q / 4, y, x + bw * q / 4 + 1, y + bh, 0x50000000);
+            // a sheen sliding through the mana
+            int fw = Math.round(fillW);
+            int sx = (int) ((time * 1.6) % (bw + 30)) - 15;
+            for (int k = 0; k < 8; k++) {
+                int px = x + sx + k;
+                if (px < x || px >= x + fw || (px - x) % sw == sw - 1) continue;
+                int al = (int) (110 * (1F - Math.abs(k - 4) / 4F));
+                g.fill(px, y + 1, px + 1, y + bh - 1, (al << 24) | c[2]);
+            }
         }
-        // the clover at the left end of the bar
-        clover(g, x - 7, y + bh / 2, LEAVES[book], c, anti, time);
+        // the grimoire's own clover as the gem on top of the casing (Iron puts a gem there), riding the fill's tip
+        int gx = anti ? x + bw / 2 : (int) Mth.clamp(x + fillW, x + 6, x + bw - 6);
+        clover(g, gx, y - 4, LEAVES[book], c, anti, time);
         // the numbers (or ANTI MAGIC) just above the right end
         Font f = mc.font;
         String s = anti ? "ANTI MAGIC" : (int) mana + " / " + (int) max;
         g.pose().pushPose();
-        g.pose().translate(x + bw, y - 7, 0);
+        g.pose().translate(x + bw, y - 9, 0);
         g.pose().scale(0.5F, 0.5F, 1F);
         g.drawString(f, Component.literal(s), -f.width(s), 0, 0xFF000000 | c[4], true);
         g.pose().popPose();
