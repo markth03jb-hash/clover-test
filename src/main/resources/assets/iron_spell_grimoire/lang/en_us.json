@@ -392,7 +392,7 @@
   "spell.iron_spell_grimoire.escort_gate": "Spatial Magic: Escort Gate",
   "spell.iron_spell_grimoire.escort_gate.guide": "A wide gate opens: you and every ally within 6 blocks are carried to where you look, up to 50 blocks away.",
   "spell.iron_spell_grimoire.waypoint": "Spatial Magic: Waypoint",
-  "spell.iron_spell_grimoire.waypoint.guide": "Mark this spot with a small gate. Cast again within a minute to return through it.",
+  "spell.iron_spell_grimoire.waypoint.guide": "Opens your waypoint menu. Save where you stand under a name you choose, then step through a gate to any waypoint you saved, from anywhere, whenever you like - they never expire. You keep them through death.",
   "spell.iron_spell_grimoire.sky_drop": "Spatial Magic: Sky Drop",
   "spell.iron_spell_grimoire.sky_drop.guide": "A gate opens under the enemy you aim at (and up to three beside it) and drops them out of another gate 18 blocks up in the sky.",
   "spell.iron_spell_grimoire.redirect_gate": "Spatial Magic: Redirect Gate",

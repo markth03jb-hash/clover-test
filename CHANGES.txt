@@ -1,7 +1,11 @@
-Iron Spell Grimoire v1.71.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.72.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.72.0
+- Spatial Grimoire: Waypoint reworked. Casting it opens a menu: type a name and Save here, Go to any saved waypoint
+  (any distance, any dimension, no time limit) or X to forget one. Waypoints are kept on you through death, up to 30.
 
 NEW IN 1.71.0
 - Three new grimoires, each with 8 spells, 2 combos, its own wheel pages, mana bar, mastery unlocks, tooltips, spell

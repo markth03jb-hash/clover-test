@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *                           anything that walks into one comes out of the other
  *  2 Short Hop            - a quick gate at you and one 12 blocks ahead: you step through
  *  3 Escort Gate          - you and every ally beside you go through a gate to where you look (up to 50 blocks)
- *  4 Waypoint             - mark this spot with a small gate; cast again within a minute to come back to it
+ *  4 Waypoint             - opens a menu: save where you stand under a name, go to any saved place (no time limit)
  *  5 Sky Drop             - a gate opens under the enemies you aim at and drops them out of one high in the sky
  *  6 Redirect Gate        - a gate before you for 5 s swallows enemy projectiles and fires them at your enemies
  *                           out of gates beside them
@@ -97,7 +97,7 @@ public final class SpaceFx {
         FxSend.beam(sl, Fx.SILVER, a.add(rt.scale(hw * 0.5)), e.subtract(rt.scale(hw * 0.5)), 0.03f, Math.max(2, life / 2));
     }
 
-    private static void whoosh(ServerLevel sl, Vec3 at) {
+    static void whoosh(ServerLevel sl, Vec3 at) {
         sound(sl, at, SoundEvents.ENDERMAN_TELEPORT, 0.7f, 1.3f);
         sound(sl, at, SoundEvents.AMETHYST_BLOCK_CHIME, 0.8f, 0.6f);
     }
@@ -219,33 +219,10 @@ public final class SpaceFx {
     private static final UUID ESCORT_SPEED = UUID.fromString("c4a2d7a0-6a3b-4f6e-8d11-7b9e5a100301");
 
     // ================================================================== 4. Waypoint
+    /** Opens the waypoint menu: save where you stand under a name, or go to any place you saved. No time limit. */
     public static void waypoint(ServerPlayer p, float power) {
-        ServerLevel sl = p.serverLevel();
-        Mark m = MARKS.get(p.getUUID());
-        long now = sl.getGameTime();
-        if (m != null && now <= m.until && m.dim == sl.dimension()) {
-            // back through a gate to the mark
-            Vec3 look = flat(p.getLookAngle());
-            gate(sl, p.position().add(look.scale(0.8)).add(0, 1, 0), look.scale(-1), 0.7f, 1.1f, 12, 0);
-            FxSend.kill(sl, m.id, m.pos);
-            gate(sl, m.pos.add(0, 1, 0), look, 0.7f, 1.1f, 12, 0);
-            MARKS.remove(p.getUUID());
-            ModeHud.hide(p, "waypoint");
-            whoosh(sl, p.position());
-            AstaFx.later(3, () -> { if (alive(p)) { Vec3 s = safe(sl, m.pos, p); if (s != null) { move(p, s, p.getYRot()); whoosh(sl, s); } } });
-            return;
-        }
-        Mark nm = new Mark();
-        nm.dim = sl.dimension(); nm.pos = p.position(); nm.until = now + 1200;
-        // a gate lying flat on the ground where you stand, big enough to step on
-        double groundY = p.onGround() ? p.getY() : sl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, (int) Math.floor(p.getX()), (int) Math.floor(p.getZ()));
-        nm.pos = new Vec3(p.getX(), Math.min(p.getY(), groundY), p.getZ());
-        nm.id = gate(sl, nm.pos.add(0, 0.06, 0), new Vec3(0, 1, 0), 1.15f, 1.15f, 1200, 0);
-        FxSend.ring(sl, S, nm.pos.add(0, 0.05, 0), 0.2f, 1.6f, 0.05f, 10);
-        ModeHud.show(p, "waypoint", 1200);
-        MARKS.put(p.getUUID(), nm);
-        p.displayClientMessage(Component.literal("Waypoint set - cast again within a minute to return.").withStyle(ChatFormatting.LIGHT_PURPLE), true);
-        sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_PLACE, 1f, 1.2f);
+        Waypoints.open(p);
+        sound(p.serverLevel(), p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 0.8f, 1.5f);
     }
 
     // ================================================================== 5. Sky Drop
