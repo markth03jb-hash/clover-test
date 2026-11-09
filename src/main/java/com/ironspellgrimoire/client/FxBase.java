@@ -55,7 +55,8 @@ abstract class FxBase {
       {0.28F, 0.0F, 0.03F},    // 14 crimson flame (Mereoleona)
       {0.55F, 0.5F, 0.42F},    // 15 bone (Zenon)
       {0.30F, 0.10F, 0.18F},   // 16 thread (Vanessa)
-      {0.05F, 0.02F, 0.14F}    // 17 space (Finral)
+      {0.05F, 0.02F, 0.14F},   // 17 space (Finral)
+      {0.2F, 0.0F, 0.01F}      // 18 pure crimson (Demon Slayer's Sky Splitter: red only)
    };
    static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
@@ -69,7 +70,8 @@ abstract class FxBase {
       {1.0F, 0.16F, 0.1F},     // 14 crimson flame (Mereoleona Vermillion)
       {0.95F, 0.92F, 0.84F},   // 15 bone (Zenon Zogratis)
       {1.0F, 0.55F, 0.78F},    // 16 thread (Vanessa Enoteca): pink-white thread
-      {0.62F, 0.45F, 1.0F}     // 17 space (Finral Roulacase): violet, gold-rimmed gates
+      {0.62F, 0.45F, 1.0F},    // 17 space (Finral Roulacase): violet, gold-rimmed gates
+      {1.0F, 0.08F, 0.05F}     // 18 pure crimson
    };
    /** Overall strength of every world effect. Lower = subtler. */
    static final float FX_ALPHA = 1.0F;
@@ -282,7 +284,7 @@ abstract class FxBase {
 
    static float[] hot(int pal) {
       float[] r = RIM[pal];
-      float w = isFlame(pal) ? 0.3F : 0.55F;   // black-flame palettes keep a red-orange core instead of white
+      float w = isFlame(pal) ? 0.3F : (pal == 13 ? 0.32F : 0.55F);   // black flame keeps a red core; Luck's lightning stays blue
       return new float[]{r[0] + (1.0F - r[0]) * w, r[1] + (1.0F - r[1]) * w, r[2] + (1.0F - r[2]) * w};
    }
 

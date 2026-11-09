@@ -70,6 +70,17 @@ public final class ThreadFx {
     static void thread(ServerLevel sl, Vec3 a, Vec3 b, int life) { FxSend.beam(sl, T | K, a, b, 0.022f, life); }
     static void redThread(ServerLevel sl, Vec3 a, Vec3 b, int life) { FxSend.beam(sl, FATE | K, a, b, 0.03f, life); }
 
+    /** A thread form worn by an entity, drawn and moved with it by the client (ThreadForms): 0 cocoon, 1 dress, 2 fate, 3 guard. */
+    static void form(LivingEntity e, int kind, int life) {
+        FxPacket pk = new FxPacket();
+        pk.shape = 47; pk.id = e.getId(); pk.palette = (byte) kind; pk.life = life;
+        com.ironspellgrimoire.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> e), pk);
+    }
+
+    static void hud(LivingEntity e, String id, int ticks, int count) {
+        if (e instanceof ServerPlayer sp) ModeHud.show(sp, id, ticks, count);
+    }
+
     static Vec3 fingers(ServerPlayer p) {
         Vec3 look = p.getLookAngle();
         return p.getEyePosition().add(look.scale(0.6)).add(rightOf(look).scale(0.3)).add(0, -0.35, 0);
@@ -82,6 +93,13 @@ public final class ThreadFx {
             Vec3 at = t.position().add(0, t.getBbHeight() * (0.2 + i * 0.22), 0);
             FxSend.ring(sl, pal | K, at, w, w + 0.04f, 0.015f, life);
         }
+    }
+
+    /** Two wraps instead of four (for the spells that wrap many bodies at once). */
+    static void wrapLight(ServerLevel sl, LivingEntity t, int pal, int life) {
+        float w = Math.max(0.35f, t.getBbWidth() * 0.65f);
+        FxSend.ring(sl, pal | K, t.position().add(0, t.getBbHeight() * 0.3, 0), w, w + 0.04f, 0.015f, life);
+        FxSend.ring(sl, pal | K, t.position().add(0, t.getBbHeight() * 0.7, 0), w, w + 0.04f, 0.015f, life);
     }
 
     static void bind(LivingEntity t, int ticks) {
@@ -114,11 +132,11 @@ public final class ThreadFx {
             int delay = (int) Math.min(6, d / 6);   // the threads take a moment to fly there
             AstaFx.later(Math.max(1, delay), () -> {
                 if (!t.isAlive() || !alive(p)) return;
-                for (int i = 0; i < 6; i++) {
-                    Vec3 off = new Vec3((i - 2.5) * 0.06, (i % 3) * 0.25 - 0.25, 0);
+                for (int i = 0; i < 3; i++) {   // three threads, each a crisp line - enough to read as a bundle
+                    Vec3 off = new Vec3((i - 1) * 0.08, (i - 1) * 0.22, 0);
                     thread(sl, fingers(p), mid(t).add(off), 60);
                 }
-                wrap(sl, t, T, 60);
+                wrapLight(sl, t, T, 60);
                 bind(t, 60);
                 AstaFx.damage(p, t, power * (t == main ? 1f : 0.6f), "binding_threads");
                 sound(sl, t.position(), SoundEvents.WOOL_PLACE, 1f, 0.7f);
@@ -179,6 +197,7 @@ public final class ThreadFx {
         n.owner = p; n.c = c; n.n = look; n.side = side; n.w = 4.0; n.h = 2.2; n.until = sl.getGameTime() + 160;
         NETS.add(n);
         int life = 160;
+        hud(p, "thread_net", life, -1);
         // the weave: threads across, threads up, and two diagonals - a net, not a wall
         for (int i = -4; i <= 4; i++) {
             Vec3 x0 = c.add(side.scale(i * n.w / 4.0));
@@ -197,17 +216,18 @@ public final class ThreadFx {
     // ================================================================== 4. Thread Cocoon
     public static void cocoon(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        COCOON.put(p.getUUID(), new float[]{8f + power * 0.8f, sl.getGameTime() + 160});
-        // threads wind round you, a spiral from the feet up
-        for (int k = 0; k < 10; k++) {
+        float shield = 8f + power * 0.8f;
+        COCOON.put(p.getUUID(), new float[]{shield, sl.getGameTime() + 160});
+        form(p, 0, 160);                       // the cocoon itself: wound threads that go wherever you go
+        hud(p, "thread_cocoon", 160, (int) Math.ceil(shield));
+        // the threads flying in and winding on
+        for (int k = 0; k < 8; k++) {
             final int kk = k;
             AstaFx.later(k, () -> {
                 if (!alive(p)) return;
-                double a = kk * 0.9;
-                Vec3 base = p.position();
-                Vec3 a0 = base.add(Math.cos(a) * 0.7, kk * 0.2, Math.sin(a) * 0.7), a1 = base.add(Math.cos(a + 2.4) * 0.7, kk * 0.2 + 0.3, Math.sin(a + 2.4) * 0.7);
-                thread(sl, a0, a1, 150 - kk);
-                FxSend.ring(sl, T | K, base.add(0, kk * 0.2, 0), 0.62f + 0.02f * (kk % 3), 0.66f + 0.02f * (kk % 3), 0.02f, 150 - kk);
+                double a = kk * 0.8;
+                Vec3 out = p.position().add(Math.cos(a) * 2.2, 0.3 + kk * 0.22, Math.sin(a) * 2.2);
+                thread(sl, out, mid(p).add(0, (kk % 3) * 0.3 - 0.3, 0), 5);
             });
         }
         sound(sl, p.position(), SoundEvents.WOOL_PLACE, 1f, 1.2f);
@@ -216,6 +236,7 @@ public final class ThreadFx {
     // ================================================================== 5. Stitching
     public static void stitching(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
+        FxSend.ring(sl, T, p.position().add(0, 0.05, 0), 0.4f, 6.0f, 0.06f, 12);   // the reach of it
         for (int k = 0; k < 100; k += 10) {
             final int kk = k;
             AstaFx.later(k, () -> {
@@ -223,14 +244,27 @@ public final class ThreadFx {
                 for (LivingEntity a : allies(p, 6)) {
                     a.heal(1.0f + power * 0.08f);
                     Vec3 m = mid(a);
-                    // a few stitches across the body: short threads in a zigzag
-                    for (int i = 0; i < 3; i++) {
-                        double y = -0.3 + i * 0.3;
-                        thread(sl, m.add(-0.25, y, 0.0), m.add(0.25, y + 0.15, 0.0), 8);
+                    Vec3 toCam = flat(p.getLookAngle()).scale(-1);   // stitch across the side facing out
+                    Vec3 side = rightOf(toCam);
+                    Vec3 face = m.add(toCam.scale(a.getBbWidth() * 0.55));
+                    // a row of bright X stitches running down the body, the thread joining them
+                    Vec3 prev = null;
+                    for (int i = 0; i < 4; i++) {
+                        Vec3 c = face.add(0, 0.45 - i * 0.3, 0);
+                        double s0 = 0.13;
+                        FxSend.beam(sl, T | K, c.add(side.scale(-s0)).add(0, s0, 0), c.add(side.scale(s0)).add(0, -s0, 0), 0.035f, 14);
+                        FxSend.beam(sl, 6 | K, c.add(side.scale(s0)).add(0, s0, 0), c.add(side.scale(-s0)).add(0, -s0, 0), 0.035f, 14);
+                        if (prev != null) thread(sl, prev, c, 14);
+                        prev = c;
                     }
-                    if (a != p) thread(sl, fingers(p), m, 6);
+                    // the needle: a short white flash sweeping down the stitches
+                    FxSend.beam(sl, 6 | K, face.add(0, 0.6 - (kk % 30) / 30.0, 0), face.add(0, 0.45 - (kk % 30) / 30.0, 0), 0.05f, 4);
+                    FxSend.ring(sl, T | K, a.position().add(0, 0.05, 0), 0.5f, 0.56f, 0.03f, 10);
+                    Fx.spark(sl, T, m.add(0, 0.6, 0), 0.5f);
+                    if (a != p) thread(sl, fingers(p), m, 8);
                 }
                 if (kk % 20 == 0) sound(sl, p.position(), SoundEvents.WOOL_HIT, 0.7f, 1.5f);
+                if (kk % 30 == 0) sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 0.6f, 1.6f);
             });
         }
     }
@@ -260,7 +294,14 @@ public final class ThreadFx {
                 thread(sl, out, mid(p).add(0, (kk % 4) * 0.2 - 0.3, 0), 6);
             });
         }
-        AstaFx.later(12, () -> { if (alive(p)) { wrap(sl, p, T, 14); Fx.flash(sl, mid(p), 0.8f); } });
+        AstaFx.later(12, () -> {
+            if (!alive(p)) return;
+            form(p, 1, dur - 12);                 // the dress: skirt, ribbons, crown of thread - worn the whole time
+            hud(p, "battle_dress", dur - 12, -1);
+            Fx.flash(sl, mid(p), 0.9f);
+            FxSend.ring(sl, T, p.position().add(0, 0.05, 0), 0.3f, 2.6f, 0.1f, 10);
+            sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 1.3f);
+        });
         sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_LEATHER, 1f, 0.8f);
     }
 
@@ -273,6 +314,7 @@ public final class ThreadFx {
         cg.owner = p; cg.c = c; cg.r = 5.0; cg.until = sl.getGameTime() + 140; cg.dmg = power * 0.35f;
         CAGES.add(cg);
         int life = 140;
+        hud(p, "thread_cage", life, -1);
         // meridians from the ground ring up over a dome, and rings of latitude
         for (int i = 0; i < 12; i++) {
             double a = i * Math.PI / 6;
@@ -296,19 +338,29 @@ public final class ThreadFx {
     // ================================================================== 8. Red Thread of Fate
     public static void redThreadOfFate(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        long until = sl.getGameTime() + 240;
+        int life = 240;
+        long until = sl.getGameTime() + life;
         List<LivingEntity> guarded = allies(p, 10);
-        for (LivingEntity a : guarded) FATE_GUARD.put(a.getUUID(), new long[]{until, 0});
-        // a great wheel of red thread turning overhead, threads running out to everyone it protects
-        Vec3 top = p.position().add(0, 4.5, 0);
-        for (int i = 0; i < 16; i++) {
-            double a0 = i * Math.PI / 8, a1 = (i + 1) * Math.PI / 8;
-            redThread(sl, top.add(Math.cos(a0) * 3, 0, Math.sin(a0) * 3), top.add(Math.cos(a1) * 3, 0, Math.sin(a1) * 3), 60);
-            if (i % 2 == 0) redThread(sl, top, top.add(Math.cos(a0) * 3, 0, Math.sin(a0) * 3), 60);
+        form(p, 2, life);   // the wheel of fate turning above you, for the whole time
+        for (LivingEntity a : guarded) {
+            FATE_GUARD.put(a.getUUID(), new long[]{until, 0});
+            if (a != p) form(a, 3, life);   // a red thread knotted round each ally's hand, running up to the wheel
+            hud(a, "red_thread_of_fate", life, 1);
         }
-        for (LivingEntity a : guarded) redThread(sl, top, mid(a), 60);
-        FxSend.ring(sl, FATE, p.position().add(0, 0.05, 0), 0.5f, 10f, 0.1f, 14);
-        Fx.flash(sl, top, 1.6f);
+        // the moment it is woven: red threads race out over the ground like a web, rings of it closing behind
+        Vec3 c = p.position().add(0, 0.08, 0);
+        for (int i = 0; i < 16; i++) {
+            double a0 = i * Math.PI / 8;
+            Vec3 tip = c.add(Math.cos(a0) * 10, 0, Math.sin(a0) * 10);
+            final Vec3 t0 = tip;
+            AstaFx.later(i % 4, () -> redThread(sl, c, t0, 30));
+        }
+        for (int k = 1; k <= 3; k++) {
+            final int kk = k;
+            AstaFx.later(2 + k * 2, () -> FxSend.ring(sl, FATE | K, c, kk * 3.2f, kk * 3.2f + 0.05f, 0.03f, 30));
+        }
+        FxSend.impactFrame(sl, p.position(), 2, FxSend.FRAME_VANESSA, 24);
+        Fx.flash(sl, p.position().add(0, 4.5, 0), 1.8f);
         sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_RESONATE, 1.2f, 0.6f);
         sound(sl, p.position(), SoundEvents.BELL_RESONATE, 0.8f, 1.2f);
     }
@@ -324,8 +376,16 @@ public final class ThreadFx {
             g[1] = 1;
             e.setCanceled(true);
             ServerLevel sl = (ServerLevel) v.level();
-            Fx.flash(sl, mid(v), 1.0f);
+            hud(v, "red_thread_of_fate", (int) Math.max(1, g[0] - now), 0);
+            form(v, 3, 0);
+            // fate rewritten: red threads snap out all round the body and the blow simply isn't there
+            Fx.flash(sl, mid(v), 1.2f);
+            for (int i = 0; i < 10; i++) {
+                double a0 = i * Math.PI / 5;
+                redThread(sl, mid(v), mid(v).add(Math.cos(a0) * 1.8, Math.sin(i * 1.3) * 0.8, Math.sin(a0) * 1.8), 10);
+            }
             FxSend.ring(sl, FATE | K, mid(v), 0.4f, 1.6f, 0.03f, 10);
+            FxSend.impactFrame(sl, mid(v), 1, FxSend.FRAME_VANESSA, 10);
             sound(sl, v.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1.2f, 0.7f);
             if (e.getSource().getEntity() instanceof LivingEntity atk && atk != v) {
                 redThread(sl, mid(v), mid(atk), 40);
@@ -341,7 +401,13 @@ public final class ThreadFx {
             e.setAmount(e.getAmount() - soak);
             ServerLevel sl = (ServerLevel) v.level();
             sound(sl, v.position(), SoundEvents.WOOL_HIT, 1f, 0.8f);
-            if (c[0] <= 0) { COCOON.remove(v.getUUID()); sound(sl, v.position(), SoundEvents.WOOL_BREAK, 1f, 0.8f); }
+            hud(v, "thread_cocoon", (int) Math.max(1, c[1] - now), (int) Math.ceil(Math.max(0, c[0])));
+            if (c[0] <= 0) {
+                COCOON.remove(v.getUUID());
+                form(v, 0, 0);
+                hud(v, "thread_cocoon", 0, -1);
+                sound(sl, v.position(), SoundEvents.WOOL_BREAK, 1f, 0.8f);
+            }
             if (e.getAmount() <= 0) e.setCanceled(true);
         }
     }

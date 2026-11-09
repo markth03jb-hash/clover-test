@@ -109,14 +109,14 @@ public final class PixelFx {
             {1.0F, 0.16F, 0.1F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F},
             {0.6F, 1.0F, 0.78F}, {0.95F, 0.95F, 1.0F}, {0.7F, 0.82F, 0.95F}, {1.0F, 0.8F, 0.3F}, {1.0F, 0.07F, 0.05F},
             {0.6F, 0.2F, 1.0F}, {0.86F, 0.92F, 1.0F}, {0.35F, 0.65F, 1.0F}, {0.45F, 0.72F, 1.0F}, {1.0F, 0.16F, 0.1F},
-            {1.0F, 0.98F, 0.93F}, {1.0F, 0.55F, 0.78F}, {0.62F, 0.45F, 1.0F}
+            {1.0F, 0.98F, 0.93F}, {1.0F, 0.55F, 0.78F}, {0.62F, 0.45F, 1.0F}, {1.0F, 0.1F, 0.06F}
     };
     /** The colour of the solid (non-glowing) sprites: black anti magic and darkness, steel, gold, mercury, bone. */
     private static final float[][] SOLID = {
             {0.02F, 0.0F, 0.01F}, {0.03F, 0.0F, 0.05F}, {0.08F, 0.03F, 0.02F}, {0.05F, 0.1F, 0.16F}, {0.1F, 0.09F, 0.02F},
             {0.05F, 0.12F, 0.08F}, {0.5F, 0.5F, 0.55F}, {0.32F, 0.36F, 0.42F}, {0.55F, 0.38F, 0.08F}, {0.03F, 0.0F, 0.0F},
             {0.015F, 0.0F, 0.035F}, {0.62F, 0.67F, 0.75F}, {0.02F, 0.05F, 0.2F}, {0.02F, 0.06F, 0.18F}, {0.12F, 0.0F, 0.01F},
-            {0.95F, 0.93F, 0.88F}, {0.4F, 0.12F, 0.26F}, {0.04F, 0.02F, 0.12F}
+            {0.95F, 0.93F, 0.88F}, {0.4F, 0.12F, 0.26F}, {0.04F, 0.02F, 0.12F}, {0.2F, 0.0F, 0.01F}
     };
 
     static final int DARK = 0, FLAME = 1, BOLT = 2, WIND = 3, METAL = 4, BONE = 5, LIGHT = 6;
@@ -139,7 +139,8 @@ public final class PixelFx {
     private static float[] glow(int pal, float heat) {
         pal = Mth.clamp(pal, 0, RIM.length - 1);
         if (pal == 2) return ramp(FIRE_H, FIRE_C, heat);
-        if (pal == 0 || pal == 9 || pal == 14) return ramp(CRIM_H, CRIM_C, heat);
+        if (pal == 0 || pal == 9 || pal == 14 || pal == 18) return ramp(CRIM_H, CRIM_C, heat);
+        if (pal == 13) return ramp(GEN_H, BLUE_C, heat);   // Luck: deep blue to electric blue to a pale blue-white, never yellow
         float[] c = RIM[pal];
         float[][] cs = {
                 {c[0] * 0.3F, c[1] * 0.3F, c[2] * 0.3F}, {c[0] * 0.6F, c[1] * 0.6F, c[2] * 0.6F}, c,
@@ -148,6 +149,7 @@ public final class PixelFx {
     }
 
     private static final float[] GEN_H = {0.1F, 0.3F, 0.55F, 0.8F, 0.97F};
+    private static final float[][] BLUE_C = {{0.02F, 0.06F, 0.28F}, {0.08F, 0.25F, 0.85F}, {0.25F, 0.55F, 1.0F}, {0.55F, 0.8F, 1.0F}, {0.82F, 0.92F, 1.0F}};
     private static final float[] CRIM_H = {0.15F, 0.42F, 0.68F, 0.86F, 0.97F};
     private static final float[][] CRIM_C = {{0.35F, 0.0F, 0.02F}, {0.75F, 0.04F, 0.04F}, {1.0F, 0.22F, 0.16F}, {1.0F, 0.75F, 0.7F}, {1.0F, 0.93F, 0.88F}};
     private static final float[] FIRE_H = {0.1F, 0.3F, 0.5F, 0.7F, 0.9F};
@@ -395,9 +397,9 @@ public final class PixelFx {
      * and claws; 10 Yami: dark crescents and smoke puffs; 11 Nozel: mercury drops; 12 blue fire: wisps;
      * 13 Luck: zigzag bolts and diamonds; 14 Mereoleona: curved lion-mane flame claws; 15 Zenon: little bones.)
      */
-    private static final int[] LONG = {K_BLADE, K_MOON, K_TONGUE, K_STREAK, K_BOLT, K_STREAK, K_STREAK, K_STREAK, K_STREAK, K_BARB, K_MOON, K_STREAK, K_WISP, K_BOLT, K_CLAW, K_STREAK, K_STREAK, K_STREAK};
-    private static final int[] BIT = {K_SHARD, K_SHARD, K_EMBER, K_DIAMOND, K_CROSS, K_FEATHER, K_STAR, K_PLATE, K_RING, K_CROSS, K_PUFF, K_DROP, K_EMBER, K_DIAMOND, K_EMBER, K_BONE, K_CROSS, K_STAR};
-    private static final int[] SPEC = {K_CROSS, K_PUFF, K_CROSS, K_STAR, K_STAR, K_MOON, K_CROSS, K_CROSS, K_STAR, K_CLAW, K_WISP, K_STAR, K_TONGUE, K_STAR, K_TONGUE, K_SHARD, K_RING, K_RING};
+    private static final int[] LONG = {K_BLADE, K_MOON, K_TONGUE, K_STREAK, K_BOLT, K_STREAK, K_STREAK, K_STREAK, K_STREAK, K_BARB, K_MOON, K_STREAK, K_WISP, K_BOLT, K_CLAW, K_STREAK, K_STREAK, K_STREAK, K_BLADE};
+    private static final int[] BIT = {K_SHARD, K_SHARD, K_EMBER, K_DIAMOND, K_CROSS, K_FEATHER, K_STAR, K_PLATE, K_RING, K_CROSS, K_PUFF, K_DROP, K_EMBER, K_DIAMOND, K_EMBER, K_BONE, K_CROSS, K_STAR, K_SHARD};
+    private static final int[] SPEC = {K_CROSS, K_PUFF, K_CROSS, K_STAR, K_STAR, K_MOON, K_CROSS, K_CROSS, K_STAR, K_CLAW, K_WISP, K_STAR, K_TONGUE, K_STAR, K_TONGUE, K_SHARD, K_RING, K_RING, K_CROSS};
 
     /** One sprite of a palette's own kind of magic at {@code at}, carried by {@code drift}, lying along {@code axis}. */
     static void one(int pal, Vec3 at, Vec3 drift, Vec3 axis, double size) {
@@ -795,6 +797,9 @@ public final class PixelFx {
     public static void fromFx(FxPacket p, Vec3 at, double age, double life, boolean perTick) {
         if (age < 0.0 || age > life) return;
         if (perTick && age >= 1.0) return;
+        // hair-thin lines (threads, red threads, hairline cuts) shed a few sprites when they appear and none after:
+        // they are drawn as crisp lines, and dozens of them held for seconds must not flood the screen with sprites
+        if (!p.pixelOnly && ((p.shape == 2 && p.r <= 0.035F) || (p.shape == 0 && p.h <= 0.03F)) && age >= 1.0) return;
         boost = p.pixelOnly ? 1.35 : 1.0;
         try { fromFx0(p, at, age, life, perTick); } finally { boost = 1.0; }
     }
@@ -1228,6 +1233,11 @@ public final class PixelFx {
             int el = element(a.pal);
             Vec3 rise = el == FLAME || el == DARK ? new Vec3(0, 0.04, 0) : (el == METAL || el == BONE ? Vec3.ZERO : new Vec3(0, 0.015, 0));
             int n = cnt(a.rate * (self && (a.mode == BODY || a.mode == GLINT || a.mode == HANDS || a.mode == RIGHT_HAND) ? 0.3 : 1.0));   // lighter in your own view
+            if (a.shape == 18) {   // Spirit Dive: its wind only shows while you move
+                double sp = Math.sqrt((e.getX() - e.xo) * (e.getX() - e.xo) + (e.getZ() - e.zo) * (e.getZ() - e.zo) + (e.getY() - e.yo) * (e.getY() - e.yo));
+                if (sp < 0.06) n = 0;
+                else mv = new Vec3(e.getX() - e.xo, e.getY() - e.yo, e.getZ() - e.zo).scale(-0.4);
+            }
             for (int i = 0; i < n; i++) {
                 switch (a.mode) {
                     case BODY, GLINT -> {
@@ -1319,7 +1329,7 @@ public final class PixelFx {
     }
 
     /** The hottest a palette may glow: darkness never turns white (no white-hot cores or edges on Yami's moves). */
-    private static float maxHeat(int pal) { return pal == 1 || pal == 10 ? 0.68F : 1.0F; }
+    private static float maxHeat(int pal) { return pal == 1 || pal == 10 ? 0.68F : (pal == 18 ? 0.5F : 1.0F); }
 
     private static void add(Spr p) {
         if (p.heat > maxHeat(p.pal)) p.heat = maxHeat(p.pal);

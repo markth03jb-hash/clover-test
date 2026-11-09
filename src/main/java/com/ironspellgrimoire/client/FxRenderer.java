@@ -103,6 +103,7 @@ public class FxRenderer extends FxBase {
       if (p.shape == 44) { PixelFx.ghostBlade(p); return; }   // Equinox's invisible sword
       if (p.shape == 45) { GrimoireCeremonyRenderer.start(p); return; }   // the grimoire tower ceremony
       if (p.shape == 46) { PortalRenderer.spawn(p); return; }   // Finral's gates of space
+      if (p.shape == 47) { ThreadForms.set(p); return; }        // the String Grimoire's thread forms
       if (p.shape == 3 && PortalRenderer.kill(p.id)) return;    // closing a gate   // Equinox hit you: your screen is cut in two   // a move's cast animation started (effect timing)
       if (FxSync.defer(p)) return;   // held back to land on the swing
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
@@ -162,7 +163,7 @@ public class FxRenderer extends FxBase {
       }
       if (p.shape == 35) { LimitClient.set(p.id, p.palette, p.life); return; }   // Surpassing Limits aura: palette = book index
       if (p.shape == 34) { MasteryClient.setEnabled(p.life > 0); return; }   // Grimoire Mastery on/off
-      if (p.shape == 32) { ModeHudOverlay.set(p.palette, p.life); return; }   // mode timer on the HUD: palette = mode, life = ticks (0 = off)
+      if (p.shape == 32) { ModeHudOverlay.set(p.palette & 0xFF, p.life, p.sweep); return; }   // mode timer on the HUD: palette = mode, life = ticks (0 = off)
       if (p.shape == 27) { DarkSmoke.hellfire(p.id, p.life); return; }   // Hellfire Incarnate body: id = player, life = ticks
       if (p.shape == 21) { DarkSmoke.burning(p.id, p.life); return; }    // burning: id = entity, life = ticks
       if (p.shape == 22) { DarkSmoke.knuckles(p.id, p.life); return; }   // Flame Knuckles: id = player, life = ticks
@@ -305,11 +306,16 @@ public class FxRenderer extends FxBase {
                if (ent == null || now > se.getValue()[1]) continue;
                java.util.concurrent.ThreadLocalRandom rr = java.util.concurrent.ThreadLocalRandom.current();
                boolean self = ent == mc.player && mc.options.getCameraType().isFirstPerson();
-               for (int k = 0; k < (self ? 1 : 2); k++) {
+               // only while moving: the wind streams back off you the way you are going, like the air you cut through
+               Vec3 mv = new Vec3(ent.getX() - ent.xo, ent.getY() - ent.yo, ent.getZ() - ent.zo);
+               double speed = mv.length();
+               if (speed < 0.06) continue;
+               int n = (int) Math.min(4, 1 + speed * 6) / (self ? 2 : 1);
+               for (int k = 0; k < n; k++) {
                   double a = rr.nextDouble(Math.PI * 2), y = rr.nextDouble(0.1, ent.getBbHeight());
-                  Vec3 at = ent.position().add(Math.cos(a) * 0.7, y, Math.sin(a) * 0.7);
-                  Vec3 tan = new Vec3(-Math.sin(a), 0.04, Math.cos(a)).scale(0.22);
-                  DarkSmoke.streak(at, tan.add(ent.getDeltaMovement().scale(0.8)), 0.06F, rr.nextInt(8, 14));
+                  Vec3 at = ent.position().add(Math.cos(a) * 0.55, y, Math.sin(a) * 0.55);
+                  Vec3 back = mv.scale(-0.55).add(new Vec3(-Math.sin(a), 0, Math.cos(a)).scale(0.04));
+                  DarkSmoke.streak(at, back, 0.05F, rr.nextInt(6, 10));
                }
             }
             SPIRIT.values().removeIf(sf -> now > sf[1] + 20.0);

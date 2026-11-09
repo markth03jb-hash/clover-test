@@ -9,6 +9,8 @@
     "iron_spell_grimoire:fire_grimoire",
     "iron_spell_grimoire:lightning_grimoire",
     "iron_spell_grimoire:hellfire_grimoire",
-    "iron_spell_grimoire:bone_grimoire"
+    "iron_spell_grimoire:bone_grimoire",
+    "iron_spell_grimoire:string_grimoire",
+    "iron_spell_grimoire:spatial_grimoire"
   ]
 }

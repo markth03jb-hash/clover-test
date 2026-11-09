@@ -11,13 +11,19 @@ public final class ModeHud {
     private ModeHud() {}
 
     /** Show (or refresh) a mode's timer with {@code ticks} left; 0 removes it. Only the caster sees it. */
-    public static void show(ServerPlayer p, String spellId, int ticks) {
+    public static void show(ServerPlayer p, String spellId, int ticks) { show(p, spellId, ticks, -1); }
+
+    /**
+     * Show (or refresh) a mode's timer with {@code ticks} left and {@code count} hits/dodges/shield left (-1 = none).
+     * Use this for anything with charges, so the HUD shows both how long it lasts and how many are left.
+     */
+    public static void show(ServerPlayer p, String spellId, int ticks, int count) {
         int i = ModeIds.index(spellId);
         if (i < 0 || p == null || p.connection == null) return;
         java.util.Map<String, Long> m = ACTIVE.computeIfAbsent(p.getUUID(), k -> new java.util.HashMap<>());
         if (ticks > 0) m.put(spellId, p.serverLevel().getGameTime() + ticks); else m.remove(spellId);
         FxPacket pkt = new FxPacket();
-        pkt.shape = 32; pkt.id = p.getId(); pkt.palette = (byte) i; pkt.life = Math.max(0, ticks);
+        pkt.shape = 32; pkt.id = p.getId(); pkt.palette = (byte) i; pkt.life = Math.max(0, ticks); pkt.sweep = count;
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), pkt);
     }
 

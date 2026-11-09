@@ -266,7 +266,7 @@ public class WindFx {
         AstaFx.later(1, () -> tornadoTick(p, sl, nb, dir, dmg, age + 1, big, held));
     }
 
-    private static void tornadoPacket(ServerLevel sl, Vec3 base, float r, float h, int age, Vec3 vel) {
+    static void tornadoPacket(ServerLevel sl, Vec3 base, float r, float h, int age, Vec3 vel) {
         FxPacket p = new FxPacket();
         p.shape = 28; p.palette = (byte) W; p.life = 1; p.c = base; p.v = vel; p.r = r; p.h = h; p.a0 = age;
         AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(base.x, base.y, base.z, 128, sl.dimension())), p);
@@ -395,7 +395,7 @@ public class WindFx {
         d.charges = dive ? 5 : 3;
         d.counter = dive;
         DANCE.put(p.getUUID(), d);
-        ModeHud.show(p, "hushed_dance", dive ? 160 : 120);
+        ModeHud.show(p, "hushed_dance", dive ? 160 : 120, d.charges);
         if (dive) diveMsg(p, "hushed_dance");
         // mana drawn in from all around: thin streams curling into you
         ThreadLocalRandom r = ThreadLocalRandom.current();
@@ -842,6 +842,7 @@ public class WindFx {
         if (d != null && now <= d.until && d.charges > 0 && src != null && src != p) {
             e.setCanceled(true);
             d.charges--;
+            ModeHud.show(p, "hushed_dance", (int) Math.max(1, d.until - p.serverLevel().getGameTime()), d.charges);
             Vec3 away = p.position().subtract(src.position()).multiply(1, 0, 1);
             Vec3 side = rightOf(away.lengthSqr() < 1.0E-4 ? p.getLookAngle() : away.normalize());
             for (int s = 1; s >= -1; s -= 2) {   // the wind carries you aside, left or right, whichever is free

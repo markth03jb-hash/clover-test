@@ -61,10 +61,10 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> STEEL_GRIMOIRE = ITEMS.register("steel_grimoire", SteelGrimoireItem::new);
 
     // ------------------------------------------------------------------ Vanessa Enoteca's Thread Magic
-    public static final RegistryObject<Item> THREAD_GRIMOIRE = ITEMS.register("thread_grimoire", com.ironspellgrimoire.item.ThreadGrimoireItem::new);
+    public static final RegistryObject<Item> THREAD_GRIMOIRE = ITEMS.register("string_grimoire", com.ironspellgrimoire.item.ThreadGrimoireItem::new);
 
     // ------------------------------------------------------------------ Finral Roulacase's Spatial Magic
-    public static final RegistryObject<Item> SPACE_GRIMOIRE = ITEMS.register("space_grimoire", com.ironspellgrimoire.item.SpaceGrimoireItem::new);
+    public static final RegistryObject<Item> SPACE_GRIMOIRE = ITEMS.register("spatial_grimoire", com.ironspellgrimoire.item.SpaceGrimoireItem::new);
 
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("iron_spell_grimoire", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.iron_spell_grimoire"))

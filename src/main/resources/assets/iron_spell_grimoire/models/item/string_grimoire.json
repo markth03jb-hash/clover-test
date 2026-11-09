@@ -2,17 +2,17 @@
  "parent": "minecraft:item/handheld",
  "loader": "forge:separate_transforms",
  "base": {
-  "parent": "iron_spell_grimoire:item/space_grimoire_model"
+  "parent": "iron_spell_grimoire:item/string_grimoire_model"
  },
  "perspectives": {
   "gui": {
    "parent": "item/generated",
    "textures": {
-    "layer0": "iron_spell_grimoire:item/space_grimoire"
+    "layer0": "iron_spell_grimoire:item/string_grimoire"
    }
   },
   "head": {
-   "parent": "iron_spell_grimoire:item/space_grimoire_open"
+   "parent": "iron_spell_grimoire:item/string_grimoire_open"
   }
  }
 }

@@ -243,7 +243,7 @@ public class AddonSpellRegistry {
     // ------------------------------------------------------------------ Thread Grimoire (Vanessa Enoteca's Thread Magic)
     private static com.ironspellgrimoire.spells.BookSpell thread(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
         return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.EVOCATION_RESOURCE,
-                com.ironspellgrimoire.item.ThreadGrimoireItem.class, "ui.iron_spell_grimoire.thread_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.item.ThreadGrimoireItem.class, "ui.iron_spell_grimoire.string_grimoire_only", cd, mana, power,
                 com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
     }
     public static final RegistryObject<AbstractSpell> BINDING_THREADS = registerSpell(thread("binding_threads", 8, 30, 8, "iron_spell_grimoire:lightning_chain", com.ironspellgrimoire.server.ThreadFx::bindingThreads));
@@ -262,7 +262,7 @@ public class AddonSpellRegistry {
     // ------------------------------------------------------------------ Space Grimoire (Finral Roulacase's Spatial Magic)
     private static com.ironspellgrimoire.spells.BookSpell space(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
         return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
-                com.ironspellgrimoire.item.SpaceGrimoireItem.class, "ui.iron_spell_grimoire.space_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.item.SpaceGrimoireItem.class, "ui.iron_spell_grimoire.spatial_grimoire_only", cd, mana, power,
                 com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
     }
     public static final RegistryObject<AbstractSpell> SPATIAL_GATE = registerSpell(space("spatial_gate", 20, 50, 0, "iron_spell_grimoire:mercury_mirror", com.ironspellgrimoire.server.SpaceFx::spatialGate));

@@ -241,10 +241,10 @@ public class AstaFx {
         // ---- 1. wind-up: energy drains into the sword
         Vec3 look0 = p.getLookAngle();
         Vec3 tip = p.getEyePosition().add(look0.scale(1.2)).add(0, -0.3, 0);
-        int pal = dw ? Fx.DARK : Fx.CRIMSON;
+        int pal = dw ? Fx.DARK : 18;   // the Slayer's is red only
         FxSend.ring(sl, pal, p.position().add(0, 0.05, 0), 3.5f, 0.3f, 0.2f, SKY_WINDUP);          // ring collapsing inward
         FxSend.ring(sl, dw ? Fx.SILVER : Fx.CRIMSON, p.position().add(0, 0.9, 0), 2.6f, 0.2f, 0.12f, SKY_WINDUP);
-        FxSend.beam(sl, dw ? Fx.DARK : 9, p.position().add(0, 0.2, 0), tip.add(0, 1.6, 0), 0.25f, SKY_WINDUP + 2);   // Slayer: black-red, never violet   // black edge along the raised blade
+        FxSend.beam(sl, dw ? Fx.DARK : 18, p.position().add(0, 0.2, 0), tip.add(0, 1.6, 0), 0.25f, SKY_WINDUP + 2);   // Slayer: black-red, never violet   // black edge along the raised blade
         sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT, 1f, 0.5f);
         sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_1, 0.8f, 0.6f);
 
@@ -261,8 +261,8 @@ public class AstaFx {
                     Vec3 u = up.scale(Math.cos(Math.toRadians(45))).add(rt.scale(s * Math.sin(Math.toRadians(45))));
                     fxIds.add(FxSend.crescent(sl, Fx.DARK, start, dir, u, 1.6f, 3.4f, SKY_MAX_STEPS + 2, (float) SKY_SPEED));
                 }
-            } else {    // Demon Slayer: one towering crescent in the pixel-sprite style - black anti magic edged with flame
-                fxIds.add(FxSend.pixelSlash(sl, 0, start, dir, up, 2.0f, 4.2f, SKY_MAX_STEPS + 2, (float) SKY_SPEED));
+            } else {    // Demon Slayer: the same crescent slash as the Dweller's - one, upright and towering - all in red
+                fxIds.add(FxSend.crescent(sl, 18, start, dir, up, 1.8f, 3.9f, SKY_MAX_STEPS + 2, (float) SKY_SPEED));
             }
             FxSend.wall(sl, pal, p.position().add(0, 0.1, 0), dir, up, 2.4f, 2.8f, -60, 80, 0.9f, 7, 2, 0);   // the upward swing itself
             Fx.flash(sl, start, 1.4f);
@@ -287,7 +287,7 @@ public class AstaFx {
             if (!hit.add(t.getUUID())) continue;
             damage(p, t, dmg, "sky_splitter");
             t.knockback(0.6, -dir.x, -dir.z);
-            Fx.impact(sl, dw ? Fx.DARK : Fx.CRIMSON, mid(t), 1.3f);
+            Fx.impact(sl, dw ? Fx.DARK : 18, mid(t), 1.3f);
             FxSend.beam(sl, Fx.SILVER, mid(t).subtract(up.scale(1.4)), mid(t).add(up.scale(1.4)), 0.2f, 6);   // a clean vertical cut through them
             sound(sl, t.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, 1f, 0.6f);
         }
@@ -296,7 +296,7 @@ public class AstaFx {
             path.add(clipped);
             if (blocked) {
                 for (int id : fxIds) FxSend.kill(sl, id, clipped);
-                Fx.impact(sl, dw ? Fx.DARK : Fx.CRIMSON, clipped, 2.2f);
+                Fx.impact(sl, dw ? Fx.DARK : 18, clipped, 2.2f);
                 FxSend.ring(sl, Fx.SILVER, clipped, 0.3f, 3.2f, 0.4f, 8);
                 sound(sl, clipped, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.7f, 1.4f);
             }
@@ -310,9 +310,9 @@ public class AstaFx {
     private static void openRift(ServerPlayer p, ServerLevel sl, List<Vec3> path, Vec3 up, Vec3 rt, float dmg, boolean dw) {
         if (path.size() < 2) return;
         Vec3 a = path.get(0), b = path.get(path.size() - 1);
-        int riftPal = dw ? Fx.DARK : Fx.CRIMSON;
+        int riftPal = dw ? Fx.DARK : 18;
         // the tear line itself: a bright core inside a dark edge
-        FxSend.beam(sl, dw ? Fx.DARK : 9, a, b, 0.9f, 16);
+        FxSend.beam(sl, dw ? Fx.DARK : 18, a, b, 0.9f, 16);
         FxSend.beam(sl, riftPal, a, b, 0.45f, 14);
         FxSend.beam(sl, Fx.SILVER, a, b, 0.14f, 12);
         // jagged shards jutting out of the tear

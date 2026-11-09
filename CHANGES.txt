@@ -1,7 +1,29 @@
-Iron Spell Grimoire v1.61.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.62.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.62.0
+- The new grimoires are the String Grimoire and the Spatial Grimoire, and both can be equipped like the others.
+- Grimoire book: the moving preview is gone - the pages are the same parchment as the floating 3D book, with the
+  spell's name, icon and description on the left and all its numbers, unlock level and combos on the right.
+- Every combo has its own finisher now (no more reskins) - e.g. Gale Fang raises a real tornado for 2 s and throws
+  them high, Marrow Pike bursts a colossal bone spike under them, Dash Cleave rips a fissure of spikes ending in an
+  eruption, Barrage Finale drops a giant fireball from the sky, Fortress Lock slams steel walls round each enemy.
+- Sky Splitter (Demon Slayer): the same crescent slash as the Demon Dweller's, in pure red.
+- Event Horizon leaves a lighter trail (Equinox unchanged).
+- Spirit Dive: the wind only streams off you while you move, trailing behind like the air you cut through.
+- Luck: his lightning is blue (no more yellow-white), forks more, and the sky flash is blue; Lightning Step always
+  goes as far as it can (stepping up and down ledges) and flashes right in front of an enemy you aim at.
+- String Grimoire: Binding Threads no longer lags when spammed (thin threads only shed sprites when they appear);
+  Thread Cocoon now winds round you and moves with you; Battle Dress wears a dress of thread (skirt, ribbons, a
+  crown of thread loops, sparkles) the whole time; Stitching shows bright X stitches, a needle and a ring; the Red
+  Thread of Fate turns a great red wheel above you with threads to everyone it protects, races a web of red thread
+  over the ground, and snaps red threads out round anyone whose blow it erases.
+- Spatial Grimoire: the Waypoint gate lies flat on the ground and is big enough to stand on; Space Deletion cracks
+  space in gold round the point before the tear opens, then shatters it outward.
+- Timers for everything with a duration, and how many hits / dodges / shield are left for everything that has
+  them (Ki Foresight, Hushed Dance, Evasion Gate, Thread Cocoon, Red Thread of Fate...).
 
 NEW IN 1.61.0
 - Vanessa's Grimoire (Thread Magic, three-leaf, 8 spells): Binding Threads, Puppet Strings, Thread Net, Thread

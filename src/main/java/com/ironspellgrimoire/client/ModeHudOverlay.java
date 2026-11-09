@@ -27,14 +27,17 @@ public final class ModeHudOverlay {
     /** mode index -> {start, end, total} in game ticks. */
     private static final Map<Integer, double[]> ACTIVE = new LinkedHashMap<>();
 
-    public static void set(int mode, int ticks) {
+    public static void set(int mode, int ticks) { set(mode, ticks, -1); }
+
+    /** count = hits / dodges / shield left (-1 = none), shown next to the time. */
+    public static void set(int mode, int ticks, int count) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mode < 0 || mode >= ModeIds.MODES.length) return;
         double now = mc.level.getGameTime();
         if (ticks <= 0) { ACTIVE.remove(mode); return; }
         double[] f = ACTIVE.get(mode);
-        if (f == null || now > f[1]) ACTIVE.put(mode, new double[]{now, now + ticks, ticks});
-        else { f[1] = now + ticks; f[2] = Math.max(f[2], f[1] - f[0]); }   // a refresh keeps the bar's full length
+        if (f == null || now > f[1]) ACTIVE.put(mode, new double[]{now, now + ticks, ticks, count});
+        else { f[1] = now + ticks; f[2] = Math.max(f[2], f[1] - f[0]); f[3] = count; }   // a refresh keeps the bar's full length
     }
 
     @SubscribeEvent
@@ -73,6 +76,7 @@ public final class ModeHudOverlay {
             Component name = Component.translatable("spell.iron_spell_grimoire." + id);
             int secs = (int) Math.ceil(left / 20.0);
             String time = String.format("%d:%02d", secs / 60, secs % 60);
+            if (f.length > 3 && f[3] >= 0) time += "  \u00b7  " + (int) f[3] + " left";   // hits / dodges / shield left
             int w = Math.max(96, Math.max(font.width(name), font.width(time)) + 28);
             int x = right - w;
             boolean blink = left < 200 && ((int) (now / 4) % 2 == 0);   // last 10 s, like vanilla
@@ -131,6 +135,9 @@ public final class ModeHudOverlay {
             case "thunder_god_mode", "thunder_gloves" -> 0xFF4FB8FF;
             case "mana_skin", "lion_mana_zone", "hellfire_incarnate" -> 0xFFE0302A;
             case "surpassing_limits" -> 0xFFFFF4C0;
+            case "thread_cocoon", "battle_dress", "thread_cage", "thread_net" -> 0xFFFF8CC6;
+            case "red_thread_of_fate" -> 0xFFE0302A;
+            case "evasion_gate", "waypoint", "spatial_gate" -> 0xFF9C78FF;
             default -> 0xFFE8DCC0;   // bone
         };
     }

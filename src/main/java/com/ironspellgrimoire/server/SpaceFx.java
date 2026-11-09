@@ -134,6 +134,7 @@ public final class SpaceFx {
         gb.id = gate(sl, b, look, 0.85f, 1.25f, life, 0);
         ga.other = gb; gb.other = ga;
         PAIRS.add(ga); PAIRS.add(gb);
+        ModeHud.show(p, "spatial_gate", life);
         whoosh(sl, a); whoosh(sl, b);
     }
 
@@ -185,13 +186,19 @@ public final class SpaceFx {
             FxSend.kill(sl, m.id, m.pos);
             gate(sl, m.pos.add(0, 1, 0), look, 0.7f, 1.1f, 12, 0);
             MARKS.remove(p.getUUID());
+            ModeHud.hide(p, "waypoint");
             whoosh(sl, p.position());
             AstaFx.later(3, () -> { if (alive(p)) { Vec3 s = safe(sl, m.pos, p); if (s != null) { move(p, s, p.getYRot()); whoosh(sl, s); } } });
             return;
         }
         Mark nm = new Mark();
         nm.dim = sl.dimension(); nm.pos = p.position(); nm.until = now + 1200;
-        nm.id = gate(sl, p.position().add(0, 0.6, 0), new Vec3(0, 1, 0), 0.45f, 0.45f, 1200, 0);   // a small gate lying on the ground
+        // a gate lying flat on the ground where you stand, big enough to step on
+        double groundY = p.onGround() ? p.getY() : sl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, (int) Math.floor(p.getX()), (int) Math.floor(p.getZ()));
+        nm.pos = new Vec3(p.getX(), Math.min(p.getY(), groundY), p.getZ());
+        nm.id = gate(sl, nm.pos.add(0, 0.06, 0), new Vec3(0, 1, 0), 1.15f, 1.15f, 1200, 0);
+        FxSend.ring(sl, S, nm.pos.add(0, 0.05, 0), 0.2f, 1.6f, 0.05f, 10);
+        ModeHud.show(p, "waypoint", 1200);
         MARKS.put(p.getUUID(), nm);
         p.displayClientMessage(Component.literal("Waypoint set - cast again within a minute to return.").withStyle(ChatFormatting.LIGHT_PURPLE), true);
         sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_PLACE, 1f, 1.2f);
@@ -238,6 +245,7 @@ public final class SpaceFx {
         ServerLevel sl = p.serverLevel();
         EVADE.put(p.getUUID(), new int[]{3});
         EVADE_UNTIL.put(p.getUUID(), sl.getGameTime() + 160);
+        ModeHud.show(p, "evasion_gate", 160, 3);
         FxSend.ring(sl, S, p.position().add(0, 0.05, 0), 0.3f, 1.6f, 0.05f, 10);
         sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_RESONATE, 1f, 1.4f);
     }
@@ -259,7 +267,8 @@ public final class SpaceFx {
         gate(sl, to.add(0, 1, 0), side.normalize().scale(-1), 0.7f, 1.1f, 10, 0);
         move(p, to, p.getYRot());
         whoosh(sl, to);
-        if (c[0] <= 0) { EVADE.remove(p.getUUID()); EVADE_UNTIL.remove(p.getUUID()); }
+        ModeHud.show(p, "evasion_gate", (int) Math.max(1, until - sl.getGameTime()), c[0]);
+        if (c[0] <= 0) { EVADE.remove(p.getUUID()); EVADE_UNTIL.remove(p.getUUID()); ModeHud.hide(p, "evasion_gate"); }
     }
 
     // ================================================================== 8. Space Deletion
@@ -270,8 +279,18 @@ public final class SpaceFx {
         boolean big = ComboChain.boosted(p, "space_deletion");
         double R = big ? 6.0 : 4.5;
         Vec3 face = p.getEyePosition().subtract(c).normalize();
-        int id = gate(sl, c, face, 0.3f, 0.3f, 30, 1);
-        // the tear grows, drawing everything in
+        Vec3 rt = rightOf(face), up = rt.cross(face).normalize();
+        int seed = (int) (sl.getGameTime() & 0xFFFF);
+        // 1. space starts to crack round the point: gold cracks spreading through the air, a gate-ring framing it
+        int frame = gate(sl, c, face, (float) R, (float) R, 26, 0);
+        for (int i = 0; i < 6; i++) {
+            double a0 = i * Math.PI / 3;
+            Vec3 along = rt.scale(Math.cos(a0)).add(up.scale(Math.sin(a0)));
+            final Vec3 al = along; final int ii = i;
+            AstaFx.later(i, () -> FxSend.cracks(sl, 8, c.add(al.scale(R * 0.45)), al, face, (float) R * 0.6f, 26, true, seed + ii * 31));
+        }
+        // 2. the black tear opens in the middle and grows, drawing everything in
+        int tear = gate(sl, c, face, 0.3f, 0.3f, 30, 1);
         for (int k = 0; k < 18; k++) {
             final int kk = k;
             AstaFx.later(k, () -> {
@@ -282,24 +301,35 @@ public final class SpaceFx {
                     Vec3 v = in.normalize().scale(0.25 + 0.02 * kk);
                     e.setDeltaMovement(v.x, v.y * 0.6, v.z); e.hurtMarked = true;
                 }
-                if (kk % 6 == 0) gate(sl, c, face, (float) (R * (0.2 + kk / 24.0)), (float) (R * (0.2 + kk / 24.0)), 8, 1);
+                if (kk % 4 == 0) gate(sl, c, face, (float) (R * (0.15 + kk / 22.0)), (float) (R * (0.15 + kk / 22.0)), 6, 1);
+                if (kk % 6 == 0) FxSend.ring(sl, S, c, (float) R + 1.5f, 0.4f, 0.12f, 6);   // space pulled inward
             });
         }
         sound(sl, c, SoundEvents.WARDEN_SONIC_CHARGE, 1f, 0.6f);
-        AstaFx.later(18, () -> {   // deleted
-            FxSend.kill(sl, id, c);
+        sound(sl, c, SoundEvents.PORTAL_TRIGGER, 0.6f, 1.6f);
+        // 3. deleted: the tear snaps shut on everything inside it, the space shatters outward, then is gone
+        AstaFx.later(18, () -> {
+            FxSend.kill(sl, tear, c);
+            FxSend.kill(sl, frame, c);
             for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(R))) {
                 if (mid(e).distanceTo(c) > R + e.getBbWidth()) continue;
                 AstaFx.damage(p, e, power, "space_deletion");
                 e.setDeltaMovement(Vec3.ZERO); e.hurtMarked = true;
             }
-            Fx.flash(sl, c, 2.6f);
-            FxSend.ring(sl, S, c, 0.2f, (float) R + 1.5f, 0.3f, 10);
-            FxSend.ring(sl, 8, c, 0.4f, (float) R + 3f, 0.12f, 12);
             FxSend.impactFrame(sl, c, 3, FxSend.FRAME_FINRAL, 40);
-            FxSend.shake(sl, c, 1.0f, 12, 40);
+            Fx.flash(sl, c, 2.8f);
+            for (int i = 0; i < 10; i++) {   // shards of space flung out
+                double a0 = i * Math.PI / 5;
+                Vec3 along = rt.scale(Math.cos(a0)).add(up.scale(Math.sin(a0)));
+                FxSend.cracks(sl, i % 2 == 0 ? 8 : S, c.add(along.scale(R * 0.8)), along, face, (float) R * 0.5f, 18, false, seed + 500 + i * 17);
+            }
+            FxSend.ring(sl, S, c, 0.2f, (float) R + 2f, 0.3f, 10);
+            FxSend.ring(sl, 8, c, 0.4f, (float) R + 4f, 0.12f, 12);
+            FxSend.shake(sl, c, 1.1f, 14, 40);
             sound(sl, c, SoundEvents.GLASS_BREAK, 1.4f, 0.5f);
             sound(sl, c, SoundEvents.GENERIC_EXPLODE, 1.0f, 0.7f);
+            // a hollow left behind for a moment: a small dark gate where the space was
+            gate(sl, c, face, 0.6f, 0.6f, 14, 1);
         });
     }
 

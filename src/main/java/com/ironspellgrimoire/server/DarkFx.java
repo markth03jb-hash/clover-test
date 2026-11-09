@@ -951,7 +951,7 @@ public class DarkFx {
         f.charges = z ? 5 : 3;
         f.counter = z;
         FORESIGHT.put(p.getUUID(), f);
-        ModeHud.show(p, "ki_foresight", z ? 160 : 100);
+        ModeHud.show(p, "ki_foresight", z ? 160 : 100, f.charges);
         ServerLevel sl = p.serverLevel();
         FxSend.ring(sl, S, p.position().add(0, 0.05, 0), 0.3f, z ? (float) ZONE_R : 4f, 0.06f, 10);
         Vec3 eye = p.getEyePosition();
@@ -1094,7 +1094,7 @@ public class DarkFx {
                 FxSend.slash(sl, D, o, dir, upB, 4.4f * scale, 17f * scale, life, speed, 1.4f);
                 FxSend.wall(sl, S, o.add(dir.scale(2)), dir, up, 3.0f * scale, 3.3f * scale, -180, 180, 0.08f, life, 0, speed);
                 FxSend.wall(sl, D, o.add(dir.scale(2)), dir, up, 3.3f * scale, 4.2f * scale, -180, 180, 0.3f, life, 0, speed);
-                for (double k = 8; k < reach; k += 10) {
+                for (double k = 8; k < reach; k += 16) {
                     final double kk = k;
                     AstaFx.later((int) (k / speed), () -> {
                         // the rifts ride on the two blades themselves, out along each arm of the X, not in the middle
@@ -1110,7 +1110,7 @@ public class DarkFx {
             }
             // space cut open along the whole path: rifts hang in the air where the wave passed
             int n = 0;
-            for (double k = 5; k < reach; k += 6.5, n++) {
+            for (double k = 6; k < reach; k += 11, n++) {   // fewer, shorter-lived rifts: a lighter trail
                 final double kk = k;
                 final int nn = n;
                 AstaFx.later((int) (k / speed), () -> {
@@ -1120,8 +1120,8 @@ public class DarkFx {
                     // the long tear runs along the cut, leaning a little each way so it reads as broken space
                     Vec3 along = dir.add(up.scale((nn % 2 == 0 ? 0.25 : -0.25))).normalize();
                     Vec3 across = along.cross(rt).normalize();
-                    FxSend.cracks(sl, D, c, along, across, 3.4f * scale * grow, 56, true, seed0 + nn * 13);
-                    if (nn % 2 == 0) FxSend.cracks(sl, D, c.add(up.scale(1.4 * scale)), rt, up, 1.4f * scale * grow, 44, false, seed0 + nn * 29);
+                    FxSend.cracks(sl, D, c, along, across, 2.4f * scale * grow, 30, true, seed0 + nn * 13);
+                    if (nn % 3 == 0) FxSend.cracks(sl, D, c.add(up.scale(1.4 * scale)), rt, up, 1.2f * scale * grow, 24, false, seed0 + nn * 29);
                     if (nn % 3 == 0) sound(sl, c, net.minecraft.sounds.SoundEvents.GLASS_BREAK, 0.9f, 0.4f);
                 });
             }
@@ -1134,8 +1134,8 @@ public class DarkFx {
                     for (double k = 4; k < reach; k += 4) {
                         double spread = Math.min(1.0, k / 12.0);   // the X opens out as it leaves you
                         Vec3 c = mid0.add(dir.scale(k)).add(off.scale(spread));
-                        FxSend.trail(sl, D, prev, c, 0.4f * scale, 40);
-                        FxSend.trail(sl, S, prev, c, 0.04f * scale, 36);
+                        FxSend.trail(sl, D, prev, c, 0.25f * scale, 22);
+                        FxSend.trail(sl, S, prev, c, 0.03f * scale, 18);
                         prev = c;
                     }
                 }
@@ -1271,6 +1271,7 @@ public class DarkFx {
         if (f != null && now <= f.until && f.charges > 0 && src != null && src != p) {
             e.setCanceled(true);
             f.charges--;
+            ModeHud.show(p, "ki_foresight", (int) Math.max(1, f.until - now), f.charges);
             Vec3 away = p.position().subtract(src.position()).multiply(1, 0, 1);
             Vec3 side = rightOf(away.lengthSqr() < 1.0E-4 ? p.getLookAngle() : away.normalize());
             for (int s = 1; s >= -1; s -= 2) {   // step left or right, whichever is free

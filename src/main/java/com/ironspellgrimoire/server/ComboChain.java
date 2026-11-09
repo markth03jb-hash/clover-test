@@ -112,77 +112,336 @@ public final class ComboChain {
         }
     }
 
-    // ------------------------------------------------------------------ finishers
+    // ------------------------------------------------------------------ finishers: every combo its own
     private static void finisher(ServerPlayer p, Combo c, float power) {
         if (!alive(p)) return;
         ServerLevel sl = p.serverLevel();
         LivingEntity t = aimed(p, 32, 30);
         Vec3 at = t != null ? mid(t) : clip(sl, p, p.getEyePosition(), p.getEyePosition().add(p.getLookAngle().scale(12)));
-        int K = FxPacket.KEEP_SHAPE;
+        Vec3 ground = t != null ? t.position() : FxLib.floor(sl, at);
+        Vec3 look = p.getLookAngle(), fl = flat(look), rt = rightOf(look), up = rt.cross(look).normalize();
         FxSend.impactFrame(sl, at, 2, c.frame(), 32);
-        sound(sl, at, SoundEvents.PLAYER_ATTACK_CRIT, 1.2f, 0.7f);
-        switch (c.kind()) {
-            case BURST -> {
-                Fx.flash(sl, at, 2.0f);
-                FxSend.ring(sl, c.pal(), at, 0.3f, 4.5f, 0.3f, 10);
-                FxSend.ring(sl, c.pal(), at.add(0, -0.8, 0), 0.5f, 5.5f, 0.1f, 12);
-                FxSend.shake(sl, at, 0.7f, 8, 24);
+        String id = c.second();
+        switch (c.name()) {
+            case "Cleave and Rift" -> {   // two giant crescents cross in an X through the target, the rift tears open behind
+                for (int s = -1; s <= 1; s += 2) {
+                    Vec3 u = up.scale(0.7071).add(rt.scale(0.7071 * s));
+                    FxSend.crescent(sl, 18, at.subtract(look.scale(3)), look, u, 1.4f, 3.6f, 8, 1.2f);
+                }
+                FxSend.cracks(sl, 18, at, up.add(rt).normalize(), look, 3.2f, 30, true, (int) sl.getGameTime());
+                FxSend.cracks(sl, 18, at, up.subtract(rt).normalize(), look, 3.2f, 30, true, (int) sl.getGameTime() + 9);
+                hitAround(p, sl, at, 3.2, power, id, 0.3);
+                sound(sl, at, SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.5f);
+            }
+            case "Dash Cleave" -> {   // the cleave splits the ground: a fissure of anti-magic spikes rips forward through them
+                Vec3 g0 = p.position().add(fl.scale(1.5));
+                for (int i = 0; i < 9; i++) {
+                    final int ii = i;
+                    AstaFx.later(i, () -> {
+                        Vec3 g = FxLib.floor(sl, g0.add(fl.scale(ii * 1.3)).add(0, 1, 0));
+                        if (g == null) return;
+                        for (int s = -1; s <= 1; s += 2)
+                            FxSend.spike(sl, 0, g.add(rt.scale(0.4 * s)), new Vec3(0, 1, 0).add(rt.scale(0.5 * s)), 1.4f + ii * 0.1f, 0.14f, 22, 2, FxPacket.GROUND);
+                        FxSend.ring(sl, 0, g.add(0, 0.05, 0), 0.2f, 1.6f, 0.08f, 6);
+                        for (LivingEntity e : enemies(sl, p, new AABB(g, g).inflate(1.6, 2, 1.6))) {
+                            AstaFx.damage(p, e, power * 0.35f, id);
+                            e.setDeltaMovement(e.getDeltaMovement().x, 0.7, e.getDeltaMovement().z); e.hurtMarked = true;
+                        }
+                        if (ii % 3 == 0) sound(sl, g, SoundEvents.STONE_BREAK, 1f, 0.6f);
+                    });
+                }
+                AstaFx.later(9, () -> {   // the end of the line erupts
+                    Vec3 end = FxLib.floor(sl, g0.add(fl.scale(11)).add(0, 1, 0));
+                    if (end == null) return;
+                    FxSend.wall(sl, 0, end.add(0, 0.2, 0), fl, new Vec3(0, 1, 0), 2.2f, 2.8f, -180, 180, 2.4f, 10, 2, 0);
+                    FxLib.shockRing(sl, 0, end.add(0, 0.05, 0), 2.4f);
+                    FxSend.shake(sl, end, 1.0f, 10, 30);
+                    hitAround(p, sl, end.add(0, 1, 0), 3.0, power, id, 0.8);
+                    sound(sl, end, SoundEvents.GENERIC_EXPLODE, 1f, 0.8f);
+                });
+            }
+            case "Twin Return" -> {   // both blades fly back through the target from the far side, crossing on it
+                for (int s = -1; s <= 1; s += 2) {
+                    Vec3 from = at.add(look.scale(5)).add(rt.scale(2.5 * s));
+                    Vec3 d = at.subtract(from).normalize();
+                    FxSend.crescent(sl, s < 0 ? 1 : 18, from, d, rightOf(d).cross(d).normalize(), 0.9f, 1.8f, 8, 1.4f);
+                }
+                AstaFx.later(4, () -> hitAround(p, sl, at, 2.6, power, id, 0.2));
+                sound(sl, at, SoundEvents.TRIDENT_RETURN, 1f, 0.8f);
+            }
+            case "Severed Thrust" -> {   // space is cut level through them, then darkness erupts from the cut
+                FxSend.wall(sl, 10, at, look, new Vec3(0, 1, 0), 0.1f, 4.0f, -90, 90, 0.04f, 10, 0, 0);
+                FxSend.cracks(sl, 10, at, rt, new Vec3(0, 1, 0), 4f, 30, true, (int) sl.getGameTime());
+                AstaFx.later(5, () -> {
+                    FxSend.beam(sl, 10, ground, ground.add(0, 8, 0), 1.1f, 12);
+                    FxSend.ring(sl, 10, ground.add(0, 0.05, 0), 0.4f, 3f, 0.2f, 10);
+                    hitAround(p, sl, at, 2.5, power, id, 1.1);
+                    sound(sl, at, SoundEvents.WITHER_SHOOT, 0.8f, 0.6f);
+                });
+            }
+            case "Eclipse" -> {   // the dark folds in on itself - rings closing - then bursts out as a dome
+                for (int k = 0; k < 4; k++) {
+                    final int kk = k;
+                    AstaFx.later(k * 2, () -> FxSend.ring(sl, 10, at, 6f - kk * 1.4f, 0.3f, 0.6f, 6));
+                }
+                pull(p, sl, at, 6, 8);
+                AstaFx.later(9, () -> {
+                    FxSend.wall(sl, 10, at, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.5f, 5f, -180, 180, 4.5f, 10, 0, 0);
+                    Fx.flash(sl, at, 2.2f);
+                    hitAround(p, sl, at, 5, power, id, 0.6);
+                    FxSend.shake(sl, at, 0.9f, 10, 30);
+                    sound(sl, at, SoundEvents.GENERIC_EXPLODE, 1f, 0.5f);
+                });
+            }
+            case "Darkness Hunts" -> {   // five dark crescents come at them from five sides, one after another
+                for (int i = 0; i < 5; i++) {
+                    final int ii = i;
+                    AstaFx.later(i * 2, () -> {
+                        double a0 = ii * Math.PI * 2 / 5;
+                        Vec3 from = at.add(Math.cos(a0) * 5, 1.5 * Math.sin(ii * 1.7), Math.sin(a0) * 5);
+                        Vec3 d = at.subtract(from).normalize();
+                        FxSend.crescent(sl, 10, from, d, rightOf(d).cross(d).normalize(), 0.7f, 1.4f, 5, 1.1f);
+                        AstaFx.later(4, () -> hitAround(p, sl, at, 1.8, power * 0.3f, id, 0.1));
+                    });
+                }
+                sound(sl, at, SoundEvents.PHANTOM_SWOOP, 1f, 0.6f);
+            }
+            case "Gale Fang" -> {   // a full tornado rises on them for two seconds and throws them high
+                for (int k = 0; k < 40; k++) {
+                    final int kk = k;
+                    AstaFx.later(k, () -> {
+                        WindFx.tornadoPacket(sl, ground, 2.6f, 9f, kk, Vec3.ZERO);
+                        for (LivingEntity e : enemies(sl, p, new AABB(ground, ground.add(0, 9, 0)).inflate(3))) {
+                            Vec3 in = new Vec3(ground.x - e.getX(), 0, ground.z - e.getZ());
+                            Vec3 tan = new Vec3(-in.z, 0, in.x).normalize().scale(0.35);
+                            e.setDeltaMovement(in.scale(0.15).add(tan).add(0, 0.18, 0)); e.hurtMarked = true; e.fallDistance = 0;
+                            if (kk % 10 == 0) AstaFx.damage(p, e, power * 0.25f, id);
+                        }
+                        if (kk % 8 == 0) FxSend.ring(sl, 5, ground.add(0, 0.05, 0), 1.2f, 4f, 0.1f, 8);
+                    });
+                }
+                AstaFx.later(40, () -> {
+                    for (LivingEntity e : enemies(sl, p, new AABB(ground, ground.add(0, 12, 0)).inflate(3.5))) {
+                        e.setDeltaMovement(0, 1.6, 0); e.hurtMarked = true;
+                        AstaFx.damage(p, e, power, id);
+                    }
+                    FxLib.shockRing(sl, 5, ground.add(0, 0.05, 0), 3f);
+                    sound(sl, ground, SoundEvents.ENDER_DRAGON_FLAP, 1.2f, 0.6f);
+                });
+                sound(sl, ground, SoundEvents.ELYTRA_FLYING, 1f, 1.2f);
+            }
+            case "Arrow Gale" -> {   // eight arrows of wind appear in a ring round them and fire inward, one by one
+                for (int i = 0; i < 8; i++) {
+                    final int ii = i;
+                    AstaFx.later(i * 2, () -> {
+                        double a0 = ii * Math.PI / 4;
+                        Vec3 from = at.add(Math.cos(a0) * 6, 1.5, Math.sin(a0) * 6);
+                        FxSend.trail(sl, 5, from, at, 0.12f, 6);
+                        FxSend.trail(sl, 6, from, at, 0.03f, 5);
+                        hitAround(p, sl, at, 1.6, power * 0.18f, id, 0);
+                    });
+                }
+                sound(sl, at, SoundEvents.ARROW_SHOOT, 1f, 1.4f);
+            }
+            case "Silver Barrage" -> {   // drops of mercury hail down on them from above
+                for (int i = 0; i < 10; i++) {
+                    final int ii = i;
+                    AstaFx.later(i * 2, () -> {
+                        Vec3 sky = at.add((Math.random() - 0.5) * 3, 9, (Math.random() - 0.5) * 3);
+                        MercuryFx.sphere(sl, sky, new Vec3(0, -1.8, 0), 0.3f, 5, 0);
+                        AstaFx.later(5, () -> { Fx.spark(sl, 11, at, 0.7f); hitAround(p, sl, at, 1.8, power * 0.15f, id, 0); });
+                    });
+                }
+                sound(sl, at, SoundEvents.TRIDENT_RIPTIDE_1, 1f, 1.4f);
+            }
+            case "Argent Tempest" -> {   // mercury blades burst outward from them in a full circle
+                for (int i = 0; i < 10; i++) {
+                    double a0 = i * Math.PI / 5;
+                    Vec3 d = new Vec3(Math.cos(a0), 0, Math.sin(a0));
+                    FxSend.crescent(sl, 11, at, d, new Vec3(0, 1, 0), 0.6f, 1.5f, 8, 0.9f);
+                }
+                MercuryFx.sphere(sl, at, Vec3.ZERO, 1.1f, 6, 1);
+                hitAround(p, sl, at, 4.5, power, id, 0.4);
+                sound(sl, at, SoundEvents.ANVIL_LAND, 0.8f, 1.6f);
+            }
+            case "Barrage Finale" -> {   // one enormous fireball falls on them from the sky
+                Vec3 sky = at.add(0, 14, 0);
+                FireFx.fireball(sl, sky, new Vec3(0, -1.4, 0), 1.6f, 4.5f, 10, true);
+                AstaFx.later(10, () -> {
+                    FxLib.shockRing(sl, 2, ground.add(0, 0.05, 0), 4f);
+                    FxSend.shake(sl, ground, 1.0f, 12, 32);
+                    hitAround(p, sl, at, 5.5, power * 1.2f, id, 0.7);
+                    sound(sl, ground, SoundEvents.GENERIC_EXPLODE, 1.3f, 0.6f);
+                });
+            }
+            case "Burning Ring" -> {   // pillars of flame burst up in a ring round them, then the ring closes in
+                for (int i = 0; i < 8; i++) {
+                    double a0 = i * Math.PI / 4;
+                    Vec3 g = ground.add(Math.cos(a0) * 3.5, 0, Math.sin(a0) * 3.5);
+                    FxSend.beam(sl, 2, g, g.add(0, 4.5, 0), 0.5f, 14);
+                }
+                AstaFx.later(8, () -> {
+                    FxSend.ring(sl, 2, ground.add(0, 0.1, 0), 3.5f, 0.3f, 1.2f, 8);
+                    hitAround(p, sl, at, 3.8, power, id, 0.5);
+                    sound(sl, ground, SoundEvents.FIRECHARGE_USE, 1.2f, 0.6f);
+                });
+                sound(sl, ground, SoundEvents.BLAZE_SHOOT, 1f, 0.6f);
+            }
+            case "Thunderclap" -> {   // lightning strikes down on them and splits back up out of the ground round them
+                LightningFx.bolt(sl, at.add(0, 16, 0), ground, 0.35f, 9, 4);
+                for (int i = 0; i < 6; i++) {
+                    double a0 = i * Math.PI / 3;
+                    Vec3 g = ground.add(Math.cos(a0) * 2.2, 0, Math.sin(a0) * 2.2);
+                    LightningFx.bolt(sl, g, g.add(0, 3.5, 0), 0.1f, 6, 1);
+                }
+                FxSend.ring(sl, 13, ground.add(0, 0.05, 0), 0.3f, 3.5f, 0.1f, 8);
+                hitAround(p, sl, at, 3, power, id, 0.9);
+                sound(sl, ground, SoundEvents.LIGHTNING_BOLT_THUNDER, 0.8f, 1.4f);
+            }
+            case "Flash Chain" -> {   // he flashes round them six times - a star of lightning drawn round the target
+                Vec3[] pts = new Vec3[6];
+                for (int i = 0; i < 6; i++) { double a0 = i * Math.PI * 2 / 6; pts[i] = at.add(Math.cos(a0) * 3, 0.3 * Math.sin(i * 2.0), Math.sin(a0) * 3); }
+                for (int i = 0; i < 6; i++) {
+                    final int ii = i;
+                    AstaFx.later(i, () -> {
+                        LightningFx.bolt(sl, pts[ii], pts[(ii + 2) % 6], 0.12f, 5, 1);
+                        LightningFx.bolt(sl, pts[ii], at, 0.08f, 4, 0);
+                        hitAround(p, sl, at, 2.0, power * 0.2f, id, 0);
+                    });
+                }
+                sound(sl, at, SoundEvents.LIGHTNING_BOLT_IMPACT, 0.8f, 1.8f);
+            }
+            case "Lioness Crash" -> {   // three great claws of crimson flame rake down through them
+                for (int i = -1; i <= 1; i++) {
+                    Vec3 o = at.add(rt.scale(i * 0.9)).add(0, 2.5, 0);
+                    FxSend.crescent(sl, 14, o, new Vec3(0, -1, 0).add(look.scale(0.3)).normalize(), rt, 0.5f, 2.2f, 6, 0.7f);
+                }
+                AstaFx.later(4, () -> {
+                    FxSend.wall(sl, 14, ground.add(0, 0.1, 0), fl, new Vec3(0, 1, 0), 1.5f, 3.5f, -180, 180, 1.8f, 10, 0, 0);
+                    hitAround(p, sl, at, 3, power, id, 0.6);
+                    sound(sl, ground, SoundEvents.RAVAGER_ROAR, 0.8f, 1.2f);
+                });
+            }
+            case "Pride Pounce" -> {   // a column of crimson flame comes down on them like a pouncing lion
+                FxSend.beam(sl, 14, at.add(0, 12, 0), ground, 1.4f, 10);
+                AstaFx.later(3, () -> {
+                    FxLib.shockRing(sl, 14, ground.add(0, 0.05, 0), 3.2f);
+                    FxSend.wall(sl, 14, ground.add(0, 0.1, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.5f, 4.5f, -180, 180, 1.4f, 10, 0, 0);
+                    FxSend.shake(sl, ground, 1.0f, 10, 30);
+                    hitAround(p, sl, at, 4, power, id, 0.8);
+                    sound(sl, ground, SoundEvents.GENERIC_EXPLODE, 1f, 0.7f);
+                });
+            }
+            case "Marrow Pike" -> {   // a colossal spike of bone bursts up under them, a crown of smaller bones round it
+                BoneFx.bone(sl, BoneFx.SPIKE, ground.add(0, 2.4, 0), new Vec3(0, 1, 0), rt, 2.4f, 0.55f, 30, 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+                for (int i = 0; i < 8; i++) {
+                    double a0 = i * Math.PI / 4;
+                    Vec3 out = new Vec3(Math.cos(a0), 0, Math.sin(a0));
+                    Vec3 dir = new Vec3(0, 1, 0).add(out.scale(0.6)).normalize();
+                    BoneFx.bone(sl, BoneFx.SPIKE, ground.add(out.scale(1.6)).add(dir.scale(0.8)), dir, out, 0.8f, 0.2f, 26, 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+                }
+                hitAround(p, sl, at, 2.4, power, id, 1.3);
+                sound(sl, ground, SoundEvents.BONE_BLOCK_BREAK, 1.2f, 0.6f);
+                sound(sl, ground, SoundEvents.SKELETON_HURT, 0.8f, 0.5f);
+            }
+            case "Bone Snare" -> {   // ribs of bone burst up round each of them and close like a cage
                 for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(4.5))) {
                     if (mid(e).distanceTo(at) > 4.5) continue;
-                    AstaFx.damage(p, e, power, c.second());
-                    Vec3 out = mid(e).subtract(at).normalize().scale(0.6);
-                    e.setDeltaMovement(out.x, 0.45, out.z); e.hurtMarked = true;
+                    Vec3 g = e.position();
+                    for (int i = 0; i < 6; i++) {
+                        double a0 = i * Math.PI / 3;
+                        Vec3 out = new Vec3(Math.cos(a0), 0, Math.sin(a0));
+                        BoneFx.bone(sl, BoneFx.RIB, g.add(out.scale(0.9)).add(0, 1.0, 0), new Vec3(0, 1, 0), out.scale(-1), 1.0f, 0.1f, 50, 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+                    }
+                    ThreadFx.bind(e, 50);
+                    AstaFx.damage(p, e, power * 0.6f, id);
                 }
-                sound(sl, at, SoundEvents.GENERIC_EXPLODE, 0.9f, 1.2f);
+                sound(sl, at, SoundEvents.BONE_BLOCK_PLACE, 1.2f, 0.6f);
             }
-            case CROSS -> {
-                Vec3 look = p.getLookAngle(), rt = rightOf(look), up = rt.cross(look).normalize();
-                for (int s = -1; s <= 1; s += 2) {
-                    Vec3 d = up.scale(0.7).add(rt.scale(0.7 * s)).scale(2.6);
-                    FxSend.beam(sl, c.pal() | K, at.subtract(d), at.add(d), 0.3f, 8);
-                    FxSend.beam(sl, 6 | K, at.subtract(d.scale(1.05)), at.add(d.scale(1.05)), 0.05f, 6);
-                }
-                Fx.impact(sl, c.pal(), at, 1.6f);
-                for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(3.0))) {
-                    if (mid(e).distanceTo(at) > 3.0) continue;
-                    AstaFx.damage(p, e, power, c.second());
-                }
-                sound(sl, at, SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.6f);
-            }
-            case PILLAR -> {
-                Vec3 g = new Vec3(at.x, (t != null ? t.getY() : at.y - 1), at.z);
-                FxSend.beam(sl, c.pal() | K, g, g.add(0, 7, 0), 0.9f, 10);
-                FxSend.ring(sl, c.pal(), g.add(0, 0.05, 0), 0.3f, 2.8f, 0.1f, 10);
-                for (LivingEntity e : enemies(sl, p, new AABB(g, g.add(0, 4, 0)).inflate(2.0))) {
-                    AstaFx.damage(p, e, power, c.second());
-                    e.setDeltaMovement(e.getDeltaMovement().x * 0.3, 1.25, e.getDeltaMovement().z * 0.3); e.hurtMarked = true;
-                }
-                sound(sl, g, SoundEvents.FIREWORK_ROCKET_LAUNCH, 1.2f, 0.6f);
-            }
-            case STORM -> {
-                for (int k = 0; k < 6; k++) {
-                    AstaFx.later(k * 5, () -> {
-                        if (!alive(p)) return;
-                        Vec3 a2 = t != null && t.isAlive() ? mid(t) : at;
-                        Vec3 from = a2.add((Math.random() - 0.5) * 6, 4 + Math.random() * 2, (Math.random() - 0.5) * 6);
-                        FxSend.beam(sl, c.pal() | K, from, a2, 0.18f, 5);
-                        Fx.spark(sl, c.pal(), a2, 0.9f);
-                        for (LivingEntity e : enemies(sl, p, new AABB(a2, a2).inflate(1.6))) AstaFx.damage(p, e, power * 0.25f, c.second());
-                        sound(sl, a2, SoundEvents.PLAYER_ATTACK_STRONG, 0.8f, 1.2f);
+            case "Lance Lightning" -> {   // steel lances rain down on them one after another
+                for (int i = 0; i < 7; i++) {
+                    final int ii = i;
+                    AstaFx.later(i * 2, () -> {
+                        Vec3 g = ground.add((Math.random() - 0.5) * 2.4, 0, (Math.random() - 0.5) * 2.4);
+                        FxSend.spike(sl, 7, g.add(0, 7, 0), new Vec3(0, -1, 0), 2.2f, 0.16f, 14, 0, FxPacket.HOLD);
+                        AstaFx.later(2, () -> {
+                            FxSend.spike(sl, 7, g, new Vec3(0, 1, 0), 1.6f, 0.16f, 20, 1, FxPacket.GROUND);
+                            Fx.spark(sl, 7, g.add(0, 0.3, 0), 0.6f);
+                            hitAround(p, sl, g.add(0, 1, 0), 1.6, power * 0.2f, id, 0);
+                        });
+                        if (ii % 2 == 0) sound(sl, g, SoundEvents.ANVIL_PLACE, 0.6f, 1.4f);
                     });
                 }
             }
-            case SNARE -> {
+            case "Fortress Lock" -> {   // walls of steel slam up on four sides of each of them
                 for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(4.5))) {
                     if (mid(e).distanceTo(at) > 4.5) continue;
+                    Vec3 g = e.position();
+                    for (int i = 0; i < 4; i++) {
+                        double a0 = i * Math.PI / 2;
+                        Vec3 out = new Vec3(Math.cos(a0), 0, Math.sin(a0));
+                        FxSend.box(sl, 7, g.add(out.scale(1.0)).add(0, 1.0, 0), rightOf(out), new Vec3(0, 1, 0), 0.9f, 0.08f, 1.0f, 50, 3, FxPacket.GROUND);
+                    }
                     ThreadFx.bind(e, 50);
-                    FxSend.ring(sl, c.pal() | K, e.position().add(0, 0.2, 0), 0.6f, 0.66f, 0.03f, 50);
-                    FxSend.ring(sl, c.pal() | K, e.position().add(0, e.getBbHeight() * 0.7, 0), 0.6f, 0.66f, 0.03f, 50);
-                    AstaFx.damage(p, e, power * 0.6f, c.second());
+                    AstaFx.damage(p, e, power * 0.6f, id);
                 }
-                sound(sl, at, SoundEvents.CHAIN_PLACE, 1.2f, 0.6f);
+                sound(sl, at, SoundEvents.IRON_DOOR_CLOSE, 1.2f, 0.6f);
             }
-            default -> {}
+            case "Marionette Slam" -> {   // more strings from all sides yank them back up - and slam them down again
+                if (t != null) {
+                    for (int i = 0; i < 8; i++) {
+                        double a0 = i * Math.PI / 4;
+                        ThreadFx.thread(sl, t.position().add(Math.cos(a0) * 5, 6, Math.sin(a0) * 5), mid(t), 14);
+                    }
+                    t.setDeltaMovement(0, 1.3, 0); t.hurtMarked = true;
+                    AstaFx.later(8, () -> { if (t.isAlive()) { t.setDeltaMovement(0, -3.0, 0); t.hurtMarked = true; } });
+                    AstaFx.later(12, () -> {
+                        if (!t.isAlive()) return;
+                        Vec3 g = t.position();
+                        for (int i = 0; i < 12; i++) {
+                            double a0 = i * Math.PI / 6;
+                            ThreadFx.thread(sl, g.add(0, 0.1, 0), g.add(Math.cos(a0) * 3.5, 0.1, Math.sin(a0) * 3.5), 16);
+                        }
+                        FxSend.shake(sl, g, 0.8f, 8, 24);
+                        hitAround(p, sl, g.add(0, 1, 0), 3.5, power, id, 0.5);
+                        sound(sl, g, SoundEvents.GENERIC_EXPLODE, 0.7f, 1.3f);
+                    });
+                }
+            }
+            case "Inescapable Weave" -> {   // every one of them is spun into a cocoon of thread where they stand
+                for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(5.5))) {
+                    if (mid(e).distanceTo(at) > 5.5) continue;
+                    ThreadFx.wrap(sl, e, 16, 70);
+                    ThreadFx.wrap(sl, e, 16, 70);
+                    ThreadFx.form(e, 0, 70);
+                    ThreadFx.bind(e, 70);
+                    AstaFx.damage(p, e, power * 0.5f, id);
+                }
+                sound(sl, at, SoundEvents.WOOL_PLACE, 1.2f, 0.5f);
+            }
+            default -> hitAround(p, sl, at, 3, power, id, 0.4);
+        }
+    }
+
+    /** Damage everything within r of c and knock it up a little. */
+    private static void hitAround(ServerPlayer p, ServerLevel sl, Vec3 c, double r, float dmg, String id, double lift) {
+        for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(r))) {
+            if (mid(e).distanceTo(c) > r + e.getBbWidth() * 0.5) continue;
+            AstaFx.damage(p, e, dmg, id);
+            if (lift > 0) { e.setDeltaMovement(e.getDeltaMovement().x, lift, e.getDeltaMovement().z); e.hurtMarked = true; }
+        }
+    }
+
+    private static void pull(ServerPlayer p, ServerLevel sl, Vec3 c, double r, int ticks) {
+        for (int k = 0; k < ticks; k++) {
+            AstaFx.later(k, () -> {
+                for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(r))) {
+                    Vec3 in = c.subtract(mid(e));
+                    if (in.length() < 0.5) continue;
+                    Vec3 v = in.normalize().scale(0.35);
+                    e.setDeltaMovement(v.x, v.y * 0.5, v.z); e.hurtMarked = true;
+                }
+            });
         }
     }
 }

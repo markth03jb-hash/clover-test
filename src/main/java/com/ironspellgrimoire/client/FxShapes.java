@@ -60,7 +60,7 @@ final class FxShapes extends FxBase {
       float glow = (float)Math.min(3.5, p.r * 12.0 + 0.3);
       Vec3 end = p.c.add(p.d);
       halo(m, cam, end, glow, RIM[p.palette], al * 0.45F * first);
-      if (p.r > 0.15F && age < 2.0) halo(m, cam, p.c.add(p.d.scale(0.5)), Math.min(8.0, len * 0.35), new float[]{1.0F, 1.0F, 0.9F}, (float)(1.0 - age / 2.0) * 0.18F);   // the whole sky lights up for an instant
+      if (p.r > 0.15F && age < 2.0) halo(m, cam, p.c.add(p.d.scale(0.5)), Math.min(8.0, len * 0.35), p.palette == 13 ? new float[]{0.55F, 0.75F, 1.0F} : new float[]{1.0F, 1.0F, 0.9F}, (float)(1.0 - age / 2.0) * 0.22F);   // the whole sky lights up for an instant
    }
 
    static void boltBranch(Matrix4f m, Vec3 cam, Vec3 a, Vec3 b, float w, int pal, float al, java.util.Random rnd, int branches, int depth) {

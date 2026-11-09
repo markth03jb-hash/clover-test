@@ -94,7 +94,7 @@ public class LightningFx {
     static void bolt(ServerLevel sl, Vec3 a, Vec3 b, float width, int life, int branches) {
         FxPacket p = new FxPacket();
         p.shape = 23; p.palette = (byte) L; p.id = ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE); p.life = life;
-        p.c = a; p.d = b.subtract(a); p.r = width; p.sweep = branches;
+        p.c = a; p.d = b.subtract(a); p.r = width; p.sweep = width >= 0.1f ? Math.max(branches, 2) + 1 : branches;   // more forks: real lightning
         AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(a.x, a.y, a.z, 128, sl.dimension())), p);
     }
 
@@ -127,17 +127,31 @@ public class LightningFx {
     }
 
     /** Move in a flash: blink to {@code to} (stopping short of walls), leaving a bolt where you were. */
+    /**
+     * Flash toward {@code to}: the furthest spot along the way with room to stand (stepping up onto ledges and down
+     * off them), so a far or awkward aim still takes you as far as it can instead of nowhere.
+     */
     private static Vec3 flashTo(ServerPlayer p, Vec3 to) {
         ServerLevel sl = p.serverLevel();
         Vec3 from = p.position();
         Vec3 eyeFrom = from.add(0, 1.0, 0);
-        Vec3 safe = clip(sl, p, eyeFrom, to.add(0, 1.0, 0));
-        Vec3 dir = safe.subtract(eyeFrom);
-        if (dir.lengthSqr() > 1.0) safe = safe.subtract(dir.normalize().scale(0.6));
-        Vec3 dest = safe.subtract(0, 1.0, 0);
-        if (!sl.noCollision(p, p.getBoundingBox().move(dest.subtract(from)))) dest = from;
+        Vec3 hit = clip(sl, p, eyeFrom, to.add(0, 1.0, 0));
+        Vec3 path = hit.subtract(eyeFrom);
+        double len = path.length();
+        Vec3 dest = from;
+        if (len > 0.8) {
+            Vec3 dir = path.scale(1.0 / len);
+            outer:
+            for (double d = len - 0.6; d >= 0.8; d -= 0.5) {
+                Vec3 feet = eyeFrom.add(dir.scale(d)).subtract(0, 1.0, 0);
+                for (double dy : new double[]{0, 1, -1, 2, -2}) {
+                    Vec3 c = feet.add(0, dy, 0);
+                    if (sl.noCollision(p, p.getBoundingBox().move(c.subtract(from)))) { dest = c; break outer; }
+                }
+            }
+        }
         bolt(sl, eyeFrom, dest.add(0, 1.0, 0), 0.16f, 6, 2);
-        p.connection.teleport(dest.x, dest.y, dest.z, p.getYRot(), p.getXRot());
+        if (dest != from) p.connection.teleport(dest.x, dest.y, dest.z, p.getYRot(), p.getXRot());
         p.fallDistance = 0;
         sound(sl, from, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 0.3f, 2.0f);
         return dest;
@@ -284,7 +298,11 @@ public class LightningFx {
         boolean mode = inMode(p);
         if (mode) modeMsg(p, "lightning_step");
         Vec3 from = p.position().add(0, 1, 0);
-        Vec3 dest = flashTo(p, p.position().add(p.getLookAngle().scale(mode ? 20 : 12)));
+        double range = mode ? 20 : 12;
+        LivingEntity aim = aimed(p, range + 2, 12);
+        Vec3 goal = aim != null ? aim.position().subtract(flat(aim.position().subtract(p.position())).scale(1.2))
+                : p.position().add(p.getLookAngle().scale(range));
+        Vec3 dest = flashTo(p, goal);
         Vec3 to = dest.add(0, 1, 0);
         Set<UUID> hitSet = new HashSet<>();
         for (LivingEntity t : enemies(sl, p, new AABB(from, to).inflate(1.5))) {
