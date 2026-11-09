@@ -1,7 +1,12 @@
-Iron Spell Grimoire v1.55.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.55.1 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.55.1
+- Fix for playing with Essential: Essential 1.5.x could crash the game (ConcurrentModificationException in its
+  GameProfileManager) when it read your skin while it was being updated. That read is now made safe - Essential
+  just skips that one frame and tries again on the next. Does nothing if Essential is not installed.
 
 NEW IN 1.55.0
 - Asta's sword summon redone, from the book to the hand:

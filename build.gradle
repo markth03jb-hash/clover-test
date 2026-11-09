@@ -65,5 +65,8 @@ tasks.withType(ProcessResources).configureEach {
     filesMatching(['META-INF/mods.toml']) { expand props }
 }
 
-tasks.named('jar', Jar).configure { finalizedBy 'reobfJar' }
+tasks.named('jar', Jar).configure {
+    manifest { attributes(['MixinConfigs': 'arcane_addon.mixins.json']) }   // the Essential compatibility fix
+    finalizedBy 'reobfJar'
+}
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
