@@ -1,7 +1,11 @@
-Iron Spell Grimoire v1.74.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.75.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.75.0
+- Covers share one grimoire look now: a clover crest in the middle (four leaves for Yuno and Luck), metal corner brackets,
+  a title plate at the foot and worn leather, with each book's own theme drawn behind. Asta keeps his original cover.
 
 NEW IN 1.74.0
 - Asta's grimoire has its original cover back.

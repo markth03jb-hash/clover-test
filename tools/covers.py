@@ -212,11 +212,54 @@ def rift():    # Langris: plum black, space cut open by straight slashes, violet
     l, d = c.layer(); poly(d, [(20, 330), (236, 60), (236, 80), (20, 352)], fill=(70, 10, 90, 200)); c.put(l)
     l, d = c.layer(); frame(d, (214, 160, 232, 255), 16, 2, 0, False); c.put(l); return c
 
+
+# ---------------------------------------------------------------- the shared grimoire look: a clover crest, corner brackets, worn leather
+ACC = dict(dark=(180, 169, 200), wind=(231, 217, 160), mercury=(220, 232, 248), fire=(217, 169, 76), lightning=(237, 231, 200),
+           hellfire=(232, 182, 82), bone=(237, 227, 204), steel=(217, 169, 76), string=(242, 221, 232), spatial=(231, 199, 102),
+           water=(228, 242, 255), mirror=(232, 232, 242), rift=(214, 160, 232))
+GLOW = dict(dark=(150, 70, 255), wind=(110, 255, 170), mercury=(170, 200, 240), fire=(255, 110, 20), lightning=(90, 170, 255),
+            hellfire=(255, 80, 30), bone=(240, 220, 190), steel=(150, 190, 235), string=(255, 120, 190), spatial=(156, 120, 255),
+            water=(110, 205, 255), mirror=(255, 176, 216), rift=(224, 64, 216))
+LEAVES = dict(wind=4, lightning=4)
+
+def decorate(c, n):
+    col = ACC[n] + (255,)
+    # a plate behind the crest, so it reads on top of any motif
+    l, d = c.layer()
+    d.ellipse([CX - 50 * S, CY - 50 * S, CX + 50 * S, CY + 50 * S], fill=(0, 0, 0, 110))
+    c.put(l)
+    l, d = c.layer()
+    clover(d, CX / S, CY / S - 2, 30, LEAVES.get(n, 3), ACC[n] + (255,))
+    clover(d, CX / S, CY / S - 2, 24, LEAVES.get(n, 3), tuple(int(v * 0.18) for v in ACC[n]) + (255,))
+    c.put(l, GLOW[n], 7, 0.8)
+    # bracketed corners, like the metal corners of an old book
+    l, d = c.layer()
+    for (x, y, sx, sy) in [(12, 12, 1, 1), (244, 12, -1, 1), (12, 372, 1, -1), (244, 372, -1, -1)]:
+        line(d, [(x, y + 34 * sy), (x, y), (x + 34 * sx, y)], fill=col, width=4)
+        line(d, [(x + 6 * sx, y + 22 * sy), (x + 6 * sx, y + 6 * sy), (x + 22 * sx, y + 6 * sy)], fill=col, width=2)
+        d.ellipse([(x + 9 * sx - 3) * S, (y + 9 * sy - 3) * S, (x + 9 * sx + 3) * S, (y + 9 * sy + 3) * S], fill=col)
+    # a title plate at the foot
+    d.rounded_rectangle([78 * S, 322 * S, 178 * S, 342 * S], radius=6 * S, outline=col, width=2 * S, fill=(0, 0, 0, 90))
+    line(d, [(92, 332), (164, 332)], fill=col, width=2)
+    c.put(l)
+    # worn leather: darker edges, a few pale scratches
+    r = random.Random(len(n))
+    l, d = c.layer()
+    for _ in range(26):
+        x, y = r.randint(10, 246), r.randint(10, 374); a = r.uniform(0, 6.28); ln = r.randint(8, 30)
+        line(d, [(x, y), (x + math.cos(a) * ln, y + math.sin(a) * ln)], fill=(255, 255, 255, 38), width=1)
+    c.put(l)
+    v = Image.new('L', (W, H), 0); vd = ImageDraw.Draw(v)
+    vd.rectangle([0, 0, W, H], fill=0); vd.rectangle([30 * S, 30 * S, W - 30 * S, H - 30 * S], fill=255)
+    v = v.filter(ImageFilter.GaussianBlur(26 * S))
+    shade = Image.composite(Image.new('RGBA', (W, H), (0, 0, 0, 0)), Image.new('RGBA', (W, H), (0, 0, 0, 110)), v)
+    c.im = Image.alpha_composite(c.im, shade)
+
 BOOKS = dict(dark=dark, wind=wind, mercury=mercury, fire=fire, lightning=lightning, hellfire=hellfire, bone=bone, steel=steel,
              string=string, spatial=spatial, water=water, mirror=mirror, rift=rift)
 if __name__ == '__main__':
     for n, f in BOOKS.items():
-        c = f(); c.save(f'{n}_grimoire_front')
+        c = f(); decorate(c, n); c.save(f'{n}_grimoire_front')
         # the back: the same ground, quieter - just the frame colour and a small emblem would do, so reuse the cover softened
         b = Image.open(os.path.join(OUT, f'{n}_grimoire_front.png')).convert('RGBA')
         b = Image.blend(b, Image.new('RGBA', b.size, tuple(int(v) for v in b.resize((1, 1), Image.BOX).getpixel((0, 0)))), 0.55)
