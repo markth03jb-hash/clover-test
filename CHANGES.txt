@@ -1,7 +1,13 @@
-Iron Spell Grimoire v1.67.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.68.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.68.0
+- The spell wheel is much more distinct per grimoire - beyond colours, every page is cut to that grimoire's own shape:
+  Asta black blades, Yami a glowing crescent, Yuno feathers, Nozel hanging mercury drops, Magna rising embers,
+  Luck zigzag bolts, Mereoleona flame claws, Zenon arches of rib, Klaus bolted plates, Vanessa stitched patches,
+  Finral little gates. (The wheel still runs from the top clockwise in unlock order.)
 
 NEW IN 1.67.0
 - Lightning Step flashes THROUGH the enemy you aim at and stops behind them, already turned back toward them.

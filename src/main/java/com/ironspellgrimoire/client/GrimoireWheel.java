@@ -170,6 +170,7 @@ public final class GrimoireWheel {
                 ring(bb, m, cx, cy, ro - 2.0, ro + 1.5, a0 + 0.012, a1 - 0.012, col[0], col[1], col[2], 0.9F * p * A, 1.0F, 1.0F, 0.92F, 0.7F * p * A, 12);
                 ring(bb, m, cx, cy, ro + 1.5, ro + 7.0, a0 + 0.012, a1 - 0.012, col[0], col[1], col[2], 0.35F * p * A, col[0], col[1], col[2], 0.0F, 12);
             }
+            pageDeco(bb, m, cx, cy, book, th, a0, a1, ri, ro, p, A, time);   // every grimoire cuts its pages to its own shape
             line(bb, m, cx, cy, a0, rIn + 1.0, rOut + 1.0, 1.1, tr[0], tr[1], tr[2], 0.85F * A);
         }
         // the trim: inner edge and outer double ring
@@ -264,6 +265,85 @@ public final class GrimoireWheel {
     }
 
     private static int rgb(float[] c) { return ((int) (c[0] * 255) << 16) | ((int) (c[1] * 255) << 8) | (int) (c[2] * 255); }
+
+    /**
+     * What each page of the wheel is shaped like, beyond its colours: Asta's pages end in black blades, Yami's carry a
+     * glowing crescent, Yuno's are feathers, Nozel's hold a mercury drop, Magna's end in embers, Luck's edge zigzags,
+     * Mereoleona's sweep into claws, Zenon's are arches of rib, Klaus's are bolted plates, Vanessa's are stitched
+     * patches, Finral's are little gates.
+     */
+    private static void pageDeco(BufferBuilder bb, Matrix4f m, int cx, int cy, int book, Theme th, double a0, double a1,
+                                 double ri, double ro, float p, float A, double time) {
+        double am = (a0 + a1) * 0.5, w = a1 - a0, mid = ri + (ro - ri) * 0.5;
+        float[] ac = th.accent, t = th.trim;
+        switch (book) {
+            case 0 -> {   // Asta: a black blade standing on each page, red along its edge
+                tri(bb, m, cx, cy, a0 + w * 0.12, ro, a1 - w * 0.12, ro, am + 0.02, ro + 5.0 + 3.0 * p, 0.02F, 0.0F, 0.02F, 0.95F * A);
+                seg(bb, m, cx, cy, a0 + w * 0.12, ro, am + 0.02, ro + 5.0 + 3.0 * p, 0.8, ac[0], ac[1], ac[2], 0.85F * A);
+            }
+            case 1 -> {   // Yami: a crescent of violet light inside the page, and a thin inner rim
+                ring(bb, m, cx, cy, ri + 3, ri + 8, a0 + w * 0.1, a1 - w * 0.1, ac[0], ac[1], ac[2], 0.0F, ac[0], ac[1], ac[2], (0.35F + 0.4F * p) * A, 10);
+                ring(bb, m, cx, cy, ro - 9, ro - 8, a0 + w * 0.2, a1 - w * 0.2, t[0], t[1], t[2], 0.7F * A, t[0], t[1], t[2], 0.7F * A, 8);
+            }
+            case 2 -> {   // Yuno: a feather - a spine and a vane
+                line(bb, m, cx, cy, am, ri + 3, ro - 1, 0.9, t[0], t[1], t[2], 0.85F * A);
+                tri(bb, m, cx, cy, am - w * 0.3, ri + (ro - ri) * 0.42, am + w * 0.3, ri + (ro - ri) * 0.42, am, ro - 2, ac[0], ac[1], ac[2], (0.2F + 0.3F * p) * A);
+                tri(bb, m, cx, cy, am - w * 0.2, ri + (ro - ri) * 0.18, am + w * 0.2, ri + (ro - ri) * 0.18, am, ri + (ro - ri) * 0.62, ac[0], ac[1], ac[2], 0.14F * A);
+            }
+            case 3 -> {   // Nozel: a drop of mercury hanging in each page
+                double x = cx + Math.sin(am) * (mid + 3), y = cy - Math.cos(am) * (mid + 3);
+                tri(bb, m, cx, cy, am - 0.045, mid - 4, am + 0.045, mid - 4, am, mid + 1, 0.7F, 0.76F, 0.86F, 0.8F * A);
+                disc(bb, m, x, y, 2.6 + p, 0.66F, 0.72F, 0.82F, 0.95F * A);
+                disc(bb, m, x - 0.8, y - 0.8, 0.9, 1.0F, 1.0F, 1.0F, 0.9F * A);
+            }
+            case 4 -> {   // Magna: embers rising off every page
+                for (int i = 0; i < 3; i++) {
+                    double a = a0 + w * (0.25 + 0.25 * i), h = 3 + 3 * Math.abs(Math.sin(time * 2.4 + am * 7 + i));
+                    tri(bb, m, cx, cy, a - 0.03, ro, a + 0.03, ro, a, ro + h, 1.0F, 0.55F, 0.1F, 0.9F * A);
+                }
+            }
+            case 5 -> {   // Luck: the page's outer edge cracks in a zigzag of bolt
+                double r = ro - 1.5, a = a0 + w * 0.08;
+                for (int k = 0; k < 6; k++) {
+                    double a1n = a0 + w * (0.08 + 0.84 * (k + 1) / 6.0), r1 = ro - 1.5 + (k % 2 == 0 ? 3.2 : -0.6);
+                    seg(bb, m, cx, cy, a, r, a1n, r1, 1.3, ac[0], ac[1], ac[2], 0.85F * A);
+                    seg(bb, m, cx, cy, a, r, a1n, r1, 0.5, 1.0F, 1.0F, 1.0F, 0.9F * A);
+                    a = a1n; r = r1;
+                }
+            }
+            case 6 -> {   // Mereoleona: every page sweeps into a flame claw
+                tri(bb, m, cx, cy, a0 + w * 0.1, ro, a1 - w * 0.25, ro, a1 + 0.05, ro + 6.0 + 3.0 * p, 0.85F, 0.1F, 0.05F, 0.95F * A);
+                tri(bb, m, cx, cy, a0 + w * 0.3, ro, a1 - w * 0.4, ro, a1 - 0.02, ro + 3.5 + 2.0 * p, 1.0F, 0.62F, 0.25F, 0.9F * A);
+            }
+            case 7 -> {   // Zenon: each page an arch of rib, with a knuckle at its foot
+                ring(bb, m, cx, cy, ro - 6, ro - 4.6, a0 + w * 0.12, a1 - w * 0.12, t[0], t[1], t[2], 0.9F * A, t[0], t[1], t[2], 0.9F * A, 8);
+                line(bb, m, cx, cy, a0 + w * 0.12, ri + 3, ro - 5.3, 1.3, t[0], t[1], t[2], 0.9F * A);
+                line(bb, m, cx, cy, a1 - w * 0.12, ri + 3, ro - 5.3, 1.3, t[0], t[1], t[2], 0.9F * A);
+                disc(bb, m, cx + Math.sin(am) * (ri + 5), cy - Math.cos(am) * (ri + 5), 1.4, t[0], t[1], t[2], 0.95F * A);
+            }
+            case 8 -> {   // Klaus: bolted plates, a rivet in every corner
+                for (int c = 0; c < 4; c++) {
+                    double a = c < 2 ? a0 + w * 0.14 : a1 - w * 0.14, r = c % 2 == 0 ? ri + 4 : ro - 4;
+                    disc(bb, m, cx + Math.sin(a) * r, cy - Math.cos(a) * r, 1.15, 0.82F, 0.86F, 0.92F, 0.95F * A);
+                }
+                ring(bb, m, cx, cy, ri + 2.5, ri + 3.1, a0 + w * 0.08, a1 - w * 0.08, t[0], t[1], t[2], 0.8F * A, t[0], t[1], t[2], 0.8F * A, 6);
+            }
+            case 9 -> {   // Vanessa: stitched patches - a dashed seam round every page and a needle in the middle
+                for (int d = 0; d < 6; d++) {
+                    double s0 = a0 + w * (0.08 + 0.15 * d);
+                    ring(bb, m, cx, cy, ro - 4.2, ro - 3.4, s0, s0 + w * 0.09, t[0], t[1], t[2], 0.95F * A, t[0], t[1], t[2], 0.95F * A, 2);
+                    ring(bb, m, cx, cy, ri + 3.4, ri + 4.2, s0, s0 + w * 0.09, t[0], t[1], t[2], 0.95F * A, t[0], t[1], t[2], 0.95F * A, 2);
+                }
+                line(bb, m, cx, cy, am, ri + 6, ro - 7, 0.7, ac[0], ac[1], ac[2], 0.5F * A);
+            }
+            default -> {   // Finral: each page a little gate - an arch outline with a glowing doorway
+                ring(bb, m, cx, cy, ro - 7, ro - 6, a0 + w * 0.2, a1 - w * 0.2, ac[0], ac[1], ac[2], 0.9F * A, ac[0], ac[1], ac[2], 0.9F * A, 8);
+                line(bb, m, cx, cy, a0 + w * 0.2, ri + 4, ro - 6.5, 1.0, ac[0], ac[1], ac[2], 0.9F * A);
+                line(bb, m, cx, cy, a1 - w * 0.2, ri + 4, ro - 6.5, 1.0, ac[0], ac[1], ac[2], 0.9F * A);
+                ring(bb, m, cx, cy, ri + 5, ro - 7.5, a0 + w * 0.22, a1 - w * 0.22, ac[0], ac[1], ac[2], (0.08F + 0.2F * p) * A, ac[0], ac[1], ac[2], (0.04F + 0.12F * p) * A, 8);
+            }
+        }
+    }
 
     /** The marks turning between the two outer rings. */
     private static void marks(BufferBuilder bb, Matrix4f m, int cx, int cy, Theme th, double rOut, double time, float A) {
