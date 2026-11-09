@@ -204,7 +204,7 @@ public class FxRenderer extends FxBase {
          return;
       }
       if (p.shape == 12) {  // impact frame: life = ticks
-         Cutscene.impactFrame(p.life, (int) p.palette);
+         ImpactFrames.start(p.life, p.palette & 0x3F, p.c);
          return;
       }
       if (p.shape == 11) {  // Knight's Armor form: id = player, life = ticks left (0 = off)

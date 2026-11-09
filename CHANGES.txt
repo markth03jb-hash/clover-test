@@ -1,7 +1,19 @@
-Iron Spell Grimoire v1.53.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.54.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.54.0
+- Every impact frame redone, the way anime draws them:
+  - Negative frames: the world itself flips to a photo negative tinted with the grimoire's colour, so you still see
+    who got hit and where - no more flat white screen. They alternate with ink frames (the grimoire's dark ink, not
+    fully opaque) carrying its pattern.
+  - Aimed at the hit: the spot that was struck is found on your screen and the speed lines, spikes, bolts, flames,
+    cracks and cuts all converge on it or burst out of it, rushing inward as the frame plays.
+  - Tapered, sharp lines (needle points, blade-shaped cuts, flame tongues) instead of flat bars; Asta's black frames
+    get a red flash star on the hit, the finisher's huge slash cuts right through it, Equinox splits the screen at it.
+  - Snaps in like a cut, lets go smoothly over its last tick, and is drawn under the HUD so your hotbar and health
+    stay readable.
 
 NEW IN 1.53.0
 - Damage never lands before the move: a move's hit now waits until its slash, bolt, ball or gust has actually come out
