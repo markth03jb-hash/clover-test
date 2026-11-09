@@ -253,6 +253,14 @@ public final class GrimoireWheel {
             new Theme(c(0x0E1014), c(0x353C46), c(0xD9A94C), c(0xC7D6EA), c(0x4A5462), 3, O_RIVETS, M_NOTCHES, true, 0x101216, 0xE6EEF8),
     };
 
+    /** {page inside, page edge, trim, accent, panel, title} as RGB ints, for the grimoire book screen and others. */
+    static int[] themeColors(int book) {
+        Theme t = THEMES[Mth.clamp(book, 0, THEMES.length - 1)];
+        return new int[]{rgb(t.pageIn), rgb(t.pageOut), rgb(t.trim), rgb(t.accent), t.panel, t.title};
+    }
+
+    private static int rgb(float[] c) { return ((int) (c[0] * 255) << 16) | ((int) (c[1] * 255) << 8) | (int) (c[2] * 255); }
+
     /** The marks turning between the two outer rings. */
     private static void marks(BufferBuilder bb, Matrix4f m, int cx, int cy, Theme th, double rOut, double time, float A) {
         float[] t = th.trim;
