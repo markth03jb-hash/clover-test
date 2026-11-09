@@ -109,14 +109,14 @@ public final class PixelFx {
             {1.0F, 0.16F, 0.1F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F},
             {0.6F, 1.0F, 0.78F}, {0.95F, 0.95F, 1.0F}, {0.7F, 0.82F, 0.95F}, {1.0F, 0.8F, 0.3F}, {1.0F, 0.07F, 0.05F},
             {0.6F, 0.2F, 1.0F}, {0.86F, 0.92F, 1.0F}, {0.35F, 0.65F, 1.0F}, {0.45F, 0.72F, 1.0F}, {1.0F, 0.16F, 0.1F},
-            {1.0F, 0.98F, 0.93F}
+            {1.0F, 0.98F, 0.93F}, {1.0F, 0.55F, 0.78F}, {0.62F, 0.45F, 1.0F}
     };
     /** The colour of the solid (non-glowing) sprites: black anti magic and darkness, steel, gold, mercury, bone. */
     private static final float[][] SOLID = {
             {0.02F, 0.0F, 0.01F}, {0.03F, 0.0F, 0.05F}, {0.08F, 0.03F, 0.02F}, {0.05F, 0.1F, 0.16F}, {0.1F, 0.09F, 0.02F},
             {0.05F, 0.12F, 0.08F}, {0.5F, 0.5F, 0.55F}, {0.32F, 0.36F, 0.42F}, {0.55F, 0.38F, 0.08F}, {0.03F, 0.0F, 0.0F},
             {0.015F, 0.0F, 0.035F}, {0.62F, 0.67F, 0.75F}, {0.02F, 0.05F, 0.2F}, {0.02F, 0.06F, 0.18F}, {0.12F, 0.0F, 0.01F},
-            {0.95F, 0.93F, 0.88F}
+            {0.95F, 0.93F, 0.88F}, {0.4F, 0.12F, 0.26F}, {0.04F, 0.02F, 0.12F}
     };
 
     static final int DARK = 0, FLAME = 1, BOLT = 2, WIND = 3, METAL = 4, BONE = 5, LIGHT = 6;
@@ -137,7 +137,7 @@ public final class PixelFx {
     /** Glow colour of a palette at a given heat: white-hot at the top, the palette's own colour, then dying embers -
      *  blended smoothly between those stops, so a sprite cools without visible colour jumps. */
     private static float[] glow(int pal, float heat) {
-        pal = Mth.clamp(pal, 0, 15);
+        pal = Mth.clamp(pal, 0, RIM.length - 1);
         if (pal == 2) return ramp(FIRE_H, FIRE_C, heat);
         if (pal == 0 || pal == 9 || pal == 14) return ramp(CRIM_H, CRIM_C, heat);
         float[] c = RIM[pal];
@@ -395,14 +395,14 @@ public final class PixelFx {
      * and claws; 10 Yami: dark crescents and smoke puffs; 11 Nozel: mercury drops; 12 blue fire: wisps;
      * 13 Luck: zigzag bolts and diamonds; 14 Mereoleona: curved lion-mane flame claws; 15 Zenon: little bones.)
      */
-    private static final int[] LONG = {K_BLADE, K_MOON, K_TONGUE, K_STREAK, K_BOLT, K_STREAK, K_STREAK, K_STREAK, K_STREAK, K_BARB, K_MOON, K_STREAK, K_WISP, K_BOLT, K_CLAW, K_STREAK};
-    private static final int[] BIT = {K_SHARD, K_SHARD, K_EMBER, K_DIAMOND, K_CROSS, K_FEATHER, K_STAR, K_PLATE, K_RING, K_CROSS, K_PUFF, K_DROP, K_EMBER, K_DIAMOND, K_EMBER, K_BONE};
-    private static final int[] SPEC = {K_CROSS, K_PUFF, K_CROSS, K_STAR, K_STAR, K_MOON, K_CROSS, K_CROSS, K_STAR, K_CLAW, K_WISP, K_STAR, K_TONGUE, K_STAR, K_TONGUE, K_SHARD};
+    private static final int[] LONG = {K_BLADE, K_MOON, K_TONGUE, K_STREAK, K_BOLT, K_STREAK, K_STREAK, K_STREAK, K_STREAK, K_BARB, K_MOON, K_STREAK, K_WISP, K_BOLT, K_CLAW, K_STREAK, K_STREAK, K_STREAK};
+    private static final int[] BIT = {K_SHARD, K_SHARD, K_EMBER, K_DIAMOND, K_CROSS, K_FEATHER, K_STAR, K_PLATE, K_RING, K_CROSS, K_PUFF, K_DROP, K_EMBER, K_DIAMOND, K_EMBER, K_BONE, K_CROSS, K_STAR};
+    private static final int[] SPEC = {K_CROSS, K_PUFF, K_CROSS, K_STAR, K_STAR, K_MOON, K_CROSS, K_CROSS, K_STAR, K_CLAW, K_WISP, K_STAR, K_TONGUE, K_STAR, K_TONGUE, K_SHARD, K_RING, K_RING};
 
     /** One sprite of a palette's own kind of magic at {@code at}, carried by {@code drift}, lying along {@code axis}. */
     static void one(int pal, Vec3 at, Vec3 drift, Vec3 axis, double size) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        pal = Mth.clamp(pal, 0, 15);
+        pal = Mth.clamp(pal, 0, RIM.length - 1);
         axis = nz(axis, UP);
         float sz = (float) size;
         int L = LONG[pal], B = BIT[pal], X = SPEC[pal];
@@ -718,7 +718,7 @@ public final class PixelFx {
     static void signature(int pal, Vec3 at, Vec3 d, double s) {
         if (density() <= 0.0F) return;
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        pal = Mth.clamp(pal, 0, 15);
+        pal = Mth.clamp(pal, 0, RIM.length - 1);
         d = nz(d, UP);
         Vec3 s1 = nz(d.cross(UP), new Vec3(1, 0, 0)), s2 = d.cross(s1);
         double sz = Mth.clamp(s * 0.25, 0.25, 1.2);
@@ -802,7 +802,7 @@ public final class PixelFx {
     private static void fromFx0(FxPacket p, Vec3 at, double age, double life, boolean perTick) {
         if (density() <= 0.0F) return;
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        int pal = Mth.clamp(p.palette, 0, 15);
+        int pal = Mth.clamp(p.palette, 0, RIM.length - 1);
         boolean burst = !perTick && age < 1.0;
         double frac = Mth.clamp(age / Math.max(1.0, life), 0.0, 1.0);
         Vec3 dn = nz(p.d, new Vec3(1, 0, 0)), un = nz(p.u, UP);
@@ -1151,7 +1151,7 @@ public final class PixelFx {
     /** Aura-outline colours (AuraOutlineLayer) to palettes. */
     private static final int[] OUTLINE_PAL = {10, 9, 11, 13, 14, 0, 15, 6, 9};
     /** Grimoire (GrimoireMastery.BOOKS order) to palette: Asta, Yami, Yuno, Nozel, Magna, Luck, Mereoleona, Zenon, Klaus. */
-    private static final int[] BOOK_PAL = {0, 10, 5, 11, 2, 13, 14, 15, 7};
+    private static final int[] BOOK_PAL = {0, 10, 5, 11, 2, 13, 14, 15, 7, 16, 17};
 
     /** Ki Sense colours by creature: hostile red, passive green (wind), neutral yellow (lightning), players blue. */
     private static final int[] KI_PAL = {14, 5, 4, 13};
@@ -1172,7 +1172,7 @@ public final class PixelFx {
             case 14 -> { mode = BODY; pal = OUTLINE_PAL[Mth.clamp(p.palette, 0, OUTLINE_PAL.length - 1)]; rate = 1.0F; }   // aura outline
             case 15 -> { mode = SHELL; pal = 10; rate = 4.0F; }                                    // Black Cocoon
             case 16 -> { mode = BODY; pal = 10; rate = 2.0F; }                                     // Black Blade
-            case 17 -> { mode = ZONE; pal = Mth.clamp(p.palette, 0, 15); rate = 1.0F; }            // Mana Zone
+            case 17 -> { mode = ZONE; pal = Mth.clamp(p.palette, 0, RIM.length - 1); rate = 1.0F; }            // Mana Zone
             case 18 -> { mode = BODY; pal = 5; rate = 1.0F; }                                      // Spirit Dive
             case 21 -> { mode = BODY; pal = flamePal(p.palette); rate = 1.2F; }                    // burning
             case 22 -> { mode = HANDS; pal = flamePal(p.palette); rate = 2.0F; }                   // Flame Knuckles
@@ -1494,7 +1494,7 @@ public final class PixelFx {
         }
         float r, g, bl, al = 1.0F;
         switch (layer) {
-            case L_SOLID -> { float[] sc = SOLID[Mth.clamp(p.pal, 0, 15)]; r = Math.min(1F, sc[0] * p.tone); g = Math.min(1F, sc[1] * p.tone); bl = Math.min(1F, sc[2] * p.tone); al = p.darkAlpha * fade; }
+            case L_SOLID -> { float[] sc = SOLID[Mth.clamp(p.pal, 0, RIM.length - 1)]; r = Math.min(1F, sc[0] * p.tone); g = Math.min(1F, sc[1] * p.tone); bl = Math.min(1F, sc[2] * p.tone); al = p.darkAlpha * fade; }
             case L_SOLID_RIM -> {   // the glowing edge round a solid sprite: strong on black magic, a faint sheen on metal and bone
                 float k = (element(p.pal) == DARK ? 0.95F : (p.pal == 11 ? 0.18F : 0.45F)) * fade * Math.min(1.0F, p.darkAlpha + 0.2F);
                 float[] c = glow(p.pal, 0.6F);

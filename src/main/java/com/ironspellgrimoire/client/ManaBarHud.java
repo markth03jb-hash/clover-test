@@ -38,8 +38,10 @@ public final class ManaBarHud {
             {0xE8B652, 0xC4201A, 0xFF9A70, 0x160505, 0xFFB08A},   // Mereoleona
             {0xEDE3CC, 0xBBA98C, 0xFFF8E6, 0x100808, 0xF5EBD5},   // Zenon
             {0xD9A94C, 0x5E7896, 0xD8E6F6, 0x101216, 0xE6EEF8},   // Klaus
+            {0xF2DDE8, 0xE0559A, 0xFFC4E2, 0x1C0814, 0xFFD0E8},   // Vanessa
+            {0xE7C766, 0x6A48D8, 0xC8B4FF, 0x090620, 0xE6DAFF},   // Finral
     };
-    private static final int[] LEAVES = {5, 3, 4, 3, 3, 3, 3, 3, 3};
+    private static final int[] LEAVES = {5, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3};
 
     private static float shown = -1F;
     private static Method getMana;

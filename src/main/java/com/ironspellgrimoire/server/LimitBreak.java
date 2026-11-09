@@ -79,7 +79,7 @@ public final class LimitBreak {
         p.setHealth(Math.max(p.getHealth(), p.getMaxHealth() * 0.5f));   // back up to half health
         ModeHud.show(p, "surpassing_limits", DURATION);
         sendAura(p, idx, DURATION);
-        AnimSend.play(p, AnimSend.LIMIT_FIRST + idx);   // the grimoire's own awakening pose
+        AnimSend.play(p, AnimSend.LIMIT_FIRST + (idx <= 8 ? idx : 1));   // the grimoire's own awakening pose
         LimitFx.awaken(p, idx);
         GrimoireMastery.Book b = GrimoireMastery.BOOKS.get(idx);
         String ult = null;

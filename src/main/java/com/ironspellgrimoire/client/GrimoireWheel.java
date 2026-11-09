@@ -251,6 +251,10 @@ public final class GrimoireWheel {
             new Theme(c(0x0E0606), c(0x2C1414), c(0xEDE3CC), c(0xF2E6CC), c(0x3A2622), 3, O_BONES, M_NOTCHES, true, 0x100808, 0xF5EBD5),
             // Klaus: grey steel plates with gold trim, a riveted band
             new Theme(c(0x0E1014), c(0x353C46), c(0xD9A94C), c(0xC7D6EA), c(0x4A5462), 3, O_RIVETS, M_NOTCHES, true, 0x101216, 0xE6EEF8),
+            // Vanessa: rose-pink pages, silver-white trim, threads drawn round the ring
+            new Theme(c(0x1A0712), c(0x4A1634), c(0xF2DDE8), c(0xFF8CC6), c(0x6A1E46), 3, O_SMOKE, M_DOTS, false, 0x1C0814, 0xFFD0E8),
+            // Finral: deep indigo pages, gold trim, little gates turning round it
+            new Theme(c(0x07051A), c(0x1C1450), c(0xE7C766), c(0x9C78FF), c(0x2A1E6A), 3, O_BOLTS, M_CRESCENTS, false, 0x090620, 0xE6DAFF),
     };
 
     /** {page inside, page edge, trim, accent, panel, title} as RGB ints, for the grimoire book screen and others. */

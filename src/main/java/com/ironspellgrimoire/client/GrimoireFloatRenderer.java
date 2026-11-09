@@ -110,6 +110,8 @@ public class GrimoireFloatRenderer {
       if (item == AddonItemRegistry.LIGHTNING_GRIMOIRE.get()) return new int[]{4, 4};
       if (item == AddonItemRegistry.HELLFIRE_GRIMOIRE.get()) return new int[]{14, 0};   // crimson hellfire, like her flames
       if (item == AddonItemRegistry.BONE_GRIMOIRE.get()) return new int[]{15, 2};
+      if (item == AddonItemRegistry.THREAD_GRIMOIRE.get()) return new int[]{16, 3};
+      if (item == AddonItemRegistry.SPACE_GRIMOIRE.get()) return new int[]{17, 3};
       String id = BuiltInRegistries.ITEM.getKey(item).getPath();
       return switch (id) {
          default -> new int[]{8, 4};

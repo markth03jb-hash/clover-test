@@ -288,6 +288,14 @@ public class GrimoireBookScreen extends Screen {
         try { info.add(Component.translatable("ui.irons_spellbooks.mana_cost", sp.getManaCost(lvl))); } catch (Throwable ignored) {}
         try { info.add(Component.translatable("tooltip.irons_spellbooks.cooldown_length_seconds", Utils.timeFromTicks(sp.getSpellCooldown(), 1))); } catch (Throwable ignored) {}
         try { info.add(Component.literal("Cast: " + pretty(sp.getCastType().name()))); } catch (Throwable ignored) {}
+        for (com.ironspellgrimoire.server.ComboChain.Combo cb : com.ironspellgrimoire.server.ComboChain.COMBOS) {   // its combos
+            String id = ids.get(i);
+            if (!cb.first().equals(id) && !cb.second().equals(id)) continue;
+            String other = cb.first().equals(id) ? cb.second() : cb.first();
+            Component o2 = Component.translatable("spell.iron_spell_grimoire." + other);
+            info.add(Component.literal("Combo \"" + cb.name() + "\": ").withStyle(net.minecraft.ChatFormatting.GOLD)
+                    .append(cb.first().equals(id) ? Component.literal("then ").append(o2) : Component.literal("after ").append(o2)));
+        }
         for (Component c : info) {
             for (FormattedCharSequence l : f.split(c, w)) {
                 if (yy > y + h - 4) return;

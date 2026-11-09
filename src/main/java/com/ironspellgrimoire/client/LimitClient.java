@@ -34,6 +34,8 @@ public final class LimitClient {
             {1.0F, 0.18F, 0.1F},    // Mereoleona: crimson
             {0.95F, 0.9F, 0.8F},    // Zenon: ivory
             {0.78F, 0.84F, 0.92F},  // Klaus: steel
+            {1.0F, 0.55F, 0.78F},   // Vanessa: thread pink
+            {0.62F, 0.45F, 1.0F},   // Finral: space violet
     };
 
     public static void set(int id, int book, int life) {

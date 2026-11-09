@@ -240,6 +240,44 @@ public class AddonSpellRegistry {
             BLACK_BLADE, DIMENSION_SLASH, AVIDYA_SLASH, BLACK_COCOON, DEATH_THRUST,
             BLACK_MOON, BLACK_HOLE, MANA_ZONE_DIMENSION_SLASH, KI_FORESIGHT, EVENT_HORIZON);
 
+    // ------------------------------------------------------------------ Thread Grimoire (Vanessa Enoteca's Thread Magic)
+    private static com.ironspellgrimoire.spells.BookSpell thread(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.EVOCATION_RESOURCE,
+                com.ironspellgrimoire.item.ThreadGrimoireItem.class, "ui.iron_spell_grimoire.thread_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> BINDING_THREADS = registerSpell(thread("binding_threads", 8, 30, 8, "iron_spell_grimoire:lightning_chain", com.ironspellgrimoire.server.ThreadFx::bindingThreads));
+    public static final RegistryObject<AbstractSpell> PUPPET_STRINGS = registerSpell(thread("puppet_strings", 12, 40, 18, "iron_spell_grimoire:klaus_clench", com.ironspellgrimoire.server.ThreadFx::puppetStrings));
+    public static final RegistryObject<AbstractSpell> THREAD_NET = registerSpell(thread("thread_net", 16, 40, 0, "iron_spell_grimoire:mercury_mirror", com.ironspellgrimoire.server.ThreadFx::threadNet));
+    public static final RegistryObject<AbstractSpell> THREAD_COCOON = registerSpell(thread("thread_cocoon", 24, 45, 10, "iron_spell_grimoire:mercury_guardian", com.ironspellgrimoire.server.ThreadFx::cocoon));
+    public static final RegistryObject<AbstractSpell> STITCHING = registerSpell(thread("stitching", 30, 50, 10, "iron_spell_grimoire:dark_ki_read", com.ironspellgrimoire.server.ThreadFx::stitching));
+    public static final RegistryObject<AbstractSpell> BATTLE_DRESS = registerSpell(thread("battle_dress", 45, 50, 0, "iron_spell_grimoire:mercury_guardian", com.ironspellgrimoire.server.ThreadFx::battleDress));
+    public static final RegistryObject<AbstractSpell> THREAD_CAGE = registerSpell(thread("thread_cage", 28, 65, 16, "iron_spell_grimoire:fire_rain", com.ironspellgrimoire.server.ThreadFx::threadCage));
+    public static final RegistryObject<AbstractSpell> RED_THREAD_OF_FATE = registerSpell(thread("red_thread_of_fate", 90, 110, 0, "iron_spell_grimoire:dark_mana_zone", com.ironspellgrimoire.server.ThreadFx::redThreadOfFate));
+
+    /** The eight Thread Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> THREAD_SPELLS = List.of(
+            BINDING_THREADS, PUPPET_STRINGS, THREAD_NET, THREAD_COCOON, STITCHING, BATTLE_DRESS, THREAD_CAGE, RED_THREAD_OF_FATE);
+
+    // ------------------------------------------------------------------ Space Grimoire (Finral Roulacase's Spatial Magic)
+    private static com.ironspellgrimoire.spells.BookSpell space(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
+                com.ironspellgrimoire.item.SpaceGrimoireItem.class, "ui.iron_spell_grimoire.space_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> SPATIAL_GATE = registerSpell(space("spatial_gate", 20, 50, 0, "iron_spell_grimoire:mercury_mirror", com.ironspellgrimoire.server.SpaceFx::spatialGate));
+    public static final RegistryObject<AbstractSpell> SHORT_HOP = registerSpell(space("short_hop", 5, 20, 0, "irons_spellbooks:instant_self", com.ironspellgrimoire.server.SpaceFx::shortHop));
+    public static final RegistryObject<AbstractSpell> ESCORT_GATE = registerSpell(space("escort_gate", 40, 70, 0, "iron_spell_grimoire:mercury_mirror", com.ironspellgrimoire.server.SpaceFx::escortGate));
+    public static final RegistryObject<AbstractSpell> WAYPOINT = registerSpell(space("waypoint", 3, 25, 0, "irons_spellbooks:instant_self", com.ironspellgrimoire.server.SpaceFx::waypoint));
+    public static final RegistryObject<AbstractSpell> SKY_DROP = registerSpell(space("sky_drop", 14, 45, 10, "iron_spell_grimoire:klaus_clench", com.ironspellgrimoire.server.SpaceFx::skyDrop));
+    public static final RegistryObject<AbstractSpell> REDIRECT_GATE = registerSpell(space("redirect_gate", 18, 40, 0, "iron_spell_grimoire:mercury_mirror", com.ironspellgrimoire.server.SpaceFx::redirectGate));
+    public static final RegistryObject<AbstractSpell> EVASION_GATE = registerSpell(space("evasion_gate", 25, 40, 0, "iron_spell_grimoire:dark_ki_read", com.ironspellgrimoire.server.SpaceFx::evasionGate));
+    public static final RegistryObject<AbstractSpell> SPACE_DELETION = registerSpell(space("space_deletion", 75, 110, 28, "iron_spell_grimoire:dark_black_hole", com.ironspellgrimoire.server.SpaceFx::spaceDeletion));
+
+    /** The eight Space Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> SPACE_SPELLS = List.of(
+            SPATIAL_GATE, SHORT_HOP, ESCORT_GATE, WAYPOINT, SKY_DROP, REDIRECT_GATE, EVASION_GATE, SPACE_DELETION);
+
     private static RegistryObject<AbstractSpell> registerSpell(AbstractSpell spell) {
         return SPELLS.register(spell.getSpellName(), () -> spell);
     }

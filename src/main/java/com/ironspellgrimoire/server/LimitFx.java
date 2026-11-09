@@ -89,7 +89,7 @@ public final class LimitFx {
         Vec3 c = p.position();
         // shared beat: the world goes white for an instant (Luck: his lightning frame), the ground shakes, the power erupts
         FxSend.impactFrame(sl, c, 4, new int[]{FxSend.FRAME_ASTA, FxSend.FRAME_YAMI, FxSend.FRAME_YUNO, FxSend.FRAME_NOZEL, FxSend.FRAME_MAGNA,
-                FxSend.FRAME_LUCK, FxSend.FRAME_MEREOLEONA, FxSend.FRAME_ZENON, FxSend.FRAME_KLAUS}[Math.max(0, Math.min(8, idx))], 24);   // each grimoire's own frame
+                FxSend.FRAME_LUCK, FxSend.FRAME_MEREOLEONA, FxSend.FRAME_ZENON, FxSend.FRAME_KLAUS, FxSend.FRAME_VANESSA, FxSend.FRAME_FINRAL}[Math.max(0, Math.min(10, idx))], 24);   // each grimoire's own frame
         FxSend.shake(sl, c, 0.7f, 18, 32);
         sound(sl, c, SoundEvents.BEACON_ACTIVATE, 1f, 0.6f);
         sound(sl, c, SoundEvents.TOTEM_USE, 0.6f, 0.8f);
@@ -184,7 +184,23 @@ public final class LimitFx {
                 sound(sl, c, SoundEvents.SKELETON_HURT, 1f, 0.4f);
                 sound(sl, c, SoundEvents.BONE_BLOCK_BREAK, 1f, 0.6f);
             }
-            default -> {   // Klaus: steel plates rise around him in a circle, ringing like a bell
+            case 9 -> {    // Vanessa: threads burst out from her in every direction and weave a glowing ring round her
+                for (int i = 0; i < 24; i++) {
+                    double a = i * Math.PI / 12;
+                    ThreadFx.thread(sl, c.add(0, 1.2, 0), c.add(Math.cos(a) * 6, 0.2 + (i % 3) * 1.4, Math.sin(a) * 6), 30);
+                }
+                FxSend.ring(sl, 16, c.add(0, 0.1, 0), 0.5f, 6.5f, 0.2f, 14);
+                FxSend.ring(sl, Fx.CRIMSON | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, c.add(0, 2.4, 0), 2.8f, 2.84f, 0.02f, 40);
+            }
+            case 10 -> {   // Finral: gates open all round him at once, then close
+                for (int i = 0; i < 6; i++) {
+                    double a = i * Math.PI / 3;
+                    Vec3 g = c.add(Math.cos(a) * 3.5, 1.2, Math.sin(a) * 3.5);
+                    SpaceFx.gate(sl, g, g.subtract(c.add(0, 1.2, 0)), 0.7f, 1.1f, 24, 0);
+                }
+                FxSend.ring(sl, 17, c.add(0, 0.1, 0), 0.5f, 6.0f, 0.2f, 14);
+            }
+            case 8 -> {    // Klaus: steel plates rise around him in a circle, ringing like a bell
                 for (int k = 0; k < 8; k++) {
                     double a = Math.PI * 2 * k / 8;
                     Vec3 g = FxLib.ground(sl, c.add(Math.cos(a) * 3.2, 1, Math.sin(a) * 3.2), 3);

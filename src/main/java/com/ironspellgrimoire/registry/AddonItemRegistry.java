@@ -60,6 +60,12 @@ public class AddonItemRegistry {
     // ------------------------------------------------------------------ Klaus Lunettes' Steel Magic
     public static final RegistryObject<Item> STEEL_GRIMOIRE = ITEMS.register("steel_grimoire", SteelGrimoireItem::new);
 
+    // ------------------------------------------------------------------ Vanessa Enoteca's Thread Magic
+    public static final RegistryObject<Item> THREAD_GRIMOIRE = ITEMS.register("thread_grimoire", com.ironspellgrimoire.item.ThreadGrimoireItem::new);
+
+    // ------------------------------------------------------------------ Finral Roulacase's Spatial Magic
+    public static final RegistryObject<Item> SPACE_GRIMOIRE = ITEMS.register("space_grimoire", com.ironspellgrimoire.item.SpaceGrimoireItem::new);
+
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("iron_spell_grimoire", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.iron_spell_grimoire"))
             .icon(() -> BLACK_GRIMOIRE.get().getDefaultInstance())
@@ -92,6 +98,12 @@ public class AddonItemRegistry {
                 ItemStack steel = new ItemStack(STEEL_GRIMOIRE.get());
                 ((IPresetSpellContainer) STEEL_GRIMOIRE.get()).initializeSpellContainer(steel);
                 out.accept(steel);
+                ItemStack thread = new ItemStack(THREAD_GRIMOIRE.get());
+                ((IPresetSpellContainer) THREAD_GRIMOIRE.get()).initializeSpellContainer(thread);
+                out.accept(thread);
+                ItemStack space = new ItemStack(SPACE_GRIMOIRE.get());
+                ((IPresetSpellContainer) SPACE_GRIMOIRE.get()).initializeSpellContainer(space);
+                out.accept(space);
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());
             })
             .build());

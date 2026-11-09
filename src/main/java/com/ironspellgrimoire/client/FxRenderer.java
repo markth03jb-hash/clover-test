@@ -101,7 +101,9 @@ public class FxRenderer extends FxBase {
       if (p.shape == 42) { FxSync.cast(p.id, p.sweep, p.life); return; }
       if (p.shape == 43) { ScreenCut.start(p.life, p.sweep); return; }
       if (p.shape == 44) { PixelFx.ghostBlade(p); return; }   // Equinox's invisible sword
-      if (p.shape == 45) { GrimoireCeremonyRenderer.start(p); return; }   // the grimoire tower ceremony   // Equinox hit you: your screen is cut in two   // a move's cast animation started (effect timing)
+      if (p.shape == 45) { GrimoireCeremonyRenderer.start(p); return; }   // the grimoire tower ceremony
+      if (p.shape == 46) { PortalRenderer.spawn(p); return; }   // Finral's gates of space
+      if (p.shape == 3 && PortalRenderer.kill(p.id)) return;    // closing a gate   // Equinox hit you: your screen is cut in two   // a move's cast animation started (effect timing)
       if (FxSync.defer(p)) return;   // held back to land on the swing
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
       if (p.shape == 4) {   // Ki Sense mark: id = entity, palette = creature type, life = duration

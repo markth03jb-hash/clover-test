@@ -1,7 +1,21 @@
-Iron Spell Grimoire v1.60.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.61.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.61.0
+- Vanessa's Grimoire (Thread Magic, three-leaf, 8 spells): Binding Threads, Puppet Strings, Thread Net, Thread
+  Cocoon, Stitching, Battle Dress, Thread Cage, Red Thread of Fate. Fine glowing pink-white threads; the Red Thread
+  of Fate turns a wheel of red thread overhead and makes the first heavy blow on you and your allies never land.
+- Finral's Grimoire (Spatial Magic, three-leaf, 8 spells): Gate, Short Hop, Escort Gate, Waypoint, Sky Drop,
+  Redirect Gate, Evasion Gate, Space Deletion. Gates are ovals with a gold-white rim, violet glow and deep space
+  inside with ripples and turning stars; they open and close with a snap. Walk into one gate, come out of the other.
+- Both have their own spell wheel theme, mana bar, book colours, impact frames, Surpassing Limits awakening, mastery
+  unlocks and spell icons, and can be chosen at the Grimoire Altar (now 11 grimoires, all the same chance).
+- Combo chains: cast a grimoire's two linked spells within 4 seconds and a finisher follows (24 combos - see the
+  grimoire book, each spell's page lists its combos).
+- Grimoire Towers: a little rarer and in more biomes - in tests /locate always found one, typically 300-1500
+  blocks away.
 
 NEW IN 1.60.0
 - The mod's id is now iron_spell_grimoire (was arcane_addon) - commands, item ids and files all use the new name,

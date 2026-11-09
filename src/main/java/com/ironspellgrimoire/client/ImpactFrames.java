@@ -61,7 +61,9 @@ public final class ImpactFrames {
             {0xFFDCA8, 0x2A0800, 0xFF8A2A, 0xFFF0C0},   // 7 Magna
             {0xFFC4BC, 0x200000, 0xE0302A, 0xFFE0D0},   // 8 Mereoleona
             {0xF4EEDC, 0x0A0610, 0xE8DCC0, 0x9A5CFF},   // 9 Zenon
-            {0xE6ECF2, 0x0E1420, 0x9AA8B8, 0xFFFFFF}};  // 10 Klaus
+            {0xE6ECF2, 0x0E1420, 0x9AA8B8, 0xFFFFFF},   // 10 Klaus
+            {0xFFD6EA, 0x24081A, 0xFF8CC6, 0xFFFFFF},   // 11 Vanessa
+            {0xE0D4FF, 0x0A0420, 0x9C78FF, 0xFFE6A0}};  // 12 Finral
 
     public static void start(int ticks, int st, Vec3 where) {
         Minecraft mc = Minecraft.getInstance();
@@ -246,6 +248,26 @@ public final class ImpactFrames {
                 float bw = 5F + slam * 10F;
                 quadTo(bb, m, -10, fy - bw, W + 10, fy + bw, acc, la);
                 quadTo(bb, m, fx - bw, -10, fx + bw, H + 10, acc, la * 0.8F);
+            }
+            case 11 -> {  // Vanessa: threads drawn taut across the frame, all crossing at the hit
+                for (int i = 0; i < 26; i++) {
+                    double a = r.nextDouble() * Math.PI;
+                    float dx = (float) Math.cos(a) * reach, dy = (float) Math.sin(a) * reach;
+                    float ox = (r.nextFloat() - 0.5F) * 10F, oy = (r.nextFloat() - 0.5F) * 10F;
+                    taper(bb, m, fx - dx + ox, fy - dy + oy, 0.4F, fx + dx + ox, fy + dy + oy, 0.4F, i % 5 == 0 ? acc : line, la);
+                }
+                star(bb, m, fx, fy, Math.min(W, H) * 0.08F, 2F, acc, la);
+            }
+            case 12 -> {  // Finral: rings of space closing in on the hit, a gold rim on the innermost
+                for (int k = 0; k < 7; k++) {
+                    float rr = reach * (0.12F + k * 0.13F) * (1F - 0.25F * smooth(in));
+                    int seg = 40;
+                    for (int j = 0; j < seg; j++) {
+                        double a0 = j * Math.PI * 2 / seg, a1 = (j + 1) * Math.PI * 2 / seg;
+                        taper(bb, m, fx + (float) Math.cos(a0) * rr, fy + (float) Math.sin(a0) * rr * 0.7F, k == 0 ? 3F : 1.4F,
+                                fx + (float) Math.cos(a1) * rr, fy + (float) Math.sin(a1) * rr * 0.7F, k == 0 ? 3F : 1.4F, k == 0 ? acc : line, la * (1F - k * 0.1F));
+                    }
+                }
             }
             default -> {  // Asta: speed lines rushing in on the hit; the black frames get a red star on it
                 speedLines(bb, m, r, fx, fy, reach, 46, 0.42F * rush, 4.5F, line, la);

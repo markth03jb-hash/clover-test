@@ -143,6 +143,16 @@ public final class GrimoireMastery {
                 "white_steel_horse_cart", 3,
                 "knights_armor", 4,
                 "acier_silva", 5);
+        book(AddonItemRegistry.THREAD_GRIMOIRE::get, 16,
+                "binding_threads", 1, "puppet_strings", 1, "thread_net", 1,
+                "thread_cocoon", 2, "stitching", 2,
+                "battle_dress", 3, "thread_cage", 3,
+                "red_thread_of_fate", 5);
+        book(AddonItemRegistry.SPACE_GRIMOIRE::get, 17,
+                "spatial_gate", 1, "short_hop", 1, "waypoint", 1,
+                "sky_drop", 2, "escort_gate", 2,
+                "redirect_gate", 3, "evasion_gate", 3,
+                "space_deletion", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

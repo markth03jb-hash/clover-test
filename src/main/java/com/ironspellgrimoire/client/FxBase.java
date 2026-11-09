@@ -53,7 +53,9 @@ abstract class FxBase {
       {0.0F, 0.06F, 0.3F},     // 12 blue flame
       {0.02F, 0.07F, 0.22F},   // 13 blue lightning (Luck)
       {0.28F, 0.0F, 0.03F},    // 14 crimson flame (Mereoleona)
-      {0.55F, 0.5F, 0.42F}     // 15 bone (Zenon)
+      {0.55F, 0.5F, 0.42F},    // 15 bone (Zenon)
+      {0.30F, 0.10F, 0.18F},   // 16 thread (Vanessa)
+      {0.05F, 0.02F, 0.14F}    // 17 space (Finral)
    };
    static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
@@ -65,7 +67,9 @@ abstract class FxBase {
       {0.35F, 0.65F, 1.0F},    // 12 blue flame (Calidos Brachium Purgatory)
       {0.45F, 0.72F, 1.0F},    // 13 blue lightning (Luck Voltia)
       {1.0F, 0.16F, 0.1F},     // 14 crimson flame (Mereoleona Vermillion)
-      {0.95F, 0.92F, 0.84F}    // 15 bone (Zenon Zogratis)
+      {0.95F, 0.92F, 0.84F},   // 15 bone (Zenon Zogratis)
+      {1.0F, 0.55F, 0.78F},    // 16 thread (Vanessa Enoteca): pink-white thread
+      {0.62F, 0.45F, 1.0F}     // 17 space (Finral Roulacase): violet, gold-rimmed gates
    };
    /** Overall strength of every world effect. Lower = subtler. */
    static final float FX_ALPHA = 1.0F;
