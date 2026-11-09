@@ -1,7 +1,14 @@
-Iron Spell Grimoire v1.72.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.73.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.73.0
+- Every grimoire has its own cover (drawn from scratch, tools/covers.py): Asta - torn black leather with red cracks;
+  Yami - a great violet crescent; Yuno - a four-leaf clover in wind spirals; Nozel - chrome ripples and a mercury drop;
+  Magna - a burning sun over flames; Luck - a forking bolt; Mereoleona - a lion's mane of flame; Zenon - a ribcage of
+  bone; Klaus - bolted steel plates and a gear; Vanessa - stitched rose cloth with needle and thread; Finral - a golden
+  gate with a violet void; Noelle - waves and bubbles; Gauche - a lattice of mirror panes; Langris - space slashed open.
 
 NEW IN 1.72.0
 - Spatial Grimoire: Waypoint reworked. Casting it opens a menu: type a name and Save here, Go to any saved waypoint
