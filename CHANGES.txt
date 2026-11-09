@@ -1,7 +1,21 @@
-Iron Spell Grimoire v1.70.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.71.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.71.0
+- Three new grimoires, each with 8 spells, 2 combos, its own wheel pages, mana bar, mastery unlocks, tooltips, spell
+  icons, floating-book aura and a Surpassing Limits ultimate:
+  * Water Grimoire (Noelle Silva): Water Ball, Torrent Lance, Sea Dragon's Nest, Aqua Barrage, Tidal Wave, Sea
+    Serpent, Valkyrie Dress (20 s water armour), Sea Dragon's Wrath (limit break: Sea Dragon's Domain). Passive:
+    water hits soak and slow. Combos: Whirlpool Crush, Flood Serpent.
+  * Mirror Grimoire (Gauche Adlai): Mirror Shard, Mirror Step, Reflect Guard (reflects the next four blows),
+    Prism Beam (bounces between enemies), Mirror Cage, Mirror Barrage, Mirror Double, Hall of Mirrors (limit break:
+    Infinite Reflection). Combos: Refraction, Shattered Cage.
+  * Rift Grimoire (Langris Vaude, an offensive Spatial grimoire next to Finral's): Spatial Cut, Rift Blades, Blink
+    Strike, Severing Line, Gate Barrage, Space Collapse, Convergence, Dimensional Severance (limit break: Absolute
+    Severance). Combos: Twin Cut, Rift Storm, Hunt and Crush.
+  New effect palettes: water blue, mirror silver-rose, void magenta. Nothing here changes a block.
 
 NEW IN 1.70.0
 - Combo hint: after the first spell of a combo, the spell that finishes it pulses softly on the spell wheel in the

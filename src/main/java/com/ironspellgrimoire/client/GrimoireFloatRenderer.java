@@ -115,6 +115,9 @@ public class GrimoireFloatRenderer {
       if (item == AddonItemRegistry.BONE_GRIMOIRE.get()) return new int[]{15, 2};
       if (item == AddonItemRegistry.THREAD_GRIMOIRE.get()) return new int[]{16, 3};
       if (item == AddonItemRegistry.SPACE_GRIMOIRE.get()) return new int[]{17, 3};
+      if (item == AddonItemRegistry.WATER_GRIMOIRE.get()) return new int[]{19, 3};
+      if (item == AddonItemRegistry.MIRROR_GRIMOIRE.get()) return new int[]{20, 2};
+      if (item == AddonItemRegistry.RIFT_GRIMOIRE.get()) return new int[]{21, 4};
       String id = BuiltInRegistries.ITEM.getKey(item).getPath();
       return switch (id) {
          default -> new int[]{8, 4};

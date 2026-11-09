@@ -90,7 +90,7 @@ public final class LimitFx {
         Vec3 c = p.position();
         // shared beat: the world goes white for an instant (Luck: his lightning frame), the ground shakes, the power erupts
         if (!foesNear(sl, p, c.add(0, 1, 0), 14).isEmpty()) FxSend.impactFrame(sl, c, 4, new int[]{FxSend.FRAME_ASTA, FxSend.FRAME_YAMI, FxSend.FRAME_YUNO, FxSend.FRAME_NOZEL, FxSend.FRAME_MAGNA,
-                FxSend.FRAME_LUCK, FxSend.FRAME_MEREOLEONA, FxSend.FRAME_ZENON, FxSend.FRAME_KLAUS, FxSend.FRAME_VANESSA, FxSend.FRAME_FINRAL}[Math.max(0, Math.min(10, idx))], 24);   // each grimoire's own frame
+                FxSend.FRAME_LUCK, FxSend.FRAME_MEREOLEONA, FxSend.FRAME_ZENON, FxSend.FRAME_KLAUS, FxSend.FRAME_VANESSA, FxSend.FRAME_FINRAL, FxSend.FRAME_NOZEL, FxSend.FRAME_KLAUS, FxSend.FRAME_FINRAL}[Math.max(0, Math.min(13, idx))], 24);   // each grimoire's own frame
         FxSend.shake(sl, c, 0.7f, 18, 32);
         sound(sl, c, SoundEvents.BEACON_ACTIVATE, 1f, 0.6f);
         sound(sl, c, SoundEvents.TOTEM_USE, 0.6f, 0.8f);
@@ -200,6 +200,32 @@ public final class LimitFx {
                     SpaceFx.gate(sl, g, g.subtract(c.add(0, 1.2, 0)), 0.7f, 1.1f, 24, 0);
                 }
                 FxSend.ring(sl, 17, c.add(0, 0.1, 0), 0.5f, 6.0f, 0.2f, 14);
+            }
+            case 11 -> {   // Noelle: a ring of water rises round her and falls back in a splash
+                for (int i = 0; i < 8; i++) {
+                    double a = i * Math.PI / 4;
+                    FxSend.trail(sl, 19, c.add(Math.cos(a) * 2.2, 0.1, Math.sin(a) * 2.2), c.add(Math.cos(a + 0.5) * 1.4, 3.2, Math.sin(a + 0.5) * 1.4), 0.3f, 16);
+                }
+                FxSend.ring(sl, 19, c.add(0, 0.1, 0), 0.5f, 6.0f, 0.2f, 14);
+                sound(sl, c, SoundEvents.GENERIC_SPLASH, 1f, 0.7f);
+            }
+            case 12 -> {   // Gauche: mirrors flash into being all round him
+                for (int i = 0; i < 6; i++) {
+                    double a = i * Math.PI / 3;
+                    Vec3 g = c.add(Math.cos(a) * 3.2, 1.2, Math.sin(a) * 3.2);
+                    MirrorFx.paneFacing(sl, g, c.add(0, 1.2, 0).subtract(g).normalize(), 0.8f, 1.2f, 24);
+                }
+                FxSend.ring(sl, 20, c.add(0, 0.1, 0), 0.5f, 6.0f, 0.2f, 14);
+                sound(sl, c, SoundEvents.AMETHYST_CLUSTER_BREAK, 1f, 0.8f);
+            }
+            case 13 -> {   // Langris: cuts in space open round him and snap shut
+                for (int i = 0; i < 4; i++) {
+                    double a = i * Math.PI / 2 + 0.4;
+                    Vec3 along = new Vec3(Math.cos(a + 1.57), 0.3 * (i % 2 == 0 ? 1 : -1), Math.sin(a + 1.57)).normalize();
+                    RiftFx.cut(sl, c.add(Math.cos(a) * 3.4, 1.3, Math.sin(a) * 3.4), along, new Vec3(Math.cos(a), 0, Math.sin(a)), 1.8f, 14);
+                }
+                FxSend.ring(sl, 21, c.add(0, 0.1, 0), 0.5f, 6.0f, 0.2f, 14);
+                sound(sl, c, SoundEvents.GLASS_BREAK, 1f, 0.6f);
             }
             case 8 -> {    // Klaus: steel plates rise around him in a circle, ringing like a bell
                 for (int k = 0; k < 8; k++) {
@@ -706,6 +732,128 @@ public final class LimitFx {
             sound(sl, c, SoundEvents.GLASS_BREAK, 1.5f, 0.5f);
             sound(sl, c, SoundEvents.GENERIC_EXPLODE, 1.2f, 0.6f);
             SpaceFx.gate(sl, c, face, 1.0f, 1.0f, 16, 1);   // a hollow where the cube was
+        });
+    }
+
+
+    // ---------------------------------------------------------------- Noelle: Sea Dragon's Wrath - Sea Dragon's Domain
+    /**
+     * Noelle's evolved ultimate: a vast dome of water closes round you (10 blocks). Everything inside is lifted and held
+     * while three dragons of water circle through it, then the dome breaks in a flood that throws them all outward.
+     */
+    public static void seaDomain(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        final double R = 10;
+        Vec3 c = p.position().add(0, 1, 0);
+        sound(sl, c, SoundEvents.BUBBLE_COLUMN_WHIRLPOOL_INSIDE, 1.4f, 0.5f);
+        sound(sl, c, SoundEvents.WARDEN_SONIC_CHARGE, 1.0f, 0.6f);
+        FxSend.ring(sl, 19, p.position().add(0, 0.05, 0), 0.5f, (float) R, 0.15f, 14);
+        for (int t = 0; t < 60; t++) {
+            final int tt = t;
+            AstaFx.later(t + 1, () -> {
+                if (!alive(p)) return;
+                Vec3 o = p.position().add(0, 1, 0);
+                if (tt % 6 == 0) for (int r = 0; r < 3; r++) {   // the dome: slow rings of water at three heights
+                    double h = -0.4 + r * 0.45;
+                    FxSend.ring(sl, 19, o.add(0, h * R * 0.6, 0), (float) (R * Math.sqrt(Math.max(0.05, 1 - h * h))), (float) (R * Math.sqrt(Math.max(0.05, 1 - h * h))) - 0.2f, 0.1f, 8);
+                }
+                for (int d = 0; d < 3; d++) {   // three dragons circling
+                    double a = tt * 0.22 + d * Math.PI * 2 / 3, a2 = a - 0.5;
+                    double h1 = Math.sin(tt * 0.15 + d * 2) * 3, h2 = Math.sin((tt - 2) * 0.15 + d * 2) * 3;
+                    Vec3 q1 = o.add(Math.cos(a) * R * 0.7, h1, Math.sin(a) * R * 0.7), q0 = o.add(Math.cos(a2) * R * 0.7, h2, Math.sin(a2) * R * 0.7);
+                    FxSend.trail(sl, 19, q0, q1, 0.7f, 8);
+                    FxSend.trail(sl, 6, q0, q1, 0.12f, 5);
+                    if (tt % 2 == 0) fireball(sl, 19, q1, q1.subtract(q0), 0.6f, 0.6f, 2, false);
+                }
+                for (LivingEntity e : foesNear(sl, p, o, R)) {
+                    Vec3 up = new Vec3(0, Math.max(-0.1, Math.min(0.12, (o.y + 2 - mid(e).y) * 0.08)), 0);
+                    e.setDeltaMovement(e.getDeltaMovement().scale(0.4).add(up));
+                    e.hurtMarked = true;
+                    if (tt % 8 == 7) AstaFx.damage(p, e, power * 0.3f, "sea_dragons_wrath");
+                }
+            });
+        }
+        AstaFx.later(62, () -> {
+            if (!alive(p)) return;
+            Vec3 o = p.position().add(0, 1, 0);
+            boolean any = false;
+            for (LivingEntity e : foesNear(sl, p, o, R)) {
+                AstaFx.damage(p, e, power * 2.4f, "sea_dragons_wrath");
+                Vec3 away = mid(e).subtract(o);
+                if (away.lengthSqr() > 1.0E-4) e.setDeltaMovement(away.normalize().scale(1.3).add(0, 0.7, 0));
+                e.hurtMarked = true;
+                any = true;
+            }
+            if (any) FxSend.impactFrame(sl, o, 4, FxSend.FRAME_NOZEL, 40);
+            Fx.flash(sl, o, 3.6f);
+            FxSend.ring(sl, 19, o.add(0, -0.9, 0), 0.5f, (float) R * 1.6f, 0.4f, 14);
+            FxSend.ring(sl, 6, o.add(0, -0.8, 0), 0.3f, (float) R * 1.2f, 0.08f, 12);
+            FxSend.shake(sl, o, 1.3f, 16, 48);
+            sound(sl, o, SoundEvents.GENERIC_SPLASH, 1.6f, 0.4f);
+            sound(sl, o, SoundEvents.GENERIC_EXPLODE, 1.2f, 0.6f);
+        });
+    }
+
+    // ---------------------------------------------------------------- Gauche: Hall of Mirrors - Infinite Reflection
+    /** Gauche's evolved ultimate: a bigger dome (12 blocks), reflections for 5 s instead of 3, and a harder shatter. */
+    public static void infiniteReflection(ServerPlayer p, float power) {
+        MirrorFx.dome(p, power, 12.0, 100, 0.42f, 2.6f);
+    }
+
+    // ---------------------------------------------------------------- Langris: Dimensional Severance - Absolute Severance
+    /**
+     * Langris' evolved ultimate: five cuts open space one after another round the spot you aim at (each hits everything
+     * within 9 blocks), then the severed space folds in on itself and is crushed to nothing.
+     */
+    public static void absoluteSeverance(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 c = aimPoint(p, 32).add(0, 2.5, 0);
+        final double R = 9;
+        sound(sl, p.position(), SoundEvents.WARDEN_SONIC_CHARGE, 1.3f, 0.6f);
+        for (int i = 0; i < 5; i++) {
+            final int ii = i;
+            AstaFx.later(6 + i * 7, () -> {
+                if (!alive(p)) return;
+                double a = ii * Math.PI / 5 + 0.3;
+                Vec3 along = new Vec3(Math.cos(a), Math.sin(a * 1.5) * 0.45, Math.sin(a)).normalize();
+                Vec3 normal = along.cross(new Vec3(0, 1, 0)).lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : along.cross(new Vec3(0, 1, 0)).normalize();
+                RiftFx.cut(sl, c, along, normal, 10f, 14);
+                SpaceFx.gate(sl, c, normal, 9f, 1.1f, 14, 1);
+                boolean any = false;
+                for (LivingEntity e : foesNear(sl, p, c, R)) {
+                    AstaFx.damage(p, e, power * 0.8f, "dimensional_severance");
+                    any = true;
+                }
+                if (any) FxSend.impactFrame(sl, c, 3, FxSend.FRAME_FINRAL, 40);
+                FxSend.shake(sl, c, 0.7f, 8, 40);
+                sound(sl, c, SoundEvents.GLASS_BREAK, 1.2f, 0.5f + ii * 0.1f);
+            });
+        }
+        AstaFx.later(46, () -> {
+            if (!alive(p)) return;
+            final float H = 5.0f;
+            SpaceFx.cube(sl, c, H, 18);
+            sound(sl, c, SoundEvents.PORTAL_TRIGGER, 1.0f, 1.2f);
+            for (int t = 0; t < 14; t++) {
+                final int tt = t;
+                AstaFx.later(t + 1, () -> {
+                    if (!alive(p)) return;
+                    for (LivingEntity e : foesNear(sl, p, c, H * 1.8)) {
+                        Vec3 in = c.subtract(mid(e));
+                        e.setDeltaMovement(in.lengthSqr() < 0.4 ? Vec3.ZERO : in.normalize().scale(Math.min(0.7, 0.15 + tt * 0.04)));
+                        e.hurtMarked = true;
+                    }
+                    if (tt >= 8) SpaceFx.cube(sl, c, H * (1.0f - (tt - 8) * 0.14f), 2);
+                });
+            }
+            AstaFx.later(16, () -> {
+                if (!alive(p)) return;
+                for (LivingEntity e : foesNear(sl, p, c, H * 1.8)) AstaFx.damage(p, e, power * 2.0f, "dimensional_severance");
+                Fx.flash(sl, c, 3.2f);
+                FxSend.ring(sl, 21, c, 0.2f, H * 2.8f, 0.3f, 12);
+                FxSend.shake(sl, c, 1.2f, 14, 44);
+                sound(sl, c, SoundEvents.GENERIC_EXPLODE, 1.2f, 0.6f);
+            });
         });
     }
 

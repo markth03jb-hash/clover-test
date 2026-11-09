@@ -109,14 +109,16 @@ public final class PixelFx {
             {1.0F, 0.16F, 0.1F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F},
             {0.6F, 1.0F, 0.78F}, {0.95F, 0.95F, 1.0F}, {0.7F, 0.82F, 0.95F}, {1.0F, 0.8F, 0.3F}, {1.0F, 0.07F, 0.05F},
             {0.6F, 0.2F, 1.0F}, {0.86F, 0.92F, 1.0F}, {0.35F, 0.65F, 1.0F}, {0.45F, 0.72F, 1.0F}, {1.0F, 0.16F, 0.1F},
-            {1.0F, 0.98F, 0.93F}, {1.0F, 0.55F, 0.78F}, {0.62F, 0.45F, 1.0F}, {1.0F, 0.1F, 0.06F}
+            {1.0F, 0.98F, 0.93F}, {1.0F, 0.55F, 0.78F}, {0.62F, 0.45F, 1.0F}, {1.0F, 0.1F, 0.06F},
+            {0.3F, 0.7F, 1.0F}, {0.85F, 0.88F, 1.0F}, {0.9F, 0.25F, 0.85F}
     };
     /** The colour of the solid (non-glowing) sprites: black anti magic and darkness, steel, gold, mercury, bone. */
     private static final float[][] SOLID = {
             {0.02F, 0.0F, 0.01F}, {0.03F, 0.0F, 0.05F}, {0.08F, 0.03F, 0.02F}, {0.05F, 0.1F, 0.16F}, {0.1F, 0.09F, 0.02F},
             {0.05F, 0.12F, 0.08F}, {0.5F, 0.5F, 0.55F}, {0.32F, 0.36F, 0.42F}, {0.55F, 0.38F, 0.08F}, {0.03F, 0.0F, 0.0F},
             {0.015F, 0.0F, 0.035F}, {0.62F, 0.67F, 0.75F}, {0.02F, 0.05F, 0.2F}, {0.02F, 0.06F, 0.18F}, {0.12F, 0.0F, 0.01F},
-            {0.95F, 0.93F, 0.88F}, {0.4F, 0.12F, 0.26F}, {0.04F, 0.02F, 0.12F}, {0.2F, 0.0F, 0.01F}
+            {0.95F, 0.93F, 0.88F}, {0.4F, 0.12F, 0.26F}, {0.04F, 0.02F, 0.12F}, {0.2F, 0.0F, 0.01F},
+            {0.02F, 0.08F, 0.22F}, {0.55F, 0.58F, 0.7F}, {0.1F, 0.0F, 0.12F}
     };
 
     static final int DARK = 0, FLAME = 1, BOLT = 2, WIND = 3, METAL = 4, BONE = 5, LIGHT = 6;
@@ -1156,7 +1158,7 @@ public final class PixelFx {
     /** Aura-outline colours (AuraOutlineLayer) to palettes. */
     private static final int[] OUTLINE_PAL = {10, 9, 11, 13, 14, 0, 15, 6, 9};
     /** Grimoire (GrimoireMastery.BOOKS order) to palette: Asta, Yami, Yuno, Nozel, Magna, Luck, Mereoleona, Zenon, Klaus. */
-    private static final int[] BOOK_PAL = {0, 10, 5, 11, 2, 13, 14, 15, 7, 16, 17};
+    private static final int[] BOOK_PAL = {0, 10, 5, 11, 2, 13, 14, 15, 7, 16, 17, 19, 20, 21};
 
     /** Ki Sense colours by creature: hostile red, passive green (wind), neutral yellow (lightning), players blue. */
     private static final int[] KI_PAL = {14, 5, 4, 13};

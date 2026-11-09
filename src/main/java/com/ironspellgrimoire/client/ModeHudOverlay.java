@@ -130,6 +130,8 @@ public final class ModeHudOverlay {
             case "mana_zone_dimension_slash", "black_blade", "black_cocoon", "ki_foresight" -> 0xFF8A4DE0;
             case "knights_armor" -> 0xFFB8C4D0;
             case "spirit_dive", "hushed_dance", "mana_zone" -> 0xFF6BE09A;
+            case "valkyrie_dress" -> 0xFF5CC8FF;
+            case "reflect_guard" -> 0xFFFFB0D8;
             case "silver_guardian", "silver_mirror" -> 0xFFD8E2EE;
             case "flame_knuckles", "soul_chain" -> 0xFFFF8A2A;
             case "thunder_god_mode", "thunder_gloves" -> 0xFF4FB8FF;

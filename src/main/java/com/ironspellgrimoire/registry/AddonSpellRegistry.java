@@ -277,6 +277,64 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> SPACE_SPELLS = List.of(
             SPATIAL_GATE, SHORT_HOP, ESCORT_GATE, WAYPOINT, SKY_DROP, REDIRECT_GATE, EVASION_GATE, SPACE_DELETION);
 
+
+    // ------------------------------------------------------------------ Water Grimoire (Noelle Silva's Water Magic)
+    private static com.ironspellgrimoire.spells.BookSpell water(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.EVOCATION_RESOURCE,
+                com.ironspellgrimoire.item.WaterGrimoireItem.class, "ui.iron_spell_grimoire.water_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> WATER_BALL = registerSpell(water("water_ball", 4, 20, 9, "iron_spell_grimoire:fire_fireball", com.ironspellgrimoire.server.WaterFx::waterBall));
+    public static final RegistryObject<AbstractSpell> TORRENT_LANCE = registerSpell(water("torrent_lance", 8, 30, 12, "iron_spell_grimoire:mercury_regal_spear", com.ironspellgrimoire.server.WaterFx::torrentLance));
+    public static final RegistryObject<AbstractSpell> SEA_DRAGONS_NEST = registerSpell(water("sea_dragons_nest", 18, 55, 14, "iron_spell_grimoire:mercury_sphere", com.ironspellgrimoire.server.WaterFx::seaDragonsNest));
+    public static final RegistryObject<AbstractSpell> AQUA_BARRAGE = registerSpell(water("aqua_barrage", 10, 40, 10, "iron_spell_grimoire:fire_barrage", com.ironspellgrimoire.server.WaterFx::aquaBarrage));
+    public static final RegistryObject<AbstractSpell> TIDAL_WAVE = registerSpell(water("tidal_wave", 20, 60, 14, "iron_spell_grimoire:klaus_clench", com.ironspellgrimoire.server.WaterFx::tidalWave));
+    public static final RegistryObject<AbstractSpell> SEA_SERPENT = registerSpell(water("sea_serpent", 16, 55, 14, "iron_spell_grimoire:lightning_chain", com.ironspellgrimoire.server.WaterFx::seaSerpent));
+    public static final RegistryObject<AbstractSpell> VALKYRIE_DRESS = registerSpell(water("valkyrie_dress", 60, 80, 0, "iron_spell_grimoire:mercury_guardian", com.ironspellgrimoire.server.WaterFx::valkyrieDress));
+    public static final RegistryObject<AbstractSpell> SEA_DRAGONS_WRATH = registerSpell(water("sea_dragons_wrath", 80, 120, 30, "iron_spell_grimoire:fire_cannon", com.ironspellgrimoire.server.WaterFx::seaDragonsWrath));
+
+    /** The eight Water Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> WATER_SPELLS = List.of(
+            WATER_BALL, TORRENT_LANCE, SEA_DRAGONS_NEST, AQUA_BARRAGE, TIDAL_WAVE, SEA_SERPENT, VALKYRIE_DRESS, SEA_DRAGONS_WRATH);
+
+    // ------------------------------------------------------------------ Mirror Grimoire (Gauche Adlai's Mirror Magic)
+    private static com.ironspellgrimoire.spells.BookSpell mirror(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
+                com.ironspellgrimoire.item.MirrorGrimoireItem.class, "ui.iron_spell_grimoire.mirror_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> MIRROR_SHARD = registerSpell(mirror("mirror_shard", 4, 20, 9, "iron_spell_grimoire:mercury_bullets", com.ironspellgrimoire.server.MirrorFx::mirrorShard));
+    public static final RegistryObject<AbstractSpell> MIRROR_STEP = registerSpell(mirror("mirror_step", 6, 25, 0, "irons_spellbooks:instant_self", com.ironspellgrimoire.server.MirrorFx::mirrorStep));
+    public static final RegistryObject<AbstractSpell> REFLECT_GUARD = registerSpell(mirror("reflect_guard", 22, 45, 0, "iron_spell_grimoire:mercury_mirror", com.ironspellgrimoire.server.MirrorFx::reflectGuard));
+    public static final RegistryObject<AbstractSpell> PRISM_BEAM = registerSpell(mirror("prism_beam", 12, 40, 12, "iron_spell_grimoire:klaus_railgun", com.ironspellgrimoire.server.MirrorFx::prismBeam));
+    public static final RegistryObject<AbstractSpell> MIRROR_CAGE = registerSpell(mirror("mirror_cage", 20, 55, 14, "iron_spell_grimoire:mercury_mirror", com.ironspellgrimoire.server.MirrorFx::mirrorCage));
+    public static final RegistryObject<AbstractSpell> MIRROR_BARRAGE = registerSpell(mirror("mirror_barrage", 24, 60, 14, "iron_spell_grimoire:mercury_silver_rain", com.ironspellgrimoire.server.MirrorFx::mirrorBarrage));
+    public static final RegistryObject<AbstractSpell> MIRROR_DOUBLE = registerSpell(mirror("mirror_double", 14, 45, 14, "iron_spell_grimoire:dark_death_thrust", com.ironspellgrimoire.server.MirrorFx::mirrorDouble));
+    public static final RegistryObject<AbstractSpell> HALL_OF_MIRRORS = registerSpell(mirror("hall_of_mirrors", 80, 120, 28, "iron_spell_grimoire:dark_mana_zone", com.ironspellgrimoire.server.MirrorFx::hallOfMirrors));
+
+    /** The eight Mirror Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> MIRROR_SPELLS = List.of(
+            MIRROR_SHARD, MIRROR_STEP, REFLECT_GUARD, PRISM_BEAM, MIRROR_CAGE, MIRROR_BARRAGE, MIRROR_DOUBLE, HALL_OF_MIRRORS);
+
+    // ------------------------------------------------------------------ Rift Grimoire (Langris Vaude's Spatial Magic)
+    private static com.ironspellgrimoire.spells.BookSpell rift(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
+                com.ironspellgrimoire.item.RiftGrimoireItem.class, "ui.iron_spell_grimoire.rift_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> SPATIAL_CUT = registerSpell(rift("spatial_cut", 4, 20, 10, "iron_spell_grimoire:dark_dimension_slash", com.ironspellgrimoire.server.RiftFx::spatialCut));
+    public static final RegistryObject<AbstractSpell> RIFT_BLADES = registerSpell(rift("rift_blades", 8, 30, 10, "iron_spell_grimoire:mercury_spears", com.ironspellgrimoire.server.RiftFx::riftBlades));
+    public static final RegistryObject<AbstractSpell> BLINK_STRIKE = registerSpell(rift("blink_strike", 12, 40, 14, "iron_spell_grimoire:dark_death_thrust", com.ironspellgrimoire.server.RiftFx::blinkStrike));
+    public static final RegistryObject<AbstractSpell> SEVERING_LINE = registerSpell(rift("severing_line", 14, 45, 14, "iron_spell_grimoire:dark_avidya", com.ironspellgrimoire.server.RiftFx::severingLine));
+    public static final RegistryObject<AbstractSpell> GATE_BARRAGE = registerSpell(rift("gate_barrage", 18, 55, 12, "iron_spell_grimoire:mercury_mirror", com.ironspellgrimoire.server.RiftFx::gateBarrage));
+    public static final RegistryObject<AbstractSpell> SPACE_COLLAPSE = registerSpell(rift("space_collapse", 22, 65, 16, "iron_spell_grimoire:dark_black_hole", com.ironspellgrimoire.server.RiftFx::spaceCollapse));
+    public static final RegistryObject<AbstractSpell> CONVERGENCE = registerSpell(rift("convergence", 24, 70, 14, "iron_spell_grimoire:klaus_clench", com.ironspellgrimoire.server.RiftFx::convergence));
+    public static final RegistryObject<AbstractSpell> DIMENSIONAL_SEVERANCE = registerSpell(rift("dimensional_severance", 90, 130, 34, "iron_spell_grimoire:dark_event_horizon", com.ironspellgrimoire.server.RiftFx::dimensionalSeverance));
+
+    /** The eight Rift Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> RIFT_SPELLS = List.of(
+            SPATIAL_CUT, RIFT_BLADES, BLINK_STRIKE, SEVERING_LINE, GATE_BARRAGE, SPACE_COLLAPSE, CONVERGENCE, DIMENSIONAL_SEVERANCE);
+
     private static RegistryObject<AbstractSpell> registerSpell(AbstractSpell spell) {
         return SPELLS.register(spell.getSpellName(), () -> spell);
     }

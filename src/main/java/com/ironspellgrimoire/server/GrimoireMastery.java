@@ -155,6 +155,24 @@ public final class GrimoireMastery {
                 "sky_drop", 2, "escort_gate", 2,
                 "redirect_gate", 3, "evasion_gate", 3,
                 "space_deletion", 5);
+        book(AddonItemRegistry.WATER_GRIMOIRE::get, Fx.WATER,
+                "water_ball", 1, "torrent_lance", 1,
+                "sea_dragons_nest", 2, "aqua_barrage", 2,
+                "tidal_wave", 3, "sea_serpent", 3,
+                "valkyrie_dress", 4,
+                "sea_dragons_wrath", 5);
+        book(AddonItemRegistry.MIRROR_GRIMOIRE::get, Fx.MIRROR,
+                "mirror_shard", 1, "mirror_step", 1,
+                "reflect_guard", 2, "prism_beam", 2,
+                "mirror_cage", 3, "mirror_barrage", 3,
+                "mirror_double", 4,
+                "hall_of_mirrors", 5);
+        book(AddonItemRegistry.RIFT_GRIMOIRE::get, Fx.VOID,
+                "spatial_cut", 1, "rift_blades", 1,
+                "blink_strike", 2, "severing_line", 2,
+                "gate_barrage", 3, "space_collapse", 3,
+                "convergence", 4,
+                "dimensional_severance", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

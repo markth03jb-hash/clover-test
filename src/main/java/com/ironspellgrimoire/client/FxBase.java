@@ -71,7 +71,10 @@ abstract class FxBase {
       {0.95F, 0.92F, 0.84F},   // 15 bone (Zenon Zogratis)
       {1.0F, 0.55F, 0.78F},    // 16 thread (Vanessa Enoteca): pink-white thread
       {0.62F, 0.45F, 1.0F},    // 17 space (Finral Roulacase): violet, gold-rimmed gates
-      {1.0F, 0.08F, 0.05F}     // 18 pure crimson
+      {1.0F, 0.08F, 0.05F},    // 18 pure crimson
+      {0.3F, 0.7F, 1.0F},      // 19 water: a bright clear blue
+      {0.85F, 0.88F, 1.0F},    // 20 mirror: silvery, with a rose glint
+      {0.9F, 0.25F, 0.85F}     // 21 void: magenta-violet cuts
    };
    /** Overall strength of every world effect. Lower = subtler. */
    static final float FX_ALPHA = 1.0F;

@@ -66,6 +66,15 @@ public class AddonItemRegistry {
     // ------------------------------------------------------------------ Finral Roulacase's Spatial Magic
     public static final RegistryObject<Item> SPACE_GRIMOIRE = ITEMS.register("spatial_grimoire", com.ironspellgrimoire.item.SpaceGrimoireItem::new);
 
+    // ------------------------------------------------------------------ Noelle Silva's Water Magic
+    public static final RegistryObject<Item> WATER_GRIMOIRE = ITEMS.register("water_grimoire", com.ironspellgrimoire.item.WaterGrimoireItem::new);
+
+    // ------------------------------------------------------------------ Gauche Adlai's Mirror Magic
+    public static final RegistryObject<Item> MIRROR_GRIMOIRE = ITEMS.register("mirror_grimoire", com.ironspellgrimoire.item.MirrorGrimoireItem::new);
+
+    // ------------------------------------------------------------------ Langris Vaude's Rift (offensive spatial) Magic
+    public static final RegistryObject<Item> RIFT_GRIMOIRE = ITEMS.register("rift_grimoire", com.ironspellgrimoire.item.RiftGrimoireItem::new);
+
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("iron_spell_grimoire", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.iron_spell_grimoire"))
             .icon(() -> BLACK_GRIMOIRE.get().getDefaultInstance())
@@ -104,6 +113,11 @@ public class AddonItemRegistry {
                 ItemStack space = new ItemStack(SPACE_GRIMOIRE.get());
                 ((IPresetSpellContainer) SPACE_GRIMOIRE.get()).initializeSpellContainer(space);
                 out.accept(space);
+                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE)) {
+                    ItemStack st = new ItemStack(g.get());
+                    ((IPresetSpellContainer) g.get()).initializeSpellContainer(st);
+                    out.accept(st);
+                }
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());
             })
             .build());

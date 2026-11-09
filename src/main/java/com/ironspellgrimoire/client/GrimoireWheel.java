@@ -263,6 +263,12 @@ public final class GrimoireWheel {
             new Theme(c(0x1A0712), c(0x4A1634), c(0xF2DDE8), c(0xFF8CC6), c(0x6A1E46), 3, O_SMOKE, M_DOTS, false, 0x1C0814, 0xFFD0E8),
             // Finral: deep indigo pages, gold trim, little gates turning round it
             new Theme(c(0x07051A), c(0x1C1450), c(0xE7C766), c(0x9C78FF), c(0x2A1E6A), 3, O_BOLTS, M_CRESCENTS, false, 0x090620, 0xE6DAFF),
+            // Noelle: deep sea-blue pages, white-silver trim, waves and drops of water round the ring
+            new Theme(c(0x04101C), c(0x0C3A66), c(0xE4F2FF), c(0x5CC8FF), c(0x1A5A9A), 3, O_DROPS, M_DOTS, false, 0x061320, 0xBFE8FF),
+            // Gauche: smoky silver-violet pages, bright silver trim with a rose glint, framed like mirrors
+            new Theme(c(0x0C0A12), c(0x2E2A44), c(0xE8E8F2), c(0xFFB0D8), c(0x58587A), 3, O_RIVETS, M_CRESCENTS, false, 0x0E0C18, 0xEEE6FF),
+            // Langris: black-plum pages, pale orchid trim, cracks of space across the ring
+            new Theme(c(0x0A0410), c(0x35103E), c(0xE0B0F0), c(0xE040D8), c(0x5A1E6E), 3, O_BOLTS, M_NOTCHES, true, 0x0C0612, 0xF0C8FF),
     };
 
     /** {page inside, page edge, trim, accent, panel, title} as RGB ints, for the grimoire book screen and others. */
@@ -343,11 +349,30 @@ public final class GrimoireWheel {
                 }
                 line(bb, m, cx, cy, am, ri + 6, ro - 7, 0.7, ac[0], ac[1], ac[2], 0.5F * A);
             }
-            default -> {   // Finral: each page a little gate - an arch outline with a glowing doorway
+            case 10 -> {   // Finral: each page a little gate - an arch outline with a glowing doorway
                 ring(bb, m, cx, cy, ro - 7, ro - 6, a0 + w * 0.2, a1 - w * 0.2, ac[0], ac[1], ac[2], 0.9F * A, ac[0], ac[1], ac[2], 0.9F * A, 8);
                 line(bb, m, cx, cy, a0 + w * 0.2, ri + 4, ro - 6.5, 1.0, ac[0], ac[1], ac[2], 0.9F * A);
                 line(bb, m, cx, cy, a1 - w * 0.2, ri + 4, ro - 6.5, 1.0, ac[0], ac[1], ac[2], 0.9F * A);
                 ring(bb, m, cx, cy, ri + 5, ro - 7.5, a0 + w * 0.22, a1 - w * 0.22, ac[0], ac[1], ac[2], (0.08F + 0.2F * p) * A, ac[0], ac[1], ac[2], (0.04F + 0.12F * p) * A, 8);
+            }
+            case 11 -> {   // Noelle: a wave crest curling across each page, with a bubble above it
+                double prevA = a0 + w * 0.12, prevR = mid - 2;
+                for (int k = 1; k <= 6; k++) {
+                    double aa = a0 + w * (0.12 + 0.76 * k / 6.0), rr = mid - 2 + Math.sin(k * 1.1 + time * 2.0 + am * 3) * 2.2;
+                    seg(bb, m, cx, cy, prevA, prevR, aa, rr, 1.2, t[0], t[1], t[2], 0.85F * A);
+                    prevA = aa; prevR = rr;
+                }
+                disc(bb, m, cx + Math.sin(am) * (mid + 6), cy - Math.cos(am) * (mid + 6), 1.5 + p, ac[0], ac[1], ac[2], 0.85F * A);
+            }
+            case 12 -> {   // Gauche: every page a small mirror - a framed pane with a diagonal glint
+                ring(bb, m, cx, cy, ri + 5, ro - 5, a0 + w * 0.2, a1 - w * 0.2, t[0], t[1], t[2], 0.35F * A, t[0], t[1], t[2], 0.35F * A, 6);
+                seg(bb, m, cx, cy, a0 + w * 0.3, ri + 7, a1 - w * 0.3, ro - 7, 0.9, ac[0], ac[1], ac[2], (0.5F + 0.4F * p) * A);
+                seg(bb, m, cx, cy, a0 + w * 0.38, ri + 6, a1 - w * 0.22, ro - 9, 0.5, 1.0F, 1.0F, 1.0F, 0.6F * A);
+            }
+            case 13 -> {   // Langris: a straight cut of violet light across each page, with a crack off it
+                seg(bb, m, cx, cy, a0 + w * 0.12, ro - 3, a1 - w * 0.12, ri + 4, 1.4, ac[0], ac[1], ac[2], 0.9F * A);
+                seg(bb, m, cx, cy, a0 + w * 0.12, ro - 3, a1 - w * 0.12, ri + 4, 0.5, 1.0F, 0.9F, 1.0F, 0.9F * A);
+                seg(bb, m, cx, cy, am, mid, a1 - w * 0.05, mid + 6, 0.7, ac[0], ac[1], ac[2], (0.4F + 0.4F * p) * A);
             }
         }
     }

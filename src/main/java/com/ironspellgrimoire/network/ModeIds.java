@@ -10,7 +10,7 @@ public final class ModeIds {
             "flame_knuckles", "soul_chain", "thunder_god_mode", "thunder_gloves", "mana_skin",
             "lion_mana_zone", "hellfire_incarnate", "marrow_regeneration", "beelzebub_union",
             "surpassing_limits", "thread_cocoon", "battle_dress", "red_thread_of_fate", "evasion_gate", "waypoint",
-            "spatial_gate", "thread_cage", "thread_net", "mana_zone"
+            "spatial_gate", "thread_cage", "thread_net", "mana_zone", "valkyrie_dress", "reflect_guard"
     };
 
     public static int index(String id) {

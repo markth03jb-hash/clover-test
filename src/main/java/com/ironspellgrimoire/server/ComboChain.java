@@ -73,7 +73,17 @@ public final class ComboChain {
             new Combo("thread_net", "thread_cage", "Inescapable Weave", Kind.SNARE, 16, FxSend.FRAME_VANESSA, "everyone in the cage is bound in threads"),
             // Finral
             new Combo("short_hop", "sky_drop", "Gentleman's Trapdoor", Kind.BOOST, 17, FxSend.FRAME_FINRAL, "boosts Sky Drop: they fall from 30 blocks instead of 18"),
-            new Combo("evasion_gate", "space_deletion", "Erase and Vanish", Kind.BOOST, 17, FxSend.FRAME_FINRAL, "boosts Space Deletion: a much larger tear"));
+            new Combo("evasion_gate", "space_deletion", "Erase and Vanish", Kind.BOOST, 17, FxSend.FRAME_FINRAL, "boosts Space Deletion: a much larger tear"),
+            // Noelle
+            new Combo("water_ball", "sea_dragons_nest", "Whirlpool Crush", Kind.SNARE, 19, FxSend.FRAME_NOZEL, "a whirlpool drags everyone in, then crushes them"),
+            new Combo("tidal_wave", "sea_serpent", "Flood Serpent", Kind.BURST, 19, FxSend.FRAME_NOZEL, "the flood rises around the target in rings of water"),
+            // Gauche
+            new Combo("mirror_shard", "prism_beam", "Refraction", Kind.CROSS, 20, FxSend.FRAME_KLAUS, "the light splits into a cross of beams through the target"),
+            new Combo("mirror_cage", "mirror_barrage", "Shattered Cage", Kind.BURST, 20, FxSend.FRAME_KLAUS, "every mirror of the cage bursts outward in shards"),
+            // Langris
+            new Combo("spatial_cut", "severing_line", "Twin Cut", Kind.CROSS, 21, FxSend.FRAME_FINRAL, "two cuts in space cross on the target"),
+            new Combo("rift_blades", "convergence", "Rift Storm", Kind.STORM, 21, FxSend.FRAME_FINRAL, "blades come out of gates all round the target"),
+            new Combo("blink_strike", "space_collapse", "Hunt and Crush", Kind.BURST, 21, FxSend.FRAME_FINRAL, "the space round the target folds in on it"));
 
     private static final Map<UUID, Object[]> LAST = new HashMap<>();      // player -> {spell id, game time}
     private static final Map<UUID, Object[]> BOOSTED = new HashMap<>();   // player -> {spell id, game time}
@@ -466,6 +476,69 @@ public final class ComboChain {
                     AstaFx.damage(p, e, power * 0.5f, id);
                 }
                 sound(sl, at, SoundEvents.WOOL_PLACE, 1.2f, 0.5f);
+            }
+            case "Whirlpool Crush" -> {
+                FxLib.implode(sl, 19, at, 1.6f);
+                pull(p, sl, at, 5, 10);
+                sound(sl, at, SoundEvents.BUBBLE_COLUMN_WHIRLPOOL_INSIDE, 1.2f, 0.7f);
+                AstaFx.later(10, () -> {
+                    hitAround(p, sl, at, 5, power * 0.9f, id, 0.5);
+                    FxSend.ring(sl, 19, at, 0.3f, 6f, 0.2f, 10);
+                    Fx.impact(sl, 19, at, 2.0f);
+                    sound(sl, at, SoundEvents.GENERIC_SPLASH, 1.3f, 0.6f);
+                });
+            }
+            case "Flood Serpent" -> {
+                for (int k = 0; k < 3; k++) {
+                    final int kk = k;
+                    AstaFx.later(k * 3, () -> FxSend.ring(sl, 19, ground.add(0, 0.1 + kk * 0.5, 0), 0.4f, 3.0f + kk * 1.5f, 0.15f, 9));
+                }
+                hitAround(p, sl, at, 5, power * 0.9f, id, 0.6);
+                sound(sl, at, SoundEvents.GENERIC_SPLASH, 1.4f, 0.6f);
+            }
+            case "Refraction" -> {
+                FxLib.crossSlash(sl, 20, at, look, 1.8f);
+                for (int s = -1; s <= 1; s += 2) FxSend.beam(sl, 20, at.add(rt.scale(4 * s)).add(0, 3, 0), at.subtract(rt.scale(4 * s)).add(0, -3, 0), 0.12f, 6);
+                hitAround(p, sl, at, 3.2, power, id, 0.3);
+                sound(sl, at, SoundEvents.GLASS_BREAK, 1.0f, 1.4f);
+            }
+            case "Shattered Cage" -> {
+                for (int i = 0; i < 8; i++) {
+                    double a = i * Math.PI / 4;
+                    FxSend.beam(sl, 20, at, at.add(Math.cos(a) * 4, (i % 2 == 0 ? 1 : -1) * 0.8, Math.sin(a) * 4), 0.14f, 6);
+                }
+                FxSend.ring(sl, 20, at, 0.3f, 5f, 0.15f, 9);
+                hitAround(p, sl, at, 4.5, power, id, 0.4);
+                sound(sl, at, SoundEvents.GLASS_BREAK, 1.3f, 0.8f);
+            }
+            case "Twin Cut" -> {
+                RiftFx.cut(sl, at, rt.add(up).normalize(), look, 3.0f, 9);
+                RiftFx.cut(sl, at, rt.subtract(up).normalize(), look, 3.0f, 9);
+                hitAround(p, sl, at, 3.4, power, id, 0.3);
+                sound(sl, at, SoundEvents.GLASS_BREAK, 1.0f, 0.6f);
+            }
+            case "Rift Storm" -> {
+                for (int i = 0; i < 8; i++) {
+                    final int ii = i;
+                    AstaFx.later(i, () -> {
+                        double yaw = ii * 2.399963, pitch = Math.asin(-0.6 + 1.2 * ((ii * 0.618) % 1.0));
+                        Vec3 n = new Vec3(Math.cos(pitch) * Math.cos(yaw), Math.sin(pitch), Math.cos(pitch) * Math.sin(yaw));
+                        Vec3 g = at.add(n.scale(3.6));
+                        SpaceFx.gate(sl, g, n.scale(-1), 0.4f, 0.4f, 6, 0);
+                        FxSend.spike(sl, 21, g, n.scale(-1), 3.6f, 0.13f, 4, 2, 2.0f);
+                    });
+                }
+                AstaFx.later(8, () -> { hitAround(p, sl, at, 4, power * 1.1f, id, 0.4); Fx.impact(sl, 21, at, 1.8f); });
+            }
+            case "Hunt and Crush" -> {
+                SpaceFx.cube(sl, at, 2.4f, 14);
+                pull(p, sl, at, 4, 8);
+                AstaFx.later(9, () -> {
+                    SpaceFx.cube(sl, at, 1.0f, 3);
+                    hitAround(p, sl, at, 4, power * 1.1f, id, 0.3);
+                    FxSend.ring(sl, 21, at, 0.2f, 4.5f, 0.15f, 8);
+                    sound(sl, at, SoundEvents.GENERIC_EXPLODE, 0.8f, 1.2f);
+                });
             }
             default -> hitAround(p, sl, at, 3, power, id, 0.4);
         }
