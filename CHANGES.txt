@@ -1,7 +1,19 @@
-Iron Spell Grimoire v1.51.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.52.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.52.0
+- No popping in or out, and no slow fading either: every effect grows in over about two ticks and shrinks away over
+  about three, and every pixel sprite scales in smoothly and leaves by dissolving.
+- All effects up to date: the shapes that were still drawn the old smooth way are now pixel sprites only - rings and
+  walls, crescents, beams and trails, tornadoes and gusts (like the fireballs and mercury balls); pixel-only trails
+  keep being drawn their whole life. The smoke, wisps, motes and glows every move gives off are redrawn as pixel
+  art too. (Slashes keep their glowing blade under the sprites; blocks, spikes, bones, lightning and cracks keep
+  their solid shape.)
+- Equinox: a faint trace of the cut now lingers along the whole line - a thin drift of black and violet. A player
+  it hits sees their own screen cut in two before the blow lands: a razor-thin line of light flicks across the
+  screen at the angle of the cut, then the two halves slide apart over a dark void - and then the damage hits.
 
 NEW IN 1.51.0
 - Sounds: the made-up grimoire sounds are gone - every move plays its original sound again (several moves had

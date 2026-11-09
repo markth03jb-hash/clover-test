@@ -713,7 +713,8 @@ public final class PixelFx {
             case 2 -> {       // beams and trails
                 double len = p.d.length();
                 if (len < 0.05) return;
-                int n = cnt(age < 3.0 ? Mth.clamp(len * 1.5, 3.0, 24.0) : Mth.clamp(len * 0.35, 0.5, 6.0));
+                // a pixel-only beam or trail keeps being drawn in sprites its whole life (it has no solid line under it)
+                int n = cnt(age < 3.0 ? Mth.clamp(len * 1.5, 3.0, 24.0) : (p.pixelOnly ? Mth.clamp(len * 0.9, 2.0, 16.0) : Mth.clamp(len * 0.35, 0.5, 6.0)));
                 double sz = Mth.clamp(p.r * 1.5 + 0.15, 0.15, 0.8);
                 for (int i = 0; i < n; i++)
                     one(pal, p.c.add(p.d.scale(r.nextDouble())).add(rnd(r, p.r * 0.4)), dn.scale(0.05).add(rnd(r, 0.01)), dn, sz);
@@ -1162,6 +1163,7 @@ public final class PixelFx {
 
     private static void add(Spr p) {
         if (p.heat > maxHeat(p.pal)) p.heat = maxHeat(p.pal);
+        if (p.pop == 0 && p.grow == 1.0F) p.pop = 1.5F;   // every sprite scales in smoothly - nothing pops into being
         if (SPRITES.size() >= MAX) return;   // full: drop the newest instead of shifting the whole list
         if (p.age == 0 && p.vel.lengthSqr() > 1.0E-4) {   // spread along the path it moved this tick, so no stepping
             double u = ThreadLocalRandom.current().nextDouble();

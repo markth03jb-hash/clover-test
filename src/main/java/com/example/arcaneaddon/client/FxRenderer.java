@@ -90,8 +90,12 @@ public class FxRenderer extends FxBase {
 
    public static void spawn(FxPacket p) {
       if ((p.palette & FxPacket.PIXEL_ONLY) != 0) { p.palette = (byte)(p.palette & 0x3F); p.pixelOnly = true; }
-      if (p.shape == 19 || p.shape == 20) p.pixelOnly = true;   // fireballs and mercury balls: pixel sprites only (no liquid ball)
-      if (p.shape == 42) { FxSync.cast(p.id, p.sweep, p.life); return; }   // a move's cast animation started (effect timing)
+      // the shapes still drawn the old smooth way are now pixel sprites only: fireballs and mercury balls (no liquid
+      // ball), rings and walls, crescents, beams and trails, tornadoes and gusts. Slashes keep their glowing blade
+      // (plus sprites); blocks, spikes, bones, lightning and cracks keep their solid shape (plus sprites).
+      if (p.shape == 19 || p.shape == 20 || p.shape == 0 || p.shape == 1 || p.shape == 2 || p.shape == 28 || p.shape == 29) p.pixelOnly = true;
+      if (p.shape == 42) { FxSync.cast(p.id, p.sweep, p.life); return; }
+      if (p.shape == 43) { ScreenCut.start(p.life, p.sweep); return; }   // Equinox hit you: your screen is cut in two   // a move's cast animation started (effect timing)
       if (FxSync.defer(p)) return;   // held back to land on the swing
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
       if (p.shape == 4) {   // Ki Sense mark: id = entity, palette = creature type, life = duration
@@ -415,7 +419,7 @@ public class FxRenderer extends FxBase {
                // packet never leaves a one-frame gap; they move along their velocity, so the overlap lines up
                boolean perTick = f.p.life <= 1 && f.killAge < 0.0;
                if (!(age < 0.0) && !(age > life + (perTick ? 1.5 : 0.0))) {
-                  float env = (float)smooth((life - age) / 2.0);   // full strength from the first frame; only a 2-tick cut at the very end (no fading in and out)
+                  float env = (float)(smooth(age / 2.0) * smooth((life - age) / 3.0));   // a quick grow in and out (~0.1 s): no slow fade, no hard pop
                   int sh = f.p.shape;
                   // a per-tick copy is normally replaced by the next one at age ~1; if that one is late, this one keeps
                   // gliding along its path and fades out gently instead of freezing and then jumping

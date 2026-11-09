@@ -504,6 +504,17 @@ public class DarkFx {
     /** Ticks from the cast to the thrust in the dark_death_thrust animation (draw back, hold, then lunge). */
     private static final int THRUST_RELEASE = 10;
 
+    /**
+     * Equinox on a player: their screen is cut in half (FxPacket shape 43 to that player only: life = ticks until the
+     * blow lands, sweep = the angle of the cut in degrees) - a thin line across it, then the two halves slide apart.
+     */
+    private static void screenCut(ServerPlayer victim, int ticks) {
+        com.example.arcaneaddon.network.FxPacket pkt = new com.example.arcaneaddon.network.FxPacket();
+        pkt.shape = 43; pkt.life = ticks;
+        pkt.sweep = (java.util.concurrent.ThreadLocalRandom.current().nextBoolean() ? 1 : -1) * java.util.concurrent.ThreadLocalRandom.current().nextInt(20, 60);
+        com.example.arcaneaddon.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> victim), pkt);
+    }
+
     public static void deathThrust(ServerPlayer p, float power) {
         windup(p, THRUST_RELEASE, 1.0f);
         AstaFx.later(THRUST_RELEASE, () -> { if (alive(p)) thrustRelease(p, power); });
@@ -843,6 +854,8 @@ public class DarkFx {
             // the cut itself is invisible: only a hairline of light along the line and a faint ripple at the blade
             FxSend.trail(sl, S, start.add(dir.scale(1.5)), end, 0.015f, 6);
             FxSend.ring(sl, S, start.add(dir.scale(1.6)), 0.2f, 1.6f, 0.03f, 5);
+            // ...and a faint trace of it that lingers a moment: a thin drift of black and violet along the whole line
+            FxSend.beam(sl, D, start.add(dir.scale(1.5)), end, 0.12f, 14);
             sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 1.8f);
             // everything on the line is cut at the same instant - and a moment later it comes apart
             for (LivingEntity e : enemies(sl, p, new AABB(start, end).inflate(band + 2))) {
@@ -853,6 +866,7 @@ public class DarkFx {
                 FxSend.trail(sl, S, m.subtract(rt.scale(1.4)), m.add(rt.scale(1.4)), 0.02f, 8);
                 tt.setDeltaMovement(Vec3.ZERO);
                 tt.hurtMarked = true;
+                if (tt instanceof ServerPlayer victim) screenCut(victim, 8);   // a player sees their own screen cut in two first
                 AstaFx.later(8, () -> {   // ...then it is cut in half: the line opens, darkness spills out both ways
                     if (!tt.isAlive() || !alive(p)) return;
                     Vec3 mm = mid(tt);
