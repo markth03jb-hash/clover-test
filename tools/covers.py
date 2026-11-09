@@ -261,7 +261,7 @@ ACC = dict(dark=(180, 169, 200), wind=(231, 217, 160), mercury=(220, 232, 248), 
 GLOW = dict(dark=(150, 70, 255), wind=(110, 255, 170), mercury=(170, 200, 240), fire=(255, 110, 20), lightning=(90, 170, 255),
             hellfire=(255, 80, 30), bone=(240, 220, 190), steel=(150, 190, 235), string=(255, 120, 190), spatial=(156, 120, 255),
             water=(110, 205, 255), mirror=(255, 176, 216), rift=(224, 64, 216))
-LEAVES = dict(wind=4, lightning=4)
+LEAVES = dict(wind=4)
 
 def heart_clover_mask(cx, cy, r, n, ang0=-math.pi / 2):
     """A clover of heart-shaped leaves (and a curved stem), as a soft-edged mask, in 2x pixels."""
