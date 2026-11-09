@@ -3,7 +3,9 @@ package com.ironspellgrimoire.server;
 import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.IronSpellGrimoire;
+import com.ironspellgrimoire.network.AddonNetwork;
 import com.ironspellgrimoire.network.FxPacket;
+import net.minecraftforge.network.PacketDistributor;
 import io.redspace.ironsspellbooks.api.events.SpellOnCastEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -82,6 +84,20 @@ public final class ComboChain {
         return b != null && spell.equals(b[0]) && p.serverLevel().getGameTime() - (Long) b[1] <= 2;
     }
 
+    /** Tells the client which spell(s) would complete a combo with {@code id}: they pulse on the wheel for the window. */
+    private static void hint(ServerPlayer p, String id) {
+        if (p.connection == null) return;
+        FxPacket clear = new FxPacket();
+        clear.shape = 48; clear.life = 0;
+        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), clear);
+        for (Combo c : COMBOS) {
+            if (!c.first().equals(id)) continue;
+            FxPacket pk = new FxPacket();
+            pk.shape = 48; pk.life = WINDOW; pk.sweep = c.second().hashCode();
+            AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), pk);
+        }
+    }
+
     private static String path(String id) { int i = id.indexOf(':'); return i < 0 ? id : id.substring(i + 1); }
 
     @SubscribeEvent
@@ -91,6 +107,7 @@ public final class ComboChain {
         long now = p.serverLevel().getGameTime();
         Object[] last = LAST.get(p.getUUID());
         LAST.put(p.getUUID(), new Object[]{id, now});
+        hint(p, id);
         if (last == null || now - (Long) last[1] > WINDOW) return;
         for (Combo c : COMBOS) {
             if (!c.first().equals(last[0]) || !c.second().equals(id)) continue;

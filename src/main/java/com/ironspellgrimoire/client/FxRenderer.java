@@ -99,6 +99,7 @@ public class FxRenderer extends FxBase {
       // wind (Yuno: Tornado Fang, Sylph's Breath, Spirit Dive...) keeps its 3D shape too - it looked best that way
       if (worldShape && !keep && !p.pixelOnly && (p.palette & 0x1F) != 5) p.pixelOnly = true;
       if (p.shape == 42) { FxSync.cast(p.id, p.sweep, p.life); return; }
+      if (p.shape == 48) { ComboHint.set(p.sweep, p.life); return; }   // combo hint: the spell that finishes a combo pulses on the wheel
       if (p.shape == 43) { ScreenCut.start(p.life, p.sweep); return; }
       if (p.shape == 44) { PixelFx.ghostBlade(p); return; }   // Equinox's invisible sword
       if (p.shape == 45) { GrimoireCeremonyRenderer.start(p); return; }   // the grimoire tower ceremony

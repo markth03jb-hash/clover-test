@@ -15,5 +15,6 @@ public final class ClientEntities {
     @SubscribeEvent
     public static void renderers(EntityRenderersEvent.RegisterRenderers e) {
         e.registerEntityRenderer(AddonEntities.MAGIC_BOLT.get(), NoopRenderer::new);
+        e.registerEntityRenderer(AddonEntities.MAGE.get(), MageRenderer::new);
     }
 }

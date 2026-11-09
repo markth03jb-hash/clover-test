@@ -136,12 +136,13 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> SPIRIT_OF_BOREAS = registerSpell(new WindSpell("spirit_of_boreas", 14, 45, 16, WindSpell.anim("iron_spell_grimoire:wind_boreas"), WindFx::spiritOfBoreas));
     public static final RegistryObject<AbstractSpell> SPIRIT_OF_EUROS = registerSpell(new WindSpell("spirit_of_euros", 20, 60, 34, WindSpell.anim("iron_spell_grimoire:wind_euros"), WindFx::spiritOfEuros));
     public static final RegistryObject<AbstractSpell> SPIRIT_DIVE = registerSpell(new WindSpell("spirit_dive", 90, 100, 0, WindSpell.anim("iron_spell_grimoire:wind_spirit_dive"), WindFx::spiritDive));
+    public static final RegistryObject<AbstractSpell> MANA_ZONE = registerSpell(new WindSpell("mana_zone", 40, 90, 14, WindSpell.anim("iron_spell_grimoire:dark_mana_zone"), WindFx::manaZone));
     public static final RegistryObject<AbstractSpell> SPIRIT_STORM = registerSpell(new WindSpell("spirit_storm", 60, 130, 40, WindSpell.anim("iron_spell_grimoire:wind_spirit_storm"), WindFx::spiritStorm));
 
     /** The ten Wind Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> WIND_SPELLS = List.of(
             WIND_BLADE_SHOWER, TORNADO_FANG, SYLPHS_BREATH, GALE_WHITE_BOW, HUSHED_DANCE,
-            SPIRIT_OF_ZEPHYR, SPIRIT_OF_BOREAS, SPIRIT_OF_EUROS, SPIRIT_DIVE, SPIRIT_STORM);
+            SPIRIT_OF_ZEPHYR, SPIRIT_OF_BOREAS, SPIRIT_OF_EUROS, MANA_ZONE, SPIRIT_DIVE, SPIRIT_STORM);
 
     // ------------------------------------------------------------------ Mercury Grimoire (Nozel Silva's Mercury Magic)
     //                                                                                id                          cd mana power  animation

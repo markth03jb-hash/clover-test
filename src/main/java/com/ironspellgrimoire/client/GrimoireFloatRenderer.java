@@ -89,9 +89,12 @@ public class GrimoireFloatRenderer {
       return (float) (4.0 + since * 2.3);   // FxBooks flips page i over cycle 4+5i .. 18+5i
    }
 
+   /** The book stays open this long (10 s) after the last hit given, hit taken or spell cast. */
+   public static final long COMBAT_TICKS = 200L;
+
    public static void openBook(int entityId) {
       ClientLevel level = Minecraft.getInstance().level;
-      if (level != null) OPEN_UNTIL.put(entityId, level.getGameTime() + 60L);
+      if (level != null) OPEN_UNTIL.put(entityId, level.getGameTime() + COMBAT_TICKS);   // combat: open for 10 s after the last hit / cast
    }
 
    /** Every grimoire of this addon floats open while you cast (Black, Dark, Steel and the themed ones). */

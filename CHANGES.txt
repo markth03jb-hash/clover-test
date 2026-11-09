@@ -1,7 +1,19 @@
-Iron Spell Grimoire v1.69.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.70.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.70.0
+- Combo hint: after the first spell of a combo, the spell that finishes it pulses softly on the spell wheel in the
+  grimoire's colour for the 4-second window.
+- The floating grimoire follows combat: it opens when you hit something, get hit or cast, stays open through the
+  fight and closes 10 seconds after the last thing that happened (every new hit or cast restarts the timer).
+- Hooded Casters: robed mages with simple elemental spells (fire bolt, wind crescent, marked lightning strike, water
+  orb). They keep their distance, drop nothing and give much more grimoire mastery than normal mobs. Their spells
+  hurt only the target and never touch a block. They spawn rarely in the dark, like other monsters.
+- Wind Grimoire: Mana Zone (mastery 4). Spread your mana through the air for 20 s; each second a blade of wind
+  appears beside each enemy (up to 3, five in Spirit Dive) within 12 blocks. New books only (existing books keep
+  their 10 spells).
 
 NEW IN 1.69.0
 - The grimoire book has its own combo page now (the combo lines hidden at the bottom of each spell page are gone):

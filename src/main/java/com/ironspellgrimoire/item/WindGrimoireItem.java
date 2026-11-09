@@ -25,7 +25,7 @@ import net.minecraftforge.registries.RegistryObject;
 /** Yuno Grinberryall's four-leaf grimoire of Wind Magic: ten preset spells, uses normal mana. */
 public class WindGrimoireItem extends SimpleAttributeSpellBook {
     public WindGrimoireItem() {
-        super(10, SpellRarity.LEGENDARY, modifiers());
+        super(11, SpellRarity.LEGENDARY, modifiers());
     }
 
     private static Multimap<Attribute, AttributeModifier> modifiers() {

@@ -404,5 +404,9 @@
   "tooltip.iron_spell_grimoire.open_book": "Sneak + use: open the grimoire - every spell, its numbers and its combos.",
   "tooltip.iron_spell_grimoire.black_grimoire.passive": "Passive - Anti Magic",
   "tooltip.iron_spell_grimoire.black_grimoire.desc": "Drains your mana away while worn, and its spells cost none. Its power flows into your body instead. Ten spells, from Zetten to Devil Union.",
-  "tooltip.iron_spell_grimoire.black_grimoire.lore": "A tattered five-leaf grimoire. A devil sleeps in its pages."
+  "tooltip.iron_spell_grimoire.black_grimoire.lore": "A tattered five-leaf grimoire. A devil sleeps in its pages.",
+  "entity.iron_spell_grimoire.hooded_mage": "Hooded Caster",
+  "spell.iron_spell_grimoire.mana_zone": "Mana Zone",
+  "spell.iron_spell_grimoire.mana_zone.guide": "Spread your mana through the air around you and feel everything inside it. For 20 s, every second a blade of wind appears beside each enemy (up to 3) within 12 blocks and cuts it - no aiming, the wind answers from anywhere. Spirit Dive: five enemies at once, stronger blades.",
+  "ui.iron_spell_grimoire.dive.mana_zone": "Spirit Dive: Mana Zone"
 }

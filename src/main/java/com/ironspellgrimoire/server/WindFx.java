@@ -865,6 +865,76 @@ public class WindFx {
         FxSend.trail(sl, W, c.subtract(d2), c.add(d2), size * 0.06f, life);
     }
 
+
+    // ================================================================== Mana Zone
+    private static final double ZONE_R = 12;
+    private static final Map<UUID, long[]> ZONEW = new HashMap<>();          // player -> {until, power*100}
+
+    /**
+     * Yuno's Mana Zone: he spreads his mana through the air around him, so he feels everything inside it and the wind
+     * answers him from anywhere - for 20 s, every second a blade of wind appears beside each enemy (up to 3) within
+     * 12 blocks and cuts it, with no aiming needed.
+     * Spirit Dive: five enemies at once and stronger blades.
+     */
+    public static void manaZone(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        boolean dive = diving(p);
+        ZONEW.put(p.getUUID(), new long[]{sl.getGameTime() + 400, (long) (power * 100)});
+        ModeHud.show(p, "mana_zone", 400);
+        if (dive) diveMsg(p, "mana_zone");
+        // the mana spreads out: a ring racing to the edge of the zone, then streams curling back in
+        FxSend.ring(sl, W, p.position().add(0, 0.05, 0), 0.5f, (float) ZONE_R, 0.08f, 14);
+        FxSend.ring(sl, S, p.position().add(0, 0.05, 0), 0.3f, (float) ZONE_R * 0.7f, 0.05f, 10);
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        for (int k = 0; k < 10; k++) {
+            final double a = Math.PI * 2 * k / 10 + r.nextDouble(0.3);
+            AstaFx.later(2 + k, () -> {
+                if (!alive(p)) return;
+                Vec3 c = p.position().add(0, 1, 0);
+                Vec3 out = c.add(Math.cos(a) * ZONE_R * 0.9, r.nextDouble(0.2, 1.8), Math.sin(a) * ZONE_R * 0.9);
+                Vec3 mid = c.add(Math.cos(a + 0.5) * ZONE_R * 0.5, 0.4, Math.sin(a + 0.5) * ZONE_R * 0.5);
+                FxSend.trail(sl, W, out, mid, 0.05f, 8);
+                FxSend.trail(sl, W, mid, c.add(Math.cos(a + 1.0) * 0.8, 0, Math.sin(a + 1.0) * 0.8), 0.04f, 7);
+            });
+        }
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 1.1f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.5f, 1.5f);
+    }
+
+    private static void zoneTick(ServerPlayer p, long now) {
+        long[] z = ZONEW.get(p.getUUID());
+        if (z == null) return;
+        ServerLevel sl = p.serverLevel();
+        if (now > z[0]) {
+            ZONEW.remove(p.getUUID());
+            ModeHud.hide(p, "mana_zone");
+            FxSend.ring(sl, W, p.position().add(0, 0.05, 0), (float) ZONE_R, 0.5f, 0.05f, 10);
+            return;
+        }
+        if (now % 10 == 0) {   // the edge of the zone, faint, with one slow stream of wind drifting round it
+            FxSend.ring(sl, W, p.position().add(0, 0.05, 0), (float) ZONE_R - 0.15f, (float) ZONE_R, 0.05f, 12);
+            double a = now * 0.07;
+            Vec3 c = p.position().add(0, 0.6, 0);
+            FxSend.trail(sl, W, c.add(Math.cos(a) * ZONE_R, 0.3, Math.sin(a) * ZONE_R), c.add(Math.cos(a + 0.5) * ZONE_R, 0.9, Math.sin(a + 0.5) * ZONE_R), 0.04f, 10);
+        }
+        if (now % 20 != 0) return;
+        boolean dive = diving(p);
+        float dmg = z[1] / 100f * (dive ? 0.5f : 0.38f);
+        List<LivingEntity> near = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(ZONE_R)));
+        near.removeIf(t -> t.distanceTo(p) > ZONE_R);
+        near.sort(Comparator.comparingDouble(t -> t.distanceToSqr(p)));
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        int max = dive ? 5 : 3;
+        for (int i = 0; i < Math.min(max, near.size()); i++) {
+            LivingEntity t = near.get(i);
+            double a = r.nextDouble(Math.PI * 2);
+            Vec3 from = mid(t).add(Math.cos(a) * 3.0, r.nextDouble(0.5, 2.2), Math.sin(a) * 3.0);   // appears beside it: the zone reaches everywhere
+            Vec3 aim = mid(t).subtract(from).normalize();
+            final int ii = i;
+            AstaFx.later(1 + i * 2, () -> volleyBlade(p, sl, from, t, aim, rightOf(aim), ii % 2 == 0 ? -1 : 1, dmg, dive));
+        }
+    }
+
     // ================================================================== events
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent e) {
@@ -884,6 +954,7 @@ public class WindFx {
                 if (now % 40 == 0) sendDive(p, (int) (d - now));
             }
         }
+        zoneTick(p, now);
         Dance dc = DANCE.get(id);
         if (dc != null && (now > dc.until || dc.charges <= 0)) { DANCE.remove(id); ModeHud.hide(p, "hushed_dance"); }
     }
@@ -944,11 +1015,11 @@ public class WindFx {
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {
         UUID id = e.getEntity().getUUID();
-        DIVE.remove(id); DANCE.remove(id);
+        DIVE.remove(id); DANCE.remove(id); ZONEW.remove(id);
     }
 
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent e) {
-        DIVE.clear(); DANCE.clear();
+        DIVE.clear(); DANCE.clear(); ZONEW.clear();
     }
 }

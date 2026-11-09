@@ -71,6 +71,8 @@ public final class GrimoireMastery {
     /** Total XP needed to reach level 2, 3, 4, 5. */
     public static final int[] THRESHOLDS = {0, 0, 800, 2400, 5200, 9000};
     private static final String TAG = "arcane_mastery";
+    /** Hooded mages teach more than ordinary mobs: their damage counts triple and a kill adds a bonus. */
+    private static final float MAGE_XP_MULT = 3f, MAGE_KILL_XP = 60f;
     private static final float KILL_XP = 15, BOSS_XP = 300, MODE_XP_PER_SECOND = 3;
 
     private static final UUID POWER_ID = UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a100101");
@@ -105,7 +107,7 @@ public final class GrimoireMastery {
                 "wind_blade_shower", 1, "sylphs_breath", 1, "gale_white_bow", 1,
                 "tornado_fang", 2, "hushed_dance", 2,
                 "spirit_of_zephyr", 3, "spirit_of_boreas", 3,
-                "spirit_of_euros", 4, "spirit_dive", 4,
+                "spirit_of_euros", 4, "spirit_dive", 4, "mana_zone", 4,
                 "spirit_storm", 5);
         book(AddonItemRegistry.MERCURY_GRIMOIRE::get, 11,
                 "mercury_bullets", 1, "mercury_spears", 1, "silver_mirror", 1,
@@ -274,7 +276,8 @@ public final class GrimoireMastery {
         if (!(e.getSource().getEntity() instanceof ServerPlayer p) || e.getEntity() == p) return;
         String spell = spellOf(e.getSource());
         if (spell == null || !worthXp(e.getEntity())) return;
-        award(p, spell, Math.min(e.getAmount(), Math.max(0f, e.getEntity().getHealth())));
+        float dealt = Math.min(e.getAmount(), Math.max(0f, e.getEntity().getHealth()));
+        award(p, spell, e.getEntity() instanceof com.ironspellgrimoire.entity.MageEnemy ? dealt * MAGE_XP_MULT : dealt);
     }
 
     @SubscribeEvent
@@ -284,7 +287,7 @@ public final class GrimoireMastery {
         LivingEntity t = e.getEntity();
         if (spell == null || !worthXp(t)) return;
         boolean boss = t.getType().is(Tags.EntityTypes.BOSSES) || t instanceof Warden;
-        award(p, spell, KILL_XP + (boss ? BOSS_XP : 0));
+        award(p, spell, KILL_XP + (boss ? BOSS_XP : 0) + (t instanceof com.ironspellgrimoire.entity.MageEnemy ? MAGE_KILL_XP : 0));
     }
 
     // ------------------------------------------------------------------ level bonuses, mode XP
