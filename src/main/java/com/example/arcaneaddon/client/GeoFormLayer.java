@@ -11,8 +11,9 @@ import net.minecraft.util.Mth;
 
 /**
  * The animated models of the two transformations, attached to the player's own model parts:
- *   Devil Union  - Asta's single black wing on the left of his back: one solid membrane arching up to a sharp
- *                  point, a small hooked spike on its leading edge and a torn, ragged trailing edge. It unfurls,
+ *   Devil Union  - Asta's single black wing on the left of his back, built like a real wing: an arm (upper arm,
+ *                  elbow, forearm, wrist with a hooked thumb claw) and four finger bones fanning to the point, with a
+ *                  thin membrane between them whose trailing edge is scalloped and torn. It unfurls,
  *                  beats slowly at rest, sweeps back while running, flaps hard in the air, spreads to glide when
  *                  falling and folds in when crouching (bending along its length as it moves)
  *   Beelzebub    - skeletal wings (open, idle, flap in the air) and horns that grow from the temples

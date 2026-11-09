@@ -1,7 +1,14 @@
-Iron Spell Grimoire v1.50.1 - all changed files since v1.0.0
+Iron Spell Grimoire v1.50.2 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.50.2
+- Asta's wing rebuilt so it actually reads as a wing: a bony arm (upper arm to elbow, forearm to wrist, with a
+  hooked thumb claw) and four finger bones fanning out from the wrist - the top one running out to the point -
+  with a thin black membrane stretched between them. The membrane's trailing edge is scalloped between the finger
+  tips and torn, and faint veins run along the fingers. The edge is a smooth curve (high-resolution cut-out
+  texture) instead of blocky steps. It hinges at the shoulder, elbow and wrist, so it folds and beats like a wing.
 
 NEW IN 1.50.1
 - Devil Union now grows Asta's single black wing instead of a pair of bladed wings: one solid black membrane on the
