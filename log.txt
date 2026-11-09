@@ -1,0 +1,7 @@
+OK sci-fi_sounds.zip 5875104
+OK sword_-_starninjas.zip 84504
+FAIL https://opengameart.org/sites/default/files/sword_clash_-_starninjas.zip
+FAIL https://opengameart.org/sites/default/files/kenney_impactsounds.zip
+FAIL https://opengameart.org/sites/default/files/impact_sounds.zip
+FAIL https://opengameart.org/sites/default/files/kenney_rpgaudio.zip
+FAIL https://opengameart.org/sites/default/files/rpg_audio.zip
