@@ -88,7 +88,7 @@ public final class LimitFx {
         ServerLevel sl = p.serverLevel();
         Vec3 c = p.position();
         // shared beat: the world goes white for an instant (Luck: his lightning frame), the ground shakes, the power erupts
-        FxSend.impactFrame(sl, c, 4, new int[]{FxSend.FRAME_ASTA, FxSend.FRAME_YAMI, FxSend.FRAME_YUNO, FxSend.FRAME_NOZEL, FxSend.FRAME_MAGNA,
+        if (!foesNear(sl, p, c.add(0, 1, 0), 14).isEmpty()) FxSend.impactFrame(sl, c, 4, new int[]{FxSend.FRAME_ASTA, FxSend.FRAME_YAMI, FxSend.FRAME_YUNO, FxSend.FRAME_NOZEL, FxSend.FRAME_MAGNA,
                 FxSend.FRAME_LUCK, FxSend.FRAME_MEREOLEONA, FxSend.FRAME_ZENON, FxSend.FRAME_KLAUS, FxSend.FRAME_VANESSA, FxSend.FRAME_FINRAL}[Math.max(0, Math.min(10, idx))], 24);   // each grimoire's own frame
         FxSend.shake(sl, c, 0.7f, 18, 32);
         sound(sl, c, SoundEvents.BEACON_ACTIVATE, 1f, 0.6f);
@@ -224,7 +224,7 @@ public final class LimitFx {
         ServerLevel sl = p.serverLevel();
         TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, FULL_UNION_DMG, "Full Devil Union", 6.0, AttributeModifier.Operation.ADDITION, ticks);
         Vec3 c = p.position();
-        FxSend.impactFrame(sl, c, 4, FxSend.FRAME_ASTA_SLASH, 24);
+        if (!foesNear(sl, p, c.add(0, 1, 0), 14).isEmpty()) FxSend.impactFrame(sl, c, 4, FxSend.FRAME_ASTA_SLASH, 24);
         FxSend.beam(sl, DARK, c, c.add(0, 24, 0), 3.0f, 30);
         FxSend.beam(sl, EMBER, c, c.add(0, 22, 0), 1.2f, 28);
         FxLib.shockRing(sl, EMBER, c.add(0, 0.1, 0), 4f);

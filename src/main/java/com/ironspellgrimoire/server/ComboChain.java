@@ -120,7 +120,7 @@ public final class ComboChain {
         Vec3 at = t != null ? mid(t) : clip(sl, p, p.getEyePosition(), p.getEyePosition().add(p.getLookAngle().scale(12)));
         Vec3 ground = t != null ? t.position() : FxLib.floor(sl, at);
         Vec3 look = p.getLookAngle(), fl = flat(look), rt = rightOf(look), up = rt.cross(look).normalize();
-        FxSend.impactFrame(sl, at, 2, c.frame(), 32);
+        if (t != null) FxSend.impactFrame(sl, at, 2, c.frame(), 32);   // only when it actually lands on someone
         String id = c.second();
         switch (c.name()) {
             case "Cleave and Rift" -> {   // two giant crescents cross in an X through the target, the rift tears open behind

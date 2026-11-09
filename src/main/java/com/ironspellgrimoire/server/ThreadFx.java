@@ -359,7 +359,7 @@ public final class ThreadFx {
             final int kk = k;
             AstaFx.later(2 + k * 2, () -> FxSend.ring(sl, FATE | K, c, kk * 3.2f, kk * 3.2f + 0.05f, 0.03f, 30));
         }
-        FxSend.impactFrame(sl, p.position(), 2, FxSend.FRAME_VANESSA, 24);
+        if (!enemies(sl, p, new AABB(c, c).inflate(10)).isEmpty()) FxSend.impactFrame(sl, p.position(), 2, FxSend.FRAME_VANESSA, 24);
         Fx.flash(sl, p.position().add(0, 4.5, 0), 1.8f);
         sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_RESONATE, 1.2f, 0.6f);
         sound(sl, p.position(), SoundEvents.BELL_RESONATE, 0.8f, 1.2f);

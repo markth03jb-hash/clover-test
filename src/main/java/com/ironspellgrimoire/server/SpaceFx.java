@@ -316,7 +316,7 @@ public final class SpaceFx {
                 AstaFx.damage(p, e, power, "space_deletion");
                 e.setDeltaMovement(Vec3.ZERO); e.hurtMarked = true;
             }
-            FxSend.impactFrame(sl, c, 3, FxSend.FRAME_FINRAL, 40);
+            if (!enemies(sl, p, new AABB(c, c).inflate(R + 1)).isEmpty()) FxSend.impactFrame(sl, c, 3, FxSend.FRAME_FINRAL, 40);
             Fx.flash(sl, c, 2.8f);
             for (int i = 0; i < 10; i++) {   // shards of space flung out
                 double a0 = i * Math.PI / 5;

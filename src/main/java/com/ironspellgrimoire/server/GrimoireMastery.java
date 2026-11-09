@@ -292,6 +292,8 @@ public final class GrimoireMastery {
     public static void onPlayerTick(TickEvent.PlayerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || p.tickCount % 20 != 0) return;
         ItemStack book = equipped(p);
+        sortSlots(book);
+        if (p.tickCount % 100 == 0) for (ItemStack st : p.getInventory().items) sortSlots(st);
         Book b = bookOf(book);
         boolean on = AddonConfig.progression() && b != null;
         int bonus = on ? level(book) - 1 : 0;
@@ -303,6 +305,28 @@ public final class GrimoireMastery {
         for (String mode : ModeHud.active(p)) {
             if (belongs(b, mode)) { addXp(p, book, b, MODE_XP_PER_SECOND * AddonConfig.xpMultiplier()); break; }
         }
+    }
+
+    /**
+     * Keeps a grimoire's spells in unlock order - its wheel runs from the top clockwise, so a mastery 2 move can
+     * never sit after a mastery 3 one. Books made before this (or put together in another order) are re-sorted in
+     * place; spells on the same level keep the order they had, and each spell keeps its level and lock.
+     */
+    public static void sortSlots(ItemStack stack) {
+        Book b = bookOf(stack);
+        if (b == null || !io.redspace.ironsspellbooks.api.spells.ISpellContainer.isSpellContainer(stack)) return;
+        try {
+            var c = io.redspace.ironsspellbooks.api.spells.ISpellContainer.get(stack);
+            List<io.redspace.ironsspellbooks.api.spells.SpellSlot> slots = new ArrayList<>(c.getActiveSpells());
+            List<io.redspace.ironsspellbooks.api.spells.SpellSlot> sorted = new ArrayList<>(slots);
+            sorted.sort(java.util.Comparator.comparingInt(sl -> required(b, sl.getSpell().getSpellResource().getPath())));
+            boolean same = true;
+            for (int i = 0; i < slots.size(); i++) if (slots.get(i) != sorted.get(i)) { same = false; break; }
+            if (same) return;
+            var fresh = io.redspace.ironsspellbooks.api.spells.ISpellContainer.create(c.getMaxSpellCount(), c.isSpellWheel(), c.mustEquip());
+            for (var sl : sorted) fresh.addSpell(sl.getSpell(), sl.getLevel(), sl.isLocked(), stack);
+            fresh.save(stack);
+        } catch (Throwable ignored) { }
     }
 
     private static void setMod(Player p, Attribute a, UUID id, String name, double amount, AttributeModifier.Operation op) {

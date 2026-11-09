@@ -19,7 +19,6 @@ import com.ironspellgrimoire.spells.GrimoireSpell.Need;
 import com.ironspellgrimoire.server.SteelFx;
 import com.ironspellgrimoire.spells.SteelSpell;
 import com.ironspellgrimoire.spells.AntiMagicSpell;
-import com.ironspellgrimoire.spells.ArcanePulseSpell;
 import com.ironspellgrimoire.spells.BorrowedSlashSpell;
 import com.ironspellgrimoire.spells.DarkSpell;
 import com.ironspellgrimoire.spells.DevilUnionSpell;
@@ -41,7 +40,6 @@ import java.util.List;
 public class AddonSpellRegistry {
     public static final DeferredRegister<AbstractSpell> SPELLS = DeferredRegister.create(SpellRegistry.SPELL_REGISTRY_KEY, "iron_spell_grimoire");
 
-    public static final RegistryObject<AbstractSpell> ARCANE_PULSE = registerSpell(new ArcanePulseSpell());
     // ------------------------------------------------------------------ Black Grimoire (Asta)
     public static final RegistryObject<AbstractSpell> SUMMON_GREATSWORD = registerSpell(new SummonGreatswordSpell());
     public static final RegistryObject<AbstractSpell> PIERCING_DASH = registerSpell(new PiercingDashSpell());

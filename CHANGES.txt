@@ -1,7 +1,15 @@
-Iron Spell Grimoire v1.64.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.65.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.65.0
+- Arcane Pulse is gone completely.
+- Grimoire spell scrolls are hidden from every creative tab and from JEI; the spells exist only inside their book.
+- The spell wheel runs from the top clockwise in unlock order (mastery 1, then 2, 3...) - existing books are
+  re-sorted automatically, so a mastery 3 move never comes before a mastery 2 one.
+- Impact frames only appear when something is actually hit (combo finishers, Red Thread of Fate, Space Deletion and
+  the awakenings no longer flash on empty air).
 
 NEW IN 1.64.0
 - Moonlight is now a required library (libs/moonlight-1.20-2.16.39-forge.jar is bundled for building).
