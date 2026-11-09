@@ -21,6 +21,8 @@ public class FxPacket {
     public float r, r2, a0, a1, h, speed;
     /** Sent as bit 0x40 of the palette: draw this effect only in the pixel-sprite style (no old solid shape). */
     public static final int PIXEL_ONLY = 0x40;
+    /** Sent as bit 0x20 of the palette: keep this effect's solid 3D shape under its sprites (not pixel-only). */
+    public static final int KEEP_SHAPE = 0x20;
     /** Client side, decoded from the palette bit (never sent itself). */
     public transient boolean pixelOnly;
 

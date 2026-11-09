@@ -146,6 +146,7 @@ public final class GrimoireWheel {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
+        RenderSystem.disableCull();   // shapes are wound both ways
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         BufferBuilder bb = Tesselator.getInstance().getBuilder();
         bb.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
@@ -189,6 +190,7 @@ public final class GrimoireWheel {
             }
         }
         BufferUploader.drawWithShader(bb.end());
+        RenderSystem.enableCull();
 
         // spell icons on the pages
         Font font = mc.font;
@@ -465,8 +467,51 @@ public final class GrimoireWheel {
         }
     }
 
+    // Asta's five-leaf clover: five broad heart-shaped leaves, each the union of two round lobes seen from the
+    // centre, with a shallow notch at the top, deep rounded V's between neighbours and a thin straight slit between
+    // them down to the middle.
+    private static final double H_D = 0.545, H_OFF = 0.105, H_RAD = 0.248, H_GAP = 0.03;
+
+    /** Distance from the centre to the leaf's edge along local angle phi (0 = the leaf's axis), 0 if past its side. */
+    private static double heartEdge(double phi) {
+        double dx = Math.cos(phi), dy = Math.sin(phi), best = 0.0;
+        for (int s = -1; s <= 1; s += 2) {
+            double cxl = H_D, cyl = H_OFF * s;
+            double bq = dx * cxl + dy * cyl, cq = cxl * cxl + cyl * cyl - H_RAD * H_RAD, disc = bq * bq - cq;
+            if (disc >= 0) best = Math.max(best, bq + Math.sqrt(disc));
+        }
+        return best;
+    }
+
+    /** One heart leaf of the five-leaf clover pointing out at angle a (fan of triangles from just off the centre). */
+    private static void heartLeaf(BufferBuilder bb, Matrix4f m, int cx, int cy, double a, double rl, double grow, float r, float g, float b, float al) {
+        double R = rl * 1.23;   // the leaf's tip reaches about as far as the old leaves did
+        double fx = Math.sin(a), fy = -Math.cos(a), sx = Math.cos(a), sy = Math.sin(a);
+        double half = Math.PI / 5.0;
+        double tipOff = (H_GAP * R * 0.5 - grow) / Math.sin(half);   // where the two slits meet this leaf
+        double tx = cx + fx * tipOff, ty = cy + fy * tipOff;
+        int steps = 28;
+        double px = 0, py = 0;
+        boolean have = false;
+        for (int i = 0; i <= steps; i++) {
+            double phi = -half + 2.0 * half * i / steps;
+            double e = heartEdge(phi);
+            if (e <= 0.0) continue;
+            double rr = e * R + grow;
+            double ux = Math.cos(phi), uy = Math.sin(phi);
+            double qx = cx + (fx * ux + sx * uy) * rr, qy = cy + (fy * ux + sy * uy) * rr;
+            if (have) {
+                v(bb, m, (float) tx, (float) ty, r, g, b, al);
+                v(bb, m, (float) px, (float) py, r, g, b, al);
+                v(bb, m, (float) qx, (float) qy, r, g, b, al);
+            }
+            px = qx; py = qy; have = true;
+        }
+    }
+
     /** One heart-shaped clover leaf pointing out at angle a: two lobes and a point at the centre. */
     private static void leaf(BufferBuilder bb, Matrix4f m, int cx, int cy, double a, double rl, double grow, float r, float g, float b, float al) {
+        if (leafLobe < 0.25) { heartLeaf(bb, m, cx, cy, a, rl, grow, r, g, b, al); return; }   // Asta's five
         double lobe = rl * leafLobe + grow;   // separate heart-shaped leaves, not one blob
         double off = rl * 0.27;
         double dist = rl * 0.74;

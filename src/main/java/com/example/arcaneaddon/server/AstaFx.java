@@ -155,6 +155,7 @@ public class AstaFx {
     /** Huge downward slash (Slayer) / fast X of two slashes (Dweller). */
     public static void zetten(ServerPlayer p, float dmg, boolean dw) {
         ServerLevel sl = p.serverLevel();
+        final int K = com.example.arcaneaddon.network.FxPacket.KEEP_SHAPE;   // Zetten keeps its solid 3D blades and walls
         if (dw) { dmg *= 0.85f; variantMsg(p); AnimSend.play(p, AnimSend.CROSS_CUT); }   // Dweller: the X is two quick cuts
         Vec3 eye = p.getEyePosition();
         Vec3 look = p.getLookAngle();
@@ -173,17 +174,17 @@ public class AstaFx {
             Vec3 cx = eye.add(dir.scale(2.4)).add(0, -0.2, 0);
             for (int dgn = 0; dgn < 2; dgn++) {
                 Vec3 u = rt.scale(dgn == 0 ? 0.7 : -0.7).add(0, 0.7, 0).scale(3.0);
-                FxSend.beam(sl, Fx.DARK, cx.subtract(u), cx.add(u), 0.55f, 9);
+                FxSend.beam(sl, (Fx.DARK) | K, cx.subtract(u), cx.add(u), 0.55f, 9);
             }
-            FxSend.wall(sl, Fx.DARK, p.position().add(0, 0.1, 0).add(dir.scale(0.2)), dir, rt, 3.4f, 3.4f, -70, 70, 0.8f, 8, 2, 0);
+            FxSend.wall(sl, (Fx.DARK) | K, p.position().add(0, 0.1, 0).add(dir.scale(0.2)), dir, rt, 3.4f, 3.4f, -70, 70, 0.8f, 8, 2, 0);
             later(2, () -> {
                 for (int dgn = 0; dgn < 2; dgn++) {
                     Vec3 u2 = rt.scale(dgn == 0 ? 0.7 : -0.7).add(0, 0.7, 0).scale(3.3);
-                    FxSend.beam(sl, Fx.SILVER, cx.subtract(u2), cx.add(u2), 0.2f, 7);
+                    FxSend.beam(sl, (Fx.SILVER) | K, cx.subtract(u2), cx.add(u2), 0.2f, 7);
                 }
             });
         } else {    // the Slayer's vertical cleave, from above your head down to the ground, then the ground splits
-            FxSend.wall(sl, Fx.CRIMSON, eye.add(0, -0.3, 0), dir, new Vec3(0, 1, 0), 3.4f, 3.4f, 80, -70, 1.5f, 13, 3, 0);
+            FxSend.wall(sl, (Fx.CRIMSON) | K, eye.add(0, -0.3, 0), dir, new Vec3(0, 1, 0), 3.4f, 3.4f, 80, -70, 1.5f, 13, 3, 0);
             Fx.flash(sl, hit.add(0, 0.6, 0), 1.8f);
             // the ground splits: a jagged glowing fissure runs ahead, with thin side cracks and small black shards
             Vec3 ground = new Vec3(hit.x, p.getY() + 0.04, hit.z);
@@ -197,9 +198,9 @@ public class AstaFx {
                 final int seg = i;
                 final double side = rr.nextBoolean() ? 1 : -1;
                 later(seg / 2, () -> {
-                    FxSend.beam(sl, Fx.CRIMSON, a, b, 0.14f, 26);
-                    FxSend.beam(sl, Fx.SILVER, a, b, 0.03f, 18);
-                    if (seg % 2 == 0) FxSend.beam(sl, Fx.CRIMSON, b, b.add(rt.scale(0.75 * side)).add(dir.scale(0.35)), 0.07f, 20);
+                    FxSend.beam(sl, (Fx.CRIMSON) | K, a, b, 0.14f, 26);
+                    FxSend.beam(sl, (Fx.SILVER) | K, a, b, 0.03f, 18);
+                    if (seg % 2 == 0) FxSend.beam(sl, (Fx.CRIMSON) | K, b, b.add(rt.scale(0.75 * side)).add(dir.scale(0.35)), 0.07f, 20);
                     if (seg % 2 == 1) {
                         for (int sd = -1; sd <= 1; sd += 2) {
                             FxSend.spike(sl, Fx.DARK, b.add(rt.scale(0.22 * sd)).add(0, -0.05, 0), new Vec3(0, 1, 0).add(rt.scale(0.7 * sd)),
@@ -210,8 +211,8 @@ public class AstaFx {
             }
             sound(sl, hit, net.minecraft.sounds.SoundEvents.STONE_BREAK, 0.9f, 0.6f);
         }
-        FxSend.ring(sl, dw ? Fx.DARK : Fx.CRIMSON, hit, 0.3f, 3.0f, 0.08f, 8);
-        later(2, () -> FxSend.ring(sl, Fx.SILVER, hit, 0.6f, 5.5f, 0.05f, 8));   // one thin shockwave rolling out
+        FxSend.ring(sl, (dw ? Fx.DARK : Fx.CRIMSON) | K, hit, 0.3f, 3.0f, 0.08f, 8);
+        later(2, () -> FxSend.ring(sl, (Fx.SILVER) | K, hit, 0.6f, 5.5f, 0.05f, 8));   // one thin shockwave rolling out
         sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.5f);
         sound(sl, hit, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.8f, 1.2f);
         sound(sl, hit, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT, 1.0f, 0.6f);
@@ -241,8 +242,8 @@ public class AstaFx {
         Vec3 tip = p.getEyePosition().add(look0.scale(1.2)).add(0, -0.3, 0);
         int pal = dw ? Fx.DARK : Fx.CRIMSON;
         FxSend.ring(sl, pal, p.position().add(0, 0.05, 0), 3.5f, 0.3f, 0.2f, SKY_WINDUP);          // ring collapsing inward
-        FxSend.ring(sl, Fx.SILVER, p.position().add(0, 0.9, 0), 2.6f, 0.2f, 0.12f, SKY_WINDUP);
-        FxSend.beam(sl, Fx.DARK, p.position().add(0, 0.2, 0), tip.add(0, 1.6, 0), 0.25f, SKY_WINDUP + 2);   // black edge along the raised blade
+        FxSend.ring(sl, dw ? Fx.SILVER : Fx.CRIMSON, p.position().add(0, 0.9, 0), 2.6f, 0.2f, 0.12f, SKY_WINDUP);
+        FxSend.beam(sl, dw ? Fx.DARK : 9, p.position().add(0, 0.2, 0), tip.add(0, 1.6, 0), 0.25f, SKY_WINDUP + 2);   // Slayer: black-red, never violet   // black edge along the raised blade
         sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT, 1f, 0.5f);
         sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_1, 0.8f, 0.6f);
 
@@ -310,7 +311,7 @@ public class AstaFx {
         Vec3 a = path.get(0), b = path.get(path.size() - 1);
         int riftPal = dw ? Fx.DARK : Fx.CRIMSON;
         // the tear line itself: a bright core inside a dark edge
-        FxSend.beam(sl, Fx.DARK, a, b, 0.9f, 16);
+        FxSend.beam(sl, dw ? Fx.DARK : 9, a, b, 0.9f, 16);
         FxSend.beam(sl, riftPal, a, b, 0.45f, 14);
         FxSend.beam(sl, Fx.SILVER, a, b, 0.14f, 12);
         // jagged shards jutting out of the tear

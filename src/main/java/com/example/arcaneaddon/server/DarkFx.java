@@ -799,6 +799,14 @@ public class DarkFx {
      * across it, every enemy inside is cut at the same instant, a ring of darkness sweeps the edge and a pale
      * dividing line hangs across the ground. (No cracks in space here - it is one clean cut.)
      */
+    /** Equinox's invisible sword: drawn by the client only as faint edges (FxPacket shape 44). */
+    private static void ghostBlade(ServerLevel sl, Vec3 hilt, Vec3 along, Vec3 across, float length, float width, int life) {
+        com.example.arcaneaddon.network.FxPacket pk = new com.example.arcaneaddon.network.FxPacket();
+        pk.shape = 44; pk.c = hilt; pk.d = along.normalize(); pk.u = across.normalize(); pk.r = length; pk.r2 = width; pk.life = life;
+        com.example.arcaneaddon.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.NEAR.with(
+                () -> new net.minecraftforge.network.PacketDistributor.TargetPoint(hilt.x, hilt.y, hilt.z, 96, sl.dimension())), pk);
+    }
+
     private static void equinox(ServerPlayer p, ServerLevel sl, float power) {
         zoneMsg(p, "equinox");
         AnimSend.play(p, AnimSend.EQUINOX);
@@ -820,8 +828,9 @@ public class DarkFx {
                 // the level blade: darkness gathering on it, a white edge growing
                 Vec3 hilt = p.position().add(0, 1.3, 0).add(fw.scale(0.5)).subtract(rt.scale(0.45));
                 Vec3 tip = hilt.add(rt.scale(1.3 + k * 0.9));
-                FxSend.trail(sl, D, hilt, tip, 0.25f + k * 0.45f, 3);
-                FxSend.trail(sl, S, hilt, tip, 0.02f + k * 0.03f, 3);
+                // the sword can't be seen - only its outline, sharpening as the darkness gathers on it
+                ghostBlade(sl, hilt, rt, new Vec3(0, 1, 0), (float) hilt.distanceTo(tip) + 0.4f, 0.22f + k * 0.12f, 3);
+                if (tt % 6 == 0) FxSend.trail(sl, D, hilt, tip, 0.1f + k * 0.15f, 3);
                 // the zone's darkness drawn in from its edge toward the blade
                 if (tt % 4 == 0) {
                     double a = tt * 0.7;
@@ -851,6 +860,8 @@ public class DarkFx {
             final Vec3 dir = look, start = eye, end = eye.add(look.scale(reach));
             final Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
             FxSend.shake(sl, p.position(), 1.0f, 16, 48);
+            // the invisible sword swings through: a giant blade seen only by its outline, out along the line
+            ghostBlade(sl, start.add(dir.scale(0.8)), dir, rt, 18f, 1.1f, 7);
             // the cut itself is invisible: only a hairline of light along the line and a faint ripple at the blade
             FxSend.trail(sl, S, start.add(dir.scale(1.5)), end, 0.015f, 6);
             FxSend.ring(sl, S, start.add(dir.scale(1.6)), 0.2f, 1.6f, 0.03f, 5);

@@ -339,9 +339,9 @@ public final class DarkSmoke {
         if (age < 0 || age > p.life) return;
         double t = age / p.life;
         Vec3 c = new Vec3(p.x + p.vx * pt, p.y + p.vy * pt, p.z + p.vz * pt);
-        float near = (float) Mth.clamp((c.distanceTo(cam) - 0.6) / 1.8, 0.0, 1.0);
-        if (near <= 0.01F) return;
         float size = (float) (p.s0 + (p.s1 - p.s0) * t), a, cr, cg, cb;
+        float near = (float) Mth.clamp((c.distanceTo(cam) - 0.6 - size * 1.5) / (1.8 + size), 0.0, 1.0);
+        if (near <= 0.01F) return;
         if (isDark(p)) {   // a faint violet aura around the darkness
             a = (float) (Mth.clamp(age / 3.0, 0.0, 1.0) * Math.pow(1.0 - t, 1.5)) * 0.14F;
             cr = 0.45F; cg = 0.12F; cb = 0.9F; size *= 1.35F;
@@ -390,9 +390,10 @@ public final class DarkSmoke {
         double t = age / p.life;
         Vec3 c = new Vec3(p.x + p.vx * pt, p.y + p.vy * pt, p.z + p.vz * pt);
         double dist = c.distanceTo(cam);
-        float near = (float) Mth.clamp((dist - 0.6) / 1.8, 0.0, 1.0);   // never smother the camera
-        if (near <= 0.01F) return;
         float size = (float) (p.s0 + (p.s1 - p.s0) * (1.0 - Math.pow(1.0 - t, 2.0)));
+        double nearAt = 0.6 + size * 1.5;   // never smother the camera: big puffs fade out further away
+        float near = (float) Mth.clamp((dist - nearAt) / (1.8 + size), 0.0, 1.0);
+        if (near <= 0.01F) return;
         float a, cr, cg, cb;
         if (p.streak) {
             a = (float) (Mth.clamp(age / 2.0, 0.0, 1.0) * Math.pow(1.0 - t, 1.2)) * 0.7F * near;

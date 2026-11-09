@@ -67,7 +67,7 @@ public final class ImpactFrames {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || !com.example.arcaneaddon.AddonClientConfig.impactFrames()) return;
         start = mc.level.getGameTime();
-        len = Math.max(1, ticks);
+        len = Mth.clamp(ticks, 1, 4);   // never long enough to blind you
         style = Mth.clamp(st, 0, PAL.length - 1);
         at = where == null || where.equals(Vec3.ZERO) ? null : where;
     }
@@ -135,7 +135,7 @@ public final class ImpactFrames {
 
         // ---- the background
         if (negative) negative(m, 0, 0, W, H, fade, c[0]);
-        else quad(m, 0, 0, W, H, c[1], 0.84F * fade);
+        else quad(m, 0, 0, W, H, c[1], 0.6F * fade);   // ink you can still see through
 
         // ---- the pattern, converging on the hit
         int line = negative ? c[1] : c[2], acc = negative ? c[1] : c[3];
@@ -200,7 +200,7 @@ public final class ImpactFrames {
                 }
             }
             case 7, 8 -> {   // Magna / Mereoleona: tongues of flame roaring out of the hit
-                int n = style == 7 ? 24 : 32;
+                int n = style == 7 ? 16 : 20;
                 float grow = 0.75F + 0.35F * smooth(in);
                 for (int i = 0; i < n; i++) {
                     double a = i * Math.PI * 2 / n + r.nextDouble() * 0.15;
@@ -208,7 +208,7 @@ public final class ImpactFrames {
                     float base = (style == 8 ? 7F : 5.5F) * (0.7F + r.nextFloat() * 0.6F);
                     int segs = 7;
                     for (int s = 1; s <= segs; s++) {
-                        double rr = reach * (0.06 + s * 0.13) * grow, wob = Math.sin(s * 1.7 + i) * 0.09 + (r.nextDouble() - 0.5) * 0.08;
+                        double rr = reach * (0.05 + s * 0.09) * grow, wob = Math.sin(s * 1.7 + i) * 0.09 + (r.nextDouble() - 0.5) * 0.08;
                         float qx = fx + (float) (Math.cos(a + wob) * rr), qy = fy + (float) (Math.sin(a + wob) * rr);
                         float w0 = base * (1F - (s - 1) / (float) segs), w1 = base * (1F - s / (float) segs);
                         taper(bb, m, px, py, w0, qx, qy, w1, s < 3 ? acc : line, la);

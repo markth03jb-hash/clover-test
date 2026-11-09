@@ -1,7 +1,24 @@
-Iron Spell Grimoire v1.56.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.57.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.57.0
+- Equinox: an invisible sword. While it charges you see only its outline - faint pale edges tapering to a point, a
+  hairline spine and a sheen sliding along it - and when it cuts, a giant invisible blade swings out along the line.
+- Zetten: the solid 3D cleave, X blades, fissure and shockwaves are back under the sprites.
+- Sky Splitter (Demon Slayer): the slash is back - a move's main blade can no longer be dropped when the screen is
+  busy - and the last violet is gone (wind-up edge, rift and ring are black-red now).
+- Devil Union: the crown of black flame and the cloak streaming down your back are pixel sprites now; the crown is
+  never drawn in your own first-person view.
+- Mercury looks like liquid metal: solid chrome blobs shaded like a polished ball (bright sky on top, dark band at
+  the horizon, dim ground below), falling beads and sharp white glints - no more glowing light.
+- Tornado Fang's tornado is back, and Sylph's Breath and Spirit Dive look as they did before: wind keeps its 3D
+  shapes. Spirit Dive's sprite aura is lighter so the wings show.
+- Nothing covers the screen: sprites, flames and smoke fade out as they near the camera, the bigger the earlier;
+  your own hand fire is lighter in first person; impact frames last at most 4 ticks with see-through ink, and
+  Magna's / Mereoleona's flame frames are smaller.
+- The radial wheel: Asta's five-leaf clover now has five broad heart-shaped leaves with thin slits between them.
 
 NEW IN 1.56.0
 - No more delay: effects are never held back any more - every effect shows the moment the move sends it, so nothing

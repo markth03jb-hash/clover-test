@@ -195,34 +195,7 @@ final class FxForms extends FxBase {
       Vec3 back = base.add(0.0, h * 0.76, 0.0).subtract(fw.scale(0.2));
       // (the wings themselves are the animated GeckoLib model - GeoFormLayer)
 
-      // ---- crown of black flame
-      Vec3 crown = base.add(0.0, h + 0.02, 0.0);
-      for (int k = 0; k < 10; k++) {
-         boolean tallOne = k % 3 == 0 && k < 9;
-         double ang = Math.PI * 2.0 * k / 10.0 + now * 0.025;
-         double r0 = 0.26, span = tallOne ? 0.14 : 0.2;
-         Vec3 b0 = crown.add(Math.cos(ang - span) * r0, 0.0, Math.sin(ang - span) * r0);
-         Vec3 b1 = crown.add(Math.cos(ang + span) * r0, 0.0, Math.sin(ang + span) * r0);
-         double tall = ((tallOne ? 0.42 : 0.22) + 0.12 * Math.sin(now * (tallOne ? 0.5 : 0.4) + k * 1.7)) * Math.min(1.0F, grow);
-         Vec3 tip = crown.add(Math.cos(ang) * (tallOne ? 0.3 : 0.34), tall, Math.sin(ang) * (tallOne ? 0.3 : 0.34))
-                         .subtract(fw.scale(sweep * 0.25 * tall));                // flames lean back when you run
-         quad(vc, m, n, cam, b0, b1, tip, tip, dark, a * 0.9F, a * 0.9F, 0.0F, 0.0F);
-         beam(vc, m, n, cam, crown.add(Math.cos(ang) * r0, 0.0, Math.sin(ang) * r0), tip, tallOne ? 0.045F : 0.03F, EMBER, a * 0.75F, 0.5);
-      }
-
-      // ---- mantle of shadow: rippling, blown back by movement
-      for (int s = -1; s <= 1; s++) {
-         Vec3 start = back.add(lf.scale(0.12 * s));
-         Vec3 end = base.add(0.0, 0.2, 0.0).subtract(fw.scale(0.42 + 0.06 * Math.abs(s) + speed * 2.2)).add(lf.scale(0.28 * s)).add(0.0, speed * 1.2, 0.0);
-         Vec3 prev = start;
-         for (int k = 1; k <= 3; k++) {
-            double t = k / 3.0 * Math.min(1.0F, grow);
-            Vec3 q = start.add(end.subtract(start).scale(t)).add(lf.scale(Math.sin(now * 0.2 + k * 1.1 + s * 2.0) * 0.07 * k));
-            beam(vc, m, n, cam, prev, q, 0.2F - k * 0.03F, EMBER, a * 0.5F, 0.7);
-            prev = q;
-         }
-      }
-
+      // the crown of black flame and the cloak are pixel sprites now (PixelFx CROWN / MANTLE)
    }
 
    /**

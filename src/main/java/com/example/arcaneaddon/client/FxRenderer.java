@@ -93,9 +93,14 @@ public class FxRenderer extends FxBase {
       // the shapes still drawn the old smooth way are now pixel sprites only: fireballs and mercury balls (no liquid
       // ball), rings and walls, crescents, beams and trails, tornadoes and gusts. Slashes keep their glowing blade
       // (plus sprites); blocks, spikes, bones, lightning and cracks keep their solid shape (plus sprites).
-      if (p.shape == 19 || p.shape == 20 || p.shape == 0 || p.shape == 1 || p.shape == 2 || p.shape == 28 || p.shape == 29) p.pixelOnly = true;
+      boolean worldShape = p.shape == 19 || p.shape == 20 || p.shape == 0 || p.shape == 1 || p.shape == 2 || p.shape == 28 || p.shape == 29;
+      boolean keep = false;
+      if (worldShape && (p.palette & FxPacket.KEEP_SHAPE) != 0) { p.palette = (byte)(p.palette & 0x1F); keep = true; }
+      // wind (Yuno: Tornado Fang, Sylph's Breath, Spirit Dive...) keeps its 3D shape too - it looked best that way
+      if (worldShape && !keep && !p.pixelOnly && (p.palette & 0x1F) != 5) p.pixelOnly = true;
       if (p.shape == 42) { FxSync.cast(p.id, p.sweep, p.life); return; }
-      if (p.shape == 43) { ScreenCut.start(p.life, p.sweep); return; }   // Equinox hit you: your screen is cut in two   // a move's cast animation started (effect timing)
+      if (p.shape == 43) { ScreenCut.start(p.life, p.sweep); return; }
+      if (p.shape == 44) { PixelFx.ghostBlade(p); return; }   // Equinox's invisible sword   // Equinox hit you: your screen is cut in two   // a move's cast animation started (effect timing)
       if (FxSync.defer(p)) return;   // held back to land on the swing
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
       if (p.shape == 4) {   // Ki Sense mark: id = entity, palette = creature type, life = duration

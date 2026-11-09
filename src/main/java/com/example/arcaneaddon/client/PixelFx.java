@@ -61,6 +61,8 @@ public final class PixelFx {
     /** One sprite. kind: 0 streak, 1 shard, 2 ember, 3 tongue. dark = drawn black (anti magic), else glowing. */
     private static final class Spr {
         boolean see;   // part of a barrier seen from inside: drawn faint
+        float tone = 1.0F;   // brightness of a solid sprite (mercury's chrome shading)
+        float alpha = 1.0F;  // extra see-through-ness (Equinox's invisible blade)
         Vec3 pos, prev, vel, axis; float len, wid; int life, age, kind; boolean dark; float heat; float drag;
         int pal = 2; Vec3 curl; float curlRate; float darkAlpha = 0.92F; float grav;
         float spin; float grow = 1.0F; float pop; boolean twinkle, flicker; int seed = ThreadLocalRandom.current().nextInt(64);
@@ -78,6 +80,8 @@ public final class PixelFx {
     private static final List<Spr> SPRITES = new ArrayList<>();
     private static final int MAX = 2400;   // a hard cap that keeps big fights smooth
     private static int sigsThisTick = 0;
+    /** True while a slash (a move's main blade) emits: it may go past the cap, so the blade is never dropped. */
+    private static boolean priority = false;
 
     public static void spawn(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
@@ -88,7 +92,8 @@ public final class PixelFx {
         s.born = mc.level.getGameTime();
         SLASHES.add(s);
         int first = SPRITES.size();
-        emit(s, 0, true);   // the first frame is already a full blade
+        priority = true;
+        try { emit(s, 0, true); } finally { priority = false; }   // the first frame is already a full blade
         if (s.pal == 0) signature(0, s.c, s.d, s.r1);   // anti magic's star of blade slivers as it's released
         if (s.pal == 0) redOnly(first);
     }
@@ -491,6 +496,7 @@ public final class PixelFx {
                 }
             }
             case METAL -> {
+                if (pal == 11) { mercury(at, drift, axis, sz, q, r); return; }
                 if (q < 0.38) {        // solid pieces (Klaus: plates, Nozel: mercury drops, gold: coins), falling and spinning
                     Vec3 v = drift.scale(0.6).add(rnd(r, 0.08));
                     float s2 = sz * (float) r.nextDouble(0.35, 0.6);
@@ -557,6 +563,7 @@ public final class PixelFx {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int el = element(pal);
         if (R > 1.2) { shell(pal, el, at, v, R, r); return; }
+        if (pal == 11) { mercuryBall(at, v, R, r); return; }
         int n = cnt(Mth.clamp(R * 12.0, 6.0, 30.0));
         for (int i = 0; i < n; i++) {
             Vec3 dir = nz(rnd(r, 1.0), UP);
@@ -583,6 +590,61 @@ public final class PixelFx {
     }
 
     /**
+     * Chrome shading of liquid mercury by which way its surface faces: the bright sky reflected on top, a dark band
+     * at the horizon, the dimmer ground below - the look of a polished metal ball.
+     */
+    private static float chrome(double ny) {
+        if (ny > 0.3) return 1.45F;
+        if (ny > 0.0) return 0.55F + (float) (ny / 0.3) * 0.9F;
+        if (ny > -0.18) return 0.38F;
+        return 0.85F;
+    }
+
+    /** One piece of liquid mercury: a solid chrome blob, a falling bead or a sharp white glint. */
+    private static void mercury(Vec3 at, Vec3 drift, Vec3 axis, float sz, double q, ThreadLocalRandom r) {
+        Spr p;
+        if (q < 0.62) {
+            Vec3 v = drift.scale(0.7).add(rnd(r, 0.03));
+            float s2 = sz * (float) r.nextDouble(0.45, 0.85);
+            p = spr(at, v, v.lengthSqr() > 1.0E-4 ? v : axis, K_DROP, s2 * 1.25F, s2, r.nextInt(4, 9));
+            p.dark = true; p.darkAlpha = 1.0F; p.drag = 0.9F; p.grav = -0.006F;
+            p.tone = chrome(r.nextDouble(-1, 1));
+        } else if (q < 0.86) {
+            Vec3 v = drift.scale(0.4).add(rnd(r, 0.04)).add(0, -0.02, 0);
+            float s2 = sz * (float) r.nextDouble(0.16, 0.28);
+            p = spr(at, v, new Vec3(0, -1, 0), K_DROP, s2 * 1.4F, s2, r.nextInt(8, 15));
+            p.dark = true; p.darkAlpha = 1.0F; p.grav = -0.02F; p.drag = 0.96F;
+            p.tone = r.nextBoolean() ? 1.4F : 0.75F;
+        } else {
+            p = spr(at.add(rnd(r, sz * 0.2)), drift.scale(0.9), axis, K_STAR, sz * 0.32F, sz * 0.32F, r.nextInt(2, 4));
+            p.heat = 1.0F; p.twinkle = true;
+        }
+        p.pal = 11;
+        add(p);
+    }
+
+    /** A ball of mercury: solid chrome drops packed into a sphere, shaded like a polished metal ball, glints on top. */
+    private static void mercuryBall(Vec3 at, Vec3 v, double R, ThreadLocalRandom r) {
+        int n = cnt(Mth.clamp(R * 16.0, 8.0, 34.0));
+        for (int i = 0; i < n; i++) {
+            Vec3 dir = nz(rnd(r, 1.0), UP);
+            double rr = R * Math.sqrt(r.nextDouble(0.35, 1.0));
+            float sz = (float) (R * r.nextDouble(0.42, 0.62));
+            Spr s = spr(at.add(dir.scale(rr * 0.75)), v, dir.cross(UP).lengthSqr() > 1.0E-6 ? dir.cross(UP) : UP, K_DROP, sz, sz * 0.9F, r.nextInt(2, 4));
+            s.dark = true; s.darkAlpha = 1.0F; s.drag = 1.0F; s.grav = 0.0F;
+            s.tone = chrome(dir.y);
+            s.pal = 11;
+            add(s);
+        }
+        if (r.nextInt(3) == 0) {   // the highlight: a hard white star high on the side facing the sky
+            Vec3 o = at.add(nz(new Vec3(r.nextGaussian() * 0.4, 1.0, r.nextGaussian() * 0.4), UP).scale(R * 0.7));
+            Spr g = spr(o, v, UP, K_STAR, (float) R * 0.35F, (float) R * 0.35F, 2);
+            g.heat = 1.0F; g.pal = 11; g.twinkle = true;
+            add(g);
+        }
+    }
+
+    /**
      * A big ball (a barrier like the Mercury Sphere): only its SURFACE is drawn, in small sprites with gaps between
      * them, so you can always see out of it from inside and see in from outside. Seen from inside it is fainter still.
      */
@@ -598,9 +660,45 @@ public final class PixelFx {
             Spr s = spr(o, v.add(tan.scale(r.nextDouble(-0.02, 0.02))), tan, el == METAL ? (r.nextInt(3) == 0 ? K_STAR : K_DROP) : BIT[pal], sz, sz * 0.8F, r.nextInt(3, 6));
             s.heat = el == METAL ? 0.85F : 0.7F;
             if (el == METAL && s.kind == K_STAR) s.twinkle = true;
+            if (pal == 11 && s.kind == K_DROP) { s.dark = true; s.darkAlpha = inside ? 0.45F : 0.9F; s.tone = chrome(dir.y); }
             s.pal = pal; s.drag = 1.0F; s.grav = 0.0F; s.spin = (float) r.nextDouble(-0.2, 0.2);
             s.see = inside;
             add(s);
+        }
+    }
+
+    /**
+     * Equinox's invisible sword (FxPacket shape 44: c = hilt, d = along the blade, u = across it, r = length,
+     * r2 = width, life): the blade itself can't be seen - only its outline, picked out by faint pale glints along
+     * both edges that taper to the point, a hairline down its spine and a slow sheen sliding along it. Inside it is
+     * clear.
+     */
+    public static void ghostBlade(FxPacket p) {
+        if (Minecraft.getInstance().level == null || p.d == null || p.u == null) return;
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        Vec3 d = nz(p.d, UP), u = nz(p.u, new Vec3(1, 0, 0));
+        double L = Math.max(0.5, p.r), W = Math.max(0.05, p.r2);
+        int life = Math.max(2, p.life);
+        int n = (int) Mth.clamp(L * 7.0, 10.0, 110.0);
+        for (int i = 0; i < n; i++) {
+            double t = r.nextDouble();
+            double w = W * 0.5 * (t < 0.82 ? 1.0 : (1.0 - t) / 0.18);   // straight edges, then the point
+            int side = r.nextBoolean() ? 1 : -1;
+            Vec3 at = p.c.add(d.scale(L * t)).add(u.scale(w * side));
+            Vec3 along = t < 0.82 ? d : d.scale(0.8).subtract(u.scale(side * 0.6));
+            Spr e = spr(at, Vec3.ZERO, along, K_STREAK, (float) Math.min(0.5, L * 0.04 + 0.12), 0.035F, life + r.nextInt(0, 3));
+            e.pal = 6; e.heat = 0.62F; e.alpha = 0.55F; e.pop = 1.0F;
+            add(e);
+        }
+        for (int i = 0; i < n / 3; i++) {   // the spine: a hairline down the middle
+            Spr e = spr(p.c.add(d.scale(L * r.nextDouble(0.0, 0.95))), Vec3.ZERO, d, K_STREAK, (float) Math.min(0.6, L * 0.05 + 0.12), 0.02F, life);
+            e.pal = 10; e.heat = 0.6F; e.alpha = 0.35F;
+            add(e);
+        }
+        for (int i = 0; i < 2; i++) {        // the sheen: a brighter glint sliding from hilt to tip
+            Spr g = spr(p.c.add(u.scale(W * 0.5 * (i == 0 ? 1 : -1))), d.scale(L / (double) life), d, K_STREAK, (float) Math.min(1.2, L * 0.12), 0.05F, life);
+            g.pal = 6; g.heat = 0.95F; g.alpha = 0.8F; g.drag = 1.0F;
+            add(g);
         }
     }
 
@@ -1042,7 +1140,7 @@ public final class PixelFx {
     }
 
     // ------------------------------------------------------------------ forms and auras worn by an entity
-    private static final int BODY = 0, HANDS = 1, RIGHT_HAND = 2, SHELL = 3, ZONE = 4, ORBIT = 5, RING = 6, GLINT = 7, WING = 8;
+    private static final int BODY = 0, HANDS = 1, RIGHT_HAND = 2, SHELL = 3, ZONE = 4, ORBIT = 5, RING = 6, GLINT = 7, WING = 8, CROWN = 9, MANTLE = 10;
 
     private static final class Att { int id, shape, pal, mode; double end; float r, h; float rate; }
 
@@ -1073,7 +1171,7 @@ public final class PixelFx {
             case 15 -> { mode = SHELL; pal = 10; rate = 4.0F; }                                    // Black Cocoon
             case 16 -> { mode = BODY; pal = 10; rate = 2.0F; }                                     // Black Blade
             case 17 -> { mode = ZONE; pal = Mth.clamp(p.palette, 0, 15); rate = 1.0F; }            // Mana Zone
-            case 18 -> { mode = BODY; pal = 5; rate = 2.5F; }                                      // Spirit Dive
+            case 18 -> { mode = BODY; pal = 5; rate = 1.0F; }                                      // Spirit Dive
             case 21 -> { mode = BODY; pal = flamePal(p.palette); rate = 1.2F; }                    // burning
             case 22 -> { mode = HANDS; pal = flamePal(p.palette); rate = 2.0F; }                   // Flame Knuckles
             case 24 -> { mode = BODY; pal = 13; rate = 2.5F; }                                     // Thunder God Mode
@@ -1089,7 +1187,8 @@ public final class PixelFx {
         }
         long key = (long) p.id << 8 | (p.shape & 0xFF);
         long wingKey = (long) p.id << 8 | 106;   // Devil Union's wing sheds the same sprites as its aura
-        if (p.shape == 6 && p.life <= 0) ATTACH.remove(wingKey);
+        long crownKey = (long) p.id << 8 | 107, mantleKey = (long) p.id << 8 | 108;   // Devil Union's crown and cloak
+        if (p.shape == 6 && p.life <= 0) { ATTACH.remove(wingKey); ATTACH.remove(crownKey); ATTACH.remove(mantleKey); }
         if (p.life <= 0) { ATTACH.remove(key); return; }
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
@@ -1103,6 +1202,12 @@ public final class PixelFx {
             Att w = new Att();
             w.id = p.id; w.shape = 106; w.pal = 9; w.mode = WING; w.rate = 3.0F; w.end = a.end;
             ATTACH.put(wingKey, w);
+            Att c = new Att();
+            c.id = p.id; c.shape = 107; c.pal = 9; c.mode = CROWN; c.rate = 5.0F; c.end = a.end;
+            ATTACH.put(crownKey, c);
+            Att k = new Att();
+            k.id = p.id; k.shape = 108; k.pal = 9; k.mode = MANTLE; k.rate = 6.0F; k.end = a.end;
+            ATTACH.put(mantleKey, k);
         }
     }
 
@@ -1120,7 +1225,7 @@ public final class PixelFx {
             Vec3 base = e.position(), mv = e.getDeltaMovement();
             int el = element(a.pal);
             Vec3 rise = el == FLAME || el == DARK ? new Vec3(0, 0.04, 0) : (el == METAL || el == BONE ? Vec3.ZERO : new Vec3(0, 0.015, 0));
-            int n = cnt(a.rate * (self && (a.mode == BODY || a.mode == GLINT) ? 0.35 : 1.0));
+            int n = cnt(a.rate * (self && (a.mode == BODY || a.mode == GLINT || a.mode == HANDS || a.mode == RIGHT_HAND) ? 0.3 : 1.0));   // lighter in your own view
             for (int i = 0; i < n; i++) {
                 switch (a.mode) {
                     case BODY, GLINT -> {
@@ -1164,6 +1269,33 @@ public final class PixelFx {
                         Vec3 o = base.add(0, h * 0.78, 0).subtract(fw.scale(0.3)).add(lf.scale(0.1 + u * 1.7)).add(0, -0.6 + v * (0.9 + u * 0.9), 0);
                         one(a.pal, o, mv.scale(0.5).add(0, 0.02, 0), lf.scale(0.6).add(0, 1, 0), 0.28);
                     }
+                    case CROWN -> {   // a crown of black flame: tongues standing round the head, three taller points
+                        if (self) break;   // never in your own view
+                        int k = r.nextInt(10);
+                        boolean tall = k % 3 == 0 && k < 9;
+                        double ang = Math.PI * 2.0 * k / 10.0 + now * 0.025 + r.nextDouble(-0.12, 0.12);
+                        Vec3 o = base.add(Math.cos(ang) * 0.27, h + 0.03, Math.sin(ang) * 0.27);
+                        double up = tall ? r.nextDouble(0.035, 0.06) : r.nextDouble(0.018, 0.035);
+                        Spr f = spr(o, mv.scale(0.6).add(0, up, 0), UP, K_TONGUE, tall ? 0.26F : 0.17F, tall ? 0.09F : 0.07F, r.nextInt(5, 9));
+                        f.dark = r.nextFloat() < 0.6F; f.darkAlpha = 1.0F; f.heat = 0.55F; f.drag = 0.86F; f.pal = 9;
+                        add(f);
+                    }
+                    case MANTLE -> {  // a cloak of black flame down the back, streaming out behind as you move
+                        double yaw = e instanceof net.minecraft.world.entity.LivingEntity le ? le.yBodyRot : e.getYRot();
+                        if (e instanceof net.minecraft.world.entity.player.Player pl) yaw -= FxRenderer.animYawDeg(pl, 1.0F);
+                        double by = Math.toRadians(yaw);
+                        Vec3 fw = new Vec3(-Math.sin(by), 0.0, Math.cos(by)), lf = new Vec3(Math.cos(by), 0.0, Math.sin(by));
+                        double sp = Math.min(0.5, Math.sqrt(mv.x * mv.x + mv.z * mv.z));
+                        double u = r.nextDouble(), side = r.nextDouble(-1, 1);
+                        // from the shoulders (u = 0) down to the calves (u = 1), widening and pushed back by speed
+                        Vec3 o = base.add(0, h * (0.82 - 0.62 * u), 0).subtract(fw.scale(0.2 + u * (0.18 + sp * 1.6)))
+                                .add(lf.scale(side * (0.22 + 0.18 * u)));
+                        Vec3 vel = fw.scale(-0.015 - sp * 0.4).add(0, 0.006 - 0.012 * u, 0).add(lf.scale(Math.sin(now * 0.2 + u * 4) * 0.01));
+                        Spr c = spr(o, vel, new Vec3(0, -1, 0).subtract(fw.scale(0.4 + sp * 2)), r.nextFloat() < 0.7F ? K_TONGUE : K_STREAK,
+                                (float) r.nextDouble(0.22, 0.36), (float) r.nextDouble(0.1, 0.16), r.nextInt(4, 8));
+                        c.dark = r.nextFloat() < 0.75F; c.darkAlpha = self ? 0.5F : 0.95F; c.heat = 0.5F; c.drag = 0.9F; c.pal = 9;
+                        add(c);
+                    }
                     case RING -> {
                         double ang = r.nextDouble(Math.PI * 2), R = Math.max(1.0, a.r) * r.nextDouble(0.3, 0.9);
                         one(a.pal, base.add(Math.cos(ang) * R, h * r.nextDouble(0.3, 0.8), Math.sin(ang) * R), mv.scale(0.5), new Vec3(Math.cos(ang), 0, Math.sin(ang)), 0.3);
@@ -1190,7 +1322,7 @@ public final class PixelFx {
     private static void add(Spr p) {
         if (p.heat > maxHeat(p.pal)) p.heat = maxHeat(p.pal);
         if (p.pop == 0 && p.grow == 1.0F) p.pop = 1.5F;   // every sprite scales in smoothly - nothing pops into being
-        if (SPRITES.size() >= MAX) return;   // full: drop the newest instead of shifting the whole list
+        if (SPRITES.size() >= (priority ? MAX + 1600 : MAX)) return;   // full: drop the newest (a move's blade gets extra room)
         if (p.age == 0 && p.vel.lengthSqr() > 1.0E-4) {   // spread along the path it moved this tick, so no stepping
             double u = ThreadLocalRandom.current().nextDouble();
             p.pos = p.pos.subtract(p.vel.scale(u));
@@ -1211,7 +1343,8 @@ public final class PixelFx {
             double age = now - s.born;
             if (s.dead || age > s.life) { it.remove(); continue; }
             int first = SPRITES.size();
-            emit(s, age, false);
+            priority = true;
+            try { emit(s, age, false); } finally { priority = false; }
             if (s.pal == 0) redOnly(first);
         }
         // compact in place (one pass) instead of removing one at a time - thousands of sprites die every second
@@ -1296,8 +1429,12 @@ public final class PixelFx {
     private static float fadeOf(Spr p, Vec3 pos, Vec3 cam, float pt, float opacity) {
         float fade = opacity;   // full strength all its life: the dither dissolve takes it away (no fading in or out)
         double dc = pos.distanceTo(cam);
-        if (dc < 2.2) fade *= (float) Mth.clamp((dc - 0.6) / 1.6, 0.0, 1.0);   // never smother the camera
+        // never smother the camera: a sprite fades out as it nears you, the bigger it is the earlier
+        double big = Math.max(p.len, p.wid) * p.scaleNow(pt);
+        double near = 0.8 + big * 1.6, full = near + 1.6 + big;
+        if (dc < full) fade *= (float) Mth.clamp((dc - near) / (full - near), 0.0, 1.0);
         if (p.see) fade *= 0.35F;
+        fade *= p.alpha;
         if (p.twinkle) fade *= 0.55F + 0.45F * (float) Math.abs(Math.sin((p.age + pt) * 1.3 + p.seed));
         return fade;
     }
@@ -1354,9 +1491,9 @@ public final class PixelFx {
         }
         float r, g, bl, al = 1.0F;
         switch (layer) {
-            case L_SOLID -> { float[] sc = SOLID[Mth.clamp(p.pal, 0, 15)]; r = sc[0]; g = sc[1]; bl = sc[2]; al = p.darkAlpha * fade; }
+            case L_SOLID -> { float[] sc = SOLID[Mth.clamp(p.pal, 0, 15)]; r = Math.min(1F, sc[0] * p.tone); g = Math.min(1F, sc[1] * p.tone); bl = Math.min(1F, sc[2] * p.tone); al = p.darkAlpha * fade; }
             case L_SOLID_RIM -> {   // the glowing edge round a solid sprite: strong on black magic, a faint sheen on metal and bone
-                float k = (element(p.pal) == DARK ? 0.95F : 0.45F) * fade * Math.min(1.0F, p.darkAlpha + 0.2F);
+                float k = (element(p.pal) == DARK ? 0.95F : (p.pal == 11 ? 0.18F : 0.45F)) * fade * Math.min(1.0F, p.darkAlpha + 0.2F);
                 float[] c = glow(p.pal, 0.6F);
                 r = c[0] * k; g = c[1] * k; bl = c[2] * k;
             }
