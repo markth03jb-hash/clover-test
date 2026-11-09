@@ -77,6 +77,26 @@ public final class SpaceFx {
         return p.id;
     }
 
+    /** Space's own geometry: a cube of cut-out space, drawn as hard edges (threads are soft curves - space is straight lines and corners). */
+    static void cube(ServerLevel sl, Vec3 c, float h, int life) {
+        int[][] edges = {{0, 1}, {1, 3}, {3, 2}, {2, 0}, {4, 5}, {5, 7}, {7, 6}, {6, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
+        Vec3[] k = new Vec3[8];
+        for (int i = 0; i < 8; i++) k[i] = c.add((i & 1) != 0 ? h : -h, (i & 4) != 0 ? h : -h, (i & 2) != 0 ? h : -h);
+        for (int[] e : edges) {
+            FxSend.trail(sl, S, k[e[0]], k[e[1]], 0.05f, life);
+            FxSend.trail(sl, Fx.SILVER, k[e[0]], k[e[1]], 0.012f, life);
+        }
+    }
+
+    /** A flat rectangular pane of space, outlined, with one bright diagonal glint across it. */
+    static void pane(ServerLevel sl, Vec3 c, Vec3 rt, Vec3 up, float hw, float hh, int life) {
+        Vec3 a = c.add(rt.scale(-hw)).add(up.scale(-hh)), b = c.add(rt.scale(hw)).add(up.scale(-hh));
+        Vec3 d = c.add(rt.scale(-hw)).add(up.scale(hh)), e = c.add(rt.scale(hw)).add(up.scale(hh));
+        FxSend.trail(sl, S, a, b, 0.05f, life); FxSend.trail(sl, S, b, e, 0.05f, life);
+        FxSend.trail(sl, S, e, d, 0.05f, life); FxSend.trail(sl, S, d, a, 0.05f, life);
+        FxSend.beam(sl, Fx.SILVER, a.add(rt.scale(hw * 0.5)), e.subtract(rt.scale(hw * 0.5)), 0.03f, Math.max(2, life / 2));
+    }
+
     private static void whoosh(ServerLevel sl, Vec3 at) {
         sound(sl, at, SoundEvents.ENDERMAN_TELEPORT, 0.7f, 1.3f);
         sound(sl, at, SoundEvents.AMETHYST_BLOCK_CHIME, 0.8f, 0.6f);
@@ -146,8 +166,9 @@ public final class SpaceFx {
         if (to == null) return;
         gate(sl, p.position().add(0, 1, 0).add(look.scale(0.6)), look.scale(-1), 0.7f, 1.1f, 12, 0);
         gate(sl, to.add(0, 1, 0), look, 0.7f, 1.1f, 12, 0);
+        cube(sl, p.position().add(0, 0.9, 0), 0.6f, 8);   // the cube of space you stood in is cut out and left behind
         whoosh(sl, p.position());
-        AstaFx.later(3, () -> { if (alive(p)) { move(p, to, yawOf(look)); whoosh(sl, to); } });
+        AstaFx.later(3, () -> { if (alive(p)) { move(p, to, yawOf(look)); whoosh(sl, to); FxSend.ring(sl, S, to.add(0, 0.05, 0), 0.2f, 1.8f, 0.05f, 8); } });
     }
 
     // ================================================================== 3. Escort Gate
@@ -158,21 +179,44 @@ public final class SpaceFx {
         Vec3 to = safe(sl, hit.subtract(p.getLookAngle().scale(1.0)), p);
         if (to == null) return;
         List<LivingEntity> group = ThreadFx.allies(p, 6);
-        // a wide gate opens before the group, its twin at the far end
-        gate(sl, p.position().add(look.scale(1.5)).add(0, 1.3, 0), look.scale(-1), 1.6f, 1.6f, 30, 0);
-        gate(sl, to.add(0, 1.3, 0), look, 1.6f, 1.6f, 30, 0);
+        // a great gate, tall enough to walk a whole squad through, opens before the group - and a corridor of
+        // shrinking gates runs from it to its twin at the far end, the way the group travels
+        Vec3 from = p.position().add(look.scale(2.0)).add(0, 1.7, 0);
+        Vec3 far = to.add(0, 1.7, 0);
+        gate(sl, from, look.scale(-1), 2.4f, 2.7f, 36, 0);
+        gate(sl, far, look, 2.4f, 2.7f, 36, 0);
+        pane(sl, from, rightOf(look), new Vec3(0, 1, 0), 2.7f, 3.0f, 20);
+        pane(sl, far, rightOf(look), new Vec3(0, 1, 0), 2.7f, 3.0f, 20);
+        int rungs = (int) Math.max(3, Math.min(9, from.distanceTo(far) / 6.0));
+        for (int k = 1; k <= rungs; k++) {
+            final int kk = k;
+            Vec3 at = from.add(far.subtract(from).scale(k / (double) (rungs + 1)));
+            float sz = 2.2f - 1.2f * (float) Math.sin(Math.PI * k / (rungs + 1));
+            AstaFx.later(k, () -> gate(sl, at, look, sz, sz * 1.1f, 20, 0));
+        }
         whoosh(sl, p.position());
-        AstaFx.later(8, () -> {
-            int i = 0;
-            for (LivingEntity e : group) {
-                if (!e.isAlive()) continue;
-                double a = i++ * 2.4;
-                Vec3 spot = i == 1 ? to : safe(sl, to.add(Math.cos(a) * 1.4, 0, Math.sin(a) * 1.4), e);
-                if (spot != null) move(e, spot, yawOf(look));
-            }
-            whoosh(sl, to);
-        });
+        sound(sl, p.position(), SoundEvents.PORTAL_TRAVEL, 0.3f, 1.6f);
+        int idx = 0;
+        for (LivingEntity e : group) {   // each body is drawn toward the gate in turn, one after another
+            final LivingEntity ee = e;
+            final int i0 = idx++;
+            AstaFx.later(6 + i0 * 3, () -> {
+                if (!ee.isAlive()) return;
+                Vec3 spot = i0 == 0 ? to : safe(sl, to.add(Math.cos(i0 * 2.4) * 1.8, 0, Math.sin(i0 * 2.4) * 1.8), ee);
+                if (spot == null) return;
+                cube(sl, ee.position().add(0, ee.getBbHeight() * 0.5, 0), Math.max(0.5f, ee.getBbWidth() * 0.8f), 6);
+                move(ee, spot, yawOf(look));
+                cube(sl, spot.add(0, ee.getBbHeight() * 0.5, 0), Math.max(0.5f, ee.getBbWidth() * 0.8f), 6);
+                FxSend.ring(sl, S, spot.add(0, 0.05, 0), 0.2f, 2.0f, 0.05f, 8);
+                // carried by space itself: a burst of speed for the whole squad on arrival
+                TimedModifiers.apply(ee, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED, ESCORT_SPEED, "Escort Gate", 0.25,
+                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL, 160);
+                whoosh(sl, spot);
+            });
+        }
     }
+
+    private static final UUID ESCORT_SPEED = UUID.fromString("c4a2d7a0-6a3b-4f6e-8d11-7b9e5a100301");
 
     // ================================================================== 4. Waypoint
     public static void waypoint(ServerPlayer p, float power) {
@@ -215,6 +259,7 @@ public final class SpaceFx {
         int height = ComboChain.boosted(p, "sky_drop") ? 30 : 18;
         for (LivingEntity t : hit) {
             Vec3 floor = t.position().add(0, 0.05, 0);
+            cube(sl, floor.add(0, t.getBbHeight() * 0.5, 0), Math.max(0.7f, t.getBbWidth() * 0.9f), 8);   // the space around them is cut out
             gate(sl, floor, new Vec3(0, 1, 0), Math.max(0.9f, t.getBbWidth()), Math.max(0.9f, t.getBbWidth()), 14, 0);
             whoosh(sl, floor);
             AstaFx.later(6, () -> {
@@ -237,6 +282,8 @@ public final class SpaceFx {
         r.owner = p; r.c = p.getEyePosition().add(look.scale(2.0)); r.n = look; r.until = sl.getGameTime() + 100;
         REDIRECTS.add(r);
         gate(sl, r.c, look, 1.3f, 1.3f, 100, 0);
+        Vec3 rr = rightOf(look);
+        pane(sl, r.c.add(look.scale(0.15)), rr, rr.cross(look).normalize(), 1.5f, 1.5f, 40);   // a mirror pane of space in front of the gate
         whoosh(sl, r.c);
     }
 
@@ -263,6 +310,7 @@ public final class SpaceFx {
         if (to == null) return;
         e.setCanceled(true);
         c[0]--;
+        cube(sl, p.position().add(0, 0.9, 0), 0.55f, 10);   // an afterimage of cut space where the blow landed
         gate(sl, p.position().add(0, 1, 0), side.normalize(), 0.7f, 1.1f, 10, 0);
         gate(sl, to.add(0, 1, 0), side.normalize().scale(-1), 0.7f, 1.1f, 10, 0);
         move(p, to, p.getYRot());
@@ -273,6 +321,7 @@ public final class SpaceFx {
 
     // ================================================================== 8. Space Deletion
     public static void spaceDeletion(ServerPlayer p, float power) {
+        if (LimitBreak.active(p)) { LimitFx.dimensionalCollapse(p, power); return; }   // Surpassing Limits: the evolved ultimate
         ServerLevel sl = p.serverLevel();
         LivingEntity t = aimed(p, 36, 14);
         Vec3 c = t != null ? mid(t) : lookPoint(p, 30);

@@ -1,7 +1,27 @@
-Iron Spell Grimoire v1.66.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.67.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.67.0
+- Lightning Step flashes THROUGH the enemy you aim at and stops behind them, already turned back toward them.
+- Bone Whips redrawn: real whips of vertebrae grow from your back, coil round you while they wait, snap out to
+  their marks and crack (ring, splinters, sound) - no more client-held whips.
+- Ribcage Prison remade: the ribs erupt round the circle in a wave, a tall third row closes into a dome, rings of
+  bone tighten round the captive and a ring of vertebrae turns above their head.
+- Dimension Slash is smaller (a tighter, shorter wave that only cuts what is in its path).
+- Puppet Strings are redrawn every other tick from the target's current position, so the strings ride the body up
+  and down and jerk limb by limb like a real marionette.
+- The Battle Dress is not drawn at all in your own first-person view.
+- Red Thread of Fate is easier: it lasts 20 s, covers allies within 14 blocks, turns aside the first THREE blows
+  (any hit of 2+ damage) and the HUD counts the charges left.
+- Escort Gate reworked: a great two-block-wide gate and its twin joined by a corridor of shrinking gates; every ally
+  is drawn through in turn and arrives with a 8 s burst of speed.
+- Spatial Grimoire has its own look now: hard-edged cubes and panes of cut-out space (Short Hop, Evasion Gate,
+  Sky Drop, Redirect Gate, Escort Gate) instead of soft thread-like lines.
+- Both new grimoires get their Surpassing Limits ultimates, like the others: Vanessa's Great Loom (every enemy
+  within 22 blocks is drawn in on red threads and cut) and Finral's Dimensional Collapse (a vast cube of space
+  closes in on everything inside it and is deleted).
 
 NEW IN 1.66.0
 - Demon Slayer's Sky Splitter is now only the slash: one towering red crescent with a slim echo, no rift and no wall.

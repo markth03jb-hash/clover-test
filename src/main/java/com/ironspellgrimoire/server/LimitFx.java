@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -597,6 +598,115 @@ public final class LimitFx {
             });
             k++;
         }
+    }
+
+    // ---------------------------------------------------------------- Vanessa: Red Thread of Fate - the Great Loom
+    /**
+     * Vanessa's evolved ultimate (replaces Red Thread of Fate while surpassing limits): a vast loom of red thread opens
+     * over you. Every enemy within 22 blocks is caught on a thread and drawn to you, held while the loom turns, then
+     * every thread draws tight at once. You and every ally within 14 blocks are guarded by six charges for 30 seconds.
+     */
+    public static void fateLoom(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        ThreadFx.fateGuard(p, 600, 3);   // the normal guard, with three more blows turned aside
+        Vec3 c = p.position().add(0, 0.1, 0);
+        final double R = 22;
+        for (int k = 0; k < 6; k++) {   // the loom: rings of red thread racing out over the ground
+            final int kk = k;
+            AstaFx.later(k * 2, () -> {
+                FxSend.ring(sl, 16, c, kk * 4f, kk * 4f + 0.06f, 0.04f, 40);
+                for (int i = 0; i < 12; i++) {
+                    double a0 = i * Math.PI / 6 + kk * 0.3;
+                    ThreadFx.redThread(sl, c, c.add(Math.cos(a0) * (kk + 1) * 3.6, 0, Math.sin(a0) * (kk + 1) * 3.6), 20);
+                }
+            });
+        }
+        if (!foesNear(sl, p, c.add(0, 1, 0), R).isEmpty()) FxSend.impactFrame(sl, c, 4, FxSend.FRAME_VANESSA, 32);
+        sound(sl, c, SoundEvents.AMETHYST_BLOCK_RESONATE, 1.4f, 0.5f);
+        sound(sl, c, SoundEvents.BELL_RESONATE, 1f, 0.8f);
+        Set<UUID> caught = new HashSet<>();
+        for (int t = 0; t < 70; t++) {
+            final int tt = t;
+            AstaFx.later(4 + t, () -> {
+                if (!alive(p)) return;
+                for (LivingEntity f : foesNear(sl, p, p.position().add(0, 1, 0), R)) {
+                    if (tt < 24) caught.add(f.getUUID());
+                    if (!caught.contains(f.getUUID())) continue;
+                    Vec3 to = p.position().subtract(f.position());
+                    double d = to.length();
+                    if (tt < 50 && d > 3.5) f.setDeltaMovement(flat(to).scale(Math.min(0.9, 0.2 + d * 0.03)).add(0, 0.05, 0));   // drawn in along the thread
+                    else f.setDeltaMovement(0, 0.0, 0);
+                    f.hurtMarked = true;
+                    if (tt % 3 == 0) ThreadFx.redThread(sl, p.position().add(0, 1.3, 0), mid(f), 4);
+                    if (tt == 60) {   // every thread draws tight
+                        AstaFx.damage(p, f, power * 1.9f, "red_thread_of_fate");
+                        FxSend.ring(sl, 16, mid(f), 0.3f, 2.2f, 0.05f, 7);
+                        Fx.impact(sl, 16, mid(f), 1.3f);
+                    }
+                }
+                if (tt == 60) {
+                    FxLib.shockRing(sl, 16, c, 6f);
+                    sound(sl, c, SoundEvents.GENERIC_EXPLODE, 0.7f, 1.5f);
+                }
+            });
+        }
+    }
+
+    // ---------------------------------------------------------------- Finral: Space Deletion - Dimensional Collapse
+    /**
+     * Finral's evolved ultimate (replaces Space Deletion while surpassing limits): a vast cube of space is cut out around
+     * where you aim (11 blocks across), everything inside is drawn to its centre and held, the cube closes in on itself,
+     * and then it is deleted - everything in it takes a colossal blow and the cube shatters outward in shards of space.
+     */
+    public static void dimensionalCollapse(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 c = aimPoint(p, 34).add(0, 3, 0);
+        final float H = 5.5f;
+        SpaceFx.cube(sl, c, H, 34);
+        SpaceFx.cube(sl, c, H * 0.8f, 30);
+        for (int i = 0; i < 4; i++) {
+            Vec3 face = i == 0 ? new Vec3(1, 0, 0) : i == 1 ? new Vec3(-1, 0, 0) : i == 2 ? new Vec3(0, 0, 1) : new Vec3(0, 0, -1);
+            SpaceFx.gate(sl, c.add(face.scale(H)), face.scale(-1), H * 0.9f, H * 0.9f, 34, 0);   // a gate in every wall of the cube
+        }
+        sound(sl, c, SoundEvents.WARDEN_SONIC_CHARGE, 1.2f, 0.5f);
+        sound(sl, c, SoundEvents.PORTAL_TRIGGER, 0.8f, 1.2f);
+        for (int t = 0; t < 30; t++) {
+            final int tt = t;
+            AstaFx.later(t, () -> {
+                if (!alive(p)) return;
+                for (LivingEntity e : foesNear(sl, p, c, H * 1.9)) {
+                    Vec3 in = c.subtract(mid(e));
+                    if (in.length() < 0.6) { e.setDeltaMovement(Vec3.ZERO); e.hurtMarked = true; continue; }
+                    e.setDeltaMovement(in.normalize().scale(Math.min(0.8, 0.15 + tt * 0.02)));
+                    e.hurtMarked = true;
+                }
+                if (tt >= 22) SpaceFx.cube(sl, c, H * (1.0f - (tt - 22) * 0.1f), 2);   // the cube closes in on itself
+            });
+        }
+        AstaFx.later(31, () -> {
+            if (!alive(p)) return;
+            boolean any = false;
+            for (LivingEntity e : foesNear(sl, p, c, H * 1.9)) {
+                AstaFx.damage(p, e, power * 2.4f, "space_deletion");
+                e.setDeltaMovement(Vec3.ZERO); e.hurtMarked = true;
+                any = true;
+            }
+            if (any) FxSend.impactFrame(sl, c, 4, FxSend.FRAME_FINRAL, 44);
+            Fx.flash(sl, c, 3.4f);
+            Vec3 rt = new Vec3(1, 0, 0), up = new Vec3(0, 1, 0), face = new Vec3(0, 0, 1);
+            int seed = (int) (sl.getGameTime() & 0xFFFF);
+            for (int i = 0; i < 14; i++) {   // the cube shatters outward in shards of space
+                double a0 = i * Math.PI / 7;
+                Vec3 along = rt.scale(Math.cos(a0)).add(up.scale(Math.sin(a0)));
+                FxSend.cracks(sl, i % 2 == 0 ? 8 : 17, c.add(along.scale(H * 0.8)), along, face, H * 0.6f, 20, false, seed + i * 19);
+            }
+            FxSend.ring(sl, 17, c, 0.2f, H * 2.6f, 0.3f, 12);
+            FxSend.ring(sl, 8, c, 0.4f, H * 3.4f, 0.1f, 14);
+            FxSend.shake(sl, c, 1.3f, 16, 48);
+            sound(sl, c, SoundEvents.GLASS_BREAK, 1.5f, 0.5f);
+            sound(sl, c, SoundEvents.GENERIC_EXPLODE, 1.2f, 0.6f);
+            SpaceFx.gate(sl, c, face, 1.0f, 1.0f, 16, 1);   // a hollow where the cube was
+        });
     }
 
     // ---------------------------------------------------------------- Klaus: Steel Fortress

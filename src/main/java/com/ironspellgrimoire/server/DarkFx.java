@@ -235,17 +235,17 @@ public class DarkFx {
             if (inZone(p)) { zoneDimension(p, sl, power); return; }
             Vec3 start = p.getEyePosition().add(0, -0.25, 0);
             Vec3 dir = p.getLookAngle();
-            Vec3 end = start.add(dir.scale(40));
+            Vec3 end = start.add(dir.scale(32));
             Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
             Vec3 left = rt.scale(-1);
             final float SPEED = 2.6f;
             // everything the wave of darkness passes through is cut as it arrives (a wide, tall path)
-            for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(4.5))) {
+            for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(3.2))) {
                 Vec3 m = mid(t), on = closestOnSegment(start, end, m);
                 Vec3 off = m.subtract(on);
                 double side = Math.abs(off.dot(rt)), high = Math.abs(off.dot(up));
                 double along = on.distanceTo(start);
-                if (side > 2.5 + along * 0.12 || high > 2.4) continue;   // the wave widens as it travels
+                if (side > 1.6 + along * 0.05 || high > 1.7) continue;   // a tighter wave: it only cuts what is actually in its path   // the wave widens as it travels
                 final LivingEntity tt = t;
                 AstaFx.later((int) (along / SPEED), () -> {
                     if (!tt.isAlive() || !alive(p)) return;
@@ -257,8 +257,8 @@ public class DarkFx {
             // the draw and the release: one clean, solid slash - a black blade of darkness with a white-hot edge,
             // drawn left to right as you cut, flying forward and growing as it goes
             Vec3 o = start.add(dir.scale(1.2));
-            FxSend.slash(sl, D, start.add(dir.scale(0.8)), dir, rt, 2.8f, 3.4f, 6, 0f, 1.0f);   // the swing itself, at your blade
-            FxSend.slash(sl, D, o, dir, rt, 4.5f, 13.0f, 18, SPEED, 1.15f);                      // the slash that flies: big, blade-thin
+            FxSend.slash(sl, D, start.add(dir.scale(0.8)), dir, rt, 1.8f, 2.2f, 6, 0f, 1.0f);   // the swing itself, at your blade
+            FxSend.slash(sl, D, o, dir, rt, 2.6f, 6.5f, 14, SPEED, 1.0f);                      // the slash that flies: big, blade-thin
             // after it passes: one clean white hairline left through space, fading
             AstaFx.later(3, () -> {
                 FxSend.trail(sl, S, o, end, 0.03f, 14);

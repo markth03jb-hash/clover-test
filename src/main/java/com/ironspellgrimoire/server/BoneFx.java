@@ -322,7 +322,6 @@ public class BoneFx {
         int n = u ? 6 : 4;
         double R = u ? 14 : 9;
         double period = u ? 7 : 10;   // ticks per lash
-        sendHeld(p, 38, WHIP_TICKS, (float) R, n, (float) period, u);   // the client draws them, smoothly, every frame
         crack(sl, p.position(), 0.8f);
         Map<UUID, Long> lastHit = new HashMap<>();
         for (int t = 0; t < WHIP_TICKS; t++) {
@@ -335,6 +334,14 @@ public class BoneFx {
                 for (int i = 0; i < n; i++) {
                     LivingEntity t0 = foes.isEmpty() ? null : foes.get(i % foes.size());
                     double phase = ((tt + i * period * 0.4) % period) / period;
+                    // each whip grows from your back: coiled round you while it waits, then it snaps out to its mark and back
+                    Vec3 look0 = p.getLookAngle();
+                    Vec3 root = p.position().add(0, 1.25 + (i % 2) * 0.28, 0).add(flat(look0).scale(-0.35)).add(rightOf(look0).scale((i - (n - 1) / 2.0) * 0.3));
+                    double ca = tt * 0.3 + i * Math.PI * 2 / n;
+                    Vec3 coil = root.add(Math.cos(ca) * 1.7, 0.5 + Math.sin(tt * 0.2 + i) * 0.3, Math.sin(ca) * 1.7);
+                    double reach = 1.0 - Math.abs(2 * phase - 1);                 // 0 coiled .. 1 fully out
+                    Vec3 tip = t0 == null ? coil : coil.add(mid(t0).subtract(coil).scale(reach * reach * (3 - 2 * reach)));
+                    whip(sl, root, tip, i * 1.7, tt);
                     if (t0 == null || Math.abs(phase - 0.5) > 0.5 / period + 1.0E-6) continue;   // the tick the lash is fully out
                     Long lh = lastHit.get(t0.getUUID());
                     if (lh != null && tt - lh < 5) continue;
@@ -347,6 +354,8 @@ public class BoneFx {
                     Vec3 rt = rightOf(kb);
                     FxSend.slash(sl, B, mid(t0).subtract(kb.scale(0.6)), kb, rt.cross(kb).normalize().add(rt.scale(i % 2 == 0 ? 0.6 : -0.6)).normalize(), 0.7f, 1.1f, 4, 0.2f, 0.6f);
                     splinters(sl, mid(t0), kb);
+                    FxSend.ring(sl, B, mid(t0), 0.15f, 1.5f, 0.05f, 5);   // the crack of the whip
+                    sound(sl, mid(t0), net.minecraft.sounds.SoundEvents.CROSSBOW_SHOOT, 0.6f, 1.9f);
                     if (u) cube(sl, mid(t0), 0.7f, 6);   // Beelzebub: space snaps shut round the hit
                 }
                 if (tt % 6 == 0) sound(sl, p.position(), net.minecraft.sounds.SoundEvents.SKELETON_STEP, 0.9f, 0.7f);
@@ -358,7 +367,7 @@ public class BoneFx {
     private static void whip(ServerLevel sl, Vec3 root, Vec3 tip, double seed, int t) {
         Vec3 d = tip.subtract(root);
         double len = d.length();
-        int segs = (int) Math.max(4, Math.min(14, len / 0.4));
+        int segs = (int) Math.max(4, Math.min(8, len / 0.5));
         Vec3 sag = new Vec3(0, -1, 0).scale(len * 0.12).add(rightOf(d.normalize()).scale(Math.sin(t * 0.5 + seed) * len * 0.1));
         Vec3 prev = root;
         for (int k = 1; k <= segs; k++) {
@@ -391,15 +400,38 @@ public class BoneFx {
         FxSend.shake(sl, c, 0.4f, 8, 20);
         int ribs = 12;
         for (int i = 0; i < ribs; i++) {
-            double a = Math.PI * 2 * i / ribs;
-            Vec3 out = new Vec3(Math.cos(a), 0, Math.sin(a));
-            Vec3 base = c.add(out.scale(2.2 * scale));
-            Vec3 dir = new Vec3(0, 1, 0).subtract(out.scale(0.45)).normalize();
-            bone(sl, RIB, base.add(dir.scale(2.2 * scale)), dir, out.scale(-1), 2.2f * scale, 0.14f, 72, 3 + i % 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
-            double a2 = a + Math.PI / ribs;
-            Vec3 out2 = new Vec3(Math.cos(a2), 0, Math.sin(a2));
-            Vec3 dir2 = new Vec3(0, 1, 0).subtract(out2.scale(0.6)).normalize();
-            bone(sl, RIB, c.add(out2.scale(1.6 * scale)).add(dir2.scale(1.3 * scale)), dir2, out2.scale(-1), 1.3f * scale, 0.1f, 70, 6 + i % 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+            final int ii = i;
+            AstaFx.later(i, () -> {   // the eruption runs round the circle like a wave
+                double a = Math.PI * 2 * ii / ribs;
+                Vec3 out = new Vec3(Math.cos(a), 0, Math.sin(a));
+                Vec3 base = c.add(out.scale(2.2 * scale));
+                Vec3 dir = new Vec3(0, 1, 0).subtract(out.scale(0.45)).normalize();
+                bone(sl, RIB, base.add(dir.scale(2.2 * scale)), dir, out.scale(-1), 2.2f * scale, 0.14f, 72 - ii, 3 + ii % 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+                double a2 = a + Math.PI / ribs;
+                Vec3 out2 = new Vec3(Math.cos(a2), 0, Math.sin(a2));
+                Vec3 dir2 = new Vec3(0, 1, 0).subtract(out2.scale(0.6)).normalize();
+                bone(sl, RIB, c.add(out2.scale(1.6 * scale)).add(dir2.scale(1.3 * scale)), dir2, out2.scale(-1), 1.3f * scale, 0.1f, 70 - ii, 6 + ii % 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+                // a tall third row leaning right over the top, so the cage closes into a dome
+                Vec3 dir3 = new Vec3(0, 1, 0).subtract(out.scale(0.95)).normalize();
+                if (ii % 2 == 0) bone(sl, RIB, c.add(out.scale(1.2 * scale)).add(dir3.scale(2.6 * scale)), dir3, out.scale(-1), 2.6f * scale, 0.09f, 68 - ii, 9, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+                sound(sl, base, net.minecraft.sounds.SoundEvents.BONE_BLOCK_PLACE, 0.5f, 0.6f + ii * 0.04f);
+            });
+        }
+        // the bars tighten: rings of bone-white contracting round the captive, and a ring of vertebrae turning above their head
+        for (int k = 0; k < 6; k++) {
+            final int kk = k;
+            AstaFx.later(8 + k * 8, () -> FxSend.ring(sl, B, c.add(0, 0.1 + kk * 0.45 * scale, 0), 3.0f * scale, 0.8f * scale, 0.05f, 10));
+        }
+        for (int k = 0; k < 56; k += 4) {
+            final int kk = k;
+            AstaFx.later(10 + k, () -> {
+                if (!alive(p) || !t.isAlive()) return;
+                for (int q = 0; q < 3; q++) {
+                    double ang = kk * 0.22 + q * Math.PI * 2 / 3;
+                    Vec3 o = mid(t).add(Math.cos(ang) * 1.5 * scale, 1.0 * scale, Math.sin(ang) * 1.5 * scale);
+                    bone(sl, VERTEBRA, o, new Vec3(-Math.sin(ang), 0, Math.cos(ang)), new Vec3(0, 1, 0), 0.2f * scale, 0.12f, 4, 0, FxPacket.POP, 0, Vec3.ZERO, 0);
+                }
+            });
         }
         // the spine arching over the top, vertebra by vertebra
         for (int k = 0; k <= 8; k++) {

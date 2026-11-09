@@ -384,7 +384,7 @@
   "spell.iron_spell_grimoire.thread_cage": "Thread Magic: Thread Cage",
   "spell.iron_spell_grimoire.thread_cage.guide": "A great dome of threads closes over the area you aim at for 7 seconds. Enemies inside cannot leave - the threads throw them back and cut them.",
   "spell.iron_spell_grimoire.red_thread_of_fate": "Thread Magic: Red Thread of Fate",
-  "spell.iron_spell_grimoire.red_thread_of_fate.guide": "A wheel of red thread turns above you and fate is rewritten for 12 seconds: the first heavy blow you and each ally within 10 blocks would take never lands, and whoever threw it is snared in red thread.",
+  "spell.iron_spell_grimoire.red_thread_of_fate.guide": "A wheel of red thread turns above you and fate is rewritten for 20 seconds: the first three blows that you and each ally within 14 blocks would take never land, and whoever threw each one is snared in red thread.",
   "spell.iron_spell_grimoire.spatial_gate": "Spatial Magic: Gate",
   "spell.iron_spell_grimoire.spatial_gate.guide": "Open a pair of gates in space - one before you and one where you look, up to 40 blocks. For 12 seconds anything that steps into one comes out of the other.",
   "spell.iron_spell_grimoire.short_hop": "Spatial Magic: Short Hop",

@@ -111,6 +111,7 @@ public final class ThreadForms {
             float a = Math.min(in, out);
             if (a <= 0.01F) continue;
             boolean self = ent == mc.player && mc.options.getCameraType().isFirstPerson();
+            if (self && kind == DRESS) continue;     // the dress is not drawn at all in your own first-person view
             if (self && kind != FATE) a *= 0.25F;   // barely there in your own view
             Vec3 base = ent.getPosition(pt);
             float h = ent.getBbHeight(), w = Math.max(0.35F, ent.getBbWidth() * 0.7F);

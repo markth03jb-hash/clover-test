@@ -300,9 +300,17 @@ public class LightningFx {
         Vec3 from = p.position().add(0, 1, 0);
         double range = mode ? 20 : 12;
         LivingEntity aim = aimed(p, range + 2, 12);
-        Vec3 goal = aim != null ? aim.position().subtract(flat(aim.position().subtract(p.position())).scale(1.2))
+        // with an enemy in sight Luck flashes THROUGH them and stops behind, already turning back on them
+        Vec3 goal = aim != null ? aim.position().add(flat(aim.position().subtract(p.position())).scale(2.8))
                 : p.position().add(p.getLookAngle().scale(range));
         Vec3 dest = flashTo(p, goal);
+        if (aim != null) {
+            Vec3 face = aim.position().subtract(dest);
+            float yaw = (float) (Math.atan2(-face.x, face.z) * 180.0 / Math.PI);
+            p.connection.teleport(dest.x, dest.y, dest.z, yaw, 0F);
+            strike(sl, mid(aim), 0.9f);
+            FxSend.ring(sl, L, mid(aim), 0.3f, 2.4f, 0.06f, 6);
+        }
         Vec3 to = dest.add(0, 1, 0);
         Set<UUID> hitSet = new HashSet<>();
         for (LivingEntity t : enemies(sl, p, new AABB(from, to).inflate(1.5))) {

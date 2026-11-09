@@ -149,15 +149,26 @@ public final class ThreadFx {
         ServerLevel sl = p.serverLevel();
         LivingEntity t = aimed(p, 24, 16);
         if (t == null) return;
-        Vec3 anchor = mid(t).add(0, 7, 0);
-        // strings drop from above onto the limbs, one more from your fingers
-        for (int i = 0; i < 5; i++) {
-            Vec3 limb = t.position().add((i - 2) * 0.18, t.getBbHeight() * (i % 2 == 0 ? 0.85 : 0.35), 0);
-            thread(sl, anchor.add((i - 2) * 0.4, 0, 0), limb, 26);
-        }
-        thread(sl, fingers(p), mid(t), 26);
-        bind(t, 26);
+        final Vec3 anchor = mid(t).add(0, 7, 0);
         sound(sl, t.position(), SoundEvents.LEASH_KNOT_PLACE, 1f, 1.2f);
+        bind(t, 26);
+        // the strings are redrawn every other tick from where the target is NOW, so they ride the body up and down like
+        // a real marionette's: five from the rafters to the limbs and head (jerking in turn), one from your fingers
+        for (int k = 0; k <= 20; k += 2) {
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (!t.isAlive() || !alive(p)) return;
+                Vec3 base = t.position();
+                double h = t.getBbHeight();
+                for (int i = 0; i < 5; i++) {
+                    double jerk = kk < 14 ? Math.sin(kk * 0.9 + i * 1.7) * 0.18 : 0;   // each limb tugged in turn
+                    Vec3 limb = base.add((i - 2) * 0.25 * Math.max(1, t.getBbWidth()) + jerk, h * (i == 2 ? 1.0 : (i % 2 == 0 ? 0.8 : 0.35)) + Math.abs(jerk) * 0.6, jerk * 0.5);
+                    Vec3 top = anchor.add((i - 2) * 0.4, 0, 0);
+                    thread(sl, top, limb, 3);
+                }
+                thread(sl, fingers(p), mid(t), 3);
+            });
+        }
         // lifted like a marionette...
         for (int k = 2; k < 14; k++) {
             final int kk = k;
@@ -165,7 +176,6 @@ public final class ThreadFx {
                 if (!t.isAlive()) return;
                 BOUND_AT.put(t.getUUID(), t.position().add(0, 0.42, 0));
                 t.setDeltaMovement(0, 0.42, 0); t.hurtMarked = true;
-                if (kk % 4 == 0) for (int i = 0; i < 3; i++) thread(sl, t.position().add(0, 9 - kk * 0.4, 0).add((i - 1) * 0.5, 0, 0), mid(t), 4);
             });
         }
         // ...and slammed down
@@ -336,16 +346,27 @@ public final class ThreadFx {
     }
 
     // ================================================================== 8. Red Thread of Fate
+    /** The Fate guard on you and every ally within 14 blocks: 3 blows turned aside + {@code extra}, for {@code life} ticks. */
+    static void fateGuard(ServerPlayer p, int life, int extra) {
+        long until = p.serverLevel().getGameTime() + life;
+        for (LivingEntity a : allies(p, 14)) {
+            FATE_GUARD.put(a.getUUID(), new long[]{until, -extra});
+            if (a != p) form(a, 3, life); else form(p, 2, life);
+            hud(a, "red_thread_of_fate", life, FATE_CHARGES + extra);
+        }
+    }
+
     public static void redThreadOfFate(ServerPlayer p, float power) {
+        if (LimitBreak.active(p)) { LimitFx.fateLoom(p, power); return; }   // Surpassing Limits: the evolved ultimate
         ServerLevel sl = p.serverLevel();
-        int life = 240;
+        int life = 400;   // 20 s - long enough to forget about it until it matters
         long until = sl.getGameTime() + life;
-        List<LivingEntity> guarded = allies(p, 10);
+        List<LivingEntity> guarded = allies(p, 14);
         form(p, 2, life);   // the wheel of fate turning above you, for the whole time
         for (LivingEntity a : guarded) {
             FATE_GUARD.put(a.getUUID(), new long[]{until, 0});
             if (a != p) form(a, 3, life);   // a red thread knotted round each ally's hand, running up to the wheel
-            hud(a, "red_thread_of_fate", life, 1);
+            hud(a, "red_thread_of_fate", life, FATE_CHARGES);
         }
         // the moment it is woven: red threads race out over the ground like a web, rings of it closing behind
         Vec3 c = p.position().add(0, 0.08, 0);
@@ -365,19 +386,22 @@ public final class ThreadFx {
         sound(sl, p.position(), SoundEvents.BELL_RESONATE, 0.8f, 1.2f);
     }
 
-    /** Fate rewritten: the first heavy blow on a guarded body never lands; the attacker is snared in red thread. */
+    private static final int FATE_CHARGES = 3;
+
+    /** Fate rewritten: the first three blows on a guarded body never land; each attacker is snared in red thread. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onHurt(LivingHurtEvent e) {
         LivingEntity v = e.getEntity();
         if (v.level().isClientSide) return;
         long now = v.level().getGameTime();
         long[] g = FATE_GUARD.get(v.getUUID());
-        if (g != null && now <= g[0] && g[1] == 0 && (e.getAmount() >= 4f || e.getAmount() >= v.getHealth())) {
-            g[1] = 1;
+        if (g != null && now <= g[0] && g[1] < FATE_CHARGES && (e.getAmount() >= 2f || e.getAmount() >= v.getHealth())) {
+            g[1]++;   // three blows are turned aside, not just the first
             e.setCanceled(true);
             ServerLevel sl = (ServerLevel) v.level();
-            hud(v, "red_thread_of_fate", (int) Math.max(1, g[0] - now), 0);
-            form(v, 3, 0);
+            int left = (int) (FATE_CHARGES - g[1]);
+            hud(v, "red_thread_of_fate", (int) Math.max(1, g[0] - now), left);
+            if (left <= 0) form(v, 3, 0);
             // fate rewritten: red threads snap out all round the body and the blow simply isn't there
             Fx.flash(sl, mid(v), 1.2f);
             for (int i = 0; i < 10; i++) {
