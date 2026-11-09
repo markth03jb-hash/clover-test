@@ -259,13 +259,13 @@ public final class ImpactFrames {
                 star(bb, m, fx, fy, Math.min(W, H) * 0.08F, 2F, acc, la);
             }
             case 12 -> {  // Finral: rings of space closing in on the hit, a gold rim on the innermost
-                for (int k = 0; k < 7; k++) {
-                    float rr = reach * (0.12F + k * 0.13F) * (1F - 0.25F * smooth(in));
+                for (int q = 0; q < 7; q++) {
+                    float rr = reach * (0.12F + q * 0.13F) * (1F - 0.25F * smooth(in));
                     int seg = 40;
                     for (int j = 0; j < seg; j++) {
                         double a0 = j * Math.PI * 2 / seg, a1 = (j + 1) * Math.PI * 2 / seg;
-                        taper(bb, m, fx + (float) Math.cos(a0) * rr, fy + (float) Math.sin(a0) * rr * 0.7F, k == 0 ? 3F : 1.4F,
-                                fx + (float) Math.cos(a1) * rr, fy + (float) Math.sin(a1) * rr * 0.7F, k == 0 ? 3F : 1.4F, k == 0 ? acc : line, la * (1F - k * 0.1F));
+                        taper(bb, m, fx + (float) Math.cos(a0) * rr, fy + (float) Math.sin(a0) * rr * 0.7F, q == 0 ? 3F : 1.4F,
+                                fx + (float) Math.cos(a1) * rr, fy + (float) Math.sin(a1) * rr * 0.7F, q == 0 ? 3F : 1.4F, q == 0 ? acc : line, la * (1F - q * 0.1F));
                     }
                 }
             }
