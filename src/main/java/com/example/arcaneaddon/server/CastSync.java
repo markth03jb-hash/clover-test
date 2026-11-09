@@ -93,7 +93,8 @@ public final class CastSync {
         decide(best, now);
         best.lastLaunch = now;
         double sp = speed(p);
-        if (best.origin == null && sp > 0.2) { best.origin = p.c; best.speed = sp; best.launched = now; }   // the move travels: remember from where, how fast
+        if (best.origin == null && sp > 0.2) { best.origin = p.c; best.speed = sp; best.launched = now; }
+        SpellClash.track(best.p, best.start, p, sp);   // travelling moves can clash head-on with another player's   // the move travels: remember from where, how fast
     }
 
     /**
@@ -157,6 +158,12 @@ public final class CastSync {
         if (dist < 2.5) return 0;
         int travel = (int) Math.min(8, Math.round(dist / w.speed));
         return (int) Math.max(0, travel - (now - w.launched));
+    }
+
+    /** True if the caster's current move lost a Spell Clash: its damage never lands. */
+    public static boolean clashLost(ServerPlayer p) {
+        Win w = WIN.get(p.getUUID());
+        return w != null && SpellClash.broken(p, w.start);
     }
 
     public static void forget(ServerPlayer p) { WIN.remove(p.getUUID()); }

@@ -18,6 +18,10 @@ NEW IN 1.58.0
   grimoire's colours turning behind) and the mastery level it unlocks at; on the right what it does, its base
   damage and other numbers, mana cost, cooldown and cast type. Spells the grimoire hasn't given you yet are empty
   pages. Turn pages with the arrows, arrow keys / A-D or the mouse wheel. The effect quality switch is at the top.
+- Spell Clash: when two players' travelling moves (slashes, crescents, balls, gusts...) meet head-on they clash -
+  a flash, rings in both colours, sparks, a shake. The stronger (spell power x the size of the move) breaks through;
+  the weaker is torn apart and its damage never lands; within 15% of each other both are cancelled. Anti magic
+  always cuts through magic. Both players are told the result.
 
 NEW IN 1.57.0
 - Equinox: an invisible sword. While it charges you see only its outline - faint pale edges tapering to a point, a
