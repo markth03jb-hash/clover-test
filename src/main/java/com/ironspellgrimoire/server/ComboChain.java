@@ -46,7 +46,7 @@ public final class ComboChain {
             new Combo("black_moon", "black_hole", "Eclipse", Kind.BURST, 10, FxSend.FRAME_YAMI, "the darkness collapses in a blast"),
             new Combo("black_blade", "avidya_slash", "Darkness Hunts", Kind.CROSS, 10, FxSend.FRAME_YAMI, "two dark cuts cross on the target"),
             // Yuno
-            new Combo("sylphs_breath", "tornado_fang", "Gale Fang", Kind.PILLAR, 5, FxSend.FRAME_YUNO, "a column of wind hurls the target skyward"),
+            new Combo("sylphs_breath", "tornado_fang", "Sylph's Verdict", Kind.SNARE, 5, FxSend.FRAME_YUNO, "Sylph circles the target, binds it in a cutting vortex, then drops one great gale from above"),
             new Combo("wind_blade_shower", "gale_white_bow", "Arrow Gale", Kind.STORM, 5, FxSend.FRAME_YUNO, "a storm of wind blades keeps striking the target"),
             // Nozel
             new Combo("mercury_bullets", "mercury_spears", "Silver Barrage", Kind.STORM, 11, FxSend.FRAME_NOZEL, "mercury keeps raining onto the target"),
@@ -123,17 +123,31 @@ public final class ComboChain {
         if (t != null) FxSend.impactFrame(sl, at, 2, c.frame(), 32);   // only when it actually lands on someone
         String id = c.second();
         switch (c.name()) {
-            case "Cleave and Rift" -> {   // two giant crescents cross in an X through the target, the rift tears open behind
-                for (int s = -1; s <= 1; s += 2) {
-                    Vec3 u = up.scale(0.7071).add(rt.scale(0.7071 * s));
-                    FxSend.crescent(sl, 18, at.subtract(look.scale(3)), look, u, 1.4f, 3.6f, 8, 1.2f);
+            case "Cleave and Rift" -> {   // each sword has its own: the Slayer's red X, the Dweller's stacked flat anti-magic cuts
+                if (AstaFx.isDweller(p)) {
+                    for (int k = -1; k <= 1; k++) {   // three horizontal crescents sweep through at different heights, the middle one last
+                        final int kk = k;
+                        AstaFx.later(k == 0 ? 3 : (k + 1) / 2, () -> {
+                            Vec3 o = at.subtract(look.scale(3)).add(0, kk * 0.9, 0);
+                            FxSend.crescent(sl, Fx.DARK, o, look, rt, 1.5f, 3.8f, 8, 1.3f);
+                            FxSend.ring(sl, Fx.SILVER, at.add(0, kk * 0.9, 0), 0.3f, 2.8f, 0.04f, 7);   // the silver edge of anti magic unmaking what it crosses
+                        });
+                    }
+                    FxSend.cracks(sl, Fx.DARK, at, rt, look, 3.4f, 30, true, (int) sl.getGameTime());
+                } else {
+                    for (int s = -1; s <= 1; s += 2) {
+                        Vec3 u = up.scale(0.7071).add(rt.scale(0.7071 * s));
+                        FxSend.crescent(sl, 18, at.subtract(look.scale(3)), look, u, 1.4f, 3.6f, 8, 1.2f);
+                    }
+                    FxSend.cracks(sl, 18, at, up.add(rt).normalize(), look, 3.2f, 30, true, (int) sl.getGameTime());
+                    FxSend.cracks(sl, 18, at, up.subtract(rt).normalize(), look, 3.2f, 30, true, (int) sl.getGameTime() + 9);
                 }
-                FxSend.cracks(sl, 18, at, up.add(rt).normalize(), look, 3.2f, 30, true, (int) sl.getGameTime());
-                FxSend.cracks(sl, 18, at, up.subtract(rt).normalize(), look, 3.2f, 30, true, (int) sl.getGameTime() + 9);
                 hitAround(p, sl, at, 3.2, power, id, 0.3);
                 sound(sl, at, SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.5f);
             }
-            case "Dash Cleave" -> {   // the cleave splits the ground: a fissure of anti-magic spikes rips forward through them
+            case "Dash Cleave" -> {   // the cleave splits the ground: the Slayer's fissure is red spikes, the Dweller's is black and silver
+                final boolean dwl = AstaFx.isDweller(p);
+                final int fp = dwl ? Fx.DARK : 18;
                 Vec3 g0 = p.position().add(fl.scale(1.5));
                 for (int i = 0; i < 9; i++) {
                     final int ii = i;
@@ -141,8 +155,8 @@ public final class ComboChain {
                         Vec3 g = FxLib.floor(sl, g0.add(fl.scale(ii * 1.3)).add(0, 1, 0));
                         if (g == null) return;
                         for (int s = -1; s <= 1; s += 2)
-                            FxSend.spike(sl, 0, g.add(rt.scale(0.4 * s)), new Vec3(0, 1, 0).add(rt.scale(0.5 * s)), 1.4f + ii * 0.1f, 0.14f, 22, 2, FxPacket.GROUND);
-                        FxSend.ring(sl, 0, g.add(0, 0.05, 0), 0.2f, 1.6f, 0.08f, 6);
+                            FxSend.spike(sl, fp, g.add(rt.scale(0.4 * s)), new Vec3(0, 1, 0).add(rt.scale(0.5 * s)), 1.4f + ii * 0.1f, 0.14f, 22, 2, FxPacket.GROUND);
+                        FxSend.ring(sl, dwl ? Fx.SILVER : fp, g.add(0, 0.05, 0), 0.2f, 1.6f, 0.08f, 6);
                         for (LivingEntity e : enemies(sl, p, new AABB(g, g).inflate(1.6, 2, 1.6))) {
                             AstaFx.damage(p, e, power * 0.35f, id);
                             e.setDeltaMovement(e.getDeltaMovement().x, 0.7, e.getDeltaMovement().z); e.hurtMarked = true;
@@ -153,8 +167,8 @@ public final class ComboChain {
                 AstaFx.later(9, () -> {   // the end of the line erupts
                     Vec3 end = FxLib.floor(sl, g0.add(fl.scale(11)).add(0, 1, 0));
                     if (end == null) return;
-                    FxSend.wall(sl, 0, end.add(0, 0.2, 0), fl, new Vec3(0, 1, 0), 2.2f, 2.8f, -180, 180, 2.4f, 10, 2, 0);
-                    FxLib.shockRing(sl, 0, end.add(0, 0.05, 0), 2.4f);
+                    FxSend.wall(sl, fp, end.add(0, 0.2, 0), fl, new Vec3(0, 1, 0), 2.2f, 2.8f, -180, 180, 2.4f, 10, 2, 0);
+                    FxLib.shockRing(sl, dwl ? Fx.SILVER : fp, end.add(0, 0.05, 0), 2.4f);
                     FxSend.shake(sl, end, 1.0f, 10, 30);
                     hitAround(p, sl, end.add(0, 1, 0), 3.0, power, id, 0.8);
                     sound(sl, end, SoundEvents.GENERIC_EXPLODE, 1f, 0.8f);
@@ -206,29 +220,46 @@ public final class ComboChain {
                 }
                 sound(sl, at, SoundEvents.PHANTOM_SWOOP, 1f, 0.6f);
             }
-            case "Gale Fang" -> {   // a full tornado rises on them for two seconds and throws them high
-                for (int k = 0; k < 40; k++) {
+            case "Sylph's Verdict" -> {   // Sylph circles them once, binds them in a cutting vortex, then drops one great gale from above
+                final Vec3 c0 = at;
+                for (int k = 0; k < 24; k++) {
                     final int kk = k;
                     AstaFx.later(k, () -> {
-                        WindFx.tornadoPacket(sl, ground, 2.6f, 9f, kk, Vec3.ZERO);
-                        for (LivingEntity e : enemies(sl, p, new AABB(ground, ground.add(0, 9, 0)).inflate(3))) {
-                            Vec3 in = new Vec3(ground.x - e.getX(), 0, ground.z - e.getZ());
-                            Vec3 tan = new Vec3(-in.z, 0, in.x).normalize().scale(0.35);
-                            e.setDeltaMovement(in.scale(0.15).add(tan).add(0, 0.18, 0)); e.hurtMarked = true; e.fallDistance = 0;
-                            if (kk % 10 == 0) AstaFx.damage(p, e, power * 0.25f, id);
+                        double r1 = 5.0 - kk * 0.16, r0 = r1 + 0.16;
+                        for (int q = 0; q < 2; q++) {   // two ribbons of wind, one spirit's body, spiralling in
+                            double a1 = kk * 0.5 + q * Math.PI, a0 = a1 - 0.5;
+                            Vec3 p1 = c0.add(Math.cos(a1) * r1, -0.6 + kk * 0.07 + q * 0.5, Math.sin(a1) * r1);
+                            Vec3 p0 = c0.add(Math.cos(a0) * r0, -0.6 + (kk - 1) * 0.07 + q * 0.5, Math.sin(a0) * r0);
+                            FxSend.trail(sl, 5, p0, p1, 0.16f, 8);
+                            if (kk % 3 == 0) FxSend.trail(sl, 6, p0, p1, 0.04f, 6);
                         }
-                        if (kk % 8 == 0) FxSend.ring(sl, 5, ground.add(0, 0.05, 0), 1.2f, 4f, 0.1f, 8);
+                        if (kk % 4 == 0) WindFx.star(sl, c0.add(Math.cos(kk) * (r1 + 0.4), 0.8 + (kk % 3) * 0.5, Math.sin(kk) * (r1 + 0.4)), look, 0.35f, 8);
+                        for (LivingEntity e : enemies(sl, p, new AABB(c0, c0).inflate(4.2))) {   // held in the vortex, rising a little
+                            e.setDeltaMovement(0, 0.05, 0); e.hurtMarked = true; e.fallDistance = 0;
+                            if (kk % 6 == 5) {
+                                AstaFx.damage(p, e, power * 0.15f, id);
+                                Vec3 m = mid(e); Vec3 cut = new Vec3(Math.cos(kk), 0.3, Math.sin(kk));
+                                FxSend.beam(sl, 6, m.subtract(cut), m.add(cut), 0.08f, 3);
+                            }
+                        }
                     });
                 }
-                AstaFx.later(40, () -> {
-                    for (LivingEntity e : enemies(sl, p, new AABB(ground, ground.add(0, 12, 0)).inflate(3.5))) {
-                        e.setDeltaMovement(0, 1.6, 0); e.hurtMarked = true;
-                        AstaFx.damage(p, e, power, id);
+                AstaFx.later(25, () -> {   // the verdict: a column of wind drops out of the sky and slams them down
+                    FxSend.beam(sl, 5, c0.add(0, 16, 0), c0, 1.5f, 6);
+                    FxSend.beam(sl, 6, c0.add(0, 16, 0), c0, 0.35f, 5);
+                    FxLib.shockRing(sl, 5, ground.add(0, 0.05, 0), 3.6f);
+                    FxSend.ring(sl, 6, ground.add(0, 0.2, 0), 0.4f, 6f, 0.05f, 8);
+                    WindFx.star(sl, c0.add(0, 1, 0), look, 3.0f, 14);
+                    for (LivingEntity e : enemies(sl, p, new AABB(c0, c0).inflate(4.2, 5, 4.2))) {
+                        AstaFx.damage(p, e, power * 1.1f, id);
+                        e.setDeltaMovement(0, -1.8, 0); e.hurtMarked = true;
                     }
-                    FxLib.shockRing(sl, 5, ground.add(0, 0.05, 0), 3f);
-                    sound(sl, ground, SoundEvents.ENDER_DRAGON_FLAP, 1.2f, 0.6f);
+                    FxSend.shake(sl, c0, 0.8f, 8, 30);
+                    sound(sl, c0, SoundEvents.ENDER_DRAGON_FLAP, 1.2f, 0.5f);
+                    sound(sl, c0, SoundEvents.GENERIC_EXPLODE, 0.8f, 1.4f);
                 });
-                sound(sl, ground, SoundEvents.ELYTRA_FLYING, 1f, 1.2f);
+                sound(sl, c0, SoundEvents.ELYTRA_FLYING, 1f, 1.4f);
+                sound(sl, c0, SoundEvents.AMETHYST_BLOCK_RESONATE, 1f, 1.8f);
             }
             case "Arrow Gale" -> {   // eight arrows of wind appear in a ring round them and fire inward, one by one
                 for (int i = 0; i < 8; i++) {

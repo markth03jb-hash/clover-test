@@ -242,7 +242,7 @@ final class FxForms extends FxBase {
       // the middle one tallest, all swaying slightly
       double hyr = Math.toRadians(Mth.rotLerp(pt, p.yHeadRotO, p.yHeadRot));
       Vec3 hf = new Vec3(-Math.sin(hyr), 0, Math.cos(hyr)), hl = new Vec3(Math.cos(hyr), 0, Math.sin(hyr));
-      Vec3 crown = base.add(0, h * 0.97, 0);
+      Vec3 crown = base.add(0, h + 0.42 + Math.sin(now * 0.09) * 0.025, 0);   // floating clear above the head, bobbing slowly
       Vec3 prevC = null;
       for (int k = 0; k <= 16; k++) {
          double t = Math.PI * 2 * k / 16;

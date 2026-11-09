@@ -253,6 +253,14 @@ public final class LimitFx {
             AstaFx.later(t, () -> {
                 if (!alive(p)) return;
                 tornado(sl, WIND, c, 2.5f + Math.min(1f, tt / 10f) * 2f, 9f, tt, Vec3.ZERO);
+                for (int sat = 0; sat < 3; sat++) {   // three smaller cyclones circle the great one
+                    double ang = tt * 0.12 + sat * Math.PI * 2 / 3;
+                    WindFx.tornadoPacket(sl, c.add(Math.cos(ang) * R * 0.62, 0, Math.sin(ang) * R * 0.62), 1.8f + Math.min(1f, tt / 12f), 7f, tt, Vec3.ZERO);
+                }
+                if (tt % 3 == 0) {   // stars drifting down through the whole storm
+                    double sa = r.nextDouble(Math.PI * 2), sd = Math.sqrt(r.nextDouble()) * R;
+                    WindFx.star(sl, c.add(Math.cos(sa) * sd, r.nextDouble(1, 12), Math.sin(sa) * sd), new Vec3(0, 0, 1), r.nextInt(4) == 0 ? 1.1f : 0.4f, 10);
+                }
                 if (tt % 2 != 0) return;
                 for (int k = 0; k < 2; k++) {
                     double a = r.nextDouble(Math.PI * 2), d = Math.sqrt(r.nextDouble()) * R;
@@ -275,6 +283,7 @@ public final class LimitFx {
         AstaFx.later(62, () -> {
             if (!alive(p)) return;
             if (!foesNear(sl, p, c.add(0, 1, 0), R + 1).isEmpty()) FxSend.impactFrame(sl, c, 3, FxSend.FRAME_YUNO, 40);
+            WindFx.star(sl, c.add(0, 2.5, 0), new Vec3(0, 0, 1), 5f, 16);   // the storm ends in one great star
             FxLib.shockRing(sl, WIND, c.add(0, 0.1, 0), 4f);
             for (LivingEntity f : foesNear(sl, p, c.add(0, 1, 0), R + 1)) {
                 AstaFx.damage(p, f, power * 1.6f, "spirit_storm");

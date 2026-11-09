@@ -126,8 +126,10 @@ public class WindFx {
     private static final int SHOWER_RELEASE = 10;
 
     /**
-     * A sweep of the hand and a fan of wind blades leaves it, flying 26 blocks.
-     * Spirit Dive: thirteen blades in a wider fan, and each one bends toward an enemy in front of it.
+     * Sylph's feather blades, the way Yuno fights - precise, light, never wasted. Slender blades of wind open round
+     * your shoulders like a pair of wings and hang there a breath, glinting; then Sylph guides each one, bending in a
+     * clean curve onto its own mark (spread over every enemy ahead of you; with none, they arc out to the front) and
+     * cutting once, exactly. Spirit Dive: twelve blades, bigger and brighter.
      */
     public static void windBladeShower(ServerPlayer p, float power) {
         windup(p, SHOWER_RELEASE, false);
@@ -136,30 +138,73 @@ public class WindFx {
             ServerLevel sl = p.serverLevel();
             boolean dive = diving(p);
             if (dive) diveMsg(p, "wind_blade_shower");
-            int n = dive ? 13 : 7;
-            double spread = Math.toRadians(dive ? 50 : 34);
-            Vec3 look = p.getLookAngle(), eye = p.getEyePosition().add(0, -0.3, 0);
-            List<LivingEntity> foes = enemies(sl, p, p.getBoundingBox().inflate(28));
-            for (int i = 0; i < n; i++) {
-                double a = -spread + 2 * spread * i / (n - 1);
-                Vec3 dir = rotY(look, a).normalize();
-                if (dive) {   // bend toward whoever is closest to the blade's line
-                    LivingEntity best = null; double bd = Math.cos(Math.toRadians(14));
-                    for (LivingEntity t : foes) {
-                        Vec3 to = mid(t).subtract(eye);
-                        if (to.length() > 28) continue;
-                        double d = to.normalize().dot(dir);
-                        if (d > bd) { bd = d; best = t; }
-                    }
-                    if (best != null) dir = mid(best).subtract(eye).normalize();
-                }
-                final Vec3 d = dir;
-                final int delay = Math.abs(i - n / 2) / 2;   // the middle leaves first: a sweeping fan
-                AstaFx.later(delay, () -> blade(p, sl, eye.add(d.scale(0.8)), d, power * (dive ? 0.55f : 0.5f), dive));
+            final int n = dive ? 12 : 8;
+            Vec3 look = p.getLookAngle();
+            Vec3 rt = rightOf(look), up = new Vec3(0, 1, 0);
+            Vec3 centre = p.position().add(0, p.getBbHeight() * 0.72, 0);
+            List<LivingEntity> foes = new ArrayList<>();
+            for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(26))) {
+                Vec3 to = mid(t).subtract(centre);
+                if (to.length() < 26 && to.normalize().dot(look) > 0.25) foes.add(t);
             }
-            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 1.6f);
-            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.5f, 1.8f);
+            foes.sort(Comparator.comparingDouble(t -> t.distanceToSqr(p)));
+            // the blades open like wings: a fan of slender blades behind both shoulders
+            Vec3[] at = new Vec3[n];
+            for (int i = 0; i < n; i++) {
+                double side = i % 2 == 0 ? -1 : 1, row = i / 2, rows = Math.max(1, n / 2 - 1);
+                double a = Math.toRadians(25 + 55 * row / rows);   // each wing fans from low to high
+                at[i] = centre.add(rt.scale(side * (0.5 + Math.sin(a) * 1.4))).add(up.scale(Math.cos(a) * 0.9 - 0.2)).add(look.scale(-0.35 - row * 0.05));
+                Vec3 out = at[i].subtract(centre).normalize();
+                final Vec3 pos = at[i], dirOut = out;
+                AstaFx.later((int) (row * 1), () -> {   // they unfold from the middle outward
+                    FxSend.slash(sl, W, pos, dirOut, rt.cross(dirOut), 0.18f, 0.95f, 9, 0.0f, 0.22f);
+                    Fx.spark(sl, W, pos, 0.35f);
+                });
+            }
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.7f, 1.8f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 0.8f, 1.9f);
+            // Sylph guides them off, left and right in turn, each along its own curve
+            for (int i = 0; i < n; i++) {
+                final int ii = i;
+                final LivingEntity mark = foes.isEmpty() ? null : foes.get(i % foes.size());
+                final Vec3 aim = look.add(rt.scale((i % 2 == 0 ? -1 : 1) * (0.05 + 0.04 * (i / 2)))).normalize();
+                AstaFx.later(9 + i / 2 * 2 + (i % 2), () -> volleyBlade(p, sl, at[ii], mark, aim, rt, ii % 2 == 0 ? -1 : 1, power * (dive ? 0.55f : 0.5f), dive));
+            }
         });
+    }
+
+    /** One guided feather blade: a quadratic curve from its perch to the mark, drawn as short slashes joined by a thin streak. */
+    private static void volleyBlade(ServerPlayer p, ServerLevel sl, Vec3 from, LivingEntity mark, Vec3 aim, Vec3 rt, int side, float dmg, boolean big) {
+        if (!alive(p)) return;
+        Vec3 target = mark != null && mark.isAlive() ? mid(mark) : clip(sl, p, from, from.add(aim.scale(22)));
+        Vec3 chord = target.subtract(from);
+        double len = Math.max(1.0, chord.length());
+        Vec3 ctrl = from.add(chord.scale(0.5)).add(rt.scale(side * Math.min(3.2, len * 0.35))).add(0, Math.min(1.5, len * 0.12), 0);
+        final int T = (int) Math.max(5, Math.min(11, len / 2.4));
+        final float s = big ? 1.25f : 1.0f;
+        Vec3[] prev = {from};
+        for (int k = 1; k <= T; k++) {
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                double t = kk / (double) T, u = 1 - t;
+                Vec3 pos = from.scale(u * u).add(ctrl.scale(2 * u * t)).add(target.scale(t * t));
+                Vec3 tan = pos.subtract(prev[0]);
+                if (tan.lengthSqr() < 1.0E-6) return;
+                Vec3 d = tan.normalize();
+                FxSend.trail(sl, W, prev[0], pos, 0.05f * s, 5);
+                if (kk % 2 == 0 || kk == T) FxSend.slash(sl, W, pos, d, rt.cross(d), 0.2f * s, 1.1f * s, 3, 0.0f, 0.22f);
+                prev[0] = pos;
+                if (kk == T) {   // the cut: exactly once, clean through the mark
+                    Vec3 end = pos;
+                    if (mark != null && mark.isAlive()) {
+                        AstaFx.damage(p, mark, dmg, "wind_blade_shower");
+                        FxSend.beam(sl, S, mid(mark).subtract(d.scale(0.9)), mid(mark).add(d.scale(0.9)), 0.1f, 4);
+                    }
+                    gust(sl, end, 0.55f * s);
+                }
+            });
+        }
     }
 
     private static void blade(ServerPlayer p, ServerLevel sl, Vec3 from, Vec3 dir, float dmg, boolean big) {
@@ -723,65 +768,95 @@ public class WindFx {
             if (!alive(p)) return;
             boolean dive = diving(p);
             if (dive) diveMsg(p, "spirit_storm");
-            Vec3 dir = p.getLookAngle();
-            Vec3 start = p.getEyePosition().add(0, -0.3, 0).add(dir.scale(0.9));
-            double reach = dive ? 70 : 50;
-            Vec3 end = clip(sl, p, start, start.add(dir.scale(reach)));
-            double len = start.distanceTo(end);
-            double R = dive ? 3.2 : 2.2;
-            float speed = 5f;
-            Vec3 rt = rightOf(dir), up = rt.cross(dir).normalize();
-            for (LivingEntity t : enemies(sl, p, new AABB(start, end).inflate(R + 1))) {
-                Vec3 on = closestOnSegment(start, end, mid(t));
-                if (on.distanceTo(mid(t)) > R + t.getBbWidth() * 0.5) continue;
-                final LivingEntity tt = t;
-                AstaFx.later((int) (on.distanceTo(start) / speed), () -> {
-                    if (!tt.isAlive() || !alive(p)) return;
-                    AstaFx.damage(p, tt, power * (dive ? 1.3f : 1f), "spirit_storm");
-                    tt.setDeltaMovement(tt.getDeltaMovement().add(dir.scale(2.0)).add(0, 0.3, 0));
-                    tt.hurtMarked = true;
-                    gust(sl, mid(tt), 1.2f);
+            Vec3 dir = flat(p.getLookAngle());
+            Vec3 rt = rightOf(dir);
+            Vec3 first = p.position().add(dir.scale(3.5));
+            final int cyclones = dive ? 2 : 1;              // Double Spirit Storm: two cyclones side by side
+            final double R = dive ? 3.6 : 3.0;
+            final float height = dive ? 15f : 12f;
+            final int LIFE = 44;
+            final double speed = 0.75;
+            // a great cyclone is born ahead and rolls forward, pulling everything into its spin
+            Vec3[] centre = new Vec3[cyclones];
+            for (int c = 0; c < cyclones; c++) centre[c] = first.add(rt.scale(cyclones == 1 ? 0 : (c == 0 ? -4.2 : 4.2)));
+            final Vec3[] posRef = centre;
+            Set<UUID> caught = new HashSet<>();
+            star(sl, p.getEyePosition().add(dir.scale(0.9)), dir, 1.8f, 8);   // a star flares in your hands as it leaves
+            FxLib.shockRing(sl, W, p.position().add(0, 0.05, 0), 1.8f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM, 0.6f, 1.5f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 1f, 0.8f);
+            for (int t = 0; t < LIFE; t++) {
+                final int tt = t;
+                AstaFx.later(t, () -> {
+                    if (!alive(p)) return;
+                    ThreadLocalRandom rr = ThreadLocalRandom.current();
+                    for (int c = 0; c < cyclones; c++) {
+                        Vec3 pos = posRef[c];
+                        Vec3 nxt = pos.add(dir.scale(speed));
+                        Vec3 wall = clip(sl, p, pos.add(0, 1.2, 0), nxt.add(0, 1.2, 0));
+                        if (wall.distanceToSqr(nxt.add(0, 1.2, 0)) > 1.0E-4) nxt = pos;   // a wall holds it where it is
+                        Vec3 ground = FxLib.floor(sl, nxt.add(0, 2, 0));
+                        if (ground != null) nxt = new Vec3(nxt.x, ground.y, nxt.z);
+                        posRef[c] = nxt;
+                        float grow = Math.min(1f, tt / 8f) * (tt > LIFE - 8 ? (LIFE - tt) / 8f : 1f);
+                        tornadoPacket(sl, nxt, (float) R * Math.max(0.4f, grow), height * Math.max(0.4f, grow), tt, dir.scale(speed));
+                        if (tt % 3 == 0) {   // blades of wind orbiting the column, one ring high and one low
+                            for (int q = 0; q < 2; q++) {
+                                double ang = tt * 0.55 + q * Math.PI;
+                                Vec3 o = nxt.add(Math.cos(ang) * R * 1.15, height * (q == 0 ? 0.28 : 0.6), Math.sin(ang) * R * 1.15);
+                                Vec3 tan = new Vec3(-Math.sin(ang), 0.12, Math.cos(ang));
+                                FxSend.crescent(sl, W, o, tan, new Vec3(0, 1, 0), 0.9f, 0.55f, 4, 0.0f);
+                            }
+                        }
+                        if (tt % 2 == 0) {   // a river of stars through the column
+                            double sa = rr.nextDouble(Math.PI * 2), sd = rr.nextDouble() * R;
+                            star(sl, nxt.add(Math.cos(sa) * sd, rr.nextDouble() * height * 0.8, Math.sin(sa) * sd), dir, rr.nextInt(5) == 0 ? 0.9f : 0.35f, 8 + rr.nextInt(6));
+                        }
+                        // everything near is drawn in, spun up the column and cut
+                        for (LivingEntity e : enemies(sl, p, new AABB(nxt, nxt).inflate(R * 1.7, height * 0.6, R * 1.7))) {
+                            Vec3 off = flat(e.position().subtract(nxt));
+                            double dist = e.position().subtract(nxt).multiply(1, 0, 1).length();
+                            if (dist > R * 1.7) continue;
+                            Vec3 tan = new Vec3(-off.z, 0, off.x);
+                            e.setDeltaMovement(tan.scale(0.55).add(off.scale(-0.08 * Math.min(2.0, dist))).add(0, 0.28, 0));
+                            e.hurtMarked = true;
+                            caught.add(e.getUUID());
+                            if (tt % 6 == 0) {
+                                AstaFx.damage(p, e, power * (dive ? 0.3f : 0.25f), "spirit_storm");
+                                FxSend.beam(sl, S, mid(e).subtract(tan.scale(0.6)), mid(e).add(tan.scale(0.6)), 0.08f, 3);
+                            }
+                        }
+                        if (tt % 8 == 0) sound(sl, nxt, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.7f, 0.7f + rr.nextFloat() * 0.3f);
+                    }
                 });
             }
-            // the storm: travels out from your hands - a thick column of wind with rings of air spinning along it
-            int beams = dive ? 2 : 1;
-            for (int b = 0; b < beams; b++) {
-                final int bb = b;
-                for (int k = 0; k < (int) len; k += 3) {
-                    final int kk = k;
-                    AstaFx.later((int) (k / speed), () -> {
-                        double tw = kk * 0.35 + bb * Math.PI;
-                        Vec3 off = beams == 1 ? Vec3.ZERO : rt.scale(Math.cos(tw) * 1.2).add(up.scale(Math.sin(tw) * 1.2));
-                        Vec3 a0 = start.add(dir.scale(kk)).add(off), a1 = start.add(dir.scale(Math.min(len, kk + 3))).add(off);
-                        FxSend.trail(sl, W, a0, a1, (float) R * (beams == 1 ? 0.75f : 0.5f), 14);
-                        FxSend.trail(sl, S, a0, a1, 0.18f, 12);
-                        if (kk % 6 == 0) FxSend.wall(sl, kk % 12 == 0 ? S : W, a0, rt, up, (float) R * 0.9f, (float) R * 1.5f, kk * 20f, kk * 20f + 240, 0.12f, 9, 0, 0);
-                        // a river of stars: four-pointed glints scattered through the column, a few big ones
-                        ThreadLocalRandom rr = ThreadLocalRandom.current();
-                        for (int q = 0; q < 2; q++) {
-                            double qa = rr.nextDouble(Math.PI * 2), qd = rr.nextDouble() * R * 1.1;
-                            Vec3 sc = a0.add(rt.scale(Math.cos(qa) * qd)).add(up.scale(Math.sin(qa) * qd)).add(dir.scale(rr.nextDouble(3)));
-                            star(sl, sc, dir, rr.nextInt(5) == 0 ? 0.9f : 0.3f + rr.nextFloat() * 0.3f, 8 + rr.nextInt(6));
-                        }
-                    });
+            // the end: the cyclone bursts - one great star and a shockwave that throws out everything still inside
+            AstaFx.later(LIFE, () -> {
+                if (!alive(p)) return;
+                for (int c = 0; c < cyclones; c++) {
+                    Vec3 e0 = posRef[c];
+                    star(sl, e0.add(0, 1.2, 0), dir, dive ? 3.6f : 2.8f, 14);
+                    gust(sl, e0.add(0, 1, 0), dive ? 2.4f : 1.8f);
+                    FxLib.shockRing(sl, W, e0.add(0, 0.1, 0), (float) R + 1.2f);
+                    FxSend.ring(sl, S, e0.add(0, 1.2, 0), 0.4f, (float) R * 2.2f, 0.05f, 8);
+                    boolean any = false;
+                    for (LivingEntity e : enemies(sl, p, new AABB(e0, e0).inflate(R * 2.2, height * 0.5, R * 2.2))) {
+                        if (e.position().subtract(e0).multiply(1, 0, 1).length() > R * 2.2) continue;
+                        AstaFx.damage(p, e, power * (dive ? 1.3f : 1.1f), "spirit_storm");
+                        e.setDeltaMovement(flat(e.position().subtract(e0)).scale(1.5).add(0, 0.9, 0));
+                        e.hurtMarked = true;
+                        any = true;
+                    }
+                    if (any && c == 0) FxSend.impactFrame(sl, e0.add(0, 1, 0), 3, FxSend.FRAME_YUNO, 40);
                 }
-            }
-            AstaFx.later((int) (len / speed) + 1, () -> {
-                gust(sl, end, dive ? 2.2f : 1.6f);
-                star(sl, end.add(0, 0.8, 0), dir, dive ? 3.2f : 2.4f, 14);   // it ends in one great star
+                sound(sl, posRef[0], net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.6f, 1.6f);
+                sound(sl, posRef[0], net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 1.2f, 0.6f);
             });
-            star(sl, start, dir, 1.6f, 8);   // a star flares in your hands as it leaves
-            FxLib.shockRing(sl, W, p.position().add(0, 0.05, 0), 1.4f);
-            p.setDeltaMovement(p.getDeltaMovement().subtract(dir.scale(0.4)));   // the recoil
-            p.hurtMarked = true;
-            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM, 0.6f, 1.4f);
-            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.2f);
-            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.5f, 1.6f);
         });
     }
 
     /** A four-pointed star glint facing {@code view}: two long silver-white rays and two short diagonal ones. */
-    private static void star(ServerLevel sl, Vec3 c, Vec3 view, float size, int life) {
+    static void star(ServerLevel sl, Vec3 c, Vec3 view, float size, int life) {
         Vec3 a = rightOf(view), b = a.cross(view).normalize();
         FxSend.trail(sl, S, c.subtract(a.scale(size)), c.add(a.scale(size)), size * 0.09f, life);
         FxSend.trail(sl, S, c.subtract(b.scale(size)), c.add(b.scale(size)), size * 0.09f, life);

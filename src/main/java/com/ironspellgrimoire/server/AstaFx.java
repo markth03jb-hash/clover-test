@@ -236,15 +236,19 @@ public class AstaFx {
     public static void skySplitter(ServerPlayer p, float dmg, boolean dw) {
         ServerLevel sl = p.serverLevel();
         if (dw) variantMsg(p);
-        final float hitDmg = dw ? dmg * 0.85f : dmg;
+        final float hitDmg = dw ? dmg * 0.85f : dmg * 1.2f;   // the Slayer's is the slash alone (no rift), so it cuts a little harder
 
         // ---- 1. wind-up: energy drains into the sword
         Vec3 look0 = p.getLookAngle();
         Vec3 tip = p.getEyePosition().add(look0.scale(1.2)).add(0, -0.3, 0);
         int pal = dw ? Fx.DARK : 18;   // the Slayer's is red only
-        FxSend.ring(sl, pal, p.position().add(0, 0.05, 0), 3.5f, 0.3f, 0.2f, SKY_WINDUP);          // ring collapsing inward
-        FxSend.ring(sl, dw ? Fx.SILVER : Fx.CRIMSON, p.position().add(0, 0.9, 0), 2.6f, 0.2f, 0.12f, SKY_WINDUP);
-        FxSend.beam(sl, dw ? Fx.DARK : 18, p.position().add(0, 0.2, 0), tip.add(0, 1.6, 0), 0.25f, SKY_WINDUP + 2);   // Slayer: black-red, never violet   // black edge along the raised blade
+        if (dw) {
+            FxSend.ring(sl, pal, p.position().add(0, 0.05, 0), 3.5f, 0.3f, 0.2f, SKY_WINDUP);          // ring collapsing inward
+            FxSend.ring(sl, Fx.SILVER, p.position().add(0, 0.9, 0), 2.6f, 0.2f, 0.12f, SKY_WINDUP);
+            FxSend.beam(sl, Fx.DARK, p.position().add(0, 0.2, 0), tip.add(0, 1.6, 0), 0.25f, SKY_WINDUP + 2);   // black edge along the raised blade
+        } else {   // Slayer: a single red edge gathering along the raised blade, nothing else
+            FxSend.beam(sl, 18, tip.add(0, -0.4, 0), tip.add(0, 1.6, 0), 0.18f, SKY_WINDUP + 2);
+        }
         sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT, 1f, 0.5f);
         sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_1, 0.8f, 0.6f);
 
@@ -263,8 +267,9 @@ public class AstaFx {
                 }
             } else {    // Demon Slayer: the same crescent slash as the Dweller's - one, upright and towering - all in red
                 fxIds.add(FxSend.crescent(sl, 18, start, dir, up, 1.8f, 3.9f, SKY_MAX_STEPS + 2, (float) SKY_SPEED));
+                later(2, () -> fxIds.add(FxSend.crescent(sl, 18, start, dir, up, 1.1f, 2.8f, SKY_MAX_STEPS, (float) SKY_SPEED)));   // a slimmer echo chasing it
             }
-            FxSend.wall(sl, pal, p.position().add(0, 0.1, 0), dir, up, 2.4f, 2.8f, -60, 80, 0.9f, 7, 2, 0);   // the upward swing itself
+            if (dw) FxSend.wall(sl, pal, p.position().add(0, 0.1, 0), dir, up, 2.4f, 2.8f, -60, 80, 0.9f, 7, 2, 0);   // the upward swing itself
             Fx.flash(sl, start, 1.4f);
             sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.4f);
             sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_THUNDER, 0.8f, 1.3f);
@@ -288,7 +293,7 @@ public class AstaFx {
             damage(p, t, dmg, "sky_splitter");
             t.knockback(0.6, -dir.x, -dir.z);
             Fx.impact(sl, dw ? Fx.DARK : 18, mid(t), 1.3f);
-            FxSend.beam(sl, Fx.SILVER, mid(t).subtract(up.scale(1.4)), mid(t).add(up.scale(1.4)), 0.2f, 6);   // a clean vertical cut through them
+            if (dw) FxSend.beam(sl, Fx.SILVER, mid(t).subtract(up.scale(1.4)), mid(t).add(up.scale(1.4)), 0.2f, 6);   // a clean vertical cut through them
             sound(sl, t.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, 1f, 0.6f);
         }
         if (step % 2 == 0) sound(sl, clipped, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 0.5f, 0.6f + step * 0.05f);
@@ -300,7 +305,7 @@ public class AstaFx {
                 FxSend.ring(sl, Fx.SILVER, clipped, 0.3f, 3.2f, 0.4f, 8);
                 sound(sl, clipped, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.7f, 1.4f);
             }
-            later(2, () -> openRift(p, sl, path, up, rt, dmg * SKY_RIFT_FACTOR, dw));
+            if (dw) later(2, () -> openRift(p, sl, path, up, rt, dmg * SKY_RIFT_FACTOR, dw));   // only the Dweller's tears the sky open
             return;
         }
         later(1, () -> flyCrescent(p, sl, next, dir, up, rt, dmg, dw, fxIds, path, hit, step + 1));

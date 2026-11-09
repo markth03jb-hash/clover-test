@@ -1,7 +1,21 @@
-Iron Spell Grimoire v1.65.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.66.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.66.0
+- Demon Slayer's Sky Splitter is now only the slash: one towering red crescent with a slim echo, no rift and no wall.
+  The Dweller's keeps its X of crescents and the sky-splitting rift.
+- Asta's combos change with the sword: Cleave and Rift is a red X with the Slayer sword but three stacked flat
+  anti-magic cuts with the Dweller sword; Dash Cleave's fissure is red spikes or black-and-silver.
+- Spirit Dive: the crown floats well above the head instead of sitting in it.
+- Wind Blade Shower reworked to suit Yuno: slender feather blades open like wings round your shoulders, then Sylph
+  guides each one along its own curve onto its own mark and it cuts exactly once.
+- Spirit Storm reworked: a great cyclone is born ahead of you and rolls forward, spinning enemies up its column and
+  cutting them, then bursts in a star and a shockwave. Spirit Dive makes it a Double Spirit Storm (two cyclones).
+  The Surpassing Limits Star Storm gets three orbiting cyclones, a river of stars and a great star at the end.
+- Gale Fang is gone: the Sylph's Breath + Tornado Fang combo is now Sylph's Verdict - Sylph circles the target, binds
+  it in a cutting vortex, then drops one great gale from above and slams it down.
 
 NEW IN 1.65.0
 - Arcane Pulse is gone completely.
