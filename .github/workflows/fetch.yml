@@ -1,0 +1,30 @@
+name: Fetch CC0 sounds
+on:
+  push:
+    branches: [fetch-sfx]
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download
+        run: |
+          mkdir -p sfx && cd sfx
+          for u in \
+            https://opengameart.org/sites/default/files/sci-fi_sounds.zip \
+            https://opengameart.org/sites/default/files/sword_-_starninjas.zip \
+            https://opengameart.org/sites/default/files/sword_clash_-_starninjas.zip \
+            https://opengameart.org/sites/default/files/kenney_impactsounds.zip \
+            https://opengameart.org/sites/default/files/impact_sounds.zip \
+            https://opengameart.org/sites/default/files/kenney_rpgaudio.zip \
+            https://opengameart.org/sites/default/files/rpg_audio.zip ; do
+            f=$(basename $u); curl -sSfL -A "Mozilla/5.0" -o "$f" "$u" && echo "OK $f $(stat -c%s $f)" >> ../log.txt || echo "FAIL $u" >> ../log.txt
+          done
+          for z in *.zip; do d="${z%.zip}"; mkdir -p "$d" && (cd "$d" && unzip -q -o "../$z") || true; rm -f "$z"; done
+          find . -type f | sort > ../files.txt
+      - name: Commit
+        run: |
+          git config user.name ci; git config user.email ci@example.com
+          git add sfx log.txt files.txt && git commit -qm "fetched CC0 sounds [skip ci]" && git push
