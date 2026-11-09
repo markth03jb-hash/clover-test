@@ -212,7 +212,7 @@ def rift():    # Langris: plum black, space cut open by straight slashes, violet
     l, d = c.layer(); poly(d, [(20, 330), (236, 60), (236, 80), (20, 352)], fill=(70, 10, 90, 200)); c.put(l)
     l, d = c.layer(); frame(d, (214, 160, 232, 255), 16, 2, 0, False); c.put(l); return c
 
-BOOKS = dict(black=black, dark=dark, wind=wind, mercury=mercury, fire=fire, lightning=lightning, hellfire=hellfire, bone=bone, steel=steel,
+BOOKS = dict(dark=dark, wind=wind, mercury=mercury, fire=fire, lightning=lightning, hellfire=hellfire, bone=bone, steel=steel,
              string=string, spatial=spatial, water=water, mirror=mirror, rift=rift)
 if __name__ == '__main__':
     for n, f in BOOKS.items():

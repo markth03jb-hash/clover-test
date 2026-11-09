@@ -1,7 +1,10 @@
-Iron Spell Grimoire v1.73.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.74.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.74.0
+- Asta's grimoire has its original cover back.
 
 NEW IN 1.73.0
 - Every grimoire has its own cover (drawn from scratch, tools/covers.py): Asta - torn black leather with red cracks;
