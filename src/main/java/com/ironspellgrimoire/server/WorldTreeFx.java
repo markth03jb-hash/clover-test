@@ -52,7 +52,7 @@ public final class WorldTreeFx {
                     Vec3 d = new Vec3(Math.cos(a), 0.6 + (i % 2) * 0.4, Math.sin(a));
                     FxSend.spike(sl, T, at, d, 1.5f, 0.12f, 7, 2, 0);
                 }
-                sound(sl, at, SoundEvents.SWEET_BERRY_BUSH_PICK_FRUITS, 1.0f, 0.8f);
+                sound(sl, at, SoundEvents.GRASS_BREAK, 1.0f, 0.8f);
             });
             sound(sl, p.position(), SoundEvents.GRASS_BREAK, 0.8f, 1.5f);
         });
@@ -141,7 +141,7 @@ public final class WorldTreeFx {
                     FxSend.trail(sl, T, q0, q, 0.16f, 4);
                     if (tt % 2 == 0) FxSend.slash(sl, T, q, new Vec3(-Math.sin(a), 0, Math.cos(a)), UP, 0.5f, 0.15f, 3, 0.2f);
                 }
-                if (tt % 10 == 0) FxSend.ring(sl, G, c.add(0, -0.9, 0), R * 0.8f, R, 0.03f, 5);
+                if (tt % 10 == 0) FxSend.ring(sl, G, c.add(0, -0.9, 0), (float) (R * 0.8), (float) R, 0.03f, 5);
                 if (tt % 5 == 4) for (LivingEntity e : Kit.near(sl, p, c, R + 0.6)) {
                     Moves.hit(p, e, power * 0.28f, "leaf_storm", T);
                     Kit.push(e, e.position().subtract(c), 0.25, 0.1);

@@ -102,7 +102,7 @@ public final class FlameSpiritFx {
                     FxSend.trail(sl, F, q0, q1, 0.2f, 5);
                     FxSend.trail(sl, G, q0, q1, 0.05f, 3);
                 }
-                if (tt % 10 == 0) FxSend.ring(sl, F, c.add(0, 0.05, 0), R * 0.9f, R, 0.04f, 6);
+                if (tt % 10 == 0) FxSend.ring(sl, F, c.add(0, 0.05, 0), (float) (R * 0.9), (float) R, 0.04f, 6);
                 if (tt % 4 == 0) for (LivingEntity e : Kit.near(sl, p, c, R)) {
                     Vec3 away = e.position().subtract(c);
                     Kit.push(e, away, 0.35, 0.08);
