@@ -27,9 +27,9 @@ import java.util.UUID;
 public final class CastSync {
     private CastSync() {}
 
-    private static final int MAX_SHIFT = 8;
+    private static final int MAX_SHIFT = 0;   // effects are never held back: they come out exactly when the move sends them
 
-    private static final class Win { ServerPlayer p; long start; int impact; int shift = -1; long lastLaunch; Vec3 origin; double speed; }
+    private static final class Win { ServerPlayer p; long start; int impact; int shift = -1; long lastLaunch; Vec3 origin; double speed; long launched; }
 
     private static final Map<UUID, Win> WIN = new HashMap<>();
     private static boolean bypass = false;
@@ -94,7 +94,7 @@ public final class CastSync {
         decide(best, now);
         best.lastLaunch = now;
         double sp = speed(p);
-        if (best.origin == null && sp > 0.2) { best.origin = p.c; best.speed = sp; }   // the move travels: remember from where, how fast
+        if (best.origin == null && sp > 0.2) { best.origin = p.c; best.speed = sp; best.launched = now; }   // the move travels: remember from where, how fast
     }
 
     /**
@@ -110,16 +110,17 @@ public final class CastSync {
         if (w == null) return false;
         long now = p.serverLevel().getGameTime();
         if (!live(w, now)) { WIN.remove(p.getUUID()); return false; }
+        Runnable go = () -> { bypass = true; try { deal.run(); } finally { bypass = false; } };
+        int left = travelLeft(w, target, now);
+        if (left >= 0) {   // the move's carrier is already out: wait only for what is left of its flight
+            if (left <= 0) return false;
+            AstaFx.later(left, go);
+            return true;
+        }
+        // not out yet this tick (its effect may be sent right after the damage): look again next tick
         AstaFx.later(1, () -> {
-            int shift = Math.max(0, w.shift);
-            int travel = 0;
-            if (w.origin != null && w.speed > 0.2 && target != null) {
-                double dist = w.origin.distanceTo(target.position().add(0, target.getBbHeight() * 0.5, 0));
-                travel = (int) Math.min(12, Math.round(dist / w.speed));
-            }
-            int rest = Math.max(0, shift + travel - 1);
-            Runnable go = () -> { bypass = true; try { deal.run(); } finally { bypass = false; } };
-            if (rest <= 0) go.run(); else AstaFx.later(rest, go);
+            int l = travelLeft(w, target, p.serverLevel().getGameTime());
+            if (l <= 1) go.run(); else AstaFx.later(l - 1, go);
         });
         return true;
     }
@@ -138,13 +139,25 @@ public final class CastSync {
             double d = w.p.position().add(0, 1, 0).distanceToSqr(at);
             if (d < bestD) { bestD = d; best = w; }
         }
-        if (best == null || best.shift == 0) return false;
+        if (best == null || MAX_SHIFT == 0 || best.shift == 0) return false;   // sounds play with the move, never later
         Win w = best;
         AstaFx.later(1, () -> {
             int rest = Math.max(0, w.shift) - 1;
             if (rest <= 0) play.run(); else AstaFx.later(rest, play);
         });
         return true;
+    }
+
+    /**
+     * Ticks until the move's carrier reaches {@code target}, counted from when it was launched (a projectile that
+     * the move flies itself and that deals its damage on arrival gets 0 - no double wait); -1 if nothing was launched.
+     */
+    private static int travelLeft(Win w, net.minecraft.world.entity.LivingEntity target, long now) {
+        if (w.origin == null || w.speed <= 0.2 || target == null) return -1;
+        double dist = w.origin.distanceTo(target.position().add(0, target.getBbHeight() * 0.5, 0));
+        if (dist < 2.5) return 0;
+        int travel = (int) Math.min(8, Math.round(dist / w.speed));
+        return (int) Math.max(0, travel - (now - w.launched));
     }
 
     public static void forget(ServerPlayer p) { WIN.remove(p.getUUID()); }

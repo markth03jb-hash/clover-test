@@ -31,7 +31,7 @@ import java.util.Map;
 public final class FxSync {
     private FxSync() {}
 
-    private static final int MAX_SHIFT = 8;
+    private static final int MAX_SHIFT = 0;   // nothing is held back: every effect shows the moment it is sent
     /** player id -> {start tick, impact tick, shift (-1 = not decided yet), last launched effect tick} */
     private static final Map<Integer, double[]> WIN = new HashMap<>();
     private static final Map<String, Integer> IMPACT = new HashMap<>();
@@ -71,7 +71,7 @@ public final class FxSync {
 
     /** True if the packet was held back (it will be spawned later). */
     public static boolean defer(FxPacket p) {
-        if (releasing) return false;
+        if (releasing || MAX_SHIFT == 0) return false;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || WIN.isEmpty()) return false;
         double now = mc.level.getGameTime();

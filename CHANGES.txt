@@ -1,7 +1,18 @@
-Iron Spell Grimoire v1.55.1 - all changed files since v1.0.0
+Iron Spell Grimoire v1.56.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.56.0
+- No more delay: effects are never held back any more - every effect shows the moment the move sends it, so nothing
+  comes out after the animation has finished. Sounds play with the move again.
+- Damage lands with the effect: a move whose blade or ball flies only waits for what is LEFT of its flight (a
+  projectile that hits you itself is never made to wait a second time), at most 8 ticks, and a target within
+  2.5 blocks is hit at once.
+- Mercury Sphere: you can see again. Big balls like the barrier are drawn as a thin, gappy shell of small sprites
+  instead of a solid mass of big ones, and from inside the shell is fainter still.
+- Much less lag: the pixel-sprite cap is 2400 (was 6000), sprite-only effects emit about 40% less, new sprites
+  thin out automatically the busier the screen gets, and far-away sprites and glows are skipped.
 
 NEW IN 1.55.1
 - Fix for playing with Essential: Essential 1.5.x could crash the game (ConcurrentModificationException in its

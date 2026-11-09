@@ -60,6 +60,7 @@ public final class PixelFx {
 
     /** One sprite. kind: 0 streak, 1 shard, 2 ember, 3 tongue. dark = drawn black (anti magic), else glowing. */
     private static final class Spr {
+        boolean see;   // part of a barrier seen from inside: drawn faint
         Vec3 pos, prev, vel, axis; float len, wid; int life, age, kind; boolean dark; float heat; float drag;
         int pal = 2; Vec3 curl; float curlRate; float darkAlpha = 0.92F; float grav;
         float spin; float grow = 1.0F; float pop; boolean twinkle, flicker; int seed = ThreadLocalRandom.current().nextInt(64);
@@ -75,7 +76,7 @@ public final class PixelFx {
 
     private static final List<Slash> SLASHES = new ArrayList<>();
     private static final List<Spr> SPRITES = new ArrayList<>();
-    private static final int MAX = 6000;
+    private static final int MAX = 2400;   // a hard cap that keeps big fights smooth
     private static int sigsThisTick = 0;
 
     public static void spawn(FxPacket p) {
@@ -368,6 +369,8 @@ public final class PixelFx {
 
     private static int cnt(double want) {
         double w = want * density() * boost;
+        int busy = SPRITES.size();
+        if (busy > 900) w *= 900.0 / busy;   // the busier the screen, the fewer new sprites per emission
         int n = (int) w;
         return n + (ThreadLocalRandom.current().nextDouble() < w - n ? 1 : 0);
     }
@@ -553,6 +556,7 @@ public final class PixelFx {
     private static void ball(int pal, Vec3 at, Vec3 v, double R) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int el = element(pal);
+        if (R > 1.2) { shell(pal, el, at, v, R, r); return; }
         int n = cnt(Mth.clamp(R * 12.0, 6.0, 30.0));
         for (int i = 0; i < n; i++) {
             Vec3 dir = nz(rnd(r, 1.0), UP);
@@ -574,6 +578,28 @@ public final class PixelFx {
                 s.heat = 0.9F;
             }
             s.pal = pal; s.drag = 1.0F; s.grav = 0.0F; s.spin = (float) r.nextDouble(-0.3, 0.3);
+            add(s);
+        }
+    }
+
+    /**
+     * A big ball (a barrier like the Mercury Sphere): only its SURFACE is drawn, in small sprites with gaps between
+     * them, so you can always see out of it from inside and see in from outside. Seen from inside it is fainter still.
+     */
+    private static void shell(int pal, int el, Vec3 at, Vec3 v, double R, ThreadLocalRandom r) {
+        Minecraft mc = Minecraft.getInstance();
+        boolean inside = mc.gameRenderer != null && mc.gameRenderer.getMainCamera().getPosition().distanceTo(at) < R + 0.3;
+        int n = cnt(Mth.clamp(R * 3.0, 4.0, 12.0) * (inside ? 0.5 : 1.0));
+        for (int i = 0; i < n; i++) {
+            Vec3 dir = nz(rnd(r, 1.0), UP);
+            Vec3 o = at.add(dir.scale(R * r.nextDouble(0.95, 1.0)));
+            Vec3 tan = nz(dir.cross(UP), new Vec3(1, 0, 0));
+            float sz = (float) r.nextDouble(0.14, 0.3);
+            Spr s = spr(o, v.add(tan.scale(r.nextDouble(-0.02, 0.02))), tan, el == METAL ? (r.nextInt(3) == 0 ? K_STAR : K_DROP) : BIT[pal], sz, sz * 0.8F, r.nextInt(3, 6));
+            s.heat = el == METAL ? 0.85F : 0.7F;
+            if (el == METAL && s.kind == K_STAR) s.twinkle = true;
+            s.pal = pal; s.drag = 1.0F; s.grav = 0.0F; s.spin = (float) r.nextDouble(-0.2, 0.2);
+            s.see = inside;
             add(s);
         }
     }
@@ -669,7 +695,7 @@ public final class PixelFx {
     public static void fromFx(FxPacket p, Vec3 at, double age, double life, boolean perTick) {
         if (age < 0.0 || age > life) return;
         if (perTick && age >= 1.0) return;
-        boost = p.pixelOnly ? 2.2 : 1.0;
+        boost = p.pixelOnly ? 1.35 : 1.0;
         try { fromFx0(p, at, age, life, perTick); } finally { boost = 1.0; }
     }
 
@@ -1271,6 +1297,7 @@ public final class PixelFx {
         float fade = opacity;   // full strength all its life: the dither dissolve takes it away (no fading in or out)
         double dc = pos.distanceTo(cam);
         if (dc < 2.2) fade *= (float) Mth.clamp((dc - 0.6) / 1.6, 0.0, 1.0);   // never smother the camera
+        if (p.see) fade *= 0.35F;
         if (p.twinkle) fade *= 0.55F + 0.45F * (float) Math.abs(Math.sin((p.age + pt) * 1.3 + p.seed));
         return fade;
     }
@@ -1283,6 +1310,7 @@ public final class PixelFx {
 
     private static void bloom(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Spr p, float pt, float opacity) {
         Vec3 pos = p.prev.add(p.pos.subtract(p.prev).scale(pt));
+        if (pos.distanceToSqr(cam) > 48.0 * 48.0) return;   // the soft glow only up close
         float fade = fadeOf(p, pos, cam, pt, opacity) * 0.32F * Mth.clamp((p.heat - 0.35F) * 2.0F, 0.0F, 1.0F);
         if (fade <= 0.01F) return;
         Vec3 toCam = cam.subtract(pos).normalize();
@@ -1294,6 +1322,7 @@ public final class PixelFx {
 
     private static void draw(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Spr p, float pt, int layer, float opacity) {
         Vec3 pos = p.prev.add(p.pos.subtract(p.prev).scale(pt));
+        if (pos.distanceToSqr(cam) > 80.0 * 80.0) return;   // too far to see a pixel of it
         float fade = fadeOf(p, pos, cam, pt, opacity);
         if (fade <= 0.01F) return;
         float life = (p.age + pt) / (float) p.life;
