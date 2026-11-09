@@ -13,6 +13,11 @@ NEW IN 1.58.0
 - Grimoire mana bar: while one of this addon's grimoires is equipped, Iron's mana bar makes way for the grimoire's
   own - framed in its trim colour with its clover at the end, mana in its colour with a sheen running through,
   easing to the new value, numbers above it. Asta's has no mana: a black bar with a flickering blood-red edge.
+- The grimoire book: sneak + use while holding a grimoire to open it. One spread per spell in the book's order: on
+  the left its name, a moving preview (a copy of you playing the spell's cast animation, its icon and the
+  grimoire's colours turning behind) and the mastery level it unlocks at; on the right what it does, its base
+  damage and other numbers, mana cost, cooldown and cast type. Spells the grimoire hasn't given you yet are empty
+  pages. Turn pages with the arrows, arrow keys / A-D or the mouse wheel. The effect quality switch is at the top.
 
 NEW IN 1.57.0
 - Equinox: an invisible sword. While it charges you see only its outline - faint pale edges tapering to a point, a
