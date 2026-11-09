@@ -297,6 +297,10 @@ def decorate(c, n):
         x, y = CX + math.cos(a) * (R0 - 3) * S, CY + math.sin(a) * (R0 - 3) * S
         rd.ellipse([x - 1.2 * S, y - 1.2 * S, x + 1.2 * S, y + 1.2 * S], fill=255)
     emboss(c, ring.filter(ImageFilter.GaussianBlur(0.6)), acc, glow, depth=1, gold=0.8, inset=0.0, glowAmt=0.25)
+    # 2b. the clover in the medallion, pressed into the leather with a fine metal edge and veins
+    leaves = LEAVES.get(n, 3); r = 40 * S
+    m = heart_clover_mask(CX, CY - 7 * S, r, leaves)
+    emboss(c, m, acc, glow, depth=2, gold=0.95, inset=0.55, veins=(CX, CY - 7 * S, r, leaves), glowAmt=0.4)
     # 3. bracketed corners and a title plate, pressed in the same way
     k = Image.new('L', (W, H), 0); kd = ImageDraw.Draw(k)
     for (x, y, sx, sy) in [(12, 12, 1, 1), (244, 12, -1, 1), (12, 372, 1, -1), (244, 372, -1, -1)]:
