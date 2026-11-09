@@ -353,5 +353,13 @@
   "ui.arcane_addon.beelzebub.ribcage": "Beelzebub: Ribcage Prison",
   "ui.arcane_addon.beelzebub.spatial_cube": "Beelzebub: Spatial Cube",
   "ui.arcane_addon.beelzebub.spear_storm": "Beelzebub: Bone Spear Storm",
-  "ui.arcane_addon.zone.equinox": "Mana Zone: Dark Cloaked Dimension Slash - Equinox"
+  "ui.arcane_addon.zone.equinox": "Mana Zone: Dark Cloaked Dimension Slash - Equinox",
+  "subtitles.arcane_addon.sfx.slash": "Blade slashes",
+  "subtitles.arcane_addon.sfx.blast": "Magic explodes",
+  "subtitles.arcane_addon.sfx.whoosh": "Magic rushes",
+  "subtitles.arcane_addon.sfx.impact": "Magic strikes",
+  "subtitles.arcane_addon.sfx.charge": "Mana gathers",
+  "subtitles.arcane_addon.sfx.fire": "Flames roar",
+  "subtitles.arcane_addon.sfx.thunder": "Lightning cracks",
+  "subtitles.arcane_addon.sfx.roar": "Mana roars"
 }

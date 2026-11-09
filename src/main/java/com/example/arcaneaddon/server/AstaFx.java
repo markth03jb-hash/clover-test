@@ -141,7 +141,7 @@ public class AstaFx {
     }
 
     static void damage(ServerPlayer p, LivingEntity t, float dmg, String id) {
-        if (CastSync.deferDamage(p, () -> { if (t.isAlive()) damage(p, t, dmg, id); })) return;   // lands on the swing
+        if (CastSync.deferDamage(p, t, () -> { if (t.isAlive()) damage(p, t, dmg, id); })) return;   // lands when the move reaches it
         var spell = spellById(id);
         if (spell != null) DamageSources.applyDamage(t, dmg, spell.getDamageSource(p));
         else t.hurt(p.damageSources().playerAttack(p), dmg);

@@ -20,8 +20,20 @@ import java.util.List;
 final class FxUtil {
     private FxUtil() {}
 
+    /**
+     * A move's sound: its CC0 clip of the same kind (Sfx), with the vanilla stand-in kept quietly under it. Sounds
+     * that belong to the move coming out (not its wind-up charge) wait for it the same as its visuals (CastSync).
+     */
     static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float vol, float pitch) {
-        sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
+        String kind = Sfx.kind(s);
+        SoundEvent own = Sfx.own(kind);
+        Runnable play = () -> {
+            if (own != null) {
+                sl.playSound(null, at.x, at.y, at.z, own, SoundSource.PLAYERS, Math.min(1.6f, vol * 1.1f), pitch);
+                sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol * 0.35f, pitch);
+            } else sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
+        };
+        if (kind == null || "charge".equals(kind) || !CastSync.deferSound(at, play)) play.run();
     }
 
     static boolean alive(ServerPlayer p) { return p.isAlive() && !p.isRemoved(); }

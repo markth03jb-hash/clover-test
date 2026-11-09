@@ -1,7 +1,16 @@
-Iron Spell Grimoire v1.52.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.53.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.53.0
+- Damage never lands before the move: a move's hit now waits until its slash, bolt, ball or gust has actually come out
+  on the swing, and then for it to fly from where it was launched to the target - a far target is hit a moment later
+  than a close one, exactly when the effect reaches it.
+- The move sounds wait for the move the same way, so the swing, the sound, the effect and the hit happen together.
+- New sounds from copyright-free (CC0) packs: sword slashes by StarNinjas; blasts, impacts, rushes, charges, flames,
+  thunder and roars from Kenney's Sci-Fi Sounds. All mono (so they come from where the move is) and loudness-matched
+  to the game, with the old vanilla sound kept quietly under each for body. Subtitles included. See CREDITS.txt.
 
 NEW IN 1.52.0
 - No popping in or out, and no slow fading either: every effect grows in over about two ticks and shrinks away over

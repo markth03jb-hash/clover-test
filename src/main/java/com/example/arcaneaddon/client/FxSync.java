@@ -31,7 +31,7 @@ import java.util.Map;
 public final class FxSync {
     private FxSync() {}
 
-    private static final int MAX_SHIFT = 0;   // off: moves fire the moment they are cast (no holding back)
+    private static final int MAX_SHIFT = 8;
     /** player id -> {start tick, impact tick, shift (-1 = not decided yet), last launched effect tick} */
     private static final Map<Integer, double[]> WIN = new HashMap<>();
     private static final Map<String, Integer> IMPACT = new HashMap<>();
@@ -51,6 +51,16 @@ public final class FxSync {
         WIN.put(playerId, new double[]{now, impact, -1, now});
     }
 
+    /** The effects that carry a move (same rule as the server's CastSync.carrier): only these decide the shift. */
+    private static boolean carrier(FxPacket p) {
+        return switch (p.shape) {
+            case 13, 1, 41, 23, 29, 12 -> true;
+            case 19, 20 -> p.life > 1;
+            default -> false;
+        };
+    }
+
+    /** Once a move's shift is decided, what it puts in the world is held by that much. */
     private static boolean launch(FxPacket p) {
         return switch (p.shape) {
             case 13, 1, 41, 23, 29, 33, 0, 10, 12 -> true;
@@ -84,7 +94,10 @@ public final class FxSync {
             if (d < bestD) { bestD = d; best = w; }
         }
         if (best == null) return false;
-        if (best[2] < 0) best[2] = Mth.clamp(best[1] - (now - best[0]), 0, MAX_SHIFT);
+        if (best[2] < 0) {
+            if (!carrier(p)) return false;   // wind-up glows and rings before the move comes out show at once
+            best[2] = Mth.clamp(best[1] - (now - best[0]), 0, MAX_SHIFT);
+        }
         best[3] = now;
         int shift = (int) best[2];
         if (shift <= 0) return false;

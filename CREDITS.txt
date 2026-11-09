@@ -1,0 +1,9 @@
+Sound credits - all clips are public domain (CC0 1.0), converted to mono and loudness-matched for Minecraft.
+
+  "Sci-Fi Sounds" by Kenney (www.kenney.nl) - CC0
+    https://opengameart.org/content/sci-fi-sounds  (file: sci-fi_sounds.zip)
+    used for: blast, whoosh, impact, charge, fire, thunder, roar
+
+  "20 sword sound effects (attacks and clashes)" by StarNinjas - CC0 (credit requested, thank you!)
+    https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes  (file: sword_-_starninjas.zip)
+    used for: slash

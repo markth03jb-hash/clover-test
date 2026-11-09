@@ -27,9 +27,9 @@ import java.util.UUID;
 public final class CastSync {
     private CastSync() {}
 
-    private static final int MAX_SHIFT = 0;   // off: moves fire the moment they are cast (no holding back)
+    private static final int MAX_SHIFT = 8;
 
-    private static final class Win { ServerPlayer p; long start; int impact; int shift = -1; long lastLaunch; }
+    private static final class Win { ServerPlayer p; long start; int impact; int shift = -1; long lastLaunch; Vec3 origin; double speed; }
 
     private static final Map<UUID, Win> WIN = new HashMap<>();
     private static boolean bypass = false;
@@ -39,11 +39,9 @@ public final class CastSync {
         if (name == null) return;
         int impact = AnimImpact.of(name);
         long now = p.serverLevel().getGameTime();
-        if (impact > 0) {
-            Win w = new Win();
-            w.p = p; w.start = now; w.impact = impact; w.lastLaunch = now;
-            WIN.put(p.getUUID(), w);
-        } else WIN.remove(p.getUUID());
+        Win w = new Win();   // every cast gets a window (also moves with no swing: their damage still waits for travel)
+        w.p = p; w.start = now; w.impact = impact; w.lastLaunch = now;
+        WIN.put(p.getUUID(), w);
         FxPacket pkt = new FxPacket();
         pkt.shape = 42; pkt.id = p.getId(); pkt.sweep = name.hashCode(); pkt.life = impact;
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
@@ -58,18 +56,31 @@ public final class CastSync {
         return w.shift;
     }
 
-    /** Same rule as the client: the effects that "launch" a move (not held pieces re-sent every tick). */
-    private static boolean launch(FxPacket p) {
+    /**
+     * The effects that CARRY a move to its target - a slash, crescent, bolt, gust, thrown ball or the impact frame.
+     * Only these decide when the move "comes out"; wind-up glows, rings and trails never hold anything back.
+     */
+    static boolean carrier(FxPacket p) {
         return switch (p.shape) {
-            case 13, 1, 41, 23, 29, 33, 0, 10, 12 -> true;
-            case 2, 7, 8, 19, 20, 30 -> p.life > 1;
+            case 13, 1, 41, 23, 29, 12 -> true;
+            case 19, 20 -> p.life > 1;
             default -> false;
+        };
+    }
+
+    /** How fast a carrier travels (blocks per tick), 0 if it appears at once. */
+    private static double speed(FxPacket p) {
+        return switch (p.shape) {
+            case 13, 1, 41 -> p.speed;
+            case 19, 20 -> p.v.length();
+            case 29 -> p.life > 0 ? p.r / Math.max(1.0, p.life * 0.55) : 0.0;
+            default -> 0.0;
         };
     }
 
     /** Called for every effect packet the server sends (AddonNetwork.send). */
     public static void onSend(FxPacket p) {
-        if (WIN.isEmpty() || !launch(p) || p.c == null || p.c.equals(Vec3.ZERO)) return;
+        if (WIN.isEmpty() || !carrier(p) || p.c == null || p.c.equals(Vec3.ZERO)) return;
         Win best = null;
         double bestD = 8.0 * 8.0;
         for (Win w : WIN.values()) {
@@ -82,23 +93,56 @@ public final class CastSync {
         long now = best.p.serverLevel().getGameTime();
         decide(best, now);
         best.lastLaunch = now;
+        double sp = speed(p);
+        if (best.origin == null && sp > 0.2) { best.origin = p.c; best.speed = sp; }   // the move travels: remember from where, how fast
     }
 
     /**
-     * Deal the move's damage on the swing: returns true if the damage was taken over (it will be dealt by
-     * {@code deal} after the shift), false if it should be dealt right now.
+     * Deal a move's damage when the move actually reaches the target - never before it has visibly come out:
+     *   1. it waits for the move to come out (its carrier effect is held for the swing - the same shift as the visuals)
+     *   2. then for the carrier to travel from where it was launched to the target (a slash or a thrown ball flies)
+     * The check runs one tick later, so the move's own effects sent in the same tick are already known.
+     * Returns true if the damage was taken over ({@code deal} runs later), false to deal it right now.
      */
-    public static boolean deferDamage(ServerPlayer p, Runnable deal) {
+    public static boolean deferDamage(ServerPlayer p, net.minecraft.world.entity.LivingEntity target, Runnable deal) {
         if (bypass || WIN.isEmpty()) return false;
         Win w = WIN.get(p.getUUID());
         if (w == null) return false;
         long now = p.serverLevel().getGameTime();
         if (!live(w, now)) { WIN.remove(p.getUUID()); return false; }
-        int s = decide(w, now);
-        if (s <= 0) return false;
-        AstaFx.later(s, () -> {
-            bypass = true;
-            try { deal.run(); } finally { bypass = false; }
+        AstaFx.later(1, () -> {
+            int shift = Math.max(0, w.shift);
+            int travel = 0;
+            if (w.origin != null && w.speed > 0.2 && target != null) {
+                double dist = w.origin.distanceTo(target.position().add(0, target.getBbHeight() * 0.5, 0));
+                travel = (int) Math.min(12, Math.round(dist / w.speed));
+            }
+            int rest = Math.max(0, shift + travel - 1);
+            Runnable go = () -> { bypass = true; try { deal.run(); } finally { bypass = false; } };
+            if (rest <= 0) go.run(); else AstaFx.later(rest, go);
+        });
+        return true;
+    }
+
+    /**
+     * A move's sound plays when the move comes out, like its effects: if a cast near {@code at} is being held for its
+     * swing, the sound waits by the same shift (checked a tick later, once the move's carrier is known).
+     * Returns true if {@code play} was taken over.
+     */
+    public static boolean deferSound(Vec3 at, Runnable play) {
+        if (WIN.isEmpty() || at == null) return false;
+        Win best = null;
+        double bestD = 8.0 * 8.0;
+        for (Win w : WIN.values()) {
+            if (!live(w, w.p.serverLevel().getGameTime())) continue;
+            double d = w.p.position().add(0, 1, 0).distanceToSqr(at);
+            if (d < bestD) { bestD = d; best = w; }
+        }
+        if (best == null || best.shift == 0) return false;
+        Win w = best;
+        AstaFx.later(1, () -> {
+            int rest = Math.max(0, w.shift) - 1;
+            if (rest <= 0) play.run(); else AstaFx.later(rest, play);
         });
         return true;
     }
