@@ -210,9 +210,9 @@ public final class GrimoireWheel {
             float hint = ComboHint.pulse(sp.getSpellName());
             if (hint > 0f) {   // this spell finishes a combo: a soft pulsing frame in the grimoire's accent colour
                 int al = (int) (hint * 150 * A) & 0xFF;
-                int col = (al << 24) | (((int) (th.accent[0] * 255) & 0xFF) << 16) | (((int) (th.accent[1] * 255) & 0xFF) << 8) | ((int) (th.accent[2] * 255) & 0xFF);
-                g.renderOutline(ix - 2, iy - 2, size + 4, size + 4, col);
-                g.renderOutline(ix - 3, iy - 3, size + 6, size + 6, (al / 3 << 24) | (col & 0xFFFFFF));
+                int hintCol = (al << 24) | (((int) (th.accent[0] * 255) & 0xFF) << 16) | (((int) (th.accent[1] * 255) & 0xFF) << 8) | ((int) (th.accent[2] * 255) & 0xFF);
+                g.renderOutline(ix - 2, iy - 2, size + 4, size + 4, hintCol);
+                g.renderOutline(ix - 3, iy - 3, size + 6, size + 6, (al / 3 << 24) | (hintCol & 0xFFFFFF));
             }
             float cd = ClientMagicData.getCooldownPercent(sp);
             if (cd > 0.0F) g.fill(ix, iy + (int) (size * (1.0F - cd)), ix + size, iy + size, 0xAA000000);
