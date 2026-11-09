@@ -20,6 +20,7 @@ class Cv:
                 v = abs(x - W / 2) / (W / 2)
                 k = 1 - 0.25 * v * v
                 px[x, y] = (max(0, min(255, int(c[0] * k + n))), max(0, min(255, int(c[1] * k + n))), max(0, min(255, int(c[2] * k + n))), 255)
+        self.bg = self.im.copy()
     def layer(self): 
         l = Image.new('RGBA', (W, H), (0, 0, 0, 0)); return l, ImageDraw.Draw(l)
     def put(self, l, glow=None, gr=10, ga=1.0):
@@ -71,95 +72,122 @@ def black():   # Asta: torn black leather, red cracks, five black leaves
     for i in range(14): poly(d, [(16 + i * 17, 16), (24 + i * 17, 16), (20 + i * 17, 28 + (i % 3) * 5)], fill=(138, 122, 110, 255))
     clover(d, CX / S, CY / S, 52, 5, (6, 5, 6, 255)); c.put(l, (255, 30, 20), 8, 1.2)
     return c
-def dark():    # Yami: violet-black, great crescent, silver filigree, rippling darkness
+# Every cover below (Asta's is kept as it was) keeps the middle clear: an empty medallion where a clover can sit.
+X0, Y0 = 128, CY / S          # the centre, in 1x units
+R0 = 62                       # nothing is drawn inside this radius
+
+def ringpts(r, a0, a1, n=60):
+    return [(X0 + math.cos(a0 + (a1 - a0) * t / n) * r, Y0 + math.sin(a0 + (a1 - a0) * t / n) * r) for t in range(n + 1)]
+
+def dark():    # Yami: violet-black; ripples of darkness spreading out from the medallion, crescents above and below
     c = Cv((8, 5, 14), (22, 10, 34), 2)
     l, d = c.layer()
-    for k in range(5): d.ellipse([CX - (60 + k * 22) * S, CY - (60 + k * 22) * S, CX + (60 + k * 22) * S, CY + (60 + k * 22) * S], outline=(120, 60, 200, 90 - k * 14), width=2 * S)
+    for k in range(5): line(d, ringpts(R0 + 8 + k * 16, 0, 6.29, 90), fill=(120, 60, 200, 110 - k * 18), width=2)
     c.put(l)
-    l, d = c.layer(); d.ellipse([CX - 62 * S, CY - 62 * S, CX + 62 * S, CY + 62 * S], fill=(180, 150, 235, 255)); d.ellipse([CX - 40 * S, CY - 72 * S, CX + 84 * S, CY + 52 * S], fill=(0, 0, 0, 0))
-    mask = l.copy(); c.put(l, (150, 70, 255), 14, 1.0)
-    l, d = c.layer(); frame(d, (180, 169, 200, 255), 18, 2, 6)
-    for x in (60, 196): d.arc([(x - 18) * S, 330 * S, (x + 18) * S, 366 * S], 200, 340, fill=(180, 169, 200, 255), width=2 * S)
-    c.put(l); return c
-def wind():    # Yuno: jade green, four-leaf clover riding wind spirals, feather corners
+    l, d = c.layer()
+    for (y, dy) in ((58, 8), (290, -8)):   # a thin crescent moon top and bottom, horns pointing at the medallion
+        d.ellipse([(X0 - 20) * S, (y - 20) * S, (X0 + 20) * S, (y + 20) * S], fill=(190, 160, 240, 255))
+        d.ellipse([(X0 - 20) * S, (y - 20 + dy) * S, (X0 + 20) * S, (y + 20 + dy) * S], fill=(0, 0, 0, 0))
+    c.put(l, (150, 70, 255), 10, 0.9)
+    l, d = c.layer(); frame(d, (180, 169, 200, 255), 18, 2, 6); c.put(l); return c
+
+def wind():    # Yuno: jade green; wind spirals sweeping round the medallion, feathers at the corners
     c = Cv((8, 34, 24), (14, 60, 42), 3)
     l, d = c.layer()
     for k in range(4):
-        a0 = k * 90 + 20; d.arc([CX - (86 + k * 8) * S, CY - (86 + k * 8) * S, CX + (86 + k * 8) * S, CY + (86 + k * 8) * S], a0, a0 + 150, fill=(190, 255, 215, 200), width=2 * S)
-    for k in range(3): d.arc([CX - (50 - k * 10) * S, CY - (50 - k * 10) * S, CX + (50 - k * 10) * S, CY + (50 - k * 10) * S], k * 120, k * 120 + 220, fill=(220, 255, 235, 230), width=S)
+        a0 = math.radians(k * 90 + 20); line(d, ringpts(R0 + 12 + k * 9, a0, a0 + 2.6), fill=(190, 255, 215, 210), width=2)
+    for k in range(3):
+        a0 = math.radians(k * 120 + 60); line(d, ringpts(R0 + 4, a0, a0 + 1.2, 30), fill=(230, 255, 240, 230), width=1)
     c.put(l, (110, 255, 170), 6, 0.6)
-    l, d = c.layer(); clover(d, CX / S, CY / S, 34, 4, (22, 130, 78, 255)); c.put(l, (140, 255, 190), 6, 0.8)
     l, d = c.layer(); frame(d, (231, 217, 160, 255), 16, 2, 0, True)
-    for (x, y, s) in [(34, 34, 1), (222, 34, -1), (34, 350, 1), (222, 350, -1)]:
-        poly(d, [(x, y), (x + 16 * s, y + 4), (x + 4 * s, y + 20)], fill=(231, 217, 160, 255))
+    for (x, y, sx) in [(36, 40, 1), (220, 40, -1), (36, 344, 1), (220, 344, -1)]:   # a feather in each corner
+        line(d, [(x, y + 18), (x + 22 * sx, y - 10)], fill=(231, 217, 160, 255), width=2)
+        for t in range(1, 6): line(d, [(x + 4 * t * sx, y + 18 - 5 * t), (x + (4 * t - 6) * sx, y + 18 - 5 * t - 7)], fill=(231, 217, 160, 200), width=1)
     c.put(l); return c
-def mercury(): # Nozel: polished chrome-blue, concentric ripples and hanging drops, wave frame
+
+def mercury(): # Nozel: chrome-blue; ripples spreading from the medallion, mercury drops hanging from the top
     c = Cv((26, 32, 44), (60, 72, 92), 4, 6)
     l, d = c.layer()
-    for k in range(7): d.ellipse([CX - (14 + k * 15) * S, CY - (14 + k * 15) * S, CX + (14 + k * 15) * S, CY + (14 + k * 15) * S], outline=(220, 232, 248, 190 - k * 20), width=S)
+    for k in range(6): line(d, ringpts(R0 + 6 + k * 15, 0, 6.29, 90), fill=(220, 232, 248, 170 - k * 24), width=1)
     c.put(l, (170, 200, 240), 6, 0.5)
-    l, d = c.layer(); d.ellipse([CX - 20 * S, CY - 22 * S, CX + 20 * S, CY + 18 * S], fill=(215, 226, 244, 255)); poly(d, [(128, CY / S - 44), (116, CY / S - 14), (140, CY / S - 14)], fill=(215, 226, 244, 255))
-    d.ellipse([CX - 9 * S, CY - 14 * S, CX - 2 * S, CY - 6 * S], fill=(255, 255, 255, 255)); c.put(l, (190, 215, 255), 8, 0.9)
     l, d = c.layer()
+    for (x, ln) in [(70, 34), (100, 52), (156, 52), (186, 34)]:
+        line(d, [(x, 26), (x, 26 + ln)], fill=(215, 226, 244, 255), width=2)
+        d.ellipse([(x - 5) * S, (26 + ln - 2) * S, (x + 5) * S, (26 + ln + 10) * S], fill=(215, 226, 244, 255))
     for edge in (22, 362):
-        pts = [(x, edge + math.sin(x / 9.0) * 4) for x in range(20, 237, 3)]; line(d, pts, fill=(220, 230, 245, 255), width=2)
+        line(d, [(x, edge + math.sin(x / 9.0) * 4) for x in range(20, 237, 3)], fill=(220, 230, 245, 255), width=2)
     line(d, [(20, 22), (20, 362)], fill=(220, 230, 245, 255), width=2); line(d, [(236, 22), (236, 362)], fill=(220, 230, 245, 255), width=2)
-    for x in (60, 128, 196): d.ellipse([(x - 5) * S, 330 * S, (x + 5) * S, 342 * S], fill=(200, 215, 240, 255))
-    c.put(l); return c
-def fire():    # Magna: scorched brown, brass frame, flames licking up from the foot, a burning fist-ball
+    c.put(l, (190, 215, 255), 5, 0.5); return c
+
+def fire():    # Magna: scorched brown; a ring of flame tongues round the medallion, a fire rising from the foot
     c = Cv((26, 12, 6), (60, 22, 8), 5)
     l, d = c.layer(); r = random.Random(9)
+    for i in range(18):
+        a = i * math.pi / 9; h = r.randint(14, 26)
+        p0 = (X0 + math.cos(a - 0.12) * (R0 + 2), Y0 + math.sin(a - 0.12) * (R0 + 2)); p1 = (X0 + math.cos(a + 0.12) * (R0 + 2), Y0 + math.sin(a + 0.12) * (R0 + 2))
+        tip = (X0 + math.cos(a + 0.1) * (R0 + h), Y0 + math.sin(a + 0.1) * (R0 + h))
+        poly(d, [p0, p1, tip], fill=(255, 140, 30, 220))
     for i in range(22):
-        x = 24 + i * 10; h = r.randint(50, 130)
-        poly(d, [(x - 8, 366), (x + 8, 366), (x + r.randint(-5, 5), 366 - h)], fill=(255, 120 + r.randint(0, 60), 20, 200))
+        x = 24 + i * 10; hh = r.randint(30, 80)
+        poly(d, [(x - 8, 366), (x + 8, 366), (x + r.randint(-5, 5), 366 - hh)], fill=(255, 120 + r.randint(0, 60), 20, 190))
     c.put(l, (255, 100, 20), 10, 0.6)
-    l, d = c.layer(); d.ellipse([CX - 44 * S, CY - 44 * S, CX + 44 * S, CY + 44 * S], fill=(255, 150, 40, 255)); d.ellipse([CX - 28 * S, CY - 28 * S, CX + 28 * S, CY + 28 * S], fill=(255, 220, 120, 255)); d.ellipse([CX - 12 * S, CY - 12 * S, CX + 12 * S, CY + 12 * S], fill=(255, 250, 220, 255))
-    c.put(l, (255, 110, 20), 12, 1.0)
     l, d = c.layer(); frame(d, (217, 169, 76, 255), 16, 3, 5, False); c.put(l); return c
-def lightning(): # Luck: midnight blue, big forking bolt, four-leaf shape in the sparks
+
+def lightning(): # Luck: midnight blue; two bolts down the sides, sparks crackling off the medallion
     c = Cv((4, 10, 26), (10, 28, 62), 6)
     l, d = c.layer(); r = random.Random(3)
-    line(d, [(150, 40), (112, 140), (140, 150), (96, 250), (162, 150), (132, 140), (170, 40)], fill=(150, 205, 255, 255), width=5)
-    for a in [0.6, 2.4, 3.6, 5.4]: crack(d, 128, 170, a, 90, (190, 225, 255, 255), 2, r)
+    for sx in (1, -1):
+        x = X0 + 92 * sx
+        line(d, [(x, 36), (x - 14 * sx, 120), (x + 4 * sx, 128), (x - 16 * sx, 230), (x + 8 * sx, 236), (x - 6 * sx, 340)], fill=(150, 205, 255, 255), width=4)
+    for a in [0.4, 1.6, 2.8, 3.6, 4.8, 5.8]: crack(d, X0 + math.cos(a) * (R0 + 2), Y0 + math.sin(a) * (R0 + 2), a, 40, (190, 225, 255, 255), 2, r, 1)
     c.put(l, (90, 170, 255), 8, 1.0)
-    l, d = c.layer(); line(d, [(150, 40), (112, 140), (140, 150), (96, 250), (162, 150), (132, 140), (170, 40)], fill=(255, 255, 255, 255), width=2); frame(d, (237, 231, 200, 255), 16, 2, 0, True)
-    for (x, y) in [(40, 40), (216, 40), (40, 344), (216, 344)]: line(d, [(x - 8, y - 6), (x, y), (x - 3, y + 2), (x + 8, y + 8)], fill=(150, 205, 255, 255), width=2)
-    c.put(l); return c
-def hellfire(): # Mereoleona: crimson, a lion's mane of flame claws round a sun
+    l, d = c.layer()
+    for sx in (1, -1):
+        x = X0 + 92 * sx
+        line(d, [(x, 36), (x - 14 * sx, 120), (x + 4 * sx, 128), (x - 16 * sx, 230), (x + 8 * sx, 236), (x - 6 * sx, 340)], fill=(255, 255, 255, 255), width=1)
+    frame(d, (237, 231, 200, 255), 16, 2, 0, True); c.put(l); return c
+
+def hellfire(): # Mereoleona: crimson; a lion's mane of flame claws round the medallion
     c = Cv((34, 6, 8), (74, 12, 10), 7)
     l, d = c.layer()
     for i in range(16):
-        a = i * math.pi / 8; r0, r1 = 52, 100 + (i % 2) * 22
-        poly(d, [(CX / S + math.cos(a - 0.12) * r0, CY / S + math.sin(a - 0.12) * r0), (CX / S + math.cos(a + 0.12) * r0, CY / S + math.sin(a + 0.12) * r0), (CX / S + math.cos(a + 0.28) * r1, CY / S + math.sin(a + 0.28) * r1)], fill=(255, 70, 30, 235))
+        a = i * math.pi / 8; r0, r1 = R0 + 2, R0 + 34 + (i % 2) * 18
+        poly(d, [(X0 + math.cos(a - 0.12) * r0, Y0 + math.sin(a - 0.12) * r0), (X0 + math.cos(a + 0.12) * r0, Y0 + math.sin(a + 0.12) * r0), (X0 + math.cos(a + 0.3) * r1, Y0 + math.sin(a + 0.3) * r1)], fill=(255, 70, 30, 235))
     c.put(l, (255, 60, 20), 8, 0.9)
-    l, d = c.layer(); d.ellipse([CX - 48 * S, CY - 48 * S, CX + 48 * S, CY + 48 * S], fill=(120, 14, 10, 255), outline=(232, 182, 82, 255), width=3 * S); d.ellipse([CX - 24 * S, CY - 24 * S, CX + 24 * S, CY + 24 * S], fill=(255, 150, 60, 255))
-    frame(d, (232, 182, 82, 255), 16, 3, 0, False); c.put(l, (255, 80, 30), 8, 0.6); return c
-def bone():    # Zenon: dark red-black, a ribcage of bone arches, knuckle bones at the corners
+    l, d = c.layer(); frame(d, (232, 182, 82, 255), 16, 3, 0, False); c.put(l); return c
+
+def bone():    # Zenon: dark red-black; a spine above and below the medallion with ribs curving round it
     c = Cv((22, 10, 10), (40, 18, 18), 8)
     l, d = c.layer(); bc = (237, 227, 204, 255)
-    line(d, [(128, 70), (128, 300)], fill=bc, width=7)
-    for k in range(6):
-        y = 100 + k * 32; w = 78 - abs(k - 2) * 8
-        d.arc([(128 - w) * S, (y - 22) * S, (128 + w) * S, (y + 22) * S], 0, 180, fill=bc, width=5 * S)
-        d.ellipse([(128 - w - 5) * S, (y - 2) * S, (128 - w + 5) * S, (y + 8) * S], fill=bc); d.ellipse([(128 + w - 5) * S, (y - 2) * S, (128 + w + 5) * S, (y + 8) * S], fill=bc)
-    c.put(l, (240, 220, 190), 6, 0.35)
+    line(d, [(X0, 40), (X0, Y0 - R0 - 4)], fill=bc, width=6); line(d, [(X0, Y0 + R0 + 4), (X0, 312)], fill=bc, width=6)
+    for k in range(4):   # ribs curving round the medallion
+        rr = R0 + 10 + k * 13
+        for s_ in (-1, 1):
+            line(d, ringpts(rr, -math.pi / 2 + s_ * 0.35, -math.pi / 2 + s_ * 1.25, 20), fill=bc, width=4)
+            line(d, ringpts(rr, math.pi / 2 - s_ * 0.35, math.pi / 2 - s_ * 1.25, 20), fill=bc, width=4)
+    for y in (52, 70, 88, 258, 276, 294): d.ellipse([(X0 - 6) * S, (y - 3) * S, (X0 + 6) * S, (y + 3) * S], fill=bc)
+    c.put(l, (240, 220, 190), 6, 0.3)
     l, d = c.layer(); frame(d, bc, 16, 3, 0, False)
     for (x, y) in [(28, 28), (228, 28), (28, 356), (228, 356)]:
         d.ellipse([(x - 8) * S, (y - 5) * S, (x + 1) * S, (y + 4) * S], fill=bc); d.ellipse([(x - 1) * S, (y - 5) * S, (x + 8) * S, (y + 4) * S], fill=bc)
     c.put(l); return c
-def steel():   # Klaus: grey plate, bolted panels, a gear with a lens in it
+
+def steel():   # Klaus: grey plate; bolted panels, and a brass gear rim round the medallion
     c = Cv((48, 54, 62), (72, 80, 92), 9, 7)
     l, d = c.layer()
-    for (x0, y0, x1, y1) in [(26, 26, 230, 120), (26, 128, 230, 256), (26, 264, 230, 358)]:
+    for (x0, y0, x1, y1) in [(26, 26, 230, 96), (26, 252, 230, 358)]:
         d.rectangle([x0 * S, y0 * S, x1 * S, y1 * S], outline=(30, 34, 40, 255), width=3 * S)
         for (x, y) in [(x0 + 9, y0 + 9), (x1 - 9, y0 + 9), (x0 + 9, y1 - 9), (x1 - 9, y1 - 9)]: d.ellipse([(x - 4) * S, (y - 4) * S, (x + 4) * S, (y + 4) * S], fill=(210, 216, 226, 255))
     c.put(l)
     l, d = c.layer()
-    for i in range(12):
-        a = i * math.pi / 6; poly(d, [(CX / S + math.cos(a - .12) * 60, CY / S + math.sin(a - .12) * 60), (CX / S + math.cos(a + .12) * 60, CY / S + math.sin(a + .12) * 60), (CX / S + math.cos(a + .1) * 76, CY / S + math.sin(a + .1) * 76), (CX / S + math.cos(a - .1) * 76, CY / S + math.sin(a - .1) * 76)], fill=(217, 169, 76, 255))
-    d.ellipse([CX - 62 * S, CY - 62 * S, CX + 62 * S, CY + 62 * S], fill=(217, 169, 76, 255)); d.ellipse([CX - 46 * S, CY - 46 * S, CX + 46 * S, CY + 46 * S], fill=(38, 42, 50, 255)); d.ellipse([CX - 22 * S, CY - 22 * S, CX + 22 * S, CY + 22 * S], fill=(150, 190, 235, 255)); d.ellipse([CX - 8 * S, CY - 12 * S, CX, CY - 4 * S], fill=(255, 255, 255, 255))
+    for i in range(16):
+        a = i * math.pi / 8
+        poly(d, [(X0 + math.cos(a - .1) * (R0 + 6), Y0 + math.sin(a - .1) * (R0 + 6)), (X0 + math.cos(a + .1) * (R0 + 6), Y0 + math.sin(a + .1) * (R0 + 6)),
+                 (X0 + math.cos(a + .08) * (R0 + 18), Y0 + math.sin(a + .08) * (R0 + 18)), (X0 + math.cos(a - .08) * (R0 + 18), Y0 + math.sin(a - .08) * (R0 + 18))], fill=(217, 169, 76, 255))
+    line(d, ringpts(R0 + 4, 0, 6.29, 90), fill=(217, 169, 76, 255), width=5)
     c.put(l); return c
-def string():  # Vanessa: rose cloth, stitched seams, needle and looping thread
+
+def string():  # Vanessa: rose cloth; stitched border, a thread looping round the medallion, a needle in the corner
     c = Cv((74, 22, 52), (110, 36, 78), 10, 14)
     l, d = c.layer()
     for k in range(40):
@@ -167,51 +195,64 @@ def string():  # Vanessa: rose cloth, stitched seams, needle and looping thread
     for k in range(60):
         y = 28 + k * 5.5; d.line([22 * S, y * S, 22 * S, (y + 3) * S], fill=(242, 221, 232, 255), width=2 * S); d.line([234 * S, y * S, 234 * S, (y + 3) * S], fill=(242, 221, 232, 255), width=2 * S)
     c.put(l)
-    l, d = c.layer(); pts = []
-    for t in range(0, 300):
-        a = t / 300 * 6.4 * math.pi; rr = 20 + t / 300 * 70; pts.append((128 + math.cos(a) * rr * 0.95, 170 + math.sin(a) * rr * 0.75))
-    line(d, pts, fill=(255, 140, 198, 255), width=2); c.put(l, (255, 120, 190), 5, 0.7)
-    l, d = c.layer(); line(d, [(60, 330), (196, 90)], fill=(245, 235, 240, 255), width=3); d.ellipse([194 * S, 82 * S, 202 * S, 96 * S], outline=(245, 235, 240, 255), width=S); c.put(l); return c
-def spatial(): # Finral: deep indigo, a golden gate ring with a violet void, tiny gates drifting
+    l, d = c.layer()
+    pts = [(X0 + math.cos(t / 40) * (R0 + 10 + 7 * math.sin(t / 11)), Y0 + math.sin(t / 40) * (R0 + 10 + 7 * math.sin(t / 11))) for t in range(0, 252)]
+    line(d, pts, fill=(255, 140, 198, 255), width=2)
+    line(d, [(196, 60), (218, 34)], fill=(255, 140, 198, 255), width=1)
+    c.put(l, (255, 120, 190), 5, 0.7)
+    l, d = c.layer(); line(d, [(186, 72), (214, 38)], fill=(245, 235, 240, 255), width=3); d.ellipse([211 * S, 32 * S, 219 * S, 44 * S], outline=(245, 235, 240, 255), width=S)
+    c.put(l); return c
+
+def spatial(): # Finral: deep indigo; a golden gate ring round the medallion, small gates drifting outside it
     c = Cv((6, 4, 26), (22, 16, 64), 11)
     l, d = c.layer()
-    d.ellipse([CX - 62 * S, CY - 80 * S, CX + 62 * S, CY + 80 * S], fill=(30, 12, 90, 255), outline=(231, 199, 102, 255), width=5 * S)
-    d.ellipse([CX - 46 * S, CY - 62 * S, CX + 46 * S, CY + 62 * S], fill=(8, 4, 34, 255), outline=(156, 120, 255, 255), width=2 * S)
-    c.put(l, (156, 120, 255), 10, 0.9)
+    line(d, ringpts(R0 + 6, 0, 6.29, 90), fill=(231, 199, 102, 255), width=5)
+    line(d, ringpts(R0 + 13, 0, 6.29, 90), fill=(156, 120, 255, 255), width=2)
+    c.put(l, (156, 120, 255), 10, 0.8)
     l, d = c.layer()
-    for (x, y, s) in [(52, 70, 10), (204, 110, 8), (60, 290, 9), (200, 320, 12)]: d.ellipse([(x - s * .6) * S, (y - s) * S, (x + s * .6) * S, (y + s) * S], outline=(231, 199, 102, 255), width=2 * S)
+    for (x, y, s_) in [(52, 64, 10), (204, 84, 8), (56, 300, 9), (200, 296, 12)]: d.ellipse([(x - s_ * .6) * S, (y - s_) * S, (x + s_ * .6) * S, (y + s_) * S], outline=(231, 199, 102, 255), width=2 * S, fill=(30, 12, 90, 255))
     frame(d, (231, 199, 102, 255), 16, 2, 4, True); c.put(l); return c
-def water():   # Noelle: sea blue, a curling wave with foam and bubbles, a sea-dragon's coil
+
+def water():   # Noelle: sea blue; waves above and below, a crest of foam curling round the medallion, bubbles
     c = Cv((6, 26, 52), (10, 70, 120), 12)
     l, d = c.layer()
-    for k in range(6):
-        y0 = 120 + k * 36; pts = [(x, y0 + math.sin(x / 14.0 + k) * 8) for x in range(24, 233, 3)]; line(d, pts, fill=(130, 210, 255, 220 - k * 20), width=3)
+    for k in range(3):
+        for y0 in (60 + k * 22, 270 + k * 22):
+            line(d, [(x, y0 + math.sin(x / 14.0 + k) * 7) for x in range(24, 233, 3)], fill=(130, 210, 255, 220 - k * 40), width=3)
     c.put(l, (90, 190, 255), 6, 0.5)
-    l, d = c.layer(); d.pieslice([CX - 62 * S, CY - 62 * S, CX + 62 * S, CY + 62 * S], 200, 360, fill=(92, 200, 255, 255)); d.pieslice([CX - 44 * S, CY - 44 * S, CX + 62 * S, CY + 62 * S], 200, 360, fill=(14, 60, 110, 255))
-    for (x, y, s) in [(80, 110, 6), (176, 90, 8), (150, 130, 4), (96, 250, 7), (180, 270, 5)]: d.ellipse([(x - s) * S, (y - s) * S, (x + s) * S, (y + s) * S], outline=(228, 242, 255, 255), width=2 * S)
+    l, d = c.layer()
+    line(d, ringpts(R0 + 6, math.radians(150), math.radians(390)), fill=(92, 200, 255, 255), width=6)
+    line(d, ringpts(R0 + 12, math.radians(170), math.radians(360), 40), fill=(228, 242, 255, 230), width=2)
+    for (x, y, s_) in [(52, 150, 6), (204, 140, 8), (190, 200, 4), (60, 210, 7)]: d.ellipse([(x - s_) * S, (y - s_) * S, (x + s_) * S, (y + s_) * S], outline=(228, 242, 255, 255), width=2 * S)
     c.put(l, (110, 205, 255), 8, 0.7)
     l, d = c.layer(); frame(d, (228, 242, 255, 255), 16, 2, 0, False)
-    pts = [(x, 366 + math.sin(x / 8.0) * 4) for x in range(24, 233, 2)]; line(d, pts, fill=(228, 242, 255, 255), width=3); c.put(l); return c
-def mirror():  # Gauche: silver glass, a lattice of angled mirror panes with a rose glint
+    line(d, [(x, 366 + math.sin(x / 8.0) * 4) for x in range(24, 233, 2)], fill=(228, 242, 255, 255), width=3); c.put(l); return c
+
+def mirror():  # Gauche: silver glass; angled mirror panes round the edges, the middle left clear
     c = Cv((52, 52, 70), (96, 96, 122), 13, 5)
     l, d = c.layer(); r = random.Random(11)
-    cells = [(30, 30, 126, 150), (130, 30, 226, 110), (30, 154, 110, 250), (114, 114, 226, 250), (30, 254, 140, 354), (144, 254, 226, 354)]
+    cells = [(28, 28, 118, 96), (126, 28, 228, 90), (28, 104, 58, 250), (198, 98, 228, 250), (28, 258, 132, 356), (140, 262, 228, 356)]
     for (x0, y0, x1, y1) in cells:
-        poly(d, [(x0, y0 + r.randint(0, 10)), (x1 - r.randint(0, 10), y0), (x1, y1 - r.randint(0, 10)), (x0 + r.randint(0, 10), y1)], fill=(120 + r.randint(0, 40), 120 + r.randint(0, 40), 150 + r.randint(0, 40), 255), outline=(232, 232, 242, 255))
-        line(d, [(x0 + 12, y1 - 14), (x1 - 14, y0 + 14)], fill=(255, 176, 216, 200), width=2)
-    c.put(l, (255, 176, 216), 5, 0.35)
-    l, d = c.layer(); frame(d, (232, 232, 242, 255), 14, 3, 0, False); c.put(l); return c
-def rift():    # Langris: plum black, space cut open by straight slashes, violet void showing through
+        poly(d, [(x0, y0 + r.randint(0, 8)), (x1 - r.randint(0, 8), y0), (x1, y1 - r.randint(0, 8)), (x0 + r.randint(0, 8), y1)], fill=(120 + r.randint(0, 40), 120 + r.randint(0, 40), 150 + r.randint(0, 40), 255), outline=(232, 232, 242, 255))
+        line(d, [(x0 + 8, y1 - 10), (x1 - 10, y0 + 10)], fill=(255, 176, 216, 200), width=2)
+    c.put(l, (255, 176, 216), 5, 0.3)
+    l, d = c.layer()
+    for i in range(12):   # a frame of small glass facets round the medallion
+        a = i * math.pi / 6
+        poly(d, [(X0 + math.cos(a) * (R0 + 4), Y0 + math.sin(a) * (R0 + 4)), (X0 + math.cos(a + 0.26) * (R0 + 14), Y0 + math.sin(a + 0.26) * (R0 + 14)), (X0 + math.cos(a + 0.52) * (R0 + 4), Y0 + math.sin(a + 0.52) * (R0 + 4))], fill=(200, 200, 225, 255), outline=(240, 240, 250, 255))
+    frame(d, (232, 232, 242, 255), 14, 3, 0, False); c.put(l); return c
+
+def rift():    # Langris: plum black; straight cuts in space that stop at the medallion's edge, cracks off them
     c = Cv((10, 4, 16), (30, 10, 40), 14)
     l, d = c.layer(); r = random.Random(21)
-    for (x0, y0, x1, y1) in [(20, 330, 236, 60), (30, 250, 200, 36), (60, 360, 240, 150)]:
-        line(d, [(x0, y0), (x1, y1)], fill=(255, 220, 255, 255), width=3)
-        for k in range(5):
-            t = r.uniform(0.1, 0.9); px_, py_ = x0 + (x1 - x0) * t, y0 + (y1 - y0) * t; crack(d, px_, py_, r.uniform(0, 6.28), 36, (224, 64, 216, 255), 2, r, 1)
+    for (a, ln) in [(-2.4, 130), (-0.6, 120), (0.75, 150), (2.6, 120), (-1.5, 70), (1.65, 110)]:
+        p0 = (X0 + math.cos(a) * (R0 + 6), Y0 + math.sin(a) * (R0 + 6)); p1 = (X0 + math.cos(a) * (R0 + 6 + ln), Y0 + math.sin(a) * (R0 + 6 + ln))
+        p1 = (max(22, min(234, p1[0])), max(22, min(362, p1[1])))
+        line(d, [p0, p1], fill=(255, 220, 255, 255), width=3)
+        for k in range(2):
+            t = r.uniform(0.3, 0.9); crack(d, p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t, a + r.choice([-1, 1]) * 1.2, 28, (224, 64, 216, 255), 2, r, 1)
     c.put(l, (224, 64, 216), 10, 1.0)
-    l, d = c.layer(); poly(d, [(20, 330), (236, 60), (236, 80), (20, 352)], fill=(70, 10, 90, 200)); c.put(l)
     l, d = c.layer(); frame(d, (214, 160, 232, 255), 16, 2, 0, False); c.put(l); return c
-
 
 # ---------------------------------------------------------------- the shared grimoire look: a clover crest, corner brackets, worn leather
 ACC = dict(dark=(180, 169, 200), wind=(231, 217, 160), mercury=(220, 232, 248), fire=(217, 169, 76), lightning=(237, 231, 200),
@@ -244,37 +285,27 @@ def shift(m, dx, dy):
 
 def decorate(c, n):
     acc = ACC[n]; glow = GLOW[n]
-    leaves = LEAVES.get(n, 3)
-    r = 34 * S
-    # 1. the theme fades softly into the leather round the crest, so the crest sits IN the cover, not on it
-    calm = Image.new('L', (W, H), 0); ImageDraw.Draw(calm).ellipse([CX - 62 * S, CY - 62 * S, CX + 62 * S, CY + 62 * S], fill=255)
-    calm = calm.filter(ImageFilter.GaussianBlur(22 * S))
-    soft = c.im.filter(ImageFilter.GaussianBlur(5 * S))
-    base = c.im.resize((1, 1), Image.BOX).getpixel((0, 0))
-    soft = Image.blend(soft, Image.new('RGBA', (W, H), base[:3] + (255,)), 0.45)
-    c.im = Image.composite(soft, c.im, calm)
-    # 2. a tooled medallion ring pressed into the leather
+    # 1. the middle is left as clean leather: an empty medallion where a clover can go
+    clear = Image.new('L', (W, H), 0); ImageDraw.Draw(clear).ellipse([CX - (R0 - 2) * S, CY - (R0 - 2) * S, CX + (R0 - 2) * S, CY + (R0 - 2) * S], fill=255)
+    c.im = Image.composite(c.bg, c.im, clear.filter(ImageFilter.GaussianBlur(3 * S)))
+    # 2. a tooled ring pressed into the leather round it
     ring = Image.new('L', (W, H), 0); rd = ImageDraw.Draw(ring)
-    rd.ellipse([CX - 54 * S, CY - 54 * S, CX + 54 * S, CY + 54 * S], outline=255, width=2 * S)
-    rd.ellipse([CX - 49 * S, CY - 49 * S, CX + 49 * S, CY + 49 * S], outline=255, width=1 * S)
-    for i in range(24):
-        a = i * math.pi / 12
-        rd.ellipse([CX + math.cos(a) * 51.5 * S - 1.2 * S, CY + math.sin(a) * 51.5 * S - 1.2 * S, CX + math.cos(a) * 51.5 * S + 1.2 * S, CY + math.sin(a) * 51.5 * S + 1.2 * S], fill=255)
-    emboss(c, ring, acc, glow, depth=1, gold=0.75, inset=0.0)
-    # 3. the clover itself, debossed: a darker inset, shadowed top-left, lit bottom-right, a fine metal edge and veins
-    m = heart_clover_mask(CX, CY - 6 * S, r, leaves)
-    emboss(c, m, acc, glow, depth=2, gold=0.95, inset=0.55, veins=(CX, CY - 6 * S, r, leaves))
-    # 4. bracketed corners and a title plate, embossed the same way
+    rd.ellipse([CX - R0 * S, CY - R0 * S, CX + R0 * S, CY + R0 * S], outline=255, width=2 * S)
+    rd.ellipse([CX - (R0 - 6) * S, CY - (R0 - 6) * S, CX + (R0 - 6) * S, CY + (R0 - 6) * S], outline=255, width=1 * S)
+    for i in range(28):
+        a = i * math.pi / 14
+        x, y = CX + math.cos(a) * (R0 - 3) * S, CY + math.sin(a) * (R0 - 3) * S
+        rd.ellipse([x - 1.2 * S, y - 1.2 * S, x + 1.2 * S, y + 1.2 * S], fill=255)
+    emboss(c, ring.filter(ImageFilter.GaussianBlur(0.6)), acc, glow, depth=1, gold=0.8, inset=0.0, glowAmt=0.25)
+    # 3. bracketed corners and a title plate, pressed in the same way
     k = Image.new('L', (W, H), 0); kd = ImageDraw.Draw(k)
     for (x, y, sx, sy) in [(12, 12, 1, 1), (244, 12, -1, 1), (12, 372, 1, -1), (244, 372, -1, -1)]:
         kd.line([((x) * S, (y + 30 * sy) * S), (x * S, y * S), ((x + 30 * sx) * S, y * S)], fill=255, width=3 * S)
-        kd.arc([min(x, x + 26 * sx) * S, min(y, y + 26 * sy) * S, max(x, x + 26 * sx) * S, max(y, y + 26 * sy) * S],
-               {(1, 1): 180, (-1, 1): 270, (1, -1): 90, (-1, -1): 0}[(sx, sy)], {(1, 1): 270, (-1, 1): 360, (1, -1): 180, (-1, -1): 90}[(sx, sy)], fill=255, width=1 * S)
         kd.ellipse([(x + 8 * sx - 2.5) * S, (y + 8 * sy - 2.5) * S, (x + 8 * sx + 2.5) * S, (y + 8 * sy + 2.5) * S], fill=255)
     kd.rounded_rectangle([82 * S, 322 * S, 174 * S, 340 * S], radius=5 * S, outline=255, width=2 * S)
     kd.line([(96 * S, 331 * S), (160 * S, 331 * S)], fill=255, width=1 * S)
     emboss(c, k.filter(ImageFilter.GaussianBlur(0.6)), acc, glow, depth=1, gold=0.8, inset=0.0, glowAmt=0.0)
-    # 5. worn leather: a few pale scuffs, edges darker
+    # 4. worn leather: a few pale scuffs, edges darker
     rr = random.Random(len(n))
     l, d = c.layer()
     for _ in range(30):
