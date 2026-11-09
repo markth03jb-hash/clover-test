@@ -222,38 +222,95 @@ GLOW = dict(dark=(150, 70, 255), wind=(110, 255, 170), mercury=(170, 200, 240), 
             water=(110, 205, 255), mirror=(255, 176, 216), rift=(224, 64, 216))
 LEAVES = dict(wind=4, lightning=4)
 
+def heart_clover_mask(cx, cy, r, n, ang0=-math.pi / 2):
+    """A clover of heart-shaped leaves (and a curved stem), as a soft-edged mask, in 2x pixels."""
+    m = Image.new('L', (W, H), 0); d = ImageDraw.Draw(m)
+    for i in range(n):
+        a = ang0 + i * 2 * math.pi / n
+        ux, uy = math.cos(a), math.sin(a); px, py = -uy, ux
+        for s_ in (-1, 1):   # the two lobes of the heart
+            lx, ly = cx + ux * r * 0.62 + px * r * 0.24 * s_, cy + uy * r * 0.62 + py * r * 0.24 * s_
+            d.ellipse([lx - r * 0.31, ly - r * 0.31, lx + r * 0.31, ly + r * 0.31], fill=255)
+        d.polygon([(cx + ux * r * 0.05, cy + uy * r * 0.05),
+                   (cx + ux * r * 0.62 + px * r * 0.53, cy + uy * r * 0.62 + py * r * 0.53),
+                   (cx + ux * r * 0.8, cy + uy * r * 0.8),
+                   (cx + ux * r * 0.62 - px * r * 0.53, cy + uy * r * 0.62 - py * r * 0.53)], fill=255)
+    pts = [(cx + math.sin(t / 10 * 1.2) * r * 0.25, cy + t / 10 * r * 1.25) for t in range(11)]
+    d.line(pts, fill=255, width=max(2, int(r * 0.11)))
+    return m.filter(ImageFilter.GaussianBlur(0.8))
+
+def shift(m, dx, dy):
+    return ImageChops.offset(m, dx, dy)
+
 def decorate(c, n):
-    col = ACC[n] + (255,)
-    # a plate behind the crest, so it reads on top of any motif
-    l, d = c.layer()
-    d.ellipse([CX - 50 * S, CY - 50 * S, CX + 50 * S, CY + 50 * S], fill=(0, 0, 0, 110))
-    c.put(l)
-    l, d = c.layer()
-    clover(d, CX / S, CY / S - 2, 30, LEAVES.get(n, 3), ACC[n] + (255,))
-    clover(d, CX / S, CY / S - 2, 24, LEAVES.get(n, 3), tuple(int(v * 0.18) for v in ACC[n]) + (255,))
-    c.put(l, GLOW[n], 7, 0.8)
-    # bracketed corners, like the metal corners of an old book
-    l, d = c.layer()
+    acc = ACC[n]; glow = GLOW[n]
+    leaves = LEAVES.get(n, 3)
+    r = 34 * S
+    # 1. the theme fades softly into the leather round the crest, so the crest sits IN the cover, not on it
+    calm = Image.new('L', (W, H), 0); ImageDraw.Draw(calm).ellipse([CX - 62 * S, CY - 62 * S, CX + 62 * S, CY + 62 * S], fill=255)
+    calm = calm.filter(ImageFilter.GaussianBlur(22 * S))
+    soft = c.im.filter(ImageFilter.GaussianBlur(5 * S))
+    base = c.im.resize((1, 1), Image.BOX).getpixel((0, 0))
+    soft = Image.blend(soft, Image.new('RGBA', (W, H), base[:3] + (255,)), 0.45)
+    c.im = Image.composite(soft, c.im, calm)
+    # 2. a tooled medallion ring pressed into the leather
+    ring = Image.new('L', (W, H), 0); rd = ImageDraw.Draw(ring)
+    rd.ellipse([CX - 54 * S, CY - 54 * S, CX + 54 * S, CY + 54 * S], outline=255, width=2 * S)
+    rd.ellipse([CX - 49 * S, CY - 49 * S, CX + 49 * S, CY + 49 * S], outline=255, width=1 * S)
+    for i in range(24):
+        a = i * math.pi / 12
+        rd.ellipse([CX + math.cos(a) * 51.5 * S - 1.2 * S, CY + math.sin(a) * 51.5 * S - 1.2 * S, CX + math.cos(a) * 51.5 * S + 1.2 * S, CY + math.sin(a) * 51.5 * S + 1.2 * S], fill=255)
+    emboss(c, ring, acc, glow, depth=1, gold=0.75, inset=0.0)
+    # 3. the clover itself, debossed: a darker inset, shadowed top-left, lit bottom-right, a fine metal edge and veins
+    m = heart_clover_mask(CX, CY - 6 * S, r, leaves)
+    emboss(c, m, acc, glow, depth=2, gold=0.95, inset=0.55, veins=(CX, CY - 6 * S, r, leaves))
+    # 4. bracketed corners and a title plate, embossed the same way
+    k = Image.new('L', (W, H), 0); kd = ImageDraw.Draw(k)
     for (x, y, sx, sy) in [(12, 12, 1, 1), (244, 12, -1, 1), (12, 372, 1, -1), (244, 372, -1, -1)]:
-        line(d, [(x, y + 34 * sy), (x, y), (x + 34 * sx, y)], fill=col, width=4)
-        line(d, [(x + 6 * sx, y + 22 * sy), (x + 6 * sx, y + 6 * sy), (x + 22 * sx, y + 6 * sy)], fill=col, width=2)
-        d.ellipse([(x + 9 * sx - 3) * S, (y + 9 * sy - 3) * S, (x + 9 * sx + 3) * S, (y + 9 * sy + 3) * S], fill=col)
-    # a title plate at the foot
-    d.rounded_rectangle([78 * S, 322 * S, 178 * S, 342 * S], radius=6 * S, outline=col, width=2 * S, fill=(0, 0, 0, 90))
-    line(d, [(92, 332), (164, 332)], fill=col, width=2)
-    c.put(l)
-    # worn leather: darker edges, a few pale scratches
-    r = random.Random(len(n))
+        kd.line([((x) * S, (y + 30 * sy) * S), (x * S, y * S), ((x + 30 * sx) * S, y * S)], fill=255, width=3 * S)
+        kd.arc([min(x, x + 26 * sx) * S, min(y, y + 26 * sy) * S, max(x, x + 26 * sx) * S, max(y, y + 26 * sy) * S],
+               {(1, 1): 180, (-1, 1): 270, (1, -1): 90, (-1, -1): 0}[(sx, sy)], {(1, 1): 270, (-1, 1): 360, (1, -1): 180, (-1, -1): 90}[(sx, sy)], fill=255, width=1 * S)
+        kd.ellipse([(x + 8 * sx - 2.5) * S, (y + 8 * sy - 2.5) * S, (x + 8 * sx + 2.5) * S, (y + 8 * sy + 2.5) * S], fill=255)
+    kd.rounded_rectangle([82 * S, 322 * S, 174 * S, 340 * S], radius=5 * S, outline=255, width=2 * S)
+    kd.line([(96 * S, 331 * S), (160 * S, 331 * S)], fill=255, width=1 * S)
+    emboss(c, k.filter(ImageFilter.GaussianBlur(0.6)), acc, glow, depth=1, gold=0.8, inset=0.0, glowAmt=0.0)
+    # 5. worn leather: a few pale scuffs, edges darker
+    rr = random.Random(len(n))
     l, d = c.layer()
-    for _ in range(26):
-        x, y = r.randint(10, 246), r.randint(10, 374); a = r.uniform(0, 6.28); ln = r.randint(8, 30)
-        line(d, [(x, y), (x + math.cos(a) * ln, y + math.sin(a) * ln)], fill=(255, 255, 255, 38), width=1)
+    for _ in range(30):
+        x, y = rr.randint(10, 246), rr.randint(10, 374); a = rr.uniform(0, 6.28); ln = rr.randint(6, 26)
+        line(d, [(x, y), (x + math.cos(a) * ln, y + math.sin(a) * ln)], fill=(255, 255, 255, 26), width=1)
     c.put(l)
-    v = Image.new('L', (W, H), 0); vd = ImageDraw.Draw(v)
-    vd.rectangle([0, 0, W, H], fill=0); vd.rectangle([30 * S, 30 * S, W - 30 * S, H - 30 * S], fill=255)
+    v = Image.new('L', (W, H), 0); ImageDraw.Draw(v).rectangle([28 * S, 28 * S, W - 28 * S, H - 28 * S], fill=255)
     v = v.filter(ImageFilter.GaussianBlur(26 * S))
-    shade = Image.composite(Image.new('RGBA', (W, H), (0, 0, 0, 0)), Image.new('RGBA', (W, H), (0, 0, 0, 110)), v)
-    c.im = Image.alpha_composite(c.im, shade)
+    c.im = Image.alpha_composite(c.im, Image.composite(Image.new('RGBA', (W, H), (0, 0, 0, 0)), Image.new('RGBA', (W, H), (0, 0, 0, 120)), v))
+
+def emboss(c, m, acc, glow, depth=2, gold=0.9, inset=0.5, veins=None, glowAmt=0.45):
+    """Presses a shape into the leather: darkened inside, a shadow on the upper-left edge, light on the lower-right,
+    then a thin metal outline and a faint glow of the book's magic - so it reads as part of the cover."""
+    dd = depth * S
+    edge = ImageChops.subtract(m, m.filter(ImageFilter.MinFilter(3 if S < 2 else 5)))
+    img = c.im
+    if inset > 0:   # the leather inside the shape is pressed down and a shade darker, tinted with the magic
+        dark = ImageChops.multiply(img, Image.new('RGBA', (W, H), (int(150 + glow[0] * 0.2), int(150 + glow[1] * 0.2), int(150 + glow[2] * 0.2), 255)))
+        img = Image.composite(dark, img, m.point(lambda v: int(v * inset)))
+    shadow = ImageChops.subtract(shift(m, dd, dd), m).filter(ImageFilter.GaussianBlur(1.2 * S))
+    light = ImageChops.subtract(shift(m, -dd, -dd), m).filter(ImageFilter.GaussianBlur(1.0 * S))
+    img = Image.composite(Image.new('RGBA', (W, H), (0, 0, 0, 255)), img, shadow.point(lambda v: int(v * 0.75)))
+    img = Image.composite(Image.new('RGBA', (W, H), tuple(min(255, int(a * 0.9 + 40)) for a in acc) + (255,)), img, light.point(lambda v: int(v * 0.5)))
+    if glowAmt > 0:   # the magic glowing faintly out of the pressed shape
+        g = m.filter(ImageFilter.GaussianBlur(6 * S)).point(lambda v: int(v * glowAmt))
+        img = Image.composite(Image.new('RGBA', (W, H), glow + (255,)), img, ImageChops.subtract(g, m.point(lambda v: v // 2)))
+    metal = Image.new('RGBA', (W, H), acc + (255,))
+    img = Image.composite(metal, img, edge.point(lambda v: int(v * gold)))
+    if veins:   # fine veins down the middle of each leaf
+        cx, cy, r, nl = veins
+        vm = Image.new('L', (W, H), 0); vd = ImageDraw.Draw(vm)
+        for i in range(nl):
+            a = -math.pi / 2 + i * 2 * math.pi / nl
+            vd.line([(cx + math.cos(a) * r * 0.12, cy + math.sin(a) * r * 0.12), (cx + math.cos(a) * r * 0.7, cy + math.sin(a) * r * 0.7)], fill=255, width=S)
+        img = Image.composite(metal, img, vm.filter(ImageFilter.GaussianBlur(0.6)).point(lambda v: int(v * 0.5)))
+    c.im = img
 
 BOOKS = dict(dark=dark, wind=wind, mercury=mercury, fire=fire, lightning=lightning, hellfire=hellfire, bone=bone, steel=steel,
              string=string, spatial=spatial, water=water, mirror=mirror, rift=rift)
