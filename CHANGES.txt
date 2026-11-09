@@ -1,7 +1,13 @@
-Iron Spell Grimoire v1.50.2 - all changed files since v1.0.0
+Iron Spell Grimoire v1.50.3 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.50.3
+- Fixed a crash (ConcurrentModificationException in FxRenderer.onTick): effects held back to land on a move's
+  swing were released in the middle of the effect loop. They are now released before it.
+- The grimoire sounds were far too loud. Every sound is re-mastered to vanilla loudness (the same average level,
+  peaks capped), and played at 60% volume on top of that.
 
 NEW IN 1.50.2
 - Asta's wing rebuilt so it actually reads as a wing: a bony arm (upper arm to elbow, forearm to wrist, with a

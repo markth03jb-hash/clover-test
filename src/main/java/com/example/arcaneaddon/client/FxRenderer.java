@@ -276,10 +276,10 @@ public class FxRenderer extends FxBase {
             WHIPS.clear();
          } else {
             double now = (double)mc.level.getGameTime();
+            FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
             Iterator<FxRenderer.Fx> it = FX.iterator();
             DarkSmoke.tick();
             PixelFx.tick();
-            FxSync.tick();
             for (java.util.Map.Entry<Integer, double[]> ze : ZONES.entrySet()) {
                Double tgt = ZONE_TARGET.get(ze.getKey());
                if (tgt != null) ze.getValue()[2] += (tgt - ze.getValue()[2]) * 0.2;
