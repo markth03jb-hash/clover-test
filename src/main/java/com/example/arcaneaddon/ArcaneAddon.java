@@ -14,6 +14,8 @@ public class ArcaneAddon {
     public ArcaneAddon() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         AddonSpellRegistry.SPELLS.register(modBus);
+        com.example.arcaneaddon.registry.AddonBlocks.init();
+        com.example.arcaneaddon.registry.AddonBlocks.BLOCKS.register(modBus);
         AddonItemRegistry.ITEMS.register(modBus);
         com.example.arcaneaddon.registry.AddonSounds.SOUNDS.register(modBus);
         AddonItemRegistry.TABS.register(modBus);

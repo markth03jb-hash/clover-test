@@ -43,7 +43,6 @@ public final class FxSync {
     public static void cast(int playerId, int nameHash, int serverImpact) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
-        GrimoireFloatRenderer.castFlip(playerId);   // every cast: the grimoire flips open to the spell's page
         String name = nameHash == 0 ? null : AnimNames.byHash(nameHash);
         // the server's impact tick (read from the same animation files) keeps both sides in step with each other
         int impact = serverImpact > 0 ? serverImpact : (name == null ? 0 : impactOf(name));

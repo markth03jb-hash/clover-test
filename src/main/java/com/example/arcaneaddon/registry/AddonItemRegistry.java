@@ -92,6 +92,7 @@ public class AddonItemRegistry {
                 ItemStack steel = new ItemStack(STEEL_GRIMOIRE.get());
                 ((IPresetSpellContainer) STEEL_GRIMOIRE.get()).initializeSpellContainer(steel);
                 out.accept(steel);
+                out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());
             })
             .build());
 }

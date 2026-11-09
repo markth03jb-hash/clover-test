@@ -20,7 +20,7 @@ public class GrimoireOpenPacket {
 
     public static void handle(GrimoireOpenPacket p, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() ->
-                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> GrimoireFloatRenderer.openBook(p.entityId)));
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> GrimoireFloatRenderer.castFlip(p.entityId)));
         ctx.get().setPacketHandled(true);
     }
 }

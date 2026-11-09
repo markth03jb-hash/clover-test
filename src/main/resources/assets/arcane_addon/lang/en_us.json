@@ -361,5 +361,6 @@
   "subtitles.arcane_addon.sfx.charge": "Mana gathers",
   "subtitles.arcane_addon.sfx.fire": "Flames roar",
   "subtitles.arcane_addon.sfx.thunder": "Lightning cracks",
-  "subtitles.arcane_addon.sfx.roar": "Mana roars"
+  "subtitles.arcane_addon.sfx.roar": "Mana roars",
+  "block.arcane_addon.grimoire_altar": "Grimoire Altar"
 }

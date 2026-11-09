@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [ " B ", "GLG", "SSS" ],
+  "key": {
+    "B": { "item": "minecraft:book" },
+    "G": { "item": "minecraft:gold_ingot" },
+    "L": { "item": "minecraft:lapis_block" },
+    "S": { "item": "minecraft:polished_deepslate" }
+  },
+  "result": { "item": "arcane_addon:grimoire_altar", "count": 1 }
+}

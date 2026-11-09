@@ -19,6 +19,11 @@ public class GrimoireCastEvents {
         if (!(e.getEntity() instanceof ServerPlayer sp)) return;
         ItemStack book = Utils.getPlayerSpellbookStack(sp);
         if (book == null || book.isEmpty() || !ArcaneAddon.MODID.equals(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(book.getItem()).getNamespace())) return;
+        if (!sp.isCreative() && GrimoireCeremony.boundToOther(book, sp)) {   // a grimoire only answers the one it chose
+            e.setCanceled(true);
+            sp.displayClientMessage(net.minecraft.network.chat.Component.literal("This grimoire did not choose you.").withStyle(net.minecraft.ChatFormatting.RED), true);
+            return;
+        }
         AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> sp), new GrimoireOpenPacket(sp.getId()));
     }
 }

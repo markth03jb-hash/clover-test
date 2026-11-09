@@ -1,0 +1,25 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "arcane_addon:block/grimoire_altar_side",
+    "side": "arcane_addon:block/grimoire_altar_side",
+    "top": "arcane_addon:block/grimoire_altar_top",
+    "bottom": "arcane_addon:block/grimoire_altar_bottom"
+  },
+  "elements": [
+    { "from": [0, 0, 0], "to": [16, 3, 16],
+      "faces": {
+        "down": {"texture": "#bottom", "cullface": "down"}, "up": {"texture": "#top"},
+        "north": {"texture": "#side", "uv": [0, 13, 16, 16], "cullface": "north"}, "south": {"texture": "#side", "uv": [0, 13, 16, 16], "cullface": "south"},
+        "west": {"texture": "#side", "uv": [0, 13, 16, 16], "cullface": "west"}, "east": {"texture": "#side", "uv": [0, 13, 16, 16], "cullface": "east"} } },
+    { "from": [3, 3, 3], "to": [13, 11, 13],
+      "faces": {
+        "north": {"texture": "#side", "uv": [3, 4, 13, 12]}, "south": {"texture": "#side", "uv": [3, 4, 13, 12]},
+        "west": {"texture": "#side", "uv": [3, 4, 13, 12]}, "east": {"texture": "#side", "uv": [3, 4, 13, 12]} } },
+    { "from": [1, 11, 1], "to": [15, 14, 15],
+      "faces": {
+        "down": {"texture": "#bottom"}, "up": {"texture": "#top"},
+        "north": {"texture": "#side", "uv": [0, 0, 16, 3]}, "south": {"texture": "#side", "uv": [0, 0, 16, 3]},
+        "west": {"texture": "#side", "uv": [0, 0, 16, 3]}, "east": {"texture": "#side", "uv": [0, 0, 16, 3]} } }
+  ]
+}

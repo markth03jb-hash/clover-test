@@ -22,6 +22,15 @@ NEW IN 1.58.0
   a flash, rings in both colours, sparks, a shake. The stronger (spell power x the size of the move) breaks through;
   the weaker is torn apart and its damage never lands; within 15% of each other both are cancelled. Anti magic
   always cuts through magic. Both players are told the result.
+- Grimoire acquisition - the grimoire tower ceremony: craft a Grimoire Altar (book over gold - lapis block - gold,
+  three polished deepslate) and use it. The grimoires rise out of it and circle above, faster and faster, until one
+  leaves the ring and comes to your hands: it has chosen you. Which one is weighted by how you play (your stats):
+  fighters draw Asta's, Yami's and Mereoleona's; archers and fliers Yuno's; swimmers Nozel's; fire-starters Magna's;
+  runners and jumpers Luck's; skeleton hunters Zenon's; shield users Klaus's. Asta's five-leaf grimoire is the
+  rarest and favours those with little magic (low experience level).
+  In survival you are chosen once and the grimoire is bound to you - nobody else can cast from it. Lose it and the
+  altar calls it back. In creative the ceremony can be repeated. The grimoires can no longer be crafted.
+- The page-turn now starts the moment you begin casting.
 
 NEW IN 1.57.0
 - Equinox: an invisible sword. While it charges you see only its outline - faint pale edges tapering to a point, a
