@@ -313,7 +313,7 @@ public final class WaterFx {
                 Vec3 pos = from.add(flatTo.scale(t)).add(0, Math.sin(t * Math.PI) * 7.0, 0);
                 Vec3 tan = pos.subtract(prev[0]);
                 // the body: a thick chain of water with a coil of foam, and a head of three spikes
-                FxSend.trail(sl, W, prev[0], pos, 1.0f - t * 0.25f, 12);
+                FxSend.trail(sl, W, prev[0], pos, 1.0f - (float) t * 0.25f, 12);
                 FxSend.trail(sl, S, prev[0], pos, 0.18f, 8);
                 Vec3 d = tan.lengthSqr() < 1.0E-4 ? new Vec3(0, -1, 0) : tan.normalize();
                 Vec3 rt = rightOf(d), up = rt.cross(d).normalize();
