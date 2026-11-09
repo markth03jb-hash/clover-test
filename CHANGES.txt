@@ -8,6 +8,8 @@ NEW IN 1.58.0
   LOW    35% particles, at most 800 pixel sprites and 300 smoke puffs, no glow pass, 1-tick impact frames, lighter shake
   MEDIUM 65% particles, 1600 sprites, 600 puffs, 3-tick impact frames
   HIGH   everything (2400 sprites, 900 puffs, 4-tick impact frames)
+- Grimoire page-turn: every cast flips your floating grimoire open (fast) and riffles three pages over in quick
+  succession to the spell, with the sound of the pages - seen by everyone around you.
 
 NEW IN 1.57.0
 - Equinox: an invisible sword. While it charges you see only its outline - faint pale edges tapering to a point, a

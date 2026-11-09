@@ -69,6 +69,26 @@ public class GrimoireFloatRenderer {
       }
    }
 
+   /** player id -> game time of their last cast: the grimoire flips quickly through its pages to the spell. */
+   private static final Map<Integer, Long> FLIP = new HashMap<>();
+   private static final int FLIP_TICKS = 14;
+
+   public static void castFlip(int entityId) {
+      ClientLevel level = Minecraft.getInstance().level;
+      if (level == null) return;
+      FLIP.put(entityId, level.getGameTime());
+      openBook(entityId);
+   }
+
+   /** The page-turn cycle while a cast flips the book: three pages riffle over in quick succession (else -1). */
+   private static float castCycle(int id, double time) {
+      Long t = FLIP.get(id);
+      if (t == null) return -1.0F;
+      double since = time - t;
+      if (since < 0 || since > FLIP_TICKS) return -1.0F;
+      return (float) (4.0 + since * 2.3);   // FxBooks flips page i over cycle 4+5i .. 18+5i
+   }
+
    public static void openBook(int entityId) {
       ClientLevel level = Minecraft.getInstance().level;
       if (level != null) OPEN_UNTIL.put(entityId, level.getGameTime() + 60L);
@@ -288,7 +308,8 @@ public class GrimoireFloatRenderer {
          float[] pr = PROGRESS.computeIfAbsent(p.getId(), k -> new float[]{0.0F, 0.0F});
          pr[0] = pr[1];
          boolean open = has && (OPEN_UNTIL.getOrDefault(p.getId(), 0L) > now || ANIMS.containsKey(p.getId()));
-         pr[1] = Mth.clamp(pr[1] + (open ? (ANIMS.containsKey(p.getId()) ? 0.3F : 0.12F) : -0.08F), 0.0F, 1.0F);   // a summon flips it open fast
+         boolean quick = ANIMS.containsKey(p.getId()) || (FLIP.containsKey(p.getId()) && now - FLIP.get(p.getId()) < FLIP_TICKS);
+         pr[1] = Mth.clamp(pr[1] + (open ? (quick ? 0.3F : 0.12F) : -0.08F), 0.0F, 1.0F);   // a cast flips it open fast   // a summon flips it open fast
          if (has) HOLDERS.add(p.getId());
 
          // the book turns after you and floats after you, a little behind
@@ -312,6 +333,11 @@ public class GrimoireFloatRenderer {
                mc.level.playLocalSound(c.x, c.y, c.z, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 0.5F, 0.9F + rnd.nextFloat() * 0.3F, false);
             }
          }
+         Long fl = FLIP.get(p.getId());
+         if (has && fl != null && !p.isSpectator() && (now - fl == 2L || now - fl == 4L || now - fl == 6L)) {   // the riffle of pages
+            Vec3 c = sp[1];
+            mc.level.playLocalSound(c.x, c.y, c.z, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 0.55F, 1.1F + rnd.nextFloat() * 0.3F, false);
+         }
          Long st = ANIMS.get(p.getId());
          if (has && st != null && !p.isInvisible()) {
             boolean off = OFFHAND_ANIMS.contains(p.getId());
@@ -324,6 +350,7 @@ public class GrimoireFloatRenderer {
          }
       }
       BURSTED.removeIf(id -> !ANIMS.containsKey(id));
+      FLIP.values().removeIf(t -> now - t > FLIP_TICKS + 2L);
       ANIMS.values().removeIf(s -> now - s > SWORD_TICKS + 6L);   // a few ticks of grace for the real sword to arrive
       PROGRESS.keySet().removeIf(id -> !HOLDERS.contains(id) && PROGRESS.get(id)[1] <= 0.0F);
       SMOOTH_YAW.keySet().retainAll(PROGRESS.keySet());
@@ -392,7 +419,8 @@ public class GrimoireFloatRenderer {
             ps.mulPose(Axis.XP.rotationDegrees(-tilt));
             ps.scale(s, s, s);
             renderOpen(mc, ps, buf, book, p.getId(), light);
-            float cyc = k > 0.95F ? (float)((mc.level.getGameTime() + (long)p.getId() * 13L) % 50L) + pt : -1.0F;
+            float cast = castCycle(p.getId(), time);
+            float cyc = k > 0.8F ? (cast >= 0.0F ? cast : (float)((mc.level.getGameTime() + (long)p.getId() * 13L) % 50L) + pt) : -1.0F;
             boolean mastered = MasteryClient.enabled() && com.example.arcaneaddon.server.GrimoireMastery.bookOf(book) != null
                   && com.example.arcaneaddon.server.GrimoireMastery.level(book) >= com.example.arcaneaddon.server.GrimoireMastery.MAX_LEVEL;
             if (book.is(AddonItemRegistry.HELLFIRE_GRIMOIRE.get()) && java.util.concurrent.ThreadLocalRandom.current().nextFloat() < 0.25F) {

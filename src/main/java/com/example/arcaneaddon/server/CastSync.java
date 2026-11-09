@@ -36,14 +36,13 @@ public final class CastSync {
 
     public static void cast(ServerPlayer p, AnimationHolder anim) {
         String name = AnimNames.of(anim);
-        if (name == null) return;
-        int impact = AnimImpact.of(name);
+        int impact = name == null ? 0 : AnimImpact.of(name);
         long now = p.serverLevel().getGameTime();
         Win w = new Win();   // every cast gets a window (also moves with no swing: their damage still waits for travel)
         w.p = p; w.start = now; w.impact = impact; w.lastLaunch = now;
         WIN.put(p.getUUID(), w);
         FxPacket pkt = new FxPacket();
-        pkt.shape = 42; pkt.id = p.getId(); pkt.sweep = name.hashCode(); pkt.life = impact;
+        pkt.shape = 42; pkt.id = p.getId(); pkt.sweep = name == null ? 0 : name.hashCode(); pkt.life = impact;   // also turns the grimoire's pages
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
