@@ -381,8 +381,15 @@ public final class GrimoireWheel {
             int cdTicks = io.redspace.ironsspellbooks.capabilities.magic.MagicManager.getEffectiveSpellCooldown(sp, pl, sm.getSpellSlot(sel).getCastSource());
             cool = Component.translatable("tooltip.irons_spellbooks.cooldown_length_seconds", Utils.timeFromTicks(cdTicks, 1)).withStyle(net.minecraft.ChatFormatting.YELLOW);
         } catch (Throwable ignored) {}
-        int w = Math.max(font.width(name), Math.max(font.width(mana), cool == null ? 0 : font.width(cool))) + 18;
-        int h = cool == null ? 34 : 44;
+        java.util.List<Component> info = new java.util.ArrayList<>();   // damage etc., as the spell itself reports it
+        try {
+            for (Component c : sp.getUniqueInfo(lvl, pl)) { if (info.size() < 2) info.add(c); }
+            if (info.isEmpty()) info.add(Component.translatable("ui.irons_spellbooks.damage", String.format("%.1f", sp.getSpellPower(lvl, pl))));
+        } catch (Throwable ignored) {}
+        int w = Math.max(font.width(name), Math.max(font.width(mana), cool == null ? 0 : font.width(cool)));
+        for (Component c : info) w = Math.max(w, font.width(c));
+        w += 18;
+        int h = (cool == null ? 34 : 44) + info.size() * 10;
         int x0 = cx - w / 2, x1 = cx + w / 2;
         int a = Mth.clamp((int) (A * 255), 8, 255);
         g.fill(x0, top, x1, top + h, (int) (A * 0xD8) << 24 | th.panel);
@@ -396,7 +403,9 @@ public final class GrimoireWheel {
         g.drawCenteredString(font, name, cx, top + 3, th.title | a << 24);
         g.drawCenteredString(font, level, cx, top + 15, 0xBFB49A | a << 24);
         g.drawCenteredString(font, mana, cx, top + 25, 0xFFFFFF | a << 24);
-        if (cool != null) g.drawCenteredString(font, cool, cx, top + 35, 0xFFFFFF | a << 24);
+        int ly = top + 35;
+        if (cool != null) { g.drawCenteredString(font, cool, cx, ly, 0xFFFFFF | a << 24); ly += 10; }
+        for (Component c : info) { g.drawCenteredString(font, c, cx, ly, 0xFF8A70 | a << 24); ly += 10; }
     }
 
     private static ResourceLocation icon(AbstractSpell sp) {

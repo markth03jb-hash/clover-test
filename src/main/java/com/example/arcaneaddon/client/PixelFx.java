@@ -68,7 +68,7 @@ public final class PixelFx {
         float scaleNow(float pt) {
             float t = age + pt;
             float s = grow == 1.0F ? 1.0F : (float) Math.pow(grow, t);
-            if (pop > 0) s *= Mth.clamp(0.35F + 0.65F * t / pop, 0.35F, 1.0F);
+            if (pop > 0) { float k = Mth.clamp(t / pop, 0.0F, 1.0F); s *= 0.35F + 0.65F * k * k * (3.0F - 2.0F * k); }   // smoothstep
             return s;
         }
     }
@@ -86,8 +86,10 @@ public final class PixelFx {
         s.r0 = p.r; s.r1 = p.r2 > 0 ? p.r2 : p.r; s.speed = p.speed; s.life = Math.max(1, p.life); s.pal = p.palette;
         s.born = mc.level.getGameTime();
         SLASHES.add(s);
+        int first = SPRITES.size();
         emit(s, 0, true);   // the first frame is already a full blade
         if (s.pal == 0) signature(0, s.c, s.d, s.r1);   // anti magic's star of blade slivers as it's released
+        if (s.pal == 0) redOnly(first);
     }
 
     public static void kill(int id) {
@@ -100,14 +102,14 @@ public final class PixelFx {
             {1.0F, 0.16F, 0.1F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F},
             {0.6F, 1.0F, 0.78F}, {0.95F, 0.95F, 1.0F}, {0.7F, 0.82F, 0.95F}, {1.0F, 0.8F, 0.3F}, {1.0F, 0.07F, 0.05F},
             {0.6F, 0.2F, 1.0F}, {0.86F, 0.92F, 1.0F}, {0.35F, 0.65F, 1.0F}, {0.45F, 0.72F, 1.0F}, {1.0F, 0.16F, 0.1F},
-            {1.0F, 0.94F, 0.8F}
+            {1.0F, 0.98F, 0.93F}
     };
     /** The colour of the solid (non-glowing) sprites: black anti magic and darkness, steel, gold, mercury, bone. */
     private static final float[][] SOLID = {
             {0.02F, 0.0F, 0.01F}, {0.03F, 0.0F, 0.05F}, {0.08F, 0.03F, 0.02F}, {0.05F, 0.1F, 0.16F}, {0.1F, 0.09F, 0.02F},
             {0.05F, 0.12F, 0.08F}, {0.5F, 0.5F, 0.55F}, {0.32F, 0.36F, 0.42F}, {0.55F, 0.38F, 0.08F}, {0.03F, 0.0F, 0.0F},
             {0.015F, 0.0F, 0.035F}, {0.62F, 0.67F, 0.75F}, {0.02F, 0.05F, 0.2F}, {0.02F, 0.06F, 0.18F}, {0.12F, 0.0F, 0.01F},
-            {0.82F, 0.78F, 0.68F}
+            {0.95F, 0.93F, 0.88F}
     };
 
     static final int DARK = 0, FLAME = 1, BOLT = 2, WIND = 3, METAL = 4, BONE = 5, LIGHT = 6;
@@ -125,34 +127,35 @@ public final class PixelFx {
         };
     }
 
-    /** Glow colour of a palette at a given heat: white-hot at the top, the palette's own colour, then dying embers. */
+    /** Glow colour of a palette at a given heat: white-hot at the top, the palette's own colour, then dying embers -
+     *  blended smoothly between those stops, so a sprite cools without visible colour jumps. */
     private static float[] glow(int pal, float heat) {
         pal = Mth.clamp(pal, 0, 15);
-        if (pal == 2) return fire(heat);
-        if (pal == 0 || pal == 9 || pal == 14) return crimson(heat);
+        if (pal == 2) return ramp(FIRE_H, FIRE_C, heat);
+        if (pal == 0 || pal == 9 || pal == 14) return ramp(CRIM_H, CRIM_C, heat);
         float[] c = RIM[pal];
-        if (heat > 0.92F) return new float[]{0.92F + 0.08F * c[0], 0.92F + 0.08F * c[1], 0.92F + 0.08F * c[2]};
-        if (heat > 0.7F) return new float[]{0.55F + 0.45F * c[0], 0.55F + 0.45F * c[1], 0.55F + 0.45F * c[2]};
-        if (heat > 0.4F) return c;
-        if (heat > 0.2F) return new float[]{c[0] * 0.6F, c[1] * 0.6F, c[2] * 0.6F};
-        return new float[]{c[0] * 0.3F, c[1] * 0.3F, c[2] * 0.3F};
+        float[][] cs = {
+                {c[0] * 0.3F, c[1] * 0.3F, c[2] * 0.3F}, {c[0] * 0.6F, c[1] * 0.6F, c[2] * 0.6F}, c,
+                {0.55F + 0.45F * c[0], 0.55F + 0.45F * c[1], 0.55F + 0.45F * c[2]}, {0.92F + 0.08F * c[0], 0.92F + 0.08F * c[1], 0.92F + 0.08F * c[2]}};
+        return ramp(GEN_H, cs, heat);
     }
 
-    /** Anti magic's glow: crimson, from a hot pink-white down to a deep blood red. */
-    private static float[] crimson(float heat) {
-        if (heat > 0.92F) return new float[]{1.0F, 0.93F, 0.88F};
-        if (heat > 0.8F) return new float[]{1.0F, 0.75F, 0.7F};
-        if (heat > 0.55F) return new float[]{1.0F, 0.22F, 0.16F};
-        if (heat > 0.3F) return new float[]{0.75F, 0.04F, 0.04F};
-        return new float[]{0.35F, 0.0F, 0.02F};
-    }
+    private static final float[] GEN_H = {0.1F, 0.3F, 0.55F, 0.8F, 0.97F};
+    private static final float[] CRIM_H = {0.15F, 0.42F, 0.68F, 0.86F, 0.97F};
+    private static final float[][] CRIM_C = {{0.35F, 0.0F, 0.02F}, {0.75F, 0.04F, 0.04F}, {1.0F, 0.22F, 0.16F}, {1.0F, 0.75F, 0.7F}, {1.0F, 0.93F, 0.88F}};
+    private static final float[] FIRE_H = {0.1F, 0.3F, 0.5F, 0.7F, 0.9F};
+    private static final float[][] FIRE_C = {{0.45F, 0.06F, 0.03F}, {0.9F, 0.22F, 0.05F}, {1.0F, 0.55F, 0.12F}, {1.0F, 0.86F, 0.35F}, {1.0F, 0.97F, 0.85F}};
 
-    private static float[] fire(float heat) {
-        if (heat > 0.8F) return new float[]{1.0F, 0.97F, 0.85F};
-        if (heat > 0.6F) return new float[]{1.0F, 0.86F, 0.35F};
-        if (heat > 0.4F) return new float[]{1.0F, 0.55F, 0.12F};
-        if (heat > 0.2F) return new float[]{0.9F, 0.22F, 0.05F};
-        return new float[]{0.45F, 0.06F, 0.03F};
+    private static float[] ramp(float[] hs, float[][] cs, float h) {
+        if (h <= hs[0]) return cs[0];
+        for (int i = 1; i < hs.length; i++) {
+            if (h <= hs[i]) {
+                float t = (h - hs[i - 1]) / (hs[i] - hs[i - 1]);
+                float[] a = cs[i - 1], b = cs[i];
+                return new float[]{a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t};
+            }
+        }
+        return cs[cs.length - 1];
     }
 
     // ------------------------------------------------------------------ emitting
@@ -360,8 +363,11 @@ public final class PixelFx {
     private static float density() { return Mth.clamp(com.example.arcaneaddon.AddonClientConfig.particleDensity(), 0.0F, 2.0F); }
 
     /** How many sprites for a wanted (fractional) count, scaled by the density setting. */
+    /** Extra density while emitting for an effect that is drawn only in sprites (no solid shape under it). */
+    private static double boost = 1.0;
+
     private static int cnt(double want) {
-        double w = want * density();
+        double w = want * density() * boost;
         int n = (int) w;
         return n + (ThreadLocalRandom.current().nextDouble() < w - n ? 1 : 0);
     }
@@ -540,6 +546,38 @@ public final class PixelFx {
         add(p);
     }
 
+    /**
+     * The body of a fireball / mercury sphere, all in sprites, moving with it: fire is a churning ball of flame tongues
+     * with a white-hot heart; mercury is a cluster of silver drops with glints; anything else, its own pieces.
+     */
+    private static void ball(int pal, Vec3 at, Vec3 v, double R) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        int el = element(pal);
+        int n = cnt(Mth.clamp(R * 12.0, 6.0, 30.0));
+        for (int i = 0; i < n; i++) {
+            Vec3 dir = nz(rnd(r, 1.0), UP);
+            double rr = R * Math.cbrt(r.nextDouble());
+            Vec3 o = at.add(dir.scale(rr));
+            float sz = (float) (R * r.nextDouble(0.45, 0.8));
+            Spr s;
+            if (el == FLAME) {
+                s = spr(o, v.add(dir.scale(0.02)), dir, rr < R * 0.5 ? K_EMBER : K_TONGUE, sz * (rr < R * 0.5 ? 0.8F : 1.4F), sz * 0.8F, r.nextInt(2, 4));
+                s.heat = (float) (1.0 - 0.45 * rr / R); s.flicker = true;
+            } else if (el == METAL) {
+                s = spr(o, v, dir, rr > R * 0.7 ? K_STAR : K_DROP, sz, sz * 0.8F, r.nextInt(2, 4));
+                if (rr > R * 0.7) { s.heat = 1.0F; s.twinkle = true; } else { s.dark = true; s.darkAlpha = 1.0F; }
+            } else if (el == DARK) {
+                s = spr(o, v, dir, LONG[pal], sz * 1.2F, sz * 0.6F, r.nextInt(2, 4));
+                if (rr < R * 0.75) { s.dark = true; s.darkAlpha = 1.0F; } else s.heat = 0.6F;
+            } else {
+                s = spr(o, v, dir, BIT[pal], sz, sz, r.nextInt(2, 4));
+                s.heat = 0.9F;
+            }
+            s.pal = pal; s.drag = 1.0F; s.grav = 0.0F; s.spin = (float) r.nextDouble(-0.3, 0.3);
+            add(s);
+        }
+    }
+
     /** A shock ring: a pixel ring that bursts outward from {@code at} and fades. */
     private static void shockRing(int pal, Vec3 at, double size) {
         Spr p = spr(at, Vec3.ZERO, UP, K_SHOCK, (float) size, (float) size, 6);
@@ -631,6 +669,11 @@ public final class PixelFx {
     public static void fromFx(FxPacket p, Vec3 at, double age, double life, boolean perTick) {
         if (age < 0.0 || age > life) return;
         if (perTick && age >= 1.0) return;
+        boost = p.pixelOnly ? 2.2 : 1.0;
+        try { fromFx0(p, at, age, life, perTick); } finally { boost = 1.0; }
+    }
+
+    private static void fromFx0(FxPacket p, Vec3 at, double age, double life, boolean perTick) {
         if (density() <= 0.0F) return;
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int pal = Mth.clamp(p.palette, 0, 15);
@@ -713,6 +756,7 @@ public final class PixelFx {
                     return;
                 }
                 if (p.r < 0.08F) return;
+                ball(pal, at, p.v, p.r);
                 int n = cnt(p.r > 1.0F ? 5.0 : 3.0);
                 Vec3 back = p.v.lengthSqr() > 1.0E-4 ? p.v.scale(-1) : null;
                 for (int i = 0; i < n; i++) {
@@ -971,7 +1015,7 @@ public final class PixelFx {
     }
 
     // ------------------------------------------------------------------ forms and auras worn by an entity
-    private static final int BODY = 0, HANDS = 1, RIGHT_HAND = 2, SHELL = 3, ZONE = 4, ORBIT = 5, RING = 6, GLINT = 7;
+    private static final int BODY = 0, HANDS = 1, RIGHT_HAND = 2, SHELL = 3, ZONE = 4, ORBIT = 5, RING = 6, GLINT = 7, WING = 8;
 
     private static final class Att { int id, shape, pal, mode; double end; float r, h; float rate; }
 
@@ -981,6 +1025,9 @@ public final class PixelFx {
     private static final int[] OUTLINE_PAL = {10, 9, 11, 13, 14, 0, 15, 6, 9};
     /** Grimoire (GrimoireMastery.BOOKS order) to palette: Asta, Yami, Yuno, Nozel, Magna, Luck, Mereoleona, Zenon, Klaus. */
     private static final int[] BOOK_PAL = {0, 10, 5, 11, 2, 13, 14, 15, 7};
+
+    /** Ki Sense colours by creature: hostile red, passive green (wind), neutral yellow (lightning), players blue. */
+    private static final int[] KI_PAL = {14, 5, 4, 13};
 
     private static int flamePal(int p) { return p == 12 || p == 14 ? p : 2; }
 
@@ -992,7 +1039,7 @@ public final class PixelFx {
         int mode, pal;
         float rate;
         switch (p.shape) {
-            case 4 -> { mode = GLINT; pal = 6; rate = 0.35F; }                                     // Ki Sense mark
+            case 4 -> { mode = GLINT; pal = KI_PAL[p.palette & 3]; rate = 0.35F; }                 // Ki Sense mark, in the creature's colour
             case 6 -> { mode = BODY; pal = 9; rate = 3.0F; }                                       // Devil Union
             case 11 -> { mode = BODY; pal = 7; rate = 1.2F; }                                      // Knight's Armor
             case 14 -> { mode = BODY; pal = OUTLINE_PAL[Mth.clamp(p.palette, 0, OUTLINE_PAL.length - 1)]; rate = 1.0F; }   // aura outline
@@ -1014,6 +1061,8 @@ public final class PixelFx {
             default -> { return; }
         }
         long key = (long) p.id << 8 | (p.shape & 0xFF);
+        long wingKey = (long) p.id << 8 | 106;   // Devil Union's wing sheds the same sprites as its aura
+        if (p.shape == 6 && p.life <= 0) ATTACH.remove(wingKey);
         if (p.life <= 0) { ATTACH.remove(key); return; }
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
@@ -1023,6 +1072,11 @@ public final class PixelFx {
         a.r = p.shape == 36 ? p.r : (p.shape == 37 ? Math.max(0.6F, p.r) : p.r);
         a.h = p.shape == 36 ? p.r2 : p.h;
         ATTACH.put(key, a);
+        if (p.shape == 6) {
+            Att w = new Att();
+            w.id = p.id; w.shape = 106; w.pal = 9; w.mode = WING; w.rate = 3.0F; w.end = a.end;
+            ATTACH.put(wingKey, w);
+        }
     }
 
     private static void tickAttached(Minecraft mc) {
@@ -1074,6 +1128,15 @@ public final class PixelFx {
                         Vec3 tan = new Vec3(-Math.sin(ang), 0, Math.cos(ang));
                         one(a.pal, base.add(Math.cos(ang) * R, a.h > 0 ? a.h : h * 0.6, Math.sin(ang) * R), mv.scale(0.6).add(tan.scale(0.1)), tan, 0.3);
                     }
+                    case WING -> {   // across Asta's wing: out to his left and up from the shoulder blade
+                        double yaw = e instanceof net.minecraft.world.entity.LivingEntity le ? le.yBodyRot : e.getYRot();
+                        if (e instanceof net.minecraft.world.entity.player.Player pl) yaw -= FxRenderer.animYawDeg(pl, 1.0F);
+                        double by = Math.toRadians(yaw);
+                        Vec3 fw = new Vec3(-Math.sin(by), 0.0, Math.cos(by)), lf = new Vec3(Math.cos(by), 0.0, Math.sin(by));
+                        double u = r.nextDouble(), v = r.nextDouble();
+                        Vec3 o = base.add(0, h * 0.78, 0).subtract(fw.scale(0.3)).add(lf.scale(0.1 + u * 1.7)).add(0, -0.6 + v * (0.9 + u * 0.9), 0);
+                        one(a.pal, o, mv.scale(0.5).add(0, 0.02, 0), lf.scale(0.6).add(0, 1, 0), 0.28);
+                    }
                     case RING -> {
                         double ang = r.nextDouble(Math.PI * 2), R = Math.max(1.0, a.r) * r.nextDouble(0.3, 0.9);
                         one(a.pal, base.add(Math.cos(ang) * R, h * r.nextDouble(0.3, 0.8), Math.sin(ang) * R), mv.scale(0.5), new Vec3(Math.cos(ang), 0, Math.sin(ang)), 0.3);
@@ -1084,8 +1147,27 @@ public final class PixelFx {
         }
     }
 
+    /** Sky Splitter is all red: the sprites made since {@code first} lose their black and their white-hot. */
+    private static void redOnly(int first) {
+        for (int i = first; i < SPRITES.size(); i++) {
+            Spr p = SPRITES.get(i);
+            p.pal = 0;
+            if (p.dark) { p.dark = false; p.heat = 0.45F; }
+            p.heat = Math.min(p.heat, 0.5F);   // crimson tops out red, never pink-white
+        }
+    }
+
+    /** The hottest a palette may glow: darkness never turns white (no white-hot cores or edges on Yami's moves). */
+    private static float maxHeat(int pal) { return pal == 1 || pal == 10 ? 0.68F : 1.0F; }
+
     private static void add(Spr p) {
+        if (p.heat > maxHeat(p.pal)) p.heat = maxHeat(p.pal);
         if (SPRITES.size() >= MAX) return;   // full: drop the newest instead of shifting the whole list
+        if (p.age == 0 && p.vel.lengthSqr() > 1.0E-4) {   // spread along the path it moved this tick, so no stepping
+            double u = ThreadLocalRandom.current().nextDouble();
+            p.pos = p.pos.subtract(p.vel.scale(u));
+            p.prev = p.pos;
+        }
         SPRITES.add(p);
     }
 
@@ -1100,7 +1182,9 @@ public final class PixelFx {
             Slash s = it.next();
             double age = now - s.born;
             if (s.dead || age > s.life) { it.remove(); continue; }
+            int first = SPRITES.size();
             emit(s, age, false);
+            if (s.pal == 0) redOnly(first);
         }
         // compact in place (one pass) instead of removing one at a time - thousands of sprites die every second
         int keep = 0;
@@ -1182,8 +1266,7 @@ public final class PixelFx {
     }
 
     private static float fadeOf(Spr p, Vec3 pos, Vec3 cam, float pt, float opacity) {
-        float life = (p.age + pt) / (float) p.life;
-        float fade = Mth.clamp((1.0F - life) * 3.0F, 0.0F, 1.0F) * opacity;   // the dither dissolve does most of the fading
+        float fade = opacity;   // full strength all its life: the dither dissolve takes it away (no fading in or out)
         double dc = pos.distanceTo(cam);
         if (dc < 2.2) fade *= (float) Mth.clamp((dc - 0.6) / 1.6, 0.0, 1.0);   // never smother the camera
         if (p.twinkle) fade *= 0.55F + 0.45F * (float) Math.abs(Math.sin((p.age + pt) * 1.3 + p.seed));
@@ -1212,6 +1295,7 @@ public final class PixelFx {
         float fade = fadeOf(p, pos, cam, pt, opacity);
         if (fade <= 0.01F) return;
         float life = (p.age + pt) / (float) p.life;
+        float heat = p.dark ? p.heat : Math.max(0.0F, p.heat - 0.9F / p.life * pt);   // keeps cooling between ticks
         Vec3 toCam = cam.subtract(pos);
         Vec3 ax, side;
         float scale = p.scaleNow(pt);
@@ -1245,9 +1329,9 @@ public final class PixelFx {
                 float[] c = glow(p.pal, 0.6F);
                 r = c[0] * k; g = c[1] * k; bl = c[2] * k;
             }
-            case L_CORE -> { float[] c = glow(p.pal, 1.0F); float k = fade * Mth.clamp((p.heat - 0.5F) * 2.5F, 0.0F, 1.0F); r = c[0] * k; g = c[1] * k; bl = c[2] * k; }
-            case L_GLOW_RIM -> { float[] c = glow(p.pal, Math.min(p.heat, 0.5F)); float k = 0.4F * fade; r = c[0] * k; g = c[1] * k; bl = c[2] * k; }
-            default -> { float[] c = glow(p.pal, Math.min(p.heat, 0.88F)); r = c[0] * fade; g = c[1] * fade; bl = c[2] * fade; }
+            case L_CORE -> { float[] c = glow(p.pal, maxHeat(p.pal)); float k = fade * Mth.clamp((heat - 0.5F) * 2.5F, 0.0F, 1.0F); r = c[0] * k; g = c[1] * k; bl = c[2] * k; }
+            case L_GLOW_RIM -> { float[] c = glow(p.pal, Math.min(heat, 0.5F)); float k = 0.4F * fade; r = c[0] * k; g = c[1] * k; bl = c[2] * k; }
+            default -> { float[] c = glow(p.pal, Math.min(heat, 0.88F)); r = c[0] * fade; g = c[1] * fade; bl = c[2] * fade; }
         }
         if (r + g + bl < 0.01F && layer != L_SOLID) return;
         int fr = frameOf(p, pt);

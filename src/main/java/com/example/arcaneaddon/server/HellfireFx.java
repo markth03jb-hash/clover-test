@@ -149,7 +149,7 @@ public class HellfireFx {
             final int kk = k;
             AstaFx.later(k, () -> { if (alive(p)) ball(sl, pal, handPos(p), Vec3.ZERO, 0.15f + kk * 0.02f, 0.15f + kk * 0.02f, 3, false); });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.FIRECHARGE_USE), 0.6f, 1.0f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.FIRECHARGE_USE, 0.6f, 1.0f);
     }
 
     // ================================================================== 1. Calidos Brachium
@@ -174,8 +174,8 @@ public class HellfireFx {
                     Vec3 side = rightOf(look).scale(n == 1 ? 0 : (ii - 1) * 0.6);
                     Vec3 start = handPos(p).add(side);
                     arm(p, p.serverLevel(), start, start, look, power, 0, new HashSet<>());
-                    sound(p.serverLevel(), p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), 1f, 0.7f);
-                    sound(p.serverLevel(), p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 1f, 0.8f);
+                    sound(p.serverLevel(), p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, 1f, 0.7f);
+                    sound(p.serverLevel(), p.position(), net.minecraft.sounds.SoundEvents.BLAZE_SHOOT, 1f, 0.8f);
                 });
             }
         });
@@ -196,7 +196,7 @@ public class HellfireFx {
             t.hurtMarked = true;
             ball(sl, F, mid(t), Vec3.ZERO, 0.5f, 2.2f, 8, true);
             shake(sl, mid(t), 0.35f, 5);
-            sound(sl, t.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.5f, 1.3f);
+            sound(sl, t.position(), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.5f, 1.3f);
             return;
         }
         if (next.distanceToSqr(want) > 1.0E-4) { ball(sl, F, next, Vec3.ZERO, 0.5f, 2.0f, 8, true); return; }
@@ -235,7 +235,7 @@ public class HellfireFx {
                 fist(sl, F, mid(t).subtract(in.scale(0.6)), in, 1.1f, Vec3.ZERO);
                 hit(p, t, power * 0.15f, "calidos_brachium_barrage");
                 ball(sl, F, mid(t), Vec3.ZERO, 0.3f, 1.2f, 6, true);
-                sound(sl, t.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), 0.9f, 0.9f + r.nextFloat() * 0.4f);
+                sound(sl, t.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, 0.9f, 0.9f + r.nextFloat() * 0.4f);
             });
         }
         shake(sl, mid(targets.get(0)), 0.25f, 30);
@@ -252,7 +252,7 @@ public class HellfireFx {
             main.hurtMarked = true;
             ball(sl, F, mid(main), Vec3.ZERO, 0.6f, 3.2f, 10, true);
             shake(sl, mid(main), 0.5f, 6);
-            sound(sl, main.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.8f, 1.0f);
+            sound(sl, main.position(), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.8f, 1.0f);
         });
     }
 
@@ -289,7 +289,7 @@ public class HellfireFx {
                 }
             });
         }
-        sound(sl, t.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.RAVAGER_ROAR), 0.6f, 1.4f);
+        sound(sl, t.position(), net.minecraft.sounds.SoundEvents.RAVAGER_ROAR, 0.6f, 1.4f);
         AstaFx.later(SLAM + 3, () -> {
             if (!alive(p)) return;
             Vec3 g = FxLib.ground(sl, t.position().add(0, 0.5, 0), 12);
@@ -299,7 +299,7 @@ public class HellfireFx {
             ball(sl, F, at.add(0, 0.5, 0), Vec3.ZERO, 0.6f, zone ? 4.5f : 3f, 10, true);
             FxLib.shockRing(sl, F, at.add(0, 0.05, 0), zone ? 1.6f : 1.1f);
             shake(sl, at, 0.5f, 8);
-            sound(sl, at, Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 1f, 0.8f);
+            sound(sl, at, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 1f, 0.8f);
         });
     }
 
@@ -337,12 +337,12 @@ public class HellfireFx {
                     ball(sl, F, mid(e), Vec3.ZERO, 0.5f, 2.6f, 9, true);
                     shake(sl, mid(e), 0.4f, 6);
                     p.setDeltaMovement(v.scale(-0.15));
-                    sound(sl, e.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.6f, 1.2f);
+                    sound(sl, e.position(), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.6f, 1.2f);
                     break;
                 }
             });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 1f, 0.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BLAZE_SHOOT, 1f, 0.6f);
     }
 
     // ================================================================== 5. Mana Skin
@@ -352,7 +352,7 @@ public class HellfireFx {
         SKIN.put(p.getUUID(), sl.getGameTime() + 400);
         sendAura(p, 5, 400);
         FxSend.ring(sl, F, p.position().add(0, 0.05, 0), 0.4f, 2.0f, 0.3f, 8);
-        sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE), 1f, 0.8f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE, 1f, 0.8f);
     }
 
     private static void sendAura(ServerPlayer p, int pal, int life) {
@@ -372,8 +372,8 @@ public class HellfireFx {
         ZONE.put(p.getUUID(), sl.getGameTime() + 400);
         sendZone(p, 400);
         p.displayClientMessage(Component.translatable("ui.arcane_addon.lion_zone.open").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
-        sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.BLAZE_AMBIENT), 1f, 0.6f);
-        sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.RAVAGER_ROAR), 0.5f, 1.2f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BLAZE_AMBIENT, 1f, 0.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.RAVAGER_ROAR, 0.5f, 1.2f);
     }
 
     private static void sendZone(ServerPlayer p, int life) {
@@ -416,7 +416,7 @@ public class HellfireFx {
                         e.setDeltaMovement(e.getDeltaMovement().add(0, 0.9, 0));
                         e.hurtMarked = true;
                     }
-                    sound(sl, c, Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.4f, 1.0f + (float) rr * 0.03f);
+                    sound(sl, c, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.4f, 1.0f + (float) rr * 0.03f);
                 });
             }
         });
@@ -442,7 +442,7 @@ public class HellfireFx {
                 FxSend.ring(sl, F, p.position().add(0, 0.05, 0), 2.2f - tt * 0.15f, 0.2f, 0.3f, 4);
             });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.BLAZE_AMBIENT), 1f, 0.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BLAZE_AMBIENT, 1f, 0.6f);
         AstaFx.later(SLAM, () -> {
             if (!alive(p)) return;
             Vec3 c = p.position();
@@ -450,7 +450,7 @@ public class HellfireFx {
             ball(sl, F, c.add(0, 0.4, 0), Vec3.ZERO, 0.6f, 2.8f, 8, true);
             FxLib.shockRing(sl, F, c.add(0, 0.1, 0), 3.2f);
             shake(sl, c, 0.7f, 10);
-            sound(sl, c, Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.9f, 0.7f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.9f, 0.7f);
             List<LivingEntity> foes = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(16)));
             foes.removeIf(e -> e.distanceTo(p) > 16);
             foes.sort(Comparator.comparingDouble(e -> e.distanceToSqr(p)));
@@ -478,7 +478,7 @@ public class HellfireFx {
                         e.setDeltaMovement(e.getDeltaMovement().add(0, 1.0, 0));
                         e.hurtMarked = true;
                     }
-                    sound(sl, g, Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 1f, 0.6f);
+                    sound(sl, g, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT, 1f, 0.6f);
                 });
             }
             AstaFx.later(16, () -> {   // the great column where she is looking
@@ -497,8 +497,8 @@ public class HellfireFx {
                     e.hurtMarked = true;
                 }
                 shake(sl, g, 0.9f, 12);
-                sound(sl, g, Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 1.2f, 0.5f);
-                sound(sl, g, Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.RAVAGER_ROAR), 0.8f, 0.9f);
+                sound(sl, g, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 1.2f, 0.5f);
+                sound(sl, g, net.minecraft.sounds.SoundEvents.RAVAGER_ROAR, 0.8f, 0.9f);
             });
         });
     }
@@ -526,8 +526,8 @@ public class HellfireFx {
             FxSend.beam(sl, F, p.position(), p.position().add(0, 12, 0), 0.9f, 10);
             shake(sl, p.position(), 0.6f, 10);
             p.displayClientMessage(Component.translatable("ui.arcane_addon.hellfire.open").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
-            sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.BLAZE_AMBIENT), 1.2f, 0.5f);
-            sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.8f, 0.6f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BLAZE_AMBIENT, 1.2f, 0.5f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.8f, 0.6f);
         });
     }
 
@@ -561,8 +561,8 @@ public class HellfireFx {
                 FxSend.trail(sl, F, from, from.add(h.subtract(from).scale(0.7)), 0.12f, 4);
             });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE), 0.8f, 0.6f);
-        sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.BLAZE_AMBIENT), 1f, 0.4f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE, 0.8f, 0.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BLAZE_AMBIENT, 1f, 0.4f);
         AstaFx.later(PURGATORY_RELEASE, () -> {
             if (!alive(p)) return;
             boolean big = inZone(p) || heat(p) > 1f;
@@ -602,9 +602,9 @@ public class HellfireFx {
             p.setDeltaMovement(p.getDeltaMovement().subtract(dir.scale(0.5)));
             p.hurtMarked = true;
             MagicData.getPlayerMagicData(p).setMana(0);   // it burns through everything she has
-            sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 1.4f, 0.5f);
-            sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 0.6f, 0.7f);
-            sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 1.5f, 0.4f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 1.4f, 0.5f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM, 0.6f, 0.7f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BLAZE_SHOOT, 1.5f, 0.4f);
         });
     }
 
@@ -666,7 +666,7 @@ public class HellfireFx {
             if (to.dot(p.getLookAngle()) > 0.2) {   // from the front: blocked, and the attacker eats a burning counter-punch
                 e.setCanceled(true);
                 ball(sl, F, p.getEyePosition().add(to.scale(1.2)), Vec3.ZERO, 0.3f, 1.4f, 6, true);
-                sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), 1f, 1.1f);
+                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, 1f, 1.1f);
                 if (e.getSource().getEntity() instanceof LivingEntity att && att != p && att.distanceTo(p) <= 5) {
                     Long lc = GUARD_COUNTER.get(p.getUUID());
                     if (lc == null || now - lc >= 6) {
@@ -695,7 +695,7 @@ public class HellfireFx {
                     FxSend.trail(sl, F, p.position().add(0, 1, 0), dest.add(0, 1, 0), 0.3f, 6);
                     p.connection.teleport(dest.x, dest.y, dest.z, p.getYRot(), p.getXRot());
                 }
-                sound(sl, p.position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT), 0.4f, 1.8f);
+                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BLAZE_SHOOT, 0.4f, 1.8f);
             }
         }
     }
@@ -725,7 +725,7 @@ public class HellfireFx {
             ball(p.serverLevel(), F, mid(e.getEntity()), Vec3.ZERO, 0.4f, 2.0f, 7, true);
             Vec3 push = e.getEntity().position().subtract(p.position()).multiply(1, 0, 1);
             if (push.lengthSqr() > 1.0E-4) e.getEntity().setDeltaMovement(e.getEntity().getDeltaMovement().add(push.normalize().scale(0.8)).add(0, 0.3, 0));
-            sound(p.serverLevel(), e.getEntity().position(), Sfx.of(Sfx.MEREOLEONA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.4f, 1.4f);
+            sound(p.serverLevel(), e.getEntity().position(), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.4f, 1.4f);
         }
     }
 

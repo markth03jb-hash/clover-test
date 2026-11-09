@@ -49,11 +49,11 @@ public class GeoFormLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<
         if (bf != null && now <= bf[1]) {
             ps.pushPose();
             getParentModel().body.translateAndRotate(ps);
-            GeoForms.draw("beelzebub_wings", p.getId(), bf[0], "open", p.onGround() ? "idle" : "fly", null, ps, buf, light);
+            GeoForms.draw("beelzebub_wings", p.getId(), bf[0], "open", p.onGround() ? "idle" : "fly", null, ps, buf, LightTexture.FULL_BRIGHT);
             ps.popPose();
             ps.pushPose();
             getParentModel().head.translateAndRotate(ps);
-            GeoForms.draw("beelzebub_horns", p.getId(), bf[0], "grow", "idle", null, ps, buf, light);
+            GeoForms.draw("beelzebub_horns", p.getId(), bf[0], "grow", "idle", null, ps, buf, LightTexture.FULL_BRIGHT);
             ps.popPose();
         }
     }

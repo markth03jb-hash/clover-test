@@ -40,7 +40,7 @@ public class SummonQueue {
         PENDING.put(p.getUUID(), DELAY_TICKS);
         OFFHAND.put(p.getUUID(), offhand);
         AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), new SummonAnimPacket(p.getId(), offhand));
-        p.level().playSound(null, p.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.SOUL_ESCAPE), SoundSource.PLAYERS, 1.0f, 0.6f);
+        p.level().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.SOUL_ESCAPE, SoundSource.PLAYERS, 1.0f, 0.6f);
     }
 
     /** Swap attacks can fire at most every 4 s; swapping itself stays instant so you can still change stance. */
@@ -76,8 +76,8 @@ public class SummonQueue {
         FxSend.ring(sl, toDweller ? 1 : 0, rh, 0.1f, 1.1f, 0.35f, 7);
         FxSend.ring(sl, toDweller ? 0 : 1, lh, 0.1f, 1.1f, 0.35f, 7);
         Fx.flash(sl, new Vec3(p.getX(), y, p.getZ()), 0.9f);
-        p.level().playSound(null, p.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE), SoundSource.PLAYERS, 0.9f, 1.3f);
-        p.level().playSound(null, p.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.CHAIN_PLACE), SoundSource.PLAYERS, 1.0f, 0.7f);
+        p.level().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.PLAYERS, 0.9f, 1.3f);
+        p.level().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.CHAIN_PLACE, SoundSource.PLAYERS, 1.0f, 0.7f);
 
         // Twin Momentum
         TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, TimedModifiers.MOMENTUM_SPEED, "Twin Momentum", 0.4, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
@@ -123,9 +123,9 @@ public class SummonQueue {
         if (ok) {
             if (off) p.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(AddonItemRegistry.DEMON_DWELLER_SWORD.get()));
             else p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(AddonItemRegistry.DEMON_SLAYER_SWORD.get()));
-            p.level().playSound(null, p.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ANVIL_PLACE), SoundSource.PLAYERS, 0.6f, 0.5f);
-            p.level().playSound(null, p.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE), SoundSource.PLAYERS, 1.0f, 0.6f);
-            p.level().playSound(null, p.blockPosition(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ENCHANTMENT_TABLE_USE), SoundSource.PLAYERS, 0.8f, 0.6f);
+            p.level().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 0.6f, 0.5f);
+            p.level().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.PLAYERS, 1.0f, 0.6f);
+            p.level().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.8f, 0.6f);
             if (p.level() instanceof ServerLevel sl) {
                 double y = p.getY() + 1.1;
                 boolean twinGrab = p.getOffhandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get());

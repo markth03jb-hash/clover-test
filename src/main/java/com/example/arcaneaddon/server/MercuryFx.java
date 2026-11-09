@@ -115,7 +115,7 @@ public class MercuryFx {
                 if (alive(p)) sphere(sl, handPos(p), new Vec3(0, 0.01, 0), 0.12f + kk * 0.012f, 3, 1);
             });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.BUCKET_FILL), 0.6f, 1.4f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BUCKET_FILL, 0.6f, 1.4f);
     }
 
     // ================================================================== 1. Mercury Bullets
@@ -134,7 +134,7 @@ public class MercuryFx {
                     if (!alive(p)) return;
                     Vec3 d = p.getLookAngle().add(r.nextDouble(-0.04, 0.04), r.nextDouble(-0.04, 0.04), r.nextDouble(-0.04, 0.04)).normalize();
                     bullet(p, sl, handPos(p), d, target, power * 0.35f, 0);
-                    sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.SLIME_SQUISH_SMALL), 0.8f, 1.6f);
+                    sound(sl, p.position(), net.minecraft.sounds.SoundEvents.SLIME_SQUISH_SMALL, 0.8f, 1.6f);
                 });
             }
         });
@@ -177,7 +177,7 @@ public class MercuryFx {
                 }
             });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY), 0.8f, 1.2f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, 0.8f, 1.2f);
         AstaFx.later(SPEAR_LAUNCH, () -> {
             if (!alive(p)) return;
             Vec3 look = p.getLookAngle(), rt = rightOf(look);
@@ -187,7 +187,7 @@ public class MercuryFx {
                 Vec3 d = aim.subtract(base).normalize();
                 AstaFx.later(i + 1, () -> spear(p, sl, base, d, power * 0.6f, 0, new HashSet<>()));
             }
-            sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.TRIDENT_THROW), 1f, 0.9f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_THROW, 1f, 0.9f);
         });
     }
 
@@ -206,7 +206,7 @@ public class MercuryFx {
             if (!hit.add(t.getUUID())) continue;
             AstaFx.damage(p, t, dmg, "mercury_spears");
             splash(sl, mid(t), 0.8f);
-            sound(sl, t.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.TRIDENT_HIT), 1f, 1.1f);
+            sound(sl, t.position(), net.minecraft.sounds.SoundEvents.TRIDENT_HIT, 1f, 1.1f);
         }
         if (next.distanceToSqr(want) > 1.0E-4) {   // stuck in the wall, then melts back
             FxSend.spike(sl, M, next.subtract(dir.scale(2.0)), dir, 2.4f, 0.15f, 14, 0, FxPacket.POP);
@@ -230,7 +230,7 @@ public class MercuryFx {
         final Vec3 sky = c.add(0, 9, 0);
         FxSend.wall(sl, M, sky, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.5f, (float) R, -180, 180, 0.12f, 60, 6, 0);   // the sheet of mercury above
         FxSend.ring(sl, M, c.add(0, 0.05, 0), (float) R - 0.15f, (float) R, 0.05f, 60);                             // where it will fall
-        sound(sl, sky, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY), 1f, 0.7f);
+        sound(sl, sky, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, 1f, 0.7f);
         ThreadLocalRandom r = ThreadLocalRandom.current();
         for (int t = 0; t < 50; t++) {
             final int tt = t;
@@ -252,7 +252,7 @@ public class MercuryFx {
                     Vec3 gg = FxLib.ground(sl, c.add(Math.cos(a) * d, 2, Math.sin(a) * d), 5);
                     if (gg != null) FxSend.ring(sl, M, gg.add(0, 0.04, 0), 0.1f, 0.9f, 0.04f, 5);   // splashes on the ground
                 }
-                if (tt % 10 == 0) sound(sl, c, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.WEATHER_RAIN), 0.8f, 1.6f);
+                if (tt % 10 == 0) sound(sl, c, net.minecraft.sounds.SoundEvents.WEATHER_RAIN, 0.8f, 1.6f);
             });
         }
     }
@@ -265,7 +265,7 @@ public class MercuryFx {
         ServerLevel sl = p.serverLevel();
         int n = 6;
         FxSend.orbit(sl, p, 1, n, 1.9f, 1.3f, 0.3f, 0f, 0.25f, 5, 1, BLADES_LAUNCH);   // circling you, drawn smoothly by the client
-        sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_CHAIN), 1f, 1.4f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_CHAIN, 1f, 1.4f);
         AstaFx.later(BLADES_LAUNCH, () -> {
             if (!alive(p)) return;
             List<LivingEntity> foes = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(24)));
@@ -285,7 +285,7 @@ public class MercuryFx {
                     swordFly(p, sl, c, d, power * 0.4f, 0, new HashSet<>());
                 });
             }
-            sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1f, 1.5f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 1.5f);
         });
     }
 
@@ -325,7 +325,7 @@ public class MercuryFx {
             if (!hit.add(t.getUUID())) continue;
             AstaFx.damage(p, t, dmg, "storm_of_blades");
             splash(sl, mid(t), 0.6f);
-            sound(sl, t.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT), 1f, 1.3f);
+            sound(sl, t.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT, 1f, 1.3f);
         }
         if (next.distanceToSqr(want) > 1.0E-4) { splash(sl, next, 0.5f); return; }
         AstaFx.later(1, () -> swordFly(p, sl, next, dir, dmg, step + 1, hit));
@@ -345,8 +345,8 @@ public class MercuryFx {
             ServerLevel sl = p.serverLevel();
             LivingEntity target = aimed(p, 50, 25);
             eagle(p, sl, handPos(p).add(p.getLookAngle()), p.getLookAngle(), target, power, 0);
-            sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.PHANTOM_FLAP), 1f, 0.8f);
-            sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY), 0.6f, 1.5f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PHANTOM_FLAP, 1f, 0.8f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, 0.6f, 1.5f);
         });
     }
 
@@ -378,11 +378,11 @@ public class MercuryFx {
                 FxSend.spike(sl, M, at, new Vec3(Math.cos(a), 0.4, Math.sin(a)).normalize(), 1.6f, 0.12f, 12, 2, FxPacket.POP);
             }
             sphere(sl, at, Vec3.ZERO, 0.9f, 6, 1);
-            sound(sl, at, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.TRIDENT_HIT), 1f, 0.7f);
-            sound(sl, at, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY), 1f, 0.8f);
+            sound(sl, at, net.minecraft.sounds.SoundEvents.TRIDENT_HIT, 1f, 0.7f);
+            sound(sl, at, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, 1f, 0.8f);
             return;
         }
-        if (age % 6 == 0) sound(sl, next, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.PHANTOM_FLAP), 0.6f, 1.1f);
+        if (age % 6 == 0) sound(sl, next, net.minecraft.sounds.SoundEvents.PHANTOM_FLAP, 0.6f, 1.1f);
         final Vec3 nd = dir; final LivingEntity tg = target;
         AstaFx.later(1, () -> eagle(p, sl, next, nd, tg, dmg, age + 1));
     }
@@ -421,8 +421,8 @@ public class MercuryFx {
         Vec3 c = p.position().add(look.scale(1.6)).add(0, 1.3, 0);
         FxSend.box(sl, M, c, rt, new Vec3(0, 1, 0), 1.6f, 0.05f, 1.5f, 80, 5, FxPacket.POP);   // the mirror
         FxSend.box(sl, S, c.add(look.scale(0.06)), rt, new Vec3(0, 1, 0), 1.45f, 0.01f, 1.35f, 80, 7, FxPacket.POP);   // its bright face
-        sound(sl, c, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME), 1f, 1.8f);
-        sound(sl, c, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY), 0.6f, 1.6f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 1.8f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, 0.6f, 1.6f);
     }
 
     // ================================================================== 7. Mercury Sphere
@@ -440,8 +440,8 @@ public class MercuryFx {
         BARRIERS.add(b);
         sphere(sl, b.c, Vec3.ZERO, (float) SPHERE_R, 80, 8);
         FxSend.ring(sl, M, p.position().add(0, 0.05, 0), 0.3f, (float) SPHERE_R, 0.08f, 8);
-        sound(sl, b.c, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY), 1f, 0.6f);
-        sound(sl, b.c, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON), 1f, 0.6f);
+        sound(sl, b.c, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, 1f, 0.6f);
+        sound(sl, b.c, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON, 1f, 0.6f);
     }
 
     private static boolean insideBarrier(Vec3 at, long now) {
@@ -476,7 +476,7 @@ public class MercuryFx {
                 FxSend.ring(sl, S, h, 1.4f - kk * 0.06f, 0.1f, 0.03f, 3);
             });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE), 0.7f, 1.8f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE, 0.7f, 1.8f);
         AstaFx.later(REGAL_RELEASE, () -> {
             if (!alive(p)) return;
             Vec3 dir = p.getLookAngle();
@@ -505,8 +505,8 @@ public class MercuryFx {
             FxLib.flash(sl, S, start, 1.0f);
             p.setDeltaMovement(p.getDeltaMovement().subtract(dir.scale(0.3)));
             p.hurtMarked = true;
-            sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 0.5f, 1.8f);
-            sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_3), 0.8f, 1.6f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM, 0.5f, 1.8f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_3, 0.8f, 1.6f);
         });
     }
 
@@ -530,10 +530,10 @@ public class MercuryFx {
             GUARDIAN.put(p.getUUID(), sl.getGameTime() + GUARDIAN_TICKS);
             sendGuardian(p, GUARDIAN_TICKS);
             sphere(sl, p.position().add(0, 1, 0), Vec3.ZERO, 1.2f, 4, 0);
-            sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE), 1f, 1.3f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE, 1f, 1.3f);
             p.displayClientMessage(Component.translatable("ui.arcane_addon.silver_guardian.on").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD), true);
         });
-        sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY), 0.8f, 1.0f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, 0.8f, 1.0f);
     }
 
     private static void sendGuardian(ServerPlayer p, int life) {
@@ -570,10 +570,10 @@ public class MercuryFx {
         }
         FxSend.box(sl, M, c.add(0, H + 8, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), (float) R, (float) R, 0.08f,
                 CAGE_DROP + HOLD, 0, FxPacket.POP, 0, new Vec3(0, -8.0 / CAGE_DROP, 0), CAGE_DROP);   // the lid
-        sound(sl, c, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.CHAIN_FALL), 1f, 0.6f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.CHAIN_FALL, 1f, 0.6f);
         AstaFx.later(CAGE_DROP, () -> {
             FxLib.shockRing(sl, M, c.add(0, 0.05, 0), 1.4f);
-            sound(sl, c, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.8f, 0.7f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.8f, 0.7f);
         });
         // held inside
         for (int t = 0; t <= HOLD; t += 2) {
@@ -606,8 +606,8 @@ public class MercuryFx {
                 FxSend.spike(sl, M, from, c.add(0, 1.2, 0).subtract(from).normalize(), (float) R * 0.95f, 0.12f, 10, 2, FxPacket.EXTEND);
             }
             sphere(sl, c.add(0, 1.2, 0), Vec3.ZERO, 1.6f, 8, 1);
-            sound(sl, c, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 1f, 0.5f);
-            sound(sl, c, Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.TRIDENT_HIT), 1f, 0.6f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.ANVIL_LAND, 1f, 0.5f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.TRIDENT_HIT, 1f, 0.6f);
         });
     }
 
@@ -680,7 +680,7 @@ public class MercuryFx {
                 }
                 if (e.isCanceled()) {
                     FxLib.flash(sl, S, p.position().add(face.scale(1.6)).add(0, 1.3, 0), 0.8f);
-                    sound(sl, p.position(), Sfx.of(Sfx.NOZEL, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_HIT), 1f, 1.8f);
+                    sound(sl, p.position(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_HIT, 1f, 1.8f);
                     return;
                 }
             }

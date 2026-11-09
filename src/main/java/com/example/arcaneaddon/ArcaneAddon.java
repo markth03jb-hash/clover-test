@@ -15,7 +15,6 @@ public class ArcaneAddon {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         AddonSpellRegistry.SPELLS.register(modBus);
         AddonItemRegistry.ITEMS.register(modBus);
-        com.example.arcaneaddon.registry.AddonSounds.SOUNDS.register(modBus);
         AddonItemRegistry.TABS.register(modBus);
         AddonNetwork.init();
         net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.COMMON, AddonConfig.SPEC, "iron_spell_grimoire-common.toml");

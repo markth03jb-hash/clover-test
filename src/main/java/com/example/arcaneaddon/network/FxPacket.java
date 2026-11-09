@@ -19,6 +19,10 @@ public class FxPacket {
     public int id, life, sweep;
     public Vec3 c = Vec3.ZERO, d = Vec3.ZERO, u = Vec3.ZERO, v = Vec3.ZERO;   // v = velocity per tick (BOX / SPIKE)
     public float r, r2, a0, a1, h, speed;
+    /** Sent as bit 0x40 of the palette: draw this effect only in the pixel-sprite style (no old solid shape). */
+    public static final int PIXEL_ONLY = 0x40;
+    /** Client side, decoded from the palette bit (never sent itself). */
+    public transient boolean pixelOnly;
 
     /*
      * Wire format: the header, then a bitmask saying which vectors / floats are non-zero, then only those.

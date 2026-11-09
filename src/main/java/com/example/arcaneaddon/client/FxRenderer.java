@@ -89,6 +89,8 @@ public class FxRenderer extends FxBase {
    }
 
    public static void spawn(FxPacket p) {
+      if ((p.palette & FxPacket.PIXEL_ONLY) != 0) { p.palette = (byte)(p.palette & 0x3F); p.pixelOnly = true; }
+      if (p.shape == 19 || p.shape == 20) p.pixelOnly = true;   // fireballs and mercury balls: pixel sprites only (no liquid ball)
       if (p.shape == 42) { FxSync.cast(p.id, p.sweep, p.life); return; }   // a move's cast animation started (effect timing)
       if (FxSync.defer(p)) return;   // held back to land on the swing
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
@@ -324,7 +326,8 @@ public class FxRenderer extends FxBase {
                   Vec3 pat = (f.p.shape == 7 || f.p.shape == 8 || f.p.shape == 30) ? travelled(f, pa) : f.p.c.add(f.p.v.scale(mv(f.p, pa)));
                   PixelFx.fromFx(f.p, pat, pa, Math.max(pl, pTick ? 1.0 : pl), pTick);
                }
-               if (f.p.palette == DARKNESS) FxEmitters.emitDarkness(f, now - f.born);
+               if (f.p.pixelOnly) { /* pixel sprites only: no old smoke / flames */ }
+               else if (f.p.palette == DARKNESS) FxEmitters.emitDarkness(f, now - f.born);
                else if (f.p.palette == WIND) FxEmitters.emitWind(f, now - f.born);
                else if (f.p.palette == MERCURY) FxEmitters.emitMercury(f, now - f.born);
                else if (f.p.palette == FIRE || f.p.palette == BLUE_FIRE || f.p.palette == CRIMSON) { flamePal = f.p.palette; FxEmitters.emitFire(f, now - f.born); flamePal = FIRE; }
@@ -412,7 +415,7 @@ public class FxRenderer extends FxBase {
                // packet never leaves a one-frame gap; they move along their velocity, so the overlap lines up
                boolean perTick = f.p.life <= 1 && f.killAge < 0.0;
                if (!(age < 0.0) && !(age > life + (perTick ? 1.5 : 0.0))) {
-                  float env = (float)(smooth(age / 1.5) * smooth((life - age) / Math.max(2.0, life * 0.45)));   // eased in and out, no hard edges
+                  float env = (float)smooth((life - age) / 2.0);   // full strength from the first frame; only a 2-tick cut at the very end (no fading in and out)
                   int sh = f.p.shape;
                   // a per-tick copy is normally replaced by the next one at age ~1; if that one is late, this one keeps
                   // gliding along its path and fades out gently instead of freezing and then jumping
@@ -421,7 +424,7 @@ public class FxRenderer extends FxBase {
                   // Asta's darkness, which stays a black blade with a glowing edge
                   slashGlow = sh == 13 && f.p.palette != 1 && f.p.palette != 10;
                   lightPal = ((sh == 0 || sh == 1 || sh == 2 || sh == 13) && isLight(f.p.palette)) || slashGlow ? f.p.palette : -1;
-                  switch (f.p.shape) {
+                  if (!f.p.pixelOnly) switch (f.p.shape) {   // pixel-only effects are drawn entirely by PixelFx
                      case 0:
                         FxShapes.wall(vc, m, n, cam, f.p, age, env);
                         break;

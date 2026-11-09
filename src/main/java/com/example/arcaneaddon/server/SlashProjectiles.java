@@ -60,8 +60,8 @@ public class SlashProjectiles {
         s.left_ = 4;
         LIST.add(s);
         FxSend.wall(sl, 0, s.pos, f, s.left, 3.4f, 3.4f, -105, 105, 1.1f, 14, 4, 0);   // the swing as a real 3D slash wall
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.3f, 0.55f);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_2), 0.8f, 1.2f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.55f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_2, 0.8f, 1.2f);
     }
 
     /** Slayer Whirlwind: a full 360 degree spin cut around you, then the slash aura flies on ahead. */
@@ -81,8 +81,8 @@ public class SlashProjectiles {
         FxSend.wall(sl, 6, s.pos.add(0, 0.25, 0), f, s.left, 3.0f, 3.2f, 180, -180, 0.5f, 10, 4, 0);
         FxSend.ring(sl, 0, p.position().add(0, 0.05, 0), 0.4f, 5.0f, 0.2f, 10);
         FxSend.ring(sl, Fx.SILVER, s.pos, 3.4f, 3.8f, 0.08f, 6);   // the edge of the spin
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.4f, 0.45f);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_3), 0.9f, 1.1f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.45f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_3, 0.9f, 1.1f);
     }
 
     /** Dweller fires a dark slash straight ahead. */
@@ -104,9 +104,9 @@ public class SlashProjectiles {
         s.fxId = FxSend.crescent(sl, 1, s.pos, s.dir, u, 1.5f, 2.4f, 18, 1.5f);   // dark crescent blade, drawn in 3D on the client
         Fx.flash(sl, s.pos, 0.9f);
         FxSend.ring(sl, Fx.DARK, s.pos, 0.1f, 1.2f, 0.25f, 6);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.WITHER_SHOOT), 0.7f, 1.4f);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.0f, 0.5f);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.SCULK_SHRIEKER_SHRIEK), 0.4f, 1.8f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.WITHER_SHOOT, 0.7f, 1.4f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.0f, 0.5f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.SCULK_SHRIEKER_SHRIEK, 0.4f, 1.8f);
     }
 
     // ------------------------------------------------------------------ ticking
@@ -159,7 +159,7 @@ public class SlashProjectiles {
                 t.knockback(1.0, -k.x, -k.z);
                 Vec3 m = t.position().add(0, t.getBbHeight() * 0.5, 0);
                 Fx.impact(sl, Fx.CRIMSON, m, 1.2f);
-                sound(sl, m, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), 1f, 0.7f);
+                sound(sl, m, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, 1f, 0.7f);
             }
         }
         if (s.age == 2) {                      // the slash aura leaves the blade and flies on
@@ -171,8 +171,8 @@ public class SlashProjectiles {
             a.fxId = FxSend.crescent(sl, 0, c.add(f.scale(1.6)), f, l, 3.0f, 4.4f, 11, 1.7f);
             AstaFx.later(2, () -> FxSend.crescent(sl, Fx.SILVER, c.add(f.scale(1.6)), f, l, 2.4f, 3.6f, 8, 1.7f));
             FxSend.wall(sl, 0, c.add(f.scale(1.2)), l, l.cross(f).normalize(), 0.3f, 2.2f, -180, 180, 0.12f, 6, 0, 0);   // shock ring as it leaves
-            sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.8f, 1.6f);
-            sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_3), 0.7f, 0.8f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.6f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_3, 0.7f, 0.8f);
         }
         return ++s.age >= s.left_;
     }
@@ -192,10 +192,10 @@ public class SlashProjectiles {
             Vec3 m = t.position().add(0, t.getBbHeight() * 0.5, 0);
             if (dark) corrode(owner, t, s.damage);   // anti magic eats at them for 3 s (custom damage over time, not a status effect)
             Fx.impact(sl, dark ? Fx.DARK : Fx.CRIMSON, m, 1.2f);
-            sound(sl, m, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), 1f, dark ? 0.5f : 0.8f);
+            sound(sl, m, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, 1f, dark ? 0.5f : 0.8f);
         }
         if (dark && s.age % 2 == 0) FxSend.ring(sl, Fx.DARK, next, 0.2f, 0.8f, 0.15f, 5);   // dark wake behind the blade
-        if (s.age % 3 == 0) sound(sl, next, dark ? Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.SOUL_ESCAPE) : Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 0.5f, dark ? 0.8f : 1.5f);
+        if (s.age % 3 == 0) sound(sl, next, dark ? net.minecraft.sounds.SoundEvents.SOUL_ESCAPE : net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 0.5f, dark ? 0.8f : 1.5f);
         s.pos = next;
         s.age++;
         if (blocked || --s.left_ <= 0) {
@@ -203,7 +203,7 @@ public class SlashProjectiles {
             // dissipate
             FxSend.ring(sl, dark ? Fx.DARK : Fx.CRIMSON, next, 0.2f, 2.4f, 0.3f, 8);
             Fx.spark(sl, Fx.SILVER, next, 0.9f);
-            if (dark) sound(sl, next, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.WITHER_BREAK_BLOCK), 0.5f, 1.5f);
+            if (dark) sound(sl, next, net.minecraft.sounds.SoundEvents.WITHER_BREAK_BLOCK, 0.5f, 1.5f);
             return true;
         }
         return false;

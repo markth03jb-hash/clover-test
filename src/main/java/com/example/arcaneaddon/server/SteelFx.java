@@ -119,8 +119,8 @@ public class SteelFx {
         int[] ids = lance3d(sl, start, dir, 2.4f, 0.075f, 20, 2, 42f, dir.scale(1.7), 0);
         FxLib.flash(sl, ST, start, 1.0f);
         FxSend.wall(sl, SV, start.add(dir.scale(0.4)), FxLib.right(dir), FxLib.up(dir), 0.15f, 1.1f, -180, 180, 0.05f, 6, 0, 0);   // shock ring at launch
-        sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_USE), 0.6f, 1.6f);
-        sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.TRIDENT_THROW), 1f, 0.7f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ANVIL_USE, 0.6f, 1.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_THROW, 1f, 0.7f);
         flyLance(p, sl, start, dir, power, 0, new HashSet<>(), ids);
     }
 
@@ -137,7 +137,7 @@ public class SteelFx {
             AstaFx.damage(p, t, dmg, "violent_rotating_lance");
             FxLib.impact(sl, ST, mid(t), 1.0f);
             FxSend.spike(sl, ST, mid(t).subtract(dir.scale(0.2)), dir, 0.9f, 0.1f, 6, 1, POP);   // steel bursting out the far side
-            sound(sl, t.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.4f, 1.8f);
+            sound(sl, t.position(), net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.4f, 1.8f);
         }
         if (blocked) {
             killAll(sl, ids, end);
@@ -145,7 +145,7 @@ public class SteelFx {
             lance3d(sl, wallHit.subtract(dir.scale(1.6)), dir, 2.4f, 0.075f, 30, 0, 0f, Vec3.ZERO, 0);   // stuck in the wall
             FxLib.spikeBurst(sl, ST, wallHit, 0.8f);
             FxLib.shockRing(sl, SV, wallHit, 0.6f);
-            sound(sl, end, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.6f, 1.2f);
+            sound(sl, end, net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.6f, 1.2f);
             return;
         }
         AstaFx.later(1, () -> flyLance(p, sl, next, dir, dmg, step + 1, hit, ids));
@@ -158,7 +158,7 @@ public class SteelFx {
         Vec3 h0 = handPos(p), d0 = p.getLookAngle();
         lance3d(sl, h0, d0, 1.8f, 0.07f, 9, 6, 28f, Vec3.ZERO, 0);   // forming in the hand, spinning faster
         FxLib.implode(sl, FI, h0.add(d0.scale(1.0)), 0.6f);
-        sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.FIRECHARGE_USE), 0.8f, 0.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.FIRECHARGE_USE, 0.8f, 0.6f);
         AstaFx.later(8, () -> {
             if (!alive(p)) return;
             Vec3 a = handPos(p), d = p.getLookAngle();
@@ -187,8 +187,8 @@ public class SteelFx {
                 FxLib.starburst(sl, GD, tip, d, 0.9f);
                 FxSend.wall(sl, FI, tip, FxLib.right(d), FxLib.up(d), 0.3f, 2.2f, -180, 180, 0.12f, 9, 0, 0);
             }
-            sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_2), 1f, 0.8f);
-            sound(sl, tip, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.7f, 0.9f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_2, 1f, 0.8f);
+            sound(sl, tip, net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.7f, 0.9f);
         });
     }
 
@@ -224,7 +224,7 @@ public class SteelFx {
                     t.hurtMarked = true;
                     FxLib.spark(sl, ST, t.position().add(0, 0.5, 0), 0.9f);
                 }
-                sound(sl, b, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_PLACE), 0.5f, 0.55f + delay * 0.08f);
+                sound(sl, b, net.minecraft.sounds.SoundEvents.ANVIL_PLACE, 0.5f, 0.55f + delay * 0.08f);
             });
         }
         AstaFx.later(5, () -> {
@@ -234,10 +234,10 @@ public class SteelFx {
             }
             // the castle crest: a gold diamond on the front
             FxSend.box(sl, GD, c.add(n.scale(0.27)).add(0, 2.3, 0), r.add(UP).normalize(), n, 0.36f, 0.36f, 0.04f, WALL_TICKS - 6, 4, POP);
-            sound(sl, c, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.IRON_DOOR_CLOSE), 1f, 0.6f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.IRON_DOOR_CLOSE, 1f, 0.6f);
         });
         FxLib.shockRing(sl, ST, c.add(0, 0.05, 0), 1.5f);
-        sound(sl, c, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_PLACE), 1f, 0.6f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.ANVIL_PLACE, 1f, 0.6f);
     }
 
     /** True when {@code at} is in front of the wall, within its width. */
@@ -268,7 +268,7 @@ public class SteelFx {
             pr.setOwner(p);
             pr.hurtMarked = true;
             FxLib.spark(sl, ST, pr.position(), 0.8f);
-            sound(sl, pr.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.35f, 1.8f);
+            sound(sl, pr.position(), net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.35f, 1.8f);
         }
         for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, box, x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {
             Vec3 rel = t.position().subtract(c);
@@ -360,10 +360,10 @@ public class SteelFx {
             FxSend.box(sl, pc.pal(), from, vecOf(pc.ax(), d, r), vecOf(pc.up(), d, r), pc.hl(), pc.hw(), pc.hh(), CART_ASSEMBLE + 1, 1, POP, 0,
                     at.subtract(from).scale(1.0 / CART_ASSEMBLE), CART_ASSEMBLE);
         }
-        sound(sl, feet, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_USE), 0.6f, 0.8f);
+        sound(sl, feet, net.minecraft.sounds.SoundEvents.ANVIL_USE, 0.6f, 0.8f);
         for (int k = 1; k < CART_ASSEMBLE; k += 2) {
             final int kk = k;
-            AstaFx.later(k, () -> sound(sl, feet, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_PLACE), 0.4f, 1.2f + kk * 0.08f));
+            AstaFx.later(k, () -> sound(sl, feet, net.minecraft.sounds.SoundEvents.ANVIL_PLACE, 0.4f, 1.2f + kk * 0.08f));
         }
         cartTick(p, sl, d, power, -CART_ASSEMBLE, new HashSet<>());
     }
@@ -374,8 +374,8 @@ public class SteelFx {
             p.setDeltaMovement(0, Math.min(0, p.getDeltaMovement().y), 0);
             p.hurtMarked = true;
             if (step == -1) {
-                sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.HORSE_ANGRY), 0.9f, 0.6f);
-                sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.HORSE_GALLOP), 1.2f, 0.7f);
+                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 0.9f, 0.6f);
+                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.HORSE_GALLOP, 1.2f, 0.7f);
                 FxLib.shockRing(sl, SV, p.position().add(0, 0.05, 0), 0.8f);
             }
             AstaFx.later(1, () -> cartTick(p, sl, d, dmg, step + 1, hit));
@@ -393,8 +393,8 @@ public class SteelFx {
             }
             p.setDeltaMovement(d.scale(0.2));
             p.hurtMarked = true;
-            sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 1f, 0.6f);
-            sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.6f, 1.3f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ANVIL_LAND, 1f, 0.6f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.6f, 1.3f);
             return;
         }
         Vec3 v = d.scale(CART_SPEED);
@@ -420,9 +420,9 @@ public class SteelFx {
             t.knockback(1.4, -k.x, -k.z);
             t.push(0, 0.45, 0);
             FxLib.impact(sl, ST, mid(t), 1.0f);
-            sound(sl, t.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.4f, 1.4f);
+            sound(sl, t.position(), net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.4f, 1.4f);
         }
-        if (step % 3 == 0) sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.HORSE_STEP), 1f, 0.6f);
+        if (step % 3 == 0) sound(sl, p.position(), net.minecraft.sounds.SoundEvents.HORSE_STEP, 1f, 0.6f);
         AstaFx.later(1, () -> cartTick(p, sl, d, dmg, step + 1, hit));
     }
 
@@ -430,7 +430,7 @@ public class SteelFx {
     /** Two steel rails form in front of you and charge through crackling coils for 1 s, then fire a steel bolt. */
     public static void thunderArrow(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT), 0.8f, 1.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT, 0.8f, 1.6f);
         for (int k = 0; k < 5; k++) {
             final int kk = k;
             AstaFx.later(k * 4, () -> {
@@ -444,7 +444,7 @@ public class SteelFx {
                     FxSend.wall(sl, LT, a.add(d.scale(0.5 + c * 0.5)), r, u, 0.4f, 0.4f, -180, 180, 0.04f, 5, 0, 0);
                 }
                 FxLib.spark(sl, LT, a.add(d.scale(0.6 + kk * 0.45)), 0.5f);
-                sound(sl, a, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 0.25f, 1.6f + kk * 0.1f);
+                sound(sl, a, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 0.25f, 1.6f + kk * 0.1f);
             });
         }
         AstaFx.later(20, () -> {
@@ -468,8 +468,8 @@ public class SteelFx {
             FxLib.impact(sl, LT, end, 1.6f);
             p.push(-d.x * 0.6, 0.1, -d.z * 0.6);        // recoil
             p.hurtMarked = true;
-            sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER), 0.8f, 1.6f);
-            sound(sl, end, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.6f, 1.0f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER, 0.8f, 1.6f);
+            sound(sl, end, net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.6f, 1.0f);
         });
     }
 
@@ -480,7 +480,7 @@ public class SteelFx {
         ServerLevel sl = p.serverLevel();
         Vec3 c = p.position();
         Set<UUID> hit = new HashSet<>();
-        sound(sl, c, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_PLACE), 0.8f, 0.5f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.ANVIL_PLACE, 0.8f, 0.5f);
         FxLib.shockRing(sl, ST, c.add(0, 0.05, 0), 1.0f);
         for (int ring = 0; ring < 3; ring++) {
             final double r = 2.5 + ring * 2.5;
@@ -509,7 +509,7 @@ public class SteelFx {
                     t.hurtMarked = true;
                     FxLib.spark(sl, ST, mid(t), 1.0f);
                 }
-                sound(sl, c, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.5f, 0.7f + (float) r * 0.05f);
+                sound(sl, c, net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.5f, 0.7f + (float) r * 0.05f);
             });
         }
     }
@@ -557,7 +557,7 @@ public class SteelFx {
                 FxSend.box(sl, ST, feet.add(m).add(0, 0.12, 0), tan, UP, half, 0.06f, 0.05f, 56, 3, POP);
             }
             FxSend.spike(sl, GD, feet.add(0, hh * 2 + 0.1, 0), UP, 0.5f, 0.12f, 56, 4, POP);   // finial on the cage roof
-            sound(sl, feet, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.IRON_DOOR_CLOSE), 1f, 0.5f);
+            sound(sl, feet, net.minecraft.sounds.SoundEvents.IRON_DOOR_CLOSE, 1f, 0.5f);
         });
         for (int k = 0; k < 6; k++) {
             AstaFx.later(k * 10, () -> {
@@ -577,10 +577,10 @@ public class SteelFx {
             }
             FxLib.implode(sl, ST, t.position().add(0, 1, 0), s);
             FxLib.spikeBurst(sl, ST, mid(t), s);
-            sound(sl, t.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.9f, 0.6f);
+            sound(sl, t.position(), net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.9f, 0.6f);
         });
-        sound(sl, t.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.CHAIN_PLACE), 1f, 0.6f);
-        sound(sl, t.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_PLACE), 0.6f, 0.8f);
+        sound(sl, t.position(), net.minecraft.sounds.SoundEvents.CHAIN_PLACE, 1f, 0.6f);
+        sound(sl, t.position(), net.minecraft.sounds.SoundEvents.ANVIL_PLACE, 0.6f, 0.8f);
     }
 
     // ================================================================== 8. Knight's Armor (addon original)
@@ -621,11 +621,11 @@ public class SteelFx {
             sendKnight(p, KNIGHT_TICKS - 5);   // the armor appears on you as the plates arrive
             FxLib.flash(sl, ST, p.position().add(0, 1.1, 0), 0.9f);
             FxLib.shockRing(sl, SV, p.position().add(0, 0.05, 0), 0.8f);
-            sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE), 1f, 0.8f);
-            sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.4f, 1.5f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_NETHERITE, 1f, 0.8f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.4f, 1.5f);
         });
-        sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON), 1f, 0.7f);
-        sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_USE), 0.6f, 1.2f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON, 1f, 0.7f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ANVIL_USE, 0.6f, 1.2f);
     }
 
     /** One armor plate flying in from {@code outward} and locking onto the body at the given offset. */
@@ -649,7 +649,7 @@ public class SteelFx {
             if (now > w.until()) {
                 WALLS.remove(p.getUUID());
                 FxLib.groundPuff(sl, ST, w.center(), 2.0f);
-                sound(sl, w.center(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.IRON_DOOR_OPEN), 0.8f, 0.6f);
+                sound(sl, w.center(), net.minecraft.sounds.SoundEvents.IRON_DOOR_OPEN, 0.8f, 0.6f);
             } else wallTick(p, sl, w);
         }
         Long a = ARMOR.get(p.getUUID());
@@ -658,7 +658,7 @@ public class SteelFx {
                 ARMOR.remove(p.getUUID());
                 sendKnight(p, 0);
                 FxLib.spikeBurst(sl, ST, p.position().add(0, 1, 0), 0.6f);   // the plates fall away
-                sound(sl, p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON), 0.8f, 0.5f);
+                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON, 0.8f, 0.5f);
             } else if (now % 40 == 0) sendKnight(p, (int) (a - now));   // so players who arrive later see it too
         }
     }
@@ -678,7 +678,7 @@ public class SteelFx {
             Vec3 rel = from.subtract(w.center());
             Vec3 hitAt = w.center().add(0, 1.9, 0).add(FxLib.right(w.normal()).scale(Math.max(-WALL_HALF, Math.min(WALL_HALF, rel.dot(FxLib.right(w.normal()))))));
             FxLib.spark(victim.serverLevel(), ST, hitAt, 1.0f);
-            sound(victim.serverLevel(), hitAt, Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.4f, 1.6f);
+            sound(victim.serverLevel(), hitAt, net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.4f, 1.6f);
             return;
         }
     }
@@ -696,7 +696,7 @@ public class SteelFx {
         if (to.normalize().dot(flat(p.getLookAngle())) < -0.3) {
             e.setAmount(e.getAmount() * 0.5f);
             FxLib.spark(p.serverLevel(), FxLib.CRIMSON, p.position().add(0, 1.0, 0).subtract(flat(p.getLookAngle()).scale(0.4)), 0.7f);
-            sound(p.serverLevel(), p.position(), Sfx.of(Sfx.KLAUS, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_LEATHER), 0.8f, 0.6f);
+            sound(p.serverLevel(), p.position(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_LEATHER, 0.8f, 0.6f);
         }
     }
 

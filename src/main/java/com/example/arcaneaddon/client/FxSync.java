@@ -31,7 +31,7 @@ import java.util.Map;
 public final class FxSync {
     private FxSync() {}
 
-    private static final int MAX_SHIFT = 8;
+    private static final int MAX_SHIFT = 0;   // off: moves fire the moment they are cast (no holding back)
     /** player id -> {start tick, impact tick, shift (-1 = not decided yet), last launched effect tick} */
     private static final Map<Integer, double[]> WIN = new HashMap<>();
     private static final Map<String, Integer> IMPACT = new HashMap<>();

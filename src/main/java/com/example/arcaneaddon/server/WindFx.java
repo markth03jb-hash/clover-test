@@ -119,7 +119,7 @@ public class WindFx {
                 FxSend.trail(sl, W, from, from.add(h.subtract(from).scale(0.7)), 0.05f, 4);
             });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.25f, 1.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.25f, 1.6f);
     }
 
     // ================================================================== 1. Wind Blade Shower
@@ -157,8 +157,8 @@ public class WindFx {
                 final int delay = Math.abs(i - n / 2) / 2;   // the middle leaves first: a sweeping fan
                 AstaFx.later(delay, () -> blade(p, sl, eye.add(d.scale(0.8)), d, power * (dive ? 0.55f : 0.5f), dive));
             }
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.2f, 1.6f);
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.5f, 1.8f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 1.6f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.5f, 1.8f);
         });
     }
 
@@ -208,8 +208,8 @@ public class WindFx {
             Vec3 g = FxLib.ground(sl, start.add(0, 1, 0), 5);
             if (g != null) start = g;
             FxLib.shockRing(sl, W, start.add(0, 0.05, 0), dive ? 1.6f : 1.1f);
-            sound(sl, start, Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.8f, 0.6f);
-            sound(sl, start, Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1f, 0.6f);
+            sound(sl, start, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 0.6f);
+            sound(sl, start, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 0.6f);
             tornadoTick(p, sl, start, flat, power, 0, dive, new HashMap<>());
         });
     }
@@ -245,7 +245,7 @@ public class WindFx {
             gust(sl, pr.position(), 0.5f);
             pr.discard();
         }
-        if (age % 10 == 0) sound(sl, base, Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 0.5f, 0.5f + age * 0.004f);
+        if (age % 10 == 0) sound(sl, base, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 0.5f, 0.5f + age * 0.004f);
         if (age >= LIFE) {
             for (LivingEntity t : enemies(sl, p, new AABB(base, base.add(0, H, 0)).inflate(R + 1.5))) {
                 if (new Vec3(base.x, t.getY(), base.z).distanceTo(t.position()) > R + 1.5) continue;
@@ -256,7 +256,7 @@ public class WindFx {
             FxSend.wall(sl, W, base.add(0, 0.3, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), (float) R, (float) R * 2.4f, -180, 180, 0.5f, 10, 0, 0);
             FxSend.beam(sl, W, base, base.add(0, H + 3, 0), (float) R * 0.4f, 8);
             FxSend.beam(sl, S, base, base.add(0, H + 3, 0), 0.08f, 6);
-            sound(sl, base, Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.6f, 1.4f);
+            sound(sl, base, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.6f, 1.4f);
             return;
         }
         // roll forward along the ground (climb or step down with it)
@@ -309,8 +309,8 @@ public class WindFx {
             FxPacket gp = new FxPacket();
             gp.shape = 29; gp.palette = (byte) W; gp.life = 14; gp.c = o; gp.d = look; gp.r = (float) range; gp.h = (float) half;
             AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(o.x, o.y, o.z, 96, sl.dimension())), gp);
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.8f, 1.3f);
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.8f, 1.4f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.3f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.4f);
         });
     }
 
@@ -344,8 +344,8 @@ public class WindFx {
                 Vec3 d = rotY(look, a).normalize();
                 AstaFx.later(i / 2, () -> arrow(p, sl, bowHand(p), d, null, power * 0.7f, 0, dive, new HashSet<>(), 0.18f));
             }
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ARROW_SHOOT), 1f, 1.4f);
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_1), 0.6f, 1.6f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ARROW_SHOOT, 1f, 1.4f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_1, 0.6f, 1.6f);
         });
     }
 
@@ -374,7 +374,7 @@ public class WindFx {
             if (!hit.add(t.getUUID())) continue;
             AstaFx.damage(p, t, dmg, "gale_white_bow");
             gust(sl, mid(t), 0.7f);
-            sound(sl, t.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ARROW_HIT), 1f, 1.2f);
+            sound(sl, t.position(), net.minecraft.sounds.SoundEvents.ARROW_HIT, 1f, 1.2f);
         }
         if (next.distanceToSqr(want) > 1.0E-4) { gust(sl, next, 0.7f); return; }
         final Vec3 nd = dir; final LivingEntity tg = target;
@@ -411,8 +411,8 @@ public class WindFx {
             });
         }
         FxSend.ring(sl, W, p.position().add(0, 0.05, 0), 4.5f, 0.6f, 0.05f, 10);
-        sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME), 1f, 1.4f);
-        sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.4f, 1.8f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 1.4f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.4f, 1.8f);
     }
 
     // ================================================================== 6. Spirit of Zephyr
@@ -429,7 +429,7 @@ public class WindFx {
         if (dive) diveMsg(p, "spirit_of_zephyr");
         // the sword of wind forming in your hand
         FxSend.ring(sl, W, handPos(p), 1.2f, 0.1f, 0.05f, 5);
-        sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.4f, 2f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.4f, 2f);
         for (int i = 0; i < 3; i++) {
             final int ii = i;
             AstaFx.later(ZEPHYR_CUTS[i], () -> {
@@ -458,7 +458,7 @@ public class WindFx {
                 }
                 p.setDeltaMovement(p.getDeltaMovement().add(new Vec3(look.x, 0, look.z).normalize().scale(0.45)));
                 p.hurtMarked = true;
-                sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.1f, 1.3f + ii * 0.15f);
+                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.1f, 1.3f + ii * 0.15f);
             });
         }
     }
@@ -484,8 +484,8 @@ public class WindFx {
             });
         }
         FxLib.shockRing(sl, W, p.position().add(0, 0.05, 0), 1.4f);
-        sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.4f, 0.7f);
-        sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 0.35f, 1.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.7f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM, 0.35f, 1.6f);
     }
 
     // ================================================================== 7. Spirit of Boreas
@@ -502,7 +502,7 @@ public class WindFx {
         int n = dive ? 8 : 4;
         // circling you: one packet, animated by the client every frame so it is perfectly smooth
         FxSend.orbit(sl, p, 0, n, 1.8f, 1.6f, 0.25f, 0f, 0.2f, 6, 2, BOREAS_LAUNCH);
-        sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.6f, 1.2f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.6f, 1.2f);
         AstaFx.later(BOREAS_LAUNCH, () -> {
             if (!alive(p)) return;
             List<LivingEntity> foes = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(30)));
@@ -521,7 +521,7 @@ public class WindFx {
                     halberdFly(p, sl, c, d, power * 0.6f, 0, new HashSet<>());
                 });
             }
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.TRIDENT_THROW), 1f, 1.3f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_THROW, 1f, 1.3f);
         });
     }
 
@@ -561,7 +561,7 @@ public class WindFx {
             if (!hit.add(t.getUUID())) continue;
             AstaFx.damage(p, t, dmg, "spirit_of_boreas");
             gust(sl, mid(t), 0.9f);
-            sound(sl, t.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.TRIDENT_HIT), 1f, 1.2f);
+            sound(sl, t.position(), net.minecraft.sounds.SoundEvents.TRIDENT_HIT, 1f, 1.2f);
         }
         if (next.distanceToSqr(want) > 1.0E-4) { gust(sl, next, 0.9f); return; }
         AstaFx.later(1, () -> halberdFly(p, sl, next, dir, dmg, step + 1, hit));
@@ -595,8 +595,8 @@ public class WindFx {
             if (dive) diveMsg(p, "spirit_of_euros");
             eurosArrow(p, sl, bowHand(p), p.getLookAngle(), power, 0, dive, new HashSet<>());
             FxLib.shockRing(sl, W, bowHand(p), 0.9f);
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ARROW_SHOOT), 1f, 0.6f);
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 0.3f, 1.8f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ARROW_SHOOT, 1f, 0.6f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM, 0.3f, 1.8f);
         });
     }
 
@@ -634,7 +634,7 @@ public class WindFx {
                     t.hurtMarked = true;
                 }
                 FxSend.wall(sl, W, next, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.5f, 6f, -180, 180, 0.6f, 9, 0, 0);
-                sound(sl, next, Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.6f, 1.5f);
+                sound(sl, next, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.6f, 1.5f);
             }
             return;
         }
@@ -659,7 +659,7 @@ public class WindFx {
                 FxSend.ring(sl, W, p.position().add(0, 0.1 + kk * 0.13, 0), 3f - kk * 0.15f, 0.3f, 0.06f, 4);
             });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.8f, 1.0f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.0f);
         AstaFx.later(DIVE_FORM, () -> {
             if (!alive(p)) return;
             DIVE.put(p.getUUID(), sl.getGameTime() + DIVE_TICKS);
@@ -669,8 +669,8 @@ public class WindFx {
             FxSend.wall(sl, W, p.position().add(0, 1, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.5f, 7f, -180, 180, 1.2f, 10, 0, 0);
             FxSend.beam(sl, S, p.position(), p.position().add(0, 9, 0), 0.4f, 8);
             p.displayClientMessage(Component.translatable("ui.arcane_addon.dive.open").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 1f, 1.6f);
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT), 0.7f, 1.6f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 1f, 1.6f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT, 0.7f, 1.6f);
         });
     }
 
@@ -717,8 +717,8 @@ public class WindFx {
                 }
             });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.8f, 0.7f);
-        sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE), 0.6f, 1.8f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 0.7f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE, 0.6f, 1.8f);
         AstaFx.later(STORM_RELEASE, () -> {
             if (!alive(p)) return;
             boolean dive = diving(p);
@@ -774,9 +774,9 @@ public class WindFx {
             FxLib.shockRing(sl, W, p.position().add(0, 0.05, 0), 1.4f);
             p.setDeltaMovement(p.getDeltaMovement().subtract(dir.scale(0.4)));   // the recoil
             p.hurtMarked = true;
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM), 0.6f, 1.4f);
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.8f, 1.2f);
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.5f, 1.6f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.WARDEN_SONIC_BOOM, 0.6f, 1.4f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.2f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.5f, 1.6f);
         });
     }
 
@@ -823,7 +823,7 @@ public class WindFx {
         if (e.getSource().is(DamageTypeTags.IS_FALL) && (wears || diving(p))) {
             e.setCanceled(true);
             FxSend.ring(sl, W, p.position().add(0, 0.05, 0), 0.3f, 2.2f, 0.06f, 6);   // a gust catches you
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.3f, 2f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.3f, 2f);
             return;
         }
         if (wears && e.getSource().is(DamageTypeTags.IS_PROJECTILE) && ThreadLocalRandom.current().nextFloat() < 0.25f) {
@@ -833,7 +833,7 @@ public class WindFx {
                 gust(sl, proj.position(), 0.6f);
                 proj.setDeltaMovement(proj.getDeltaMovement().scale(-0.3).add(0, 0.3, 0));
             }
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.4f, 1.8f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.4f, 1.8f);
             return;
         }
         long now = sl.getGameTime();
@@ -861,7 +861,7 @@ public class WindFx {
                     blade(p, sl, from, mid(le).subtract(from).normalize(), 6f, false);
                 });
             }
-            sound(sl, p.position(), Sfx.of(Sfx.YUNO, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.5f, 2f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.5f, 2f);
         }
     }
 

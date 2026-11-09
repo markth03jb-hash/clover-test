@@ -20,11 +20,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Zenon's Bone Sword. Third person: held in the right hand, drawn in the arm's own space so it is one solid piece
+ * Zenon's bone weapon. Third person: worn on the right hand, drawn in the arm's own space so it is one solid piece
  * that follows every frame of the swing. First person: drawn in your view, cutting with the same three swings.
- * The sword is an animated GeckoLib model (GeoForms): a pommel knob, a grip of stacked vertebrae, a guard of two
- * rib-prongs and a blade of bone segments with a tooth on each - it grows out of the hand segment by segment, the
- * ridges then pulse along it, and it shrinks back at the end.
+ * The weapon is now a set of bone claws (an animated GeckoLib model, GeoForms): a knuckle plate and three curved
+ * claws that slide out of the fist, hook, then flex like fingers - and shrink back at the end.
  * Fed by FxPacket shape 37 (id = player, life = ticks, r = blade length, palette 1 = Beelzebub: a violet-black edge).
  */
 @EventBusSubscriber(modid = "arcane_addon", value = {Dist.CLIENT})
@@ -106,17 +105,19 @@ public class BoneBladeLayer extends RenderLayer<AbstractClientPlayer, PlayerMode
         ps.popPose();
     }
 
-    // ------------------------------------------------------------------ the sword itself (blade along -z, +y = down the arm)
-    private static final ResourceLocation UNION_TEX = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/geo/bone_sword_union.png");
-    /** The model's own length, pommel to point, in blocks (it is stretched to the blade length the move asks for). */
-    private static final float MODEL_LEN = 2.25F;
+    // ------------------------------------------------------------------ the claws (forward = -z out of the fist, +y = down the arm)
+    private static final ResourceLocation UNION_TEX = ResourceLocation.fromNamespaceAndPath("arcane_addon", "textures/geo/bone_claws_union.png");
 
-    /** The animated bone sword (GeoForms "bone_sword"): it grows out vertebra by vertebra, then its ridges pulse. */
+    /**
+     * Zenon's bone claws (GeoForms "bone_claws"), replacing the old bone sword: a knuckle plate over the fist and three
+     * curved bone claws that slide out one after another and hook, then flex like fingers. Violet-edged in Beelzebub.
+     * Always lit bright white. {@code L} is ignored - the claws keep their own length.
+     */
     private static void drawSword(PoseStack ps, MultiBufferSource buf, int light, float L, float g, boolean union, int owner, double started) {
-        if (L < 0.05F) return;
+        if (g < 0.02F) return;
         ps.pushPose();
-        ps.scale(g, g, L / MODEL_LEN);
-        GeoForms.draw("bone_sword", owner, started, "form", "idle", union ? UNION_TEX : null, ps, buf, light);
+        ps.scale(g, g, g);
+        GeoForms.draw("bone_claws", owner, started, "form", "idle", union ? UNION_TEX : null, ps, buf, net.minecraft.client.renderer.LightTexture.FULL_BRIGHT);
         ps.popPose();
     }
 }

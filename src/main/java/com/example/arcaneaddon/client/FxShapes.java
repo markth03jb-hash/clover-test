@@ -209,7 +209,7 @@ final class FxShapes extends FxBase {
    static void boneFx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxRenderer.Fx f, double age, double life) {
       FxPacket p = f.p;
       double in = p.sweep > 0 ? Mth.clamp(age / (double)p.sweep, 0.0, 1.0) : 1.0;
-      double out = smooth((life - age) / Math.min(6.0, Math.max(2.0, life * 0.3)));
+      double out = smooth((life - age) / 2.0);
       double k = p.speed == FxPacket.HOLD || p.life <= 1 ? 1.0 : (p.speed == FxPacket.POP ? backOut(in) * out : in * out);
       if (k < 0.01) return;
       int kind = (int)p.h;
@@ -395,7 +395,7 @@ final class FxShapes extends FxBase {
    static void spaceCracks(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, double life) {
       java.util.Random rnd = new java.util.Random(p.sweep * 341873128712L + 132897987541L);
       double grow = smooth(age / 3.0);
-      float fade = (float)smooth((life - age) / Math.max(4.0, life * 0.5));
+      float fade = (float)smooth((life - age) / 2.0);
       if (fade <= 0.01F) return;
       Vec3 d = p.d.normalize(), u = p.u.normalize();
       double R = p.r;
@@ -458,7 +458,7 @@ final class FxShapes extends FxBase {
       Vec3 side = s0.scale(Math.cos(th)).add(u0.scale(Math.sin(th)));
       Vec3 upv = u0.scale(Math.cos(th)).subtract(s0.scale(Math.sin(th)));
       double in = p.sweep > 0 ? Mth.clamp(age / (double)p.sweep, 0.0, 1.0) : 1.0;
-      double out = smooth((life - age) / Math.min(6.0, Math.max(2.0, life * 0.3)));
+      double out = smooth((life - age) / 2.0);
       double hl = p.r, hw = p.r2, hh = p.h;
       Vec3 c = travelled(f, age);
       if (p.speed == FxPacket.GROUND) {
@@ -614,7 +614,7 @@ final class FxShapes extends FxBase {
    static void spikeFx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxRenderer.Fx f, double age, double life) {
       FxPacket p = f.p;
       double in = p.sweep > 0 ? Mth.clamp(age / (double)p.sweep, 0.0, 1.0) : 1.0;
-      double out = smooth((life - age) / Math.min(6.0, Math.max(2.0, life * 0.3)));
+      double out = smooth((life - age) / 2.0);
       double k = p.speed == FxPacket.HOLD ? 1.0 : (p.speed == FxPacket.EXTEND ? in : backOut(in)) * out;
       double L = p.r * k;
       double R = p.r2 * (0.45 + 0.55 * Math.min(1.0, k));

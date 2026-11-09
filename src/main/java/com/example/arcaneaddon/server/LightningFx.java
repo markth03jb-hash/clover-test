@@ -139,7 +139,7 @@ public class LightningFx {
         bolt(sl, eyeFrom, dest.add(0, 1.0, 0), 0.16f, 6, 2);
         p.connection.teleport(dest.x, dest.y, dest.z, p.getYRot(), p.getXRot());
         p.fallDistance = 0;
-        sound(sl, from, Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 0.3f, 2.0f);
+        sound(sl, from, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 0.3f, 2.0f);
         return dest;
     }
 
@@ -180,8 +180,8 @@ public class LightningFx {
                     Vec3 push = back.lengthSqr() < 1.0E-4 ? p.getLookAngle() : back.normalize();
                     e.setDeltaMovement(e.getDeltaMovement().add(push.scale(1.1)).add(0, 0.3, 0));
                     e.hurtMarked = true;
-                    sound(sl, e.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), 1f, 1.3f);
-                    sound(sl, e.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 0.4f, 1.6f);
+                    sound(sl, e.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, 1f, 1.3f);
+                    sound(sl, e.position(), net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 0.4f, 1.6f);
                 });
             }
         });
@@ -213,7 +213,7 @@ public class LightningFx {
                     e.hurtMarked = true;
                     if (ii == 2 && mode) bolt(sl, mid(e).add(0, 14, 0), mid(e), 0.3f, 8, 3);   // the mode: lightning answers from the sky
                 }
-                sound(sl, p.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_KNOCKBACK), 1f, 1.4f);
+                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1f, 1.4f);
             });
         }
     }
@@ -239,7 +239,7 @@ public class LightningFx {
                 Vec3 d = look.add(rt.scale((i - (n - 1) / 2.0) * 0.25)).normalize();
                 AstaFx.later(i, () -> orb(p, sl, start, d, t, power * 0.5f, 0));
             }
-            sound(sl, p.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 0.5f, 1.8f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 0.5f, 1.8f);
         });
     }
 
@@ -270,7 +270,7 @@ public class LightningFx {
                 bolt(sl, next, next.add(d.scale(r.nextDouble(1.5, 3.0))), 0.07f, 5, 1);
             }
             FxLib.flash(sl, L, next, 1.1f);
-            sound(sl, next, Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 0.6f, 1.5f);
+            sound(sl, next, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 0.6f, 1.5f);
             return;
         }
         final Vec3 nd = dir;
@@ -293,7 +293,7 @@ public class LightningFx {
         }
         bolt(sl, from, to, 0.22f, 8, 3);
         strike(sl, to, 0.7f);
-        sound(sl, to, Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER), 0.3f, 2.0f);
+        sound(sl, to, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER, 0.3f, 2.0f);
     }
 
     // ================================================================== 5. Chain Lightning
@@ -312,7 +312,7 @@ public class LightningFx {
                 Vec3 end = clip(sl, p, from, from.add(p.getLookAngle().scale(24)));
                 bolt(sl, from, end, 0.18f, 7, 3);
                 strike(sl, end, 0.8f);
-                sound(sl, p.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 0.6f, 1.4f);
+                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 0.6f, 1.4f);
                 return;
             }
             Set<UUID> done = new HashSet<>();
@@ -326,7 +326,7 @@ public class LightningFx {
                     if (!alive(p) || !t.isAlive()) return;
                     bolt(sl, a, mid(t), 0.14f, 7, 2);
                     hit(p, t, dmg, "chain_lightning");
-                    sound(sl, t.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 0.4f, 1.6f);
+                    sound(sl, t.position(), net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 0.4f, 1.6f);
                 });
                 at = mid(cur);
                 LivingEntity next = null;
@@ -352,8 +352,8 @@ public class LightningFx {
             ThreadLocalRandom r = ThreadLocalRandom.current();
             bolt(sl, h, h.add(r.nextDouble(-1.5, 1.5), r.nextDouble(-0.5, 1.5), r.nextDouble(-1.5, 1.5)), 0.06f, 5, 1);
         }
-        sound(sl, p.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 0.5f, 1.8f);
-        sound(sl, p.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_CHAIN), 1f, 1.4f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 0.5f, 1.8f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_CHAIN, 1f, 1.4f);
     }
 
     /** Client marks for an entity: shape 24 = Thunder God Mode body, shape 25 = glowing gloves. */
@@ -375,7 +375,7 @@ public class LightningFx {
         }
         FxSend.ring(sl, L, p.position().add(0, 0.05, 0), 0.5f, 12f, 0.04f, 12);
         FxLib.flash(sl, L, p.getEyePosition(), 0.6f);
-        sound(sl, p.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME), 1f, 1.8f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 1.8f);
     }
 
     // ================================================================== 8. Thunderfall
@@ -388,7 +388,7 @@ public class LightningFx {
         int strikes = mode ? 14 : 9;
         ThreadLocalRandom r = ThreadLocalRandom.current();
         bolt(sl, p.getEyePosition().add(0, 0.6, 0), p.getEyePosition().add(0, 16, 0), 0.2f, 6, 2);   // the call, up into the sky
-        sound(sl, p.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER), 0.6f, 1.2f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER, 0.6f, 1.2f);
         for (int i = 0; i < strikes; i++) {
             AstaFx.later(6 + i * 3, () -> {
                 if (!alive(p)) return;
@@ -410,7 +410,7 @@ public class LightningFx {
                     if (e.position().distanceTo(land) > 2.4) continue;
                     hit(p, e, power * 0.45f, "thunderfall");
                 }
-                sound(sl, land, Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 0.9f, 1.0f + r.nextFloat() * 0.4f);
+                sound(sl, land, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 0.9f, 1.0f + r.nextFloat() * 0.4f);
             });
         }
     }
@@ -436,7 +436,7 @@ public class LightningFx {
                 bolt(sl, far, c, 0.08f, 3, 1);   // lightning gathering into you
             });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT), 0.7f, 2f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT, 0.7f, 2f);
         AstaFx.later(MODE_FORM, () -> {
             if (!alive(p)) return;
             MODE.put(p.getUUID(), sl.getGameTime() + MODE_TICKS);
@@ -454,8 +454,8 @@ public class LightningFx {
                 bolt(sl, c.add(0, 1, 0), c.add(Math.cos(a) * 4, 0.1, Math.sin(a) * 4), 0.1f, 7, 1);
             }
             p.displayClientMessage(Component.translatable("ui.arcane_addon.thunder_mode.open").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD), true);
-            sound(sl, c, Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER), 1f, 1.2f);
-            sound(sl, c, Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 1f, 1.0f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER, 1f, 1.2f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 1f, 1.0f);
         });
     }
 
@@ -473,7 +473,7 @@ public class LightningFx {
         if (mode) modeMsg(p, "rampage");
         int flashes = mode ? 16 : 10;
         Vec3 home = p.position();
-        sound(sl, p.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER), 0.5f, 1.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER, 0.5f, 1.6f);
         for (int i = 0; i < flashes; i++) {
             final int ii = i;
             AstaFx.later(RAMPAGE_START + i * 2, () -> {
@@ -494,7 +494,7 @@ public class LightningFx {
                 hit(p, t, power * 0.22f, "rampage");
                 t.setDeltaMovement(t.getDeltaMovement().scale(0.3));
                 t.hurtMarked = true;
-                sound(sl, t.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), 0.8f, 1.5f);
+                sound(sl, t.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, 0.8f, 1.5f);
             });
         }
         AstaFx.later(RAMPAGE_START + flashes * 2 + 3, () -> {
@@ -521,8 +521,8 @@ public class LightningFx {
                 t.setDeltaMovement(t.getDeltaMovement().add(0, 0.8, 0));
                 t.hurtMarked = true;
             }
-            sound(sl, land, Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER), 1.5f, 0.9f);
-            sound(sl, land, Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 1.5f, 0.8f);
+            sound(sl, land, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER, 1.5f, 0.9f);
+            sound(sl, land, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 1.5f, 0.8f);
         });
     }
 
@@ -587,7 +587,7 @@ public class LightningFx {
             }
         }
         if (mode) bolt(sl, mid(t).add(0, 10, 0), mid(t), 0.18f, 6, 2);
-        sound(sl, t.position(), Sfx.of(Sfx.LUCK, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT), 0.4f, 1.8f);
+        sound(sl, t.position(), net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_IMPACT, 0.4f, 1.8f);
     }
 
     @SubscribeEvent

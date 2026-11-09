@@ -1,7 +1,33 @@
-Iron Spell Grimoire v1.50.3 - all changed files since v1.0.0
+Iron Spell Grimoire v1.51.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.51.0
+- Sounds: the made-up grimoire sounds are gone - every move plays its original sound again (several moves had
+  gone silent).
+- No more delay: moves fire the moment they are cast again (the "land on the swing" hold-back is off, for both the
+  effects and the damage).
+- Equinox now needs Surpassing Limits AND the Mana Zone at the same time.
+- Sky Splitter (Demon Slayer) is all red - no black, no white.
+- Yami: the white trails and accents on his moves (Death Thrust included) are now dark violet, and his sprites
+  never burn white-hot.
+- No fading in and out: effects appear at full strength and leave with a short cut; pixel sprites stay solid all
+  their life and leave by dissolving.
+- Fireballs (Magna) and mercury spheres are now drawn only in the pixel style - the old liquid ball is gone: a
+  churning ball of flame tongues with a white-hot heart, or a cluster of silver drops with glints.
+- Black Meteorite is drawn only in the pixel style, with denser sprites.
+- Ki Sense marks are pixel-art flames in the creature's colour, with embers rising off them (and a pixel beacon,
+  ember ring and diamond in the Mana Zone) - still seen through walls.
+- Asta's wing matches Devil Union: crimson veins and a burning crimson edge on the black membrane, and it sheds
+  black flakes and crimson embers like the aura.
+- Zenon's Bone Sword is replaced by Bone Claws: a knuckle plate and three curved bone claws that slide out of the
+  fist, hook and flex like fingers (violet-edged in Beelzebub).
+- Bone always looks white: Beelzebub's wings and horns and the claws are lit bright, and every bone colour is
+  whiter.
+- The spell wheel shows the move's damage (from the spell's own info).
+- Smoother sprites (re-applied - this never made it into 1.48.0): colours blend as they cool, fast effects leave no
+  gaps between ticks, pieces pop in with a smoothstep.
 
 NEW IN 1.50.3
 - Fixed a crash (ConcurrentModificationException in FxRenderer.onTick): effects held back to land on a move's

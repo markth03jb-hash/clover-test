@@ -88,7 +88,7 @@ abstract class FxBase {
    static int flamePal = 2, boltPal = 4;
 
    // ------------------------------------------------------------------ bones (Zenon)
-   static final float[] IVORY = {0.93F, 0.89F, 0.8F}, MARROW = {0.55F, 0.47F, 0.38F};
+   static final float[] IVORY = {0.98F, 0.97F, 0.93F}, MARROW = {0.62F, 0.56F, 0.48F};
 
 
    /** A shaded ivory tube along the centre points with the given radii (capped at the ends when caps is true). */

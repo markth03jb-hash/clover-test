@@ -208,13 +208,13 @@ public class AstaFx {
                     }
                 });
             }
-            sound(sl, hit, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.STONE_BREAK), 0.9f, 0.6f);
+            sound(sl, hit, net.minecraft.sounds.SoundEvents.STONE_BREAK, 0.9f, 0.6f);
         }
         FxSend.ring(sl, dw ? Fx.DARK : Fx.CRIMSON, hit, 0.3f, 3.0f, 0.08f, 8);
         later(2, () -> FxSend.ring(sl, Fx.SILVER, hit, 0.6f, 5.5f, 0.05f, 8));   // one thin shockwave rolling out
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.2f, 0.5f);
-        sound(sl, hit, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.8f, 1.2f);
-        sound(sl, hit, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT), 1.0f, 0.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.5f);
+        sound(sl, hit, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.8f, 1.2f);
+        sound(sl, hit, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT, 1.0f, 0.6f);
     }
 
     // ================================================================== Sky Splitter
@@ -243,8 +243,8 @@ public class AstaFx {
         FxSend.ring(sl, pal, p.position().add(0, 0.05, 0), 3.5f, 0.3f, 0.2f, SKY_WINDUP);          // ring collapsing inward
         FxSend.ring(sl, Fx.SILVER, p.position().add(0, 0.9, 0), 2.6f, 0.2f, 0.12f, SKY_WINDUP);
         FxSend.beam(sl, Fx.DARK, p.position().add(0, 0.2, 0), tip.add(0, 1.6, 0), 0.25f, SKY_WINDUP + 2);   // black edge along the raised blade
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT), 1f, 0.5f);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_1), 0.8f, 0.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT, 1f, 0.5f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_1, 0.8f, 0.6f);
 
         // ---- 2. release
         later(SKY_WINDUP, () -> {
@@ -264,9 +264,9 @@ public class AstaFx {
             }
             FxSend.wall(sl, pal, p.position().add(0, 0.1, 0), dir, up, 2.4f, 2.8f, -60, 80, 0.9f, 7, 2, 0);   // the upward swing itself
             Fx.flash(sl, start, 1.4f);
-            sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.4f, 0.4f);
-            sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.TRIDENT_THUNDER), 0.8f, 1.3f);
-            sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.WITHER_SHOOT), 0.6f, 0.6f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.4f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_THUNDER, 0.8f, 1.3f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.WITHER_SHOOT, 0.6f, 0.6f);
             flyCrescent(p, sl, start, dir, up, rt, hitDmg, dw, fxIds, new ArrayList<>(), new HashSet<>(), 0);
         });
     }
@@ -287,16 +287,16 @@ public class AstaFx {
             t.knockback(0.6, -dir.x, -dir.z);
             Fx.impact(sl, dw ? Fx.DARK : Fx.CRIMSON, mid(t), 1.3f);
             FxSend.beam(sl, Fx.SILVER, mid(t).subtract(up.scale(1.4)), mid(t).add(up.scale(1.4)), 0.2f, 6);   // a clean vertical cut through them
-            sound(sl, t.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG), 1f, 0.6f);
+            sound(sl, t.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, 1f, 0.6f);
         }
-        if (step % 2 == 0) sound(sl, clipped, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 0.5f, 0.6f + step * 0.05f);
+        if (step % 2 == 0) sound(sl, clipped, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 0.5f, 0.6f + step * 0.05f);
         if (blocked || step + 1 >= SKY_MAX_STEPS) {
             path.add(clipped);
             if (blocked) {
                 for (int id : fxIds) FxSend.kill(sl, id, clipped);
                 Fx.impact(sl, dw ? Fx.DARK : Fx.CRIMSON, clipped, 2.2f);
                 FxSend.ring(sl, Fx.SILVER, clipped, 0.3f, 3.2f, 0.4f, 8);
-                sound(sl, clipped, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.7f, 1.4f);
+                sound(sl, clipped, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.7f, 1.4f);
             }
             later(2, () -> openRift(p, sl, path, up, rt, dmg * SKY_RIFT_FACTOR, dw));
             return;
@@ -323,8 +323,8 @@ public class AstaFx {
             FxSend.spike(sl, riftPal, c, shard, (float) shard.length(), 0.09f, 12, 2, com.example.arcaneaddon.network.FxPacket.POP);   // solid shard
             FxSend.spike(sl, riftPal, c, shard.scale(-1), (float) shard.length() * 0.7f, 0.07f, 12, 2, com.example.arcaneaddon.network.FxPacket.POP);
         }
-        sound(sl, a, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP), 0.9f, 0.5f);
-        sound(sl, b, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ILLUSIONER_CAST_SPELL), 0.9f, 0.5f);
+        sound(sl, a, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.9f, 0.5f);
+        sound(sl, b, net.minecraft.sounds.SoundEvents.ILLUSIONER_CAST_SPELL, 0.9f, 0.5f);
 
         // collapse: the rift snaps shut and everything still inside it is cut again
         later(10, () -> {
@@ -344,8 +344,8 @@ public class AstaFx {
                 }
             }
             FxSend.beam(sl, Fx.SILVER, a, b, 0.6f, 4);   // final flash as it seals
-            sound(sl, a, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.8f, 0.5f);
-            sound(sl, b, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT), 1.2f, 0.5f);
+            sound(sl, a, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.8f, 0.5f);
+            sound(sl, b, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT, 1.2f, 0.5f);
         });
     }
 
@@ -404,13 +404,13 @@ public class AstaFx {
                     t.setTicksFrozen(t.getTicksRequiredToFreeze() + 60);
                 }
                 case "lightning" -> {
-                    sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER), 0.5f, 1.8f);
+                    sound(sl, c, net.minecraft.sounds.SoundEvents.LIGHTNING_BOLT_THUNDER, 0.5f, 1.8f);
                     FxSend.beam(sl, Fx.LIGHTNING, c.add(0, 4, 0), c, 0.3f, 5);   // a bolt drops onto them
                 }
                 default -> t.push(0, 0.9, 0);
             }
             Fx.impact(sl, pal, c, 1.1f);
-            sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT), 1f, 1.3f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT, 1f, 1.3f);
         }
         // the flying crescent blade, tilted 30 degrees like a diagonal cut, with a pale echo chasing it
         Vec3 right = rightOf(look);
@@ -422,8 +422,8 @@ public class AstaFx {
         later(2, () -> FxSend.crescent(sl, el == null ? Fx.SILVER : pal, cStart, look, u, 1.0f, 2.0f, 7, 2.4f));
         Fx.flash(sl, cStart, 0.9f);
         FxSend.ring(sl, pal, start.add(look.scale(1.2)), 0.2f, 1.4f, 0.3f, 6);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP), 1.2f, 0.7f);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_1), 0.7f, 1.4f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.7f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_RIPTIDE_1, 0.7f, 1.4f);
         if (el != null) {
             // the Dweller blade blazes in the borrowed element's colour for 4 seconds
             for (net.minecraft.world.item.ItemStack st : new net.minecraft.world.item.ItemStack[]{p.getMainHandItem(), p.getOffhandItem()}) {
@@ -431,7 +431,7 @@ public class AstaFx {
                     com.example.arcaneaddon.item.DemonDwellerSwordItem.glow(st, el, sl.getGameTime() + 80);
                 }
             }
-            sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ENCHANTMENT_TABLE_USE), 0.8f, 1.4f);
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENCHANTMENT_TABLE_USE, 0.8f, 1.4f);
             p.displayClientMessage(Component.translatable("ui.arcane_addon.borrowed." + el).withStyle(ChatFormatting.DARK_RED), true);
         }
     }
@@ -457,7 +457,7 @@ public class AstaFx {
             if (broke) {   // their spell shatters
                 Fx.impact(sl, Fx.SILVER, mid(t), 1.6f);
                 FxSend.wall(sl, Fx.DARK, mid(t), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 0.2f, 1.6f, -180, 180, 0.3f, 6, 0, 0);
-                sound(sl, t.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.GLASS_BREAK), 1f, 0.7f);
+                sound(sl, t.position(), net.minecraft.sounds.SoundEvents.GLASS_BREAK, 1f, 0.7f);
             } else {
                 Fx.spark(sl, Fx.DARK, mid(t), 0.8f);
             }
@@ -468,9 +468,9 @@ public class AstaFx {
         // a black pillar of anti magic, then one more wave rolling outward
         Fx.pillar(sl, Fx.DARK, c, 6f, 0.6f, 12);
         later(4, () -> FxSend.ring(sl, Fx.DARK, c, 0.5f, 12f, 0.2f, 10));
-        later(3, () -> sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ILLUSIONER_CAST_SPELL), 1f, 0.6f));
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE), 1.2f, 0.6f);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ENCHANTMENT_TABLE_USE), 1f, 0.5f);
+        later(3, () -> sound(sl, c, net.minecraft.sounds.SoundEvents.ILLUSIONER_CAST_SPELL, 1f, 0.6f));
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE, 1.2f, 0.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENCHANTMENT_TABLE_USE, 1f, 0.5f);
     }
 
     // ================================================================== Ki Sense
@@ -520,11 +520,11 @@ public class AstaFx {
             final float pitch = 1.0f + k * 0.35f;
             later(k * 6, () -> {
                 FxSend.ring(sl, Fx.SILVER, c, 0.5f, 32f, 0.15f, 16);
-                sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME), 1.2f, pitch);
+                sound(sl, c, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 1.2f, pitch);
             });
         }
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE), 1f, 1.6f);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_RESONATE), 1f, 0.7f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE, 1f, 1.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_RESONATE, 1f, 0.7f);
     }
 
     // ================================================================== Instinct Guard
@@ -542,8 +542,8 @@ public class AstaFx {
         FxSend.ring(sl, Fx.SILVER, p.position().add(0, 0.9, 0), 0.4f, 1.6f, 0.5f, 9);
         FxSend.ring(sl, Fx.SILVER, p.position().add(0, 0.05, 0), 0.3f, 6.0f, 0.08f, 10);   // ki spreads out to read the next attack
         sendOutline(p, 7, devil ? GUARD_TICKS + 20 : GUARD_TICKS);   // a thin skin of white ki while the stance holds
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT), 0.8f, 1.6f);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME), 1f, 1.8f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, 0.8f, 1.6f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 1.8f);
     }
 
     /** Instinct Guard counter: step behind the attacker and cut them before they recover. */
@@ -580,9 +580,9 @@ public class AstaFx {
         FxSend.crescent(sl, Fx.CRIMSON, m.subtract(look.scale(0.8)), look, u, 1.1f, 1.9f, 6, 0.4f);
         Fx.flash(sl, m, 1.2f);
         Fx.impact(sl, Fx.CRIMSON, m, 1.4f);
-        sound(sl, m, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT), 0.7f, 1.8f);
-        sound(sl, m, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT), 1.2f, 0.7f);
-        sound(sl, m, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.TRIDENT_HIT), 1f, 0.6f);
+        sound(sl, m, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, 0.7f, 1.8f);
+        sound(sl, m, net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT, 1.2f, 0.7f);
+        sound(sl, m, net.minecraft.sounds.SoundEvents.TRIDENT_HIT, 1f, 0.6f);
         p.displayClientMessage(Component.translatable("ui.arcane_addon.counter").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
     }
 
@@ -604,7 +604,7 @@ public class AstaFx {
         Vec3 c = p.position();
         // no rings or pillars around you any more - just the transformation itself, and a shove as the power bursts out
         later(8, () -> {
-            sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 0.9f, 0.5f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.9f, 0.5f);
             if (p.isAlive()) {
                 for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(6), x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {
                     Vec3 away = t.position().subtract(p.position()).multiply(1, 0, 1);
@@ -615,9 +615,9 @@ public class AstaFx {
             }
         });
         if (full) LimitFx.fullUnion(p, UNION_TICKS);
-        sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.WITHER_SPAWN), 0.5f, 1.6f);
-        sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_GROWL), 0.6f, 0.7f);
-        sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT), 1f, 0.5f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.WITHER_SPAWN, 0.5f, 1.6f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_GROWL, 0.6f, 0.7f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT, 1f, 0.5f);
     }
 
     /** Body aura outline (FxPacket shape 14) for everyone who can see {@code p}: palette = colour, life 0 = off. */
@@ -671,8 +671,8 @@ public class AstaFx {
             t.push(0, 0.7, 0);
             t.hurtMarked = true;
         }
-        sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE), 1.2f, 0.5f);
-        sound(sl, c, Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.WITHER_DEATH), 0.5f, 1.4f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 1.2f, 0.5f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.WITHER_DEATH, 0.5f, 1.4f);
         endUnion(p);
     }
 
@@ -697,7 +697,7 @@ public class AstaFx {
         e.setCanceled(true);
         ServerLevel sl = p.serverLevel();
         Fx.spark(sl, Fx.SILVER, p.position().add(0, 1, 0), 1.0f);
-        sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.SHIELD_BLOCK), 0.8f, 1.5f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.SHIELD_BLOCK, 0.8f, 1.5f);
         Entity src = e.getSource().getEntity();
         if (src instanceof LivingEntity attacker && attacker != p && attacker.isAlive() && attacker.distanceTo(p) <= COUNTER_RANGE) {
             long now = sl.getGameTime();
@@ -722,7 +722,7 @@ public class AstaFx {
         e.setAmount(e.getAmount() * keep);
         if (spell) {
             Fx.spark(p.serverLevel(), Fx.DARK, p.position().add(0, 1, 0), 0.9f);
-            sound(p.serverLevel(), p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.ANVIL_LAND), 0.25f, 1.8f);
+            sound(p.serverLevel(), p.position(), net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.25f, 1.8f);
         }
     }
 
@@ -742,7 +742,7 @@ public class AstaFx {
         if (u != null) {
             if (now > u) {
                 endUnion(p);
-                sound(sl, p.position(), Sfx.of(Sfx.ASTA, net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE), 1f, 0.8f);
+                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE, 1f, 0.8f);
             } else {
                 if (now % UNION_HEAL_EVERY == 0 && p.getHealth() < p.getMaxHealth()) p.heal(1.0f);   // devil regeneration
                 if (now % 40 == 0) sendForm(p, (int) (u - now));   // keeps the form visible to players who arrive later

@@ -27,7 +27,7 @@ import java.util.Map;
  *   devil_wings        Devil Union         Asta's single black wing - open, idle, run, fly, glide, fold
  *   beelzebub_wings    Beelzebub           open, idle, fly
  *   beelzebub_horns    Beelzebub           grow, idle
- *   bone_sword         Zenon's bone sword  form, idle
+ *   bone_claws         Zenon's bone claws  form, idle
  *   knight_*           Knight's Armor      equip, idle (+ plume sway / running), cape idle, run, air
  *
  * Every model is drawn inside a player model part's own transform (so it follows that part exactly). The models

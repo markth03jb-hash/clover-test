@@ -27,7 +27,7 @@ import java.util.UUID;
 public final class CastSync {
     private CastSync() {}
 
-    private static final int MAX_SHIFT = 8;
+    private static final int MAX_SHIFT = 0;   // off: moves fire the moment they are cast (no holding back)
 
     private static final class Win { ServerPlayer p; long start; int impact; int shift = -1; long lastLaunch; }
 
