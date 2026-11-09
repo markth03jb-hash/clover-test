@@ -11,8 +11,10 @@ import net.minecraft.util.Mth;
 
 /**
  * The animated models of the two transformations, attached to the player's own model parts:
- *   Devil Union  - demon wings on the back: burst open, then idle beats, swept back while running, hard flaps in
- *                  the air, spread wide to glide when falling, folded in when crouching
+ *   Devil Union  - Asta's single black wing on the left of his back: one solid membrane arching up to a sharp
+ *                  point, a small hooked spike on its leading edge and a torn, ragged trailing edge. It unfurls,
+ *                  beats slowly at rest, sweeps back while running, flaps hard in the air, spreads to glide when
+ *                  falling and folds in when crouching (bending along its length as it moves)
  *   Beelzebub    - skeletal wings (open, idle, flap in the air) and horns that grow from the temples
  * The crown, mantle and burst of the Devil Union stay as effects (FxRenderer.devilForm).
  */

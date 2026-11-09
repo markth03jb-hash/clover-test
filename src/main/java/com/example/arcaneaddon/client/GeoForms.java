@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  * The animated GeckoLib models worn by the forms (assets/arcane_addon/geo, animations, textures/geo):
- *   devil_wings        Devil Union         open, idle, run, fly, glide, fold
+ *   devil_wings        Devil Union         Asta's single black wing - open, idle, run, fly, glide, fold
  *   beelzebub_wings    Beelzebub           open, idle, fly
  *   beelzebub_horns    Beelzebub           grow, idle
  *   bone_sword         Zenon's bone sword  form, idle
