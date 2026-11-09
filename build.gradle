@@ -66,7 +66,7 @@ tasks.withType(ProcessResources).configureEach {
 }
 
 tasks.named('jar', Jar).configure {
-    manifest { attributes(['MixinConfigs': 'arcane_addon.mixins.json']) }   // the Essential compatibility fix
+    manifest { attributes(['MixinConfigs': 'iron_spell_grimoire.mixins.json']) }   // the Essential compatibility fix
     finalizedBy 'reobfJar'
 }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }

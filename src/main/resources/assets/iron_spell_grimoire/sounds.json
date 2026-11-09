@@ -1,0 +1,153 @@
+{
+  "sfx.slash": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/slash_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/slash_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/slash_3"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/slash_4"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/slash_5"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/slash_6"
+      }
+    ],
+    "subtitle": "subtitles.iron_spell_grimoire.sfx.slash"
+  },
+  "sfx.blast": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/blast_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/blast_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/blast_3"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/blast_4"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/blast_5"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/blast_6"
+      }
+    ],
+    "subtitle": "subtitles.iron_spell_grimoire.sfx.blast"
+  },
+  "sfx.whoosh": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/whoosh_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/whoosh_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/whoosh_3"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/whoosh_4"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/whoosh_5"
+      }
+    ],
+    "subtitle": "subtitles.iron_spell_grimoire.sfx.whoosh"
+  },
+  "sfx.impact": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/impact_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/impact_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/impact_3"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/impact_4"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/impact_5"
+      }
+    ],
+    "subtitle": "subtitles.iron_spell_grimoire.sfx.impact"
+  },
+  "sfx.charge": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/charge_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/charge_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/charge_3"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/charge_4"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/charge_5"
+      }
+    ],
+    "subtitle": "subtitles.iron_spell_grimoire.sfx.charge"
+  },
+  "sfx.fire": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fire_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fire_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fire_3"
+      }
+    ],
+    "subtitle": "subtitles.iron_spell_grimoire.sfx.fire"
+  },
+  "sfx.thunder": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/thunder_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/thunder_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/thunder_3"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/thunder_4"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/thunder_5"
+      }
+    ],
+    "subtitle": "subtitles.iron_spell_grimoire.sfx.thunder"
+  },
+  "sfx.roar": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/roar_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/roar_2"
+      }
+    ],
+    "subtitle": "subtitles.iron_spell_grimoire.sfx.roar"
+  }
+}

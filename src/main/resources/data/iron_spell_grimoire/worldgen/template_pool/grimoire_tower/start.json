@@ -1,0 +1,7 @@
+{
+  "name": "iron_spell_grimoire:grimoire_tower/start",
+  "fallback": "minecraft:empty",
+  "elements": [
+    { "weight": 1, "element": { "element_type": "minecraft:single_pool_element", "location": "iron_spell_grimoire:grimoire_tower", "projection": "rigid", "processors": "minecraft:empty" } }
+  ]
+}

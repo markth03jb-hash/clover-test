@@ -1,7 +1,22 @@
-Iron Spell Grimoire v1.59.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.60.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.60.0
+- The mod's id is now iron_spell_grimoire (was arcane_addon) - commands, item ids and files all use the new name,
+  e.g. /locate structure iron_spell_grimoire:grimoire_tower. Worlds made before keep their items, blocks and
+  grimoire spells: old ids are remapped, and grimoires' stored spells are rewritten when a player joins.
+- The Grimoire Tower rebuilt, much wider (33 x 33) but no taller (43 blocks above ground):
+  - a broad lower tier with eight buttresses and a walkway with battlements round its top, a slimmer upper tower,
+    tall arched windows of violet and blue stained glass, dark bands of deepslate, a flared roof of dark tiles
+  - a great arched door; inside one huge hall: a spiral stair climbing the wall to two wooden balconies lined with
+    bookshelves and a gallery under the roof; chandeliers hanging down; dozens of books and grimoires floating in
+    the air
+  - the floor is inlaid with a great five-leaf clover in black and gold; the Grimoire Altar stands on a dais at its
+    heart, with five lecterns round it
+  - it blends in: its foundation is sunk into the ground, the land is shaped round it, steps run round its foot,
+    ivy climbs the walls, moss grows on the floors and walkways and the stone is weathered and cracked
 
 NEW IN 1.59.0
 - Grimoire Towers generate in the world (plains, meadows, forests, taigas, savannas, cherry groves...): a tall
@@ -443,14 +458,14 @@ Mana
 
 NEW IN 1.40.1
 - The mod is now called "Iron Spell Grimoire" (mod list, creative tab, jar name: iron_spell_grimoire-<version>.jar).
-  Its internal id stays arcane_addon on purpose, so existing worlds keep every grimoire, item and spell.
+  Its internal id stays iron_spell_grimoire on purpose, so existing worlds keep every grimoire, item and spell.
 - Commands are now /grimoire instead of /arcane: /grimoire progression on|off, /grimoire mastery set <1-5> [player],
   /grimoire mastery add <xp>, /grimoire limit [player], /grimoire limit reset [player].
 - Config files are now config/iron_spell_grimoire-common.toml and config/iron_spell_grimoire-client.toml. The old
-  arcane_addon-*.toml files are no longer read (settings start from the defaults; the old files can be deleted).
+  iron_spell_grimoire-*.toml files are no longer read (settings start from the defaults; the old files can be deleted).
 
 NEW IN 1.40.0
-- NEW: client effect settings (config/arcane_addon-client.toml, each player sets their own; the defaults are exactly
+- NEW: client effect settings (config/iron_spell_grimoire-client.toml, each player sets their own; the defaults are exactly
   the current look, and nothing here changes what a spell does):
   - particle_density (0-1): how many smoke / flame / spark / dust particles spells make.
   - effect_opacity (0.1-1): how solid the 3D effects look (slashes, walls, beams, domes, body auras).
@@ -532,7 +547,7 @@ NEW IN 1.37.0
     timers in gold.
   - the grimoire tooltip shows its Mastery, an XP bar, the current bonus, what the next level unlocks and which
     spells are still locked. Gaining XP pops up a small Mastery bar under the mode timers for a few seconds.
-  - ON / OFF: /arcane progression on|off (saved to config/arcane_addon-common.toml, "grimoire_mastery.enabled").
+  - ON / OFF: /arcane progression on|off (saved to config/iron_spell_grimoire-common.toml, "grimoire_mastery.enabled").
     Off = every spell unlocked and no level bonuses - handy for testing a new grimoire. The config also has
     xp_multiplier. Commands (op): /arcane mastery set <1-5> [player], /arcane mastery add <xp>.
 
@@ -1044,7 +1059,7 @@ FROM 1.7.0 - KATANA TECHNIQUES + ANIMATIONS
            Borrowed Slash = horizontal slash, Arcane Pulse = stomp
   Mid-move poses: Twin Swap whirlwind spin (new) / volley throw / quick blade flip, Zetten Dweller X cross-cut (new),
     Instinct Guard counter-thrust, Foresight blade deflect on each dodge.
-  New poses are in assets/arcane_addon/player_animation/arcane_animations.json, built from Iron's own keyframes.
+  New poses are in assets/iron_spell_grimoire/player_animation/arcane_animations.json, built from Iron's own keyframes.
 
   NEW FILES: client/ArcaneAnimations.java, server/AnimSend.java, player_animation/arcane_animations.json
   CHANGED:   build.gradle (compileOnly player-animation-lib), spells/DarkSpell.java, spells/GrimoireSpell.java,

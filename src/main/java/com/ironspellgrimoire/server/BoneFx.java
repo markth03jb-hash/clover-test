@@ -1,0 +1,732 @@
+package com.ironspellgrimoire.server;
+
+import static com.ironspellgrimoire.server.FxUtil.*;
+import com.ironspellgrimoire.IronSpellGrimoire;
+import com.ironspellgrimoire.item.BoneGrimoireItem;
+import com.ironspellgrimoire.network.AddonNetwork;
+import com.ironspellgrimoire.network.FxPacket;
+import io.redspace.ironsspellbooks.api.util.Utils;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+
+/**
+ * Zenon Zogratis' Bone Magic - the ten spells of the Bone Grimoire and its passive. He grows, shapes and throws his
+ * own bones - spears in bunches and tangles, swords, whips - regrows them faster than they break, and (through the
+ * devil Beelzebub) traps enemies in cubes of space.
+ *
+ *  1 Bone Spear Volley      - a bunch of bone spears thrown at once
+ *  2 Bone Spike Eruption    - spikes of bone burst out of the ground in a line ahead of you
+ *  3 Bone Sword             - a sword of bone grows in your hand: three cuts
+ *  4 Bone Whips             - whips of vertebrae lash out from your back at everything around you
+ *  5 Ribcage Prison         - giant ribs close around the enemy you aim at
+ *  6 Marrow Regeneration    - bone plates over your body while you regrow: heal and take less damage
+ *  7 Bone Thicket           - a tangle of bones bursts out across an area, cornering everyone in it
+ *  8 Spatial Cube           - Beelzebub's space: a cube closes on your target, holds it, then crushes inward
+ *  9 Devil Union: Beelzebub - horns, bone wings, faster and harder bones for 25 s
+ * 10 Bone Spear Storm       - a cube of space opens in the sky and rains bone spears on an area
+ *
+ * Passive "Endless Bone": you regrow - 1 health every 2 s while you're hurt.
+ * Bones are drawn as real bone (client shape 30): shaded ivory with knobbed ends, sharpened points, vertebrae.
+ */
+@Mod.EventBusSubscriber(modid = IronSpellGrimoire.MODID)
+public class BoneFx {
+    private static final int B = 15;   // bone palette (the client draws bone in its own ivory, this only groups them)
+    private static final int SPACE = Fx.DARK;   // Beelzebub's space: violet-black edges
+    public static final int LONG = 0, SPEAR = 1, SPIKE = 2, VERTEBRA = 3, RIB = 4;
+
+    private static final Map<UUID, Long> PLATES = new HashMap<>();
+    private static final Map<UUID, Long> UNION = new HashMap<>();
+    private static final UUID UNION_SPEED = UUID.fromString("f3a4b5c6-d7e8-4f90-a1b2-c3d4e5f6a7b8");
+    private static final int UNION_TICKS = 25 * 20;
+
+    // ------------------------------------------------------------------ helpers
+
+    private static boolean wearsBoneGrimoire(ServerPlayer p) {
+        ItemStack s = Utils.getPlayerSpellbookStack(p);
+        return s != null && s.getItem() instanceof BoneGrimoireItem;
+    }
+
+    public static boolean inUnion(ServerPlayer p) {
+        Long u = UNION.get(p.getUUID());
+        return u != null && p.serverLevel().getGameTime() <= u;
+    }
+
+    private static void unionMsg(ServerPlayer p, String key) {
+        p.displayClientMessage(Component.translatable("ui.iron_spell_grimoire.beelzebub." + key).withStyle(ChatFormatting.DARK_RED), true);
+    }
+
+    /** One bone (client shape 30). */
+    static void bone(ServerLevel sl, int kind, Vec3 c, Vec3 axis, Vec3 bend, float halfLen, float radius,
+                     int life, int rise, float mode, float spin, Vec3 vel, int moveTicks) {
+        FxPacket p = new FxPacket();
+        if (mode == FxPacket.HOLD && life <= 2) life = 1;
+        p.shape = 30; p.palette = (byte) B; p.life = life; p.sweep = rise; p.h = kind;
+        p.c = c; p.d = axis.normalize(); p.u = bend; p.r = halfLen; p.r2 = radius; p.speed = mode; p.a0 = spin; p.v = vel; p.a1 = moveTicks;
+        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
+    }
+
+    /** A spike of bone bursting out of the ground at {@code base}, pointing {@code dir}. */
+    private static void spikeUp(ServerLevel sl, Vec3 base, Vec3 dir, float len, float rad, int life, int rise) {
+        bone(sl, SPIKE, base.add(dir.normalize().scale(len * 0.5)), dir, rightOf(dir), len * 0.5f, rad, life, rise, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+    }
+
+    private static void crack(ServerLevel sl, Vec3 at, float s) {
+        sound(sl, at, net.minecraft.sounds.SoundEvents.SKELETON_HURT, 0.6f * s, 0.6f);
+        sound(sl, at, net.minecraft.sounds.SoundEvents.BONE_BLOCK_BREAK, 0.9f * s, 0.8f);
+    }
+
+    /** Beelzebub: every bone move hits 50% harder. */
+    private static float power(ServerPlayer p, float base) { return inUnion(p) ? base * 1.5f : base; }
+
+    /** Client-drawn effects tied to the caster: 37 = the bone sword in the hand, 38 = the bone whips. */
+    private static void sendHeld(ServerPlayer p, int shape, int life, float r, float count, float period, boolean union) {
+        FxPacket pkt = new FxPacket();
+        pkt.shape = (byte) shape; pkt.id = p.getId(); pkt.life = life; pkt.r = r; pkt.h = count; pkt.a0 = period; pkt.palette = (byte) (union ? 1 : 0);
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+    }
+
+    /** A bone spear's whole flight, sent once: the client glides it (smooth, no per-tick re-sends). */
+    private static void spearFlight(ServerLevel sl, ServerPlayer p, Vec3 pos, Vec3 dir, double speed, int maxSteps, float size) {
+        Vec3 far = clip(sl, p, pos, pos.add(dir.scale(speed * (maxSteps + 1))));
+        int ticks = (int) Math.max(1, Math.ceil(far.distanceTo(pos) / speed));
+        bone(sl, SPEAR, pos.add(dir.scale(speed - 0.9 * size)), dir, rightOf(dir), 0.9f * size, 0.08f * size, ticks + 1, 0, FxPacket.HOLD, 0, dir.scale(speed), ticks - 1);
+    }
+
+    // ================================================================== 1. Bone Spear Volley
+    private static final int VOLLEY_RELEASE = 8;
+
+    /** Bone spears grow out of your arm and fly in a bunch - 6 (Beelzebub: 10) - piercing, 3 blocks a tick. */
+    public static void spearVolley(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        boolean u = inUnion(p);
+        int n = u ? 12 : 6;
+        // the spears grow out in a fan behind your hand, then turn and fly
+        for (int t = 0; t < VOLLEY_RELEASE; t++) {
+            final int tt = t;
+            AstaFx.later(t, () -> {
+                if (!alive(p)) return;
+                Vec3 look = p.getLookAngle(), rt = rightOf(look), up = rt.cross(look).normalize();
+                Vec3 base = p.getEyePosition().add(0, -0.2, 0).subtract(look.scale(0.3));
+                for (int i = 0; i < n; i++) {
+                    double a = (i - (n - 1) / 2.0) * 0.32;
+                    Vec3 at = base.add(rt.scale(Math.sin(a) * 1.4)).add(up.scale(0.6 + Math.cos(a) * 0.5));
+                    float g = Math.min(1f, (tt + 1) / 5f);
+                    bone(sl, SPEAR, at, look, up, 0.9f * g, 0.08f, 2, 0, FxPacket.HOLD, 0, Vec3.ZERO, 0);
+                }
+            });
+        }
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.SKELETON_AMBIENT, 0.8f, 0.6f);
+        AstaFx.later(VOLLEY_RELEASE, () -> {
+            if (!alive(p)) return;
+            if (u) unionMsg(p, "spear_volley");
+            Vec3 look = p.getLookAngle(), rt = rightOf(look), up = rt.cross(look).normalize();
+            Vec3 base = p.getEyePosition().add(0, -0.2, 0).subtract(look.scale(0.3));
+            Vec3 aim = clip(sl, p, p.getEyePosition(), p.getEyePosition().add(look.scale(40)));
+            for (int i = 0; i < n; i++) {
+                double a = (i - (n - 1) / 2.0) * 0.32;
+                Vec3 at = base.add(rt.scale(Math.sin(a) * 1.4)).add(up.scale(0.6 + Math.cos(a) * 0.5));
+                Vec3 d = aim.add(rt.scale(Math.sin(a) * 1.5)).subtract(at).normalize();
+                AstaFx.later(i / 3, () -> spear(p, sl, at, d, power(p, power) * 0.4f, 0, new HashSet<>(), 0.9f));
+            }
+            if (u) {   // Beelzebub: rifts open in space all round the target and more spears come out of them
+                LivingEntity tg = aimed(p, 40, 25);
+                Vec3 at0 = tg != null ? mid(tg) : aim;
+                for (int i = 0; i < 6; i++) {
+                    double a = Math.PI * 2 * i / 6;
+                    Vec3 from = at0.add(Math.cos(a) * 5, 2.5 + (i % 2) * 1.5, Math.sin(a) * 5);
+                    Vec3 d = at0.subtract(from).normalize();
+                    FxSend.cracks(sl, SPACE, from, rightOf(d), rightOf(d).cross(d).normalize(), 0.9f, 14, false, (int) sl.getGameTime() + i * 7);
+                    AstaFx.later(3 + i, () -> spear(p, sl, from, d, power(p, power) * 0.4f, 0, new HashSet<>(), 0.9f));
+                }
+            }
+            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.TRIDENT_THROW, 1f, 0.7f);
+        });
+    }
+
+    /** One flying bone spear, piercing; it sticks where it hits a wall. */
+    private static void spear(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float dmg, int step, Set<UUID> hit, float size) {
+        if (!alive(p) || step > 14) return;
+        if (step == 0) spearFlight(sl, p, pos, dir, 3, 14, size);
+        Vec3 want = pos.add(dir.scale(3));
+        Vec3 next = clip(sl, p, pos, want);
+        for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.0))) {
+            if (!t.getBoundingBox().inflate(0.35).clip(pos, next).isPresent()) continue;
+            if (!hit.add(t.getUUID())) continue;
+            AstaFx.damage(p, t, dmg, "bone_spear_volley");
+            sound(sl, t.position(), net.minecraft.sounds.SoundEvents.TRIDENT_HIT, 0.9f, 1.2f);
+        }
+        if (next.distanceToSqr(want) > 1.0E-4) {   // stuck in the wall, shaking, then crumbling
+            bone(sl, SPEAR, next.subtract(dir.scale(0.6 * size)), dir, rightOf(dir), 0.9f * size, 0.08f * size, 40, 0, FxPacket.POP, 0, Vec3.ZERO, 0);
+            crack(sl, next, 0.4f);
+            return;
+        }
+        AstaFx.later(1, () -> spear(p, sl, next, dir, dmg, step + 1, hit, size));
+    }
+
+    // ================================================================== 2. Bone Spike Eruption
+    private static final int ERUPT_RELEASE = 6;
+
+    /** Stamp: spikes of bone burst out of the ground in a widening line 16 blocks ahead, impaling and launching. */
+    public static void spikeEruption(ServerPlayer p, float power) {
+        AstaFx.later(ERUPT_RELEASE, () -> {
+            if (!alive(p)) return;
+            ServerLevel sl = p.serverLevel();
+            boolean u = inUnion(p);
+            if (u) unionMsg(p, "spike_eruption");
+            Vec3 look = p.getLookAngle();
+            Vec3 flat = new Vec3(look.x, 0, look.z).normalize(), rt = rightOf(flat);
+            ThreadLocalRandom r = ThreadLocalRandom.current();
+            double reach = u ? 26 : 16;
+            Set<UUID> hit = new HashSet<>();
+            for (int k = 1; k <= (int) (reach / 1.4); k++) {
+                final int kk = k;
+                AstaFx.later(k, () -> {
+                    if (!alive(p)) return;
+                    double dist = kk * 1.4;
+                    int per = 1 + (int) (dist / 5);
+                    for (int j = 0; j < per; j++) {
+                        double off = (j - (per - 1) / 2.0) * 1.1 + r.nextDouble(-0.3, 0.3);
+                        Vec3 g = FxLib.ground(sl, p.position().add(flat.scale(dist)).add(rt.scale(off)).add(0, 2, 0), 5);
+                        if (g == null) continue;
+                        Vec3 dir = new Vec3(r.nextDouble(-0.35, 0.35), 1, r.nextDouble(-0.35, 0.35)).add(flat.scale(0.3)).normalize();
+                        float len = (float) (1.6 + dist * 0.08 + r.nextDouble(0.6));
+                        spikeUp(sl, g, dir, len, 0.22f + (float) (dist * 0.006), 34, 3);
+                        for (LivingEntity t : enemies(sl, p, new AABB(g, g).inflate(1.0, 2.5, 1.0))) {
+                            if (!hit.add(t.getUUID())) continue;
+                            AstaFx.damage(p, t, power(p, power), "bone_spike_eruption");
+                            t.setDeltaMovement(t.getDeltaMovement().add(0, 0.8, 0).add(flat.scale(0.3)));
+                            t.hurtMarked = true;
+                        }
+                    }
+                    if (kk % 2 == 0) crack(sl, p.position().add(flat.scale(dist)), 0.6f);
+                });
+            }
+        });
+    }
+
+    // ================================================================== 3. Bone Sword
+    private static final int[] SWORD_CUTS = {5, 12, 20};   // the swings of the fire_bat_combo animation
+
+    /** A long sword of bone grows out of your hand - three cuts that reach 4.5 blocks, each throwing splinters of bone. */
+    public static void boneSword(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        boolean u = inUnion(p);
+        if (u) unionMsg(p, "bone_sword");
+        // the sword grows out of your hand and is drawn on your arm, so it follows the swing exactly, all one piece
+        sendHeld(p, 37, 26, u ? 1.9f : 1.5f, 0, 0, u);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.SKELETON_AMBIENT, 0.7f, 0.7f);
+        crack(sl, p.position(), 0.5f);
+        double[][] cutDir = {{1, 0.3}, {-1, 0.3}, {0, 1}};   // right-to-left, left-to-right, overhead
+        for (int i = 0; i < 3; i++) {
+            final int ii = i;
+            AstaFx.later(SWORD_CUTS[i], () -> {
+                if (!alive(p)) return;
+                Vec3 look = p.getLookAngle();
+                Vec3 rt = rightOf(look), up = rt.cross(look).normalize();
+                Vec3 sweep = ii == 2 ? up : rt.scale(cutDir[ii][0]).add(up.scale(cutDir[ii][1])).normalize();
+                Vec3 at = p.getEyePosition().add(look.scale(1.6)).add(0, -0.3, 0);
+                FxSend.slash(sl, B, at, look, sweep, 1.6f, 2.4f, 5, 0.3f, 0.9f);   // the cut, in bone-white
+                double reach = u ? 7 : 4.5;
+                for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(reach))) {
+                    Vec3 to = mid(t).subtract(p.getEyePosition());
+                    if (to.length() > reach || to.normalize().dot(look) < 0.3) continue;
+                    AstaFx.damage(p, t, power(p, power) * (ii == 2 ? 0.5f : 0.35f), "bone_sword");
+                    t.setDeltaMovement(t.getDeltaMovement().add(look.scale(0.6)).add(0, ii == 2 ? -0.3 : 0.2, 0));
+                    t.hurtMarked = true;
+                    splinters(sl, mid(t), look);
+                }
+                if (u) {   // Beelzebub: the cut carries on through space - a violet-black wave 12 blocks long
+                    FxSend.slash(sl, SPACE, at.add(look.scale(0.5)), look, sweep, 2.0f, 4.5f, 8, 1.6f, 0.8f);
+                    Vec3 end = at.add(look.scale(12));
+                    for (LivingEntity t : enemies(sl, p, new AABB(at, end).inflate(2.5))) {
+                        Vec3 on = closestOnSegment(at, end, mid(t));
+                        if (on.distanceTo(mid(t)) > 2.5) continue;
+                        AstaFx.damage(p, t, power(p, power) * 0.3f, "bone_sword");
+                    }
+                }
+                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 0.8f);
+            });
+        }
+    }
+
+    private static Vec3[] swordFrame(ServerPlayer p, double[][] keys, double t) {
+        double yaw = keys[keys.length - 1][1], pitch = keys[keys.length - 1][2];
+        for (int i = 1; i < keys.length; i++) {
+            if (t <= keys[i][0]) {
+                double f = (t - keys[i - 1][0]) / (keys[i][0] - keys[i - 1][0]);
+                f = f * f * (3 - 2 * f);
+                yaw = keys[i - 1][1] + (keys[i][1] - keys[i - 1][1]) * f;
+                pitch = keys[i - 1][2] + (keys[i][2] - keys[i - 1][2]) * f;
+                break;
+            }
+        }
+        if (t <= keys[0][0]) { yaw = keys[0][1]; pitch = keys[0][2]; }
+        Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
+        Vec3 rt = rightOf(look);
+        double y = Math.toRadians(yaw), pt = Math.toRadians(pitch);
+        Vec3 flat = look.scale(Math.cos(y)).add(rt.scale(Math.sin(y)));
+        Vec3 dir = flat.scale(Math.cos(pt)).add(0, Math.sin(pt), 0).normalize();
+        Vec3 grip = p.position().add(0, 1.15, 0).add(look.scale(0.3)).add(dir.scale(0.25));
+        return new Vec3[]{grip, dir};
+    }
+
+    /** Splinters of bone flying off a hit. */
+    private static void splinters(ServerLevel sl, Vec3 at, Vec3 push) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        for (int k = 0; k < 4; k++) {
+            Vec3 d = push.scale(0.5).add(r.nextDouble(-1, 1), r.nextDouble(0, 1), r.nextDouble(-1, 1)).normalize();
+            bone(sl, SPIKE, at, d, rightOf(d), 0.15f, 0.04f, 8, 0, FxPacket.POP, 30, d.scale(0.25), 6);
+        }
+        crack(sl, at, 0.4f);
+    }
+
+    // ================================================================== 4. Bone Whips
+    private static final int WHIP_TICKS = 30;
+
+    /** Four whips of vertebrae grow out of your back and lash at every enemy within 9 blocks for 1.5 s (Beelzebub: six, 12 blocks, faster). */
+    public static void boneWhips(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        boolean u = inUnion(p);
+        if (u) unionMsg(p, "bone_whips");
+        int n = u ? 6 : 4;
+        double R = u ? 14 : 9;
+        double period = u ? 7 : 10;   // ticks per lash
+        sendHeld(p, 38, WHIP_TICKS, (float) R, n, (float) period, u);   // the client draws them, smoothly, every frame
+        crack(sl, p.position(), 0.8f);
+        Map<UUID, Long> lastHit = new HashMap<>();
+        for (int t = 0; t < WHIP_TICKS; t++) {
+            final int tt = t;
+            AstaFx.later(t, () -> {
+                if (!alive(p)) return;
+                List<LivingEntity> foes = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(R)));
+                foes.removeIf(e -> e.distanceTo(p) > R);
+                foes.sort(Comparator.comparingDouble(e -> e.distanceToSqr(p)));
+                for (int i = 0; i < n; i++) {
+                    LivingEntity t0 = foes.isEmpty() ? null : foes.get(i % foes.size());
+                    double phase = ((tt + i * period * 0.4) % period) / period;
+                    if (t0 == null || Math.abs(phase - 0.5) > 0.5 / period + 1.0E-6) continue;   // the tick the lash is fully out
+                    Long lh = lastHit.get(t0.getUUID());
+                    if (lh != null && tt - lh < 5) continue;
+                    lastHit.put(t0.getUUID(), (long) tt);
+                    AstaFx.damage(p, t0, power(p, power) * 0.22f, "bone_whips");
+                    Vec3 kb = mid(t0).subtract(p.position().add(0, 1.3, 0)).normalize();
+                    t0.setDeltaMovement(t0.getDeltaMovement().add(kb.scale(0.5)).add(0, 0.2, 0));
+                    t0.hurtMarked = true;
+                    // the crack of the whip: a thin bone-white slash across the target and a burst of splinters
+                    Vec3 rt = rightOf(kb);
+                    FxSend.slash(sl, B, mid(t0).subtract(kb.scale(0.6)), kb, rt.cross(kb).normalize().add(rt.scale(i % 2 == 0 ? 0.6 : -0.6)).normalize(), 0.7f, 1.1f, 4, 0.2f, 0.6f);
+                    splinters(sl, mid(t0), kb);
+                    if (u) cube(sl, mid(t0), 0.7f, 6);   // Beelzebub: space snaps shut round the hit
+                }
+                if (tt % 6 == 0) sound(sl, p.position(), net.minecraft.sounds.SoundEvents.SKELETON_STEP, 0.9f, 0.7f);
+            });
+        }
+    }
+
+    /** A whip of vertebrae from root to tip, sagging in a curve. */
+    private static void whip(ServerLevel sl, Vec3 root, Vec3 tip, double seed, int t) {
+        Vec3 d = tip.subtract(root);
+        double len = d.length();
+        int segs = (int) Math.max(4, Math.min(14, len / 0.4));
+        Vec3 sag = new Vec3(0, -1, 0).scale(len * 0.12).add(rightOf(d.normalize()).scale(Math.sin(t * 0.5 + seed) * len * 0.1));
+        Vec3 prev = root;
+        for (int k = 1; k <= segs; k++) {
+            double f = (double) k / segs;
+            Vec3 q = root.add(d.scale(f)).add(sag.scale(Math.sin(Math.PI * f)));
+            Vec3 ax = q.subtract(prev);
+            float s = (float) (1.0 - f * 0.55);
+            bone(sl, VERTEBRA, prev.add(ax.scale(0.5)), ax, new Vec3(0, 1, 0), (float) (ax.length() * 0.5), 0.09f * s, 2, 0, FxPacket.HOLD, 0, Vec3.ZERO, 0);
+            prev = q;
+        }
+        bone(sl, SPIKE, tip, d.normalize(), new Vec3(0, 1, 0), 0.25f, 0.07f, 2, 0, FxPacket.HOLD, 0, Vec3.ZERO, 0);   // a hooked point at the end
+    }
+
+    // ================================================================== 5. Ribcage Prison
+    /** Giant ribs burst out of the ground around the enemy you aim at and close over it like a cage: held for 3 s, then crushed. */
+    public static void ribcage(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        LivingEntity t = aimed(p, 20, 18);
+        if (t == null) {
+            p.displayClientMessage(Component.translatable("ui.iron_spell_grimoire.bone.no_target").withStyle(ChatFormatting.GRAY), true);
+            return;
+        }
+        boolean u = inUnion(p);
+        if (u) unionMsg(p, "ribcage");
+        Vec3 g = FxLib.ground(sl, t.position().add(0, 1, 0), 6);
+        final Vec3 c = g != null ? g : t.position();
+        final float scale = (float) Math.max(1.0, t.getBbHeight() / 1.8);
+        // the ground splits and the ribs burst up - an outer row, then a shorter inner row between them
+        FxSend.ring(sl, B, c.add(0, 0.05, 0), 0.4f, 3.6f * scale, 0.1f, 10);
+        FxSend.shake(sl, c, 0.4f, 8, 20);
+        int ribs = 12;
+        for (int i = 0; i < ribs; i++) {
+            double a = Math.PI * 2 * i / ribs;
+            Vec3 out = new Vec3(Math.cos(a), 0, Math.sin(a));
+            Vec3 base = c.add(out.scale(2.2 * scale));
+            Vec3 dir = new Vec3(0, 1, 0).subtract(out.scale(0.45)).normalize();
+            bone(sl, RIB, base.add(dir.scale(2.2 * scale)), dir, out.scale(-1), 2.2f * scale, 0.14f, 72, 3 + i % 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+            double a2 = a + Math.PI / ribs;
+            Vec3 out2 = new Vec3(Math.cos(a2), 0, Math.sin(a2));
+            Vec3 dir2 = new Vec3(0, 1, 0).subtract(out2.scale(0.6)).normalize();
+            bone(sl, RIB, c.add(out2.scale(1.6 * scale)).add(dir2.scale(1.3 * scale)), dir2, out2.scale(-1), 1.3f * scale, 0.1f, 70, 6 + i % 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+        }
+        // the spine arching over the top, vertebra by vertebra
+        for (int k = 0; k <= 8; k++) {
+            final int kk = k;
+            AstaFx.later(6 + k, () -> {
+                double f = kk / 8.0, ang = Math.PI * f;
+                Vec3 q = c.add(Math.cos(ang) * 2.0 * scale, (2.6 + Math.sin(ang) * 1.6) * scale, 0);
+                Vec3 tan = new Vec3(-Math.sin(ang), Math.cos(ang), 0);
+                bone(sl, VERTEBRA, q, tan, new Vec3(0, 1, 0), 0.22f * scale, 0.16f, 64 - kk, 2, FxPacket.POP, 0, Vec3.ZERO, 0);
+            });
+        }
+        if (u) cube(sl, c.add(0, 2.2 * scale, 0), 2.8f * scale, 66);   // Beelzebub: the cage is sealed in a cube of space
+        crack(sl, c, 1f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.SKELETON_AMBIENT, 1f, 0.5f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.BONE_BLOCK_PLACE, 1f, 0.5f);
+        for (int k = 0; k < 60; k += 2) {
+            AstaFx.later(5 + k, () -> {
+                if (!alive(p) || !t.isAlive()) return;
+                Vec3 off = new Vec3(t.getX() - c.x, 0, t.getZ() - c.z);
+                if (u) { t.setDeltaMovement(Vec3.ZERO); t.hurtMarked = true; return; }   // held completely still in the cube
+                if (off.length() > 1.4 * scale) { t.setDeltaMovement(off.normalize().scale(-0.3).add(0, t.getDeltaMovement().y, 0)); t.hurtMarked = true; }
+                if (t.getY() > c.y + 3.2 * scale) { t.setDeltaMovement(t.getDeltaMovement().x, -0.3, t.getDeltaMovement().z); t.hurtMarked = true; }
+            });
+        }
+        AstaFx.later(66, () -> {   // the cage snaps shut
+            if (!alive(p) || !t.isAlive()) return;
+            AstaFx.damage(p, t, power(p, power) * (u ? 1.5f : 1f), "ribcage_prison");
+            FxSend.impactFrame(sl, mid(t), 2, FxSend.FRAME_ZENON, 20);
+            FxSend.shake(sl, c, 0.6f, 10, 24);
+            for (int i = 0; i < ribs; i++) {
+                double a = Math.PI * 2 * i / ribs;
+                Vec3 from = c.add(Math.cos(a) * 2.4 * scale, (1.0 + (i % 3) * 0.7) * scale, Math.sin(a) * 2.4 * scale);
+                Vec3 d = c.add(0, 1.0 * scale, 0).subtract(from).normalize();
+                bone(sl, SPIKE, from.add(d.scale(0.9)), d, rightOf(d), 1.1f * scale, 0.13f, 10, 2, FxPacket.EXTEND, 0, Vec3.ZERO, 0);
+            }
+            splinters(sl, mid(t), new Vec3(0, 1, 0));
+            splinters(sl, mid(t), new Vec3(0, -1, 0));
+            if (u) FxLib.implode(sl, SPACE, mid(t), 1.4f);
+            crack(sl, c, 1.4f);
+        });
+    }
+
+    // ================================================================== 6. Marrow Regeneration
+    /** Bone plates grow over your body for 10 s while you regrow: heal 30% of your health over the time, take 25% less damage. */
+    public static void regeneration(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        PLATES.put(p.getUUID(), sl.getGameTime() + 200);
+        for (int k = 0; k < 200; k += 10) {
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                p.heal(p.getMaxHealth() * 0.015f);
+            });
+        }
+        // the plates growing over you: ribs around the chest, a bone along each arm
+        for (int i = 0; i < 6; i++) {
+            final int ii = i;
+            AstaFx.later(i * 2, () -> {
+                if (!alive(p)) return;
+                double a = Math.PI * 2 * ii / 6;
+                Vec3 out = new Vec3(Math.cos(a), 0, Math.sin(a));
+                bone(sl, RIB, p.position().add(0, 1.1, 0).add(out.scale(0.42)), new Vec3(0, 1, 0), out, 0.45f, 0.06f, 14, 3, FxPacket.POP, 0, Vec3.ZERO, 0);
+            });
+        }
+        crack(sl, p.position(), 0.8f);
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_TURTLE, 1f, 0.6f);
+        sendPlates(p, 200);
+    }
+
+    private static void sendPlates(ServerPlayer p, int life) {
+        ModeHud.show(p, "marrow_regeneration", life);
+        FxPacket pkt = new FxPacket();
+        pkt.shape = 14; pkt.id = p.getId(); pkt.palette = 6; pkt.life = life;   // AuraOutlineLayer 6 = bone plates
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+    }
+
+    // ================================================================== 7. Bone Thicket
+    /** A tangle of bones bursts out across a 7-block circle where you aim: everything in it is hit, held back and cut for 4 s. */
+    public static void thicket(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 eye = p.getEyePosition();
+        Vec3 hitAt = clip(sl, p, eye, eye.add(p.getLookAngle().scale(28)));
+        Vec3 g = FxLib.ground(sl, hitAt.add(0, 0.5, 0), 10);
+        final Vec3 c = g != null ? g : hitAt;
+        final double R = inUnion(p) ? 11 : 7;
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        for (int i = 0; i < 46; i++) {
+            final int ii = i;
+            AstaFx.later(i / 4, () -> {
+                double a = r.nextDouble(Math.PI * 2), d = Math.sqrt(r.nextDouble()) * R;
+                Vec3 gg = FxLib.ground(sl, c.add(Math.cos(a) * d, 2, Math.sin(a) * d), 5);
+                if (gg == null) return;
+                Vec3 dir = new Vec3(r.nextDouble(-0.9, 0.9), r.nextDouble(0.4, 1.0), r.nextDouble(-0.9, 0.9)).normalize();
+                int kind = ii % 3 == 0 ? LONG : SPIKE;
+                float len = (float) r.nextDouble(1.0, 2.4);
+                bone(sl, kind, gg.add(dir.scale(len * 0.5)), dir, rightOf(dir), len * 0.5f, (float) r.nextDouble(0.08, 0.16), 90, 3, FxPacket.GROUND, 0, Vec3.ZERO, 0);
+            });
+        }
+        crack(sl, c, 1.2f);
+        for (int t = 0; t < 80; t += 4) {
+            final int tt = t;
+            AstaFx.later(t + 4, () -> {
+                if (!alive(p)) return;
+                for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(R, 3, R))) {
+                    if (new Vec3(e.getX() - c.x, 0, e.getZ() - c.z).length() > R) continue;
+                    e.setDeltaMovement(e.getDeltaMovement().multiply(0.2, 1, 0.2));   // tangled
+                    e.hurtMarked = true;
+                    if (tt % 12 == 0) AstaFx.damage(p, e, power(p, power) * 0.3f, "bone_thicket");
+                }
+            });
+        }
+    }
+
+    // ================================================================== 8. Spatial Cube
+    /** Beelzebub's spatial magic: a cube of space closes around the enemy you aim at - held still for 3 s - then crushes inward. */
+    public static void spatialCube(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        LivingEntity t = aimed(p, 30, 18);
+        if (t == null) {
+            p.displayClientMessage(Component.translatable("ui.iron_spell_grimoire.bone.no_target").withStyle(ChatFormatting.GRAY), true);
+            return;
+        }
+        if (inUnion(p)) {   // Beelzebub: up to two more enemies near the first are sealed in cubes too
+            unionMsg(p, "spatial_cube");
+            int extra = 0;
+            for (LivingEntity o : enemies(sl, p, t.getBoundingBox().inflate(10))) {
+                if (o == t || extra >= 2) continue;
+                extra++;
+                final LivingEntity oo = o;
+                final Vec3 oc = mid(o);
+                cube(sl, oc, 1.4f, 50);
+                for (int k = 0; k < 50; k++) AstaFx.later(k, () -> { if (oo.isAlive()) { oo.setDeltaMovement(Vec3.ZERO); oo.hurtMarked = true; } });
+                AstaFx.later(50, () -> {
+                    if (!alive(p) || !oo.isAlive()) return;
+                    AstaFx.damage(p, oo, power(p, power) * 0.8f, "spatial_cube");
+                    FxLib.implode(sl, SPACE, oc, 1.0f);
+                });
+            }
+        }
+        Vec3 c = mid(t);
+        float h = 1.6f;
+        cube(sl, c, h, 60);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, 1f, 0.5f);
+        sound(sl, c, net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT, 0.6f, 0.5f);
+        for (int k = 0; k < 60; k++) {
+            AstaFx.later(k, () -> {
+                if (!t.isAlive()) return;
+                t.setDeltaMovement(Vec3.ZERO);
+                t.hurtMarked = true;
+                if (t.position().add(0, t.getBbHeight() * 0.5, 0).distanceTo(c) > 0.5)
+                    t.teleportTo(c.x, c.y - t.getBbHeight() * 0.5, c.z);
+            });
+        }
+        AstaFx.later(60, () -> {
+            if (!alive(p) || !t.isAlive()) return;
+            cube(sl, c, 0.4f, 6);   // the cube folds in
+            AstaFx.damage(p, t, power(p, power), "spatial_cube");
+            FxLib.implode(sl, SPACE, c, 1.2f);
+            sound(sl, c, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, 0.6f, 0.6f);
+        });
+    }
+
+    /** A cube of space: its twelve edges as thin violet-black lines, plus a faint shimmer at the corners. */
+    private static void cube(ServerLevel sl, Vec3 c, float h, int life) {
+        int[][] edges = {{0, 1}, {1, 3}, {3, 2}, {2, 0}, {4, 5}, {5, 7}, {7, 6}, {6, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
+        Vec3[] k = new Vec3[8];
+        for (int i = 0; i < 8; i++) k[i] = c.add((i & 1) != 0 ? h : -h, (i & 4) != 0 ? h : -h, (i & 2) != 0 ? h : -h);
+        for (int[] e : edges) {
+            FxSend.trail(sl, SPACE, k[e[0]], k[e[1]], 0.06f, life);
+            FxSend.trail(sl, Fx.SILVER, k[e[0]], k[e[1]], 0.015f, life);
+        }
+    }
+
+    // ================================================================== 9. Devil Union: Beelzebub
+    private static final int UNION_FORM = 15;
+
+    /** Beelzebub's power: horns and bone wings grow, your bones grow bigger and faster (+35% on every move), and you move faster, for 25 s. */
+    public static void devilUnion(ServerPlayer p, float power) {
+        if (LimitBreak.active(p)) { LimitFx.spatialRelease(p, power); return; }   // Surpassing Limits: a different ultimate
+        ServerLevel sl = p.serverLevel();
+        for (int k = 0; k < UNION_FORM; k += 3) {
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                ThreadLocalRandom r = ThreadLocalRandom.current();
+                double a = r.nextDouble(Math.PI * 2);
+                Vec3 g = FxLib.ground(sl, p.position().add(Math.cos(a) * (3 - kk * 0.15), 1, Math.sin(a) * (3 - kk * 0.15)), 3);
+                if (g != null) spikeUp(sl, g, new Vec3(-Math.cos(a) * 0.4, 1, -Math.sin(a) * 0.4), 1.4f, 0.14f, 20, 2);
+            });
+        }
+        sound(sl, p.position(), net.minecraft.sounds.SoundEvents.WITHER_SPAWN, 0.4f, 1.4f);
+        AstaFx.later(UNION_FORM, () -> {
+            if (!alive(p)) return;
+            UNION.put(p.getUUID(), sl.getGameTime() + UNION_TICKS);
+            sendForm(p, UNION_TICKS);
+            var att = p.getAttribute(Attributes.MOVEMENT_SPEED);
+            if (att != null) {
+                att.removeModifier(UNION_SPEED);
+                att.addTransientModifier(new AttributeModifier(UNION_SPEED, "beelzebub", 0.3, AttributeModifier.Operation.MULTIPLY_TOTAL));
+            }
+            FxLib.implode(sl, SPACE, p.position().add(0, 1, 0), 1.6f);
+            p.displayClientMessage(Component.translatable("ui.iron_spell_grimoire.beelzebub.open").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), true);
+            crack(sl, p.position(), 1.5f);
+        });
+    }
+
+    /** Client marker for the union form (shape 31): horns and bone wings are drawn on the player. */
+    private static void sendForm(ServerPlayer p, int life) {
+        ModeHud.show(p, "beelzebub_union", life);
+        FxPacket pkt = new FxPacket();
+        pkt.shape = 31; pkt.id = p.getId(); pkt.palette = (byte) B; pkt.life = life;
+        AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+    }
+
+    // ================================================================== 10. Bone Spear Storm
+    /** A cube of space opens high over the spot you aim at and pours down bone spears for 3 s across an 8-block circle. */
+    public static void spearStorm(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        boolean u = inUnion(p);
+        if (u) unionMsg(p, "spear_storm");
+        Vec3 eye = p.getEyePosition();
+        Vec3 hitAt = clip(sl, p, eye, eye.add(p.getLookAngle().scale(36)));
+        Vec3 g = FxLib.ground(sl, hitAt.add(0, 0.5, 0), 14);
+        final Vec3 c = g != null ? g : hitAt;
+        final double R = u ? 14 : 9;
+        final Vec3 sky = c.add(0, 16, 0);
+        cube(sl, sky, (float) R * 0.6f, 70);
+        FxSend.ring(sl, B, c.add(0, 0.05, 0), (float) R - 0.3f, (float) R, 0.06f, 70);   // where it will fall
+        sound(sl, sky, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, 1f, 0.4f);
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        int perTick = u ? 3 : 2;
+        for (int t = 0; t < 50; t++) {
+            final int tt = t;
+            AstaFx.later(8 + t, () -> {
+                if (!alive(p)) return;
+                List<LivingEntity> foes = new ArrayList<>(enemies(sl, p, new AABB(c, c).inflate(R, 6, R)));
+                foes.removeIf(e -> new Vec3(e.getX() - c.x, 0, e.getZ() - c.z).length() > R);
+                for (int k = 0; k < perTick; k++) {
+                    Vec3 land;
+                    if (!foes.isEmpty() && k == 0) {   // one spear every tick goes for an enemy (aimed where it's heading)
+                        LivingEntity f = foes.get((tt + k) % foes.size());
+                        land = f.position().add(f.getDeltaMovement().scale(5)).add(0, f.getBbHeight() * 0.4, 0);
+                    } else {
+                        double a = r.nextDouble(Math.PI * 2), d = Math.sqrt(r.nextDouble()) * R;
+                        land = c.add(Math.cos(a) * d, 0, Math.sin(a) * d);
+                    }
+                    Vec3 top = sky.add(r.nextDouble(-R * 0.4, R * 0.4), 0, r.nextDouble(-R * 0.4, R * 0.4));
+                    Vec3 dir = land.subtract(top).normalize();
+                    stormSpear(p, sl, top, dir, power(p, power) * 0.3f, 0, new HashSet<>());
+                }
+                if (tt % 10 == 0) crack(sl, c, 0.6f);
+            });
+        }
+        AstaFx.later(60, () -> {   // the last volley: a great spear for every enemy still in the circle
+            if (!alive(p)) return;
+            for (LivingEntity f : enemies(sl, p, new AABB(c, c).inflate(R, 6, R))) {
+                if (new Vec3(f.getX() - c.x, 0, f.getZ() - c.z).length() > R) continue;
+                Vec3 top = mid(f).add(0, 14, 0);
+                Vec3 dir = mid(f).subtract(top).normalize();
+                spearFlight(sl, p, top, dir, 4, 4, 1.6f);
+                final LivingEntity ff = f;
+                AstaFx.later(3, () -> {
+                    if (!ff.isAlive() || !alive(p)) return;
+                    AstaFx.damage(p, ff, power(p, power) * 0.9f, "bone_spear_storm");
+                    splinters(sl, mid(ff), new Vec3(0, 1, 0));
+                });
+            }
+            FxSend.shake(sl, c, 0.5f, 8, 24);
+            crack(sl, c, 1.2f);
+        });
+    }
+
+    private static void stormSpear(ServerPlayer p, ServerLevel sl, Vec3 pos, Vec3 dir, float dmg, int step, Set<UUID> hit) {
+        if (!alive(p) || step > 12) return;
+        if (step == 0) spearFlight(sl, p, pos, dir, 3.2, 12, 0.9f);
+        Vec3 want = pos.add(dir.scale(3.2));
+        Vec3 next = clip(sl, p, pos, want);
+        for (LivingEntity t : enemies(sl, p, new AABB(pos, next).inflate(1.4))) {   // pierces, and a wider hit
+            if (!t.getBoundingBox().inflate(0.7).clip(pos, next).isPresent()) continue;
+            if (!hit.add(t.getUUID())) continue;
+            AstaFx.damage(p, t, dmg, "bone_spear_storm");
+        }
+        if (next.distanceToSqr(want) > 1.0E-4) {   // stuck in the ground, then crumbles
+            bone(sl, SPEAR, next.subtract(dir.scale(0.5)), dir, rightOf(dir), 0.8f, 0.07f, 30, 0, FxPacket.POP, 0, Vec3.ZERO, 0);
+            for (LivingEntity t : enemies(sl, p, new AABB(next, next).inflate(1.3))) if (hit.add(t.getUUID())) AstaFx.damage(p, t, dmg * 0.6f, "bone_spear_storm");
+            return;
+        }
+        AstaFx.later(1, () -> stormSpear(p, sl, next, dir, dmg, step + 1, hit));
+    }
+
+    // ================================================================== events
+    @SubscribeEvent
+    public static void onPlayerTick(TickEvent.PlayerTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p)) return;
+        long now = p.serverLevel().getGameTime();
+        UUID id = p.getUUID();
+        Long u = UNION.get(id);
+        if (u != null) {
+            if (now > u) {
+                UNION.remove(id);
+                sendForm(p, 0);
+                var att = p.getAttribute(Attributes.MOVEMENT_SPEED);
+                if (att != null) att.removeModifier(UNION_SPEED);
+                p.displayClientMessage(Component.translatable("ui.iron_spell_grimoire.beelzebub.close").withStyle(ChatFormatting.DARK_RED), true);
+            } else if (now % 40 == 0) sendForm(p, (int) (u - now));
+        }
+        Long pl = PLATES.get(id);
+        if (pl != null && now > pl) PLATES.remove(id);
+        // passive: Endless Bone - you regrow, slowly, and not while you're being hit (nerfed: was 1 health every 2 s, always)
+        if (now % 80 == 0 && p.getHealth() < p.getMaxHealth() && p.tickCount - p.getLastHurtByMobTimestamp() > 100
+                && p.hurtTime == 0 && wearsBoneGrimoire(p)) p.heal(1f);
+    }
+
+    @SubscribeEvent
+    public static void onHurt(LivingHurtEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        Long pl = PLATES.get(p.getUUID());
+        if (pl != null && p.serverLevel().getGameTime() <= pl) e.setAmount(e.getAmount() * 0.75f);
+    }
+
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {
+        UUID id = e.getEntity().getUUID();
+        PLATES.remove(id); UNION.remove(id);
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent e) {
+        PLATES.clear(); UNION.clear();
+    }
+}

@@ -1,0 +1,1 @@
+{ "type": "minecraft:block", "pools": [ { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "iron_spell_grimoire:grimoire_altar" } ], "conditions": [ { "condition": "minecraft:survives_explosion" } ] } ] }

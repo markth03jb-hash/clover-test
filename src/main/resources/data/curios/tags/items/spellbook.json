@@ -1,14 +1,14 @@
 {
   "replace": false,
   "values": [
-    "arcane_addon:black_grimoire",
-    "arcane_addon:dark_grimoire",
-    "arcane_addon:steel_grimoire",
-    "arcane_addon:wind_grimoire",
-    "arcane_addon:mercury_grimoire",
-    "arcane_addon:fire_grimoire",
-    "arcane_addon:lightning_grimoire",
-    "arcane_addon:hellfire_grimoire",
-    "arcane_addon:bone_grimoire"
+    "iron_spell_grimoire:black_grimoire",
+    "iron_spell_grimoire:dark_grimoire",
+    "iron_spell_grimoire:steel_grimoire",
+    "iron_spell_grimoire:wind_grimoire",
+    "iron_spell_grimoire:mercury_grimoire",
+    "iron_spell_grimoire:fire_grimoire",
+    "iron_spell_grimoire:lightning_grimoire",
+    "iron_spell_grimoire:hellfire_grimoire",
+    "iron_spell_grimoire:bone_grimoire"
   ]
 }
