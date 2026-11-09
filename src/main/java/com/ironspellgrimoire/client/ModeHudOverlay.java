@@ -136,6 +136,13 @@ public final class ModeHudOverlay {
             case "flame_knuckles", "soul_chain" -> 0xFFFF8A2A;
             case "thunder_god_mode", "thunder_gloves" -> 0xFF4FB8FF;
             case "mana_skin", "lion_mana_zone", "hellfire_incarnate" -> 0xFFE0302A;
+            case "salamander_spirit" -> 0xFFFF5A1E;
+            case "mane_blaze" -> 0xFFFFB02E;
+            case "world_tree_mantle" -> 0xFF6BE05A;
+            case "ripper_frenzy" -> 0xFFFF4458;
+            case "bedrock_armor" -> 0xFFC8A064;
+            case "beast_instinct" -> 0xFF4DDCB0;
+            case "nean_armor" -> 0xFFFFB4DC;
             case "surpassing_limits" -> 0xFFFFF4C0;
             case "thread_cocoon", "battle_dress", "thread_cage", "thread_net" -> 0xFFFF8CC6;
             case "red_thread_of_fate" -> 0xFFE0302A;

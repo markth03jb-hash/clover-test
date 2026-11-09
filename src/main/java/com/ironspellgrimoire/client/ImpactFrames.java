@@ -63,7 +63,14 @@ public final class ImpactFrames {
             {0xF4EEDC, 0x0A0610, 0xE8DCC0, 0x9A5CFF},   // 9 Zenon
             {0xE6ECF2, 0x0E1420, 0x9AA8B8, 0xFFFFFF},   // 10 Klaus
             {0xFFD6EA, 0x24081A, 0xFF8CC6, 0xFFFFFF},   // 11 Vanessa
-            {0xE0D4FF, 0x0A0420, 0x9C78FF, 0xFFE6A0}};  // 12 Finral
+            {0xE0D4FF, 0x0A0420, 0x9C78FF, 0xFFE6A0},   // 12 Finral
+            {0xFFD2B0, 0x1E0600, 0xFF5A1E, 0xFFF0D0},   // 13 Fuegoleon: flame tongues
+            {0xFFE6A8, 0x241000, 0xFFB02E, 0xFFFFFF},   // 14 Leopold: a lion's flame
+            {0xD6FFC8, 0x03200A, 0x62E050, 0xFFF4B0},   // 15 William: spiralling leaves
+            {0xFFD0D6, 0x14000A, 0xFF4458, 0xFFFFFF},   // 16 Jack: cuts
+            {0xF2DFC0, 0x1C1208, 0xB88A4E, 0xFFFFFF},   // 17 Sol: slabs
+            {0xCFFFF0, 0x021C16, 0x3CD4A8, 0xFFE7A0},   // 18 Vetto: fangs
+            {0xFFE4F0, 0x2A0E1E, 0xFF8CC6, 0xFFFFFF}};  // 19 Charmy: threads of cream
 
     public static void start(int ticks, int st, Vec3 where) {
         Minecraft mc = Minecraft.getInstance();
@@ -167,7 +174,7 @@ public final class ImpactFrames {
                     }
                 }
             }
-            case 4 -> {   // Yami: long diagonal cuts through the hit, one bright one right through it
+            case 4, 16 -> {   // Yami / Jack: long diagonal cuts through the hit, one bright one right through it
                 speedLines(bb, m, r, fx, fy, reach, 22, 0.5F * rush, 2.0F, line, la * 0.45F);
                 float dx = 0.86F, dy = 0.5F, nx = -dy, ny = dx;
                 for (int i = -3; i <= 3; i++) {
@@ -177,7 +184,7 @@ public final class ImpactFrames {
                 }
                 blade(bb, m, fx, fy, dx, dy, reach * 1.3F, Math.max(3F, H / 55F), acc, la);
             }
-            case 5 -> {   // Yuno: wind spiralling in on the hit
+            case 5, 15 -> {   // Yuno / William: wind spiralling in on the hit
                 for (int a = 0; a < 6; a++) {
                     double a0 = a * Math.PI * 2 / 6 + r.nextDouble() * 0.3 + in * 0.5;
                     float px = fx + (float) Math.cos(a0) * reach, py = fy + (float) Math.sin(a0) * reach;
@@ -190,7 +197,7 @@ public final class ImpactFrames {
                     }
                 }
             }
-            case 6 -> {   // Nozel: silver spikes stabbing in from every edge, needle tips at the hit
+            case 6, 18 -> {   // Nozel / Vetto: silver spikes stabbing in from every edge, needle tips at the hit
                 for (int i = 0; i < 22; i++) {
                     double a = i * Math.PI * 2 / 22 + r.nextDouble() * 0.18;
                     float ex = fx + (float) Math.cos(a) * reach, ey = fy + (float) Math.sin(a) * reach;
@@ -201,7 +208,7 @@ public final class ImpactFrames {
                     taper(bb, m, ex, ey, wd * 0.3F, tx, ty, 0F, acc, la * 0.9F);
                 }
             }
-            case 7, 8 -> {   // Magna / Mereoleona: tongues of flame roaring out of the hit
+            case 7, 8, 13, 14 -> {   // Magna / Mereoleona / Fuegoleon / Leopold / Mereoleona: tongues of flame roaring out of the hit
                 int n = style == 7 ? 16 : 20;
                 float grow = 0.75F + 0.35F * smooth(in);
                 for (int i = 0; i < n; i++) {
@@ -237,7 +244,7 @@ public final class ImpactFrames {
                     }
                 }
             }
-            case 10 -> {  // Klaus: heavy steel plates slamming in, their seams meeting on the hit
+            case 10, 17 -> {  // Klaus / Sol: heavy steel plates slamming in, their seams meeting on the hit
                 float slam = 1F - smooth(Math.min(1F, in * 2F));
                 for (int i = -3; i <= 3; i++) {
                     if (i == 0) continue;
@@ -249,7 +256,7 @@ public final class ImpactFrames {
                 quadTo(bb, m, -10, fy - bw, W + 10, fy + bw, acc, la);
                 quadTo(bb, m, fx - bw, -10, fx + bw, H + 10, acc, la * 0.8F);
             }
-            case 11 -> {  // Vanessa: threads drawn taut across the frame, all crossing at the hit
+            case 11, 19 -> {  // Vanessa / Charmy: threads drawn taut across the frame, all crossing at the hit
                 for (int i = 0; i < 26; i++) {
                     double a = r.nextDouble() * Math.PI;
                     float dx = (float) Math.cos(a) * reach, dy = (float) Math.sin(a) * reach;

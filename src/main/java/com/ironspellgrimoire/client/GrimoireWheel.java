@@ -269,6 +269,20 @@ public final class GrimoireWheel {
             new Theme(c(0x0C0A12), c(0x2E2A44), c(0xE8E8F2), c(0xFFB0D8), c(0x58587A), 3, O_RIVETS, M_CRESCENTS, false, 0x0E0C18, 0xEEE6FF),
             // Langris: black-plum pages, pale orchid trim, cracks of space across the ring
             new Theme(c(0x0A0410), c(0x35103E), c(0xE0B0F0), c(0xE040D8), c(0x5A1E6E), 3, O_BOLTS, M_NOTCHES, true, 0x0C0612, 0xF0C8FF),
+            // Fuegoleon: vermilion pages, pale gold trim, a flame spirit's tongues round the ring
+            new Theme(c(0x140503), c(0x4C1208), c(0xF0CE7A), c(0xFF5A1E), c(0x7A1C08), 3, O_FIRE, M_NOTCHES, true, 0x160604, 0xFFB890),
+            // Leopold: scorched amber pages, bright gold trim, a lion's mane of claws
+            new Theme(c(0x160A02), c(0x5A2E06), c(0xFFD36B), c(0xFFB02E), c(0x8A4A0A), 3, O_MANE, M_DOTS, true, 0x180C03, 0xFFE0A0),
+            // William: deep forest pages, pale gold trim, leaves turning round the ring
+            new Theme(c(0x04120A), c(0x14401C), c(0xE8E2A0), c(0x7CE866), c(0x2A7A32), 3, O_WIND, M_CRESCENTS, false, 0x06140B, 0xCFFFC0),
+            // Jack: black-wine pages, white trim, a blood-red edge
+            new Theme(c(0x0C0508), c(0x3A0A14), c(0xE8E8F0), c(0xFF4458), c(0x5A1220), 3, O_BOLTS, M_NOTCHES, true, 0x0E0609, 0xFFC0CC),
+            // Sol: baked-clay pages, sandstone trim, riveted like a slab of stone
+            new Theme(c(0x120C06), c(0x3E2A14), c(0xD8B878), c(0xC8964E), c(0x6A4A26), 3, O_RIVETS, M_NOTCHES, true, 0x140E07, 0xEBD0A0),
+            // Vetto: wet-moss pages, old-gold trim, claws round the ring
+            new Theme(c(0x04130F), c(0x0F4034), c(0xE6D08A), c(0x4DDCB0), c(0x1E7A62), 3, O_MANE, M_DOTS, false, 0x061511, 0xBFFFEA),
+            // Charmy: rose-cream pages, white trim, soft drops of cream round the ring
+            new Theme(c(0x1A0A14), c(0x5A2A48), c(0xFFF0F6), c(0xFF9CCB), c(0x8A3E6A), 3, O_DROPS, M_DOTS, false, 0x1C0C16, 0xFFD6EA),
     };
 
     /** {page inside, page edge, trim, accent, panel, title} as RGB ints, for the grimoire book screen and others. */
@@ -368,6 +382,46 @@ public final class GrimoireWheel {
                 ring(bb, m, cx, cy, ri + 5, ro - 5, a0 + w * 0.2, a1 - w * 0.2, t[0], t[1], t[2], 0.35F * A, t[0], t[1], t[2], 0.35F * A, 6);
                 seg(bb, m, cx, cy, a0 + w * 0.3, ri + 7, a1 - w * 0.3, ro - 7, 0.9, ac[0], ac[1], ac[2], (0.5F + 0.4F * p) * A);
                 seg(bb, m, cx, cy, a0 + w * 0.38, ri + 6, a1 - w * 0.22, ro - 9, 0.5, 1.0F, 1.0F, 1.0F, 0.6F * A);
+            }
+            case 14 -> {   // Fuegoleon: a tongue of flame on each page, a paler one inside it
+                tri(bb, m, cx, cy, a0 + w * 0.2, ro - 3, a1 - w * 0.2, ro - 3, am, ro + 5.0 + 3.0 * p, ac[0], ac[1], ac[2], 0.9F * A);
+                tri(bb, m, cx, cy, a0 + w * 0.38, ro - 3, a1 - w * 0.38, ro - 3, am, ro + 1.0 + 2.0 * p, t[0], t[1], t[2], 0.85F * A);
+            }
+            case 15 -> {   // Leopold: three claw marks raked across each page
+                for (int k = 0; k < 3; k++) {
+                    double o = (k - 1) * w * 0.2;
+                    seg(bb, m, cx, cy, am + o - w * 0.12, ro - 4, am + o + w * 0.12, ri + 5, 1.1, ac[0], ac[1], ac[2], (0.75F + 0.2F * p) * A);
+                }
+            }
+            case 16 -> {   // William: a leaf on each page - two curved edges, a midrib, a stalk
+                seg(bb, m, cx, cy, am, ri + 4, am - w * 0.22, mid + 2, 1.0, ac[0], ac[1], ac[2], 0.85F * A);
+                seg(bb, m, cx, cy, am - w * 0.22, mid + 2, am, ro - 3, 1.0, ac[0], ac[1], ac[2], 0.85F * A);
+                seg(bb, m, cx, cy, am, ri + 4, am + w * 0.22, mid + 2, 1.0, ac[0], ac[1], ac[2], 0.85F * A);
+                seg(bb, m, cx, cy, am + w * 0.22, mid + 2, am, ro - 3, 1.0, ac[0], ac[1], ac[2], 0.85F * A);
+                seg(bb, m, cx, cy, am, ri + 2, am, ro - 3, 0.6, t[0], t[1], t[2], (0.5F + 0.4F * p) * A);
+            }
+            case 17 -> {   // Jack: two thin cuts across each page, the second shorter, with a red bead where they meet
+                seg(bb, m, cx, cy, a0 + w * 0.1, ro - 2, a1 - w * 0.1, ri + 3, 0.9, ac[0], ac[1], ac[2], 0.95F * A);
+                seg(bb, m, cx, cy, a0 + w * 0.1, ro - 2, a1 - w * 0.1, ri + 3, 0.35, 1.0F, 1.0F, 1.0F, 0.95F * A);
+                seg(bb, m, cx, cy, a0 + w * 0.3, ri + 3, a1 - w * 0.05, mid + 3, 0.6, ac[0], ac[1], ac[2], (0.4F + 0.4F * p) * A);
+            }
+            case 18 -> {   // Sol: a slab on each page, split by a crack
+                ring(bb, m, cx, cy, ri + 4, ro - 4, a0 + w * 0.18, a1 - w * 0.18, t[0], t[1], t[2], 0.55F * A, t[0], t[1], t[2], 0.55F * A, 4);
+                seg(bb, m, cx, cy, a0 + w * 0.3, ro - 5, am + w * 0.05, mid, 0.8, ac[0], ac[1], ac[2], 0.8F * A);
+                seg(bb, m, cx, cy, am + w * 0.05, mid, a1 - w * 0.28, ri + 6, 0.8, ac[0], ac[1], ac[2], 0.8F * A);
+            }
+            case 19 -> {   // Vetto: a paw print on each page
+                double px = cx + Math.sin(am) * (mid - 1), py = cy - Math.cos(am) * (mid - 1);
+                disc(bb, m, px, py, 3.0 + p, ac[0], ac[1], ac[2], 0.9F * A);
+                for (int k = -1; k <= 1; k++) {
+                    double ta = am + k * w * 0.2, tr = mid + 6 - Math.abs(k) * 1.5;
+                    disc(bb, m, cx + Math.sin(ta) * tr, cy - Math.cos(ta) * tr, 1.5, ac[0], ac[1], ac[2], 0.9F * A);
+                }
+            }
+            case 20 -> {   // Charmy: a puff of cotton on each page - three soft balls
+                disc(bb, m, cx + Math.sin(am) * mid, cy - Math.cos(am) * mid, 3.0 + p, t[0], t[1], t[2], 0.85F * A);
+                disc(bb, m, cx + Math.sin(am - w * 0.18) * (mid + 3), cy - Math.cos(am - w * 0.18) * (mid + 3), 2.0, t[0], t[1], t[2], 0.8F * A);
+                disc(bb, m, cx + Math.sin(am + w * 0.18) * (mid + 3), cy - Math.cos(am + w * 0.18) * (mid + 3), 2.0, ac[0], ac[1], ac[2], 0.85F * A);
             }
             case 13 -> {   // Langris: a straight cut of violet light across each page, with a crack off it
                 seg(bb, m, cx, cy, a0 + w * 0.12, ro - 3, a1 - w * 0.12, ri + 4, 1.4, ac[0], ac[1], ac[2], 0.9F * A);

@@ -14,6 +14,13 @@
     "iron_spell_grimoire:spatial_grimoire",
     "iron_spell_grimoire:water_grimoire",
     "iron_spell_grimoire:mirror_grimoire",
-    "iron_spell_grimoire:rift_grimoire"
+    "iron_spell_grimoire:rift_grimoire",
+    "iron_spell_grimoire:flame_spirit_grimoire",
+    "iron_spell_grimoire:lions_flame_grimoire",
+    "iron_spell_grimoire:world_tree_grimoire",
+    "iron_spell_grimoire:slash_grimoire",
+    "iron_spell_grimoire:earth_grimoire",
+    "iron_spell_grimoire:beast_grimoire",
+    "iron_spell_grimoire:cotton_grimoire"
   ]
 }

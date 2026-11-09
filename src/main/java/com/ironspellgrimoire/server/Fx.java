@@ -14,7 +14,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class Fx {
     private Fx() {}
 
-    public static final int CRIMSON = 0, DARK = 1, FIRE = 2, ICE = 3, LIGHTNING = 4, WIND = 5, SILVER = 6, STEEL = 7, GOLD = 8, YAMI = 10, WATER = 19, MIRROR = 20, VOID = 21;
+    public static final int CRIMSON = 0, DARK = 1, FIRE = 2, ICE = 3, LIGHTNING = 4, WIND = 5, SILVER = 6, STEEL = 7, GOLD = 8, YAMI = 10, WATER = 19, MIRROR = 20, VOID = 21,
+            FUEGO = 22, LION = 23, TREE = 24, RIPPER = 25, EARTH = 26, BEAST = 27, COTTON = 28;
 
     private static Vec3 randomUnit() {
         ThreadLocalRandom r = ThreadLocalRandom.current();

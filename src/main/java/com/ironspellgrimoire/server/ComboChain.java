@@ -83,7 +83,21 @@ public final class ComboChain {
             // Langris
             new Combo("spatial_cut", "severing_line", "Twin Cut", Kind.CROSS, 21, FxSend.FRAME_FINRAL, "two cuts in space cross on the target"),
             new Combo("rift_blades", "convergence", "Rift Storm", Kind.STORM, 21, FxSend.FRAME_FINRAL, "blades come out of gates all round the target"),
-            new Combo("blink_strike", "space_collapse", "Hunt and Crush", Kind.BURST, 21, FxSend.FRAME_FINRAL, "the space round the target folds in on it"));
+            new Combo("blink_strike", "space_collapse", "Hunt and Crush", Kind.BURST, 21, FxSend.FRAME_FINRAL, "the space round the target folds in on it"),
+            new Combo("salamander_flare", "spirit_lance", "Spirit Pierce", Kind.PILLAR, 22, FxSend.FRAME_FUEGOLEON, "a pillar of spirit-flame erupts under the target"),
+            new Combo("flare_volley", "great_salamander", "Salamander Dawn", Kind.BURST, 22, FxSend.FRAME_FUEGOLEON, "the sky burns white and the ground blows out"),
+            new Combo("ember_fist", "lion_claw", "Lion's Mark", Kind.CROSS, 23, FxSend.FRAME_LEOPOLD, "a claw of flame crosses the target twice"),
+            new Combo("pride_barrage", "king_lion_roar", "Pride of the Lion", Kind.BURST, 23, FxSend.FRAME_LEOPOLD, "the roar shakes the ground one last time"),
+            new Combo("root_snare", "treant_guardian", "Rooted Fist", Kind.SNARE, 24, FxSend.FRAME_WILLIAM, "roots hold the target while the guardian's fist falls"),
+            new Combo("leaf_storm", "world_tree_judgement", "Autumn Verdict", Kind.STORM, 24, FxSend.FRAME_WILLIAM, "leaves keep cutting the target as the tree falls"),
+            new Combo("phantom_slash", "crescent_cut", "Twin Edge", Kind.CROSS, 25, FxSend.FRAME_JACK, "a second crescent crosses the first"),
+            new Combo("thousand_cuts", "bloody_massacre", "Red Curtain", Kind.STORM, 25, FxSend.FRAME_JACK, "cuts keep opening on the target as the curtain falls"),
+            new Combo("rock_spike", "stone_fist", "Quarry", Kind.PILLAR, 26, FxSend.FRAME_SOL, "a column of rock erupts under the target"),
+            new Combo("quake_stomp", "mountain_fall", "Aftershock", Kind.BURST, 26, FxSend.FRAME_SOL, "the ground heaves a second time"),
+            new Combo("wolf_fang", "hawk_dive", "Hunt from Two Sides", Kind.CROSS, 27, FxSend.FRAME_VETTO, "the hawk and the wolf strike the target together"),
+            new Combo("stampede", "primal_king", "Herd of Kings", Kind.STORM, 27, FxSend.FRAME_VETTO, "the herd keeps running over the target"),
+            new Combo("cotton_ball", "neans_charge", "Soft Landing", Kind.SNARE, 28, FxSend.FRAME_CHARMY, "cotton glues the target while Nean charges through"),
+            new Combo("cream_puff_barrage", "grand_banquet", "Dessert", Kind.BURST, 28, FxSend.FRAME_CHARMY, "the cake bursts in a cloud of cream"));
 
     private static final Map<UUID, Object[]> LAST = new HashMap<>();      // player -> {spell id, game time}
     private static final Map<UUID, Object[]> BOOSTED = new HashMap<>();   // player -> {spell id, game time}

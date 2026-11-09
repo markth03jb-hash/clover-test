@@ -1,6 +1,6 @@
 """Draws a unique front (and a quieter back) cover for every grimoire. Original designs, 256x384, drawn at 2x and scaled down."""
 from PIL import Image, ImageDraw, ImageFilter, ImageChops
-import math, random, os
+import math, random, os, sys
 OUT = os.path.join(os.path.dirname(__file__), '..', 'src/main/resources/assets/iron_spell_grimoire/textures/item/spell_book_models')
 S = 2; W, H = 256 * S, 384 * S
 CX, CY = W // 2, int(H * 0.45)
@@ -254,13 +254,153 @@ def rift():    # Langris: plum black; straight cuts in space that stop at the me
     c.put(l, (224, 64, 216), 10, 1.0)
     l, d = c.layer(); frame(d, (214, 160, 232, 255), 16, 2, 0, False); c.put(l); return c
 
+
+# ---------------------------------------------------------------- the seven newer grimoires
+def flame_spirit():   # Fuegoleon: vermilion leather; a salamander coiled round the medallion, flame tongues rising off its back
+    c = Cv((62, 10, 4), (128, 34, 10), 31)
+    l, d = c.layer()
+    for k in range(2):
+        line(d, [(x, 80 + k * 12 + math.sin(x / 18.0 + k) * 5) for x in range(24, 233, 3)], fill=(255, 140, 50, 130 - k * 40), width=2)
+        line(d, [(x, 300 + k * 12 + math.sin(x / 18.0 + k * 2) * 5) for x in range(24, 233, 3)], fill=(255, 140, 50, 130 - k * 40), width=2)
+    pts = ringpts(R0 + 15, math.radians(35), math.radians(385), 90)
+    for i in range(len(pts) - 1):   # the body, thick at the shoulders and tapering to the tail
+        t = i / (len(pts) - 1)
+        w = 9 * math.sin(math.pi * min(1, t * 1.15)) + 1.5
+        line(d, [pts[i], pts[i + 1]], fill=(255, 112, 30, 255), width=max(1, w))
+        if i % 6 == 3:   # flame tongues up off the back
+            x, y = pts[i]; a = math.atan2(y - Y0, x - X0)
+            poly(d, [(x + math.cos(a + 0.2) * 3, y + math.sin(a + 0.2) * 3), (x + math.cos(a) * 17, y + math.sin(a) * 17), (x + math.cos(a - 0.2) * 3, y + math.sin(a - 0.2) * 3)], fill=(255, 226, 150, 255))
+    hx, hy = pts[0]
+    poly(d, [(hx - 10, hy - 6), (hx + 10, hy - 8), (hx + 14, hy + 2), (hx, hy + 10), (hx - 12, hy + 4)], fill=(255, 112, 30, 255))
+    d.ellipse([(hx - 1) * S, (hy - 3) * S, (hx + 4) * S, (hy + 2) * S], fill=(255, 244, 200, 255))
+    for (dx, dy) in [(-9, 8), (8, 9), (-8, -8)]: line(d, [(hx + dx * 0.3, hy + dy * 0.3), (hx + dx * 1.5, hy + dy * 1.5)], fill=(255, 112, 30, 255), width=3)
+    c.put(l, (255, 100, 20), 9, 0.9)
+    l, d = c.layer(); frame(d, (240, 206, 122, 255), 16, 3, 3, True); c.put(l); return c
+
+def lions_flame():   # Leopold: amber leather; a mane of long and short flame rays round the medallion, claw marks in the corners
+    c = Cv((70, 36, 4), (140, 80, 14), 32)
+    l, d = c.layer()
+    for i in range(36):
+        a = i * math.pi / 18; long_ = i % 2 == 0
+        r0, r1 = R0 + 8, R0 + (62 if long_ else 36)
+        for s_ in (-1, 1):
+            pass
+        px, py = -math.sin(a), math.cos(a)
+        poly(d, [(X0 + math.cos(a) * r0 + px * 4, Y0 + math.sin(a) * r0 + py * 4), (X0 + math.cos(a + 0.05) * r1, Y0 + math.sin(a + 0.05) * r1),
+                 (X0 + math.cos(a) * r0 - px * 4, Y0 + math.sin(a) * r0 - py * 4)], fill=(255, 182, 40, 255 if long_ else 200))
+    for (x, y, sx, sy) in [(26, 26, 1, 1), (230, 26, -1, 1), (26, 358, 1, -1), (230, 358, -1, -1)]:
+        for k in range(3): line(d, [(x + sx * (k * 8), y), (x + sx * (k * 8 + 22), y + sy * 40)], fill=(255, 240, 170, 255), width=3)
+    c.put(l, (255, 170, 30), 8, 0.9)
+    l, d = c.layer(); frame(d, (255, 211, 107, 255), 16, 3, 0, True); c.put(l); return c
+
+def world_tree():   # William: forest green; boughs reaching down from the top and roots up from the foot to meet at the medallion
+    c = Cv((6, 34, 14), (20, 78, 34), 33)
+    l, d = c.layer(); r = random.Random(41)
+    for (x0, side) in [(40, 1), (128, 0), (216, -1)]:
+        for dirn in (1, -1):
+            pass
+    def bough(x, y, a, ln, w, depth):
+        if depth == 0 or ln < 8: return
+        x2, y2 = x + math.cos(a) * ln, y + math.sin(a) * ln
+        line(d, [(x, y), (x2, y2)], fill=(122, 82, 40, 255), width=w)
+        if depth <= 2:
+            for _ in range(3):
+                lx, ly = x2 + r.uniform(-8, 8), y2 + r.uniform(-8, 8)
+                poly(d, [(lx, ly - 6), (lx + 4, ly), (lx, ly + 6), (lx - 4, ly)], fill=(110, 232, 90, 255))
+        bough(x2, y2, a + 0.55, ln * 0.7, max(1, w - 1), depth - 1); bough(x2, y2, a - 0.55, ln * 0.7, max(1, w - 1), depth - 1)
+    bough(128, 8, math.pi / 2 + 0.5, 46, 5, 4); bough(128, 8, math.pi / 2 - 0.5, 46, 5, 4)
+    bough(128, 376, -math.pi / 2 + 0.5, 46, 5, 4); bough(128, 376, -math.pi / 2 - 0.5, 46, 5, 4)
+    for sx in (30, 226):
+        bough(sx, 120, 0.1 if sx < 100 else math.pi - 0.1, 26, 3, 3); bough(sx, 270, -0.1 if sx < 100 else math.pi + 0.1, 26, 3, 3)
+    c.put(l, (110, 232, 90), 6, 0.5)
+    l, d = c.layer(); frame(d, (232, 226, 160, 255), 16, 2, 0, False)
+    for i in range(14):   # a ring of tiny leaves round the medallion
+        a = i * 2 * math.pi / 14 + 0.2
+        lx, ly = X0 + math.cos(a) * (R0 + 14), Y0 + math.sin(a) * (R0 + 14)
+        poly(d, [(lx + math.cos(a) * 8, ly + math.sin(a) * 8), (lx - math.sin(a) * 4, ly + math.cos(a) * 4), (lx - math.cos(a) * 4, ly - math.sin(a) * 4), (lx + math.sin(a) * 4, ly - math.cos(a) * 4)], fill=(124, 232, 102, 255))
+    c.put(l, (110, 232, 90), 6, 0.6); return c
+
+def slash():   # Jack: wine-black leather cut by long, clean lines that stop at the medallion
+    c = Cv((14, 4, 8), (46, 8, 18), 34, 6)
+    l, d = c.layer(); r = random.Random(51)
+    cuts = [((-8, 70), (150, 20)), ((120, 10), (270, 120)), ((-8, 330), (110, 392)), ((140, 380), (266, 250)), ((20, 40), (70, 190)), ((236, 190), (200, 340)), ((60, 372), (180, 300))]
+    for (p0, p1) in cuts:
+        line(d, [p0, p1], fill=(255, 236, 240, 255), width=2)
+        line(d, [(p0[0] + 3, p0[1] + 2), (p1[0] + 3, p1[1] + 2)], fill=(255, 70, 90, 255), width=3)
+        for _ in range(3):
+            t = r.uniform(0.1, 0.9); x, y = p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t
+            d.ellipse([(x - 1.5) * S, (y + 3) * S, (x + 1.5) * S, (y + 8 + r.randint(0, 8)) * S], fill=(200, 20, 40, 230))   # blood, run down from the cut
+    c.put(l, (255, 60, 80), 8, 0.9)
+    l, d = c.layer(); frame(d, (232, 232, 240, 255), 16, 2, 0, False); c.put(l); return c
+
+def earth():   # Sol: ochre clay; strata of rock in bands, hewn slabs at the foot, cracks round the medallion
+    c = Cv((60, 42, 22), (112, 80, 44), 35, 12)
+    l, d = c.layer(); r = random.Random(61)
+    for k in range(9):
+        y = 24 + k * 14
+        if y > Y0 - R0 - 12: break
+        line(d, [(x, y + r.uniform(-1.5, 1.5)) for x in range(24, 233, 6)], fill=(150 + r.randint(-14, 14), 108, 60, 255), width=3)
+    for k in range(9):
+        y = 372 - k * 14
+        if y < Y0 + R0 + 12: break
+        line(d, [(x, y + r.uniform(-1.5, 1.5)) for x in range(24, 233, 6)], fill=(150 + r.randint(-14, 14), 108, 60, 255), width=3)
+    for (x0, y0, w, h) in [(30, 296, 58, 26), (92, 288, 70, 34), (168, 300, 58, 22), (46, 324, 70, 26), (122, 326, 62, 24)]:
+        poly(d, [(x0, y0 + 4), (x0 + w - 6, y0), (x0 + w, y0 + h - 4), (x0 + 6, y0 + h)], fill=(168, 126, 72, 255), outline=(236, 206, 150, 255))
+    for i in range(5):
+        a = i * 1.3 + 0.4; crack(d, X0 + math.cos(a) * (R0 + 8), Y0 + math.sin(a) * (R0 + 8), a, 46, (28, 18, 8, 255), 2, r, 2)
+    c.put(l, (200, 150, 80), 6, 0.3)
+    l, d = c.layer(); frame(d, (216, 184, 120, 255), 16, 3, 3, True); c.put(l); return c
+
+def beast():   # Vetto: wet-moss teal; three claw rakes across the cover, a border of fur-like strokes, paw prints at the foot
+    c = Cv((4, 40, 32), (14, 92, 74), 36)
+    l, d = c.layer(); r = random.Random(71)
+    for x in range(22, 236, 5):   # fur along the top and bottom edges
+        for y0, dy in ((22, 1), (362, -1)):
+            line(d, [(x, y0), (x + r.uniform(-2, 2), y0 + dy * r.randint(8, 18))], fill=(70, 222, 178, 160), width=1)
+    for k in range(3):   # three claw rakes sweeping from the upper right, stopping short of the medallion
+        line(d, [(236 - k * 12, 44 + k * 4), (150 - k * 12, 120 + k * 8)], fill=(238, 216, 132, 255), width=4)
+        line(d, [(24 + k * 12, 340 - k * 4), (104 + k * 12, 270 - k * 8)], fill=(238, 216, 132, 255), width=4)
+    for (x, y) in [(58, 328), (92, 346), (132, 330), (166, 348), (200, 330)]:   # prints
+        d.ellipse([(x - 6) * S, (y - 5) * S, (x + 6) * S, (y + 5) * S], fill=(70, 222, 178, 235))
+        for dx in (-9, -3, 3, 9): d.ellipse([(x + dx - 2.5) * S, (y - 12) * S, (x + dx + 2.5) * S, (y - 7) * S], fill=(70, 222, 178, 235))
+    c.put(l, (70, 222, 178), 7, 0.6)
+    l, d = c.layer(); frame(d, (230, 208, 138, 255), 16, 2, 0, False); c.put(l); return c
+
+def cotton():  # Charmy: candy pink; a scalloped border of cotton puffs, stitching, sprinkles and stars
+    c = Cv((120, 48, 90), (200, 100, 150), 37, 6)
+    l, d = c.layer(); r = random.Random(81)
+    for x in range(30, 236, 18):
+        for y0 in (22, 362):
+            d.ellipse([(x - 10) * S, (y0 - 9) * S, (x + 10) * S, (y0 + 9) * S], fill=(255, 244, 248, 255))
+    for y in range(40, 350, 18):
+        for x0 in (22, 234):
+            d.ellipse([(x0 - 9) * S, (y - 10) * S, (x0 + 9) * S, (y + 10) * S], fill=(255, 244, 248, 255))
+    for _ in range(46):   # sprinkles
+        x, y = r.randint(40, 216), r.randint(40, 344)
+        if math.hypot(x - X0, y - Y0) < R0 + 18: continue
+        a = r.uniform(0, 3.14); col = r.choice([(255, 236, 140), (160, 240, 255), (255, 255, 255), (190, 160, 255)])
+        line(d, [(x, y), (x + math.cos(a) * 7, y + math.sin(a) * 7)], fill=col + (255,), width=3)
+    c.put(l, (255, 200, 225), 6, 0.4)
+    l, d = c.layer()
+    for k in range(60):   # stitched line inside the puffs
+        a0 = k * 6.0
+    d.rectangle([34 * S, 34 * S, W - 34 * S, H - 34 * S], outline=(255, 244, 248, 255), width=S)
+    for x in range(38, 220, 8): d.line([x * S, 36 * S, (x + 4) * S, 36 * S], fill=(255, 244, 248, 255), width=2 * S)
+    for i in range(10):   # a ring of tiny pink hearts round the medallion
+        a = i * 2 * math.pi / 10; hx, hy = X0 + math.cos(a) * (R0 + 14), Y0 + math.sin(a) * (R0 + 14)
+        d.ellipse([(hx - 4) * S, (hy - 4) * S, (hx) * S, (hy) * S], fill=(255, 244, 248, 255)); d.ellipse([(hx) * S, (hy - 4) * S, (hx + 4) * S, (hy) * S], fill=(255, 244, 248, 255))
+        poly(d, [(hx - 4, hy - 1), (hx + 4, hy - 1), (hx, hy + 5)], fill=(255, 244, 248, 255))
+    c.put(l, (255, 200, 225), 5, 0.4); return c
+
 # ---------------------------------------------------------------- the shared grimoire look: a clover crest, corner brackets, worn leather
 ACC = dict(dark=(180, 169, 200), wind=(231, 217, 160), mercury=(220, 232, 248), fire=(217, 169, 76), lightning=(237, 231, 200),
            hellfire=(232, 182, 82), bone=(237, 227, 204), steel=(217, 169, 76), string=(242, 221, 232), spatial=(231, 199, 102),
-           water=(228, 242, 255), mirror=(232, 232, 242), rift=(214, 160, 232))
+           water=(228, 242, 255), mirror=(232, 232, 242), rift=(214, 160, 232),
+           flame_spirit=(240, 206, 122), lions_flame=(255, 211, 107), world_tree=(232, 226, 160), slash=(232, 232, 240), earth=(216, 184, 120), beast=(230, 208, 138), cotton=(255, 244, 248))
 GLOW = dict(dark=(150, 70, 255), wind=(110, 255, 170), mercury=(170, 200, 240), fire=(255, 110, 20), lightning=(90, 170, 255),
             hellfire=(255, 80, 30), bone=(240, 220, 190), steel=(150, 190, 235), string=(255, 120, 190), spatial=(156, 120, 255),
-            water=(110, 205, 255), mirror=(255, 176, 216), rift=(224, 64, 216))
+            water=(110, 205, 255), mirror=(255, 176, 216), rift=(224, 64, 216),
+            flame_spirit=(255, 100, 20), lions_flame=(255, 170, 30), world_tree=(110, 232, 90), slash=(255, 60, 80), earth=(200, 150, 80), beast=(70, 222, 178), cotton=(255, 160, 210))
 LEAVES = dict(wind=4)
 
 def heart_clover_mask(cx, cy, r, n, ang0=-math.pi / 2):
@@ -349,8 +489,12 @@ def emboss(c, m, acc, glow, depth=2, gold=0.9, inset=0.5, veins=None, glowAmt=0.
 
 BOOKS = dict(dark=dark, wind=wind, mercury=mercury, fire=fire, lightning=lightning, hellfire=hellfire, bone=bone, steel=steel,
              string=string, spatial=spatial, water=water, mirror=mirror, rift=rift)
+NEW = dict(flame_spirit=flame_spirit, lions_flame=lions_flame, world_tree=world_tree, slash=slash, earth=earth, beast=beast, cotton=cotton)
 if __name__ == '__main__':
-    for n, f in BOOKS.items():
+    only = sys.argv[1:]
+    todo = {**BOOKS, **NEW}
+    for n, f in todo.items():
+        if only and n not in only: continue
         c = f(); decorate(c, n); c.save(f'{n}_grimoire_front')
         # the back: the same ground, quieter - just the frame colour and a small emblem would do, so reuse the cover softened
         b = Image.open(os.path.join(OUT, f'{n}_grimoire_front.png')).convert('RGBA')

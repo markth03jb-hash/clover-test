@@ -173,6 +173,41 @@ public final class GrimoireMastery {
                 "gate_barrage", 3, "space_collapse", 3,
                 "convergence", 4,
                 "dimensional_severance", 5);
+        book(AddonItemRegistry.FLAME_SPIRIT_GRIMOIRE::get, Fx.FUEGO,
+                "salamander_flare", 1, "spirit_lance", 1,
+                "flame_aegis", 2, "salamander_coil", 2,
+                "flare_volley", 3, "salamander_rush", 3,
+                "salamander_spirit", 4, "great_salamander", 5);
+        book(AddonItemRegistry.LION_FLAME_GRIMOIRE::get, Fx.LION,
+                "ember_fist", 1, "lion_claw", 1,
+                "flame_leap", 2, "roaring_burst", 2,
+                "pride_barrage", 3, "prowl_dash", 3,
+                "mane_blaze", 4, "king_lion_roar", 5);
+        book(AddonItemRegistry.WORLD_TREE_GRIMOIRE::get, Fx.TREE,
+                "thorn_bolt", 1, "vine_lash", 1,
+                "root_snare", 2, "leaf_storm", 2,
+                "verdant_bloom", 3, "treant_guardian", 3,
+                "world_tree_mantle", 4, "world_tree_judgement", 5);
+        book(AddonItemRegistry.SLASH_GRIMOIRE::get, Fx.RIPPER,
+                "phantom_slash", 1, "crescent_cut", 1,
+                "shadow_step_slash", 2, "thousand_cuts", 2,
+                "cross_reaper", 3, "bleeding_edge", 3,
+                "ripper_frenzy", 4, "bloody_massacre", 5);
+        book(AddonItemRegistry.EARTH_GRIMOIRE::get, Fx.EARTH,
+                "stone_fist", 1, "rock_spike", 1,
+                "earth_wall", 2, "boulder_toss", 2,
+                "quake_stomp", 3, "stone_golem", 3,
+                "bedrock_armor", 4, "mountain_fall", 5);
+        book(AddonItemRegistry.BEAST_GRIMOIRE::get, Fx.BEAST,
+                "wolf_fang", 1, "hawk_dive", 1,
+                "bear_swipe", 2, "panther_pounce", 2,
+                "stampede", 3, "serpent_snare", 3,
+                "beast_instinct", 4, "primal_king", 5);
+        book(AddonItemRegistry.COTTON_GRIMOIRE::get, Fx.COTTON,
+                "cotton_ball", 1, "cotton_net", 1,
+                "neans_charge", 2, "cream_puff_barrage", 2,
+                "sweet_feast", 3, "cotton_cloud", 3,
+                "nean_armor", 4, "grand_banquet", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

@@ -43,8 +43,15 @@ public final class ManaBarHud {
             {0xDCEEFF, 0x1E78D8, 0x9CE0FF, 0x061224, 0xB8E4FF},   // Noelle
             {0xE8E8F2, 0x8A86B8, 0xFFD0EA, 0x0E0C18, 0xEEE6FF},   // Gauche
             {0xE0B0F0, 0x9A22B0, 0xFF7AF0, 0x14061A, 0xF2C0FF},   // Langris
+            {0xF0CE7A, 0xE0501A, 0xFFB070, 0x140503, 0xFFB890},   // Fuegoleon
+            {0xFFD36B, 0xE69010, 0xFFE08A, 0x180C03, 0xFFE0A0},   // Leopold
+            {0xE8E2A0, 0x2E9A3A, 0xA0F090, 0x06140B, 0xCFFFC0},   // William
+            {0xE8E8F0, 0xB01E34, 0xFF8090, 0x0E0609, 0xFFC0CC},   // Jack
+            {0xD8B878, 0x8A6034, 0xD8B070, 0x140E07, 0xEBD0A0},   // Sol
+            {0xE6D08A, 0x1E9C7C, 0x80F0D0, 0x061511, 0xBFFFEA},   // Vetto
+            {0xFFF0F6, 0xE0709E, 0xFFC4DC, 0x1C0C16, 0xFFD6EA},   // Charmy
     };
-    private static final int[] LEAVES = {5, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
+    private static final int[] LEAVES = {5, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
 
     private static float shown = -1F;
     private static Method getMana;

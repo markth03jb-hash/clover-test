@@ -1,0 +1,13 @@
+{
+ "parent": "iron_spell_grimoire:item/black_grimoire_open",
+ "textures": {
+  "leather": "iron_spell_grimoire:item/spell_book_models/flame_spirit_grimoire_leather",
+  "trim": "iron_spell_grimoire:item/spell_book_models/flame_spirit_grimoire_trim",
+  "edge": "iron_spell_grimoire:item/spell_book_models/black_grimoire_edge",
+  "front": "iron_spell_grimoire:item/spell_book_models/flame_spirit_grimoire_front",
+  "back": "iron_spell_grimoire:item/spell_book_models/flame_spirit_grimoire_back",
+  "pageL": "iron_spell_grimoire:item/spell_book_models/black_grimoire_page_left",
+  "pageR": "iron_spell_grimoire:item/spell_book_models/black_grimoire_page_right",
+  "particle": "iron_spell_grimoire:item/spell_book_models/flame_spirit_grimoire_leather"
+ }
+}

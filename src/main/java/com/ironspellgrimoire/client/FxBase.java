@@ -56,7 +56,17 @@ abstract class FxBase {
       {0.55F, 0.5F, 0.42F},    // 15 bone (Zenon)
       {0.30F, 0.10F, 0.18F},   // 16 thread (Vanessa)
       {0.05F, 0.02F, 0.14F},   // 17 space (Finral)
-      {0.2F, 0.0F, 0.01F}      // 18 pure crimson (Demon Slayer's Sky Splitter: red only)
+      {0.2F, 0.0F, 0.01F},     // 18 pure crimson (Demon Slayer's Sky Splitter: red only)
+      {0.02F, 0.1F, 0.2F},     // 19 water
+      {0.45F, 0.47F, 0.55F},   // 20 mirror
+      {0.1F, 0.0F, 0.12F},     // 21 void
+      {0.25F, 0.04F, 0.0F},    // 22 flame spirit
+      {0.22F, 0.12F, 0.0F},    // 23 lion's flame
+      {0.03F, 0.12F, 0.04F},   // 24 world tree
+      {0.18F, 0.02F, 0.04F},   // 25 ripper
+      {0.2F, 0.13F, 0.06F},    // 26 earth
+      {0.02F, 0.14F, 0.1F},    // 27 beast
+      {0.55F, 0.5F, 0.55F}     // 28 cotton
    };
    static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
@@ -74,7 +84,14 @@ abstract class FxBase {
       {1.0F, 0.08F, 0.05F},    // 18 pure crimson
       {0.3F, 0.7F, 1.0F},      // 19 water: a bright clear blue
       {0.85F, 0.88F, 1.0F},    // 20 mirror: silvery, with a rose glint
-      {0.9F, 0.25F, 0.85F}     // 21 void: magenta-violet cuts
+      {0.9F, 0.25F, 0.85F},    // 21 void: magenta-violet cuts
+      {1.0F, 0.38F, 0.1F},     // 22 flame spirit rim: vermilion
+      {1.0F, 0.72F, 0.18F},    // 23 lion's flame: gold-orange
+      {0.45F, 0.95F, 0.38F},   // 24 world tree: living green
+      {1.0F, 0.3F, 0.36F},     // 25 ripper: blood-red edge
+      {0.86F, 0.64F, 0.36F},   // 26 earth: ochre
+      {0.3F, 0.88F, 0.7F},     // 27 beast: sea-green
+      {1.0F, 0.78F, 0.9F}      // 28 cotton: candy pink
    };
    /** Overall strength of every world effect. Lower = subtler. */
    static final float FX_ALPHA = 1.0F;
@@ -219,7 +236,7 @@ abstract class FxBase {
    /** Alpha multiplier for the effect being drawn right now (OPACITY, faded for an overdue per-tick copy). */
    static float ALPHA_NOW = 1F;
 
-   static boolean isLight(int pal) { return pal == 2 || pal == 4 || pal == 5 || pal == 6 || pal == 12 || pal == 13 || pal == 14; }
+   static boolean isLight(int pal) { return pal == 2 || pal == 4 || pal == 5 || pal == 6 || pal == 12 || pal == 13 || pal == 14 || pal == 22 || pal == 23; }
 
    static void vtx(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, float[] col, float a) {
       if (lightPal >= 0 && gv != null) {
