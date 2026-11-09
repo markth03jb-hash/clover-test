@@ -1,7 +1,15 @@
-Iron Spell Grimoire v1.58.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.59.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.59.0
+- Grimoire Towers generate in the world (plains, meadows, forests, taigas, savannas, cherry groves...): a tall
+  round stone tower with a pointed dark-tiled roof. Inside, a stair spirals up round an open atrium lined with
+  bookshelves, chandeliers hanging down the middle; at the top is the ceremony room - the Grimoire Altar on a
+  gold-and-deepslate floor, lecterns round it, windows all round. (The altar can still be crafted too.)
+- Every grimoire now has the same chance to choose you.
+- Spell Clash is no longer announced - you see who won.
 
 NEW IN 1.58.0
 - Effect quality setting (config: effect_quality = LOW / MEDIUM / HIGH, default HIGH):

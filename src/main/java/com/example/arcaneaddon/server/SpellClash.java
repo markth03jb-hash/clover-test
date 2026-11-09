@@ -5,8 +5,6 @@ import com.example.arcaneaddon.item.BlackGrimoireItem;
 import com.example.arcaneaddon.network.FxPacket;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import io.redspace.ironsspellbooks.api.util.Utils;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -32,6 +30,7 @@ import java.util.UUID;
  *   - The stronger one (spell power x the size of the move) breaks through and flies on; the weaker one is torn
  *     apart there and its damage never lands. If they are within 15% of each other both are cancelled.
  *   - Anti magic (Asta's grimoire) always cuts through magic.
+ * Nothing is announced: you see who won.
  */
 @Mod.EventBusSubscriber(modid = ArcaneAddon.MODID)
 public final class SpellClash {
@@ -130,17 +129,9 @@ public final class SpellClash {
             win.dead = true;
             FxSend.kill(sl, win.id, at);
             BROKEN.put(win.owner.getUUID(), win.window);
-            tell(a.owner, "Spell Clash - both cancelled!", ChatFormatting.GRAY);
-            tell(b.owner, "Spell Clash - both cancelled!", ChatFormatting.GRAY);
         } else {
             FxSend.ring(sl, win.pal, at, 0.3f, 5.5f, 0.12f, 10);   // the winner breaking through
-            tell(win.owner, win.anti && !lose.anti ? "Spell Clash - anti magic cuts through!" : "Spell Clash - you broke through!", ChatFormatting.GOLD);
-            tell(lose.owner, "Spell Clash - your spell was overpowered!", ChatFormatting.RED);
         }
-    }
-
-    private static void tell(ServerPlayer p, String s, ChatFormatting col) {
-        p.displayClientMessage(Component.literal(s).withStyle(col), true);
     }
 
     @SubscribeEvent

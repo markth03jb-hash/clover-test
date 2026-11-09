@@ -1,0 +1,4 @@
+{
+  "structures": [ { "structure": "arcane_addon:grimoire_tower", "weight": 1 } ],
+  "placement": { "type": "minecraft:random_spread", "spacing": 40, "separation": 16, "salt": 731904551 }
+}

@@ -16,13 +16,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.stats.Stat;
-import net.minecraft.stats.Stats;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -34,11 +30,9 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Grimoire acquisition - the grimoire tower ceremony. At a Grimoire Altar the grimoires rise and circle above it,
- * faster and faster, until one leaves the ring and comes to you: it has chosen you. Which one is weighted by how you
- * play (your statistics): fighters draw Asta's, Yami's and Mereoleona's; archers and fliers Yuno's; swimmers Nozel's;
- * fire-starters Magna's; runners and jumpers Luck's; skeleton hunters Zenon's; shield users Klaus's. Asta's five-leaf
- * grimoire is the rarest, and favours those with little magic (a low experience level).
+ * Grimoire acquisition - the grimoire tower ceremony. At a Grimoire Altar (at the top of every Grimoire Tower) the
+ * grimoires rise and circle above it, faster and faster, until one leaves the ring and comes to you: it has chosen
+ * you. Every grimoire has the same chance.
  *
  * In survival each player is chosen once; the grimoire is bound to them (only they can cast from it). After that the
  * altar calls your grimoire back if you no longer carry it (a fresh copy). In creative the ceremony can be repeated.
@@ -135,38 +129,10 @@ public final class GrimoireCeremony {
         return !s.getTag().getUUID(OWNER).equals(p.getUUID());
     }
 
-    // ------------------------------------------------------------------ the choice, weighted by how you play
-    private static int stat(ServerPlayer p, Stat<?> s) {
-        try { return p.getStats().getValue(s); } catch (Throwable t) { return 0; }
-    }
-
-    private static int custom(ServerPlayer p, net.minecraft.resources.ResourceLocation s) { return stat(p, Stats.CUSTOM.get(s)); }
-
-    private static double cap(double v) { return Math.min(30.0, v); }
-
+    // ------------------------------------------------------------------ the choice: every grimoire has the same chance
     private static int pick(ServerPlayer p) {
-        int n = GrimoireMastery.BOOKS.size();
-        double[] w = new double[n];
-        java.util.Arrays.fill(w, 10.0);
-        if (n > 0) w[0] = 3.0;   // Asta's five-leaf grimoire is the rarest
-        double dealt = custom(p, Stats.DAMAGE_DEALT) / 10.0, kills = custom(p, Stats.MOB_KILLS);
-        set(w, 0, cap(dealt / 120.0) + (p.experienceLevel < 5 ? 8 : 0));                                           // Asta: a fighter with no magic
-        set(w, 1, cap(kills / 25.0) + cap(stat(p, Stats.ENTITY_KILLED.get(EntityType.ENDERMAN)) / 3.0));              // Yami
-        set(w, 2, cap(stat(p, Stats.ITEM_USED.get(Items.BOW)) / 15.0) + cap(custom(p, Stats.AVIATE_ONE_CM) / 20000.0)); // Yuno
-        set(w, 3, cap(custom(p, Stats.SWIM_ONE_CM) / 15000.0));                                                       // Nozel
-        set(w, 4, cap(stat(p, Stats.ITEM_USED.get(Items.FLINT_AND_STEEL)) * 1.5 + stat(p, Stats.ITEM_USED.get(Items.FIRE_CHARGE)) * 2.0)); // Magna
-        set(w, 5, cap(custom(p, Stats.SPRINT_ONE_CM) / 60000.0) + cap(custom(p, Stats.JUMP) / 600.0));                // Luck
-        set(w, 6, cap(custom(p, Stats.DAMAGE_TAKEN) / 3000.0) + cap(custom(p, Stats.PLAYER_KILLS) * 3.0));            // Mereoleona
-        set(w, 7, cap(stat(p, Stats.ENTITY_KILLED.get(EntityType.SKELETON)) / 4.0));                                  // Zenon
-        set(w, 8, cap(custom(p, Stats.DAMAGE_BLOCKED_BY_SHIELD) / 300.0) + cap(stat(p, Stats.ITEM_USED.get(Items.SHIELD)) / 20.0)); // Klaus
-        double sum = 0;
-        for (double v : w) sum += v;
-        double r = p.getRandom().nextDouble() * sum;
-        for (int i = 0; i < n; i++) { r -= w[i]; if (r <= 0) return i; }
-        return n - 1;
+        return p.getRandom().nextInt(Math.max(1, GrimoireMastery.BOOKS.size()));
     }
-
-    private static void set(double[] w, int i, double bonus) { if (i < w.length) w[i] += bonus; }
 
     /** Keep the record on respawn (Forge copies the persisted tag, but be sure). */
     @SubscribeEvent
