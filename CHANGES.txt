@@ -1,7 +1,19 @@
-Iron Spell Grimoire v1.54.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.55.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.55.0
+- Asta's sword summon redone, from the book to the hand:
+  - The grimoire flips open fast, and the sword only starts once it is open - no more sword popping in half way.
+  - Rise: the blade grows up out of the open pages hilt first, its tip still on the pages, turning slowly as it
+    comes, with black anti-magic smoke curling up it and motes drawn in to the book.
+  - Hang: it hangs for a beat above the book, drifts back a little as a wind-up and swings its hilt toward your hand.
+  - Fly: it shoots to your hand hilt first, faster and faster along a short arc, leaving speed streaks and smoke.
+  - Catch: the hand gives a little as it closes on the grip, the blade swings up into the held angle, black motes
+    burst from the grip - and the real sword is in your hand on that same tick (the flying one stays until it is,
+    so there is no gap or double sword).
+  - No old smooth glow around it any more; all of it is pixel art. Works for the twin Demon Dweller too.
 
 NEW IN 1.54.0
 - Every impact frame redone, the way anime draws them:

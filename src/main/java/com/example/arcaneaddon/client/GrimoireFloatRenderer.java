@@ -139,6 +139,133 @@ public class GrimoireFloatRenderer {
       return base(p, pt).add(0.0, (double)p.getBbHeight() * 0.45, 0.0).add(leftOf(bodyYaw).scale(0.36)).add(fwdOf(bodyYaw).scale(-0.05));
    }
 
+   // ------------------------------------------------------------------ the summoned sword's flight
+   /** Matches SummonQueue.DELAY_TICKS: the real sword is put in the hand the tick the flying one arrives. */
+   private static final int SWORD_TICKS = 16;
+   /** rise out of the pages | hang and turn to the hand | fly | caught */
+   private static final float RISE = 0.36F, HANG = 0.54F, FLY = 0.86F;
+   /** The book takes this long to flip open; the sword starts rising once it is open. */
+   private static final int OPEN_TICKS = 4;
+
+   /** 0..1 through the sword's flight, from when the book is open to the catch (can be below 0 / above 1). */
+   private static float swordT(double elapsed) { return (float) ((elapsed - OPEN_TICKS) / (SWORD_TICKS - OPEN_TICKS)); }
+   /** The sword item model's blade axis (hilt to tip) in item space. */
+   private static final org.joml.Vector3f BLADE = new org.joml.Vector3f(0.70710677F, 0.70710677F, 0.0F);
+
+   private record Pose(Vec3 pos, Vec3 tip, org.joml.Quaternionf rot, float scale) {}
+
+   private static boolean holding(Player p, boolean off) {
+      return off ? p.getOffhandItem().is(AddonItemRegistry.DEMON_DWELLER_SWORD.get()) : p.getMainHandItem().is(AddonItemRegistry.DEMON_SLAYER_SWORD.get());
+   }
+
+   /** Where the hand that takes the sword is: reaching out in front (third person), low at the side of the view (first). */
+   private static Vec3 handPos(Player p, float pt, boolean off) {
+      Minecraft mc = Minecraft.getInstance();
+      float yaw = p.getViewYRot(pt);
+      Vec3 left = leftOf(yaw);
+      if (firstPerson(mc, p)) {
+         Vec3 eye = p.getEyePosition(pt), look = p.getViewVector(pt);
+         return eye.add(look.scale(0.7)).add(left.scale(off ? 0.38 : -0.38)).add(0.0, -0.34, 0.0);
+      }
+      return base(p, pt).add(0.0, p.getEyeHeight() * 0.8, 0.0).add(fwdOf(yaw).scale(0.55)).add(left.scale(off ? 0.4 : -0.4));
+   }
+
+   private static org.joml.Quaternionf aim(Vec3 tip, float spin) {
+      org.joml.Vector3f d = new org.joml.Vector3f((float) tip.x, (float) tip.y, (float) tip.z).normalize();
+      org.joml.Quaternionf q = new org.joml.Quaternionf().rotationTo(BLADE, d);
+      if (spin != 0.0F) q.premul(new org.joml.Quaternionf().rotationAxis(spin, d.x, d.y, d.z));
+      return q;
+   }
+
+   private static Vec3 slerpDir(Vec3 a, Vec3 b, float k) {
+      Vec3 v = a.scale(1.0F - k).add(b.scale(k));
+      return v.lengthSqr() < 1.0E-4 ? b : v.normalize();
+   }
+
+   /**
+   * The sword at time t (0..1):
+   *   rise  - it grows up out of the open pages HILT FIRST, tip still on the pages, turning slowly as it comes
+   *   hang  - it hangs for a beat above the book, drifts back a little (wind-up) and swings its hilt toward your hand
+   *   fly   - it shoots to the hand, hilt leading, faster and faster along a short arc
+   *   catch - the hand closes on the grip; the blade swings up into the held angle with a little recoil
+   */
+   private static Pose swordPose(Player p, float pt, Vec3 book, boolean off, float t) {
+      float half = off ? 1.05F : 1.45F;
+      Vec3 up = new Vec3(0.0, 1.0, 0.0), down = new Vec3(0.0, -1.0, 0.0);
+      Vec3 hand = handPos(p, pt, off);
+      Vec3 top = book.add(0.0, half + 0.12, 0.0);
+      Vec3 toHand = hand.subtract(top);
+      Vec3 dirHand = toHand.lengthSqr() < 1.0E-4 ? fwdOf(p.getViewYRot(pt)) : toHand.normalize();
+      Vec3 held = up.scale(0.8).add(fwdOf(p.getViewYRot(pt)).scale(0.6)).normalize();   // tip up and forward, as held
+      if (t < RISE) {
+         float u = t / RISE, e = ease(u);
+         float sc = 0.3F + 0.7F * (1.0F - (1.0F - u) * (1.0F - u));   // grows fast, settles
+         Vec3 pos = book.add(up.scale(half * sc * 0.92F + 0.06F + 0.12F * e));
+         return new Pose(pos, down, aim(down, (1.0F - e) * 3.6F), sc);
+      }
+      if (t < HANG) {
+         float u = (t - RISE) / (HANG - RISE), e = ease(u);
+         Vec3 pos = top.add(0.0, Math.sin(u * Math.PI) * 0.06, 0.0).subtract(dirHand.scale(0.18 * e));   // pulled back: the wind-up
+         Vec3 tip = slerpDir(down, dirHand.scale(-1.0), e);                                              // hilt turns to the hand
+         return new Pose(pos, tip, aim(tip, 0.0F), 1.0F);
+      }
+      Vec3 from = top.subtract(dirHand.scale(0.18));
+      if (t < FLY) {
+         float u = (t - HANG) / (FLY - HANG);
+         float m = u * u * (1.6F - 0.6F * u);                         // accelerates into the hand
+         Vec3 ctrl = from.add(hand).scale(0.5).add(0.0, 0.3, 0.0);
+         float im = 1.0F - m;
+         Vec3 pos = from.scale(im * im).add(ctrl.scale(2.0F * im * m)).add(hand.scale(m * m));
+         Vec3 vel = ctrl.subtract(from).scale(2.0F * im).add(hand.subtract(ctrl).scale(2.0F * m));
+         Vec3 tip = vel.lengthSqr() < 1.0E-4 ? dirHand.scale(-1.0) : vel.normalize().scale(-1.0);    // hilt first
+         return new Pose(pos, tip, aim(tip, 0.0F), 1.0F);
+      }
+      float u = (t - FLY) / (1.0F - FLY), e = ease(Math.min(1.0F, u * 1.4F));
+      Vec3 arrive = hand.subtract(ctrlDir(from, hand)).normalize();
+      double recoil = Math.sin(Math.min(1.0F, u) * Math.PI) * 0.09;   // the hand gives a little as it catches
+      Vec3 tip = slerpDir(arrive.scale(-1.0), held, e);
+      return new Pose(hand.add(arrive.scale(recoil)), tip, aim(tip, 0.0F), 1.0F);
+   }
+
+   private static Vec3 ctrlDir(Vec3 from, Vec3 hand) { return from.add(hand).scale(0.5).add(0.0, 0.3, 0.0); }
+
+   /** Pixel-art smoke, motes and speed streaks around the flying sword, spawned per tick (not per frame). */
+   private static void swordFx(Player p, Vec3 book, boolean off, float t, float tPrev) {
+      java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+      Pose now = swordPose(p, 1.0F, book, off, Math.min(1.0F, t));
+      float half = (off ? 1.05F : 1.45F) * now.scale;
+      if (t < RISE) {
+         // anti-magic smoke curling up the blade as it leaves the pages; motes sucked in from around the book
+         for (int i = 0; i < 2; i++) {
+            Vec3 at = now.pos.add(now.tip.scale(r.nextDouble(-half, half) * 0.8)).add(r.nextDouble(-0.1, 0.1), 0, r.nextDouble(-0.1, 0.1));
+            DarkSmoke.smoke(at, new Vec3(r.nextDouble(-0.01, 0.01), 0.025, r.nextDouble(-0.01, 0.01)), 0.16F, 12);
+         }
+         double a = r.nextDouble(Math.PI * 2);
+         Vec3 from = book.add(Math.cos(a) * 0.7, r.nextDouble(-0.1, 0.3), Math.sin(a) * 0.7);
+         DarkSmoke.mote(from, book.subtract(from).scale(0.12), 0.07F, 8);
+      } else if (t < HANG) {
+         if (r.nextInt(2) == 0) DarkSmoke.smoke(now.pos.add(r.nextDouble(-0.15, 0.15), r.nextDouble(-half, half) * 0.6, r.nextDouble(-0.15, 0.15)), new Vec3(0, 0.015, 0), 0.13F, 10);
+      } else if (t < FLY + 0.05F) {
+         // speed streaks and a smoke trail left along the path
+         Pose was = swordPose(p, 1.0F, book, off, Math.min(1.0F, Math.max(HANG, tPrev)));
+         Vec3 step = now.pos.subtract(was.pos);
+         for (int i = 0; i < 4; i++) {
+            Vec3 at = was.pos.add(step.scale(r.nextDouble())).add(r.nextDouble(-0.12, 0.12), r.nextDouble(-0.12, 0.12), r.nextDouble(-0.12, 0.12));
+            DarkSmoke.streakTinted(at, step.scale(0.25), 0.07F, 5, 0.85F, 0.85F, 0.9F);
+            DarkSmoke.smoke(at, step.scale(-0.05), 0.12F, 9);
+         }
+      }
+      if (tPrev < FLY && t >= FLY) {
+         // the catch: a quick burst of black motes from the grip
+         for (int i = 0; i < 14; i++) {
+            double a = i * Math.PI * 2 / 14;
+            Vec3 v = new Vec3(Math.cos(a), r.nextDouble(-0.4, 0.6), Math.sin(a)).scale(0.09);
+            DarkSmoke.mote(now.pos, v, 0.08F, 8);
+         }
+         DarkSmoke.smoke(now.pos, Vec3.ZERO, 0.3F, 10);
+      }
+   }
+
    @SubscribeEvent
    public static void onClientTick(ClientTickEvent e) {
       if (e.phase != Phase.END) return;
@@ -161,7 +288,7 @@ public class GrimoireFloatRenderer {
          float[] pr = PROGRESS.computeIfAbsent(p.getId(), k -> new float[]{0.0F, 0.0F});
          pr[0] = pr[1];
          boolean open = has && (OPEN_UNTIL.getOrDefault(p.getId(), 0L) > now || ANIMS.containsKey(p.getId()));
-         pr[1] = Mth.clamp(pr[1] + (open ? 0.12F : -0.08F), 0.0F, 1.0F);
+         pr[1] = Mth.clamp(pr[1] + (open ? (ANIMS.containsKey(p.getId()) ? 0.3F : 0.12F) : -0.08F), 0.0F, 1.0F);   // a summon flips it open fast
          if (has) HOLDERS.add(p.getId());
 
          // the book turns after you and floats after you, a little behind
@@ -186,13 +313,18 @@ public class GrimoireFloatRenderer {
             }
          }
          Long st = ANIMS.get(p.getId());
+         if (has && st != null && !p.isInvisible()) {
+            boolean off = OFFHAND_ANIMS.contains(p.getId());
+            float t = swordT(now - st), tPrev = swordT(now - 1 - st);
+            if (t >= 0.0F && t <= 1.05F && !(t >= 1.0F && holding(p, off))) swordFx(p, sp[1], off, t, Math.max(0.0F, tPrev));
+         }
          if (has && st != null && now - st <= 1L && BURSTED.add(p.getId())) {
             Vec3 cx = sp[1].add(0.0, 0.1, 0.0);
             mc.level.playLocalSound(cx.x, cx.y, cx.z, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.7F, 0.5F, false);
          }
       }
       BURSTED.removeIf(id -> !ANIMS.containsKey(id));
-      ANIMS.values().removeIf(s -> now - s > 18L);
+      ANIMS.values().removeIf(s -> now - s > SWORD_TICKS + 6L);   // a few ticks of grace for the real sword to arrive
       PROGRESS.keySet().removeIf(id -> !HOLDERS.contains(id) && PROGRESS.get(id)[1] <= 0.0F);
       SMOOTH_YAW.keySet().retainAll(PROGRESS.keySet());
       SMOOTH_POS.keySet().retainAll(PROGRESS.keySet());
@@ -273,43 +405,18 @@ public class GrimoireFloatRenderer {
          }
          ps.popPose();
 
-         // Asta's sword rising out of the open pages, hilt first, then pulled into the hand
+         // Asta's sword rising out of the open pages, hilt first, then flying hilt-first into the hand
          Long start = ANIMS.get(p.getId());
-         if (start != null && prog >= 0.99F) {
-            float t = Mth.clamp(((float)(mc.level.getGameTime() - start) + pt) / 16.0F, 0.0F, 1.0F);
+         if (start != null && prog >= 0.9F) {
+            float t = swordT(mc.level.getGameTime() - start + pt);
+            if (t < 0.0F) continue;
             boolean off = OFFHAND_ANIMS.contains(p.getId());
-            Vec3 fwd = fwdOf(yaw), left = leftOf(yaw);
-            Vec3 hand = base(p, pt).add(0.0, (double)p.getEyeHeight() * 0.8, 0.0).add(fwd.scale(0.55)).add(left.scale(off ? 0.4 : -0.4));
-            float half = off ? 1.05F : 1.45F;
-            Vec3 up = new Vec3(0.0, 1.0, 0.0);
-            Vec3 pos;
-            float scale;
-            float roll;
-            if (t < 0.45F) {
-               float u = ease(t / 0.45F);
-               scale = 0.1F + 0.9F * u;
-               // the tip stays on the pages while the blade grows out of them, so it emerges from the centre of the book
-               pos = bookPos.add(up.scale((double)(half * scale * 0.9F + 0.05F)));
-               roll = 225.0F;
-            } else {
-               float u = (t - 0.45F) / 0.55F;
-               float m = ease(u);
-               Vec3 top = bookPos.add(up.scale((double)(half * 0.9F + 0.05F)));
-               Vec3 ctrl = top.add(hand).scale(0.5).add(0.0, 0.35, 0.0).add(fwd.scale(0.35));
-               pos = top.scale((double)((1.0F - m) * (1.0F - m))).add(ctrl.scale((double)(2.0F * (1.0F - m) * m))).add(hand.scale((double)(m * m)));
-               scale = 1.0F;
-               roll = 225.0F + (off ? -90.0F : 90.0F) * ease(Mth.clamp(u * 3.0F, 0.0F, 1.0F));
-            }
-            double ang = Math.toRadians((double)(45.0F + roll));
-            double yr = Math.toRadians((double)yaw);
-            Vec3 axis = new Vec3(Math.cos(ang) * Math.cos(yr), Math.sin(ang), Math.cos(ang) * Math.sin(yr));
-            float auraA = t < 0.45F ? 0.35F + 0.35F * (t / 0.45F) : 0.7F * (1.0F - 0.6F * (t - 0.45F) / 0.55F);
-            FxRenderer.queueAura(pos.subtract(axis.scale((double)(half * scale))), pos.add(axis.scale((double)(half * scale))), (off ? 0.16F : 0.22F) * scale, off ? 1 : 0, auraA);
+            if (t >= 1.0F && holding(p, off)) continue;   // the real sword is in the hand: the flying one is gone
+            Pose sw = swordPose(p, pt, bookPos, off, Math.min(t, 1.0F));
             ps.pushPose();
-            ps.translate(pos.x - cam.x, pos.y - cam.y, pos.z - cam.z);
-            ps.mulPose(Axis.YP.rotationDegrees(-yaw));
-            ps.mulPose(Axis.ZP.rotationDegrees(roll));
-            ps.scale(0.9F * scale, 0.9F * scale, 0.9F * scale);
+            ps.translate(sw.pos.x - cam.x, sw.pos.y - cam.y, sw.pos.z - cam.z);
+            ps.mulPose(sw.rot);
+            ps.scale(0.9F * sw.scale, 0.9F * sw.scale, 0.9F * sw.scale);
             ps.translate(-0.582F, -0.582F, 0.0F);
             mc.getItemRenderer().renderStatic(off ? twin : sword, ItemDisplayContext.NONE, 15728880, OverlayTexture.NO_OVERLAY, ps, buf, mc.level, p.getId());
             ps.popPose();
