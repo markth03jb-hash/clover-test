@@ -133,7 +133,7 @@ public final class ImpactFrames {
         float fade = (float) Mth.clamp((len - k) / Math.min(1.0, len), 0.0, 1.0);   // lets go over the last tick
         fade = fade * fade * (3F - 2F * fade);
         float in = (float) (k - frame);                                               // 0..1 through this frame
-        int[] c = PAL[style];
+        int[] c = PAL[Math.max(0, Math.min(PAL.length - 1, style))];
         float[] f = focus(W, H);
         float fx = f[0], fy = f[1];
         float reach = (float) Math.hypot(Math.max(fx, W - fx), Math.max(fy, H - fy)) + 8F;

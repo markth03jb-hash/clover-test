@@ -124,4 +124,42 @@ public final class LimbusClient {
         g.drawString(f, Component.literal(s), 0, 0, col, true);
         g.pose().popPose();
     }
+
+    // ------------------------------------------------------------------ Bleed and Fortuna shown over the enemies that carry them
+    private static final Map<Integer, double[]> MARKS = new HashMap<>();   // entity id -> {bleed, fortuna, last heard}
+
+    static void mark(int id, int bleed, int fortuna) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        if (bleed <= 0 && fortuna <= 0) MARKS.remove(id);
+        else MARKS.put(id, new double[]{bleed, fortuna, mc.level.getGameTime()});
+    }
+
+    /** A row of red drops (one per 3 Bleed) and under it a row of pale bars (one per 20 Fortuna), facing the camera. */
+    static void drawMarks(org.joml.Matrix4f m, net.minecraft.world.phys.Vec3 cam, double now, float pt) {
+        if (MARKS.isEmpty()) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        MARKS.values().removeIf(v -> now - v[2] > 140);
+        for (Map.Entry<Integer, double[]> en : MARKS.entrySet()) {
+            net.minecraft.world.entity.Entity e = mc.level.getEntity(en.getKey());
+            if (e == null || !e.isAlive()) continue;
+            net.minecraft.world.phys.Vec3 c = new net.minecraft.world.phys.Vec3(Mth.lerp(pt, e.xo, e.getX()), Mth.lerp(pt, e.yo, e.getY()) + e.getBbHeight() + 0.45, Mth.lerp(pt, e.zo, e.getZ()));
+            if (c.distanceToSqr(cam) > 40 * 40) continue;
+            net.minecraft.world.phys.Vec3 to = cam.subtract(c);
+            net.minecraft.world.phys.Vec3 side = new net.minecraft.world.phys.Vec3(-to.z, 0, to.x);
+            if (side.lengthSqr() < 1.0E-6) continue;
+            side = side.normalize();
+            float fade = (float) Mth.clamp((140 - (now - en.getValue()[2])) / 20.0, 0, 1);
+            int drops = (int) Math.min(10, Math.ceil(en.getValue()[0] / 3.0)), bars = (int) Math.min(10, Math.ceil(en.getValue()[1] / 20.0));
+            for (int i = 0; i < drops; i++) {
+                net.minecraft.world.phys.Vec3 p = c.add(side.scale((i - (drops - 1) / 2.0) * 0.11));
+                FxBase.gline(m, cam, p.add(0, 0.07, 0), p.add(0, -0.03, 0), 0.05F, 18, 0.95F * fade);
+            }
+            for (int i = 0; i < bars; i++) {
+                net.minecraft.world.phys.Vec3 p = c.add(0, -0.14, 0).add(side.scale((i - (bars - 1) / 2.0) * 0.11));
+                FxBase.gline(m, cam, p.add(side.scale(-0.04)), p.add(side.scale(0.04)), 0.035F, 6, 0.9F * fade);
+            }
+        }
+    }
 }

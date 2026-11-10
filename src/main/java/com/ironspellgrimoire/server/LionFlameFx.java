@@ -209,16 +209,10 @@ public final class LionFlameFx {
         }
         AstaFx.later(11, () -> { if (alive(p)) { Fx.flash(sl, p.position().add(0, 1.6, 0), 1.8f); FxLib.halo(sl, L, p.position().add(0, p.getBbHeight() + 0.5, 0), 1.0f); } });
         sound(sl, p.position(), SoundEvents.RAVAGER_ROAR, 1.0f, 1.3f);
+        Moves.aura(p, 3, L, 400);   // the mane of flame, drawn by the client every frame
         Moves.mode(p, "mane_blaze", 400, 3, pl -> {
             ServerLevel s2 = pl.serverLevel();
             long now = s2.getGameTime();
-            Vec3 h = pl.position().add(0, pl.getBbHeight() - 0.15, 0);
-            Vec3 back = flat(pl.getLookAngle()).scale(-1);
-            for (int i = 0; i < 5; i++) {   // flame mane streaming back from the head and shoulders
-                double a = now * 0.2 + i * 1.26, sway = Math.sin(now * 0.3 + i);
-                Vec3 root = h.add(Math.cos(a) * 0.35, -0.1, Math.sin(a) * 0.35);
-                FxSend.trail(s2, L, root, root.add(back.scale(0.7 + 0.25 * sway)).add(Math.cos(a) * 0.5, 0.4 + 0.2 * sway, Math.sin(a) * 0.5), 0.1f, 5);
-            }
             if (now % 21 == 0) for (LivingEntity e : Kit.near(s2, pl, pl.position(), 2.6)) {
                 Moves.hit(pl, e, power * 0.3f, "mane_blaze", L);
                 Fx.impact(s2, L, mid(e), 0.8f);

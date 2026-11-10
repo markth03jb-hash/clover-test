@@ -198,17 +198,11 @@ public final class FlameSpiritFx {
         AstaFx.later(13, () -> { if (alive(p)) { Fx.flash(sl, p.position().add(0, 1, 0), 1.8f); FxLib.halo(sl, F, p.position().add(0, p.getBbHeight() + 0.4, 0), 0.9f); } });
         sound(sl, p.position(), SoundEvents.FIRECHARGE_USE, 1.0f, 0.6f);
         sound(sl, p.position(), SoundEvents.BEACON_ACTIVATE, 0.7f, 1.4f);
+        Moves.aura(p, 2, F, 400);   // the ribbons of flame and the little spirit, drawn by the client every frame
         Moves.mode(p, "salamander_spirit", 400, 4, pl -> {
             long now = pl.serverLevel().getGameTime();
             ServerLevel s2 = pl.serverLevel();
             Vec3 c = pl.position();
-            double a = now * 0.32;
-            for (int s = 0; s < 2; s++) {   // two ribbons of flame, and the little spirit running a loop round the body
-                double b = a + s * Math.PI;
-                FxSend.trail(s2, F, c.add(Math.cos(b) * 0.6, 0.2, Math.sin(b) * 0.6), c.add(Math.cos(b + 0.9) * 0.55, 1.8, Math.sin(b + 0.9) * 0.55), 0.06f, 6);
-            }
-            Vec3 head = c.add(Math.cos(a * 1.5) * 1.1, 1.0 + Math.sin(a * 2) * 0.5, Math.sin(a * 1.5) * 1.1);
-            Kit.orb(s2, F, head, Vec3.ZERO, 0.28f, 2);
             if (now % 20 == 0) for (LivingEntity e : Kit.near(s2, pl, c, 2.8)) {
                 Moves.hit(pl, e, power * 0.3f, "salamander_spirit", F);
                 Fx.impact(s2, F, mid(e), 0.8f);
