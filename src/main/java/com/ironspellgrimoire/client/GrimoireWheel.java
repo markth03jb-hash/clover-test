@@ -283,6 +283,8 @@ public final class GrimoireWheel {
             new Theme(c(0x04130F), c(0x0F4034), c(0xE6D08A), c(0x4DDCB0), c(0x1E7A62), 3, O_MANE, M_DOTS, false, 0x061511, 0xBFFFEA),
             // Charmy: rose-cream pages, white trim, soft drops of cream round the ring
             new Theme(c(0x1A0A14), c(0x5A2A48), c(0xFFF0F6), c(0xFF9CCB), c(0x8A3E6A), 3, O_DROPS, M_DOTS, false, 0x1C0C16, 0xFFD6EA),
+            // Julius: midnight-navy pages, bright gold trim, a little clock on every page
+            new Theme(c(0x070A1C), c(0x1A2450), c(0xF4E6B8), c(0xFFC844), c(0x2E3A78), 3, O_RIVETS, M_NOTCHES, true, 0x080B1E, 0xFFF0C8),
     };
 
     /** {page inside, page edge, trim, accent, panel, title} as RGB ints, for the grimoire book screen and others. */
@@ -417,6 +419,18 @@ public final class GrimoireWheel {
                     double ta = am + k * w * 0.2, tr = mid + 6 - Math.abs(k) * 1.5;
                     disc(bb, m, cx + Math.sin(ta) * tr, cy - Math.cos(ta) * tr, 1.5, ac[0], ac[1], ac[2], 0.9F * A);
                 }
+            }
+            case 21 -> {   // Julius: a small clock on each page - a gold ring, two hands
+                double px = cx + Math.sin(am) * mid, py = cy - Math.cos(am) * mid, rr = 4.2 + p;
+                float[] in = th.pageIn;
+                disc(bb, m, px, py, rr, ac[0], ac[1], ac[2], 0.9F * A);
+                disc(bb, m, px, py, rr - 1.0, in[0], in[1], in[2], 0.95F * A);
+                double hh = time * 0.8 + am * 3, mm = time * 2.4 + am * 7;
+                double hx = px + Math.sin(hh) * rr * 0.5, hy = py - Math.cos(hh) * rr * 0.5, mx = px + Math.sin(mm) * rr * 0.8, my = py - Math.cos(mm) * rr * 0.8;
+                double pa = Math.atan2(px - cx, -(py - cy)), pr = Math.hypot(px - cx, py - cy);
+                seg(bb, m, cx, cy, pa, pr, Math.atan2(hx - cx, -(hy - cy)), Math.hypot(hx - cx, hy - cy), 0.9, t[0], t[1], t[2], 0.95F * A);
+                seg(bb, m, cx, cy, pa, pr, Math.atan2(mx - cx, -(my - cy)), Math.hypot(mx - cx, my - cy), 0.6, ac[0], ac[1], ac[2], 0.95F * A);
+                disc(bb, m, px, py, 0.8, t[0], t[1], t[2], A);
             }
             case 20 -> {   // Charmy: a puff of cotton on each page - three soft balls
                 disc(bb, m, cx + Math.sin(am) * mid, cy - Math.cos(am) * mid, 3.0 + p, t[0], t[1], t[2], 0.85F * A);

@@ -34,7 +34,13 @@ public abstract class ThemedGrimoireItem extends SimpleAttributeSpellBook {
 
     protected ThemedGrimoireItem(String key, ChatFormatting color, Supplier<List<RegistryObject<AbstractSpell>>> spells,
                                  Supplier<Attribute> school, double mana, double regen, double power, double armor) {
-        super(8, SpellRarity.LEGENDARY, modifiers(key, school.get(), mana, regen, power, armor));
+        this(8, key, color, spells, school, mana, regen, power, armor);
+    }
+
+    /** A grimoire with {@code slots} pages (Julius's holds twelve). */
+    protected ThemedGrimoireItem(int slots, String key, ChatFormatting color, Supplier<List<RegistryObject<AbstractSpell>>> spells,
+                                 Supplier<Attribute> school, double mana, double regen, double power, double armor) {
+        super(slots, SpellRarity.LEGENDARY, modifiers(key, school.get(), mana, regen, power, armor));
         this.key = key;
         this.color = color;
         this.spells = spells;

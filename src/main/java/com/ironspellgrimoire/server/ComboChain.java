@@ -97,7 +97,10 @@ public final class ComboChain {
             new Combo("wolf_fang", "hawk_dive", "Hunt from Two Sides", Kind.CROSS, 27, FxSend.FRAME_VETTO, "the hawk and the wolf strike the target together"),
             new Combo("stampede", "primal_king", "Herd of Kings", Kind.STORM, 27, FxSend.FRAME_VETTO, "the herd keeps running over the target"),
             new Combo("cotton_ball", "neans_charge", "Soft Landing", Kind.SNARE, 28, FxSend.FRAME_CHARMY, "cotton glues the target while Nean charges through"),
-            new Combo("cream_puff_barrage", "grand_banquet", "Dessert", Kind.BURST, 28, FxSend.FRAME_CHARMY, "the cake bursts in a cloud of cream"));
+            new Combo("cream_puff_barrage", "grand_banquet", "Dessert", Kind.BURST, 28, FxSend.FRAME_CHARMY, "the cake bursts in a cloud of cream"),
+            new Combo("clock_hand_bolt", "time_stop_point", "Hands of the Hour", Kind.BOOST, 8, FxSend.FRAME_JULIUS, "the frozen target shatters out of the stopped moment"),
+            new Combo("time_theft", "chrono_acceleration", "Borrowed Time", Kind.BOOST, 8, FxSend.FRAME_JULIUS, "the stolen seconds come off your cooldowns"),
+            new Combo("time_skip", "time_stop_point", "Between Seconds", Kind.BOOST, 8, FxSend.FRAME_JULIUS, "the freeze lasts twice as long"));
 
     private static final Map<UUID, Object[]> LAST = new HashMap<>();      // player -> {spell id, game time}
     private static final Map<UUID, Object[]> BOOSTED = new HashMap<>();   // player -> {spell id, game time}

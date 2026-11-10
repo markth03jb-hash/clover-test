@@ -469,6 +469,29 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> COTTON_SPELLS = List.of(
             COTTON_BALL, COTTON_NET, NEANS_CHARGE, CREAM_PUFF_BARRAGE, SWEET_FEAST, COTTON_CLOUD, NEAN_ARMOR, GRAND_BANQUET);
 
+    // ------------------------------------------------------------------ Time Grimoire (Julius Novachrono)
+    private static com.ironspellgrimoire.spells.BookSpell time(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
+                com.ironspellgrimoire.item.TimeGrimoireItem.class, "ui.iron_spell_grimoire.time_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> CLOCK_HAND_BOLT = registerSpell(time("clock_hand_bolt", 3, 20, 9, "iron_spell_grimoire:julius_hand_bolt", com.ironspellgrimoire.server.TimeFx::clockHandBolt));
+    public static final RegistryObject<AbstractSpell> TIME_STOP_POINT = registerSpell(time("time_stop_point", 14, 45, 6, "iron_spell_grimoire:julius_stop_point", com.ironspellgrimoire.server.TimeFx::timeStopPoint));
+    public static final RegistryObject<AbstractSpell> TIME_SKIP = registerSpell(time("time_skip", 6, 25, 0, "iron_spell_grimoire:julius_time_skip", com.ironspellgrimoire.server.TimeFx::timeSkip));
+    public static final RegistryObject<AbstractSpell> TIME_RECOVERY = registerSpell(time("time_recovery", 35, 80, 0, "iron_spell_grimoire:julius_time_recovery", com.ironspellgrimoire.server.TimeFx::timeRecovery));
+    public static final RegistryObject<AbstractSpell> CHRONO_ACCELERATION = registerSpell(time("chrono_acceleration", 28, 55, 0, "iron_spell_grimoire:julius_acceleration", com.ironspellgrimoire.server.TimeFx::chronoAcceleration));
+    public static final RegistryObject<AbstractSpell> TICKING_SNARE = registerSpell(time("ticking_snare", 12, 40, 10, "iron_spell_grimoire:julius_ticking_snare", com.ironspellgrimoire.server.TimeFx::tickingSnare));
+    public static final RegistryObject<AbstractSpell> TIME_THEFT = registerSpell(time("time_theft", 16, 55, 10, "iron_spell_grimoire:julius_time_theft", com.ironspellgrimoire.server.TimeFx::timeTheft));
+    public static final RegistryObject<AbstractSpell> HOURGLASS_BARRAGE = registerSpell(time("hourglass_barrage", 18, 65, 7, "iron_spell_grimoire:julius_hourglass_barrage", com.ironspellgrimoire.server.TimeFx::hourglassBarrage));
+    public static final RegistryObject<AbstractSpell> REWIND_WARD = registerSpell(time("rewind_ward", 24, 50, 0, "iron_spell_grimoire:julius_rewind_ward", com.ironspellgrimoire.server.TimeFx::rewindWard));
+    public static final RegistryObject<AbstractSpell> ECHO_OF_THE_PAST = registerSpell(time("echo_of_the_past", 20, 45, 0, "iron_spell_grimoire:julius_echo", com.ironspellgrimoire.server.TimeFx::echoOfThePast));
+    public static final RegistryObject<AbstractSpell> CHRONOSTASIS_FIELD = registerSpell(time("chronostasis_field", 60, 100, 6, "iron_spell_grimoire:julius_chronostasis", com.ironspellgrimoire.server.TimeFx::chronostasisField));
+    public static final RegistryObject<AbstractSpell> ZENITH_HOUR = registerSpell(time("zenith_hour", 90, 150, 32, "iron_spell_grimoire:julius_zenith_hour", com.ironspellgrimoire.server.TimeFx::zenithHour));
+
+    /** The twelve Time Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> TIME_SPELLS = List.of(
+            CLOCK_HAND_BOLT, TIME_STOP_POINT, TIME_SKIP, TIME_RECOVERY, CHRONO_ACCELERATION, TICKING_SNARE, TIME_THEFT, HOURGLASS_BARRAGE, REWIND_WARD, ECHO_OF_THE_PAST, CHRONOSTASIS_FIELD, ZENITH_HOUR);
+
     private static RegistryObject<AbstractSpell> registerSpell(AbstractSpell spell) {
         return SPELLS.register(spell.getSpellName(), () -> spell);
     }

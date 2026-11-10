@@ -12,6 +12,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FxSend {
     private static final AtomicInteger IDS = new AtomicInteger(1);
 
+    /** A fresh effect id (shared by every shape, so kill packets never hit the wrong effect). */
+    public static int nextId() { return IDS.getAndIncrement(); }
+
+    /** Sends one packet to everyone within 96 blocks of {@code near}. */
+    public static void sendNear(ServerLevel sl, Vec3 near, FxPacket p) { send(sl, near, p); }
+
     private static void send(ServerLevel sl, Vec3 near, FxPacket p) {
         AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(near.x, near.y, near.z, 96, sl.dimension())), p);
     }
@@ -141,7 +147,7 @@ public class FxSend {
     public static final int FRAME_ASTA = 0, FRAME_ASTA_SLASH = 1, FRAME_LUCK = 2, FRAME_EQUINOX = 3, FRAME_YAMI = 4, FRAME_YUNO = 5,
             FRAME_NOZEL = 6, FRAME_MAGNA = 7, FRAME_MEREOLEONA = 8, FRAME_ZENON = 9, FRAME_KLAUS = 10,
             FRAME_VANESSA = 11, FRAME_FINRAL = 12,
-            FRAME_FUEGOLEON = 13, FRAME_LEOPOLD = 14, FRAME_WILLIAM = 15, FRAME_JACK = 16, FRAME_SOL = 17, FRAME_VETTO = 18, FRAME_CHARMY = 19;
+            FRAME_FUEGOLEON = 13, FRAME_LEOPOLD = 14, FRAME_WILLIAM = 15, FRAME_JACK = 16, FRAME_SOL = 17, FRAME_VETTO = 18, FRAME_CHARMY = 19, FRAME_JULIUS = 20;
 
     /** style: one of the FRAME_ constants. */
     public static void impactFrame(ServerLevel sl, Vec3 at, int ticks, int style, double radius) {

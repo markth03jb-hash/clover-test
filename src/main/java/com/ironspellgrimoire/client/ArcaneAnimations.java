@@ -46,6 +46,7 @@ public class ArcaneAnimations {
             ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "limit_steel"),
             ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "fire_magna_special"),   // 14: Magna's swing
             ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "dark_equinox"),         // 15: Yami's Equinox
+            ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "limit_time"),           // 16: Julius's awakening
     };
 
     @SubscribeEvent

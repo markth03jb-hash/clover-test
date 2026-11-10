@@ -17,6 +17,8 @@ public final class AnimSend {
     public static final int MAGNA_SWING = 14;
     /** Yami's Equinox: katana drawn level, held, one cut. */
     public static final int EQUINOX = 15;
+    /** Julius: arms crossed while rising, then thrown open (limit_time). */
+    public static final int TIME_AWAKEN = 16;
 
     public static void play(ServerPlayer p, int pose) {
         FxPacket pkt = new FxPacket();

@@ -70,7 +70,8 @@ public final class ImpactFrames {
             {0xFFD0D6, 0x14000A, 0xFF4458, 0xFFFFFF},   // 16 Jack: cuts
             {0xF2DFC0, 0x1C1208, 0xB88A4E, 0xFFFFFF},   // 17 Sol: slabs
             {0xCFFFF0, 0x021C16, 0x3CD4A8, 0xFFE7A0},   // 18 Vetto: fangs
-            {0xFFE4F0, 0x2A0E1E, 0xFF8CC6, 0xFFFFFF}};  // 19 Charmy: threads of cream
+            {0xFFE4F0, 0x2A0E1E, 0xFF8CC6, 0xFFFFFF},   // 19 Charmy: threads of cream
+            {0xFFF4D8, 0x070A1C, 0xE8D9A8, 0xFFC844}};  // 20 Julius: pages spiralling in, a clock round the hit
 
     public static void start(int ticks, int st, Vec3 where) {
         Minecraft mc = Minecraft.getInstance();
@@ -264,6 +265,31 @@ public final class ImpactFrames {
                     taper(bb, m, fx - dx + ox, fy - dy + oy, 0.4F, fx + dx + ox, fy + dy + oy, 0.4F, i % 5 == 0 ? acc : line, la);
                 }
                 star(bb, m, fx, fy, Math.min(W, H) * 0.08F, 2F, acc, la);
+            }
+            case 20 -> {  // Julius: page edges spiralling in on the hit (FWIP), a clock ring round it, two hands stopped
+                for (int i = 0; i < 64; i++) {
+                    double a0 = i * Math.PI * 2 / 64 + r.nextFloat() * 0.05;
+                    float px = fx, py = fy;
+                    for (int q = 1; q <= 6; q++) {
+                        float f = q / 6F, rr = reach * (1F - f * 0.86F * rush);
+                        double a = a0 + 1.6 * Math.pow(f, 0.9);
+                        float nx = fx + (float) Math.cos(a) * rr, ny = fy + (float) Math.sin(a) * rr;
+                        if (q > 1) taper(bb, m, px, py, (1F - f) * 3.2F + 0.4F, nx, ny, (1F - f) * 2.6F + 0.3F, i % 9 == 0 ? acc : line, la);
+                        px = nx; py = ny;
+                    }
+                }
+                float cr = Math.min(W, H) * 0.2F;
+                for (int j = 0; j < 48; j++) {
+                    double a0 = j * Math.PI * 2 / 48, a1 = (j + 1) * Math.PI * 2 / 48;
+                    taper(bb, m, fx + (float) Math.cos(a0) * cr, fy + (float) Math.sin(a0) * cr, 3F, fx + (float) Math.cos(a1) * cr, fy + (float) Math.sin(a1) * cr, 3F, acc, la);
+                }
+                for (int j = 0; j < 12; j++) {
+                    double a = j * Math.PI / 6;
+                    taper(bb, m, fx + (float) Math.cos(a) * cr * 0.82F, fy + (float) Math.sin(a) * cr * 0.82F, j % 3 == 0 ? 3F : 1.6F,
+                            fx + (float) Math.cos(a) * cr * 0.96F, fy + (float) Math.sin(a) * cr * 0.96F, j % 3 == 0 ? 3F : 1.6F, acc, la);
+                }
+                taper(bb, m, fx, fy, 3F, fx + cr * 0.15F, fy - cr * 0.55F, 0.5F, acc, la);
+                taper(bb, m, fx, fy, 2F, fx + cr * 0.72F, fy + cr * 0.12F, 0.5F, acc, la);
             }
             case 12 -> {  // Finral: rings of space closing in on the hit, a gold rim on the innermost
                 for (int q = 0; q < 7; q++) {

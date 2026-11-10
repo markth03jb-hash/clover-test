@@ -125,6 +125,7 @@ public class GrimoireFloatRenderer {
       if (item == AddonItemRegistry.EARTH_GRIMOIRE.get()) return new int[]{26, 2};
       if (item == AddonItemRegistry.BEAST_GRIMOIRE.get()) return new int[]{27, 3};
       if (item == AddonItemRegistry.COTTON_GRIMOIRE.get()) return new int[]{28, 4};
+      if (item == AddonItemRegistry.TIME_GRIMOIRE.get()) return new int[]{8, 3};
       String id = BuiltInRegistries.ITEM.getKey(item).getPath();
       return switch (id) {
          default -> new int[]{8, 4};
@@ -447,6 +448,7 @@ public class GrimoireFloatRenderer {
                DarkSmoke.crimsonFlame(fp0, new Vec3(0, fr.nextDouble(0.03, 0.07), 0), (float) fr.nextDouble(0.08, 0.16), fr.nextInt(8, 14));
             }
             FxRenderer.queueBook(bookPos, yawS - turn, tilt, s, k * (mastered ? 1.5F : 1.0F), cyc, 0.46F, 0.375F, 22.5F, au[0], au[1], light);
+            if (book.is(AddonItemRegistry.TIME_GRIMOIRE.get())) TimeFxClient.bookFan(bookPos, k);   // Julius: a little fan of pages turning round it
          }
          ps.popPose();
 

@@ -208,6 +208,11 @@ public final class GrimoireMastery {
                 "neans_charge", 2, "cream_puff_barrage", 2,
                 "sweet_feast", 3, "cotton_cloud", 3,
                 "nean_armor", 4, "grand_banquet", 5);
+        book(AddonItemRegistry.TIME_GRIMOIRE::get, Fx.GOLD,
+                "clock_hand_bolt", 1, "time_stop_point", 1, "time_skip", 1,
+                "time_recovery", 2, "chrono_acceleration", 2, "ticking_snare", 2,
+                "time_theft", 3, "hourglass_barrage", 3, "rewind_ward", 3,
+                "echo_of_the_past", 4, "chronostasis_field", 4, "zenith_hour", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)
