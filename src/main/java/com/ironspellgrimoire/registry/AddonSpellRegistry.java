@@ -405,7 +405,7 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> THOUSAND_CUTS = registerSpell(slash("thousand_cuts", 14, 45, 12, "iron_spell_grimoire:mercury_bullets", com.ironspellgrimoire.server.SlashFx::thousandCuts));
     public static final RegistryObject<AbstractSpell> CROSS_REAPER = registerSpell(slash("cross_reaper", 16, 55, 12, "iron_spell_grimoire:dark_avidya", com.ironspellgrimoire.server.SlashFx::crossReaper));
     public static final RegistryObject<AbstractSpell> BLEEDING_EDGE = registerSpell(slash("bleeding_edge", 18, 55, 12, "iron_spell_grimoire:dark_death_thrust", com.ironspellgrimoire.server.SlashFx::bleedingEdge));
-    public static final RegistryObject<AbstractSpell> RIPPER_FRENZY = registerSpell(slash("ripper_frenzy", 55, 85, 8, "iron_spell_grimoire:dark_black_blade", com.ironspellgrimoire.server.SlashFx::ripperFrenzy));
+    public static final RegistryObject<AbstractSpell> RIPPER_FRENZY = registerSpell(slash("ripper_frenzy", 55, 85, 8, "iron_spell_grimoire:ripper_frenzy", com.ironspellgrimoire.server.SlashFx::ripperFrenzy));
     public static final RegistryObject<AbstractSpell> BLOODY_MASSACRE = registerSpell(slash("bloody_massacre", 90, 130, 30, "iron_spell_grimoire:dark_event_horizon", com.ironspellgrimoire.server.SlashFx::bloodyMassacre));
 
     /** The eight Slash Grimoire spells, in the order they fill the book. */

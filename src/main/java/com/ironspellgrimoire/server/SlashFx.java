@@ -378,27 +378,19 @@ public final class SlashFx {
                 float k = (tt - 6) / (float) (HZ_CHARGE - 6);
                 double yr = Math.toRadians(p.getYRot());
                 Vec3 fw = new Vec3(-Math.sin(yr), 0, Math.cos(yr));
-                Vec3 hilt = p.position().add(0, 2.05, 0).add(fw.scale(0.12)), tip = hilt.add(0, 1.55 + 1.2 * k, 0).subtract(fw.scale(0.45));
-                FxSend.trail(sl, GR, hilt, tip, 0.3f + 0.55f * k, 3);                 // the raised edge, wrapped in green
+                Vec3 g = FxLib.floor(sl, p.position()).add(0, 0.05, 0);
+                Vec3 hilt = p.position().add(0, 0.9, 0).subtract(fw.scale(0.25)), tip = g.add(fw.scale(1.8 + 1.2 * k));
+                FxSend.trail(sl, GR, hilt, tip, 0.3f + 0.55f * k, 3);                 // the edge held low, wrapped in green, its point on the ground
                 FxSend.trail(sl, S, hilt, tip, 0.04f + 0.04f * k, 3);
-                if (tt % 4 == 0) {   // hair-thin green cuts drawn in from all round, converging on the tip
+                if (tt % 4 == 0) {   // hair-thin green cuts drawn in from all round, converging on the point
                     for (int i = 0; i < 2; i++) {
                         double a = tt * 0.7 + i * Math.PI;
-                        Vec3 from = tip.add(Math.cos(a) * (4.5 + k * 2), -1.5 + Math.sin(tt + i) * 1.4, Math.sin(a) * (4.5 + k * 2));
+                        Vec3 from = tip.add(Math.cos(a) * (4.5 + k * 2), 0.3 + Math.abs(Math.sin(tt + i)) * 1.6, Math.sin(a) * (4.5 + k * 2));
                         green(sl, from, tip.add(from.subtract(tip).scale(0.25)), 0.09f + k * 0.05f, 4);
                     }
                 }
                 if (tt % 8 == 0) FxSend.ring(sl, GR, p.position().add(0, 0.05, 0), 7f - k * 4f, 0.3f + k * 0.3f, 0.12f, 7);
-                if (tt == 18 || tt == 36 || tt == 50) {   // the ground gives way under you
-                    Vec3 g = FxLib.floor(sl, p.position()).add(0, 0.04, 0);
-                    FxSend.cracks(sl, GR, g, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 2.2f + k * 3.2f, 80 - tt, false, seed0 + tt);
-                    FxSend.shake(sl, p.position(), 0.2f + k * 0.35f, 8, 18);
-                    sound(sl, p.position(), SoundEvents.DEEPSLATE_BREAK, 1f, 0.6f);
-                }
-                if (tt == 44 || tt == 54) {   // space around the edge begins to fracture
-                    FxSend.cracks(sl, GR, tip, rightOf(fw), new Vec3(0, 1, 0), 1.2f + k * 0.8f, 14, false, seed0 + tt * 7);
-                    sound(sl, tip, SoundEvents.GLASS_BREAK, 0.7f, 0.5f);
-                }
+                if (tt % 6 == 0) FxSend.shake(sl, p.position(), 0.15f + k * 0.3f, 6, 18);
             });
         }
 
@@ -412,12 +404,11 @@ public final class SlashFx {
             Vec3 dir = aimed ? look.normalize() : flatDir;
             Vec3 start = aimed ? eye.add(0, -0.3, 0) : FxLib.floor(sl, p.position());
             Vec3 rt = rightOf(dir), up = aimed ? rt.cross(dir).normalize() : new Vec3(0, 1, 0);
-            final double reach = 70;
+            final double reach = 80;
             final float speed = 3.6f;
             Vec3 end = start.add(dir.scale(reach));
             final Vec3 o = start.add(dir.scale(1.5)).add(aimed ? Vec3.ZERO : up.scale(1.2));
             FxSend.shake(sl, p.position(), 1.5f, 22, 70);
-            FxSend.cracks(sl, GR, o.add(dir).add(up.scale(0.6)), rt, up, 5.5f, 70, false, seed0 + 999);
             Fx.flash(sl, o, 3.0f);
             sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_CRIT, 1.6f, 0.5f);
             sound(sl, p.position(), SoundEvents.GENERIC_EXPLODE, 1.2f, 0.6f);
@@ -430,7 +421,7 @@ public final class SlashFx {
                 double f = Math.max(0, Math.min(1, m.subtract(start).dot(seg) / seg.lengthSqr()));
                 Vec3 on = start.add(seg.scale(f)), off = m.subtract(on);
                 double along = on.distanceTo(start);
-                if (Math.abs(off.dot(rt)) > 3.5 + along * 0.15 || Math.abs(off.dot(up)) > 7.5) continue;
+                if (Math.abs(off.dot(rt)) > 5.5 + along * 0.2 || Math.abs(off.dot(up)) > 11) continue;
                 AstaFx.later((int) (along / speed), () -> {
                     if (!t.isAlive() || !alive(p)) return;
                     AstaFx.damage(p, t, dmg, "bloody_massacre");
@@ -442,25 +433,35 @@ public final class SlashFx {
             }
             AstaFx.later(10, () -> { if (!framed[0] && alive(p)) { framed[0] = true; FxSend.impactFrame(sl, o.add(dir.scale(10)), 5, FxSend.FRAME_RIPPER_GREEN, 48); } });
 
+            // the upward cut: crescents lying low on the ground tip up one after another until the blade stands tall
+            for (int i = 0; i < 6; i++) {
+                final int ii = i;
+                AstaFx.later(i, () -> {
+                    double lean = Math.PI / 2 * ii / 5.0;   // 0 = flat on the ground, 90 deg = upright
+                    Vec3 uu = aimed ? up : rt.scale(Math.cos(lean)).add(new Vec3(0, 1, 0).scale(Math.sin(lean)));
+                    FxSend.slash(sl, GR, o.add(dir.scale(0.4 * ii)), dir, uu, 4.0f + ii * 0.5f, 14f + ii * 3f, 6, 0f, 2.0f);
+                    FxSend.slash(sl, S, o.add(dir.scale(0.4 * ii)), dir, uu, 4.0f + ii * 0.5f, 12f + ii * 3f, 5, 0f, 0.3f);
+                });
+            }
+
             // ONE colossal green slash, upright, rolling forward and growing; a thin white-hot core inside it
             int life = (int) (reach / speed) + 2;
-            FxSend.slash(sl, GR, o, dir, up, 5.0f, 24f, life, speed, 1.8f);
-            FxSend.slash(sl, S, o, dir, up, 5.0f, 22f, life, speed, 0.3f);
-            AstaFx.later(3, () -> FxSend.slash(sl, GR, o.add(dir.scale(-1.0)), dir, up, 3.5f, 17f, life - 2, speed, 1.2f));   // an echo of the cut behind it
-            FxSend.wall(sl, GR, o.add(dir.scale(2)), dir, up, 3.0f, 3.6f, -180, 180, 0.3f, life, 0, speed);
+            AstaFx.later(5, () -> {
+                FxSend.slash(sl, GR, o, dir, up, 8.0f, 42f, life, speed, 2.6f);
+                FxSend.slash(sl, S, o, dir, up, 8.0f, 40f, life, speed, 0.4f);
+                FxSend.slash(sl, GR, o.add(dir.scale(-1.2)), dir, up, 5.5f, 30f, life - 2, speed, 1.6f);   // an echo of the cut behind it
+            });
+            FxSend.wall(sl, GR, o.add(dir.scale(2)), dir, up, 3.5f, 4.5f, -180, 180, 0.3f, life, 0, speed);
 
-            // space cut open along the whole path: green rifts hang in the air where it passed
-            int n = 0;
-            for (double k = 6; k < reach; k += 9, n++) {
+            // the ground it passed over stays cut: a long green scar laid along the floor behind the blade
+            for (double k = 0; k < reach; k += 4) {
                 final double kk = k;
-                final int nn = n;
-                AstaFx.later((int) (k / speed), () -> {
-                    Vec3 base = aimed ? start.add(dir.scale(kk)) : FxLib.floor(sl, start.add(dir.scale(kk)));
-                    float grow = (float) (1.0 + kk / reach * 0.9);
-                    Vec3 c = base.add(up.scale((aimed ? 0 : 2.8) * grow));
-                    Vec3 lean = rt.scale(nn % 2 == 0 ? 0.35 : -0.35).add(up).normalize();
-                    FxSend.cracks(sl, GR, c, dir, lean, 4.0f * grow, 60, true, seed0 + nn * 13);
-                    FxSend.shake(sl, base, 0.4f, 6, 40);
+                AstaFx.later((int) (k / speed) + 5, () -> {
+                    Vec3 a0 = FxLib.floor(sl, start.add(dir.scale(kk))).add(0, 0.06, 0);
+                    Vec3 a1 = FxLib.floor(sl, start.add(dir.scale(kk + 4.4))).add(0, 0.06, 0);
+                    FxSend.trail(sl, GR, a0, a1, 1.1f, 60);
+                    FxSend.trail(sl, S, a0, a1, 0.18f, 50);
+                    FxSend.shake(sl, a0, 0.3f, 4, 30);
                 });
             }
         });
