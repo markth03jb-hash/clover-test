@@ -1,5 +1,5 @@
-"""Julius Novachrono's Time Grimoire: an anime-style cover (bold ink outlines, flat two-tone cel shading, gold metal),
-plus the leather, trim and inventory icon. An original design: a clock-face ring with a three-leaf clover over its hands."""
+"""Julius Novachrono's Time Grimoire: an anime-style cover (bold ink outlines, flat two-tone cel shading, cyan metal),
+plus the leather, trim and inventory icon. An original design: a clock-face ring over crossed clock hands (no clover)."""
 from PIL import Image, ImageDraw, ImageFilter
 import colorsys, math, os
 ROOT = os.path.join(os.path.dirname(__file__), '..', 'src/main/resources/assets/iron_spell_grimoire/textures/item')
@@ -7,8 +7,8 @@ M = os.path.join(ROOT, 'spell_book_models')
 S = 2                     # drawn at 2x, then scaled down
 W, H = 256 * S, 384 * S
 INK = (12, 12, 22, 255)
-NAVY, NAVY_SH, NAVY_HI = (30, 40, 98, 255), (17, 24, 64, 255), (48, 62, 132, 255)
-GOLD, GOLD_SH, GOLD_HI, IVORY = (240, 186, 58, 255), (176, 118, 30, 255), (255, 236, 150, 255), (255, 250, 228, 255)
+NAVY, NAVY_SH, NAVY_HI = (14, 44, 88, 255), (7, 24, 54, 255), (26, 74, 128, 255)
+GOLD, GOLD_SH, GOLD_HI, IVORY = (70, 205, 245, 255), (24, 120, 170, 255), (170, 240, 255, 255), (232, 250, 255, 255)   # cyan metal
 
 def P(x, y): return (x * S, y * S)
 
@@ -143,19 +143,12 @@ def front():
     # a faint glow of gold behind the dial (flat rings, cel style)
     for k, a in ((R + 22, 40), (R + 15, 70)):
         g = Image.new('RGBA', (W, H)); gd = ImageDraw.Draw(g)
-        circle(gd, cx, cy, k, fill=(255, 200, 80, a))
+        circle(gd, cx, cy, k, fill=(90, 215, 255, a))
         im = Image.alpha_composite(im, g); d = ImageDraw.Draw(im)
     dial(d, cx, cy, R)
     clock_hand(d, cx, cy, math.radians(-60), R * 0.52, 3.2, GOLD)        # ten o'clock
     clock_hand(d, cx, cy, math.radians(60), R * 0.78, 2.4, GOLD_HI)      # ten past
-    # the clover over the hands: three heart leaves and a stem
-    stroke(d, (cx + 2, cy + 6), (cx + 16, cy + 40), 9, INK)
-    stroke(d, (cx + 2, cy + 6), (cx + 16, cy + 40), 4.5, GOLD)
-    for ang in (-90, 30, 150):
-        leaf_fill(d, cx, cy, 40, math.radians(ang), INK, 3.0)   # one shared outline first, so leaves overlap cleanly
-    for ang in (-90, 30, 150):
-        shade_leaf(d, cx, cy, 40, math.radians(ang))
-    circle(d, cx, cy, 6, fill=GOLD_HI, outline=INK, w=2.5)
+    circle(d, cx, cy, 6, fill=GOLD_HI, outline=INK, w=2.5)   # just the hands and the hub - no clover
     # sharp anime glints on the metal
     for (x, y, s) in ((cx - 50, cy - 70, 7), (200, 40, 5), (60, 330, 4)):
         poly(d, [(x, y - s), (x + s * 0.25, y - s * 0.25), (x + s, y), (x + s * 0.25, y + s * 0.25), (x, y + s), (x - s * 0.25, y + s * 0.25), (x - s, y), (x - s * 0.25, y - s * 0.25)], IVORY, None)
@@ -185,17 +178,17 @@ def shift(im, hue, sm, vm):
 
 front().save(os.path.join(M, 'time_grimoire_front.png'))
 back().save(os.path.join(M, 'time_grimoire_back.png'))
-shift(Image.open(os.path.join(M, 'dark_grimoire_leather.png')), 0.64, 1.25, 1.05).save(os.path.join(M, 'time_grimoire_leather.png'))
-icon = shift(Image.open(os.path.join(ROOT, 'dark_grimoire.png')), 0.64, 1.3, 1.1)
+shift(Image.open(os.path.join(M, 'dark_grimoire_leather.png')), 0.54, 1.25, 1.05).save(os.path.join(M, 'time_grimoire_leather.png'))
+icon = shift(Image.open(os.path.join(ROOT, 'dark_grimoire.png')), 0.54, 1.3, 1.1)
 px = icon.load()   # a gold clock-dot in the middle of the inventory icon
 for (x, y) in ((7, 7), (8, 7), (7, 8), (8, 8)):
-    if px[x, y][3]: px[x, y] = (255, 200, 68, 255)
+    if px[x, y][3]: px[x, y] = (90, 225, 255, 255)
 icon.save(os.path.join(ROOT, 'time_grimoire.png'))
 t = Image.open(os.path.join(M, 'spatial_grimoire_trim.png')).convert('RGBA'); px = t.load()
 for y in range(t.height):
     for x in range(t.width):
         r, g, b, a = px[x, y]
         k = 0.45 + 0.6 * min(1.2, (r + g + b) / 450.0)
-        px[x, y] = (min(255, int(250 * k)), min(255, int(196 * k)), min(255, int(80 * k)), a)
+        px[x, y] = (min(255, int(110 * k)), min(255, int(225 * k)), min(255, int(255 * k)), a)
 t.save(os.path.join(M, 'time_grimoire_trim.png'))
 print('julius cover ok')

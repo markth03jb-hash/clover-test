@@ -56,7 +56,7 @@ import java.util.function.Consumer;
 public final class TimeFx {
     private TimeFx() {}
 
-    private static final int G = Fx.GOLD, S = Fx.SILVER;
+    private static final int G = Fx.TIME, S = Fx.SILVER;
     public static final String MODE = "chronostasis_field";
     private static final Vec3 UP = new Vec3(0, 1, 0);
     private static final double TAU = Math.PI * 2;
@@ -134,6 +134,13 @@ public final class TimeFx {
     public static void frozenMark(ServerLevel sl, LivingEntity t, int ticks) {
         FxPacket p = new FxPacket();
         p.shape = 54; p.id = t.getId(); p.life = ticks;
+        FxSend.sendNear(sl, t.position(), p);
+    }
+
+    /** The Ticking Snare's time bubble round one trapped target. */
+    public static void bubble(ServerLevel sl, LivingEntity t, int ticks) {
+        FxPacket p = new FxPacket();
+        p.shape = 57; p.id = t.getId(); p.life = ticks;
         FxSend.sendNear(sl, t.position(), p);
     }
 
@@ -381,7 +388,7 @@ public final class TimeFx {
             sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1.0f, 0.7f);
             sound(sl, p.position(), SoundEvents.BELL_RESONATE, 0.6f, 1.4f);
             if (p.getHealth() > before + 0.5f)
-                p.displayClientMessage(Component.literal("Rewound " + Math.round(p.getHealth() - before) / 2.0 + " hearts").withStyle(ChatFormatting.GOLD), true);
+                p.displayClientMessage(Component.literal("Rewound " + Math.round(p.getHealth() - before) / 2.0 + " hearts").withStyle(ChatFormatting.AQUA), true);
         });
     }
 
@@ -400,7 +407,7 @@ public final class TimeFx {
             if ("time_theft".equals(prev)) {   // Borrowed Time: the stolen seconds come off every cooldown
                 int sec = Math.min(8, STOLEN.getOrDefault(p.getUUID(), 2));
                 hasten(p, sec * 20, true);
-                p.displayClientMessage(Component.literal("Borrowed Time: -" + sec + "s on every cooldown").withStyle(ChatFormatting.GOLD), true);
+                p.displayClientMessage(Component.literal("Borrowed Time: -" + sec + "s on every cooldown").withStyle(ChatFormatting.AQUA), true);
                 sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1.0f, 1.8f);
             }
             for (int t = 1; t <= T; t++) {   // every cooldown runs twice as fast; afterimages trail behind you
@@ -446,6 +453,7 @@ public final class TimeFx {
                 for (LivingEntity e : Kit.near(sl, p, c.add(0, 0.8, 0), R + 0.3)) {
                     hit(p, e, power, "ticking_snare");
                     TimeStop.freeze(p, e, echo ? 25 : 40, false, null);
+                    bubble(sl, e, echo ? 25 : 40);
                 }
                 Fx.flash(sl, c.add(0, 0.5, 0), 1.4f);
             });
@@ -561,7 +569,7 @@ public final class TimeFx {
             Fx.flash(sl, p.position().add(0, 1, 0), 1.0f);
             sound(sl, p.position(), SoundEvents.TRIDENT_RETURN, 1.0f, 1.0f);
             sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1.0f, 1.2f);
-            p.displayClientMessage(Component.literal("Rewound " + Math.round(back) / 2.0 + " hearts").withStyle(ChatFormatting.GOLD), true);
+            p.displayClientMessage(Component.literal("Rewound " + Math.round(back) / 2.0 + " hearts").withStyle(ChatFormatting.AQUA), true);
         });
     }
 
@@ -664,7 +672,7 @@ public final class TimeFx {
             sound(sl, c, SoundEvents.BEACON_DEACTIVATE, 1.6f, 0.5f);
             sound(sl, c, SoundEvents.BELL_BLOCK, 1.6f, 0.5f);
             sound(sl, c, SoundEvents.AMETHYST_BLOCK_RESONATE, 1.4f, 0.5f);
-            p.displayClientMessage(Component.literal(sovereign ? "Eternal Sovereign" : "Zenith Hour").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
+            p.displayClientMessage(Component.literal(sovereign ? "Eternal Sovereign" : "Zenith Hour").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), true);
             if (stopped == 0) Fx.flash(sl, c.add(0, 1, 0), 2f);
             if (sovereign) for (int i = 0; i < 12; i++) {   // twelve giant clock hands strike the stopped field, one by one
                 final int ii = i;
@@ -689,7 +697,7 @@ public final class TimeFx {
                 p.clearFire();
                 screen(p, 16, 1);
                 column(sl, p.position(), 1.2f, 2.5f, 16, 4, 2, p, 1.4f, -0.15f);
-                p.displayClientMessage(Component.literal("Time rewinds for you").withStyle(ChatFormatting.GOLD), true);
+                p.displayClientMessage(Component.literal("Time rewinds for you").withStyle(ChatFormatting.AQUA), true);
             }
         });
     }

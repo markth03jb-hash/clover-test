@@ -143,7 +143,7 @@ public final class ModeHudOverlay {
             case "bedrock_armor" -> 0xFFC8A064;
             case "beast_instinct" -> 0xFF4DDCB0;
             case "nean_armor" -> 0xFFFFB4DC;
-            case "chronostasis_field" -> 0xFFFFD36B;
+            case "chronostasis_field" -> 0xFF6BE3FF;
             case "surpassing_limits" -> 0xFFFFF4C0;
             case "thread_cocoon", "battle_dress", "thread_cage", "thread_net" -> 0xFFFF8CC6;
             case "red_thread_of_fate" -> 0xFFE0302A;

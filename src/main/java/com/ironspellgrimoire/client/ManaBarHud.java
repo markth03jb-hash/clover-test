@@ -50,7 +50,7 @@ public final class ManaBarHud {
             {0xD8B878, 0x8A6034, 0xD8B070, 0x140E07, 0xEBD0A0},   // Sol
             {0xE6D08A, 0x1E9C7C, 0x80F0D0, 0x061511, 0xBFFFEA},   // Vetto
             {0xFFF0F6, 0xE0709E, 0xFFC4DC, 0x1C0C16, 0xFFD6EA},   // Charmy
-            {0xF4E6B8, 0xD9A63A, 0xFFE8A0, 0x070A1C, 0xFFF0C8},   // Julius
+            {0xC8F2FF, 0x22B8E8, 0x8CE6FF, 0x04101C, 0xE0FAFF},   // Julius
     };
     private static final int[] LEAVES = {5, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
 
