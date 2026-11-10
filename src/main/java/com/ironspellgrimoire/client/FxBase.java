@@ -68,7 +68,8 @@ abstract class FxBase {
       {0.1F, 0.03F, 0.18F},    // 27 beast: deep violet
       {0.55F, 0.5F, 0.55F},    // 28 cotton
       {0.02F, 0.13F, 0.22F},   // 29 Julius's time: deep clockwork blue
-      {0.26F, 0.15F, 0.07F}    // 30 bark (the World Tree's wood)
+      {0.26F, 0.15F, 0.07F},   // 30 bark (the World Tree's wood)
+      {0.012F, 0.012F, 0.016F} // 31 black slime (Rien's Caduceus): glossy ink-black
    };
    static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
@@ -95,7 +96,8 @@ abstract class FxBase {
       {0.78F, 0.38F, 1.0F},    // 27 beast: feral violet
       {1.0F, 0.97F, 0.99F},    // 28 cotton: clean white
       {0.3F, 0.86F, 1.0F},     // 29 Julius: cyan
-      {0.66F, 0.44F, 0.22F}    // 30 bark: warm brown
+      {0.66F, 0.44F, 0.22F},   // 30 bark: warm brown
+      {0.62F, 0.62F, 0.68F}    // 31 black slime: a cold grey-white sheen on the black
    };
    /** Overall strength of every world effect. Lower = subtler. */
    static final float FX_ALPHA = 1.0F;
@@ -405,6 +407,11 @@ abstract class FxBase {
             if (edge) m *= 0.74F;
             if (h > 0.92F) m *= 0.5F;
             return new float[]{m, m * 0.97F, m * 0.92F};
+         }
+         case 31 -> {   // black slime: smooth and glossy, a wet highlight here and there
+            m = 0.85F + 0.15F * h;
+            if (h > 0.9F) m *= 3.0F;
+            return new float[]{m, m, m * 1.05F};
          }
          case 30 -> {   // bark: long vertical grain, rings, dark knots
             float st = h2(i, 0, salt + 3);

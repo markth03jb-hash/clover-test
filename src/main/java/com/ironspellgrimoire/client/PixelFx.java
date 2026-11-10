@@ -114,7 +114,8 @@ public final class PixelFx {
             {1.0F, 0.38F, 0.1F}, {1.0F, 0.72F, 0.18F}, {0.45F, 0.95F, 0.38F}, {1.0F, 0.3F, 0.36F}, {0.86F, 0.64F, 0.36F},
             {0.78F, 0.38F, 1.0F}, {1.0F, 0.97F, 0.99F},
             {0.3F, 0.88F, 1.0F},
-            {0.66F, 0.46F, 0.24F}
+            {0.66F, 0.46F, 0.24F},
+            {0.55F, 0.55F, 0.62F}
     };
     /** The colour of the solid (non-glowing) sprites: black anti magic and darkness, steel, gold, mercury, bone. */
     private static final float[][] SOLID = {
@@ -126,7 +127,8 @@ public final class PixelFx {
             {0.12F, 0.02F, 0.01F}, {0.2F, 0.12F, 0.02F}, {0.05F, 0.14F, 0.05F}, {0.08F, 0.0F, 0.02F}, {0.34F, 0.24F, 0.14F},
             {0.12F, 0.04F, 0.2F}, {0.97F, 0.97F, 1.0F},
             {0.02F, 0.1F, 0.2F},
-            {0.2F, 0.11F, 0.05F}
+            {0.2F, 0.11F, 0.05F},
+            {0.015F, 0.015F, 0.02F}
     };
 
     static final int DARK = 0, FLAME = 1, BOLT = 2, WIND = 3, METAL = 4, BONE = 5, LIGHT = 6;
@@ -134,7 +136,7 @@ public final class PixelFx {
     /** Which kind of magic a palette is - it decides what its sprites do. */
     static int element(int pal) {
         return switch (pal) {
-            case 0, 1, 9, 10 -> DARK;
+            case 0, 1, 9, 10, 31 -> DARK;
             case 2, 12, 14, 22, 23 -> FLAME;
             case 24 -> WIND;
             case 26 -> METAL;
@@ -409,9 +411,9 @@ public final class PixelFx {
      * and claws; 10 Yami: dark crescents and smoke puffs; 11 Nozel: mercury drops; 12 blue fire: wisps;
      * 13 Luck: zigzag bolts and diamonds; 14 Mereoleona: curved lion-mane flame claws; 15 Zenon: little bones.)
      */
-    private static final int[] LONG = {K_BLADE, K_MOON, K_TONGUE, K_STREAK, K_BOLT, K_STREAK, K_STREAK, K_STREAK, K_STREAK, K_BARB, K_MOON, K_STREAK, K_WISP, K_BOLT, K_CLAW, K_STREAK, K_STREAK, K_STREAK, K_BLADE, K_STREAK, K_STREAK, K_STREAK, K_TONGUE, K_CLAW, K_STREAK, K_BLADE, K_SHARD, K_CLAW, K_PUFF, K_STREAK, K_STREAK};
-    private static final int[] BIT = {K_SHARD, K_SHARD, K_EMBER, K_DIAMOND, K_CROSS, K_FEATHER, K_STAR, K_PLATE, K_RING, K_CROSS, K_PUFF, K_DROP, K_EMBER, K_DIAMOND, K_EMBER, K_BONE, K_CROSS, K_STAR, K_SHARD, K_DROP, K_DIAMOND, K_RING, K_EMBER, K_EMBER, K_FEATHER, K_SHARD, K_PLATE, K_BONE, K_PUFF, K_STAR, K_FEATHER};
-    private static final int[] SPEC = {K_CROSS, K_PUFF, K_CROSS, K_STAR, K_STAR, K_MOON, K_CROSS, K_CROSS, K_STAR, K_CLAW, K_WISP, K_STAR, K_TONGUE, K_STAR, K_TONGUE, K_SHARD, K_RING, K_RING, K_CROSS, K_STAR, K_STAR, K_RING, K_TONGUE, K_TONGUE, K_STAR, K_CROSS, K_CROSS, K_CLAW, K_STAR, K_RING, K_SHARD};
+    private static final int[] LONG = {K_BLADE, K_MOON, K_TONGUE, K_STREAK, K_BOLT, K_STREAK, K_STREAK, K_STREAK, K_STREAK, K_BARB, K_MOON, K_STREAK, K_WISP, K_BOLT, K_CLAW, K_STREAK, K_STREAK, K_STREAK, K_BLADE, K_STREAK, K_STREAK, K_STREAK, K_TONGUE, K_CLAW, K_STREAK, K_BLADE, K_SHARD, K_CLAW, K_PUFF, K_STREAK, K_STREAK, K_TONGUE};
+    private static final int[] BIT = {K_SHARD, K_SHARD, K_EMBER, K_DIAMOND, K_CROSS, K_FEATHER, K_STAR, K_PLATE, K_RING, K_CROSS, K_PUFF, K_DROP, K_EMBER, K_DIAMOND, K_EMBER, K_BONE, K_CROSS, K_STAR, K_SHARD, K_DROP, K_DIAMOND, K_RING, K_EMBER, K_EMBER, K_FEATHER, K_SHARD, K_PLATE, K_BONE, K_PUFF, K_STAR, K_FEATHER, K_DROP};
+    private static final int[] SPEC = {K_CROSS, K_PUFF, K_CROSS, K_STAR, K_STAR, K_MOON, K_CROSS, K_CROSS, K_STAR, K_CLAW, K_WISP, K_STAR, K_TONGUE, K_STAR, K_TONGUE, K_SHARD, K_RING, K_RING, K_CROSS, K_STAR, K_STAR, K_RING, K_TONGUE, K_TONGUE, K_STAR, K_CROSS, K_CROSS, K_CLAW, K_STAR, K_RING, K_SHARD, K_DROP};
 
     /** One sprite of a palette's own kind of magic at {@code at}, carried by {@code drift}, lying along {@code axis}. */
     static void one(int pal, Vec3 at, Vec3 drift, Vec3 axis, double size) {
@@ -1221,7 +1223,7 @@ public final class PixelFx {
     /** Aura-outline colours (AuraOutlineLayer) to palettes. */
     private static final int[] OUTLINE_PAL = {10, 9, 11, 13, 14, 0, 15, 6, 9};
     /** Grimoire (GrimoireMastery.BOOKS order) to palette: Asta, Yami, Yuno, Nozel, Magna, Luck, Mereoleona, Zenon, Klaus. */
-    private static final int[] BOOK_PAL = {0, 10, 5, 11, 2, 13, 14, 15, 7, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29};
+    private static final int[] BOOK_PAL = {0, 10, 5, 11, 2, 13, 14, 15, 7, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 18, 31};
 
     /** Ki Sense colours by creature: hostile red, passive green (wind), neutral yellow (lightning), players blue. */
     private static final int[] KI_PAL = {14, 5, 4, 13};

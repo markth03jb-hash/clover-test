@@ -65,35 +65,63 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
         return seq[Math.floorMod((int) ((now - f[0]) / 5.0), seq.length)];
     }
 
+    /** True while this player wears the Caduceus (Rien): its rod is always in the main hand. */
+    private static boolean wearsCaduceus(net.minecraft.world.entity.player.Player p) {
+        try {
+            net.minecraft.world.item.ItemStack s = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            return s != null && s.is(com.ironspellgrimoire.registry.AddonItemRegistry.CADUCEUS_GRIMOIRE.get());
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** Swords, lances and the like carry on along the line of the arm, tilted a little up from it - so a thrust points at
+     *  what it stabs and a swing follows the arm's arc (a vanilla item sits square to the fist, which looked wrong). */
+    private static final float ALONG_ARM = 62F;
+
+    private static boolean alongArm(int k) { return k != VIAL && k != BOW && k != FISTS; }
+
     // ------------------------------------------------------------------ third person
     @Override
     public void render(PoseStack ps, MultiBufferSource buf, int light, AbstractClientPlayer p, float limbSwing, float limbSwingAmount,
                        float pt, float age, float netHeadYaw, float headPitch) {
-        double[] f = ACTIVE.get(p.getId());
-        if (f == null || p.isInvisible()) return;
+        if (p.isInvisible()) return;
         double now = p.level().getGameTime() + pt;
-        if (now > f[1] + 3) { ACTIVE.remove(p.getId()); return; }
-        float g = grow(f, now);
-        if (g <= 0.01F) return;
-        int kind = kindAt(f, now);
-        boolean gold = f[3] > 0.5;
+        double[] f = ACTIVE.get(p.getId());
+        if (f != null && now > f[1] + 3) { ACTIVE.remove(p.getId()); f = null; }
+        boolean rien = wearsCaduceus(p);
+        if (f == null && !rien) return;
         VertexConsumer vc = buf.getBuffer(RenderType.entityTranslucentEmissive(WHITE));
         PlayerModel<AbstractClientPlayer> m = getParentModel();
-        hand(ps, vc, m.rightArm, -1.0F / 16.0F, kind, gold, g, now, true, f);
-        if (twoHanded(kind)) hand(ps, vc, m.leftArm, 1.0F / 16.0F, kind, gold, g, now, false, f);
-        else if (gold && kind != VIAL) hand(ps, vc, m.leftArm, 1.0F / 16.0F, VIAL, true, 1F, now, false, null);   // Rien keeps the Caduceus rods in the other hand
-    }
-
-    private static boolean twoHanded(int k) { return k == TWIN || k == FISTS || k == DAGGERS || k == BOW; }
-
-    private static void hand(PoseStack ps, VertexConsumer vc, ModelPart arm, float x, int kind, boolean gold, float g, double now, boolean right, double[] f) {
+        float g = f == null ? 0F : grow(f, now);
+        int kind = f == null ? 0 : kindAt(f, now);
+        boolean slime = f != null ? f[3] > 0.5 : rien;
+        // the right hand: Rien always holds the Caduceus, and his weapons pour out of it
         ps.pushPose();
-        arm.translateAndRotate(ps);
-        ps.translate(x, 0.6F, -0.03F);   // in the fist
-        if (f != null) motion(ps, f, now, kind, right, 1F);
-        draw(ps, vc, kind, gold, g, now, right);
+        m.rightArm.translateAndRotate(ps);
+        ps.translate(-1.0F / 16.0F, 0.6F, -0.03F);
+        if (rien) caduceus(ps, vc, now, f != null && g > 0.01F && kind != VIAL ? g : 0F);
+        if (f != null && g > 0.01F && kind != VIAL) {
+            ps.pushPose();
+            if (alongArm(kind)) ps.mulPose(Axis.XP.rotationDegrees(ALONG_ARM));
+            motion(ps, f, now, kind, true, 1F);
+            draw(ps, vc, kind, slime, g, now, true);
+            ps.popPose();
+        }
         ps.popPose();
+        // the left hand: only the two-handed forms (twin sabres, daggers, the bow)
+        if (f != null && g > 0.01F && twoHanded(kind)) {
+            ps.pushPose();
+            m.leftArm.translateAndRotate(ps);
+            ps.translate(1.0F / 16.0F, 0.6F, -0.03F);
+            if (alongArm(kind)) ps.mulPose(Axis.XP.rotationDegrees(ALONG_ARM));
+            motion(ps, f, now, kind, false, 1F);
+            draw(ps, vc, kind, slime, g, now, false);
+            ps.popPose();
+        }
     }
+
+    private static boolean twoHanded(int k) { return k == TWIN || k == DAGGERS || k == BOW; }
 
     // ------------------------------------------------------------------ first person
     @SubscribeEvent
@@ -101,26 +129,45 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
         if (e.getHand() != InteractionHand.MAIN_HAND) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
-        double[] f = ACTIVE.get(mc.player.getId());
-        if (f == null) return;
         double now = mc.level.getGameTime() + e.getPartialTick();
-        if (now > f[1] + 3) return;
-        float g = grow(f, now);
-        if (g <= 0.01F) return;
-        int kind = kindAt(f, now);
-        boolean gold = f[3] > 0.5;
+        double[] f = ACTIVE.get(mc.player.getId());
+        if (f != null && now > f[1] + 3) f = null;
+        boolean rien = wearsCaduceus(mc.player);
+        if (f == null && !rien) return;
+        float g = f == null ? 0F : grow(f, now);
+        int kind = f == null ? 0 : kindAt(f, now);
+        boolean slime = f != null ? f[3] > 0.5 : rien;
         VertexConsumer vc = e.getMultiBufferSource().getBuffer(RenderType.entityTranslucentEmissive(WHITE));
         PoseStack ps = e.getPoseStack();
-        for (int side = 0; side < (twoHanded(kind) ? 2 : 1); side++) {
+        float swing = e.getSwingProgress();
+        for (int side = 0; side < (f != null && twoHanded(kind) ? 2 : 1); side++) {
             ps.pushPose();
-            ps.translate(side == 0 ? 0.5F : -0.5F, -0.48F, -0.72F);
-            ps.mulPose(Axis.YP.rotationDegrees(side == 0 ? -8F : 8F));
-            ps.mulPose(Axis.XP.rotationDegrees(180.0F + (kind == BOW ? 90F : 12F)));   // arm space: +y down, blade toward -z
-            ps.scale(0.8F, 0.8F, 0.8F);
-            motion(ps, f, now, kind, side == 0, 1.4F);   // first person has no arm animation: the weapon does all the moving
-            draw(ps, vc, kind, gold, g, now, side == 0);
+            // low in the corner of the view, where the hand is; the weapon points away from you into the screen
+            ps.translate(side == 0 ? 0.42F : -0.42F, -0.42F, -0.62F);
+            ps.mulPose(Axis.YP.rotationDegrees(side == 0 ? 6F : -6F));
+            ps.mulPose(Axis.XP.rotationDegrees(8F - swing * 40F));
+            if (side == 0 && rien) caduceus(ps, vc, now, f != null && g > 0.01F && kind != VIAL ? g : 0F);
+            if (f != null && g > 0.01F && kind != VIAL) {
+                ps.pushPose();
+                ps.scale(0.75F, 0.75F, 0.75F);
+                motion(ps, f, now, kind, side == 0, 1.3F);
+                draw(ps, vc, kind, slime, g, now, side == 0);
+                ps.popPose();
+            }
             ps.popPose();
         }
+    }
+
+    /** The Caduceus in the fist, sized to the hand; {@code pour} > 0 while slime is coming out of its tip to make a weapon. */
+    private static void caduceus(PoseStack ps, VertexConsumer vc, double now, float pour) {
+        ps.pushPose();
+        ps.scale(0.5F, 0.5F, 0.5F);
+        vial(vc, ps.last().pose(), ps.last().normal(), new Mat(1, now), now);
+        if (pour > 0.01F) {   // a swelling bead of black slime at the rod's tip, feeding the weapon
+            float r = 0.08F + 0.06F * pour + (float) Math.sin(now * 0.8) * 0.015F;
+            sphere(vc, ps.last().pose(), ps.last().normal(), new Mat(4, now), 0, 0, -0.78F, r);
+        }
+        ps.popPose();
     }
 
     // ------------------------------------------------------------------ the weapon's own motion, timed to the skill's blows
@@ -174,17 +221,37 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
     private static void draw(PoseStack ps, VertexConsumer vc, int kind, boolean gold, float g, double now, boolean right) {
         Matrix4f m = ps.last().pose();
         Matrix3f n = ps.last().normal();
-        Mat mat = new Mat(gold ? 1 : 0, now);
+        Mat mat = new Mat(gold ? 4 : 0, now);   // 'gold' = Rien's: his weapons are black slime
         float L = g;   // everything grows out of the fist (gold pours out of the vial)
         switch (kind) {
             case LANCE -> {
-                // Don Quixote's lance: a long fluted cone with a round vamplate guarding the hand, the grip behind it
-                tube(vc, m, n, mat, 0, 0, 0.28F, 0, 0, -0.05F, 0.05F, 0.05F, 0.05F, 0.05F, 6);                      // grip (behind the fist)
-                tube(vc, m, n, mat, 0, 0, -0.05F, 0, 0, -0.18F, 0.06F, 0.06F, 0.34F, 0.34F, 12);                   // vamplate, flaring
-                tube(vc, m, n, mat, 0, 0, -0.18F, 0, 0, -0.22F, 0.34F, 0.34F, 0.12F, 0.12F, 12);
-                tube(vc, m, n, mat, 0, 0, -0.22F, 0, 0, -0.22F - 2.6F * L, 0.12F, 0.12F, 0.0F, 0.0F, 8);           // the cone
-                ring(vc, m, n, mat, 0, 0, -0.22F - 0.8F * L, 0.085F, 0.02F);
-                ring(vc, m, n, mat, 0, 0, -0.22F - 1.5F * L, 0.055F, 0.015F);
+                // Don Quixote's lance (our own design): a long grip with a spiked pommel and wrapped bands, a thorned cup
+                // guard, then the body - a long cone with three ridges winding round it and a collar - to a narrow point
+                tube(vc, m, n, mat, 0, 0, 0.42F, 0, 0, 0.5F, 0.04F, 0.04F, 0F, 0F, 6);
+                tube(vc, m, n, mat, 0, 0, 0.38F, 0, 0, -0.05F, 0.042F, 0.042F, 0.038F, 0.038F, 8);
+                for (int w = 0; w < 4; w++) ring(vc, m, n, mat, 0, 0, 0.32F - w * 0.1F, 0.045F, 0.012F);
+                tube(vc, m, n, mat, 0, 0, -0.05F, 0, 0, -0.16F, 0.05F, 0.05F, 0.26F, 0.26F, 12);
+                tube(vc, m, n, mat, 0, 0, -0.16F, 0, 0, -0.2F, 0.26F, 0.26F, 0.11F, 0.11F, 12);
+                for (int k = 0; k < 6; k++) {   // thorns round the guard's rim, curving back toward the hand
+                    double a = Math.PI * 2 * k / 6;
+                    float cx = (float) Math.cos(a), cy = (float) Math.sin(a);
+                    tube(vc, m, n, mat, cx * 0.24F, cy * 0.24F, -0.15F, cx * 0.36F, cy * 0.36F, -0.02F, 0.025F, 0.025F, 0F, 0F, 4);
+                }
+                float len = 2.2F * L, z0 = -0.2F;
+                tube(vc, m, n, mat, 0, 0, z0, 0, 0, z0 - len, 0.11F, 0.11F, 0.0F, 0.0F, 10);
+                for (int r = 0; r < 3; r++) {   // three ridges winding round it, narrowing with the cone
+                    float px = 0, py = 0, pz = z0;
+                    for (int i = 0; i <= 14; i++) {
+                        float t = i / 14F, rad = 0.11F * (1F - t) + 0.008F;
+                        double a = r * Math.PI * 2 / 3 + t * Math.PI * 2.2;
+                        float x = (float) Math.cos(a) * rad, y = (float) Math.sin(a) * rad, z = z0 - len * t * 0.92F;
+                        float w0 = 0.02F * (1F - t * 0.7F);
+                        if (i > 0) tube(vc, m, n, mat, px, py, pz, x, y, z, w0, w0, w0 * 0.8F, w0 * 0.8F, 4);
+                        px = x; py = y; pz = z;
+                    }
+                }
+                ring(vc, m, n, mat, 0, 0, z0 - len * 0.12F, 0.1F, 0.022F);
+                drips(vc, m, n, mat, now, z0, z0 - len * 0.9F, 0.11F);
             }
             case BOW -> {
                 // a recurved bow of hardblood held across the fist, the string a thin red line
@@ -224,6 +291,7 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
                 sphere(vc, m, n, mat, 0, 0, 0.34F, 0.07F);
                 tube(vc, m, n, mat, -0.34F, 0, -0.04F, 0.34F, 0, -0.04F, 0.05F, 0.05F, 0.05F, 0.05F, 6);
                 blade(vc, m, n, mat, -0.06F, -0.06F - 2.2F * L, 0.18F, 0.1F, 0.035F);
+                if (!gold) drips(vc, m, n, mat, now, -0.1F, -0.06F - 2.0F * L, 0.1F);
             }
             case VIAL -> vial(vc, m, n, mat, now);
             case WHIP -> {
@@ -291,6 +359,12 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
                 float k = 0.45F + 0.55F * shade + rip;
                 return new float[]{Math.min(1F, 0.98F * k), Math.min(1F, 0.72F * k + rip * 0.3F), Math.min(1F, 0.2F * k + rip * 0.5F)};
             }
+            if (style == 4) {   // black slime: ink-black, glossy, a cold sheen sliding along it as it moves
+                float rip = (float) Math.pow(Math.max(0, Math.sin(now * 0.5 - along * 5.0)), 6.0) * 0.5F;
+                float spec = shade > 0.86F ? (shade - 0.86F) * 5F : 0F;
+                float v = 0.02F + 0.05F * shade + spec * 0.55F + rip * 0.35F;
+                return new float[]{v, v, Math.min(1F, v * 1.12F)};
+            }
             if (style == 2 || style == 3) {   // the Caduceus rods: black lacquer, and white enamel
                 float spec = shade > 0.88F ? (shade - 0.88F) * 6F : 0F;
                 float base = style == 2 ? 0.1F : 0.78F, k = 0.45F + 0.55F * shade;
@@ -348,6 +422,18 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
             if (i == 8) wb = 0.004F;
             tube(vc, m, n, mat, px, 0, pz, x, 0, z, wa, 0.02F, wb, 0.012F, 4);
             px = x; pz = z;
+        }
+    }
+
+    /** Drops of blood (or slime) creeping down the weapon from base to tip, swelling and falling off the end. */
+    private static void drips(VertexConsumer vc, Matrix4f m, Matrix3f n, Mat mat, double now, float z0, float z1, float r0) {
+        for (int i = 0; i < 3; i++) {
+            double t = ((now * 0.035) + i / 3.0) % 1.0;
+            float z = (float) (z0 + (z1 - z0) * t);
+            float rad = r0 * (1F - (float) t) + 0.012F;
+            float sz = 0.018F + 0.02F * (float) t;
+            double a = i * 2.1;
+            sphere(vc, m, n, mat, (float) Math.cos(a) * rad, (float) Math.sin(a) * rad + sz * 0.5F, z, sz);
         }
     }
 

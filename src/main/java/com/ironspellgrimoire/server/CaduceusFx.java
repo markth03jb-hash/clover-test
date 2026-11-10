@@ -28,7 +28,7 @@ import net.minecraftforge.network.PacketDistributor;
 public final class CaduceusFx {
     private CaduceusFx() {}
 
-    static final int G = Fx.GOLD, W = Fx.SILVER;
+    static final int G = 31, W = Fx.SILVER;   // G: black slime (palette 31), W: the thin cold sheen on it
 
     static void held(ServerPlayer p, int kind, int life) { held(p, kind, life, 0, 0, 0); }
 
@@ -40,14 +40,40 @@ public final class CaduceusFx {
         AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
-    /** The vial pours: a short ribbon of gold falling from the hand and the pour's sound, then the metal sets with a chime. */
+    /** The Caduceus spills: a bead of black slime swells at the rod's tip and a thick rope of it pours out, with the
+     *  sound of something heavy and wet; then it sets with a dull knock. */
     private static void pour(ServerLevel sl, ServerPlayer p) {
-        Vec3 h = Kit.hand(p);
-        FxSend.trail(sl, G, h, h.add(p.getLookAngle().scale(0.8)).add(0, -0.3, 0), 0.12f, 6);
-        FxSend.ring(sl, G, h, 0.05f, 0.6f, 0.04f, 6);
-        sound(sl, h, SoundEvents.BUCKET_EMPTY_LAVA, 0.7f, 1.3f);
-        sound(sl, h, SoundEvents.CHAIN_PLACE, 0.8f, 1.0f);
-        AstaFx.later(3, () -> sound(sl, h, SoundEvents.AMETHYST_BLOCK_CHIME, 0.7f, 1.2f));
+        Vec3 h = tip(p);
+        FxSend.spike(sl, G, h, p.getLookAngle(), 0.5f, 0.16f, 8, 0, FxPacket.POP);
+        FxSend.trail(sl, G, h, h.add(p.getLookAngle().scale(0.7)).add(0, -0.25, 0), 0.16f, 8);
+        drops(sl, h, 3);
+        sound(sl, h, SoundEvents.BUCKET_EMPTY_LAVA, 0.6f, 0.7f);
+        sound(sl, h, SoundEvents.SLIME_SQUISH, 0.8f, 0.6f);
+        AstaFx.later(3, () -> sound(sl, h, SoundEvents.SLIME_BLOCK_PLACE, 0.8f, 0.6f));
+    }
+
+    /** Where the Caduceus's tip is: just in front of the right hand. */
+    static Vec3 tip(ServerPlayer p) {
+        Vec3 look = p.getLookAngle();
+        return Kit.hand(p).add(look.scale(0.45));
+    }
+
+    /** A rope of black slime lashing out of the Caduceus to {@code to}: everything Rien makes comes out of it. */
+    static void from(ServerLevel sl, ServerPlayer p, Vec3 to, int life) {
+        Vec3 h = tip(p);
+        Vec3 mid = h.add(to).scale(0.5).add(0, 0.25 + h.distanceTo(to) * 0.06, 0);
+        FxSend.trail(sl, G, h, mid, 0.12f, life);
+        FxSend.trail(sl, G, mid, to, 0.09f, life);
+        FxSend.trail(sl, W, h, mid, 0.02f, Math.max(2, life - 2));
+    }
+
+    /** A few drops of slime falling off. */
+    static void drops(ServerLevel sl, Vec3 at, int n) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        for (int k = 0; k < n; k++) {
+            Vec3 o = at.add(r.nextDouble(-0.15, 0.15), 0, r.nextDouble(-0.15, 0.15));
+            FxSend.spike(sl, G, o, new Vec3(0, -1, 0), 0.18f, 0.05f, 10, 0, FxPacket.POP, 0, new Vec3(0, -0.1, 0), 9);
+        }
     }
 
     private static float pow(ServerPlayer p, float base) {
@@ -78,6 +104,7 @@ public final class CaduceusFx {
                     Vec3 dir = rotY(look, a);
                     Vec3 at = c.add(dir.scale(3.4));
                     FxSend.slash(sl, G, at, dir, rightOf(dir), 0.6f, 1.4f, 5, 0, 0.5f);
+                    from(sl, p, at, 4);
                     FxSend.trail(sl, G, c.add(rotY(look, a - 0.43).scale(3.4)), at, 0.1f, 6);
                 });
             }
@@ -104,7 +131,7 @@ public final class CaduceusFx {
                 if (!alive(p)) return;
                 Vec3 look = p.getLookAngle(), a = p.getEyePosition().add(0, -0.3, 0), b = a.add(look.scale(5.0));
                 Vec3 off = rightOf(flat(look)).scale((ii - 1) * 0.25);
-                FxSend.spike(sl, G, a.add(look.scale(0.6)).add(off), look, 4.2f, 0.05f, 5, 0, FxPacket.EXTEND);
+                FxSend.spike(sl, G, tip(p).add(off), look, 4.6f, 0.06f, 5, 0, FxPacket.EXTEND);
                 FxSend.trail(sl, W, a.add(off), b.add(off), 0.06f, 5);
                 FxSend.ring(sl, G, b, 0.05f, ii == 2 ? 1.2f : 0.6f, 0.03f, 5);
                 sound(sl, a, SoundEvents.PLAYER_ATTACK_SWEEP, 0.6f, 1.8f);
@@ -132,7 +159,9 @@ public final class CaduceusFx {
             if (!alive(p)) return;
             Vec3 look = flat(p.getLookAngle()), rt = rightOf(look);
             Vec3 c = p.position().add(0, 1.0, 0).add(look.scale(1.0));
+            from(sl, p, c, 6);
             FxSend.slash(sl, G, c, look, rt.add(0, -0.25, 0).normalize(), 3.2f, 6.0f, 9, 0.1f, 1.6f);
+            drops(sl, c.add(look.scale(2)), 5);
             FxSend.slash(sl, W, c.add(0, 0.05, 0), look, rt.add(0, -0.25, 0).normalize(), 3.0f, 5.6f, 6, 0.1f, 0.35f);
             FxSend.impactFrame(sl, c.add(look.scale(3)), 3, FxSend.FRAME_GOLD, 20);
             sound(sl, c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.5f);
@@ -155,7 +184,7 @@ public final class CaduceusFx {
         AstaFx.later(8, () -> {
             if (!alive(p)) return;
             ThreadLocalRandom r = ThreadLocalRandom.current();
-            Vec3 look = p.getLookAngle(), eye = p.getEyePosition().add(0, -0.2, 0);
+            Vec3 look = p.getLookAngle(), eye = tip(p);
             sound(sl, eye, SoundEvents.FIREWORK_ROCKET_BLAST, 1.2f, 0.6f);
             sound(sl, eye, SoundEvents.CROSSBOW_SHOOT, 1f, 1.3f);
             FxSend.ring(sl, G, eye.add(look.scale(1.2)), 0.1f, 1.0f, 0.06f, 5);
@@ -182,7 +211,8 @@ public final class CaduceusFx {
             if (!alive(p)) return;
             Vec3 look = p.getLookAngle(), a = p.getEyePosition();
             sound(sl, a, SoundEvents.TRIDENT_THROW, 1.2f, 1.1f);
-            fly(p, sl, a.add(look.scale(1.0)), look, pow(p, power), 0);
+            from(sl, p, tip(p).add(look.scale(1.2)), 4);
+            fly(p, sl, tip(p), look, pow(p, power), 0);
         });
     }
 
@@ -207,11 +237,11 @@ public final class CaduceusFx {
     public static void shell(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         pour(sl, p);
-        aura(p, 9, 80);
+        aura(p, 11, 80);
         FxSend.ring(sl, G, p.position().add(0, 0.1, 0), 0.2f, 1.4f, 0.06f, 10);
         TimedModifiers.apply(p, Attributes.ARMOR, java.util.UUID.fromString("e3b61c20-7a4d-4f8e-9b11-0d1a6c900120"), "Golden Shell", 14, AttributeModifier.Operation.ADDITION, 80);
         TimedModifiers.apply(p, Attributes.ARMOR_TOUGHNESS, java.util.UUID.fromString("e3b61c20-7a4d-4f8e-9b11-0d1a6c900121"), "Golden Shell", 8, AttributeModifier.Operation.ADDITION, 80);
-        sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_GOLD, 1.2f, 0.8f);
+        sound(sl, p.position(), SoundEvents.SLIME_BLOCK_PLACE, 1.2f, 0.6f);
         Moves.mode(p, "golden_shell", 80, 5, pl -> {
             LivingEntity last = pl.getLastHurtByMob();
             if (last != null && pl.tickCount - pl.getLastHurtByMobTimestamp() < 6) LimbusStatus.addFortuna(pl, last, 5);
@@ -241,7 +271,7 @@ public final class CaduceusFx {
                     t.setDeltaMovement(0, Math.min(0, t.getDeltaMovement().y), 0);
                     Vec3 m = mid(t);
                     // threads: one back to your hand, and a cradle of wires round the body
-                    FxSend.trail(sl, G, Kit.hand(p), m, 0.025f, 5);
+                    FxSend.trail(sl, G, tip(p), m, 0.03f, 5);
                     for (int w = 0; w < 3; w++) {
                         double a = w * 2.1 + kk * 0.2;
                         Vec3 o = new Vec3(Math.cos(a) * 0.8, 0, Math.sin(a) * 0.8);
@@ -262,7 +292,9 @@ public final class CaduceusFx {
         Vec3 hitAt = p.position().add(look.scale(3.5));
         // the hammer above: a thick bar of gold and its long handle, held up, then brought down
         Vec3 top = hitAt.add(0, 7, 0);
+        from(sl, p, top.add(0, -1, 0), 14);
         FxSend.box(sl, G, top, rt, new Vec3(0, 1, 0), 1.6f, 1.1f, 1.1f, 18, 4, FxPacket.POP);
+        drops(sl, top.add(0, -1.1, 0), 6);
         FxSend.box(sl, W, top.add(0, 1.6, 0), rt, new Vec3(0, 1, 0), 0.15f, 0.15f, 1.8f, 18, 4, FxPacket.POP);
         sound(sl, p.position(), SoundEvents.ANVIL_PLACE, 0.6f, 0.6f);
         AstaFx.later(16, () -> {
@@ -336,6 +368,7 @@ public final class CaduceusFx {
                 Vec3 look = flat(m.subtract(p.position())).normalize();
                 Vec3 c = p.position().add(0, 1.1, 0).add(look.scale(1.0));
                 float dmg = pow(p, power) * 0.28f;
+                from(sl, p, m, 5);
                 switch (form) {
                     case 0 -> {   // rapier thrust
                         FxSend.spike(sl, G, c, look, 3f, 0.05f, 5, 0, FxPacket.EXTEND);
@@ -395,6 +428,8 @@ public final class CaduceusFx {
                 Vec3 from = m.add(Math.cos(a) * 4, 1.5 + Math.sin(k * 1.7), Math.sin(a) * 4);
                 FxSend.spike(sl, k % 2 == 0 ? G : W, from, m.subtract(from).normalize(), (float) from.distanceTo(m), 0.12f, 8, 0, FxPacket.EXTEND);
             }
+            from(sl, p, m, 8);
+            drops(sl, m, 8);
             FxSend.impactFrame(sl, m, 5, FxSend.FRAME_GOLD, 30);
             FxSend.shake(sl, m, 0.9f, 12, 26);
             FxSend.ring(sl, G, target.position().add(0, 0.05, 0), 0.5f, 7f, 0.2f, 14);
