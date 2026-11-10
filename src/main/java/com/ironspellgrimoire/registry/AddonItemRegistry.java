@@ -82,7 +82,6 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> LION_FLAME_GRIMOIRE = ITEMS.register("lions_flame_grimoire", com.ironspellgrimoire.item.LionFlameGrimoireItem::new);
 
     // ------------------------------------------------------------------ William Vangeance: World Tree Grimoire
-    public static final RegistryObject<Item> WORLD_TREE_GRIMOIRE = ITEMS.register("world_tree_grimoire", com.ironspellgrimoire.item.WorldTreeGrimoireItem::new);
 
     // ------------------------------------------------------------------ Jack the Ripper: Slash Grimoire
     public static final RegistryObject<Item> SLASH_GRIMOIRE = ITEMS.register("slash_grimoire", com.ironspellgrimoire.item.SlashGrimoireItem::new);
@@ -91,17 +90,12 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> EARTH_GRIMOIRE = ITEMS.register("earth_grimoire", com.ironspellgrimoire.item.EarthGrimoireItem::new);
 
     // ------------------------------------------------------------------ Vetto: Beast Grimoire
-    public static final RegistryObject<Item> BEAST_GRIMOIRE = ITEMS.register("beast_grimoire", com.ironspellgrimoire.item.BeastGrimoireItem::new);
 
     // ------------------------------------------------------------------ Charmy Pappitson: Cotton Grimoire
-    public static final RegistryObject<Item> COTTON_GRIMOIRE = ITEMS.register("cotton_grimoire", com.ironspellgrimoire.item.CottonGrimoireItem::new);
 
     // ------------------------------------------------------------------ Julius Novachrono: Time Grimoire
     public static final RegistryObject<Item> TIME_GRIMOIRE = ITEMS.register("time_grimoire", com.ironspellgrimoire.item.TimeGrimoireItem::new);
 
-    // ------------------------------------------------------------------ Limbus Company: Don Quixote (La Manchaland) and Rien (the Index)
-    public static final RegistryObject<Item> BLOODFIEND_GRIMOIRE = ITEMS.register("bloodfiend_grimoire", com.ironspellgrimoire.item.BloodfiendGrimoireItem::new);
-    public static final RegistryObject<Item> CADUCEUS_GRIMOIRE = ITEMS.register("caduceus_grimoire", com.ironspellgrimoire.item.CaduceusGrimoireItem::new);
 
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("iron_spell_grimoire", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.iron_spell_grimoire"))
@@ -141,7 +135,7 @@ public class AddonItemRegistry {
                 ItemStack space = new ItemStack(SPACE_GRIMOIRE.get());
                 ((IPresetSpellContainer) SPACE_GRIMOIRE.get()).initializeSpellContainer(space);
                 out.accept(space);
-                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, WORLD_TREE_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, BEAST_GRIMOIRE, COTTON_GRIMOIRE, TIME_GRIMOIRE, BLOODFIEND_GRIMOIRE, CADUCEUS_GRIMOIRE)) {
+                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, TIME_GRIMOIRE)) {
                     ItemStack st = new ItemStack(g.get());
                     ((IPresetSpellContainer) g.get()).initializeSpellContainer(st);
                     out.accept(st);

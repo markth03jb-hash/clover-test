@@ -150,11 +150,7 @@ public class FxRenderer extends FxBase {
          }
          return;
       }
-      if (p.shape == 61) { LimbusClient.hud(p); return; }   // Limbus grimoires: Bloodfeast / Hardblood, or Fortune / the Prescript (to this player only)
-      if (p.shape == 62) { LimbusClient.vampire(p.id, p.life); return; }   // Don Quixote's Vampire Mode: red eyes, blood cape, aura
-      if (p.shape == 65) { LimbusClient.mark(p.id, (int) p.h, (int) p.r); return; }   // Bleed / Fortuna on an enemy, shown over its head
       if (p.shape == 64) { ModeAuraFx.set(p.id, p.sweep, p.palette, p.life); return; }   // a mode's trappings on the player, drawn here every frame
-      if (p.shape == 63) { LimbusWeaponLayer.set(p.id, p.life, p.sweep, p.palette == 1, p.a0, p.a1, (int) p.h); return; }   // a hardblood / gold weapon in the hands
       if (p.shape == 59) { GolemFx.spawn(p); return; }   // the Stone Golem: id, c = its feet, d = which way it faces, r = scale, life
       if (p.shape == 60) { GolemFx.punch(p); return; }   // one of its punches: id = the golem, c = the mark, sweep = which arm
       if (p.shape == 41) { PixelFx.spawn(p); return; }   // the pixel-sprite effect style (Sky Splitter test)
@@ -506,7 +502,6 @@ public class FxRenderer extends FxBase {
             GolemFx.tick(now);
             AltarFx.draw(vc, m, cam, now, pt);
             ModeAuraFx.draw(m, cam, now, pt);
-            LimbusClient.drawMarks(m, cam, now, pt);
             GrimoireCeremonyRenderer.glow(m, cam, now, pt);
             for (GolemFx.Golem g : GolemFx.GOLEMS) GolemFx.draw(vc, m, n, cam, g, now, pt);
             float pulse = 0.75F + 0.25F * (float)Math.sin(now * 0.35);

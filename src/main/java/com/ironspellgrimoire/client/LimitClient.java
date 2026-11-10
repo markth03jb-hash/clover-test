@@ -41,14 +41,9 @@ public final class LimitClient {
             {0.9F, 0.25F, 0.85F},   // Langris: rift
             {1.0F, 0.38F, 0.1F},    // Fuegoleon: vermilion
             {1.0F, 0.72F, 0.18F},   // Leopold: gold-orange
-            {0.45F, 0.95F, 0.38F},  // William: green
-            {1.0F, 0.3F, 0.36F},    // Jack: blood-red
+            {0.36F, 1.0F, 0.48F},   // Jack: green
             {0.86F, 0.64F, 0.36F},  // Sol: ochre
-            {0.3F, 0.88F, 0.7F},    // Vetto: sea-green
-            {1.0F, 0.78F, 0.9F},    // Charmy: pink
             {0.3F, 0.86F, 1.0F},    // Julius: cyan
-            {0.85F, 0.05F, 0.1F},   // Don Quixote: blood
-            {1.0F, 0.8F, 0.3F},     // Rien: liquid gold
     };
 
     public static void set(int id, int book, int life) {
