@@ -220,7 +220,7 @@ public class AddonSpellRegistry {
     //                                                                             id                       cd mana power  animation
     public static final RegistryObject<AbstractSpell> BONE_SPEAR_VOLLEY = registerSpell(new BoneSpell("bone_spear_volley", 6, 25, 14, BoneSpell.anim("iron_spell_grimoire:bone_volley"), BoneFx::spearVolley));
     public static final RegistryObject<AbstractSpell> BONE_SPIKE_ERUPTION = registerSpell(new BoneSpell("bone_spike_eruption", 10, 35, 14, BoneSpell.anim("irons_spellbooks:stomp"), BoneFx::spikeEruption));
-    public static final RegistryObject<AbstractSpell> BONE_SWORD = registerSpell(new BoneSpell("bone_sword", 8, 25, 22, BoneSpell.anim("iron_spell_grimoire:bone_sword_combo"), BoneFx::boneSword));
+    public static final RegistryObject<AbstractSpell> BONE_SWORD = registerSpell(new BoneSpell("bone_sword", 8, 25, 22, BoneSpell.anim("iron_spell_grimoire:bone_claws"), BoneFx::boneSword));
     public static final RegistryObject<AbstractSpell> BONE_WHIPS = registerSpell(new BoneSpell("bone_whips", 14, 45, 22, BoneSpell.anim("iron_spell_grimoire:mana_bone_whips"), BoneFx::boneWhips));
     public static final RegistryObject<AbstractSpell> RIBCAGE_PRISON = registerSpell(new BoneSpell("ribcage_prison", 20, 45, 20, BoneSpell.anim("iron_spell_grimoire:klaus_clench"), BoneFx::ribcage));
     public static final RegistryObject<AbstractSpell> MARROW_REGENERATION = registerSpell(new BoneSpell("marrow_regeneration", 40, 40, 0, BoneSpell.anim("iron_spell_grimoire:mercury_guardian"), BoneFx::regeneration));
@@ -329,7 +329,7 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> GATE_BARRAGE = registerSpell(rift("gate_barrage", 18, 55, 12, "iron_spell_grimoire:mercury_mirror", com.ironspellgrimoire.server.RiftFx::gateBarrage));
     public static final RegistryObject<AbstractSpell> SPACE_COLLAPSE = registerSpell(rift("space_collapse", 22, 65, 16, "iron_spell_grimoire:dark_black_hole", com.ironspellgrimoire.server.RiftFx::spaceCollapse));
     public static final RegistryObject<AbstractSpell> CONVERGENCE = registerSpell(rift("convergence", 24, 70, 14, "iron_spell_grimoire:klaus_clench", com.ironspellgrimoire.server.RiftFx::convergence));
-    public static final RegistryObject<AbstractSpell> DIMENSIONAL_SEVERANCE = registerSpell(rift("dimensional_severance", 90, 130, 34, "iron_spell_grimoire:dark_event_horizon", com.ironspellgrimoire.server.RiftFx::dimensionalSeverance));
+    public static final RegistryObject<AbstractSpell> DIMENSIONAL_SEVERANCE = registerSpell(rift("dimensional_severance", 90, 130, 34, "iron_spell_grimoire:rift_severance", com.ironspellgrimoire.server.RiftFx::dimensionalSeverance));
 
     /** The eight Rift Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> RIFT_SPELLS = List.of(
@@ -423,7 +423,7 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> EARTH_WALL = registerSpell(earth("earth_wall", 20, 40, 8, "iron_spell_grimoire:klaus_clench", com.ironspellgrimoire.server.EarthFx::earthWall));
     public static final RegistryObject<AbstractSpell> BOULDER_TOSS = registerSpell(earth("boulder_toss", 12, 45, 14, "iron_spell_grimoire:fire_fireball", com.ironspellgrimoire.server.EarthFx::boulderToss));
     public static final RegistryObject<AbstractSpell> QUAKE_STOMP = registerSpell(earth("quake_stomp", 18, 55, 10, "iron_spell_grimoire:lion_ground_punch", com.ironspellgrimoire.server.EarthFx::quakeStomp));
-    public static final RegistryObject<AbstractSpell> STONE_GOLEM = registerSpell(earth("stone_golem", 24, 60, 13, "iron_spell_grimoire:lion_barrage", com.ironspellgrimoire.server.EarthFx::stoneGolem));
+    public static final RegistryObject<AbstractSpell> STONE_GOLEM = registerSpell(earth("stone_golem", 24, 60, 13, "iron_spell_grimoire:earth_stone_golem", com.ironspellgrimoire.server.EarthFx::stoneGolem));
     public static final RegistryObject<AbstractSpell> BEDROCK_ARMOR = registerSpell(earth("bedrock_armor", 60, 90, 0, "iron_spell_grimoire:mercury_guardian", com.ironspellgrimoire.server.EarthFx::bedrockArmor));
     public static final RegistryObject<AbstractSpell> MOUNTAIN_FALL = registerSpell(earth("mountain_fall", 85, 125, 30, "iron_spell_grimoire:fire_cannon", com.ironspellgrimoire.server.EarthFx::mountainFall));
 

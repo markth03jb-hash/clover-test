@@ -192,18 +192,19 @@ public final class EarthFx {
     // ================================================================== 6. Stone Golem
     public static void stoneGolem(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        Vec3 dir = flat(p.getLookAngle()), rt = rightOf(dir);
-        Vec3 back = floorAt(sl, p.position().subtract(dir.scale(2.6)));
+        Vec3 dir = flat(p.getLookAngle());
+        Vec3 back = floorAt(sl, p.position().subtract(dir.scale(3.0)));
         sound(sl, back, SoundEvents.STONE_BREAK, 1.3f, 0.4f);
-        FxSend.ring(sl, E, back.add(0, 0.05, 0), 0.3f, 3.0f, 0.1f, 10);
-        FxSend.box(sl, E, back.add(rt.scale(0.7)).add(0, 0.8, 0), dir, UP, 0.5f, 0.45f, 0.8f, 56, 4, FxPacket.GROUND);   // legs
-        FxSend.box(sl, E, back.add(rt.scale(-0.7)).add(0, 0.8, 0), dir, UP, 0.5f, 0.45f, 0.8f, 56, 4, FxPacket.GROUND);
-        FxSend.box(sl, E, back.add(0, 2.5, 0), dir, UP, 0.8f, 1.3f, 1.0f, 56, 6, FxPacket.GROUND);                       // torso
-        FxSend.box(sl, E, back.add(0, 3.9, 0), dir, UP, 0.5f, 0.5f, 0.45f, 56, 6, FxPacket.GROUND);                      // head
-        FxSend.box(sl, G, back.add(dir.scale(0.45)).add(0, 3.95, 0), dir, UP, 0.06f, 0.4f, 0.08f, 54, 6, FxPacket.GROUND);  // glowing eye-slit
+        sound(sl, back, SoundEvents.GRAVEL_BREAK, 1.2f, 0.5f);
+        FxSend.ring(sl, E, back.add(0, 0.05, 0), 0.3f, 3.6f, 0.1f, 10);
+        FxSend.shake(sl, back, 0.45f, 12, 30);
+        // the golem itself is one client-animated figure (GolemFx): it climbs out of the ground, turns and throws its fists
+        FxPacket g = new FxPacket();
+        g.shape = 59; g.id = FxSend.nextId(); g.c = back; g.d = dir; g.r = 1.0f; g.life = 66; g.palette = (byte) E;
+        FxSend.sendNear(sl, back, g);
         for (int i = 0; i < 5; i++) {
             final int ii = i;
-            AstaFx.later(12 + i * 6, () -> {
+            AstaFx.later(16 + i * 7, () -> {
                 if (!alive(p)) return;
                 Vec3 centre = p.position().add(p.getLookAngle().scale(5));
                 LivingEntity t = null;
@@ -212,23 +213,25 @@ public final class EarthFx {
                     double d = e.position().distanceTo(p.position());
                     if (d < best) { best = d; t = e; }
                 }
-                Vec3 at = t != null ? t.position() : centre;
-                Vec3 fistFrom = back.add(0, 3.0, 0).add(rt.scale(ii % 2 == 0 ? 1.6 : -1.6));
-                Vec3 to = at.add(0, 1.0, 0);
-                Vec3 v = to.subtract(fistFrom);
-                FxSend.box(sl, E, fistFrom, v.normalize(), UP, 0.8f, 0.8f, 0.8f, 9, 1, FxPacket.POP, 0, v.scale(1.0 / 5), 5);
-                FxSend.trail(sl, E, fistFrom, to, 0.5f, 5);
-                final Vec3 hitAt = at;
+                final Vec3 hitAt = t != null ? t.position() : centre;
+                FxPacket pu = new FxPacket();
+                pu.shape = 60; pu.id = g.id; pu.c = hitAt.add(0, 1.0, 0); pu.sweep = ii % 2; pu.life = 12; pu.palette = (byte) E;
+                FxSend.sendNear(sl, hitAt, pu);
+                sound(sl, back, SoundEvents.STONE_STEP, 1.0f, 0.5f);
                 AstaFx.later(5, () -> {
                     if (!alive(p)) return;
                     Moves.nova(p, E, hitAt.add(0, 0.5, 0), 2.6, power * 0.95f, "stone_golem", 0.9, 0.45);
                     FxLib.spikeBurst(sl, E, hitAt.add(0, 0.3, 0), 0.7f);
-                    FxSend.shake(sl, hitAt, 0.3f, 4, 22);
+                    FxSend.shake(sl, hitAt, 0.35f, 4, 22);
                     sound(sl, hitAt, SoundEvents.IRON_GOLEM_ATTACK, 1.0f, 0.5f);
                     sound(sl, hitAt, SoundEvents.STONE_BREAK, 1.0f, 0.6f);
                 });
             });
         }
+        AstaFx.later(58, () -> {   // it crumbles back into the ground
+            sound(sl, back, SoundEvents.STONE_BREAK, 1.0f, 0.4f);
+            FxSend.ring(sl, E, back.add(0, 0.05, 0), 0.3f, 2.8f, 0.08f, 8);
+        });
     }
 
     // ================================================================== 7. Bedrock Armor
@@ -250,16 +253,11 @@ public final class EarthFx {
         AstaFx.later(10, () -> { if (alive(p)) { Fx.flash(sl, p.position().add(0, 1, 0), 1.6f); FxLib.halo(sl, G, p.position().add(0, p.getBbHeight() + 0.4, 0), 0.8f); } });
         sound(sl, p.position(), SoundEvents.STONE_BREAK, 1.2f, 0.5f);
         sound(sl, p.position(), SoundEvents.ANVIL_LAND, 0.6f, 0.6f);
-        Moves.mode(p, "bedrock_armor", 400, 4, pl -> {
+        // the plates circling you are one client-drawn ring (smooth every frame), not a box re-sent every few ticks
+        FxSend.orbit(sl, p, 2, 8, 1.15f, 0.85f, 0.09f, 0f, 0.12f, 12, 0, 400);
+        Moves.mode(p, "bedrock_armor", 400, 20, pl -> {
             ServerLevel s2 = pl.serverLevel();
-            long now = s2.getGameTime();
-            Vec3 c = pl.position();
-            for (int i = 0; i < 4; i++) {   // plates circling the body, bobbing a little
-                double a = now * 0.12 + i * Math.PI / 2;
-                Vec3 q = c.add(Math.cos(a) * 1.0, 0.5 + 0.6 * Math.sin(now * 0.1 + i * 1.3) + (i % 2) * 0.5, Math.sin(a) * 1.0);
-                FxSend.box(s2, E, q, new Vec3(-Math.sin(a), 0, Math.cos(a)), UP, 0.22f, 0.06f, 0.25f, 5, 1, FxPacket.HOLD);
-            }
-            if (now % 20 == 0) FxSend.ring(s2, E, c.add(0, 0.05, 0), 0.8f, 1.3f, 0.03f, 6);
+            FxSend.ring(s2, E, pl.position().add(0, 0.05, 0), 0.8f, 1.3f, 0.03f, 6);
         });
     }
 

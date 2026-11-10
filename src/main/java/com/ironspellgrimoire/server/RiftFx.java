@@ -188,8 +188,17 @@ public final class RiftFx {
         LivingEntity main = aimed(p, 28, 18);
         Vec3 c = main != null ? mid(main) : Kit.aim(p, 22).add(0, 1.5, 0);
         final float H = 2.6f;
-        SpaceFx.cube(sl, c, H, 20);
         sound(sl, c, SoundEvents.WARDEN_SONIC_CHARGE, 1.0f, 1.0f);
+        // a sphere of space is cut out and crushed in on itself: great circles of cut space, drawn once and shrinking to a point
+        Vec3 X = new Vec3(1, 0, 0), Y = new Vec3(0, 1, 0), Z = new Vec3(0, 0, 1);
+        Vec3 d45 = new Vec3(0.7071, 0, 0.7071), e45 = new Vec3(-0.7071, 0, 0.7071);
+        float r0 = H * 1.15f;
+        FxSend.wall(sl, V, c, X, Y, r0, 0.05f, -180, 180, 0.08f, 17, 0, 0);
+        FxSend.wall(sl, V, c, Z, Y, r0, 0.05f, -180, 180, 0.08f, 17, 0, 0);
+        FxSend.wall(sl, V, c, X, Z, r0, 0.05f, -180, 180, 0.08f, 17, 0, 0);
+        FxSend.wall(sl, S, c, d45, Y, r0, 0.05f, -180, 180, 0.03f, 17, 0, 0);
+        FxSend.wall(sl, S, c, e45, Y, r0, 0.05f, -180, 180, 0.03f, 17, 0, 0);
+        FxSend.ring(sl, V, c.add(0, -c.y + FxLib.floor(sl, c).y + 0.1, 0), 0.2f, H * 1.4f, 0.06f, 10);
         for (int t = 0; t < 14; t++) {
             final int tt = t;
             AstaFx.later(t + 1, () -> {
@@ -199,7 +208,7 @@ public final class RiftFx {
                     e.setDeltaMovement(in.lengthSqr() < 0.3 ? Vec3.ZERO : in.normalize().scale(Math.min(0.6, 0.15 + tt * 0.03)));
                     e.hurtMarked = true;
                 }
-                if (tt >= 8) SpaceFx.cube(sl, c, H * (1.0f - (tt - 8) * 0.14f), 2);
+                if (tt >= 6 && tt % 2 == 0) Kit.orb(sl, V, c, Vec3.ZERO, 0.25f + (tt - 6) * 0.16f, 3);   // the black core swelling as it shrinks
             });
         }
         AstaFx.later(16, () -> {

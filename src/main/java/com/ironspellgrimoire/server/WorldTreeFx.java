@@ -2,6 +2,7 @@ package com.ironspellgrimoire.server;
 
 import static com.ironspellgrimoire.server.FxUtil.*;
 
+import com.ironspellgrimoire.network.FxPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -95,29 +96,83 @@ public final class WorldTreeFx {
     }
 
     // ================================================================== 3. Root Snare
+    /** One gnarled root as a chain of tapering blocks along a curve (a quadratic bezier), growing out of the ground block by block. */
+    private static void root(ServerLevel sl, Vec3 p0, Vec3 p1, Vec3 p2, float thick, int life, int segs, int delay, boolean knots) {
+        Vec3 prev = p0;
+        for (int i = 1; i <= segs; i++) {
+            double t = i / (double) segs, u = 1 - t;
+            Vec3 pt = p0.scale(u * u).add(p1.scale(2 * u * t)).add(p2.scale(t * t));
+            final Vec3 a = prev, b = pt;
+            final float th = thick * (1f - 0.7f * (float) ((i - 1) / (double) segs));
+            final int ii = i;
+            AstaFx.later(delay + i, () -> {
+                Vec3 d = b.subtract(a);
+                double len = d.length();
+                if (len < 0.05) return;
+                Vec3 dn = d.normalize();
+                Vec3 sd = dn.cross(UP);
+                sd = sd.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : sd.normalize();
+                Vec3 up = sd.cross(dn).normalize();
+                FxSend.box(sl, Fx.BARK, a.add(b).scale(0.5), dn, up, (float) len * 0.5f + 0.06f, th, th * 0.9f, Math.max(10, life - ii), 2, FxPacket.EXTEND);
+                if (knots && ii % 2 == 0) {   // a knot where it bends, and a rootlet curling off it
+                    FxSend.box(sl, Fx.BARK, b, dn, up, th * 1.2f, th * 1.25f, th * 1.15f, Math.max(10, life - ii), 2, FxPacket.POP);
+                    Vec3 off = sd.scale(ii % 4 == 0 ? 1 : -1).add(up.scale(-0.3)).normalize();
+                    FxSend.box(sl, Fx.BARK, b.add(off.scale(0.3)), off, up, 0.3f, th * 0.4f, th * 0.35f, Math.max(8, life - ii - 2), 2, FxPacket.EXTEND);
+                }
+            });
+            prev = pt;
+        }
+    }
+
     public static void rootSnare(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         Vec3 c = floorAt(sl, Kit.aim(p, 22));
         final double R = 4.2;
+        final java.util.Random rnd = new java.util.Random(p.getId() * 31L + sl.getGameTime());
         FxSend.ring(sl, T, c.add(0, 0.1, 0), 0.3f, (float) R, 0.08f, 10);
+        FxSend.shake(sl, c, 0.3f, 8, 30);
         sound(sl, c, SoundEvents.ROOTED_DIRT_BREAK, 1.2f, 0.6f);
-        for (int i = 0; i < 12; i++) {   // roots tearing out of the ground in a ring
-            final int ii = i;
-            AstaFx.later(2 + i / 2, () -> {
-                double a = ii * Math.PI / 6;
-                double d = R * (0.45 + 0.5 * ((ii * 37) % 10) / 10.0);
-                Vec3 b = c.add(Math.cos(a) * d, -0.2, Math.sin(a) * d);
-                FxSend.spike(sl, Fx.BARK, b, new Vec3(Math.cos(a) * 0.4, 1, Math.sin(a) * 0.4), 2.6f + (ii % 3) * 0.5f, 0.24f, 40, 3, 1);
-            });
+        sound(sl, c, SoundEvents.AZALEA_BREAK, 1.0f, 0.5f);
+        // roots tear out of the ground round the ring, rise, and arch in over the middle like a cage of knuckled wood
+        int n = 9;
+        for (int i = 0; i < n; i++) {
+            double a = Math.PI * 2 * i / n + rnd.nextDouble() * 0.3;
+            double d = R * (0.8 + 0.2 * rnd.nextDouble());
+            Vec3 b = c.add(Math.cos(a) * d, -0.25, Math.sin(a) * d);
+            Vec3 inward = new Vec3(-Math.cos(a), 0, -Math.sin(a));
+            Vec3 mid = b.add(0, 2.6 + rnd.nextDouble() * 1.0, 0).add(inward.scale(R * 0.25)).add(-Math.sin(a) * 0.8 * (rnd.nextBoolean() ? 1 : -1), 0, Math.cos(a) * 0.5);
+            Vec3 end = c.add(inward.scale(-0.0)).add(Math.cos(a + 0.9) * R * 0.25, 0.5 + rnd.nextDouble() * 0.6, Math.sin(a + 0.9) * R * 0.25);
+            root(sl, b, mid, end, 0.3f + rnd.nextFloat() * 0.1f, 46, 7, 1 + i / 3, true);
+        }
+        for (int i = 0; i < 6; i++) {   // thin roots clawing along the ground between them
+            double a = Math.PI * 2 * i / 6 + 0.5, d = R * 0.9;
+            Vec3 b = c.add(Math.cos(a) * d, 0.0, Math.sin(a) * d);
+            Vec3 e = c.add(Math.cos(a + 0.5) * R * 0.35, 0.1, Math.sin(a + 0.5) * R * 0.35);
+            root(sl, b, b.add(e.subtract(b).scale(0.5)).add(0, 0.7, 0), e, 0.14f, 40, 5, 2 + i / 3, false);
         }
         AstaFx.later(8, () -> {
             if (!alive(p)) return;
             for (LivingEntity t : Kit.near(sl, p, c.add(0, 1, 0), R)) {
                 Moves.hit(p, t, power, "root_snare", T);
                 Moves.slow(t, 70, -0.8);
-                for (int w = 0; w < 4; w++) {   // roots spiralling up the legs
-                    double a0 = w * 1.57;
-                    FxSend.trail(sl, T, t.position().add(Math.cos(a0) * 0.5, 0, Math.sin(a0) * 0.5), t.position().add(Math.cos(a0 + 1.3) * 0.45, t.getBbHeight() * 0.8, Math.sin(a0 + 1.3) * 0.45), 0.1f, 40);
+                // two roots coil up the body in a helix, thick at the ankle, thinner toward the chest
+                Vec3 f0 = t.position();
+                for (int w = 0; w < 2; w++) {
+                    Vec3 prev = f0.add(Math.cos(w * Math.PI) * 0.5, 0.05, Math.sin(w * Math.PI) * 0.5);
+                    for (int k = 1; k <= 7; k++) {
+                        double ang = w * Math.PI + k * 0.95;
+                        double h = t.getBbHeight() * 0.85 * k / 7.0;
+                        Vec3 nxt = f0.add(Math.cos(ang) * (0.55 - 0.03 * k), h, Math.sin(ang) * (0.55 - 0.03 * k));
+                        final Vec3 aa = prev, bb = nxt;
+                        final float th = 0.11f - 0.01f * k;
+                        AstaFx.later(k, () -> {
+                            Vec3 d = bb.subtract(aa), dn = d.normalize();
+                            Vec3 sd = dn.cross(UP);
+                            sd = sd.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : sd.normalize();
+                            FxSend.box(sl, Fx.BARK, aa.add(bb).scale(0.5), dn, sd.cross(dn).normalize(), (float) d.length() * 0.5f + 0.04f, th, th, 56, 2, FxPacket.EXTEND);
+                        });
+                        prev = nxt;
+                    }
                 }
                 Fx.impact(sl, T, mid(t), 1.0f);
             }

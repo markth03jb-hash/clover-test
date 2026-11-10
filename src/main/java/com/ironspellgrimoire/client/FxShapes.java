@@ -498,6 +498,19 @@ final class FxShapes extends FxBase {
             drawSpike(vc, m, n, cam, c.subtract(dir.scale(1.4 * s)), dir, 2.8 * s, 0.07, 0.0, 5, 0.96F);
             drawSpike(vc, m, n, cam, c.add(dir.scale(0.9 * s)), dir, 0.7 * s, 0.12, 0.0, 6, 0.96F);
             drawSpike(vc, m, n, cam, c.add(dir.scale(0.7 * s)), side.add(dir.scale(0.3)).normalize(), 0.55 * s, 0.16, 0.0, 5, 0.96F);
+         } else if (kind == 2) {   // bedrock armour: slabs of stone circling the body in two ring heights, each tilting and tumbling a little, with chips of rock in orbit round it
+            Vec3 rad = new Vec3(Math.cos(a), 0, Math.sin(a)), tan = new Vec3(-Math.sin(a), 0, Math.cos(a));
+            double tilt = 0.28 * Math.sin(age * 0.09 + i * 1.7);
+            Vec3 ax = tan.scale(Math.cos(tilt)).add(new Vec3(0, 1, 0).scale(Math.sin(tilt)));
+            Vec3 upv = new Vec3(0, 1, 0).scale(Math.cos(tilt)).subtract(tan.scale(Math.sin(tilt)));
+            Vec3 cc = c.add(0, (i % 2) * 0.6 - 0.15, 0);
+            drawBox(vc, m, n, cam, cc, ax, rad, upv, 0.27 * s, 0.05 * s, 0.31 * s, 26, 0.96F, 0.5F);
+            drawBox(vc, m, n, cam, cc.add(rad.scale(0.07 * s)), ax, rad, upv, 0.17 * s, 0.03 * s, 0.2 * s, 26, 0.96F, 0.3F);
+            for (int k = 0; k < 2; k++) {
+               double ca = age * (0.14 + 0.04 * k) + i * 2.1 + k * 3.1;
+               Vec3 chip = cc.add(rad.scale(0.12 + 0.18 * k)).add(tan.scale(Math.cos(ca) * 0.34 * s)).add(0, Math.sin(ca) * 0.3 * s, 0);
+               drawBox(vc, m, n, cam, chip, tan, rad, new Vec3(0, 1, 0), 0.06 * s, 0.06 * s, 0.06 * s, 26, 0.96F, 0.3F);
+            }
          } else {           // mercury sword, point down, flat side along the circle: blade, guard and grip
             Vec3 dir = new Vec3(0, -1, 0), flat = new Vec3(-Math.sin(a), 0, Math.cos(a));
             Vec3 up = dir.cross(flat).normalize();
@@ -539,12 +552,13 @@ final class FxShapes extends FxBase {
       Vec3 back = ep.add(0, 1.3, 0).subtract(look.scale(0.3));
       List<net.minecraft.world.entity.LivingEntity> foes = new ArrayList<>(mc.level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
             e.getBoundingBox().inflate(reach), x -> x != e && x.isAlive() && !(x instanceof net.minecraft.world.entity.decoration.ArmorStand) && x.distanceTo(e) <= reach));
-      foes.sort(java.util.Comparator.comparingDouble(x -> x.distanceToSqr(e)));
+      foes.sort(java.util.Comparator.comparingInt(x -> x.getId()));
       for (int i = 0; i < count; i++) {
          double side = i - (count - 1) / 2.0;
          Vec3 root = back.add(rt.scale(side * 0.25));
-         net.minecraft.world.entity.LivingEntity t0 = foes.isEmpty() ? null : foes.get(i % foes.size());
-         double phase = ((age + i * period * 0.4) % period) / period;
+         double cyc = (age + i * period * 0.4) / period;
+         net.minecraft.world.entity.LivingEntity t0 = foes.isEmpty() ? null : foes.get(Math.floorMod((int) Math.floor(cyc) + i, foes.size()));
+         double phase = cyc - Math.floor(cyc);
          double lash = Math.sin(Math.PI * phase);
          lash = lash * lash * (3 - 2 * lash);   // snap out, hang, snap back
          Vec3 rest = root.add(rt.scale(side * 1.2)).add(0, 1.2 + 0.25 * Math.sin(age * 0.2 + i), 0).subtract(look.scale(1.2));

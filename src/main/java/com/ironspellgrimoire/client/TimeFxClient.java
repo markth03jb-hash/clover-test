@@ -113,6 +113,14 @@ public final class TimeFxClient {
     private static final List<Clock> CLOCKS = new ArrayList<>();
     private static final List<Hand> HANDS = new ArrayList<>();
     private static final List<Ghost> GHOSTS = new ArrayList<>();
+    /** The Chronostasis Field and Zenith Hour realms. */
+    private static final class Realm {
+        int id, style, life, follow = -1, lockAt;
+        Vec3 c;
+        float r, h;
+        double born, closeAt = -1;
+    }
+    private static final List<Realm> REALMS = new ArrayList<>();
     /** entity id -> {start, end of the freeze} */
     private static final Map<Integer, double[]> MARKS = new HashMap<>();
     private static final Map<Integer, double[]> BUBBLES = new HashMap<>();
@@ -143,6 +151,13 @@ public final class TimeFxClient {
                 k.jit = new float[k.n];
                 for (int i = 0; i < k.n; i++) k.jit[i] = r.nextFloat();
                 COLUMNS.add(k);
+            }
+            case 58 -> {
+                Realm k = new Realm();
+                k.id = p.id; k.style = (int) p.h; k.life = Math.max(10, p.life); k.lockAt = p.sweep;
+                k.c = p.c; k.r = Math.max(2F, p.r); k.h = Math.max(2F, p.r2); k.born = now;
+                if (p.v.y > 0.5) k.follow = (int) Math.round(p.v.x);
+                REALMS.add(k);
             }
             case 50 -> {
                 for (Column k : COLUMNS) if (k.id == p.id) k.frozenUntil = p.life > 0 ? now + p.life : now;
@@ -208,6 +223,7 @@ public final class TimeFxClient {
         for (Column k : COLUMNS) if (k.id == id && k.closeAt < 0) { k.closeAt = now; k.frozenUntil = -1; any = true; }
         for (Hand k : HANDS) if (k.id == id && k.killedAt < 0) { k.killedAt = now; any = true; }
         for (Clock k : CLOCKS) if (k.id == id) { k.life = (int) Math.min(k.life, now - k.born + 6); any = true; }
+        for (Realm k : REALMS) if (k.id == id && k.closeAt < 0) { k.closeAt = now; any = true; }
         return any;
     }
 
@@ -222,7 +238,7 @@ public final class TimeFxClient {
         if (e.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
-            COLUMNS.clear(); CLOCKS.clear(); HANDS.clear(); GHOSTS.clear(); MARKS.clear(); BUBBLES.clear(); stored = 0; holding = false;
+            COLUMNS.clear(); REALMS.clear(); CLOCKS.clear(); HANDS.clear(); GHOSTS.clear(); MARKS.clear(); BUBBLES.clear(); stored = 0; holding = false;
             return;
         }
         if (mc.isPaused()) return;
@@ -347,7 +363,7 @@ public final class TimeFxClient {
         if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) { FANS.clear(); return; }
-        boolean any = !COLUMNS.isEmpty() || !CLOCKS.isEmpty() || !HANDS.isEmpty() || !MARKS.isEmpty() || !BUBBLES.isEmpty() || !FANS.isEmpty();
+        boolean any = !REALMS.isEmpty() || !COLUMNS.isEmpty() || !CLOCKS.isEmpty() || !HANDS.isEmpty() || !MARKS.isEmpty() || !BUBBLES.isEmpty() || !FANS.isEmpty();
         float pt = e.getPartialTick();
         PT = pt;
         double now = mc.level.getGameTime() + pt;
@@ -365,6 +381,8 @@ public final class TimeFxClient {
         RenderSystem.depthMask(true);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         begin();
+        REALMS.removeIf(k -> now - k.born > k.life + 14 || (k.closeAt >= 0 && now - k.closeAt > 14));
+        for (Realm k : REALMS) realm(mc, k, now, pt);
         for (Column k : COLUMNS) column(mc, k, now, pt);
         for (Clock k : CLOCKS) clock(k, now);
         for (Hand k : HANDS) hand(k, now);
@@ -386,6 +404,187 @@ public final class TimeFxClient {
         RenderSystem.depthMask(true);
         RenderSystem.enableCull();
         RenderSystem.defaultBlendFunc();
+    }
+
+
+    // ================================================================== realms: the Chronostasis Field and Zenith Hour
+    private static void fadeDisc(Vec3 c, double R, double y, int seg, float[] col, float aC, float aE) {
+        Vec3 o = new Vec3(c.x, y, c.z);
+        for (int i = 0; i < seg; i++) {
+            double a0 = TAU * i / seg, a1 = TAU * (i + 1) / seg;
+            v(o, col, aC); v(ring(c, a0, R, y), col, aE); v(ring(c, a1, R, y), col, aE);
+        }
+    }
+
+    private static void bandXZ(Vec3 c, double r0, double r1, double y, int seg, double rot, float[] col, float a) {
+        for (int i = 0; i < seg; i++) {
+            double a0 = rot + TAU * i / seg, a1 = rot + TAU * (i + 1) / seg;
+            quad(ring(c, a0, r0, y), ring(c, a0, r1, y), ring(c, a1, r1, y), ring(c, a1, r0, y), col, a);
+        }
+    }
+
+    private static void ticksXZ(Vec3 c, double r0, double r1, double y, int n, int heavyEvery, double rot, float w, float[] col, float a) {
+        for (int i = 0; i < n; i++) {
+            boolean hv = i % heavyEvery == 0;
+            double ang = rot + TAU * i / n;
+            stroke(ring(c, ang, r0 - (hv ? (r1 - r0) * 0.5 : 0), y), ring(c, ang, r1, y), UPV, hv ? w * 2.2F : w, col, a, Vec3.ZERO);
+        }
+    }
+
+    private static final Vec3 UPV = new Vec3(0, 1, 0);
+
+    /** A rising shaft of light: wide at the foot, fading out toward the top. */
+    private static void shaft(Vec3 base, double th, float w, float h, float[] col, float a0, float a1) {
+        for (int k = 0; k < 2; k++) {
+            double t = th + k * Math.PI / 2;
+            Vec3 d = new Vec3(Math.cos(t) * w, 0, Math.sin(t) * w);
+            Vec3 b0 = base.subtract(d), b1 = base.add(d), t0 = b0.add(0, h, 0), t1 = b1.add(0, h, 0);
+            v(b0, col, a0); v(b1, col, a0); v(t1, col, a1);
+            v(b0, col, a0); v(t1, col, a1); v(t0, col, a1);
+        }
+    }
+
+    private static void realm(Minecraft mc, Realm k, double now, float pt) {
+        double age = now - k.born;
+        double end = k.closeAt >= 0 ? k.closeAt : k.born + k.life;
+        float a = (float) Math.min(Mth.clamp(age / 12.0, 0.0, 1.0), Mth.clamp((end + 12 - now) / 12.0, 0.0, 1.0));
+        if (a <= 0.01F) return;
+        Vec3 c = k.c;
+        if (k.follow >= 0 && mc.level != null) {
+            Entity en = mc.level.getEntity(k.follow);
+            if (en != null) c = new Vec3(Mth.lerp(pt, en.xo, en.getX()), Mth.lerp(pt, en.yo, en.getY()), Mth.lerp(pt, en.zo, en.getZ()));
+        }
+        double R = k.r * smooth((float) (age / 14.0));
+        double y = c.y + 0.06;
+        if (k.style == 0) chronoRealm(k, c, R, y, age, now, a);
+        else zenithRealm(k, c, R, y, age, now, a);
+    }
+
+    /** The Chronostasis Field: a clock lying on the ground under everything inside it, turning slowly, with a dome of time over it. */
+    private static void chronoRealm(Realm k, Vec3 c, double R, double y, double age, double now, float a) {
+        double t = age;
+        fadeDisc(c, R, y, 64, NAVY, 0.55F * a, 0.0F);
+        fadeDisc(c, R * 0.98, y + 0.01, 64, GOLD, 0.16F * a, 0.0F);
+        bandXZ(c, R * 0.955, R * 1.0, y + 0.02, 96, 0, INK, a * 0.9F);
+        bandXZ(c, R * 0.965, R * 0.99, y + 0.03, 96, 0, GOLD, a * 0.85F);
+        ticksXZ(c, R * 0.86, R * 0.95, y + 0.03, 60, 5, t * 0.004, (float) (R * 0.01), GOLD_HI, a * 0.9F);
+        bandXZ(c, R * 0.74, R * 0.76, y + 0.03, 96, -t * 0.006, GOLD, a * 0.7F);
+        for (int i = 0; i < 12; i++) {   // twelve hour studs that drift the other way round the inner ring
+            double ang = -t * 0.006 + TAU * i / 12;
+            Vec3 p0 = ring(c, ang, R * 0.75, y + 0.04);
+            double s = R * 0.035;
+            quad(p0.add(s, 0, 0), p0.add(0, 0, s), p0.add(-s, 0, 0), p0.add(0, 0, -s), GOLD_HI, a);
+        }
+        cog(null, new Vec3(c.x, y + 0.05, c.z), (float) (R * 0.5), t * 0.02, a * 0.8F, 0F, GOLD, GOLD_HI);
+        cog(null, new Vec3(c.x, y + 0.12, c.z), (float) (R * 0.26), -t * 0.04, a * 0.9F, 0F, GOLD_HI, PAPER);
+        double minute = t * 0.05, hour = t * 0.004;
+        stroke(new Vec3(c.x, y + 0.2, c.z), ring(c, minute, R * 0.62, y + 0.2), UPV, (float) (R * 0.02), INK, a, Vec3.ZERO);
+        stroke(new Vec3(c.x, y + 0.21, c.z), ring(c, minute, R * 0.6, y + 0.21), UPV, (float) (R * 0.011), PAPER, a, Vec3.ZERO);
+        stroke(new Vec3(c.x, y + 0.2, c.z), ring(c, hour, R * 0.38, y + 0.2), UPV, (float) (R * 0.03), INK, a, Vec3.ZERO);
+        stroke(new Vec3(c.x, y + 0.21, c.z), ring(c, hour, R * 0.36, y + 0.21), UPV, (float) (R * 0.018), GOLD_HI, a, Vec3.ZERO);
+        double rp = (t % 40) / 40.0;   // a ripple of slowed time runs out from the middle every two seconds
+        bandXZ(c, R * rp, R * rp + 0.35, y + 0.05, 64, 0, GOLD_HI, a * (float) (1.0 - rp) * 0.7F);
+        for (int i = 0; i < 5; i++) {   // five great wheels hang in the air round the edge, turning
+            double ang = t * 0.012 + TAU * i / 5;
+            double bob = Math.sin(t * 0.05 + i * 1.7) * 0.25;
+            cog(null, ring(c, ang, R * 0.86, c.y + 3.6 + bob), 1.5F, (i % 2 == 0 ? 1 : -1) * t * 0.05, a * 0.9F, 0F, GOLD, GOLD_HI);
+        }
+        // the dome: a see-through shell with a cyan rim of light, and a bright band that climbs it
+        double H = k.h;
+        boolean inside = CAM.distanceTo(c) < R;
+        for (int i = 0; i < 8; i++) {
+            double e0 = Math.PI / 2 * i / 8, e1 = Math.PI / 2 * (i + 1) / 8;
+            for (int j = 0; j < 36; j++) {
+                double a0 = TAU * j / 36, a1 = TAU * (j + 1) / 36;
+                Vec3[] q = {FxZones.dome(a0, e0), FxZones.dome(a1, e0), FxZones.dome(a1, e1), FxZones.dome(a0, e1)};
+                float[] al = new float[4];
+                Vec3[] w = new Vec3[4];
+                for (int m = 0; m < 4; m++) {
+                    w[m] = new Vec3(c.x + q[m].x * R, c.y + q[m].y * H, c.z + q[m].z * R);
+                    float fres = (float) Math.pow(1.0 - Math.abs(q[m].dot(CAM.subtract(w[m]).normalize())), 3.0);
+                    double climb = ((t * 0.01) % 1.0);
+                    float band = (float) Math.max(0, 1.0 - Math.abs(q[m].y - climb) * 9.0);
+                    al[m] = a * ((inside ? 0.02F : 0.05F) + (inside ? 0.05F : 0.22F) * fres + 0.12F * band);
+                }
+                v(w[0], GOLD, al[0]); v(w[1], GOLD, al[1]); v(w[2], GOLD, al[2]);
+                v(w[0], GOLD, al[0]); v(w[2], GOLD, al[2]); v(w[3], GOLD, al[3]);
+            }
+        }
+        final Vec3 cc = c;
+        final double tt = t, RR = R;
+        final float aa = a;
+        GLOWS.add(() -> {   // grains of time drifting up through the field
+            for (int i = 0; i < 36; i++) {
+                double seed = i * 12.9898;
+                double ang = (seed * 43758.5453) % TAU, rad = Math.sqrt(((seed * 7.13) % 1.0 + 1.0) % 1.0) * RR * 0.95;
+                double yy = ((tt * 0.018 + i * 0.137) % 1.0) * 5.0;
+                float tw = (float) (0.5 + 0.5 * Math.sin(tt * 0.2 + i));
+                glowDisc(new Vec3(cc.x + Math.cos(ang) * rad, cc.y + 0.2 + yy, cc.z + Math.sin(ang) * rad), new Vec3(0, 1, 0), 0.06F, GOLD_HI, 0.8F * aa * tw);
+            }
+            glowDisc(new Vec3(cc.x, cc.y + 0.15, cc.z), new Vec3(0, 1, 0), (float) (RR * 0.9), GOLD, 0.1F * aa);
+        });
+    }
+
+    /** Zenith Hour: a colossal clock drawn on the ground to the edge of the world, twelve shafts of light at its hours, a beam to the sky clock; the hands stop when time does. */
+    private static void zenithRealm(Realm k, Vec3 c, double R, double y, double age, double now, float a) {
+        boolean max = k.style == 2;
+        double lock = k.lockAt;
+        double t = Math.min(age, lock);                 // everything turns until time stops, then hangs still
+        double after = Math.max(0, age - lock);
+        float hold = after > 0 ? 1F : 0F;
+        fadeDisc(c, R, y, 96, NAVY, 0.5F * a, 0.0F);
+        fadeDisc(c, R * 0.98, y + 0.01, 96, GOLD, 0.2F * a, 0.02F * a);
+        bandXZ(c, R * 0.94, R * 1.0, y + 0.02, 160, 0, INK, a);
+        bandXZ(c, R * 0.95, R * 0.985, y + 0.03, 160, 0, GOLD, a * 0.9F);
+        bandXZ(c, R * 0.8, R * 0.815, y + 0.03, 160, 0, GOLD, a * 0.6F);
+        ticksXZ(c, R * 0.82, R * 0.93, y + 0.03, 60, 5, 0, (float) (R * 0.006), GOLD_HI, a);
+        for (int i = 0; i < 12; i++) {   // the twelve hours: big slabs set into the ring
+            double ang = TAU * i / 12;
+            Vec3 a0 = ring(c, ang, R * 0.83, y + 0.04), a1 = ring(c, ang, R * 0.935, y + 0.04);
+            stroke(a0, a1, UPV, (float) (R * 0.035), INK, a, Vec3.ZERO);
+            stroke(a0, a1, UPV, (float) (R * 0.022), GOLD_HI, a, Vec3.ZERO);
+        }
+        cog(null, new Vec3(c.x, y + 0.05, c.z), (float) (R * 0.55), t * 0.01, a * 0.75F, 0F, GOLD, GOLD_HI);
+        cog(null, new Vec3(c.x, y + 0.1, c.z), (float) (R * 0.3), -t * 0.02, a * 0.85F, 0F, GOLD_HI, PAPER);
+        if (max) cog(null, new Vec3(c.x, y + 0.15, c.z), (float) (R * 0.75), -t * 0.007, a * 0.55F, 0F, GOLD, GOLD_HI);
+        double minute = t * 0.09 - 1.4, hour = t * 0.0075 - 1.4;
+        stroke(new Vec3(c.x, y + 0.25, c.z), ring(c, minute, R * 0.9, y + 0.25), UPV, (float) (R * 0.03), INK, a, Vec3.ZERO);
+        stroke(new Vec3(c.x, y + 0.26, c.z), ring(c, minute, R * 0.88, y + 0.26), UPV, (float) (R * 0.016), PAPER, a, Vec3.ZERO);
+        stroke(new Vec3(c.x, y + 0.25, c.z), ring(c, hour, R * 0.55, y + 0.25), UPV, (float) (R * 0.045), INK, a, Vec3.ZERO);
+        stroke(new Vec3(c.x, y + 0.26, c.z), ring(c, hour, R * 0.53, y + 0.26), UPV, (float) (R * 0.026), GOLD_HI, a, Vec3.ZERO);
+        // twelve shafts of light rise at the hours, one after another; with the Max form a second, inner twelve
+        for (int i = 0; i < 12; i++) {
+            float up = smooth((float) ((age - 4 - i * 1.2) / 10.0));
+            if (up <= 0F) continue;
+            double ang = TAU * i / 12;
+            shaft(ring(c, ang, R * 0.97, y), ang, (float) (0.5 + R * 0.012), k.h * up, GOLD, 0.55F * a, 0.0F);
+            shaft(ring(c, ang, R * 0.97, y), ang + 0.4, 0.18F, k.h * 1.3F * up, GOLD_HI, 0.8F * a, 0.0F);
+            if (max) shaft(ring(c, ang + TAU / 24, R * 0.62, y), ang, 0.4F, k.h * 0.8F * up, GOLD_HI, 0.5F * a, 0.0F);
+        }
+        float beam = smooth((float) (age / 18.0));   // the beam from the middle up to the clock in the sky
+        shaft(new Vec3(c.x, y, c.z), now * 0.01, (float) (R * 0.05) * (1F + 0.3F * hold), k.h * 1.5F * beam, GOLD_HI, 0.7F * a, 0.1F * a);
+        shaft(new Vec3(c.x, y, c.z), now * 0.01 + 0.7, (float) (R * 0.12), k.h * 1.5F * beam, GOLD, 0.25F * a, 0.0F);
+        if (after > 0) {   // when time stops: shock rings roll out across the ground and up the shafts
+            for (int i = 0; i < 3; i++) {
+                double rr = (after * 2.4 - i * 7) ;
+                if (rr <= 0 || rr > R * 1.05) continue;
+                bandXZ(c, rr, rr + 0.7 + i * 0.3, y + 0.08, 120, 0, GOLD_HI, a * (float) Math.max(0, 1.0 - rr / (R * 1.05)));
+            }
+        }
+        final Vec3 cc = c;
+        final double tt = age;
+        final float aa = a;
+        final double RR = R, HH = k.h;
+        GLOWS.add(() -> {
+            glowDisc(new Vec3(cc.x, cc.y + 0.2, cc.z), new Vec3(0, 1, 0), (float) (RR * 0.95), GOLD, 0.12F * aa);
+            glowDisc(new Vec3(cc.x, cc.y + HH * 1.5, cc.z), new Vec3(0, 1, 0), (float) (RR * 0.6), GOLD_HI, 0.18F * aa);
+            for (int i = 0; i < 70; i++) {   // time dust swirling up round the edge
+                double seed = i * 12.9898;
+                double ang = TAU * i / 70 + tt * 0.01 * (i % 2 == 0 ? 1 : -1), rad = RR * (0.3 + ((seed * 7.13) % 1.0 + 1.0) % 1.0 * 0.7);
+                double yy = ((tt * 0.02 + i * 0.113) % 1.0) * HH;
+                glowDisc(new Vec3(cc.x + Math.cos(ang) * rad, cc.y + 0.3 + yy, cc.z + Math.sin(ang) * rad), new Vec3(0, 1, 0), 0.1F, GOLD_HI, 0.7F * aa * (float) (0.5 + 0.5 * Math.sin(tt * 0.15 + i)));
+            }
+        });
     }
 
     // ------------------------------------------------------------------ the page column

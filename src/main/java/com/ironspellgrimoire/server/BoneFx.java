@@ -236,46 +236,43 @@ public class BoneFx {
     }
 
     // ================================================================== 3. Bone Sword
-    private static final int[] SWORD_CUTS = {5, 12, 20};   // the swings of the fire_bat_combo animation
+    private static final int[] SWORD_CUTS = {10, 18, 26};   // the rakes of the bone_claws animation
 
-    /** A long sword of bone grows out of your hand - three cuts that reach 4.5 blocks, each throwing splinters of bone. */
+    /** Bone Claws: three rakes, each throwing three claw-marks of bone that fly 16 blocks (Beelzebub: 26, with a wave of space). */
     public static void boneSword(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         boolean u = inUnion(p);
         if (u) unionMsg(p, "bone_sword");
-        // the sword grows out of your hand and is drawn on your arm, so it follows the swing exactly, all one piece
-        sendHeld(p, 37, 26, u ? 1.9f : 1.5f, 0, 0, u);
         sound(sl, p.position(), net.minecraft.sounds.SoundEvents.SKELETON_AMBIENT, 0.7f, 0.7f);
         crack(sl, p.position(), 0.5f);
-        double[][] cutDir = {{1, 0.3}, {-1, 0.3}, {0, 1}};   // right-to-left, left-to-right, overhead
+        double[][] cutDir = {{1, 0.5}, {-1, 0.5}, {1, -0.4}};   // diagonal rakes, alternating
         for (int i = 0; i < 3; i++) {
             final int ii = i;
             AstaFx.later(SWORD_CUTS[i], () -> {
                 if (!alive(p)) return;
                 Vec3 look = p.getLookAngle();
                 Vec3 rt = rightOf(look), up = rt.cross(look).normalize();
-                Vec3 sweep = ii == 2 ? up : rt.scale(cutDir[ii][0]).add(up.scale(cutDir[ii][1])).normalize();
-                Vec3 at = p.getEyePosition().add(look.scale(1.6)).add(0, -0.3, 0);
-                FxSend.slash(sl, B, at, look, sweep, 1.6f, 2.4f, 5, 0.3f, 0.9f);   // the cut, in bone-white
-                double reach = u ? 7 : 4.5;
-                for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(reach))) {
-                    Vec3 to = mid(t).subtract(p.getEyePosition());
-                    if (to.length() > reach || to.normalize().dot(look) < 0.3) continue;
-                    AstaFx.damage(p, t, power(p, power) * (ii == 2 ? 0.5f : 0.35f), "bone_sword");
-                    t.setDeltaMovement(t.getDeltaMovement().add(look.scale(0.6)).add(0, ii == 2 ? -0.3 : 0.2, 0));
+                Vec3 sweep = rt.scale(cutDir[ii][0]).add(up.scale(cutDir[ii][1])).normalize();
+                Vec3 side = sweep.cross(look).normalize();
+                Vec3 at = p.getEyePosition().add(look.scale(1.2)).add(0, -0.4, 0);
+                int life = u ? 16 : 10;
+                float spd = 1.6f;
+                for (int k = -1; k <= 1; k++) {   // three parallel claw-marks
+                    FxSend.slash(sl, B, at.add(side.scale(k * 0.55)), look, sweep, 1.2f, 2.0f, life, spd, 0.6f);
+                    bone(sl, SPIKE, at.add(side.scale(k * 0.55)).add(look.scale(0.8)), look, sweep, 0.5f, 0.05f, 8, 0, FxPacket.HOLD, 0, look.scale(spd), 7);
+                }
+                if (u) FxSend.slash(sl, SPACE, at.add(look.scale(0.5)), look, sweep, 2.0f, 4.0f, life, spd, 0.8f);
+                double reach = (life) * spd;
+                Vec3 end = at.add(look.scale(reach));
+                for (LivingEntity t : enemies(sl, p, new AABB(at, end).inflate(2.5))) {
+                    Vec3 on = closestOnSegment(at, end, mid(t));
+                    if (on.distanceTo(mid(t)) > 2.0) continue;
+                    AstaFx.damage(p, t, power(p, power) * (u ? 0.45f : 0.35f), "bone_sword");
+                    t.setDeltaMovement(t.getDeltaMovement().add(look.scale(0.4)).add(0, 0.15, 0));
                     t.hurtMarked = true;
                     splinters(sl, mid(t), look);
                 }
-                if (u) {   // Beelzebub: the cut carries on through space - a violet-black wave 12 blocks long
-                    FxSend.slash(sl, SPACE, at.add(look.scale(0.5)), look, sweep, 2.0f, 4.5f, 8, 1.6f, 0.8f);
-                    Vec3 end = at.add(look.scale(12));
-                    for (LivingEntity t : enemies(sl, p, new AABB(at, end).inflate(2.5))) {
-                        Vec3 on = closestOnSegment(at, end, mid(t));
-                        if (on.distanceTo(mid(t)) > 2.5) continue;
-                        AstaFx.damage(p, t, power(p, power) * 0.3f, "bone_sword");
-                    }
-                }
-                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 0.8f);
+                sound(sl, p.position(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_SWEEP, 1f, 0.7f);
             });
         }
     }
@@ -323,6 +320,7 @@ public class BoneFx {
         double R = u ? 14 : 9;
         double period = u ? 7 : 10;   // ticks per lash
         crack(sl, p.position(), 0.8f);
+        sendHeld(p, 38, WHIP_TICKS + 4, (float) R, n, (float) period, u);   // drawn once, smoothly, on the client
         Map<UUID, Long> lastHit = new HashMap<>();
         for (int t = 0; t < WHIP_TICKS; t++) {
             final int tt = t;
@@ -330,10 +328,11 @@ public class BoneFx {
                 if (!alive(p)) return;
                 List<LivingEntity> foes = new ArrayList<>(enemies(sl, p, p.getBoundingBox().inflate(R)));
                 foes.removeIf(e -> e.distanceTo(p) > R);
-                foes.sort(Comparator.comparingDouble(e -> e.distanceToSqr(p)));
+                foes.sort(Comparator.comparingInt(net.minecraft.world.entity.Entity::getId));
                 for (int i = 0; i < n; i++) {
-                    LivingEntity t0 = foes.isEmpty() ? null : foes.get(i % foes.size());
-                    double phase = ((tt + i * period * 0.4) % period) / period;
+                    double cyc = (tt + i * period * 0.4) / period;
+                    LivingEntity t0 = foes.isEmpty() ? null : foes.get(Math.floorMod((int) Math.floor(cyc) + i, foes.size()));
+                    double phase = cyc - Math.floor(cyc);
                     // each whip grows from your back: coiled round you while it waits, then it snaps out to its mark and back
                     Vec3 look0 = p.getLookAngle();
                     Vec3 root = p.position().add(0, 1.25 + (i % 2) * 0.28, 0).add(flat(look0).scale(-0.35)).add(rightOf(look0).scale((i - (n - 1) / 2.0) * 0.3));
@@ -341,7 +340,6 @@ public class BoneFx {
                     Vec3 coil = root.add(Math.cos(ca) * 1.7, 0.5 + Math.sin(tt * 0.2 + i) * 0.3, Math.sin(ca) * 1.7);
                     double reach = 1.0 - Math.abs(2 * phase - 1);                 // 0 coiled .. 1 fully out
                     Vec3 tip = t0 == null ? coil : coil.add(mid(t0).subtract(coil).scale(reach * reach * (3 - 2 * reach)));
-                    whip(sl, root, tip, i * 1.7, tt);
                     if (t0 == null || Math.abs(phase - 0.5) > 0.5 / period + 1.0E-6) continue;   // the tick the lash is fully out
                     Long lh = lastHit.get(t0.getUUID());
                     if (lh != null && tt - lh < 5) continue;
@@ -646,7 +644,7 @@ public class BoneFx {
     }
 
     // ================================================================== 10. Bone Spear Storm
-    /** A cube of space opens high over the spot you aim at and pours down bone spears for 3 s across an 8-block circle. */
+    /** A great wheel of ribs opens in the sky over the spot you aim at and spirals bone spears down for 3 s across a 9-block circle. */
     public static void spearStorm(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         boolean u = inUnion(p);
@@ -657,9 +655,24 @@ public class BoneFx {
         final Vec3 c = g != null ? g : hitAt;
         final double R = u ? 14 : 9;
         final Vec3 sky = c.add(0, 16, 0);
-        cube(sl, sky, (float) R * 0.6f, 70);
-        FxSend.ring(sl, B, c.add(0, 0.05, 0), (float) R - 0.3f, (float) R, 0.06f, 70);   // where it will fall
+        // a great wheel of ribs opens in the sky, and its rim is drawn over the ground where the spears will land
+        final int ribs = 14;
+        for (int i = 0; i < ribs; i++) {
+            double a = i * Math.PI * 2 / ribs;
+            Vec3 out = new Vec3(Math.cos(a), 0, Math.sin(a));
+            bone(sl, RIB, sky.add(out.scale(R * 0.55)), out.cross(new Vec3(0, 1, 0)), new Vec3(0, 1, 0), 2.2f, 0.16f, 74, 6, FxPacket.EXTEND, 0, Vec3.ZERO, 0);
+        }
+        FxSend.ring(sl, B, sky, (float) R * 0.6f - 0.2f, (float) R * 0.6f, 0.25f, 74);
+        FxSend.ring(sl, B, sky, (float) R * 0.3f - 0.2f, (float) R * 0.3f, 0.2f, 74);
+        FxSend.ring(sl, B, c.add(0, 0.05, 0), (float) R - 0.3f, (float) R, 0.06f, 70);
+        FxSend.ring(sl, B, c.add(0, 0.05, 0), 0.3f, (float) R * 0.5f, 0.05f, 24);   // ripples in toward the middle
+        if (u) {
+            FxSend.ring(sl, SPACE, sky.add(0, 1.5, 0), (float) R * 0.8f - 0.2f, (float) R * 0.8f, 0.3f, 74);
+            FxSend.ring(sl, SPACE, c.add(0, 0.08, 0), (float) R * 0.6f, (float) R * 0.65f, 0.05f, 70);
+        }
+        FxSend.shake(sl, c, 0.3f, 10, 24);
         sound(sl, sky, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, 1f, 0.4f);
+        sound(sl, sky, net.minecraft.sounds.SoundEvents.WITHER_SKELETON_AMBIENT, 1f, 0.5f);
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int perTick = u ? 3 : 2;
         for (int t = 0; t < 50; t++) {
@@ -677,7 +690,8 @@ public class BoneFx {
                         double a = r.nextDouble(Math.PI * 2), d = Math.sqrt(r.nextDouble()) * R;
                         land = c.add(Math.cos(a) * d, 0, Math.sin(a) * d);
                     }
-                    Vec3 top = sky.add(r.nextDouble(-R * 0.4, R * 0.4), 0, r.nextDouble(-R * 0.4, R * 0.4));
+                    double sa = tt * 0.45 + k * Math.PI * 2 / perTick;   // the rain sweeps round the wheel like a spiral
+                    Vec3 top = sky.add(Math.cos(sa) * R * 0.55, 0, Math.sin(sa) * R * 0.55);
                     Vec3 dir = land.subtract(top).normalize();
                     stormSpear(p, sl, top, dir, power(p, power) * 0.3f, 0, new HashSet<>());
                 }

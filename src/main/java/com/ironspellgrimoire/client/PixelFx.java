@@ -38,11 +38,11 @@ public final class PixelFx {
     /** The pixel-art sprites (grey-scale, tinted per palette). Long ones point up: the top row leads. */
     static final int K_STREAK = 0, K_SHARD = 1, K_EMBER = 2, K_TONGUE = 3, K_BLADE = 4, K_CROSS = 5, K_BOLT = 6, K_FEATHER = 7,
             K_STAR = 8, K_PLATE = 9, K_RING = 10, K_BARB = 11, K_PUFF = 12, K_MOON = 13, K_DROP = 14, K_WISP = 15, K_DIAMOND = 16,
-            K_CLAW = 17, K_BONE = 18, K_GLOW = 19, K_SHOCK = 20;
+            K_CLAW = 17, K_BONE = 18, K_GLOW = 19, K_SHOCK = 20, K_COTTON = 21, K_TUFT = 22, K_FIBER = 23;
     private static final ResourceLocation[] TEX = {
             tex("streak"), tex("shard"), tex("ember"), tex("tongue"), tex("blade"), tex("cross"), tex("bolt"), tex("feather"),
             tex("star"), tex("plate"), tex("ring"), tex("barb"), tex("puff"), tex("moon"), tex("drop"), tex("wisp"), tex("diamond"),
-            tex("claw"), tex("bone"), tex("glow"), tex("shock")};
+            tex("claw"), tex("bone"), tex("glow"), tex("shock"), tex("cotton"), tex("tuft"), tex("fiber")};
     private static final ResourceLocation[] TEX_CORE = suffixed("_core"), TEX_RIM = suffixed("_rim");
 
     private static ResourceLocation[] suffixed(String sfx) {
@@ -112,7 +112,7 @@ public final class PixelFx {
             {1.0F, 0.98F, 0.93F}, {1.0F, 0.55F, 0.78F}, {0.62F, 0.45F, 1.0F}, {1.0F, 0.1F, 0.06F},
             {0.3F, 0.7F, 1.0F}, {0.85F, 0.88F, 1.0F}, {0.9F, 0.25F, 0.85F},
             {1.0F, 0.38F, 0.1F}, {1.0F, 0.72F, 0.18F}, {0.45F, 0.95F, 0.38F}, {1.0F, 0.3F, 0.36F}, {0.86F, 0.64F, 0.36F},
-            {0.3F, 0.88F, 0.7F}, {1.0F, 0.78F, 0.9F},
+            {0.78F, 0.38F, 1.0F}, {1.0F, 0.97F, 0.99F},
             {0.3F, 0.88F, 1.0F},
             {0.66F, 0.46F, 0.24F}
     };
@@ -124,7 +124,7 @@ public final class PixelFx {
             {0.95F, 0.93F, 0.88F}, {0.4F, 0.12F, 0.26F}, {0.04F, 0.02F, 0.12F}, {0.2F, 0.0F, 0.01F},
             {0.02F, 0.08F, 0.22F}, {0.55F, 0.58F, 0.7F}, {0.1F, 0.0F, 0.12F},
             {0.12F, 0.02F, 0.01F}, {0.2F, 0.12F, 0.02F}, {0.05F, 0.14F, 0.05F}, {0.08F, 0.0F, 0.02F}, {0.34F, 0.24F, 0.14F},
-            {0.04F, 0.16F, 0.12F}, {0.95F, 0.9F, 0.95F},
+            {0.12F, 0.04F, 0.2F}, {0.97F, 0.97F, 1.0F},
             {0.02F, 0.1F, 0.2F},
             {0.2F, 0.11F, 0.05F}
     };
@@ -421,6 +421,7 @@ public final class PixelFx {
         float sz = (float) size;
         pal = Math.min(pal, LONG.length - 1);
         int L = LONG[pal], B = BIT[pal], X = SPEC[pal];
+        if (pal == 28) { cottonOne(at, drift, axis, sz); return; }
         double q = r.nextDouble();
         Spr p;
         switch (element(pal)) {
@@ -572,6 +573,56 @@ public final class PixelFx {
         add(p);
     }
 
+
+    // ------------------------------------------------------------------ real cotton (Charmy): lumpy fluffy bolls, tufts and curling fibres, solid white with soft shading
+    private static void cottonOne(Vec3 at, Vec3 drift, Vec3 axis, float sz) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        double q = r.nextDouble();
+        Spr p;
+        if (q < 0.5) {         // a boll of cotton, floating on
+            Vec3 v = drift.scale(0.35).add(rnd(r, 0.03)).add(0, 0.01, 0);
+            float s = sz * (float) r.nextDouble(0.9, 1.7);
+            p = spr(at.add(rnd(r, sz * 0.2)), v, v, K_COTTON, s, s, r.nextInt(10, 18));
+            p.tone = (float) r.nextDouble(0.88, 1.0); p.drag = 0.9F; p.grav = -0.003F; p.spin = (float) r.nextDouble(-0.15, 0.15); p.pop = 2; p.grow = 1.015F;
+        } else if (q < 0.72) { // a tuft with fine fibres streaming off it
+            Vec3 v = drift.scale(0.3).add(rnd(r, 0.04)).add(0, 0.015, 0);
+            float s = sz * (float) r.nextDouble(0.8, 1.3);
+            p = spr(at.add(rnd(r, sz * 0.2)), v, v, K_TUFT, s, s, r.nextInt(8, 15));
+            p.tone = (float) r.nextDouble(0.9, 1.0); p.drag = 0.9F; p.grav = -0.004F; p.spin = (float) r.nextDouble(-0.2, 0.2); p.pop = 1.5F;
+        } else if (q < 0.9) {  // a long curling fibre
+            Vec3 v = drift.scale(0.5).add(rnd(r, 0.03));
+            p = spr(at, v, v.lengthSqr() > 1.0E-6 ? v : axis, K_FIBER, sz * 1.8F, sz * 0.4F, r.nextInt(6, 11));
+            p.tone = 0.97F; p.drag = 0.92F; p.grav = -0.002F; p.curl = nz(drift, UP); p.curlRate = (float) r.nextDouble(0.15, 0.35) * (r.nextBoolean() ? 1 : -1);
+        } else {               // a speck of fluff
+            Vec3 v = drift.scale(0.2).add(rnd(r, 0.03)).add(0, 0.02, 0);
+            p = spr(at, v, v, K_EMBER, sz * 0.18F, sz * 0.18F, r.nextInt(10, 18));
+            p.drag = 0.93F; p.grav = -0.003F;
+        }
+        p.dark = true; p.darkAlpha = 1.0F; p.pal = 28;
+        add(p);
+    }
+
+    /** A ball of cotton: a heap of overlapping lumps with fibres bristling off its surface. */
+    private static void cottonBall(Vec3 at, Vec3 v, double R) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        int n = cnt(Mth.clamp(R * 9.0, 5.0, 26.0));
+        for (int i = 0; i < n; i++) {
+            Vec3 dir = nz(rnd(r, 1.0), UP);
+            double rr = R * 0.8 * Math.cbrt(r.nextDouble());
+            float sz = (float) (R * r.nextDouble(0.7, 1.1));
+            Spr s = spr(at.add(dir.scale(rr)), v, dir, K_COTTON, sz, sz, r.nextInt(2, 4));
+            s.dark = true; s.darkAlpha = 1.0F; s.tone = 0.84F + 0.16F * r.nextFloat(); s.spin = (r.nextFloat() - 0.5F) * 0.3F; s.pal = 28;
+            add(s);
+        }
+        int f = cnt(Mth.clamp(R * 6.0, 3.0, 14.0));
+        for (int i = 0; i < f; i++) {
+            Vec3 dir = nz(rnd(r, 1.0), UP);
+            Spr s = spr(at.add(dir.scale(R * 0.9)), v.add(dir.scale(0.03)), dir, K_FIBER, (float) R * 1.1F, (float) R * 0.25F, r.nextInt(2, 4));
+            s.dark = true; s.darkAlpha = 1.0F; s.tone = 0.97F; s.pal = 28;
+            add(s);
+        }
+    }
+
     /**
      * The body of a fireball / mercury sphere, all in sprites, moving with it: fire is a churning ball of flame tongues
      * with a white-hot heart; mercury is a cluster of silver drops with glints; anything else, its own pieces.
@@ -579,6 +630,7 @@ public final class PixelFx {
     private static void ball(int pal, Vec3 at, Vec3 v, double R) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int el = element(pal);
+        if (pal == 28) { cottonBall(at, v, R); return; }
         if (R > 1.2) { shell(pal, el, at, v, R, r); return; }
         if (pal == 11) { mercuryBall(at, v, R, r); return; }
         int n = cnt(Mth.clamp(R * 12.0, 6.0, 30.0));
@@ -1449,7 +1501,7 @@ public final class PixelFx {
 
     /** Sprites drawn as a square (not stretched along their travel). */
     private static boolean square(int k) {
-        return k == K_SHARD || k == K_EMBER || k == K_CROSS || k == K_STAR || k == K_PLATE || k == K_RING || k == K_PUFF || k == K_DIAMOND || k == K_GLOW || k == K_SHOCK;
+        return k == K_SHARD || k == K_EMBER || k == K_CROSS || k == K_STAR || k == K_PLATE || k == K_RING || k == K_PUFF || k == K_DIAMOND || k == K_GLOW || k == K_SHOCK || k == K_COTTON || k == K_TUFT;
     }
 
     private static float fadeOf(Spr p, Vec3 pos, Vec3 cam, float pt, float opacity) {
@@ -1512,7 +1564,7 @@ public final class PixelFx {
             if (side.lengthSqr() < 1.0E-8) side = ax.cross(UP);
             if (side.lengthSqr() < 1.0E-8) side = new Vec3(1, 0, 0);
             side = side.normalize();
-            float stretch = p.kind == K_STREAK || p.kind == K_TONGUE || p.kind == K_CLAW || p.kind == K_WISP ? 0.7F + 0.6F * (1.0F - life) : 1.0F;
+            float stretch = p.kind == K_STREAK || p.kind == K_TONGUE || p.kind == K_CLAW || p.kind == K_WISP || p.kind == K_FIBER ? 0.7F + 0.6F * (1.0F - life) : 1.0F;
             len = p.len * stretch * scale; wid = p.wid * scale;
         }
         float r, g, bl, al = 1.0F;

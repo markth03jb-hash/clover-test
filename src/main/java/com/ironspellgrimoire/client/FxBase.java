@@ -65,7 +65,7 @@ abstract class FxBase {
       {0.03F, 0.12F, 0.04F},   // 24 world tree
       {0.18F, 0.02F, 0.04F},   // 25 ripper
       {0.2F, 0.13F, 0.06F},    // 26 earth
-      {0.02F, 0.14F, 0.1F},    // 27 beast
+      {0.1F, 0.03F, 0.18F},    // 27 beast: deep violet
       {0.55F, 0.5F, 0.55F},    // 28 cotton
       {0.02F, 0.13F, 0.22F},   // 29 Julius's time: deep clockwork blue
       {0.26F, 0.15F, 0.07F}    // 30 bark (the World Tree's wood)
@@ -92,8 +92,8 @@ abstract class FxBase {
       {0.45F, 0.95F, 0.38F},   // 24 world tree: living green
       {1.0F, 0.3F, 0.36F},     // 25 ripper: blood-red edge
       {0.86F, 0.64F, 0.36F},   // 26 earth: ochre
-      {0.3F, 0.88F, 0.7F},     // 27 beast: sea-green
-      {1.0F, 0.78F, 0.9F},     // 28 cotton: candy pink
+      {0.78F, 0.38F, 1.0F},    // 27 beast: feral violet
+      {1.0F, 0.97F, 0.99F},    // 28 cotton: clean white
       {0.3F, 0.86F, 1.0F},     // 29 Julius: cyan
       {0.66F, 0.44F, 0.22F}    // 30 bark: warm brown
    };
