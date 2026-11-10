@@ -1,7 +1,11 @@
-Iron Spell Grimoire v1.77.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.78.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.78.0
+- Fixed a crash (ArrayIndexOutOfBounds in PixelFx) when casting with the newer grimoires (Julius and the seven new books).
+- Julius's Time Grimoire now folds in on itself: covers back to back, pages fanned in a full circle, no front or back cover.
 
 NEW IN 1.77.0
 - Julius Novachrono's Time Grimoire: twelve spells of Time Magic - Clock Hand Bolt, Time Stop Point, Time Skip,
