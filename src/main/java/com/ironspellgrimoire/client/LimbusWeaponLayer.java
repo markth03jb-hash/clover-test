@@ -78,6 +78,7 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
         PlayerModel<AbstractClientPlayer> m = getParentModel();
         hand(ps, vc, m.rightArm, -1.0F / 16.0F, kind, gold, g, now, true);
         if (twoHanded(kind)) hand(ps, vc, m.leftArm, 1.0F / 16.0F, kind, gold, g, now, false);
+        else if (gold && kind != VIAL) hand(ps, vc, m.leftArm, 1.0F / 16.0F, VIAL, true, 1F, now, false);   // Rien keeps the Caduceus rods in the other hand
     }
 
     private static boolean twoHanded(int k) { return k == TWIN || k == FISTS || k == DAGGERS || k == BOW; }
@@ -123,7 +124,7 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
     private static void draw(PoseStack ps, VertexConsumer vc, int kind, boolean gold, float g, double now, boolean right) {
         Matrix4f m = ps.last().pose();
         Matrix3f n = ps.last().normal();
-        Mat mat = new Mat(gold, now);
+        Mat mat = new Mat(gold ? 1 : 0, now);
         float L = g;   // everything grows out of the fist (gold pours out of the vial)
         switch (kind) {
             case LANCE -> {
@@ -233,12 +234,18 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
 
     // ------------------------------------------------------------------ materials
     /** Blood: glossy near-black red with a wet highlight. Gold: liquid gold with a ripple of light along it. */
-    private record Mat(boolean gold, double now) {
+    private record Mat(int style, double now) {
         float[] col(float shade, float along) {
-            if (gold) {
+            if (style == 1) {
                 float rip = (float) Math.max(0, Math.sin(now * 0.45 - along * 6.0)) * 0.35F;
                 float k = 0.45F + 0.55F * shade + rip;
                 return new float[]{Math.min(1F, 0.98F * k), Math.min(1F, 0.72F * k + rip * 0.3F), Math.min(1F, 0.2F * k + rip * 0.5F)};
+            }
+            if (style == 2 || style == 3) {   // the Caduceus rods: black lacquer, and white enamel
+                float spec = shade > 0.88F ? (shade - 0.88F) * 6F : 0F;
+                float base = style == 2 ? 0.1F : 0.78F, k = 0.45F + 0.55F * shade;
+                float v = Math.min(1F, base * k + spec * 0.5F);
+                return new float[]{v, v, Math.min(1F, v * 1.02F)};
             }
             float spec = shade > 0.9F ? (shade - 0.9F) * 8F : 0F;
             float k = 0.25F + 0.75F * shade;
@@ -307,16 +314,37 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
         tube(vc, m, n, mat, x, y, z, x, y, z + r, r, r, 0F, 0F, 8);
     }
 
-    /** The Caduceus itself: a gold vial hanging from a short chain looped round the fist, swinging. */
-    private static void vial(VertexConsumer vc, Matrix4f m, Matrix3f n, Mat mat, double now) {
-        float sw = (float) Math.sin(now * 0.25) * 0.15F;
-        float px = 0, py = 0.05F;
-        for (int i = 1; i <= 5; i++) {
-            float x = sw * i / 5F, y = 0.05F + i * 0.07F;
-            tube(vc, m, n, mat, px, py, 0, x, y, 0, 0.012F, 0.012F, 0.012F, 0.012F, 4);
-            px = x; py = y;
+    /**
+     * The Caduceus itself: two rods, one black and one white, each banded and capped in gold, joined end to end by a
+     * gold chain. The black rod is held; the white one hangs off the chain and swings.
+     */
+    private static void vial(VertexConsumer vc, Matrix4f m, Matrix3f n, Mat gold, double now) {
+        Mat black = new Mat(2, now), white = new Mat(3, now);
+        // the held rod, along -z out of the fist
+        rod(vc, m, n, black, gold, 0, 0, 0.25F, 0, 0, -0.75F, now);
+        // the chain from the far end of the held rod, hanging and swinging, to the white rod
+        float sw = (float) Math.sin(now * 0.22) * 0.35F, sw2 = (float) Math.cos(now * 0.17) * 0.15F;
+        float px = 0, py = 0, pz = -0.75F;
+        float ex = sw, ey = 0.65F, ez = -0.55F + sw2;
+        for (int i = 1; i <= 9; i++) {
+            float t = i / 9F;
+            float x = ex * t, y = ey * t - (float) Math.sin(t * Math.PI) * 0.12F, z = -0.75F + (ez + 0.75F) * t;
+            if (i % 2 == 1) ring(vc, m, n, gold, (px + x) * 0.5F, (py + y) * 0.5F, (pz + z) * 0.5F, 0.03F, 0.008F);
+            else tube(vc, m, n, gold, px, py, pz, x, y, z, 0.01F, 0.01F, 0.01F, 0.01F, 4);
+            px = x; py = y; pz = z;
         }
-        tube(vc, m, n, mat, px, py, 0, px, py + 0.05F, 0, 0.04F, 0.04F, 0.04F, 0.04F, 6);   // stopper
-        sphere(vc, m, n, mat, px, py + 0.16F, 0, 0.11F);
+        // the white rod hanging from the chain's end, roughly level and swinging with it
+        rod(vc, m, n, white, gold, ex, ey, ez, ex + 0.1F + sw * 0.4F, ey + 0.08F, ez + 0.95F, now);
+    }
+
+    private static void rod(VertexConsumer vc, Matrix4f m, Matrix3f n, Mat body, Mat gold, float ax, float ay, float az, float bx, float by, float bz, double now) {
+        tube(vc, m, n, body, ax, ay, az, bx, by, bz, 0.045F, 0.045F, 0.045F, 0.045F, 8);
+        for (float t : new float[]{0.1F, 0.18F, 0.82F, 0.9F}) {   // bands near each end
+            float x = ax + (bx - ax) * t, y = ay + (by - ay) * t, z = az + (bz - az) * t;
+            float x2 = ax + (bx - ax) * (t + 0.025F), y2 = ay + (by - ay) * (t + 0.025F), z2 = az + (bz - az) * (t + 0.025F);
+            tube(vc, m, n, body.style() == 2 ? new Mat(3, now) : new Mat(2, now), x, y, z, x2, y2, z2, 0.05F, 0.05F, 0.05F, 0.05F, 8);
+        }
+        sphere(vc, m, n, gold, ax, ay, az, 0.06F);   // gold caps
+        sphere(vc, m, n, gold, bx, by, bz, 0.06F);
     }
 }

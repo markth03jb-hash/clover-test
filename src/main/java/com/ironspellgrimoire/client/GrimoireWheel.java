@@ -205,15 +205,30 @@ public final class GrimoireWheel {
             disc(bb, m, cx, cy + cr * 0.12, cr * 0.42 * pulse, ac[0], ac[1], ac[2], A);
             for (int q = 1; q <= 5; q++) disc(bb, m, cx, cy + cr * 0.12 - cr * 0.1 * q, cr * 0.42 * pulse * (1.0 - q * 0.17), ac[0], ac[1], ac[2], A);
             disc(bb, m, cx - cr * 0.14, cy + cr * 0.02, cr * 0.09, 1.0F, 0.8F, 0.8F, 0.9F * A);
-        } else if (book == 23) {   // Rien: the Caduceus - a gold vial on a chain, its liquid swaying
+        } else if (book == 23) {   // Rien: the Caduceus - a black rod and a white rod, gold-capped, joined by a gold chain
             float[] ac = th.accent;
             double cr = rIn - 2.0;
             ring(bb, m, cx, cy, cr - 1.3, cr, 0, TAU, tr[0], tr[1], tr[2], 0.95F * A, tr[0], tr[1], tr[2], 0.95F * A, 40);
-            double sw = Math.sin(time * 1.5) * 0.25;
-            for (int i = 0; i < 5; i++) disc(bb, m, cx + Math.sin(sw) * cr * (0.15 * i), cy - cr * 0.8 + cr * 0.15 * i, 1.2, tr[0], tr[1], tr[2], A);
-            double vx = cx + Math.sin(sw) * cr * 0.75, vy = cy + cr * 0.1;
-            disc(bb, m, vx, vy, cr * 0.36, tr[0], tr[1], tr[2], A);
-            disc(bb, m, vx, vy + cr * 0.06, cr * 0.26, ac[0], ac[1], ac[2], A);
+            double sw = Math.sin(time * 1.2) * 0.08;
+            double[][] rods = {{-0.62, -0.05, 0.62, -0.32}, {-0.58, 0.32, 0.66, 0.05}};
+            for (int rr = 0; rr < 2; rr++) {
+                double[] q = rods[rr];
+                float[] rodCol = rr == 0 ? new float[]{0.16F, 0.16F, 0.18F} : new float[]{0.92F, 0.9F, 0.86F};
+                for (int s2 = 0; s2 <= 24; s2++) {
+                    double t = s2 / 24.0;
+                    double x = cx + cr * (q[0] + (q[2] - q[0]) * t), y = cy + cr * (q[1] + (q[3] - q[1]) * t + sw * rr);
+                    boolean band = (t > 0.1 && t < 0.16) || (t > 0.84 && t < 0.9);
+                    float[] c2 = band ? (rr == 0 ? new float[]{0.92F, 0.9F, 0.86F} : new float[]{0.16F, 0.16F, 0.18F}) : rodCol;
+                    disc(bb, m, x, y, cr * 0.075, c2[0], c2[1], c2[2], A);
+                }
+                disc(bb, m, cx + cr * q[0], cy + cr * (q[1] + sw * rr), cr * 0.1, tr[0], tr[1], tr[2], A);
+                disc(bb, m, cx + cr * q[2], cy + cr * (q[3] + sw * rr), cr * 0.1, tr[0], tr[1], tr[2], A);
+            }
+            for (int s2 = 0; s2 <= 12; s2++) {   // the chain, arcing over from the left ends to the right ends
+                double t = s2 / 12.0;
+                double x = cx + cr * (-0.62 + 1.28 * t), y = cy + cr * (-0.05 - 0.27 * t - Math.sin(t * Math.PI) * 0.5);
+                disc(bb, m, x, y, cr * (s2 % 2 == 0 ? 0.055 : 0.035), tr[0], tr[1], tr[2], A);
+            }
         } else
         for (int pass = 0; pass < 2; pass++) {   // the trim colour as an outline first, the leaf over it
             for (int l = 0; l < th.leaves; l++) {

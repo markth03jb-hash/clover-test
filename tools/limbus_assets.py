@@ -1,4 +1,4 @@
-"""Covers, leather, trim, inventory icons and spell icons for the two Limbus-inspired grimoires (original designs):
+"""Spell icons for the two Limbus-inspired grimoires (original designs):
  - Bloodfiend Grimoire (Don Quixote, La Manchaland): wine-black leather, old gold, a drop of blood over a lance.
  - Caduceus Grimoire (Rien, the Index): black leather, liquid gold, a vial hanging on a chain."""
 from PIL import Image, ImageDraw, ImageFilter
@@ -104,10 +104,6 @@ def dq_emblem(d):
         d.ellipse([P(x - 4, y - 4), P(x + 4, y + 4)], fill=INK)
         d.ellipse([P(x - 3, y - 3), P(x + 3, y + 3)], fill=RED if i % 2 else OLD)
 
-cover('bloodfiend_grimoire', BG, BG2, dq_emblem, OLD, OLD_SH, OLD_HI)
-leather((58, 8, 16, 255), (30, 2, 8, 255), (90, 20, 30, 255), 7).save(os.path.join(M, 'bloodfiend_grimoire_leather.png'))
-trim(OLD, OLD_SH, OLD_HI).save(os.path.join(M, 'bloodfiend_grimoire_trim.png'))
-
 # ---------------------------------------------------------------- Rien: a vial on a chain, liquid gold
 RBG, RBG2 = (20, 20, 22, 255), (6, 6, 8, 255)
 GLD, GLD_SH, GLD_HI = (242, 196, 74, 255), (140, 96, 18, 255), (255, 246, 196, 255)
@@ -148,26 +144,7 @@ def rien_emblem(d):
         d.ellipse([P(x - 3, y - 3), P(x + 3, y + 3)], fill=WHITE if i % 2 else GLD)
     d.ellipse([P(cx - 92, by - 92), P(cx + 92, by + 92)], outline=GLD, width=2 * S)
 
-cover('caduceus_grimoire', RBG, RBG2, rien_emblem, GLD, GLD_SH, GLD_HI)
-leather((26, 26, 28, 255), (10, 10, 12, 255), (54, 50, 44, 255), 11).save(os.path.join(M, 'caduceus_grimoire_leather.png'))
-trim(GLD, GLD_SH, GLD_HI).save(os.path.join(M, 'caduceus_grimoire_trim.png'))
-
-# ---------------------------------------------------------------- inventory icons (16x16)
-def book_icon(name, cover_c, spine_c, gold, emblem):
-    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    d.rectangle([2, 1, 13, 14], fill=INK)
-    d.rectangle([3, 1, 13, 13], fill=cover_c)
-    d.rectangle([2, 1, 3, 14], fill=spine_c)
-    d.rectangle([4, 2, 12, 12], outline=gold)
-    d.line([(3, 14), (13, 14)], fill=(220, 210, 190, 255))
-    emblem(d)
-    im.save(os.path.join(ROOT, name + '.png'))
-
-book_icon('bloodfiend_grimoire', (70, 8, 18, 255), (36, 2, 8, 255), OLD,
-          lambda d: (d.polygon([(8, 4), (10, 8), (8, 10), (6, 8)], fill=RED), d.point((7, 7), fill=RED_HI)))
-book_icon('caduceus_grimoire', (28, 28, 30, 255), (10, 10, 12, 255), GLD,
-          lambda d: (d.line([(8, 3), (8, 6)], fill=GLD), d.ellipse([6, 6, 10, 10], fill=GLD), d.point((7, 7), fill=GLD_HI)))
+# (the two powers are not books: their inventory sprites - the hardblood lance and the Caduceus rods - are hand-made pixel art saved directly as textures/item/bloodfiend_grimoire.png and caduceus_grimoire.png)
 
 # ---------------------------------------------------------------- spell icons
 B = ((110, 8, 22), (14, 2, 4), (226, 30, 48), (255, 214, 140))   # blood: crimson + old gold accent
