@@ -448,7 +448,7 @@ public class GrimoireFloatRenderer {
                Vec3 fp0 = bookPos.add(fr.nextDouble(-0.25, 0.25), 0.05, fr.nextDouble(-0.25, 0.25));
                DarkSmoke.crimsonFlame(fp0, new Vec3(0, fr.nextDouble(0.03, 0.07), 0), (float) fr.nextDouble(0.08, 0.16), fr.nextInt(8, 14));
             }
-            if (timeBook) TimeFxClient.bookFan(bookPos, k, s / OPEN_SCALE, cyc);   // Julius: covers folded back to back, pages fanned in a full circle
+            if (timeBook) TimeFxClient.bookFan(bookPos, k, (fp ? FP_SCALE : OPEN_SCALE) / OPEN_SCALE, cast);   // steady: no overshoot pop, no idle page riffle   // Julius: covers folded back to back, pages fanned in a full circle
             else FxRenderer.queueBook(bookPos, yawS - turn, tilt, s, k * (mastered ? 1.5F : 1.0F), cyc, 0.46F, 0.375F, 22.5F, au[0], au[1], light);
          }
          ps.popPose();

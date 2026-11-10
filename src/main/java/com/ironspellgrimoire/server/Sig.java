@@ -60,7 +60,11 @@ final class Sig {
                 for (int i = 0; i < 4; i++) Kit.orb(sl, pal, at.add(0, 0.5, 0), new Vec3(rnd.nextDouble(-0.2, 0.2), 0.3, rnd.nextDouble(-0.2, 0.2)), 0.35f, 6);
             }
             case Moves.TREE -> {    // saplings shoot up out of the ground and stand as real little trees
-                int n = R > 3 ? 3 : 2;
+                // trees are heavy (dozens of boxes each): one at a time, and none while another is still growing nearby
+                long gt = sl.getGameTime();
+                if (gt - lastTree < 24) { FxSend.ring(sl, pal, at.add(0, 0.05, 0), R * 0.3f, R * 0.8f, 0.03f, 8); break; }
+                lastTree = gt;
+                int n = 1;
                 float H = Math.max(2.4f, Math.min(4.6f, R * 0.8f + 1.2f));
                 for (int i = 0; i < n; i++) {
                     double a = i * Math.PI * 2 / n + rnd.nextDouble(0.8), d = R * (0.25 + 0.4 * rnd.nextDouble());
@@ -240,6 +244,8 @@ final class Sig {
      * gripping the ground, branches spreading from the upper trunk, and a crown of leaf-cubes popping in over it - all solid
      * 3D with pixel-art texture, with leaves drifting down from it. It stands for {@code life} ticks, then sinks away.
      */
+    private static long lastTree = -1000;
+
     static void tree(ServerLevel sl, Vec3 base, float H, int life, long seed, int delay) {
         Random r = new Random(seed);
         final int B = Fx.BARK, LF = Fx.TREE;
