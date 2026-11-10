@@ -183,6 +183,20 @@ public final class GrimoireWheel {
         double rl = (rIn - 2.0) * 0.78;
         double spin = time * (book == 0 ? -0.25 : 0.25);
         leafLobe = th.leaves >= 5 ? 0.24 : 0.3;
+        if (book == 21) {   // Julius: no clover, a clock - it keeps the real time, the second hand ticking round
+            float[] pi = th.pageIn, ac = th.accent;
+            double cr = rIn - 2.0;
+            ring(bb, m, cx, cy, 0, cr, 0, TAU, pi[0] * 0.6F, pi[1] * 0.6F, pi[2] * 0.6F, 0.96F * A, pi[0], pi[1], pi[2], 0.96F * A, 40);
+            ring(bb, m, cx, cy, cr - 1.3, cr, 0, TAU, tr[0], tr[1], tr[2], 0.95F * A, tr[0], tr[1], tr[2], 0.95F * A, 40);
+            for (int i = 0; i < 12; i++) line(bb, m, cx, cy, i * TAU / 12, cr - (i % 3 == 0 ? 5.0 : 3.2), cr - 1.6, i % 3 == 0 ? 1.4 : 0.8, tr[0], tr[1], tr[2], 0.95F * A);
+            java.time.LocalTime lt = java.time.LocalTime.now();
+            double sec = lt.getSecond() + Math.floor(lt.getNano() / 1.0E9 * 4) / 4;   // it ticks in quarter steps, like a clock
+            double mn = lt.getMinute() + sec / 60, hr = (lt.getHour() % 12) + mn / 60;
+            line(bb, m, cx, cy, hr * TAU / 12, 0, cr * 0.5, 2.0, ac[0], ac[1], ac[2], 0.97F * A);
+            line(bb, m, cx, cy, mn * TAU / 60, 0, cr * 0.78, 1.3, tr[0], tr[1], tr[2], 0.97F * A);
+            line(bb, m, cx, cy, sec * TAU / 60, -cr * 0.18, cr * 0.86, 0.6, 1.0F, 1.0F, 1.0F, 0.9F * A);
+            ring(bb, m, cx, cy, 0, 2.2, 0, TAU, ac[0], ac[1], ac[2], A, ac[0], ac[1], ac[2], A, 12);
+        } else
         for (int pass = 0; pass < 2; pass++) {   // the trim colour as an outline first, the leaf over it
             for (int l = 0; l < th.leaves; l++) {
                 double a = spin + l * TAU / th.leaves;
@@ -283,8 +297,8 @@ public final class GrimoireWheel {
             new Theme(c(0x04130F), c(0x0F4034), c(0xE6D08A), c(0x4DDCB0), c(0x1E7A62), 3, O_MANE, M_DOTS, false, 0x061511, 0xBFFFEA),
             // Charmy: rose-cream pages, white trim, soft drops of cream round the ring
             new Theme(c(0x1A0A14), c(0x5A2A48), c(0xFFF0F6), c(0xFF9CCB), c(0x8A3E6A), 3, O_DROPS, M_DOTS, false, 0x1C0C16, 0xFFD6EA),
-            // Julius: midnight-navy pages, bright gold trim, a little clock on every page
-            new Theme(c(0x070A1C), c(0x1A2450), c(0xF4E6B8), c(0xFFC844), c(0x2E3A78), 3, O_RIVETS, M_NOTCHES, true, 0x080B1E, 0xFFF0C8),
+            // Julius: midnight-blue pages, bright cyan trim, a little clock on every page
+            new Theme(c(0x040E1C), c(0x0F3050), c(0xBDF0FF), c(0x3CC8F0), c(0x1A4A70), 3, O_RIVETS, M_NOTCHES, true, 0x05101E, 0xD8F8FF),
     };
 
     /** {page inside, page edge, trim, accent, panel, title} as RGB ints, for the grimoire book screen and others. */
@@ -420,7 +434,7 @@ public final class GrimoireWheel {
                     disc(bb, m, cx + Math.sin(ta) * tr, cy - Math.cos(ta) * tr, 1.5, ac[0], ac[1], ac[2], 0.9F * A);
                 }
             }
-            case 21 -> {   // Julius: a small clock on each page - a gold ring, two hands
+            case 21 -> {   // Julius: a small clock on each page - a cyan ring, two hands
                 double px = cx + Math.sin(am) * mid, py = cy - Math.cos(am) * mid, rr = 4.2 + p;
                 float[] in = th.pageIn;
                 disc(bb, m, px, py, rr, ac[0], ac[1], ac[2], 0.9F * A);

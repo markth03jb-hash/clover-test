@@ -65,6 +65,8 @@ import java.util.Random;
  *  shape 54  a frozen target: id = the entity, life = ticks (0 = let go). A stopped clock at its feet, pages hanging
  *            round it and an hourglass over its head - and when time starts again the pages scatter.
  *  shape 55  stored time on your HUD: life = seconds (0..10), sweep = 1 while you hold the book
+ *  shape 57  a time bubble round one trapped target (the Ticking Snare): id = the entity, life = ticks. A glassy blue
+ *            sphere with a ring of numerals tumbling round it; it pops when the time is up.
  *  shape 56  your screen while time stops (h 0) or runs back (h 1): life = ticks
  */
 @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = Dist.CLIENT)
@@ -73,7 +75,7 @@ public final class TimeFxClient {
 
     private static final double TAU = Math.PI * 2;
     static final float[] PAPER = {0.97F, 0.96F, 0.9F}, COLD = {0.84F, 0.89F, 1.0F}, INK = {0.05F, 0.05F, 0.09F},
-            GOLD = {1.0F, 0.8F, 0.32F}, GOLD_HI = {1.0F, 0.95F, 0.7F}, GOLD_PAPER = {1.0F, 0.87F, 0.52F}, NAVY = {0.04F, 0.06F, 0.17F};
+            GOLD = {0.3F, 0.86F, 1.0F}, GOLD_HI = {0.8F, 0.97F, 1.0F}, GOLD_PAPER = {0.72F, 0.92F, 1.0F}, NAVY = {0.04F, 0.06F, 0.17F};
 
     // ================================================================== state
     private static final class Column {
@@ -113,6 +115,7 @@ public final class TimeFxClient {
     private static final List<Ghost> GHOSTS = new ArrayList<>();
     /** entity id -> {start, end of the freeze} */
     private static final Map<Integer, double[]> MARKS = new HashMap<>();
+    private static final Map<Integer, double[]> BUBBLES = new HashMap<>();
     /** the open Time grimoires this frame: {x, y, z, open 0..1} */
     private static final List<double[]> FANS = new ArrayList<>();
     private static final List<Runnable> GLOWS = new ArrayList<>();
@@ -179,6 +182,9 @@ public final class TimeFxClient {
                     if (f != null) f[1] = Math.min(f[1], now);
                 }
             }
+            case 57 -> {
+                BUBBLES.put(p.id, new double[]{now, now + Math.max(4, p.life)});
+            }
             case 55 -> { stored = Mth.clamp(p.life, 0, 10); holding = p.sweep == 1; }
             case 56 -> {
                 if (p.life > 0) { scrStart = now; scrEnd = now + p.life; scrStyle = (int) p.h; }
@@ -211,7 +217,7 @@ public final class TimeFxClient {
         if (e.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
-            COLUMNS.clear(); CLOCKS.clear(); HANDS.clear(); GHOSTS.clear(); MARKS.clear(); stored = 0; holding = false;
+            COLUMNS.clear(); CLOCKS.clear(); HANDS.clear(); GHOSTS.clear(); MARKS.clear(); BUBBLES.clear(); stored = 0; holding = false;
             return;
         }
         if (mc.isPaused()) return;
@@ -256,6 +262,7 @@ public final class TimeFxClient {
         HANDS.removeIf(k -> (k.killedAt >= 0 && now - k.killedAt > 6) || now - k.born > k.life + 6);
         GHOSTS.removeIf(k -> now - k.born > k.life + 1);
         MARKS.values().removeIf(f -> now > f[1] + 8);
+        BUBBLES.values().removeIf(f -> now > f[1] + 8);
         if (scrEnd >= 0 && now > scrEnd + 8) scrEnd = scrStart = -1;
     }
 
@@ -339,7 +346,7 @@ public final class TimeFxClient {
         if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) { FANS.clear(); return; }
-        boolean any = !COLUMNS.isEmpty() || !CLOCKS.isEmpty() || !HANDS.isEmpty() || !MARKS.isEmpty() || !FANS.isEmpty();
+        boolean any = !COLUMNS.isEmpty() || !CLOCKS.isEmpty() || !HANDS.isEmpty() || !MARKS.isEmpty() || !BUBBLES.isEmpty() || !FANS.isEmpty();
         float pt = e.getPartialTick();
         PT = pt;
         double now = mc.level.getGameTime() + pt;
@@ -362,6 +369,7 @@ public final class TimeFxClient {
         for (Hand k : HANDS) hand(k, now);
         for (Map.Entry<Integer, double[]> m : MARKS.entrySet()) mark(mc, m.getKey(), m.getValue(), now, pt);
         for (double[] f : FANS) fan(f, now);
+        for (Map.Entry<Integer, double[]> m : BUBBLES.entrySet()) bubble(mc, m.getKey(), m.getValue(), now, pt);
         end();
         FANS.clear();
 
@@ -525,8 +533,7 @@ public final class TimeFxClient {
 
     /**
      * Julius's open grimoire: the covers fold all the way back until they meet, so there is no front or back - just
-     * the spine standing upright and every page fanned out round it in a full circle, turning slowly. The two navy
-     * boards sit back to back as one; the pages are ink-edged paper with gilt edges. When a spell is cast the fan
+     * the spine standing upright and every page fanned out round it in a full circle, turning slowly. There is no cover at all, only pages: sixty-odd ink-edged sheets of paper. When a spell is cast the fan
      * riffles: a wave of pages lifts and falls round the ring.
      */
     private static void fan(double[] f, double now) {
@@ -535,7 +542,7 @@ public final class TimeFxClient {
         float sc = (float) f[4];
         double cast = f[5];
         Vec3 c = new Vec3(f[0], f[1] + 0.02, f[2]);
-        int n = 26;
+        int n = 64;
         float W = 0.3F * sc, Hh = 0.24F * sc;                        // page width, half height
         Vec3 up = new Vec3(0, 1, 0);
         double spin = now * 0.03;
@@ -543,10 +550,10 @@ public final class TimeFxClient {
         for (int i = 0; i < n; i++) {
             // the pages spread from a closed book (all at angle 0) to an even full circle
             double th = spin + TAU * i / n * fold;
-            double lift = 0;
+            double lift = 0.12 * Math.sin(i * 1.7) * fold;             // each page leans its own little way
             if (cast >= 0) {                                          // the riffle: a wave runs round the ring
-                double wave = (cast * 0.9 - i * 0.35);
-                if (wave > 0 && wave < Math.PI) lift = Math.sin(wave) * 0.35;
+                double wave = (cast * 0.9 - i * 0.15);
+                if (wave > 0 && wave < Math.PI) lift += Math.sin(wave) * 0.35;
             }
             double bow = 0.04 * Math.sin(now * 0.25 + i * 1.3) * sc;  // each page bends a little
             Vec3 out = new Vec3(Math.cos(th), 0, Math.sin(th));
@@ -556,28 +563,15 @@ public final class TimeFxClient {
             Vec3 midOff = tip.scale(W * 0.5).add(side.scale(bow));
             Vec3 m0 = s0.add(midOff), m1 = s1.add(midOff);
             Vec3 e0 = s0.add(tip.scale(W)), e1 = s1.add(tip.scale(W));
-            boolean board = i == 0 || i == n - 1;                     // the two covers, back to back
             Vec3 tc = CAM.subtract(m0.add(m1).scale(0.5));
             float shade = 0.72F + 0.28F * (float) Math.abs(side.dot(tc.lengthSqr() < 1.0E-6 ? side : tc.normalize()));
-            float[] col = board ? mul(NAVY, 1.6F + shade) : mul(PAPER, shade * (i % 2 == 0 ? 1F : 0.95F));
+            float[] col = mul(PAPER, shade * (i % 2 == 0 ? 1F : 0.95F));
             float a = Math.min(1F, open * 1.4F);
-            if (board) {   // a cover board stands a little proud of the pages, with a gold edge
-                Vec3 b0 = s0.add(0, -0.015 * sc, 0), b1 = s1.add(0, 0.015 * sc, 0);
-                Vec3 be0 = b0.add(tip.scale(W * 1.04)), be1 = b1.add(tip.scale(W * 1.04));
-                quad(b0, be0, be1, b1, col, a);
-                line(be0, be1, 0.018F * sc, GOLD, a, 0.004);
-                line(b0, be0, 0.012F * sc, GOLD, a, 0.004);
-                line(b1, be1, 0.012F * sc, GOLD, a, 0.004);
-                continue;
-            }
             quad(s0, m0, m1, s1, col, a);
             quad(m0, e0, e1, m1, col, a);
-            line(e0, e1, 0.012F * sc, i % 4 == 0 ? GOLD : INK, a, 0.004);   // the fore-edge
+            line(e0, e1, 0.012F * sc, i % 4 == 0 ? GOLD : INK, a, 0.004);   // the fore-edge: cyan-lit every fourth page
             line(m1, e1, 0.007F * sc, INK, a * 0.8F, 0.003);
         }
-        // the spine: a gold-bound rod up the middle where every page meets
-        line(c.add(0, -Hh - 0.02 * sc, 0), c.add(0, Hh + 0.02 * sc, 0), 0.045F * sc, INK, open, 0.006);
-        line(c.add(0, -Hh - 0.02 * sc, 0), c.add(0, Hh + 0.02 * sc, 0), 0.025F * sc, GOLD, open, 0.01);
         final Vec3 top = c.add(0, Hh + 0.04 * sc, 0);
         final float o = open, ss = sc;
         GLOWS.add(() -> glowDisc(top, new Vec3(0, 1, 0), 0.12F * ss, GOLD_HI, 0.6F * o));
@@ -890,6 +884,73 @@ public final class TimeFxClient {
         }
     }
 
+    /**
+     * The Ticking Snare's time bubble: a glassy blue sphere round the trapped target - clear in the middle, bright at
+     * the rim - with a ribbon of Roman numerals tumbling round it like a ring round a planet. It pops when time is up.
+     */
+    private static void bubble(Minecraft mc, int id, double[] f, double now, float pt) {
+        Entity en = mc.level.getEntity(id);
+        if (en == null) return;
+        double age = now - f[0], left = f[1] - now;
+        float in = backOut((float) Mth.clamp(age / 5.0, 0, 1));
+        float pop = left < 0 ? (float) Mth.clamp(-left / 4.0, 0, 1) : 0F;
+        if (pop >= 1F) return;
+        float a = (1F - pop) * (float) Mth.clamp(age / 2.0, 0, 1);
+        double w = en.getBbWidth(), h = en.getBbHeight();
+        Vec3 c = new Vec3(Mth.lerp(pt, en.xo, en.getX()), Mth.lerp(pt, en.yo, en.getY()) + h * 0.5, Mth.lerp(pt, en.zo, en.getZ()));
+        double R = (Math.max(h * 0.62, w * 0.9) + 0.25) * in * (1 + pop * 0.6);
+        // the ring of numerals: tipped over and turning, like Saturn's
+        double tilt = 0.5 + 0.25 * Math.sin(now * 0.03 + id), ph = now * 0.035 + id * 1.7;
+        Clock k = new Clock();
+        k.n = new Vec3(Math.sin(tilt) * Math.cos(ph), Math.cos(tilt), Math.sin(tilt) * Math.sin(ph)).normalize();
+        Vec3 ref = Math.abs(k.n.y) < 0.9 ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0);
+        Vec3 u0 = ref.cross(k.n).normalize(), u1 = k.n.cross(u0).normalize();
+        double sp = now * 0.12;
+        k.up = u0.scale(Math.cos(sp)).add(u1.scale(Math.sin(sp)));
+        k.right = k.up.cross(k.n).normalize();
+        k.c = c; k.r = (float) R;
+        double Rr = R * 1.14;
+        double sg = CAM.subtract(c).dot(k.n) >= 0 ? 1 : -1;
+        Vec3 l0 = k.n.scale(0.004 * sg), l1 = k.n.scale(0.01 * sg), l2 = k.n.scale(0.016 * sg);
+        float[] ribbon = {0.82F, 0.94F, 1.0F};
+        band(k, c, Rr * 0.9, Rr * 1.1, 56, INK, a * 0.9F, l0);
+        band(k, c, Rr * 0.92, Rr * 1.08, 56, ribbon, a, l1);
+        for (int i = 0; i < 12; i++) numeral(k, c, i, Rr / 0.68, a, l1, l2);
+        // the sphere: a thin film, brighter where it turns away from you (like glass)
+        int LA = 10, LO = 18;
+        float[] film = {0.55F, 0.82F, 1.0F};
+        for (int i = 0; i < LA; i++) {
+            double p0 = Math.PI * i / LA - Math.PI / 2, p1 = Math.PI * (i + 1) / LA - Math.PI / 2;
+            for (int j = 0; j < LO; j++) {
+                double t0 = TAU * j / LO, t1 = TAU * (j + 1) / LO;
+                Vec3 n00 = new Vec3(Math.cos(p0) * Math.cos(t0), Math.sin(p0), Math.cos(p0) * Math.sin(t0));
+                Vec3 n01 = new Vec3(Math.cos(p0) * Math.cos(t1), Math.sin(p0), Math.cos(p0) * Math.sin(t1));
+                Vec3 n10 = new Vec3(Math.cos(p1) * Math.cos(t0), Math.sin(p1), Math.cos(p1) * Math.sin(t0));
+                Vec3 n11 = new Vec3(Math.cos(p1) * Math.cos(t1), Math.sin(p1), Math.cos(p1) * Math.sin(t1));
+                Vec3 mid = n00.add(n11).normalize();
+                Vec3 tv = CAM.subtract(c.add(mid.scale(R)));
+                double facing = tv.lengthSqr() < 1.0E-6 ? 1 : Math.abs(mid.dot(tv.normalize()));
+                float al = (float) (0.16 + 0.5 * Math.pow(1 - facing, 2.2)) * a;
+                quad(c.add(n00.scale(R)), c.add(n01.scale(R)), c.add(n11.scale(R)), c.add(n10.scale(R)), film, al);
+            }
+        }
+        // a bright edge line round the silhouette, and a little glint
+        Vec3 tc = CAM.subtract(c);
+        if (tc.lengthSqr() > 1.0E-6) {
+            Vec3 vn = tc.normalize();
+            Vec3 s1 = (Math.abs(vn.y) < 0.9 ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).cross(vn).normalize(), s2 = vn.cross(s1).normalize();
+            double rr = R * Math.sqrt(Math.max(0, 1 - R * R / Math.max(R * R, tc.lengthSqr())));
+            for (int j = 0; j < 36; j++) {
+                double t0 = TAU * j / 36, t1 = TAU * (j + 1) / 36;
+                Vec3 e0 = c.add(s1.scale(Math.cos(t0) * rr)).add(s2.scale(Math.sin(t0) * rr));
+                Vec3 e1 = c.add(s1.scale(Math.cos(t1) * rr)).add(s2.scale(Math.sin(t1) * rr));
+                line(e0, e1, (float) (R * 0.035), GOLD_HI, 0.55F * a, 0.02);
+            }
+            Vec3 gl = c.add(s1.scale(-rr * 0.55)).add(s2.scale(rr * 0.5));
+            line(gl, gl.add(s2.scale(-rr * 0.18)).add(s1.scale(rr * 0.1)), (float) (R * 0.05), PAPER, 0.8F * a, 0.03);
+        }
+    }
+
     /** A small page card at {@code at}, turned by yaw and tipped by pitch, with an ink edge. */
     private static void card(Vec3 at, double yaw, double pitch, float size, float[] paper, float a) {
         if (a <= 0.01F || size <= 0.001F) return;
@@ -934,7 +995,7 @@ public final class TimeFxClient {
             ps.translate(0.0F, -0.75F, 0.0F);
             model.renderToBuffer(ps, vc, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0.05F, 0.05F, 0.12F, a * 0.45F);
             ps.popPose();
-            model.renderToBuffer(ps, vc, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1.0F, 0.84F, 0.42F, a * 0.7F);
+            model.renderToBuffer(ps, vc, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0.4F, 0.88F, 1.0F, a * 0.7F);
             ps.popPose();
             drew = true;
         }

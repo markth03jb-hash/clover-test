@@ -71,7 +71,7 @@ public final class ImpactFrames {
             {0xF2DFC0, 0x1C1208, 0xB88A4E, 0xFFFFFF},   // 17 Sol: slabs
             {0xCFFFF0, 0x021C16, 0x3CD4A8, 0xFFE7A0},   // 18 Vetto: fangs
             {0xFFE4F0, 0x2A0E1E, 0xFF8CC6, 0xFFFFFF},   // 19 Charmy: threads of cream
-            {0xFFF4D8, 0x070A1C, 0xE8D9A8, 0xFFC844}};  // 20 Julius: pages spiralling in, a clock round the hit
+            {0xE6FAFF, 0x040E1C, 0x8CDFF5, 0x3CC8F0}};  // 20 Julius: pages spiralling in, a clock round the hit
 
     public static void start(int ticks, int st, Vec3 where) {
         Minecraft mc = Minecraft.getInstance();
