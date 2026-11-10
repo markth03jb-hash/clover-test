@@ -1,6 +1,12 @@
-Iron Spell Grimoire v1.83.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.84.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.84.0
+- Limbus rework: weapons point along the arm and show in first person; the Caduceus is always in Rien's main hand (3D item model too) and every weapon pours out of it as black slime.
+- Hardblood: new lance, dripping blood everywhere, a five-shot bow, Twin Blades cut six ways, pull-back Fist Barrage, a torn dripping cape for Vampire Mode, and a staged Grand Finale.
+- Rien: a new Hammer of Judgement (a slime hammer swung in an arc, a crown of slime, shockwaves) and the Black Shell (a glossy black coat of slime that lashes back at attackers).
+- Zenith Hour: the big tower of light in the middle is gone.
 
 NEW IN 1.83.0
 - Fixed a server crash from Bleed (Hardblood).

@@ -86,6 +86,12 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             shell(ps, m, vc, 1.07F + flick * 0.5F, col[0], col[1], col[2], 0.16F * a);
             return;
         }
+        if ((int) f[2] == 11) {   // Rien's Black Shell: a skin of glossy black slime like a tailored black coat, a cold sheen sliding over it
+            float sheen = (float) Math.pow(0.5 + 0.5 * Math.sin(now * 0.35), 4);
+            shell(ps, m, vc, 1.035F, 0.015F, 0.015F, 0.02F, 0.78F * a);
+            shell(ps, m, vc, 1.05F + flick * 0.2F, 0.75F, 0.75F, 0.82F, (0.05F + 0.14F * sheen) * a);
+            return;
+        }
         if ((int) f[2] == 4) {   // Hellfire Incarnate: a body of fire - a white-hot skin inside a wide, pulsing orange glow
             float pulse = 0.8F + 0.2F * (float) Math.sin(now * 0.8);
             shell(ps, m, vc, 1.03F + flick, 1.0F, 0.75F, 0.55F, 0.3F * a * pulse);

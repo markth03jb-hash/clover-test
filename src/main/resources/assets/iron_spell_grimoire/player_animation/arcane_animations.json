@@ -34810,7 +34810,7 @@
    }
   },
   "rien_hammer": {
-   "animation_length": 1.6,
+   "animation_length": 1.9,
    "bones": {
     "right_arm": {
      "rotation": {
@@ -34822,15 +34822,7 @@
        ],
        "easing": "easeInOutSine"
       },
-      "0.4": {
-       "vector": [
-        -178,
-        0,
-        15
-       ],
-       "easing": "easeInOutSine"
-      },
-      "0.78": {
+      "0.35": {
        "vector": [
         -178,
         0,
@@ -34840,13 +34832,13 @@
       },
       "0.85": {
        "vector": [
-        -50,
+        -180,
         0,
-        0
+        10
        ],
        "easing": "easeInOutSine"
       },
-      "1.2": {
+      "1.0": {
        "vector": [
         -45,
         0,
@@ -34854,7 +34846,15 @@
        ],
        "easing": "easeInOutSine"
       },
-      "1.6": {
+      "1.4": {
+       "vector": [
+        -42,
+        0,
+        0
+       ],
+       "easing": "easeInOutSine"
+      },
+      "1.9": {
        "vector": [
         0,
         0,
@@ -34882,7 +34882,7 @@
        ],
        "easing": "easeInOutSine"
       },
-      "1.4": {
+      "1.7": {
        "vector": [
         25,
         -20,
@@ -34890,7 +34890,7 @@
        ],
        "easing": "easeInOutSine"
       },
-      "1.6": {
+      "1.9": {
        "vector": [
         0,
         0,
@@ -34910,9 +34910,9 @@
        ],
        "easing": "easeInOutSine"
       },
-      "0.4": {
+      "0.35": {
        "vector": [
-        -10,
+        -12,
         0,
         0
        ],
@@ -34920,13 +34920,57 @@
       },
       "0.85": {
        "vector": [
+        -15,
+        0,
+        0
+       ],
+       "easing": "easeInOutSine"
+      },
+      "1.0": {
+       "vector": [
+        22,
+        0,
+        0
+       ],
+       "easing": "easeInOutSine"
+      },
+      "1.4": {
+       "vector": [
         20,
         0,
         0
        ],
        "easing": "easeInOutSine"
       },
-      "1.6": {
+      "1.9": {
+       "vector": [
+        0,
+        0,
+        0
+       ],
+       "easing": "easeInOutSine"
+      }
+     }
+    },
+    "left_leg": {
+     "rotation": {
+      "0": {
+       "vector": [
+        0,
+        0,
+        0
+       ],
+       "easing": "easeInOutSine"
+      },
+      "1.0": {
+       "vector": [
+        -25,
+        0,
+        0
+       ],
+       "easing": "easeInOutSine"
+      },
+      "1.9": {
        "vector": [
         0,
         0,
