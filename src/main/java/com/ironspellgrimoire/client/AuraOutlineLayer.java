@@ -38,6 +38,7 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             {0.75F, 0.03F, 0.03F},   // 8 faint demonic (Devil Union)
             {1.0F, 0.78F, 0.25F},    // 9 liquid gold (Rien's Golden Shell)
             {0.7F, 0.0F, 0.06F},     // 10 blood (Don Quixote's Vampire Mode)
+            {0.05F, 0.05F, 0.07F},   // 11 black slime (Rien's shell)
     };
 
     public AuraOutlineLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {

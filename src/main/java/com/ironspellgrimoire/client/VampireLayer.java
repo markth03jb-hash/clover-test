@@ -14,8 +14,8 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 /**
- * Don Quixote's Vampire Mode on the player: a long tattered cape of blood hanging from the shoulders that sways and
- * streams behind as you move, and two red eyes glowing in the face.
+ * Don Quixote's Vampire Mode on the player: a long cloak of blood with a torn, dripping hem that sways and streams
+ * behind as you move, thin threads of blood rising round you, and two red eyes glowing in the face.
  */
 public class VampireLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
     private static final ResourceLocation WHITE = new ResourceLocation("iron_spell_grimoire", "textures/effect/white.png");
@@ -31,27 +31,56 @@ public class VampireLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<
         VertexConsumer vc = buf.getBuffer(RenderType.entityTranslucentEmissive(WHITE));
         PlayerModel<AbstractClientPlayer> m = getParentModel();
 
-        // ---- the cape: strips hanging from the shoulders, swaying, streaming back with speed, ragged at the hem
+        // ---- the cape: a long cloak of blood from the shoulders. It sways, streams out behind you with speed, has a
+        //      glossy wine-red outside and a near-black lining, and its hem tears into points that drip.
         ps.pushPose();
         m.body.translateAndRotate(ps);
         Matrix4f mat = ps.last().pose();
         Matrix3f nor = ps.last().normal();
         float speed = (float) Math.min(1.0, p.getDeltaMovement().horizontalDistance() * 5.0) + limbSwingAmount * 0.5F;
-        int strips = 10, rows = 8;
-        float half = 0.36F, len = 1.25F * k;
+        int strips = 14, rows = 10;
+        float half = 0.34F, len = 1.5F * k;
         for (int s = 0; s < strips; s++) {
-            float u0 = s / (float) strips, u1 = (s + 1) / (float) strips;
-            float rag0 = ragged(s), rag1 = ragged(s + 1);
+            float u0 = s / (float) strips, u1 = (s + 1) / (float) strips, um = (u0 + u1) * 0.5F;
+            float rag = ragged(s);
             for (int r = 0; r < rows; r++) {
                 float v0 = r / (float) rows, v1 = (r + 1) / (float) rows;
-                float[] a = capePt(u0, v0, half, len * rag0, speed, now, s), b = capePt(u1, v0, half, len * rag1, speed, now, s + 1);
-                float[] c = capePt(u1, v1, half, len * rag1, speed, now, s + 1), d = capePt(u0, v1, half, len * rag0, speed, now, s);
-                float shade = 0.55F + 0.45F * (float) Math.sin(u0 * 9 + now * 0.2) * 0.3F + 0.25F * (1 - v0);
-                float[] col = {0.45F * shade + 0.05F, 0.01F, 0.04F * shade};
-                float al = 0.92F * k * (r == rows - 1 ? 0.6F : 1F);
+                boolean hem = r == rows - 1;
+                // the last row of every strip narrows to a point: a torn, pointed hem
+                float ua1 = hem ? um - (um - u0) * 0.15F : u0, ub1 = hem ? um + (u1 - um) * 0.15F : u1;
+                float[] a = capePt(u0, v0, half, len * rag, speed, now, s), b = capePt(u1, v0, half, len * rag, speed, now, s);
+                float[] c = capePt(ub1, v1, half, len * rag, speed, now, s), d = capePt(ua1, v1, half, len * rag, speed, now, s);
+                // a sheen running down the folds
+                float fold = 0.5F + 0.5F * (float) Math.sin(um * 22 + now * 0.15);
+                float sheen = (float) Math.pow(fold, 6) * 0.5F;
+                float[] col = {0.32F + 0.18F * fold + sheen, 0.0F + sheen * 0.25F, 0.03F + sheen * 0.25F};
+                float al = 0.95F * k;
                 quad(vc, mat, nor, a, b, c, d, col, al);
-                quad(vc, mat, nor, d, c, b, a, new float[]{col[0] * 0.6F, col[1], col[2] * 0.6F}, al);   // the inside, darker
+                quad(vc, mat, nor, d, c, b, a, new float[]{0.06F, 0.0F, 0.01F}, al);   // the lining
             }
+            // a drop gathering at the hem's point and falling away
+            float[] tip = capePt(um, 1F, half, len * rag, speed, now, s);
+            double ph = (now * 0.06 + s * 0.37) % 1.0;
+            if (s % 2 == 0) {
+                float y = tip[1] + (float) (ph * ph) * 0.9F, sz = 0.025F + 0.015F * (float) Math.min(1, ph * 4);
+                float fa = (float) (1.0 - ph) * k;
+                quad(vc, mat, nor, new float[]{tip[0] - sz, y - sz * 1.6F, tip[2]}, new float[]{tip[0] + sz, y - sz * 1.6F, tip[2]},
+                        new float[]{tip[0] + sz, y + sz, tip[2]}, new float[]{tip[0] - sz, y + sz, tip[2]}, new float[]{0.55F, 0.0F, 0.04F}, fa);
+            }
+        }
+        // ---- a subtle aura: thin threads of blood rising round you, curling, fading as they climb
+        for (int w = 0; w < 9; w++) {
+            double ph = (now * 0.025 + w * 0.29) % 1.0;
+            double ang = w * 2.4 + now * 0.03 + ph * 2.0;
+            float rr = 0.42F + 0.08F * (float) Math.sin(w * 1.7);
+            float x = (float) Math.cos(ang) * rr, z = (float) Math.sin(ang) * rr * 0.7F;
+            float y = 0.9F - (float) ph * 1.9F;
+            float h = 0.16F, ww = 0.012F;
+            float fa = (float) Math.sin(ph * Math.PI) * 0.45F * k;
+            quad(vc, mat, nor, new float[]{x - ww, y, z}, new float[]{x + ww, y, z}, new float[]{x + ww * 0.3F, y - h, z}, new float[]{x - ww * 0.3F, y - h, z},
+                    new float[]{0.7F, 0.02F, 0.06F}, fa);
+            quad(vc, mat, nor, new float[]{x, y, z - ww}, new float[]{x, y, z + ww}, new float[]{x, y - h, z + ww * 0.3F}, new float[]{x, y - h, z - ww * 0.3F},
+                    new float[]{0.7F, 0.02F, 0.06F}, fa);
         }
         // the collar: a stiff high ring of hardblood round the neck
         for (int s = 0; s < 8; s++) {
@@ -75,7 +104,7 @@ public class VampireLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<
                     new float[]{1.0F, 0.12F, 0.15F}, k * pulse);
             float gw = w * 2.2F, gh = h * 3F;   // a soft glow round each eye
             quad(vc, hm, hn, new float[]{cx - gw, cy - gh, z - 0.002F}, new float[]{cx + gw, cy - gh, z - 0.002F}, new float[]{cx + gw, cy + gh, z - 0.002F}, new float[]{cx - gw, cy + gh, z - 0.002F},
-                    new float[]{0.9F, 0.0F, 0.05F}, 0.3F * k * pulse);
+                    new float[]{0.9F, 0.0F, 0.05F}, 0.18F * k * pulse);
         }
         ps.popPose();
     }

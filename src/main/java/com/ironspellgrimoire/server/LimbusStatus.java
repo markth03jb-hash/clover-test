@@ -49,7 +49,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class LimbusStatus {
     private LimbusStatus() {}
 
-    static final int BLOOD = 18, GOLD = Fx.GOLD;
+    static final int BLOOD = 18, GOLD = 31;   // GOLD: Rien's marks are black slime now
 
     // ================================================================== Bleed
     private static final class Bleed { LivingEntity e; ServerPlayer src; int stacks; Vec3 last; long lastTrig; }
@@ -94,12 +94,39 @@ public final class LimbusStatus {
     /** A spurt of blood: a few small crimson spikes thrown out, and a wet sound. */
     static void splash(ServerLevel sl, Vec3 at, float size) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        int n = (int) (3 + size * 4);
-        for (int k = 0; k < n; k++) {
-            Vec3 d = new Vec3(r.nextDouble(-1, 1), r.nextDouble(-0.2, 1), r.nextDouble(-1, 1)).normalize();
-            FxSend.spike(sl, BLOOD, at, d, 0.25f * size + r.nextFloat() * 0.2f, 0.05f * size, 7, 0, FxPacket.POP, 0, d.scale(0.12).add(0, -0.05, 0), 6);
+        int n = (int) (4 + size * 5);
+        for (int k = 0; k < n; k++) {   // a spray of thick drops flung out, already sagging
+            Vec3 d = new Vec3(r.nextDouble(-1, 1), r.nextDouble(-0.1, 0.9), r.nextDouble(-1, 1)).normalize();
+            FxSend.spike(sl, BLOOD, at, d, 0.22f * size + r.nextFloat() * 0.18f, 0.06f * size, 8, 0, FxPacket.POP, 0, d.scale(0.14).add(0, -0.08, 0), 7);
         }
+        int drops = (int) (2 + size * 3);
+        for (int k = 0; k < drops; k++) drip(sl, at.add(r.nextDouble(-0.4, 0.4) * size, r.nextDouble(-0.2, 0.2), r.nextDouble(-0.4, 0.4) * size), 2 + r.nextInt(6));
         sound(sl, at, SoundEvents.SLIME_SQUISH_SMALL, 0.5f + size * 0.2f, 0.8f + r.nextFloat() * 0.3f);
+    }
+
+    /** One drop of blood falling from {@code from} (after {@code delay} ticks) and spattering where it lands. */
+    static void drip(ServerLevel sl, Vec3 from, int delay) {
+        AstaFx.later(Math.max(1, delay), () -> {
+            double floor = from.y;
+            net.minecraft.core.BlockPos.MutableBlockPos bp = new net.minecraft.core.BlockPos.MutableBlockPos();
+            for (int i = 0; i < 8; i++) {   // find the ground below (at most 8 blocks)
+                bp.set(from.x, from.y - i - 0.01, from.z);
+                if (!sl.getBlockState(bp).getCollisionShape(sl, bp).isEmpty()) { floor = bp.getY() + 1.0; break; }
+                floor = from.y - i - 1;
+            }
+            double fall = Math.max(0.2, from.y - floor);
+            int ticks = (int) Math.max(2, Math.min(14, Math.sqrt(fall) * 4.5));
+            Vec3 v = new Vec3(0, -fall / ticks, 0);
+            FxSend.spike(sl, BLOOD, from, new Vec3(0, -1, 0), 0.16f, 0.035f, ticks + 1, 0, FxPacket.POP, 0, v, ticks);
+            Vec3 land = new Vec3(from.x, floor + 0.02, from.z);
+            AstaFx.later(ticks, () -> {   // the spatter: a small dark pool spreading, two tiny drops jumping off it
+                FxSend.ring(sl, BLOOD, land, 0.02f, 0.22f + ThreadLocalRandom.current().nextFloat() * 0.12f, 0.01f, 40);
+                for (int k = 0; k < 2; k++) {
+                    Vec3 d = new Vec3(ThreadLocalRandom.current().nextDouble(-1, 1), 0.8, ThreadLocalRandom.current().nextDouble(-1, 1)).normalize();
+                    FxSend.spike(sl, BLOOD, land, d, 0.08f, 0.02f, 4, 0, FxPacket.POP, 0, d.scale(0.05), 3);
+                }
+            });
+        });
     }
 
     // ================================================================== Bloodfeast, Hardblood, Vampire Mode (Don Quixote)
@@ -166,7 +193,6 @@ public final class LimbusStatus {
         FxPacket pkt = new FxPacket();
         pkt.shape = 62; pkt.id = p.getId(); pkt.life = ticks; pkt.palette = 0;
         AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
-        CaduceusFx.aura(p, 10, ticks);
     }
 
     /** Red mist: burst into blood mist and come out 5 blocks ahead. */
@@ -374,9 +400,9 @@ public final class LimbusStatus {
             else {
                 if (now % 4 == 0 && spendBloodfeast(p, 3) <= 0 && now % 20 == 0) endVampire(p);
                 if (now % 20 == 0) TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, VAMP_SPEED, "Vampire", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
-                if (now % 6 == 0) {   // a few drops of red mist trail off you
-                    Vec3 back = p.position().add(0, 1.0, 0).subtract(flat(p.getLookAngle()).scale(0.4));
-                    Kit.orb(p.serverLevel(), BLOOD, back, new Vec3(0, 0.02, 0), 0.18f, 10);
+                if (now % 10 == 0) {   // now and then a drop falls from the cape's hem
+                    Vec3 back = p.position().add(0, 0.3, 0).subtract(flat(p.getLookAngle()).scale(0.5));
+                    FxSend.spike(p.serverLevel(), BLOOD, back, new Vec3(0, -1, 0), 0.14f, 0.03f, 8, 0, FxPacket.POP, 0, new Vec3(0, -0.06, 0), 6);
                 }
                 long[] s = SNEAK.computeIfAbsent(p.getUUID(), k -> new long[]{0, -100});
                 boolean sn = p.isShiftKeyDown();

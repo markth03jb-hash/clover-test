@@ -74,7 +74,7 @@ public final class ImpactFrames {
             {0xE6FAFF, 0x040E1C, 0x8CDFF5, 0x3CC8F0},   // 20 Julius
             {0xE2FFE6, 0x02140A, 0x44F06C, 0xFFFFFF},
             {0xFFD8DC, 0x140003, 0xE0102A, 0xFFF0F0},   // 22 Don Quixote: blood spattering out from the hit
-            {0xFFF6D8, 0x0A0806, 0xF2C04A, 0xFFFFFF}};  // 23 Rien: gold liquid weapons converging  // 21 Jack's green horizon: the same long cuts, in green  // 20 Julius: clock marks closing in, a clock round the hit
+            {0xE8E8EE, 0x050506, 0x1C1C22, 0xFFFFFF}};  // 23 Rien: black-slime weapons converging  // 21 Jack's green horizon: the same long cuts, in green  // 20 Julius: clock marks closing in, a clock round the hit
 
     public static void start(int ticks, int st, Vec3 where) {
         Minecraft mc = Minecraft.getInstance();
