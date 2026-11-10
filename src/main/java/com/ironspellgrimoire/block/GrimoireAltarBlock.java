@@ -30,6 +30,14 @@ public class GrimoireAltarBlock extends Block {
                 .lightLevel(s -> 7).requiresCorrectToolForDrops().noOcclusion());
     }
 
+    /** Client only: tell the altar renderer this altar is near (it draws the turning runes and stars). */
+    @Override
+    @net.minecraftforge.api.distmarker.OnlyIn(net.minecraftforge.api.distmarker.Dist.CLIENT)
+    public void animateTick(BlockState state, Level level, BlockPos pos, net.minecraft.util.RandomSource rnd) {
+        com.ironspellgrimoire.client.AltarClient.seen(pos, level.getGameTime());
+        if (rnd.nextInt(2) == 0) com.ironspellgrimoire.client.AltarClient.mote(pos, rnd);
+    }
+
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) { return SHAPE; }
 

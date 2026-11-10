@@ -59,6 +59,29 @@ public final class SpaceFx {
     // ------------------------------------------------------------------ gates (the client draws them: shape 46)
     private static final class Gate { ServerPlayer owner; Vec3 c, n; float rw, rh; long until; int id; Gate other; }
     private static final List<Gate> PAIRS = new ArrayList<>();
+
+    /** A Waypoint portal: a gate that stays open and carries anyone who walks in to a saved place (possibly in another dimension). */
+    private static final class WpGate { ServerLevel lvl, destLvl; Vec3 c, n, dest; float yaw; long until; }
+    private static final List<WpGate> WAYPOINT_GATES = new ArrayList<>();
+    static final int WAYPOINT_LIFE = 400;   // 20 s
+
+    /**
+     * Opens a gate in front of {@code p} that leads to {@code at} in {@code destLvl}, and a twin there. Nobody is carried
+     * unless they step in: you, an ally, an enemy. It stays open 20 s.
+     */
+    static void waypointGate(ServerPlayer p, ServerLevel destLvl, Vec3 at) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 look = flat(p.getLookAngle());
+        WpGate g = new WpGate();
+        g.lvl = sl; g.destLvl = destLvl; g.n = look.scale(-1); g.c = p.position().add(look.scale(2.4)).add(0, 1.3, 0);
+        g.dest = at; g.yaw = yawOf(look); g.until = sl.getGameTime() + WAYPOINT_LIFE;
+        WAYPOINT_GATES.add(g);
+        gate(sl, g.c, g.n, 1.0f, 1.45f, WAYPOINT_LIFE, 0);
+        FxSend.ring(sl, S, p.position().add(look.scale(2.4)).add(0, 0.05, 0), 0.3f, 2.2f, 0.06f, 12);
+        // the twin where it comes out, standing behind the place you arrive at
+        gate(destLvl, at.subtract(look.scale(1.3)).add(0, 1.3, 0), look, 1.0f, 1.45f, WAYPOINT_LIFE, 0);
+        whoosh(sl, g.c); whoosh(destLvl, at);
+    }
     private static final Map<UUID, Long> PASSED = new HashMap<>();
     private static final class Redirect { ServerPlayer owner; Vec3 c, n; long until; }
     private static final List<Redirect> REDIRECTS = new ArrayList<>();
@@ -410,9 +433,32 @@ public final class SpaceFx {
                 whoosh(sl, exit);
             }
         }
+        for (Iterator<WpGate> it = WAYPOINT_GATES.iterator(); it.hasNext(); ) {
+            WpGate g = it.next();
+            long now = g.lvl.getGameTime();
+            if (now > g.until) { it.remove(); continue; }
+            for (Entity ent : g.lvl.getEntities((Entity) null, new AABB(g.c, g.c).inflate(1.6, 2.0, 1.6),
+                    x -> x instanceof LivingEntity || x instanceof Projectile || x instanceof net.minecraft.world.entity.item.ItemEntity)) {
+                Long last = PASSED.get(ent.getUUID());
+                if (last != null && now - last < 30) continue;
+                Vec3 o = ent.position().add(0, ent.getBbHeight() * 0.5, 0).subtract(g.c);
+                if (Math.abs(o.dot(g.n)) > 0.7 || o.subtract(g.n.scale(o.dot(g.n))).length() > 1.45) continue;
+                Vec3 s = ent instanceof LivingEntity ? safe(g.destLvl, g.dest, ent) : g.dest;
+                if (s == null) s = g.dest;
+                PASSED.put(ent.getUUID(), now);
+                if (ent instanceof ServerPlayer sp) {
+                    sp.teleportTo(g.destLvl, s.x, s.y, s.z, g.yaw, sp.getXRot());
+                    sp.fallDistance = 0;
+                } else if (g.destLvl == g.lvl) {
+                    move(ent, s, g.yaw);
+                } else continue;
+                whoosh(g.lvl, g.c); whoosh(g.destLvl, s);
+                FxSend.ring(g.destLvl, S, s.add(0, 0.05, 0), 0.2f, 1.8f, 0.05f, 8);
+            }
+        }
         if (PASSED.size() > 512) PASSED.clear();
     }
 
     @SubscribeEvent
-    public static void onStop(ServerStoppingEvent e) { PAIRS.clear(); PASSED.clear(); REDIRECTS.clear(); EVADE.clear(); EVADE_UNTIL.clear(); MARKS.clear(); }
+    public static void onStop(ServerStoppingEvent e) { PAIRS.clear(); WAYPOINT_GATES.clear(); PASSED.clear(); REDIRECTS.clear(); EVADE.clear(); EVADE_UNTIL.clear(); MARKS.clear(); }
 }

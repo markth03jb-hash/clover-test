@@ -3,6 +3,7 @@ package com.ironspellgrimoire.server;
 import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.IronSpellGrimoire;
+import com.ironspellgrimoire.network.FxPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -44,13 +45,24 @@ public final class MirrorFx {
     private static final Map<UUID, Long> GUARD_UNTIL = new HashMap<>();
 
     // ------------------------------------------------------------------ shared
-    /** A mirror pane: a rectangle edged in silver with one bright glint across it. */
+    /**
+     * A real 3D mirror: a slab of glass with depth, held in a thick gilded frame with corner studs and a stand-off
+     * back plate, with a bright glint sliding across the glass.
+     */
     static void pane(ServerLevel sl, Vec3 c, Vec3 rt, Vec3 up, float hw, float hh, int life) {
-        Vec3 a = c.add(rt.scale(-hw)).add(up.scale(-hh)), b = c.add(rt.scale(hw)).add(up.scale(-hh));
-        Vec3 d = c.add(rt.scale(-hw)).add(up.scale(hh)), e = c.add(rt.scale(hw)).add(up.scale(hh));
-        FxSend.trail(sl, M, a, b, 0.05f, life); FxSend.trail(sl, M, b, e, 0.05f, life);
-        FxSend.trail(sl, M, e, d, 0.05f, life); FxSend.trail(sl, M, d, a, 0.05f, life);
-        FxSend.beam(sl, S, a.add(rt.scale(hw * 0.4)), e.subtract(rt.scale(hw * 0.4)), 0.035f, Math.max(2, life / 2));
+        Vec3 n = rt.cross(up).normalize();
+        float fb = Math.min(0.14f, Math.max(0.07f, hw * 0.09f));            // frame bar thickness
+        FxSend.box(sl, M, c, rt, up, hw - fb * 0.5f, 0.035f, hh - fb * 0.5f, life, 2, FxPacket.POP);   // the glass
+        FxSend.box(sl, Fx.SILVER, c.subtract(n.scale(0.05)), rt, up, hw, 0.02f, hh, life, 2, FxPacket.POP);   // the silvered back
+        int G = Fx.GOLD;
+        FxSend.box(sl, G, c.add(up.scale(hh)), rt, up, hw + fb, fb * 0.8f, fb, life, 2, FxPacket.POP);       // top bar
+        FxSend.box(sl, G, c.subtract(up.scale(hh)), rt, up, hw + fb, fb * 0.8f, fb, life, 2, FxPacket.POP);  // bottom bar
+        FxSend.box(sl, G, c.add(rt.scale(hw)), rt, up, fb, fb * 0.8f, hh, life, 2, FxPacket.POP);            // sides
+        FxSend.box(sl, G, c.subtract(rt.scale(hw)), rt, up, fb, fb * 0.8f, hh, life, 2, FxPacket.POP);
+        // a glint sweeping across the glass
+        Vec3 a = c.subtract(rt.scale(hw * 0.7)).subtract(up.scale(hh * 0.8)).add(n.scale(0.06));
+        Vec3 e = c.add(rt.scale(hw * 0.7)).add(up.scale(hh * 0.8)).add(n.scale(0.06));
+        FxSend.beam(sl, S, a, e, 0.03f, Math.max(2, life / 2));
     }
 
     /** A pane standing at {@code c} facing {@code n}. */

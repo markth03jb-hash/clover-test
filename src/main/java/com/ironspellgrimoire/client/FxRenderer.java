@@ -294,7 +294,7 @@ public class FxRenderer extends FxBase {
             TRACK.clear();
             ORBITS.clear();
             WHIPS.clear();
-            GolemFx.GOLEMS.clear();
+            GolemFx.GOLEMS.clear(); AltarFx.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
@@ -499,6 +499,8 @@ public class FxRenderer extends FxBase {
             for (double[] o : WHIPS) FxShapes.whipsFx(vc, m, n, cam, mc, o, now, pt);
             for (double[] o : ORBITS) FxShapes.orbitFx(vc, m, n, cam, mc, o, now, pt);
             GolemFx.tick(now);
+            AltarFx.draw(vc, m, cam, now, pt);
+            GrimoireCeremonyRenderer.glow(m, cam, now, pt);
             for (GolemFx.Golem g : GolemFx.GOLEMS) GolemFx.draw(vc, m, n, cam, g, now, pt);
             float pulse = 0.75F + 0.25F * (float)Math.sin(now * 0.35);
 
