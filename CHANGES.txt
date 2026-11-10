@@ -1,6 +1,11 @@
-Iron Spell Grimoire v1.86.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.87.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.87.0
+- Removed the World Tree, Beast and Cotton grimoires and the Hardblood and Caduceus powers.
+- The Slash grimoire (Jack) and all its spells are green now.
+- The big green slash plays its animation in first person too.
 
 NEW IN 1.86.0
 - Every spell's hits land harder: a white flash, a shock ring in the grimoire's colour, sparks carried past the target, and a jolt on heavy hits.
