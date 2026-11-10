@@ -1,6 +1,13 @@
-Iron Spell Grimoire v1.80.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.81.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.81.0
+- Time: Chronostasis Field and Zenith Hour remade (huge ground clock realms); every Time skill has a MAX variant that needs full stored time.
+- Cotton looks like real cotton; Beast grimoire now feral violet with new sounds.
+- Stone Golem has a new body and animation; Bedrock Armor plates are smooth; Root Snare grows real roots.
+- Space Collapse is a sphere; Rift ultimate has a new animation.
+- Bone Claws are now ranged with a new animation; Bone Whips are smooth; Bone Spear Storm is a wheel of ribs with spiralling spears.
 
 NEW IN 1.80.0
 - Yami Mana Zone: sea lies on lower ground at block steps (no bright hole/slab by the altar)
