@@ -92,8 +92,11 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
         }
         if ((int) f[2] == 7) {   // Instinct Guard: a thin, flickering skin of white ki - reading everything around you
             float flickK = 0.7F + 0.3F * (float) Math.sin(now * 1.3 + p.getId());
-            shell(ps, m, vc, 1.04F + flick * 0.4F, col[0], col[1], col[2], 0.2F * a * flickK);
-            shell(ps, m, vc, 1.1F + flick, 1.0F, 1.0F, 1.0F, 0.06F * a);
+            float sweep = 0.5F + 0.5F * (float) Math.sin(now * 0.9);
+            shell(ps, m, vc, 1.03F, 0.02F, 0.03F, 0.05F, 0.45F * a);                                   // dark core so the ki reads
+            shell(ps, m, vc, 1.06F + flick * 0.4F, 0.85F, 0.95F, 1.0F, 0.6F * a * flickK);              // bright ki skin
+            shell(ps, m, vc, 1.12F + flick + 0.03F * sweep, col[0], col[1], col[2], 0.3F * a);          // rippling ring of sensed ki
+            shell(ps, m, vc, 1.2F + flick * 1.6F + 0.06F * sweep, 1.0F, 1.0F, 1.0F, 0.12F * a * flickK);
             return;
         }
         if ((int) f[2] == 8) {   // Devil Union: a faint, slow-breathing demonic haze - black inside, a dim red edge
