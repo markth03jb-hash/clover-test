@@ -175,8 +175,11 @@ final class FxZones extends FxBase {
             double y00 = hs[4 + i * SEG + j], y01 = hs[4 + i * SEG + j1], y11 = hs[4 + (i + 1) * SEG + j1], y10 = hs[4 + (i + 1) * SEG + j];
             if (Double.isNaN(y00) || Double.isNaN(y01) || Double.isNaN(y11) || Double.isNaN(y10)) continue;
             double yHi = Math.max(Math.max(y00, y01), Math.max(y11, y10)), yLo = Math.min(Math.min(y00, y01), Math.min(y11, y10));
-            if (yHi - yLo > 0.52) continue;   // no sheets over blocks/cliffs: they hung in the air beside pedestals as a slab
-            if (yHi - yLo > 0.02) { y00 = y01 = y11 = y10 = yHi; }   // a step (slab, path, stairs...): lie flat on the top, never sink into a block
+            if (yHi - yLo > 1.6) continue;   // no sheets over cliffs
+            // a small step (slab, path, stairs): lie flat on the top. A bigger one (an altar, a block, a pillar): lie flat on the
+            // LOWER ground - the block hides the part inside it - instead of leaving a bright hole in the sea or hanging above it
+            if (yHi - yLo > 0.52) { y00 = y01 = y11 = y10 = yLo; }
+            else if (yHi - yLo > 0.02) { y00 = y01 = y11 = y10 = yHi; }
             double a0 = Math.PI * 2 * j / SEG, a1 = Math.PI * 2 * (j + 1) / SEG;
             Vec3 p00 = new Vec3(c.x + Math.cos(a0) * r0, y00, c.z + Math.sin(a0) * r0), p01 = new Vec3(c.x + Math.cos(a1) * r0, y01, c.z + Math.sin(a1) * r0);
             Vec3 p11 = new Vec3(c.x + Math.cos(a1) * r1, y11, c.z + Math.sin(a1) * r1), p10 = new Vec3(c.x + Math.cos(a0) * r1, y10, c.z + Math.sin(a0) * r1);
