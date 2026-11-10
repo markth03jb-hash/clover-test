@@ -71,7 +71,8 @@ public final class ImpactFrames {
             {0xF2DFC0, 0x1C1208, 0xB88A4E, 0xFFFFFF},   // 17 Sol: slabs
             {0xCFFFF0, 0x021C16, 0x3CD4A8, 0xFFE7A0},   // 18 Vetto: fangs
             {0xFFE4F0, 0x2A0E1E, 0xFF8CC6, 0xFFFFFF},   // 19 Charmy: threads of cream
-            {0xE6FAFF, 0x040E1C, 0x8CDFF5, 0x3CC8F0}};  // 20 Julius: clock marks closing in, a clock round the hit
+            {0xE6FAFF, 0x040E1C, 0x8CDFF5, 0x3CC8F0},   // 20 Julius
+            {0xE2FFE6, 0x02140A, 0x44F06C, 0xFFFFFF}};  // 21 Jack's green horizon: the same long cuts, in green  // 20 Julius: clock marks closing in, a clock round the hit
 
     public static void start(int ticks, int st, Vec3 where) {
         Minecraft mc = Minecraft.getInstance();
@@ -175,7 +176,7 @@ public final class ImpactFrames {
                     }
                 }
             }
-            case 4, 16 -> {   // Yami / Jack: long diagonal cuts through the hit, one bright one right through it
+            case 4, 16, 21 -> {   // Yami / Jack: long diagonal cuts through the hit, one bright one right through it
                 speedLines(bb, m, r, fx, fy, reach, 22, 0.5F * rush, 2.0F, line, la * 0.45F);
                 float dx = 0.86F, dy = 0.5F, nx = -dy, ny = dx;
                 for (int i = -3; i <= 3; i++) {

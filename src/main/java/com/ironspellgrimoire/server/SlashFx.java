@@ -285,7 +285,11 @@ public final class SlashFx {
      * Surpassing Limits: Endless Night of the Ripper.
      */
     public static void bloodyMassacre(ServerPlayer p, float power) {
-        if (LimitBreak.active(p)) { AwakenFx.endlessNight(p, power); return; }
+        if (LimitBreak.active(p)) {
+            if (Moves.inMode(p, "ripper_frenzy")) ripperHorizon(p, power);   // Frenzy running + Surpassing Limits: the ultimate
+            else AwakenFx.endlessNight(p, power);
+            return;
+        }
         ServerLevel sl = p.serverLevel();
         Vec3 origin = p.position();
         List<LivingEntity> foes = new ArrayList<>(Kit.near(sl, p, origin, 14));
@@ -336,6 +340,129 @@ public final class SlashFx {
             FxSend.shake(sl, origin, 0.9f, 12, 44);
             sound(sl, origin, SoundEvents.PLAYER_ATTACK_CRIT, 1.4f, 0.8f);
             sound(sl, origin, SoundEvents.GENERIC_EXPLODE, 1.0f, 1.0f);
+        });
+    }
+
+    // ================================================================== Ultimate: Ripper's Horizon
+    /**
+     * Bloody Massacre cast while Ripper Frenzy is running AND in Surpassing Limits: Jack's ultimate, staged like Yami's
+     * Event Horizon but in green. Both arms go up and HOLD while hair-thin green cuts pour into the raised edge, the
+     * ground splits and space starts to fracture; then one cut - a single colossal green slash stands upright, rolls
+     * forward and grows, splitting space along its whole path with green rifts left hanging where it passed.
+     */
+    private static final int HZ_CHARGE = 56, HZ_CUT = 57;
+
+    private static void green(ServerLevel sl, Vec3 a, Vec3 b, float w, int life) {
+        FxSend.trail(sl, Fx.TREE, a, b, w, life);
+        FxSend.trail(sl, S, a, b, w * 0.3f, Math.max(2, life - 1));
+    }
+
+    static void ripperHorizon(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        final int GR = Fx.TREE;
+        final float dmg = power * 3.2f;
+        final int seed0 = (int) (sl.getGameTime() * 31 + p.getId());
+        AnimSend.play(p, AnimSend.RIPPER_HORIZON);
+        p.displayClientMessage(net.minecraft.network.chat.Component.literal("Ripper's Horizon")
+                .withStyle(net.minecraft.ChatFormatting.GREEN, net.minecraft.ChatFormatting.BOLD), true);
+        TimedModifiers.apply(p, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED, TimedModifiers.HORIZON_CHARGE,
+                "Ripper's Horizon charge", -0.8, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL, HZ_CUT + 4);
+        sound(sl, p.position(), SoundEvents.WARDEN_SONIC_CHARGE, 1f, 0.6f);
+        sound(sl, p.position(), SoundEvents.BEACON_ACTIVATE, 0.8f, 0.7f);
+
+        // ---------------------------------------------------------------- the charge
+        for (int t = 6; t < HZ_CHARGE; t += 2) {
+            final int tt = t;
+            AstaFx.later(t, () -> {
+                if (!alive(p)) return;
+                float k = (tt - 6) / (float) (HZ_CHARGE - 6);
+                double yr = Math.toRadians(p.getYRot());
+                Vec3 fw = new Vec3(-Math.sin(yr), 0, Math.cos(yr));
+                Vec3 hilt = p.position().add(0, 2.05, 0).add(fw.scale(0.12)), tip = hilt.add(0, 1.55 + 1.2 * k, 0).subtract(fw.scale(0.45));
+                FxSend.trail(sl, GR, hilt, tip, 0.3f + 0.55f * k, 3);                 // the raised edge, wrapped in green
+                FxSend.trail(sl, S, hilt, tip, 0.04f + 0.04f * k, 3);
+                if (tt % 4 == 0) {   // hair-thin green cuts drawn in from all round, converging on the tip
+                    for (int i = 0; i < 2; i++) {
+                        double a = tt * 0.7 + i * Math.PI;
+                        Vec3 from = tip.add(Math.cos(a) * (4.5 + k * 2), -1.5 + Math.sin(tt + i) * 1.4, Math.sin(a) * (4.5 + k * 2));
+                        green(sl, from, tip.add(from.subtract(tip).scale(0.25)), 0.09f + k * 0.05f, 4);
+                    }
+                }
+                if (tt % 8 == 0) FxSend.ring(sl, GR, p.position().add(0, 0.05, 0), 7f - k * 4f, 0.3f + k * 0.3f, 0.12f, 7);
+                if (tt == 18 || tt == 36 || tt == 50) {   // the ground gives way under you
+                    Vec3 g = FxLib.floor(sl, p.position()).add(0, 0.04, 0);
+                    FxSend.cracks(sl, GR, g, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 2.2f + k * 3.2f, 80 - tt, false, seed0 + tt);
+                    FxSend.shake(sl, p.position(), 0.2f + k * 0.35f, 8, 18);
+                    sound(sl, p.position(), SoundEvents.DEEPSLATE_BREAK, 1f, 0.6f);
+                }
+                if (tt == 44 || tt == 54) {   // space around the edge begins to fracture
+                    FxSend.cracks(sl, GR, tip, rightOf(fw), new Vec3(0, 1, 0), 1.2f + k * 0.8f, 14, false, seed0 + tt * 7);
+                    sound(sl, tip, SoundEvents.GLASS_BREAK, 0.7f, 0.5f);
+                }
+            });
+        }
+
+        // ---------------------------------------------------------------- the cut
+        AstaFx.later(HZ_CUT, () -> {
+            TimedModifiers.remove(p, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED, TimedModifiers.HORIZON_CHARGE);
+            if (!alive(p)) return;
+            Vec3 look = p.getLookAngle(), eye = p.getEyePosition();
+            final boolean aimed = Math.abs(look.y) > 0.12;
+            Vec3 flatDir = new Vec3(look.x, 0, look.z).lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : new Vec3(look.x, 0, look.z).normalize();
+            Vec3 dir = aimed ? look.normalize() : flatDir;
+            Vec3 start = aimed ? eye.add(0, -0.3, 0) : FxLib.floor(sl, p.position());
+            Vec3 rt = rightOf(dir), up = aimed ? rt.cross(dir).normalize() : new Vec3(0, 1, 0);
+            final double reach = 70;
+            final float speed = 3.6f;
+            Vec3 end = start.add(dir.scale(reach));
+            final Vec3 o = start.add(dir.scale(1.5)).add(aimed ? Vec3.ZERO : up.scale(1.2));
+            FxSend.shake(sl, p.position(), 1.5f, 22, 70);
+            FxSend.cracks(sl, GR, o.add(dir).add(up.scale(0.6)), rt, up, 5.5f, 70, false, seed0 + 999);
+            Fx.flash(sl, o, 3.0f);
+            sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_CRIT, 1.6f, 0.5f);
+            sound(sl, p.position(), SoundEvents.GENERIC_EXPLODE, 1.2f, 0.6f);
+
+            // everything in the colossal band is cut as the blade passes
+            final boolean[] framed = {false};
+            Vec3 midp = start.add(dir.scale(reach * 0.5));
+            for (LivingEntity t : Kit.near(sl, p, midp, reach * 0.5 + 14)) {
+                Vec3 m = mid(t), seg = end.subtract(start);
+                double f = Math.max(0, Math.min(1, m.subtract(start).dot(seg) / seg.lengthSqr()));
+                Vec3 on = start.add(seg.scale(f)), off = m.subtract(on);
+                double along = on.distanceTo(start);
+                if (Math.abs(off.dot(rt)) > 3.5 + along * 0.15 || Math.abs(off.dot(up)) > 7.5) continue;
+                AstaFx.later((int) (along / speed), () -> {
+                    if (!t.isAlive() || !alive(p)) return;
+                    AstaFx.damage(p, t, dmg, "bloody_massacre");
+                    Fx.impact(sl, GR, mid(t), 2.0f);
+                    if (!framed[0]) { framed[0] = true; FxSend.impactFrame(sl, mid(t), 6, FxSend.FRAME_RIPPER_GREEN, 48); }
+                    t.setDeltaMovement(t.getDeltaMovement().add(dir.add(0, 0.35, 0).normalize().scale(1.7)));
+                    t.hurtMarked = true;
+                });
+            }
+            AstaFx.later(10, () -> { if (!framed[0] && alive(p)) { framed[0] = true; FxSend.impactFrame(sl, o.add(dir.scale(10)), 5, FxSend.FRAME_RIPPER_GREEN, 48); } });
+
+            // ONE colossal green slash, upright, rolling forward and growing; a thin white-hot core inside it
+            int life = (int) (reach / speed) + 2;
+            FxSend.slash(sl, GR, o, dir, up, 5.0f, 24f, life, speed, 1.8f);
+            FxSend.slash(sl, S, o, dir, up, 5.0f, 22f, life, speed, 0.3f);
+            AstaFx.later(3, () -> FxSend.slash(sl, GR, o.add(dir.scale(-1.0)), dir, up, 3.5f, 17f, life - 2, speed, 1.2f));   // an echo of the cut behind it
+            FxSend.wall(sl, GR, o.add(dir.scale(2)), dir, up, 3.0f, 3.6f, -180, 180, 0.3f, life, 0, speed);
+
+            // space cut open along the whole path: green rifts hang in the air where it passed
+            int n = 0;
+            for (double k = 6; k < reach; k += 9, n++) {
+                final double kk = k;
+                final int nn = n;
+                AstaFx.later((int) (k / speed), () -> {
+                    Vec3 base = aimed ? start.add(dir.scale(kk)) : FxLib.floor(sl, start.add(dir.scale(kk)));
+                    float grow = (float) (1.0 + kk / reach * 0.9);
+                    Vec3 c = base.add(up.scale((aimed ? 0 : 2.8) * grow));
+                    Vec3 lean = rt.scale(nn % 2 == 0 ? 0.35 : -0.35).add(up).normalize();
+                    FxSend.cracks(sl, GR, c, dir, lean, 4.0f * grow, 60, true, seed0 + nn * 13);
+                    FxSend.shake(sl, base, 0.4f, 6, 40);
+                });
+            }
         });
     }
 }

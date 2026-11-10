@@ -19,6 +19,8 @@ public final class AnimSend {
     public static final int EQUINOX = 15;
     /** Julius: arms crossed while rising, then thrown open (limit_time). */
     public static final int TIME_AWAKEN = 16;
+    /** Both arms raised overhead, held, then one cut (dark_event_horizon): Jack's Ripper's Horizon. */
+    public static final int RIPPER_HORIZON = 17;
 
     public static void play(ServerPlayer p, int pose) {
         FxPacket pkt = new FxPacket();
