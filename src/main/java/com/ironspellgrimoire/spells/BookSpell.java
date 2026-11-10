@@ -76,6 +76,12 @@ public class BookSpell extends AbstractSpell {
                 : List.of();
     }
 
+    /** An extra condition the caster must meet (e.g. Furioso needs a full Fortune), and what to say when they don't. */
+    private java.util.function.Predicate<Player> gate;
+    private String gateMsg;
+
+    public BookSpell gate(java.util.function.Predicate<Player> gate, String msg) { this.gate = gate; this.gateMsg = msg; return this; }
+
     @Override
     public CastResult canBeCastedBy(int spellLevel, CastSource source, MagicData magicData, Player player) {
         CastResult base = super.canBeCastedBy(spellLevel, source, magicData, player);
@@ -84,6 +90,7 @@ public class BookSpell extends AbstractSpell {
         if (held == null || !book.isInstance(held.getItem())) {
             return new CastResult(CastResult.Type.FAILURE, Component.translatable(onlyKey).withStyle(ChatFormatting.GRAY));
         }
+        if (gate != null && !gate.test(player)) return new CastResult(CastResult.Type.FAILURE, Component.literal(gateMsg).withStyle(ChatFormatting.GRAY));
         return base;
     }
 

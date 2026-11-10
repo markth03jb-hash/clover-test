@@ -120,7 +120,7 @@ public final class LimbusStatus {
             FxSend.spike(sl, BLOOD, from, new Vec3(0, -1, 0), 0.16f, 0.035f, ticks + 1, 0, FxPacket.POP, 0, v, ticks);
             Vec3 land = new Vec3(from.x, floor + 0.02, from.z);
             AstaFx.later(ticks, () -> {   // the spatter: a small dark pool spreading, two tiny drops jumping off it
-                FxSend.ring(sl, BLOOD, land, 0.02f, 0.22f + ThreadLocalRandom.current().nextFloat() * 0.12f, 0.01f, 40);
+                FxSend.ring(sl, BLOOD, land, 0.02f, 0.22f + ThreadLocalRandom.current().nextFloat() * 0.12f, 0.01f, 22);
                 for (int k = 0; k < 2; k++) {
                     Vec3 d = new Vec3(ThreadLocalRandom.current().nextDouble(-1, 1), 0.8, ThreadLocalRandom.current().nextDouble(-1, 1)).normalize();
                     FxSend.spike(sl, BLOOD, land, d, 0.08f, 0.02f, 4, 0, FxPacket.POP, 0, d.scale(0.05), 3);

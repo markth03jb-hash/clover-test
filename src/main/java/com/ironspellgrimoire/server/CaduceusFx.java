@@ -318,91 +318,46 @@ public final class CaduceusFx {
     /** A huge gold hammer forms overhead and comes down; it cashes in all Fortuna on the foes it strikes for extra damage. */
     public static void hammer(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 15, 34, 20, 0, 1);
+        held(p, 15, 34, 20, 0, 1);   // the hammer pours out of the Caduceus in your hand and comes down on tick 20
         pour(sl, p);
-        Vec3 look = flat(p.getLookAngle()), rt = rightOf(look), up = new Vec3(0, 1, 0);
-        Vec3 hitAt = p.position().add(look.scale(4.0));
-        Vec3 pivot = p.position().add(0, 1.6, 0);
-        // a thick rope of slime surges up out of the Caduceus and swells into a hammer high over you:
-        // a long haft, a great block of a head with spikes along its faces, slime running off it
-        Vec3 top = pivot.add(look.scale(-1.0)).add(0, 6.5, 0);
-        for (int i = 0; i < 4; i++) {
-            final int ii = i;
-            AstaFx.later(i * 2, () -> {
-                if (!alive(p)) return;
-                Vec3 a = ii == 0 ? tip(p) : pivot.add(0, ii * 1.4, 0).add(look.scale(-0.25 * ii));
-                Vec3 b = pivot.add(0, (ii + 1) * 1.4, 0).add(look.scale(-0.25 * (ii + 1)));
-                FxSend.trail(sl, G, a, b, 0.22f - ii * 0.02f, 14 - ii * 2);
-            });
-        }
-        AstaFx.later(6, () -> {
-            if (!alive(p)) return;
-            hammerAt(sl, pivot, top, rt, 12, FxPacket.POP);
-            drops(sl, top.add(0, -1.3, 0), 8);
-            sound(sl, top, SoundEvents.SLIME_BLOCK_PLACE, 1.4f, 0.4f);
-            sound(sl, top, SoundEvents.BUCKET_EMPTY_LAVA, 1.2f, 0.5f);
-        });
-        // the swing: it comes over in an arc - three frames - and down onto the mark
-        Vec3 mid1 = pivot.add(look.scale(1.8)).add(0, 5.6, 0), mid2 = pivot.add(look.scale(3.6)).add(0, 3.2, 0);
-        AstaFx.later(17, () -> { if (alive(p)) { hammerAt(sl, pivot, mid1, rt, 2, FxPacket.HOLD); FxSend.trail(sl, W, top, mid1, 0.05f, 4); } });
-        AstaFx.later(19, () -> { if (alive(p)) { hammerAt(sl, pivot, mid2, rt, 2, FxPacket.HOLD); FxSend.trail(sl, W, mid1, mid2, 0.05f, 4); sound(sl, mid2, SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.4f); } });
+        AstaFx.later(5, () -> { if (alive(p)) { drops(sl, tip(p), 4); sound(sl, tip(p), SoundEvents.SLIME_BLOCK_PLACE, 1.2f, 0.4f); } });
+        AstaFx.later(17, () -> { if (alive(p)) sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.4f); });
         AstaFx.later(20, () -> {
             if (!alive(p)) return;
-            Vec3 head = hitAt.add(0, 1.1, 0);
-            hammerAt(sl, pivot, head, rt, 18, FxPacket.HOLD);
-            FxSend.impactFrame(sl, hitAt.add(0, 1, 0), 4, FxSend.FRAME_GOLD, 26);
-            FxSend.shake(sl, hitAt, 1.0f, 12, 26);
-            FxSend.cracks(sl, G, hitAt.add(0, 0.05, 0), look, up, 3.0f, 50, false, p.getId() * 11);
-            // a crown of black slime bursting up all round the head, and two shockwaves along the ground
-            for (int k = 0; k < 14; k++) {
-                double a = Math.PI * 2 * k / 14;
-                Vec3 d = new Vec3(Math.cos(a) * 0.6, 1, Math.sin(a) * 0.6).normalize();
-                FxSend.spike(sl, G, hitAt.add(Math.cos(a) * 1.6, 0, Math.sin(a) * 1.6), d, 1.8f + (k % 3) * 0.6f, 0.16f, 22, 2, FxPacket.GROUND);
+            Vec3 look = flat(p.getLookAngle()), up = new Vec3(0, 1, 0);
+            Vec3 hitAt = clip(sl, p, p.position().add(0, 1, 0), p.position().add(0, 1, 0).add(look.scale(2.6))).add(0, -1, 0);
+            FxSend.impactFrame(sl, hitAt.add(0, 1, 0), 4, FxSend.FRAME_GOLD, 24);
+            FxSend.shake(sl, hitAt, 0.9f, 10, 24);
+            FxSend.cracks(sl, G, hitAt.add(0, 0.05, 0), look, up, 2.6f, 36, false, p.getId() * 11);
+            // where it lands: a splash of black slime bursting up in a crown, two shockwaves, a pool spreading
+            for (int k = 0; k < 12; k++) {
+                double a = Math.PI * 2 * k / 12;
+                Vec3 d = new Vec3(Math.cos(a) * 0.7, 1, Math.sin(a) * 0.7).normalize();
+                FxSend.spike(sl, G, hitAt.add(Math.cos(a) * 1.1, 0, Math.sin(a) * 1.1), d, 1.1f + (k % 3) * 0.4f, 0.13f, 16, 2, FxPacket.GROUND);
             }
             for (int w = 0; w < 2; w++) {
                 final int ww = w;
                 AstaFx.later(w * 3, () -> {
-                    FxSend.ring(sl, G, hitAt.add(0, 0.05 + ww * 0.02, 0), 0.6f, 6.5f + ww * 2.5f, 0.24f - ww * 0.08f, 14);
-                    FxSend.ring(sl, W, hitAt.add(0, 0.08, 0), 0.4f, 4.5f + ww * 2.5f, 0.04f, 10);
+                    FxSend.ring(sl, G, hitAt.add(0, 0.05 + ww * 0.02, 0), 0.5f, 5f + ww * 2.5f, 0.2f - ww * 0.06f, 12);
+                    FxSend.ring(sl, W, hitAt.add(0, 0.08, 0), 0.4f, 3.5f + ww * 2.5f, 0.03f, 9);
                 });
             }
-            FxSend.ring(sl, G, hitAt.add(0, 0.02, 0), 0.5f, 3.0f, 0.02f, 60);   // a pool of slime spreading under it
-            drops(sl, head.add(0, 0.6, 0), 10);
-            sound(sl, hitAt, SoundEvents.ANVIL_LAND, 1.4f, 0.5f);
-            sound(sl, hitAt, SoundEvents.GENERIC_EXPLODE, 0.9f, 0.8f);
+            FxSend.ring(sl, G, hitAt.add(0, 0.02, 0), 0.4f, 2.2f, 0.02f, 40);
+            drops(sl, hitAt.add(0, 1.2, 0), 8);
+            sound(sl, hitAt, SoundEvents.ANVIL_LAND, 1.3f, 0.5f);
             sound(sl, hitAt, SoundEvents.SLIME_SQUISH, 1.4f, 0.4f);
-            for (LivingEntity t : Kit.near(sl, p, hitAt, 5.5)) {
+            for (LivingEntity t : Kit.near(sl, p, hitAt, 4.5)) {
                 int f = LimbusStatus.consumeFortuna(t);
                 hit(p, t, pow(p, power) * (1f + f / 60f), "hammer_of_judgement", 0, false);
                 t.setDeltaMovement(t.getDeltaMovement().add(0, 0.55, 0));
                 t.hurtMarked = true;
                 if (f > 0) {   // the cashed-in Fortuna cracks open on them
-                    FxSend.cracks(sl, G, mid(t), up, flat(t.position().subtract(hitAt)).lengthSqr() > 1e-4 ? flat(t.position().subtract(hitAt)).normalize() : look,
-                            Math.max(0.7f, t.getBbHeight() * 0.6f), 16, false, t.getId());
+                    Vec3 away = flat(t.position().subtract(hitAt));
+                    FxSend.cracks(sl, G, mid(t), up, away.lengthSqr() > 1e-4 ? away.normalize() : look, Math.max(0.7f, t.getBbHeight() * 0.6f), 16, false, t.getId());
                     FxSend.ring(sl, W, mid(t), 0.1f, 1.0f + f / 60f, 0.05f, 8);
                 }
             }
         });
-        AstaFx.later(36, () -> {   // the hammer melts and runs back into the Caduceus
-            if (!alive(p)) return;
-            from(sl, p, hitAt.add(0, 0.8, 0), 10);
-            drops(sl, hitAt.add(0, 1.4, 0), 6);
-            sound(sl, hitAt, SoundEvents.BUCKET_FILL_LAVA, 1f, 0.6f);
-        });
-    }
-
-    /** The slime hammer drawn with its head at {@code head}, its haft running back toward {@code pivot}. */
-    private static void hammerAt(ServerLevel sl, Vec3 pivot, Vec3 head, Vec3 rt, int life, float mode) {
-        Vec3 haft = pivot.subtract(head);
-        Vec3 hd = haft.normalize();
-        Vec3 face = hd.cross(rt).normalize();
-        FxSend.box(sl, G, head, rt, hd, 1.7f, 1.1f, 1.1f, life, mode == FxPacket.POP ? 4 : 0, mode);              // the head
-        FxSend.box(sl, W, head, rt, hd, 1.75f, 0.06f, 1.15f, life, mode == FxPacket.POP ? 4 : 0, mode);           // a sheen band round it
-        FxSend.box(sl, G, head.add(hd.scale(haft.length() * 0.5)), hd, rt, (float) haft.length() * 0.5f, 0.14f, 0.14f, life, 0, mode);   // the haft
-        for (int s = -1; s <= 1; s += 2) {   // blunt spikes on both striking faces
-            Vec3 f = face.scale(s);
-            for (int k = -1; k <= 1; k++) FxSend.spike(sl, G, head.add(f.scale(1.05)).add(rt.scale(k * 0.9)), f, 0.55f, 0.16f, life, 0, mode);
-        }
     }
 
     // ================================================================== 9. Prescript Received

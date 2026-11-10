@@ -75,11 +75,18 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
         }
     }
 
-    /** Swords, lances and the like carry on along the line of the arm, tilted a little up from it - so a thrust points at
-     *  what it stabs and a swing follows the arm's arc (a vanilla item sits square to the fist, which looked wrong). */
-    private static final float ALONG_ARM = 62F;
-
-    private static boolean alongArm(int k) { return k != VIAL && k != BOW && k != FISTS; }
+    /** How far each weapon is turned from square-to-the-fist toward carrying on along the arm (degrees): lances and
+     *  spears point almost straight on from the arm, so a thrust goes where the arm points; swords sit a little higher;
+     *  hafted weapons (scythe, hammer) and the gun continue the arm's line. */
+    private static float angle(int k) {
+        return switch (k) {
+            case LANCE, SPEAR, RAPIER -> 82F;
+            case GREATSWORD, TWIN, DAGGERS -> 70F;
+            case SCYTHE, HAMMER, WHIP, GUN -> 88F;
+            case VIAL -> 75F;
+            default -> 0F;
+        };
+    }
 
     // ------------------------------------------------------------------ third person
     @Override
@@ -96,39 +103,52 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
         float g = f == null ? 0F : grow(f, now);
         int kind = f == null ? 0 : kindAt(f, now);
         boolean slime = f != null ? f[3] > 0.5 : rien;
-        // the right hand: Rien always holds the Caduceus, and his weapons pour out of it
+        boolean weapon = f != null && g > 0.01F && kind != VIAL;
         ps.pushPose();
         m.rightArm.translateAndRotate(ps);
-        ps.translate(-1.0F / 16.0F, 0.6F, -0.03F);
-        if (rien) caduceus(ps, vc, now, f != null && g > 0.01F && kind != VIAL ? g : 0F);
-        if (f != null && g > 0.01F && kind != VIAL) {
-            ps.pushPose();
-            if (alongArm(kind)) ps.mulPose(Axis.XP.rotationDegrees(ALONG_ARM));
-            motion(ps, f, now, kind, true, 1F);
-            draw(ps, vc, kind, slime, g, now, true);
-            ps.popPose();
-        }
+        ps.translate(-1.0F / 16.0F, 0.6F, -0.03F);   // in the right fist
+        hold(ps, vc, f, now, g, kind, slime, rien, weapon, true, 1F);
         ps.popPose();
-        // the left hand: only the two-handed forms (twin sabres, daggers, the bow)
-        if (f != null && g > 0.01F && twoHanded(kind)) {
+        if (weapon && twoHanded(kind)) {   // the second sabre / dagger, or the bow, in the left fist
             ps.pushPose();
             m.leftArm.translateAndRotate(ps);
             ps.translate(1.0F / 16.0F, 0.6F, -0.03F);
-            if (alongArm(kind)) ps.mulPose(Axis.XP.rotationDegrees(ALONG_ARM));
-            motion(ps, f, now, kind, false, 1F);
-            draw(ps, vc, kind, slime, g, now, false);
+            hold(ps, vc, f, now, g, kind, slime, false, true, false, 1F);
             ps.popPose();
         }
+    }
+
+    /** What one fist holds. Rien: the Caduceus, turned along the arm like a baton, and the weapon pouring out of its tip. */
+    private static void hold(PoseStack ps, VertexConsumer vc, double[] f, double now, float g, int kind, boolean slime, boolean rien,
+                             boolean weapon, boolean right, float motionK) {
+        if (rien) {
+            ps.pushPose();
+            ps.mulPose(Axis.XP.rotationDegrees(weapon ? angle(kind) : angle(VIAL)));
+            if (weapon) motion(ps, f, now, kind, right, motionK);
+            caduceus(ps, vc, now, weapon ? g : 0F);
+            if (weapon) {
+                ps.translate(0, 0, -0.36F);   // out of the rod's tip
+                draw(ps, vc, kind, slime, g, now, right);
+            }
+            ps.popPose();
+            return;
+        }
+        if (!weapon) return;
+        ps.pushPose();
+        ps.mulPose(Axis.XP.rotationDegrees(angle(kind)));
+        motion(ps, f, now, kind, right, motionK);
+        draw(ps, vc, kind, slime, g, now, right);
+        ps.popPose();
     }
 
     private static boolean twoHanded(int k) { return k == TWIN || k == DAGGERS || k == BOW; }
 
     // ------------------------------------------------------------------ first person
-    @SubscribeEvent
+    @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.LOWEST, receiveCanceled = true)   // even while a cast hides the hands
     public static void onHand(RenderHandEvent e) {
         if (e.getHand() != InteractionHand.MAIN_HAND) return;
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) return;
+        if (mc.player == null || mc.level == null || !mc.options.getCameraType().isFirstPerson()) return;
         double now = mc.level.getGameTime() + e.getPartialTick();
         double[] f = ACTIVE.get(mc.player.getId());
         if (f != null && now > f[1] + 3) f = null;
@@ -137,23 +157,22 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
         float g = f == null ? 0F : grow(f, now);
         int kind = f == null ? 0 : kindAt(f, now);
         boolean slime = f != null ? f[3] > 0.5 : rien;
+        boolean weapon = f != null && g > 0.01F && kind != VIAL;
         VertexConsumer vc = e.getMultiBufferSource().getBuffer(RenderType.entityTranslucentEmissive(WHITE));
         PoseStack ps = e.getPoseStack();
         float swing = e.getSwingProgress();
-        for (int side = 0; side < (f != null && twoHanded(kind) ? 2 : 1); side++) {
+        for (int side = 0; side < (weapon && twoHanded(kind) ? 2 : 1); side++) {
+            boolean right = side == 0;
             ps.pushPose();
-            // low in the corner of the view, where the hand is; the weapon points away from you into the screen
-            ps.translate(side == 0 ? 0.42F : -0.42F, -0.42F, -0.62F);
-            ps.mulPose(Axis.YP.rotationDegrees(side == 0 ? 6F : -6F));
-            ps.mulPose(Axis.XP.rotationDegrees(8F - swing * 40F));
-            if (side == 0 && rien) caduceus(ps, vc, now, f != null && g > 0.01F && kind != VIAL ? g : 0F);
-            if (f != null && g > 0.01F && kind != VIAL) {
-                ps.pushPose();
-                ps.scale(0.75F, 0.75F, 0.75F);
-                motion(ps, f, now, kind, side == 0, 1.3F);
-                draw(ps, vc, kind, slime, g, now, side == 0);
-                ps.popPose();
-            }
+            // where vanilla holds an item in the hand, low in the corner of the view
+            ps.translate(right ? 0.56F : -0.56F, -0.52F, -0.72F);
+            ps.mulPose(Axis.YP.rotationDegrees(right ? -4F : 4F));
+            ps.mulPose(Axis.XP.rotationDegrees(-swing * 50F));
+            ps.scale(0.7F, 0.7F, 0.7F);
+            // first person has no arm model to follow: turn the arm frame (+y down the arm, -z out of the fist) so the
+            // arm points into the screen - then everything is held exactly as in third person
+            ps.mulPose(Axis.XP.rotationDegrees(-90F));
+            hold(ps, vc, f, now, g, kind, slime, rien && right, weapon, right, 1.3F);
             ps.popPose();
         }
     }
@@ -211,7 +230,7 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
                 ps.translate(0, 0, -0.2F * Math.max(0, s));
             }
             case GUN -> ps.mulPose(Axis.XP.rotationDegrees(30F * Math.max(0, s)));   // the kick of each shot
-            case BOW -> { if (right) ps.translate(0, 0, Math.min(0, s) * -0.9F); }   // the arrow drawn back, then loosed
+            case BOW -> { if (right) ps.translate(0, Math.min(0, s) * 0.7F, 0); }   // the arrow drawn back along the arm, then loosed
             case VIAL -> ps.mulPose(Axis.YP.rotationDegrees((float) Math.sin(now * 0.4) * 20F));
             default -> { }
         }
@@ -254,22 +273,24 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
                 drips(vc, m, n, mat, now, z0, z0 - len * 0.9F, 0.11F);
             }
             case BOW -> {
-                // a recurved bow of hardblood held across the fist, the string a thin red line
-                if (!right) {
-                    float R = 0.75F * L;
+                // held in the arm's frame: with the arm out in front, +y points ahead and -z points up
+                if (!right) {   // the bow: limbs up and down, bowed forward, recurved at the tips, the string behind
+                    float R = 0.8F * L;
                     float[] prev = null;
                     for (int i = 0; i <= 16; i++) {
                         double a = -1.25 + 2.5 * i / 16.0;
-                        float bx = (float) (Math.sin(a) * R), bz = (float) (-0.35F + (1 - Math.cos(a)) * R * 0.55F);
-                        float rec = Math.abs(i - 8) > 6 ? (float) (0.06 * Math.signum(i - 8)) : 0F;
-                        if (prev != null) tube(vc, m, n, mat, prev[0], 0, prev[1], bx + rec, 0, bz - Math.abs(rec), 0.035F, 0.05F, 0.035F, 0.05F, 6);
-                        prev = new float[]{bx + rec, bz - Math.abs(rec)};
+                        float bz = (float) (Math.sin(a) * R), by = (float) ((Math.cos(a) - Math.cos(1.25)) * R * 0.5);
+                        if (Math.abs(i - 8) > 6) by -= 0.05F * (Math.abs(i - 8) - 6);   // the recurve
+                        if (prev != null) tube(vc, m, n, mat, 0, prev[0], prev[1], 0, by, bz, 0.04F, 0.055F, 0.04F, 0.055F, 6);
+                        prev = new float[]{by, bz};
                     }
-                    float ex = (float) (Math.sin(1.25) * R) + 0.06F, ez = (float) (-0.35F + (1 - Math.cos(1.25)) * R * 0.55F) - 0.06F;
-                    tube(vc, m, n, mat, -ex, 0, ez, ex, 0, ez, 0.006F, 0.006F, 0.006F, 0.006F, 4);
-                } else {
-                    tube(vc, m, n, mat, 0, 0, 0.05F, 0, 0, -0.9F * L, 0.02F, 0.02F, 0.02F, 0.02F, 5);   // the nocked arrow
-                    tube(vc, m, n, mat, 0, 0, -0.9F * L, 0, 0, -1.05F * L, 0.05F, 0.02F, 0F, 0F, 4);
+                    float ez = (float) (Math.sin(1.25) * R) + 0.02F, ey = -0.08F;
+                    tube(vc, m, n, mat, 0, ey, -ez, 0, ey, ez, 0.006F, 0.006F, 0.006F, 0.006F, 4);
+                    tube(vc, m, n, mat, 0, -0.06F, -0.05F, 0, 0.12F, -0.05F, 0.06F, 0.06F, 0.06F, 0.06F, 6);   // the grip wrap
+                } else {   // the arrow, nocked: shaft forward along the arm, a heavy head, blood fletching
+                    tube(vc, m, n, mat, 0, -0.1F, 0, 0, 0.95F * L, 0, 0.018F, 0.018F, 0.018F, 0.018F, 5);
+                    tube(vc, m, n, mat, 0, 0.95F * L, 0, 0, 1.15F * L, 0, 0.06F, 0.025F, 0F, 0F, 4);
+                    tube(vc, m, n, mat, 0, -0.1F, 0, 0, 0.05F, 0, 0.05F, 0.005F, 0.005F, 0.005F, 3);
                 }
             }
             case TWIN -> {
@@ -290,7 +311,7 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
                 tube(vc, m, n, mat, 0, 0, 0.32F, 0, 0, -0.02F, 0.04F, 0.04F, 0.04F, 0.04F, 6);
                 sphere(vc, m, n, mat, 0, 0, 0.34F, 0.07F);
                 tube(vc, m, n, mat, -0.34F, 0, -0.04F, 0.34F, 0, -0.04F, 0.05F, 0.05F, 0.05F, 0.05F, 6);
-                blade(vc, m, n, mat, -0.06F, -0.06F - 2.2F * L, 0.18F, 0.1F, 0.035F);
+                blade(vc, m, n, mat, -0.06F, -0.06F - 1.8F * L, 0.17F, 0.09F, 0.035F);
                 if (!gold) drips(vc, m, n, mat, now, -0.1F, -0.06F - 2.0F * L, 0.1F);
             }
             case VIAL -> vial(vc, m, n, mat, now);
@@ -331,9 +352,18 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
                 ring(vc, m, n, mat, 0, 0, -1.6F * L, 0.06F, 0.02F);
             }
             case HAMMER -> {
-                tube(vc, m, n, mat, 0, 0, 0.3F, 0, 0, -1.2F * L, 0.04F, 0.04F, 0.04F, 0.04F, 6);
-                tube(vc, m, n, mat, -0.36F * L, 0, -1.25F * L, 0.36F * L, 0, -1.25F * L, 0.2F * L, 0.24F * L, 0.2F * L, 0.24F * L, 8);
-                ring(vc, m, n, mat, -0.36F * L, 0, -1.25F * L, 0.2F * L, 0.03F);
+                // a long haft and a great block of a head with blunt spikes on both striking faces
+                float H = 1.3F * L;
+                tube(vc, m, n, mat, 0, 0, 0.25F, 0, 0, -1.25F * H, 0.05F, 0.05F, 0.045F, 0.045F, 6);
+                float hz = -1.35F * H, hw = 0.45F * H, hr = 0.26F * H;
+                tube(vc, m, n, mat, -hw, 0, hz, hw, 0, hz, hr, hr, hr, hr, 8);
+                ring(vc, m, n, mat, -hw, 0, hz, hr, 0.035F);
+                ring(vc, m, n, mat, hw, 0, hz, hr, 0.035F);
+                for (int k = -1; k <= 1; k++) {
+                    tube(vc, m, n, mat, k * hw * 0.6F, -hr, hz, k * hw * 0.6F, -hr - 0.16F * H, hz, 0.06F, 0.06F, 0F, 0F, 4);
+                    tube(vc, m, n, mat, k * hw * 0.6F, hr, hz, k * hw * 0.6F, hr + 0.16F * H, hz, 0.06F, 0.06F, 0F, 0F, 4);
+                }
+                drips(vc, m, n, mat, now, hz + 0.1F, hz - 0.3F, hr);
             }
             case DAGGERS -> {
                 tube(vc, m, n, mat, 0, 0, 0.12F, 0, 0, -0.03F, 0.03F, 0.03F, 0.03F, 0.03F, 5);

@@ -531,7 +531,8 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> SEVERING_WIRE = registerSpell(cad("severing_wire", 14, 40, 6, "iron_spell_grimoire:rien_wire", com.ironspellgrimoire.server.CaduceusFx::wire));
     public static final RegistryObject<AbstractSpell> HAMMER_OF_JUDGEMENT = registerSpell(cad("hammer_of_judgement", 12, 50, 16, "iron_spell_grimoire:rien_hammer", com.ironspellgrimoire.server.CaduceusFx::hammer));
     public static final RegistryObject<AbstractSpell> PRESCRIPT_RECEIVED = registerSpell(cad("prescript_received", 40, 60, 0, "iron_spell_grimoire:rien_prescript", com.ironspellgrimoire.server.CaduceusFx::prescriptReceived));
-    public static final RegistryObject<AbstractSpell> FURIOSO = registerSpell(cad("furioso", 80, 140, 30, "iron_spell_grimoire:rien_furioso", com.ironspellgrimoire.server.CaduceusFx::furioso));
+    public static final RegistryObject<AbstractSpell> FURIOSO = registerSpell(cad("furioso", 80, 140, 30, "iron_spell_grimoire:rien_furioso", com.ironspellgrimoire.server.CaduceusFx::furioso)
+            .gate(com.ironspellgrimoire.spells.LimbusGate::fortuneFull, "Furioso needs a full Fortune (100)."));
 
     /** The ten Caduceus Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> CADUCEUS_SPELLS = List.of(

@@ -472,11 +472,11 @@ public final class BloodfiendFx {
         p.displayClientMessage(Component.literal("The Grand Finale of La Manchaland!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), true);
         // 4: the sky over the target turns to blood - a vast dim dome, and a blood moon hanging over it
         AstaFx.later(4, () -> {
-            FxSend.wall(sl, BL, land.add(0, 0.2, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 16f, 16f, -180, 180, 16f, 56, 0, 0);
+            FxSend.wall(sl, BL, land.add(0, 0.2, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 16f, 16f, -180, 180, 16f, 34, 0, 0);
             Vec3 moon = land.add(0, 24, 0);
-            FxSend.ring(sl, BL, moon, 0.1f, 4.5f, 0.6f, 56);
-            FxSend.ring(sl, GD, moon, 4.4f, 4.7f, 0.1f, 56);
-            FxSend.ring(sl, BL, land.add(0, 0.06, 0), 13.5f, 14f, 0.05f, 56);
+            FxSend.ring(sl, BL, moon, 0.1f, 4.5f, 0.6f, 34);
+            FxSend.ring(sl, GD, moon, 4.4f, 4.7f, 0.1f, 34);
+            FxSend.ring(sl, BL, land.add(0, 0.06, 0), 13.5f, 14f, 0.05f, 30);
             sound(sl, land, SoundEvents.WARDEN_HEARTBEAT, 1.6f, 0.6f);
         });
         // 6-18: blood drawn up out of the ground in streams, built into the lance above her a section at a time
@@ -494,7 +494,7 @@ public final class BloodfiendFx {
                 }
                 Vec3 dn = land.add(0, 1, 0).subtract(top).normalize();
                 float part = 1.5f + kk * 1.3f;   // the lance grows a section with each surge
-                FxSend.spike(sl, BL, top.subtract(dn.scale(1.2)), dn, part, 0.35f + kk * 0.1f, 22 - kk * 2 + 30, 0, FxPacket.HOLD);
+                FxSend.spike(sl, BL, top.subtract(dn.scale(1.2)), dn, part, 0.35f + kk * 0.1f, 26 - (6 + kk * 2) + 1, 0, FxPacket.HOLD);   // gone the moment she dives
                 LimbusStatus.drip(sl, top.add(dn.scale(part * 0.5)), 1);
                 sound(sl, top, SoundEvents.HONEY_BLOCK_PLACE, 1.2f, 0.5f + kk * 0.08f);
             });
@@ -517,12 +517,12 @@ public final class BloodfiendFx {
             Vec3 to = SpaceFx.safe(sl, land, p);
             if (to == null) to = land;
             FxSend.trail(sl, BL, from.add(0, 1, 0), to.add(0, 1, 0), 1.0f, 8);
-            FxSend.spike(sl, BL, to.add(0, 9, 0), new Vec3(0, -1, 0), 9.5f, 0.9f, 40, 0, FxPacket.EXTEND);
+            FxSend.spike(sl, BL, to.add(0, 9, 0), new Vec3(0, -1, 0), 9.5f, 0.9f, 16, 0, FxPacket.EXTEND);
             SpaceFx.move(p, to, p.getYRot());
             p.fallDistance = 0;
             FxSend.impactFrame(sl, to.add(0, 1, 0), 5, FxSend.FRAME_BLOOD, 32);
             FxSend.shake(sl, to, 1.1f, 16, 32);
-            FxSend.cracks(sl, BL, to.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 3.5f, 60, false, p.getId() * 3);
+            FxSend.cracks(sl, BL, to.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 3.5f, 28, false, p.getId() * 3);
             sound(sl, to, SoundEvents.TRIDENT_THUNDER, 1.4f, 0.7f);
             sound(sl, to, SoundEvents.GENERIC_EXPLODE, 1.2f, 0.7f);
             if (aimed != null && aimed.isAlive()) {
@@ -559,7 +559,7 @@ public final class BloodfiendFx {
                     double a = Math.PI * 2 * k / n + wave * 0.3;
                     Vec3 b = land.add(Math.cos(a) * rad, 0, Math.sin(a) * rad);
                     Vec3 d = new Vec3(Math.cos(a) * 0.45, 1, Math.sin(a) * 0.45).normalize();   // curving outward, like a briar
-                    FxSend.spike(sl, BL, b, d, 1.4f + r.nextFloat() * 1.0f, 0.12f, 34, 3, FxPacket.GROUND);
+                    FxSend.spike(sl, BL, b, d, 1.4f + r.nextFloat() * 1.0f, 0.12f, 18, 3, FxPacket.GROUND);
                 }
                 sound(sl, land, SoundEvents.POINTED_DRIPSTONE_LAND, 1.2f, 0.6f + wave * 0.1f);
                 for (LivingEntity t : Kit.near(sl, p, land, rad + 1.2)) {
@@ -575,12 +575,12 @@ public final class BloodfiendFx {
                 Vec3 b = t.position();
                 for (int k = 0; k < 8; k++) {
                     double a = Math.PI * 2 * k / 8;
-                    FxSend.spike(sl, BL, b.add(Math.cos(a) * 0.7, 0, Math.sin(a) * 0.7), new Vec3(Math.cos(a) * 0.4, 1, Math.sin(a) * 0.4).normalize(), 1.8f, 0.14f, 24, 3, FxPacket.GROUND);
+                    FxSend.spike(sl, BL, b.add(Math.cos(a) * 0.7, 0, Math.sin(a) * 0.7), new Vec3(Math.cos(a) * 0.4, 1, Math.sin(a) * 0.4).normalize(), 1.8f, 0.14f, 16, 3, FxPacket.GROUND);
                 }
                 LimbusStatus.splash(sl, mid(t), 1.4f);
                 LimbusStatus.burstBleed(p, t, 1.5f * boost);
             }
-            for (int k = 0; k < 24; k++) LimbusStatus.drip(sl, land.add(r.nextDouble(-9, 9), 7 + r.nextDouble(3), r.nextDouble(-9, 9)), r.nextInt(16));
+            for (int k = 0; k < 14; k++) LimbusStatus.drip(sl, land.add(r.nextDouble(-8, 8), 5 + r.nextDouble(2), r.nextDouble(-8, 8)), r.nextInt(8));
             sound(sl, land, SoundEvents.HONEY_BLOCK_BREAK, 1.4f, 0.5f);
             sound(sl, land, SoundEvents.WARDEN_HEARTBEAT, 1.4f, 0.7f);
         });
