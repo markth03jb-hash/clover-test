@@ -1,6 +1,12 @@
-Iron Spell Grimoire v1.79.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.80.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.80.0
+- Yami Mana Zone: sea lies on lower ground at block steps (no bright hole/slab by the altar)
+- Julius: smooth plain page fan (no cyan or ink lines), steady book, stored-time arc fades after a few seconds
+- Treant Guardian: one tree at a time (much less lag)
+
 
 NEW IN 1.79.0
 - Julius: no covers, more pages, cyan colours, clock in the wheel, clockwork/page effects, stored-time HUD fix
