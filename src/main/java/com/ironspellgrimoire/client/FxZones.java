@@ -166,20 +166,15 @@ final class FxZones extends FxBase {
       float[] sea = fireZone ? new float[]{0.4F, 0.02F, 0.02F} : new float[]{0.012F, 0.0F, 0.03F};
       float seaMul = fireZone ? 0.45F : 1.0F;   // her zone: a glowing heat-haze over the ground, not a sea of black
       int RINGS = ZR, SEG = ZS;
-      double[] hs = zoneHeights(e, ep.x, gy, ep.z, R);
+      double[] hs = new double[4 + (RINGS + 1) * SEG];   // heights are no longer sampled: the sea is one flat sheet at the caster's ground level
       // the sea of dark mana on the ground, lying on the terrain (nothing drawn where there's no ground)
       for (int i = 0; i < RINGS; i++) {
          double r0 = R * i / RINGS, r1 = R * (i + 1) / RINGS;
          for (int j = 0; j < SEG; j++) {
             int j1 = (j + 1) % SEG;
             double y00 = hs[4 + i * SEG + j], y01 = hs[4 + i * SEG + j1], y11 = hs[4 + (i + 1) * SEG + j1], y10 = hs[4 + (i + 1) * SEG + j];
-            if (Double.isNaN(y00) || Double.isNaN(y01) || Double.isNaN(y11) || Double.isNaN(y10)) continue;
             double yHi = Math.max(Math.max(y00, y01), Math.max(y11, y10)), yLo = Math.min(Math.min(y00, y01), Math.min(y11, y10));
-            if (yHi - yLo > 1.6) continue;   // no sheets over cliffs
-            // a small step (slab, path, stairs): lie flat on the top. A bigger one (an altar, a block, a pillar): lie flat on the
-            // LOWER ground - the block hides the part inside it - instead of leaving a bright hole in the sea or hanging above it
-            if (yHi - yLo > 0.52) { y00 = y01 = y11 = y10 = yLo; }
-            else if (yHi - yLo > 0.02) { y00 = y01 = y11 = y10 = yHi; }
+            y00 = y01 = y11 = y10 = c.y;   // flat at the caster's ground level: never follows block tops, so no slabs or holes
             double a0 = Math.PI * 2 * j / SEG, a1 = Math.PI * 2 * (j + 1) / SEG;
             Vec3 p00 = new Vec3(c.x + Math.cos(a0) * r0, y00, c.z + Math.sin(a0) * r0), p01 = new Vec3(c.x + Math.cos(a1) * r0, y01, c.z + Math.sin(a1) * r0);
             Vec3 p11 = new Vec3(c.x + Math.cos(a1) * r1, y11, c.z + Math.sin(a1) * r1), p10 = new Vec3(c.x + Math.cos(a0) * r1, y10, c.z + Math.sin(a0) * r1);
