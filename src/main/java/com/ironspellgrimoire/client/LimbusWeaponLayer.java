@@ -42,12 +42,15 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
 
     public LimbusWeaponLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) { super(parent); }
 
-    public static void set(int id, int life, int kind, boolean gold) {
+    public static void set(int id, int life, int kind, boolean gold) { set(id, life, kind, gold, 0, 0, 0); }
+
+    /** {@code first}, {@code every}, {@code count}: when the skill's blows land (ticks from now) - the weapon swings / thrusts on them. */
+    public static void set(int id, int life, int kind, boolean gold, float first, float every, int count) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         double now = mc.level.getGameTime();
         if (life <= 0) ACTIVE.remove(id);
-        else ACTIVE.put(id, new double[]{now, now + life, kind, gold ? 1 : 0});
+        else ACTIVE.put(id, new double[]{now, now + life, kind, gold ? 1 : 0, first, every, count});
     }
 
     private static float grow(double[] f, double now) {
@@ -76,17 +79,18 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
         boolean gold = f[3] > 0.5;
         VertexConsumer vc = buf.getBuffer(RenderType.entityTranslucentEmissive(WHITE));
         PlayerModel<AbstractClientPlayer> m = getParentModel();
-        hand(ps, vc, m.rightArm, -1.0F / 16.0F, kind, gold, g, now, true);
-        if (twoHanded(kind)) hand(ps, vc, m.leftArm, 1.0F / 16.0F, kind, gold, g, now, false);
-        else if (gold && kind != VIAL) hand(ps, vc, m.leftArm, 1.0F / 16.0F, VIAL, true, 1F, now, false);   // Rien keeps the Caduceus rods in the other hand
+        hand(ps, vc, m.rightArm, -1.0F / 16.0F, kind, gold, g, now, true, f);
+        if (twoHanded(kind)) hand(ps, vc, m.leftArm, 1.0F / 16.0F, kind, gold, g, now, false, f);
+        else if (gold && kind != VIAL) hand(ps, vc, m.leftArm, 1.0F / 16.0F, VIAL, true, 1F, now, false, null);   // Rien keeps the Caduceus rods in the other hand
     }
 
     private static boolean twoHanded(int k) { return k == TWIN || k == FISTS || k == DAGGERS || k == BOW; }
 
-    private static void hand(PoseStack ps, VertexConsumer vc, ModelPart arm, float x, int kind, boolean gold, float g, double now, boolean right) {
+    private static void hand(PoseStack ps, VertexConsumer vc, ModelPart arm, float x, int kind, boolean gold, float g, double now, boolean right, double[] f) {
         ps.pushPose();
         arm.translateAndRotate(ps);
         ps.translate(x, 0.6F, -0.03F);   // in the fist
+        if (f != null) motion(ps, f, now, kind, right, 1F);
         draw(ps, vc, kind, gold, g, now, right);
         ps.popPose();
     }
@@ -105,18 +109,64 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
         if (g <= 0.01F) return;
         int kind = kindAt(f, now);
         boolean gold = f[3] > 0.5;
-        double t = now - f[0];
-        float thrust = (float) Math.max(0, Math.sin(t * 0.9)) * 0.12F;   // a little forward jab in time with the swings
         VertexConsumer vc = e.getMultiBufferSource().getBuffer(RenderType.entityTranslucentEmissive(WHITE));
         PoseStack ps = e.getPoseStack();
         for (int side = 0; side < (twoHanded(kind) ? 2 : 1); side++) {
             ps.pushPose();
-            ps.translate(side == 0 ? 0.5F : -0.5F, -0.48F, -0.72F - thrust);
+            ps.translate(side == 0 ? 0.5F : -0.5F, -0.48F, -0.72F);
             ps.mulPose(Axis.YP.rotationDegrees(side == 0 ? -8F : 8F));
             ps.mulPose(Axis.XP.rotationDegrees(180.0F + (kind == BOW ? 90F : 12F)));   // arm space: +y down, blade toward -z
             ps.scale(0.8F, 0.8F, 0.8F);
+            motion(ps, f, now, kind, side == 0, 1.4F);   // first person has no arm animation: the weapon does all the moving
             draw(ps, vc, kind, gold, g, now, side == 0);
             ps.popPose();
+        }
+    }
+
+    // ------------------------------------------------------------------ the weapon's own motion, timed to the skill's blows
+    /** {strength, which blow}: -0.45 drawing back before a blow, snapping to 1 as it lands, easing back to 0 after. */
+    private static float[] strike(double[] f, double now) {
+        if (f.length < 7 || f[6] <= 0) return new float[]{0F, 0F};
+        double t = now - f[0];
+        float best = 0F, idx = 0F;
+        for (int i = 0; i < (int) f[6]; i++) {
+            double d = t - (f[4] + i * f[5]);
+            float v;
+            if (d < -6 || d > 7) continue;
+            if (d < 0) v = (float) (-0.45 * Math.sin((d + 6) / 6.0 * Math.PI / 2));
+            else if (d < 1.5) v = (float) Mth.lerp(d / 1.5, -0.45, 1.0);
+            else v = (float) (1.0 - (d - 1.5) / 5.5);
+            if (Math.abs(v) > Math.abs(best)) { best = v; idx = i; }
+        }
+        return new float[]{best, idx};
+    }
+
+    private static void motion(PoseStack ps, double[] f, double now, int kind, boolean right, float k) {
+        float[] st = strike(f, now);
+        float s = st[0] * k;
+        int i = (int) st[1];
+        float side = (right ? 1F : -1F) * (i % 2 == 0 ? 1F : -1F);
+        float idle = (float) Math.sin(now * 0.3) * 0.03F;   // never quite still: a slow breathing sway
+        ps.translate(0, idle, 0);
+        switch (kind) {
+            case LANCE, RAPIER, SPEAR -> {   // thrust: drawn back, then driven out along the blade
+                ps.translate(0, 0, -0.6F * s);
+                ps.mulPose(Axis.ZP.rotationDegrees(25F * s * (kind == RAPIER ? 1 : 0.4F)));   // a twist as it goes in
+            }
+            case FISTS, DAGGERS -> {   // jabs, the hands taking turns
+                float js = (right == (i % 2 == 0)) ? s : s * 0.3F;
+                ps.translate(0, 0, -0.5F * js);
+                if (kind == DAGGERS) ps.mulPose(Axis.YP.rotationDegrees(50F * js * side));
+            }
+            case TWIN, SCYTHE, WHIP -> ps.mulPose(Axis.YP.rotationDegrees(85F * s * side));   // wide horizontal sweeps, back and forth
+            case GREATSWORD, HAMMER -> {   // overhead: raised back, then brought down hard
+                ps.mulPose(Axis.XP.rotationDegrees(-75F * s));
+                ps.translate(0, 0, -0.2F * Math.max(0, s));
+            }
+            case GUN -> ps.mulPose(Axis.XP.rotationDegrees(30F * Math.max(0, s)));   // the kick of each shot
+            case BOW -> { if (right) ps.translate(0, 0, Math.min(0, s) * -0.9F); }   // the arrow drawn back, then loosed
+            case VIAL -> ps.mulPose(Axis.YP.rotationDegrees((float) Math.sin(now * 0.4) * 20F));
+            default -> { }
         }
     }
 
@@ -315,26 +365,22 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
     }
 
     /**
-     * The Caduceus itself: two rods, one black and one white, each banded and capped in gold, joined end to end by a
-     * gold chain. The black rod is held; the white one hangs off the chain and swings.
+     * The Caduceus itself: a black rod banded in white and capped in gold, with a gold chain looping from end to end.
      */
     private static void vial(VertexConsumer vc, Matrix4f m, Matrix3f n, Mat gold, double now) {
-        Mat black = new Mat(2, now), white = new Mat(3, now);
+        Mat black = new Mat(2, now);
         // the held rod, along -z out of the fist
         rod(vc, m, n, black, gold, 0, 0, 0.25F, 0, 0, -0.75F, now);
-        // the chain from the far end of the held rod, hanging and swinging, to the white rod
-        float sw = (float) Math.sin(now * 0.22) * 0.35F, sw2 = (float) Math.cos(now * 0.17) * 0.15F;
-        float px = 0, py = 0, pz = -0.75F;
-        float ex = sw, ey = 0.65F, ez = -0.55F + sw2;
-        for (int i = 1; i <= 9; i++) {
-            float t = i / 9F;
-            float x = ex * t, y = ey * t - (float) Math.sin(t * Math.PI) * 0.12F, z = -0.75F + (ez + 0.75F) * t;
+        // the gold chain looping from one end of the rod to the other, swaying
+        float sw = (float) Math.sin(now * 0.22) * 0.12F;
+        float px = 0, py = 0, pz = 0.25F;
+        for (int i = 1; i <= 11; i++) {
+            float t = i / 11F;
+            float z = 0.25F - 1.0F * t, y = (float) Math.sin(t * Math.PI) * 0.35F, x = (float) Math.sin(t * Math.PI) * sw;
             if (i % 2 == 1) ring(vc, m, n, gold, (px + x) * 0.5F, (py + y) * 0.5F, (pz + z) * 0.5F, 0.03F, 0.008F);
             else tube(vc, m, n, gold, px, py, pz, x, y, z, 0.01F, 0.01F, 0.01F, 0.01F, 4);
             px = x; py = y; pz = z;
         }
-        // the white rod hanging from the chain's end, roughly level and swinging with it
-        rod(vc, m, n, white, gold, ex, ey, ez, ex + 0.1F + sw * 0.4F, ey + 0.08F, ez + 0.95F, now);
     }
 
     private static void rod(VertexConsumer vc, Matrix4f m, Matrix3f n, Mat body, Mat gold, float ax, float ay, float az, float bx, float by, float bz, double now) {

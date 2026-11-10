@@ -30,9 +30,13 @@ public final class CaduceusFx {
 
     static final int G = Fx.GOLD, W = Fx.SILVER;
 
-    static void held(ServerPlayer p, int kind, int life) {
+    static void held(ServerPlayer p, int kind, int life) { held(p, kind, life, 0, 0, 0); }
+
+    /** ... with the ticks its blows land on ({@code first}, then every {@code every}, {@code count} of them): the weapon swings on them. */
+    static void held(ServerPlayer p, int kind, int life, int first, int every, int count) {
         FxPacket pkt = new FxPacket();
         pkt.shape = 63; pkt.id = p.getId(); pkt.life = life; pkt.sweep = kind; pkt.palette = 1;
+        pkt.a0 = first; pkt.a1 = every; pkt.h = count;
         AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
@@ -60,7 +64,7 @@ public final class CaduceusFx {
     /** The vial spins on its chain; the gold stretches into a whip-sword and cuts a wide arc. */
     public static void lash(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 11, 20);
+        held(p, 11, 20, 8, 0, 1);
         pour(sl, p);
         AstaFx.later(8, () -> {
             if (!alive(p)) return;
@@ -91,7 +95,7 @@ public final class CaduceusFx {
     /** A thin sword of gold: three precise thrusts; the third is a sure critical on a foe with 30+ Fortuna. */
     public static void rapier(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 12, 30);
+        held(p, 12, 30, 8, 7, 3);
         pour(sl, p);
         int[] at = {8, 14, 22};
         for (int i = 0; i < 3; i++) {
@@ -122,7 +126,7 @@ public final class CaduceusFx {
     /** A great scythe of gold: one huge reap that pulls everything in front of you inward and always crits. */
     public static void scythe(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 13, 30);
+        held(p, 13, 30, 14, 0, 1);
         pour(sl, p);
         AstaFx.later(14, () -> {
             if (!alive(p)) return;
@@ -146,7 +150,7 @@ public final class CaduceusFx {
     /** The liquid splits into a burst of small spikes fired like shot. Counts as a fired form for the Prescript. */
     public static void volley(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 17, 18);
+        held(p, 17, 18, 8, 0, 1);
         pour(sl, p);
         AstaFx.later(8, () -> {
             if (!alive(p)) return;
@@ -172,7 +176,7 @@ public final class CaduceusFx {
     /** A long spear thrown straight and far; it pierces, then melts back into the vial. A fired form. */
     public static void lance(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 14, 14);
+        held(p, 14, 14, 12, 0, 1);
         pour(sl, p);
         AstaFx.later(12, () -> {
             if (!alive(p)) return;
@@ -252,7 +256,7 @@ public final class CaduceusFx {
     /** A huge gold hammer forms overhead and comes down; it cashes in all Fortuna on the foes it strikes for extra damage. */
     public static void hammer(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 15, 30);
+        held(p, 15, 30, 16, 0, 1);
         pour(sl, p);
         Vec3 look = flat(p.getLookAngle()), rt = rightOf(look);
         Vec3 hitAt = p.position().add(look.scale(3.5));
@@ -310,7 +314,7 @@ public final class CaduceusFx {
         int fortune = LimbusStatus.spendFortune(p);
         boolean full = fortune >= 100;
         final LivingEntity target = t;
-        held(p, 18, full ? 60 : 36);
+        held(p, 18, full ? 60 : 36, 6, 5, (full ? 9 : 5) + 1);
         pour(sl, p);
         FxSend.impactFrame(sl, p.position().add(0, 1.6, 0), 3, FxSend.FRAME_GOLD, 18);
         sound(sl, p.position(), SoundEvents.GLASS_BREAK, 1.2f, 0.7f);   // the vial bursts

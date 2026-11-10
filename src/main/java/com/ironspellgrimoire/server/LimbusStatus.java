@@ -328,9 +328,10 @@ public final class LimbusStatus {
     public static void onTick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END) return;
         // bleed: moving hurts
-        for (Iterator<Bleed> it = BLEED.values().iterator(); it.hasNext(); ) {
-            Bleed b = it.next();
-            if (!b.e.isAlive() || b.e.isRemoved() || b.stacks <= 0) { it.remove(); continue; }
+        // a snapshot: the damage below can add or remove Bleed (lifesteal, deaths) while we go through them
+        BLEED.values().removeIf(b -> !b.e.isAlive() || b.e.isRemoved() || b.stacks <= 0);
+        for (Bleed b : new java.util.ArrayList<>(BLEED.values())) {
+            if (!b.e.isAlive() || b.stacks <= 0) continue;
             ServerLevel sl = (ServerLevel) b.e.level();
             long now = sl.getGameTime();
             if (now % 5 != 0) continue;
@@ -343,9 +344,8 @@ public final class LimbusStatus {
             }
         }
         // fortuna fades if they are left alone
-        for (Iterator<Fortuna> it = FORTUNA.values().iterator(); it.hasNext(); ) {
-            Fortuna f = it.next();
-            if (!f.e.isAlive() || f.e.isRemoved() || f.stacks <= 0) { it.remove(); continue; }
+        FORTUNA.values().removeIf(f -> !f.e.isAlive() || f.e.isRemoved() || f.stacks <= 0);
+        for (Fortuna f : new java.util.ArrayList<>(FORTUNA.values())) {
             long now = f.e.level().getGameTime();
             if (now - f.lastHit > 100 && now % 40 == 0) f.stacks -= 5;
         }
