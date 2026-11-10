@@ -1,6 +1,11 @@
-Iron Spell Grimoire v1.82.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.83.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.83.0
+- Fixed a server crash from Bleed (Hardblood).
+- The spell wheel's info page now sits above the wheel, clear of the health bar.
+- Hardblood and Caduceus weapons swing, thrust and jab on each blow of their skills (first and third person).
 
 NEW IN 1.82.0
 - Two new powers (worn in the spellbook slot, not books): Hardblood (Don Quixote, La Manchaland) - 12 spells with Bleed, Bloodfeast, Hardblood and Vampire Mode; Caduceus (Rien) - 10 spells with the Prescript, Fortune, Fortuna and Furioso. Held weapons, own animations, HUD bars.
