@@ -548,7 +548,8 @@ public class AstaFx {
         LAST_COUNTER.remove(p.getUUID());
         FxSend.ring(sl, Fx.SILVER, p.position().add(0, 0.9, 0), 0.4f, 1.6f, 0.5f, 9);
         FxSend.ring(sl, Fx.SILVER, p.position().add(0, 0.05, 0), 0.3f, 6.0f, 0.08f, 10);   // ki spreads out to read the next attack
-        sendOutline(p, 7, devil ? GUARD_TICKS + 20 : GUARD_TICKS);   // a thin skin of white ki while the stance holds
+        ModeHud.show(p, "instinct_guard", devil ? GUARD_TICKS + 20 : GUARD_TICKS);
+        sendOutline(p, 7, devil ? GUARD_TICKS + 20 : GUARD_TICKS);   // a skin of white ki while the stance holds
         sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, 0.8f, 1.6f);
         sound(sl, p.position(), net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 1f, 1.8f);
     }
