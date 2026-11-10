@@ -334,13 +334,13 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
                 tube(vc, m, n, mat, 0, 0, -0.06F, 0, 0, -0.08F - 1.7F * L, 0.03F, 0.01F, 0.004F, 0.004F, 4);
             }
             case SCYTHE -> {
-                // a long shaft and a great curved blade at its head, edge inward
+                // a long shaft and a great curved blade at its head, curving the way the reap sweeps so the edge leads
                 tube(vc, m, n, mat, 0, 0, 0.9F, 0, 0, -1.4F * L, 0.035F, 0.035F, 0.035F, 0.035F, 6);
                 float hz = -1.4F * L;
                 float[] prev = {0, hz};
                 for (int i = 1; i <= 10; i++) {
                     double a = i / 10.0 * 2.3;
-                    float bx = (float) (Math.sin(a) * 0.75 * L), bz = (float) (hz + (1 - Math.cos(a)) * 0.6 * L);
+                    float bx = (float) (-Math.sin(a) * 0.75 * L), bz = (float) (hz + (1 - Math.cos(a)) * 0.6 * L);
                     float w = 0.16F * (float) (1.0 - i / 11.0);
                     tube(vc, m, n, mat, prev[0], 0, prev[1], bx, 0, bz, 0.02F, w, 0.02F, w * 0.9F, 4);
                     prev = new float[]{bx, bz};
