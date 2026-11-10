@@ -125,8 +125,10 @@ public final class Moves {
             Kit.push(t, mid(t).subtract(at), push, up);
         }
         Fx.impact(sl, pal, at, (float) r * 0.45f);
-        FxSend.ring(sl, pal, at.add(0, 0.05, 0), 0.2f, (float) r, 0.08f, 8);
-        FxSend.ring(sl, S, at.add(0, 0.3, 0), 0.1f, (float) r * 0.65f, 0.04f, 6);
+        if (!Sig.nova(sl, pal, at, r)) {
+            FxSend.ring(sl, pal, at.add(0, 0.05, 0), 0.2f, (float) r, 0.08f, 8);
+            FxSend.ring(sl, S, at.add(0, 0.3, 0), 0.1f, (float) r * 0.65f, 0.04f, 6);
+        }
     }
 
     /** A glowing sphere thrown ahead; it bursts where it lands. {@code burst} runs at that spot after the damage. */
@@ -140,6 +142,7 @@ public final class Moves {
                     if (burst != null) burst.accept(c);
                 },
                 (b, prev) -> {
+                    if (Sig.bolt(sl, pal, prev, b.position(), b.getDeltaMovement(), size, sl.getGameTime())) return;
                     Kit.orb(sl, pal, b.position(), b.getDeltaMovement(), size, 2);
                     FxSend.trail(sl, pal, prev, b.position(), size * 0.6f, 5);
                     FxSend.trail(sl, S, prev, b.position(), size * 0.15f, 3);
@@ -175,8 +178,10 @@ public final class Moves {
                 if (dest == null) return;
                 Vec3 from = p.position().add(0, 1, 0);
                 SpaceFx.move(p, dest, p.getYRot());
-                FxSend.trail(sl, pal, from, dest.add(0, 1, 0), 0.22f, 6);
-                FxSend.trail(sl, S, from, dest.add(0, 1, 0), 0.06f, 4);
+                if (!Sig.dash(sl, pal, from, dest.add(0, 1, 0))) {
+                    FxSend.trail(sl, pal, from, dest.add(0, 1, 0), 0.22f, 6);
+                    FxSend.trail(sl, S, from, dest.add(0, 1, 0), 0.06f, 4);
+                }
                 if (perStep != null) perStep.accept(dest, ii);
             });
         }
@@ -201,6 +206,7 @@ public final class Moves {
                     AstaFx.later(s + 1, () -> {
                         double t0 = ss / (double) lead, t1 = (ss + 1) / (double) lead;
                         Vec3 q0 = top.add(ground.subtract(top).scale(t0)), q1 = top.add(ground.subtract(top).scale(t1));
+                        if (Sig.strike(sl, pal, q0, q1)) return;
                         FxSend.trail(sl, pal, q0, q1, 0.45f, 4);
                         FxSend.trail(sl, S, q0, q1, 0.12f, 3);
                         Kit.orb(sl, pal, q1, q1.subtract(q0), 0.5f, 2);
@@ -257,8 +263,10 @@ public final class Moves {
                 Vec3 c = p.getEyePosition().add(dir.scale(reach * 0.55)).add(0, -0.3, 0);
                 double tilt = (ii % 2 == 0 ? 1 : -1) * 0.7;
                 Vec3 up = new Vec3(rightOf(dir).x * tilt, 1, rightOf(dir).z * tilt).normalize();
-                FxSend.slash(sl, pal, c, dir, up, len, len * 0.28f, 5, 0.25f);
-                FxSend.slash(sl, S, c, dir, up, len * 0.8f, len * 0.1f, 4, 0.25f, 0.5f);
+                if (!Sig.claw(sl, pal, c, dir, up, len, ii)) {
+                    FxSend.slash(sl, pal, c, dir, up, len, len * 0.28f, 5, 0.25f);
+                    FxSend.slash(sl, S, c, dir, up, len * 0.8f, len * 0.1f, 4, 0.25f, 0.5f);
+                }
                 for (LivingEntity t : Kit.near(sl, p, p.getEyePosition().add(dir.scale(reach * 0.6)), reach * 0.6 + 0.8)) {
                     if (to(p, t).dot(dir) < 0.2) continue;
                     if (!hit.add(t.getUUID())) { hit(p, t, dmg * 0.45f, id, pal); Fx.spark(sl, pal, mid(t), 0.9f); continue; }
