@@ -1,6 +1,12 @@
-Iron Spell Grimoire v1.81.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.82.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.82.0
+- Two new powers (worn in the spellbook slot, not books): Hardblood (Don Quixote, La Manchaland) - 12 spells with Bleed, Bloodfeast, Hardblood and Vampire Mode; Caduceus (Rien) - 10 spells with the Prescript, Fortune, Fortuna and Furioso. Held weapons, own animations, HUD bars.
+- Time grimoire page ring: level edges, no soft spots. Mirror spells use a real 3D framed mirror.
+- Spatial Waypoint: the gate stays open 20 s, anyone can walk through, you are never forced through; menu redrawn with no vanilla buttons.
+- Grimoire Altar: new model and idle runes/stars; the grimoire ceremony has new light effects.
 
 NEW IN 1.81.0
 - Time: Chronostasis Field and Zenith Hour remade (huge ground clock realms); every Time skill has a MAX variant that needs full stored time.

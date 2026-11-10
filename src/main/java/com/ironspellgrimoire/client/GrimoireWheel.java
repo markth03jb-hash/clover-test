@@ -205,13 +205,13 @@ public final class GrimoireWheel {
             disc(bb, m, cx, cy + cr * 0.12, cr * 0.42 * pulse, ac[0], ac[1], ac[2], A);
             for (int q = 1; q <= 5; q++) disc(bb, m, cx, cy + cr * 0.12 - cr * 0.1 * q, cr * 0.42 * pulse * (1.0 - q * 0.17), ac[0], ac[1], ac[2], A);
             disc(bb, m, cx - cr * 0.14, cy + cr * 0.02, cr * 0.09, 1.0F, 0.8F, 0.8F, 0.9F * A);
-        } else if (book == 23) {   // Rien: the Caduceus - a black rod and a white rod, gold-capped, joined by a gold chain
+        } else if (book == 23) {   // Rien: the Caduceus - a black rod, gold-capped, a gold chain looping over it
             float[] ac = th.accent;
             double cr = rIn - 2.0;
             ring(bb, m, cx, cy, cr - 1.3, cr, 0, TAU, tr[0], tr[1], tr[2], 0.95F * A, tr[0], tr[1], tr[2], 0.95F * A, 40);
             double sw = Math.sin(time * 1.2) * 0.08;
-            double[][] rods = {{-0.62, -0.05, 0.62, -0.32}, {-0.58, 0.32, 0.66, 0.05}};
-            for (int rr = 0; rr < 2; rr++) {
+            double[][] rods = {{-0.62, 0.3, 0.62, 0.03}};
+            for (int rr = 0; rr < 1; rr++) {
                 double[] q = rods[rr];
                 float[] rodCol = rr == 0 ? new float[]{0.16F, 0.16F, 0.18F} : new float[]{0.92F, 0.9F, 0.86F};
                 for (int s2 = 0; s2 <= 24; s2++) {
@@ -226,7 +226,7 @@ public final class GrimoireWheel {
             }
             for (int s2 = 0; s2 <= 12; s2++) {   // the chain, arcing over from the left ends to the right ends
                 double t = s2 / 12.0;
-                double x = cx + cr * (-0.62 + 1.28 * t), y = cy + cr * (-0.05 - 0.27 * t - Math.sin(t * Math.PI) * 0.5);
+                double x = cx + cr * (-0.62 + 1.24 * t), y = cy + cr * (0.3 - 0.27 * t - Math.sin(t * Math.PI) * 0.6);
                 disc(bb, m, x, y, cr * (s2 % 2 == 0 ? 0.055 : 0.035), tr[0], tr[1], tr[2], A);
             }
         } else

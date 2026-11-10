@@ -655,7 +655,7 @@
   "ui.iron_spell_grimoire.bloodfiend_grimoire_only": "Only Hardblood can cast this.",
   "item.iron_spell_grimoire.caduceus_grimoire": "Caduceus",
   "tooltip.iron_spell_grimoire.caduceus_grimoire.passive": "Passive - Prescript, Fortune & Fortuna",
-  "tooltip.iron_spell_grimoire.caduceus_grimoire.desc": "Two rods, one black and one white, joined by a gold chain - and from them, liquid gold that sets into any weapon. Every 20 s it hands you a Prescript; carry it out for Fortune and a burst of speed and strength. Your hits leave Fortuna: each stack makes the foe take 0.5% more damage, and at 40+ they hit 20% softer.",
+  "tooltip.iron_spell_grimoire.caduceus_grimoire.desc": "A black rod on a gold chain - and from them, liquid gold that sets into any weapon. Every 20 s it hands you a Prescript; carry it out for Fortune and a burst of speed and strength. Your hits leave Fortuna: each stack makes the foe take 0.5% more damage, and at 40+ they hit 20% softer.",
   "tooltip.iron_spell_grimoire.caduceus_grimoire.lore": "Not a book: the Index Proxy's weapon. Wear it where a grimoire goes. The Prescript is absolute.",
   "ui.iron_spell_grimoire.caduceus_grimoire_only": "Only the Caduceus can cast this.",
   "spell.iron_spell_grimoire.hardblood_lance": "Hardblood: Lance",

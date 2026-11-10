@@ -315,26 +315,22 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
     }
 
     /**
-     * The Caduceus itself: two rods, one black and one white, each banded and capped in gold, joined end to end by a
-     * gold chain. The black rod is held; the white one hangs off the chain and swings.
+     * The Caduceus itself: a black rod banded in white and capped in gold, with a gold chain looping from end to end.
      */
     private static void vial(VertexConsumer vc, Matrix4f m, Matrix3f n, Mat gold, double now) {
-        Mat black = new Mat(2, now), white = new Mat(3, now);
+        Mat black = new Mat(2, now);
         // the held rod, along -z out of the fist
         rod(vc, m, n, black, gold, 0, 0, 0.25F, 0, 0, -0.75F, now);
-        // the chain from the far end of the held rod, hanging and swinging, to the white rod
-        float sw = (float) Math.sin(now * 0.22) * 0.35F, sw2 = (float) Math.cos(now * 0.17) * 0.15F;
-        float px = 0, py = 0, pz = -0.75F;
-        float ex = sw, ey = 0.65F, ez = -0.55F + sw2;
-        for (int i = 1; i <= 9; i++) {
-            float t = i / 9F;
-            float x = ex * t, y = ey * t - (float) Math.sin(t * Math.PI) * 0.12F, z = -0.75F + (ez + 0.75F) * t;
+        // the gold chain looping from one end of the rod to the other, swaying
+        float sw = (float) Math.sin(now * 0.22) * 0.12F;
+        float px = 0, py = 0, pz = 0.25F;
+        for (int i = 1; i <= 11; i++) {
+            float t = i / 11F;
+            float z = 0.25F - 1.0F * t, y = (float) Math.sin(t * Math.PI) * 0.35F, x = (float) Math.sin(t * Math.PI) * sw;
             if (i % 2 == 1) ring(vc, m, n, gold, (px + x) * 0.5F, (py + y) * 0.5F, (pz + z) * 0.5F, 0.03F, 0.008F);
             else tube(vc, m, n, gold, px, py, pz, x, y, z, 0.01F, 0.01F, 0.01F, 0.01F, 4);
             px = x; py = y; pz = z;
         }
-        // the white rod hanging from the chain's end, roughly level and swinging with it
-        rod(vc, m, n, white, gold, ex, ey, ez, ex + 0.1F + sw * 0.4F, ey + 0.08F, ez + 0.95F, now);
     }
 
     private static void rod(VertexConsumer vc, Matrix4f m, Matrix3f n, Mat body, Mat gold, float ax, float ay, float az, float bx, float by, float bz, double now) {
