@@ -212,6 +212,7 @@ public final class TimeStop {
 
     // ================================================================== Stored Time, Rewind Ward
     private static final Map<UUID, Integer> STORED = new HashMap<>();
+    private static final java.util.Set<UUID> SHOWN = new java.util.HashSet<>();
     private static final Map<UUID, Long> LAST_GAIN = new HashMap<>();
     private static final Map<UUID, float[]> WARD = new HashMap<>();   // {until, banked}
 
@@ -300,10 +301,11 @@ public final class TimeStop {
             q.addLast(new double[]{now, p.getHealth(), p.getX(), p.getY(), p.getZ(), p.getYRot()});
             while (q.size() > 26) q.removeFirst();
         }
-        if (now % 20 == 0) {
+        if (now % 5 == 0) {   // the stored seconds belong to the book: put it away or swap grimoires and they go, HUD and all
             boolean h = holds(p);
-            if (!h && stored(p) > 0) { STORED.remove(p.getUUID()); TimeFx.hud(p, 0, false); }
-            else if (h && now % 100 == 0) TimeFx.hud(p, stored(p), true);
+            boolean shown = SHOWN.contains(p.getUUID());
+            if (!h && (shown || stored(p) > 0)) { STORED.remove(p.getUUID()); SHOWN.remove(p.getUUID()); TimeFx.hud(p, 0, false); }
+            else if (h && (!shown || now % 100 == 0)) { SHOWN.add(p.getUUID()); TimeFx.hud(p, stored(p), true); }
         }
         float[] w = WARD.get(p.getUUID());
         if (w != null && now > w[0] + 40) WARD.remove(p.getUUID());
@@ -311,13 +313,13 @@ public final class TimeStop {
 
     @SubscribeEvent
     public static void onBookChange(PlayerEvent.PlayerLoggedInEvent e) {
-        if (e.getEntity() instanceof ServerPlayer p) TimeFx.hud(p, 0, false);
+        if (e.getEntity() instanceof ServerPlayer p) { SHOWN.remove(p.getUUID()); TimeFx.hud(p, 0, false); }
     }
 
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {
         UUID id = e.getEntity().getUUID();
-        STORED.remove(id); LAST_GAIN.remove(id); WARD.remove(id); PAST.remove(id);
+        STORED.remove(id); SHOWN.remove(id); LAST_GAIN.remove(id); WARD.remove(id); PAST.remove(id);
         Frozen f = FROZEN.remove(id);
         if (f != null) f.until = 0;
     }

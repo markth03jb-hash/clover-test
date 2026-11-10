@@ -1032,6 +1032,10 @@ public final class TimeFxClient {
         float W = g.guiWidth(), H = g.guiHeight();
         Matrix4f m = g.pose().last().pose();
         boolean screen = scrEnd >= 0 && now >= scrStart && now <= scrEnd + 8;
+        if (holding || stored > 0) {   // the stored time only shows while the Time Grimoire is the book in hand
+            net.minecraft.world.item.ItemStack bk = mc.player == null ? null : io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(mc.player);
+            if (bk == null || bk.isEmpty() || !bk.is(com.ironspellgrimoire.registry.AddonItemRegistry.TIME_GRIMOIRE.get())) { holding = false; stored = 0; }
+        }
         if (!screen && !holding && stored == 0) return;
         RenderSystem.disableDepthTest();
         RenderSystem.disableCull();
