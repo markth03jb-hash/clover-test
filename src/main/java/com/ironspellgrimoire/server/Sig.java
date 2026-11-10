@@ -6,6 +6,7 @@ import com.ironspellgrimoire.network.FxPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -58,15 +59,14 @@ final class Sig {
                 }
                 for (int i = 0; i < 4; i++) Kit.orb(sl, pal, at.add(0, 0.5, 0), new Vec3(rnd.nextDouble(-0.2, 0.2), 0.3, rnd.nextDouble(-0.2, 0.2)), 0.35f, 6);
             }
-            case Moves.TREE -> {    // roots and thorns thrust out of the ground, leaves drifting off them
-                int n = R > 3 ? 9 : 6;
+            case Moves.TREE -> {    // saplings shoot up out of the ground and stand as real little trees
+                int n = R > 3 ? 3 : 2;
+                float H = Math.max(2.4f, Math.min(4.6f, R * 0.8f + 1.2f));
                 for (int i = 0; i < n; i++) {
-                    double a = i * Math.PI * 2 / n + rnd.nextDouble(0.4), d = R * (0.3 + 0.55 * rnd.nextDouble());
-                    Vec3 base = at.add(Math.cos(a) * d, -0.2, Math.sin(a) * d);
-                    FxSend.spike(sl, pal, base, new Vec3(Math.cos(a) * 0.45, 1, Math.sin(a) * 0.45), 1.2f + (float) rnd.nextDouble(1.0), 0.15f, 16, 4, FxPacket.GROUND);
-                    Vec3 top = base.add(Math.cos(a) * 0.4, 1.6, Math.sin(a) * 0.4);
-                    FxSend.trail(sl, G, top, top.add(Math.cos(a + 1) * 0.8, 0.5, Math.sin(a + 1) * 0.8), 0.06f, 10);
+                    double a = i * Math.PI * 2 / n + rnd.nextDouble(0.8), d = R * (0.25 + 0.4 * rnd.nextDouble());
+                    tree(sl, at.add(Math.cos(a) * d, 0, Math.sin(a) * d), H * (0.8f + 0.4f * rnd.nextFloat()), 40, rnd.nextLong(), i * 2);
                 }
+                FxSend.ring(sl, pal, at.add(0, 0.05, 0), R * 0.3f, R * 0.8f, 0.03f, 8);
             }
             case Moves.RIPPER -> {  // three cuts crossing on the hit: nothing round, nothing glowing, only lines
                 double base = rnd.nextDouble(Math.PI);
@@ -226,5 +226,77 @@ final class Sig {
             default -> { return false; }
         }
         return true;
+    }
+
+    // ================================================================== a real tree (World Tree)
+    private static Vec3 up2(Vec3 d) {
+        Vec3 r = d.cross(UP);
+        if (r.lengthSqr() < 1.0E-6) r = d.cross(new Vec3(1, 0, 0));
+        return r.normalize().cross(d).normalize();
+    }
+
+    /**
+     * A tree grows out of the ground at {@code base}: a tapering trunk of bark-textured blocks climbing piece by piece, roots
+     * gripping the ground, branches spreading from the upper trunk, and a crown of leaf-cubes popping in over it - all solid
+     * 3D with pixel-art texture, with leaves drifting down from it. It stands for {@code life} ticks, then sinks away.
+     */
+    static void tree(ServerLevel sl, Vec3 base, float H, int life, long seed, int delay) {
+        Random r = new Random(seed);
+        final int B = Fx.BARK, LF = Fx.TREE;
+        float rad = H * 0.07f + 0.12f;
+        int segs = Math.max(4, Math.round(H / 1.1f));
+        float segLen = H * 0.78f / segs;
+        Vec3 lean = new Vec3(r.nextDouble() - 0.5, 0, r.nextDouble() - 0.5).scale(0.5);
+        Vec3 cur = base.add(0, -0.05, 0);
+        Vec3[] ring = new Vec3[segs + 1];
+        ring[0] = cur;
+        for (int i = 0; i < segs; i++) {   // the trunk, a little crooked, thinner toward the top
+            Vec3 dir = new Vec3(lean.x * Math.sin(i * 0.9 + 1), 1.0, lean.z * Math.cos(i * 0.9)).normalize();
+            float rr = rad * (1f - 0.55f * i / segs);
+            Vec3 centre = cur.add(dir.scale(segLen * 0.5));
+            final int d0 = delay + i * 2, l0 = Math.max(8, life - i * 2);
+            AstaFx.later(d0, () -> FxSend.box(sl, B, centre, dir, up2(dir), segLen * 0.5f + 0.04f, rr, rr, l0, 3, FxPacket.EXTEND));
+            cur = cur.add(dir.scale(segLen));
+            ring[i + 1] = cur;
+        }
+        for (int i = 0; i < 4; i++) {   // roots gripping the ground
+            double a = i * Math.PI / 2 + r.nextDouble(0.7);
+            Vec3 dir = new Vec3(Math.cos(a), -0.25, Math.sin(a)).normalize();
+            Vec3 c = base.add(dir.scale(rad * 1.6)).add(0, 0.05, 0);
+            AstaFx.later(delay, () -> FxSend.box(sl, B, c, dir, up2(dir), rad * 2.2f, rad * 0.5f, rad * 0.45f, life, 3, FxPacket.EXTEND));
+        }
+        final int leafAt = delay + segs * 2 + 2;
+        for (int b = 0; b < 4; b++) {   // boughs from the upper trunk, each ending in a clump of leaves
+            int at = Math.max(1, segs / 2 + b % (segs / 2 + 1));
+            double a = b * Math.PI / 2 + r.nextDouble(0.8);
+            Vec3 bd = new Vec3(Math.cos(a) * 0.85, 0.55 + r.nextDouble(0.35), Math.sin(a) * 0.85).normalize();
+            float len = H * (0.22f + 0.1f * r.nextFloat());
+            Vec3 from = ring[Math.min(at, segs)], tip = from.add(bd.scale(len));
+            AstaFx.later(leafAt - 4 + b, () -> FxSend.box(sl, B, from.add(bd.scale(len * 0.5)), bd, up2(bd), len * 0.5f, rad * 0.38f, rad * 0.38f, Math.max(10, life - (leafAt - delay)), 3, FxPacket.EXTEND));
+            float s = Math.min(1.1f, 0.4f + H * 0.07f);
+            for (int k = 0; k < 3; k++) {
+                Vec3 lp = tip.add((r.nextDouble() - 0.5) * s * 1.6, (r.nextDouble() - 0.3) * s, (r.nextDouble() - 0.5) * s * 1.6);
+                double y = r.nextDouble() * Math.PI;
+                float ls = s * (0.6f + 0.5f * r.nextFloat());
+                AstaFx.later(leafAt + 2 + k * 2, () -> FxSend.box(sl, LF, lp, new Vec3(Math.cos(y), 0, Math.sin(y)), UP, ls, ls, ls, Math.max(8, (int) ((life - (leafAt - delay)) / 1.6)), 4, FxPacket.POP));
+            }
+        }
+        Vec3 top = cur.add(0, H * 0.1, 0);
+        float Rc = H * 0.3f;
+        int leaves = Math.min(24, 10 + Math.round(H * 1.4f));
+        for (int k = 0; k < leaves; k++) {   // the crown: a rounded heap of leaf-cubes
+            double a = r.nextDouble() * Math.PI * 2, e = r.nextDouble() * Math.PI - Math.PI * 0.3;
+            double rr = Rc * (0.35 + 0.65 * r.nextDouble());
+            Vec3 lp = top.add(Math.cos(a) * Math.cos(e) * rr * 1.2, Math.sin(e) * rr * 0.8, Math.sin(a) * Math.cos(e) * rr * 1.2);
+            float ls = Math.min(1.5f, 0.38f + H * 0.07f) * (0.7f + 0.6f * r.nextFloat());
+            double y = r.nextDouble() * Math.PI;
+            Vec3 ax = new Vec3(Math.cos(y), 0, Math.sin(y));
+            AstaFx.later(leafAt + (k * 5) / leaves + r.nextInt(5), () -> FxSend.box(sl, LF, lp, ax, UP, ls, ls, ls, Math.max(8, (int) ((life - (leafAt - delay)) / 1.6)), 4, FxPacket.POP));
+        }
+        for (int k = 0; k < 6; k++) {   // leaves drifting down from it
+            double a = r.nextDouble() * Math.PI * 2;
+            Vec3 from = top.add(Math.cos(a) * Rc, -0.2, Math.sin(a) * Rc);
+            AstaFx.later(leafAt + 4 + k * 3, () -> FxSend.trail(sl, LF, from, from.add(Math.cos(a + 1) * 1.2, -H * 0.55, Math.sin(a + 1) * 1.2), 0.1f, 22));
+        }
     }
 }

@@ -50,7 +50,7 @@ public final class WorldTreeFx {
                 for (int i = 0; i < 8; i++) {   // thorns bursting out
                     double a = i * Math.PI / 4;
                     Vec3 d = new Vec3(Math.cos(a), 0.6 + (i % 2) * 0.4, Math.sin(a));
-                    FxSend.spike(sl, T, at, d, 1.5f, 0.12f, 7, 2, 0);
+                    FxSend.spike(sl, Fx.BARK, at, d, 1.5f, 0.14f, 7, 2, 0);
                 }
                 sound(sl, at, SoundEvents.GRASS_BREAK, 1.0f, 0.8f);
             });
@@ -107,7 +107,7 @@ public final class WorldTreeFx {
                 double a = ii * Math.PI / 6;
                 double d = R * (0.45 + 0.5 * ((ii * 37) % 10) / 10.0);
                 Vec3 b = c.add(Math.cos(a) * d, -0.2, Math.sin(a) * d);
-                FxSend.spike(sl, T, b, new Vec3(Math.cos(a) * 0.4, 1, Math.sin(a) * 0.4), 2.6f + (ii % 3) * 0.5f, 0.2f, 40, 3, 1);
+                FxSend.spike(sl, Fx.BARK, b, new Vec3(Math.cos(a) * 0.4, 1, Math.sin(a) * 0.4), 2.6f + (ii % 3) * 0.5f, 0.24f, 40, 3, 1);
             });
         }
         AstaFx.later(8, () -> {
@@ -192,7 +192,7 @@ public final class WorldTreeFx {
                 if (!alive(p)) return;
                 Vec3 at = floorAt(sl, p.position().add(dir.scale(3.5 + ss * 3.0)));
                 FxSend.ring(sl, T, at.add(0, 0.05, 0), 0.2f, 3.0f, 0.04f, 6);
-                FxSend.spike(sl, T, at.add(0.5, 9, 0.3), new Vec3(0, -1, 0), 9.6f, 1.0f, 8, 4, 2);   // the fist: a thick limb driven down
+                FxSend.spike(sl, Fx.BARK, at.add(0.5, 9, 0.3), new Vec3(0, -1, 0), 9.6f, 1.0f, 8, 4, 2);   // the fist: a thick limb driven down
                 FxSend.spike(sl, G, at.add(0.5, 9, 0.3), new Vec3(0, -1, 0), 9.6f, 0.2f, 8, 4, 2);
                 AstaFx.later(4, () -> {
                     if (!alive(p)) return;
@@ -258,17 +258,16 @@ public final class WorldTreeFx {
         }
         for (int r = 0; r < 8; r++) {   // roots first
             double a = r * Math.PI / 4;
-            FxSend.spike(sl, T, c.add(Math.cos(a) * 1.6, -0.3, Math.sin(a) * 1.6), new Vec3(Math.cos(a), 0.15, Math.sin(a)), 5.5f, 0.45f, 50, 6, 1);
+            FxSend.spike(sl, Fx.BARK, c.add(Math.cos(a) * 1.6, -0.3, Math.sin(a) * 1.6), new Vec3(Math.cos(a), 0.15, Math.sin(a)), 5.5f, 0.55f, 50, 6, 1);
         }
-        AstaFx.later(6, () -> FxSend.spike(sl, T, c.add(0, -0.3, 0), UP, 19f, 1.5f, 50, 14, 1));   // the trunk climbs
-        AstaFx.later(6, () -> FxSend.spike(sl, G, c.add(0, -0.3, 0), UP, 19f, 0.25f, 50, 14, 1));
+        Sig.tree(sl, c, 18f, 56, p.getId() * 131L + sl.getGameTime(), 4);   // a whole tree climbs: trunk, roots, boughs and a crown of leaves
         for (int b = 0; b < 8; b++) {   // the boughs spread from the top, then drive down
             final int bb = b;
             AstaFx.later(20, () -> {
                 double a = bb * Math.PI / 4 + 0.2;
                 Vec3 top = c.add(0, 16.5, 0);
                 Vec3 out = new Vec3(Math.cos(a), -0.35, Math.sin(a));
-                FxSend.spike(sl, T, top, out, 11f, 0.55f, 26, 8, 2);
+                FxSend.spike(sl, Fx.BARK, top, out, 11f, 0.6f, 26, 8, 2);
             });
         }
         AstaFx.later(26, () -> {
@@ -278,7 +277,7 @@ public final class WorldTreeFx {
                 float k = (float) (1.8 - 0.6 * Math.min(1, mid(t).distanceTo(c) / 8.0));
                 Moves.hit(p, t, power * k, "world_tree_judgement", T);
                 Kit.push(t, mid(t).subtract(c), 0.8, 0.6);
-                FxSend.spike(sl, T, t.position().add(0, 6, 0), new Vec3(0, -1, 0), 7.5f, 0.3f, 10, 3, 2);
+                FxSend.spike(sl, Fx.BARK, t.position().add(0, 6, 0), new Vec3(0, -1, 0), 7.5f, 0.32f, 10, 3, 2);
                 any = true;
             }
             if (any) FxSend.impactFrame(sl, c, 4, FxSend.FRAME_WILLIAM, 40);
