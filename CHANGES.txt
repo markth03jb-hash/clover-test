@@ -1,6 +1,14 @@
-Iron Spell Grimoire v1.78.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.79.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.79.0
+- Julius: no covers, more pages, cyan colours, clock in the wheel, clockwork/page effects, stored-time HUD fix
+- Clover removed from the mana bar
+- Fatter, textured 3D effects; real World Tree; Ripper's Horizon limit break
+- Asta Instinct Guard: visible ki aura + HUD timer
+- Yami Mana Zone: no floating slab over blocks
+
 and let it overwrite. Then build as usual.
 
 NEW IN 1.78.0
