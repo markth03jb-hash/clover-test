@@ -22,6 +22,8 @@
     "iron_spell_grimoire:earth_grimoire",
     "iron_spell_grimoire:beast_grimoire",
     "iron_spell_grimoire:cotton_grimoire",
-    "iron_spell_grimoire:time_grimoire"
+    "iron_spell_grimoire:time_grimoire",
+    "iron_spell_grimoire:bloodfiend_grimoire",
+    "iron_spell_grimoire:caduceus_grimoire"
   ]
 }

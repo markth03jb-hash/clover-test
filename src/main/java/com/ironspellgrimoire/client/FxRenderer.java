@@ -150,6 +150,9 @@ public class FxRenderer extends FxBase {
          }
          return;
       }
+      if (p.shape == 61) { LimbusClient.hud(p); return; }   // Limbus grimoires: Bloodfeast / Hardblood, or Fortune / the Prescript (to this player only)
+      if (p.shape == 62) { LimbusClient.vampire(p.id, p.life); return; }   // Don Quixote's Vampire Mode: red eyes, blood cape, aura
+      if (p.shape == 63) { LimbusWeaponLayer.set(p.id, p.life, p.sweep, p.palette == 1); return; }   // a hardblood / gold weapon in the hands
       if (p.shape == 59) { GolemFx.spawn(p); return; }   // the Stone Golem: id, c = its feet, d = which way it faces, r = scale, life
       if (p.shape == 60) { GolemFx.punch(p); return; }   // one of its punches: id = the golem, c = the mark, sweep = which arm
       if (p.shape == 41) { PixelFx.spawn(p); return; }   // the pixel-sprite effect style (Sky Splitter test)

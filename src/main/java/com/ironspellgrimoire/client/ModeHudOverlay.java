@@ -145,6 +145,8 @@ public final class ModeHudOverlay {
             case "nean_armor" -> 0xFFFFB4DC;
             case "instinct_guard" -> 0xFFD8F0FF;
             case "chronostasis_field" -> 0xFF6BE3FF;
+            case "vampire_mode", "hardblood_barricade" -> 0xFFE0182A;
+            case "prescript_received", "golden_shell" -> 0xFFF2CC5A;
             case "surpassing_limits" -> 0xFFFFF4C0;
             case "thread_cocoon", "battle_dress", "thread_cage", "thread_net" -> 0xFFFF8CC6;
             case "red_thread_of_fate" -> 0xFFE0302A;

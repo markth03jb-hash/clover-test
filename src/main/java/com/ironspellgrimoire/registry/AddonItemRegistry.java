@@ -99,6 +99,10 @@ public class AddonItemRegistry {
     // ------------------------------------------------------------------ Julius Novachrono: Time Grimoire
     public static final RegistryObject<Item> TIME_GRIMOIRE = ITEMS.register("time_grimoire", com.ironspellgrimoire.item.TimeGrimoireItem::new);
 
+    // ------------------------------------------------------------------ Limbus Company: Don Quixote (La Manchaland) and Rien (the Index)
+    public static final RegistryObject<Item> BLOODFIEND_GRIMOIRE = ITEMS.register("bloodfiend_grimoire", com.ironspellgrimoire.item.BloodfiendGrimoireItem::new);
+    public static final RegistryObject<Item> CADUCEUS_GRIMOIRE = ITEMS.register("caduceus_grimoire", com.ironspellgrimoire.item.CaduceusGrimoireItem::new);
+
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("iron_spell_grimoire", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.iron_spell_grimoire"))
             .icon(() -> BLACK_GRIMOIRE.get().getDefaultInstance())
@@ -137,7 +141,7 @@ public class AddonItemRegistry {
                 ItemStack space = new ItemStack(SPACE_GRIMOIRE.get());
                 ((IPresetSpellContainer) SPACE_GRIMOIRE.get()).initializeSpellContainer(space);
                 out.accept(space);
-                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, WORLD_TREE_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, BEAST_GRIMOIRE, COTTON_GRIMOIRE, TIME_GRIMOIRE)) {
+                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, WORLD_TREE_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, BEAST_GRIMOIRE, COTTON_GRIMOIRE, TIME_GRIMOIRE, BLOODFIEND_GRIMOIRE, CADUCEUS_GRIMOIRE)) {
                     ItemStack st = new ItemStack(g.get());
                     ((IPresetSpellContainer) g.get()).initializeSpellContainer(st);
                     out.accept(st);

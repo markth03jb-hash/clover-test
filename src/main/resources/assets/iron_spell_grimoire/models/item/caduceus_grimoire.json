@@ -1,0 +1,9 @@
+{
+ "parent": "minecraft:item/handheld",
+ "loader": "forge:separate_transforms",
+ "base": { "parent": "iron_spell_grimoire:item/caduceus_grimoire_model" },
+ "perspectives": {
+  "gui": { "parent": "item/generated", "textures": { "layer0": "iron_spell_grimoire:item/caduceus_grimoire" } },
+  "head": { "parent": "iron_spell_grimoire:item/caduceus_grimoire_open" }
+ }
+}

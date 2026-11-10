@@ -51,6 +51,8 @@ public final class ManaBarHud {
             {0xE6D08A, 0x8A2BD8, 0xD89BFF, 0x100620, 0xE6C4FF},   // Vetto
             {0xFFF0F6, 0xE0709E, 0xFFC4DC, 0x1C0C16, 0xFFD6EA},   // Charmy
             {0xC8F2FF, 0x22B8E8, 0x8CE6FF, 0x04101C, 0xE0FAFF},   // Julius
+            {0xD8B060, 0xB0101E, 0xFF5A66, 0x120204, 0xFFB0B8},   // Don Quixote (bloodfiend)
+            {0xF2CC5A, 0xD9A020, 0xFFF0B0, 0x0A0A0C, 0xFFE8A8},   // Rien (the Caduceus)
     };
 
     private static float shown = -1F;

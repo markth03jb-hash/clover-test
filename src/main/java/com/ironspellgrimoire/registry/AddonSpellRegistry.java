@@ -492,6 +492,52 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> TIME_SPELLS = List.of(
             CLOCK_HAND_BOLT, TIME_STOP_POINT, TIME_SKIP, TIME_RECOVERY, CHRONO_ACCELERATION, TICKING_SNARE, TIME_THEFT, HOURGLASS_BARRAGE, REWIND_WARD, ECHO_OF_THE_PAST, CHRONOSTASIS_FIELD, ZENITH_HOUR);
 
+    // ------------------------------------------------------------------ Bloodfiend Grimoire (Don Quixote, La Manchaland)
+    private static com.ironspellgrimoire.spells.BookSpell blood(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.BLOOD_RESOURCE,
+                com.ironspellgrimoire.item.BloodfiendGrimoireItem.class, "ui.iron_spell_grimoire.bloodfiend_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> HARDBLOOD_LANCE = registerSpell(blood("hardblood_lance", 3, 20, 10, "iron_spell_grimoire:dq_lance_thrust", com.ironspellgrimoire.server.BloodfiendFx::hardbloodLance));
+    public static final RegistryObject<AbstractSpell> JUSTICE_CHARGE = registerSpell(blood("justice_charge", 8, 35, 12, "iron_spell_grimoire:dq_charge", com.ironspellgrimoire.server.BloodfiendFx::justiceCharge));
+    public static final RegistryObject<AbstractSpell> SANGUINE_CRESCENT = registerSpell(blood("sanguine_crescent", 6, 30, 10, "iron_spell_grimoire:dq_crescent", com.ironspellgrimoire.server.BloodfiendFx::sanguineCrescent));
+    public static final RegistryObject<AbstractSpell> CRIMSON_PACT = registerSpell(blood("crimson_pact", 20, 10, 0, "iron_spell_grimoire:dq_pact", com.ironspellgrimoire.server.BloodfiendFx::crimsonPact));
+    public static final RegistryObject<AbstractSpell> THIRST = registerSpell(blood("thirst", 14, 40, 6, "iron_spell_grimoire:dq_thirst", com.ironspellgrimoire.server.BloodfiendFx::thirst));
+    public static final RegistryObject<AbstractSpell> HARDBLOOD_BARRICADE = registerSpell(blood("hardblood_barricade", 16, 45, 6, "iron_spell_grimoire:dq_barricade", com.ironspellgrimoire.server.BloodfiendFx::barricade));
+    public static final RegistryObject<AbstractSpell> HARDBLOOD_BOW = registerSpell(blood("hardblood_bow", 5, 25, 11, "iron_spell_grimoire:dq_bow", com.ironspellgrimoire.server.BloodfiendFx::hardbloodBow));
+    public static final RegistryObject<AbstractSpell> TWIN_BLOOD_BLADES = registerSpell(blood("twin_blood_blades", 7, 35, 12, "iron_spell_grimoire:dq_twin_blades", com.ironspellgrimoire.server.BloodfiendFx::twinBlades));
+    public static final RegistryObject<AbstractSpell> BLOOD_FIST_BARRAGE = registerSpell(blood("blood_fist_barrage", 9, 40, 12, "iron_spell_grimoire:dq_fist_barrage", com.ironspellgrimoire.server.BloodfiendFx::fistBarrage));
+    public static final RegistryObject<AbstractSpell> HARDBLOOD_GREATSWORD = registerSpell(blood("hardblood_greatsword", 10, 45, 16, "iron_spell_grimoire:dq_greatsword", com.ironspellgrimoire.server.BloodfiendFx::greatsword));
+    public static final RegistryObject<AbstractSpell> VAMPIRE_MODE = registerSpell(blood("vampire_mode", 40, 60, 0, "iron_spell_grimoire:dq_vampire", com.ironspellgrimoire.server.BloodfiendFx::vampireMode));
+    public static final RegistryObject<AbstractSpell> GRAND_FINALE = registerSpell(blood("grand_finale", 80, 140, 30, "iron_spell_grimoire:dq_finale", com.ironspellgrimoire.server.BloodfiendFx::grandFinale));
+
+    /** The twelve Bloodfiend Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> BLOODFIEND_SPELLS = List.of(
+            HARDBLOOD_LANCE, JUSTICE_CHARGE, SANGUINE_CRESCENT, CRIMSON_PACT, THIRST, HARDBLOOD_BARRICADE, HARDBLOOD_BOW, TWIN_BLOOD_BLADES,
+            BLOOD_FIST_BARRAGE, HARDBLOOD_GREATSWORD, VAMPIRE_MODE, GRAND_FINALE);
+
+    // ------------------------------------------------------------------ Caduceus Grimoire (Rien, the Index's Proxy)
+    private static com.ironspellgrimoire.spells.BookSpell cad(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.HOLY_RESOURCE,
+                com.ironspellgrimoire.item.CaduceusGrimoireItem.class, "ui.iron_spell_grimoire.caduceus_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> CADUCEUS_LASH = registerSpell(cad("caduceus_lash", 3, 20, 9, "iron_spell_grimoire:rien_lash", com.ironspellgrimoire.server.CaduceusFx::lash));
+    public static final RegistryObject<AbstractSpell> GILDED_RAPIER = registerSpell(cad("gilded_rapier", 5, 25, 11, "iron_spell_grimoire:rien_rapier", com.ironspellgrimoire.server.CaduceusFx::rapier));
+    public static final RegistryObject<AbstractSpell> REAPERS_PRESCRIPT = registerSpell(cad("reapers_prescript", 8, 35, 14, "iron_spell_grimoire:rien_scythe", com.ironspellgrimoire.server.CaduceusFx::scythe));
+    public static final RegistryObject<AbstractSpell> MOLTEN_VOLLEY = registerSpell(cad("molten_volley", 6, 30, 9, "iron_spell_grimoire:rien_volley", com.ironspellgrimoire.server.CaduceusFx::volley));
+    public static final RegistryObject<AbstractSpell> INDEX_LANCE = registerSpell(cad("index_lance", 7, 30, 13, "iron_spell_grimoire:rien_lance", com.ironspellgrimoire.server.CaduceusFx::lance));
+    public static final RegistryObject<AbstractSpell> GOLDEN_SHELL = registerSpell(cad("golden_shell", 18, 40, 0, "iron_spell_grimoire:rien_shell", com.ironspellgrimoire.server.CaduceusFx::shell));
+    public static final RegistryObject<AbstractSpell> SEVERING_WIRE = registerSpell(cad("severing_wire", 14, 40, 6, "iron_spell_grimoire:rien_wire", com.ironspellgrimoire.server.CaduceusFx::wire));
+    public static final RegistryObject<AbstractSpell> HAMMER_OF_JUDGEMENT = registerSpell(cad("hammer_of_judgement", 12, 50, 16, "iron_spell_grimoire:rien_hammer", com.ironspellgrimoire.server.CaduceusFx::hammer));
+    public static final RegistryObject<AbstractSpell> PRESCRIPT_RECEIVED = registerSpell(cad("prescript_received", 40, 60, 0, "iron_spell_grimoire:rien_prescript", com.ironspellgrimoire.server.CaduceusFx::prescriptReceived));
+    public static final RegistryObject<AbstractSpell> FURIOSO = registerSpell(cad("furioso", 80, 140, 30, "iron_spell_grimoire:rien_furioso", com.ironspellgrimoire.server.CaduceusFx::furioso));
+
+    /** The ten Caduceus Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> CADUCEUS_SPELLS = List.of(
+            CADUCEUS_LASH, GILDED_RAPIER, REAPERS_PRESCRIPT, MOLTEN_VOLLEY, INDEX_LANCE, GOLDEN_SHELL, SEVERING_WIRE, HAMMER_OF_JUDGEMENT,
+            PRESCRIPT_RECEIVED, FURIOSO);
+
     private static RegistryObject<AbstractSpell> registerSpell(AbstractSpell spell) {
         return SPELLS.register(spell.getSpellName(), () -> spell);
     }
