@@ -84,6 +84,7 @@ public class DashQueue {
         for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, swept, x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {
             if (!d.hit.add(t.getUUID())) continue;           // pierce: each target is hit once, dash keeps going
             DamageSources.applyDamage(t, d.damage, d.spell.getDamageSource(p));
+            HitFx.land(p, t, d.damage);
             Vec3 tm = new Vec3(t.getX(), t.getY() + t.getBbHeight() * 0.5, t.getZ());
             Fx.impact(sl, d.dweller ? Fx.DARK : Fx.CRIMSON, tm, 1.3f);
             // a clean cut straight through them along the dash line
@@ -123,7 +124,7 @@ public class DashQueue {
                 FxLib.pillar(sl, 9, at, 0.8f);
                 FxLib.groundPuff(sl, 9, at, 1.6f);
                 for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(1.8, 1.5, 1.8), x -> x != p && x.isAlive() && !x.isAlliedTo(p))) {
-                    if (struck.add(t.getUUID())) DamageSources.applyDamage(t, d.damage * 0.6f, d.spell.getDamageSource(p));
+                    if (struck.add(t.getUUID())) { DamageSources.applyDamage(t, d.damage * 0.6f, d.spell.getDamageSource(p)); HitFx.land(p, t, d.damage * 0.6f); }
                 }
                 sl.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.35f, 1.4f);
             });

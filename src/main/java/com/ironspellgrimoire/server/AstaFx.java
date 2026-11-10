@@ -146,6 +146,7 @@ public class AstaFx {
         var spell = spellById(id);
         if (spell != null) DamageSources.applyDamage(t, dmg, spell.getDamageSource(p));
         else t.hurt(p.damageSources().playerAttack(p), dmg);
+        if (!"thirst".equals(id)) HitFx.land(p, t, dmg);   // the weight of the hit (not for Bleed's own ticks)
     }
 
     private static void variantMsg(ServerPlayer p) {
