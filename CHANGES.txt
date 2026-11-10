@@ -1,6 +1,11 @@
-Iron Spell Grimoire v1.84.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.85.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.85.0
+- Limbus weapons now sit in the hand in first person and show even while casting; Rien's weapons grow out of the Caduceus's tip.
+- New bow hold, bigger hand-held slime hammer (no hammer in the sky), two-handed scythe reap, one-handed greatsword cut.
+- Furioso can only be cast with a full Fortune (100). The Grand Finale's effects clear much sooner.
 
 NEW IN 1.84.0
 - Limbus rework: weapons point along the arm and show in first person; the Caduceus is always in Rien's main hand (3D item model too) and every weapon pours out of it as black slime.
