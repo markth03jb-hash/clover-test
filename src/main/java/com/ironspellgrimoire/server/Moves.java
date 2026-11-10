@@ -294,6 +294,13 @@ public final class Moves {
         ModeHud.show(p, id, ticks);
     }
 
+    /** Whether {@code id} is running on the player right now. */
+    static boolean inMode(ServerPlayer p, String id) {
+        Map<String, ModeRun> m = MODES.get(p.getUUID());
+        ModeRun r = m == null ? null : m.get(id);
+        return r != null && p.serverLevel().getGameTime() < r.until();
+    }
+
     static void ends(ServerPlayer p, String id) {
         Map<String, ModeRun> m = MODES.get(p.getUUID());
         if (m != null) m.remove(id);

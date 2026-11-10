@@ -33,7 +33,7 @@ public class FxSend {
     /** Curved wall (arc of a circle in the plane d/u, extruded +-h along d x u). a0..a1 degrees; sweep = ticks to draw the swing. */
     public static int wall(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float r, float r2, float a0, float a1, float h, int life, int sweep, float speed) {
         FxPacket p = new FxPacket();
-        p.shape = FxPacket.WALL; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = vl(pal, life, 1.7); p.sweep = sweep;
+        p.shape = FxPacket.WALL; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = speed == 0 ? vl(pal, life, 1.7) : life; p.sweep = sweep;
         p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = r2; p.a0 = a0; p.a1 = a1; p.h = vw(pal, h, 1.5); p.speed = speed;
         send(sl, c, p);
         return p.id;
@@ -47,7 +47,7 @@ public class FxSend {
     /** Moving crescent blade facing d, in the plane spanned by d and u. */
     public static int crescent(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float r, float r2, int life, float speed) {
         FxPacket p = new FxPacket();
-        p.shape = FxPacket.CRESCENT; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = vl(pal, life, 1.8);
+        p.shape = FxPacket.CRESCENT; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = speed == 0 ? vl(pal, life, 1.8) : life;   // pieces that travel keep their length of life, or they would fly on past where they should end
         p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = vw(pal, r2, 1.25f); p.speed = speed;
         send(sl, c, p);
         return p.id;
@@ -60,7 +60,7 @@ public class FxSend {
      */
     public static int slash(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float r, float r2, int life, float speed) {
         FxPacket p = new FxPacket();
-        p.shape = FxPacket.SLASH; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = vl(pal, life, 1.8);
+        p.shape = FxPacket.SLASH; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = speed == 0 ? vl(pal, life, 1.8) : life;   // pieces that travel keep their length of life, or they would fly on past where they should end
         p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = vw(pal, r2, 1.25f); p.speed = speed;
         send(sl, c, p);
         return p.id;
@@ -69,7 +69,7 @@ public class FxSend {
     /** A slash with a chosen blade thickness ({@code thick} 1 = normal, 2 = twice as thick). */
     public static int slash(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float r, float r2, int life, float speed, float thick) {
         FxPacket p = new FxPacket();
-        p.shape = FxPacket.SLASH; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = vl(pal, life, 1.8);
+        p.shape = FxPacket.SLASH; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = speed == 0 ? vl(pal, life, 1.8) : life;   // pieces that travel keep their length of life, or they would fly on past where they should end
         p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = vw(pal, r2, 1.25f); p.speed = speed; p.h = thick;
         send(sl, c, p);
         return p.id;
@@ -155,7 +155,7 @@ public class FxSend {
     public static final int FRAME_ASTA = 0, FRAME_ASTA_SLASH = 1, FRAME_LUCK = 2, FRAME_EQUINOX = 3, FRAME_YAMI = 4, FRAME_YUNO = 5,
             FRAME_NOZEL = 6, FRAME_MAGNA = 7, FRAME_MEREOLEONA = 8, FRAME_ZENON = 9, FRAME_KLAUS = 10,
             FRAME_VANESSA = 11, FRAME_FINRAL = 12,
-            FRAME_FUEGOLEON = 13, FRAME_LEOPOLD = 14, FRAME_WILLIAM = 15, FRAME_JACK = 16, FRAME_SOL = 17, FRAME_VETTO = 18, FRAME_CHARMY = 19, FRAME_JULIUS = 20;
+            FRAME_FUEGOLEON = 13, FRAME_LEOPOLD = 14, FRAME_WILLIAM = 15, FRAME_JACK = 16, FRAME_SOL = 17, FRAME_VETTO = 18, FRAME_CHARMY = 19, FRAME_JULIUS = 20, FRAME_RIPPER_GREEN = 21;
 
     /** style: one of the FRAME_ constants. */
     public static void impactFrame(ServerLevel sl, Vec3 at, int ticks, int style, double radius) {
