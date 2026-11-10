@@ -405,9 +405,9 @@ public final class PixelFx {
      * and claws; 10 Yami: dark crescents and smoke puffs; 11 Nozel: mercury drops; 12 blue fire: wisps;
      * 13 Luck: zigzag bolts and diamonds; 14 Mereoleona: curved lion-mane flame claws; 15 Zenon: little bones.)
      */
-    private static final int[] LONG = {K_BLADE, K_MOON, K_TONGUE, K_STREAK, K_BOLT, K_STREAK, K_STREAK, K_STREAK, K_STREAK, K_BARB, K_MOON, K_STREAK, K_WISP, K_BOLT, K_CLAW, K_STREAK, K_STREAK, K_STREAK, K_BLADE};
-    private static final int[] BIT = {K_SHARD, K_SHARD, K_EMBER, K_DIAMOND, K_CROSS, K_FEATHER, K_STAR, K_PLATE, K_RING, K_CROSS, K_PUFF, K_DROP, K_EMBER, K_DIAMOND, K_EMBER, K_BONE, K_CROSS, K_STAR, K_SHARD};
-    private static final int[] SPEC = {K_CROSS, K_PUFF, K_CROSS, K_STAR, K_STAR, K_MOON, K_CROSS, K_CROSS, K_STAR, K_CLAW, K_WISP, K_STAR, K_TONGUE, K_STAR, K_TONGUE, K_SHARD, K_RING, K_RING, K_CROSS};
+    private static final int[] LONG = {K_BLADE, K_MOON, K_TONGUE, K_STREAK, K_BOLT, K_STREAK, K_STREAK, K_STREAK, K_STREAK, K_BARB, K_MOON, K_STREAK, K_WISP, K_BOLT, K_CLAW, K_STREAK, K_STREAK, K_STREAK, K_BLADE, K_STREAK, K_STREAK, K_STREAK, K_TONGUE, K_CLAW, K_STREAK, K_BLADE, K_SHARD, K_CLAW, K_PUFF};
+    private static final int[] BIT = {K_SHARD, K_SHARD, K_EMBER, K_DIAMOND, K_CROSS, K_FEATHER, K_STAR, K_PLATE, K_RING, K_CROSS, K_PUFF, K_DROP, K_EMBER, K_DIAMOND, K_EMBER, K_BONE, K_CROSS, K_STAR, K_SHARD, K_DROP, K_DIAMOND, K_RING, K_EMBER, K_EMBER, K_FEATHER, K_SHARD, K_PLATE, K_BONE, K_PUFF};
+    private static final int[] SPEC = {K_CROSS, K_PUFF, K_CROSS, K_STAR, K_STAR, K_MOON, K_CROSS, K_CROSS, K_STAR, K_CLAW, K_WISP, K_STAR, K_TONGUE, K_STAR, K_TONGUE, K_SHARD, K_RING, K_RING, K_CROSS, K_STAR, K_STAR, K_RING, K_TONGUE, K_TONGUE, K_STAR, K_CROSS, K_CROSS, K_CLAW, K_STAR};
 
     /** One sprite of a palette's own kind of magic at {@code at}, carried by {@code drift}, lying along {@code axis}. */
     static void one(int pal, Vec3 at, Vec3 drift, Vec3 axis, double size) {
@@ -415,6 +415,7 @@ public final class PixelFx {
         pal = Mth.clamp(pal, 0, RIM.length - 1);
         axis = nz(axis, UP);
         float sz = (float) size;
+        pal = Math.min(pal, LONG.length - 1);
         int L = LONG[pal], B = BIT[pal], X = SPEC[pal];
         double q = r.nextDouble();
         Spr p;
