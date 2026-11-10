@@ -30,9 +30,13 @@ public final class BloodfiendFx {
     static final int BL = 18, GD = Fx.GOLD;
 
     /** The weapon of hardblood in the hands for {@code life} ticks (client: LimbusWeaponLayer). */
-    static void held(ServerPlayer p, int kind, int life) {
+    static void held(ServerPlayer p, int kind, int life) { held(p, kind, life, 0, 0, 0); }
+
+    /** ... with the ticks its blows land on ({@code first}, then every {@code every}, {@code count} of them): the weapon swings on them. */
+    static void held(ServerPlayer p, int kind, int life, int first, int every, int count) {
         FxPacket pkt = new FxPacket();
         pkt.shape = 63; pkt.id = p.getId(); pkt.life = life; pkt.sweep = kind; pkt.palette = 0;
+        pkt.a0 = first; pkt.a1 = every; pkt.h = count;
         AddonNetwork.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
     }
 
@@ -58,7 +62,7 @@ public final class BloodfiendFx {
     /** A long lance of hardblood thrust 6 blocks: one piercing line, Bleed 3. */
     public static void hardbloodLance(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 1, 22);
+        held(p, 1, 22, 8, 0, 1);
         harden(sl, Kit.hand(p));
         LimbusStatus.addHardblood(p, 1);
         AstaFx.later(8, () -> {
@@ -82,7 +86,7 @@ public final class BloodfiendFx {
     /** Lance levelled, the knight charges 12 blocks; the first foe is carried on the lance and slammed off at the end. */
     public static void justiceCharge(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 1, 26);
+        held(p, 1, 26, 15, 0, 1);
         LimbusStatus.addHardblood(p, 2);
         Vec3 dir = flat(p.getLookAngle());
         sound(sl, p.position(), SoundEvents.HORSE_GALLOP, 1.2f, 0.9f);
@@ -131,7 +135,7 @@ public final class BloodfiendFx {
     /** A wide sweep throws a crescent of blood that splits into droplets landing as little blood spikes. */
     public static void sanguineCrescent(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 1, 18);
+        held(p, 1, 18, 7, 0, 1);
         LimbusStatus.addHardblood(p, 1);
         AstaFx.later(7, () -> {
             if (!alive(p)) return;
@@ -246,7 +250,7 @@ public final class BloodfiendFx {
     /** A recurved bow of blood: one heavy piercing arrow; with 300+ Bloodfeast it splits into five; Vampire Mode makes them seek the bleeding. */
     public static void hardbloodBow(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 2, 24);
+        held(p, 2, 24, 14, 0, 1);
         sound(sl, p.position(), SoundEvents.CROSSBOW_LOADING_MIDDLE, 1f, 0.7f);
         harden(sl, Kit.hand(p));
         LimbusStatus.addHardblood(p, 1);
@@ -292,7 +296,7 @@ public final class BloodfiendFx {
     /** Two curved sabres of blood: a fast six-cut spinning combo, left and right, ending in a cross-cut that bursts Bleed. */
     public static void twinBlades(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 3, 34);
+        held(p, 3, 34, 6, 4, 6);
         LimbusStatus.addHardblood(p, 2);
         harden(sl, Kit.hand(p));
         int[] at = {6, 10, 14, 18, 22, 28};
@@ -327,7 +331,7 @@ public final class BloodfiendFx {
     /** Fists sheathed in hardblood: a 1.5 s barrage of afterimage punches, then a heavy blow that throws them. */
     public static void fistBarrage(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 4, 40);
+        held(p, 4, 40, 6, 2, 17);
         LimbusStatus.addHardblood(p, 2);
         harden(sl, Kit.hand(p));
         ThreadLocalRandom r = ThreadLocalRandom.current();
@@ -370,7 +374,7 @@ public final class BloodfiendFx {
     /** One great blade of blood brought down overhead; a wave runs along the ground and rises into blood spikes. */
     public static void greatsword(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 5, 30);
+        held(p, 5, 30, 16, 0, 1);
         LimbusStatus.addHardblood(p, 2);
         harden(sl, Kit.hand(p));
         sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 1f, 0.6f);
@@ -428,7 +432,7 @@ public final class BloodfiendFx {
         Vec3 land = aimed != null ? aimed.position() : Kit.aim(p, 22);
         int feast = LimbusStatus.spendBloodfeast(p, 999);
         float boost = 1f + feast / 999f;
-        held(p, 1, 60);
+        held(p, 1, 60, 24, 0, 1);
         LimbusStatus.addHardblood(p, 10);
         // the leap
         p.setDeltaMovement(0, 1.6, 0);

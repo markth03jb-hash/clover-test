@@ -272,7 +272,7 @@ public final class GrimoireWheel {
             g.blit(icon(chosen.getSpell()), cx - s / 2, cy - s / 2, 0, 0, s, s, s, s);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             // text can't fade below ~4% alpha (Minecraft draws that fully opaque), so it waits for the wheel to open
-            if (A > 0.15F) infoPage(g, font, pl, sm, chosen, sel, cx, (int) (cy + rOut + 16 * ease), th, A);
+            if (A > 0.15F) infoPage(g, font, pl, sm, chosen, sel, cx, (int) (cy - rOut - 16 * ease), th, A);   // above the wheel, clear of the health bar
         }
         RenderSystem.disableBlend();
     }
@@ -640,6 +640,7 @@ public final class GrimoireWheel {
         for (Component c : info) w = Math.max(w, font.width(c));
         w += 18;
         int h = (cool == null ? 34 : 44) + info.size() * 10;
+        top = Math.max(2, top - h);   // 'top' comes in as the bottom edge: the page sits above the wheel
         int x0 = cx - w / 2, x1 = cx + w / 2;
         int a = Mth.clamp((int) (A * 255), 8, 255);
         g.fill(x0, top, x1, top + h, (int) (A * 0xD8) << 24 | th.panel);
