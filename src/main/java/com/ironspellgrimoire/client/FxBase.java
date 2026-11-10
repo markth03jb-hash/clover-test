@@ -66,7 +66,9 @@ abstract class FxBase {
       {0.18F, 0.02F, 0.04F},   // 25 ripper
       {0.2F, 0.13F, 0.06F},    // 26 earth
       {0.02F, 0.14F, 0.1F},    // 27 beast
-      {0.55F, 0.5F, 0.55F}     // 28 cotton
+      {0.55F, 0.5F, 0.55F},    // 28 cotton
+      {0.02F, 0.13F, 0.22F},   // 29 Julius's time: deep clockwork blue
+      {0.26F, 0.15F, 0.07F}    // 30 bark (the World Tree's wood)
    };
    static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
@@ -91,7 +93,9 @@ abstract class FxBase {
       {1.0F, 0.3F, 0.36F},     // 25 ripper: blood-red edge
       {0.86F, 0.64F, 0.36F},   // 26 earth: ochre
       {0.3F, 0.88F, 0.7F},     // 27 beast: sea-green
-      {1.0F, 0.78F, 0.9F}      // 28 cotton: candy pink
+      {1.0F, 0.78F, 0.9F},     // 28 cotton: candy pink
+      {0.3F, 0.86F, 1.0F},     // 29 Julius: cyan
+      {0.66F, 0.44F, 0.22F}    // 30 bark: warm brown
    };
    /** Overall strength of every world effect. Lower = subtler. */
    static final float FX_ALPHA = 1.0F;
@@ -244,7 +248,7 @@ abstract class FxBase {
          boolean zephyr = lightPal == 5 || slashGlow;   // the Spirit of Zephyr look: a soft, bright, see-through blade
          float k = zephyr ? 0.85F : 0.75F;
          float[] lc = {col[0] + (rc[0] - col[0]) * k, col[1] + (rc[1] - col[1]) * k, col[2] + (rc[2] - col[2]) * k};
-         gvtx(m, cam, w, lc, a * (zephyr ? 0.28F : 0.6F));   // gvtx applies the opacity
+         gvtx(m, cam, w, lc, a * (zephyr ? 0.28F : (lightPal == 22 || lightPal == 23 ? 0.9F : 0.6F)));   // gvtx applies the opacity
          return;
       }
       a *= ALPHA_NOW;
@@ -380,8 +384,81 @@ abstract class FxBase {
       return new float[]{lo[0] + (hi[0] - lo[0]) * k, lo[1] + (hi[1] - lo[1]) * k, lo[2] + (hi[2] - lo[2]) * k};
    }
 
+   /** Palettes whose solid 3D pieces (blocks, spikes) are drawn with a pixel texture instead of one flat colour. */
+   static boolean texPal(int pal) { return pal >= 22 && pal <= 30; }
+
+   static float h2(int a, int b, int c) {
+      int h = a * 374761393 + b * 668265263 + c * 1274126177;
+      h = (h ^ (h >>> 13)) * 1274126177;
+      h ^= h >>> 16;
+      return (h & 0xFFFF) / 65535F;
+   }
+
+   /** The pixel-art pattern of each material: what one cell (i, j) of a face is multiplied by. */
+   static float[] texMul(int pal, int i, int j, int nu, int nv, int salt) {
+      float h = h2(i, j, salt + pal * 17);
+      boolean edge = i == 0 || j == 0 || i == nu - 1 || j == nv - 1;
+      float m;
+      switch (pal) {
+         case 26 -> {   // stone: chunky blocks, darker at the joints, the odd crack
+            m = 0.82F + 0.3F * h;
+            if (edge) m *= 0.74F;
+            if (h > 0.92F) m *= 0.5F;
+            return new float[]{m, m * 0.97F, m * 0.92F};
+         }
+         case 30 -> {   // bark: long vertical grain, rings, dark knots
+            float st = h2(i, 0, salt + 3);
+            m = 0.7F + 0.34F * st + 0.08F * h;
+            if (j % 4 == 3) m *= 0.86F;
+            if (h > 0.95F) m *= 0.45F;
+            return new float[]{m * 1.05F, m * 0.97F, m * 0.88F};
+         }
+         case 24 -> {   // leaves: a patchwork of greens with lit yellow-green cells
+            m = 0.7F + 0.45F * h;
+            if (h > 0.84F) return new float[]{m * 1.25F, m * 1.3F, m * 0.7F};
+            if (h < 0.15F) return new float[]{m * 0.7F, m * 0.9F, m * 0.8F};
+            return new float[]{m, m * 1.05F, m * 0.9F};
+         }
+         case 22 -> {   // volcanic crust: dark plates with glowing seams
+            if (h > 0.8F) return new float[]{2.4F, 1.5F, 0.7F};
+            m = 0.55F + 0.35F * h;
+            return new float[]{m, m * 0.9F, m * 0.85F};
+         }
+         case 23 -> {   // beaten gold plates in a chequer, riveted edges
+            m = ((i + j) & 1) == 0 ? 1.12F : 0.86F;
+            if (edge) m *= 0.8F;
+            if (i == 1 && j == 1) m = 1.4F;
+            return new float[]{m, m * 0.96F, m * 0.8F};
+         }
+         case 25 -> {   // honed steel: hairline streaks along the blade
+            m = 0.9F + 0.18F * h2(0, j, salt);
+            return new float[]{m, m, m * 1.03F};
+         }
+         case 27 -> {   // bone and fang: ridges across, a pale tip
+            m = j % 2 == 0 ? 1.1F : 0.82F;
+            m *= 0.93F + 0.12F * h;
+            return new float[]{m, m * 1.02F, m * 0.95F};
+         }
+         case 28 -> {   // quilted cotton: soft puffed cells, pinched at the stitches
+            m = edge ? 0.86F : 1.0F + 0.1F * h;
+            return new float[]{m, m * 0.98F, m * 1.0F};
+         }
+         case 29 -> {   // clockwork plate: riveted panels, a bright rivet in each corner
+            m = ((i / 2 + j / 2) & 1) == 0 ? 1.08F : 0.9F;
+            if (edge) m *= 0.76F;
+            if ((i == 1 || i == nu - 2) && (j == 1 || j == nv - 2)) m = 1.5F;
+            return new float[]{m * 0.95F, m, m * 1.05F};
+         }
+         default -> { return new float[]{1F, 1F, 1F}; }
+      }
+   }
+
    /** One flat-shaded face (quad, or triangle with d == c). Returns false when it faces away and was skipped. */
    static boolean face(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 a, Vec3 b, Vec3 c, Vec3 d, Vec3 nrm, int pal, float al, Vec3 up, Vec3 ctr) {
+      return face(vc, m, n, cam, a, b, c, d, nrm, pal, al, up, ctr, 1.0F);
+   }
+
+   static boolean face(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 a, Vec3 b, Vec3 c, Vec3 d, Vec3 nrm, int pal, float al, Vec3 up, Vec3 ctr, float tone) {
       Vec3 mid = a.add(b).add(c).add(d).scale(0.25);
       Vec3 view = mid.subtract(cam);
       double vl = view.length();
@@ -391,6 +468,29 @@ abstract class FxBase {
       float[] cb = shade(pal, nrm, view, b.subtract(ctr).dot(up) > 0.0 ? 1.0F : 0.78F);
       float[] cc = shade(pal, nrm, view, c.subtract(ctr).dot(up) > 0.0 ? 1.0F : 0.78F);
       float[] cd = shade(pal, nrm, view, d.subtract(ctr).dot(up) > 0.0 ? 1.0F : 0.78F);
+      if (tone != 1.0F) for (float[] q : new float[][]{ca, cb, cc, cd}) { q[0] *= tone; q[1] *= tone; q[2] *= tone; }
+      boolean quad = c.subtract(d).lengthSqr() > 1.0E-10;
+      if (texPal(pal) && quad) {
+         Vec3 ab = b.subtract(a), ad = d.subtract(a), extra = a.subtract(b).add(c).subtract(d);
+         int nu = Mth.clamp((int) Math.round(ab.length() / 0.16), 1, 10), nv = Mth.clamp((int) Math.round(ad.length() / 0.16), 1, 10);
+         int salt = (int) Math.round(nrm.x * 3) * 31 + (int) Math.round(nrm.y * 3) * 17 + (int) Math.round(nrm.z * 3) * 7;
+         for (int i = 0; i < nu; i++) {
+            for (int j = 0; j < nv; j++) {
+               float u0 = i / (float) nu, u1 = (i + 1) / (float) nu, v0 = j / (float) nv, v1 = (j + 1) / (float) nv;
+               float uc = (u0 + u1) * 0.5F, vc2 = (v0 + v1) * 0.5F;
+               float[] tm = texMul(pal, i, j, nu, nv, salt);
+               float w0 = (1 - uc) * (1 - vc2), w1 = uc * (1 - vc2), w2 = uc * vc2, w3 = (1 - uc) * vc2;
+               float[] col = {Math.min(1F, (ca[0] * w0 + cb[0] * w1 + cc[0] * w2 + cd[0] * w3) * tm[0]),
+                              Math.min(1F, (ca[1] * w0 + cb[1] * w1 + cc[1] * w2 + cd[1] * w3) * tm[1]),
+                              Math.min(1F, (ca[2] * w0 + cb[2] * w1 + cc[2] * w2 + cd[2] * w3) * tm[2])};
+               vtx(vc, m, n, cam, a.add(ab.scale(u0)).add(ad.scale(v0)).add(extra.scale(u0 * v0)), col, al);
+               vtx(vc, m, n, cam, a.add(ab.scale(u1)).add(ad.scale(v0)).add(extra.scale(u1 * v0)), col, al);
+               vtx(vc, m, n, cam, a.add(ab.scale(u1)).add(ad.scale(v1)).add(extra.scale(u1 * v1)), col, al);
+               vtx(vc, m, n, cam, a.add(ab.scale(u0)).add(ad.scale(v1)).add(extra.scale(u0 * v1)), col, al);
+            }
+         }
+         return true;
+      }
       vtx(vc, m, n, cam, a, ca, al);
       vtx(vc, m, n, cam, b, cb, al);
       vtx(vc, m, n, cam, c, cc, al);
@@ -421,7 +521,12 @@ abstract class FxBase {
       Vec3 mid = a.add(b).add(c).scale(1.0 / 3.0);
       Vec3 axisPt = base.add(d.scale(mid.subtract(base).dot(d)));
       if (nrm.dot(mid.subtract(axisPt)) < 0.0) nrm = nrm.scale(-1.0);
-      return face(vc, m, n, cam, a, b, c, c, nrm, pal, al, d, ctr);
+      float tone = 1.0F;
+      if (texPal(pal)) {   // spikes: bands along the length (growth rings, bone segments, forged plates) and a per-facet tint
+         int band = (int) Math.floor(mid.subtract(base).dot(d) / 0.26);
+         tone = ((band & 1) == 0 ? 1.0F : 0.84F) * (0.9F + 0.2F * h2(band, (int) Math.round(nrm.x * 4), (int) Math.round(nrm.z * 4) + pal));
+      }
+      return face(vc, m, n, cam, a, b, c, c, nrm, pal, al, d, ctr, tone);
    }
 
    static void crescent(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, Vec3 d, Vec3 u, double R, int pal, float env) {
