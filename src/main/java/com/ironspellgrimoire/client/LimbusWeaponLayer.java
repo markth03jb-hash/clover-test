@@ -65,14 +65,24 @@ public class LimbusWeaponLayer extends RenderLayer<AbstractClientPlayer, PlayerM
         return seq[Math.floorMod((int) ((now - f[0]) / 5.0), seq.length)];
     }
 
+    /** player id -> {game tick checked, 1 if wearing}: the Curios lookup is done once a tick, not once a frame. */
+    private static final Map<Integer, long[]> WEARS = new HashMap<>();
+
     /** True while this player wears the Caduceus (Rien): its rod is always in the main hand. */
     private static boolean wearsCaduceus(net.minecraft.world.entity.player.Player p) {
+        long tick = p.level().getGameTime();
+        long[] c = WEARS.get(p.getId());
+        if (c != null && c[0] == tick) return c[1] == 1;
+        boolean w = false;
         try {
             net.minecraft.world.item.ItemStack s = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
-            return s != null && s.is(com.ironspellgrimoire.registry.AddonItemRegistry.CADUCEUS_GRIMOIRE.get());
+            w = s != null && s.is(com.ironspellgrimoire.registry.AddonItemRegistry.CADUCEUS_GRIMOIRE.get());
         } catch (Throwable t) {
-            return false;
+            w = false;
         }
+        if (WEARS.size() > 256) WEARS.clear();
+        WEARS.put(p.getId(), new long[]{tick, w ? 1 : 0});
+        return w;
     }
 
     /** How far each weapon is turned from square-to-the-fist toward carrying on along the arm (degrees): lances and

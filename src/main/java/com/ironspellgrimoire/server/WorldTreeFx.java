@@ -280,17 +280,11 @@ public final class WorldTreeFx {
         AstaFx.later(15, () -> { if (alive(p)) { Fx.flash(sl, p.position().add(0, 1, 0), 1.6f); FxLib.halo(sl, G, p.position().add(0, p.getBbHeight() + 0.5, 0), 0.9f); } });
         sound(sl, p.position(), SoundEvents.WOOD_BREAK, 0.9f, 0.8f);
         sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 0.8f, 0.7f);
+        Moves.aura(p, 4, T, 400);   // the leaves and the vine, drawn by the client every frame
         Moves.mode(p, "world_tree_mantle", 400, 5, pl -> {
             ServerLevel s2 = pl.serverLevel();
             long now = s2.getGameTime();
             Vec3 c = pl.position();
-            double a = now * 0.25;
-            for (int i = 0; i < 3; i++) {   // leaves drifting round, a vine winding up
-                double b = a + i * 2.1;
-                Vec3 q = c.add(Math.cos(b) * 0.9, 0.5 + 0.5 * Math.sin(now * 0.15 + i), Math.sin(b) * 0.9);
-                FxSend.trail(s2, T, q, q.add(Math.cos(b + 1.6) * 0.3, 0.25, Math.sin(b + 1.6) * 0.3), 0.1f, 6);
-            }
-            FxSend.trail(s2, T, c.add(Math.cos(a * 1.3) * 0.55, 0.1, Math.sin(a * 1.3) * 0.55), c.add(Math.cos(a * 1.3 + 1.1) * 0.5, 1.8, Math.sin(a * 1.3 + 1.1) * 0.5), 0.05f, 8);
             if (now % 40 == 0) { pl.heal(1.0f); FxLib.halo(s2, G, c.add(0, pl.getBbHeight() + 0.3, 0), 0.4f); }
         });
     }

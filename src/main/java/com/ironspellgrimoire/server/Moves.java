@@ -294,6 +294,13 @@ public final class Moves {
         ModeHud.show(p, id, ticks);
     }
 
+    /** The mode's trappings on the player, drawn smoothly by the client for {@code life} ticks (ModeAuraFx; 0 ends it). */
+    static void aura(ServerPlayer p, int style, int pal, int life) {
+        com.ironspellgrimoire.network.FxPacket pkt = new com.ironspellgrimoire.network.FxPacket();
+        pkt.shape = 64; pkt.id = p.getId(); pkt.life = life; pkt.sweep = style; pkt.palette = (byte) pal;
+        com.ironspellgrimoire.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), pkt);
+    }
+
     /** Whether {@code id} is running on the player right now. */
     static boolean inMode(ServerPlayer p, String id) {
         Map<String, ModeRun> m = MODES.get(p.getUUID());
@@ -322,12 +329,18 @@ public final class Moves {
         Map<String, ModeRun> m = MODES.get(p.getUUID());
         if (m == null || m.isEmpty()) return;
         long now = p.serverLevel().getGameTime();
+        java.util.List<ModeRun> due = new java.util.ArrayList<>();
         var it = m.entrySet().iterator();
         while (it.hasNext()) {
             var en = it.next();
             ModeRun r = en.getValue();
             if (now > r.until()) { it.remove(); ModeHud.hide(p, en.getKey()); continue; }
-            if (now % r.every() == 0) r.fx().accept(p);
+            if (now % r.every() == 0) due.add(r);
+        }
+        // run after the loop: a mode's effect may start or end another mode (or kill something that does), which
+        // would change this map while it was being walked
+        for (ModeRun r : due) {
+            try { r.fx().accept(p); } catch (RuntimeException ex) { org.slf4j.LoggerFactory.getLogger("iron_spell_grimoire").warn("mode effect failed", ex); }
         }
     }
 

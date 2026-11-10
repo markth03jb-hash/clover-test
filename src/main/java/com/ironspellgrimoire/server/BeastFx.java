@@ -244,19 +244,11 @@ public final class BeastFx {
         spirit(sl, p.position().add(0, 1.0, 0).add(flat(p.getLookAngle()).scale(1.6)), flat(p.getLookAngle()).scale(-1), 0.9f, 0, 14);   // the wolf rears round you
         AstaFx.later(12, () -> { if (alive(p)) { Fx.flash(sl, p.position().add(0, 1, 0), 1.6f); FxLib.halo(sl, B, p.position().add(0, p.getBbHeight() + 0.4, 0), 0.9f); } });
         sound(sl, p.position(), SoundEvents.WARDEN_HEARTBEAT, 1.4f, 1.0f);
+        Moves.aura(p, 0, B, 400);   // ears, tail and glowing eyes of spirit, drawn on you by the client every frame
         Moves.mode(p, "beast_instinct", 400, 3, pl -> {
             ServerLevel s2 = pl.serverLevel();
             long now = s2.getGameTime();
             Vec3 c = pl.position();
-            Vec3 face = flat(pl.getLookAngle());
-            Vec3 rt = rightOf(face);
-            for (int s = -1; s <= 1; s += 2) {   // ears and a tail of spirit, and eyes that glow
-                Vec3 e0 = c.add(0, pl.getBbHeight() - 0.1, 0).add(rt.scale(s * 0.22));
-                FxSend.trail(s2, B, e0, e0.add(rt.scale(s * 0.08)).add(0, 0.5, 0), 0.1f, 5);
-                Kit.orb(s2, G, c.add(0, pl.getEyeHeight(), 0).add(face.scale(0.3)).add(rt.scale(s * 0.12)), Vec3.ZERO, 0.08f, 2);
-            }
-            Vec3 t0 = c.add(0, 0.9, 0).subtract(face.scale(0.3));
-            FxSend.trail(s2, B, t0, t0.subtract(face.scale(0.9)).add(rt.scale(Math.sin(now * 0.3) * 0.4)).add(0, 0.5, 0), 0.14f, 5);
             if (now % 15 == 0) for (LivingEntity e : Kit.near(s2, pl, c, 3.2)) {
                 Moves.hit(pl, e, power * 0.4f, "beast_instinct", B);
                 Vec3 m = mid(e);

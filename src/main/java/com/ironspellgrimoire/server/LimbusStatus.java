@@ -61,6 +61,17 @@ public final class LimbusStatus {
         Bleed b = BLEED.computeIfAbsent(t.getUUID(), k -> { Bleed x = new Bleed(); x.e = t; x.last = t.position(); return x; });
         b.src = src;
         b.stacks = Math.min(30, b.stacks + n);
+        sync(t);
+    }
+
+    /** Tells nearby clients how much Bleed and Fortuna {@code t} carries, so they can show it over its head. */
+    private static void sync(LivingEntity t) {
+        if (!(t.level() instanceof ServerLevel sl)) return;
+        Bleed b = BLEED.get(t.getUUID());
+        Fortuna f = FORTUNA.get(t.getUUID());
+        FxPacket pkt = new FxPacket();
+        pkt.shape = 65; pkt.id = t.getId(); pkt.h = b == null ? 0 : Math.max(0, b.stacks); pkt.r = f == null ? 0 : Math.max(0, f.stacks); pkt.life = 120;
+        FxSend.sendNear(sl, t.position(), pkt);
     }
 
     public static int bleedOf(LivingEntity t) {
@@ -75,6 +86,7 @@ public final class LimbusStatus {
         float dmg = (0.6f + 0.35f * b.stacks) * mult;
         AstaFx.damage(src, t, dmg, "thirst");
         addBloodfeast(src, Math.round(dmg * 12));
+        sync(t);
         splash((ServerLevel) t.level(), mid(t), 1.2f);
         return dmg;
     }
@@ -88,6 +100,7 @@ public final class LimbusStatus {
             addBloodfeast(b.src, Math.round(dmg * 10));
         } else b.e.hurt(sl.damageSources().magic(), dmg);
         b.stacks -= Math.max(1, b.stacks / 5);
+        sync(b.e);
         splash(sl, mid(b.e), 0.5f);
     }
 
@@ -236,6 +249,7 @@ public final class LimbusStatus {
         int before = f.stacks / 10;
         f.stacks = Math.min(200, f.stacks + n);
         f.lastHit = t.level().getGameTime();
+        sync(t);
         if (f.stacks / 10 > before) {   // a golden crack runs over them with every 10 stacks
             ServerLevel sl = (ServerLevel) t.level();
             FxSend.cracks(sl, GOLD, mid(t), new Vec3(0, 1, 0), flat(t.position().subtract(src.position())), Math.max(0.6f, t.getBbHeight() * 0.5f), 10, false, t.getId() * 7 + f.stacks);
@@ -250,6 +264,7 @@ public final class LimbusStatus {
     /** Takes all of {@code t}'s Fortuna; returns how many there were. */
     public static int consumeFortuna(LivingEntity t) {
         Fortuna f = FORTUNA.remove(t.getUUID());
+        if (f != null) sync(t);
         return f == null ? 0 : f.stacks;
     }
 
@@ -373,7 +388,7 @@ public final class LimbusStatus {
         FORTUNA.values().removeIf(f -> !f.e.isAlive() || f.e.isRemoved() || f.stacks <= 0);
         for (Fortuna f : new java.util.ArrayList<>(FORTUNA.values())) {
             long now = f.e.level().getGameTime();
-            if (now - f.lastHit > 100 && now % 40 == 0) f.stacks -= 5;
+            if (now - f.lastHit > 100 && now % 40 == 0) { f.stacks -= 5; sync(f.e); }
         }
     }
 
@@ -479,6 +494,14 @@ public final class LimbusStatus {
             if (r != null && r[1] == 5) progress(sp, 1);
         }
         if (e.getEntity() instanceof ServerPlayer sp) endVampire(sp);
+    }
+
+    /** A player who leaves takes their own state with them (their marks on enemies simply stop being theirs). */
+    @SubscribeEvent
+    public static void onLogout(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e) {
+        UUID id = e.getEntity().getUUID();
+        DQ.remove(id); VAMPIRE.remove(id); SNEAK.remove(id); RIEN.remove(id); PRESCRIPT_HIT.remove(id); RECEIVED.remove(id);
+        BLEED.values().forEach(b -> { if (b.src != null && b.src.getUUID().equals(id)) b.src = null; });
     }
 
     @SubscribeEvent

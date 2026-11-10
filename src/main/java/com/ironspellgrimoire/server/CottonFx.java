@@ -252,16 +252,12 @@ public final class CottonFx {
         AstaFx.later(11, () -> { if (alive(p)) { Fx.flash(sl, p.position().add(0, 1, 0), 1.6f); FxLib.halo(sl, C, p.position().add(0, p.getBbHeight() + 0.4, 0), 0.8f); } });
         sound(sl, p.position(), SoundEvents.SHEEP_AMBIENT, 1.0f, 0.8f);
         sound(sl, p.position(), SoundEvents.WOOL_PLACE, 1.0f, 0.7f);
+        Moves.aura(p, 1, C, 400);
         Moves.mode(p, "nean_armor", 400, 5, pl -> {
             ServerLevel s2 = pl.serverLevel();
             long now = s2.getGameTime();
             Vec3 c = pl.position();
-            for (int i = 0; i < 4; i++) {   // fluffs of fleece bobbing round the body; a pair of curled horns on the head
-                double a = now * 0.1 + i * Math.PI / 2;
-                Kit.orb(s2, C, c.add(Math.cos(a) * 0.75, 0.6 + 0.5 * Math.sin(now * 0.12 + i), Math.sin(a) * 0.75), Vec3.ZERO, 0.3f, 2);
-            }
-            Vec3 h = c.add(0, pl.getBbHeight() + 0.05, 0);
-            for (int s = -1; s <= 1; s += 2) FxSend.trail(s2, G, h.add(s * 0.2, 0, 0), h.add(s * 0.5, 0.15, 0.1), 0.07f, 6);
+            Vec3 h = c.add(0, pl.getBbHeight() + 0.05, 0);   // (the fleece and the horns are drawn by the client: Moves.aura)
             if (now % 40 == 0) { pl.heal(1.0f); FxLib.halo(s2, C, h.add(0, 0.3, 0), 0.4f); }
         });
     }
