@@ -237,14 +237,46 @@ public final class CaduceusFx {
     public static void shell(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         pour(sl, p);
-        aura(p, 11, 80);
-        FxSend.ring(sl, G, p.position().add(0, 0.1, 0), 0.2f, 1.4f, 0.06f, 10);
-        TimedModifiers.apply(p, Attributes.ARMOR, java.util.UUID.fromString("e3b61c20-7a4d-4f8e-9b11-0d1a6c900120"), "Golden Shell", 14, AttributeModifier.Operation.ADDITION, 80);
-        TimedModifiers.apply(p, Attributes.ARMOR_TOUGHNESS, java.util.UUID.fromString("e3b61c20-7a4d-4f8e-9b11-0d1a6c900121"), "Golden Shell", 8, AttributeModifier.Operation.ADDITION, 80);
-        sound(sl, p.position(), SoundEvents.SLIME_BLOCK_PLACE, 1.2f, 0.6f);
-        Moves.mode(p, "golden_shell", 80, 5, pl -> {
-            LivingEntity last = pl.getLastHurtByMob();
-            if (last != null && pl.tickCount - pl.getLastHurtByMobTimestamp() < 6) LimbusStatus.addFortuna(pl, last, 5);
+        // black slime climbs out of the Caduceus and winds up round you in a spiral, then sets as a glossy black skin
+        for (int i = 0; i < 8; i++) {
+            final int ii = i;
+            AstaFx.later(1 + i, () -> {
+                if (!alive(p)) return;
+                Vec3 c = p.position();
+                for (int k = 0; k < 2; k++) {
+                    double a0 = ii * 0.8 + k * Math.PI, a1 = a0 + 0.8;
+                    Vec3 q0 = c.add(Math.cos(a0) * 0.55, ii * 0.25, Math.sin(a0) * 0.55), q1 = c.add(Math.cos(a1) * 0.55, (ii + 1) * 0.25, Math.sin(a1) * 0.55);
+                    FxSend.trail(sl, G, ii == 0 ? tip(p) : q0, q1, 0.1f, 8);
+                }
+                if (ii == 7) sound(sl, c, SoundEvents.SLIME_BLOCK_PLACE, 1.2f, 0.5f);
+            });
+        }
+        AstaFx.later(8, () -> { if (alive(p)) aura(p, 11, 80); });
+        TimedModifiers.apply(p, Attributes.ARMOR, java.util.UUID.fromString("e3b61c20-7a4d-4f8e-9b11-0d1a6c900120"), "Black Shell", 14, AttributeModifier.Operation.ADDITION, 88);
+        TimedModifiers.apply(p, Attributes.ARMOR_TOUGHNESS, java.util.UUID.fromString("e3b61c20-7a4d-4f8e-9b11-0d1a6c900121"), "Black Shell", 8, AttributeModifier.Operation.ADDITION, 88);
+        sound(sl, p.position(), SoundEvents.BUCKET_EMPTY_LAVA, 1f, 0.6f);
+        final int[] lastHurt = {p.getLastHurtByMobTimestamp()};
+        Moves.mode(p, "golden_shell", 88, 2, pl -> {
+            // struck: the shell answers - a spike of black slime lashes out of it at the attacker
+            LivingEntity att = pl.getLastHurtByMob();
+            if (att != null && att.isAlive() && pl.getLastHurtByMobTimestamp() != lastHurt[0]) {
+                lastHurt[0] = pl.getLastHurtByMobTimestamp();
+                Vec3 from = pl.position().add(0, 1.1, 0), to = mid(att);
+                Vec3 d = to.subtract(from).normalize();
+                FxSend.spike(sl, G, from, d, (float) from.distanceTo(to), 0.12f, 6, 0, FxPacket.EXTEND);
+                FxSend.trail(sl, W, from, to, 0.02f, 4);
+                AstaFx.damage(pl, att, pow(pl, 4f), "golden_shell");
+                LimbusStatus.addFortuna(pl, att, 6);
+                drops(sl, to, 3);
+                sound(sl, to, SoundEvents.SLIME_ATTACK, 1f, 0.6f);
+            }
+            if (pl.tickCount % 10 == 0) drops(sl, pl.position().add(0, 0.6, 0), 1);   // it never quite stops dripping
+        });
+        AstaFx.later(88, () -> {   // it melts off and runs to the ground
+            if (!alive(p)) return;
+            drops(sl, p.position().add(0, 1.2, 0), 6);
+            FxSend.ring(sl, G, p.position().add(0, 0.03, 0), 0.2f, 1.2f, 0.02f, 30);
+            sound(sl, p.position(), SoundEvents.SLIME_SQUISH, 1f, 0.5f);
         });
     }
 
@@ -286,33 +318,44 @@ public final class CaduceusFx {
     /** A huge gold hammer forms overhead and comes down; it cashes in all Fortuna on the foes it strikes for extra damage. */
     public static void hammer(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        held(p, 15, 30, 16, 0, 1);
+        held(p, 15, 34, 20, 0, 1);   // the hammer pours out of the Caduceus in your hand and comes down on tick 20
         pour(sl, p);
-        Vec3 look = flat(p.getLookAngle()), rt = rightOf(look);
-        Vec3 hitAt = p.position().add(look.scale(3.5));
-        // the hammer above: a thick bar of gold and its long handle, held up, then brought down
-        Vec3 top = hitAt.add(0, 7, 0);
-        from(sl, p, top.add(0, -1, 0), 14);
-        FxSend.box(sl, G, top, rt, new Vec3(0, 1, 0), 1.6f, 1.1f, 1.1f, 18, 4, FxPacket.POP);
-        drops(sl, top.add(0, -1.1, 0), 6);
-        FxSend.box(sl, W, top.add(0, 1.6, 0), rt, new Vec3(0, 1, 0), 0.15f, 0.15f, 1.8f, 18, 4, FxPacket.POP);
-        sound(sl, p.position(), SoundEvents.ANVIL_PLACE, 0.6f, 0.6f);
-        AstaFx.later(16, () -> {
+        AstaFx.later(5, () -> { if (alive(p)) { drops(sl, tip(p), 4); sound(sl, tip(p), SoundEvents.SLIME_BLOCK_PLACE, 1.2f, 0.4f); } });
+        AstaFx.later(17, () -> { if (alive(p)) sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.3f, 0.4f); });
+        AstaFx.later(20, () -> {
             if (!alive(p)) return;
-            FxSend.box(sl, G, hitAt.add(0, 1.1, 0), rt, new Vec3(0, 1, 0), 1.6f, 1.1f, 1.1f, 12, 0, FxPacket.POP, 0, new Vec3(0, -0.4, 0), 2);
+            Vec3 look = flat(p.getLookAngle()), up = new Vec3(0, 1, 0);
+            Vec3 hitAt = clip(sl, p, p.position().add(0, 1, 0), p.position().add(0, 1, 0).add(look.scale(2.6))).add(0, -1, 0);
             FxSend.impactFrame(sl, hitAt.add(0, 1, 0), 4, FxSend.FRAME_GOLD, 24);
             FxSend.shake(sl, hitAt, 0.9f, 10, 24);
-            FxSend.ring(sl, G, hitAt.add(0, 0.05, 0), 0.4f, 6.5f, 0.2f, 14);
-            FxSend.ring(sl, W, hitAt.add(0, 0.08, 0), 0.3f, 4.0f, 0.08f, 10);
-            FxSend.cracks(sl, G, hitAt.add(0, 0.05, 0), look, new Vec3(0, 1, 0), 2.8f, 40, false, p.getId() * 11);
-            sound(sl, hitAt, SoundEvents.ANVIL_LAND, 1.4f, 0.6f);
-            sound(sl, hitAt, SoundEvents.GENERIC_EXPLODE, 0.8f, 0.9f);
-            for (LivingEntity t : Kit.near(sl, p, hitAt, 5)) {
+            FxSend.cracks(sl, G, hitAt.add(0, 0.05, 0), look, up, 2.6f, 36, false, p.getId() * 11);
+            // where it lands: a splash of black slime bursting up in a crown, two shockwaves, a pool spreading
+            for (int k = 0; k < 12; k++) {
+                double a = Math.PI * 2 * k / 12;
+                Vec3 d = new Vec3(Math.cos(a) * 0.7, 1, Math.sin(a) * 0.7).normalize();
+                FxSend.spike(sl, G, hitAt.add(Math.cos(a) * 1.1, 0, Math.sin(a) * 1.1), d, 1.1f + (k % 3) * 0.4f, 0.13f, 16, 2, FxPacket.GROUND);
+            }
+            for (int w = 0; w < 2; w++) {
+                final int ww = w;
+                AstaFx.later(w * 3, () -> {
+                    FxSend.ring(sl, G, hitAt.add(0, 0.05 + ww * 0.02, 0), 0.5f, 5f + ww * 2.5f, 0.2f - ww * 0.06f, 12);
+                    FxSend.ring(sl, W, hitAt.add(0, 0.08, 0), 0.4f, 3.5f + ww * 2.5f, 0.03f, 9);
+                });
+            }
+            FxSend.ring(sl, G, hitAt.add(0, 0.02, 0), 0.4f, 2.2f, 0.02f, 40);
+            drops(sl, hitAt.add(0, 1.2, 0), 8);
+            sound(sl, hitAt, SoundEvents.ANVIL_LAND, 1.3f, 0.5f);
+            sound(sl, hitAt, SoundEvents.SLIME_SQUISH, 1.4f, 0.4f);
+            for (LivingEntity t : Kit.near(sl, p, hitAt, 4.5)) {
                 int f = LimbusStatus.consumeFortuna(t);
                 hit(p, t, pow(p, power) * (1f + f / 60f), "hammer_of_judgement", 0, false);
-                t.setDeltaMovement(t.getDeltaMovement().add(0, 0.5, 0));
+                t.setDeltaMovement(t.getDeltaMovement().add(0, 0.55, 0));
                 t.hurtMarked = true;
-                if (f > 0) FxSend.ring(sl, G, mid(t), 0.1f, 1.0f + f / 60f, 0.1f, 8);
+                if (f > 0) {   // the cashed-in Fortuna cracks open on them
+                    Vec3 away = flat(t.position().subtract(hitAt));
+                    FxSend.cracks(sl, G, mid(t), up, away.lengthSqr() > 1e-4 ? away.normalize() : look, Math.max(0.7f, t.getBbHeight() * 0.6f), 16, false, t.getId());
+                    FxSend.ring(sl, W, mid(t), 0.1f, 1.0f + f / 60f, 0.05f, 8);
+                }
             }
         });
     }

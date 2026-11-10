@@ -561,9 +561,6 @@ public final class TimeFxClient {
             shaft(ring(c, ang, R * 0.97, y), ang + 0.4, 0.18F, k.h * 1.3F * up, GOLD_HI, 0.8F * a, 0.0F);
             if (max) shaft(ring(c, ang + TAU / 24, R * 0.62, y), ang, 0.4F, k.h * 0.8F * up, GOLD_HI, 0.5F * a, 0.0F);
         }
-        float beam = smooth((float) (age / 18.0));   // the beam from the middle up to the clock in the sky
-        shaft(new Vec3(c.x, y, c.z), now * 0.01, (float) (R * 0.05) * (1F + 0.3F * hold), k.h * 1.5F * beam, GOLD_HI, 0.7F * a, 0.1F * a);
-        shaft(new Vec3(c.x, y, c.z), now * 0.01 + 0.7, (float) (R * 0.12), k.h * 1.5F * beam, GOLD, 0.25F * a, 0.0F);
         if (after > 0) {   // when time stops: shock rings roll out across the ground and up the shafts
             for (int i = 0; i < 3; i++) {
                 double rr = (after * 2.4 - i * 7) ;

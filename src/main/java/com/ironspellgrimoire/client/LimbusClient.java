@@ -37,6 +37,7 @@ public final class LimbusClient {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         kind = p.palette; a = p.h; b = p.r; c = p.r2; d = p.a0; timer = p.life;
+        if (kind == 1) com.ironspellgrimoire.spells.LimbusGate.clientFortune = (int) p.h;
         seen = mc.level.getGameTime();
     }
 
