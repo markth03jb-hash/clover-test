@@ -213,12 +213,12 @@ public final class GrimoireWheel {
             double[][] rods = {{-0.62, -0.05, 0.62, -0.32}, {-0.58, 0.32, 0.66, 0.05}};
             for (int rr = 0; rr < 2; rr++) {
                 double[] q = rods[rr];
-                float[] col = rr == 0 ? new float[]{0.16F, 0.16F, 0.18F} : new float[]{0.92F, 0.9F, 0.86F};
+                float[] rodCol = rr == 0 ? new float[]{0.16F, 0.16F, 0.18F} : new float[]{0.92F, 0.9F, 0.86F};
                 for (int s2 = 0; s2 <= 24; s2++) {
                     double t = s2 / 24.0;
                     double x = cx + cr * (q[0] + (q[2] - q[0]) * t), y = cy + cr * (q[1] + (q[3] - q[1]) * t + sw * rr);
                     boolean band = (t > 0.1 && t < 0.16) || (t > 0.84 && t < 0.9);
-                    float[] c2 = band ? (rr == 0 ? new float[]{0.92F, 0.9F, 0.86F} : new float[]{0.16F, 0.16F, 0.18F}) : col;
+                    float[] c2 = band ? (rr == 0 ? new float[]{0.92F, 0.9F, 0.86F} : new float[]{0.16F, 0.16F, 0.18F}) : rodCol;
                     disc(bb, m, x, y, cr * 0.075, c2[0], c2[1], c2[2], A);
                 }
                 disc(bb, m, cx + cr * q[0], cy + cr * (q[1] + sw * rr), cr * 0.1, tr[0], tr[1], tr[2], A);
