@@ -130,7 +130,11 @@ public final class TimeStop {
             for (Iterator<Frozen> it = FROZEN.values().iterator(); it.hasNext(); ) {
                 Frozen f = it.next();
                 LivingEntity t = f.e;
-                if (!t.isAlive() || t.isRemoved()) { it.remove(); continue; }
+                if (!t.isAlive() || t.isRemoved()) {
+                    it.remove();
+                    if (t.level() instanceof ServerLevel sl) TimeFx.dropHeld(sl, t);
+                    continue;
+                }
                 long now = t.level().getGameTime();
                 if (now >= f.until) { it.remove(); done.add(f); continue; }
                 pin(f);

@@ -77,7 +77,7 @@ public final class TimeFx {
     private static final Map<UUID, Object[]> PREV = new HashMap<>();           // {spell id, game time}: for the combos
     private static final Map<UUID, Long> BOLTED = new HashMap<>();             // target -> when a Clock Hand hit it
     private static final Map<UUID, Integer> STOLEN = new HashMap<>();          // caster -> seconds taken by Time Theft
-    private static final Map<UUID, Integer> HELD = new HashMap<>();            // target -> hands hanging in the air at it
+    private static final Map<UUID, List<Integer>> HELD = new HashMap<>();      // target -> the hands hanging in the air at it
 
     /** Remembers this cast for the combos; returns the spell cast just before it (within 4 s), or "". */
     private static String cast(ServerPlayer p, String id) {
@@ -743,24 +743,32 @@ public final class TimeFx {
     /** A blow landed on a held target: a gold hand hangs in the air, pointing at it, until time starts again. */
     public static void heldBlow(ServerPlayer by, LivingEntity t, float bank) {
         ServerLevel sl = by.serverLevel();
-        int n = HELD.merge(t.getUUID(), 1, Integer::sum);
-        if (n > 14) return;
+        List<Integer> ids = HELD.computeIfAbsent(t.getUUID(), k -> new ArrayList<>());
+        int n = ids.size() + 1;
+        if (n > 14) { sound(sl, mid(t), SoundEvents.COMPARATOR_CLICK, 0.9f, 1.4f); return; }
         Random r = new Random(t.getId() * 31L + n);
         Vec3 m = mid(t);
         Vec3 off = new Vec3(r.nextDouble() - 0.5, r.nextDouble() * 0.6 - 0.1, r.nextDouble() - 0.5).normalize().scale(1.1 + t.getBbWidth() * 0.5);
-        hand(sl, m.add(off), Vec3.ZERO, off.scale(-1), 0.9f, 200, 0);
+        ids.add(hand(sl, m.add(off), Vec3.ZERO, off.scale(-1), 0.9f, 200, 0));
         sound(sl, m, SoundEvents.COMPARATOR_CLICK, 0.9f, 0.6f + n * 0.05f);
     }
 
     /** Time starts again on a held target: everything it was dealt lands at once, a little harder. */
     public static void releaseHeld(ServerPlayer by, LivingEntity t, float bank) {
-        HELD.remove(t.getUUID());
         ServerLevel sl = by.serverLevel();
         Vec3 m = mid(t);
+        List<Integer> ids = HELD.remove(t.getUUID());
+        if (ids != null) for (int id : ids) FxSend.kill(sl, id, m);   // the hanging hands strike home
         hit(by, t, bank * 1.2f, "zenith_hour");
         Fx.impact(sl, G, m, Math.min(2.4f, 0.8f + bank * 0.05f));
         FxSend.ring(sl, G, t.position().add(0, 0.05, 0), 0.2f, 2.0f, 0.05f, 8);
         sound(sl, m, SoundEvents.PLAYER_ATTACK_CRIT, 1.0f, 0.8f);
+    }
+
+    /** A held target died or vanished before time started again: its hanging hands go. */
+    public static void dropHeld(ServerLevel sl, LivingEntity t) {
+        List<Integer> ids = HELD.remove(t.getUUID());
+        if (ids != null) for (int id : ids) FxSend.kill(sl, id, t.position());
     }
 
     /** The tenth stored second: a soft chime. */
