@@ -19,7 +19,7 @@ import java.lang.reflect.Method;
 
 /**
  * The grimoire's own mana bar, in place of Iron's while one of this addon's grimoires is equipped: a frame in the
- * grimoire's trim colour with its clover at the end, the mana inside in the grimoire's colour with a sheen running
+ * grimoire's trim colour, the mana inside in the grimoire's colour with a sheen running
  * through it, and the numbers beside it. The bar eases toward the real value instead of jumping.
  * Asta's grimoire has no mana (anti magic): its bar is pitch black with a flickering blood-red edge.
  */
@@ -52,7 +52,6 @@ public final class ManaBarHud {
             {0xFFF0F6, 0xE0709E, 0xFFC4DC, 0x1C0C16, 0xFFD6EA},   // Charmy
             {0xC8F2FF, 0x22B8E8, 0x8CE6FF, 0x04101C, 0xE0FAFF},   // Julius
     };
-    private static final int[] LEAVES = {5, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
 
     private static float shown = -1F;
     private static Method getMana;
@@ -145,9 +144,6 @@ public final class ManaBarHud {
                 g.fill(px, y + 1, px + 1, y + bh - 1, (al << 24) | c[2]);
             }
         }
-        // the grimoire's own clover as the gem on top of the casing (Iron puts a gem there), riding the fill's tip
-        int gx = anti ? x + bw / 2 : (int) Mth.clamp(x + fillW, x + 6, x + bw - 6);
-        clover(g, gx, y - 4, LEAVES[book], c, anti, time);
         // the numbers (or ANTI MAGIC) just above the right end
         Font f = mc.font;
         String s = anti ? "ANTI MAGIC" : (int) mana + " / " + (int) max;
@@ -157,21 +153,6 @@ public final class ManaBarHud {
         g.drawString(f, Component.literal(s), -f.width(s), 0, 0xFF000000 | c[4], true);
         g.pose().popPose();
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-    }
-
-    /** A small clover badge: its leaves as little squares round a centre, turning slowly. */
-    private static void clover(GuiGraphics g, int cx, int cy, int leaves, int[] c, boolean anti, double time) {
-        g.fill(cx - 5, cy - 5, cx + 6, cy + 6, 0xFF000000 | darker(c[0], 0.45F));
-        g.fill(cx - 4, cy - 4, cx + 5, cy + 5, 0xFF000000 | c[3]);
-        int leaf = anti ? 0xFF000000 | 0x0A0A0A : 0xFF000000 | c[1];
-        int rim = 0xFF000000 | (anti ? c[2] : c[0]);
-        for (int i = 0; i < leaves; i++) {
-            double a = i * Math.PI * 2 / leaves + time * 0.02 - Math.PI / 2;
-            int lx = cx + (int) Math.round(Math.cos(a) * 2.2), ly = cy + (int) Math.round(Math.sin(a) * 2.2);
-            g.fill(lx - 2, ly - 2, lx + 2, ly + 2, rim);
-            g.fill(lx - 1, ly - 1, lx + 1, ly + 1, leaf);
-        }
-        g.fill(cx, cy, cx + 1, cy + 1, rim);
     }
 
     private static int darker(int rgb, float k) {
