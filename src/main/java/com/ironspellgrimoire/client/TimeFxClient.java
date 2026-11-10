@@ -230,20 +230,16 @@ public final class TimeFxClient {
             k.flPrev = k.flT; k.spPrev = k.spT;
             if (now >= k.frozenUntil) { k.flT += 1; k.spT += k.spin; }
             Vec3 c = k.lastC;
-            if (age <= k.open && age % 2 == 0) {   // FWIP: the wave of pages fanning open round the ring
+            if (age <= k.open && age % 2 == 0) {   // the rings click into place one after another, like a ratchet
                 double frac = Mth.clamp(age / k.open, 0, 1);
-                for (int s = -1; s <= 1; s += 2) {
-                    double th = s * Math.PI * frac;
-                    Vec3 at = c.add(Math.cos(th) * k.r, k.h * 0.5, Math.sin(th) * k.r);
-                    mc.level.playLocalSound(at.x, at.y, at.z, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS,
-                            (float) Math.min(1.0, 0.3 + k.r * 0.07), 0.75F + rnd.nextFloat() * 0.5F, false);
-                }
+                mc.level.playLocalSound(c.x, c.y + k.h * frac, c.z, SoundEvents.COMPARATOR_CLICK, SoundSource.PLAYERS,
+                        (float) Math.min(1.0, 0.35 + k.r * 0.07), 1.2F + (float) frac * 0.8F, false);
             }
             if (now >= close && !k.scatterSounded) {
                 k.scatterSounded = true;
                 for (int i = 0; i < 3; i++)
-                    mc.level.playLocalSound(c.x, c.y + k.h * 0.5, c.z, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS,
-                            (float) Math.min(1.0, 0.4 + k.r * 0.06), 0.55F + i * 0.2F, false);
+                    mc.level.playLocalSound(c.x, c.y + k.h * 0.5, c.z, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS,
+                            (float) Math.min(1.0, 0.4 + k.r * 0.06), 0.6F + i * 0.35F, false);
             }
         }
         for (Iterator<Clock> it = CLOCKS.iterator(); it.hasNext(); ) {
@@ -403,131 +399,123 @@ public final class TimeFxClient {
         double age = now - k.born, close = closeStart(k);
         Vec3 c = centre(mc, k, pt);
         boolean frozen = now < k.frozenUntil;
-        double fl = frozen ? k.flT : Mth.lerp(pt, k.flPrev, k.flT);
         double sp = frozen ? k.spT : Mth.lerp(pt, k.spPrev, k.spT);
-        float[] paper = frozen ? COLD : PAPER;
-        float wInk = Mth.clamp(0.012F + k.r * 0.0045F, 0.012F, 0.085F);
-        if (now >= close) {
-            float s = (float) ((now - close) / 14.0);
-            scatter(k, c, s, sp, paper, wInk, k.r, k.h, k.n, false);
-            if (k.style == 1) scatter(k, c, s * 1.1F, -sp * 1.6, GOLD_PAPER, wInk, k.r * 0.78F, k.h * 0.92F, (int) (k.n * 0.8F), true);
-            return;
+        float s = now >= close ? (float) ((now - close) / 14.0) : 0F;   // 0..1 while it rings out
+        if (s >= 1F) return;
+        float[] metal = frozen ? COLD : GOLD, hi = frozen ? PAPER : GOLD_HI;
+        stack(k, c, k.r, k.h, sp, age, s, metal, hi, frozen, 1);
+        if (k.style == 1) stack(k, c, k.r * 0.78F, k.h * 0.92F, -sp * 1.6, age - 4, s, hi, PAPER, frozen, -1);
+        if (k.style != 2) {   // a great cog turning at the top and the foot
+            float g = (float) Mth.clamp((age - k.open - 1) / 7.0, 0.0, 1.0);
+            if (g > 0F) {
+                cog(k, c.add(0, k.h, 0), k.r, sp * 0.6, g * (1F - s), s, metal, hi);
+                cog(k, c.add(0, 0.02, 0), k.r * 0.9F, -sp * 0.6, g * (1F - s), s, metal, hi);
+            }
         }
-        pages(k, c, k.r, k.h, k.n, sp, fl, age, paper, wInk, false, frozen);
-        if (k.style == 1) pages(k, c, k.r * 0.78F, k.h * 0.92F, (int) (k.n * 0.8F), -sp * 1.6, fl + 3.0, age - 4, GOLD_PAPER, wInk, true, frozen);
-        if (k.style != 2) lid(k, c, sp, age, paper, wInk, frozen);
-        if (frozen) {   // a thin gold line runs round the base and the top while time is stopped
-            final Vec3 cc = c;
-            final float r = k.r, h = k.h;
-            GLOWS.add(() -> {
-                for (int i = 0; i < 64; i++) {
-                    double a0 = TAU * i / 64, a1 = TAU * (i + 1) / 64;
-                    line(ring(cc, a0, r + 0.05, cc.y + 0.05), ring(cc, a1, r + 0.05, cc.y + 0.05), 0.08F + r * 0.004F, GOLD, 0.5F, 0.02);
-                    line(ring(cc, a0, r + 0.05, cc.y + h), ring(cc, a1, r + 0.05, cc.y + h), 0.08F + r * 0.004F, GOLD, 0.5F, 0.02);
-                }
-            });
-        }
+        final Vec3 cc = c;
+        final float R = k.r, H = k.h, ss = s, gr = (float) Mth.clamp(age / 6.0, 0, 1);
+        final double ag = age, fz = frozen ? 0 : 1;
+        final int id = k.id;
+        GLOWS.add(() -> chronoLight(cc, R, H, ss, gr, ag, fz, id));
     }
 
-    /** One ring of pages: overlapping like shingles, leaning into the swirl, each with an ink edge. */
-    private static void pages(Column k, Vec3 c, float R, float H, int n, double sp, double fl, double age, float[] paper,
-                              float wInk, boolean gold, boolean frozen) {
-        double del = TAU / n * 2.4, tw = 0.32;
-        double lift = 0.01 + R * 0.0006;
-        for (int i = 0; i < n; i++) {
-            double frac = Math.min(i, n - i) / (n * 0.5);   // the wave starts at the front and runs round both ways
-            float g = (float) Mth.clamp((age - k.open * frac) / 5.0, 0.0, 1.0);
+    /** A stack of clockwork rings - short bands of metal with tick slits - rising round the column, turning in turn. */
+    private static void stack(Column k, Vec3 c, float R, float H, double sp, double age, float s, float[] col, float[] hi, boolean frozen, int dir) {
+        int m = Mth.clamp(Math.round(H * 1.1F) + 2, 3, 12);
+        int seg = Mth.clamp((int) (R * 14), 32, 96);
+        float bh = Mth.clamp(0.09F + R * 0.012F, 0.09F, 0.3F);
+        for (int j = 0; j < m; j++) {
+            float g = (float) Mth.clamp((age - k.open * (j / (double) m)) / 5.0, 0.0, 1.0);
             if (g <= 0F) continue;
             g = backOut(g);
-            float j = k.jit[i % k.jit.length];
-            double th = TAU * i / n + j * 0.4 * TAU / n + sp;
-            double e = 0.06 + 0.02 * Math.sqrt(R) + k.flutter * 0.18 * Math.sin(fl * 0.55 + i * 1.7);
-            double y0 = c.y, y1 = c.y + H * g;
-            Vec3 p0 = ring(c, th, R, y0), p1 = ring(c, th + del, R + e, y0), p2 = ring(c, th + del + tw, R + e, y1), p3 = ring(c, th + tw, R, y1);
-            double na = th + del * 0.5 + tw * 0.5;
-            Vec3 nrm = new Vec3(Math.cos(na), 0, Math.sin(na));
-            Vec3 tc = CAM.subtract(p0.add(p2).scale(0.5));
-            float shade = 0.76F + 0.24F * (float) Math.abs(nrm.dot(tc.lengthSqr() < 1.0E-6 ? nrm : tc.normalize()));
-            quad(p0, p1, p2, p3, mul(paper, shade * (0.96F + 0.04F * j)), 1F);
-            line(p0, p3, wInk, INK, 1F, lift);
-            if (i % 3 == 0) line(p3, p2, wInk * 0.7F, INK, 1F, lift);
-            if (gold ? i % 2 == 0 : i % 7 == 0) line(p1, p2, wInk * 0.8F, frozen ? GOLD_HI : GOLD, 1F, lift * 1.5);
+            float al = Math.min(1F, g) * (1F - s);
+            if (al <= 0.02F) continue;
+            double y = c.y + (H - bh) * (j / (double) (m - 1));
+            double rr = R * (0.8 + 0.2 * Math.min(1F, g)) * (1.0 + s * 1.3);
+            double rot = (j % 2 == 0 ? 1 : -1) * dir * sp * (1.0 + 0.18 * j) + j * 0.9;
+            for (int i = 0; i < seg; i++) {
+                double t0 = TAU * i / seg + rot, t1 = TAU * (i + 1) / seg + rot;
+                Vec3 p0 = ring(c, t0, rr, y), p1 = ring(c, t1, rr, y), p2 = ring(c, t1, rr, y + bh), p3 = ring(c, t0, rr, y + bh);
+                Vec3 nm = new Vec3(Math.cos((t0 + t1) * 0.5), 0, Math.sin((t0 + t1) * 0.5));
+                Vec3 tc = CAM.subtract(p0.add(p2).scale(0.5));
+                float shade = 0.7F + 0.3F * (float) Math.abs(nm.dot(tc.lengthSqr() < 1.0E-6 ? nm : tc.normalize()));
+                quad(p0, p1, p2, p3, mul(col, shade), al);
+            }
+            // ink edges top and bottom, and a slit every fifteen degrees (a bright tick every thirty)
+            for (int i = 0; i < seg; i++) {
+                double t0 = TAU * i / seg + rot, t1 = TAU * (i + 1) / seg + rot;
+                double e = bh * 0.1;
+                quad(ring(c, t0, rr * 1.003, y), ring(c, t1, rr * 1.003, y), ring(c, t1, rr * 1.003, y + e), ring(c, t0, rr * 1.003, y + e), INK, al);
+                quad(ring(c, t0, rr * 1.003, y + bh - e), ring(c, t1, rr * 1.003, y + bh - e), ring(c, t1, rr * 1.003, y + bh), ring(c, t0, rr * 1.003, y + bh), INK, al);
+            }
+            for (int q = 0; q < 24; q++) {
+                double t0 = TAU * q / 24 + rot, t1 = t0 + 0.035 * (q % 2 == 0 ? 1.6 : 1.0) / Math.max(0.6, Math.sqrt(R));
+                float[] tc2 = q % 2 == 0 ? hi : INK;
+                double y0 = y + bh * (q % 2 == 0 ? 0.18 : 0.3), y1 = y + bh * (q % 2 == 0 ? 0.82 : 0.7);
+                quad(ring(c, t0, rr * 1.006, y0), ring(c, t1, rr * 1.006, y0), ring(c, t1, rr * 1.006, y1), ring(c, t0, rr * 1.006, y1), tc2, al);
+            }
         }
     }
 
-    /** The top: paper closing in from the rim to the middle, ink spirals sweeping in to one bright point. */
-    private static void lid(Column k, Vec3 c, double sp, double age, float[] paper, float wInk, boolean frozen) {
-        float lg = (float) Mth.clamp((age - k.open - 2) / 7.0, 0.0, 1.0);
-        if (lg <= 0F) return;
-        float R = k.r;
-        double rin = R * (1F - smooth(lg));
-        double y1 = c.y + k.h, dh = R * 0.1;
-        int K = 10, S = Mth.clamp(k.n / 3, 24, 140);
-        float[] lidC = mul(paper, 0.9F);
-        // from inside the column the paper roof is left out, so the swirl reads as ink lines against the sky and the
-        // great clock above stays in view
-        boolean inside = Math.hypot(CAM.x - c.x, CAM.z - c.z) < R && CAM.y < y1 + dh;
-        if (!inside) for (int a = 0; a < K; a++) {
-            double ra = R * (1.0 - a / (double) K), rb = R * (1.0 - (a + 1) / (double) K);
-            if (ra <= rin) break;
-            rb = Math.max(rb, rin);
-            double ya = y1 + dh * (1 - (ra / R) * (ra / R)), yb = y1 + dh * (1 - (rb / R) * (rb / R));
-            for (int s = 0; s < S; s++) {
-                double t0 = TAU * s / S, t1 = TAU * (s + 1) / S;
-                quad(ring(c, t0, ra, ya), ring(c, t1, ra, ya), ring(c, t1, rb, yb), ring(c, t0, rb, yb), lidC, 1F);
-            }
+    /** A flat cog with a toothed rim and spokes: metal, ink-edged, turning. */
+    private static void cog(Column k, Vec3 c, float R, double sp, float al, float s, float[] col, float[] hi) {
+        if (al <= 0.02F) return;
+        int T = Mth.clamp((int) (R * 5), 10, 28);
+        double w = TAU / T, th = 0.2 * R * (1 + s * 1.3);
+        double rr = R * (1 + s * 1.3);
+        List<double[]> pts = new ArrayList<>();
+        for (int i = 0; i < T; i++) {
+            double a = sp + i * w;
+            pts.add(new double[]{a, 0.93});
+            pts.add(new double[]{a + 0.12 * w, 1.1});
+            pts.add(new double[]{a + 0.4 * w, 1.1});
+            pts.add(new double[]{a + 0.52 * w, 0.93});
         }
-        int spirals = Mth.clamp(k.n / 4, 18, 96);
-        double lift = 0.012 + R * 0.0008;
-        for (int i = 0; i < spirals; i++) {
-            double phi0 = TAU * i / spirals + sp + 0.32;
-            Vec3 prev = null;
-            for (int q = 0; q <= 12; q++) {
-                double f = q / 12.0, rho = R * (1 - f);
-                if (rho < rin) break;
-                double phi = phi0 + 2.4 * Math.pow(f, 0.85);
-                Vec3 pnt = ring(c, phi, rho, y1 + dh * (1 - (rho / R) * (rho / R)));
-                if (prev != null) line(prev, pnt, wInk * (float) (1.0 - f * 0.6), INK, 1F, lift);
-                prev = pnt;
-            }
+        double yb = c.y, yt = c.y + Math.min(0.2, 0.05 + R * 0.02);
+        for (int i = 0; i < pts.size(); i++) {
+            double[] p = pts.get(i), q = pts.get((i + 1) % pts.size());
+            double a1 = q[0] < p[0] ? q[0] + TAU : q[0];
+            Vec3 b0 = ring(c, p[0], rr * p[1], yb), b1 = ring(c, a1, rr * q[1], yb), t1 = ring(c, a1, rr * q[1], yt), t0 = ring(c, p[0], rr * p[1], yt);
+            quad(b0, b1, t1, t0, mul(col, 0.8F), al);                                // the rim of the tooth
+            Vec3 i0 = ring(c, p[0], rr * 0.62, yt), i1 = ring(c, a1, rr * 0.62, yt);
+            quad(i0, i1, t1, t0, col, al);                                           // the top face
+            line(t0, t1, (float) (R * 0.012 + 0.01), INK, al, 0.004);
         }
-        if (lg >= 1F) {   // the bright point where every page meets
-            final Vec3 top = new Vec3(c.x, y1 + dh + 0.05, c.z);
-            final float rr = R;
-            final float pulse = frozen ? 1F : (float) (0.8 + 0.2 * Math.sin(age * 0.3));
-            GLOWS.add(() -> {
-                glowDisc(top, new Vec3(0, 1, 0), rr * 0.22F, GOLD_HI, 0.9F * pulse);
-                glowDisc(top, new Vec3(0, 1, 0), rr * 0.45F, GOLD, 0.35F * pulse);
-                for (int i = 0; i < 12; i++) {
-                    double a = TAU * i / 12 + age * (frozen ? 0 : 0.01);
-                    line(top, ring(top, a, rr * (i % 2 == 0 ? 0.55 : 0.35), top.y), 0.06F + rr * 0.006F, GOLD_HI, 0.6F * pulse, 0.02);
-                }
-            });
+        for (int i = 0; i < 6; i++) {   // spokes and a bright hub
+            double a = sp + i * TAU / 6;
+            line(ring(c, a, rr * 0.12, yt), ring(c, a, rr * 0.62, yt), (float) (R * 0.05 + 0.03), INK, al, 0.006);
+            line(ring(c, a, rr * 0.12, yt), ring(c, a, rr * 0.62, yt), (float) (R * 0.028 + 0.015), hi, al, 0.01);
+        }
+        for (int i = 0; i < 48; i++) {
+            double a0 = TAU * i / 48, a1 = TAU * (i + 1) / 48;
+            line(ring(c, a0, rr * 0.62, yt), ring(c, a1, rr * 0.62, yt), (float) (R * 0.02 + 0.014), INK, al, 0.006);
         }
     }
 
-    /** The pages fly apart: each one a card tumbling outward and fading. */
-    private static void scatter(Column k, Vec3 c, float s, double sp, float[] paper, float wInk, float R, float H, int n, boolean gold) {
-        float a = 1F - s;
-        if (a <= 0F) return;
-        int step = Math.max(1, n / 160);
-        for (int i = 0; i < n; i += step) {
-            float j = k.jit[i % k.jit.length];
-            double th = TAU * i / n + sp;
-            Vec3 rad = new Vec3(Math.cos(th), 0, Math.sin(th)), tan = new Vec3(-Math.sin(th), 0, Math.cos(th)), up = new Vec3(0, 1, 0);
-            Vec3 base = c.add(rad.scale(R)).add(0, H * (0.15 + 0.7 * j), 0);
-            double out = s * (2.5 + R * 0.35) * (0.6 + j);
-            Vec3 pos = base.add(rad.scale(out)).add(0, s * 3.0 * (j - 0.3) - s * s * 1.5, 0);
-            double spin = s * (4 + 6 * j);
-            Vec3 rt = tan.scale(Math.cos(spin)).add(up.scale(Math.sin(spin)));
-            Vec3 uu = up.scale(Math.cos(spin)).subtract(tan.scale(Math.sin(spin)));
-            float cw = (0.22F + R * 0.02F) * (1F - 0.4F * s), ch = cw * 1.4F;
-            Vec3 q0 = pos.subtract(rt.scale(cw)).subtract(uu.scale(ch)), q1 = pos.add(rt.scale(cw)).subtract(uu.scale(ch));
-            Vec3 q2 = pos.add(rt.scale(cw)).add(uu.scale(ch)), q3 = pos.subtract(rt.scale(cw)).add(uu.scale(ch));
-            quad(q0, q1, q2, q3, paper, a);
-            float w = wInk * 0.8F;
-            line(q0, q1, w, INK, a, 0.01); line(q1, q2, w, gold ? GOLD : INK, a, 0.01);
-            line(q2, q3, w, INK, a, 0.01); line(q3, q0, w, INK, a, 0.01);
+    /** The light of the column: a soft cyan wall, a glow on the ground, and grains of time rising inside it. */
+    private static void chronoLight(Vec3 c, float R, float H, float s, float gr, double age, double mv, int id) {
+        float a = gr * (1F - s);
+        if (a <= 0.01F) return;
+        int seg = 40;
+        double rr = R * (1 + s * 1.3);
+        for (int i = 0; i < seg; i++) {
+            double t0 = TAU * i / seg, t1 = TAU * (i + 1) / seg;
+            Vec3 b0 = ring(c, t0, rr, c.y), b1 = ring(c, t1, rr, c.y), u0 = ring(c, t0, rr, c.y + H * gr), u1 = ring(c, t1, rr, c.y + H * gr);
+            v(b0, GOLD, 0.22F * a); v(b1, GOLD, 0.22F * a); v(u1, GOLD, 0.02F * a);
+            v(b0, GOLD, 0.22F * a); v(u1, GOLD, 0.02F * a); v(u0, GOLD, 0.02F * a);
+        }
+        glowDisc(c.add(0, 0.05, 0), new Vec3(0, 1, 0), (float) (rr * 1.05), GOLD, 0.4F * a);
+        glowDisc(c.add(0, 0.05, 0), new Vec3(0, 1, 0), (float) (rr * 0.6), GOLD_HI, 0.5F * a);
+        int n = Mth.clamp((int) (R * 14), 10, 56);
+        Random r = new Random(id * 131L + 7);
+        double drift = age * 0.012 * mv;
+        for (int j = 0; j < n; j++) {
+            double f = (r.nextDouble() + drift * (0.6 + r.nextDouble())) % 1.0;
+            double ang = r.nextDouble() * TAU + f * 5 + age * 0.02 * mv;
+            double rad = R * (0.25 + 0.7 * r.nextDouble()) * (1 + s * 1.3);
+            Vec3 at = ring(c, ang, rad, c.y + H * f);
+            float tw = (float) (0.6 + 0.4 * Math.sin(age * 0.3 + j));
+            glowDisc(at, new Vec3(0, 1, 0), 0.05F + R * 0.006F, GOLD_HI, 0.9F * a * tw * (float) Math.sin(f * Math.PI));
         }
     }
 
@@ -951,13 +939,13 @@ public final class TimeFxClient {
         }
     }
 
-    /** A small page card at {@code at}, turned by yaw and tipped by pitch, with an ink edge. */
+    /** A small shard of time at {@code at}, turned by yaw and tipped by pitch, with an ink edge. */
     private static void card(Vec3 at, double yaw, double pitch, float size, float[] paper, float a) {
         if (a <= 0.01F || size <= 0.001F) return;
         Vec3 rt = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
         Vec3 up = new Vec3(0, Math.cos(pitch), 0).add(new Vec3(-Math.sin(yaw), 0, Math.cos(yaw)).scale(Math.sin(pitch)));
-        Vec3 q0 = at.subtract(rt.scale(size)).subtract(up.scale(size * 1.4)), q1 = at.add(rt.scale(size)).subtract(up.scale(size * 1.4));
-        Vec3 q2 = at.add(rt.scale(size)).add(up.scale(size * 1.4)), q3 = at.subtract(rt.scale(size)).add(up.scale(size * 1.4));
+        // a shard of stopped time: a little diamond, ink-edged
+        Vec3 q0 = at.subtract(up.scale(size * 1.5)), q1 = at.add(rt.scale(size * 0.75)), q2 = at.add(up.scale(size * 1.5)), q3 = at.subtract(rt.scale(size * 0.75));
         quad(q0, q1, q2, q3, paper, a);
         float w = size * 0.12F;
         line(q0, q1, w, INK, a, 0.006); line(q1, q2, w, GOLD, a, 0.006); line(q2, q3, w, INK, a, 0.006); line(q3, q0, w, INK, a, 0.006);

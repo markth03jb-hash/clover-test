@@ -353,7 +353,7 @@ public final class TimeFx {
             column(sl, dest, 0.9f, 2.3f, 6, 2, 2, null, 1.6f, 0.15f);   // the pages you skipped flutter apart round you
             clock(sl, dest.add(0, 0.05, 0), UP, d, 1.3f, 10, 2, -1.5f);
             sound(sl, dest, SoundEvents.ILLUSIONER_MIRROR_MOVE, 0.9f, 1.4f);
-            sound(sl, dest, SoundEvents.BOOK_PAGE_TURN, 1.0f, 1.3f);
+            sound(sl, dest, SoundEvents.AMETHYST_BLOCK_CHIME, 1.0f, 1.3f);
         });
     }
 
@@ -438,7 +438,7 @@ public final class TimeFx {
             Vec3 c = groundAt(sl, s.aim(sl, p, 18)).add(0, 0.04, 0);
             int clk = clock(sl, c, UP, flat(s.look()), R, STEP * 3 + 12, 1, (float) (TAU / 12 / STEP), STEP, 3, 0, 0, null, 0);
             FxSend.ring(sl, G, c, 0.2f, R, 0.04f, 8);
-            sound(sl, c, SoundEvents.BOOK_PAGE_TURN, 1.0f, 0.8f);
+            sound(sl, c, SoundEvents.AMETHYST_BLOCK_CHIME, 1.0f, 0.8f);
             for (int t = 1; t < STEP * 3; t++) {   // whoever walks on it already feels time thicken
                 final int tt = t;
                 AstaFx.later(t, () -> {
@@ -557,7 +557,7 @@ public final class TimeFx {
             column(sl, p.position(), 1.15f, 2.4f, T, 4, 2, p, 0.9f, -0.03f);
             clock(sl, p.position(), UP, flat(p.getLookAngle()), 1.5f, T, 3, -0.3f, 0, 0, 0, 0, p, 0.05);
             sound(sl, p.position(), SoundEvents.BEACON_ACTIVATE, 0.7f, 1.8f);
-            sound(sl, p.position(), SoundEvents.BOOK_PAGE_TURN, 1.0f, 0.9f);
+            sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1.0f, 0.9f);
         });
         AstaFx.later(6 + T + 1, () -> {
             if (!alive(p)) return;

@@ -71,7 +71,7 @@ public final class ImpactFrames {
             {0xF2DFC0, 0x1C1208, 0xB88A4E, 0xFFFFFF},   // 17 Sol: slabs
             {0xCFFFF0, 0x021C16, 0x3CD4A8, 0xFFE7A0},   // 18 Vetto: fangs
             {0xFFE4F0, 0x2A0E1E, 0xFF8CC6, 0xFFFFFF},   // 19 Charmy: threads of cream
-            {0xE6FAFF, 0x040E1C, 0x8CDFF5, 0x3CC8F0}};  // 20 Julius: pages spiralling in, a clock round the hit
+            {0xE6FAFF, 0x040E1C, 0x8CDFF5, 0x3CC8F0}};  // 20 Julius: clock marks closing in, a clock round the hit
 
     public static void start(int ticks, int st, Vec3 where) {
         Minecraft mc = Minecraft.getInstance();
@@ -266,17 +266,13 @@ public final class ImpactFrames {
                 }
                 star(bb, m, fx, fy, Math.min(W, H) * 0.08F, 2F, acc, la);
             }
-            case 20 -> {  // Julius: page edges spiralling in on the hit (FWIP), a clock ring round it, two hands stopped
-                for (int i = 0; i < 64; i++) {
-                    double a0 = i * Math.PI * 2 / 64 + r.nextFloat() * 0.05;
-                    float px = fx, py = fy;
-                    for (int q = 1; q <= 6; q++) {
-                        float fq = q / 6F, rr = reach * (1F - fq * 0.86F * rush);
-                        double a = a0 + 1.6 * Math.pow(fq, 0.9);
-                        float nx = fx + (float) Math.cos(a) * rr, ny = fy + (float) Math.sin(a) * rr;
-                        if (q > 1) taper(bb, m, px, py, (1F - fq) * 3.2F + 0.4F, nx, ny, (1F - fq) * 2.6F + 0.3F, i % 9 == 0 ? acc : line, la);
-                        px = nx; py = ny;
-                    }
+            case 20 -> {  // Julius: the minute marks of a giant clock closing in on the hit, a clock ring round it, two hands stopped
+                for (int i = 0; i < 60; i++) {
+                    double a0 = i * Math.PI * 2 / 60;
+                    boolean five = i % 5 == 0;
+                    float r0 = reach * (five ? 0.38F : 0.5F) * (1F - 0.2F * rush), r1 = reach * (1F - 0.15F * rush);
+                    taper(bb, m, fx + (float) Math.cos(a0) * r0, fy + (float) Math.sin(a0) * r0, five ? 1.2F : 0.6F,
+                            fx + (float) Math.cos(a0) * r1, fy + (float) Math.sin(a0) * r1, five ? 4.5F : 2.2F, five ? acc : line, la);
                 }
                 float cr = Math.min(W, H) * 0.2F;
                 for (int j = 0; j < 48; j++) {
