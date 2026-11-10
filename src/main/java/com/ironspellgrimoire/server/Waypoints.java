@@ -91,16 +91,8 @@ public final class Waypoints {
                 ServerLevel dest = p.server.getLevel(key);
                 if (dest == null) { p.displayClientMessage(Component.literal("That place can't be reached.").withStyle(ChatFormatting.RED), true); break; }
                 Vec3 at = new Vec3(c.getDouble("x"), c.getDouble("y"), c.getDouble("z"));
-                Vec3 look = flat(p.getLookAngle());
-                SpaceFx.gate(sl, p.position().add(look.scale(0.8)).add(0, 1, 0), look.scale(-1), 0.7f, 1.1f, 12, 0);
-                SpaceFx.whoosh(sl, p.position());
-                AstaFx.later(3, () -> {
-                    if (!alive(p)) return;
-                    if (dest == p.serverLevel()) SpaceFx.move(p, at, p.getYRot());
-                    else p.teleportTo(dest, at.x, at.y, at.z, p.getYRot(), p.getXRot());
-                    SpaceFx.gate(dest, at.add(look.scale(0.8)).add(0, 1, 0), look, 0.7f, 1.1f, 12, 0);
-                    SpaceFx.whoosh(dest, at);
-                });
+                SpaceFx.waypointGate(p, dest, at);   // a gate opens in front of you and stays open: step in when you want, others can too
+                p.displayClientMessage(Component.literal("Gate opened to " + c.getString("n") + " - step in.").withStyle(ChatFormatting.LIGHT_PURPLE), true);
             }
             case 2 -> {
                 if (index < 0 || index >= l.size()) break;

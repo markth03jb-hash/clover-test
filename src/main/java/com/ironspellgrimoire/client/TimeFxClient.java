@@ -742,7 +742,7 @@ public final class TimeFxClient {
         for (int i = 0; i < n; i++) {
             // the pages spread from a closed book (all at angle 0) to an even full circle
             double th = spin + TAU * i / n * fold;
-            double lift = 0.10 * fold * Math.cos(th * 2.0 - spin * 2.0);   // a slow, even swell round the ring (no random leaning)
+            double lift = 0.025 * fold * Math.cos(th * 2.0 - spin * 2.0);   // a barely-there swell: the top and bottom edges stay level, no dips
             if (cast >= 0) {                                          // the riffle: a wave runs round the ring
                 double wave = (cast * 0.9 - i * 0.15);
                 if (wave > 0 && wave < Math.PI) lift += Math.sin(wave) * 0.35;
@@ -762,8 +762,23 @@ public final class TimeFxClient {
             quad(s0, m0, m1, s1, col, a);
             quad(m0, e0, e1, m1, col, a);
         }
-        final Vec3 top = c.add(0, Hh + 0.04 * sc, 0);
-        final float o = open, ss = sc;
+        // the spine, and a paper cap over the middle of the top and the bottom so there is no hollow where the pages meet
+        float a2 = Math.min(1F, open * 1.4F);
+        float[] capCol = mul(PAPER, 0.8F), spineCol = mul(INK, 1F);
+        for (int s = 0; s < 2; s++) {
+            double y = s == 0 ? Hh : -Hh;
+            for (int i = 0; i < 24; i++) {
+                double t0 = TAU * i / 24 + spin, t1 = TAU * (i + 1) / 24 + spin;
+                double rc = W * 0.5 * fold;
+                tri(c.add(0, y, 0), c.add(Math.cos(t0) * rc, y, Math.sin(t0) * rc), c.add(Math.cos(t1) * rc, y, Math.sin(t1) * rc), capCol, a2);
+            }
+        }
+        for (int i = 0; i < 8; i++) {
+            double t0 = TAU * i / 8, t1 = TAU * (i + 1) / 8;
+            double rs = 0.025 * sc;
+            quad(c.add(Math.cos(t0) * rs, -Hh, Math.sin(t0) * rs), c.add(Math.cos(t1) * rs, -Hh, Math.sin(t1) * rs),
+                    c.add(Math.cos(t1) * rs, Hh, Math.sin(t1) * rs), c.add(Math.cos(t0) * rs, Hh, Math.sin(t0) * rs), spineCol, a2);
+        }
     }
 
     // ------------------------------------------------------------------ clocks
