@@ -65,7 +65,9 @@ final class HitFx {
         }
         if (heavy) {   // a heavy blow: the screen jolts and a second, wider ring rolls out behind the first
             FxSend.shake(sl, at, Math.min(0.55f, 0.12f + dmg / 60f), 4, 14);
-            AstaFx.later(2, () -> FxSend.wall(sl, pal, at, side, up, 0.4f, 1.6f * s, -180, 180, 0.03f * s, 6, 0, 0));
+            final int fp = pal;
+            final Vec3 fs = side, fu = up;
+            AstaFx.later(2, () -> FxSend.wall(sl, fp, at, fs, fu, 0.4f, 1.6f * s, -180, 180, 0.03f * s, 6, 0, 0));
         }
     }
 }
