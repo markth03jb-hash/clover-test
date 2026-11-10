@@ -72,7 +72,9 @@ public final class ImpactFrames {
             {0xCFFFF0, 0x021C16, 0x3CD4A8, 0xFFE7A0},   // 18 Vetto: fangs
             {0xFFE4F0, 0x2A0E1E, 0xFF8CC6, 0xFFFFFF},   // 19 Charmy: threads of cream
             {0xE6FAFF, 0x040E1C, 0x8CDFF5, 0x3CC8F0},   // 20 Julius
-            {0xE2FFE6, 0x02140A, 0x44F06C, 0xFFFFFF}};  // 21 Jack's green horizon: the same long cuts, in green  // 20 Julius: clock marks closing in, a clock round the hit
+            {0xE2FFE6, 0x02140A, 0x44F06C, 0xFFFFFF},
+            {0xFFD8DC, 0x140003, 0xE0102A, 0xFFF0F0},   // 22 Don Quixote: blood spattering out from the hit
+            {0xFFF6D8, 0x0A0806, 0xF2C04A, 0xFFFFFF}};  // 23 Rien: gold liquid weapons converging  // 21 Jack's green horizon: the same long cuts, in green  // 20 Julius: clock marks closing in, a clock round the hit
 
     public static void start(int ticks, int st, Vec3 where) {
         Minecraft mc = Minecraft.getInstance();
@@ -287,6 +289,38 @@ public final class ImpactFrames {
                 }
                 taper(bb, m, fx, fy, 3F, fx + cr * 0.15F, fy - cr * 0.55F, 0.5F, acc, la);
                 taper(bb, m, fx, fy, 2F, fx + cr * 0.72F, fy + cr * 0.12F, 0.5F, acc, la);
+            }
+            case 22 -> {  // Don Quixote: blood bursting out of the hit - thick streaks that thin to a point, drops flung past them
+                for (int i = 0; i < 40; i++) {
+                    double a = r.nextDouble() * Math.PI * 2;
+                    float len = reach * (0.25F + r.nextFloat() * 0.55F) * (0.6F + 0.4F * smooth(in));
+                    float x0 = fx + (float) Math.cos(a) * reach * 0.04F, y0 = fy + (float) Math.sin(a) * reach * 0.04F;
+                    float x1 = fx + (float) Math.cos(a) * len, y1 = fy + (float) Math.sin(a) * len;
+                    taper(bb, m, x0, y0, 7F + r.nextFloat() * 6F, x1, y1, 0.4F, i % 5 == 0 ? acc : line, la);
+                    float dr = 2F + r.nextFloat() * 4F, dl = len * (1.08F + r.nextFloat() * 0.25F);
+                    float dx = fx + (float) Math.cos(a) * dl, dy = fy + (float) Math.sin(a) * dl;
+                    taper(bb, m, dx - dr, dy, dr * 2F, dx + dr, dy, dr * 2F, line, la);
+                }
+                star(bb, m, fx, fy, Math.min(W, H) * 0.07F, 3F, acc, la);
+            }
+            case 23 -> {  // Rien: liquid-gold weapons of every kind converging on the hit from all sides, a ring where they meet
+                for (int i = 0; i < 18; i++) {
+                    double a = i * Math.PI * 2 / 18 + r.nextFloat() * 0.1;
+                    float out = reach * (0.95F - 0.45F * rush * 0.6F), in0 = reach * 0.12F * (1F + (1F - rush));
+                    float x0 = fx + (float) Math.cos(a) * out, y0 = fy + (float) Math.sin(a) * out;
+                    float x1 = fx + (float) Math.cos(a) * in0, y1 = fy + (float) Math.sin(a) * in0;
+                    taper(bb, m, x0, y0, 1.2F, x1, y1, i % 3 == 0 ? 9F : 5F, i % 2 == 0 ? acc : line, la);
+                    double sa = a + Math.PI / 2;   // a crossguard on every other blade
+                    if (i % 2 == 0) {
+                        float gx = fx + (float) Math.cos(a) * (out * 0.82F), gy = fy + (float) Math.sin(a) * (out * 0.82F);
+                        taper(bb, m, gx - (float) Math.cos(sa) * 10F, gy - (float) Math.sin(sa) * 10F, 3F, gx + (float) Math.cos(sa) * 10F, gy + (float) Math.sin(sa) * 10F, 3F, acc, la);
+                    }
+                }
+                float cr = Math.min(W, H) * 0.12F;
+                for (int j = 0; j < 40; j++) {
+                    double a0 = j * Math.PI * 2 / 40, a1 = (j + 1) * Math.PI * 2 / 40;
+                    taper(bb, m, fx + (float) Math.cos(a0) * cr, fy + (float) Math.sin(a0) * cr, 3F, fx + (float) Math.cos(a1) * cr, fy + (float) Math.sin(a1) * cr, 3F, acc, la);
+                }
             }
             case 12 -> {  // Finral: rings of space closing in on the hit, a gold rim on the innermost
                 for (int q = 0; q < 7; q++) {

@@ -213,6 +213,16 @@ public final class GrimoireMastery {
                 "time_recovery", 2, "chrono_acceleration", 2, "ticking_snare", 2,
                 "time_theft", 3, "hourglass_barrage", 3, "rewind_ward", 3,
                 "echo_of_the_past", 4, "chronostasis_field", 4, "zenith_hour", 5);
+        book(AddonItemRegistry.BLOODFIEND_GRIMOIRE::get, 18,
+                "hardblood_lance", 1, "justice_charge", 1, "sanguine_crescent", 1,
+                "crimson_pact", 2, "hardblood_bow", 2, "thirst", 2,
+                "twin_blood_blades", 3, "blood_fist_barrage", 3, "hardblood_barricade", 3,
+                "hardblood_greatsword", 4, "vampire_mode", 4, "grand_finale", 5);
+        book(AddonItemRegistry.CADUCEUS_GRIMOIRE::get, Fx.GOLD,
+                "caduceus_lash", 1, "gilded_rapier", 1,
+                "molten_volley", 2, "index_lance", 2,
+                "reapers_prescript", 3, "severing_wire", 3, "golden_shell", 3,
+                "hammer_of_judgement", 4, "prescript_received", 4, "furioso", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

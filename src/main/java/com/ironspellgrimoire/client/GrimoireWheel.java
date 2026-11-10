@@ -196,6 +196,24 @@ public final class GrimoireWheel {
             line(bb, m, cx, cy, mn * TAU / 60, 0, cr * 0.78, 1.3, tr[0], tr[1], tr[2], 0.97F * A);
             line(bb, m, cx, cy, sec * TAU / 60, -cr * 0.18, cr * 0.86, 0.6, 1.0F, 1.0F, 1.0F, 0.9F * A);
             ring(bb, m, cx, cy, 0, 2.2, 0, TAU, ac[0], ac[1], ac[2], A, ac[0], ac[1], ac[2], A, 12);
+        } else if (book == 22) {   // Don Quixote: a drop of blood over a crossed lance
+            float[] ac = th.accent;
+            double cr = rIn - 2.0;
+            ring(bb, m, cx, cy, cr - 1.3, cr, 0, TAU, tr[0], tr[1], tr[2], 0.95F * A, tr[0], tr[1], tr[2], 0.95F * A, 40);
+            line(bb, m, cx, cy, TAU * 0.125, -cr * 0.85, cr * 0.85, 1.4, tr[0], tr[1], tr[2], 0.95F * A);
+            double pulse = 1.0 + 0.06 * Math.sin(time * 3.0);
+            disc(bb, m, cx, cy + cr * 0.12, cr * 0.42 * pulse, ac[0], ac[1], ac[2], A);
+            for (int q = 1; q <= 5; q++) disc(bb, m, cx, cy + cr * 0.12 - cr * 0.1 * q, cr * 0.42 * pulse * (1.0 - q * 0.17), ac[0], ac[1], ac[2], A);
+            disc(bb, m, cx - cr * 0.14, cy + cr * 0.02, cr * 0.09, 1.0F, 0.8F, 0.8F, 0.9F * A);
+        } else if (book == 23) {   // Rien: the Caduceus - a gold vial on a chain, its liquid swaying
+            float[] ac = th.accent;
+            double cr = rIn - 2.0;
+            ring(bb, m, cx, cy, cr - 1.3, cr, 0, TAU, tr[0], tr[1], tr[2], 0.95F * A, tr[0], tr[1], tr[2], 0.95F * A, 40);
+            double sw = Math.sin(time * 1.5) * 0.25;
+            for (int i = 0; i < 5; i++) disc(bb, m, cx + Math.sin(sw) * cr * (0.15 * i), cy - cr * 0.8 + cr * 0.15 * i, 1.2, tr[0], tr[1], tr[2], A);
+            double vx = cx + Math.sin(sw) * cr * 0.75, vy = cy + cr * 0.1;
+            disc(bb, m, vx, vy, cr * 0.36, tr[0], tr[1], tr[2], A);
+            disc(bb, m, vx, vy + cr * 0.06, cr * 0.26, ac[0], ac[1], ac[2], A);
         } else
         for (int pass = 0; pass < 2; pass++) {   // the trim colour as an outline first, the leaf over it
             for (int l = 0; l < th.leaves; l++) {
@@ -299,6 +317,10 @@ public final class GrimoireWheel {
             new Theme(c(0x1A0A14), c(0x5A2A48), c(0xFFF0F6), c(0xFF9CCB), c(0x8A3E6A), 3, O_DROPS, M_DOTS, false, 0x1C0C16, 0xFFD6EA),
             // Julius: midnight-blue pages, bright cyan trim, a little clock on every page
             new Theme(c(0x040E1C), c(0x0F3050), c(0xBDF0FF), c(0x3CC8F0), c(0x1A4A70), 3, O_RIVETS, M_NOTCHES, true, 0x05101E, 0xD8F8FF),
+            // Don Quixote (La Manchaland): near-black wine pages, old-gold trim, drops of blood round the ring
+            new Theme(c(0x120204), c(0x3A060C), c(0xD8B060), c(0xE0182A), c(0x6A0A14), 3, O_DROPS, M_NOTCHES, true, 0x140306, 0xFFB0B8),
+            // Rien (the Index): black pages, liquid-gold trim, white rivets like the Index's buttons
+            new Theme(c(0x08080A), c(0x24221E), c(0xF2CC5A), c(0xFFF0C0), c(0x3A3220), 3, O_RIVETS, M_RUNES, true, 0x0A0A0C, 0xFFE8A8),
     };
 
     /** {page inside, page edge, trim, accent, panel, title} as RGB ints, for the grimoire book screen and others. */

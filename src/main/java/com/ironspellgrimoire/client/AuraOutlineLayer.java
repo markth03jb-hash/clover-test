@@ -36,6 +36,8 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             {0.93F, 0.89F, 0.8F},    // 6 bone plates (Marrow Regeneration)
             {0.88F, 0.95F, 1.0F},    // 7 ki (Instinct Guard)
             {0.75F, 0.03F, 0.03F},   // 8 faint demonic (Devil Union)
+            {1.0F, 0.78F, 0.25F},    // 9 liquid gold (Rien's Golden Shell)
+            {0.7F, 0.0F, 0.06F},     // 10 blood (Don Quixote's Vampire Mode)
     };
 
     public AuraOutlineLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
