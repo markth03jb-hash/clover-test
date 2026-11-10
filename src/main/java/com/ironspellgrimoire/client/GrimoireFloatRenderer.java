@@ -99,7 +99,10 @@ public class GrimoireFloatRenderer {
 
    /** Every grimoire of this addon floats open while you cast (Black, Dark, Steel and the themed ones). */
    public static boolean isAddonGrimoire(ItemStack s) {
-      return s != null && !s.isEmpty() && "iron_spell_grimoire".equals(BuiltInRegistries.ITEM.getKey(s.getItem()).getNamespace());
+      if (s == null || s.isEmpty()) return false;
+      // Hardblood (Don Quixote) and the Caduceus (Rien) are powers, not books: nothing floats open when they cast
+      if (s.is(AddonItemRegistry.BLOODFIEND_GRIMOIRE.get()) || s.is(AddonItemRegistry.CADUCEUS_GRIMOIRE.get())) return false;
+      return "iron_spell_grimoire".equals(BuiltInRegistries.ITEM.getKey(s.getItem()).getNamespace());
    }
 
    /** {palette, aura style} per grimoire - see FxRenderer.bookAura. */
