@@ -98,7 +98,7 @@ public class FxRenderer extends FxBase {
       if (worldShape && (p.palette & FxPacket.KEEP_SHAPE) != 0) { p.palette = (byte)(p.palette & 0x1F); keep = true; }
       // wind (Yuno: Tornado Fang, Sylph's Breath, Spirit Dive...) keeps its 3D shape too - it looked best that way
       if (worldShape && !keep && !p.pixelOnly && (p.palette & 0x1F) != 5) p.pixelOnly = true;
-      if (p.shape >= 49 && p.shape <= 57) { TimeFxClient.spawn(p); return; }   // Julius's Time Magic (TimeFxClient)
+      if (p.shape >= 49 && p.shape <= 58) { TimeFxClient.spawn(p); return; }   // Julius's Time Magic (TimeFxClient)
       if (p.shape == 3 && TimeFxClient.kill(p.id)) return;
       if (p.shape == 42) { FxSync.cast(p.id, p.sweep, p.life); return; }
       if (p.shape == 48) { ComboHint.set(p.sweep, p.life); return; }   // combo hint: the spell that finishes a combo pulses on the wheel
@@ -150,6 +150,8 @@ public class FxRenderer extends FxBase {
          }
          return;
       }
+      if (p.shape == 59) { GolemFx.spawn(p); return; }   // the Stone Golem: id, c = its feet, d = which way it faces, r = scale, life
+      if (p.shape == 60) { GolemFx.punch(p); return; }   // one of its punches: id = the golem, c = the mark, sweep = which arm
       if (p.shape == 41) { PixelFx.spawn(p); return; }   // the pixel-sprite effect style (Sky Splitter test)
       if (p.shape == 40) { Cutscene.cinematic(p.life, p.sweep); return; }   // a short cinematic (Equinox)
       if (p.shape == 39) { DarkSmoke.guardFists(p.id, p.life); return; }   // Burning Fists Guard: id = player, life = ticks
@@ -292,6 +294,7 @@ public class FxRenderer extends FxBase {
             TRACK.clear();
             ORBITS.clear();
             WHIPS.clear();
+            GolemFx.GOLEMS.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
@@ -495,6 +498,8 @@ public class FxRenderer extends FxBase {
             WHIPS.removeIf(o -> now > o[1] + o[2] + 4.0);
             for (double[] o : WHIPS) FxShapes.whipsFx(vc, m, n, cam, mc, o, now, pt);
             for (double[] o : ORBITS) FxShapes.orbitFx(vc, m, n, cam, mc, o, now, pt);
+            GolemFx.tick(now);
+            for (GolemFx.Golem g : GolemFx.GOLEMS) GolemFx.draw(vc, m, n, cam, g, now, pt);
             float pulse = 0.75F + 0.25F * (float)Math.sin(now * 0.35);
 
             for (Player p : mc.level.players()) {

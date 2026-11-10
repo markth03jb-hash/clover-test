@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Vetto's Beast Magic - the eight spells of the Beast Grimoire. Spirits of the wild in sea-green and gold: a wolf that
+ * Vetto's Beast Magic - the eight spells of the Beast Grimoire. Spirits of the wild in feral violet and gold: a wolf that
  * runs its prey down, a hawk that dives, a bear's paw, a panther's pounce, a stampede, a coiling serpent, and in the end
  * all of them at once.
  *
@@ -67,7 +67,7 @@ public final class BeastFx {
         ServerLevel sl = p.serverLevel();
         Vec3 dir = flat(p.getLookAngle());
         Vec3 start = p.position().add(0, 0.9, 0).add(dir.scale(1.0));
-        sound(sl, p.position(), SoundEvents.WOLF_GROWL, 1.0f, 1.2f);
+        sound(sl, p.position(), SoundEvents.FOX_SCREECH, 1.0f, 0.6f);
         boolean[] done = {false};
         for (int k = 1; k <= 8; k++) {
             final int kk = k;
@@ -83,7 +83,7 @@ public final class BeastFx {
                     FxSend.spike(sl, B, m.add(0, 1.0, 0.5), new Vec3(0, -1, -0.4), 1.4f, 0.16f, 8, 2, 0);   // the jaws closing
                     FxSend.spike(sl, B, m.add(0, -1.0, 0.5), new Vec3(0, 1, -0.4), 1.4f, 0.16f, 8, 2, 0);
                     Fx.impact(sl, B, m, 1.4f);
-                    sound(sl, m, SoundEvents.FOX_BITE, 1.0f, 0.7f);
+                    sound(sl, m, SoundEvents.PANDA_BITE, 1.0f, 0.8f);
                     sound(sl, m, SoundEvents.PLAYER_ATTACK_CRIT, 0.7f, 1.2f);
                     break;
                 }
@@ -98,7 +98,7 @@ public final class BeastFx {
         LivingEntity t = aimed(p, 28, 20);
         Vec3 target = t != null ? t.position() : Kit.aim(p, 24);
         Vec3 high = target.add(0, 11, 0);
-        sound(sl, p.position(), SoundEvents.PHANTOM_FLAP, 1.0f, 1.2f);
+        sound(sl, p.position(), SoundEvents.ENDER_DRAGON_FLAP, 0.7f, 1.4f);
         Vec3[] prev = {high.add(5, 0, 0)};
         for (int k = 1; k <= 8; k++) {   // one slow circle above
             final int kk = k;
@@ -127,7 +127,7 @@ public final class BeastFx {
                 FxLib.starburst(sl, B, end, UP, 1.4f);
                 FxSend.impactFrame(sl, end, 2, FxSend.FRAME_VETTO, 24);
                 sound(sl, end, SoundEvents.PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
-                sound(sl, end, SoundEvents.PHANTOM_SWOOP, 1.0f, 0.8f);
+                sound(sl, end, SoundEvents.TRIDENT_RIPTIDE_1, 1.0f, 1.6f);
             });
         });
     }
@@ -135,7 +135,7 @@ public final class BeastFx {
     // ================================================================== 3. Bear Swipe
     public static void bearSwipe(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        sound(sl, p.position(), SoundEvents.RAVAGER_ROAR, 0.8f, 1.5f);
+        sound(sl, p.position(), SoundEvents.POLAR_BEAR_WARNING, 1.2f, 0.6f);
         FxSend.ring(sl, B, p.position().add(0, 0.05, 0), 0.3f, 2.2f, 0.06f, 6);
         Moves.claws(p, B, 3, 0.4, 4.2f, 4.0, power * 0.95f, "bear_swipe", 1.1, 3);
         AstaFx.later(8, () -> {   // the paw's print, left on the ground where the claws fell
@@ -156,7 +156,7 @@ public final class BeastFx {
         LivingEntity t = aimed(p, 16, 25);
         Vec3 dir = t != null ? flat(t.position().subtract(p.position())) : flat(p.getLookAngle());
         double dist = t != null ? Math.max(2.0, t.position().distanceTo(p.position()) - 1.3) : 9;
-        sound(sl, p.position(), SoundEvents.CAT_HISS, 1.0f, 0.6f);
+        sound(sl, p.position(), SoundEvents.FOX_AGGRO, 1.0f, 0.5f);
         FxSend.ring(sl, B, p.position().add(0, 0.05, 0), 0.2f, 2.0f, 0.06f, 6);
         AstaFx.later(3, () -> {
             if (!alive(p)) return;
@@ -185,8 +185,8 @@ public final class BeastFx {
     public static void stampede(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         Vec3 dir = flat(p.getLookAngle()), rt = rightOf(dir);
-        sound(sl, p.position(), SoundEvents.HORSE_GALLOP, 1.4f, 0.7f);
-        sound(sl, p.position(), SoundEvents.RAVAGER_ROAR, 0.8f, 1.1f);
+        sound(sl, p.position(), SoundEvents.HOGLIN_ANGRY, 1.4f, 0.6f);
+        sound(sl, p.position(), SoundEvents.LLAMA_ANGRY, 1.2f, 0.6f);
         Moves.front(p, B, dir, 14, 1.7, 3.0f, power * 0.9f, "stampede", 1.3, f -> {
             for (int i = -2; i <= 2; i++) {   // five beasts abreast, each a different kind
                 double bob = Math.abs(Math.sin(f.x * 1.1 + f.z * 0.9 + i)) * 0.5;
@@ -202,7 +202,7 @@ public final class BeastFx {
         ServerLevel sl = p.serverLevel();
         Vec3 c = Kit.aim(p, 20);
         FxSend.ring(sl, B, c.add(0, 0.1, 0), 0.3f, 5.0f, 0.06f, 12);
-        sound(sl, c, SoundEvents.CAT_HISS, 1.0f, 0.5f);
+        sound(sl, c, SoundEvents.SPIDER_AMBIENT, 0.8f, 0.6f);
         AstaFx.later(4, () -> {
             if (!alive(p)) return;
             for (LivingEntity t : Kit.near(sl, p, c.add(0, 1, 0), 5.0)) {
@@ -232,7 +232,7 @@ public final class BeastFx {
                     });
                 }
             }
-            sound(sl, c, SoundEvents.SLIME_SQUISH, 1.0f, 0.6f);
+            sound(sl, c, SoundEvents.HONEY_BLOCK_SLIDE, 1.0f, 0.6f);
         });
     }
 
@@ -243,7 +243,7 @@ public final class BeastFx {
         FxSend.ring(sl, B, p.position().add(0, 0.05, 0), 0.3f, 3.2f, 0.1f, 10);
         spirit(sl, p.position().add(0, 1.0, 0).add(flat(p.getLookAngle()).scale(1.6)), flat(p.getLookAngle()).scale(-1), 0.9f, 0, 14);   // the wolf rears round you
         AstaFx.later(12, () -> { if (alive(p)) { Fx.flash(sl, p.position().add(0, 1, 0), 1.6f); FxLib.halo(sl, B, p.position().add(0, p.getBbHeight() + 0.4, 0), 0.9f); } });
-        sound(sl, p.position(), SoundEvents.WOLF_HOWL, 1.2f, 0.9f);
+        sound(sl, p.position(), SoundEvents.WARDEN_HEARTBEAT, 1.4f, 1.0f);
         Moves.mode(p, "beast_instinct", 400, 3, pl -> {
             ServerLevel s2 = pl.serverLevel();
             long now = s2.getGameTime();

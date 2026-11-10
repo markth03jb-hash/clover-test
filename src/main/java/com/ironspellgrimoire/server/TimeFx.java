@@ -97,6 +97,28 @@ public final class TimeFx {
         return p.id;
     }
 
+    /** A realm on the ground (TimeFxClient shape 58): style 0 the Chronostasis Field, 1 Zenith Hour, 2 its Max form. */
+    static int realm(ServerLevel sl, Vec3 c, float r, float h, int life, int style, int lockAt, Entity follow) {
+        FxPacket p = new FxPacket();
+        p.shape = 58; p.id = FxSend.nextId(); p.c = c; p.r = r; p.r2 = h; p.life = life; p.h = style; p.sweep = lockAt;
+        if (follow != null) p.v = new Vec3(follow.getId(), 1, 0);
+        FxSend.sendNear(sl, c, p);
+        return p.id;
+    }
+
+    /** The Max form of any Time spell: only when the store is full, and it spends all ten seconds. */
+    private static boolean max(ServerPlayer p, boolean echo, String name) {
+        if (echo || TimeStop.stored(p) < TimeStop.MAX_STORED) return false;
+        TimeStop.spend(p, TimeStop.MAX_STORED);
+        ServerLevel sl = p.serverLevel();
+        p.displayClientMessage(Component.literal("MAX  -  " + name).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), true);
+        FxSend.ring(sl, G, p.position().add(0, 0.1, 0), 0.3f, 3.5f, 0.1f, 10);
+        Fx.flash(sl, p.position().add(0, 1, 0), 1.2f);
+        sound(sl, p.position(), SoundEvents.BEACON_POWER_SELECT, 1.0f, 1.9f);
+        sound(sl, p.position(), SoundEvents.BELL_BLOCK, 0.8f, 1.8f);
+        return true;
+    }
+
     static void freezeColumn(ServerLevel sl, int id, Vec3 near, int ticks) {
         FxPacket p = new FxPacket();
         p.shape = 50; p.id = id; p.life = ticks;
@@ -240,18 +262,18 @@ public final class TimeFx {
 
     private static void bolt(ServerPlayer p, Src s, float power, boolean echo) {
         ServerLevel sl = p.serverLevel();
-        boolean two = !echo && TimeStop.spend(p, 3);
+        boolean twelve = max(p, echo, "Twelve Hands");
         Vec3 hand = s.hand();
         clock(sl, hand.add(s.look().scale(0.2)), s.look(), UP, 0.32f, 9, 2, 0.6f);   // a small clock spins up in the hand
         sound(sl, hand, SoundEvents.COMPARATOR_CLICK, 0.8f, 1.7f);
         AstaFx.later(6, () -> {   // the flick
             if (!alive(p)) return;
             Vec3 from = s.hand(), dir = s.look();
-            int n = two ? 2 : 1;
+            int n = twelve ? 12 : 1;
             for (int i = 0; i < n; i++) {
-                Vec3 d = n == 1 ? dir : rotY(dir, (i == 0 ? -1 : 1) * 0.07);
-                shoot(p, from, d.scale(1.7), 20, 0.55, 1.15f, (t, at) -> {
-                    hit(p, t, power, "clock_hand_bolt");
+                Vec3 d = n == 1 ? dir : rotY(dir, -0.5 + i / 11.0).add(0, ((i % 3) - 1) * 0.07, 0).normalize();
+                shoot(p, from, d.scale(1.7), 24, 0.55, twelve ? 1.3f : 1.15f, (t, at) -> {
+                    hit(p, t, twelve ? power * 0.9f : power, "clock_hand_bolt");
                     Moves.slow(t, 40, -0.35);
                     BOLTED.put(t.getUUID(), sl.getGameTime());
                     clock(sl, at, s.eye().subtract(at), UP, 0.6f, 12, 2, -0.5f);   // its time catches for a moment
@@ -278,7 +300,8 @@ public final class TimeFx {
         int ticks = 30;
         boolean between = "time_skip".equals(prev);
         if (between) ticks *= 2;                                              // Between Seconds
-        if (!echo && TimeStop.spend(p, 2)) ticks += 20;
+        final boolean frozenMoment = max(p, echo, "Frozen Moment");
+        if (frozenMoment) ticks = 80;
         if (echo) ticks = 20;
         sound(sl, s.feet(), SoundEvents.COMPARATOR_CLICK, 1.0f, 1.2f);
         if (t == null) {
@@ -298,6 +321,18 @@ public final class TimeFx {
             boolean stopped = TimeStop.freeze(p, tt, T, false, shatter ? () -> shatter(p, tt, power) : null);
             freezeColumn(sl, cage, tt.position(), stopped ? T : 10);
             hit(p, tt, power * 0.5f, "time_stop_point");
+            if (frozenMoment) {   // every foe near it is caught in the same stopped moment
+                for (LivingEntity o : Kit.near(sl, p, mid(tt), 8)) {
+                    if (o == tt) continue;
+                    float r2 = (float) (o.getBbWidth() * 0.75 + 0.4), h2 = o.getBbHeight() + 0.45f;
+                    int c2 = column(sl, o.position(), r2, h2, T + 14, 6, 2, o, 1.0f, 0.02f);
+                    boolean st = TimeStop.freeze(p, o, T, false, null);
+                    freezeColumn(sl, c2, o.position(), st ? T : 10);
+                    hit(p, o, power * 0.4f, "time_stop_point");
+                    FxSend.trail(sl, G, mid(tt), mid(o), 0.04f, 8);
+                }
+                realm(sl, tt.position(), 8f, 6f, T + 8, 0, 0, null);
+            }
             FxSend.impactFrame(sl, mid(tt), 2, FxSend.FRAME_JULIUS, 24);
             sound(sl, mid(tt), SoundEvents.BEACON_DEACTIVATE, 0.9f, 1.6f);
             sound(sl, mid(tt), SoundEvents.AMETHYST_BLOCK_RESONATE, 1.0f, 0.8f);
@@ -334,20 +369,34 @@ public final class TimeFx {
     private static void skip(ServerPlayer p, Src s, float power, boolean echo) {
         ServerLevel sl = p.serverLevel();
         Vec3 start = p.position();
+        final boolean longSkip = max(p, echo, "Between Seconds");
         ghost(sl, p, start, p.getYRot(), 30, 0, 3, 0.65f);   // your golden silhouette, left behind mid-stride
         clock(sl, start.add(0, 0.05, 0), UP, flat(s.look()), 0.9f, 12, 2, 1.2f);
         AstaFx.later(3, () -> {
             if (!alive(p)) return;
             Vec3 d = flat(s.look());
             Vec3 dest = null;
-            for (double dist : new double[]{8, 6, 4}) {
+            for (double dist : longSkip ? new double[]{26, 20, 14, 8} : new double[]{8, 6, 4}) {
                 dest = SpaceFx.safe(sl, s.feet().add(d.scale(dist)), p);
                 if (dest != null) break;
             }
             if (dest == null) return;
             Vec3 from = p.position();
             SpaceFx.move(p, dest, p.getYRot());
-            p.invulnerableTime = Math.max(p.invulnerableTime, 10);
+            p.invulnerableTime = Math.max(p.invulnerableTime, longSkip ? 40 : 10);
+            if (longSkip) {   // the whole stretch you skipped is left cut: everything on it is stopped for a breath, and your afterimages line it
+                Vec3 seg = dest.subtract(from);
+                for (LivingEntity e : Kit.near(sl, p, from.add(seg.scale(0.5)).add(0, 1, 0), seg.length() * 0.5 + 3)) {
+                    Vec3 m = mid(e);
+                    double f = Math.max(0, Math.min(1, m.subtract(from).dot(seg) / Math.max(1e-4, seg.lengthSqr())));
+                    if (from.add(seg.scale(f)).add(0, 1, 0).distanceTo(m) > 2.6) continue;
+                    hit(p, e, power * 1.1f, "time_skip");
+                    TimeStop.freeze(p, e, 30, false, null);
+                    bubble(sl, e, 30);
+                }
+                for (int i = 1; i < 6; i++) ghost(sl, p, from.add(seg.scale(i / 6.0)), p.getYRot(), 24 - i * 2, 0, 3, 0.5f - i * 0.05f);
+                realm(sl, dest, 6f, 4f, 26, 0, 0, null);
+            }
             FxSend.trail(sl, G, from.add(0, 1, 0), dest.add(0, 1, 0), 0.05f, 6);
             FxSend.trail(sl, S, from.add(0, 1, 0), dest.add(0, 1, 0), 0.015f, 4);
             column(sl, dest, 0.9f, 2.3f, 6, 2, 2, null, 1.6f, 0.15f);   // the pages you skipped flutter apart round you
@@ -361,7 +410,7 @@ public final class TimeFx {
     public static void timeRecovery(ServerPlayer p, float power) {
         cast(p, "time_recovery");
         ServerLevel sl = p.serverLevel();
-        boolean best = TimeStop.spend(p, 5);
+        boolean best = max(p, false, "Full Rewind");
         List<double[]> path = TimeStop.path(p, best ? 120 : 80);
         clock(sl, p.position().add(0, 0.05, 0), UP, flat(p.getLookAngle()), 1.7f, 26, 3, -0.35f);
         screen(p, 22, 1);
@@ -379,7 +428,8 @@ public final class TimeFx {
             if (best) { for (double[] q : path) target = Math.max(target, q[1]); }
             else { double[] q = TimeStop.past(p, 80); if (q != null) target = q[1]; }
             float before = p.getHealth();
-            if (target > before) p.setHealth((float) Math.min(p.getMaxHealth(), target));
+            if (best) p.setHealth(p.getMaxHealth());
+            else if (target > before) p.setHealth((float) Math.min(p.getMaxHealth(), target));
             p.clearFire();
             p.fallDistance = 0;
             column(sl, p.position(), 1.15f, 2.4f, 14, 4, 2, p, 1.2f, -0.12f);
@@ -396,10 +446,12 @@ public final class TimeFx {
     public static void chronoAcceleration(ServerPlayer p, float power) {
         String prev = cast(p, "chrono_acceleration");
         ServerLevel sl = p.serverLevel();
-        final int T = 120;
+        final boolean over = max(p, false, "Overclock");
+        final int T = over ? 300 : 120;
         AstaFx.later(7, () -> {
             if (!alive(p)) return;
-            Moves.stance(p, 0, 0, 0.45, 0, 0.4, T);
+            Moves.stance(p, 0, 0, over ? 0.9 : 0.45, 0, over ? 0.8 : 0.4, T);
+            if (over) realm(sl, p.position(), 5f, 4f, T, 0, 0, p);
             clock(sl, p.position().add(0, 0.05, 0), UP, flat(p.getLookAngle()), 1.4f, 14, 2, 1.6f);
             FxSend.ring(sl, G, p.position().add(0, 0.1, 0), 0.3f, 3.0f, 0.05f, 8);
             sound(sl, p.position(), SoundEvents.BEACON_POWER_SELECT, 0.9f, 1.8f);
@@ -414,7 +466,7 @@ public final class TimeFx {
                 final int tt = t;
                 AstaFx.later(t, () -> {
                     if (!alive(p)) return;
-                    hasten(p, 1, tt % 10 == 0);
+                    hasten(p, over ? 2 : 1, tt % 10 == 0);
                     if (tt % 3 == 0 && p.getDeltaMovement().horizontalDistanceSqr() > 0.004)
                         ghost(sl, p, p.position(), p.getYRot(), 8, 0, 3, 0.32f);
                 });
@@ -432,7 +484,8 @@ public final class TimeFx {
     private static void snare(ServerPlayer p, Src s, float power, boolean echo) {
         ServerLevel sl = p.serverLevel();
         final int STEP = 15;
-        final float R = echo ? 2.0f : 2.6f;
+        final boolean big = max(p, echo, "Stopped Hour");
+        final float R = big ? 5.0f : echo ? 2.0f : 2.6f;
         AstaFx.later(7, () -> {
             if (!alive(p)) return;
             Vec3 c = groundAt(sl, s.aim(sl, p, 18)).add(0, 0.04, 0);
@@ -452,8 +505,8 @@ public final class TimeFx {
                 FxSend.impactFrame(sl, c, 2, FxSend.FRAME_JULIUS, 20);
                 for (LivingEntity e : Kit.near(sl, p, c.add(0, 0.8, 0), R + 0.3)) {
                     hit(p, e, power, "ticking_snare");
-                    TimeStop.freeze(p, e, echo ? 25 : 40, false, null);
-                    bubble(sl, e, echo ? 25 : 40);
+                    TimeStop.freeze(p, e, big ? 90 : echo ? 25 : 40, false, null);
+                    bubble(sl, e, big ? 90 : echo ? 25 : 40);
                 }
                 Fx.flash(sl, c.add(0, 0.5, 0), 1.4f);
             });
@@ -472,7 +525,8 @@ public final class TimeFx {
         ServerLevel sl = p.serverLevel();
         AstaFx.later(5, () -> {   // the reach: threads of gold to everyone ahead
             if (!alive(p)) return;
-            List<LivingEntity> ts = cone(sl, p, s, 11, 34);
+            final boolean all = max(p, echo, "Harvest of Hours");
+            List<LivingEntity> ts = all ? cone(sl, p, s, 20, 180) : cone(sl, p, s, 11, 34);
             Vec3 h = s.hand();
             for (LivingEntity t : ts) {
                 FxSend.trail(sl, G, h, mid(t), 0.035f, 8);
@@ -493,7 +547,7 @@ public final class TimeFx {
                     got++;
                 }
                 if (got > 0) {
-                    if (!echo) TimeStop.addStored(p, got * 2);
+                    if (!echo) TimeStop.addStored(p, got * (all ? 3 : 2));
                     STOLEN.put(p.getUUID(), got * 2);
                     Fx.flash(sl, h2, 0.6f);
                     sound(sl, h2, SoundEvents.TRIDENT_RETURN, 0.9f, 1.6f);
@@ -513,15 +567,16 @@ public final class TimeFx {
         ServerLevel sl = p.serverLevel();
         LivingEntity t = aimed(sl, p, s, 28, 16);
         Vec3 c = groundAt(sl, t != null ? t.position() : s.aim(sl, p, 24));
-        int n = echo ? 6 : TimeStop.spend(p, 4) ? 18 : 12;
+        final boolean storm = max(p, echo, "Hour of Hands");
+        int n = echo ? 6 : storm ? 40 : 12;
         Vec3 top = c.add(0, 7.5, 0);
-        int clk = clock(sl, top, new Vec3(0, -1, 0), flat(s.look()), 3.0f, 12 + n * 2 + 8, 0, 0.25f);   // a clock opens over them
+        int clk = clock(sl, top, new Vec3(0, -1, 0), flat(s.look()), storm ? 5.5f : 3.0f, 12 + n * 2 + 8, 0, 0.25f);   // a clock opens over them
         sound(sl, top, SoundEvents.BELL_RESONATE, 0.8f, 1.2f);
         Random r = new Random(sl.getGameTime() ^ p.getId());
         for (int i = 0; i < n; i++) {
             final int ii = i;
             double a = TAU * i / n + r.nextDouble() * 0.3;
-            double ra = Math.sqrt(r.nextDouble()) * 3.4, ta = r.nextDouble() * TAU;
+            double ra = Math.sqrt(r.nextDouble()) * (storm ? 6.0 : 3.4), ta = r.nextDouble() * TAU;
             Vec3 from = top.add(Math.cos(a) * 2.6, 0, Math.sin(a) * 2.6);
             Vec3 land = groundAt(sl, c.add(Math.cos(ta) * ra, 0, Math.sin(ta) * ra));
             Vec3 vel = land.subtract(from).scale(1 / 6.0);
@@ -550,7 +605,8 @@ public final class TimeFx {
     public static void rewindWard(ServerPlayer p, float power) {
         cast(p, "rewind_ward");
         ServerLevel sl = p.serverLevel();
-        final int T = 60;
+        final boolean deep = max(p, false, "Unbroken Hour");
+        final int T = deep ? 140 : 60;
         AstaFx.later(6, () -> {
             if (!alive(p)) return;
             TimeStop.ward(p, T);
@@ -563,7 +619,7 @@ public final class TimeFx {
             if (!alive(p)) return;
             float back = TimeStop.endWard(p);
             if (back <= 0.05f) return;
-            p.heal(back);
+            p.heal(deep ? back * 2f : back);
             screen(p, 10, 1);
             FxSend.ring(sl, G, p.position().add(0, 0.05, 0), 2.4f, 0.2f, 0.06f, 10);   // the ring rolls back in
             Fx.flash(sl, p.position().add(0, 1, 0), 1.0f);
@@ -586,6 +642,7 @@ public final class TimeFx {
         ServerLevel sl = p.serverLevel();
         final Src s = Src.of(p);
         final Last last = LAST.get(p.getUUID());
+        final boolean twice = max(p, false, "Twin Echo");
         AstaFx.later(9, () -> {
             if (!alive(p)) return;
             ghost(sl, p, s.feet(), s.yaw(), 48, 1, 1, 0.75f);   // you, left behind in the moment
@@ -599,7 +656,8 @@ public final class TimeFx {
             FxSend.trail(sl, G, s.feet().add(0, 1, 0), p.position().add(0, 1, 0), 0.025f, 8);   // the thread between you and it
             sound(sl, s.feet(), SoundEvents.AMETHYST_BLOCK_CHIME, 1.0f, 0.9f);
             if (last != null) {
-                last.op().run(p, s, last.power() * 0.5f, true);
+                last.op().run(p, s, last.power() * (twice ? 1.0f : 0.5f), true);
+                if (twice) AstaFx.later(16, () -> { if (alive(p)) last.op().run(p, s, last.power(), true); });
             } else {
                 for (LivingEntity e : Kit.near(sl, p, s.feet().add(0, 1, 0), 3.5)) { Moves.slow(e, 60, -0.4); hit(p, e, power * 0.4f, "echo_of_the_past"); }
                 FxSend.ring(sl, G, s.feet().add(0, 0.05, 0), 0.3f, 3.5f, 0.05f, 8);
@@ -611,12 +669,16 @@ public final class TimeFx {
     public static void chronostasisField(ServerPlayer p, float power) {
         cast(p, MODE);
         ServerLevel sl = p.serverLevel();
-        final int T = 300;
-        final double R = 12;
+        final boolean over = max(p, false, "Frozen Domain");
+        final int T = over ? 420 : 300;
+        final double R = over ? 20 : 12;
         AstaFx.later(12, () -> {
             if (!alive(p)) return;
-            int col = column(sl, p.position(), (float) R, 7f, T, 10, 0, p, 0.6f, 0.004f);
+            int realm = realm(sl, p.position(), (float) R, over ? 12f : 9f, T, 0, 0, p);
+            int col = column(sl, p.position(), (float) R * 0.35f, over ? 9f : 6f, T, 10, over ? 1 : 0, p, 0.6f, 0.004f);
+            FxSend.ring(sl, G, p.position().add(0, 0.1, 0), 0.5f, (float) R, 0.12f, 14);
             FxSend.impactFrame(sl, p.position().add(0, 1, 0), 2, FxSend.FRAME_JULIUS, 28);
+            Fx.flash(sl, p.position().add(0, 1, 0), 1.6f);
             sound(sl, p.position(), SoundEvents.BEACON_ACTIVATE, 1.0f, 0.7f);
             sound(sl, p.position(), SoundEvents.BELL_RESONATE, 0.7f, 1.0f);
             final long until = sl.getGameTime() + T;
@@ -624,17 +686,17 @@ public final class TimeFx {
                 long now = sl.getGameTime();
                 if (now > until) return;
                 Vec3 c = pl.position();
-                hasten(pl, 1, now % 10 == 0);                    // your cooldowns run twice as fast
+                hasten(pl, over ? 2 : 1, now % 10 == 0);         // your cooldowns run twice as fast (three times with Max)
                 if (now % 10 == 0) {
-                    for (LivingEntity e : Kit.near(sl, pl, c.add(0, 1, 0), R)) Moves.slow(e, 14, -0.65);   // foes crawl
+                    for (LivingEntity e : Kit.near(sl, pl, c.add(0, 1, 0), R)) Moves.slow(e, 14, over ? -0.9 : -0.65);   // foes crawl
                     TimeStop.freezeShots(sl, c.add(0, 1, 0), R, 12, pl);                                     // arrows hang
                 }
-                if (now % 40 == 0) for (LivingEntity e : Kit.near(sl, pl, c.add(0, 1, 0), R)) {
-                    hit(pl, e, power * 0.5f, MODE);
+                if (now % (over ? 20 : 40) == 0) for (LivingEntity e : Kit.near(sl, pl, c.add(0, 1, 0), R)) {
+                    hit(pl, e, power * (over ? 0.45f : 0.5f), MODE);
                     clock(sl, mid(e), c.add(0, 1.5, 0).subtract(mid(e)), UP, 0.5f, 12, 3, -0.6f);
                 }
             });
-            AstaFx.later(T, () -> FxSend.kill(sl, col, p.position()));
+            AstaFx.later(T, () -> { FxSend.kill(sl, col, p.position()); FxSend.kill(sl, realm, p.position()); });
         });
     }
 
@@ -647,17 +709,22 @@ public final class TimeFx {
 
     /** Zenith Hour and Eternal Sovereign share this: the column, the clock in the sky, time stopping, time resuming. */
     private static void stopTheWorld(ServerPlayer p, float power, boolean sovereign) {
+        final boolean over = !sovereign && max(p, false, "Zenith of Hours");
         ServerLevel sl = p.serverLevel();
         final Vec3 c = p.position();
-        final float R = sovereign ? 16f : 15f, H = sovereign ? 28f : 14f;
-        final int STOP = sovereign ? 120 : 80, SNAP = 18;
+        final float R = sovereign ? 34f : over ? 38f : 28f, H = sovereign ? 34f : over ? 30f : 24f;
+        final int STOP = sovereign ? 140 : over ? 130 : 90, SNAP = 24;
         final Vec3 fl = flat(p.getLookAngle());
-        final int col = column(sl, c, R, H, SNAP + STOP + 4, 12, sovereign ? 1 : 0, null, 0.8f, 0.003f);
-        sound(sl, c, SoundEvents.BEACON_POWER_SELECT, 1.2f, 0.5f);
-        AstaFx.later(6, () -> {   // the great clock opens in the sky
+        final boolean big = sovereign || over;
+        final int col = column(sl, c, R * 0.55f, H, SNAP + STOP + 4, 14, big ? 1 : 0, null, 0.8f, 0.003f);
+        final int realm = realm(sl, c, R, H, SNAP + STOP + 4, big ? 2 : 1, SNAP, null);
+        sound(sl, c, SoundEvents.BEACON_POWER_SELECT, 1.4f, 0.5f);
+        FxSend.shake(sl, c, 0.35f, 20, R + 20);
+        for (int i = 0; i < 4; i++) AstaFx.later(i * 5, () -> sound(sl, c, SoundEvents.COMPARATOR_CLICK, 1.4f, 0.5f + 0.1f * 0));
+        AstaFx.later(6, () -> {   // the great clock opens in the sky, as wide as the field beneath it
             if (!alive(p)) return;
-            clock(sl, c.add(0, H + 3, 0), new Vec3(0, -1, 0), fl, sovereign ? 10f : 8f, SNAP + STOP + 4, 0, 0.18f, 0, 0, SNAP - 6, STOP, null, 0);
-            sound(sl, c, SoundEvents.BELL_RESONATE, 1.4f, 0.6f);
+            clock(sl, c.add(0, H * 1.5 + 2, 0), new Vec3(0, -1, 0), fl, R * (sovereign ? 0.6f : 0.52f), SNAP + STOP + 4, 0, 0.18f, 0, 0, SNAP - 6, STOP, null, 0);
+            sound(sl, c, SoundEvents.BELL_RESONATE, 1.6f, 0.5f);
         });
         if (sovereign) AstaFx.later(8, () -> tower(p, c, fl, SNAP + STOP));
         AstaFx.later(SNAP, () -> {   // the snap of his fingers: time stops
@@ -666,15 +733,17 @@ public final class TimeFx {
             int stopped = 0;
             for (LivingEntity e : Kit.near(sl, p, c.add(0, 1, 0), R)) if (TimeStop.freeze(p, e, STOP, true, null)) stopped++;
             TimeStop.freezeShots(sl, c.add(0, 2, 0), R + 2, STOP, p);
-            screenNear(sl, c, R + 4, STOP, 0);
-            FxSend.impactFrame(sl, c.add(0, 1, 0), 4, FxSend.FRAME_JULIUS, R + 24);
-            FxSend.shake(sl, c, 0.6f, 6, R + 20);
-            sound(sl, c, SoundEvents.BEACON_DEACTIVATE, 1.6f, 0.5f);
-            sound(sl, c, SoundEvents.BELL_BLOCK, 1.6f, 0.5f);
-            sound(sl, c, SoundEvents.AMETHYST_BLOCK_RESONATE, 1.4f, 0.5f);
-            p.displayClientMessage(Component.literal(sovereign ? "Eternal Sovereign" : "Zenith Hour").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), true);
+            screenNear(sl, c, R + 8, STOP, 0);
+            FxSend.impactFrame(sl, c.add(0, 1, 0), 4, FxSend.FRAME_JULIUS, R + 28);
+            FxSend.shake(sl, c, 1.1f, 12, R + 24);
+            FxSend.ring(sl, G, c.add(0, 0.1, 0), 1f, R, 0.2f, 16);
+            sound(sl, c, SoundEvents.BEACON_DEACTIVATE, 1.8f, 0.5f);
+            sound(sl, c, SoundEvents.BELL_BLOCK, 1.8f, 0.5f);
+            sound(sl, c, SoundEvents.AMETHYST_BLOCK_RESONATE, 1.6f, 0.5f);
+            sound(sl, c, SoundEvents.GENERIC_EXPLODE, 0.6f, 0.4f);
+            p.displayClientMessage(Component.literal(sovereign ? "Eternal Sovereign" : over ? "Zenith of Hours" : "Zenith Hour").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), true);
             if (stopped == 0) Fx.flash(sl, c.add(0, 1, 0), 2f);
-            if (sovereign) for (int i = 0; i < 12; i++) {   // twelve giant clock hands strike the stopped field, one by one
+            if (big) for (int i = 0; i < 12; i++) {   // twelve giant clock hands strike the stopped field, one by one
                 final int ii = i;
                 AstaFx.later(14 + i * 5, () -> giantHand(p, c, R, power, ii));
             }
@@ -682,16 +751,18 @@ public final class TimeFx {
         AstaFx.later(SNAP + STOP, () -> {   // time starts again: every held blow lands, the pages scatter
             if (!alive(p)) return;
             FxSend.kill(sl, col, c);
+            FxSend.kill(sl, realm, c);
             for (LivingEntity e : Kit.near(sl, p, c.add(0, 1, 0), R + 2)) {
-                hit(p, e, power * (sovereign ? 0.8f : 0.5f), "zenith_hour");
-                Kit.push(e, mid(e).subtract(c), 0.5, 0.25);
+                hit(p, e, power * (sovereign ? 0.8f : over ? 0.7f : 0.5f), "zenith_hour");
+                Kit.push(e, mid(e).subtract(c), 0.7, 0.3);
             }
-            FxSend.ring(sl, G, c.add(0, 0.1, 0), 0.5f, R, 0.1f, 12);
-            FxSend.impactFrame(sl, c.add(0, 1, 0), 3, FxSend.FRAME_JULIUS, R + 24);
-            FxSend.shake(sl, c, 0.8f, 10, R + 20);
-            sound(sl, c, SoundEvents.BELL_BLOCK, 1.8f, 0.7f);
-            AstaFx.later(4, () -> sound(sl, c, SoundEvents.BELL_BLOCK, 1.4f, 0.5f));
-            sound(sl, c, SoundEvents.GENERIC_EXPLODE, 0.8f, 1.4f);
+            FxSend.ring(sl, G, c.add(0, 0.1, 0), 0.5f, R, 0.14f, 14);
+            FxSend.ring(sl, S, c.add(0, 0.2, 0), 0.3f, R * 0.7f, 0.08f, 10);
+            FxSend.impactFrame(sl, c.add(0, 1, 0), 3, FxSend.FRAME_JULIUS, R + 28);
+            FxSend.shake(sl, c, 1.2f, 14, R + 24);
+            sound(sl, c, SoundEvents.BELL_BLOCK, 2.0f, 0.7f);
+            AstaFx.later(4, () -> sound(sl, c, SoundEvents.BELL_BLOCK, 1.6f, 0.5f));
+            sound(sl, c, SoundEvents.GENERIC_EXPLODE, 1.0f, 1.2f);
             if (sovereign) {   // and you are rewound to your best
                 p.setHealth(p.getMaxHealth());
                 p.clearFire();

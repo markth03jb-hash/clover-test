@@ -141,7 +141,7 @@ public final class ModeHudOverlay {
             case "world_tree_mantle" -> 0xFF6BE05A;
             case "ripper_frenzy" -> 0xFFFF4458;
             case "bedrock_armor" -> 0xFFC8A064;
-            case "beast_instinct" -> 0xFF4DDCB0;
+            case "beast_instinct" -> 0xFFC060FF;
             case "nean_armor" -> 0xFFFFB4DC;
             case "instinct_guard" -> 0xFFD8F0FF;
             case "chronostasis_field" -> 0xFF6BE3FF;
