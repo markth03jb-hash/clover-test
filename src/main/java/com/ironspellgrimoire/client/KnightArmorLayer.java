@@ -57,8 +57,6 @@ public class KnightArmorLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
                     r.addLayer(new AuraOutlineLayer(r));
                     r.addLayer(new FistFlameLayer(r));
                     r.addLayer(new BoneBladeLayer(r));
-                    r.addLayer(new LimbusWeaponLayer(r));
-                    r.addLayer(new VampireLayer(r));
                 }
             }
         }

@@ -63,7 +63,7 @@ abstract class FxBase {
       {0.25F, 0.04F, 0.0F},    // 22 flame spirit
       {0.22F, 0.12F, 0.0F},    // 23 lion's flame
       {0.03F, 0.12F, 0.04F},   // 24 world tree
-      {0.18F, 0.02F, 0.04F},   // 25 ripper
+      {0.02F, 0.14F, 0.05F},   // 25 ripper (Jack): deep green
       {0.2F, 0.13F, 0.06F},    // 26 earth
       {0.1F, 0.03F, 0.18F},    // 27 beast: deep violet
       {0.55F, 0.5F, 0.55F},    // 28 cotton
@@ -91,7 +91,7 @@ abstract class FxBase {
       {1.0F, 0.38F, 0.1F},     // 22 flame spirit rim: vermilion
       {1.0F, 0.72F, 0.18F},    // 23 lion's flame: gold-orange
       {0.45F, 0.95F, 0.38F},   // 24 world tree: living green
-      {1.0F, 0.3F, 0.36F},     // 25 ripper: blood-red edge
+      {0.36F, 1.0F, 0.48F},    // 25 ripper: vivid green edge
       {0.86F, 0.64F, 0.36F},   // 26 earth: ochre
       {0.78F, 0.38F, 1.0F},    // 27 beast: feral violet
       {1.0F, 0.97F, 0.99F},    // 28 cotton: clean white

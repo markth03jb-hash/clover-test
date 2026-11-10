@@ -183,11 +183,6 @@ public final class GrimoireMastery {
                 "flame_leap", 2, "roaring_burst", 2,
                 "pride_barrage", 3, "prowl_dash", 3,
                 "mane_blaze", 4, "king_lion_roar", 5);
-        book(AddonItemRegistry.WORLD_TREE_GRIMOIRE::get, Fx.TREE,
-                "thorn_bolt", 1, "vine_lash", 1,
-                "root_snare", 2, "leaf_storm", 2,
-                "verdant_bloom", 3, "treant_guardian", 3,
-                "world_tree_mantle", 4, "world_tree_judgement", 5);
         book(AddonItemRegistry.SLASH_GRIMOIRE::get, Fx.RIPPER,
                 "phantom_slash", 1, "crescent_cut", 1,
                 "shadow_step_slash", 2, "thousand_cuts", 2,
@@ -198,31 +193,11 @@ public final class GrimoireMastery {
                 "earth_wall", 2, "boulder_toss", 2,
                 "quake_stomp", 3, "stone_golem", 3,
                 "bedrock_armor", 4, "mountain_fall", 5);
-        book(AddonItemRegistry.BEAST_GRIMOIRE::get, Fx.BEAST,
-                "wolf_fang", 1, "hawk_dive", 1,
-                "bear_swipe", 2, "panther_pounce", 2,
-                "stampede", 3, "serpent_snare", 3,
-                "beast_instinct", 4, "primal_king", 5);
-        book(AddonItemRegistry.COTTON_GRIMOIRE::get, Fx.COTTON,
-                "cotton_ball", 1, "cotton_net", 1,
-                "neans_charge", 2, "cream_puff_barrage", 2,
-                "sweet_feast", 3, "cotton_cloud", 3,
-                "nean_armor", 4, "grand_banquet", 5);
         book(AddonItemRegistry.TIME_GRIMOIRE::get, Fx.TIME,
                 "clock_hand_bolt", 1, "time_stop_point", 1, "time_skip", 1,
                 "time_recovery", 2, "chrono_acceleration", 2, "ticking_snare", 2,
                 "time_theft", 3, "hourglass_barrage", 3, "rewind_ward", 3,
                 "echo_of_the_past", 4, "chronostasis_field", 4, "zenith_hour", 5);
-        book(AddonItemRegistry.BLOODFIEND_GRIMOIRE::get, 18,
-                "hardblood_lance", 1, "justice_charge", 1, "sanguine_crescent", 1,
-                "crimson_pact", 2, "hardblood_bow", 2, "thirst", 2,
-                "twin_blood_blades", 3, "blood_fist_barrage", 3, "hardblood_barricade", 3,
-                "hardblood_greatsword", 4, "vampire_mode", 4, "grand_finale", 5);
-        book(AddonItemRegistry.CADUCEUS_GRIMOIRE::get, Fx.GOLD,
-                "caduceus_lash", 1, "gilded_rapier", 1,
-                "molten_volley", 2, "index_lance", 2,
-                "reapers_prescript", 3, "severing_wire", 3, "golden_shell", 3,
-                "hammer_of_judgement", 4, "prescript_received", 4, "furioso", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

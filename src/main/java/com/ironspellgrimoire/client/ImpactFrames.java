@@ -67,7 +67,7 @@ public final class ImpactFrames {
             {0xFFD2B0, 0x1E0600, 0xFF5A1E, 0xFFF0D0},   // 13 Fuegoleon: flame tongues
             {0xFFE6A8, 0x241000, 0xFFB02E, 0xFFFFFF},   // 14 Leopold: a lion's flame
             {0xD6FFC8, 0x03200A, 0x62E050, 0xFFF4B0},   // 15 William: spiralling leaves
-            {0xFFD0D6, 0x14000A, 0xFF4458, 0xFFFFFF},   // 16 Jack: cuts
+            {0xD6FFDC, 0x00140A, 0x44FF6C, 0xFFFFFF},   // 16 Jack: cuts, green
             {0xF2DFC0, 0x1C1208, 0xB88A4E, 0xFFFFFF},   // 17 Sol: slabs
             {0xCFFFF0, 0x021C16, 0x3CD4A8, 0xFFE7A0},   // 18 Vetto: fangs
             {0xFFE4F0, 0x2A0E1E, 0xFF8CC6, 0xFFFFFF},   // 19 Charmy: threads of cream

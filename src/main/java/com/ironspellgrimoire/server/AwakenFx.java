@@ -31,7 +31,7 @@ public final class AwakenFx {
     public static void awaken(ServerPlayer p, int idx) {
         ServerLevel sl = p.serverLevel();
         Vec3 c = p.position();
-        int pal = switch (idx) { case 14 -> Moves.FUEGO; case 15 -> Moves.LION; case 16 -> Moves.TREE; case 17 -> Moves.RIPPER; case 18 -> Moves.EARTH; case 19 -> Moves.BEAST; default -> Moves.COTTON; };
+        int pal = switch (idx) { case 14 -> Moves.FUEGO; case 15 -> Moves.LION; case 16 -> Moves.RIPPER; default -> Moves.EARTH; };
         switch (idx) {
             case 14 -> {   // a salamander of flame coils up round Fuegoleon and flares out
                 for (int k = 0; k < 14; k++) {
@@ -44,27 +44,14 @@ public final class AwakenFx {
                 for (int k = 0; k < 4; k++) { final int kk = k; AstaFx.later(k * 3, () -> FxSend.ring(sl, pal, c.add(0, 0.1 + kk * 0.5, 0), 0.5f, 4.0f + kk * 2.5f, 0.15f, 10)); }
                 sound(sl, c, SoundEvents.RAVAGER_ROAR, 1.4f, 0.6f);
             }
-            case 16 -> {   // roots and vines tear up from the ground all round
-                for (int i = 0; i < 10; i++) { double a = i * Math.PI / 5; FxSend.spike(sl, pal, c.add(Math.cos(a) * 3, -0.2, Math.sin(a) * 3), new Vec3(Math.cos(a) * 0.3, 1, Math.sin(a) * 0.3), 4.5f, 0.3f, 30, 6, 1); }
-                sound(sl, c, SoundEvents.ROOTED_DIRT_BREAK, 1.2f, 0.5f);
-            }
-            case 17 -> {   // lines of edge flash across the whole space round Jack
+            case 16 -> {   // lines of edge flash across the whole space round Jack
                 Random r = new Random(p.getId());
                 for (int i = 0; i < 14; i++) { final int ii = i; AstaFx.later(i, () -> SlashFx.cut(sl, c.add((r.nextDouble() - 0.5) * 5, 0.6 + r.nextDouble() * 2, (r.nextDouble() - 0.5) * 5), new Vec3(r.nextDouble() - 0.5, r.nextDouble() - 0.5, r.nextDouble() - 0.5), 2.2f, 0.07f, 6)); }
                 sound(sl, c, SoundEvents.PLAYER_ATTACK_CRIT, 1.2f, 1.4f);
             }
-            case 18 -> {   // the ground rises in plates round Sol
+            default -> {   // the ground rises in plates round Sol
                 for (int i = 0; i < 8; i++) { double a = i * Math.PI / 4; FxSend.box(sl, pal, c.add(Math.cos(a) * 3, 1.0, Math.sin(a) * 3), new Vec3(-Math.sin(a), 0, Math.cos(a)), UP, 0.9f, 0.2f, 1.2f, 30, 5, FxPacket.GROUND); }
                 sound(sl, c, SoundEvents.STONE_BREAK, 1.2f, 0.4f);
-            }
-            case 19 -> {   // a howl, and five spirits flash past in a circle
-                for (int b = 0; b < 5; b++) { final int bb = b; for (int k = 0; k < 6; k++) { final int kk = k; AstaFx.later(k + bb, () -> { double a = bb * 1.256 + kk * 0.35; BeastFx.spirit(sl, c.add(Math.cos(a) * 4.5, 0.9, Math.sin(a) * 4.5), new Vec3(-Math.sin(a), 0, Math.cos(a)), 0.7f, bb, 4); }); } }
-                sound(sl, c, SoundEvents.WOLF_HOWL, 1.4f, 0.7f);
-            }
-            default -> {   // a flood of cotton billows out
-                Random r = new Random(p.getId());
-                for (int i = 0; i < 12; i++) { double a = r.nextDouble() * Math.PI * 2, d = 1 + r.nextDouble() * 4; CottonFx.puff(sl, c.add(Math.cos(a) * d, 0.4 + r.nextDouble() * 2.5, Math.sin(a) * d), 0.8f, 18); }
-                sound(sl, c, SoundEvents.SHEEP_AMBIENT, 1.2f, 0.6f);
             }
         }
         FxSend.ring(sl, pal, c.add(0, 0.1, 0), 0.5f, 6.0f, 0.2f, 14);
@@ -162,33 +149,6 @@ public final class AwakenFx {
     }
 
     // ================================================================== William: World Tree Genesis
-    public static void worldTreeGenesis(ServerPlayer p, float power) {
-        ServerLevel sl = p.serverLevel();
-        final double R = 11;
-        Vec3 c0 = p.position();
-        sound(sl, c0, SoundEvents.ROOTED_DIRT_BREAK, 1.6f, 0.4f);
-        for (int t = 0; t < 8; t++) {   // a ring of great trees stands up round the edge
-            double a = t * Math.PI / 4;
-            Vec3 b = c0.add(Math.cos(a) * R * 0.8, -0.3, Math.sin(a) * R * 0.8);
-            final int tt = t;
-            AstaFx.later(tt, () -> {
-                FxSend.spike(sl, Moves.TREE, b, UP, 11f, 1.0f, 66, 10, FxPacket.GROUND);
-                FxSend.spike(sl, G, b, UP, 11f, 0.18f, 64, 10, FxPacket.GROUND);
-                for (int br = 0; br < 5; br++) {
-                    double ba = br * Math.PI * 2 / 5;
-                    FxSend.spike(sl, Moves.TREE, b.add(0, 10.5, 0), new Vec3(Math.cos(ba), 0.1, Math.sin(ba)), 5f, 0.3f, 60, 8, FxPacket.EXTEND);
-                }
-            });
-        }
-        domain(p, power, Moves.TREE, R, "world_tree_judgement", FxSend.FRAME_WILLIAM, (tt, o) -> {
-            rings(sl, Moves.TREE, o, R, tt);
-            for (int v = 0; v < 4; v++) {   // vines reaching in from the trees to the centre and lifting
-                double a = tt * 0.12 + v * Math.PI / 2;
-                Vec3 q0 = o.add(Math.cos(a) * R * 0.8, -0.8, Math.sin(a) * R * 0.8), q1 = o.add(Math.cos(a + 0.6) * R * 0.3, 1.5 + Math.sin(tt * 0.2 + v), Math.sin(a + 0.6) * R * 0.3);
-                FxSend.trail(sl, Moves.TREE, q0, q1, 0.3f, 4);
-            }
-        }, 2.6f);
-    }
 
     // ================================================================== Jack: Endless Night
     public static void endlessNight(ServerPlayer p, float power) {
@@ -258,60 +218,6 @@ public final class AwakenFx {
     }
 
     // ================================================================== Vetto: Primal Ancestor
-    public static void primalAncestor(ServerPlayer p, float power) {
-        ServerLevel sl = p.serverLevel();
-        final double R = 12;
-        sound(sl, p.position(), SoundEvents.WOLF_HOWL, 1.8f, 0.5f);
-        sound(sl, p.position(), SoundEvents.RAVAGER_ROAR, 1.4f, 0.6f);
-        domain(p, power, Moves.BEAST, R, "primal_king", FxSend.FRAME_VETTO, (tt, o) -> {
-            rings(sl, Moves.BEAST, o, R, tt);
-            for (int b = 0; b < 5; b++) {   // five giant spirits circling, each lunging inward now and then
-                double a = tt * 0.16 + b * Math.PI * 2 / 5;
-                double lunge = Math.max(0, Math.sin((tt + b * 11) * 0.16)) * 0.35;
-                double rad = R * (0.75 - lunge);
-                Vec3 pos = o.add(Math.cos(a) * rad, 0.3 + (b == 1 ? 3.5 : 0.8) + Math.sin(tt * 0.3 + b) * 0.4, Math.sin(a) * rad);
-                BeastFx.spirit(sl, pos, new Vec3(-Math.sin(a), 0, Math.cos(a)), 1.5f, b, 5);
-            }
-        }, 2.6f);
-    }
 
     // ================================================================== Charmy: Nean Colossus
-    public static void neanColossus(ServerPlayer p, float power) {
-        ServerLevel sl = p.serverLevel();
-        Vec3 dir = flat(p.getLookAngle());
-        Vec3 from = p.position().add(dir.scale(2));
-        Set<UUID> hit = new HashSet<>();
-        sound(sl, p.position(), SoundEvents.SHEEP_AMBIENT, 2.0f, 0.4f);
-        sound(sl, p.position(), SoundEvents.WARDEN_SONIC_CHARGE, 1.0f, 1.0f);
-        FxSend.ring(sl, Moves.COTTON, p.position().add(0, 0.05, 0), 0.3f, 4.5f, 0.15f, 12);
-        for (int k = 1; k <= 22; k++) {   // a colossal Nean thunders forward, 3 times her size
-            final int kk = k;
-            AstaFx.later(6 + k, () -> {
-                if (!alive(p)) return;
-                Vec3 pos = from.add(dir.scale(kk * 1.9)).add(0, 3.0, 0);
-                CottonFx.nean(sl, pos, dir, 2.8f, kk);
-                if (kk % 2 == 0) CottonFx.puff(sl, pos.subtract(dir.scale(3)).add(0, -2, 0), 1.0f, 10);
-                for (LivingEntity t : Kit.near(sl, p, pos, 5.0)) {
-                    if (!hit.add(t.getUUID())) continue;
-                    Moves.hit(p, t, power * 1.8f, "grand_banquet", Moves.COTTON);
-                    Kit.push(t, dir, 1.5, 0.7);
-                    Fx.impact(sl, Moves.COTTON, mid(t), 1.6f);
-                }
-                if (kk % 3 == 0) FxSend.shake(sl, pos, 0.4f, 4, 36);
-            });
-        }
-        Vec3 end = from.add(dir.scale(22 * 1.9));
-        AstaFx.later(6 + 23, () -> {   // at the end of the run, a rain of cakes
-            if (!alive(p)) return;
-            Moves.rain(p, 16, end, 8.0, 10, 2, 5, power * 0.9f, "grand_banquet", 3.2);
-            for (int i = 0; i < 10; i++) {
-                double a = i * Math.PI / 5;
-                CottonFx.puff(sl, end.add(Math.cos(a) * 5, 1, Math.sin(a) * 5), 1.0f, 20);
-            }
-            FxSend.impactFrame(sl, end, 4, FxSend.FRAME_CHARMY, 40);
-            Fx.flash(sl, end.add(0, 1, 0), 3.4f);
-            FxSend.ring(sl, Moves.COTTON, end.add(0, 0.1, 0), 0.5f, 13f, 0.35f, 14);
-            sound(sl, end, SoundEvents.GENERIC_EXPLODE, 1.6f, 0.6f);
-        });
-    }
 }

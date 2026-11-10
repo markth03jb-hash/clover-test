@@ -374,25 +374,6 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> LION_FLAME_SPELLS = List.of(
             EMBER_FIST, LION_CLAW, FLAME_LEAP, ROARING_BURST, PRIDE_BARRAGE, PROWL_DASH, MANE_BLAZE, KING_LION_ROAR);
 
-    // ------------------------------------------------------------------ World Tree Grimoire (William Vangeance)
-    private static com.ironspellgrimoire.spells.BookSpell world_tree(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
-        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.NATURE_RESOURCE,
-                com.ironspellgrimoire.item.WorldTreeGrimoireItem.class, "ui.iron_spell_grimoire.world_tree_grimoire_only", cd, mana, power,
-                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
-    }
-    public static final RegistryObject<AbstractSpell> THORN_BOLT = registerSpell(world_tree("thorn_bolt", 4, 20, 9, "iron_spell_grimoire:wind_gale_bow", com.ironspellgrimoire.server.WorldTreeFx::thornBolt));
-    public static final RegistryObject<AbstractSpell> VINE_LASH = registerSpell(world_tree("vine_lash", 7, 28, 11, "iron_spell_grimoire:mana_bone_whips", com.ironspellgrimoire.server.WorldTreeFx::vineLash));
-    public static final RegistryObject<AbstractSpell> ROOT_SNARE = registerSpell(world_tree("root_snare", 18, 45, 12, "iron_spell_grimoire:klaus_clench", com.ironspellgrimoire.server.WorldTreeFx::rootSnare));
-    public static final RegistryObject<AbstractSpell> LEAF_STORM = registerSpell(world_tree("leaf_storm", 16, 50, 10, "iron_spell_grimoire:wind_blade_shower", com.ironspellgrimoire.server.WorldTreeFx::leafStorm));
-    public static final RegistryObject<AbstractSpell> VERDANT_BLOOM = registerSpell(world_tree("verdant_bloom", 24, 55, 10, "iron_spell_grimoire:mercury_guardian", com.ironspellgrimoire.server.WorldTreeFx::verdantBloom));
-    public static final RegistryObject<AbstractSpell> TREANT_GUARDIAN = registerSpell(world_tree("treant_guardian", 18, 60, 13, "iron_spell_grimoire:klaus_clench", com.ironspellgrimoire.server.WorldTreeFx::treantGuardian));
-    public static final RegistryObject<AbstractSpell> WORLD_TREE_MANTLE = registerSpell(world_tree("world_tree_mantle", 60, 90, 0, "iron_spell_grimoire:wind_sylphs_breath", com.ironspellgrimoire.server.WorldTreeFx::worldTreeMantle));
-    public static final RegistryObject<AbstractSpell> WORLD_TREE_JUDGEMENT = registerSpell(world_tree("world_tree_judgement", 85, 125, 30, "iron_spell_grimoire:fire_cannon", com.ironspellgrimoire.server.WorldTreeFx::worldTreeJudgement));
-
-    /** The eight World Tree Grimoire spells, in the order they fill the book. */
-    public static final List<RegistryObject<AbstractSpell>> WORLD_TREE_SPELLS = List.of(
-            THORN_BOLT, VINE_LASH, ROOT_SNARE, LEAF_STORM, VERDANT_BLOOM, TREANT_GUARDIAN, WORLD_TREE_MANTLE, WORLD_TREE_JUDGEMENT);
-
     // ------------------------------------------------------------------ Slash Grimoire (Jack the Ripper)
     private static com.ironspellgrimoire.spells.BookSpell slash(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
         return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.BLOOD_RESOURCE,
@@ -431,44 +412,6 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> EARTH_SPELLS = List.of(
             STONE_FIST, ROCK_SPIKE, EARTH_WALL, BOULDER_TOSS, QUAKE_STOMP, STONE_GOLEM, BEDROCK_ARMOR, MOUNTAIN_FALL);
 
-    // ------------------------------------------------------------------ Beast Grimoire (Vetto)
-    private static com.ironspellgrimoire.spells.BookSpell beast(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
-        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.NATURE_RESOURCE,
-                com.ironspellgrimoire.item.BeastGrimoireItem.class, "ui.iron_spell_grimoire.beast_grimoire_only", cd, mana, power,
-                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
-    }
-    public static final RegistryObject<AbstractSpell> WOLF_FANG = registerSpell(beast("wolf_fang", 4, 20, 10, "iron_spell_grimoire:lion_punch", com.ironspellgrimoire.server.BeastFx::wolfFang));
-    public static final RegistryObject<AbstractSpell> HAWK_DIVE = registerSpell(beast("hawk_dive", 9, 30, 12, "iron_spell_grimoire:mercury_eagle", com.ironspellgrimoire.server.BeastFx::hawkDive));
-    public static final RegistryObject<AbstractSpell> BEAR_SWIPE = registerSpell(beast("bear_swipe", 12, 40, 12, "iron_spell_grimoire:lion_barrage", com.ironspellgrimoire.server.BeastFx::bearSwipe));
-    public static final RegistryObject<AbstractSpell> PANTHER_POUNCE = registerSpell(beast("panther_pounce", 10, 40, 13, "iron_spell_grimoire:klaus_lance_charge", com.ironspellgrimoire.server.BeastFx::pantherPounce));
-    public static final RegistryObject<AbstractSpell> STAMPEDE = registerSpell(beast("stampede", 20, 60, 12, "iron_spell_grimoire:klaus_clench", com.ironspellgrimoire.server.BeastFx::stampede));
-    public static final RegistryObject<AbstractSpell> SERPENT_SNARE = registerSpell(beast("serpent_snare", 18, 55, 10, "iron_spell_grimoire:lightning_chain", com.ironspellgrimoire.server.BeastFx::serpentSnare));
-    public static final RegistryObject<AbstractSpell> BEAST_INSTINCT = registerSpell(beast("beast_instinct", 60, 90, 8, "iron_spell_grimoire:wind_spirit_dive", com.ironspellgrimoire.server.BeastFx::beastInstinct));
-    public static final RegistryObject<AbstractSpell> PRIMAL_KING = registerSpell(beast("primal_king", 85, 125, 30, "iron_spell_grimoire:fire_cannon", com.ironspellgrimoire.server.BeastFx::primalKing));
-
-    /** The eight Beast Grimoire spells, in the order they fill the book. */
-    public static final List<RegistryObject<AbstractSpell>> BEAST_SPELLS = List.of(
-            WOLF_FANG, HAWK_DIVE, BEAR_SWIPE, PANTHER_POUNCE, STAMPEDE, SERPENT_SNARE, BEAST_INSTINCT, PRIMAL_KING);
-
-    // ------------------------------------------------------------------ Cotton Grimoire (Charmy Pappitson)
-    private static com.ironspellgrimoire.spells.BookSpell cotton(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
-        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.HOLY_RESOURCE,
-                com.ironspellgrimoire.item.CottonGrimoireItem.class, "ui.iron_spell_grimoire.cotton_grimoire_only", cd, mana, power,
-                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
-    }
-    public static final RegistryObject<AbstractSpell> COTTON_BALL = registerSpell(cotton("cotton_ball", 4, 20, 9, "iron_spell_grimoire:fire_fireball", com.ironspellgrimoire.server.CottonFx::cottonBall));
-    public static final RegistryObject<AbstractSpell> COTTON_NET = registerSpell(cotton("cotton_net", 10, 30, 8, "iron_spell_grimoire:mercury_mirror", com.ironspellgrimoire.server.CottonFx::cottonNet));
-    public static final RegistryObject<AbstractSpell> NEANS_CHARGE = registerSpell(cotton("neans_charge", 14, 45, 13, "iron_spell_grimoire:klaus_lance_charge", com.ironspellgrimoire.server.CottonFx::neansCharge));
-    public static final RegistryObject<AbstractSpell> CREAM_PUFF_BARRAGE = registerSpell(cotton("cream_puff_barrage", 10, 40, 10, "iron_spell_grimoire:fire_barrage", com.ironspellgrimoire.server.CottonFx::creamPuffBarrage));
-    public static final RegistryObject<AbstractSpell> SWEET_FEAST = registerSpell(cotton("sweet_feast", 30, 60, 8, "iron_spell_grimoire:mercury_guardian", com.ironspellgrimoire.server.CottonFx::sweetFeast));
-    public static final RegistryObject<AbstractSpell> COTTON_CLOUD = registerSpell(cotton("cotton_cloud", 20, 55, 10, "iron_spell_grimoire:wind_sylphs_breath", com.ironspellgrimoire.server.CottonFx::cottonCloud));
-    public static final RegistryObject<AbstractSpell> NEAN_ARMOR = registerSpell(cotton("nean_armor", 60, 90, 0, "iron_spell_grimoire:mercury_guardian", com.ironspellgrimoire.server.CottonFx::neanArmor));
-    public static final RegistryObject<AbstractSpell> GRAND_BANQUET = registerSpell(cotton("grand_banquet", 85, 125, 30, "iron_spell_grimoire:fire_cannon", com.ironspellgrimoire.server.CottonFx::grandBanquet));
-
-    /** The eight Cotton Grimoire spells, in the order they fill the book. */
-    public static final List<RegistryObject<AbstractSpell>> COTTON_SPELLS = List.of(
-            COTTON_BALL, COTTON_NET, NEANS_CHARGE, CREAM_PUFF_BARRAGE, SWEET_FEAST, COTTON_CLOUD, NEAN_ARMOR, GRAND_BANQUET);
-
     // ------------------------------------------------------------------ Time Grimoire (Julius Novachrono)
     private static com.ironspellgrimoire.spells.BookSpell time(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
         return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
@@ -491,53 +434,6 @@ public class AddonSpellRegistry {
     /** The twelve Time Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> TIME_SPELLS = List.of(
             CLOCK_HAND_BOLT, TIME_STOP_POINT, TIME_SKIP, TIME_RECOVERY, CHRONO_ACCELERATION, TICKING_SNARE, TIME_THEFT, HOURGLASS_BARRAGE, REWIND_WARD, ECHO_OF_THE_PAST, CHRONOSTASIS_FIELD, ZENITH_HOUR);
-
-    // ------------------------------------------------------------------ Bloodfiend Grimoire (Don Quixote, La Manchaland)
-    private static com.ironspellgrimoire.spells.BookSpell blood(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
-        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.BLOOD_RESOURCE,
-                com.ironspellgrimoire.item.BloodfiendGrimoireItem.class, "ui.iron_spell_grimoire.bloodfiend_grimoire_only", cd, mana, power,
-                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
-    }
-    public static final RegistryObject<AbstractSpell> HARDBLOOD_LANCE = registerSpell(blood("hardblood_lance", 3, 20, 10, "iron_spell_grimoire:dq_lance_thrust", com.ironspellgrimoire.server.BloodfiendFx::hardbloodLance));
-    public static final RegistryObject<AbstractSpell> JUSTICE_CHARGE = registerSpell(blood("justice_charge", 8, 35, 12, "iron_spell_grimoire:dq_charge", com.ironspellgrimoire.server.BloodfiendFx::justiceCharge));
-    public static final RegistryObject<AbstractSpell> SANGUINE_CRESCENT = registerSpell(blood("sanguine_crescent", 6, 30, 10, "iron_spell_grimoire:dq_crescent", com.ironspellgrimoire.server.BloodfiendFx::sanguineCrescent));
-    public static final RegistryObject<AbstractSpell> CRIMSON_PACT = registerSpell(blood("crimson_pact", 20, 10, 0, "iron_spell_grimoire:dq_pact", com.ironspellgrimoire.server.BloodfiendFx::crimsonPact));
-    public static final RegistryObject<AbstractSpell> THIRST = registerSpell(blood("thirst", 14, 40, 6, "iron_spell_grimoire:dq_thirst", com.ironspellgrimoire.server.BloodfiendFx::thirst));
-    public static final RegistryObject<AbstractSpell> HARDBLOOD_BARRICADE = registerSpell(blood("hardblood_barricade", 16, 45, 6, "iron_spell_grimoire:dq_barricade", com.ironspellgrimoire.server.BloodfiendFx::barricade));
-    public static final RegistryObject<AbstractSpell> HARDBLOOD_BOW = registerSpell(blood("hardblood_bow", 5, 25, 11, "iron_spell_grimoire:dq_bow", com.ironspellgrimoire.server.BloodfiendFx::hardbloodBow));
-    public static final RegistryObject<AbstractSpell> TWIN_BLOOD_BLADES = registerSpell(blood("twin_blood_blades", 7, 35, 12, "iron_spell_grimoire:dq_twin_blades", com.ironspellgrimoire.server.BloodfiendFx::twinBlades));
-    public static final RegistryObject<AbstractSpell> BLOOD_FIST_BARRAGE = registerSpell(blood("blood_fist_barrage", 9, 40, 12, "iron_spell_grimoire:dq_fist_barrage", com.ironspellgrimoire.server.BloodfiendFx::fistBarrage));
-    public static final RegistryObject<AbstractSpell> HARDBLOOD_GREATSWORD = registerSpell(blood("hardblood_greatsword", 10, 45, 16, "iron_spell_grimoire:dq_greatsword", com.ironspellgrimoire.server.BloodfiendFx::greatsword));
-    public static final RegistryObject<AbstractSpell> VAMPIRE_MODE = registerSpell(blood("vampire_mode", 40, 60, 0, "iron_spell_grimoire:dq_vampire", com.ironspellgrimoire.server.BloodfiendFx::vampireMode));
-    public static final RegistryObject<AbstractSpell> GRAND_FINALE = registerSpell(blood("grand_finale", 80, 140, 30, "iron_spell_grimoire:dq_finale", com.ironspellgrimoire.server.BloodfiendFx::grandFinale));
-
-    /** The twelve Bloodfiend Grimoire spells, in the order they fill the book. */
-    public static final List<RegistryObject<AbstractSpell>> BLOODFIEND_SPELLS = List.of(
-            HARDBLOOD_LANCE, JUSTICE_CHARGE, SANGUINE_CRESCENT, CRIMSON_PACT, THIRST, HARDBLOOD_BARRICADE, HARDBLOOD_BOW, TWIN_BLOOD_BLADES,
-            BLOOD_FIST_BARRAGE, HARDBLOOD_GREATSWORD, VAMPIRE_MODE, GRAND_FINALE);
-
-    // ------------------------------------------------------------------ Caduceus Grimoire (Rien, the Index's Proxy)
-    private static com.ironspellgrimoire.spells.BookSpell cad(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
-        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.HOLY_RESOURCE,
-                com.ironspellgrimoire.item.CaduceusGrimoireItem.class, "ui.iron_spell_grimoire.caduceus_grimoire_only", cd, mana, power,
-                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
-    }
-    public static final RegistryObject<AbstractSpell> CADUCEUS_LASH = registerSpell(cad("caduceus_lash", 3, 20, 9, "iron_spell_grimoire:rien_lash", com.ironspellgrimoire.server.CaduceusFx::lash));
-    public static final RegistryObject<AbstractSpell> GILDED_RAPIER = registerSpell(cad("gilded_rapier", 5, 25, 11, "iron_spell_grimoire:rien_rapier", com.ironspellgrimoire.server.CaduceusFx::rapier));
-    public static final RegistryObject<AbstractSpell> REAPERS_PRESCRIPT = registerSpell(cad("reapers_prescript", 8, 35, 14, "iron_spell_grimoire:rien_scythe", com.ironspellgrimoire.server.CaduceusFx::scythe));
-    public static final RegistryObject<AbstractSpell> MOLTEN_VOLLEY = registerSpell(cad("molten_volley", 6, 30, 9, "iron_spell_grimoire:rien_volley", com.ironspellgrimoire.server.CaduceusFx::volley));
-    public static final RegistryObject<AbstractSpell> INDEX_LANCE = registerSpell(cad("index_lance", 7, 30, 13, "iron_spell_grimoire:rien_lance", com.ironspellgrimoire.server.CaduceusFx::lance));
-    public static final RegistryObject<AbstractSpell> GOLDEN_SHELL = registerSpell(cad("golden_shell", 18, 40, 0, "iron_spell_grimoire:rien_shell", com.ironspellgrimoire.server.CaduceusFx::shell));
-    public static final RegistryObject<AbstractSpell> SEVERING_WIRE = registerSpell(cad("severing_wire", 14, 40, 6, "iron_spell_grimoire:rien_wire", com.ironspellgrimoire.server.CaduceusFx::wire));
-    public static final RegistryObject<AbstractSpell> HAMMER_OF_JUDGEMENT = registerSpell(cad("hammer_of_judgement", 12, 50, 16, "iron_spell_grimoire:rien_hammer", com.ironspellgrimoire.server.CaduceusFx::hammer));
-    public static final RegistryObject<AbstractSpell> PRESCRIPT_RECEIVED = registerSpell(cad("prescript_received", 40, 60, 0, "iron_spell_grimoire:rien_prescript", com.ironspellgrimoire.server.CaduceusFx::prescriptReceived));
-    public static final RegistryObject<AbstractSpell> FURIOSO = registerSpell(cad("furioso", 80, 140, 30, "iron_spell_grimoire:rien_furioso", com.ironspellgrimoire.server.CaduceusFx::furioso)
-            .gate(com.ironspellgrimoire.spells.LimbusGate::fortuneFull, "Furioso needs a full Fortune (100)."));
-
-    /** The ten Caduceus Grimoire spells, in the order they fill the book. */
-    public static final List<RegistryObject<AbstractSpell>> CADUCEUS_SPELLS = List.of(
-            CADUCEUS_LASH, GILDED_RAPIER, REAPERS_PRESCRIPT, MOLTEN_VOLLEY, INDEX_LANCE, GOLDEN_SHELL, SEVERING_WIRE, HAMMER_OF_JUDGEMENT,
-            PRESCRIPT_RECEIVED, FURIOSO);
 
     private static RegistryObject<AbstractSpell> registerSpell(AbstractSpell spell) {
         return SPELLS.register(spell.getSpellName(), () -> spell);

@@ -82,6 +82,11 @@ public class ArcaneAnimations {
         KeyframeAnimation anim = PlayerAnimationRegistry.getAnimation(POSES[pose]);
         if (anim == null) return;
         IAnimation layer = PlayerAnimationAccess.getPlayerAssociatedData(player).get(LAYER);
-        if (layer instanceof ModifierLayer<?> ml) ((ModifierLayer<IAnimation>) ml).setAnimation(new KeyframeAnimationPlayer(anim));
+        KeyframeAnimationPlayer kp = new KeyframeAnimationPlayer(anim);
+        if (pose == 17) {   // the big green slash: in first person you see your own arms do it, not the hand at rest
+            kp.setFirstPersonMode(dev.kosmx.playerAnim.api.firstPerson.FirstPersonMode.THIRD_PERSON_MODEL);
+            kp.setFirstPersonConfiguration(new dev.kosmx.playerAnim.api.firstPerson.FirstPersonConfiguration(true, true, true, true));
+        }
+        if (layer instanceof ModifierLayer<?> ml) ((ModifierLayer<IAnimation>) ml).setAnimation(kp);
     }
 }

@@ -100,8 +100,6 @@ public class GrimoireFloatRenderer {
    /** Every grimoire of this addon floats open while you cast (Black, Dark, Steel and the themed ones). */
    public static boolean isAddonGrimoire(ItemStack s) {
       if (s == null || s.isEmpty()) return false;
-      // Hardblood (Don Quixote) and the Caduceus (Rien) are powers, not books: nothing floats open when they cast
-      if (s.is(AddonItemRegistry.BLOODFIEND_GRIMOIRE.get()) || s.is(AddonItemRegistry.CADUCEUS_GRIMOIRE.get())) return false;
       return "iron_spell_grimoire".equals(BuiltInRegistries.ITEM.getKey(s.getItem()).getNamespace());
    }
 
@@ -123,14 +121,9 @@ public class GrimoireFloatRenderer {
       if (item == AddonItemRegistry.RIFT_GRIMOIRE.get()) return new int[]{21, 4};
       if (item == AddonItemRegistry.FLAME_SPIRIT_GRIMOIRE.get()) return new int[]{22, 4};
       if (item == AddonItemRegistry.LION_FLAME_GRIMOIRE.get()) return new int[]{23, 0};
-      if (item == AddonItemRegistry.WORLD_TREE_GRIMOIRE.get()) return new int[]{24, 3};
       if (item == AddonItemRegistry.SLASH_GRIMOIRE.get()) return new int[]{25, 2};
       if (item == AddonItemRegistry.EARTH_GRIMOIRE.get()) return new int[]{26, 2};
-      if (item == AddonItemRegistry.BEAST_GRIMOIRE.get()) return new int[]{27, 3};
-      if (item == AddonItemRegistry.COTTON_GRIMOIRE.get()) return new int[]{28, 4};
       if (item == AddonItemRegistry.TIME_GRIMOIRE.get()) return new int[]{29, 3};
-      if (item == AddonItemRegistry.BLOODFIEND_GRIMOIRE.get()) return new int[]{18, 3};
-      if (item == AddonItemRegistry.CADUCEUS_GRIMOIRE.get()) return new int[]{8, 3};
       String id = BuiltInRegistries.ITEM.getKey(item).getPath();
       return switch (id) {
          default -> new int[]{8, 4};

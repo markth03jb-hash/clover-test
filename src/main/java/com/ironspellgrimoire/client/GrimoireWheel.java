@@ -183,7 +183,7 @@ public final class GrimoireWheel {
         double rl = (rIn - 2.0) * 0.78;
         double spin = time * (book == 0 ? -0.25 : 0.25);
         leafLobe = th.leaves >= 5 ? 0.24 : 0.3;
-        if (book == 21) {   // Julius: no clover, a clock - it keeps the real time, the second hand ticking round
+        if (book == 18) {   // Julius: no clover, a clock - it keeps the real time, the second hand ticking round
             float[] pi = th.pageIn, ac = th.accent;
             double cr = rIn - 2.0;
             ring(bb, m, cx, cy, 0, cr, 0, TAU, pi[0] * 0.6F, pi[1] * 0.6F, pi[2] * 0.6F, 0.96F * A, pi[0], pi[1], pi[2], 0.96F * A, 40);
@@ -196,39 +196,6 @@ public final class GrimoireWheel {
             line(bb, m, cx, cy, mn * TAU / 60, 0, cr * 0.78, 1.3, tr[0], tr[1], tr[2], 0.97F * A);
             line(bb, m, cx, cy, sec * TAU / 60, -cr * 0.18, cr * 0.86, 0.6, 1.0F, 1.0F, 1.0F, 0.9F * A);
             ring(bb, m, cx, cy, 0, 2.2, 0, TAU, ac[0], ac[1], ac[2], A, ac[0], ac[1], ac[2], A, 12);
-        } else if (book == 22) {   // Don Quixote: a drop of blood over a crossed lance
-            float[] ac = th.accent;
-            double cr = rIn - 2.0;
-            ring(bb, m, cx, cy, cr - 1.3, cr, 0, TAU, tr[0], tr[1], tr[2], 0.95F * A, tr[0], tr[1], tr[2], 0.95F * A, 40);
-            line(bb, m, cx, cy, TAU * 0.125, -cr * 0.85, cr * 0.85, 1.4, tr[0], tr[1], tr[2], 0.95F * A);
-            double pulse = 1.0 + 0.06 * Math.sin(time * 3.0);
-            disc(bb, m, cx, cy + cr * 0.12, cr * 0.42 * pulse, ac[0], ac[1], ac[2], A);
-            for (int q = 1; q <= 5; q++) disc(bb, m, cx, cy + cr * 0.12 - cr * 0.1 * q, cr * 0.42 * pulse * (1.0 - q * 0.17), ac[0], ac[1], ac[2], A);
-            disc(bb, m, cx - cr * 0.14, cy + cr * 0.02, cr * 0.09, 1.0F, 0.8F, 0.8F, 0.9F * A);
-        } else if (book == 23) {   // Rien: the Caduceus - a black rod, gold-capped, a gold chain looping over it
-            float[] ac = th.accent;
-            double cr = rIn - 2.0;
-            ring(bb, m, cx, cy, cr - 1.3, cr, 0, TAU, tr[0], tr[1], tr[2], 0.95F * A, tr[0], tr[1], tr[2], 0.95F * A, 40);
-            double sw = Math.sin(time * 1.2) * 0.08;
-            double[][] rods = {{-0.62, 0.3, 0.62, 0.03}};
-            for (int rr = 0; rr < 1; rr++) {
-                double[] q = rods[rr];
-                float[] rodCol = rr == 0 ? new float[]{0.16F, 0.16F, 0.18F} : new float[]{0.92F, 0.9F, 0.86F};
-                for (int s2 = 0; s2 <= 24; s2++) {
-                    double t = s2 / 24.0;
-                    double x = cx + cr * (q[0] + (q[2] - q[0]) * t), y = cy + cr * (q[1] + (q[3] - q[1]) * t + sw * rr);
-                    boolean band = (t > 0.1 && t < 0.16) || (t > 0.84 && t < 0.9);
-                    float[] c2 = band ? (rr == 0 ? new float[]{0.92F, 0.9F, 0.86F} : new float[]{0.16F, 0.16F, 0.18F}) : rodCol;
-                    disc(bb, m, x, y, cr * 0.075, c2[0], c2[1], c2[2], A);
-                }
-                disc(bb, m, cx + cr * q[0], cy + cr * (q[1] + sw * rr), cr * 0.1, tr[0], tr[1], tr[2], A);
-                disc(bb, m, cx + cr * q[2], cy + cr * (q[3] + sw * rr), cr * 0.1, tr[0], tr[1], tr[2], A);
-            }
-            for (int s2 = 0; s2 <= 12; s2++) {   // the chain, arcing over from the left ends to the right ends
-                double t = s2 / 12.0;
-                double x = cx + cr * (-0.62 + 1.24 * t), y = cy + cr * (0.3 - 0.27 * t - Math.sin(t * Math.PI) * 0.6);
-                disc(bb, m, x, y, cr * (s2 % 2 == 0 ? 0.055 : 0.035), tr[0], tr[1], tr[2], A);
-            }
         } else
         for (int pass = 0; pass < 2; pass++) {   // the trim colour as an outline first, the leaf over it
             for (int l = 0; l < th.leaves; l++) {
@@ -320,22 +287,12 @@ public final class GrimoireWheel {
             new Theme(c(0x140503), c(0x4C1208), c(0xF0CE7A), c(0xFF5A1E), c(0x7A1C08), 3, O_FIRE, M_NOTCHES, true, 0x160604, 0xFFB890),
             // Leopold: scorched amber pages, bright gold trim, a lion's mane of claws
             new Theme(c(0x160A02), c(0x5A2E06), c(0xFFD36B), c(0xFFB02E), c(0x8A4A0A), 3, O_MANE, M_DOTS, true, 0x180C03, 0xFFE0A0),
-            // William: deep forest pages, pale gold trim, leaves turning round the ring
-            new Theme(c(0x04120A), c(0x14401C), c(0xE8E2A0), c(0x7CE866), c(0x2A7A32), 3, O_WIND, M_CRESCENTS, false, 0x06140B, 0xCFFFC0),
-            // Jack: black-wine pages, white trim, a blood-red edge
-            new Theme(c(0x0C0508), c(0x3A0A14), c(0xE8E8F0), c(0xFF4458), c(0x5A1220), 3, O_BOLTS, M_NOTCHES, true, 0x0E0609, 0xFFC0CC),
+            // Jack: black-green pages, white trim, a vivid green edge
+            new Theme(c(0x040C06), c(0x0C3A18), c(0xE8F0E8), c(0x44FF6C), c(0x12602A), 3, O_BOLTS, M_NOTCHES, true, 0x0E0609, 0xFFC0CC),
             // Sol: baked-clay pages, sandstone trim, riveted like a slab of stone
             new Theme(c(0x120C06), c(0x3E2A14), c(0xD8B878), c(0xC8964E), c(0x6A4A26), 3, O_RIVETS, M_NOTCHES, true, 0x140E07, 0xEBD0A0),
-            // Vetto: wet-moss pages, old-gold trim, claws round the ring
-            new Theme(c(0x04130F), c(0x0F4034), c(0xE6D08A), c(0x4DDCB0), c(0x1E7A62), 3, O_MANE, M_DOTS, false, 0x061511, 0xBFFFEA),
-            // Charmy: rose-cream pages, white trim, soft drops of cream round the ring
-            new Theme(c(0x1A0A14), c(0x5A2A48), c(0xFFF0F6), c(0xFF9CCB), c(0x8A3E6A), 3, O_DROPS, M_DOTS, false, 0x1C0C16, 0xFFD6EA),
             // Julius: midnight-blue pages, bright cyan trim, a little clock on every page
             new Theme(c(0x040E1C), c(0x0F3050), c(0xBDF0FF), c(0x3CC8F0), c(0x1A4A70), 3, O_RIVETS, M_NOTCHES, true, 0x05101E, 0xD8F8FF),
-            // Don Quixote (La Manchaland): near-black wine pages, old-gold trim, drops of blood round the ring
-            new Theme(c(0x120204), c(0x3A060C), c(0xD8B060), c(0xE0182A), c(0x6A0A14), 3, O_DROPS, M_NOTCHES, true, 0x140306, 0xFFB0B8),
-            // Rien (the Index): black pages, liquid-gold trim, white rivets like the Index's buttons
-            new Theme(c(0x08080A), c(0x24221E), c(0xF2CC5A), c(0xFFF0C0), c(0x3A3220), 3, O_RIVETS, M_RUNES, true, 0x0A0A0C, 0xFFE8A8),
     };
 
     /** {page inside, page edge, trim, accent, panel, title} as RGB ints, for the grimoire book screen and others. */
@@ -446,32 +403,17 @@ public final class GrimoireWheel {
                     seg(bb, m, cx, cy, am + o - w * 0.12, ro - 4, am + o + w * 0.12, ri + 5, 1.1, ac[0], ac[1], ac[2], (0.75F + 0.2F * p) * A);
                 }
             }
-            case 16 -> {   // William: a leaf on each page - two curved edges, a midrib, a stalk
-                seg(bb, m, cx, cy, am, ri + 4, am - w * 0.22, mid + 2, 1.0, ac[0], ac[1], ac[2], 0.85F * A);
-                seg(bb, m, cx, cy, am - w * 0.22, mid + 2, am, ro - 3, 1.0, ac[0], ac[1], ac[2], 0.85F * A);
-                seg(bb, m, cx, cy, am, ri + 4, am + w * 0.22, mid + 2, 1.0, ac[0], ac[1], ac[2], 0.85F * A);
-                seg(bb, m, cx, cy, am + w * 0.22, mid + 2, am, ro - 3, 1.0, ac[0], ac[1], ac[2], 0.85F * A);
-                seg(bb, m, cx, cy, am, ri + 2, am, ro - 3, 0.6, t[0], t[1], t[2], (0.5F + 0.4F * p) * A);
-            }
-            case 17 -> {   // Jack: two thin cuts across each page, the second shorter, with a red bead where they meet
+            case 16 -> {   // Jack: two thin cuts across each page, the second shorter, crossing
                 seg(bb, m, cx, cy, a0 + w * 0.1, ro - 2, a1 - w * 0.1, ri + 3, 0.9, ac[0], ac[1], ac[2], 0.95F * A);
                 seg(bb, m, cx, cy, a0 + w * 0.1, ro - 2, a1 - w * 0.1, ri + 3, 0.35, 1.0F, 1.0F, 1.0F, 0.95F * A);
                 seg(bb, m, cx, cy, a0 + w * 0.3, ri + 3, a1 - w * 0.05, mid + 3, 0.6, ac[0], ac[1], ac[2], (0.4F + 0.4F * p) * A);
             }
-            case 18 -> {   // Sol: a slab on each page, split by a crack
+            case 17 -> {   // Sol: a slab on each page, split by a crack
                 ring(bb, m, cx, cy, ri + 4, ro - 4, a0 + w * 0.18, a1 - w * 0.18, t[0], t[1], t[2], 0.55F * A, t[0], t[1], t[2], 0.55F * A, 4);
                 seg(bb, m, cx, cy, a0 + w * 0.3, ro - 5, am + w * 0.05, mid, 0.8, ac[0], ac[1], ac[2], 0.8F * A);
                 seg(bb, m, cx, cy, am + w * 0.05, mid, a1 - w * 0.28, ri + 6, 0.8, ac[0], ac[1], ac[2], 0.8F * A);
             }
-            case 19 -> {   // Vetto: a paw print on each page
-                double px = cx + Math.sin(am) * (mid - 1), py = cy - Math.cos(am) * (mid - 1);
-                disc(bb, m, px, py, 3.0 + p, ac[0], ac[1], ac[2], 0.9F * A);
-                for (int k = -1; k <= 1; k++) {
-                    double ta = am + k * w * 0.2, tr = mid + 6 - Math.abs(k) * 1.5;
-                    disc(bb, m, cx + Math.sin(ta) * tr, cy - Math.cos(ta) * tr, 1.5, ac[0], ac[1], ac[2], 0.9F * A);
-                }
-            }
-            case 21 -> {   // Julius: a small clock on each page - a cyan ring, two hands
+            case 18 -> {   // Julius: a small clock on each page - a cyan ring, two hands
                 double px = cx + Math.sin(am) * mid, py = cy - Math.cos(am) * mid, rr = 4.2 + p;
                 float[] in = th.pageIn;
                 disc(bb, m, px, py, rr, ac[0], ac[1], ac[2], 0.9F * A);
@@ -482,11 +424,6 @@ public final class GrimoireWheel {
                 seg(bb, m, cx, cy, pa, pr, Math.atan2(hx - cx, -(hy - cy)), Math.hypot(hx - cx, hy - cy), 0.9, t[0], t[1], t[2], 0.95F * A);
                 seg(bb, m, cx, cy, pa, pr, Math.atan2(mx - cx, -(my - cy)), Math.hypot(mx - cx, my - cy), 0.6, ac[0], ac[1], ac[2], 0.95F * A);
                 disc(bb, m, px, py, 0.8, t[0], t[1], t[2], A);
-            }
-            case 20 -> {   // Charmy: a puff of cotton on each page - three soft balls
-                disc(bb, m, cx + Math.sin(am) * mid, cy - Math.cos(am) * mid, 3.0 + p, t[0], t[1], t[2], 0.85F * A);
-                disc(bb, m, cx + Math.sin(am - w * 0.18) * (mid + 3), cy - Math.cos(am - w * 0.18) * (mid + 3), 2.0, t[0], t[1], t[2], 0.8F * A);
-                disc(bb, m, cx + Math.sin(am + w * 0.18) * (mid + 3), cy - Math.cos(am + w * 0.18) * (mid + 3), 2.0, ac[0], ac[1], ac[2], 0.85F * A);
             }
             case 13 -> {   // Langris: a straight cut of violet light across each page, with a crack off it
                 seg(bb, m, cx, cy, a0 + w * 0.12, ro - 3, a1 - w * 0.12, ri + 4, 1.4, ac[0], ac[1], ac[2], 0.9F * A);
