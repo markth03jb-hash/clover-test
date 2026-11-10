@@ -121,6 +121,7 @@ public final class TimeFxClient {
     private static final List<Runnable> GLOWS = new ArrayList<>();
 
     private static int stored = 0;
+    private static double storedShown = -1000;   // when the stored-time arc last changed: it only shows for a few seconds
     private static boolean holding = false;
     private static double scrStart = -1, scrEnd = -1;
     private static int scrStyle = 0;
@@ -185,7 +186,11 @@ public final class TimeFxClient {
             case 57 -> {
                 BUBBLES.put(p.id, new double[]{now, now + Math.max(4, p.life)});
             }
-            case 55 -> { stored = Mth.clamp(p.life, 0, 10); holding = p.sweep == 1; }
+            case 55 -> {
+                int ns = Mth.clamp(p.life, 0, 10);
+                if (ns != stored && Minecraft.getInstance().level != null) storedShown = Minecraft.getInstance().level.getGameTime();
+                stored = ns; holding = p.sweep == 1;
+            }
             case 56 -> {
                 if (p.life > 0) { scrStart = now; scrEnd = now + p.life; scrStyle = (int) p.h; }
                 else scrEnd = Math.min(scrEnd, now);
@@ -538,12 +543,12 @@ public final class TimeFxClient {
         for (int i = 0; i < n; i++) {
             // the pages spread from a closed book (all at angle 0) to an even full circle
             double th = spin + TAU * i / n * fold;
-            double lift = 0.12 * Math.sin(i * 1.7) * fold;             // each page leans its own little way
+            double lift = 0.10 * fold * Math.cos(th * 2.0 - spin * 2.0);   // a slow, even swell round the ring (no random leaning)
             if (cast >= 0) {                                          // the riffle: a wave runs round the ring
                 double wave = (cast * 0.9 - i * 0.15);
                 if (wave > 0 && wave < Math.PI) lift += Math.sin(wave) * 0.35;
             }
-            double bow = 0.04 * Math.sin(now * 0.25 + i * 1.3) * sc;  // each page bends a little
+            double bow = 0.0;
             Vec3 out = new Vec3(Math.cos(th), 0, Math.sin(th));
             Vec3 side = new Vec3(-Math.sin(th), 0, Math.cos(th));
             Vec3 tip = out.scale(Math.cos(lift)).add(up.scale(Math.sin(lift)));
@@ -552,17 +557,14 @@ public final class TimeFxClient {
             Vec3 m0 = s0.add(midOff), m1 = s1.add(midOff);
             Vec3 e0 = s0.add(tip.scale(W)), e1 = s1.add(tip.scale(W));
             Vec3 tc = CAM.subtract(m0.add(m1).scale(0.5));
-            float shade = 0.72F + 0.28F * (float) Math.abs(side.dot(tc.lengthSqr() < 1.0E-6 ? side : tc.normalize()));
-            float[] col = mul(PAPER, shade * (i % 2 == 0 ? 1F : 0.95F));
+            float shade = 0.86F + 0.14F * (float) Math.abs(side.dot(tc.lengthSqr() < 1.0E-6 ? side : tc.normalize()));
+            float[] col = mul(PAPER, shade);
             float a = Math.min(1F, open * 1.4F);
             quad(s0, m0, m1, s1, col, a);
             quad(m0, e0, e1, m1, col, a);
-            line(e0, e1, 0.012F * sc, i % 4 == 0 ? GOLD : INK, a, 0.004);   // the fore-edge: cyan-lit every fourth page
-            line(m1, e1, 0.007F * sc, INK, a * 0.8F, 0.003);
         }
         final Vec3 top = c.add(0, Hh + 0.04 * sc, 0);
         final float o = open, ss = sc;
-        GLOWS.add(() -> glowDisc(top, new Vec3(0, 1, 0), 0.12F * ss, GOLD_HI, 0.6F * o));
     }
 
     // ------------------------------------------------------------------ clocks
@@ -1036,7 +1038,8 @@ public final class TimeFxClient {
             net.minecraft.world.item.ItemStack bk = mc.player == null ? null : io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(mc.player);
             if (bk == null || bk.isEmpty() || !bk.is(com.ironspellgrimoire.registry.AddonItemRegistry.TIME_GRIMOIRE.get())) { holding = false; stored = 0; }
         }
-        if (!screen && !holding && stored == 0) return;
+        boolean showStored = (holding || stored > 0) && now - storedShown < 80;   // fades out; it does not stay on the crosshair
+        if (!screen && !showStored) return;
         RenderSystem.disableDepthTest();
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
@@ -1066,7 +1069,7 @@ public final class TimeFxClient {
             screenLine(bb, m, cx, cy, cx + (float) Math.sin(mh) * R * 0.8F, cy - (float) Math.cos(mh) * R * 0.8F, 2.5F, GOLD_HI, 0.3F * a);
             screenLine(bb, m, cx, cy, cx + (float) Math.sin(hh) * R * 0.5F, cy - (float) Math.cos(hh) * R * 0.5F, 4F, GOLD, 0.3F * a);
         }
-        if (holding || stored > 0) {   // stored time: ten small ticks on an arc under the crosshair
+        if (showStored) {   // stored time: ten small ticks on an arc under the crosshair
             float cx = W * 0.5F, cy = H * 0.5F;
             for (int i = 0; i < 10; i++) {
                 double ang = Math.toRadians(140 - i * (100.0 / 9.0));
@@ -1075,10 +1078,6 @@ public final class TimeFxClient {
                 float r0 = 13F, r1 = on ? 18F : 16F;
                 screenLine(bb, m, cx + sx * r0, cy + sy * r0, cx + sx * r1, cy + sy * r1, on ? 2.2F : 1.4F, INK, on ? 0.9F : 0.4F);
                 screenLine(bb, m, cx + sx * r0, cy + sy * r0, cx + sx * r1, cy + sy * r1, on ? 1.2F : 0.8F, on ? GOLD_HI : PAPER, on ? 1F : 0.35F);
-            }
-            if (stored >= 10) {
-                float p = (float) (0.6 + 0.4 * Math.sin(now * 0.3));
-                screenRing(bb, m, cx, cy, 19.5F, 20.5F, GOLD, 0.6F * p);
             }
         }
         BufferUploader.drawWithShader(bb.end());
