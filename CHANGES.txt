@@ -1,7 +1,18 @@
-Iron Spell Grimoire v1.76.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.77.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
 and let it overwrite. Then build as usual.
+
+NEW IN 1.77.0
+- Julius Novachrono's Time Grimoire: twelve spells of Time Magic - Clock Hand Bolt, Time Stop Point, Time Skip,
+  Time Recovery, Chrono Acceleration, Ticking Snare, Time Theft, Hourglass Barrage, Rewind Ward, Echo of the Past,
+  Chronostasis Field (mode) and Zenith Hour (Surpassing Limits: Eternal Sovereign).
+- Passive "Stored Time": every hit banks a second (up to ten, shown under the crosshair); some spells spend them.
+- The page column: the grimoire's pages fan out into a spiralling wall of ink-edged paper that freezes when time
+  stops and scatters when it starts again. Clock faces, flying clock hands, gold afterimages, frozen-target marks,
+  a time-stop screen and its own impact frame - all custom-drawn, nothing touches the world.
+- Thirteen new animations made for Julius; an anime-style navy and gold cover; twelve new spell icons.
+- Combos: Hands of the Hour, Borrowed Time, Between Seconds.
 
 NEW IN 1.76.0
 - Seven new grimoires: Fuegoleon (Flame Spirit), Leopold (Lion's Flame), William (World Tree), Jack the Ripper (Slash),

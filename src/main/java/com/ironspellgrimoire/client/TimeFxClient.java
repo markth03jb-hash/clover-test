@@ -456,7 +456,10 @@ public final class TimeFxClient {
         double y1 = c.y + k.h, dh = R * 0.1;
         int K = 10, S = Mth.clamp(k.n / 3, 24, 140);
         float[] lidC = mul(paper, 0.9F);
-        for (int a = 0; a < K; a++) {
+        // from inside the column the paper roof is left out, so the swirl reads as ink lines against the sky and the
+        // great clock above stays in view
+        boolean inside = Math.hypot(CAM.x - c.x, CAM.z - c.z) < R && CAM.y < y1 + dh;
+        if (!inside) for (int a = 0; a < K; a++) {
             double ra = R * (1.0 - a / (double) K), rb = R * (1.0 - (a + 1) / (double) K);
             if (ra <= rin) break;
             rb = Math.max(rb, rin);
