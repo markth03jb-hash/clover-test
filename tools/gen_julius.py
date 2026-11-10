@@ -147,10 +147,10 @@ patch('client/ImpactFrames.java', 'case 20 -> {  // Julius', '            case 1
                     double a0 = i * Math.PI * 2 / 64 + r.nextFloat() * 0.05;
                     float px = fx, py = fy;
                     for (int q = 1; q <= 6; q++) {
-                        float f = q / 6F, rr = reach * (1F - f * 0.86F * rush);
-                        double a = a0 + 1.6 * Math.pow(f, 0.9);
+                        float fq = q / 6F, rr = reach * (1F - fq * 0.86F * rush);
+                        double a = a0 + 1.6 * Math.pow(fq, 0.9);
                         float nx = fx + (float) Math.cos(a) * rr, ny = fy + (float) Math.sin(a) * rr;
-                        if (q > 1) taper(bb, m, px, py, (1F - f) * 3.2F + 0.4F, nx, ny, (1F - f) * 2.6F + 0.3F, i % 9 == 0 ? acc : line, la);
+                        if (q > 1) taper(bb, m, px, py, (1F - fq) * 3.2F + 0.4F, nx, ny, (1F - fq) * 2.6F + 0.3F, i % 9 == 0 ? acc : line, la);
                         px = nx; py = ny;
                     }
                 }
