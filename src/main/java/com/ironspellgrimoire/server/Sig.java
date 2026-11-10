@@ -115,6 +115,7 @@ final class Sig {
         switch (pal) {
             case Moves.FUEGO -> {   // a white-gold core and two flames weaving round it
                 Kit.orb(sl, G, pos, vel, size * 0.7f, 2);
+                FxSend.spike(sl, pal, pos.subtract(d.scale(size * 2.4)), d, size * 4.8f, size * 0.75f, 2, 0, FxPacket.HOLD);   // a solid lance-head under the sprites
                 for (int s = 0; s < 2; s++) {
                     double a0 = t * 0.9 + s * Math.PI, a1 = (t + 1) * 0.9 + s * Math.PI, w = size * 1.5;
                     Vec3 p0 = prev.add(rt.scale(Math.cos(a0) * w)).add(up.scale(Math.sin(a0) * w));
@@ -124,11 +125,13 @@ final class Sig {
             }
             case Moves.LION -> {    // a hot head with a mane of flame swept back from it
                 Kit.orb(sl, pal, pos, vel, size, 2);
+                FxSend.spike(sl, pal, pos.subtract(d.scale(size * 2.6)), d, size * 5.2f, size * 1.2f, 2, 0, FxPacket.HOLD);   // a solid head
                 for (int s = -1; s <= 1; s++)
                     FxSend.trail(sl, s == 0 ? G : pal, pos, pos.subtract(d.scale(size * 4)).add(rt.scale(s * size * 1.3)).add(up.scale(size * 0.6 * (1 - Math.abs(s)))), size * 0.35f, 5);
             }
             case Moves.TREE -> {    // a seed pod tumbling, throwing off leaves
                 Kit.orb(sl, pal, pos, vel, size * 0.7f, 2);
+                FxSend.box(sl, pal, pos, d, up, size * 0.9f, size * 0.7f, size * 0.7f, 2, 0, FxPacket.HOLD, 22f, Vec3.ZERO, 0);   // the solid pod
                 double a = t * 0.8;
                 Vec3 u2 = rt.scale(Math.cos(a)).add(up.scale(Math.sin(a)));
                 FxSend.slash(sl, pal, pos, d, u2, size * 3.2f, size * 1.0f, 3, 0f);

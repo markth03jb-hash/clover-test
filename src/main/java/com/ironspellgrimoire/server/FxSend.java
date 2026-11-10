@@ -18,6 +18,14 @@ public class FxSend {
     /** Sends one packet to everyone within 96 blocks of {@code near}. */
     public static void sendNear(ServerLevel sl, Vec3 near, FxPacket p) { send(sl, near, p); }
 
+    /**
+     * The seven newer grimoires' effects stay on screen longer and are drawn thicker, so they can be read in a fight
+     * instead of blinking past: pieces last about twice as long (they fade out slowly) and are about a third wider.
+     */
+    private static boolean fat(int pal) { return pal >= 22 && pal <= 28; }
+    private static int vl(int pal, int life, double k) { return fat(pal) && life > 0 ? (int) Math.ceil(life * k) + 2 : life; }
+    private static float vw(int pal, float w, double k) { return fat(pal) ? (float) (w * k) : w; }
+
     private static void send(ServerLevel sl, Vec3 near, FxPacket p) {
         AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(near.x, near.y, near.z, 96, sl.dimension())), p);
     }
@@ -25,8 +33,8 @@ public class FxSend {
     /** Curved wall (arc of a circle in the plane d/u, extruded +-h along d x u). a0..a1 degrees; sweep = ticks to draw the swing. */
     public static int wall(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float r, float r2, float a0, float a1, float h, int life, int sweep, float speed) {
         FxPacket p = new FxPacket();
-        p.shape = FxPacket.WALL; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life; p.sweep = sweep;
-        p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = r2; p.a0 = a0; p.a1 = a1; p.h = h; p.speed = speed;
+        p.shape = FxPacket.WALL; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = vl(pal, life, 1.7); p.sweep = sweep;
+        p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = r2; p.a0 = a0; p.a1 = a1; p.h = vw(pal, h, 1.5); p.speed = speed;
         send(sl, c, p);
         return p.id;
     }
@@ -39,8 +47,8 @@ public class FxSend {
     /** Moving crescent blade facing d, in the plane spanned by d and u. */
     public static int crescent(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float r, float r2, int life, float speed) {
         FxPacket p = new FxPacket();
-        p.shape = FxPacket.CRESCENT; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life;
-        p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = r2; p.speed = speed;
+        p.shape = FxPacket.CRESCENT; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = vl(pal, life, 1.8);
+        p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = vw(pal, r2, 1.25f); p.speed = speed;
         send(sl, c, p);
         return p.id;
     }
@@ -52,8 +60,8 @@ public class FxSend {
      */
     public static int slash(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float r, float r2, int life, float speed) {
         FxPacket p = new FxPacket();
-        p.shape = FxPacket.SLASH; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life;
-        p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = r2; p.speed = speed;
+        p.shape = FxPacket.SLASH; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = vl(pal, life, 1.8);
+        p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = vw(pal, r2, 1.25f); p.speed = speed;
         send(sl, c, p);
         return p.id;
     }
@@ -61,8 +69,8 @@ public class FxSend {
     /** A slash with a chosen blade thickness ({@code thick} 1 = normal, 2 = twice as thick). */
     public static int slash(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float r, float r2, int life, float speed, float thick) {
         FxPacket p = new FxPacket();
-        p.shape = FxPacket.SLASH; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life;
-        p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = r2; p.speed = speed; p.h = thick;
+        p.shape = FxPacket.SLASH; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = vl(pal, life, 1.8);
+        p.c = c; p.d = d.normalize(); p.u = u.normalize(); p.r = r; p.r2 = vw(pal, r2, 1.25f); p.speed = speed; p.h = thick;
         send(sl, c, p);
         return p.id;
     }
@@ -70,16 +78,16 @@ public class FxSend {
     /** A trail segment: like a beam but the same width end to end, so per-tick segments join into one smooth streak. */
     public static void trail(ServerLevel sl, int pal, Vec3 p0, Vec3 p1, float width, int life) {
         FxPacket p = new FxPacket();
-        p.shape = FxPacket.BEAM; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life;
-        p.c = p0; p.d = p1.subtract(p0); p.r = width; p.h = 1;
+        p.shape = FxPacket.BEAM; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = vl(pal, life, 1.9);
+        p.c = p0; p.d = p1.subtract(p0); p.r = vw(pal, width, 1.35); p.h = 1;
         send(sl, p0.add(p1).scale(0.5), p);
     }
 
     /** Ribbon-cross beam from p0 to p1. */
     public static void beam(ServerLevel sl, int pal, Vec3 p0, Vec3 p1, float width, int life) {
         FxPacket p = new FxPacket();
-        p.shape = FxPacket.BEAM; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life;
-        p.c = p0; p.d = p1.subtract(p0); p.r = width;
+        p.shape = FxPacket.BEAM; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = vl(pal, life, 1.7);
+        p.c = p0; p.d = p1.subtract(p0); p.r = vw(pal, width, 1.3);
         send(sl, p0, p);
     }
 
@@ -94,7 +102,7 @@ public class FxSend {
                           int life, int rise, float mode, float spin, Vec3 vel, int moveTicks) {
         FxPacket p = new FxPacket();
         if (mode == FxPacket.HOLD && life <= 2) life = 1;   // re-sent every tick: each copy only covers its own tick
-        p.shape = FxPacket.BOX; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life; p.sweep = rise;
+        p.shape = FxPacket.BOX; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = mode == FxPacket.HOLD ? life : vl(pal, life, 1.5); p.sweep = rise;
         p.c = c; p.d = axis.normalize(); p.u = up.normalize(); p.r = hl; p.r2 = hw; p.h = hh; p.speed = mode; p.a0 = spin;
         p.v = vel; p.a1 = moveTicks;
         send(sl, c, p);
@@ -114,7 +122,7 @@ public class FxSend {
                             int life, int rise, float mode, float spin, Vec3 vel, int moveTicks) {
         FxPacket p = new FxPacket();
         if (mode == FxPacket.HOLD && life <= 2) life = 1;   // re-sent every tick: each copy only covers its own tick
-        p.shape = FxPacket.SPIKE; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = life; p.sweep = rise;
+        p.shape = FxPacket.SPIKE; p.palette = (byte) pal; p.id = IDS.getAndIncrement(); p.life = mode == FxPacket.HOLD ? life : vl(pal, life, 1.5); p.sweep = rise;
         p.c = base; p.d = dir.normalize(); p.r = len; p.r2 = rad; p.speed = mode; p.a0 = spin; p.v = vel; p.a1 = moveTicks;
         send(sl, base, p);
         return p.id;

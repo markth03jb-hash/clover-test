@@ -65,7 +65,9 @@ final class Kit {
     /** A glowing sphere of magic (the client draws it like Magna's fireballs): size r, moving with {@code vel} per tick. */
     static void orb(ServerLevel sl, int pal, Vec3 c, Vec3 vel, float r, int life) {
         FxPacket p = new FxPacket();
-        p.shape = 20; p.palette = (byte) pal; p.life = Math.max(1, life <= 3 ? 1 : life); p.c = c; p.v = vel; p.r = r; p.r2 = r; p.h = 0;
+        boolean fat = pal >= 22 && pal <= 28;
+        if (fat) r *= 1.25f;
+        p.shape = 20; p.palette = (byte) pal; p.life = Math.max(1, life <= 3 ? 1 : (fat ? (int) Math.ceil(life * 1.6) : life)); p.c = c; p.v = vel; p.r = r; p.r2 = r; p.h = 0;
         AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
     }
 }
