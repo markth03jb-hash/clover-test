@@ -203,7 +203,7 @@ public final class GrimoireWheel {
             line(bb, m, cx, cy, TAU * 0.125, -cr * 0.85, cr * 0.85, 1.4, tr[0], tr[1], tr[2], 0.95F * A);
             double pulse = 1.0 + 0.06 * Math.sin(time * 3.0);
             disc(bb, m, cx, cy + cr * 0.12, cr * 0.42 * pulse, ac[0], ac[1], ac[2], A);
-            for (int k = 1; k <= 5; k++) disc(bb, m, cx, cy + cr * 0.12 - cr * 0.1 * k, cr * 0.42 * pulse * (1.0 - k * 0.17), ac[0], ac[1], ac[2], A);
+            for (int q = 1; q <= 5; q++) disc(bb, m, cx, cy + cr * 0.12 - cr * 0.1 * q, cr * 0.42 * pulse * (1.0 - q * 0.17), ac[0], ac[1], ac[2], A);
             disc(bb, m, cx - cr * 0.14, cy + cr * 0.02, cr * 0.09, 1.0F, 0.8F, 0.8F, 0.9F * A);
         } else if (book == 23) {   // Rien: the Caduceus - a gold vial on a chain, its liquid swaying
             float[] ac = th.accent;
