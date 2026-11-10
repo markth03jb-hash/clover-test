@@ -436,7 +436,8 @@ public class GrimoireFloatRenderer {
             ps.mulPose(Axis.YP.rotationDegrees(180.0F));
             ps.mulPose(Axis.XP.rotationDegrees(-tilt));
             ps.scale(s, s, s);
-            renderOpen(mc, ps, buf, book, p.getId(), light);
+            boolean timeBook = book.is(AddonItemRegistry.TIME_GRIMOIRE.get());   // Julius's book folds all the way round instead
+            if (!timeBook) renderOpen(mc, ps, buf, book, p.getId(), light);
             float cast = castCycle(p.getId(), time);
             float cyc = k > 0.8F ? (cast >= 0.0F ? cast : (float)((mc.level.getGameTime() + (long)p.getId() * 13L) % 50L) + pt) : -1.0F;
             boolean mastered = MasteryClient.enabled() && com.ironspellgrimoire.server.GrimoireMastery.bookOf(book) != null
@@ -447,8 +448,8 @@ public class GrimoireFloatRenderer {
                Vec3 fp0 = bookPos.add(fr.nextDouble(-0.25, 0.25), 0.05, fr.nextDouble(-0.25, 0.25));
                DarkSmoke.crimsonFlame(fp0, new Vec3(0, fr.nextDouble(0.03, 0.07), 0), (float) fr.nextDouble(0.08, 0.16), fr.nextInt(8, 14));
             }
-            FxRenderer.queueBook(bookPos, yawS - turn, tilt, s, k * (mastered ? 1.5F : 1.0F), cyc, 0.46F, 0.375F, 22.5F, au[0], au[1], light);
-            if (book.is(AddonItemRegistry.TIME_GRIMOIRE.get())) TimeFxClient.bookFan(bookPos, k);   // Julius: a little fan of pages turning round it
+            if (timeBook) TimeFxClient.bookFan(bookPos, k, s / OPEN_SCALE, cyc);   // Julius: covers folded back to back, pages fanned in a full circle
+            else FxRenderer.queueBook(bookPos, yawS - turn, tilt, s, k * (mastered ? 1.5F : 1.0F), cyc, 0.46F, 0.375F, 22.5F, au[0], au[1], light);
          }
          ps.popPose();
 

@@ -201,8 +201,8 @@ public final class TimeFxClient {
     }
 
     /** Called by the floating-book renderer for every open Time grimoire, each frame. */
-    public static void bookFan(Vec3 pos, float open) {
-        FANS.add(new double[]{pos.x, pos.y, pos.z, open});
+    public static void bookFan(Vec3 pos, float open, float scale, float castCycle) {
+        FANS.add(new double[]{pos.x, pos.y, pos.z, open, scale, castCycle});
     }
 
     // ================================================================== ticking: flutter, sounds, clean-up
@@ -523,22 +523,64 @@ public final class TimeFxClient {
         }
     }
 
-    /** The little fan of pages round an open Time grimoire. */
+    /**
+     * Julius's open grimoire: the covers fold all the way back until they meet, so there is no front or back - just
+     * the spine standing upright and every page fanned out round it in a full circle, turning slowly. The two navy
+     * boards sit back to back as one; the pages are ink-edged paper with gilt edges. When a spell is cast the fan
+     * riffles: a wave of pages lifts and falls round the ring.
+     */
     private static void fan(double[] f, double now) {
-        Vec3 c = new Vec3(f[0], f[1] - 0.25, f[2]);
         float open = (float) f[3];
         if (open <= 0.05F) return;
-        int n = 14;
-        float R = 0.42F * open, H = 0.5F * open;
+        float sc = (float) f[4];
+        double cast = f[5];
+        Vec3 c = new Vec3(f[0], f[1] + 0.02, f[2]);
+        int n = 26;
+        float W = 0.3F * sc, Hh = 0.24F * sc;                        // page width, half height
+        Vec3 up = new Vec3(0, 1, 0);
+        double spin = now * 0.03;
+        float fold = smooth(open);                                    // 0 closed .. 1 folded right round
         for (int i = 0; i < n; i++) {
-            double th = TAU * i / n + now * 0.045;
-            double e = 0.05 + 0.05 * Math.sin(now * 0.5 + i * 1.9);
-            double del = TAU / n * 1.6, tw = 0.3;
-            Vec3 p0 = ring(c, th, R, c.y), p1 = ring(c, th + del, R + e, c.y), p2 = ring(c, th + del + tw, R + e, c.y + H), p3 = ring(c, th + tw, R, c.y + H);
-            quad(p0, p1, p2, p3, mul(PAPER, 0.9F + 0.1F * (i % 2)), 0.95F * open);
-            line(p0, p3, 0.012F, INK, open, 0.004);
-            if (i % 3 == 0) line(p1, p2, 0.01F, GOLD, open, 0.006);
+            // the pages spread from a closed book (all at angle 0) to an even full circle
+            double th = spin + TAU * i / n * fold;
+            double lift = 0;
+            if (cast >= 0) {                                          // the riffle: a wave runs round the ring
+                double wave = (cast * 0.9 - i * 0.35);
+                if (wave > 0 && wave < Math.PI) lift = Math.sin(wave) * 0.35;
+            }
+            double bow = 0.04 * Math.sin(now * 0.25 + i * 1.3) * sc;  // each page bends a little
+            Vec3 out = new Vec3(Math.cos(th), 0, Math.sin(th));
+            Vec3 side = new Vec3(-Math.sin(th), 0, Math.cos(th));
+            Vec3 tip = out.scale(Math.cos(lift)).add(up.scale(Math.sin(lift)));
+            Vec3 s0 = c.add(0, -Hh, 0), s1 = c.add(0, Hh, 0);
+            Vec3 midOff = tip.scale(W * 0.5).add(side.scale(bow));
+            Vec3 m0 = s0.add(midOff), m1 = s1.add(midOff);
+            Vec3 e0 = s0.add(tip.scale(W)), e1 = s1.add(tip.scale(W));
+            boolean board = i == 0 || i == n - 1;                     // the two covers, back to back
+            Vec3 tc = CAM.subtract(m0.add(m1).scale(0.5));
+            float shade = 0.72F + 0.28F * (float) Math.abs(side.dot(tc.lengthSqr() < 1.0E-6 ? side : tc.normalize()));
+            float[] col = board ? mul(NAVY, 1.6F + shade) : mul(PAPER, shade * (i % 2 == 0 ? 1F : 0.95F));
+            float a = Math.min(1F, open * 1.4F);
+            if (board) {   // a cover board stands a little proud of the pages, with a gold edge
+                Vec3 b0 = s0.add(0, -0.015 * sc, 0), b1 = s1.add(0, 0.015 * sc, 0);
+                Vec3 be0 = b0.add(tip.scale(W * 1.04)), be1 = b1.add(tip.scale(W * 1.04));
+                quad(b0, be0, be1, b1, col, a);
+                line(be0, be1, 0.018F * sc, GOLD, a, 0.004);
+                line(b0, be0, 0.012F * sc, GOLD, a, 0.004);
+                line(b1, be1, 0.012F * sc, GOLD, a, 0.004);
+                continue;
+            }
+            quad(s0, m0, m1, s1, col, a);
+            quad(m0, e0, e1, m1, col, a);
+            line(e0, e1, 0.012F * sc, i % 4 == 0 ? GOLD : INK, a, 0.004);   // the fore-edge
+            line(m1, e1, 0.007F * sc, INK, a * 0.8F, 0.003);
         }
+        // the spine: a gold-bound rod up the middle where every page meets
+        line(c.add(0, -Hh - 0.02 * sc, 0), c.add(0, Hh + 0.02 * sc, 0), 0.045F * sc, INK, open, 0.006);
+        line(c.add(0, -Hh - 0.02 * sc, 0), c.add(0, Hh + 0.02 * sc, 0), 0.025F * sc, GOLD, open, 0.01);
+        final Vec3 top = c.add(0, Hh + 0.04 * sc, 0);
+        final float o = open, ss = sc;
+        GLOWS.add(() -> glowDisc(top, new Vec3(0, 1, 0), 0.12F * ss, GOLD_HI, 0.6F * o));
     }
 
     // ------------------------------------------------------------------ clocks
