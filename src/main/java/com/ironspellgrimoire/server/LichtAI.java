@@ -102,8 +102,8 @@ public final class LichtAI {
         AstaFx.later(T, () -> {
             if (!ok(b)) return;
             int pal = pal(b);
-            for (int k = 0; k < 4; k++) FxSend.slash(sl, pal, a.add(dir.scale(len * (k + 0.5) / 4)), dir, new Vec3(0, 1, 0).add(rightOf(dir).scale(0.25)).normalize(), len * 0.32f, 1.0f, 8, 1.8f, 0.9f);
-            FxSend.trail(sl, pal, a, c, 0.5f, 10);
+            for (int k = 0; k < 4; k++) BossFx.slash(sl, pal, a.add(dir.scale(len * (k + 0.5) / 4)), dir, new Vec3(0, 1, 0).add(rightOf(dir).scale(0.25)).normalize(), len * 0.32f, 1.0f, 8, 1.8f, 0.9f);
+            BossFx.trail(sl, pal, a, c, 0.5f, 10);
             for (Player p : along(b, a, c, 2.0)) {
                 hurt(b, p, 14f);
                 if (b.phase() >= 4) TimedModifiers.apply(p, Attributes.MAX_HEALTH, SAP, "Forbidden cut", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 200);
@@ -122,6 +122,7 @@ public final class LichtAI {
         Vec3 d = dirTo(b, t);
         face(b, d);
         int T = b.phase() >= 3 ? 12 : 16;
+        charge(b, lightPal(b), T);
         flash(b, sl, b.position().add(0, 1.0, 0), d, T, 22);
         return T + 8;
     }
@@ -146,6 +147,7 @@ public final class LichtAI {
         b.setPose(P_DASH);
         b.getNavigation().stop();
         int T = 8;
+        charge(b, lightPal(b), T);
         warnCircle(sl, t.position(), 2.4f, T);
         Vec3 from = b.position();
         AstaFx.later(T, () -> {
@@ -153,11 +155,11 @@ public final class LichtAI {
             Vec3 behind = t.position().add(flat(t.getLookAngle()).normalize().scale(-1.6));
             Vec3 to = SpaceFx.safe(sl, behind, b);
             if (to == null) return;
-            FxSend.trail(sl, lightPal(b), from.add(0, 1, 0), to.add(0, 1, 0), 0.4f, 8);
+            BossFx.trail(sl, lightPal(b), from.add(0, 1, 0), to.add(0, 1, 0), 0.4f, 8);
             Vec3 face = flat(t.position().subtract(to));
             SpaceFx.move(b, to, (float) Math.toDegrees(Math.atan2(-face.x, face.z)));
             b.setPose(P_SLASH);
-            FxSend.slash(sl, pal(b), t.position().add(0, 1, 0), face.lengthSqr() > 1e-4 ? face.normalize() : new Vec3(1, 0, 0), new Vec3(0, 1, 0), 2.2f, 0.5f, 6, 1.6f, 0.7f);
+            BossFx.slash(sl, pal(b), t.position().add(0, 1, 0), face.lengthSqr() > 1e-4 ? face.normalize() : new Vec3(1, 0, 0), new Vec3(0, 1, 0), 2.2f, 0.5f, 6, 1.6f, 0.7f);
             for (Player p : near(b, t.position().add(0, 1, 0), 2.4)) hurt(b, p, 8f);
             sl.playSound(null, to.x, to.y, to.z, SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.2f, 1.4f);
         });
@@ -171,6 +173,7 @@ public final class LichtAI {
         b.getNavigation().stop();
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int T = 16;
+        charge(b, lightPal(b), T);
         for (int i = 0; i < 5; i++) {
             Vec3 land = ground(sl, t.position().add(i == 0 ? 0 : r.nextDouble(-3, 3), 0, i == 0 ? 0 : r.nextDouble(-3, 3))).add(0, 0.4, 0);
             Vec3 at = b.position().add(Math.cos(i * 1.25) * 1.6, 2.6 + (i % 2) * 0.5, Math.sin(i * 1.25) * 1.6);
@@ -197,8 +200,8 @@ public final class LichtAI {
     private static void absorbing(Licht b, ServerLevel sl, long now) {
         float[] a = ABSORB.get(b.getUUID());
         if (a == null) return;
-        if (now % 6 == 0) FxSend.ring(sl, Fx.GOLD, b.position().add(0, 1.2, 0), 3.5f, 0.4f, 0.08f, 6);
-        if (now % 10 == 0) for (Player p : near(b, b.position(), 20)) FxSend.trail(sl, Fx.GOLD, mid(p), b.position().add(0, 1.4, 0), 0.12f, 8);
+        if (now % 6 == 0) BossFx.ring(sl, Fx.GOLD, b.position().add(0, 1.2, 0), 3.5f, 0.4f, 0.08f, 6);
+        if (now % 10 == 0) for (Player p : near(b, b.position(), 20)) BossFx.trail(sl, Fx.GOLD, mid(p), b.position().add(0, 1.4, 0), 0.12f, 8);
         if (now < (long) a[0]) return;
         ABSORB.remove(b.getUUID());
         Player t = target(b);
@@ -211,7 +214,7 @@ public final class LichtAI {
         warnLine(sl, from.add(0, -0.9, 0), to.add(0, -0.9, 0), 3.2f, 14);
         AstaFx.later(14, () -> {
             if (!ok(b)) return;
-            for (int k = 0; k < 6; k++) FxSend.slash(sl, Fx.GOLD, from.add(d.scale(24 * (k + 0.5) / 6)), d, new Vec3(0, 1, 0), 5f, 1.4f, 10, 2f, 1.2f);
+            for (int k = 0; k < 6; k++) BossFx.slash(sl, Fx.GOLD, from.add(d.scale(24 * (k + 0.5) / 6)), d, new Vec3(0, 1, 0), 5f, 1.4f, 10, 2f, 1.2f);
             float dmg = 8f + Math.min(30f, stored * 0.6f);
             for (Player p : along(b, from, to, 3.0)) hurt(b, p, dmg);
             FxSend.impactFrame(sl, from.add(d.scale(6)), 4, FxSend.FRAME_LIGHT, 30);
@@ -294,7 +297,7 @@ public final class LichtAI {
                 double a = i * Math.PI / 4;
                 LightFx.sword(sl, phase >= 4 ? Fx.YAMI : Fx.GOLD, c.add(Math.cos(a) * 2.2, 0.4, Math.sin(a) * 2.2), c.add(Math.cos(a) * 2.2, 5, Math.sin(a) * 2.2), new Vec3(0, 1, 0), 1.6f, 1f, 4, 12, 1, 18);
             }
-            FxSend.ring(sl, phase >= 4 ? Fx.DARK : Fx.GOLD, c.add(0, 0.1, 0), 0.5f, 9f, 0.3f, 16);
+            BossFx.ring(sl, phase >= 4 ? Fx.DARK : Fx.GOLD, c.add(0, 0.1, 0), 0.5f, 9f, 0.3f, 16);
             FxSend.impactFrame(sl, c.add(0, 1.6, 0), 4, FxSend.FRAME_LIGHT, 28);
             FxSend.shake(sl, c, 0.8f, 12, 30);
             sl.playSound(null, b.blockPosition(), phase >= 4 ? SoundEvents.WITHER_SPAWN : SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 1.4f, phase >= 4 ? 1.2f : 0.8f);

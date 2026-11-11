@@ -92,7 +92,7 @@ public final class RevenantAI {
             if (!p.open) continue;
             if (now % 40 == 0) {
                 SpaceFx.gate(sl, p.at.add(0, 1.4, 0), new Vec3(0, 0, 1), 1.1f, 1.6f, 44, 0);
-                FxSend.ring(sl, Fx.VOID, p.at.add(0, 0.06, 0), 1.4f, 1.5f, 0.05f, 42);
+                BossFx.ring(sl, Fx.VOID, p.at.add(0, 0.06, 0), 1.4f, 1.5f, 0.05f, 42);
             }
             if (t != null && now % 180 == 0 && alive < 4) { dead(sl, p.at, false); alive++; }
             boolean someone = false;
@@ -103,13 +103,13 @@ public final class RevenantAI {
             if (!someone) p.sealing = Math.max(0, p.sealing - 2);
             if (p.sealing >= 40) {
                 p.open = false;
-                FxSend.ring(sl, Fx.VOID, p.at.add(0, 1, 0), 1.8f, 0.1f, 0.1f, 10);
+                BossFx.ring(sl, Fx.VOID, p.at.add(0, 1, 0), 1.8f, 0.1f, 0.1f, 10);
                 sl.playSound(null, p.at.x, p.at.y, p.at.z, SoundEvents.END_PORTAL_SPAWN, SoundSource.HOSTILE, 0.6f, 1.8f);
                 for (Player pl : near(b, b.position(), 40)) pl.displayClientMessage(Component.literal("Portal sealed - " + openCount(b) + " left").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
             }
         }
         b.setFlag(openCount(b));
-        if (b.flag() > 0 && now % 10 == 0) FxSend.ring(sl, Fx.VOID, b.position().add(0, 1.0, 0), 1.0f, 1.1f, 0.05f, 10);   // folded space round him
+        if (b.flag() > 0 && now % 10 == 0) BossFx.ring(sl, Fx.VOID, b.position().add(0, 1.0, 0), 1.0f, 1.1f, 0.05f, 10);   // folded space round him
         if (t == null) { b.getNavigation().stop(); return; }
         if (b.getPersistentData().getBoolean("isg_met") != true) {
             b.getPersistentData().putBoolean("isg_met", true);
@@ -150,7 +150,7 @@ public final class RevenantAI {
             m.setCustomName(Component.literal("Revenant Knight").withStyle(ChatFormatting.DARK_GREEN));
         }
         sl.addFreshEntity(m);
-        Kit.orb(sl, Fx.VOID, at.add(0, 1, 0), Vec3.ZERO, 0.6f, 8);
+        BossFx.orb(sl, Fx.VOID, at.add(0, 1, 0), Vec3.ZERO, 0.6f, 8);
         return m;
     }
 
@@ -174,7 +174,7 @@ public final class RevenantAI {
             if (knight) up.setCustomName(Component.literal("Revenant Knight").withStyle(ChatFormatting.DARK_GREEN));
             up.setHealth(up.getMaxHealth() * 0.5f);
             sl.addFreshEntity(up);
-            Kit.orb(sl, Fx.VOID, at.add(0, 0.6, 0), new Vec3(0, 0.05, 0), 0.5f, 10);
+            BossFx.orb(sl, Fx.VOID, at.add(0, 0.6, 0), new Vec3(0, 0.05, 0), 0.5f, 10);
             sl.playSound(null, up.blockPosition(), SoundEvents.ZOMBIE_VILLAGER_CURE, SoundSource.HOSTILE, 0.8f, 0.6f);
         });
     }
@@ -184,6 +184,7 @@ public final class RevenantAI {
         b.setPose(P_SLASH);
         b.getNavigation().stop();
         int T = 16;
+        charge(b, Fx.VOID, T);
         Vec3 d = dirTo(b, t);
         face(b, d);
         Vec3 a = b.position().add(0, 1, 0), c = a.add(d.scale(18));
@@ -203,6 +204,7 @@ public final class RevenantAI {
         b.setPose(P_RAISE);
         b.getNavigation().stop();
         int T = 18;
+        charge(b, Fx.VOID, T);
         Vec3 g = ground(sl, t.position());
         warnCircle(sl, g, 2f, T);
         SpaceFx.gate(sl, g.add(0, 5, 0), new Vec3(0, -1, 0), 1.2f, 1.2f, T + 10, 0);
@@ -253,12 +255,12 @@ public final class RevenantAI {
         if (t == 1) {
             say(b, WHO, COL, "No... not like this... not before I get my revenge...");
             for (Mob m : sl.getEntitiesOfClass(Mob.class, b.getBoundingBox().inflate(48), m -> m.getPersistentData().getBoolean(TAG))) {   // his dead fall still
-                Kit.orb(sl, Fx.VOID, m.position().add(0, 1, 0), new Vec3(0, 0.05, 0), 0.4f, 10);
+                BossFx.orb(sl, Fx.VOID, m.position().add(0, 1, 0), new Vec3(0, 0.05, 0), 0.4f, 10);
                 m.discard();
             }
             List<Portal> l = PORTALS.remove(b.getUUID());
-            if (l != null) for (Portal p : l) if (p.open) FxSend.ring(sl, Fx.VOID, p.at.add(0, 1, 0), 1.8f, 0.1f, 0.1f, 10);
+            if (l != null) for (Portal p : l) if (p.open) BossFx.ring(sl, Fx.VOID, p.at.add(0, 1, 0), 1.8f, 0.1f, 0.1f, 10);
         }
-        if (t < 60 && t % 6 == 0) Kit.orb(sl, Fx.VOID, b.position().add(0, 1 + ThreadLocalRandom.current().nextDouble(), 0), new Vec3(0, 0.05, 0), 0.3f, 12);
+        if (t < 60 && t % 6 == 0) BossFx.orb(sl, Fx.VOID, b.position().add(0, 1 + ThreadLocalRandom.current().nextDouble(), 0), new Vec3(0, 0.05, 0), 0.3f, 12);
     }
 }

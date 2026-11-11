@@ -155,7 +155,7 @@ public final class RhyaAI {
                 Vec3 from = b.position().add(0, 1.5, 0);
                 Vec3 d = mid(p).subtract(from);
                 if (d.lengthSqr() > 1e-4) bolt(b, sl, from, d.normalize(), pal, 1.4, 22, 7f, new boolean[1]);
-                FxSend.ring(sl, pal, from, 0.3f, 1.8f, 0.08f, 8);
+                BossFx.ring(sl, pal, from, 0.3f, 1.8f, 0.08f, 8);
                 sound(sl, from, SoundEvents.ILLUSIONER_MIRROR_MOVE, 1.2f, 1.4f);
             }
         }
@@ -178,9 +178,9 @@ public final class RhyaAI {
         b.setCopy(pal);
         if (!b.ai.copied.contains(pal)) b.ai.copied.add(pal);
         b.ai.recopyAt = sl.getGameTime() + 400;
-        FxSend.trail(sl, pal, mid(p), b.position().add(0, 1.4, 0), 0.25f, 12);
-        FxSend.ring(sl, pal, p.position().add(0, 0.1, 0), 0.3f, 2.4f, 0.08f, 12);
-        FxSend.ring(sl, pal, b.position().add(0, 1.2, 0), 1.8f, 0.3f, 0.08f, 12);
+        BossFx.trail(sl, pal, mid(p), b.position().add(0, 1.4, 0), 0.25f, 12);
+        BossFx.ring(sl, pal, p.position().add(0, 0.1, 0), 0.3f, 2.4f, 0.08f, 12);
+        BossFx.ring(sl, pal, b.position().add(0, 1.2, 0), 1.8f, 0.3f, 0.08f, 12);
         sound(sl, b.position(), SoundEvents.BOOK_PAGE_TURN, 1.4f, 0.7f);
         sound(sl, b.position(), SoundEvents.ILLUSIONER_PREPARE_MIRROR, 1.2f, 1.2f);
         for (Player q : near(b, b.position(), 40))
@@ -206,7 +206,7 @@ public final class RhyaAI {
                 Vec3 p0 = a.add(to.subtract(a).scale(u0)), p1 = a.add(to.subtract(a).scale(u * 0.92));
                 b.moveTo(p1.x, p1.y, p1.z, b.getYRot(), b.getXRot());
                 b.setDeltaMovement(Vec3.ZERO);
-                FxSend.trail(sl, b.copy() >= 0 ? b.copy() : SIL, p0.add(0, 1.1, 0), p1.add(0, 1.1, 0), 0.4f, 6);
+                BossFx.trail(sl, b.copy() >= 0 ? b.copy() : SIL, p0.add(0, 1.1, 0), p1.add(0, 1.1, 0), 0.4f, 6);
             });
         }
         AstaFx.later(T + STEPS + 1, () -> {
@@ -266,8 +266,8 @@ public final class RhyaAI {
 
     static void warnCircle(ServerLevel sl, Vec3 c, float r, int ticks) {
         Vec3 g = ZenonAI.ground(sl, c).add(0, 0.06, 0);
-        FxSend.ring(sl, WARN, g, r - 0.1f, r, 0.04f, ticks);
-        FxSend.ring(sl, WARN, g, 0.05f, r, 0.025f, ticks);
+        BossFx.ring(sl, WARN, g, r - 0.1f, r, 0.04f, ticks);
+        BossFx.ring(sl, WARN, g, 0.05f, r, 0.025f, ticks);
     }
 
     static void warnLine(ServerLevel sl, Vec3 a, Vec3 c, float w, int ticks) { ZenonAI.warnLine(sl, a, c, w, ticks); }
@@ -324,9 +324,9 @@ public final class RhyaAI {
         AstaFx.later(1, () -> {
             Vec3 next = at.add(d.scale(speed));
             Vec3 wall = clip(sl, b, at, next);
-            Kit.orb(sl, pal, at, d.scale(speed), 0.32f, 2);
+            BossFx.orb(sl, pal, at, d.scale(speed), 0.32f, 2);
             for (Player p : along(b, at, next, 1.1)) { hurt(b, p, dmg); done[0] = true; }
-            if (done[0] || wall.distanceToSqr(next) > 1e-4) { FxSend.ring(sl, pal, wall, 0.2f, 1.4f, 0.06f, 8); return; }
+            if (done[0] || wall.distanceToSqr(next) > 1e-4) { BossFx.ring(sl, pal, wall, 0.2f, 1.4f, 0.06f, 8); return; }
             bolt(b, sl, next, d, pal, speed, left - 1, dmg, done);
         });
     }
@@ -373,7 +373,7 @@ public final class RhyaAI {
         if (left <= 0 || !b.isAlive()) return;
         AstaFx.later(1, () -> {
             Vec3 next = at.add(d.scale(speed));
-            FxSend.slash(sl, pal, at, d, new Vec3(0, 1, 0), 2.2f, 0.4f, 3, 1.0f);
+            BossFx.slash(sl, pal, at, d, new Vec3(0, 1, 0), 2.2f, 0.4f, 3, 1.0f);
             for (Player p : along(b, at, next, 2.0)) if (hit.add(p.getUUID())) hurt(b, p, 9f);
             if (clip(sl, b, at, next).distanceToSqr(next) > 1e-4) return;
             wave(b, sl, next, d, pal, speed, left - 1, hit);
@@ -394,8 +394,8 @@ public final class RhyaAI {
         AstaFx.later(T, () -> {
             if (!ok(b)) return;
             for (Vec3 c : spots) {
-                FxSend.beam(sl, pal, c.add(0, 12, 0), c, 0.45f, 8);
-                FxSend.ring(sl, pal, c.add(0, 0.1, 0), 0.2f, 2.0f, 0.08f, 10);
+                BossFx.beam(sl, pal, c.add(0, 12, 0), c, 0.45f, 8);
+                BossFx.ring(sl, pal, c.add(0, 0.1, 0), 0.2f, 2.0f, 0.08f, 10);
                 for (Player p : near(b, c.add(0, 1, 0), 1.8)) hurt(b, p, 8f);
             }
             sound(sl, spots.get(0), SoundEvents.GENERIC_EXPLODE, 0.8f, 1.4f);
@@ -414,7 +414,7 @@ public final class RhyaAI {
         warnCircle(sl, c.add(fwd.scale(2.5)), 3.2f, T);
         AstaFx.later(T, () -> {
             if (!ok(b)) return;
-            FxSend.wall(sl, pal, c.add(0, 0.1, 0), fwd, new Vec3(0, 1, 0), 1.5f, 5.5f, -60, 60, 2.5f, 12, 0, 0.6f);
+            BossFx.wall(sl, pal, c.add(0, 0.1, 0), fwd, new Vec3(0, 1, 0), 1.5f, 5.5f, -60, 60, 2.5f, 12, 0, 0.6f);
             for (Player p : near(b, c.add(fwd.scale(2.5)).add(0, 1, 0), 3.5)) {
                 hurt(b, p, 7f);
                 p.setDeltaMovement(fwd.scale(1.4).add(0, 0.4, 0));
@@ -431,9 +431,9 @@ public final class RhyaAI {
         Vec3 dest = SpaceFx.safe(sl, t.position().add(side), b);
         if (dest == null) return 4;
         int pal = pal(b);
-        FxSend.ring(sl, pal, b.position().add(0, 1, 0), 1.2f, 0.2f, 0.08f, 8);
+        BossFx.ring(sl, pal, b.position().add(0, 1, 0), 1.2f, 0.2f, 0.08f, 8);
         SpaceFx.move(b, dest, b.getYRot());
-        FxSend.ring(sl, pal, dest.add(0, 1, 0), 0.2f, 1.6f, 0.08f, 8);
+        BossFx.ring(sl, pal, dest.add(0, 1, 0), 0.2f, 1.6f, 0.08f, 8);
         sound(sl, dest, SoundEvents.ILLUSIONER_MIRROR_MOVE, 1.2f, 1.3f);
         return 6;
     }
@@ -446,8 +446,8 @@ public final class RhyaAI {
         int pal = STYLES[s.style];
         b.setCopy(pal);
         if (!s.copied.contains(pal)) s.copied.add(pal);
-        FxSend.ring(sl, pal, b.position().add(0, 0.1, 0), 0.3f, 3.5f, 0.1f, 12);
-        FxSend.ring(sl, pal, b.position().add(0, 1.2, 0), 2.0f, 0.3f, 0.08f, 12);
+        BossFx.ring(sl, pal, b.position().add(0, 0.1, 0), 0.3f, 3.5f, 0.1f, 12);
+        BossFx.ring(sl, pal, b.position().add(0, 1.2, 0), 2.0f, 0.3f, 0.08f, 12);
         sound(sl, b.position(), SoundEvents.BOOK_PAGE_TURN, 1.4f, 0.6f);
         for (Player q : near(b, b.position(), 40))
             q.displayClientMessage(Component.literal("Copy: " + STYLE_NAMES[s.style]).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
@@ -475,9 +475,9 @@ public final class RhyaAI {
             if (!ok(b)) return;
             for (int i = 0; i < 4; i++) {
                 double a = i * Math.PI / 2;
-                FxSend.slash(sl, Fx.YAMI, c.add(0, 1.0, 0), new Vec3(Math.cos(a), 0, Math.sin(a)), new Vec3(0, 1, 0), 6.0f, 1.2f, 10, 1.4f, 0.8f);
+                BossFx.slash(sl, Fx.YAMI, c.add(0, 1.0, 0), new Vec3(Math.cos(a), 0, Math.sin(a)), new Vec3(0, 1, 0), 6.0f, 1.2f, 10, 1.4f, 0.8f);
             }
-            FxSend.ring(sl, Fx.YAMI, c.add(0, 0.2, 0), 0.5f, 6.5f, 0.3f, 12);
+            BossFx.ring(sl, Fx.YAMI, c.add(0, 0.2, 0), 0.5f, 6.5f, 0.3f, 12);
             for (Player p : near(b, c.add(0, 1, 0), 6.5)) hurt(b, p, 12f);
             FxSend.shake(sl, c, 0.5f, 8, 16);
             sound(sl, c, SoundEvents.WITHER_SHOOT, 1.2f, 0.6f);
@@ -503,8 +503,8 @@ public final class RhyaAI {
             final Vec3[] l = lines.get(i);
             AstaFx.later(T + i * 4, () -> {
                 if (!ok(b)) return;
-                FxSend.trail(sl, Fx.RIPPER, l[0].add(0, 1.0, 0), l[1].add(0, 1.0, 0), 0.5f, 10);
-                FxSend.trail(sl, Fx.RIPPER, l[0].add(0, 0.2, 0), l[1].add(0, 0.2, 0), 0.25f, 8);
+                BossFx.trail(sl, Fx.RIPPER, l[0].add(0, 1.0, 0), l[1].add(0, 1.0, 0), 0.5f, 10);
+                BossFx.trail(sl, Fx.RIPPER, l[0].add(0, 0.2, 0), l[1].add(0, 0.2, 0), 0.25f, 8);
                 for (Player p : along(b, l[0].add(0, 1, 0), l[1].add(0, 1, 0), 1.0)) hurt(b, p, 10f);
                 sound(sl, centre(l), SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 1.3f);
             });
@@ -572,7 +572,7 @@ public final class RhyaAI {
         AstaFx.later(T, () -> {
             if (!ok(b)) return;
             b.moveTo(end.x, end.y, end.z, b.getYRot(), b.getXRot());
-            FxSend.slash(sl, ANTI, a.add(end).scale(0.5).add(0, 1.2, 0), fwd, new Vec3(0, 1, 0).add(rightOf(fwd).scale(0.6)).normalize(), 3.5f, 0.6f, 8, 1.5f, 0.9f);
+            BossFx.slash(sl, ANTI, a.add(end).scale(0.5).add(0, 1.2, 0), fwd, new Vec3(0, 1, 0).add(rightOf(fwd).scale(0.6)).normalize(), 3.5f, 0.6f, 8, 1.5f, 0.9f);
             for (Player p : along(b, a.add(0, 1, 0), end.add(0, 1, 0), 1.6)) { hurt(b, p, 10f); silence(p, 60); }
             sound(sl, end, SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.5f);
             sound(sl, end, SoundEvents.WITHER_SHOOT, 0.6f, 1.6f);
@@ -590,7 +590,7 @@ public final class RhyaAI {
             if (!ok(b)) return;
             for (int i = 0; i < 3; i++) {
                 double a = i * Math.PI * 2 / 3;
-                FxSend.slash(sl, ANTI, c.add(0, 1.0, 0), new Vec3(Math.cos(a), 0, Math.sin(a)), new Vec3(0, 1, 0), 4f, 0.8f, 8, 1.6f, 0.8f);
+                BossFx.slash(sl, ANTI, c.add(0, 1.0, 0), new Vec3(Math.cos(a), 0, Math.sin(a)), new Vec3(0, 1, 0), 4f, 0.8f, 8, 1.6f, 0.8f);
             }
             for (Player p : near(b, c.add(0, 1, 0), 4)) { hurt(b, p, 9f); silence(p, 60); }
             sound(sl, c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.6f);
@@ -658,7 +658,7 @@ public final class RhyaAI {
             for (int i = 0; i < STYLES.length; i++) {
                 final int pal = STYLES[i], k = i;
                 AstaFx.later(i * 8, () -> {
-                    FxSend.ring(sl, pal, c.add(0, 0.1 + k * 0.3, 0), 0.4f, 5f + k, 0.12f, 14);
+                    BossFx.ring(sl, pal, c.add(0, 0.1 + k * 0.3, 0), 0.4f, 5f + k, 0.12f, 14);
                     sound(sl, c, SoundEvents.BOOK_PAGE_TURN, 1.2f, 0.6f + k * 0.15f);
                 });
             }
@@ -670,7 +670,7 @@ public final class RhyaAI {
             b.setDropChance(EquipmentSlot.MAINHAND, 0f);
             AstaFx.later(30, () -> {
                 FxSend.impactFrame(sl, c.add(0, 1.6, 0), 4, FxSend.FRAME_ASTA, 28);
-                FxSend.ring(sl, ANTI, c.add(0, 0.1, 0), 0.5f, 9f, 0.3f, 16);
+                BossFx.ring(sl, ANTI, c.add(0, 0.1, 0), 0.5f, 9f, 0.3f, 16);
                 FxSend.shake(sl, c, 0.8f, 12, 30);
                 sound(sl, c, SoundEvents.WITHER_SPAWN, 1.0f, 1.2f);
             });
@@ -690,7 +690,7 @@ public final class RhyaAI {
         if (t < 60 && t % 4 == 0) {   // the copied magic leaves him, page by page
             List<Integer> pals = b.ai.copied;
             int pal = pals.isEmpty() ? SIL : pals.get(r.nextInt(pals.size()));
-            Kit.orb(sl, pal, c.add(r.nextDouble(-0.6, 0.6), 0.6 + r.nextDouble(1.4), r.nextDouble(-0.6, 0.6)), new Vec3(0, 0.06, 0), 0.22f, 16);
+            BossFx.orb(sl, pal, c.add(r.nextDouble(-0.6, 0.6), 0.6 + r.nextDouble(1.4), r.nextDouble(-0.6, 0.6)), new Vec3(0, 0.06, 0), 0.22f, 16);
         }
     }
 

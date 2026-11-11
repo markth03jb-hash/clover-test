@@ -76,6 +76,28 @@ public final class BossKit {
     static void warnLine(ServerLevel sl, Vec3 a, Vec3 c, float w, int ticks) { ZenonAI.warnLine(sl, a, c, w, ticks); }
     static Vec3 ground(ServerLevel sl, Vec3 c) { return ZenonAI.ground(sl, c); }
 
+    /**
+     * The wind-up before a blow, so you can see it coming: rings of the boss's magic closing in on it, a glow building
+     * at its hands, and a flare when it lets go.
+     */
+    static void charge(AddonBoss b, int pal, int T) {
+        ServerLevel sl = (ServerLevel) b.level();
+        for (int t = 0; t < T; t += 3) {
+            final float k = t / (float) Math.max(1, T);
+            AstaFx.later(t, () -> {
+                if (!b.isAlive()) return;
+                Vec3 c = b.position();
+                float r = 3.2f * (1 - k) + 0.6f;
+                BossFx.ring(sl, pal, c.add(0, 0.08, 0), r - 0.12f, r, 0.05f, 2);
+                BossFx.orb(sl, pal, c.add(0, b.getBbHeight() * 0.62, 0).add(b.getLookAngle().scale(0.6)), Vec3.ZERO, 0.15f + 0.35f * k, 2);
+            });
+        }
+        AstaFx.later(Math.max(1, T - 1), () -> {
+            if (!b.isAlive()) return;
+            BossFx.ring(sl, pal, b.position().add(0, b.getBbHeight() * 0.55, 0), 0.3f, 2.4f, 0.08f, 6);
+        });
+    }
+
     static void say(AddonBoss b, String who, ChatFormatting col, String line) {
         for (Player p : b.level().getEntitiesOfClass(Player.class, b.getBoundingBox().inflate(48))) {
             p.sendSystemMessage(Component.literal(who + ": ").withStyle(col, ChatFormatting.BOLD)
