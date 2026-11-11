@@ -885,7 +885,8 @@ public final class OssuarchAI {
             Kit.orb(sl, DARK, c.add(r.nextDouble(-0.6, 0.6), 0.6 + r.nextDouble(1.4), r.nextDouble(-0.6, 0.6)), new Vec3(0, 0.06, 0), 0.25f, 18);
             if (t % 9 == 0) sound(sl, c, SoundEvents.BONE_BLOCK_BREAK, 1.0f, 0.6f + t * 0.01f);
         }
-        if (t == 56) {   // the last of him falls in on itself
+        if (t == 56) {   // the last of him falls in on itself - and what he leaves is lying in the dust
+            OssuarchDrops.drop(sl, c);
             FxSend.ring(sl, BONE, c.add(0, 0.1, 0), 0.3f, 5f, 0.2f, 16);
             FxSend.ring(sl, DARK, c.add(0, 0.12, 0), 0.3f, 3.5f, 0.12f, 14);
             for (int k = 0; k < 8; k++) {
