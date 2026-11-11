@@ -50,6 +50,12 @@ public class GrimoireAltarBlock extends Block {
             if (!level.isClientSide && player instanceof ServerPlayer sp) com.ironspellgrimoire.server.ZenonDrops.forge(sp, held);
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
+        if (held.is(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_CORE.get()) && player instanceof ServerPlayer sp0
+                && !com.ironspellgrimoire.server.Familiars.has(sp0)) {   // a Mana Core: hatch your familiar (once)
+            com.ironspellgrimoire.server.Familiars.hatch(sp0, held);
+            return InteractionResult.SUCCESS;
+        }
+        if (held.is(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_CORE.get()) && level.isClientSide) return InteractionResult.SUCCESS;
         if (held.getItem() instanceof com.ironspellgrimoire.item.GrimoireUpgradeItem) {   // bind an upgrade into your grimoire
             if (!level.isClientSide && player instanceof ServerPlayer sp) com.ironspellgrimoire.server.GrimoireUpgrades.bind(sp, held);
             return InteractionResult.sidedSuccess(level.isClientSide);

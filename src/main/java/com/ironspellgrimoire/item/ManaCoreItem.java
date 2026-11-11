@@ -20,6 +20,7 @@ public class ManaCoreItem extends Item {
         tip.add(Component.literal("At the Star Forge, mutate a spell empowered 3/3:").withStyle(ChatFormatting.GRAY));
         tip.add(Component.literal("Echo - each hit lands again for 40%.").withStyle(ChatFormatting.WHITE));
         tip.add(Component.literal("Siphon - 15% of the damage returns as mana.").withStyle(ChatFormatting.WHITE));
+        tip.add(Component.literal("Or at a Grimoire Altar: hatch a familiar (once).").withStyle(ChatFormatting.GOLD));
         tip.add(Component.literal("Left behind when a boss falls.").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
     }
 }
