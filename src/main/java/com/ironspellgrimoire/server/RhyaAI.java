@@ -84,7 +84,7 @@ public final class RhyaAI {
         Player t = target(b);
         if (t == null) {
             b.getNavigation().stop();
-            if (now - s.lastSeen > 600 && b.getHealth() < b.getMaxHealth()) b.heal(0.5f);
+            if (now - s.lastSeen > 600 && now % 200 == 0 && b.getHealth() < b.getMaxHealth()) b.heal(1f);   // left alone: 1 health every 10 s
             return;
         }
         s.lastSeen = now;

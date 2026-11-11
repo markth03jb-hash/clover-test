@@ -19,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
- * The shared body of the later bosses (Licht, Rades, Catherine): phases at fixed health lines, a boss bar, a pose the
+ * The shared body of the later bosses (Licht, Revenant, CurseWitch): phases at fixed health lines, a boss bar, a pose the
  * client model follows, a transformation between phases (he can't be hurt meanwhile), and the same no-one-shot rules as
  * the others - no hit over 15% of max health, no more than 120 a second, a blow can't carry him past a phase line.
  * Each boss supplies its own fight (aiTick), phase lines, transformation and death.
@@ -74,7 +74,7 @@ public abstract class AddonBoss extends Monster {
     public void setPose(int pose) { this.entityData.set(POSE, pose); this.entityData.set(POSE_AT, this.tickCount); }
     public int transforming() { return this.entityData.get(TRANSFORM); }
     public void setTransforming(int t) { this.entityData.set(TRANSFORM, t); }
-    /** A free number the boss can show on its model (Rades: open portals; Catherine: in flight). */
+    /** A free number the boss can show on its model (Revenant: open portals; CurseWitch: in flight). */
     public int flag() { return this.entityData.get(FLAG); }
     public void setFlag(int f) { this.entityData.set(FLAG, f); }
 

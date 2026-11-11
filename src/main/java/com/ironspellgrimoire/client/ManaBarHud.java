@@ -54,12 +54,41 @@ public final class ManaBarHud {
     private static float shown = -1F;
     private static Method getMana;
 
-    /** Iron's own mana bar is hidden while ours is up. */
+    /**
+     * With a grimoire equipped, ours is drawn in place of Iron's own mana bar - at exactly its spot (its anchor and
+     * offsets, worked out by Iron's own code) and its size (98 x 21), so it never lands on the hearts, hunger or XP.
+     */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onOverlay(RenderGuiOverlayEvent.Pre e) {
         var id = e.getOverlay().id();
         if (!"irons_spellbooks".equals(id.getNamespace()) || !id.getPath().contains("mana")) return;
-        if (GrimoireWheel.grimoireIndex() >= 0) e.setCanceled(true);
+        int book = GrimoireWheel.grimoireIndex();
+        if (book < 0) { shown = -1F; return; }
+        e.setCanceled(true);
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.options.hideGui || mc.player.isSpectator()) return;
+        int[] at = ironsSpot(mc, e.getGuiGraphics().guiWidth(), e.getGuiGraphics().guiHeight());
+        try { draw(e.getGuiGraphics(), mc, Mth.clamp(book, 0, COL.length - 1), e.getPartialTick(), at[0], at[1]); } catch (Throwable ignored) { }
+    }
+
+    private static Method barX, barY;
+
+    /** Where Iron's Spellbooks would put its mana bar (top-left of its 98 x 21 image). */
+    private static int[] ironsSpot(Minecraft mc, int W, int H) {
+        try {
+            Class<?> c = io.redspace.ironsspellbooks.gui.overlays.ManaBarOverlay.class;
+            Class<?> anchorC = Class.forName("io.redspace.ironsspellbooks.gui.overlays.ManaBarOverlay$Anchor");
+            if (barX == null) {
+                barX = c.getDeclaredMethod("getBarX", anchorC, int.class); barX.setAccessible(true);
+                barY = c.getDeclaredMethod("getBarY", anchorC, int.class, net.minecraftforge.client.gui.overlay.ForgeGui.class); barY.setAccessible(true);
+            }
+            Object anchor = io.redspace.ironsspellbooks.config.ClientConfigs.MANA_BAR_ANCHOR.get();
+            int x = (Integer) barX.invoke(null, anchor, W) + io.redspace.ironsspellbooks.config.ClientConfigs.MANA_BAR_X_OFFSET.get();
+            int y = (Integer) barY.invoke(null, anchor, H, (net.minecraftforge.client.gui.overlay.ForgeGui) mc.gui) - io.redspace.ironsspellbooks.config.ClientConfigs.MANA_BAR_Y_OFFSET.get();
+            return new int[]{x, y};
+        } catch (Throwable t) {
+            return new int[]{W / 2 + 50, H - 59};   // Iron's default: beside the hunger bar, a row above it
+        }
     }
 
     private static float mana(Minecraft mc) {
@@ -71,17 +100,8 @@ public final class ManaBarHud {
         }
     }
 
-    @SubscribeEvent
-    public static void onGui(RenderGuiEvent.Post e) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.options.hideGui || mc.player.isSpectator()) return;
-        int book = GrimoireWheel.grimoireIndex();
-        if (book < 0) { shown = -1F; return; }
-        book = Mth.clamp(book, 0, COL.length - 1);
-        try { draw(e.getGuiGraphics(), mc, book, e.getPartialTick()); } catch (Throwable ignored) { }
-    }
-
-    private static void draw(GuiGraphics g, Minecraft mc, int book, float pt) {
+    /** Our bar inside Iron's 98 x 21 box at (ix, iy): the pill along the top, the numbers under it where Iron puts its own. */
+    private static void draw(GuiGraphics g, Minecraft mc, int book, float pt, int ix, int iy) {
         int[] c = COL[book];
         boolean anti = book == 0;
         float max = (float) Math.max(1.0, mc.player.getAttributeValue(AttributeRegistry.MAX_MANA.get()));
@@ -90,14 +110,8 @@ public final class ManaBarHud {
         shown = shown < 0 ? frac : shown + (frac - shown) * 0.2F;   // eases toward the real value
         double time = mc.level.getGameTime() + pt;
 
-        int W = g.guiWidth(), H = g.guiHeight();
-        // Iron's layout: a long steel pill centred above the experience bar (its own offsets are honoured)
-        int bw = 90, bh = 7, ox = 0, oy = 0;
-        try {
-            ox = io.redspace.ironsspellbooks.config.ClientConfigs.MANA_BAR_X_OFFSET.get();
-            oy = io.redspace.ironsspellbooks.config.ClientConfigs.MANA_BAR_Y_OFFSET.get();
-        } catch (Throwable ignored) { }
-        int x = W / 2 - bw / 2 + ox, y = H - 39 + oy - (mc.player.isCreative() ? 0 : 0);
+        int bw = 90, bh = 7;
+        int x = ix + 4, y = iy + 3;
         int steel = c[0], dk = darker(c[0], 0.40F), lt = mix(c[0], 0xFFFFFF, 0.45F);
         // steel casing with rounded ends (corner pixels cut), a bright top edge and a dark inside - Iron's bar shape
         g.fill(x - 3, y - 2, x + bw + 3, y + bh + 2, 0xFF000000);
@@ -142,14 +156,12 @@ public final class ManaBarHud {
                 g.fill(px, y + 1, px + 1, y + bh - 1, (al << 24) | c[2]);
             }
         }
-        // the numbers (or ANTI MAGIC) just above the right end
+        // the numbers (or ANTI MAGIC) centred under the bar, where Iron puts its own
         Font f = mc.font;
         String s = anti ? "ANTI MAGIC" : (int) mana + " / " + (int) max;
-        g.pose().pushPose();
-        g.pose().translate(x + bw, y - 9, 0);
-        g.pose().scale(0.5F, 0.5F, 1F);
-        g.drawString(f, Component.literal(s), -f.width(s), 0, 0xFF000000 | c[4], true);
-        g.pose().popPose();
+        boolean text = true;
+        try { text = io.redspace.ironsspellbooks.config.ClientConfigs.MANA_BAR_TEXT_VISIBLE.get(); } catch (Throwable ignored) { }
+        if (text) g.drawString(f, Component.literal(s), ix + 49 - f.width(s) / 2, iy + 11, 0xFF000000 | c[4], true);
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
     }
 

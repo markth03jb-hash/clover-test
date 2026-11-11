@@ -32,11 +32,11 @@ public final class AddonSounds {
             SOUNDS.register("music.zenon_2", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.zenon_2"))),
             SOUNDS.register("music.zenon_3", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.zenon_3"))));
 
-    /** Vetto's boss music, one loop per phase (tools/vetto_music.py). */
-    public static final java.util.List<RegistryObject<SoundEvent>> VETTO_MUSIC = java.util.List.of(
-            SOUNDS.register("music.vetto_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.vetto_1"))),
-            SOUNDS.register("music.vetto_2", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.vetto_2"))),
-            SOUNDS.register("music.vetto_3", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.vetto_3"))));
+    /** BeastOfDespair's boss music, one loop per phase (tools/vetto_music.py). */
+    public static final java.util.List<RegistryObject<SoundEvent>> BEAST_MUSIC = java.util.List.of(
+            SOUNDS.register("music.beast_of_despair_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.beast_of_despair_1"))),
+            SOUNDS.register("music.beast_of_despair_2", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.beast_of_despair_2"))),
+            SOUNDS.register("music.beast_of_despair_3", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.beast_of_despair_3"))));
 
     /** Rhya's boss music, one loop per phase (tools/rhya_music.py). */
     public static final java.util.List<RegistryObject<SoundEvent>> RHYA_MUSIC = java.util.List.of(
@@ -44,15 +44,15 @@ public final class AddonSounds {
             SOUNDS.register("music.rhya_2", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.rhya_2"))),
             SOUNDS.register("music.rhya_3", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.rhya_3"))));
 
-    /** Licht's, Rades' and Catherine's music (tools/boss3_music.py). */
+    /** Licht's, Revenant' and CurseWitch's music (tools/boss3_music.py). */
     public static final java.util.List<RegistryObject<SoundEvent>> LICHT_MUSIC = java.util.List.of(
             SOUNDS.register("music.licht_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.licht_1"))),
             SOUNDS.register("music.licht_2", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.licht_2"))),
             SOUNDS.register("music.licht_3", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.licht_3"))));
-    public static final java.util.List<RegistryObject<SoundEvent>> RADES_MUSIC = java.util.List.of(
-            SOUNDS.register("music.rades_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.rades_1"))));
-    public static final java.util.List<RegistryObject<SoundEvent>> CATHERINE_MUSIC = java.util.List.of(
-            SOUNDS.register("music.catherine_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.catherine_1"))));
+    public static final java.util.List<RegistryObject<SoundEvent>> REVENANT_MUSIC = java.util.List.of(
+            SOUNDS.register("music.revenant_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.revenant_1"))));
+    public static final java.util.List<RegistryObject<SoundEvent>> CURSE_WITCH_MUSIC = java.util.List.of(
+            SOUNDS.register("music.curse_witch_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.curse_witch_1"))));
 
     /** The registered sound for a kind ("slash", "blast"...), or null. */
     public static SoundEvent get(String kind) {

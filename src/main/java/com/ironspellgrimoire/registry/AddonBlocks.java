@@ -17,6 +17,15 @@ public final class AddonBlocks {
     public static final RegistryObject<Item> GRIMOIRE_ALTAR_ITEM = AddonItemRegistry.ITEMS.register("grimoire_altar",
             () -> new BlockItem(GRIMOIRE_ALTAR.get(), new Item.Properties()));
 
+    /** The Poster Board (3 wide, 2 tall): where bounties come from. */
+    public static final RegistryObject<Block> POSTER_BOARD = BLOCKS.register("poster_board", com.ironspellgrimoire.block.PosterBoardBlock::new);
+    public static final RegistryObject<Block> POSTER_BOARD_PART = BLOCKS.register("poster_board_part", com.ironspellgrimoire.block.PosterBoardPartBlock::new);
+    public static final RegistryObject<Item> POSTER_BOARD_ITEM = AddonItemRegistry.ITEMS.register("poster_board",
+            () -> new BlockItem(POSTER_BOARD.get(), new Item.Properties()));
+
+    /** A rift's door seal (server/Rifts). */
+    public static final RegistryObject<Block> RIFT_SEAL = BLOCKS.register("rift_seal", com.ironspellgrimoire.block.RiftSealBlock::new);
+
     /** Touch the class so its items are added to the item register before it is registered. */
     public static void init() {}
 }

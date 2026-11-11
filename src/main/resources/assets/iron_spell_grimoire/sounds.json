@@ -177,32 +177,32 @@
       }
     ]
   },
-  "music.vetto_1": {
+  "music.beast_of_despair_1": {
     "category": "music",
-    "subtitle": "subtitles.iron_spell_grimoire.music.vetto",
+    "subtitle": "subtitles.iron_spell_grimoire.music.beast_of_despair",
     "sounds": [
       {
-        "name": "iron_spell_grimoire:music/vetto_1",
+        "name": "iron_spell_grimoire:music/beast_of_despair_1",
         "stream": true
       }
     ]
   },
-  "music.vetto_2": {
+  "music.beast_of_despair_2": {
     "category": "music",
-    "subtitle": "subtitles.iron_spell_grimoire.music.vetto",
+    "subtitle": "subtitles.iron_spell_grimoire.music.beast_of_despair",
     "sounds": [
       {
-        "name": "iron_spell_grimoire:music/vetto_2",
+        "name": "iron_spell_grimoire:music/beast_of_despair_2",
         "stream": true
       }
     ]
   },
-  "music.vetto_3": {
+  "music.beast_of_despair_3": {
     "category": "music",
-    "subtitle": "subtitles.iron_spell_grimoire.music.vetto",
+    "subtitle": "subtitles.iron_spell_grimoire.music.beast_of_despair",
     "sounds": [
       {
-        "name": "iron_spell_grimoire:music/vetto_3",
+        "name": "iron_spell_grimoire:music/beast_of_despair_3",
         "stream": true
       }
     ]
@@ -267,22 +267,22 @@
       }
     ]
   },
-  "music.rades_1": {
+  "music.revenant_1": {
     "category": "music",
-    "subtitle": "subtitles.iron_spell_grimoire.music.rades",
+    "subtitle": "subtitles.iron_spell_grimoire.music.revenant",
     "sounds": [
       {
-        "name": "iron_spell_grimoire:music/rades_1",
+        "name": "iron_spell_grimoire:music/revenant_1",
         "stream": true
       }
     ]
   },
-  "music.catherine_1": {
+  "music.curse_witch_1": {
     "category": "music",
-    "subtitle": "subtitles.iron_spell_grimoire.music.catherine",
+    "subtitle": "subtitles.iron_spell_grimoire.music.curse_witch",
     "sounds": [
       {
-        "name": "iron_spell_grimoire:music/catherine_1",
+        "name": "iron_spell_grimoire:music/curse_witch_1",
         "stream": true
       }
     ]

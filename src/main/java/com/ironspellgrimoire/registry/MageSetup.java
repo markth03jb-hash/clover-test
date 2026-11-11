@@ -16,12 +16,11 @@ public final class MageSetup {
     public static void attributes(EntityAttributeCreationEvent e) {
         e.put(AddonEntities.MAGE.get(), com.ironspellgrimoire.entity.MageEnemy.attributes().build());
         e.put(AddonEntities.ZENON.get(), com.ironspellgrimoire.entity.Zenon.attributes().build());
-        e.put(AddonEntities.VETTO.get(), com.ironspellgrimoire.entity.Vetto.attributes().build());
+        e.put(AddonEntities.BEAST_OF_DESPAIR.get(), com.ironspellgrimoire.entity.BeastOfDespair.attributes().build());
         e.put(AddonEntities.RHYA.get(), com.ironspellgrimoire.entity.Rhya.attributes().build());
-        e.put(AddonEntities.RIVAL.get(), com.ironspellgrimoire.entity.Rival.attributes().build());
         e.put(AddonEntities.LICHT.get(), com.ironspellgrimoire.entity.Licht.attributes().build());
-        e.put(AddonEntities.RADES.get(), com.ironspellgrimoire.entity.Rades.attributes().build());
-        e.put(AddonEntities.CATHERINE.get(), com.ironspellgrimoire.entity.Catherine.attributes().build());
+        e.put(AddonEntities.REVENANT.get(), com.ironspellgrimoire.entity.Revenant.attributes().build());
+        e.put(AddonEntities.CURSE_WITCH.get(), com.ironspellgrimoire.entity.CurseWitch.attributes().build());
     }
 
     @SubscribeEvent

@@ -296,6 +296,7 @@ public final class Rifts {
                 for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) set(sl, cx + dx, Y - 1, cz + dz, Blocks.POLISHED_BLACKSTONE.defaultBlockState());
             }
             if (room.type == REST) for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(sl, cx + dx, Y - 1, cz + dz, Blocks.CRYING_OBSIDIAN.defaultBlockState());
+            decorate(sl, r, room, cx, cz, rnd);
             // doorways and the corridors to the next rooms
             for (int dd : room.doors) {
                 int ax = dd == 0 ? 1 : dd == 1 ? -1 : 0, az = dd == 2 ? 1 : dd == 3 ? -1 : 0;
@@ -311,17 +312,75 @@ public final class Rifts {
         r.built = true;
     }
 
+    /**
+     * What makes each room of a rift its own: a ring of glowing runes in the floor, amethyst growing on the pillars,
+     * windows broken through the outer walls onto the rift's sky, and the rift's law written into the room -
+     * Mana Burn: veins of crimson in the walls; Low Gravity: slabs of stone hanging in the air; Echo: pillars of mirror
+     * glass; Hunted: patches of sculk and soul lanterns in the dark.
+     */
+    private static void decorate(ServerLevel sl, Rift r, Room room, int cx, int cz, ThreadLocalRandom rnd) {
+        for (int i = 0; i < 16; i++) {   // the rune ring
+            double a = i * Math.PI / 8;
+            int x = cx + (int) Math.round(Math.cos(a) * 4.5), z = cz + (int) Math.round(Math.sin(a) * 4.5);
+            set(sl, x, Y - 1, z, i % 2 == 0 ? Blocks.CRYING_OBSIDIAN.defaultBlockState() : Blocks.CHISELED_POLISHED_BLACKSTONE.defaultBlockState());
+        }
+        for (int[] p : new int[][]{{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) {
+            set(sl, cx + p[0] + 1, Y, cz + p[1], Blocks.AMETHYST_CLUSTER.defaultBlockState().setValue(net.minecraft.world.level.block.AmethystClusterBlock.FACING, net.minecraft.core.Direction.EAST));
+            set(sl, cx + p[0], Y + 4, cz + p[1], Blocks.AMETHYST_CLUSTER.defaultBlockState());
+        }
+        // windows onto the rift's sky, in walls with no door
+        for (int side = 0; side < 4; side++) {
+            if (room.doors.contains(side)) continue;
+            int ax = side == 0 ? 1 : side == 1 ? -1 : 0, az = side == 2 ? 1 : side == 3 ? -1 : 0;
+            int sx = az != 0 ? 1 : 0, sz = ax != 0 ? 1 : 0;
+            for (int w = -2; w <= 2; w++) for (int dy = 2; dy <= 5; dy++) {
+                if (Math.abs(w) == 2 && (dy == 2 || dy == 5)) continue;   // rounded corners
+                set(sl, cx + ax * HALF + sx * w, Y + dy, cz + az * HALF + sz * w, rnd.nextInt(5) == 0 ? Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState() : Blocks.AIR.defaultBlockState());
+            }
+            for (int w = -3; w <= 3; w++) set(sl, cx + ax * (HALF - 1) + sx * w, Y - 1, cz + az * (HALF - 1) + sz * w, Blocks.POLISHED_BLACKSTONE.defaultBlockState());   // a sill
+        }
+        // the law
+        if ((r.rules & MANA_BURN) != 0) for (int i = 0; i < 18; i++) {
+            int side = rnd.nextInt(4), w = rnd.nextInt(-6, 7), dy = rnd.nextInt(0, H);
+            int ax = side == 0 ? 1 : side == 1 ? -1 : 0, az = side == 2 ? 1 : side == 3 ? -1 : 0, sx = az != 0 ? 1 : 0, sz = ax != 0 ? 1 : 0;
+            BlockPos bp = new BlockPos(cx + ax * HALF + sx * w, Y + dy, cz + az * HALF + sz * w);
+            if (!sl.getBlockState(bp).isAir()) set(sl, bp.getX(), bp.getY(), bp.getZ(), (i % 3 == 0 ? Blocks.SHROOMLIGHT : Blocks.CRIMSON_HYPHAE).defaultBlockState());
+        }
+        if ((r.rules & LOW_GRAVITY) != 0) for (int i = 0; i < 6; i++) {
+            int x = cx + rnd.nextInt(-5, 6), z = cz + rnd.nextInt(-5, 6), y = Y + rnd.nextInt(2, 6);
+            if (Math.abs(x - cx) < 2 && Math.abs(z - cz) < 2) continue;
+            set(sl, x, y, z, Blocks.SMOOTH_STONE_SLAB.defaultBlockState());
+            if (rnd.nextBoolean()) set(sl, x + 1, y, z, Blocks.SMOOTH_STONE_SLAB.defaultBlockState());
+        }
+        if ((r.rules & ECHO) != 0) for (int[] p : new int[][]{{-3, 0}, {3, 0}, {0, -3}, {0, 3}}) {
+            if (room.type == RELIC || room.type == ELITE || room.type == REST) break;
+            for (int dy = 0; dy < 3; dy++) set(sl, cx + p[0], Y + dy, cz + p[1], Blocks.TINTED_GLASS.defaultBlockState());
+            set(sl, cx + p[0], Y + 3, cz + p[1], Blocks.AMETHYST_CLUSTER.defaultBlockState());
+        }
+        if ((r.rules & HUNTED) != 0) {
+            for (int i = 0; i < 10; i++) set(sl, cx + rnd.nextInt(-6, 7), Y - 1, cz + rnd.nextInt(-6, 7), Blocks.SCULK.defaultBlockState());
+            for (int[] p : new int[][]{{-6, 0}, {6, 0}}) set(sl, cx + p[0], Y, cz + p[1], Blocks.SOUL_LANTERN.defaultBlockState());
+        }
+    }
+
     /** Seals (or opens) a room's doorways with walls of violet glass. */
     private static void seal(ServerLevel sl, Rift r, Room room, boolean shut) {
         Vec3 c = r.centre(room);
         int cx = (int) Math.floor(c.x), cz = (int) Math.floor(c.z);
-        BlockState s = shut ? Blocks.PURPLE_STAINED_GLASS.defaultBlockState() : Blocks.AIR.defaultBlockState();
         for (int dd : room.doors) {
             int ax = dd == 0 ? 1 : dd == 1 ? -1 : 0, az = dd == 2 ? 1 : dd == 3 ? -1 : 0;
             int sx = az != 0 ? 1 : 0, sz = ax != 0 ? 1 : 0;
+            BlockState s = shut ? com.ironspellgrimoire.registry.AddonBlocks.RIFT_SEAL.get().defaultBlockState()
+                    .setValue(com.ironspellgrimoire.block.RiftSealBlock.AXIS, ax != 0 ? net.minecraft.core.Direction.Axis.X : net.minecraft.core.Direction.Axis.Z) : Blocks.AIR.defaultBlockState();
             for (int w = -1; w <= 1; w++) for (int dy = 0; dy <= 3; dy++) set(sl, cx + ax * HALF + sx * w, Y + dy, cz + az * HALF + sz * w, s);
+            Vec3 door = new Vec3(cx + ax * HALF + 0.5, Y + 2, cz + az * HALF + 0.5);
+            if (shut) FxSend.ring(sl, VOIDP, door, 0.2f, 2.2f, 0.08f, 10);
+            else {   // the seal shatters
+                FxSend.ring(sl, VOIDP, door, 0.3f, 3f, 0.1f, 12);
+                for (int k = 0; k < 4; k++) Kit.orb(sl, VOIDP, door.add(sx * (k - 1.5) * 0.7, (k % 2) - 0.5, sz * (k - 1.5) * 0.7), new Vec3(ax * 0.06, 0.04, az * 0.06), 0.18f, 10);
+            }
         }
-        sl.playSound(null, BlockPos.containing(c), shut ? SoundEvents.IRON_DOOR_CLOSE : SoundEvents.IRON_DOOR_OPEN, SoundSource.BLOCKS, 1.2f, 0.6f);
+        sl.playSound(null, BlockPos.containing(c), shut ? SoundEvents.AMETHYST_BLOCK_RESONATE : SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.6f, shut ? 0.6f : 0.8f);
     }
 
     // ================================================================== going in and out
@@ -404,10 +463,15 @@ public final class Rifts {
         List<ServerPlayer> near = new ArrayList<>();
         for (ServerPlayer p : world.players()) if (p.position().distanceToSqr(at) < 96 * 96) near.add(p);
         if (near.isEmpty()) return;
-        if (tick % 40 == 0) {
-            RiftFx.cut(world, at.add(0, 1.6, 0), new Vec3(0, 1, 0), new Vec3(1, 0, 0), 1.6f, 44);
-            FxSend.ring(world, VOIDP, at.add(0, 0.1, 0), 1.6f, 1.7f, 0.05f, 42);
+        if (tick % 40 == 0) {   // a tall crack of light with a second one crossing it, a ring on the ground and a beam up into the sky
+            RiftFx.cut(world, at.add(0, 2.2, 0), new Vec3(0, 1, 0), new Vec3(1, 0, 0), 2.6f, 44);
+            RiftFx.cut(world, at.add(0, 2.2, 0), new Vec3(0.35, 1, 0).normalize(), new Vec3(0, 0, 1), 2.0f, 44);
+            FxSend.ring(world, VOIDP, at.add(0, 0.1, 0), 2.2f, 2.3f, 0.06f, 42);
+            FxSend.beam(world, VOIDP, at.add(0, 4.5, 0), at.add(0, 60, 0), 0.6f, 42);
         }
+        if (tick % 10 == 0) Kit.orb(world, VOIDP, at.add(ThreadLocalRandom.current().nextDouble(-1.5, 1.5), 0.3, ThreadLocalRandom.current().nextDouble(-1.5, 1.5)), new Vec3(0, 0.08, 0), 0.15f, 20);
+        if (tick % 60 == 0) for (ServerPlayer p : near) if (p.position().distanceToSqr(at) < 18 * 18)
+            world.playSound(null, BlockPos.containing(at), SoundEvents.BEACON_AMBIENT, SoundSource.AMBIENT, 1.2f, 0.6f);   // its hum
         for (ServerPlayer p : near) {
             double dx = p.getX() - r.x, dz = p.getZ() - r.z, dy = p.getY() - r.y;
             if (tick % 20 == 0 && dx * dx + dz * dz < 100) {
@@ -447,6 +511,15 @@ public final class Rifts {
             if (room.type == REST || (room.type == RELIC && room.cleared)) pad(sl, r, room, here, tick);
         }
         if (tick % 20 == 0) for (ServerPlayer p : inside) objective(p, r, roomOf(r, p.position()));
+        if (tick % 15 == 0) for (Room room : in.keySet()) ambience(sl, r, room, rnd);
+    }
+
+    /** Motes of the rift's light drifting up through an occupied room, coloured by its law. */
+    private static void ambience(ServerLevel sl, Rift r, Room room, ThreadLocalRandom rnd) {
+        int pal = (r.rules & MANA_BURN) != 0 ? 18 : (r.rules & HUNTED) != 0 ? Fx.DARK : (r.rules & ECHO) != 0 ? Fx.MIRROR : VOIDP;
+        Vec3 c = r.centre(room);
+        for (int i = 0; i < 3; i++)
+            Kit.orb(sl, i == 0 ? VOIDP : pal, c.add(rnd.nextDouble(-6.5, 6.5), rnd.nextDouble(0, 2), rnd.nextDouble(-6.5, 6.5)), new Vec3(rnd.nextDouble(-0.01, 0.01), 0.03, rnd.nextDouble(-0.01, 0.01)), 0.1f, 40);
     }
 
     private static void activate(ServerLevel sl, Rift r, int idx, Room room, int players) {
@@ -549,13 +622,13 @@ public final class Rifts {
         Vec3 c = r.centre(room);
         EntityType<? extends Mob> t = room.type == RELIC ? switch (rnd.nextInt(4)) {   // the big ones guard relics; the lesser ones, the elite rooms
             case 0 -> AddonEntities.ZENON.get();
-            case 1 -> AddonEntities.VETTO.get();
+            case 1 -> AddonEntities.BEAST_OF_DESPAIR.get();
             case 2 -> AddonEntities.RHYA.get();
             default -> AddonEntities.LICHT.get();
         } : switch (rnd.nextInt(4)) {
-            case 0 -> AddonEntities.RADES.get();
-            case 1 -> AddonEntities.CATHERINE.get();
-            case 2 -> AddonEntities.VETTO.get();
+            case 0 -> AddonEntities.REVENANT.get();
+            case 1 -> AddonEntities.CURSE_WITCH.get();
+            case 2 -> AddonEntities.BEAST_OF_DESPAIR.get();
             default -> AddonEntities.RHYA.get();
         };
         Mob m = t.create(sl);
@@ -714,6 +787,22 @@ public final class Rifts {
         p.invulnerableTime = 60;
         leave(p);
         p.sendSystemMessage(Component.literal("The rift threw you out.").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
+    }
+
+    // ================================================================== the rift can't be broken
+    @SubscribeEvent
+    public static void onBreak(net.minecraftforge.event.level.BlockEvent.BreakEvent e) {
+        if (e.getLevel() instanceof Level l && l.dimension().equals(RIFT) && !(e.getPlayer() != null && e.getPlayer().isCreative() && e.getPlayer().hasPermissions(2))) e.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onPlace(net.minecraftforge.event.level.BlockEvent.EntityPlaceEvent e) {
+        if (e.getLevel() instanceof Level l && l.dimension().equals(RIFT) && !(e.getEntity() instanceof ServerPlayer p && p.isCreative() && p.hasPermissions(2))) e.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onExplode(net.minecraftforge.event.level.ExplosionEvent.Detonate e) {
+        if (e.getLevel().dimension().equals(RIFT)) e.getAffectedBlocks().clear();
     }
 
     // ================================================================== /rift

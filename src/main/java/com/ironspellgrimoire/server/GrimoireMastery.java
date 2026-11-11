@@ -82,17 +82,6 @@ public final class GrimoireMastery {
         int i = id.indexOf(':');
         return ULTIMATES.contains(i < 0 ? id : id.substring(i + 1));
     }
-    /** Grimoire ranks, one per level: the book itself changes as it climbs (GrimoireFloatRenderer, RankPips). */
-    public static final String[] RANKS = {"", "I", "II", "III", "IV", "V"};
-    public static final String[] RANK_NAMES = {"", "Blank", "Inked", "Gilded", "Radiant", "Legendary"};
-    /** The colour of each rank: grey, white, gold, bright gold, and a shimmering clover green for Legendary. */
-    public static final int[] RANK_COLORS = {0x808080, 0x9A9A9A, 0xE8E8E8, 0xE8B84A, 0xFFE070, 0x5CFF8A};
-
-    /** "Rank III - Gilded". */
-    public static MutableComponent rankName(int level) {
-        int l = Math.max(1, Math.min(MAX_LEVEL, level));
-        return Component.literal("Rank " + RANKS[l] + " - " + RANK_NAMES[l]).withStyle(s -> s.withColor(RANK_COLORS[l]));
-    }
     /** Total XP needed to reach level 2, 3, 4, 5. */
     public static final int[] THRESHOLDS = {0, 0, 800, 2400, 5200, 9000};
     private static final String TAG = "arcane_mastery";
@@ -455,8 +444,7 @@ public final class GrimoireMastery {
         sl.playSound(null, at.x, at.y, at.z, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1f, 0.7f);
         if (level == MAX_LEVEL) sl.playSound(null, at.x, at.y, at.z, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.8f, 1f);
         List<String> unlocked = unlockedAt(b, level);
-        MutableComponent msg = Component.translatable("ui.iron_spell_grimoire.mastery.level_up", level).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-                .append(Component.literal("  ")).append(rankName(level).withStyle(ChatFormatting.BOLD));
+        MutableComponent msg = Component.translatable("ui.iron_spell_grimoire.mastery.level_up", level).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
         if (!unlocked.isEmpty()) msg.append(Component.literal(" — ").withStyle(ChatFormatting.GRAY))
                 .append(Component.translatable("ui.iron_spell_grimoire.mastery.unlocked", spellNames(unlocked)).withStyle(ChatFormatting.YELLOW));
         p.displayClientMessage(msg, true);

@@ -146,6 +146,9 @@ public class GrimoireBookScreen extends Screen {
         boolean hq = inside(mx, my, x0 + BW - 92, y0 - 16, 92, 12);
         g.drawString(f, q, x0 + BW - f.width(q), y0 - 15, hq ? 0xFFFFFFFF : 0xFF000000 | c[5], true);
         g.drawString(f, getTitle(), x0, y0 - 15, 0xFF000000 | c[5], true);
+        // your merit stars (bounties and rifts), under the book
+        String ms = "\u2605 " + BountyHud.stars() + " merit stars";
+        g.drawString(f, ms, x0 + (BW - f.width(ms)) / 2, y0 + BH + 6, 0xFFFFD27A, true);
 
         if (ids.isEmpty()) return;
         String num = (page + 1) + " / " + pages();

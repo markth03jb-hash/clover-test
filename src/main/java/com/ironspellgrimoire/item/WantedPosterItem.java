@@ -38,7 +38,7 @@ public class WantedPosterItem extends Item {
     @Override
     public void appendHoverText(ItemStack s, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         CompoundTag b = bounty(s);
-        if (b.isEmpty()) { tip.add(Component.literal("Ring a village bell for a bounty.").withStyle(ChatFormatting.GRAY)); return; }
+        if (b.isEmpty()) { tip.add(Component.literal("Take one from a Poster Board.").withStyle(ChatFormatting.GRAY)); return; }
         tip.add(Bounties.modsText(b.getInt("Mods")));
         if (b.getInt("State") == Bounties.STATE_DONE) {
             tip.add(Component.literal("Brought down by " + b.getString("Hunter")).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC));
@@ -49,7 +49,7 @@ public class WantedPosterItem extends Item {
             long left = Math.max(0, b.getLong("Deadline") - level.getGameTime());
             tip.add(Component.literal("Time left: " + time(left)).withStyle(left < 12000 ? ChatFormatting.RED : ChatFormatting.GRAY));
         }
-        tip.add(Component.literal("Follow the compass at the top of your screen.").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        tip.add(Component.literal("Follow the tracker at the top right. Sneak + right-click twice to tear it up.").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
     }
 
     public static String time(long ticks) {
@@ -61,6 +61,13 @@ public class WantedPosterItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player p, InteractionHand hand) {
         ItemStack s = p.getItemInHand(hand);
         CompoundTag b = bounty(s);
+        if (!level.isClientSide && !b.isEmpty() && b.getInt("State") < Bounties.STATE_DONE && p.isShiftKeyDown() && p instanceof net.minecraft.server.level.ServerPlayer sp) {
+            long now = level.getGameTime(), at = s.getOrCreateTag().getLong("TearAt");   // tearing it up: twice, so it can't happen by accident
+            if (now - at <= 60) { Bounties.cancel(sp); return InteractionResultHolder.sidedSuccess(s, level.isClientSide); }
+            s.getOrCreateTag().putLong("TearAt", now);
+            p.displayClientMessage(Component.literal("Sneak and right-click again to tear up this poster.").withStyle(ChatFormatting.RED), true);
+            return InteractionResultHolder.sidedSuccess(s, level.isClientSide);
+        }
         if (!level.isClientSide && !b.isEmpty() && b.getInt("State") < Bounties.STATE_DONE) {
             double dx = b.getInt("X") - p.getX(), dz = b.getInt("Z") - p.getZ();
             p.displayClientMessage(Component.literal(Bounties.NAMES[b.getInt("Boss")] + ": " + (int) Math.hypot(dx, dz) + " blocks "

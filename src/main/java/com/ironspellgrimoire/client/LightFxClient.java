@@ -37,7 +37,7 @@ import org.joml.Vector3f;
 public final class LightFxClient {
     private LightFxClient() {}
 
-    private static final int GOLD = 8, WHITE = 28, SILVER = 6, DARK = 10;
+    private static final int GOLD = 8, WHITE = 28, SILVER = 6, DARK = 31;
     private static final double TAU = Math.PI * 2;
 
     private static final class L {

@@ -17,11 +17,10 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.MAGIC_BOLT.get(), NoopRenderer::new);
         e.registerEntityRenderer(AddonEntities.MAGE.get(), MageRenderer::new);
         e.registerEntityRenderer(AddonEntities.ZENON.get(), ZenonRenderer::new);
-        e.registerEntityRenderer(AddonEntities.VETTO.get(), VettoRenderer::new);
+        e.registerEntityRenderer(AddonEntities.BEAST_OF_DESPAIR.get(), BeastRenderer::new);
         e.registerEntityRenderer(AddonEntities.RHYA.get(), RhyaRenderer::new);
-        e.registerEntityRenderer(AddonEntities.RIVAL.get(), RivalRenderer::new);
         e.registerEntityRenderer(AddonEntities.LICHT.get(), c -> new BossRenderer<>(c, "licht", true, 1.05F));
-        e.registerEntityRenderer(AddonEntities.RADES.get(), c -> new BossRenderer<>(c, "rades", false, 1.0F));
-        e.registerEntityRenderer(AddonEntities.CATHERINE.get(), c -> new BossRenderer<>(c, "catherine", true, 0.95F));
+        e.registerEntityRenderer(AddonEntities.REVENANT.get(), c -> new BossRenderer<>(c, "revenant", false, 1.0F));
+        e.registerEntityRenderer(AddonEntities.CURSE_WITCH.get(), c -> new BossRenderer<>(c, "curse_witch", true, 0.95F));
     }
 }
