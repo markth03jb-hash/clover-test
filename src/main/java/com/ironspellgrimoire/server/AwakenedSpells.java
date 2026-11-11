@@ -40,6 +40,11 @@ import net.minecraftforge.fml.common.Mod;
  *   <li><b>Light - Light Magic: Lamp of Avior.</b> Light gathers round you, then is thrown as one star-bright lamp
  *       that bursts where it lands - an explosion of light strong enough to stop a tornado, with a star's cross flaring
  *       over it.</li>
+ *   <li><b>Time - Time Reversal Magic: Chrono Anastasis.</b> Julius's time reversal: a clock face spreads over the
+ *       ground 18 blocks round him and its hands run backwards. You and your friends inside are rewound - back to the
+ *       healthiest you were in the last six seconds, flames gone - your cooldowns run back twenty seconds and the book
+ *       fills its stored time. Foes inside are caught in the reversed moment (frozen; your blows on them are held). Then
+ *       the hands snap forward and everything held lands at once.</li>
  * </ul>
  */
 @Mod.EventBusSubscriber(modid = IronSpellGrimoire.MODID)
@@ -268,6 +273,87 @@ public final class AwakenedSpells {
     }
 
     private static Vec3 i0(Vec3 c) { return c.add(0, 1.6, 0); }
+
+    // ================================================================== Time: Chrono Anastasis
+    public static void chronoAnastasis(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        final Vec3 c = p.position();
+        final float R = 18f;
+        final int T = 64;
+        Vec3 fl = flat(p.getLookAngle());
+        final Vec3 face = fl.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : fl.normalize();
+        // the clock face spreads out over the ground, its hands already running backwards
+        for (int k = 1; k <= 3; k++) {
+            final int kk = k;
+            AstaFx.later(k * 3 - 3, () -> TimeFx.clock(sl, c.add(0, 0.06, 0), UP, face, R * kk / 4f, 5, 3, -0.9f));
+        }
+        final int[] clockId = {-1};
+        AstaFx.later(9, () -> {
+            clockId[0] = TimeFx.clock(sl, c.add(0, 0.06, 0), UP, face, R, T - 9, 3, -0.6f);
+            TimeFx.clock(sl, c.add(0, 9, 0), new Vec3(0, -1, 0), face, R * 0.35f, T - 9, 0, -1.2f);   // and a smaller one above, turning back faster
+        });
+        FxSend.ring(sl, Fx.TIME, c.add(0, 0.05, 0), 0.5f, R, 0.2f, 14);
+        TimeFx.screenNear(sl, c, R + 6, 30, 1);
+        FxSend.impactFrame(sl, c.add(0, 1, 0), 3, FxSend.FRAME_JULIUS, R + 20);
+        sound(sl, c, SoundEvents.BEACON_POWER_SELECT, 1.4f, 0.5f);
+        sound(sl, c, SoundEvents.TRIDENT_RETURN, 1.4f, 0.5f);
+        for (int i = 0; i < 6; i++) AstaFx.later(i * 4, () -> sound(sl, c, SoundEvents.COMPARATOR_CLICK, 1.4f, 0.4f));
+        // your own time runs back: cooldowns twenty seconds back, the book's stored time filled
+        try {
+            var cd = io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).getPlayerCooldowns();
+            cd.tick(400);
+            cd.syncToPlayer(p);
+        } catch (Throwable ignored) {}
+        TimeStop.addStored(p, TimeStop.MAX_STORED);
+        // friends inside are rewound: their past selves flicker back, then they are as they were at their best
+        for (ServerPlayer ally : sl.getEntitiesOfClass(ServerPlayer.class, new AABB(c, c).inflate(R), x -> x.isAlive() && x.position().distanceTo(c) <= R)) {
+            List<double[]> path = TimeStop.path(ally, 120);
+            for (int i = 0; i < Math.min(5, path.size()); i++) {
+                final double[] q = path.get(path.size() - 1 - (int) ((i + 1) * (path.size() - 1) / 5.0));
+                final float al = 0.5f - 0.07f * i;
+                AstaFx.later(1 + i * 2, () -> TimeFx.ghost(sl, ally, new Vec3(q[2], q[3], q[4]), (float) q[5], 10, 0, 0, al));
+            }
+            double best = ally.getHealth();
+            for (double[] q : path) best = Math.max(best, q[1]);
+            final float to = (float) best;
+            AstaFx.later(12, () -> {
+                if (!ally.isAlive()) return;
+                if (to > ally.getHealth()) ally.setHealth(Math.min(ally.getMaxHealth(), to));
+                ally.clearFire();
+                ally.fallDistance = 0;
+                FxSend.ring(sl, Fx.TIME, ally.position().add(0, 0.05, 0), 0.3f, 2.2f, 0.06f, 10);
+                sound(sl, ally.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1.0f, 0.6f);
+            });
+        }
+        // foes inside are caught in the reversed moment
+        AstaFx.later(10, () -> {
+            if (!alive(p)) return;
+            for (LivingEntity e : Kit.near(sl, p, c.add(0, 1, 0), R)) {
+                if (e instanceof ServerPlayer) continue;
+                TimeStop.freeze(p, e, T - 10, true, null);
+                TimeFx.frozenMark(sl, e, T - 10);
+            }
+            TimeStop.freezeShots(sl, c.add(0, 2, 0), R + 2, T - 10, p);
+        });
+        // the hands snap forward: everything held lands at once
+        AstaFx.later(T, () -> {
+            if (!alive(p)) return;
+            if (clockId[0] >= 0) FxSend.kill(sl, clockId[0], c);
+            for (LivingEntity e : Kit.near(sl, p, c.add(0, 1, 0), R + 1)) {
+                if (e instanceof ServerPlayer) continue;
+                hit(p, e, power, "chrono_anastasis");
+                Kit.push(e, mid(e).subtract(c), 0.6, 0.3);
+            }
+            TimeFx.clock(sl, c.add(0, 0.06, 0), UP, face, R, 10, 0, 2.5f);   // a last turn, forwards, very fast
+            FxSend.ring(sl, Fx.TIME, c.add(0, 0.1, 0), 0.5f, R + 2, 0.25f, 16);
+            FxSend.ring(sl, Fx.SILVER, c.add(0, 0.3, 0), 0.3f, R * 0.7f, 0.1f, 12);
+            FxSend.impactFrame(sl, c.add(0, 1, 0), 4, FxSend.FRAME_JULIUS, R + 24);
+            FxSend.shake(sl, c, 1.1f, 16, R + 20);
+            sound(sl, c, SoundEvents.BELL_BLOCK, 2.0f, 0.6f);
+            AstaFx.later(4, () -> sound(sl, c, SoundEvents.BELL_BLOCK, 1.6f, 0.8f));
+            sound(sl, c, SoundEvents.GENERIC_EXPLODE, 1.0f, 1.3f);
+        });
+    }
 
     // ================================================================== Light: Lamp of Avior
     public static void lampOfAvior(ServerPlayer p, float power) {

@@ -468,6 +468,9 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> LAMP_OF_AVIOR = registerSpell(awakened("lamp_of_avior", io.redspace.ironsspellbooks.api.registry.SchoolRegistry.HOLY_RESOURCE,
             com.ironspellgrimoire.item.LightGrimoireItem.class, "ui.iron_spell_grimoire.light_grimoire_only", 45, 140, 42, "iron_spell_grimoire:awakened_lamp", com.ironspellgrimoire.server.AwakenedSpells::lampOfAvior));
 
+    public static final RegistryObject<AbstractSpell> CHRONO_ANASTASIS = registerSpell(awakened("chrono_anastasis", io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
+            com.ironspellgrimoire.item.TimeGrimoireItem.class, "ui.iron_spell_grimoire.time_grimoire_only", 90, 180, 36, "iron_spell_grimoire:awakened_rewind", com.ironspellgrimoire.server.AwakenedSpells::chronoAnastasis));
+
     private static RegistryObject<AbstractSpell> registerSpell(AbstractSpell spell) {
         return SPELLS.register(spell.getSpellName(), () -> spell);
     }
