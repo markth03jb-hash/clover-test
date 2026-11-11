@@ -92,7 +92,7 @@ public final class Rifts {
     /** The exam's rooms in order and the law each floor is under. */
     private static final int[] EXAM_ROOMS = {START, COMBAT, COMBAT, TRAP, COMBAT, ELITE, EXAM};
     private static final int[] FLOOR_LAWS = {0, MANA_BURN, LOW_GRAVITY, ECHO, HUNTED, MANA_BURN | ECHO, 0};
-    private static final int CELL = 24, HALF = 8, H = 8, Y = 80, SPACING = 1024;
+    private static final int CELL = 24, HALF = 8, H = 11, Y = 80, SPACING = 1024;
     private static final UUID GRAV = UUID.fromString("a1f70000-0000-4000-8000-0000000000d1");
     private static final String RETURN = "isg_rift_return";
     private static final int VOIDP = Fx.VOID;
@@ -372,43 +372,215 @@ public final class Rifts {
             int cx = (int) Math.floor(c.x), cz = (int) Math.floor(c.z);
             int keep = r.rules;
             if (r.exam) r.rules = FLOOR_LAWS[Math.min(r.rooms.indexOf(room), FLOOR_LAWS.length - 1)];   // each exam floor shows its own law
-            for (int dx = -HALF; dx <= HALF; dx++) for (int dz = -HALF; dz <= HALF; dz++) for (int dy = -1; dy <= H; dy++) {
-                boolean shell = Math.abs(dx) == HALF || Math.abs(dz) == HALF || dy == -1 || dy == H;
-                BlockState s;
-                if (!shell) s = air;
-                else if (dy == -1) s = (Math.abs(dx) + Math.abs(dz)) % 6 == 0 ? Blocks.CHISELED_DEEPSLATE.defaultBlockState() : floor;
-                else if (dy == H) s = (dx % 4 == 0 && dz % 4 == 0) ? light : wall;
-                else s = rnd.nextInt(7) == 0 ? crack : wall;
-                set(sl, cx + dx, Y + dy, cz + dz, s);
-            }
-            for (int[] p : new int[][]{{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) {   // amethyst pillars with a light on top in the corners
-                for (int dy = 0; dy < 3; dy++) set(sl, cx + p[0], Y + dy, cz + p[1], amethyst);
-                set(sl, cx + p[0], Y + 3, cz + p[1], light);
-            }
-            if (room.type == RELIC || room.type == ELITE) {   // a raised dais in the middle
-                for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) set(sl, cx + dx, Y - 1, cz + dz, Blocks.POLISHED_BLACKSTONE.defaultBlockState());
-            }
-            if (room.type == REST) for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(sl, cx + dx, Y - 1, cz + dz, Blocks.CRYING_OBSIDIAN.defaultBlockState());
-            if (room.type == EXAM) {   // the Exam Hall: a gilded dais and gold-capped pillars
-                for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++)
-                    set(sl, cx + dx, Y - 1, cz + dz, (Math.abs(dx) == 3 || Math.abs(dz) == 3 ? Blocks.GILDED_BLACKSTONE : Blocks.POLISHED_BLACKSTONE).defaultBlockState());
-                for (int[] p : new int[][]{{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) set(sl, cx + p[0], Y + 3, cz + p[1], Blocks.GOLD_BLOCK.defaultBlockState());
-            }
+            shell(sl, room, cx, cz, rnd);
+            features(sl, r, room, cx, cz, rnd);
             decorate(sl, r, room, cx, cz, rnd);
             r.rules = keep;
             // doorways and the corridors to the next rooms
             for (int dd : room.doors) {
                 int ax = dd == 0 ? 1 : dd == 1 ? -1 : 0, az = dd == 2 ? 1 : dd == 3 ? -1 : 0;
                 int sx = az != 0 ? 1 : 0, sz = ax != 0 ? 1 : 0;   // sideways
-                for (int k = HALF; k <= CELL - HALF; k++) for (int w = -2; w <= 2; w++) for (int dy = -1; dy <= 4; dy++) {
+                for (int k = HALF; k <= CELL - HALF; k++) for (int w = -2; w <= 2; w++) for (int dy = -2; dy <= 5; dy++) {
                     int x = cx + ax * k + sx * w, z = cz + az * k + sz * w;
                     boolean inner = Math.abs(w) <= 1 && dy >= 0 && dy <= 3;
                     if (k == HALF || k == CELL - HALF) { if (inner) set(sl, x, Y + dy, z, air); continue; }
-                    set(sl, x, Y + dy, z, inner ? air : dy == -1 ? floor : dy == 4 && w == 0 && k % 3 == 0 ? light : wall);
+                    boolean rib = k % 4 == 0, window = k % 4 == 2 && Math.abs(w) == 2 && (dy == 1 || dy == 2);
+                    BlockState s;
+                    if (inner) s = air;
+                    else if (window) s = air;   // slits onto the rift's sky
+                    else if (dy == -2 || dy == 5) s = Math.abs(w) == 2 ? air : Blocks.POLISHED_BLACKSTONE.defaultBlockState();   // a rounded tube, not a box
+                    else if (dy == -1) s = Math.abs(w) <= 1 ? (w == 0 ? Blocks.POLISHED_DEEPSLATE.defaultBlockState() : floor) : Blocks.POLISHED_BLACKSTONE.defaultBlockState();
+                    else if (dy == 4) s = w == 0 && k % 4 == 2 ? light : rib ? Blocks.POLISHED_BASALT.defaultBlockState() : wall;
+                    else s = rib ? Blocks.POLISHED_BASALT.defaultBlockState() : rnd.nextInt(6) == 0 ? crack : wall;
+                    set(sl, x, Y + dy, z, s);
+                }
+                for (int k = HALF + 2; k <= CELL - HALF - 2; k += 4) {   // soul lanterns hung in the corridor
+                    int x = cx + ax * k, z = cz + az * k;
+                    set(sl, x, Y + 3, z, Blocks.SOUL_LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
                 }
             }
         }
+        islands(sl, r, rnd);
         r.built = true;
+    }
+
+    // ------------------------------------------------------------------ the shape of a room
+    private static BlockState st(net.minecraft.world.level.block.Block b) { return b.defaultBlockState(); }
+
+    /**
+     * A room is an octagon, not a box: its corners are walled off on the diagonal, the ceiling steps up into a vault
+     * (low at the walls, high in the middle), ribs of basalt run up the walls, and the floor is laid in rings and
+     * spokes. Under it hangs a jagged spur of rock, so each room is a broken island floating in the rift.
+     */
+    private static void shell(ServerLevel sl, Room room, int cx, int cz, ThreadLocalRandom rnd) {
+        BlockState wall = st(Blocks.POLISHED_BLACKSTONE_BRICKS), crack = st(Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS), air = st(Blocks.AIR);
+        BlockState light = st(Blocks.SHROOMLIGHT), basalt = st(Blocks.POLISHED_BASALT);
+        for (int dx = -HALF; dx <= HALF; dx++) for (int dz = -HALF; dz <= HALF; dz++) {
+            int ax = Math.abs(dx), az = Math.abs(dz);
+            double rr = Math.sqrt(dx * dx + dz * dz);
+            boolean outer = ax == HALF || az == HALF, corner = ax + az >= 13;
+            int ceil = rr > 7 ? H - 4 : rr > 5.5 ? H - 2 : rr > 3.5 ? H - 1 : H;   // the stepped vault
+            int along = ax == HALF ? dz : dx;   // position along an outer wall
+            for (int dy = -1; dy <= H; dy++) {
+                BlockState s;
+                if (dy == -1) {   // the floor: a centre stone, rings and spokes
+                    if (corner) s = wall;
+                    else if (rr <= 1.5) s = st(Blocks.CHISELED_DEEPSLATE);
+                    else if (rr > 6.2 && rr <= 7.2) s = st(Blocks.POLISHED_BLACKSTONE);
+                    else if (rr > 2.5 && rr <= 3.3) s = st(Blocks.DEEPSLATE_BRICKS);
+                    else if (dx == 0 || dz == 0 || ax == az) s = st(Blocks.POLISHED_DEEPSLATE);
+                    else s = (ax + az) % 5 == 0 ? st(Blocks.CRACKED_DEEPSLATE_TILES) : st(Blocks.DEEPSLATE_TILES);
+                } else if (outer || corner) {
+                    s = outer && Math.abs(along) % 4 == 0 && Math.abs(along) != HALF ? basalt : rnd.nextInt(6) == 0 ? crack : wall;
+                } else if (dy > ceil) s = wall;
+                else if (dy == ceil) s = (dx % 4 == 0 && dz % 4 == 0) ? light : rr <= 1.5 ? st(Blocks.CHISELED_POLISHED_BLACKSTONE) : wall;
+                else if ((ax == HALF - 1 || az == HALF - 1) && !corner && Math.abs(ax == HALF - 1 ? dz : dx) == 4) s = basalt;   // ribs standing off the walls
+                else s = air;
+                set(sl, cx + dx, Y + dy, cz + dz, s);
+            }
+            // the rock spur hanging under the room
+            double spur = (HALF + 0.5) - rr * 0.9;
+            int depth = (int) Math.max(0, spur + rnd.nextInt(3));
+            if (!corner || rnd.nextBoolean()) for (int d = 2; d <= 1 + depth; d++)
+                set(sl, cx + dx, Y - d, cz + dz, d > depth - 1 && rnd.nextInt(3) == 0 ? st(Blocks.AMETHYST_BLOCK)
+                        : rnd.nextInt(4) == 0 ? st(Blocks.BASALT) : d % 3 == 0 ? st(Blocks.DEEPSLATE) : st(Blocks.BLACKSTONE));
+        }
+        for (int[] p : new int[][]{{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) {   // corner pillars up into the vault
+            for (int dy = 0; dy < 3; dy++) set(sl, cx + p[0], Y + dy, cz + p[1], st(Blocks.AMETHYST_BLOCK));
+            set(sl, cx + p[0], Y + 3, cz + p[1], light);
+            for (int dy = 4; dy < H - 4; dy++) set(sl, cx + p[0], Y + dy, cz + p[1], st(Blocks.POLISHED_BLACKSTONE));
+        }
+        for (int[] p : new int[][]{{-3, -3}, {3, -3}, {-3, 3}, {3, 3}}) {   // soul lanterns on chains from the vault
+            for (int dy = H - 2; dy >= H - 4; dy--) set(sl, cx + p[0], Y + dy, cz + p[1], st(Blocks.CHAIN));
+            set(sl, cx + p[0], Y + H - 5, cz + p[1], st(Blocks.SOUL_LANTERN).setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
+        }
+    }
+
+    /** The side of the room with no door (for a throne, an arch, a pool), or -1. */
+    private static int freeSide(Room room) {
+        for (int side : new int[]{2, 0, 3, 1}) if (!room.doors.contains(side)) return side;
+        return -1;
+    }
+
+    /**
+     * What each kind of room has in it - kept to the edges, so the middle stays clear to fight in: broken columns in
+     * combat rooms, a striped warning ring and floor vents in trap rooms, a pool, moss and benches in the rest room, a
+     * stepped throne at the back of elite rooms and relic chambers (gold for relics), and an arch of crying obsidian in
+     * the entrance.
+     */
+    private static void features(ServerLevel sl, Rift r, Room room, int cx, int cz, ThreadLocalRandom rnd) {
+        int side = freeSide(room);
+        int ax = side == 0 ? 1 : side == 1 ? -1 : 0, az = side == 2 ? 1 : side == 3 ? -1 : 0, sx = az != 0 ? 1 : 0, sz = ax != 0 ? 1 : 0;
+        switch (room.type) {
+            case COMBAT -> {
+                for (int i = 0; i < 6; i++) {   // broken columns round the edge
+                    double a = rnd.nextDouble(Math.PI * 2);
+                    int x = (int) Math.round(Math.cos(a) * 6.6), z = (int) Math.round(Math.sin(a) * 6.6);
+                    if (Math.abs(x) <= 2 || Math.abs(z) <= 2 || Math.abs(x) + Math.abs(z) >= 12 || x * x + z * z < 6.5 * 6.5) continue;   // clear of where foes appear
+                    int hgt = 1 + rnd.nextInt(3);
+                    for (int dy = 0; dy < hgt; dy++) set(sl, cx + x, Y + dy, cz + z, dy == hgt - 1 ? st(Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS) : st(Blocks.POLISHED_BLACKSTONE));
+                    if (rnd.nextBoolean()) set(sl, cx + x, Y + hgt, cz + z, st(Blocks.POLISHED_BLACKSTONE_SLAB));
+                }
+            }
+            case TRAP -> {
+                for (int dx = -7; dx <= 7; dx++) for (int dz = -7; dz <= 7; dz++) {   // a black and yellow warning ring, vents in the floor
+                    double rr = Math.sqrt(dx * dx + dz * dz);
+                    if (Math.abs(dx) + Math.abs(dz) >= 13) continue;
+                    if (rr > 6.2 && rr <= 7.2) set(sl, cx + dx, Y - 1, cz + dz, ((dx + dz) & 2) == 0 ? st(Blocks.YELLOW_TERRACOTTA) : st(Blocks.BLACK_TERRACOTTA));
+                    else if (rr > 1.5 && rr < 6 && rnd.nextInt(14) == 0) set(sl, cx + dx, Y - 1, cz + dz, st(Blocks.CRYING_OBSIDIAN));
+                }
+                for (int i = 0; i < 8; i++) {   // chains hanging all over the vault
+                    int x = rnd.nextInt(-5, 6), z = rnd.nextInt(-5, 6);
+                    for (int dy = H - 2; dy >= H - 3 - rnd.nextInt(3); dy--) set(sl, cx + x, Y + dy, cz + z, st(Blocks.CHAIN));
+                }
+            }
+            case REST -> {
+                for (int dx = -6; dx <= 6; dx++) for (int dz = -6; dz <= 6; dz++) {   // moss creeping in from the walls
+                    double rr = Math.sqrt(dx * dx + dz * dz);
+                    if (rr > 4.5 && Math.abs(dx) + Math.abs(dz) < 13 && rnd.nextInt(3) > 0) {
+                        set(sl, cx + dx, Y - 1, cz + dz, st(Blocks.MOSS_BLOCK));
+                        if (rnd.nextInt(5) == 0) set(sl, cx + dx, Y, cz + dz, rnd.nextBoolean() ? st(Blocks.MOSS_CARPET) : st(Blocks.AZALEA));
+                    }
+                }
+                for (int[] p : new int[][]{{-4, -4}, {4, -4}, {-4, 4}, {4, 4}}) set(sl, cx + p[0], Y + H - 3, cz + p[1], st(Blocks.SPORE_BLOSSOM));
+                if (side >= 0) {   // a little pool against the free wall, and benches beside it
+                    for (int w = -2; w <= 2; w++) for (int k = 5; k <= 6; k++) {
+                        int x = cx + ax * k + sx * w, z = cz + az * k + sz * w;
+                        set(sl, x, Y - 2, z, st(Blocks.POLISHED_BLACKSTONE));
+                        set(sl, x, Y - 1, z, st(Blocks.WATER));
+                        set(sl, x, Y, z, st(Blocks.AIR));
+                    }
+                    for (int w = -2; w <= 2; w++) set(sl, cx + ax * 7 + sx * w, Y - 1, cz + az * 7 + sz * w, st(Blocks.SEA_LANTERN));
+                }
+            }
+            case ELITE, RELIC -> {
+                boolean relic = room.type == RELIC;
+                for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++)   // a dais in the middle
+                    set(sl, cx + dx, Y - 1, cz + dz, Math.abs(dx) == 2 || Math.abs(dz) == 2 ? st(relic ? Blocks.GILDED_BLACKSTONE : Blocks.POLISHED_BLACKSTONE) : st(Blocks.CRYING_OBSIDIAN));
+                if (side >= 0) {   // a stepped throne against the back wall
+                    for (int w = -3; w <= 3; w++) {
+                        set(sl, cx + ax * 6 + sx * w, Y, cz + az * 6 + sz * w, st(Blocks.POLISHED_BLACKSTONE_SLAB));
+                        for (int dy = 0; dy <= 1; dy++) set(sl, cx + ax * 7 + sx * w, Y + dy, cz + az * 7 + sz * w, Math.abs(w) == 3 ? st(relic ? Blocks.GOLD_BLOCK : Blocks.CRYING_OBSIDIAN) : st(Blocks.POLISHED_BLACKSTONE_BRICKS));
+                    }
+                    for (int dy = 2; dy <= 4; dy++) set(sl, cx + ax * 7, Y + dy, cz + az * 7, st(dy == 4 ? (relic ? Blocks.GOLD_BLOCK : Blocks.AMETHYST_BLOCK) : Blocks.POLISHED_BLACKSTONE));   // its tall back
+                    for (int w : new int[]{-2, 2}) set(sl, cx + ax * 7 + sx * w, Y + 2, cz + az * 7 + sz * w, st(Blocks.SOUL_LANTERN));
+                }
+            }
+            case EXAM -> {   // the Exam Hall: a gilded dais, gold on the pillars, and a gold-trimmed throne for the examiners
+                for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++)
+                    set(sl, cx + dx, Y - 1, cz + dz, Math.abs(dx) == 3 || Math.abs(dz) == 3 ? st(Blocks.GILDED_BLACKSTONE) : (dx + dz) % 2 == 0 ? st(Blocks.POLISHED_BLACKSTONE) : st(Blocks.CHISELED_POLISHED_BLACKSTONE));
+                for (int[] p : new int[][]{{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) { set(sl, cx + p[0], Y + 3, cz + p[1], st(Blocks.GOLD_BLOCK)); set(sl, cx + p[0], Y + 4, cz + p[1], st(Blocks.SHROOMLIGHT)); }
+                if (side >= 0) for (int w = -3; w <= 3; w++) for (int dy = 0; dy <= 2; dy++)
+                    set(sl, cx + ax * 7 + sx * w, Y + dy, cz + az * 7 + sz * w, dy == 2 || Math.abs(w) == 3 ? st(Blocks.GOLD_BLOCK) : st(Blocks.POLISHED_BLACKSTONE_BRICKS));
+            }
+            case START -> {
+                if (side >= 0) for (int w = -3; w <= 3; w++) for (int dy = 0; dy <= 5; dy++) {   // the arch you came in by
+                    boolean frame = Math.abs(w) == 3 || dy == 5 || (dy == 4 && Math.abs(w) == 2);
+                    int x = cx + ax * 7 + sx * w, z = cz + az * 7 + sz * w;
+                    set(sl, x, Y + dy, z, frame ? st(Blocks.CRYING_OBSIDIAN) : st(Blocks.PURPLE_STAINED_GLASS));
+                }
+            }
+            default -> {}
+        }
+    }
+
+    /** Broken islands and crystal spires drifting in the rift's sky around the rooms, seen through the windows. */
+    private static void islands(ServerLevel sl, Rift r, ThreadLocalRandom rnd) {
+        int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
+        for (Room room : r.rooms) {
+            Vec3 c = r.centre(room);
+            minX = Math.min(minX, (int) c.x); maxX = Math.max(maxX, (int) c.x); minZ = Math.min(minZ, (int) c.z); maxZ = Math.max(maxZ, (int) c.z);
+        }
+        int n = 10 + r.rooms.size();
+        for (int i = 0, tries = 0; i < n && tries < 80; tries++) {
+            int x = rnd.nextInt(minX - 34, maxX + 35), z = rnd.nextInt(minZ - 34, maxZ + 35), y = Y + rnd.nextInt(-22, 20);
+            boolean clear = true;
+            for (Room room : r.rooms) {
+                Vec3 c = r.centre(room);
+                if (Math.abs(c.x - x) < 17 && Math.abs(c.z - z) < 17) { clear = false; break; }
+            }
+            if (!clear) continue;
+            i++;
+            if (rnd.nextInt(3) == 0) {   // a crystal spire
+                int len = 5 + rnd.nextInt(7);
+                for (int k = 0; k < len; k++) {
+                    set(sl, x, y + k, z, k < len - 2 ? st(Blocks.AMETHYST_BLOCK) : st(Blocks.BUDDING_AMETHYST));
+                    if (k < len / 2) for (int[] o : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) if (rnd.nextInt(3) == 0) set(sl, x + o[0], y + k, z + o[1], st(Blocks.TINTED_GLASS));
+                }
+                set(sl, x, y + len, z, st(Blocks.AMETHYST_CLUSTER));
+                continue;
+            }
+            int rad = 2 + rnd.nextInt(3);   // an island: a flat top and a tapering underside
+            for (int dx = -rad; dx <= rad; dx++) for (int dz = -rad; dz <= rad; dz++) {
+                double rr = Math.sqrt(dx * dx + dz * dz);
+                if (rr > rad + 0.3) continue;
+                int depth = (int) ((rad + 1 - rr) * 1.6) + rnd.nextInt(2);
+                for (int d = 0; d <= depth; d++)
+                    set(sl, x + dx, y - d, z + dz, d == 0 ? (rnd.nextInt(4) == 0 ? st(Blocks.CRYING_OBSIDIAN) : st(Blocks.POLISHED_BLACKSTONE)) : rnd.nextInt(5) == 0 ? st(Blocks.BASALT) : st(Blocks.BLACKSTONE));
+                if (rr < rad - 0.5 && rnd.nextInt(6) == 0) set(sl, x + dx, y + 1, z + dz, st(Blocks.AMETHYST_CLUSTER));
+            }
+            if (rnd.nextBoolean()) for (int k = 1; k <= 3; k++) set(sl, x, y + k, z, k == 3 ? st(Blocks.SHROOMLIGHT) : st(Blocks.POLISHED_BLACKSTONE_WALL));   // a ruined lamp post
+        }
     }
 
     /**
