@@ -1,6 +1,10 @@
-Iron Spell Grimoire v1.88.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.89.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.89.0
+- The Ossuarch is now Zenon, everywhere: /summon iron_spell_grimoire:zenon, the Zenon Spawn Egg, and Zenon's Phylactery (zenon_phylactery).
+  Old Ossuarch eggs, spawned bosses and phylacteries are gone after updating.
 
 NEW IN 1.88.0
 - New boss: the Ossuarch - three phases of bone, space and devil power, with telegraphed moves, phase intros, arena hazards and his own music.
