@@ -62,6 +62,9 @@ public final class BountyHud {
         return mc.level != null && mc.level.getGameTime() < riftUntil ? new Vec3(rx, 0, rz) : null;
     }
 
+    /** Is the bounty tracker on screen (the quest tracker goes under it)? */
+    public static boolean shown() { return boss >= 0; }
+
     private static boolean hunting() { return boss >= 0 && state == Bounties.STATE_HUNT; }
 
     @SubscribeEvent

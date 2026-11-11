@@ -22,6 +22,10 @@ public final class AddonBlocks {
     public static final RegistryObject<Block> POSTER_BOARD_PART = BLOCKS.register("poster_board_part", com.ironspellgrimoire.block.PosterBoardPartBlock::new);
     public static final RegistryObject<Item> POSTER_BOARD_ITEM = AddonItemRegistry.ITEMS.register("poster_board",
             () -> new BlockItem(POSTER_BOARD.get(), new Item.Properties()));
+    /** The Quest Board: the Poster Board's frame with villagers' requests pinned to it (server/Quests). */
+    public static final RegistryObject<Block> QUEST_BOARD = BLOCKS.register("quest_board", com.ironspellgrimoire.block.QuestBoardBlock::new);
+    public static final RegistryObject<Item> QUEST_BOARD_ITEM = AddonItemRegistry.ITEMS.register("quest_board",
+            () -> new BlockItem(QUEST_BOARD.get(), new Item.Properties()));
 
     /** A rift's door seal (server/Rifts). */
     public static final RegistryObject<Block> RIFT_SEAL = BLOCKS.register("rift_seal", com.ironspellgrimoire.block.RiftSealBlock::new);

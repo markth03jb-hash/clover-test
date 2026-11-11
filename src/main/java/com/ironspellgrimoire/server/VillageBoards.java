@@ -2,6 +2,7 @@ package com.ironspellgrimoire.server;
 
 import com.ironspellgrimoire.IronSpellGrimoire;
 import com.ironspellgrimoire.block.PosterBoardBlock;
+import com.ironspellgrimoire.registry.AddonBlocks;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.core.BlockPos;
@@ -22,7 +23,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * Every village gets a Poster Board. The first time a player walks into a village, a board is put up on open, flat
+ * Every village gets a Poster Board and a Quest Board. The first time a player walks into a village, a board is put up on open, flat
  * ground near its meeting place (the village's centre piece, where the bell is), facing it, off the paths. Each
  * village is only ever given one, remembered by where it starts (saved per dimension as "isg_village_boards").
  */
@@ -31,9 +32,14 @@ public final class VillageBoards {
     private VillageBoards() {}
 
     static final class Data extends SavedData {
-        final LongOpenHashSet done = new LongOpenHashSet();
-        static Data load(CompoundTag t) { Data d = new Data(); for (long l : t.getLongArray("Done")) d.done.add(l); return d; }
-        @Override public CompoundTag save(CompoundTag t) { t.putLongArray("Done", done.toLongArray()); return t; }
+        final LongOpenHashSet done = new LongOpenHashSet(), doneQuest = new LongOpenHashSet();
+        static Data load(CompoundTag t) {
+            Data d = new Data();
+            for (long l : t.getLongArray("Done")) d.done.add(l);
+            for (long l : t.getLongArray("DoneQuest")) d.doneQuest.add(l);
+            return d;
+        }
+        @Override public CompoundTag save(CompoundTag t) { t.putLongArray("Done", done.toLongArray()); t.putLongArray("DoneQuest", doneQuest.toLongArray()); return t; }
     }
 
     private static Data data(ServerLevel sl) { return sl.getDataStorage().computeIfAbsent(Data::load, Data::new, "isg_village_boards"); }
@@ -46,21 +52,19 @@ public final class VillageBoards {
         if (st == null || !st.isValid() || st.getPieces().isEmpty()) return;
         long key = st.getChunkPos().toLong();
         Data d = data(sl);
-        if (d.done.contains(key)) return;
+        boolean poster = !d.done.contains(key), quest = !d.doneQuest.contains(key);
+        if (!poster && !quest) return;
         BoundingBox centre = st.getPieces().get(0).getBoundingBox();   // the meeting place
         int cx = (centre.minX() + centre.maxX()) / 2, cz = (centre.minZ() + centre.maxZ()) / 2;
         if (!sl.hasChunk(cx >> 4, cz >> 4)) return;   // wait until its middle is loaded
-        if (place(sl, cx, cz, Math.max(centre.getXSpan(), centre.getZSpan()) / 2)) {
-            d.done.add(key);
-            d.setDirty();
-        } else if (ThreadLocalRandom.current().nextInt(6) == 0) {   // nowhere fits: give up on this one after a few tries
-            d.done.add(key);
-            d.setDirty();
-        }
+        int half = Math.max(centre.getXSpan(), centre.getZSpan()) / 2;
+        boolean giveUp = ThreadLocalRandom.current().nextInt(6) == 0;   // nowhere fits: give up on it after a few tries
+        if (poster && (place(sl, cx, cz, half, AddonBlocks.POSTER_BOARD.get()) || giveUp)) { d.done.add(key); d.setDirty(); }
+        if (quest && (place(sl, cx, cz, half, AddonBlocks.QUEST_BOARD.get()) || giveUp)) { d.doneQuest.add(key); d.setDirty(); }
     }
 
     /** Looks for a flat, open spot in rings around the meeting place and puts the board there, facing it. */
-    private static boolean place(ServerLevel sl, int cx, int cz, int half) {
+    private static boolean place(ServerLevel sl, int cx, int cz, int half, net.minecraft.world.level.block.Block board) {
         for (int dist = half + 2; dist <= half + 9; dist++) {
             int steps = 16;
             int off = ThreadLocalRandom.current().nextInt(steps);
@@ -73,7 +77,7 @@ public final class VillageBoards {
                 // face the meeting place
                 Direction f = Math.abs(cx - x) > Math.abs(cz - z) ? (cx > x ? Direction.EAST : Direction.WEST) : (cz > z ? Direction.SOUTH : Direction.NORTH);
                 if (!fits(sl, pos, f)) continue;
-                PosterBoardBlock.placeAt(sl, pos, f);
+                PosterBoardBlock.placeAt(sl, pos, f, board);
                 return true;
             }
         }
