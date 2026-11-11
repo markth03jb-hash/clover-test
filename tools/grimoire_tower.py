@@ -14,7 +14,7 @@ def p_comp(entries): return b''.join(entries) + b'\x00'
 
 W = D = 33; C = 16
 FD = 6                      # foundation depth below the ground floor
-H = FD + 48
+H = FD + 62
 blocks = {}
 def put(x, y, z, name, props=None):
     if 0 <= x < W and 0 <= y < H and 0 <= z < D: blocks[(x, y, z)] = (name, props or {})
@@ -72,6 +72,10 @@ for x in range(W):
             u, v = (x - C) / CR, (z - C) / CR
             if clover_in(u, v): b = 'minecraft:polished_blackstone'
             elif clover_in(u, v, 0.09): b = 'minecraft:gilded_blackstone'
+            elif 9.55 <= d <= 10.15: b = 'minecraft:gilded_blackstone'          # the outer ring of the circle
+            elif 8.6 <= d < 9.55:                                                # a ring of runes, glowing between dark stones
+                seg = int((ang(x, z) + math.pi) / (2 * math.pi) * 30)
+                b = 'minecraft:ochre_froglight' if seg % 3 == 0 else 'minecraft:polished_blackstone_bricks'
             elif d > R_HALL - 1.5: b = 'minecraft:polished_deepslate'
             else: b = 'minecraft:smooth_stone' if int(d) % 3 else 'minecraft:polished_andesite'
             put(x, G, z, b)
@@ -105,6 +109,32 @@ for x in range(W):
                 put(x, y, z, 'minecraft:air')
             elif lower is False and d <= R_BASE_O and y == TIER + 1:
                 pass
+# the rose window above the great door: a five-leaf clover of gold glass in violet, ringed in black stone
+for x in range(W):
+    for z in range(D):
+        d = dist(x, z); th = ang(x, z)
+        if not (R_BASE_I < d <= R_BASE_O) or adiff(th, DOOR_TH) > 0.4: continue
+        lat = (th - DOOR_TH) * d
+        for y in range(G + 7, TIER):
+            r = math.hypot(lat, (y + 0.5) - (G + 9.6))
+            if r <= 2.4:
+                u, v = lat / 2.4, ((y + 0.5) - (G + 9.6)) / 2.4
+                put(x, y, z, 'minecraft:yellow_stained_glass' if clover_in(u * 1.15, -v * 1.15, 0.02) else 'minecraft:purple_stained_glass')
+            elif r <= 3.1: put(x, y, z, 'minecraft:polished_blackstone_bricks')
+# the great door's frame: black stone with a gold keystone, and lamps either side
+for x in range(W):
+    for z in range(D):
+        d = dist(x, z); th = ang(x, z)
+        if R_BASE_O - 0.6 < d <= R_BASE_O + 0.4 and 0.2 <= adiff(th, DOOR_TH) < 0.3:
+            for y in range(G + 1, G + 7): put(x, y, z, 'minecraft:polished_blackstone_bricks')
+for x in range(C - 2, C + 3):
+    zz = max(z for z in range(D) if dist(x, z) <= R_BASE_O + 0.3)
+    put(x, G + 7, zz, 'minecraft:gilded_blackstone' if x == C else 'minecraft:polished_blackstone_bricks')
+for x in (C - 4, C + 4):
+    zz = max(z for z in range(D) if dist(x, z) <= R_BASE_O + 0.3) + 1
+    put(x, G + 1, zz, 'minecraft:polished_blackstone_wall', {'up': 'true', 'north': 'none', 'south': 'none', 'east': 'none', 'west': 'none', 'waterlogged': 'false'})
+    put(x, G + 2, zz, 'minecraft:polished_blackstone_wall', {'up': 'true', 'north': 'none', 'south': 'none', 'east': 'none', 'west': 'none', 'waterlogged': 'false'})
+    put(x, G + 3, zz, 'minecraft:soul_lantern', {'hanging': 'false', 'waterlogged': 'false'})
 # buttresses round the lower tier, eight of them, stepping in as they rise
 for k in range(8):
     a = math.pi / 8 + k * math.pi / 4
@@ -183,19 +213,31 @@ for x in range(W):
                 if get(x, yy, z) in ('minecraft:spruce_planks', 'minecraft:dark_oak_planks', 'minecraft:bookshelf', 'minecraft:dark_oak_fence'): put(x, yy, z, 'minecraft:air')
 
 # ---------------------------------------------------------------- the ceremony at the heart of the hall
+# a stepped dais of black stone and gold: a wide first step, a chiselled ring, and the top where the altar stands,
+# ringed by amethyst; five pedestals round it carry floating grimoires (item displays, below), with lamps between
 for x in range(W):
     for z in range(D):
         d = dist(x, z)
-        if d <= 3.2: put(x, G + 1, z, 'minecraft:chiseled_stone_bricks' if d > 2.2 else 'minecraft:polished_deepslate')
-        if d <= 1.6: put(x, G + 2, z, 'minecraft:polished_deepslate')
-        if 3.2 < d <= 4.0: put(x, G + 1, z, 'minecraft:stone_brick_slab', {'type': 'bottom', 'waterlogged': 'false'})
+        if 3.6 < d <= 4.6: put(x, G + 1, z, 'minecraft:polished_blackstone_brick_slab', {'type': 'bottom', 'waterlogged': 'false'})
+        elif 2.6 < d <= 3.6: put(x, G + 1, z, 'minecraft:chiseled_polished_blackstone' if int((ang(x, z) + math.pi) * 3) % 2 else 'minecraft:gilded_blackstone')
+        elif d <= 2.6: put(x, G + 1, z, 'minecraft:polished_deepslate')
+        if 1.7 < d <= 2.6: put(x, G + 2, z, 'minecraft:polished_blackstone_brick_slab', {'type': 'bottom', 'waterlogged': 'false'})
+        elif d <= 1.7: put(x, G + 2, z, 'minecraft:gold_block' if d > 0.5 else 'minecraft:polished_deepslate')
 put(C, G + 3, C, NS + ':grimoire_altar')
-for k in range(5):   # five lecterns round the dais, one for each leaf
+for dx, dz in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
+    put(C + dx, G + 3, C + dz, 'minecraft:amethyst_cluster', {'facing': 'up', 'waterlogged': 'false'})
+PEDESTALS = []
+for k in range(5):   # five pedestals round the dais, one for each leaf of the clover
     a = -math.pi / 2 + k * 2 * math.pi / 5
-    x, z = int(round(C + math.cos(a) * 5.5)), int(round(C + math.sin(a) * 5.5))
-    put(x, G + 1, z, 'minecraft:lectern', {'facing': OPP[facing_out(a)] , 'has_book': 'false', 'powered': 'false'})
+    x, z = int(round(C + math.cos(a) * 6.2)), int(round(C + math.sin(a) * 6.2))
+    put(x, G + 1, z, 'minecraft:chiseled_polished_blackstone')
+    put(x, G + 2, z, 'minecraft:polished_blackstone_wall', {'up': 'true', 'north': 'none', 'south': 'none', 'east': 'none', 'west': 'none', 'waterlogged': 'false'})
+    put(x, G + 3, z, 'minecraft:gilded_blackstone')
+    put(x, G + 4, z, 'minecraft:amethyst_cluster', {'facing': 'up', 'waterlogged': 'false'})
+    PEDESTALS.append((x + 0.5, G + 5.6, z + 0.5, a))
     x2, z2 = int(round(C + math.cos(a + 0.63) * 7.2)), int(round(C + math.sin(a + 0.63) * 7.2))
-    put(x2, G + 1, z2, 'minecraft:lantern', {'hanging': 'false', 'waterlogged': 'false'})
+    put(x2, G + 1, z2, 'minecraft:polished_blackstone_wall', {'up': 'true', 'north': 'none', 'south': 'none', 'east': 'none', 'west': 'none', 'waterlogged': 'false'})
+    put(x2, G + 2, z2, 'minecraft:soul_lantern', {'hanging': 'false', 'waterlogged': 'false'})
 # chandeliers: a great ring of lanterns and a central chain down the atrium
 for y in range(G + 16, CEIL):
     put(C, y, C, 'minecraft:chain', {'axis': 'y', 'waterlogged': 'false'})
@@ -210,7 +252,15 @@ for k in range(8):
 for x in range(W):
     for z in range(D):
         d = dist(x, z)
-        if d <= R_UP_O: put(x, CEIL, z, 'minecraft:dark_oak_planks' if d < R_UP_I else 'minecraft:deepslate_bricks')
+        if d <= R_UP_O:
+            b = 'minecraft:dark_oak_planks' if d < R_UP_I else 'minecraft:deepslate_bricks'
+            if d < R_UP_I:   # the ceiling's magic circle, mirroring the floor: gold rings, five spokes, lamps at their ends
+                th = ang(x, z); spoke = min(adiff(th, -math.pi / 2 + k * 2 * math.pi / 5) for k in range(5)) * d
+                if d <= 1.2: b = 'minecraft:shroomlight'
+                elif 2.4 <= d <= 3.1 or 6.0 <= d <= 6.7 or 9.4 <= d <= 10.1: b = 'minecraft:gilded_blackstone'
+                elif spoke < 0.55 and 3.1 < d < 9.4: b = 'minecraft:polished_blackstone_bricks' if not 7.2 <= d <= 8.2 else 'minecraft:shroomlight'
+                elif 6.7 < d < 9.4 and int((th + math.pi) / (2 * math.pi) * 40) % 4 == 0: b = 'minecraft:ochre_froglight'
+            put(x, CEIL, z, b)
         if R_UP_O < d <= R_UP_O + 1.2:
             put(x, CEIL, z, 'minecraft:deepslate_tile_stairs', {'facing': OPP[facing_out(ang(x, z))], 'half': 'top', 'shape': 'straight', 'waterlogged': 'false'})
 roof_top = CEIL
@@ -226,8 +276,23 @@ for k in range(1, 20):
                                     {'facing': OPP[facing_out(ang(x, z))], 'half': 'bottom', 'shape': 'straight', 'waterlogged': 'false'} if d > r - 0.6 else None)
             elif d <= r - 1.3: put(x, y, z, 'minecraft:air')
     roof_top = y
-for y in range(roof_top + 1, roof_top + 3): put(C, y, C, 'minecraft:deepslate_tile_wall', {'up': 'true', 'north': 'none', 'south': 'none', 'east': 'none', 'west': 'none', 'waterlogged': 'false'})
-put(C, roof_top + 3, C, 'minecraft:lightning_rod', {'facing': 'up', 'powered': 'false', 'waterlogged': 'false'})
+for y in range(roof_top + 1, roof_top + 6): put(C, y, C, 'minecraft:deepslate_tile_wall', {'up': 'true', 'north': 'none', 'south': 'none', 'east': 'none', 'west': 'none', 'waterlogged': 'false'})
+put(C, roof_top + 6, C, 'minecraft:gold_block')
+put(C, roof_top + 7, C, 'minecraft:lightning_rod', {'facing': 'up', 'powered': 'false', 'waterlogged': 'false'})
+HALO_Y = roof_top + 3
+for x in range(W):
+    for z in range(D):
+        d = dist(x, z)
+        if 3.3 <= d <= 4.1:   # a ring of gold hanging in the air round the spire, set with five lamps
+            th = ang(x, z)
+            lamp = min(adiff(th, -math.pi / 2 + k * 2 * math.pi / 5) for k in range(5)) * d < 0.6
+            put(x, HALO_Y, z, 'minecraft:ochre_froglight' if lamp else 'minecraft:gilded_blackstone')
+for k in range(8):   # pinnacles on the buttresses, each with a lamp
+    a = math.pi / 8 + k * math.pi / 4
+    if adiff(a, DOOR_TH) < 0.3: continue
+    x, z = int(round(C + math.cos(a) * (R_BASE_O + 0.9))), int(round(C + math.sin(a) * (R_BASE_O + 0.9)))
+    for y in range(TIER + 1, TIER + 4): put(x, y, z, 'minecraft:deepslate_tile_wall', {'up': 'true', 'north': 'none', 'south': 'none', 'east': 'none', 'west': 'none', 'waterlogged': 'false'})
+    put(x, TIER + 4, z, 'minecraft:soul_lantern', {'hanging': 'false', 'waterlogged': 'false'})
 
 # ---------------------------------------------------------------- blending in: steps, rubble, moss and ivy
 for x in range(W):
@@ -262,15 +327,12 @@ for (x, y, z), (n, p) in list(blocks.items()):
 # ---------------------------------------------------------------- grimoires floating through the hall (item displays)
 entities = []
 books = ['black_grimoire', 'dark_grimoire', 'wind_grimoire', 'mercury_grimoire', 'fire_grimoire', 'lightning_grimoire',
-         'hellfire_grimoire', 'bone_grimoire', 'steel_grimoire']
-plain = ['minecraft:book', 'minecraft:enchanted_book', 'minecraft:writable_book']
-for i in range(46):
-    a = random.uniform(0, 2 * math.pi); r = random.uniform(2.5, 7.8)
-    y = random.uniform(G + 5, CEIL - 3)
-    x, z = C + 0.5 + math.cos(a) * r, C + 0.5 + math.sin(a) * r
-    item = (NS + ':' + random.choice(books)) if random.random() < 0.3 else random.choice(plain)
-    s = random.uniform(0.45, 0.7)
-    yaw, pitch = random.uniform(0, 360), random.uniform(-20, 20)
+         'hellfire_grimoire', 'bone_grimoire', 'steel_grimoire', 'water_grimoire', 'mirror_grimoire', 'earth_grimoire',
+         'time_grimoire', 'light_grimoire', 'slash_grimoire']
+plain = ['minecraft:book', 'minecraft:enchanted_book', 'minecraft:writable_book', 'minecraft:paper', 'minecraft:paper']
+ENTS = []
+def display(item, x, y, z, s, yaw, pitch, light=12):
+    ENTS.append((x, y, z, s))
     nbt = p_comp([
         tag(8, 'id', p_str('minecraft:item_display')),
         tag(10, 'item', p_comp([tag(8, 'id', p_str(item)), tag(1, 'Count', p_byte(1))])),
@@ -279,15 +341,35 @@ for i in range(46):
             tag(9, 'right_rotation', p_list(5, [p_float(0), p_float(0), p_float(0), p_float(1)])),
             tag(9, 'translation', p_list(5, [p_float(0), p_float(0), p_float(0)])),
             tag(9, 'scale', p_list(5, [p_float(s), p_float(s), p_float(s)]))])),
-        tag(10, 'brightness', p_comp([tag(3, 'block', p_int(12)), tag(3, 'sky', p_int(12))])),
+        tag(10, 'brightness', p_comp([tag(3, 'block', p_int(light)), tag(3, 'sky', p_int(light))])),
         tag(9, 'Rotation', p_list(5, [p_float(yaw), p_float(pitch)])),
         tag(9, 'Tags', p_list(8, [p_str('grimoire_tower_book')])),
     ])
     entities.append(p_comp([
         tag(9, 'pos', p_list(6, [p_double(x), p_double(y), p_double(z)])),
-        tag(9, 'blockPos', p_list(3, [p_int(int(x)), p_int(int(y)), p_int(int(z))])),
+        tag(9, 'blockPos', p_list(3, [p_int(int(math.floor(x))), p_int(int(math.floor(y))), p_int(int(math.floor(z)))])),
         tag(10, 'nbt', nbt)]))
-
+# the cyclone: three spiralling streams of books and loose pages, widening as they rise from the altar to the ceiling
+for strand in range(3):
+    n = 44
+    for i in range(n):
+        t = i / (n - 1)
+        a = strand * 2 * math.pi / 3 + t * 4.2 * math.pi + random.uniform(-0.08, 0.08)
+        r = 2.4 + t * 5.6 + random.uniform(-0.3, 0.3)
+        y = G + 4.5 + t * (CEIL - G - 8) + random.uniform(-0.3, 0.3)
+        x, z = C + 0.5 + math.cos(a) * r, C + 0.5 + math.sin(a) * r
+        item = (NS + ':' + random.choice(books)) if random.random() < 0.28 else random.choice(plain)
+        yaw = math.degrees(a) + 90 + random.uniform(-25, 25)   # turned along the stream
+        display(item, x, y, z, random.uniform(0.45, 0.7), yaw, random.uniform(-30, 30), 13)
+# a few strays drifting near the walls and balconies
+for i in range(16):
+    a = random.uniform(0, 2 * math.pi); r = random.uniform(7.5, 9.5)
+    display(random.choice(plain), C + 0.5 + math.cos(a) * r, random.uniform(G + 3, CEIL - 3), C + 0.5 + math.sin(a) * r, random.uniform(0.4, 0.55), random.uniform(0, 360), random.uniform(-20, 20))
+# the five grimoires waiting over their pedestals
+for (x, y, z, a), b in zip(PEDESTALS, ['fire_grimoire', 'wind_grimoire', 'water_grimoire', 'light_grimoire', 'black_grimoire']):
+    display(NS + ':' + b, x, y, z, 0.9, math.degrees(a) + 90, -15, 15)
+# a great grimoire hanging open over the spire, facing the door
+display(NS + ':black_grimoire', C + 0.5, HALO_Y + 9.0, C + 0.5, 6.0, 0, -10, 15)
 # ---------------------------------------------------------------- write
 pal, idx = [], {}
 def key(v): return (v[0], tuple(sorted((v[1] or {}).items())))
@@ -308,5 +390,8 @@ root = tag(10, '', p_comp([
     tag(9, 'entities', p_list(10, entities)),
 ]))
 with gzip.open(sys.argv[1], 'wb') as f: f.write(root)
-json.dump({'%d,%d,%d' % k: v[0].split(':')[1] for k, v in blocks.items()}, open('/tmp/claude-0/tower/blocks.json', 'w'))
+import os
+if os.path.isdir('/tmp/claude-0/tower'):   # for the preview renderer
+    json.dump({'%d,%d,%d' % k: v[0].split(':')[1] for k, v in blocks.items()}, open('/tmp/claude-0/tower/blocks.json', 'w'))
+    json.dump(ENTS, open('/tmp/claude-0/tower/ents.json', 'w'))
 print('blocks', len(blocks), 'palette', len(pal), 'roof top', roof_top + 3 - G, 'above ground; size', W, H, D)
