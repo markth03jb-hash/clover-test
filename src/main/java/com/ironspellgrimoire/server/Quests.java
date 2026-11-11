@@ -43,6 +43,12 @@ import net.minecraftforge.network.PacketDistributor;
  *   <li><b>Monster Hunt</b> - a pack of 10-14 monsters (zombies, skeletons, spiders, husks, a witch). Defeat them all.</li>
  *   <li><b>Rift Watch</b> - a rift tears open there. Go in and reach its relic chamber.</li>
  *   <li><b>Great Beast</b> - one of the bosses is waiting (from 10 merit stars). Bring it down.</li>
+ *   <li><b>Lost Grimoire Page</b> - a glowing page, guarded by elite mages. Take it, then hold the ground round it for
+ *       thirty seconds while mages come for it (the clock only runs while you stay near). Pays the most mastery XP.</li>
+ *   <li><b>Wandering Beast</b> - a great beast that keeps moving; the tracker follows it. One day. Fall too far behind
+ *       it once found and it gets away to roam again.</li>
+ *   <li><b>Daily Special</b> - once a day the first quest you take is the gold-pinned one: two twists (armoured,
+ *       enraged, twice as many, no healing), double emeralds, stars and XP, and a Mana Core and a Rift Ink for sure.</li>
  * </ul>
  * Two days to finish it. Done quests pay emeralds, mastery XP for the equipped grimoire and merit stars - sometimes a
  * Rift Ink, a Devil Shard or a Mana Core. Sneak and right-click the board to give a quest up.
@@ -51,8 +57,14 @@ import net.minecraftforge.network.PacketDistributor;
 public final class Quests {
     private Quests() {}
 
-    public static final int MAGES = 0, MONSTERS = 1, RIFT = 2, BOSS = 3;
-    public static final String[] TITLES = {"Hooded Mages", "Monster Hunt", "Rift Watch", "Great Beast"};
+    public static final int MAGES = 0, MONSTERS = 1, RIFT = 2, BOSS = 3, PAGE = 4, BEAST = 5;
+    public static final String[] TITLES = {"Hooded Mages", "Monster Hunt", "Rift Watch", "Great Beast", "Lost Grimoire Page", "Wandering Beast"};
+    /** The Daily Special's twists (two of them, every day a new one). */
+    public static final int D_ARMOURED = 1, D_ENRAGED = 2, D_DOUBLE = 4, D_NOHEAL = 8;
+    public static final String[] DAILY_NAMES = {"Armoured", "Enraged", "Twice as many", "No healing"};
+    private static final int HOLD = 30;   // seconds to hold the ground round a Lost Grimoire Page
+    private static final java.util.UUID ARMOUR = java.util.UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a1001d1");
+    private static final java.util.UUID RAGE = java.util.UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a1001d2");
     /** state: travelling to the place, fighting there, done. */
     public static final int TRAVEL = 1, FIGHT = 3, DONE = 2;
     public static final int SHAPE = 75;
@@ -85,30 +97,50 @@ public final class Quests {
             return;
         }
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        int type = r.nextInt(Bounties.stars(p) >= 10 ? 4 : 3);
+        int[] pool = Bounties.stars(p) >= 10 ? new int[]{MAGES, MONSTERS, RIFT, PAGE, BEAST, BOSS} : new int[]{MAGES, MONSTERS, RIFT, PAGE, BEAST};
+        int type = pool[r.nextInt(pool.length)];
         double a = r.nextDouble(Math.PI * 2), d = r.nextDouble(150, 350);
         q = new CompoundTag();
         q.putInt("Type", type);
         q.putInt("State", TRAVEL);
+        long day = now / 24000;
+        boolean daily = p.getPersistentData().getLong("isg_quest_daily") != day + 1;   // the gold-pinned note: once a day
+        if (daily) {
+            p.getPersistentData().putLong("isg_quest_daily", day + 1);
+            int m1 = r.nextInt(4), m2;
+            do m2 = r.nextInt(4); while (m2 == m1);
+            q.putBoolean("Daily", true);
+            q.putInt("Mods", (1 << m1) | (1 << m2));
+        }
         q.putInt("X", (int) (pos.getX() + Math.cos(a) * d));
         q.putInt("Z", (int) (pos.getZ() + Math.sin(a) * d));
         q.putString("Dim", sl.dimension().location().toString());
-        q.putLong("Deadline", now + LIMIT);
+        q.putLong("Deadline", now + (type == BEAST ? LIMIT / 2 : LIMIT));
+        q.putFloat("Head", (float) r.nextDouble(Math.PI * 2));
         q.putInt("Id", r.nextInt(1, Integer.MAX_VALUE));
         p.getPersistentData().put(TAG, q);
         sl.playSound(null, p.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1f, 0.9f);
         sl.playSound(null, p.blockPosition(), SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.PLAYERS, 1f, 1f);
         double dx = q.getInt("X") - p.getX(), dz = q.getInt("Z") - p.getZ();
-        p.sendSystemMessage(Component.literal("QUEST: ").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD)
+        p.sendSystemMessage(Component.literal(daily ? "DAILY SPECIAL: " : "QUEST: ").withStyle(daily ? ChatFormatting.GOLD : ChatFormatting.AQUA, ChatFormatting.BOLD)
                 .append(Component.literal(TITLES[type]).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
                 .append(Component.literal("  " + brief(type)).withStyle(ChatFormatting.GRAY)));
+        if (daily) p.sendSystemMessage(Component.literal("  Twists: " + modsText(q.getInt("Mods")) + ". Double reward, and a Mana Core and a Rift Ink for sure.").withStyle(ChatFormatting.GOLD));
         p.sendSystemMessage(Component.literal("About " + (int) Math.hypot(dx, dz) + " blocks " + Bounties.direction(dx, dz)
-                + ". Two days - the quest tracker and the blue pillar show the way.").withStyle(ChatFormatting.DARK_GRAY));
+                + (type == BEAST ? ". It won't wait - one day, and it keeps moving. The tracker follows it." : ". Two days - the quest tracker and the blue pillar show the way.")).withStyle(ChatFormatting.DARK_GRAY));
         sync(p);
+    }
+
+    public static String modsText(int mods) {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < DAILY_NAMES.length; i++) if ((mods & (1 << i)) != 0) s.append(s.length() > 0 ? ", " : "").append(DAILY_NAMES[i]);
+        return s.toString();
     }
 
     private static String brief(int type) {
         return switch (type) {
+            case PAGE -> "A page torn from a grimoire glows out there, and mages guard it. Take it, and hold the ground.";
+            case BEAST -> "A great beast roams the wilds out there. Run it down before it gets away.";
             case MAGES -> "Hooded mages have made camp out there. Drive them off.";
             case MONSTERS -> "Monsters are gathering out there. Thin them out.";
             case RIFT -> "Something is about to tear open out there. Close the rift.";
@@ -130,13 +162,19 @@ public final class Quests {
             p.sendSystemMessage(Component.literal("Your quest ran out of time: " + TITLES[q.getInt("Type")] + ".").withStyle(ChatFormatting.GRAY));
             return;
         }
+        int type = q.getInt("Type");
+        if (type == BEAST && q.getInt("State") == TRAVEL && p.tickCount % 60 == 7) wander(q);   // it keeps moving
         if (q.getInt("State") == TRAVEL && sl.dimension().location().toString().equals(q.getString("Dim"))) {
             double dx = q.getInt("X") + 0.5 - p.getX(), dz = q.getInt("Z") + 0.5 - p.getZ();
-            if (dx * dx + dz * dz < 28 * 28) arrive(p, sl, q);
+            double near = type == BEAST ? 40 : 28;
+            if (dx * dx + dz * dz < near * near) arrive(p, sl, q);
+            else if (type == BEAST && p.tickCount % 60 == 7) sync(p);
         }
+        if (q.getInt("State") == FIGHT && type == PAGE) { page(p, sl, q); if (quest(p) == null) return; }
+        if (q.getInt("State") == FIGHT && type == BEAST) { chase(p, sl, q); if (quest(p) == null) return; }
         // keep the count true, whoever (or whatever) brought them down - a friend, a golem, lava, while you were away:
         // near the place (where their chunks are loaded) the quest counts the foes still standing
-        if (q.getInt("State") == FIGHT && q.getInt("Type") != RIFT && p.tickCount % 40 == 7 && sl.dimension().location().toString().equals(q.getString("Dim"))) {
+        if (q.getInt("State") == FIGHT && (type == MAGES || type == MONSTERS || type == BOSS) && p.tickCount % 40 == 7 && sl.dimension().location().toString().equals(q.getString("Dim"))) {
             double dx = q.getInt("X") + 0.5 - p.getX(), dz = q.getInt("Z") + 0.5 - p.getZ();
             if (dx * dx + dz * dz < 64 * 64) {
                 int alive = 0;
@@ -159,14 +197,24 @@ public final class Quests {
         int type = q.getInt("Type");
         ListTag mobs = new ListTag();
         q.putInt("State", FIGHT);
+        int mul = (q.getInt("Mods") & D_DOUBLE) != 0 ? 2 : 1;
         switch (type) {
+            case PAGE -> {   // the page, hanging over the ground, and its guards
+                q.putDouble("PX", at.x); q.putDouble("PY", at.y + 1.2); q.putDouble("PZ", at.z);
+                for (int i = 0; i < 3 * mul; i++) spawn(sl, p, q, AddonEntities.MAGE.get(), at, 3 + r.nextDouble(2), mobs, 2.0);
+                p.sendSystemMessage(Component.literal("Its guards rise to meet you. Take the page - then hold the ground.").withStyle(ChatFormatting.AQUA));
+            }
+            case BEAST -> {
+                spawn(sl, p, q, EntityType.RAVAGER, at, 0, mobs, 2.2);
+                p.sendSystemMessage(Component.literal("There it is - bring it down before it gets away!").withStyle(ChatFormatting.AQUA));
+            }
             case MAGES -> {
-                int n = 6 + r.nextInt(4);
+                int n = (6 + r.nextInt(4)) * mul;
                 for (int i = 0; i < n; i++) spawn(sl, p, q, AddonEntities.MAGE.get(), at, 3 + r.nextDouble(5), mobs, 1.0);
                 p.sendSystemMessage(Component.literal("The hooded mages turn on you!").withStyle(ChatFormatting.AQUA));
             }
             case MONSTERS -> {
-                int n = 10 + r.nextInt(5);
+                int n = (10 + r.nextInt(5)) * mul;
                 List<EntityType<? extends Mob>> kinds = List.of(EntityType.ZOMBIE, EntityType.SKELETON, EntityType.SPIDER, EntityType.HUSK, EntityType.ZOMBIE, EntityType.SKELETON);
                 for (int i = 0; i < n; i++) spawn(sl, p, q, kinds.get(r.nextInt(kinds.size())), at, 3 + r.nextDouble(8), mobs, 1.5);
                 spawn(sl, p, q, EntityType.WITCH, at, 2, mobs, 1.5);
@@ -190,7 +238,7 @@ public final class Quests {
             }
         }
         q.put("Mobs", mobs);
-        q.putInt("Need", type == MAGES || type == MONSTERS ? mobs.size() : 1);
+        q.putInt("Need", type == MAGES || type == MONSTERS ? mobs.size() : type == PAGE ? HOLD : 1);
         q.putInt("Have", 0);
         FxSend.ring(sl, Fx.WATER | FxPacket.KEEP_SHAPE, at.add(0, 0.1, 0), 0.5f, 8f, 0.2f, 18);
         sl.playSound(null, BlockPos.containing(at), SoundEvents.EVOKER_PREPARE_SUMMON, SoundSource.HOSTILE, 1.4f, 0.8f);
@@ -210,6 +258,10 @@ public final class Quests {
         m.getPersistentData().putInt("isg_quest_id", q.getInt("Id"));
         var h = m.getAttribute(Attributes.MAX_HEALTH);
         if (h != null && hp != 1.0) { h.setBaseValue(h.getBaseValue() * hp); m.setHealth(m.getMaxHealth()); }
+        int mods = q.getInt("Mods");
+        if ((mods & D_ARMOURED) != 0) { var ar = m.getAttribute(Attributes.ARMOR); if (ar != null && ar.getModifier(ARMOUR) == null) ar.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(ARMOUR, "Daily: armoured", 10, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION)); }
+        if ((mods & D_ENRAGED) != 0) { var sp = m.getAttribute(Attributes.MOVEMENT_SPEED); if (sp != null && sp.getModifier(RAGE) == null) sp.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(RAGE, "Daily: enraged", 0.3, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL)); }
+        if (type == EntityType.RAVAGER) m.setCustomName(Component.literal("Wandering Beast").withStyle(ChatFormatting.GOLD));
         m.setTarget(p);
         sl.addFreshEntity(m);
         mobs.add(net.minecraft.nbt.NbtUtils.createUUID(m.getUUID()));
@@ -227,6 +279,89 @@ public final class Quests {
         sync(p);
     }
 
+    // ------------------------------------------------------------------ the Wandering Beast
+    /** Out of sight, it roams: a few blocks every three seconds, turning a little as it goes. */
+    private static void wander(CompoundTag q) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        float head = q.getFloat("Head") + (float) r.nextDouble(-0.6, 0.6);
+        q.putFloat("Head", head);
+        q.putInt("X", (int) (q.getInt("X") + Math.cos(head) * 5));
+        q.putInt("Z", (int) (q.getInt("Z") + Math.sin(head) * 5));
+    }
+
+    /** In sight: if you fall too far behind it for half a minute, it gets away - back to roaming, from where it was. */
+    private static void chase(ServerPlayer p, ServerLevel sl, CompoundTag q) {
+        ListTag l = q.getList("Mobs", Tag.TAG_INT_ARRAY);
+        Entity b = l.isEmpty() ? null : sl.getEntity(net.minecraft.nbt.NbtUtils.loadUUID(l.get(0)));
+        if (b == null || !b.isAlive()) return;
+        q.putInt("X", (int) b.getX()); q.putInt("Z", (int) b.getZ());
+        if (b.distanceToSqr(p) > 72 * 72) {
+            int far = q.getInt("Far") + 1;
+            q.putInt("Far", far);
+            if (far >= 30) {
+                b.discard();
+                q.remove("Mobs");
+                q.putInt("State", TRAVEL);
+                q.putInt("Far", 0);
+                p.sendSystemMessage(Component.literal("The Wandering Beast got away. It's roaming again - the tracker still follows it.").withStyle(ChatFormatting.GRAY));
+                sync(p);
+            }
+        } else q.putInt("Far", 0);
+    }
+
+    // ------------------------------------------------------------------ the Lost Grimoire Page
+    /** Each second: the page glows; touch it to take it; then hold the ground round it while mages come for it. */
+    private static void page(ServerPlayer p, ServerLevel sl, CompoundTag q) {
+        Vec3 pg = new Vec3(q.getDouble("PX"), q.getDouble("PY"), q.getDouble("PZ"));
+        if (!sl.dimension().location().toString().equals(q.getString("Dim"))) return;
+        boolean taken = q.getBoolean("Taken");
+        // the page: a glint of gold, turning rings under it, a column of light while it's held
+        LightFx.glint(sl, Fx.GOLD, pg, taken ? 1.0f : 0.7f, 22);
+        FxSend.ring(sl, Fx.GOLD | FxPacket.KEEP_SHAPE, pg.add(0, -1.1, 0), 0.4f, 1.2f, 0.05f, 22);
+        if (taken) {
+            FxSend.ring(sl, Fx.WATER | FxPacket.KEEP_SHAPE, pg.add(0, -1.15, 0), 7.8f, 8f, 0.08f, 22);
+            FxSend.beam(sl, Fx.GOLD | FxPacket.KEEP_SHAPE, pg.add(0, -1, 0), pg.add(0, 18, 0), 0.25f, 22);
+        }
+        double d2 = p.position().add(0, 1, 0).distanceToSqr(pg);
+        if (!taken) {
+            if (d2 < 2.5 * 2.5) {
+                q.putBoolean("Taken", true);
+                q.putInt("Have", 0);
+                sl.playSound(null, BlockPos.containing(pg), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.4f, 0.7f);
+                sl.playSound(null, BlockPos.containing(pg), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1.0f, 1.4f);
+                p.sendSystemMessage(Component.literal("You have the page! Hold the ground round it for " + HOLD + " seconds.").withStyle(ChatFormatting.GOLD));
+                wave(p, sl, q, pg);
+                sync(p);
+            }
+            return;
+        }
+        if (d2 < 8 * 8) {   // the clock only runs while you hold the ground
+            int have = q.getInt("Have") + 1;
+            q.putInt("Have", have);
+            if (have % 8 == 0) wave(p, sl, q, pg);
+            if (have >= HOLD) { complete(p, q); return; }
+            sync(p);
+        } else if (p.tickCount % 60 == 7) p.displayClientMessage(Component.literal("Get back to the page - the clock stops while you're away!").withStyle(ChatFormatting.RED), true);
+    }
+
+    /** Mages come for the page from the edge of the ground. */
+    private static void wave(ServerPlayer p, ServerLevel sl, CompoundTag q, Vec3 pg) {
+        ListTag mobs = q.getList("Mobs", Tag.TAG_INT_ARRAY);
+        int n = 2 * ((q.getInt("Mods") & D_DOUBLE) != 0 ? 2 : 1);
+        Vec3 g = pg.add(0, -1.2, 0);
+        for (int i = 0; i < n; i++) spawn(sl, p, q, AddonEntities.MAGE.get(), g, 10, mobs, 1.4);
+        q.put("Mobs", mobs);
+        sl.playSound(null, BlockPos.containing(pg), SoundEvents.EVOKER_PREPARE_SUMMON, SoundSource.HOSTILE, 1.2f, 1.0f);
+    }
+
+    /** The Daily Special's No Healing: no healing while its fight is on. */
+    @SubscribeEvent
+    public static void onHeal(net.minecraftforge.event.entity.living.LivingHealEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        CompoundTag q = quest(p);
+        if (q != null && q.getInt("State") == FIGHT && (q.getInt("Mods") & D_NOHEAL) != 0) e.setCanceled(true);
+    }
+
     // ------------------------------------------------------------------ progress
     /** Any death of a quest's foe counts for the quest - it doesn't matter who or what landed the blow. */
     @SubscribeEvent
@@ -237,6 +372,7 @@ public final class Quests {
         if (p == null) return;
         CompoundTag q = quest(p);
         if (q == null || q.getInt("Id") != t.getPersistentData().getInt("isg_quest_id") || q.getInt("State") != FIGHT) return;
+        if (q.getInt("Type") == PAGE) return;   // the page's foes don't count: holding the ground does
         int have = q.getInt("Have") + 1;
         q.putInt("Have", have);
         if (have >= q.getInt("Need")) complete(p, q);
@@ -254,13 +390,24 @@ public final class Quests {
     private static void complete(ServerPlayer p, CompoundTag q) {
         int type = q.getInt("Type");
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        boolean big = type == RIFT || type == BOSS;
-        int emeralds = big ? 12 + r.nextInt(8) : 6 + r.nextInt(6);
-        int stars = big ? 3 : 1;
+        boolean big = type == RIFT || type == BOSS || type == BEAST || type == PAGE;
+        boolean daily = q.getBoolean("Daily");
+        int emeralds = (big ? 12 + r.nextInt(8) : 6 + r.nextInt(6)) * (daily ? 2 : 1);
+        int stars = (big ? 3 : 1) * (daily ? 2 : 1);
         give(p, new ItemStack(Items.EMERALD, emeralds));
-        GrimoireMastery.bountyXp(p, big ? 500 : 200 + r.nextInt(100));
+        GrimoireMastery.bountyXp(p, (type == PAGE ? 900 : big ? 500 : 200 + r.nextInt(100)) * (daily ? 2 : 1));   // a lost page teaches your grimoire most
         Bounties.addStars(p, stars);
         String extra = "";
+        if (daily) {   // the Daily Special: a Mana Core and a Rift Ink for sure
+            give(p, new ItemStack(AddonItemRegistry.MANA_CORE.get()));
+            ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(4));
+            give(p, ink);
+            extra = ", a Mana Core, a Rift Ink";
+        }
+        for (Tag t : q.getList("Mobs", Tag.TAG_INT_ARRAY)) {   // whatever is left of it fades away
+            Entity m = p.serverLevel().getEntity(net.minecraft.nbt.NbtUtils.loadUUID(t));
+            if (m != null && m.isAlive()) m.discard();
+        }
         if (r.nextInt(big ? 2 : 4) == 0) {
             ItemStack s = switch (r.nextInt(3)) {
                 case 0 -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(4)); yield ink; }
@@ -275,7 +422,7 @@ public final class Quests {
         ServerLevel sl = p.serverLevel();
         FxSend.ring(sl, Fx.WATER | FxPacket.KEEP_SHAPE, p.position().add(0, 0.05, 0), 0.3f, 2.6f, 0.06f, 14);
         sl.playSound(null, p.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.8f, 1.2f);
-        p.sendSystemMessage(Component.literal("QUEST COMPLETE  ").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD)
+        p.sendSystemMessage(Component.literal(daily ? "DAILY SPECIAL COMPLETE  " : "QUEST COMPLETE  ").withStyle(daily ? ChatFormatting.GOLD : ChatFormatting.AQUA, ChatFormatting.BOLD)
                 .append(Component.literal(TITLES[type] + ": " + emeralds + " emeralds, +" + stars + " merit star" + (stars > 1 ? "s" : "") + extra + ".").withStyle(ChatFormatting.YELLOW)));
         FxPacket k = new FxPacket();
         k.shape = SHAPE; k.life = DONE; k.sweep = type;
@@ -293,6 +440,7 @@ public final class Quests {
             k.life = q.getInt("State"); k.sweep = q.getInt("Type"); k.a0 = q.getInt("Have"); k.a1 = q.getInt("Need");
             k.c = new Vec3(q.getInt("X") + 0.5, 0, q.getInt("Z") + 0.5);
             k.r = Math.max(0, q.getLong("Deadline") - p.serverLevel().getGameTime());
+            k.h = q.getInt("Mods") | (q.getBoolean("Daily") ? 16 : 0) | (q.getBoolean("Taken") ? 32 : 0);
         }
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), k);
     }
