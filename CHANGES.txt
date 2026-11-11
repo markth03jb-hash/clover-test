@@ -1,6 +1,12 @@
-Iron Spell Grimoire v1.89.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.90.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.90.0
+- Grimoire ranks I-V (Blank, Inked, Gilded, Radiant, Legendary), following mastery: stars and rank in the tooltip,
+  rank pips on the icon, loose pages circling the open book, and a ring of light at Legendary.
+- New boss: Rhya the Disloyal (/summon iron_spell_grimoire:rhya) - copies your grimoire and fights you with it, then the
+  captains' magic, then anti-magic that silences your spells and copies them back; Total Copy near the end. Own music.
 
 NEW IN 1.89.0
 - The Ossuarch is now Zenon, everywhere: /summon iron_spell_grimoire:zenon, the Zenon Spawn Egg, and Zenon's Phylactery (zenon_phylactery).
