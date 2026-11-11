@@ -50,6 +50,9 @@ public final class RiftRewards {
     private RiftRewards() {}
 
     private static final Map<UUID, Long> CAST = new HashMap<>(), FREE = new HashMap<>(), HEART = new HashMap<>(), SHADE = new HashMap<>();
+
+    /** The next spell this mage casts (this tick) costs no mana (the Mana Tree's Thrift). */
+    public static void freeCast(ServerPlayer p) { FREE.put(p.getUUID(), p.level().getGameTime()); }
     private static final Map<UUID, Integer> COUNT = new HashMap<>();
     private static final UUID FEATHER = UUID.fromString("a1f70000-0000-4000-8000-0000000000d2");
     private static final UUID FROST = UUID.fromString("a1f70000-0000-4000-8000-0000000000d3");

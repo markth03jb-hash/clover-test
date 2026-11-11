@@ -50,6 +50,8 @@ public class GrimoireBookScreen extends Screen {
     private boolean hidden = false;
     /** The Memories tab (the Lost Memory Pages, server/MemoryPages): which spread of it is open. */
     private boolean memories = false;
+    /** The Tree tab (the Mana Tree, server/SkillTree). */
+    private boolean treeMode = false;
     private int mpage = 0;
     private static final int MSPREADS = com.ironspellgrimoire.server.MemoryStory.CH * 3;
 
@@ -122,13 +124,19 @@ public class GrimoireBookScreen extends Screen {
         int x0 = (width - BW) / 2, y0 = (height - BH) / 2;
         if (inside(mx, my, x0 - 2, y0 + BH - 20, 22, 16)) { turn(-1); return true; }
         if (inside(mx, my, x0 + BW - 20, y0 + BH - 20, 22, 16)) { turn(1); return true; }
+        if (inside(mx, my, x0 + BW + 7, y0 + 68, 54, 16)) {   // the third ribbon: the Mana Tree (or back to the spells)
+            treeMode = !treeMode; memories = false; flipAt = ticks; flipDir = treeMode ? 1 : -1;
+            Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.6F);
+            return true;
+        }
+        if (treeMode && treeClick(mx, my, x0, y0)) return true;
         if (inside(mx, my, x0 + BW + 7, y0 + 46, 54, 16)) {   // the second ribbon: the Memories (or back to the spells)
-            memories = !memories; flipAt = ticks; flipDir = memories ? 1 : -1;
+            memories = !memories; treeMode = false; flipAt = ticks; flipDir = memories ? 1 : -1;
             Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.7F);
             return true;
         }
         if (inside(mx, my, x0 + BW + 7, y0 + 24, 46, 16)) {   // the ribbon tab on the edge of the book: jump to the combos (or back to the spells)
-            if (memories) { memories = false; page = ids.size(); flipAt = ticks; flipDir = -1; Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.8F); return true; }
+            if (memories || treeMode) { memories = false; treeMode = false; page = ids.size(); flipAt = ticks; flipDir = -1; Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.8F); return true; }
             int to = onCombos() ? 0 : ids.size();
             if (to != page) { flipDir = to > page ? 1 : -1; page = to; flipAt = ticks; Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.8F); }
             return true;
@@ -172,6 +180,12 @@ public class GrimoireBookScreen extends Screen {
         boolean memHot = inside(mx, my, x0 + BW + 7, y0 + 46, 54, 16);
         g.fill(x0 + BW + 5, y0 + 46, x0 + BW + 62, y0 + 62, 0xFF000000 | dark(c[2], 0.35F));
         g.fill(x0 + BW + 6, y0 + 47, x0 + BW + 61, y0 + 61, 0xFF000000 | (memHot || memories ? c[2] : c[4]));
+        boolean treeHot = inside(mx, my, x0 + BW + 7, y0 + 68, 54, 16);
+        g.fill(x0 + BW + 5, y0 + 68, x0 + BW + 62, y0 + 84, 0xFF000000 | dark(c[2], 0.35F));
+        g.fill(x0 + BW + 6, y0 + 69, x0 + BW + 61, y0 + 83, 0xFF000000 | (treeHot || treeMode ? c[2] : c[4]));
+        String tt = treeMode ? "Spells" : "Tree";
+        g.drawString(f, tt, x0 + BW + 34 - f.width(tt) / 2, y0 + 73, treeHot || treeMode ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
+        if (treeMode) { drawTree(g, f, x0, y0, mid, mx, my, c); return; }
         String mt = memories ? "Spells" : "Memories";
         g.drawString(f, mt, x0 + BW + 34 - f.width(mt) / 2, y0 + 51, memHot || memories ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
         if (memories) {
@@ -274,6 +288,149 @@ public class GrimoireBookScreen extends Screen {
                 yy += 10;
             }
         }
+    }
+
+    // ------------------------------------------------------------------ the Mana Tree
+    private ItemStack treeBook() {
+        Minecraft mc = Minecraft.getInstance();
+        ItemStack live = mc.player == null ? null : Utils.getPlayerSpellbookStack(mc.player);
+        return live != null && live.is(stack.getItem()) ? live : stack;
+    }
+
+    private boolean equipped() {
+        Minecraft mc = Minecraft.getInstance();
+        ItemStack live = mc.player == null ? null : Utils.getPlayerSpellbookStack(mc.player);
+        return live != null && live.is(stack.getItem());
+    }
+
+    private int[] nodeXY(com.ironspellgrimoire.server.SkillTree.Node n, int x0, int y0) {
+        int mid = x0 + BW / 2;
+        int cx = n.branch() == com.ironspellgrimoire.server.SkillTree.ROOT ? x0 + 66 : n.branch() == com.ironspellgrimoire.server.SkillTree.BODY ? x0 + BW - 66 : mid;
+        if (n.branch() == com.ironspellgrimoire.server.SkillTree.CROWN) return new int[]{mid, y0 + 30};
+        return new int[]{cx + (n.lane() - 1) * 28, y0 + BH - 38 - (n.tier() - 1) * 31};
+    }
+
+    private com.ironspellgrimoire.server.SkillTree.Node nodeAt(double mx, double my, int x0, int y0) {
+        for (var n : com.ironspellgrimoire.server.SkillTree.nodes(book)) {
+            int[] p = nodeXY(n, x0, y0);
+            int r = n.branch() == com.ironspellgrimoire.server.SkillTree.CROWN ? 10 : 8;
+            if (Math.abs(mx - p[0]) <= r && Math.abs(my - p[1]) <= r) return n;
+        }
+        return null;
+    }
+
+    private boolean treeClick(double mx, double my, int x0, int y0) {
+        Minecraft mc = Minecraft.getInstance();
+        var n = nodeAt(mx, my, x0, y0);
+        if (n != null) {
+            if (equipped() && com.ironspellgrimoire.server.SkillTree.blocked(treeBook(), n, MemoryClient.chapter()) == null) {
+                com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.TreePackets.Act(0, n.id()));
+                mc.player.playSound(SoundEvents.AMETHYST_BLOCK_CHIME, 0.8F, 1.3F);
+            } else mc.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.3F, 0.6F);
+            return true;
+        }
+        String rs = "Reset tree";
+        int rw = font.width(rs);
+        if (inside(mx, my, x0 + BW / 2 - rw / 2 - 2, y0 + BH - 14, rw + 4, 11)) {
+            com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.TreePackets.Act(1, ""));
+            mc.player.playSound(SoundEvents.BOOK_PAGE_TURN, 0.8F, 0.7F);
+            return true;
+        }
+        return false;
+    }
+
+    private static void line(GuiGraphics g, int x1, int y1, int x2, int y2, int col) {
+        int n = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+        for (int i = 0; i <= n; i++) {
+            int x = x1 + (x2 - x1) * i / Math.max(1, n), y = y1 + (y2 - y1) * i / Math.max(1, n);
+            g.fill(x, y, x + 2, y + 2, col);
+        }
+    }
+
+    /** The Mana Tree, across both pages: Root on the left, the grimoire's own Element up the middle to its Crown, Body on the right. */
+    private void drawTree(GuiGraphics g, Font f, int x0, int y0, int mid, int mx, int my, int[] c) {
+        ItemStack bk = treeBook();
+        boolean eq = equipped();
+        int mem = MemoryClient.chapter();
+        int earned = com.ironspellgrimoire.server.SkillTree.earned(bk, mem), free = earned - com.ironspellgrimoire.server.SkillTree.spent(bk);
+        g.drawString(f, Component.literal("Mana Tree").withStyle(ChatFormatting.BOLD), x0 + 16, y0 + 10, RED_INK, false);
+        String lv = "\u2618 " + free + " / " + earned + " leaves";
+        g.drawString(f, lv, x0 + BW - 16 - f.width(lv), y0 + 10, free > 0 ? 0xFF2A6A20 : INK_SOFT, false);
+        String[] lab = {"Root", com.ironspellgrimoire.server.SkillTree.CROWNS.length > 0 ? "Element" : "", "Body"};
+        g.drawString(f, lab[0], x0 + 66 - f.width(lab[0]) / 2, y0 + BH - 26, INK_SOFT, false);
+        g.drawString(f, lab[1], mid - f.width(lab[1]) / 2, y0 + BH - 26, INK_SOFT, false);
+        g.drawString(f, lab[2], x0 + BW - 66 - f.width(lab[2]) / 2, y0 + BH - 26, INK_SOFT, false);
+        var nodes = com.ironspellgrimoire.server.SkillTree.nodes(book);
+        // the branches first
+        for (var n : nodes) {
+            int[] p = nodeXY(n, x0, y0);
+            if (n.parent() != null) {
+                var par = com.ironspellgrimoire.server.SkillTree.node(book, n.parent());
+                int[] q = nodeXY(par, x0, y0);
+                boolean on = com.ironspellgrimoire.server.SkillTree.has(bk, n.id());
+                line(g, q[0] - 1, q[1] - 1, p[0] - 1, p[1] - 1, on ? 0xFF000000 | c[2] : 0x605A4630);
+            } else if (n.branch() == com.ironspellgrimoire.server.SkillTree.CROWN) {
+                for (String e : new String[]{"e6", "e7"}) {
+                    int[] q = nodeXY(com.ironspellgrimoire.server.SkillTree.node(book, e), x0, y0);
+                    line(g, q[0] - 1, q[1] - 1, p[0] - 1, p[1] - 1, com.ironspellgrimoire.server.SkillTree.has(bk, "crown") ? 0xFFD8AE50 : 0x405A4630);
+                }
+            }
+        }
+        com.ironspellgrimoire.server.SkillTree.Node hover = nodeAt(mx, my, x0, y0);
+        for (var n : nodes) {
+            int[] p = nodeXY(n, x0, y0);
+            boolean crown = n.branch() == com.ironspellgrimoire.server.SkillTree.CROWN;
+            int r = crown ? 10 : 7;
+            boolean has = com.ironspellgrimoire.server.SkillTree.has(bk, n.id());
+            boolean can = eq && !has && com.ironspellgrimoire.server.SkillTree.blocked(bk, n, mem) == null;
+            int border = has ? 0xFFD8AE50 : can ? INK : 0x705A4630;
+            int fill = has ? 0xFF000000 | c[4] : can ? 0xFFF2E6C8 : 0x30000000;
+            if (can) {   // ready to learn: it breathes
+                float k = 0.5F + 0.5F * Mth.sin(ticks * 0.25F);
+                g.fill(p[0] - r - 2, p[1] - r - 2, p[0] + r + 2, p[1] + r + 2, ((int) (0x60 * k) << 24) | 0x2A6A20);
+            }
+            g.fill(p[0] - r - 1, p[1] - r - 1, p[0] + r + 1, p[1] + r + 1, border);
+            g.fill(p[0] - r, p[1] - r, p[0] + r, p[1] + r, fill);
+            if (crown && has) { g.fill(p[0] - r - 3, p[1] - r - 3, p[0] + r + 3, p[1] - r - 2, 0xFFD8AE50); g.fill(p[0] - r - 3, p[1] + r + 2, p[0] + r + 3, p[1] + r + 3, 0xFFD8AE50); }
+            String glyph = crown ? "\u2655" : n.name().substring(0, 1);
+            int gc = has ? 0xFF000000 | c[5] : can ? INK : 0x905A4630;
+            g.drawString(f, glyph, p[0] - f.width(glyph) / 2 + 1, p[1] - 3, gc, false);
+            if (n == hover) g.fill(p[0] - r, p[1] - r, p[0] + r, p[1] + r, 0x30FFFFFF);
+        }
+        String rs = "Reset tree";
+        int rw = f.width(rs);
+        boolean rh = inside(mx, my, x0 + BW / 2 - rw / 2 - 2, y0 + BH - 14, rw + 4, 11);
+        g.drawString(f, rs, x0 + BW / 2 - rw / 2, y0 + BH - 12, rh ? RED_INK : INK_SOFT, false);
+        if (!eq) {
+            String w = "Equip this grimoire to grow its tree.";
+            g.drawString(f, w, x0 + 16, y0 + 22, RED_INK, false);
+        }
+        if (hover != null) {
+            java.util.List<Component> tip = new java.util.ArrayList<>();
+            tip.add(Component.literal(hover.name()).withStyle(hover.branch() == com.ironspellgrimoire.server.SkillTree.CROWN ? ChatFormatting.GOLD : ChatFormatting.WHITE, ChatFormatting.BOLD));
+            for (FormattedCharSequence l : f.split(Component.literal(com.ironspellgrimoire.server.SkillTree.describe(book, hover)), 200))
+                tip.add(Component.literal(toStr(l)).withStyle(ChatFormatting.GRAY));
+            tip.add(Component.literal("Cost: " + hover.cost() + (hover.cost() == 1 ? " leaf" : " leaves")).withStyle(ChatFormatting.DARK_GREEN));
+            String why = com.ironspellgrimoire.server.SkillTree.blocked(bk, hover, mem);
+            tip.add(why == null ? Component.literal(eq ? "Click to learn" : "Equip the grimoire to learn").withStyle(ChatFormatting.YELLOW)
+                    : Component.literal(why).withStyle(why.equals("Learned") ? ChatFormatting.GREEN : ChatFormatting.RED));
+            g.renderComponentTooltip(f, tip, mx, my);
+        } else if (inside(mx, my, x0 + BW - 16 - f.width(lv), y0 + 8, f.width(lv), 12)) {
+            g.renderComponentTooltip(f, java.util.List.of(Component.literal("Grimoire Leaves").withStyle(ChatFormatting.GREEN),
+                    Component.literal("2 per mastery level, 1 per evolved spell (up to 6),").withStyle(ChatFormatting.GRAY),
+                    Component.literal("2 each for the Exam, Awakening and Ascension,").withStyle(ChatFormatting.GRAY),
+                    Component.literal("1 per Lost Memory chapter recovered.").withStyle(ChatFormatting.GRAY)), mx, my);
+        } else if (rh) {
+            g.renderComponentTooltip(f, java.util.List.of(Component.literal("Reset the tree").withStyle(ChatFormatting.GOLD),
+                    Component.literal("Stand by a Grimoire Altar. The first reset is free;").withStyle(ChatFormatting.GRAY),
+                    Component.literal("after that, " + com.ironspellgrimoire.server.SkillTree.RESPEC_COST + " merit stars.").withStyle(ChatFormatting.GRAY)), mx, my);
+        }
+    }
+
+    private static String toStr(FormattedCharSequence s) {
+        StringBuilder b = new StringBuilder();
+        s.accept((i, st, cp) -> { b.appendCodePoint(cp); return true; });
+        return b.toString();
     }
 
     /** The Memories: the first binder's story, two pages to a spread, in ink - a lost page is a torn blank. */
