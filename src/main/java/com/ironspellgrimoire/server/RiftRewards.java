@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -56,6 +57,13 @@ public final class RiftRewards {
     }
 
     /** The ink written into the equipped grimoire: 0-3, or -1. */
+    /** Whether the equipped grimoire carries this ink, on either of its ink pages. */
+    static boolean hasInk(Player p, int rule) {
+        ItemStack b = Utils.getPlayerSpellbookStack(p);
+        if (b == null || !b.hasTag()) return false;
+        return b.getTag().getInt("RiftInk") - 1 == rule || (b.getTag().getBoolean("InkSlot2") && b.getTag().getInt("RiftInk2") - 1 == rule);
+    }
+
     static int ink(Player p) {
         ItemStack b = Utils.getPlayerSpellbookStack(p);
         return b == null || !b.hasTag() ? -1 : b.getTag().getInt("RiftInk") - 1;
@@ -69,7 +77,9 @@ public final class RiftRewards {
             return;
         }
         int r = RiftInkItem.rule(ink);
-        book.getOrCreateTag().putInt("RiftInk", r + 1);
+        CompoundTag bt = book.getOrCreateTag();
+        if (bt.getBoolean("InkSlot2") && bt.getInt("RiftInk") > 0 && bt.getInt("RiftInk") != r + 1) bt.putInt("RiftInk2", r + 1);   // the second page takes it (replacing what was there)
+        else bt.putInt("RiftInk", r + 1);
         if (!p.isCreative()) ink.shrink(1);
         ServerLevel sl = p.serverLevel();
         FxSend.ring(sl, Fx.VOID, p.position().add(0, 0.1, 0), 0.3f, 3f, 0.1f, 14);
@@ -109,7 +119,7 @@ public final class RiftRewards {
             p.hurt(p.damageSources().magic(), Math.max(1f, cost * 0.05f));
             return;
         }
-        if (ink(p) == 0) {
+        if (hasInk(p, 0)) {
             e.setNewMana(e.getOldMana() - cost * 0.75f);
             p.hurt(p.damageSources().magic(), 1f);
         }
@@ -129,7 +139,7 @@ public final class RiftRewards {
                 sl.playSound(null, t.blockPosition(), SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.PLAYERS, 1f, 1.6f);
             }
             boolean rule = Rifts.inRule(p, Rifts.ECHO);
-            boolean inked = ink(p) == 2 && r.nextFloat() < 0.15f;
+            boolean inked = hasInk(p, 2) && r.nextFloat() < 0.15f;
             if (rule || inked) {
                 float amt = e.getAmount() * (rule ? 0.5f : 0.4f);
                 AstaFx.later(20, () -> {
@@ -167,7 +177,7 @@ public final class RiftRewards {
     /** Shade Ink: now and then a blow passes straight through you. */
     @SubscribeEvent
     public static void onAttack(LivingAttackEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer v) || ink(v) != 3) return;
+        if (!(e.getEntity() instanceof ServerPlayer v) || !hasInk(v, 3)) return;
         long now = v.level().getGameTime();
         Long ready = SHADE.get(v.getUUID());
         if ((ready != null && now < ready) || ThreadLocalRandom.current().nextFloat() >= 0.12f) return;
@@ -180,13 +190,13 @@ public final class RiftRewards {
 
     @SubscribeEvent
     public static void onFall(LivingFallEvent e) {
-        if (e.getEntity() instanceof ServerPlayer p && ink(p) == 1) e.setDamageMultiplier(0f);
+        if (e.getEntity() instanceof ServerPlayer p && hasInk(p, 1)) e.setDamageMultiplier(0f);
     }
 
     @SubscribeEvent
     public static void onTick(TickEvent.PlayerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || p.tickCount % 20 != 0) return;
-        if (ink(p) == 1) TimedModifiers.apply(p, ForgeMod.ENTITY_GRAVITY.get(), FEATHER, "Feather Ink", -0.15, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
+        if (hasInk(p, 1)) TimedModifiers.apply(p, ForgeMod.ENTITY_GRAVITY.get(), FEATHER, "Feather Ink", -0.15, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
         if (p.getHealth() < p.getMaxHealth() * 0.5f && wears(p, AddonItemRegistry.SHADE_LANTERN.get()))
             for (LivingEntity t : Kit.near(p.serverLevel(), p, p.position().add(0, 1, 0), 6)) Moves.slow(t, 30, -0.25);
     }

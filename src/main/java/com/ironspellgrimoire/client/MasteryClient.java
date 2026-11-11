@@ -37,6 +37,19 @@ public final class MasteryClient {
         int xp = GrimoireMastery.xp(stack), lvl = GrimoireMastery.levelFor(xp);
         int[] th = GrimoireMastery.THRESHOLDS;
         boolean max = lvl >= GrimoireMastery.MAX_LEVEL;
+        if (stack.hasTag() && stack.getTag().getInt("RiftInk2") > 0) {
+            int ink2 = Math.min(3, stack.getTag().getInt("RiftInk2") - 1);
+            tip.add(Component.literal("Inscribed: " + com.ironspellgrimoire.item.RiftInkItem.NAMES[ink2] + " - " + com.ironspellgrimoire.item.RiftInkItem.TEXT[ink2])
+                    .withStyle(s -> s.withColor(com.ironspellgrimoire.item.RiftInkItem.COLORS[ink2])));
+        }
+        if (stack.hasTag()) {   // what has been forged into it with merit stars
+            var boost = stack.getTag().getCompound("StarBoost");
+            for (String k : boost.getAllKeys()) if (boost.getInt(k) > 0)
+                tip.add(Component.literal("\u2605 " + Component.translatable("spell.iron_spell_grimoire." + k).getString() + " +" + boost.getInt(k) * 10 + "%").withStyle(ChatFormatting.YELLOW));
+            if (stack.getTag().getBoolean("InkSlot2")) tip.add(Component.literal("\u2605 Two ink pages").withStyle(ChatFormatting.YELLOW));
+            int gem = stack.getTag().getInt("Gem");
+            if (gem > 0 && gem <= com.ironspellgrimoire.server.StarForge.GEM_NAMES.length) tip.add(Component.literal("\u2605 " + com.ironspellgrimoire.server.StarForge.GEM_NAMES[gem - 1] + " cover gem").withStyle(ChatFormatting.YELLOW));
+        }
         if (stack.hasTag() && stack.getTag().getInt("RiftInk") > 0) {
             int ink = Math.min(3, stack.getTag().getInt("RiftInk") - 1);
             tip.add(Component.literal("Inscribed: " + com.ironspellgrimoire.item.RiftInkItem.NAMES[ink] + " - " + com.ironspellgrimoire.item.RiftInkItem.TEXT[ink])

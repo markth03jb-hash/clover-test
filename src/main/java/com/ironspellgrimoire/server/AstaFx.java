@@ -140,9 +140,10 @@ public class AstaFx {
         return spell;
     }
 
-    static void damage(ServerPlayer p, LivingEntity t, float dmg, String id) {
+    static void damage(ServerPlayer p, LivingEntity t, float dmg0, String id) {
         if (CastSync.clashLost(p)) return;   // the move was broken in a Spell Clash
-        if (CastSync.deferDamage(p, t, () -> { if (t.isAlive()) damage(p, t, dmg, id); })) return;   // lands when the move reaches it
+        final float dmg = dmg0 * StarForge.boost(p, id);   // empowered at the Star Forge
+        if (CastSync.deferDamage(p, t, () -> { if (t.isAlive()) damage(p, t, dmg0, id); })) return;   // lands when the move reaches it
         var spell = spellById(id);
         if (spell != null) DamageSources.applyDamage(t, dmg, spell.getDamageSource(p));
         else t.hurt(p.damageSources().playerAttack(p), dmg);

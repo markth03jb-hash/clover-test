@@ -46,6 +46,9 @@ public abstract class AddonBoss extends Monster {
         this.bar = new ServerBossEvent(Component.literal(name), color, BossEvent.BossBarOverlay.NOTCHED_10);
     }
 
+    /** Renames the boss bar (Licht, the Unbound). */
+    public void setBarName(Component name) { bar.setName(name); setCustomName(name); }
+
     /** Health fractions where each phase ends, e.g. {0.7, 0.4}: three phases. */
     protected abstract float[] phaseLines();
     protected abstract void aiTick();
