@@ -1036,7 +1036,7 @@ public final class Rifts {
             loot.add(ink);
             r.relicTaken = true;
         } else {
-            if (rnd.nextInt(3) == 0) loot.add(new ItemStack(AddonItemRegistry.DEVIL_SHARD.get()));
+            if (rnd.nextInt(3) == 0) loot.add(new ItemStack(AddonItemRegistry.RUNED_SPINE.get()));   // the elite's spoils (Devil Shards come only from Zenon)
             if (rnd.nextInt(4) == 0) {
                 ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get());
                 ink.getOrCreateTag().putInt("Rule", Integer.numberOfTrailingZeros(r.rules));

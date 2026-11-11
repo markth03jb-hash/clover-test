@@ -1,0 +1,22 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  " A ",
+  "LDL",
+  " A "
+ ],
+ "key": {
+  "A": {
+   "item": "minecraft:amethyst_shard"
+  },
+  "L": {
+   "item": "minecraft:leather"
+  },
+  "D": {
+   "item": "minecraft:diamond"
+  }
+ },
+ "result": {
+  "item": "iron_spell_grimoire:mana_crystal_binding"
+ }
+}

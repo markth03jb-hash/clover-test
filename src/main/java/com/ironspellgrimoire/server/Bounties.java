@@ -317,7 +317,7 @@ public final class Bounties {
         removePoster(p, b.getInt("Id"));
         giveItem(p, trophy);
         giveItem(p, new ItemStack(Items.EMERALD, 8 + hard * 6 - (wounded ? 3 : 0)));
-        if (ThreadLocalRandom.current().nextInt(3) == 0 || hard >= 2) giveItem(p, new ItemStack(AddonItemRegistry.DEVIL_SHARD.get()));
+        if (ThreadLocalRandom.current().nextInt(3) == 0 || hard >= 2) giveItem(p, new ItemStack(AddonItemRegistry.RUNED_SPINE.get()));   // (Devil Shards come only from Zenon)
         if (boss == SECRET) {   // the secret poster: a relic as well
             var relics = AddonItemRegistry.RELICS;
             giveItem(p, new ItemStack(relics.get(ThreadLocalRandom.current().nextInt(relics.size())).get()));

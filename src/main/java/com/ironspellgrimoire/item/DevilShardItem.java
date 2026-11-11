@@ -24,6 +24,6 @@ public class DevilShardItem extends Item {
         tip.add(Component.literal("Right-click a Grimoire Altar with your grimoire equipped").withStyle(ChatFormatting.GRAY));
         tip.add(Component.literal("to forge this into it: +5% spell power, +3% cooldown reduction.").withStyle(ChatFormatting.WHITE));
         tip.add(Component.literal("Up to 5 per grimoire.").withStyle(ChatFormatting.GRAY));
-        tip.add(Component.literal("Broken off Zenon.").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        tip.add(Component.literal("Broken off Zenon - only he leaves them behind.").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
     }
 }

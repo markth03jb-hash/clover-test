@@ -28,6 +28,8 @@ public final class BossCores {
         LivingEntity b = e.getEntity();
         if (!(b.level() instanceof ServerLevel sl) || !isBoss(b.getType()) || !(e.getSource().getEntity() instanceof ServerPlayer killer)) return;
         b.spawnAtLocation(new ItemStack(AddonItemRegistry.MANA_CORE.get()), 1f);
+        ItemStack trophy = GrimoireUpgrades.trophy(b.getType());   // and its own grimoire upgrade
+        if (!trophy.isEmpty()) b.spawnAtLocation(trophy, 1.4f);
         FxSend.ring(sl, Fx.GOLD, b.position().add(0, 1, 0), 0.2f, 2.4f, 0.08f, 16);
         finisher(sl, b, killer, e.getSource());
     }

@@ -403,16 +403,19 @@ public final class Quests {
             ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(4));
             give(p, ink);
             extra = ", a Mana Core, a Rift Ink";
+            if (r.nextInt(3) == 0) { give(p, new ItemStack(AddonItemRegistry.PHOENIX_RIBBON.get())); extra += ", a Phoenix Ribbon"; }
         }
         for (Tag t : q.getList("Mobs", Tag.TAG_INT_ARRAY)) {   // whatever is left of it fades away
             Entity m = p.serverLevel().getEntity(net.minecraft.nbt.NbtUtils.loadUUID(t));
             if (m != null && m.isAlive()) m.discard();
         }
         if (r.nextInt(big ? 2 : 4) == 0) {
-            ItemStack s = switch (r.nextInt(3)) {
+            ItemStack s = switch (r.nextInt(big ? 5 : 4)) {
                 case 0 -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(4)); yield ink; }
-                case 1 -> new ItemStack(AddonItemRegistry.DEVIL_SHARD.get());
-                default -> new ItemStack(AddonItemRegistry.MANA_CORE.get());
+                case 1 -> new ItemStack(AddonItemRegistry.RUNED_SPINE.get());
+                case 2 -> new ItemStack(AddonItemRegistry.MANA_CORE.get());
+                case 4 -> new ItemStack(AddonItemRegistry.PHOENIX_RIBBON.get());   // rare: only from the big quests
+                default -> new ItemStack(AddonItemRegistry.SWIFT_BOOKMARK.get());
             };
             give(p, s);
             extra = ", " + s.getHoverName().getString();

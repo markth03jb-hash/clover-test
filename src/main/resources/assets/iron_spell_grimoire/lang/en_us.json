@@ -771,5 +771,16 @@
   "spell.iron_spell_grimoire.chrono_anastasis": "Time Reversal Magic: Chrono Anastasis",
   "spell.iron_spell_grimoire.chrono_anastasis.guide": "AWAKENED. A clock face spreads over the ground 18 blocks round you and its hands run backwards. You and your friends inside are rewound to the healthiest you were in the last six seconds, your cooldowns run back twenty seconds and the book fills its stored time. Foes inside are caught in the reversed moment - frozen, your blows on them held - until the hands snap forward and it all lands at once.",
   "entity.iron_spell_grimoire.reflection": "Reflection",
-  "block.iron_spell_grimoire.quest_board": "Quest Board"
+  "block.iron_spell_grimoire.quest_board": "Quest Board",
+  "item.iron_spell_grimoire.despair_fang": "Despair Fang",
+  "item.iron_spell_grimoire.copied_sigil": "Copied Sigil",
+  "item.iron_spell_grimoire.elven_blade_shard": "Elven Blade Shard",
+  "item.iron_spell_grimoire.grave_ember": "Grave Ember",
+  "item.iron_spell_grimoire.curse_thread": "Curse Thread",
+  "item.iron_spell_grimoire.mirror_shard": "Mirror Shard",
+  "item.iron_spell_grimoire.mana_crystal_binding": "Mana Crystal Binding",
+  "item.iron_spell_grimoire.silver_clasp": "Silver Clasp",
+  "item.iron_spell_grimoire.swift_bookmark": "Swift Bookmark",
+  "item.iron_spell_grimoire.runed_spine": "Runed Spine",
+  "item.iron_spell_grimoire.phoenix_ribbon": "Phoenix Ribbon"
 }
