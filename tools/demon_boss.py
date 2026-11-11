@@ -46,66 +46,128 @@ for x in (-8, -3, 2, 7):                                          # tattered cin
     box('hips', x, 16 + rnd.randint(0, 6), 8, x + 4, 31, 9, 'cloth')
 
 bone('body', 'hips', (0, 40, 0))                                  # the torso never bends (bosses keep it still)
-box('body', -11, 40, -7, 11, 48, 7, 'hide')
-box('body', -15, 48, -9, 15, 56, 9, 'hide')
-box('body', -18, 56, -10, 18, 66, 10, 'hide')
-box('body', -6, 50, -11, 6, 60, -10, 'core')                      # the furnace in its chest
-box('body', -8, 48, -11, -6, 62, -10, 'rib'); box('body', 6, 48, -11, 8, 62, -10, 'rib')
-box('body', -13, 54, -11, -9, 56, -10, 'rib'); box('body', 9, 54, -11, 13, 56, -10, 'rib')
-box('body', -13, 50, -11, -9, 52, -10, 'rib'); box('body', 9, 50, -11, 13, 52, -10, 'rib')
+# a hunched, heavy torso: a narrow waist under plated abs, a broad chest with a furnace caged in ribs, a hump of
+# muscle behind the neck, and a ridge of spikes down the spine
+box('body', -11, 40, -7, 11, 51, 7, 'hide')
+for row, y in enumerate((41, 44.5, 48)):
+    for x0, x1 in ((-8, -0.6), (0.6, 8)):
+        box('body', x0 + row * 0.6, y, -8, x1 - row * 0.6 if x0 > 0 else x1, y + 3, -7, 'plate')
+box('body', -16, 51, -9, 16, 65, 9, 'hide')
+box('body', -18, 54, -6, 18, 64, 7, 'hide')                       # the lats flaring under the arms
+box('body', -15, 57, -11, -1, 65, -9, 'hide'); box('body', 1, 57, -11, 15, 65, -9, 'hide')   # the chest
+box('body', -15, 56, -10.5, -1, 57, -9, 'plate'); box('body', 1, 56, -10.5, 15, 57, -9, 'plate')
+box('body', -5, 50, -10.5, 5, 57, -9.5, 'core')                   # the furnace in its chest...
+for y in (51, 53.5, 56):                                          # ...caged by ribs
+    box('body', -9, y, -11, -3.5, y + 1.2, -10, 'rib'); box('body', 3.5, y, -11, 9, y + 1.2, -10, 'rib')
+box('body', -1, 50, -11, 1, 57, -10.2, 'rib')
+box('body', -14, 64, -5, 14, 70, 8, 'hide')                       # the hump of muscle behind its neck
+box('body', -10, 68, 0, 10, 72, 7, 'hide')
+for k, y in enumerate(range(44, 70, 4)):                         # the spine's ridge
+    box('body', -1.2, y, 9, 1.2, y + 2.4, 11 + (k % 2) * 2, 'horntip')
 def shoulders(s, sx):
-    box('body', 15, 59, -8, 23, 66, 8, 'horn', sx)               # bone pauldrons, spiked
-    box('body', 18, 66, -3, 21, 71, 0, 'horntip', sx)
-    box('body', 20, 65, 2, 23, 69, 5, 'horntip', sx)
+    box('body', 14, 62, -8, 24, 70, 8, 'hide', sx)               # the shoulder's bulk
+    box('body', 15, 68, -6, 23, 71, 6, 'horn', sx)               # a plate of bone over it, spiked
+    box('body', 17, 71, -3, 20, 77, 0, 'horntip', sx)
+    box('body', 20, 70, 1, 23, 75, 4, 'horntip', sx)
+    box('body', 22, 66, -5, 26, 69, -1, 'horntip', sx)
 sym(shoulders)
-box('body', -6, 64, -7, 6, 71, 4, 'hide')                         # neck
+box('body', -6, 64, -12, 6, 73, 2, 'hide')                        # the thick neck, thrust forward
 
-bone('head', 'body', (0, 71, -3))
-box('head', -9, 70, -12, 9, 86, 5, 'hide')
-box('head', -11, 71, -10, -9, 79, -4, 'horntip'); box('head', 9, 71, -10, 11, 79, -4, 'horntip')   # jaw spurs
-box('head', -12, 69, -9, -10, 73, -6, 'horntip'); box('head', 10, 69, -9, 12, 73, -6, 'horntip')
-box('head', -7, 76, -12.3, 7, 82, -12, 'socket')                  # deep-set eye sockets
-box('head', -7, 68, -19, 7, 75, -12, 'hide')                      # the long jaw
-box('head', -6, 70, -19.5, 6, 71.5, -19, 'maw')                   # its glowing maw
-box('head', -7, 73, -12.5, 7, 74, -12, 'maw')
-box('head', -7, 78, -12.6, -2, 80.5, -12, 'eye'); box('head', 2, 78, -12.6, 7, 80.5, -12, 'eye')
-box('head', -9, 80.5, -13, 9, 83, -11, 'horn')                     # a heavy brow
-box('head', -1, 81, -14, 1, 89, -12, 'horntip')                   # a blade of bone up its brow
-for i, x in enumerate((-6, -2, 2, 5)):                            # teeth
-    box('head', x, 67, -19, x + 1.5, 70, -18, 'horn')
+# the head: a long-muzzled demon's skull, low and forward - slanted burning eyes under a scowling brow, ember nostrils,
+# a jaw hung open on a furnace of a throat, fangs, cheek spurs, ram horns and back-swept spikes
+bone('head', 'body', (0, 72, -8))
+box('head', -8, 70, -16, 8, 82, -2, 'skull')                       # the skull
+box('head', -6, 82, -14, 6, 86, -3, 'skull')
+box('head', -7, 76, -16.4, 7, 81, -16, 'socket')                  # deep sockets
+def brow(s, sx):
+    bone('brow' + s, 'head', (0.5 * sx, 79.5, -16), (0, 0, -24 * sx))
+    box('brow' + s, 0, 80, -17.5, 9, 82.5, -15, 'horn', sx)      # the scowl: brows sloping down to the middle
+    bone('eye' + s, 'head', (1.5 * sx, 78, -16), (0, 0, -18 * sx))
+    box('eye' + s, 1.2, 77, -16.9, 7.8, 79.9, -16.2, 'eye', sx)  # slanted, burning eyes
+    box('head', 8, 72, -15, 11, 77, -9, 'horntip', sx)            # cheek spurs
+    box('head', 9, 70, -12, 12.5, 73, -8, 'horntip', sx)
+    for i, (z, h) in enumerate(((-2, 7), (1, 9), (4, 7))):        # spikes swept back off the skull
+        bone('spike%d%s' % (i, s), 'head', (5 * sx, 84 - i, z), (-55, 0, -25 * sx))
+        box('spike%d%s' % (i, s), 4, 84 - i, z - 1, 6, 84 - i + h, z + 1, 'horntip', sx)
+sym(brow)
+bone('snout', 'head', (0, 77, -15), (16, 0, 0))                   # the muzzle, tipped down
+box('snout', -5, 71, -27, 5, 79, -15, 'skull')
+box('snout', -3.5, 76, -27.5, -1.5, 78, -27, 'maw'); box('snout', 1.5, 76, -27.5, 3.5, 78, -27, 'maw')   # nostrils
+box('snout', -4, 79, -24, 4, 80, -16, 'plate')                    # a ridge of plate down the muzzle
+for x in (-4.5, -1.5, 1.5, 3.5):                                  # upper fangs
+    box('snout', x, 67, -26 + abs(x), x + 1.2, 71, -25 + abs(x), 'horn')
+box('snout', -4.5, 70, -25, 4.5, 71, -16, 'maw')                  # the furnace of its throat
+bone('jaw', 'head', (0, 72, -10), (30, 0, 0))                     # the lower jaw, hung open
+box('jaw', -5.5, 68, -25, 5.5, 72, -9, 'skull')
+box('jaw', -4.5, 71.6, -24, 4.5, 72.2, -10, 'maw')
+for x in (-4, 2.8):                                               # lower fangs
+    box('jaw', x, 72, -24, x + 1.2, 76, -23, 'horn')
+for x in (-3, -0.5, 2):                                           # a beard of bone spurs under the chin
+    box('jaw', x, 63, -16 - x, x + 1.5, 68, -14.5 - x, 'horntip')
+
 def horns(s, sx):
     # great ram horns: a curve of shrinking blocks sweeping out and up from the skull, back, then curling round forward
-    pts = []
-    for k in range(40):
-        t = k / 39
+    for k in range(44):
+        t = k / 43
         ang = t * math.pi * 1.55
-        r = 15 * (1 - 0.45 * t)
-        x = 9 + 2 + 14 * t + r * 0.35 * (1 - math.cos(ang * 0.5))
-        y = 82 + r * math.sin(ang) * 0.9 + 4
-        z = -2 + r * (1 - math.cos(ang)) * 0.75
-        w = 8 * (1 - 0.7 * t)
-        box('head', x - w / 2, y - w / 2, z - w / 2, x + w / 2, y + w / 2, z + w / 2, 'horn' if t < 0.8 else 'horntip', sx)
+        r = 12.5 * (1 - 0.45 * t)
+        x = 7 + 19 * t + r * 0.45 * (1 - math.cos(ang * 0.5))
+        y = 82 + r * math.sin(ang) * 0.9 + 3
+        z = -8 + r * (1 - math.cos(ang)) * 0.75
+        w = 6.6 * (1 - 0.7 * t)
+        box('head', x - w / 2, y - w / 2, z - w / 2, x + w / 2, y + w / 2, z + w / 2, 'darkhorn' if t < 0.85 else 'horntip', sx)
 sym(horns)
 
+def scale_subtree(root, k, lift=(0, 0, 0)):
+    """Scales a bone and everything under it about its pivot (and moves it), so a part can be resized whole."""
+    c = list(BONES[root]['pivot'])
+    sub = [root]
+    for bn in ORDER:
+        if BONES[bn]['parent'] in sub and bn not in sub: sub.append(bn)
+    f = lambda v: [c[i] + (v[i] - c[i]) * k + lift[i] for i in range(3)]
+    for bn in sub:
+        B = BONES[bn]
+        B['pivot'] = f(B['pivot'])
+        B['cubes'] = [(f(o), [v * k for v in sz], m, inf) for (o, sz, m, inf) in B['cubes']]
+scale_subtree('head', 1.4, (0, 2, -2))
+
 def arms(s, sx):
-    bone('arm' + s, 'body', (21 * sx, 62, 0), (-15, 0, 58 * sx))
-    box('arm' + s, 17, 40, -6, 26, 62, 6, 'hide', sx)
-    box('arm' + s, 17, 52, -7, 26, 54, 7, 'iron', sx)            # an iron cuff
-    bone('forearm' + s, 'arm' + s, (21.5 * sx, 41, 0), (30, 0, -38 * sx))
-    box('forearm' + s, 17.5, 18, -5, 25.5, 42, 5, 'hide', sx)
-    box('forearm' + s, 25, 24, -2, 28, 36, 2, 'horn', sx)        # bone spurs on the elbow line
-    box('forearm' + s, 26, 32, -1, 30, 34, 1, 'horn', sx)
-    bone('hand' + s, 'forearm' + s, (21.5 * sx, 19, 0), (20, 0, 8 * sx))
-    box('hand' + s, 17, 10, -6, 26, 19, 6, 'hide', sx)
-    for i, z in enumerate((-5, -1.5, 2, 5.5)):                    # four long claws
-        bone('claw%d%s' % (i, s), 'hand' + s, (21.5 * sx, 10, z), (18 + i * 4, 0, (-8 + i * 5) * sx))
-        box('claw%d%s' % (i, s), 20.5 + (i - 1.5) * 1.5, -4, z - 1, 23 + (i - 1.5) * 1.5, 10, z + 1, 'horn', sx)
-        box('claw%d%s' % (i, s), 21 + (i - 1.5) * 1.5, -8, z - 0.5, 22.5 + (i - 1.5) * 1.5, -4, z + 0.5, 'horntip', sx)
+    # long, heavy arms hanging to the knee: a bulging upper arm, a forearm thick at the elbow and spurred with bone,
+    # a big knuckled hand and long jointed claws curling forward
+    bone('arm' + s, 'body', (20 * sx, 64, 0), (-12, 0, 40 * sx))
+    box('arm' + s, 15, 56, -6, 25, 68, 6, 'hide', sx)            # deltoid
+    box('arm' + s, 16, 44, -5, 24.5, 57, 5, 'hide', sx)          # biceps
+    box('arm' + s, 17, 45, 4, 24, 55, 7, 'hide', sx)             # triceps
+    box('arm' + s, 17.5, 42, -4, 23, 45, 4, 'hide', sx)
+    bone('forearm' + s, 'arm' + s, (20.2 * sx, 43, 0), (36, 0, -30 * sx))
+    box('forearm' + s, 15, 32, -6, 25.5, 44, 6, 'hide', sx)      # thick below the elbow
+    box('forearm' + s, 16.2, 21, -4.8, 24.2, 32, 4.8, 'hide', sx)
+    box('forearm' + s, 15.6, 22, -5.2, 24.8, 26, 5.2, 'plate', sx)   # a band of plate at the wrist
+    box('forearm' + s, 18.5, 41, 5, 22, 46, 13, 'horntip', sx)   # the elbow spike, raking back
+    for i, y in enumerate((38, 33, 28)):                          # spurs down the outside of the forearm
+        box('forearm' + s, 25, y, -1, 28.5 - i * 0.6, y + 2.5, 1.5, 'horntip', sx)
+    bone('hand' + s, 'forearm' + s, (20.2 * sx, 21.5, 0), (14, 0, 10 * sx))
+    box('hand' + s, 15.5, 12, -6.5, 25, 22, 6.5, 'hide', sx)
+    for z in (-5, -1.5, 2, 5.5):                                  # knuckles
+        box('hand' + s, 15, 12, z - 1.4, 16.2, 15, z + 1.4, 'plate', sx)
+    for i, z in enumerate((-4.6, -1.5, 1.6, 4.7)):               # four fingers, two joints each, ending in claws
+        f1 = 'digit%d%s' % (i, s); f2 = 'claw%d%s' % (i, s)
+        x = 20.2 - 3 + i * 0.4
+        bone(f1, 'hand' + s, (x * sx, 12.5, z), (14, 0, (6 - i * 4) * sx))
+        box(f1, x - 1.3, 4, z - 1.3, x + 1.3, 13, z + 1.3, 'hide', sx)
+        bone(f2, f1, (x * sx, 4.5, z), (26, 0, 0))
+        box(f2, x - 1, -6, z - 1, x + 1, 5, z + 1, 'horn', sx)
+        box(f2, x - 0.6, -10, z - 0.6, x + 0.6, -6, z + 0.6, 'horntip', sx)
+    bone('thumb' + s, 'hand' + s, (17 * sx, 17, -6), (40, 0, -30 * sx))
+    box('thumb' + s, 16, 8, -7.5, 18.5, 17, -5, 'hide', sx)
+    box('thumb' + s, 16.4, 2, -7.1, 18, 8, -5.4, 'horn', sx)
 sym(arms)
 
 def legs(s, sx):
     bone('thigh' + s, 'hips', (7 * sx, 32, 0), (22, 0, 6 * sx))
-    box('thigh' + s, 2, 16, -6, 12, 34, 6, 'hide', sx)
+    box('thigh' + s, 1.5, 22, -7, 12.5, 34, 7, 'hide', sx)
+    box('thigh' + s, 2.5, 16, -6, 11.5, 23, 6, 'hide', sx)
+    box('thigh' + s, 3, 26, -8, 11, 33, -6.5, 'plate', sx)
     bone('shin' + s, 'thigh' + s, (7 * sx, 17, -2), (-48, 0, -4 * sx))
     box('shin' + s, 3, 2, -5, 11, 18, 3, 'hide', sx)
     box('shin' + s, 5, 8, 3, 9, 16, 6, 'horn', sx)               # a spur behind the knee
@@ -127,7 +189,7 @@ box('tail5', -1, 18, 54, 1, 30, 62, 'horntip')
 
 # the Pyre Spine: five black thorns fanned behind the shoulders, each crowned with a brazier of fire, iron chains
 # slung between them
-THORNS = [(-16, 32, -46), (-8, 38, -22), (0, 44, 0), (8, 38, 22), (16, 32, 46)]   # x, height, tilt (deg)
+THORNS = [(-16, 30, -52), (-8, 34, -28), (0, 38, 0), (8, 34, 28), (16, 30, 52)]   # x, height, tilt (deg)
 for i, (x, h, tilt) in enumerate(THORNS):
     name = 'thorn%d' % i
     bone(name, 'body', (x, 60, 9), (-22, 0, -tilt))
@@ -199,6 +261,9 @@ def paint(mat, x, y, w, h, seed):
         base = lerp((22, 15, 17), (44, 24, 22), r.random() * 0.6)
         return base
     if mat == 'socket': return (8, 4, 6)
+    if mat == 'skull': return lerp((30, 20, 22), (56, 30, 28), r.random() * 0.6)
+    if mat == 'darkhorn': t = y / max(1, h - 1); return lerp((88, 74, 70), (34, 26, 28), t * 0.6 + r.random() * 0.25)
+    if mat == 'plate': return lerp((30, 26, 30), (54, 46, 50), r.random() * 0.6)
     if mat == 'obsidian': return lerp((14, 10, 20), (36, 22, 44), r.random() * 0.5)
     if mat == 'rib': return lerp((90, 70, 62), (130, 104, 90), r.random())
     if mat == 'horn': t = y / max(1, h - 1); return lerp((150, 138, 124), (82, 70, 64), t * 0.7 + r.random() * 0.2)
@@ -211,8 +276,8 @@ def paint(mat, x, y, w, h, seed):
         if x % 7 == 0: c = (92, 20, 18)                            # veins
         return c
     if mat == 'core': d = math.hypot(x - w / 2, y - h / 2) / max(w, h); return lerp((255, 240, 170), (255, 90, 20), min(1, d * 2.2))
-    if mat == 'eye': return (255, 210, 90) if r.random() < 0.85 else (255, 255, 220)
-    if mat == 'maw': return lerp((255, 120, 30), (255, 200, 80), r.random())
+    if mat == 'eye': return (255, 236, 140) if r.random() < 0.8 else (255, 255, 230)
+    if mat == 'maw': return lerp((150, 34, 8), (210, 70, 14), r.random())
     if mat == 'fire': return lerp((255, 80, 10), (255, 150, 30), r.random())
     if mat == 'fire2': return lerp((255, 150, 30), (255, 210, 70), r.random())
     if mat == 'fire3': return lerp((255, 220, 100), (255, 250, 200), r.random())
@@ -222,7 +287,7 @@ def paint(mat, x, y, w, h, seed):
 def cracks(w, h, seed):
     r = random.Random(seed)
     s = set()
-    for _ in range((w * h) // 110 + (1 if w * h > 24 and r.random() < 0.5 else 0)):
+    for _ in range((w * h) // 150 + (1 if w * h > 24 and r.random() < 0.5 else 0)):
         x, y = r.randrange(max(1, w)), r.randrange(max(1, h))
         for _ in range(r.randint(6, 14)):
             s.add((x, y))
@@ -265,11 +330,15 @@ def build_texture():
             for yy in range(fh):
                 for xx in range(fw):
                     c = paint(mat, xx, yy, fw, fh, n * 17 + fi)
+                    if mat not in EMISSIVE:   # shade the form: darker toward the bottom of each side, darker at the edges
+                        k = 1.08 - 0.38 * (yy / max(1, fh - 1)) if fname not in ('up', 'down') else (1.12 if fname == 'up' else 0.6)
+                        if fw > 2 and fh > 2 and (xx == 0 or yy == 0 or xx == fw - 1 or yy == fh - 1): k *= 0.78
+                        c = tuple(max(0, min(255, int(v * k))) for v in c)
                     if (xx, yy) in cr:
                         c = (255, 110, 30) if mat == 'hide' else (190, 60, 255)
                         gp[fx + xx, fy + yy] = c + (255,)
                     px[fx + xx, fy + yy] = c + (255,)
-                    if mat in EMISSIVE: gp[fx + xx, fy + yy] = c + (255,)
+                    if mat in EMISSIVE: gp[fx + xx, fy + yy] = (tuple(int(v * 0.4) for v in c) if mat == 'maw' else c) + (255,)
     return tex, glow, UV
 
 # ---------------------------------------------------------------------------------------------------------- export
@@ -380,7 +449,7 @@ def render(tex, glow, UV, yaw=25, pitch=8, size=(900, 900), scale=4.2, pose=None
                 if col[3] == 0: continue
                 poly = [P(a), P(b), P(c), P(e)]
                 if g[3] > 0:
-                    d.polygon(poly, fill=g[:3]); dg.polygon(poly, fill=g[:3])
+                    d.polygon(poly, fill=col[:3]); dg.polygon(poly, fill=g[:3])
                 else:
                     d.polygon(poly, fill=tuple(int(cv * sh) for cv in col[:3]))
     # bloom
@@ -421,6 +490,11 @@ if __name__ == '__main__':
         a = render(tex, glow, UV, yaw=0, pitch=6, size=(700, 860), scale=3.6, cy=0.62)
         b = render(tex, glow, UV, yaw=90, pitch=6, size=(700, 860), scale=3.6, cy=0.62)
         s = Image.new('RGB', (1400, 860)); s.paste(a, (0, 0)); s.paste(b, (700, 0)); s.save(os.path.join(OUT, 'dbg.png'))
+    if mode == 'head':
+        ims = [render(tex, glow, UV, yaw=y, pitch=4, size=(600, 600), scale=9, cy=1.08) for y in (0, 30, 70)]
+        sh = Image.new('RGB', (1800, 600))
+        for i, im in enumerate(ims): sh.paste(im, (600 * i, 0))
+        sh.save(os.path.join(OUT, 'demon_head.png'))
     if mode == 'preview':
         S = 4.6
         hero = render(tex, glow, UV, yaw=18, pitch=-6, size=(1500, 1100), scale=S, cy=0.6)
@@ -429,8 +503,9 @@ if __name__ == '__main__':
         scene(hero, feet, 750 + 34 * S, S * 16 / 2.6)        # a mage, 2 blocks tall, at its foot (in game it's drawn 2.6x)
         ImageDraw.Draw(hero).text((24, 24), "The Cinder Sovereign  -  original world boss concept  (about 15 blocks tall)", fill=(255, 220, 160))
         small = []
-        for y, p, lab in [(0, 4, 'Front'), (90, 4, 'Side'), (165, 10, 'Back')]:
-            im = render(tex, glow, UV, yaw=y, pitch=p, size=(900, 900), scale=2.9, cy=0.62)
+        for y, p, lab, sc, cyy in [(0, 4, 'Front', 2.9, 0.62), (0, 4, 'Head', 9, 1.08), (60, 6, 'Side', 2.9, 0.62)]:
+            sz = (600, 600) if lab == 'Head' else (900, 900)
+            im = render(tex, glow, UV, yaw=y, pitch=p, size=sz, scale=sc, cy=cyy)
             ImageDraw.Draw(im).text((20, 20), lab, fill=(255, 220, 160))
             small.append(im.resize((500, 500)))
         sheet = Image.new('RGB', (1500, 1600), (0, 0, 0))
