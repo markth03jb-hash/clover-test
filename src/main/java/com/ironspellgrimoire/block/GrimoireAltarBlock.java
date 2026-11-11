@@ -54,6 +54,10 @@ public class GrimoireAltarBlock extends Block {
             if (!level.isClientSide && player instanceof ServerPlayer sp) com.ironspellgrimoire.server.RiftRewards.inscribe(sp, held);
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
+        if (player.isShiftKeyDown() && held.isEmpty()) {   // the Star Forge: spend merit stars on your grimoire
+            if (!level.isClientSide && player instanceof ServerPlayer sp) com.ironspellgrimoire.server.StarForge.open(sp);
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if (!level.isClientSide && player instanceof ServerPlayer sp) GrimoireCeremony.begin(sp, pos);
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

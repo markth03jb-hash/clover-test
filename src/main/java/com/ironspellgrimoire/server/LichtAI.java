@@ -79,6 +79,7 @@ public final class LichtAI {
         if (b.phase() >= 4) { pool.add(LichtAI::skyOfSwords); pool.add(LichtAI::skyOfSwords); }
         int took = pool.get(r.nextInt(pool.size())).applyAsInt(b, t);
         b.busy = took + (b.phase() == 1 ? 28 : b.phase() == 2 ? 22 : 16);
+        if (Bounties.unbound(b)) b.busy = (int) (b.busy * 0.7f);   // unbound: no rest between blows
     }
 
     private static void arm(Licht b) {
@@ -131,7 +132,7 @@ public final class LichtAI {
         b.getNavigation().stop();
         Vec3 d = dirTo(b, t);
         face(b, d);
-        int n = b.phase() >= 3 ? 5 : 3;
+        int n = (b.phase() >= 3 ? 5 : 3) + (Bounties.unbound(b) ? 2 : 0);
         for (int i = 0; i < n; i++) {
             Vec3 di = rotY(d, (i - (n - 1) / 2.0) * 0.35);
             flash(b, sl, b.position().add(0, 1.0, 0), di, 18 + i * 4, 18);

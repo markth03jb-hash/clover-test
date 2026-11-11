@@ -744,7 +744,8 @@ public final class Rifts {
         if (ThreadLocalRandom.current().nextInt(4) != 0) return;
         for (Rift r : data(p.server).rifts) if (!r.closed && r.dim.equals(p.level().dimension().location().toString()) && new Vec3(r.x, r.y, r.z).distanceToSqr(p.position()) < 400 * 400) return;
         Vec3 at = spot(p.serverLevel(), p.position(), 25, 50);
-        if (at != null) open(p, at, 1 + Math.min(4, Bounties.stars(p) / 15 + ThreadLocalRandom.current().nextInt(3)));
+        int cap = Bounties.stars(p) >= 60 ? 5 : Bounties.stars(p) >= 30 ? 4 : 3;   // rank 4 rifts from 30 merit stars, rank 5 from 60
+        if (at != null) open(p, at, Math.min(cap, 1 + Bounties.stars(p) / 15 + ThreadLocalRandom.current().nextInt(3)));
     }
 
     private static Vec3 spot(ServerLevel sl, Vec3 from, double min, double max) {

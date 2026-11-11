@@ -59,8 +59,10 @@ import net.minecraftforge.network.PacketDistributor;
 public final class Bounties {
     private Bounties() {}
 
-    public static final String[] BOSSES = {"zenon", "beast_of_despair", "rhya", "licht", "revenant", "curse_witch"};
-    public static final String[] NAMES = {"Zenon", "The Beast of Despair", "Rhya the Disloyal", "Licht", "The Revenant", "The Curse Witch"};
+    public static final String[] BOSSES = {"zenon", "beast_of_despair", "rhya", "licht", "revenant", "curse_witch", "unbound"};
+    public static final String[] NAMES = {"Zenon", "The Beast of Despair", "Rhya the Disloyal", "Licht", "The Revenant", "The Curse Witch", "???"};
+    /** Merit gates: two modifiers on a poster from 20 stars; the secret "???" poster can turn up from 50. */
+    public static final int TWO_MODS_AT = 20, SECRET_AT = 50, SECRET = 6;
     public static final int ENRAGED = 1, ARMOURED = 2, ESCORTED = 4, WOUNDED = 8;
     public static final String[] MOD_NAMES = {"Enraged", "Armoured", "Escorted", "Wounded"};
     public static final int STATE_HUNT = 0, STATE_FOUND = 1, STATE_DONE = 2, STATE_EXPIRED = 3;
@@ -84,7 +86,8 @@ public final class Bounties {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         double a = r.nextDouble(Math.PI * 2), d = r.nextDouble(400, 900);
         int mods = 1 << r.nextInt(4);
-        if (r.nextInt(3) == 0) mods |= 1 << r.nextInt(4);
+        if (stars(p) >= TWO_MODS_AT && r.nextInt(3) == 0) mods |= 1 << r.nextInt(4);   // two modifiers: only for hunters with 20 stars
+        if (boss == SECRET) mods = ENRAGED | ARMOURED;
         if ((mods & WOUNDED) != 0 && (mods & ~WOUNDED) != 0 && r.nextBoolean()) mods &= ~WOUNDED;
         CompoundTag t = new CompoundTag();
         t.putInt("Id", r.nextInt(1, Integer.MAX_VALUE));
@@ -157,7 +160,9 @@ public final class Bounties {
             p.displayClientMessage(Component.literal("No new posters yet - come back in about " + Math.max(1, h) + " h.").withStyle(ChatFormatting.GRAY), true);
             return;
         }
-        give(p, Vec3.atCenterOf(pos), ThreadLocalRandom.current().nextInt(BOSSES.length));
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        boolean secret = stars(p) >= SECRET_AT && r.nextInt(5) == 0;   // 50 stars: now and then, a poster with no name on it
+        give(p, Vec3.atCenterOf(pos), secret ? SECRET : r.nextInt(SECRET));
     }
 
     /** Tearing up your poster: the bounty is dropped, with no penalty, and the board has a new one sooner. */
@@ -223,7 +228,8 @@ public final class Bounties {
             case 2 -> AddonEntities.RHYA.get();
             case 3 -> AddonEntities.LICHT.get();
             case 4 -> AddonEntities.REVENANT.get();
-            default -> AddonEntities.CURSE_WITCH.get();
+            case 5 -> AddonEntities.CURSE_WITCH.get();
+            default -> AddonEntities.LICHT.get();   // ??? - Licht, unbound
         };
         Mob m = type.create(sl);
         if (m == null) return;
@@ -240,6 +246,7 @@ public final class Bounties {
             AttributeInstance ar = m.getAttribute(Attributes.ARMOR);
             if (ar != null && ar.getModifier(ARMOR) == null) ar.addPermanentModifier(new AttributeModifier(ARMOR, "Bounty: armoured", 10, AttributeModifier.Operation.ADDITION));
         }
+        if (boss == SECRET) unbind(m);
         sl.addFreshEntity(m);
         if ((mods & WOUNDED) != 0) m.setHealth(m.getMaxHealth() * 0.7f);
         if ((mods & ESCORTED) != 0) {
@@ -260,13 +267,27 @@ public final class Bounties {
         FxSend.ring(sl, 18, at.add(0, 0.1, 0), 0.5f, 8f, 0.2f, 16);
         FxSend.shake(sl, at, 0.6f, 12, 40);
         sl.playSound(null, m.blockPosition(), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 2f, 1f);
-        p.displayClientMessage(Component.literal("You found " + NAMES[boss] + "!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), true);
+        p.displayClientMessage(Component.literal("You found " + (boss == SECRET ? "Licht, the Unbound" : NAMES[boss]) + "!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), true);
         sync(p);
     }
 
-    /** Bosses on a poster hit harder when Enraged. */
+    private static final UUID UNBOUND_HP = UUID.fromString("b0a7e000-0000-4000-8000-0000000000c3");
+
+    /** The secret poster's target: Licht with nothing held back - more health, harder hits, faster moves. */
+    private static void unbind(Mob m) {
+        m.getPersistentData().putBoolean("isg_unbound", true);
+        AttributeInstance hp = m.getAttribute(Attributes.MAX_HEALTH);
+        if (hp != null && hp.getModifier(UNBOUND_HP) == null) hp.addPermanentModifier(new AttributeModifier(UNBOUND_HP, "Unbound", 0.6, AttributeModifier.Operation.MULTIPLY_TOTAL));
+        m.setHealth(m.getMaxHealth());
+        if (m instanceof com.ironspellgrimoire.entity.AddonBoss ab) ab.setBarName(Component.literal("Licht, the Unbound").withStyle(ChatFormatting.GOLD));
+    }
+
+    public static boolean unbound(Entity e) { return e.getPersistentData().getBoolean("isg_unbound"); }
+
+    /** Bosses on a poster hit harder when Enraged, and the unbound one harder still. */
     public static float damageMult(Entity boss) {
-        return (boss.getPersistentData().getInt("isg_bounty_mods") & ENRAGED) != 0 ? 1.3f : 1f;
+        float k = (boss.getPersistentData().getInt("isg_bounty_mods") & ENRAGED) != 0 ? 1.3f : 1f;
+        return unbound(boss) ? k * 1.4f : k;
     }
 
     @SubscribeEvent
@@ -286,7 +307,7 @@ public final class Bounties {
         int mods = b.getInt("Mods"), boss = b.getInt("Boss");
         int hard = Integer.bitCount(mods & ~WOUNDED);
         boolean wounded = (mods & WOUNDED) != 0;
-        int stars = 3 + hard * 2 - (wounded ? 1 : 0);
+        int stars = 3 + hard * 2 - (wounded ? 1 : 0) + (boss == SECRET ? 15 : 0);
         p.getPersistentData().putInt(STARS, stars(p) + stars);
         ItemStack trophy = poster(b);
         CompoundTag pt = trophy.getOrCreateTag().getCompound("Bounty");
@@ -297,13 +318,17 @@ public final class Bounties {
         giveItem(p, trophy);
         giveItem(p, new ItemStack(Items.EMERALD, 8 + hard * 6 - (wounded ? 3 : 0)));
         if (ThreadLocalRandom.current().nextInt(3) == 0 || hard >= 2) giveItem(p, new ItemStack(AddonItemRegistry.DEVIL_SHARD.get()));
+        if (boss == SECRET) {   // the secret poster: a relic as well
+            var relics = AddonItemRegistry.RELICS;
+            giveItem(p, new ItemStack(relics.get(ThreadLocalRandom.current().nextInt(relics.size())).get()));
+        }
         GrimoireMastery.bountyXp(p, 600 + hard * 300);
         p.getPersistentData().remove(TAG);
         p.getPersistentData().putLong(NEXT, p.level().getGameTime() + DAY);
         ServerLevel sl = p.serverLevel();
         sl.playSound(null, p.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1f, 1f);
         p.sendSystemMessage(Component.literal("SUBJUGATED: ").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD)
-                .append(Component.literal(NAMES[boss]).withStyle(ChatFormatting.GOLD))
+                .append(Component.literal(boss == SECRET ? "Licht, the Unbound" : NAMES[boss]).withStyle(ChatFormatting.GOLD))
                 .append(Component.literal("  +" + stars + " merit stars (" + stars(p) + " total)").withStyle(ChatFormatting.YELLOW)));
         FxPacket k = new FxPacket();   // the tracker shows "Subjugated" for a moment, then clears
         k.shape = 67; k.id = b.getInt("Id"); k.sweep = boss + 1; k.h = mods; k.a0 = STATE_DONE; k.a1 = stars(p); k.life = 0;
@@ -352,7 +377,7 @@ public final class Bounties {
     @SubscribeEvent
     public static void onCommands(RegisterCommandsEvent e) {
         e.getDispatcher().register(Commands.literal("bounty").requires(s -> s.hasPermission(2))
-                .then(Commands.literal("new").then(Commands.argument("boss", IntegerArgumentType.integer(0, 5)).executes(c -> {
+                .then(Commands.literal("new").then(Commands.argument("boss", IntegerArgumentType.integer(0, 6)).executes(c -> {
                     ServerPlayer p = c.getSource().getPlayerOrException();
                     p.getPersistentData().remove(TAG);
                     give(p, p.position(), IntegerArgumentType.getInteger(c, "boss"));

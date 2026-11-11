@@ -6,7 +6,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class AddonNetwork {
-    private static final String PROTOCOL = "3";   // 2: compact FxPacket encoding (server and client must match)
+    private static final String PROTOCOL = "4";   // 2: compact FxPacket encoding (server and client must match)
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(IronSpellGrimoire.MODID, "main"),
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
@@ -37,5 +37,7 @@ public class AddonNetwork {
         CHANNEL.registerMessage(2, FxPacket.class, FxPacket::encode, FxPacket::decode, FxPacket::handle);
         CHANNEL.registerMessage(3, WaypointPackets.Open.class, WaypointPackets.Open::encode, WaypointPackets.Open::decode, WaypointPackets.Open::handle);
         CHANNEL.registerMessage(4, WaypointPackets.Act.class, WaypointPackets.Act::encode, WaypointPackets.Act::decode, WaypointPackets.Act::handle);
+        CHANNEL.registerMessage(5, StarForgePackets.Open.class, StarForgePackets.Open::encode, StarForgePackets.Open::decode, StarForgePackets.Open::handle);
+        CHANNEL.registerMessage(6, StarForgePackets.Act.class, StarForgePackets.Act::encode, StarForgePackets.Act::decode, StarForgePackets.Act::handle);
     }
 }

@@ -410,6 +410,8 @@ public class GrimoireFloatRenderer {
          int wl = LevelRenderer.getLightColor(mc.level, BlockPos.containing(bookPos));
          int light = LightTexture.pack(Math.max(LightTexture.block(wl), 5), Math.max(LightTexture.sky(wl), 2));
          int[] au = aura(book.getItem());
+         int gem = book.hasTag() ? book.getTag().getInt("Gem") : 0;   // a cover gem from the Star Forge colours the aura
+         if (gem > 0 && gem <= com.ironspellgrimoire.server.StarForge.GEM_PALETTES.length) au = new int[]{com.ironspellgrimoire.server.StarForge.GEM_PALETTES[gem - 1], au[1]};
 
          ps.pushPose();
          ps.translate(bookPos.x - cam.x, bookPos.y - cam.y, bookPos.z - cam.z);
