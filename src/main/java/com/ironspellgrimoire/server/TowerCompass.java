@@ -57,7 +57,7 @@ public final class TowerCompass {
         var inv = p.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack s = inv.getItem(i);
-            if (!s.is(AddonItemRegistry.TOWER_COMPASS.get())) continue;
+            if (!s.is(AddonItemRegistry.TOWER_COMPASS.get()) || (s.hasTag() && s.getTag().contains("Memory"))) continue;   // a memory's compass (server/MemoryPages) stays
             boolean there = false;
             if (s.hasTag() && p.level().dimension().equals(Level.OVERWORLD)) {
                 double dx = s.getTag().getInt("TowerX") + 0.5 - p.getX(), dz = s.getTag().getInt("TowerZ") + 0.5 - p.getZ();

@@ -60,7 +60,10 @@ public final class GrimoireUpgrades {
             new Kind("bloodstone", "Bloodstone", 2, "+10% damage while you're below half health", "Quests, rift elite rooms"),
             new Kind("warding_glyph", "Warding Glyph", 3, "-6% damage taken from bosses", "Quests, bounties"),
             new Kind("starlit_seal", "Starlit Seal", 1, "every quest and bounty pays one more merit star", "The Daily Special"),
-            new Kind("elf_kings_leaf", "Elf King's Leaf", 1, "+5% spell power, +5% cooldown reduction, +10% mana regen", "Elf Raids only"));
+            new Kind("elf_kings_leaf", "Elf King's Leaf", 1, "+5% spell power, +5% cooldown reduction, +10% mana regen", "Elf Raids only"),
+            new Kind("binders_quill", "Binder's Quill", 1, "+50 max mana, +4% spell power", "The Copyist's Echo (Lost Memory Pages, chapter I)"),
+            new Kind("wardens_key", "Warden's Key", 1, "the first hit you take every 20 s is halved", "Taddeus, Warden of the Stair (chapter II)"),
+            new Kind("binders_pen", "Binder's Pen", 1, "every 6th spell you cast: its hits land 40% harder for 3 s", "Elowen, the First Binder (chapter III)"));
 
     public static Kind kind(String id) { for (Kind k : KINDS) if (k.id().equals(id)) return k; return null; }
 
@@ -121,7 +124,9 @@ public final class GrimoireUpgrades {
     private static final UUID LEAF_P = UUID.fromString("7b1e0001-0000-4000-8000-0000000000a8");
     private static final UUID LEAF_C = UUID.fromString("7b1e0001-0000-4000-8000-0000000000a9");
     private static final UUID LEAF_R = UUID.fromString("7b1e0001-0000-4000-8000-0000000000aa");
-    private static final List<UUID> MINE = List.of(MIRROR_POWER, MIRROR_CDR, CRYSTAL, CLASP, BOOKMARK, SPINE, FEATHER, LEAF_P, LEAF_C, LEAF_R);
+    private static final UUID QUILL_M = UUID.fromString("7b1e0001-0000-4000-8000-0000000000ab");
+    private static final UUID QUILL_P = UUID.fromString("7b1e0001-0000-4000-8000-0000000000ac");
+    private static final List<UUID> MINE = List.of(MIRROR_POWER, MIRROR_CDR, CRYSTAL, CLASP, BOOKMARK, SPINE, FEATHER, LEAF_P, LEAF_C, LEAF_R, QUILL_M, QUILL_P);
 
     private static void refresh(ItemStack book) {
         CompoundTag tag = book.getOrCreateTag();
@@ -144,6 +149,10 @@ public final class GrimoireUpgrades {
             add(book, AttributeRegistry.COOLDOWN_REDUCTION.get(), LEAF_C, 0.05, AttributeModifier.Operation.MULTIPLY_BASE);
             add(book, AttributeRegistry.MANA_REGEN.get(), LEAF_R, 0.1, AttributeModifier.Operation.MULTIPLY_BASE);
         }
+        if (count(book, "binders_quill") > 0) {
+            add(book, AttributeRegistry.MAX_MANA.get(), QUILL_M, 50.0, AttributeModifier.Operation.ADDITION);
+            add(book, AttributeRegistry.SPELL_POWER.get(), QUILL_P, 0.04, AttributeModifier.Operation.MULTIPLY_BASE);
+        }
     }
 
     private static void add(ItemStack book, Attribute a, UUID id, double amt, AttributeModifier.Operation op) {
@@ -164,6 +173,7 @@ public final class GrimoireUpgrades {
         if (boss && book != null && book.hasTag() && book.getTag().getInt("Sigil") == 4) m *= 1.1f;   // the Star Forge's Sigil of the Hunt
         int blood = count(book, "bloodstone");
         if (blood > 0 && p.getHealth() < p.getMaxHealth() * 0.5f) m *= 1f + 0.1f * blood;
+        if (count(book, "binders_pen") > 0 && p.serverLevel().getGameTime() < p.getPersistentData().getLong("isg_pen_until")) m *= 1.4f;   // the Binder's Pen
         Long until = CURSED.get(t.getUUID());
         if (until != null) { if (t.level().getGameTime() < until) m *= 1.2f; else CURSED.remove(t.getUUID()); }
         return m;
@@ -186,6 +196,15 @@ public final class GrimoireUpgrades {
     @SubscribeEvent
     public static void onCast(SpellOnCastEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer p) || e.getSpellId() == null) return;
+        if (count(p, "binders_pen") > 0) {   // the Binder's Pen: every sixth spell is written in gold
+            int n = p.getPersistentData().getInt("isg_pen") + 1;
+            p.getPersistentData().putInt("isg_pen", n % 6);
+            if (n >= 6) {
+                p.getPersistentData().putLong("isg_pen_until", p.serverLevel().getGameTime() + 60);
+                FxSend.ring(p.serverLevel(), Fx.GOLD | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, p.position().add(0, 0.1, 0), 0.3f, 2.2f, 0.06f, 12);
+                p.displayClientMessage(Component.literal("Binder's Pen - this spell is written in gold (+40%).").withStyle(ChatFormatting.GOLD), true);
+            }
+        }
         int sig = count(p, "copied_sigil");
         if (sig <= 0 || ThreadLocalRandom.current().nextFloat() >= 0.06f * sig) return;
         String id = e.getSpellId();
@@ -217,6 +236,14 @@ public final class GrimoireUpgrades {
     @SubscribeEvent
     public static void onHurt(net.minecraftforge.event.entity.living.LivingHurtEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer p) || !(e.getSource().getEntity() instanceof LivingEntity by)) return;
+        if (count(p, "wardens_key") > 0) {   // the Warden's Key: the first blow in a while is met at the door
+            long now = p.serverLevel().getGameTime(), last = p.getPersistentData().getLong("isg_key");
+            if (now - last >= 400) {
+                p.getPersistentData().putLong("isg_key", now);
+                e.setAmount(e.getAmount() * 0.5f);
+                FxSend.ring(p.serverLevel(), Fx.STEEL | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, p.position().add(0, 1, 0), 0.9f, 1.1f, 0.6f, 8);
+            }
+        }
         int ward = count(p, "warding_glyph");
         if (ward > 0 && (TimeStop.isBoss(by) || BossCores.isBoss(by.getType()))) e.setAmount(e.getAmount() * (1f - 0.06f * ward));
     }

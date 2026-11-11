@@ -48,6 +48,10 @@ public class GrimoireBookScreen extends Screen {
     private int flipDir = 1;
     private int ticks = 0;
     private boolean hidden = false;
+    /** The Memories tab (the Lost Memory Pages, server/MemoryPages): which spread of it is open. */
+    private boolean memories = false;
+    private int mpage = 0;
+    private static final int MSPREADS = com.ironspellgrimoire.server.MemoryStory.CH * 3;
 
     /** Text on a page: readable, or scribbled out when the spell isn't unlocked yet. */
     private Component ink(Component c) {
@@ -87,6 +91,13 @@ public class GrimoireBookScreen extends Screen {
     private boolean onCombos() { return page == ids.size(); }
 
     private void turn(int dir) {
+        if (memories) {
+            int np = Mth.clamp(mpage + dir, 0, MSPREADS - 1);
+            if (np == mpage) return;
+            mpage = np; flipAt = ticks; flipDir = dir;
+            Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.9F + 0.2F * (float) Math.random());
+            return;
+        }
         if (ids.isEmpty()) return;
         int np = Mth.clamp(page + dir, 0, pages() - 1);
         if (np == page) return;
@@ -111,7 +122,13 @@ public class GrimoireBookScreen extends Screen {
         int x0 = (width - BW) / 2, y0 = (height - BH) / 2;
         if (inside(mx, my, x0 - 2, y0 + BH - 20, 22, 16)) { turn(-1); return true; }
         if (inside(mx, my, x0 + BW - 20, y0 + BH - 20, 22, 16)) { turn(1); return true; }
+        if (inside(mx, my, x0 + BW + 7, y0 + 46, 54, 16)) {   // the second ribbon: the Memories (or back to the spells)
+            memories = !memories; flipAt = ticks; flipDir = memories ? 1 : -1;
+            Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.7F);
+            return true;
+        }
         if (inside(mx, my, x0 + BW + 7, y0 + 24, 46, 16)) {   // the ribbon tab on the edge of the book: jump to the combos (or back to the spells)
+            if (memories) { memories = false; page = ids.size(); flipAt = ticks; flipDir = -1; Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.8F); return true; }
             int to = onCombos() ? 0 : ids.size();
             if (to != page) { flipDir = to > page ? 1 : -1; page = to; flipAt = ticks; Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.8F); }
             return true;
@@ -151,6 +168,23 @@ public class GrimoireBookScreen extends Screen {
         String ms = "\u2605 " + BountyHud.stars() + " merit stars";
         g.drawString(f, ms, x0 + (BW - f.width(ms)) / 2, y0 + BH + 6, 0xFFFFD27A, true);
 
+        // the second ribbon: Memories
+        boolean memHot = inside(mx, my, x0 + BW + 7, y0 + 46, 54, 16);
+        g.fill(x0 + BW + 5, y0 + 46, x0 + BW + 62, y0 + 62, 0xFF000000 | dark(c[2], 0.35F));
+        g.fill(x0 + BW + 6, y0 + 47, x0 + BW + 61, y0 + 61, 0xFF000000 | (memHot || memories ? c[2] : c[4]));
+        String mt = memories ? "Spells" : "Memories";
+        g.drawString(f, mt, x0 + BW + 34 - f.width(mt) / 2, y0 + 51, memHot || memories ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
+        if (memories) {
+            drawMemories(g, f, x0, y0, mid, mx, my);
+            if (flip > 0F) {
+                float k = 1F - flip;
+                int half = BW / 2, w = (int) (half * Math.abs(Mth.cos(k * Mth.PI)));
+                boolean firstHalf = k < 0.5F;
+                int px = flipDir > 0 ? (firstHalf ? mid : mid - w) : (firstHalf ? mid - w : mid);
+                if (w > 0) g.blit((flipDir > 0) == firstHalf ? PAGE_R : PAGE_L, px, y0, w, BH, 0, 0, 256, 320, 256, 320);
+            }
+            return;
+        }
         if (ids.isEmpty()) return;
         String num = (page + 1) + " / " + pages();
         g.drawString(f, num, mid - f.width(num) / 2, y0 + BH - 13, INK_SOFT, false);
@@ -240,6 +274,57 @@ public class GrimoireBookScreen extends Screen {
                 yy += 10;
             }
         }
+    }
+
+    /** The Memories: the first binder's story, two pages to a spread, in ink - a lost page is a torn blank. */
+    private void drawMemories(GuiGraphics g, Font f, int x0, int y0, int mid, int mx, int my) {
+        int ch = mpage / 3, left = (mpage % 3) * 2;
+        String num = (mpage + 1) + " / " + MSPREADS;
+        g.drawString(f, num, mid - f.width(num) / 2, y0 + BH - 13, INK_SOFT, false);
+        if (mpage > 0) g.drawString(f, "<", x0 + 6, y0 + BH - 15, inside(mx, my, x0 - 2, y0 + BH - 20, 22, 16) ? RED_INK : INK, false);
+        if (mpage < MSPREADS - 1) g.drawString(f, ">", x0 + BW - 12, y0 + BH - 15, inside(mx, my, x0 + BW - 20, y0 + BH - 20, 22, 16) ? RED_INK : INK, false);
+        memoryPage(g, f, ch, left, x0 + 16, y0 + 12, BW / 2 - 30, BH - 32);
+        memoryPage(g, f, ch, left + 1, mid + 14, y0 + 12, BW / 2 - 30, BH - 32);
+    }
+
+    private void memoryPage(GuiGraphics g, Font f, int ch, int pg, int x, int y, int w, int h) {
+        int yy = y;
+        if (pg == 0) {   // the chapter's title, in red ink
+            g.drawString(f, Component.literal("Chapter " + com.ironspellgrimoire.server.MemoryStory.CHAPTERS[ch]).withStyle(ChatFormatting.BOLD), x, yy, RED_INK, false);
+            int n = 0;
+            for (int i = 0; i < com.ironspellgrimoire.server.MemoryStory.PER; i++) if (MemoryClient.read(ch, i)) n++;
+            yy += 10;
+            g.drawString(f, n + " of " + com.ironspellgrimoire.server.MemoryStory.PER + " pages", x, yy, INK_SOFT, false);
+            yy += 13;
+        } else {
+            String hd = "- " + (pg + 1) + " -";
+            g.drawString(f, hd, x + (w - f.width(hd)) / 2, yy, INK_SOFT, false);
+            yy += 13;
+        }
+        if (!MemoryClient.read(ch, pg)) {   // still lost: a torn blank, with a ragged edge where it was ripped out
+            for (int i = 0; i < w; i += 3) {
+                int j = (int) (Math.abs(Math.sin(i * 1.7 + pg * 3.1 + ch)) * 5);
+                g.fill(x + i, yy + 2 + j, x + i + 3, yy + 3 + j, 0x405A4630);
+            }
+            yy += 14;
+            for (FormattedCharSequence l : f.split(Component.literal("This page is still lost.").withStyle(ChatFormatting.ITALIC), w)) { g.drawString(f, l, x, yy, INK_SOFT, false); yy += 10; }
+            String hint = pg == com.ironspellgrimoire.server.MemoryStory.PER - 1 ? "The chapter's Memory Guardian keeps this one." : "One of the great foes of the world carries it.";
+            yy += 4;
+            for (FormattedCharSequence l : f.split(Component.literal(hint), w)) { g.drawString(f, l, x, yy, 0x905A4630, false); yy += 10; }
+            return;
+        }
+        float sc = 0.82F;
+        int ww = (int) (w / sc);
+        g.pose().pushPose();
+        g.pose().translate(x, yy, 0);
+        g.pose().scale(sc, sc, 1F);
+        int ly = 0;
+        boolean last = pg == com.ironspellgrimoire.server.MemoryStory.PER - 1;   // the guardian's own page, spoken: a darker ink
+        for (FormattedCharSequence l : f.split(Component.literal(com.ironspellgrimoire.server.MemoryStory.PAGES[ch][pg]).withStyle(last ? ChatFormatting.ITALIC : ChatFormatting.RESET), ww)) {
+            g.drawString(f, l, 0, ly, last ? RED_INK : INK, false);
+            ly += 10;
+        }
+        g.pose().popPose();
     }
 
     /** The combo page: this grimoire's combos - the name and the two spells on the left, what it does on the right. */

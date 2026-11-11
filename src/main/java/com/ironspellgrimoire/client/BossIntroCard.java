@@ -33,9 +33,10 @@ public final class BossIntroCard {
             "Swordsman of the elves",
             "He walks out of the dead",
             "Every word a curse",
-            "Your own magic, turned against you"};
-    private static final int[] BAND = {0x2A2420, 0x0E2A24, 0x241A30, 0x2A2614, 0x14102A, 0x22102A, 0x202024};
-    private static final int[] ACCENT = {0xE8DCC4, 0x5CE0B0, 0xC8A0FF, 0xFFE6A0, 0x9A7CFF, 0x8AE060, 0xFFFFFF};
+            "Your own magic, turned against you",
+            com.ironspellgrimoire.server.MemoryStory.EPITHETS[0], com.ironspellgrimoire.server.MemoryStory.EPITHETS[1], com.ironspellgrimoire.server.MemoryStory.EPITHETS[2]};
+    private static final int[] BAND = {0x2A2420, 0x0E2A24, 0x241A30, 0x2A2614, 0x14102A, 0x22102A, 0x202024, 0x16161C, 0x141C26, 0x2A2010};
+    private static final int[] ACCENT = {0xE8DCC4, 0x5CE0B0, 0xC8A0FF, 0xFFE6A0, 0x9A7CFF, 0x8AE060, 0xFFFFFF, 0xD8D8E8, 0xA8C8E8, 0xFFD27A};
 
     private static int age = -1, life, idx, bossId;
     private static boolean full, unbound;
