@@ -102,6 +102,8 @@ public class AddonItemRegistry {
     /** Zenon's drops. */
     public static final RegistryObject<Item> PHYLACTERY = ITEMS.register("zenon_phylactery", com.ironspellgrimoire.item.PhylacteryItem::new);
     public static final RegistryObject<Item> DEVIL_SHARD = ITEMS.register("devil_shard", com.ironspellgrimoire.item.DevilShardItem::new);
+    /** Every boss drops one (server/BossCores); the Star Forge spends it to mutate a spell. */
+    public static final RegistryObject<Item> MANA_CORE = ITEMS.register("mana_core", com.ironspellgrimoire.item.ManaCoreItem::new);
 
     /** Spawns Zenon (the three-phase bone boss). */
     public static final RegistryObject<Item> ZENON_SPAWN_EGG = ITEMS.register("zenon_spawn_egg",
@@ -190,6 +192,7 @@ public class AddonItemRegistry {
                 for (var r : RELICS) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
+                out.accept(new ItemStack(MANA_CORE.get()));
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());
                 out.accept(AddonBlocks.POSTER_BOARD_ITEM.get());
             })

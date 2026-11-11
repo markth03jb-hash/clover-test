@@ -67,23 +67,30 @@ import java.util.function.Supplier;
 public final class GrimoireMastery {
     private GrimoireMastery() {}
 
+    /** The level a grimoire's ultimate unlocks at, and as far as mastery goes before the Magic Knight Exam. */
     public static final int MAX_LEVEL = 5;
+    /** After passing the Magic Knight Exam with it (server/KnightExam), a grimoire's mastery goes on to 7. */
+    public static final int ASCENDED_MAX = 7;
     private static java.util.Set<String> ULTIMATES;
 
     /** Whether this damage comes from a grimoire's ultimate (the spell its book unlocks at the top level). Bosses' damage caps don't apply to it. */
     public static boolean isUltimate(net.minecraft.world.damagesource.DamageSource src) {
         if (!(src instanceof SpellDamageSource s) || s.spell() == null) return false;
+        String id = s.spell().getSpellId();
+        int i = id.indexOf(':');
+        return ultimates().contains(i < 0 ? id : id.substring(i + 1));
+    }
+
+    private static java.util.Set<String> ultimates() {
         if (ULTIMATES == null) {
             java.util.Set<String> u = new java.util.HashSet<>();
             for (Book b : BOOKS) for (Map.Entry<String, Integer> e : b.unlocks().entrySet()) if (e.getValue() >= MAX_LEVEL) u.add(e.getKey());
             ULTIMATES = u;
         }
-        String id = s.spell().getSpellId();
-        int i = id.indexOf(':');
-        return ULTIMATES.contains(i < 0 ? id : id.substring(i + 1));
+        return ULTIMATES;
     }
     /** Total XP needed to reach level 2, 3, 4, 5. */
-    public static final int[] THRESHOLDS = {0, 0, 800, 2400, 5200, 9000};
+    public static final int[] THRESHOLDS = {0, 0, 800, 2400, 5200, 9000, 14000, 20000};
     private static final String TAG = "arcane_mastery";
     /** Hooded mages teach more than ordinary mobs: their damage counts triple and a kill adds a bonus. */
     private static final float MAGE_XP_MULT = 3f, MAGE_KILL_XP = 60f;
@@ -230,18 +237,35 @@ public final class GrimoireMastery {
         return t == null ? 0 : t.getCompound(TAG).getInt("xp");
     }
 
-    public static int level(ItemStack stack) { return levelFor(xp(stack)); }
+    public static int level(ItemStack stack) { return levelFor(xp(stack), cap(stack)); }
 
-    public static int levelFor(int xp) {
+    /** Whether this grimoire has passed the Magic Knight Exam. */
+    public static boolean ascended(ItemStack stack) { return stack != null && stack.hasTag() && stack.getTag().getBoolean("Ascended"); }
+
+    /** How far this grimoire's mastery can go: 5, or 7 once it has passed the exam. */
+    public static int cap(ItemStack stack) { return ascended(stack) ? ASCENDED_MAX : MAX_LEVEL; }
+
+    public static int levelFor(int xp) { return levelFor(xp, MAX_LEVEL); }
+
+    public static int levelFor(int xp, int cap) {
         int l = 1;
-        while (l < MAX_LEVEL && xp >= THRESHOLDS[l + 1]) l++;
+        while (l < cap && xp >= THRESHOLDS[l + 1]) l++;
         return l;
+    }
+
+    /** How much more a grimoire's ultimate hits for at mastery 6 (+25%) and 7 (+50%). */
+    public static float ultimateBoost(ItemStack book, String spellId) {
+        if (book == null || !ascended(book)) return 1f;
+        int i = spellId.indexOf(':');
+        if (!ultimates().contains(i < 0 ? spellId : spellId.substring(i + 1))) return 1f;
+        int l = level(book);
+        return l >= 7 ? 1.5f : l >= 6 ? 1.25f : 1f;
     }
 
     private static void setXp(ItemStack stack, int xp) {
         CompoundTag t = stack.getOrCreateTag();
         CompoundTag m = t.getCompound(TAG);
-        m.putInt("xp", Math.max(0, Math.min(xp, THRESHOLDS[MAX_LEVEL])));
+        m.putInt("xp", Math.max(0, Math.min(xp, THRESHOLDS[cap(stack)])));
         t.put(TAG, m);
     }
 
@@ -321,8 +345,8 @@ public final class GrimoireMastery {
         FRACTION.put(p.getUUID(), acc - whole);
         if (whole <= 0) return;
         int before = xp(book);
-        if (before >= THRESHOLDS[MAX_LEVEL]) return;
-        int oldLevel = levelFor(before);
+        if (before >= THRESHOLDS[cap(book)]) return;
+        int oldLevel = levelFor(before, cap(book));
         setXp(book, before + whole);
         int newLevel = level(book);
         for (int l = oldLevel + 1; l <= newLevel; l++) levelUp(p, b, l);
@@ -443,9 +467,11 @@ public final class GrimoireMastery {
         sl.playSound(null, at.x, at.y, at.z, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1f, 0.8f);
         sl.playSound(null, at.x, at.y, at.z, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1f, 0.7f);
         if (level == MAX_LEVEL) sl.playSound(null, at.x, at.y, at.z, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.8f, 1f);
+        if (level > MAX_LEVEL) FxSend.shake(sl, at, 0.45f, 12, 14);
         List<String> unlocked = unlockedAt(b, level);
         MutableComponent msg = Component.translatable("ui.iron_spell_grimoire.mastery.level_up", level).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
-        if (!unlocked.isEmpty()) msg.append(Component.literal(" — ").withStyle(ChatFormatting.GRAY))
+        if (level > MAX_LEVEL) msg.append(Component.literal(" — your ultimate hits " + (level >= 7 ? "+50%" : "+25%") + " harder").withStyle(ChatFormatting.YELLOW));
+        else if (!unlocked.isEmpty()) msg.append(Component.literal(" — ").withStyle(ChatFormatting.GRAY))
                 .append(Component.translatable("ui.iron_spell_grimoire.mastery.unlocked", spellNames(unlocked)).withStyle(ChatFormatting.YELLOW));
         p.displayClientMessage(msg, true);
         p.sendSystemMessage(msg);
@@ -478,7 +504,7 @@ public final class GrimoireMastery {
                             return 1;
                         }))
                 .then(Commands.literal("mastery")
-                        .then(Commands.literal("set").then(Commands.argument("level", IntegerArgumentType.integer(1, MAX_LEVEL))
+                        .then(Commands.literal("set").then(Commands.argument("level", IntegerArgumentType.integer(1, ASCENDED_MAX))
                                 .executes(c -> setLevel(c, c.getSource().getPlayerOrException()))
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(c -> setLevel(c, EntityArgument.getPlayer(c, "player"))))))
@@ -505,7 +531,7 @@ public final class GrimoireMastery {
         ItemStack book = equipped(p);
         Book b = bookOf(book);
         if (b == null) return noBook(c);
-        int lvl = IntegerArgumentType.getInteger(c, "level");
+        int lvl = Math.min(IntegerArgumentType.getInteger(c, "level"), cap(book));
         setXp(book, THRESHOLDS[Math.max(1, lvl)]);
         c.getSource().sendSuccess(() -> Component.translatable("ui.iron_spell_grimoire.mastery.set", p.getDisplayName(), lvl).withStyle(ChatFormatting.GOLD), true);
         return 1;

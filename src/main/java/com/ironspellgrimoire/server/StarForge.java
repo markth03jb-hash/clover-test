@@ -23,6 +23,8 @@ import net.minecraftforge.network.PacketDistributor;
  *   <li>A second ink page: the book can hold two Rift Inks at once (40 stars) - "InkSlot2".</li>
  *   <li>A star sigil on the cover, one at a time (25 stars to set or change) - "Sigil": the Well (+20% max mana),
  *   Haste (+8% cooldown reduction) or the Spring (+30% mana regeneration).</li>
+ *   <li>Mutate a fully empowered spell, once, with a Mana Core (a boss's drop): Echo (each hit lands again for 40%
+ *   half a second later) or Siphon (15% of the damage it deals comes back as mana) - "StarMut".</li>
  * </ul>
  */
 public final class StarForge {
@@ -33,7 +35,17 @@ public final class StarForge {
     public static final String[] SIGIL_EFFECTS = {"+20% max mana", "+8% cooldowns", "+30% mana regen"};
     private static final java.util.UUID SIGIL_ID = java.util.UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a1001a1");
 
+    public static final int MUT_ECHO = 1, MUT_SIPHON = 2;
+    public static final String[] MUT_NAMES = {"", "Echo", "Siphon"};
+    public static final String[] MUT_TEXT = {"", "Each hit lands again for 40% half a second later.", "15% of the damage dealt returns as mana."};
+
     public static int boostCost(int toLevel) { return 10 * toLevel; }
+
+    private static int cores(ServerPlayer p) {
+        int n = 0;
+        for (ItemStack s : p.getInventory().items) if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_CORE.get())) n += s.getCount();
+        return n;
+    }
 
     private static ItemStack book(ServerPlayer p) {
         ItemStack b = Utils.getPlayerSpellbookStack(p);
@@ -43,11 +55,11 @@ public final class StarForge {
     public static void open(ServerPlayer p) {
         ItemStack b = book(p);
         if (b == null) { p.displayClientMessage(Component.literal("Equip a grimoire to forge it with stars.").withStyle(ChatFormatting.RED), true); return; }
-        CompoundTag t = b.getOrCreateTag(), boost = t.getCompound("StarBoost");
+        CompoundTag t = b.getOrCreateTag(), boost = t.getCompound("StarBoost"), mut = t.getCompound("StarMut");
         List<StarForgePackets.Spell> spells = new ArrayList<>();
-        for (String id : GrimoireMastery.bookOf(b).unlocks().keySet()) spells.add(new StarForgePackets.Spell(id, boost.getInt(id)));
+        for (String id : GrimoireMastery.bookOf(b).unlocks().keySet()) spells.add(new StarForgePackets.Spell(id, boost.getInt(id), mut.getInt(id)));
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p),
-                new StarForgePackets.Open(Bounties.stars(p), t.getBoolean("InkSlot2"), t.getInt("Sigil"), b.getHoverName().getString(), spells));
+                new StarForgePackets.Open(Bounties.stars(p), t.getBoolean("InkSlot2"), t.getInt("Sigil"), cores(p), b.getHoverName().getString(), spells));
     }
 
     public static void act(ServerPlayer p, int action, String arg) {
@@ -79,6 +91,27 @@ public final class StarForge {
                 t.putInt("Sigil", g + 1);
                 sigil(b, g);
                 done(p, "Sigil of " + SIGIL_NAMES[g] + " pressed into the cover: " + SIGIL_EFFECTS[g] + ".");
+            }
+            case 3 -> {   // mutate a fully empowered spell with a Mana Core
+                int bar = arg.indexOf('|');
+                if (bar < 0) return;
+                String id = arg.substring(0, bar);
+                int m;
+                try { m = Integer.parseInt(arg.substring(bar + 1)); } catch (NumberFormatException e) { return; }
+                if ((m != MUT_ECHO && m != MUT_SIPHON) || !GrimoireMastery.bookOf(b).unlocks().containsKey(id)) return;
+                if (t.getCompound("StarBoost").getInt(id) < MAX_BOOST || t.getCompound("StarMut").getInt(id) != 0) return;
+                ItemStack core = null;
+                for (ItemStack s : p.getInventory().items) if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_CORE.get())) { core = s; break; }
+                if (core == null) { p.displayClientMessage(Component.literal("You need a Mana Core - bosses drop them.").withStyle(ChatFormatting.RED), true); return; }
+                if (!p.isCreative()) core.shrink(1);
+                CompoundTag mut = t.getCompound("StarMut");
+                mut.putInt(id, m);
+                t.put("StarMut", mut);
+                ServerLevel sl = p.serverLevel();
+                FxSend.ring(sl, Fx.CRIMSON, p.position().add(0, 1, 0), 1.6f, 0.2f, 0.08f, 14);
+                FxSend.impactFrame(sl, p.position().add(0, 1.2, 0), 2, FxSend.FRAME_LIGHT, 10);
+                sl.playSound(null, p.blockPosition(), SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.PLAYERS, 1f, 0.8f);
+                done(p, Component.translatable("spell.iron_spell_grimoire." + id).getString() + " mutated: " + MUT_NAMES[m] + ".");
             }
             default -> { return; }
         }
@@ -113,6 +146,14 @@ public final class StarForge {
         sl.playSound(null, p.blockPosition(), SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 0.6f, 1.6f);
         sl.playSound(null, p.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1f, 1.2f);
         p.displayClientMessage(Component.literal(what).withStyle(ChatFormatting.GOLD), true);
+    }
+
+    /** The mutation (0 none, MUT_ECHO, MUT_SIPHON) of a spell of the equipped grimoire. */
+    public static int mutation(ServerPlayer p, String spellId) {
+        ItemStack b = Utils.getPlayerSpellbookStack(p);
+        if (b == null || !b.hasTag()) return 0;
+        int i = spellId.indexOf(':');
+        return b.getTag().getCompound("StarMut").getInt(i < 0 ? spellId : spellId.substring(i + 1));
     }
 
     /** How much harder a spell from the equipped grimoire hits for its star empowerment. */

@@ -46,6 +46,20 @@ public class PosterBoardBlock extends HorizontalDirectionalBlock {
         return new BlockPos[]{pos.relative(side), pos.relative(side.getOpposite()), pos.above(), pos.above().relative(side), pos.above().relative(side.getOpposite())};
     }
 
+    /** Every block a board at {@code pos} facing {@code f} needs: the board itself first, then its parts. */
+    public static BlockPos[] footprint(BlockPos pos, Direction f) {
+        BlockPos[] p = parts(pos, f), out = new BlockPos[p.length + 1];
+        out[0] = pos;
+        System.arraycopy(p, 0, out, 1, p.length);
+        return out;
+    }
+
+    /** Puts a whole board in the world (for villages: server/VillageBoards). */
+    public static void placeAt(Level level, BlockPos pos, Direction f) {
+        level.setBlock(pos, AddonBlocks.POSTER_BOARD.get().defaultBlockState().setValue(FACING, f), 3);
+        for (BlockPos p : parts(pos, f)) level.setBlock(p, AddonBlocks.POSTER_BOARD_PART.get().defaultBlockState().setValue(FACING, f), 3);
+    }
+
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
         Direction f = ctx.getHorizontalDirection().getOpposite();

@@ -30,7 +30,13 @@ public final class AltarMenu {
             else if (s.is(AddonItemRegistry.RIFT_INK.get())) inks[RiftInkItem.rule(s)] += s.getCount();
         }
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new AltarPackets.Open(pos, has ? book.getHoverName().getString() : "",
-                shards, has ? book.getOrCreateTag().getInt("DevilShards") : 0, Bounties.stars(p), inks));
+                shards, has ? book.getOrCreateTag().getInt("DevilShards") : 0, Bounties.stars(p), examState(book, has), inks));
+    }
+
+    private static int examState(ItemStack book, boolean has) {
+        if (!has) return 0;
+        if (GrimoireMastery.ascended(book)) return 3;
+        return GrimoireMastery.level(book) >= GrimoireMastery.MAX_LEVEL ? 2 : 1;
     }
 
     public static void act(ServerPlayer p, BlockPos pos, int action, int arg) {
@@ -40,6 +46,11 @@ public final class AltarMenu {
             case 1 -> StarForge.open(p);
             case 2 -> { ItemStack s = find(p, -1); if (s != null) ZenonDrops.forge(p, s); open(p, pos); }
             case 3 -> { ItemStack s = find(p, arg); if (s != null) RiftRewards.inscribe(p, s); open(p, pos); }
+            case 4 -> {   // the Magic Knight Exam, for a grimoire at mastery 5
+                ItemStack book = Utils.getPlayerSpellbookStack(p);
+                boolean has = book != null && !book.isEmpty() && GrimoireMastery.bookOf(book) != null;
+                if (examState(book, has) == 2) { p.closeContainer(); Rifts.startExam(p); }
+            }
             default -> {}
         }
     }

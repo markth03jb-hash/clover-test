@@ -12,27 +12,27 @@ import net.minecraftforge.network.NetworkEvent;
 public final class StarForgePackets {
     private StarForgePackets() {}
 
-    /** One spell of the grimoire and how far it has been empowered (0-3). */
-    public record Spell(String id, int level) {}
+    /** One spell of the grimoire, how far it has been empowered (0-3) and its mutation (0 none, 1 Echo, 2 Siphon). */
+    public record Spell(String id, int level, int mut) {}
 
     /** Server -> client: open (or refresh) the forge. */
     public static class Open {
-        public final int stars, sigil;
+        public final int stars, sigil, cores;
         public final boolean slot2;
         public final String book;
         public final List<Spell> spells;
-        public Open(int stars, boolean slot2, int sigil, String book, List<Spell> spells) { this.stars = stars; this.slot2 = slot2; this.sigil = sigil; this.book = book; this.spells = spells; }
+        public Open(int stars, boolean slot2, int sigil, int cores, String book, List<Spell> spells) { this.stars = stars; this.slot2 = slot2; this.sigil = sigil; this.cores = cores; this.book = book; this.spells = spells; }
         public static void encode(Open p, FriendlyByteBuf b) {
-            b.writeVarInt(p.stars); b.writeBoolean(p.slot2); b.writeVarInt(p.sigil); b.writeUtf(p.book, 120);
+            b.writeVarInt(p.stars); b.writeBoolean(p.slot2); b.writeVarInt(p.sigil); b.writeVarInt(p.cores); b.writeUtf(p.book, 120);
             b.writeVarInt(p.spells.size());
-            for (Spell s : p.spells) { b.writeUtf(s.id(), 80); b.writeVarInt(s.level()); }
+            for (Spell s : p.spells) { b.writeUtf(s.id(), 80); b.writeVarInt(s.level()); b.writeVarInt(s.mut()); }
         }
         public static Open decode(FriendlyByteBuf b) {
-            int stars = b.readVarInt(); boolean slot2 = b.readBoolean(); int sigil = b.readVarInt(); String book = b.readUtf(120);
+            int stars = b.readVarInt(); boolean slot2 = b.readBoolean(); int sigil = b.readVarInt(); int cores = b.readVarInt(); String book = b.readUtf(120);
             int n = b.readVarInt();
             List<Spell> l = new ArrayList<>();
-            for (int i = 0; i < n; i++) l.add(new Spell(b.readUtf(80), b.readVarInt()));
-            return new Open(stars, slot2, sigil, book, l);
+            for (int i = 0; i < n; i++) l.add(new Spell(b.readUtf(80), b.readVarInt(), b.readVarInt()));
+            return new Open(stars, slot2, sigil, cores, book, l);
         }
         public static void handle(Open p, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.StarForgeScreen.show(p)));
@@ -40,7 +40,7 @@ public final class StarForgePackets {
         }
     }
 
-    /** Client -> server: 0 empower spell {@code arg}, 1 buy the second ink slot, 2 set cover sigil {@code arg}. */
+    /** Client -> server: 0 empower spell {@code arg}, 1 buy the second ink slot, 2 set cover sigil {@code arg}, 3 mutate: {@code arg} = "spellId|1 or 2". */
     public static class Act {
         public final int action;
         public final String arg;
