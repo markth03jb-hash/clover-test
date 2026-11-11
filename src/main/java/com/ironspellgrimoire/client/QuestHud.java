@@ -1,61 +1,107 @@
 package com.ironspellgrimoire.client;
 
 import com.ironspellgrimoire.network.FxPacket;
+import com.ironspellgrimoire.server.Bounties;
 import com.ironspellgrimoire.server.Quests;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.joml.Matrix4f;
 
-/** The quest tracker, top right (under the bounty tracker when there is one): the quest, what it asks, and a bar. */
+/**
+ * The quest tracker, top right (under the bounty tracker when there is one). On the way: how far and which way, with
+ * an arrow that turns as you do, and a blue pillar of light standing over the place. There: what's left to defeat.
+ */
 @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = Dist.CLIENT)
 public final class QuestHud {
     private QuestHud() {}
 
-    private static int type = -1, have, need, item;
-    private static boolean done;
-    private static long doneAt;
+    private static int type = -1, state, have, need;
+    private static double tx, tz;
+    private static long deadline, doneAt;
 
     public static void set(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
-        if (p.life == 0) { if (!done) type = -1; return; }
+        long now = mc.level == null ? 0 : mc.level.getGameTime();
+        if (p.life == 0) { if (state != Quests.DONE) type = -1; return; }
         type = p.sweep;
-        done = p.life == 2;
-        if (done) { have = need; doneAt = mc.level == null ? 0 : mc.level.getGameTime(); return; }
-        have = (int) p.a0; need = (int) p.a1; item = (int) p.h;
+        state = p.life;
+        if (state == Quests.DONE) { have = need; doneAt = now; return; }
+        have = (int) p.a0; need = (int) p.a1;
+        tx = p.c.x; tz = p.c.z;
+        deadline = now + (long) p.r;
     }
 
     @SubscribeEvent
     public static void onGui(RenderGuiEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
         if (type < 0 || mc.player == null || mc.level == null || mc.options.hideGui) return;
-        if (done && mc.level.getGameTime() - doneAt > 80) { type = -1; done = false; return; }
+        long now = mc.level.getGameTime();
+        if (state == Quests.DONE && now - doneAt > 80) { type = -1; return; }
         GuiGraphics g = e.getGuiGraphics();
         Font f = mc.font;
         int w = 168, x = g.guiWidth() - w - 4, y = BountyHud.shown() ? 70 : 4, h = 40;
-        int head = done ? 0xFF60FF80 : 0xFF50C8FF;
+        int head = state == Quests.DONE ? 0xFF60FF80 : 0xFF50C8FF;
         g.fill(x, y, x + w, y + h, 0xA0081018);
         g.renderOutline(x, y, w, h, 0xC060A8D8);
         g.fill(x, y, x + 3, y + h, head);
-        g.drawString(f, done ? "QUEST COMPLETE" : "QUEST", x + 8, y + 4, head, false);
+        g.drawString(f, state == Quests.DONE ? "QUEST COMPLETE" : "QUEST", x + 8, y + 4, head, false);
         String title = Quests.TITLES[Math.max(0, Math.min(Quests.TITLES.length - 1, type))];
         g.drawString(f, title, x + w - 6 - f.width(title), y + 4, 0xFFFFFFFF, false);
+        if (state == Quests.TRAVEL) {
+            double dx = tx - mc.player.getX(), dz = tz - mc.player.getZ();
+            String line = (int) Math.sqrt(dx * dx + dz * dz) + " m " + Bounties.direction(dx, dz);
+            g.drawString(f, line, x + 24, y + 16, 0xFFFFFFFF, false);
+            String left = "Time left: " + com.ironspellgrimoire.item.WantedPosterItem.time(Math.max(0, deadline - now));
+            g.drawString(f, left, x + 8, y + 28, 0xFFB0C8D8, false);
+            double bearing = Math.toDegrees(Math.atan2(-dx, dz));
+            float rel = Mth.wrapDegrees((float) bearing - mc.player.getViewYRot(e.getPartialTick()));
+            float pulse = 0.7F + 0.3F * (float) Math.sin(now * 0.3);
+            int col = 0xFF000000 | ((int) (80 * pulse) << 16) | ((int) (200 * pulse) << 8) | (int) (255 * pulse);
+            g.pose().pushPose();
+            g.pose().translate(x + 13, y + 19.5, 0);
+            g.pose().mulPose(Axis.ZP.rotationDegrees(rel));
+            g.fill(-1, -2, 1, 5, col);
+            for (int i = 0; i < 4; i++) g.fill(-i, -5 + i, i + 1, -4 + i, col);
+            g.pose().popPose();
+            return;
+        }
         String what = switch (type) {
-            case Quests.MAGES -> "Hooded mages defeated";
-            case Quests.MONSTERS -> "Monsters defeated";
-            case Quests.PRACTICE -> "Grimoire spells cast";
-            case Quests.SUPPLY -> Quests.supplyItem(item).getDescription().getString() + " handed in";
-            case Quests.RIFT -> "Close a rift";
-            default -> "Bring down a boss";
+            case Quests.RIFT -> "Reach the rift's relic chamber";
+            case Quests.BOSS -> "Bring it down";
+            default -> "Defeat them all";
         };
         g.drawString(f, what, x + 8, y + 16, 0xFFB0C8D8, false);
         int bw = w - 16, filled = need <= 0 ? 0 : (int) (bw * Math.min(1f, have / (float) need));
         g.fill(x + 8, y + 29, x + 8 + bw, y + 34, 0xFF203040);
         g.fill(x + 8, y + 29, x + 8 + filled, y + 34, head);
-        String n = have + " / " + need;
-        g.drawString(f, n, x + w - 8 - f.width(n), y + 18, 0xFFFFFFFF, false);
+        if (type == Quests.MAGES || type == Quests.MONSTERS) {
+            String n = have + " / " + need;
+            g.drawString(f, n, x + w - 8 - f.width(n), y + 16, 0xFFFFFFFF, false);
+        }
+    }
+
+    /** The blue pillar over the quest's place (drawn from FxRenderer's glow pass). */
+    static void drawBeacon(Matrix4f m, Vec3 cam, double now) {
+        Minecraft mc = Minecraft.getInstance();
+        if (type < 0 || state != Quests.TRAVEL || mc.player == null || mc.level == null) return;
+        double dx = tx - cam.x, dz = tz - cam.z, d = Math.sqrt(dx * dx + dz * dz);
+        if (d > 480 || d < 6) return;
+        double ground = mc.player.getY();
+        int bx = Mth.floor(tx), bz = Mth.floor(tz);
+        if (mc.level.hasChunk(bx >> 4, bz >> 4)) ground = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz);
+        float w = (float) Math.max(0.5, d * 0.01);
+        float a = (float) (0.55 + 0.25 * Math.sin(now * 0.15 + 1.5)) * (float) Mth.clamp((d - 6) / 20.0, 0, 1);
+        Vec3 bot = new Vec3(tx, ground, tz), top = new Vec3(tx, ground + 120, tz);
+        FxBase.gline(m, cam, bot, top, w, 19, a);
+        FxBase.gline(m, cam, bot, bot.add(0, 6, 0), w * 2.2F, 19, a * 0.6F);
     }
 }
