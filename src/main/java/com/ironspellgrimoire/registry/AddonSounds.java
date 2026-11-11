@@ -44,6 +44,16 @@ public final class AddonSounds {
             SOUNDS.register("music.rhya_2", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.rhya_2"))),
             SOUNDS.register("music.rhya_3", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.rhya_3"))));
 
+    /** Licht's, Rades' and Catherine's music (tools/boss3_music.py). */
+    public static final java.util.List<RegistryObject<SoundEvent>> LICHT_MUSIC = java.util.List.of(
+            SOUNDS.register("music.licht_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.licht_1"))),
+            SOUNDS.register("music.licht_2", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.licht_2"))),
+            SOUNDS.register("music.licht_3", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.licht_3"))));
+    public static final java.util.List<RegistryObject<SoundEvent>> RADES_MUSIC = java.util.List.of(
+            SOUNDS.register("music.rades_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.rades_1"))));
+    public static final java.util.List<RegistryObject<SoundEvent>> CATHERINE_MUSIC = java.util.List.of(
+            SOUNDS.register("music.catherine_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.catherine_1"))));
+
     /** The registered sound for a kind ("slash", "blast"...), or null. */
     public static SoundEvent get(String kind) {
         RegistryObject<SoundEvent> r = BY_KIND.get(kind);

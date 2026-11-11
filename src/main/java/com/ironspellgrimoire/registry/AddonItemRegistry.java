@@ -126,6 +126,12 @@ public class AddonItemRegistry {
     /** Rivals (server/RivalAI): the ally's whistle, and the bookmark at the end of a rivalry. */
     public static final RegistryObject<Item> RIVAL_WHISTLE = ITEMS.register("rival_whistle", com.ironspellgrimoire.item.RivalWhistleItem::new);
     public static final RegistryObject<Item> RIVAL_BOOKMARK = ITEMS.register("rival_bookmark", com.ironspellgrimoire.item.RivalBookmarkItem::new);
+    public static final RegistryObject<Item> LICHT_SPAWN_EGG = ITEMS.register("licht_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.LICHT, 0xF0EEE0, 0xE8C860, new Item.Properties()));
+    public static final RegistryObject<Item> RADES_SPAWN_EGG = ITEMS.register("rades_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.RADES, 0x2A3A2A, 0x7AB060, new Item.Properties()));
+    public static final RegistryObject<Item> CATHERINE_SPAWN_EGG = ITEMS.register("catherine_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.CATHERINE, 0x3A1E4A, 0x8AE060, new Item.Properties()));
     /** Spawns Rhya the Disloyal. */
     public static final RegistryObject<Item> RHYA_SPAWN_EGG = ITEMS.register("rhya_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.RHYA, 0xD8D0C0, 0x7A5CD0, new Item.Properties()));
@@ -177,6 +183,9 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(ZENON_SPAWN_EGG.get()));
                 out.accept(new ItemStack(VETTO_SPAWN_EGG.get()));
                 out.accept(new ItemStack(RHYA_SPAWN_EGG.get()));
+                out.accept(new ItemStack(LICHT_SPAWN_EGG.get()));
+                out.accept(new ItemStack(RADES_SPAWN_EGG.get()));
+                out.accept(new ItemStack(CATHERINE_SPAWN_EGG.get()));
                 out.accept(new ItemStack(RIFT_COMPASS.get()));
                 for (var r : RELICS) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));

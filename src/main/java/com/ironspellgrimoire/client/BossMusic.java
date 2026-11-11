@@ -35,7 +35,7 @@ public final class BossMusic {
         java.util.List<net.minecraftforge.registries.RegistryObject<SoundEvent>> tracks = AddonSounds.BOSS_MUSIC;
         double best = 48 * 48;
         for (net.minecraft.world.entity.LivingEntity o : mc.level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, mc.player.getBoundingBox().inflate(48),
-                x -> x instanceof Zenon || x instanceof com.ironspellgrimoire.entity.Vetto || x instanceof com.ironspellgrimoire.entity.Rhya)) {
+                x -> x instanceof Zenon || x instanceof com.ironspellgrimoire.entity.Vetto || x instanceof com.ironspellgrimoire.entity.Rhya || x instanceof com.ironspellgrimoire.entity.AddonBoss)) {
             if (!o.isAlive()) continue;
             double d = o.distanceToSqr(mc.player);
             if (d < best) {
@@ -43,11 +43,12 @@ public final class BossMusic {
                 if (o instanceof Zenon os) { bossPhase = os.phase(); tracks = AddonSounds.BOSS_MUSIC; }
                 else if (o instanceof com.ironspellgrimoire.entity.Vetto v) { bossPhase = v.phase(); tracks = AddonSounds.VETTO_MUSIC; }
                 else if (o instanceof com.ironspellgrimoire.entity.Rhya rh) { bossPhase = rh.phase(); tracks = AddonSounds.RHYA_MUSIC; }
+                else if (o instanceof com.ironspellgrimoire.entity.AddonBoss ab) { bossPhase = Math.min(ab.music().size(), ab.phase()); tracks = ab.music(); }
             }
         }
         if (boss == null) { stop(); return; }
         mc.getMusicManager().stopPlaying();   // hold the game's own music off
-        int phase = Math.max(1, Math.min(3, bossPhase)) + (tracks == AddonSounds.VETTO_MUSIC ? 10 : tracks == AddonSounds.RHYA_MUSIC ? 20 : 0);
+        int phase = Math.max(1, Math.min(3, bossPhase)) + (tracks == AddonSounds.VETTO_MUSIC ? 10 : tracks == AddonSounds.RHYA_MUSIC ? 20 : tracks == AddonSounds.LICHT_MUSIC ? 30 : tracks == AddonSounds.RADES_MUSIC ? 40 : tracks == AddonSounds.CATHERINE_MUSIC ? 50 : 0);
         if (playing == null || playingPhase != phase || playing.isStopped()) {
             if (playing != null) playing.fadeOut();
             SoundEvent ev = tracks.get(phase % 10 - 1).get();

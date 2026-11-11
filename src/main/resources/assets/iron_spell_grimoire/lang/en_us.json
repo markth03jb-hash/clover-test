@@ -747,5 +747,14 @@
   "item.iron_spell_grimoire.shade_lantern": "Shade Lantern",
   "item.iron_spell_grimoire.rival_whistle": "Rival's Whistle",
   "item.iron_spell_grimoire.rival_bookmark": "Rival's Bookmark",
-  "entity.iron_spell_grimoire.rival": "Rival"
+  "entity.iron_spell_grimoire.rival": "Rival",
+  "entity.iron_spell_grimoire.licht": "Licht",
+  "item.iron_spell_grimoire.licht_spawn_egg": "Licht Spawn Egg",
+  "subtitles.iron_spell_grimoire.music.licht": "Licht's theme",
+  "entity.iron_spell_grimoire.rades": "Rades",
+  "item.iron_spell_grimoire.rades_spawn_egg": "Rades Spawn Egg",
+  "subtitles.iron_spell_grimoire.music.rades": "Rades's theme",
+  "entity.iron_spell_grimoire.catherine": "Catherine",
+  "item.iron_spell_grimoire.catherine_spawn_egg": "Catherine Spawn Egg",
+  "subtitles.iron_spell_grimoire.music.catherine": "Catherine's theme"
 }

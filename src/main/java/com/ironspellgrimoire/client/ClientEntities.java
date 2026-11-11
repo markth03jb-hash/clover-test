@@ -20,5 +20,8 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.VETTO.get(), VettoRenderer::new);
         e.registerEntityRenderer(AddonEntities.RHYA.get(), RhyaRenderer::new);
         e.registerEntityRenderer(AddonEntities.RIVAL.get(), RivalRenderer::new);
+        e.registerEntityRenderer(AddonEntities.LICHT.get(), c -> new BossRenderer<>(c, "licht", false, 1.05F));
+        e.registerEntityRenderer(AddonEntities.RADES.get(), c -> new BossRenderer<>(c, "rades", false, 1.0F));
+        e.registerEntityRenderer(AddonEntities.CATHERINE.get(), c -> new BossRenderer<>(c, "catherine", true, 0.95F));
     }
 }
