@@ -73,48 +73,56 @@ def shoulders(s, sx):
 sym(shoulders)
 box('body', -6, 64, -12, 6, 73, 2, 'hide')                        # the thick neck, thrust forward
 
-# the head: a long-muzzled demon's skull, low and forward - slanted burning eyes under a scowling brow, ember nostrils,
-# a jaw hung open on a furnace of a throat, fangs, cheek spurs, ram horns and back-swept spikes
+# the head: a wedge-shaped demon's face tapering to a pointed chin - a heavy scowling brow over deep-set burning eyes,
+# veins of fire running from them down the cheeks, bone cheek-plates, slit nostrils, a wide grin of jagged teeth over a
+# glowing throat (the lower jaw is its own bone, so it can open), finned ears, great ram horns curling round the sides
+# and two tall horns sweeping up and back from the crown
 bone('head', 'body', (0, 72, -8))
-box('head', -8, 70, -16, 8, 82, -2, 'skull')                       # the skull
-box('head', -6, 82, -14, 6, 86, -3, 'skull')
-box('head', -7, 76, -16.4, 7, 81, -16, 'socket')                  # deep sockets
-def brow(s, sx):
-    bone('brow' + s, 'head', (0.5 * sx, 79.5, -16), (0, 0, -24 * sx))
-    box('brow' + s, 0, 80, -17.5, 9, 82.5, -15, 'horn', sx)      # the scowl: brows sloping down to the middle
-    bone('eye' + s, 'head', (1.5 * sx, 78, -16), (0, 0, -18 * sx))
-    box('eye' + s, 1.2, 77, -16.9, 7.8, 79.9, -16.2, 'eye', sx)  # slanted, burning eyes
-    box('head', 8, 72, -15, 11, 77, -9, 'horntip', sx)            # cheek spurs
-    box('head', 9, 70, -12, 12.5, 73, -8, 'horntip', sx)
-    for i, (z, h) in enumerate(((-2, 7), (1, 9), (4, 7))):        # spikes swept back off the skull
-        bone('spike%d%s' % (i, s), 'head', (5 * sx, 84 - i, z), (-55, 0, -25 * sx))
-        box('spike%d%s' % (i, s), 4, 84 - i, z - 1, 6, 84 - i + h, z + 1, 'horntip', sx)
-sym(brow)
-bone('snout', 'head', (0, 77, -15), (16, 0, 0))                   # the muzzle, tipped down
-box('snout', -5, 71, -27, 5, 79, -15, 'skull')
-box('snout', -3.5, 76, -27.5, -1.5, 78, -27, 'maw'); box('snout', 1.5, 76, -27.5, 3.5, 78, -27, 'maw')   # nostrils
-box('snout', -4, 79, -24, 4, 80, -16, 'plate')                    # a ridge of plate down the muzzle
-for x in (-4.5, -1.5, 1.5, 3.5):                                  # upper fangs
-    box('snout', x, 67, -26 + abs(x), x + 1.2, 71, -25 + abs(x), 'horn')
-box('snout', -4.5, 70, -25, 4.5, 71, -16, 'maw')                  # the furnace of its throat
-bone('jaw', 'head', (0, 72, -10), (30, 0, 0))                     # the lower jaw, hung open
-box('jaw', -5.5, 68, -25, 5.5, 72, -9, 'skull')
-box('jaw', -4.5, 71.6, -24, 4.5, 72.2, -10, 'maw')
-for x in (-4, 2.8):                                               # lower fangs
-    box('jaw', x, 72, -24, x + 1.2, 76, -23, 'horn')
-for x in (-3, -0.5, 2):                                           # a beard of bone spurs under the chin
-    box('jaw', x, 63, -16 - x, x + 1.5, 68, -14.5 - x, 'horntip')
+ROWS = [(62, 65, 2.5, -14, -9), (65, 68, 4.5, -15, -6), (68, 72, 6.5, -15, -4), (72, 76, 7.5, -15, -3),
+        (76, 81, 8.5, -15, -2), (81, 85, 8, -14, 0), (85, 88, 6, -12, -1)]
+bone('jaw', 'head', (0, 69, -5))
+for y0, y1, w, z0, z1 in ROWS:
+    box('jaw' if y1 <= 68 else 'head', -w, y0, z0, w, y1, z1, 'skull')
+box('head', -6.5, 68, -15.3, 6.5, 69.4, -15, 'maw')               # the grin: a glowing seam...
+box('jaw', -4.5, 67.2, -15.3, 4.5, 68, -15, 'maw')
+for x in (-6.5, 5.5):                                             # ...curling up at its ends
+    box('head', x, 69.4, -15.3, x + 1, 71, -15, 'maw')
+for i, x in enumerate((-5.5, -3.5, -1.5, 0.5, 2.5, 4.5)):         # jagged teeth, top and bottom
+    box('head', x, 67.6 if i % 2 else 68.2, -15.6, x + 1.1, 69.4, -15.1, 'tooth')
+    box('jaw', x + 0.9, 67.2, -15.6, x + 1.9, 68.6 if i % 2 else 68.1, -15.1, 'tooth')
+box('head', -2, 73, -15.4, -1, 74.6, -15, 'socket'); box('head', 1, 73, -15.4, 2, 74.6, -15, 'socket')   # nostrils
+def face(s, sx):
+    box('head', 1.2, 76.5, -15.4, 7, 80.2, -15, 'socket', sx)    # a deep socket...
+    bone('eye' + s, 'head', (1.6 * sx, 78.4, -15.4), (0, 0, -14 * sx))
+    box('eye' + s, 1.8, 77.6, -15.7, 6.2, 79.2, -15.3, 'eye', sx)   # ...and a slanted burning eye in it
+    bone('brow' + s, 'head', (0.4 * sx, 80, -15), (0, 0, -22 * sx))
+    box('brow' + s, 0, 80, -17, 9.5, 83, -14, 'skull', sx)        # the scowling brow, jutting over the eyes
+    box('brow' + s, 0.5, 79.6, -17.2, 9, 80.2, -15, 'horntip', sx)
+    for x, y0, y1 in ((5.4, 74.5, 76.5), (4.8, 72.8, 74.6), (5.3, 71, 72.9), (2.6, 74.6, 76.5), (3.2, 73, 74.7)):   # veins of fire, cracking down from the eyes
+        box('head', x, y0, -15.25, x + 0.7, y1, -15.05, 'vein', sx)
+    box('head', 5, 72, -15.7, 8.2, 74, -14.5, 'horn', sx)        # cheek plates
+    box('head', 6.5, 70, -14.5, 7.8, 72, -9, 'horn', sx)
+    bone('ear' + s, 'head', (8.5 * sx, 79, -5), (0, -35 * sx, -15 * sx))
+    box('ear' + s, 8.5, 77, -6, 15, 81, -4.5, 'skull', sx)       # finned ears, swept back
+    box('ear' + s, 13, 78, -5.8, 17, 79.5, -4.7, 'horntip', sx)
+    bone('crown' + s, 'head', (3 * sx, 87, -6), (-38, 0, -14 * sx))   # a tall horn sweeping up and back from the crown
+    for k in range(6):
+        w = 3.4 - k * 0.45
+        box('crown' + s, 3 - w / 2, 87 + k * 3.2, -6 - w / 2, 3 + w / 2, 87 + k * 3.2 + 3.4, -6 + w / 2, 'darkhorn' if k < 5 else 'horntip', sx)
+sym(face)
+for x in (-1.5, 0.5):                                             # a beard of bone spurs under the chin
+    box('jaw', x, 58.5, -13, x + 1, 62, -12, 'horntip')
 
 def horns(s, sx):
-    # great ram horns: a curve of shrinking blocks sweeping out and up from the skull, back, then curling round forward
-    for k in range(44):
-        t = k / 43
-        ang = t * math.pi * 1.55
-        r = 12.5 * (1 - 0.45 * t)
-        x = 7 + 19 * t + r * 0.45 * (1 - math.cos(ang * 0.5))
-        y = 82 + r * math.sin(ang) * 0.9 + 3
-        z = -8 + r * (1 - math.cos(ang)) * 0.75
-        w = 6.6 * (1 - 0.7 * t)
+    # great ram horns from the sides of the brow: out and back, down, and curling round forward past the cheek
+    for k in range(48):
+        t = k / 47
+        ang = t * math.pi * 1.7
+        r = 9 * (1 - 0.35 * t)
+        x = 8 + 6 * t + 2 * math.sin(ang * 0.5)
+        y = 82 + r * math.sin(ang) * 0.95
+        z = -6 + r * (1 - math.cos(ang)) * 0.9 - 2 * t
+        w = 6.2 * (1 - 0.68 * t)
         box('head', x - w / 2, y - w / 2, z - w / 2, x + w / 2, y + w / 2, z + w / 2, 'darkhorn' if t < 0.85 else 'horntip', sx)
 sym(horns)
 
@@ -139,23 +147,23 @@ def arms(s, sx):
     box('arm' + s, 16, 44, -5, 24.5, 57, 5, 'hide', sx)          # biceps
     box('arm' + s, 17, 45, 4, 24, 55, 7, 'hide', sx)             # triceps
     box('arm' + s, 17.5, 42, -4, 23, 45, 4, 'hide', sx)
-    bone('forearm' + s, 'arm' + s, (20.2 * sx, 43, 0), (36, 0, -30 * sx))
+    bone('forearm' + s, 'arm' + s, (20.2 * sx, 43, 0), (22, 0, -30 * sx))
     box('forearm' + s, 15, 32, -6, 25.5, 44, 6, 'hide', sx)      # thick below the elbow
     box('forearm' + s, 16.2, 21, -4.8, 24.2, 32, 4.8, 'hide', sx)
     box('forearm' + s, 15.6, 22, -5.2, 24.8, 26, 5.2, 'plate', sx)   # a band of plate at the wrist
     box('forearm' + s, 18.5, 41, 5, 22, 46, 13, 'horntip', sx)   # the elbow spike, raking back
     for i, y in enumerate((38, 33, 28)):                          # spurs down the outside of the forearm
         box('forearm' + s, 25, y, -1, 28.5 - i * 0.6, y + 2.5, 1.5, 'horntip', sx)
-    bone('hand' + s, 'forearm' + s, (20.2 * sx, 21.5, 0), (14, 0, 10 * sx))
+    bone('hand' + s, 'forearm' + s, (20.2 * sx, 21.5, 0), (2, 0, 10 * sx))
     box('hand' + s, 15.5, 12, -6.5, 25, 22, 6.5, 'hide', sx)
     for z in (-5, -1.5, 2, 5.5):                                  # knuckles
         box('hand' + s, 15, 12, z - 1.4, 16.2, 15, z + 1.4, 'plate', sx)
     for i, z in enumerate((-4.6, -1.5, 1.6, 4.7)):               # four fingers, two joints each, ending in claws
         f1 = 'digit%d%s' % (i, s); f2 = 'claw%d%s' % (i, s)
         x = 20.2 - 3 + i * 0.4
-        bone(f1, 'hand' + s, (x * sx, 12.5, z), (14, 0, (6 - i * 4) * sx))
+        bone(f1, 'hand' + s, (x * sx, 12.5, z), (6, 0, (6 - i * 4) * sx))
         box(f1, x - 1.3, 4, z - 1.3, x + 1.3, 13, z + 1.3, 'hide', sx)
-        bone(f2, f1, (x * sx, 4.5, z), (26, 0, 0))
+        bone(f2, f1, (x * sx, 4.5, z), (16, 0, 0))
         box(f2, x - 1, -6, z - 1, x + 1, 5, z + 1, 'horn', sx)
         box(f2, x - 0.6, -10, z - 0.6, x + 0.6, -6, z + 0.6, 'horntip', sx)
     bone('thumb' + s, 'hand' + s, (17 * sx, 17, -6), (40, 0, -30 * sx))
@@ -252,7 +260,7 @@ for i in range(len(THORNS) - 1):
         box('body', x - 0.8, y - 0.8, z - 0.8, x + 0.8, y + 0.8, z + 0.8, 'chain' if k % 2 else 'iron')
 
 # ---------------------------------------------------------------------------------------------------------- materials
-EMISSIVE = {'core', 'eye', 'maw', 'fire', 'fire2', 'fire3'}
+EMISSIVE = {'core', 'eye', 'maw', 'fire', 'fire2', 'fire3', 'vein'}
 def lerp(a, b, t): return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
 def paint(mat, x, y, w, h, seed):
     """The colour of texel (x, y) on a face of size w x h of this material."""
@@ -261,6 +269,8 @@ def paint(mat, x, y, w, h, seed):
         base = lerp((22, 15, 17), (44, 24, 22), r.random() * 0.6)
         return base
     if mat == 'socket': return (8, 4, 6)
+    if mat == 'tooth': return lerp((200, 190, 170), (150, 136, 120), r.random())
+    if mat == 'vein': return lerp((255, 120, 30), (255, 180, 70), r.random())
     if mat == 'skull': return lerp((30, 20, 22), (56, 30, 28), r.random() * 0.6)
     if mat == 'darkhorn': t = y / max(1, h - 1); return lerp((88, 74, 70), (34, 26, 28), t * 0.6 + r.random() * 0.25)
     if mat == 'plate': return lerp((30, 26, 30), (54, 46, 50), r.random() * 0.6)
@@ -490,6 +500,17 @@ if __name__ == '__main__':
         a = render(tex, glow, UV, yaw=0, pitch=6, size=(700, 860), scale=3.6, cy=0.62)
         b = render(tex, glow, UV, yaw=90, pitch=6, size=(700, 860), scale=3.6, cy=0.62)
         s = Image.new('RGB', (1400, 860)); s.paste(a, (0, 0)); s.paste(b, (700, 0)); s.save(os.path.join(OUT, 'dbg.png'))
+    if mode in ('head2', 'hands'):
+        for bn in ORDER:
+            if bn.startswith(('thorn', 'flame', 'wing', 'finger', 'mem')): BONES[bn]['cubes'] = []
+        tex, glow, UV = build_texture()
+        if mode == 'head2':
+            ims = [render(tex, glow, UV, yaw=y, pitch=p, size=(600, 600), scale=9, cy=1.12) for y, p in ((0, 4), (35, 8), (90, 2))]
+        else:
+            ims = [render(tex, glow, UV, yaw=y, pitch=4, size=(600, 600), scale=5, cy=0.35) for y in (0, 30, -30)]
+        sh = Image.new('RGB', (1800, 600))
+        for i, im in enumerate(ims): sh.paste(im, (600 * i, 0))
+        sh.save(os.path.join(OUT, 'demon_%s.png' % mode))
     if mode == 'head':
         ims = [render(tex, glow, UV, yaw=y, pitch=4, size=(600, 600), scale=9, cy=1.08) for y in (0, 30, 70)]
         sh = Image.new('RGB', (1800, 600))
