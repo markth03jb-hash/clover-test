@@ -89,7 +89,7 @@ public final class ZenonAI {
             s.desperate = true;
             say(b, "...Then we end this together.");
             TimedModifiers.apply(b, Attributes.MOVEMENT_SPEED, UUID.fromString("5a0c0001-0000-4000-8000-0000000000d1"), "Desperation", 0.35, AttributeModifier.Operation.MULTIPLY_TOTAL, 20 * 600);
-            FxSend.ring(sl, WARN, b.position().add(0, 0.1, 0), 0.4f, 8f, 0.2f, 14);
+            BossFx.ring(sl, WARN, b.position().add(0, 0.1, 0), 0.4f, 8f, 0.2f, 14);
             sound(sl, b.position(), SoundEvents.WITHER_SPAWN, 1.0f, 0.6f);
         }
         hazards(b, sl);
@@ -190,14 +190,32 @@ public final class ZenonAI {
     /** A warning: a red ring on the ground at its full size, and a second ring filling out to it - when it's full, it lands. */
     static void warnCircle(ServerLevel sl, Vec3 c, float r, int ticks) {
         Vec3 g = ground(sl, c).add(0, 0.06, 0);
-        FxSend.ring(sl, WARN, g, r - 0.1f, r, 0.04f, ticks);
-        FxSend.ring(sl, WARN, g, 0.05f, r, 0.025f, ticks);
+        int K = com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE;
+        // a solid red rim for the whole wait, and a fill that grows from the middle to the rim: when it reaches it, it lands
+        FxSend.ring(sl, WARN | K, g, r - 0.14f, r, 0.08f, ticks);
+        FxSend.ring(sl, WARN | K, g, 0.05f, r, 0.015f, ticks);
+        int steps = Math.max(1, ticks / 3);
+        for (int i = 1; i <= steps; i++) {
+            final float rr = r * i / steps;
+            AstaFx.later((i - 1) * ticks / steps, () -> FxSend.ring(sl, WARN | K, g.add(0, 0.01, 0), Math.max(0.05f, rr - 0.25f), rr, 0.05f, 4));
+        }
+        AstaFx.later(Math.max(1, ticks - 3), () -> FxSend.ring(sl, Fx.SILVER | K, g.add(0, 0.02, 0), r - 0.2f, r + 0.1f, 0.12f, 4));   // a white flash on the rim just before
     }
 
     /** A warning along a line: a thin red line, and a brighter one over it at the very end. */
     static void warnLine(ServerLevel sl, Vec3 a, Vec3 c, float w, int ticks) {
-        FxSend.trail(sl, WARN, a, c, w, ticks);
-        AstaFx.later(Math.max(1, ticks - 4), () -> FxSend.trail(sl, WARN, a, c, w * 2f, 4));
+        int K = com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE;
+        // two solid edges for the whole wait, and the line between them filling in from the start to the end
+        Vec3 d = c.subtract(a), side = rightOf(flat(d).lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : flat(d).normalize()).scale(w * 0.5);
+        FxSend.trail(sl, WARN | K, a.add(side), c.add(side), 0.08f, ticks);
+        FxSend.trail(sl, WARN | K, a.subtract(side), c.subtract(side), 0.08f, ticks);
+        FxSend.trail(sl, WARN | K, a, c, 0.05f, ticks);
+        int steps = Math.max(1, ticks / 3);
+        for (int i = 1; i <= steps; i++) {
+            final Vec3 to = a.add(d.scale(i / (double) steps));
+            AstaFx.later((i - 1) * ticks / steps, () -> FxSend.trail(sl, WARN | K, a.add(0, 0.02, 0), to.add(0, 0.02, 0), Math.min(0.5f, w * 0.2f), 4));
+        }
+        AstaFx.later(Math.max(1, ticks - 3), () -> FxSend.trail(sl, Fx.SILVER | K, a, c, Math.min(0.6f, w * 0.3f), 4));
     }
 
     /** The ground under {@code c} (a few blocks down at most). */
@@ -296,7 +314,7 @@ public final class ZenonAI {
                 if (!ok(b)) return;
                 Vec3 rt = rightOf(look);
                 Vec3 sweep = rt.scale(ii % 2 == 0 ? 1 : -1).add(0, ii == 2 ? 0.9 : 0.35, 0).normalize();
-                FxSend.slash(sl, BONE, b.position().add(0, 1.2, 0).add(look.scale(1.4)), look, sweep, 1.4f, 2.6f, 6, 0.1f, 0.9f);
+                BossFx.slash(sl, BONE, b.position().add(0, 1.2, 0).add(look.scale(1.4)), look, sweep, 1.4f, 2.6f, 6, 0.1f, 0.9f);
                 sound(sl, b.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.1f, 0.7f);
                 for (Player p : near(b, front.add(0, 1, 0), 2.6)) { hurt(b, p, 7f); p.invulnerableTime = 0; }
             });
@@ -345,8 +363,8 @@ public final class ZenonAI {
                 if (!ok(b)) return;
                 Vec3 bend = from.add(to).scale(0.5).add(side.scale(ww == 0 ? 1.8 : -1.8)).add(0, 1.2, 0);
                 Vec3 end = to.add(to.subtract(from).normalize().scale(1.5));
-                FxSend.trail(sl, BONE, from, bend, 0.14f, 6);
-                FxSend.trail(sl, BONE, bend, end, 0.12f, 6);
+                BossFx.trail(sl, BONE, from, bend, 0.14f, 6);
+                BossFx.trail(sl, BONE, bend, end, 0.12f, 6);
                 for (int k = 0; k < 6; k++) {
                     double u = k / 5.0;
                     Vec3 q = from.scale((1 - u) * (1 - u)).add(bend.scale(2 * u * (1 - u))).add(end.scale(u * u));
@@ -399,7 +417,7 @@ public final class ZenonAI {
                 double a = k * Math.PI * 2 / 14;
                 spikeUp(sl, c.add(Math.cos(a) * 1.4, 0, Math.sin(a) * 1.4), new Vec3(Math.cos(a), 0.7, Math.sin(a)), 2.4f, 0.14f, 18);
             }
-            FxSend.ring(sl, BONE, c.add(0, 0.1, 0), 0.5f, 5f, 0.15f, 10);
+            BossFx.ring(sl, BONE, c.add(0, 0.1, 0), 0.5f, 5f, 0.15f, 10);
             FxSend.shake(sl, c, 0.4f, 6, 16);
             sound(sl, c, SoundEvents.GENERIC_EXPLODE, 0.8f, 1.2f);
             for (Player p : near(b, c.add(0, 1, 0), 4.3)) {
@@ -440,7 +458,7 @@ public final class ZenonAI {
                     double a = k * Math.PI / 5;
                     spikeUp(sl, land.add(Math.cos(a) * 1.6, 0, Math.sin(a) * 1.6), new Vec3(Math.cos(a) * 0.5, 1, Math.sin(a) * 0.5), 2.0f, 0.16f, 22);
                 }
-                FxSend.ring(sl, BONE, land.add(0, 0.1, 0), 0.4f, 4.5f, 0.15f, 12);
+                BossFx.ring(sl, BONE, land.add(0, 0.1, 0), 0.4f, 4.5f, 0.15f, 12);
                 FxSend.shake(sl, land, 0.6f, 8, 20);
                 sound(sl, land, SoundEvents.GENERIC_EXPLODE, 1f, 0.8f);
                 for (Player p : near(b, land.add(0, 1, 0), 3.0)) { hurt(b, p, 9f); p.setDeltaMovement(p.getDeltaMovement().add(0, 0.6, 0)); p.hurtMarked = true; }
@@ -467,13 +485,13 @@ public final class ZenonAI {
             if (!ok(b)) return;
             b.moveTo(behind.x, behind.y, behind.z, (float) Math.toDegrees(Math.atan2(-f.x, f.z)), 0);
             b.setPose(P_CLAW);
-            FxSend.ring(sl, VOID, behind.add(0, 0.1, 0), 0.3f, 2.4f, 0.1f, 8);
+            BossFx.ring(sl, VOID, behind.add(0, 0.1, 0), 0.3f, 2.4f, 0.1f, 8);
         });
         AstaFx.later(T + 4, () -> {
             if (!ok(b)) return;
             Vec3 at = behind.add(0, 1.2, 0).add(f.scale(1.5));
-            FxSend.slash(sl, BONE, at, f, rightOf(f).add(0, 0.5, 0).normalize(), 1.5f, 2.8f, 6, 0.1f, 1.0f);
-            FxSend.slash(sl, VOID, at, f, rightOf(f).scale(-1).add(0, 0.5, 0).normalize(), 1.3f, 2.4f, 5, 0.1f, 0.6f);
+            BossFx.slash(sl, BONE, at, f, rightOf(f).add(0, 0.5, 0).normalize(), 1.5f, 2.8f, 6, 0.1f, 1.0f);
+            BossFx.slash(sl, VOID, at, f, rightOf(f).scale(-1).add(0, 0.5, 0).normalize(), 1.3f, 2.4f, 5, 0.1f, 0.6f);
             sound(sl, at, SoundEvents.PLAYER_ATTACK_CRIT, 1.2f, 0.7f);
             for (Player p : near(b, at, 2.2)) hurt(b, p, 9f);
         });
@@ -501,7 +519,7 @@ public final class ZenonAI {
             for (Vec3 g : gates) {
                 Vec3 d = c.subtract(g).normalize(), end = c.add(d.scale(3));
                 BoneFx.bone(sl, BoneFx.SPEAR, g, d, rightOf(d), 1.0f, 0.1f, 6, 0, FxPacket.HOLD, 0, d.scale(1.6), 5);
-                FxSend.trail(sl, VOID, g, end, 0.05f, 5);
+                BossFx.trail(sl, VOID, g, end, 0.05f, 5);
                 for (Player p : along(b, g, end, 1.1)) { hurt(b, p, 6f); p.invulnerableTime = 0; }
             }
             sound(sl, c, SoundEvents.TRIDENT_THROW, 1.3f, 0.7f);
@@ -537,8 +555,8 @@ public final class ZenonAI {
         int T = tel(b, 14);
         b.setPose(P_CAST);
         b.getNavigation().stop();
-        FxSend.ring(sl, VOID, t.position().add(0, 0.08, 0), 2.2f, 0.2f, 0.08f, T);
-        FxSend.ring(sl, WARN, b.position().add(0, 0.06, 0), 2.4f, 2.6f, 0.04f, T + 12);
+        BossFx.ring(sl, VOID, t.position().add(0, 0.08, 0), 2.2f, 0.2f, 0.08f, T);
+        BossFx.ring(sl, WARN, b.position().add(0, 0.06, 0), 2.4f, 2.6f, 0.04f, T + 12);
         sound(sl, t.position(), SoundEvents.PORTAL_TRIGGER, 0.6f, 1.6f);
         AstaFx.later(T, () -> {
             if (!ok(b) || !t.isAlive()) return;
@@ -549,7 +567,7 @@ public final class ZenonAI {
                     if (to.length() < 2.2) return;
                     t.setDeltaMovement(to.normalize().scale(1.1).add(0, 0.12, 0));
                     t.hurtMarked = true;
-                    FxSend.trail(sl, VOID, mid(t), b.position().add(0, 1.2, 0), 0.04f, 3);
+                    BossFx.trail(sl, VOID, mid(t), b.position().add(0, 1.2, 0), 0.04f, 3);
                 });
             }
         });
@@ -557,7 +575,7 @@ public final class ZenonAI {
             if (!ok(b)) return;
             b.setPose(P_CLAW);
             Vec3 look = flat(t.position().subtract(b.position())).normalize();
-            FxSend.slash(sl, BONE, b.position().add(0, 1.2, 0).add(look.scale(1.2)), look, rightOf(look).add(0, 0.6, 0).normalize(), 1.4f, 2.6f, 6, 0.1f, 0.9f);
+            BossFx.slash(sl, BONE, b.position().add(0, 1.2, 0).add(look.scale(1.2)), look, rightOf(look).add(0, 0.6, 0).normalize(), 1.4f, 2.6f, 6, 0.1f, 0.9f);
             for (Player p : near(b, b.position().add(0, 1.2, 0).add(look.scale(1.5)), 2.4)) hurt(b, p, 8f);
             sound(sl, b.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.2f, 0.6f);
         });
@@ -586,7 +604,7 @@ public final class ZenonAI {
                     BoneFx.bone(sl, BoneFx.LONG, base.add(dir.scale(1.2)), dir, new Vec3(-Math.cos(a), 0, -Math.sin(a)), 1.2f, 0.13f, 34, 4, FxPacket.GROUND, 0, Vec3.ZERO, 0);
                     BoneFx.bone(sl, BoneFx.SPIKE, base.add(dir.scale(2.4)).add(-Math.cos(a) * 0.4, 0.2, -Math.sin(a) * 0.4), new Vec3(-Math.cos(a), 0.2, -Math.sin(a)), new Vec3(0, 1, 0), 0.5f, 0.11f, 34, 6, FxPacket.GROUND, 0, Vec3.ZERO, 0);
                 }
-                FxSend.ring(sl, DARK, g.add(0, 0.06, 0), 0.3f, 2f, 0.12f, 14);
+                BossFx.ring(sl, DARK, g.add(0, 0.06, 0), 0.3f, 2f, 0.12f, 14);
                 for (Player p : near(b, g.add(0, 1, 0), 1.9)) {
                     hurt(b, p, 10f);
                     TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, UUID.fromString("5a0c0001-0000-4000-8000-0000000000c2"), "Grasp", -0.9, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
@@ -612,11 +630,11 @@ public final class ZenonAI {
                 AstaFx.later(k, () -> {
                     double a = kk * Math.PI / 3;
                     Vec3 d = new Vec3(Math.cos(a), 0, Math.sin(a));
-                    FxSend.slash(sl, BONE, c.add(0, 0.8, 0).add(d.scale(3)), d, rightOf(d), 1.6f, 3.2f, 6, 0.1f, 0.9f);
-                    FxSend.slash(sl, DARK, c.add(0, 0.6, 0).add(d.scale(3)), d, rightOf(d), 1.4f, 3.0f, 5, 0.1f, 0.5f);
+                    BossFx.slash(sl, BONE, c.add(0, 0.8, 0).add(d.scale(3)), d, rightOf(d), 1.6f, 3.2f, 6, 0.1f, 0.9f);
+                    BossFx.slash(sl, DARK, c.add(0, 0.6, 0).add(d.scale(3)), d, rightOf(d), 1.4f, 3.0f, 5, 0.1f, 0.5f);
                 });
             }
-            FxSend.ring(sl, BONE, c.add(0, 0.1, 0), 0.5f, 6.5f, 0.2f, 10);
+            BossFx.ring(sl, BONE, c.add(0, 0.1, 0), 0.5f, 6.5f, 0.2f, 10);
             sound(sl, c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.6f, 0.4f);
             for (Player p : near(b, c.add(0, 1, 0), 6.0)) {
                 hurt(b, p, 11f);
@@ -645,7 +663,7 @@ public final class ZenonAI {
             AstaFx.later(delay - 6, () -> BoneFx.bone(sl, BoneFx.SPIKE, g.add(0, 9, 0), new Vec3(0, -1, 0), new Vec3(1, 0, 0), 0.9f, 0.14f, 8, 0, FxPacket.HOLD, 0, new Vec3(0, -1.5, 0), 6));
             AstaFx.later(delay, () -> {
                 if (!ok(b)) return;
-                FxSend.ring(sl, BONE, g.add(0, 0.08, 0), 0.2f, 1.4f, 0.08f, 6);
+                BossFx.ring(sl, BONE, g.add(0, 0.08, 0), 0.2f, 1.4f, 0.08f, 6);
                 for (Player p : near(b, g.add(0, 0.8, 0), 1.3)) { hurt(b, p, 6f); p.invulnerableTime = 0; }
                 sound(sl, g, SoundEvents.BONE_BLOCK_HIT, 1.0f, 0.7f);
             });
@@ -660,16 +678,16 @@ public final class ZenonAI {
         b.getNavigation().stop();
         Vec3 c = ground(sl, t.position());
         warnCircle(sl, c, 4f, T);
-        FxSend.ring(sl, DARK, c.add(0, 0.05, 0), 3.9f, 4.1f, 0.06f, T);
+        BossFx.ring(sl, DARK, c.add(0, 0.05, 0), 3.9f, 4.1f, 0.06f, T);
         for (int k = 0; k < 3; k++) {
             final int kk = k;
-            AstaFx.later(k * (T / 3), () -> { FxSend.ring(sl, Fx.CRIMSON, c.add(0, 0.07, 0), 4f, 0.5f, 0.05f, T / 3); sound(sl, c, SoundEvents.WARDEN_HEARTBEAT, 1.3f, 0.7f + kk * 0.1f); });
+            AstaFx.later(k * (T / 3), () -> { BossFx.ring(sl, Fx.CRIMSON, c.add(0, 0.07, 0), 4f, 0.5f, 0.05f, T / 3); sound(sl, c, SoundEvents.WARDEN_HEARTBEAT, 1.3f, 0.7f + kk * 0.1f); });
         }
         AstaFx.later(T, () -> {
             if (!ok(b)) return;
             FxSend.impactFrame(sl, c.add(0, 1, 0), 3, FxSend.FRAME_ZENON, 22);
-            FxSend.ring(sl, DARK, c.add(0, 0.1, 0), 0.5f, 5.5f, 0.3f, 14);
-            FxSend.ring(sl, Fx.CRIMSON, c.add(0, 0.12, 0), 0.3f, 4.5f, 0.12f, 12);
+            BossFx.ring(sl, DARK, c.add(0, 0.1, 0), 0.5f, 5.5f, 0.3f, 14);
+            BossFx.ring(sl, Fx.CRIMSON, c.add(0, 0.12, 0), 0.3f, 4.5f, 0.12f, 12);
             FxSend.cracks(sl, Fx.CRIMSON, c.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 3.5f, 30, false, b.getId());
             for (int k = 0; k < 10; k++) {
                 double a = k * Math.PI / 5;
@@ -689,10 +707,10 @@ public final class ZenonAI {
         b.getNavigation().stop();
         b.ai.busy = follow + lock + 30;
         say(b, ThreadLocalRandom.current().nextBoolean() ? "Kneel under the weight of every bone I've gathered." : "Look up.");
-        FxSend.wall(sl, DARK, b.ai.home.add(0, 0.2, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 18f, 18f, -180, 180, 18f, follow + lock + 20, 0, 0);
+        BossFx.wall(sl, DARK, b.ai.home.add(0, 0.2, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 18f, 18f, -180, 180, 18f, follow + lock + 20, 0, 0);
         sound(sl, b.position(), SoundEvents.WITHER_SPAWN, 1.0f, 0.5f);
         for (int k = 0; k < follow; k += 3) {   // the ring follows you...
-            AstaFx.later(k, () -> { if (ok(b) && t.isAlive()) FxSend.ring(sl, WARN, ground(sl, t.position()).add(0, 0.06, 0), 5.0f, 5.2f, 0.05f, 3); });
+            AstaFx.later(k, () -> { if (ok(b) && t.isAlive()) BossFx.ring(sl, WARN, ground(sl, t.position()).add(0, 0.06, 0), 5.0f, 5.2f, 0.05f, 3); });
         }
         final Vec3[] spot = new Vec3[1];
         AstaFx.later(follow, () -> {   // ...then locks
@@ -722,8 +740,8 @@ public final class ZenonAI {
             Vec3 c = spot[0];
             FxSend.impactFrame(sl, c.add(0, 1, 0), 5, FxSend.FRAME_ZENON, 32);
             FxSend.shake(sl, c, 1.1f, 16, 34);
-            FxSend.ring(sl, BONE, c.add(0, 0.1, 0), 0.6f, 9f, 0.35f, 16);
-            FxSend.ring(sl, DARK, c.add(0, 0.12, 0), 0.5f, 7f, 0.2f, 14);
+            BossFx.ring(sl, BONE, c.add(0, 0.1, 0), 0.6f, 9f, 0.35f, 16);
+            BossFx.ring(sl, DARK, c.add(0, 0.12, 0), 0.5f, 7f, 0.2f, 14);
             FxSend.cracks(sl, BONE, c.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 5f, 40, false, b.getId() * 3);
             BoneFx.bone(sl, BoneFx.LONG, c.add(0, 3.5, 0), new Vec3(0.15, 1, 0.1), new Vec3(1, 0, 0), 4.0f, 0.9f, 40, 0, FxPacket.POP, 0, Vec3.ZERO, 0);
             for (int k = 0; k < 16; k++) {
@@ -796,7 +814,7 @@ public final class ZenonAI {
                     AstaFx.later(20, () -> {
                         if (!ok(b)) return;
                         FxSend.cracks(sl, Fx.CRIMSON, a0.add(d.scale(ARENA / 2)).add(0, 0.05, 0), d, new Vec3(0, 1, 0), (float) ARENA / 2, 30, false, (int) (a * 1000));
-                        FxSend.trail(sl, DARK, a0.add(0, 0.1, 0), a1.add(0, 0.1, 0), 0.4f, 16);
+                        BossFx.trail(sl, DARK, a0.add(0, 0.1, 0), a1.add(0, 0.1, 0), 0.4f, 16);
                         for (Player p : along(b, a0.add(0, 0.5, 0), a1.add(0, 0.5, 0), 0.9)) hurt(b, p, 5f);
                         sound(sl, a0, SoundEvents.WARDEN_SONIC_BOOM, 0.6f, 1.6f);
                     });
@@ -837,29 +855,29 @@ public final class ZenonAI {
             }
             AstaFx.later(60, () -> {
                 FxSend.impactFrame(sl, c.add(0, 1.5, 0), 4, FxSend.FRAME_ZENON, 28);
-                FxSend.ring(sl, BONE, c.add(0, 0.1, 0), 0.5f, 10f, 0.3f, 16);
-                FxSend.ring(sl, VOID, c.add(0, 0.12, 0), 0.5f, 7f, 0.15f, 14);
+                BossFx.ring(sl, BONE, c.add(0, 0.1, 0), 0.5f, 10f, 0.3f, 16);
+                BossFx.ring(sl, VOID, c.add(0, 0.12, 0), 0.5f, 7f, 0.15f, 14);
                 FxSend.shake(sl, c, 0.8f, 12, 30);
                 sound(sl, c, SoundEvents.WITHER_SKELETON_DEATH, 1.6f, 0.4f);
             });
         } else {
             say(b, "Enough. I'll show you what was waiting under the bone.");
             b.setHealth(Math.min(b.getMaxHealth(), b.getHealth() + b.getMaxHealth() * 0.5f));
-            FxSend.wall(sl, DARK, b.ai.home.add(0, 0.2, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 18f, 18f, -180, 180, 18f, 80, 0, 0);   // the sky darkens
+            BossFx.wall(sl, DARK, b.ai.home.add(0, 0.2, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 18f, 18f, -180, 180, 18f, 80, 0, 0);   // the sky darkens
             for (int k = 0; k < 14; k++) {
                 final int kk = k;
                 AstaFx.later(k * 4, () -> {   // devil power floods into him from the edge of the arena
                     double a = kk * Math.PI / 7;
                     Vec3 e = b.ai.home.add(Math.cos(a) * ARENA, 0.2, Math.sin(a) * ARENA);
-                    FxSend.trail(sl, DARK, e, c.add(0, 1.2, 0), 0.3f, 12);
-                    FxSend.trail(sl, Fx.CRIMSON, e, c.add(0, 1.2, 0), 0.08f, 10);
+                    BossFx.trail(sl, DARK, e, c.add(0, 1.2, 0), 0.3f, 12);
+                    BossFx.trail(sl, Fx.CRIMSON, e, c.add(0, 1.2, 0), 0.08f, 10);
                     sound(sl, c, SoundEvents.WARDEN_HEARTBEAT, 1.4f, 0.6f + kk * 0.03f);
                 });
             }
             AstaFx.later(60, () -> {
                 FxSend.impactFrame(sl, c.add(0, 1.5, 0), 5, FxSend.FRAME_ZENON, 34);
-                FxSend.ring(sl, DARK, c.add(0, 0.1, 0), 0.5f, 12f, 0.4f, 18);
-                FxSend.ring(sl, Fx.CRIMSON, c.add(0, 0.12, 0), 0.5f, 9f, 0.15f, 16);
+                BossFx.ring(sl, DARK, c.add(0, 0.1, 0), 0.5f, 12f, 0.4f, 18);
+                BossFx.ring(sl, Fx.CRIMSON, c.add(0, 0.12, 0), 0.5f, 9f, 0.15f, 16);
                 FxSend.cracks(sl, Fx.CRIMSON, c.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 6f, 60, false, b.getId() * 7);
                 FxSend.shake(sl, c, 1.0f, 16, 40);
                 sound(sl, c, SoundEvents.WITHER_SPAWN, 1.4f, 0.4f);
@@ -882,13 +900,13 @@ public final class ZenonAI {
         if (t < 56 && t % 3 == 0) {   // bones break off him and fall, the darkness lifting off him like smoke
             Vec3 at = c.add(r.nextDouble(-0.5, 0.5), 0.4 + r.nextDouble(1.6), r.nextDouble(-0.5, 0.5));
             BoneFx.bone(sl, r.nextBoolean() ? BoneFx.RIB : BoneFx.VERTEBRA, at, new Vec3(r.nextDouble(-1, 1), r.nextDouble(-1, 1), r.nextDouble(-1, 1)), new Vec3(0, 1, 0), 0.3f, 0.07f, 14, 0, FxPacket.HOLD, 0, new Vec3(r.nextDouble(-0.05, 0.05), -0.12, r.nextDouble(-0.05, 0.05)), 10);
-            Kit.orb(sl, DARK, c.add(r.nextDouble(-0.6, 0.6), 0.6 + r.nextDouble(1.4), r.nextDouble(-0.6, 0.6)), new Vec3(0, 0.06, 0), 0.25f, 18);
+            BossFx.orb(sl, DARK, c.add(r.nextDouble(-0.6, 0.6), 0.6 + r.nextDouble(1.4), r.nextDouble(-0.6, 0.6)), new Vec3(0, 0.06, 0), 0.25f, 18);
             if (t % 9 == 0) sound(sl, c, SoundEvents.BONE_BLOCK_BREAK, 1.0f, 0.6f + t * 0.01f);
         }
         if (t == 56) {   // the last of him falls in on itself - and what he leaves is lying in the dust
             ZenonDrops.drop(sl, c);
-            FxSend.ring(sl, BONE, c.add(0, 0.1, 0), 0.3f, 5f, 0.2f, 16);
-            FxSend.ring(sl, DARK, c.add(0, 0.12, 0), 0.3f, 3.5f, 0.12f, 14);
+            BossFx.ring(sl, BONE, c.add(0, 0.1, 0), 0.3f, 5f, 0.2f, 16);
+            BossFx.ring(sl, DARK, c.add(0, 0.12, 0), 0.3f, 3.5f, 0.12f, 14);
             for (int k = 0; k < 8; k++) {
                 double a = k * Math.PI / 4;
                 BoneFx.bone(sl, BoneFx.LONG, c.add(Math.cos(a) * 0.8, 0.15, Math.sin(a) * 0.8), new Vec3(-Math.sin(a), 0.05, Math.cos(a)), new Vec3(0, 1, 0), 0.5f, 0.07f, 80, 0, FxPacket.POP, 0, Vec3.ZERO, 0);

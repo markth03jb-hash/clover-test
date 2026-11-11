@@ -80,8 +80,8 @@ public final class CurseWitchAI {
             TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, SLOW, "Curse", -0.9, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
             hurt(b, p, 6f);
             ServerLevel sl = (ServerLevel) b.level();
-            FxSend.ring(sl, CURSE, p.position().add(0, 0.1, 0), 1.6f, 0.3f, 0.1f, 14);
-            Kit.orb(sl, FORM, p.position().add(0, 1, 0), Vec3.ZERO, 0.8f, 10);
+            BossFx.ring(sl, CURSE, p.position().add(0, 0.1, 0), 1.6f, 0.3f, 0.1f, 14);
+            BossFx.orb(sl, FORM, p.position().add(0, 1, 0), Vec3.ZERO, 0.8f, 10);
             sl.playSound(null, p.blockPosition(), SoundEvents.WITCH_DRINK, SoundSource.HOSTILE, 1.2f, 0.6f);
             p.displayClientMessage(Component.literal("HEXED!").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD), true);
         }
@@ -111,7 +111,7 @@ public final class CurseWitchAI {
         AstaFx.later(1, () -> {
             Vec3 next = at.add(d.scale(speed));
             Vec3 wall = clip(sl, b, at, next);
-            Kit.orb(sl, CURSE, at, d.scale(speed), 0.22f, 2);
+            BossFx.orb(sl, CURSE, at, d.scale(speed), 0.22f, 2);
             for (Player p : along(b, at, next, 0.8)) { hurt(b, p, dmg); curse(b, p, 1); done[0] = true; }
             if (done[0] || wall.distanceToSqr(next) > 1e-4) return;
             bullet(b, sl, next, d, speed, left - 1, dmg, done);
@@ -129,7 +129,7 @@ public final class CurseWitchAI {
                 Vec3 from = b.position().add(0, 1.4, 0);
                 Vec3 d = mid(t).subtract(from);
                 if (d.lengthSqr() < 1e-4) return;
-                FxSend.trail(sl, WARN, from, from.add(d.normalize().scale(4)), 0.06f, 4);
+                BossFx.trail(sl, WARN, from, from.add(d.normalize().scale(4)), 0.06f, 4);
                 bullet(b, sl, from, d.normalize(), 1.1, 24, 4f, new boolean[1]);
                 sl.playSound(null, b.blockPosition(), SoundEvents.WITCH_THROW, SoundSource.HOSTILE, 1f, 1.4f);
             });
@@ -144,6 +144,7 @@ public final class CurseWitchAI {
         b.getNavigation().stop();
         Vec3 c = ground(sl, t.position());
         int T = 18;
+        charge(b, CURSE, T);
         warnCircle(sl, c, 2.8f, T);
         AstaFx.later(T, () -> {
             if (!ok(b)) return;
@@ -151,12 +152,12 @@ public final class CurseWitchAI {
                 final int kk = k;
                 AstaFx.later(k * 10, () -> {
                     if (!ok(b)) return;
-                    FxSend.ring(sl, FORM, c.add(0, 0.06, 0), 2.7f, 2.8f, 0.06f, 12);
-                    FxSend.ring(sl, CURSE, c.add(0, 0.08 + kk * 0.2, 0), 2.6f, 0.4f, 0.05f, 10);
+                    BossFx.ring(sl, FORM, c.add(0, 0.06, 0), 2.7f, 2.8f, 0.06f, 12);
+                    BossFx.ring(sl, CURSE, c.add(0, 0.08 + kk * 0.2, 0), 2.6f, 0.4f, 0.05f, 10);
                     for (Player p : near(b, c.add(0, 1, 0), 2.8)) {
                         hurt(b, p, 2f);
                         b.heal(2f);
-                        FxSend.trail(sl, FORM, mid(p), b.position().add(0, 1.2, 0), 0.1f, 8);
+                        BossFx.trail(sl, FORM, mid(p), b.position().add(0, 1.2, 0), 0.1f, 8);
                     }
                 });
             }
@@ -171,8 +172,9 @@ public final class CurseWitchAI {
         b.setPose(P_LAUGH);
         b.getNavigation().stop();
         int T = 14;
+        charge(b, CURSE, T);
         for (Player p : near(b, b.position(), 30)) p.displayClientMessage(Component.literal("\"Heehoehoehoe!\"").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC), true);
-        FxSend.ring(sl, WARN, b.position().add(0, 1.4, 0), 0.3f, 2.5f, 0.06f, T);
+        BossFx.ring(sl, WARN, b.position().add(0, 1.4, 0), 0.3f, 2.5f, 0.06f, T);
         sl.playSound(null, b.blockPosition(), SoundEvents.WITCH_CELEBRATE, SoundSource.HOSTILE, 1.6f, 1.4f);
         int waves = b.phase() >= 2 ? 4 : 3, per = 12;
         for (int w = 0; w < waves; w++) {
@@ -194,9 +196,9 @@ public final class CurseWitchAI {
         Vec3 side = rightOf(dirTo(b, t)).scale(ThreadLocalRandom.current().nextBoolean() ? 7 : -7);
         Vec3 dest = SpaceFx.safe(sl, b.position().add(side), b);
         if (dest == null) return 6;
-        Kit.orb(sl, FORM, b.position().add(0, 1, 0), Vec3.ZERO, 0.6f, 8);
+        BossFx.orb(sl, FORM, b.position().add(0, 1, 0), Vec3.ZERO, 0.6f, 8);
         SpaceFx.move(b, dest, b.getYRot());
-        Kit.orb(sl, FORM, dest.add(0, 1, 0), Vec3.ZERO, 0.6f, 8);
+        BossFx.orb(sl, FORM, dest.add(0, 1, 0), Vec3.ZERO, 0.6f, 8);
         sl.playSound(null, b.blockPosition(), SoundEvents.WITCH_AMBIENT, SoundSource.HOSTILE, 1f, 1.6f);
         return 6;
     }
@@ -206,7 +208,7 @@ public final class CurseWitchAI {
         for (int i = 0; i < 2; i++) {
             double a = now * 0.06 + i * Math.PI;
             Vec3 at = b.position().add(Math.cos(a) * 2.2, 1.6 + Math.sin(now * 0.1 + i) * 0.3, Math.sin(a) * 2.2);
-            if (now % 2 == 0) Kit.orb(sl, FORM, at, Vec3.ZERO, 0.3f, 3);
+            if (now % 2 == 0) BossFx.orb(sl, FORM, at, Vec3.ZERO, 0.3f, 3);
             if (now % 50 == i * 25) {
                 Player t = target(b);
                 if (t != null && t.distanceTo(b) < 24) {
@@ -228,7 +230,7 @@ public final class CurseWitchAI {
         b.setTransforming(40);
         b.setPose(P_LAUGH);
         say(b, WHO, COL, "Oh-ho! You're a tough one! Then my little ones will help - heehoehoe!");
-        FxSend.ring(sl, CURSE, b.position().add(0, 0.1, 0), 0.5f, 8f, 0.25f, 16);
+        BossFx.ring(sl, CURSE, b.position().add(0, 0.1, 0), 0.5f, 8f, 0.25f, 16);
         FxSend.impactFrame(sl, b.position().add(0, 1.5, 0), 3, FxSend.FRAME_YAMI, 22);
         sl.playSound(null, b.blockPosition(), SoundEvents.WITCH_CELEBRATE, SoundSource.HOSTILE, 1.8f, 0.8f);
     }
@@ -242,6 +244,6 @@ public final class CurseWitchAI {
             CURSES.clear();
             sl.playSound(null, b.blockPosition(), SoundEvents.WITCH_DEATH, SoundSource.HOSTILE, 1.4f, 0.8f);
         }
-        if (t < 60 && t % 4 == 0) Kit.orb(sl, CURSE, b.position().add(0, 1 + ThreadLocalRandom.current().nextDouble(), 0), new Vec3(0, 0.06, 0), 0.25f, 12);
+        if (t < 60 && t % 4 == 0) BossFx.orb(sl, CURSE, b.position().add(0, 1 + ThreadLocalRandom.current().nextDouble(), 0), new Vec3(0, 0.06, 0), 0.25f, 12);
     }
 }

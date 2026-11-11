@@ -89,7 +89,7 @@ public final class BeastAI {
             float cap = b.getMaxHealth() * (b.phase() == 2 ? 0.6f : 0.3f);
             if (b.getHealth() < cap) {
                 b.heal(Math.min(1.0f, cap - b.getHealth()));
-                if (now % 30 == 0) FxSend.ring(sl, BEAST, b.position().add(0, 0.1, 0), 0.4f, 1.6f, 0.06f, 10);
+                if (now % 30 == 0) BossFx.ring(sl, BEAST, b.position().add(0, 0.1, 0), 0.4f, 1.6f, 0.06f, 10);
             }
         }
         // the last of him: everything he has left, gathered to blow
@@ -147,7 +147,7 @@ public final class BeastAI {
             p.setDeltaMovement(away.normalize().scale(1.3).add(0, 0.45, 0));
             p.hurtMarked = true;
             hurt(b, p, 4f);
-            FxSend.ring(sl, BEAST, b.position().add(0, 1.0, 0), 0.5f, 3f, 0.12f, 8);
+            BossFx.ring(sl, BEAST, b.position().add(0, 1.0, 0), 0.5f, 3f, 0.12f, 8);
             sound(sl, b.position(), SoundEvents.SHIELD_BLOCK, 1.2f, 0.6f);
         }
     }
@@ -195,8 +195,8 @@ public final class BeastAI {
 
     static void warnCircle(ServerLevel sl, Vec3 c, float r, int ticks) {
         Vec3 g = ZenonAI.ground(sl, c).add(0, 0.06, 0);
-        FxSend.ring(sl, WARN, g, r - 0.1f, r, 0.04f, ticks);
-        FxSend.ring(sl, WARN, g, 0.05f, r, 0.025f, ticks);
+        BossFx.ring(sl, WARN, g, r - 0.1f, r, 0.04f, ticks);
+        BossFx.ring(sl, WARN, g, 0.05f, r, 0.025f, ticks);
     }
 
     static void warnLine(ServerLevel sl, Vec3 a, Vec3 c, float w, int ticks) { ZenonAI.warnLine(sl, a, c, w, ticks); }
@@ -251,8 +251,8 @@ public final class BeastAI {
     private static void rake(ServerLevel sl, Vec3 c, Vec3 fwd, double tilt, float r, int pal) {
         Vec3 side = rightOf(fwd);
         Vec3 up = new Vec3(0, 1, 0).scale(Math.cos(tilt)).add(side.scale(Math.sin(tilt))).normalize();
-        for (int k = -1; k <= 1; k++) FxSend.slash(sl, pal, c.add(up.scale(k * 0.32)), fwd, up, r, 0.25f, 7, 1.6f, 0.6f);
-        FxSend.slash(sl, FANG, c, fwd, up, r * 0.9f, 0.2f, 5, 1.6f, 0.3f);
+        for (int k = -1; k <= 1; k++) BossFx.slash(sl, pal, c.add(up.scale(k * 0.32)), fwd, up, r, 0.25f, 7, 1.6f, 0.6f);
+        BossFx.slash(sl, FANG, c, fwd, up, r * 0.9f, 0.2f, 5, 1.6f, 0.3f);
     }
 
     // ================================================================== phase 1: Beast Magic
@@ -307,8 +307,8 @@ public final class BeastAI {
                 Vec3 p0 = a.add(end.subtract(a).scale(u0)), p1 = a.add(end.subtract(a).scale(u));
                 b.moveTo(p1.x, p1.y, p1.z, b.getYRot(), b.getXRot());
                 b.setDeltaMovement(Vec3.ZERO);
-                FxSend.trail(sl, BEAST, p0.add(0, 1.2, 0), p1.add(0, 1.2, 0), 0.9f, 8);
-                FxSend.trail(sl, BEAST, p0.add(0, 0.4, 0), p1.add(0, 0.4, 0), 0.4f, 6);
+                BossFx.trail(sl, BEAST, p0.add(0, 1.2, 0), p1.add(0, 1.2, 0), 0.9f, 8);
+                BossFx.trail(sl, BEAST, p0.add(0, 0.4, 0), p1.add(0, 0.4, 0), 0.4f, 6);
                 for (Player p : along(b, p0.add(0, 1, 0), p1.add(0, 1, 0), 1.5)) {
                     if (!hit.add(p.getUUID())) continue;
                     hurt(b, p, 11f);
@@ -321,7 +321,7 @@ public final class BeastAI {
         AstaFx.later(T + 1, () -> sound(sl, a, SoundEvents.RAVAGER_STEP, 1.5f, 1.4f));
         AstaFx.later(T + STEPS + 1, () -> {
             if (!b.isAlive()) return;
-            FxSend.ring(sl, BEAST, end.add(0, 0.1, 0), 0.3f, 3f, 0.1f, 10);
+            BossFx.ring(sl, BEAST, end.add(0, 0.1, 0), 0.3f, 3f, 0.1f, 10);
             FxSend.shake(sl, end, 0.4f, 6, 16);
             sound(sl, end, SoundEvents.RAVAGER_STEP, 1.6f, 0.7f);
         });
@@ -334,8 +334,8 @@ public final class BeastAI {
         b.getNavigation().stop();
         b.setArmored(100);
         Vec3 c = b.position();
-        FxSend.ring(sl, BEAST, c.add(0, 0.1, 0), 0.5f, 3.2f, 0.12f, 12);
-        FxSend.ring(sl, FANG, c.add(0, 1.2, 0), 1.6f, 0.6f, 0.08f, 10);
+        BossFx.ring(sl, BEAST, c.add(0, 0.1, 0), 0.5f, 3.2f, 0.12f, 12);
+        BossFx.ring(sl, FANG, c.add(0, 1.2, 0), 1.6f, 0.6f, 0.08f, 10);
         sound(sl, c, SoundEvents.ARMOR_EQUIP_NETHERITE, 1.6f, 0.6f);
         sound(sl, c, SoundEvents.IRON_GOLEM_REPAIR, 1.2f, 0.7f);
         return 24;
@@ -366,8 +366,8 @@ public final class BeastAI {
             }
             AstaFx.later(9, () -> {
                 if (!b.isAlive()) return;
-                FxSend.ring(sl, BEAST, land.add(0, 0.1, 0), 0.4f, R + 1.5f, 0.18f, 12);
-                FxSend.ring(sl, FANG, land.add(0, 0.12, 0), 0.3f, R, 0.06f, 10);
+                BossFx.ring(sl, BEAST, land.add(0, 0.1, 0), 0.4f, R + 1.5f, 0.18f, 12);
+                BossFx.ring(sl, FANG, land.add(0, 0.12, 0), 0.3f, R, 0.06f, 10);
                 FxSend.cracks(sl, BEAST, land.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), R, 40, false, b.getId() * 13 + (int) sl.getGameTime());
                 FxSend.shake(sl, land, 0.7f, 10, 22);
                 sound(sl, land, SoundEvents.GENERIC_EXPLODE, 1f, 0.7f);
@@ -388,7 +388,7 @@ public final class BeastAI {
             if (!ok(b)) return;
             for (int i = 0; i < 3; i++) {
                 final int k = i;
-                AstaFx.later(i * 3, () -> FxSend.ring(sl, k == 1 ? FANG : BEAST, c.add(0, 1.2 + k * 0.3, 0), 0.6f, 9.5f, 0.1f, 10));
+                AstaFx.later(i * 3, () -> BossFx.ring(sl, k == 1 ? FANG : BEAST, c.add(0, 1.2 + k * 0.3, 0), 0.6f, 9.5f, 0.1f, 10));
             }
             FxSend.impactFrame(sl, c.add(0, 1.6, 0), 2, FxSend.FRAME_FANGS, 14);
             FxSend.shake(sl, c, 0.5f, 14, 20);
@@ -478,7 +478,7 @@ public final class BeastAI {
             Vec3 wall = clip(sl, b, at, next);
             rake(sl, at, d, 0, 1.5f, BEAST);
             for (Player p : along(b, at, next, 1.3)) { hurt(b, p, 9f); done[0] = true; }
-            if (done[0] || wall.distanceToSqr(next) > 1e-4) { FxSend.ring(sl, BEAST, wall, 0.2f, 1.6f, 0.08f, 8); return; }
+            if (done[0] || wall.distanceToSqr(next) > 1e-4) { BossFx.ring(sl, BEAST, wall, 0.2f, 1.6f, 0.08f, 8); return; }
             fly(b, sl, next, d, speed, left - 1, done);
         });
     }
@@ -535,8 +535,8 @@ public final class BeastAI {
         Vec3 c = b.position();
         if (k % 6 == 0) {   // mana pulled in from the edge, tighter and faster as it builds
             float r = 14f - 10f * k / FINAL_T;
-            FxSend.ring(sl, k % 12 == 0 ? WARN : BEAST, c.add(0, 0.2 + k * 0.01, 0), r, 0.6f, 0.1f, 8);
-            Kit.orb(sl, BEAST, c.add(0, 1.5, 0), Vec3.ZERO, 0.4f + 1.4f * k / FINAL_T, 7);
+            BossFx.ring(sl, k % 12 == 0 ? WARN : BEAST, c.add(0, 0.2 + k * 0.01, 0), r, 0.6f, 0.1f, 8);
+            BossFx.orb(sl, BEAST, c.add(0, 1.5, 0), Vec3.ZERO, 0.4f + 1.4f * k / FINAL_T, 7);
             sound(sl, c, SoundEvents.WARDEN_HEARTBEAT, 1.8f, 0.6f + k * 0.006f);
         }
         if (k % 20 == 0) {
@@ -555,7 +555,7 @@ public final class BeastAI {
         b.setPose(P_BROKEN);
         Vec3 c = b.position();
         say(b, "No... how... how is there still hope in you...?");
-        FxSend.ring(sl, BEAST, c.add(0, 1, 0), 0.5f, 6f, 0.15f, 12);
+        BossFx.ring(sl, BEAST, c.add(0, 1, 0), 0.5f, 6f, 0.15f, 12);
         FxSend.impactFrame(sl, c.add(0, 1.4, 0), 3, FxSend.FRAME_ASTA, 24);
         sound(sl, c, SoundEvents.GLASS_BREAK, 2.0f, 0.5f);
         sound(sl, c, SoundEvents.RAVAGER_STUNNED, 1.6f, 0.7f);
@@ -566,9 +566,9 @@ public final class BeastAI {
         State s = b.ai;
         b.setCharging(0);
         Vec3 c = b.position();
-        FxSend.ring(sl, WARN, c.add(0, 0.2, 0), 0.5f, 16f, 0.5f, 18);
-        FxSend.ring(sl, BEAST, c.add(0, 1.5, 0), 0.5f, 14f, 0.3f, 16);
-        FxSend.wall(sl, BEAST, c, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 1f, 14f, -180, 180, 10f, 14, 0, 0);
+        BossFx.ring(sl, WARN, c.add(0, 0.2, 0), 0.5f, 16f, 0.5f, 18);
+        BossFx.ring(sl, BEAST, c.add(0, 1.5, 0), 0.5f, 14f, 0.3f, 16);
+        BossFx.wall(sl, BEAST, c, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 1f, 14f, -180, 180, 10f, 14, 0, 0);
         Fx.flash(sl, c.add(0, 1.5, 0), 3f);
         FxSend.impactFrame(sl, c.add(0, 1.5, 0), 6, FxSend.FRAME_FANGS, 40);
         FxSend.shake(sl, c, 1.4f, 24, 48);
@@ -610,13 +610,13 @@ public final class BeastAI {
                 AstaFx.later(k * 5, () -> {   // beast mana pours up out of the ground into him
                     double a = kk * Math.PI / 5;
                     Vec3 e = c.add(Math.cos(a) * 7, 0.2, Math.sin(a) * 7);
-                    FxSend.trail(sl, BEAST, e, c.add(0, 2.2, 0), 0.25f, 10);
+                    BossFx.trail(sl, BEAST, e, c.add(0, 2.2, 0), 0.25f, 10);
                     sound(sl, c, SoundEvents.WOLF_GROWL, 1.2f, 0.5f + kk * 0.04f);
                 });
             }
             AstaFx.later(50, () -> {
                 FxSend.impactFrame(sl, c.add(0, 2.0, 0), 4, FxSend.FRAME_FANGS, 28);
-                FxSend.ring(sl, BEAST, c.add(0, 0.1, 0), 0.5f, 10f, 0.3f, 16);
+                BossFx.ring(sl, BEAST, c.add(0, 0.1, 0), 0.5f, 10f, 0.3f, 16);
                 Fx.flash(sl, c.add(0, 2.2, 0), 1.6f);
                 FxSend.shake(sl, c, 0.8f, 12, 30);
                 sound(sl, c, SoundEvents.RAVAGER_ROAR, 2.0f, 0.4f);
@@ -629,14 +629,14 @@ public final class BeastAI {
                 final int kk = k;
                 AstaFx.later(k * 4, () -> {
                     double a = kk * Math.PI / 6;
-                    FxSend.trail(sl, WARN, c.add(0, 1.2, 0), c.add(Math.cos(a) * 6, 0.3, Math.sin(a) * 6), 0.2f, 10);
+                    BossFx.trail(sl, WARN, c.add(0, 1.2, 0), c.add(Math.cos(a) * 6, 0.3, Math.sin(a) * 6), 0.2f, 10);
                     sound(sl, c, SoundEvents.WARDEN_HEARTBEAT, 1.4f, 0.6f + kk * 0.03f);
                 });
             }
             AstaFx.later(50, () -> {
                 FxSend.impactFrame(sl, c.add(0, 2.0, 0), 5, FxSend.FRAME_FANGS, 34);
-                FxSend.ring(sl, WARN, c.add(0, 0.1, 0), 0.5f, 12f, 0.4f, 18);
-                FxSend.ring(sl, BEAST, c.add(0, 0.12, 0), 0.5f, 9f, 0.15f, 16);
+                BossFx.ring(sl, WARN, c.add(0, 0.1, 0), 0.5f, 12f, 0.4f, 18);
+                BossFx.ring(sl, BEAST, c.add(0, 0.12, 0), 0.5f, 9f, 0.15f, 16);
                 FxSend.cracks(sl, WARN, c.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 6f, 60, false, b.getId() * 7);
                 FxSend.shake(sl, c, 1.0f, 16, 40);
                 sound(sl, c, SoundEvents.RAVAGER_ROAR, 2.0f, 0.3f);
@@ -659,11 +659,11 @@ public final class BeastAI {
             FxSend.impactFrame(sl, c.add(0, 1.5, 0), 4, FxSend.FRAME_FANGS, 26);
         }
         if (t < 60 && t % 3 == 0) {   // the beast mana leaves him like breath on a cold day
-            Kit.orb(sl, BEAST, c.add(r.nextDouble(-0.7, 0.7), 0.6 + r.nextDouble(1.8), r.nextDouble(-0.7, 0.7)), new Vec3(0, 0.07, 0), 0.25f, 18);
+            BossFx.orb(sl, BEAST, c.add(r.nextDouble(-0.7, 0.7), 0.6 + r.nextDouble(1.8), r.nextDouble(-0.7, 0.7)), new Vec3(0, 0.07, 0), 0.25f, 18);
             if (t % 12 == 0) sound(sl, c, SoundEvents.WOLF_WHINE, 0.8f, 0.5f);
         }
         if (t == 60) {
-            FxSend.ring(sl, BEAST, c.add(0, 0.1, 0), 0.3f, 4f, 0.1f, 14);
+            BossFx.ring(sl, BEAST, c.add(0, 0.1, 0), 0.3f, 4f, 0.1f, 14);
             sound(sl, c, SoundEvents.RAVAGER_STEP, 1.2f, 0.5f);
         }
     }
