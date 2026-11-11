@@ -106,6 +106,9 @@ public class AddonItemRegistry {
     /** Spawns the Ossuarch (the three-phase bone boss). */
     public static final RegistryObject<Item> OSSUARCH_SPAWN_EGG = ITEMS.register("ossuarch_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.OSSUARCH, 0x1A1418, 0xE8DCC4, new Item.Properties()));
+    /** Spawns Vetto, Beast of Despair. */
+    public static final RegistryObject<Item> VETTO_SPAWN_EGG = ITEMS.register("vetto_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.VETTO, 0x1E3A30, 0x5CE0B0, new Item.Properties()));
 
 
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("iron_spell_grimoire", () -> CreativeModeTab.builder()
@@ -152,6 +155,7 @@ public class AddonItemRegistry {
                     out.accept(st);
                 }
                 out.accept(new ItemStack(OSSUARCH_SPAWN_EGG.get()));
+                out.accept(new ItemStack(VETTO_SPAWN_EGG.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());

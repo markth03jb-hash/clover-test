@@ -32,6 +32,12 @@ public final class AddonSounds {
             SOUNDS.register("music.ossuarch_2", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.ossuarch_2"))),
             SOUNDS.register("music.ossuarch_3", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.ossuarch_3"))));
 
+    /** Vetto's boss music, one loop per phase (tools/vetto_music.py). */
+    public static final java.util.List<RegistryObject<SoundEvent>> VETTO_MUSIC = java.util.List.of(
+            SOUNDS.register("music.vetto_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.vetto_1"))),
+            SOUNDS.register("music.vetto_2", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.vetto_2"))),
+            SOUNDS.register("music.vetto_3", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.vetto_3"))));
+
     /** The registered sound for a kind ("slash", "blast"...), or null. */
     public static SoundEvent get(String kind) {
         RegistryObject<SoundEvent> r = BY_KIND.get(kind);
