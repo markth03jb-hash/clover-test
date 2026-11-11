@@ -37,6 +37,8 @@ public final class MasteryClient {
         int xp = GrimoireMastery.xp(stack), cap = GrimoireMastery.cap(stack), lvl = GrimoireMastery.levelFor(xp, cap);
         int[] th = GrimoireMastery.THRESHOLDS;
         boolean max = lvl >= cap;
+        if (com.ironspellgrimoire.server.Awakening.awakened(stack)) tip.add(Component.literal("\u2726 Awakened - " + Component.translatable("spell.iron_spell_grimoire." + com.ironspellgrimoire.server.Awakening.spellFor(stack)).getString()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
+        else if (com.ironspellgrimoire.server.Awakening.canAwaken(stack)) tip.add(Component.literal("\u2726 Ready to awaken - in a desperate fight against a boss").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
         if (GrimoireMastery.ascended(stack)) tip.add(Component.literal("\u2694 Magic Knight - passed the exam").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
         if (stack.hasTag() && stack.getTag().getInt("RiftInk2") > 0) {
             int ink2 = Math.min(3, stack.getTag().getInt("RiftInk2") - 1);
@@ -64,6 +66,7 @@ public final class MasteryClient {
                 .append(Component.literal("|".repeat(20 - filled)).withStyle(ChatFormatting.DARK_GRAY))
                 .append(Component.literal(max ? "  MASTERED" : "  " + (xp - th[lvl]) + " / " + (th[lvl + 1] - th[lvl]) + " XP").withStyle(ChatFormatting.GRAY)));
         if (lvl > GrimoireMastery.MAX_LEVEL) tip.add(Component.literal("Ultimate: +" + (lvl >= 7 ? 50 : 25) + "% damage").withStyle(ChatFormatting.GOLD));
+        if (lvl >= GrimoireMastery.AWAKENED_MAX) tip.add(Component.literal("Awakened spell: +30% damage").withStyle(ChatFormatting.LIGHT_PURPLE));
         if (max && cap == GrimoireMastery.MAX_LEVEL) tip.add(Component.literal("Pass the Magic Knight Exam at the altar to go beyond.").withStyle(ChatFormatting.DARK_AQUA));
         if (lvl > 1) tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.bonus", 4 * (lvl - 1), 3 * (lvl - 1), 50 * (lvl - 1)).withStyle(ChatFormatting.DARK_GREEN));
         if (!max) {
