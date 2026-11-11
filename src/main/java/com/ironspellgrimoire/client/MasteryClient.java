@@ -44,6 +44,11 @@ public final class MasteryClient {
                     .append(Component.literal("\u2606".repeat(GrimoireMastery.MAX_LEVEL - lvl)).withStyle(ChatFormatting.DARK_GRAY)));
         }
         tip.add(GrimoireMastery.rankName(lvl).withStyle(ChatFormatting.BOLD));
+        if (stack.hasTag() && stack.getTag().getInt("RiftInk") > 0) {
+            int ink = Math.min(3, stack.getTag().getInt("RiftInk") - 1);
+            tip.add(Component.literal("Inscribed: " + com.ironspellgrimoire.item.RiftInkItem.NAMES[ink] + " - " + com.ironspellgrimoire.item.RiftInkItem.TEXT[ink])
+                    .withStyle(s -> s.withColor(com.ironspellgrimoire.item.RiftInkItem.COLORS[ink])));
+        }
         tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.level", lvl, GrimoireMastery.MAX_LEVEL).withStyle(ChatFormatting.GOLD));
         // a text XP bar
         float frac = max ? 1f : (xp - th[lvl]) / (float) Math.max(1, th[lvl + 1] - th[lvl]);

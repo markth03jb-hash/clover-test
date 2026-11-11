@@ -111,6 +111,18 @@ public class AddonItemRegistry {
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.VETTO, 0x1E3A30, 0x5CE0B0, new Item.Properties()));
     /** A Wanted Poster: a bounty on a boss, handed out by village bells (server/Bounties). */
     public static final RegistryObject<Item> WANTED_POSTER = ITEMS.register("wanted_poster", com.ironspellgrimoire.item.WantedPosterItem::new);
+    /** Dungeon Rifts (server/Rifts): the compass, the ink and the relics. */
+    public static final RegistryObject<Item> RIFT_COMPASS = ITEMS.register("rift_compass", com.ironspellgrimoire.item.RiftCompassItem::new);
+    public static final RegistryObject<Item> RIFT_INK = ITEMS.register("rift_ink", com.ironspellgrimoire.item.RiftInkItem::new);
+    public static final RegistryObject<Item> CRACKED_LENS = ITEMS.register("cracked_lens", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Your spells sometimes land 50% harder.", "A lens split by the rift: through it, every weak point shows."));
+    public static final RegistryObject<Item> RIFT_HEART = ITEMS.register("rift_heart", () -> new com.ironspellgrimoire.item.RelicItem(
+            "A blow that takes a third of your health tears a rift and throws you clear (once a minute).", "It still beats with the rift it came from."));
+    public static final RegistryObject<Item> HOLLOW_BELL = ITEMS.register("hollow_bell", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Every tenth spell you cast costs no mana.", "It rings only for magic."));
+    public static final RegistryObject<Item> SHADE_LANTERN = ITEMS.register("shade_lantern", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Below half health, foes near you slow down.", "Its light is darker than the dark around it."));
+    public static final java.util.List<RegistryObject<Item>> RELICS = java.util.List.of(CRACKED_LENS, RIFT_HEART, HOLLOW_BELL, SHADE_LANTERN);
     /** Spawns Rhya the Disloyal. */
     public static final RegistryObject<Item> RHYA_SPAWN_EGG = ITEMS.register("rhya_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.RHYA, 0xD8D0C0, 0x7A5CD0, new Item.Properties()));
@@ -162,6 +174,8 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(ZENON_SPAWN_EGG.get()));
                 out.accept(new ItemStack(VETTO_SPAWN_EGG.get()));
                 out.accept(new ItemStack(RHYA_SPAWN_EGG.get()));
+                out.accept(new ItemStack(RIFT_COMPASS.get()));
+                for (var r : RELICS) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());
