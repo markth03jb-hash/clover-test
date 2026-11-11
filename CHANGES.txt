@@ -1,6 +1,13 @@
-Iron Spell Grimoire v1.87.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.88.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.88.0
+- New boss: the Ossuarch - three phases of bone, space and devil power, with telegraphed moves, phase intros, arena hazards and his own music.
+- Ossuarch drops: the Phylactery (cheats death once, 5 min recharge) and Devil Shards (forged into a grimoire at the altar).
+- New boss: Vetto, Beast of Despair - Beast Magic, then Mythical Beast Magic, then Despair and a Final Despair you must break.
+- Bosses can't be one-shot: at most 15% of their health per hit and 120 damage a second.
+- New grimoire: the Light Grimoire (Patolli) - ten spells of Light Magic, from Light Sword to Imperial Swords of Conviction.
 
 NEW IN 1.87.0
 - Removed the World Tree, Beast and Cotton grimoires and the Hardblood and Caduceus powers.
