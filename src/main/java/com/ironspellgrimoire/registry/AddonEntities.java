@@ -35,4 +35,9 @@ public final class AddonEntities {
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Rhya>> RHYA = ENTITIES.register("rhya",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Rhya>of(com.ironspellgrimoire.entity.Rhya::new, MobCategory.MONSTER).sized(0.6F, 2.0F)
                     .fireImmune().clientTrackingRange(10).build("rhya"));
+
+    /** Your rival's body for one encounter (server/RivalAI). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Rival>> RIVAL = ENTITIES.register("rival",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Rival>of(com.ironspellgrimoire.entity.Rival::new, MobCategory.MONSTER).sized(0.6F, 1.8F)
+                    .clientTrackingRange(10).build("rival"));
 }

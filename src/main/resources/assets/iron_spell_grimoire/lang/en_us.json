@@ -744,5 +744,8 @@
   "item.iron_spell_grimoire.cracked_lens": "Cracked Lens",
   "item.iron_spell_grimoire.rift_heart": "Rift Heart",
   "item.iron_spell_grimoire.hollow_bell": "Hollow Bell",
-  "item.iron_spell_grimoire.shade_lantern": "Shade Lantern"
+  "item.iron_spell_grimoire.shade_lantern": "Shade Lantern",
+  "item.iron_spell_grimoire.rival_whistle": "Rival's Whistle",
+  "item.iron_spell_grimoire.rival_bookmark": "Rival's Bookmark",
+  "entity.iron_spell_grimoire.rival": "Rival"
 }
