@@ -460,6 +460,11 @@ public class GrimoireFloatRenderer {
                   float breath = 0.7F + 0.3F * Mth.sin((float) time * 0.09F + 1.5F);
                   FxRenderer.queueBook(bookPos, yawS - turn, tilt, s * 1.7F, k * breath, cyc, 0.46F, 0.375F, 22.5F, 8, au[1], light);
                }
+               if (book.hasTag() && book.getTag().getBoolean("MemoryAura")) {   // the Binder's Aura (server/MemoryPages): ink and gold, slow and wide
+                  float breath = 0.55F + 0.35F * Mth.sin((float) time * 0.06F + 3.0F);
+                  FxRenderer.queueBook(bookPos, yawS - turn, tilt, s * 2.05F, k * breath, cyc, 0.46F, 0.375F, 22.5F, 31, 3, light);
+                  FxRenderer.queueBook(bookPos, yawS - turn, tilt, s * 1.55F, k * breath * 0.7F, cyc, 0.46F, 0.375F, 22.5F, 8, 2, light);
+               }
             }
          }
          ps.popPose();

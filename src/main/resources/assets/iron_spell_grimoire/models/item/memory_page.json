@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:item/generated",
+ "textures": {
+  "layer0": "iron_spell_grimoire:item/memory_page"
+ }
+}

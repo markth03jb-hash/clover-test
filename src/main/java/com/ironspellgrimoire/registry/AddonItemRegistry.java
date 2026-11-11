@@ -130,7 +130,11 @@ public class AddonItemRegistry {
             "Slowly mends you: one health every four seconds.", "Plucked from the tree the elves remember."));
     public static final RegistryObject<Item> ELVEN_WIND_CHARM = ITEMS.register("elven_wind_charm", () -> new com.ironspellgrimoire.item.RelicItem(
             "Your Magic Broom flies 40% faster, on half the mana.", "Elven wind, braided into a charm."));
-    public static final java.util.List<RegistryObject<Item>> UPGRADES = java.util.List.of(DESPAIR_FANG, COPIED_SIGIL, ELVEN_BLADE_SHARD, GRAVE_EMBER, CURSE_THREAD, MIRROR_SHARD, MANA_CRYSTAL_BINDING, SILVER_CLASP, SWIFT_BOOKMARK, RUNED_SPINE, PHOENIX_RIBBON, WIND_FEATHER, BLOODSTONE, WARDING_GLYPH, STARLIT_SEAL, ELF_KINGS_LEAF);
+    public static final RegistryObject<Item> MEMORY_PAGE = ITEMS.register("memory_page", com.ironspellgrimoire.item.MemoryPageItem::new);
+    public static final RegistryObject<Item> BINDERS_QUILL = ITEMS.register("binders_quill", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("binders_quill", true));
+    public static final RegistryObject<Item> WARDENS_KEY = ITEMS.register("wardens_key", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("wardens_key", true));
+    public static final RegistryObject<Item> BINDERS_PEN = ITEMS.register("binders_pen", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("binders_pen", true));
+    public static final java.util.List<RegistryObject<Item>> UPGRADES = java.util.List.of(DESPAIR_FANG, COPIED_SIGIL, ELVEN_BLADE_SHARD, GRAVE_EMBER, CURSE_THREAD, MIRROR_SHARD, MANA_CRYSTAL_BINDING, SILVER_CLASP, SWIFT_BOOKMARK, RUNED_SPINE, PHOENIX_RIBBON, WIND_FEATHER, BLOODSTONE, WARDING_GLYPH, STARLIT_SEAL, ELF_KINGS_LEAF, BINDERS_QUILL, WARDENS_KEY, BINDERS_PEN);
 
     /** Spawns Zenon (the three-phase bone boss). */
     public static final RegistryObject<Item> ZENON_SPAWN_EGG = ITEMS.register("zenon_spawn_egg",

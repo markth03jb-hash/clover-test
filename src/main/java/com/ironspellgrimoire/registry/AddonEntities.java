@@ -50,6 +50,11 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.CurseWitch>of(com.ironspellgrimoire.entity.CurseWitch::new, MobCategory.MONSTER).sized(0.6F, 1.9F)
                     .fireImmune().clientTrackingRange(10).build("curse_witch"));
 
+    /** A Memory Guardian (entity/MemoryGuardian, server/MemoryPages). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MemoryGuardian>> MEMORY_GUARDIAN = ENTITIES.register("memory_guardian",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.MemoryGuardian>of(com.ironspellgrimoire.entity.MemoryGuardian::new, MobCategory.MONSTER).sized(0.6F, 1.8F)
+                    .fireImmune().clientTrackingRange(10).build("memory_guardian"));
+
     /** A mana familiar (entity/FamiliarEntity, server/Familiars). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.FamiliarEntity>> FAMILIAR = ENTITIES.register("familiar",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.FamiliarEntity>of(com.ironspellgrimoire.entity.FamiliarEntity::new, MobCategory.MISC).sized(0.5F, 0.5F)
