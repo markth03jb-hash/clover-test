@@ -212,7 +212,7 @@ public final class ZenonAI {
 
     static float scale(Zenon b) {
         Difficulty d = b.level().getDifficulty();
-        return d == Difficulty.EASY ? 0.6f : d == Difficulty.HARD ? 1.25f : d == Difficulty.PEACEFUL ? 0.4f : 1f;
+        return (d == Difficulty.EASY ? 0.6f : d == Difficulty.HARD ? 1.25f : d == Difficulty.PEACEFUL ? 0.4f : 1f) * Bounties.damageMult(b);
     }
 
     static void hurt(Zenon b, Player p, float dmg) {

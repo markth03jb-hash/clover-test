@@ -109,6 +109,8 @@ public class AddonItemRegistry {
     /** Spawns Vetto, Beast of Despair. */
     public static final RegistryObject<Item> VETTO_SPAWN_EGG = ITEMS.register("vetto_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.VETTO, 0x1E3A30, 0x5CE0B0, new Item.Properties()));
+    /** A Wanted Poster: a bounty on a boss, handed out by village bells (server/Bounties). */
+    public static final RegistryObject<Item> WANTED_POSTER = ITEMS.register("wanted_poster", com.ironspellgrimoire.item.WantedPosterItem::new);
     /** Spawns Rhya the Disloyal. */
     public static final RegistryObject<Item> RHYA_SPAWN_EGG = ITEMS.register("rhya_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.RHYA, 0xD8D0C0, 0x7A5CD0, new Item.Properties()));
