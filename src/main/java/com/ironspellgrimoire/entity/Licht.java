@@ -29,6 +29,6 @@ public class Licht extends AddonBoss {
     @Override protected void aiTick() { LichtAI.tick(this); }
     @Override protected void onPhase(int phase) { LichtAI.phase(this, phase); }
     @Override protected void onDying(int t) { LichtAI.dying(this, t); }
-    @Override protected void onHurt(DamageSource src, float amount) { LichtAI.hurt(this, src, amount); }
+    @Override protected void onHurt(DamageSource src, float amount) { LichtAI.onHurt(this, src, amount); }
     @Override protected float damageTaken(DamageSource src) { return LichtAI.taken(this, src); }
 }

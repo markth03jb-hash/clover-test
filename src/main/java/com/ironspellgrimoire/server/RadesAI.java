@@ -228,7 +228,7 @@ public final class RadesAI {
         return 8;
     }
 
-    public static void hurt(Rades b, DamageSource src, float amount) {
+    public static void onHurt(Rades b, DamageSource src, float amount) {
         if (src.getEntity() instanceof Player p && valid(b, p)) b.focus = p.getUUID();
     }
 

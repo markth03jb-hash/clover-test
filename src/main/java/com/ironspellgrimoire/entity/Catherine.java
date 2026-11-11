@@ -29,6 +29,6 @@ public class Catherine extends AddonBoss {
     @Override protected void aiTick() { CatherineAI.tick(this); }
     @Override protected void onPhase(int phase) { CatherineAI.phase(this, phase); }
     @Override protected void onDying(int t) { CatherineAI.dying(this, t); }
-    @Override protected void onHurt(DamageSource src, float amount) { CatherineAI.hurt(this, src, amount); }
+    @Override protected void onHurt(DamageSource src, float amount) { CatherineAI.onHurt(this, src, amount); }
     @Override protected float damageTaken(DamageSource src) { return CatherineAI.taken(this, src); }
 }

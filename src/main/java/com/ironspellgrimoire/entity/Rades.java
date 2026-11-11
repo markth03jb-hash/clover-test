@@ -29,6 +29,6 @@ public class Rades extends AddonBoss {
     @Override protected void aiTick() { RadesAI.tick(this); }
     @Override protected void onPhase(int phase) { RadesAI.phase(this, phase); }
     @Override protected void onDying(int t) { RadesAI.dying(this, t); }
-    @Override protected void onHurt(DamageSource src, float amount) { RadesAI.hurt(this, src, amount); }
+    @Override protected void onHurt(DamageSource src, float amount) { RadesAI.onHurt(this, src, amount); }
     @Override protected float damageTaken(DamageSource src) { return RadesAI.taken(this, src); }
 }

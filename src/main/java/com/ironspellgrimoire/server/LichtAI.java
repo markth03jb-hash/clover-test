@@ -256,7 +256,7 @@ public final class LichtAI {
         return 50;
     }
 
-    public static void hurt(Licht b, DamageSource src, float amount) {
+    public static void onHurt(Licht b, DamageSource src, float amount) {
         if (src.getEntity() instanceof Player p && valid(b, p)) b.focus = p.getUUID();
         float[] a = ABSORB.get(b.getUUID());
         if (a != null && src instanceof io.redspace.ironsspellbooks.damage.SpellDamageSource) a[1] += amount / 0.3f;

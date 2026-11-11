@@ -217,7 +217,7 @@ public final class CatherineAI {
         }
     }
 
-    public static void hurt(Catherine b, DamageSource src, float amount) {
+    public static void onHurt(Catherine b, DamageSource src, float amount) {
         if (src.getEntity() instanceof Player p && valid(b, p)) b.focus = p.getUUID();
     }
 
