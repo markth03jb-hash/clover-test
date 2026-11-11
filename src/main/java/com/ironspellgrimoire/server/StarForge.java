@@ -21,16 +21,17 @@ import net.minecraftforge.network.PacketDistributor;
  * <ul>
  *   <li>Empower a spell: +10% damage, up to three times per spell (10, 20, 30 stars) - "StarBoost".</li>
  *   <li>A second ink page: the book can hold two Rift Inks at once (40 stars) - "InkSlot2".</li>
- *   <li>A cover gem: its floating aura takes the gem's colour (15 stars, change any time) - "Gem".</li>
+ *   <li>A star sigil on the cover, one at a time (25 stars to set or change) - "Sigil": the Well (+20% max mana),
+ *   Haste (+8% cooldown reduction) or the Spring (+30% mana regeneration).</li>
  * </ul>
  */
 public final class StarForge {
     private StarForge() {}
 
-    public static final int MAX_BOOST = 3, SLOT_COST = 40, GEM_COST = 15;
-    public static final String[] GEM_NAMES = {"Ruby", "Sapphire", "Emerald", "Amethyst", "Topaz", "Diamond"};
-    /** The aura palette each gem gives. */
-    public static final int[] GEM_PALETTES = {18, 19, 25, 17, 8, 6};
+    public static final int MAX_BOOST = 3, SLOT_COST = 40, SIGIL_COST = 25;
+    public static final String[] SIGIL_NAMES = {"the Well", "Haste", "the Spring"};
+    public static final String[] SIGIL_EFFECTS = {"+20% max mana", "+8% cooldowns", "+30% mana regen"};
+    private static final java.util.UUID SIGIL_ID = java.util.UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a1001a1");
 
     public static int boostCost(int toLevel) { return 10 * toLevel; }
 
@@ -46,7 +47,7 @@ public final class StarForge {
         List<StarForgePackets.Spell> spells = new ArrayList<>();
         for (String id : GrimoireMastery.bookOf(b).unlocks().keySet()) spells.add(new StarForgePackets.Spell(id, boost.getInt(id)));
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p),
-                new StarForgePackets.Open(Bounties.stars(p), t.getBoolean("InkSlot2"), t.getInt("Gem"), b.getHoverName().getString(), spells));
+                new StarForgePackets.Open(Bounties.stars(p), t.getBoolean("InkSlot2"), t.getInt("Sigil"), b.getHoverName().getString(), spells));
     }
 
     public static void act(ServerPlayer p, int action, String arg) {
@@ -71,16 +72,32 @@ public final class StarForge {
                 t.putBoolean("InkSlot2", true);
                 done(p, "A second ink page is bound into the grimoire.");
             }
-            case 2 -> {   // a cover gem
+            case 2 -> {   // a star sigil on the cover
                 int g;
                 try { g = Integer.parseInt(arg); } catch (NumberFormatException e) { return; }
-                if (g < 0 || g >= GEM_NAMES.length || t.getInt("Gem") == g + 1 || !pay(p, stars, GEM_COST)) return;
-                t.putInt("Gem", g + 1);
-                done(p, GEM_NAMES[g] + " set into the cover.");
+                if (g < 0 || g >= SIGIL_NAMES.length || t.getInt("Sigil") == g + 1 || !pay(p, stars, SIGIL_COST)) return;
+                t.putInt("Sigil", g + 1);
+                sigil(b, g);
+                done(p, "Sigil of " + SIGIL_NAMES[g] + " pressed into the cover: " + SIGIL_EFFECTS[g] + ".");
             }
             default -> { return; }
         }
         open(p);   // refresh the forge
+    }
+
+    /** The sigil's bonus, as a curio modifier on the book itself (like the Devil Shards), so it works only while equipped. */
+    private static void sigil(ItemStack book, int g) {
+        CompoundTag tag = book.getOrCreateTag();
+        if (tag.contains("CurioAttributeModifiers", net.minecraft.nbt.Tag.TAG_LIST)) {
+            tag.getList("CurioAttributeModifiers", net.minecraft.nbt.Tag.TAG_COMPOUND)
+                    .removeIf(x -> x instanceof CompoundTag ct && ct.hasUUID("UUID") && ct.getUUID("UUID").equals(SIGIL_ID));
+        }
+        var attr = g == 0 ? io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA.get()
+                : g == 1 ? io.redspace.ironsspellbooks.api.registry.AttributeRegistry.COOLDOWN_REDUCTION.get()
+                : io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MANA_REGEN.get();
+        double amt = g == 0 ? 0.2 : g == 1 ? 0.08 : 0.3;
+        top.theillusivec4.curios.api.CuriosApi.addModifier(book, attr, "Star Sigil", SIGIL_ID, amt,
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_BASE, "spellbook");
     }
 
     private static boolean pay(ServerPlayer p, int have, int cost) {

@@ -47,8 +47,8 @@ public final class MasteryClient {
             for (String k : boost.getAllKeys()) if (boost.getInt(k) > 0)
                 tip.add(Component.literal("\u2605 " + Component.translatable("spell.iron_spell_grimoire." + k).getString() + " +" + boost.getInt(k) * 10 + "%").withStyle(ChatFormatting.YELLOW));
             if (stack.getTag().getBoolean("InkSlot2")) tip.add(Component.literal("\u2605 Two ink pages").withStyle(ChatFormatting.YELLOW));
-            int gem = stack.getTag().getInt("Gem");
-            if (gem > 0 && gem <= com.ironspellgrimoire.server.StarForge.GEM_NAMES.length) tip.add(Component.literal("\u2605 " + com.ironspellgrimoire.server.StarForge.GEM_NAMES[gem - 1] + " cover gem").withStyle(ChatFormatting.YELLOW));
+            int sg = stack.getTag().getInt("Sigil");
+            if (sg > 0 && sg <= com.ironspellgrimoire.server.StarForge.SIGIL_NAMES.length) tip.add(Component.literal("\u2605 Sigil of " + com.ironspellgrimoire.server.StarForge.SIGIL_NAMES[sg - 1] + ": " + com.ironspellgrimoire.server.StarForge.SIGIL_EFFECTS[sg - 1]).withStyle(ChatFormatting.YELLOW));
         }
         if (stack.hasTag() && stack.getTag().getInt("RiftInk") > 0) {
             int ink = Math.min(3, stack.getTag().getInt("RiftInk") - 1);
