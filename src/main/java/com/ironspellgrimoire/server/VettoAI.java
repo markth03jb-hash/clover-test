@@ -509,7 +509,7 @@ public final class VettoAI {
         return a + tel(b, 18) + 13 + tel(b, 16) + 14;
     }
 
-    private static float breakNeed(Vetto b) { return 70f; }
+    private static float breakNeed(Vetto b) { return 100f; }
 
     private static void startFinal(Vetto b, ServerLevel sl) {
         State s = b.ai;
