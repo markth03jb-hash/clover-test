@@ -701,5 +701,8 @@
   "spell.iron_spell_grimoire.prescript_received": "Caduceus: Prescript Received",
   "spell.iron_spell_grimoire.prescript_received.guide": "For 15 s you follow the Prescript perfectly: orders count double and come faster, and every skill hits 25% harder.",
   "spell.iron_spell_grimoire.furioso": "Caduceus: Furioso",
-  "spell.iron_spell_grimoire.furioso.guide": "The Caduceus floods with black slime and every weapon strikes the target in turn - rapier, scythe, lance, hammer, daggers, gun, greatsword, whip - then all at once. Needs a full Fortune (100) for the whole nine-strike chain; less gives five."
+  "spell.iron_spell_grimoire.furioso.guide": "The Caduceus floods with black slime and every weapon strikes the target in turn - rapier, scythe, lance, hammer, daggers, gun, greatsword, whip - then all at once. Needs a full Fortune (100) for the whole nine-strike chain; less gives five.",
+  "entity.iron_spell_grimoire.ossuarch": "The Ossuarch",
+  "item.iron_spell_grimoire.ossuarch_spawn_egg": "Ossuarch Spawn Egg",
+  "subtitles.iron_spell_grimoire.music.ossuarch": "The Ossuarch's theme"
 }
