@@ -13,9 +13,9 @@ import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
 /**
- * The Ossuarch's Phylactery: a small reliquary of bone on a chain, worn in the necklace slot. The first blow that
+ * Zenon's Phylactery: a small reliquary of bone on a chain, worn in the necklace slot. The first blow that
  * would kill you leaves you on half a heart instead; then it must mend for 5 minutes (the bar shows it filling).
- * The cheat-death itself is in {@link com.ironspellgrimoire.server.OssuarchDrops}.
+ * The cheat-death itself is in {@link com.ironspellgrimoire.server.ZenonDrops}.
  */
 public class PhylacteryItem extends Item implements ICurioItem {
     public static final int RECHARGE = 20 * 60 * 5;
@@ -46,6 +46,6 @@ public class PhylacteryItem extends Item implements ICurioItem {
         tip.add(Component.literal("Then it mends for 5 minutes.").withStyle(ChatFormatting.GRAY));
         int c = charge(s);
         tip.add(c >= 100 ? Component.literal("Ready.").withStyle(ChatFormatting.GREEN) : Component.literal("Mending: " + c + "%").withStyle(ChatFormatting.DARK_RED));
-        tip.add(Component.literal("Taken from the Ossuarch.").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        tip.add(Component.literal("Taken from Zenon.").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
     }
 }

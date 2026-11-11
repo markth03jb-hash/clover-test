@@ -1,6 +1,6 @@
 package com.ironspellgrimoire.client;
 
-import com.ironspellgrimoire.entity.Ossuarch;
+import com.ironspellgrimoire.entity.Zenon;
 import com.ironspellgrimoire.registry.AddonSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
@@ -14,7 +14,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * The bosses' music (the Ossuarch, Vetto): while a living boss is within 48 blocks, his theme for the phase he is in plays (looping,
+ * The bosses' music (Zenon, Vetto): while a living boss is within 48 blocks, his theme for the phase he is in plays (looping,
  * on the Music volume) and the game's own music is held off. A phase change cross-fades into the next track; when he
  * dies or you leave, it fades out.
  */
@@ -35,12 +35,12 @@ public final class BossMusic {
         java.util.List<net.minecraftforge.registries.RegistryObject<SoundEvent>> tracks = AddonSounds.BOSS_MUSIC;
         double best = 48 * 48;
         for (net.minecraft.world.entity.LivingEntity o : mc.level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, mc.player.getBoundingBox().inflate(48),
-                x -> x instanceof Ossuarch || x instanceof com.ironspellgrimoire.entity.Vetto)) {
+                x -> x instanceof Zenon || x instanceof com.ironspellgrimoire.entity.Vetto)) {
             if (!o.isAlive()) continue;
             double d = o.distanceToSqr(mc.player);
             if (d < best) {
                 best = d; boss = o;
-                if (o instanceof Ossuarch os) { bossPhase = os.phase(); tracks = AddonSounds.BOSS_MUSIC; }
+                if (o instanceof Zenon os) { bossPhase = os.phase(); tracks = AddonSounds.BOSS_MUSIC; }
                 else if (o instanceof com.ironspellgrimoire.entity.Vetto v) { bossPhase = v.phase(); tracks = AddonSounds.VETTO_MUSIC; }
             }
         }

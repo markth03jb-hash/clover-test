@@ -28,7 +28,7 @@ import net.minecraft.world.phys.Vec3;
  *   <li>Phase 3 (from 30%): Despair - unbridled rage; near the end he gathers all his mana to blow himself up, and
  *       you have to break it or get clear.</li>
  * </ul>
- * He cannot be one-shot (no hit over 8% of his health, no more than 60 a second, a blow can't carry him past a phase
+ * He cannot be one-shot (no hit over 15% of his health, no more than 120 a second, a blow can't carry him past a phase
  * line, nothing while he transforms). Rhinoceros Armor takes 70% off what gets through. Spawned only by egg or
  * command. His fight is in {@link VettoAI}.
  */
@@ -99,12 +99,12 @@ public class Vetto extends Monster {
         if (src.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return super.hurt(src, amount);
         if (transforming() > 0 || this.isDeadOrDying()) return false;
         float max = this.getMaxHealth();
-        amount = Math.min(amount, max * 0.08f);
+        amount = Math.min(amount, max * 0.15f);
         if (armored() > 0) amount *= 0.3f;                              // Rhinoceros Armor
         amount *= VettoAI.damageTaken(this);                             // more while he lies broken
         long now = this.level().getGameTime();
         if (now - windowStart >= 20) { windowStart = now; windowDmg = 0; }
-        amount = Math.min(amount, 60f - windowDmg);
+        amount = Math.min(amount, 120f - windowDmg);
         float floor = phase() == 1 ? max * 0.6f : phase() == 2 ? max * 0.3f : 0f;
         float hp = this.getHealth();
         if (phase() < 3 && hp - amount < floor) amount = Math.max(0f, hp - floor);

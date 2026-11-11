@@ -1,6 +1,6 @@
 package com.ironspellgrimoire.client;
 
-import com.ironspellgrimoire.entity.Ossuarch;
+import com.ironspellgrimoire.entity.Zenon;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.PlayerModel;
@@ -17,7 +17,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * What grows over the Ossuarch as the fight goes on (all original designs, drawn in the body's own space so it moves
+ * What grows over Zenon as the fight goes on (all original designs, drawn in the body's own space so it moves
  * with every pose):
  * <ul>
  *   <li>Phase 2, Bone Mode: a crown of short back-swept horns, a ribcage plate over the chest, heavy bone pauldrons, a
@@ -28,11 +28,11 @@ import org.joml.Vector3f;
  * </ul>
  * Each grows in over the transformation.
  */
-public class OssuarchLayer extends RenderLayer<Ossuarch, PlayerModel<Ossuarch>> {
+public class ZenonLayer extends RenderLayer<Zenon, PlayerModel<Zenon>> {
     private static final ResourceLocation WHITE = new ResourceLocation("iron_spell_grimoire", "textures/effect/white.png");
     private static final Vector3f LIGHT = new Vector3f(0.3F, -0.8F, -0.5F).normalize();
 
-    public OssuarchLayer(RenderLayerParent<Ossuarch, PlayerModel<Ossuarch>> parent) { super(parent); }
+    public ZenonLayer(RenderLayerParent<Zenon, PlayerModel<Zenon>> parent) { super(parent); }
 
     /** A surface: base colour, how dark its shade side goes, a highlight, alpha, and whether it glows. */
     private record Mat(float r, float g, float b, float a, boolean glow) {
@@ -53,7 +53,7 @@ public class OssuarchLayer extends RenderLayer<Ossuarch, PlayerModel<Ossuarch>> 
     private int light;
 
     @Override
-    public void render(PoseStack ps, MultiBufferSource buf, int light, Ossuarch e, float limbSwing, float limbAmount, float pt, float age,
+    public void render(PoseStack ps, MultiBufferSource buf, int light, Zenon e, float limbSwing, float limbAmount, float pt, float age,
                        float headYaw, float headPitch) {
         int phase = e.phase();
         if (phase < 2 || e.isInvisible()) return;
@@ -64,14 +64,14 @@ public class OssuarchLayer extends RenderLayer<Ossuarch, PlayerModel<Ossuarch>> 
         float grow = e.transforming() > 0 ? Mth.clamp((70 - e.transforming() + pt) / 50F, 0F, 1F) : 1F;
         if (e.deathTime > 0) grow *= Math.max(0F, 1F - (e.deathTime + pt) / 50F);
         if (grow <= 0.01F) return;
-        PlayerModel<Ossuarch> m = getParentModel();
+        PlayerModel<Zenon> m = getParentModel();
         double t = age;
         if (phase == 2) boneMode(ps, m, grow, t);
         else devilUnion(ps, m, grow, t);
     }
 
     // ------------------------------------------------------------------ phase 2: Bone Mode
-    private void boneMode(PoseStack ps, PlayerModel<Ossuarch> m, float k, double t) {
+    private void boneMode(PoseStack ps, PlayerModel<Zenon> m, float k, double t) {
         // horns: three per side, sweeping back from the brow
         part(ps, m.head, () -> {
             for (int s = -1; s <= 1; s += 2) {
@@ -119,7 +119,7 @@ public class OssuarchLayer extends RenderLayer<Ossuarch, PlayerModel<Ossuarch>> 
     }
 
     // ------------------------------------------------------------------ phase 3: Devil Union (original form)
-    private void devilUnion(PoseStack ps, PlayerModel<Ossuarch> m, float k, double t) {
+    private void devilUnion(PoseStack ps, PlayerModel<Zenon> m, float k, double t) {
         part(ps, m.head, () -> {
             // a halo of jagged dark spikes standing in a ring behind the head, slowly turning
             float[] c = {0, -0.28F, 0.32F};
