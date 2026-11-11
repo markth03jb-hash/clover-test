@@ -206,5 +206,35 @@
         "stream": true
       }
     ]
+  },
+  "music.rhya_1": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.rhya",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/rhya_1",
+        "stream": true
+      }
+    ]
+  },
+  "music.rhya_2": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.rhya",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/rhya_2",
+        "stream": true
+      }
+    ]
+  },
+  "music.rhya_3": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.rhya",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/rhya_3",
+        "stream": true
+      }
+    ]
   }
 }

@@ -109,6 +109,9 @@ public class AddonItemRegistry {
     /** Spawns Vetto, Beast of Despair. */
     public static final RegistryObject<Item> VETTO_SPAWN_EGG = ITEMS.register("vetto_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.VETTO, 0x1E3A30, 0x5CE0B0, new Item.Properties()));
+    /** Spawns Rhya the Disloyal. */
+    public static final RegistryObject<Item> RHYA_SPAWN_EGG = ITEMS.register("rhya_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.RHYA, 0xD8D0C0, 0x7A5CD0, new Item.Properties()));
 
 
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("iron_spell_grimoire", () -> CreativeModeTab.builder()
@@ -156,6 +159,7 @@ public class AddonItemRegistry {
                 }
                 out.accept(new ItemStack(ZENON_SPAWN_EGG.get()));
                 out.accept(new ItemStack(VETTO_SPAWN_EGG.get()));
+                out.accept(new ItemStack(RHYA_SPAWN_EGG.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());

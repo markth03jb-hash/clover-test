@@ -35,18 +35,19 @@ public final class BossMusic {
         java.util.List<net.minecraftforge.registries.RegistryObject<SoundEvent>> tracks = AddonSounds.BOSS_MUSIC;
         double best = 48 * 48;
         for (net.minecraft.world.entity.LivingEntity o : mc.level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, mc.player.getBoundingBox().inflate(48),
-                x -> x instanceof Zenon || x instanceof com.ironspellgrimoire.entity.Vetto)) {
+                x -> x instanceof Zenon || x instanceof com.ironspellgrimoire.entity.Vetto || x instanceof com.ironspellgrimoire.entity.Rhya)) {
             if (!o.isAlive()) continue;
             double d = o.distanceToSqr(mc.player);
             if (d < best) {
                 best = d; boss = o;
                 if (o instanceof Zenon os) { bossPhase = os.phase(); tracks = AddonSounds.BOSS_MUSIC; }
                 else if (o instanceof com.ironspellgrimoire.entity.Vetto v) { bossPhase = v.phase(); tracks = AddonSounds.VETTO_MUSIC; }
+                else if (o instanceof com.ironspellgrimoire.entity.Rhya rh) { bossPhase = rh.phase(); tracks = AddonSounds.RHYA_MUSIC; }
             }
         }
         if (boss == null) { stop(); return; }
         mc.getMusicManager().stopPlaying();   // hold the game's own music off
-        int phase = Math.max(1, Math.min(3, bossPhase)) + (tracks == AddonSounds.VETTO_MUSIC ? 10 : 0);
+        int phase = Math.max(1, Math.min(3, bossPhase)) + (tracks == AddonSounds.VETTO_MUSIC ? 10 : tracks == AddonSounds.RHYA_MUSIC ? 20 : 0);
         if (playing == null || playingPhase != phase || playing.isStopped()) {
             if (playing != null) playing.fadeOut();
             SoundEvent ev = tracks.get(phase % 10 - 1).get();

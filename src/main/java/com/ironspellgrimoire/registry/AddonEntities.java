@@ -30,4 +30,9 @@ public final class AddonEntities {
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Vetto>> VETTO = ENTITIES.register("vetto",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Vetto>of(com.ironspellgrimoire.entity.Vetto::new, MobCategory.MONSTER).sized(0.9F, 2.6F)
                     .fireImmune().clientTrackingRange(10).build("vetto"));
+
+    /** Rhya the Disloyal: a three-phase Copy Magic boss that fights with your own grimoire (spawn egg or /summon only). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Rhya>> RHYA = ENTITIES.register("rhya",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Rhya>of(com.ironspellgrimoire.entity.Rhya::new, MobCategory.MONSTER).sized(0.6F, 2.0F)
+                    .fireImmune().clientTrackingRange(10).build("rhya"));
 }

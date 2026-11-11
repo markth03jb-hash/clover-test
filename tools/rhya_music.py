@@ -1,0 +1,178 @@
+"""Boss music for Rhya (adapted from boss_music.py), synthesised from scratch (original, free to use): three seamless loops, one per phase.
+ 1 - a slow dread: a low drone, a heartbeat drum, a cold bell melody in D phrygian.
+ 2 - faster and tighter: driving toms, a pulsing bass, tense strings sliding a semitone.
+ 3 - all out: heavy drums, a dark choir pad, tritone stabs, a racing ostinato."""
+import numpy as np, subprocess, os, sys
+SR = 32000
+OUT = sys.argv[1] if len(sys.argv) > 1 else '.'
+rng = np.random.default_rng(7)
+
+def t_(n): return np.arange(n) / SR
+def env(n, a=0.005, d=0.3, s=0.0, r=0.05, sus_len=None):
+    t = t_(n); e = np.ones(n)
+    ai = int(a * SR); e[:ai] = np.linspace(0, 1, ai) if ai > 0 else 1
+    e[ai:] = np.exp(-(t[ai:] - a) / max(d, 1e-4)) * (1 - s) + s
+    ri = int(r * SR); e[-ri:] *= np.linspace(1, 0, ri)
+    return e
+def note(f): return 440.0 * 2 ** ((f - 69) / 12)
+def sine(f, n, ph=0): return np.sin(2 * np.pi * f * t_(n) + ph)
+def saw(f, n):
+    t = t_(n); x = (f * t) % 1.0
+    return 2 * x - 1
+def lowpass(x, cut):
+    a = np.exp(-2 * np.pi * cut / SR); y = np.zeros_like(x); acc = 0.0
+    for i in range(len(x)):
+        acc = (1 - a) * x[i] + a * acc; y[i] = acc
+    return y
+def lp_fast(x, cut):   # one-pole lowpass via cumulative trick (block-wise exact enough)
+    a = np.exp(-2 * np.pi * cut / SR)
+    from scipy.signal import lfilter
+    return lfilter([1 - a], [1, -a], x)
+
+def kick(n, f0=110, f1=40, d=0.35):
+    t = t_(n); f = f1 + (f0 - f1) * np.exp(-t / 0.05)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    return np.sin(ph) * np.exp(-t / d)
+def tom(n, f0=150, d=0.25):
+    t = t_(n); f = f0 * (0.6 + 0.4 * np.exp(-t / 0.08))
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / d) + rng.standard_normal(n) * np.exp(-t / 0.02) * 0.2
+def snare(n):
+    t = t_(n); return (rng.standard_normal(n) * 0.6 + np.sin(2 * np.pi * 190 * t) * 0.4) * np.exp(-t / 0.09)
+def bell(f, n):
+    t = t_(n)
+    return (sine(f, n) + 0.5 * sine(f * 2.76, n) + 0.25 * sine(f * 5.4, n)) * np.exp(-t / 1.2) * 0.4
+def pad(fs, n, bright=600):
+    x = sum(saw(f * (1 + d), n) for f in fs for d in (-0.004, 0, 0.005))
+    return lp_fast(x, bright) / (len(fs) * 3)
+
+def place(buf, x, at):
+    i = int(at * SR)
+    if i >= len(buf): return
+    j = min(len(buf), i + len(x)); buf[i:j] += x[:j - i]
+
+def track(bpm, bars, parts):
+    beat = 60.0 / bpm; L = int(bars * 4 * beat * SR)
+    buf = np.zeros(L + SR * 3)   # tail wraps back to the start so the loop is seamless
+    for p in parts: p(buf, beat, bars)
+    tail = buf[L:]; buf = buf[:L]; buf[:len(tail)] += tail
+    buf = np.tanh(buf * 1.2) * 0.85
+    return buf
+
+D = 54   # F#3
+PHRY = [0, 1, 3, 5, 6, 8, 10]   # F# locrian: unsettled, sly
+
+def drone(level, root=D - 12):
+    def f(buf, beat, bars):
+        n = len(buf) - SR * 3
+        x = (sine(note(root), n) + 0.6 * sine(note(root) * 1.5, n) + 0.3 * sine(note(root) * 2.003, n)) * level
+        x *= 0.75 + 0.25 * np.sin(2 * np.pi * 0.07 * t_(n))
+        buf[:n] += x
+    return f
+
+def heartbeat(level):
+    def f(buf, beat, bars):
+        for b in range(bars * 4):
+            if b % 2 == 0:
+                place(buf, kick(int(0.5 * SR)) * level, b * beat)
+                place(buf, kick(int(0.5 * SR), 90, 35) * level * 0.6, b * beat + beat * 0.3)
+    return f
+
+def bells(level, seq, every):
+    def f(buf, beat, bars):
+        steps = int(bars * 4 / every)
+        for i in range(steps):
+            deg = seq[i % len(seq)]
+            if deg is None: continue
+            place(buf, bell(note(D + 12 + PHRY[deg % 7] + 12 * (deg // 7)), int(2.5 * SR)) * level, i * every * beat)
+    return f
+
+def toms(level, pattern):
+    def f(buf, beat, bars):
+        for b in range(bars):
+            for k, hit in enumerate(pattern):
+                if hit: place(buf, tom(int(0.6 * SR), 120 + 40 * (k % 3)) * level * hit, (b * 4 + k * 0.5) * beat)
+    return f
+
+def kicks(level, pattern, snares=None):
+    def f(buf, beat, bars):
+        for b in range(bars):
+            for k, hit in enumerate(pattern):
+                if hit: place(buf, kick(int(0.4 * SR), 120, 45, 0.25) * level * hit, (b * 4 + k * 0.25) * beat)
+            if snares:
+                for k, hit in enumerate(snares):
+                    if hit: place(buf, snare(int(0.3 * SR)) * level * 0.5 * hit, (b * 4 + k * 0.25) * beat)
+    return f
+
+def bass(level, roots, sub=0.5):
+    def f(buf, beat, bars):
+        for b in range(bars * 4):
+            for s in range(int(1 / sub)):
+                r = roots[(b // 4) % len(roots)]
+                n = int(sub * beat * SR)
+                x = lp_fast(saw(note(D - 24 + r), n), 300) * env(n, 0.005, sub * beat * 0.7, 0.2, 0.02)
+                place(buf, x * level, (b + s * sub) * beat)
+    return f
+
+def strings(level, chords, bars_per=2, bright=900):
+    def f(buf, beat, bars):
+        for i in range(bars // bars_per):
+            ch = chords[i % len(chords)]
+            n = int(bars_per * 4 * beat * SR)
+            x = pad([note(D + c) for c in ch], n, bright) * env(n, 0.6, 99, 1.0, 0.4)
+            place(buf, x * level, i * bars_per * 4 * beat)
+    return f
+
+def ostinato(level, seq, sub=0.25):
+    def f(buf, beat, bars):
+        steps = int(bars * 4 / sub)
+        for i in range(steps):
+            deg = seq[i % len(seq)]
+            n = int(sub * beat * SR * 0.95)
+            x = lp_fast(saw(note(D + PHRY[deg % 7] + 12 * (deg // 7)), n), 1800) * env(n, 0.003, sub * beat * 0.5, 0.0, 0.01)
+            place(buf, x * level, i * sub * beat)
+    return f
+
+def stabs(level, at_beats, chord):
+    def f(buf, beat, bars):
+        for b in range(bars):
+            for a in at_beats:
+                n = int(0.5 * SR)
+                x = pad([note(D + c) for c in chord], n, 2500) * env(n, 0.003, 0.25, 0.0, 0.05)
+                place(buf, x * level * 2.5, (b * 4 + a) * beat)
+    return f
+
+def write(name, x):
+    raw = os.path.join(OUT, name + '.raw')
+    (np.clip(x, -1, 1) * 32767).astype('<i2').tofile(raw)
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 's16le', '-ar', str(SR), '-ac', '1', '-i', raw, '-c:a', 'libvorbis', '-q:a', '3',
+                    os.path.join(OUT, name + '.ogg')], check=True)
+    os.remove(raw)
+
+
+
+def pluck(level, seq, sub=0.5):
+    """A sly plucked figure, like a music box gone wrong."""
+    def f(buf, beat, bars):
+        steps = int(bars * 4 / sub)
+        for i in range(steps):
+            deg = seq[i % len(seq)]
+            if deg is None: continue
+            n = int(0.6 * SR)
+            fr = note(D + 12 + PHRY[deg % 7] + 12 * (deg // 7))
+            x = (sine(fr, n) + 0.4 * sine(fr * 3, n)) * np.exp(-t_(n) / 0.18) * 0.5
+            place(buf, x * level, i * sub * beat)
+    return f
+
+r1 = track(96, 16, [drone(0.22), pluck(0.5, [0, None, 2, 1, None, 4, 3, None, 0, None, 5, 4, None, 2, 1, None]),
+                    kicks(0.35, [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0]), strings(0.2, [[0, 3, 6], [1, 5, 8], [0, 3, 6], [-2, 1, 5]], 4, 700)])
+write('rhya_1', r1)
+r2 = track(124, 16, [drone(0.2), pluck(0.4, [0, 2, 4, 2, 7, 4, 2, 1], 0.25), bass(0.3, [0, 1, 0, -2]),
+                     kicks(0.45, [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]),
+                     strings(0.28, [[0, 3, 6], [1, 4, 8], [0, 3, 6], [-1, 3, 6]], 2, 1200)])
+write('rhya_2', r2)
+r3 = track(150, 16, [drone(0.2, D - 24), kicks(0.6, [1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1], [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0]),
+                     bass(0.3, [0, 1, 0, 6], 0.25), ostinato(0.15, [0, 1, 3, 1, 6, 5, 3, 1, 0, 1, 3, 1, 7, 6, 5, 3]),
+                     pluck(0.3, [7, 6, 5, 3], 0.5), stabs(0.3, [0, 2.5], [0, 6, 12]),
+                     strings(0.32, [[0, 3, 6, 12], [1, 4, 8, 13], [0, 3, 6, 12], [-1, 3, 6, 11]], 2, 1600)])
+write('rhya_3', r3)
+print('ok', [len(x) / SR for x in (r1, r2, r3)])
