@@ -1,6 +1,10 @@
-Iron Spell Grimoire v1.91.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.92.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.92.0
+- Licht wears your skin, with added shading, cloth texture, hair strands and gold highlights.
+- A grimoire's ultimate (its Rank V spell, and its Surpassing Limits form) ignores the bosses' damage caps.
 
 NEW IN 1.91.0
 - Wanted Posters: ring a village bell for a bounty on a boss, with modifiers and three days to find it; a quest tracker,
