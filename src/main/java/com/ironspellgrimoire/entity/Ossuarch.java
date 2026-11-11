@@ -38,7 +38,7 @@ public class Ossuarch extends Monster {
     private static final EntityDataAccessor<Integer> POSE_AT = SynchedEntityData.defineId(Ossuarch.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> TRANSFORM = SynchedEntityData.defineId(Ossuarch.class, EntityDataSerializers.INT);
 
-    private final ServerBossEvent bar = new ServerBossEvent(Component.literal("The Ossuarch"), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_10);
+    private final ServerBossEvent bar = new ServerBossEvent(Component.literal("Zenon"), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_10);
     private long windowStart = -100;
     private float windowDmg = 0;
     /** The fight's own state, kept by OssuarchAI. */
