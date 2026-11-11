@@ -39,5 +39,7 @@ public class AddonNetwork {
         CHANNEL.registerMessage(4, WaypointPackets.Act.class, WaypointPackets.Act::encode, WaypointPackets.Act::decode, WaypointPackets.Act::handle);
         CHANNEL.registerMessage(5, StarForgePackets.Open.class, StarForgePackets.Open::encode, StarForgePackets.Open::decode, StarForgePackets.Open::handle);
         CHANNEL.registerMessage(6, StarForgePackets.Act.class, StarForgePackets.Act::encode, StarForgePackets.Act::decode, StarForgePackets.Act::handle);
+        CHANNEL.registerMessage(7, AltarPackets.Open.class, AltarPackets.Open::encode, AltarPackets.Open::decode, AltarPackets.Open::handle);
+        CHANNEL.registerMessage(8, AltarPackets.Act.class, AltarPackets.Act::encode, AltarPackets.Act::decode, AltarPackets.Act::handle);
     }
 }

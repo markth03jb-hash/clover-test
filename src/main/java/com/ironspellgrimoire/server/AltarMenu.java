@@ -1,0 +1,56 @@
+package com.ironspellgrimoire.server;
+
+import com.ironspellgrimoire.item.RiftInkItem;
+import com.ironspellgrimoire.network.AddonNetwork;
+import com.ironspellgrimoire.network.AltarPackets;
+import com.ironspellgrimoire.registry.AddonBlocks;
+import com.ironspellgrimoire.registry.AddonItemRegistry;
+import io.redspace.ironsspellbooks.api.util.Utils;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.PacketDistributor;
+
+/**
+ * Right-clicking the Grimoire Altar opens its menu: receive a grimoire (the tower ceremony), the Star Forge, forge a
+ * Devil Shard into your grimoire, or write a Rift Ink into it - each one also says what it needs.
+ */
+public final class AltarMenu {
+    private AltarMenu() {}
+
+    public static void open(ServerPlayer p, BlockPos pos) {
+        ItemStack book = Utils.getPlayerSpellbookStack(p);
+        boolean has = book != null && !book.isEmpty() && GrimoireMastery.bookOf(book) != null;
+        int shards = 0;
+        int[] inks = new int[4];
+        var inv = p.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (s.is(AddonItemRegistry.DEVIL_SHARD.get())) shards += s.getCount();
+            else if (s.is(AddonItemRegistry.RIFT_INK.get())) inks[RiftInkItem.rule(s)] += s.getCount();
+        }
+        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new AltarPackets.Open(pos, has ? book.getHoverName().getString() : "",
+                shards, has ? book.getOrCreateTag().getInt("DevilShards") : 0, Bounties.stars(p), inks));
+    }
+
+    public static void act(ServerPlayer p, BlockPos pos, int action, int arg) {
+        if (p.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > 64 || !p.level().getBlockState(pos).is(AddonBlocks.GRIMOIRE_ALTAR.get())) return;
+        switch (action) {
+            case 0 -> { p.closeContainer(); GrimoireCeremony.begin(p, pos); }
+            case 1 -> StarForge.open(p);
+            case 2 -> { ItemStack s = find(p, -1); if (s != null) ZenonDrops.forge(p, s); open(p, pos); }
+            case 3 -> { ItemStack s = find(p, arg); if (s != null) RiftRewards.inscribe(p, s); open(p, pos); }
+            default -> {}
+        }
+    }
+
+    /** A Devil Shard (rule -1) or a Rift Ink of {@code rule} from your inventory. */
+    private static ItemStack find(ServerPlayer p, int rule) {
+        var inv = p.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (rule < 0 ? s.is(AddonItemRegistry.DEVIL_SHARD.get()) : s.is(AddonItemRegistry.RIFT_INK.get()) && RiftInkItem.rule(s) == rule) return s;
+        }
+        return null;
+    }
+}
