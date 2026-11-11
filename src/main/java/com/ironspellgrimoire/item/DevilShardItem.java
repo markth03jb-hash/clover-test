@@ -10,9 +10,9 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 /**
- * A Devil Shard, broken off the Ossuarch. Right-click a Grimoire Altar holding one, with a grimoire equipped, to forge
+ * A Devil Shard, broken off Zenon. Right-click a Grimoire Altar holding one, with a grimoire equipped, to forge
  * it into that grimoire: each shard (up to 5) gives it +5% spell power and +3% cooldown reduction, for good.
- * The forging is in {@link com.ironspellgrimoire.server.OssuarchDrops}.
+ * The forging is in {@link com.ironspellgrimoire.server.ZenonDrops}.
  */
 public class DevilShardItem extends Item {
     public DevilShardItem() { super(new Item.Properties().stacksTo(16).rarity(Rarity.RARE).fireResistant()); }

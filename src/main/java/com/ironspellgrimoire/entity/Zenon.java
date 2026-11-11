@@ -1,6 +1,6 @@
 package com.ironspellgrimoire.entity;
 
-import com.ironspellgrimoire.server.OssuarchAI;
+import com.ironspellgrimoire.server.ZenonAI;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -20,7 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The Ossuarch: a boss of bone, space and devil power, fought in three phases.
+ * Zenon: a boss of bone, space and devil power, fought in three phases.
  * <ul>
  *   <li>Phase 1 (100%-75%): bone only.</li>
  *   <li>Phase 2 (75%-25%): Bone Mode - armoured in bone, and he uses space.</li>
@@ -29,22 +29,22 @@ import net.minecraft.world.phys.Vec3;
  * </ul>
  * He cannot be one-shot: no hit takes more than 15% of his health, no more than 120 a second gets through, a blow can't
  * carry him past a phase line, and he can't be hurt while he transforms. Spawned only by egg or command; drops nothing
- * (yet). His moves, arena hazards and fight brain are in {@link OssuarchAI}.
+ * (yet). His moves, arena hazards and fight brain are in {@link ZenonAI}.
  */
-public class Ossuarch extends Monster {
+public class Zenon extends Monster {
     public static final float MAX_HP = 400f;
-    private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(Ossuarch.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> POSE = SynchedEntityData.defineId(Ossuarch.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> POSE_AT = SynchedEntityData.defineId(Ossuarch.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> TRANSFORM = SynchedEntityData.defineId(Ossuarch.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(Zenon.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> POSE = SynchedEntityData.defineId(Zenon.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> POSE_AT = SynchedEntityData.defineId(Zenon.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> TRANSFORM = SynchedEntityData.defineId(Zenon.class, EntityDataSerializers.INT);
 
     private final ServerBossEvent bar = new ServerBossEvent(Component.literal("Zenon"), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_10);
     private long windowStart = -100;
     private float windowDmg = 0;
-    /** The fight's own state, kept by OssuarchAI. */
-    public final OssuarchAI.State ai = new OssuarchAI.State();
+    /** The fight's own state, kept by ZenonAI. */
+    public final ZenonAI.State ai = new ZenonAI.State();
 
-    public Ossuarch(EntityType<? extends Ossuarch> type, Level level) {
+    public Zenon(EntityType<? extends Zenon> type, Level level) {
         super(type, level);
         this.xpReward = 0;
         this.setPersistenceRequired();
@@ -74,12 +74,12 @@ public class Ossuarch extends Monster {
     public int transforming() { return this.entityData.get(TRANSFORM); }
     public void setTransforming(int t) { this.entityData.set(TRANSFORM, t); }
 
-    @Override protected void registerGoals() { this.goalSelector.addGoal(0, new FloatGoal(this)); }   // everything else: OssuarchAI
+    @Override protected void registerGoals() { this.goalSelector.addGoal(0, new FloatGoal(this)); }   // everything else: ZenonAI
 
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
-        OssuarchAI.tick(this);
+        ZenonAI.tick(this);
         this.bar.setProgress(this.getHealth() / this.getMaxHealth());
         this.bar.setColor(phase() == 1 ? BossEvent.BossBarColor.WHITE : phase() == 2 ? BossEvent.BossBarColor.PURPLE : BossEvent.BossBarColor.RED);
     }
@@ -101,9 +101,9 @@ public class Ossuarch extends Monster {
         boolean done = amount > 0 && super.hurt(src, amount);
         if (done) {
             windowDmg += amount;
-            OssuarchAI.onHurt(this, src);
+            ZenonAI.onHurt(this, src);
         }
-        if (phase() < 3 && this.getHealth() <= floor + 0.01f) OssuarchAI.transform(this, phase() + 1);
+        if (phase() < 3 && this.getHealth() <= floor + 0.01f) ZenonAI.transform(this, phase() + 1);
         return done;
     }
 
@@ -111,7 +111,7 @@ public class Ossuarch extends Monster {
     @Override
     protected void tickDeath() {
         ++this.deathTime;
-        if (!this.level().isClientSide) OssuarchAI.dying(this, this.deathTime);
+        if (!this.level().isClientSide) ZenonAI.dying(this, this.deathTime);
         if (this.deathTime >= 70 && !this.level().isClientSide && !this.isRemoved()) this.remove(RemovalReason.KILLED);
     }
 

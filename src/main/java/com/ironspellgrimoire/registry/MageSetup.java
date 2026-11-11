@@ -15,7 +15,7 @@ public final class MageSetup {
     @SubscribeEvent
     public static void attributes(EntityAttributeCreationEvent e) {
         e.put(AddonEntities.MAGE.get(), com.ironspellgrimoire.entity.MageEnemy.attributes().build());
-        e.put(AddonEntities.OSSUARCH.get(), com.ironspellgrimoire.entity.Ossuarch.attributes().build());
+        e.put(AddonEntities.ZENON.get(), com.ironspellgrimoire.entity.Zenon.attributes().build());
         e.put(AddonEntities.VETTO.get(), com.ironspellgrimoire.entity.Vetto.attributes().build());
     }
 

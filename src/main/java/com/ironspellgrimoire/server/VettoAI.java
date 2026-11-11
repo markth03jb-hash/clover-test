@@ -194,12 +194,12 @@ public final class VettoAI {
     private static int tel(Vetto b, int ticks) { return b.phase() == 3 ? Math.max(6, (int) (ticks * 0.75)) : ticks; }
 
     static void warnCircle(ServerLevel sl, Vec3 c, float r, int ticks) {
-        Vec3 g = OssuarchAI.ground(sl, c).add(0, 0.06, 0);
+        Vec3 g = ZenonAI.ground(sl, c).add(0, 0.06, 0);
         FxSend.ring(sl, WARN, g, r - 0.1f, r, 0.04f, ticks);
         FxSend.ring(sl, WARN, g, 0.05f, r, 0.025f, ticks);
     }
 
-    static void warnLine(ServerLevel sl, Vec3 a, Vec3 c, float w, int ticks) { OssuarchAI.warnLine(sl, a, c, w, ticks); }
+    static void warnLine(ServerLevel sl, Vec3 a, Vec3 c, float w, int ticks) { ZenonAI.warnLine(sl, a, c, w, ticks); }
 
     static float scale(Vetto b) {
         Difficulty d = b.level().getDifficulty();
@@ -347,7 +347,7 @@ public final class VettoAI {
     private static int leap(Vetto b, ServerLevel sl, Player t, int T, float R, float dmg) {
         b.setPose(P_SLAM);
         b.getNavigation().stop();
-        Vec3 land = OssuarchAI.ground(sl, t.position());
+        Vec3 land = ZenonAI.ground(sl, t.position());
         warnCircle(sl, land, R, T + 9);
         Vec3 from = b.position();
         face(b, flat(land.subtract(from)).lengthSqr() < 1e-4 ? flat(b.getLookAngle()) : flat(land.subtract(from)).normalize());
@@ -430,7 +430,7 @@ public final class VettoAI {
                 final int kk = k;
                 AstaFx.later(k, () -> {
                     if (!b.isAlive()) return;
-                    Vec3 c = OssuarchAI.ground(sl, a.add(fwd.scale(len * u)).add(0, 1, 0));
+                    Vec3 c = ZenonAI.ground(sl, a.add(fwd.scale(len * u)).add(0, 1, 0));
                     for (int s = -1; s <= 1; s += 2) {   // the jaws: fangs leaning in from both sides
                         Vec3 base = c.add(side.scale(s * 1.7));
                         Vec3 dir = side.scale(-s * 0.75).add(0, 1, 0).normalize();

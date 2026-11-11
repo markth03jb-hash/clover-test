@@ -47,7 +47,7 @@ public class GrimoireAltarBlock extends Block {
         if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
         net.minecraft.world.item.ItemStack held = player.getItemInHand(hand);
         if (held.is(com.ironspellgrimoire.registry.AddonItemRegistry.DEVIL_SHARD.get())) {   // forge a Devil Shard into your grimoire
-            if (!level.isClientSide && player instanceof ServerPlayer sp) com.ironspellgrimoire.server.OssuarchDrops.forge(sp, held);
+            if (!level.isClientSide && player instanceof ServerPlayer sp) com.ironspellgrimoire.server.ZenonDrops.forge(sp, held);
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
         if (!level.isClientSide && player instanceof ServerPlayer sp) GrimoireCeremony.begin(sp, pos);

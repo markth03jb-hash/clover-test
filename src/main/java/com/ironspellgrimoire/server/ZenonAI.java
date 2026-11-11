@@ -2,7 +2,7 @@ package com.ironspellgrimoire.server;
 
 import static com.ironspellgrimoire.server.FxUtil.*;
 
-import com.ironspellgrimoire.entity.Ossuarch;
+import com.ironspellgrimoire.entity.Zenon;
 import com.ironspellgrimoire.network.FxPacket;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The Ossuarch's fight: who he goes for, how he moves, which move he picks, the hazards he wakes in his arena, his
+ * Zenon's fight: who he goes for, how he moves, which move he picks, the hazards he wakes in his arena, his
  * transformations, and how he dies.
  * <ul>
  *   <li><b>Telegraphs:</b> every move shows where it will land first - a red ring that fills to its edge, or a red line
@@ -36,8 +36,8 @@ import net.minecraft.world.phys.Vec3;
  * </ul>
  * Nothing he does breaks blocks; every effect is drawn by the mod's own renderer.
  */
-public final class OssuarchAI {
-    private OssuarchAI() {}
+public final class ZenonAI {
+    private ZenonAI() {}
 
     public static final int P_IDLE = 0, P_CAST = 1, P_THROW = 2, P_SLAM = 3, P_SWEEP = 4, P_ROAR = 5, P_RAISE = 6, P_CLAW = 7;
     static final int BONE = 15, WARN = 18, VOID = Fx.VOID, DARK = Fx.DARK, SIL = Fx.SILVER;
@@ -56,7 +56,7 @@ public final class OssuarchAI {
     }
 
     // ================================================================== the tick
-    public static void tick(Ossuarch b) {
+    public static void tick(Zenon b) {
         ServerLevel sl = (ServerLevel) b.level();
         State s = b.ai;
         if (s.home == null) s.home = b.position();
@@ -108,7 +108,7 @@ public final class OssuarchAI {
         choose(b, sl, t, dist);
     }
 
-    private static Player target(Ossuarch b) {
+    private static Player target(Zenon b) {
         State s = b.ai;
         ServerLevel sl = (ServerLevel) b.level();
         if (s.target != null) {
@@ -127,22 +127,22 @@ public final class OssuarchAI {
         return best;
     }
 
-    private static boolean valid(Ossuarch b, Player p) {
+    private static boolean valid(Zenon b, Player p) {
         return p != null && p.isAlive() && !p.isCreative() && !p.isSpectator() && p.level() == b.level() && p.distanceToSqr(b) < 48 * 48;
     }
 
-    static void onHurtBy(Ossuarch b, LivingEntity att) {
+    static void onHurtBy(Zenon b, LivingEntity att) {
         if (att instanceof Player p && valid(b, p)) b.ai.target = p.getUUID();
     }
 
-    public static void onHurt(Ossuarch b, DamageSource src) {
+    public static void onHurt(Zenon b, DamageSource src) {
         if (src.getEntity() instanceof LivingEntity le) onHurtBy(b, le);
     }
 
     // ================================================================== choosing a move
-    private interface Move { int run(Ossuarch b, ServerLevel sl, Player t); }
+    private interface Move { int run(Zenon b, ServerLevel sl, Player t); }
 
-    private static void choose(Ossuarch b, ServerLevel sl, Player t, double dist) {
+    private static void choose(Zenon b, ServerLevel sl, Player t, double dist) {
         State s = b.ai;
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int ph = b.phase();
@@ -157,24 +157,24 @@ public final class OssuarchAI {
         } else {
             List<Move> pool = new ArrayList<>();
             if (ph <= 2) {
-                pool.add(OssuarchAI::spearVolley);
-                pool.add(OssuarchAI::spikeField);
-                if (dist < 4.5) { pool.add(OssuarchAI::claws); pool.add(OssuarchAI::claws); }
-                if (dist < 11) pool.add(OssuarchAI::whips);
-                if (r.nextInt(3) == 0) pool.add(OssuarchAI::cage);
+                pool.add(ZenonAI::spearVolley);
+                pool.add(ZenonAI::spikeField);
+                if (dist < 4.5) { pool.add(ZenonAI::claws); pool.add(ZenonAI::claws); }
+                if (dist < 11) pool.add(ZenonAI::whips);
+                if (r.nextInt(3) == 0) pool.add(ZenonAI::cage);
             }
             if (ph == 2) {
-                pool.add(OssuarchAI::teleportStrike);
-                pool.add(OssuarchAI::portalSpears);
-                pool.add(OssuarchAI::spatialCut);
-                if (dist > 6) pool.add(OssuarchAI::spaceFold);
+                pool.add(ZenonAI::teleportStrike);
+                pool.add(ZenonAI::portalSpears);
+                pool.add(ZenonAI::spatialCut);
+                if (dist > 6) pool.add(ZenonAI::spaceFold);
             }
             if (ph == 3) {
-                pool.add(OssuarchAI::grasp);
-                pool.add(OssuarchAI::shroudRain);
-                pool.add(OssuarchAI::devilPulse);
-                pool.add(OssuarchAI::teleportStrike);
-                if (dist < 7) { pool.add(OssuarchAI::tailSweep); pool.add(OssuarchAI::tailSweep); }
+                pool.add(ZenonAI::grasp);
+                pool.add(ZenonAI::shroudRain);
+                pool.add(ZenonAI::devilPulse);
+                pool.add(ZenonAI::teleportStrike);
+                if (dist < 7) { pool.add(ZenonAI::tailSweep); pool.add(ZenonAI::tailSweep); }
             }
             took = pool.get(r.nextInt(pool.size())).run(b, sl, t);
         }
@@ -185,7 +185,7 @@ public final class OssuarchAI {
 
     // ================================================================== shared pieces
     /** Telegraph length, shorter when he's desperate. */
-    private static int tel(Ossuarch b, int ticks) { return b.ai.desperate ? Math.max(6, (int) (ticks * 0.75)) : ticks; }
+    private static int tel(Zenon b, int ticks) { return b.ai.desperate ? Math.max(6, (int) (ticks * 0.75)) : ticks; }
 
     /** A warning: a red ring on the ground at its full size, and a second ring filling out to it - when it's full, it lands. */
     static void warnCircle(ServerLevel sl, Vec3 c, float r, int ticks) {
@@ -210,17 +210,17 @@ public final class OssuarchAI {
         return c;
     }
 
-    static float scale(Ossuarch b) {
+    static float scale(Zenon b) {
         Difficulty d = b.level().getDifficulty();
         return d == Difficulty.EASY ? 0.6f : d == Difficulty.HARD ? 1.25f : d == Difficulty.PEACEFUL ? 0.4f : 1f;
     }
 
-    static void hurt(Ossuarch b, Player p, float dmg) {
+    static void hurt(Zenon b, Player p, float dmg) {
         if (!b.isAlive() || !p.isAlive()) return;
         p.hurt(b.damageSources().mobAttack(b), dmg * scale(b));
     }
 
-    static List<Player> near(Ossuarch b, Vec3 c, double r) {
+    static List<Player> near(Zenon b, Vec3 c, double r) {
         List<Player> out = new ArrayList<>();
         for (Player p : b.level().getEntitiesOfClass(Player.class, new AABB(c, c).inflate(r))) {
             if (p.isAlive() && !p.isCreative() && !p.isSpectator() && p.position().add(0, 0.9, 0).distanceTo(c) <= r + 0.6) out.add(p);
@@ -228,7 +228,7 @@ public final class OssuarchAI {
         return out;
     }
 
-    static List<Player> along(Ossuarch b, Vec3 a, Vec3 c, double w) {
+    static List<Player> along(Zenon b, Vec3 a, Vec3 c, double w) {
         List<Player> out = new ArrayList<>();
         for (Player p : b.level().getEntitiesOfClass(Player.class, new AABB(a, c).inflate(w + 1))) {
             if (!p.isAlive() || p.isCreative() || p.isSpectator()) continue;
@@ -237,14 +237,14 @@ public final class OssuarchAI {
         return out;
     }
 
-    static void say(Ossuarch b, String line) {
+    static void say(Zenon b, String line) {
         for (Player p : b.level().getEntitiesOfClass(Player.class, b.getBoundingBox().inflate(48))) {
             p.sendSystemMessage(Component.literal("Zenon: ").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD)
                     .append(Component.literal(line).withStyle(ChatFormatting.WHITE, ChatFormatting.ITALIC)));
         }
     }
 
-    private static boolean ok(Ossuarch b) { return b.isAlive() && b.transforming() == 0; }
+    private static boolean ok(Zenon b) { return b.isAlive() && b.transforming() == 0; }
 
     private static void spikeUp(ServerLevel sl, Vec3 base, Vec3 dir, float len, float rad, int life) {
         dir = dir.normalize();
@@ -253,7 +253,7 @@ public final class OssuarchAI {
 
     // ================================================================== phase 1: bone
     /** Three bone spears thrown in a fan at where you're going; each path is shown first. */
-    static int spearVolley(Ossuarch b, ServerLevel sl, Player t) {
+    static int spearVolley(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 16);
         b.setPose(P_THROW);
         b.getNavigation().stop();
@@ -282,7 +282,7 @@ public final class OssuarchAI {
     }
 
     /** Close in: three rakes of bone claws in front of him. */
-    static int claws(Ossuarch b, ServerLevel sl, Player t) {
+    static int claws(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 12);
         b.setPose(P_CLAW);
         b.getNavigation().stop();
@@ -305,7 +305,7 @@ public final class OssuarchAI {
     }
 
     /** Bone spikes erupt under you, and on either side of you. */
-    static int spikeField(Ossuarch b, ServerLevel sl, Player t) {
+    static int spikeField(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 20);
         b.setPose(P_RAISE);
         b.getNavigation().stop();
@@ -332,7 +332,7 @@ public final class OssuarchAI {
     }
 
     /** Two whips of linked vertebrae lash at where you stood. */
-    static int whips(Ossuarch b, ServerLevel sl, Player t) {
+    static int whips(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 12);
         b.setPose(P_SWEEP);
         b.getNavigation().stop();
@@ -360,7 +360,7 @@ public final class OssuarchAI {
     }
 
     /** A ring marks the ground round you; still inside when it fills, and you're caged in bone for 2 s. */
-    static int cage(Ossuarch b, ServerLevel sl, Player t) {
+    static int cage(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 24);
         b.setPose(P_CAST);
         b.getNavigation().stop();
@@ -387,7 +387,7 @@ public final class OssuarchAI {
     }
 
     /** Crowded: a burst of bone out of the ground all round him that throws you back. */
-    static int pushback(Ossuarch b, ServerLevel sl, Player t) {
+    static int pushback(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 10);
         b.setPose(P_ROAR);
         b.getNavigation().stop();
@@ -414,7 +414,7 @@ public final class OssuarchAI {
     }
 
     /** Kept at range: he bounds into the air and lands where you are, bone bursting out round him. */
-    static int leap(Ossuarch b, ServerLevel sl, Player t) {
+    static int leap(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 16);
         b.setPose(P_RAISE);
         b.getNavigation().stop();
@@ -451,7 +451,7 @@ public final class OssuarchAI {
 
     // ================================================================== phase 2: space
     /** He steps through space: a gate opens behind you, he comes out of it, and rakes. */
-    static int teleportStrike(Ossuarch b, ServerLevel sl, Player t) {
+    static int teleportStrike(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 12);
         b.setPose(P_CAST);
         b.getNavigation().stop();
@@ -481,7 +481,7 @@ public final class OssuarchAI {
     }
 
     /** Four gates open round you; from each, a bone spear at where you stood. */
-    static int portalSpears(Ossuarch b, ServerLevel sl, Player t) {
+    static int portalSpears(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 18);
         b.setPose(P_CAST);
         b.getNavigation().stop();
@@ -510,7 +510,7 @@ public final class OssuarchAI {
     }
 
     /** A cut through space straight across the arena, through where you stand. */
-    static int spatialCut(Ossuarch b, ServerLevel sl, Player t) {
+    static int spatialCut(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 22);
         b.setPose(P_SWEEP);
         b.getNavigation().stop();
@@ -533,7 +533,7 @@ public final class OssuarchAI {
     }
 
     /** Space folds: you're dragged across to him, and his claws are waiting. */
-    static int spaceFold(Ossuarch b, ServerLevel sl, Player t) {
+    static int spaceFold(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 14);
         b.setPose(P_CAST);
         b.getNavigation().stop();
@@ -566,7 +566,7 @@ public final class OssuarchAI {
 
     // ================================================================== phase 3: devil union (his alone)
     /** Huge hands of bone burst up under you and close; caught, you're held a moment. */
-    static int grasp(Ossuarch b, ServerLevel sl, Player t) {
+    static int grasp(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 20);
         b.setPose(P_SLAM);
         b.getNavigation().stop();
@@ -598,7 +598,7 @@ public final class OssuarchAI {
     }
 
     /** His great bone tail sweeps all the way round him. */
-    static int tailSweep(Ossuarch b, ServerLevel sl, Player t) {
+    static int tailSweep(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 16);
         b.setPose(P_SWEEP);
         b.getNavigation().stop();
@@ -630,7 +630,7 @@ public final class OssuarchAI {
     }
 
     /** His shroud tears: shards of bone rain down all round you, each spot marked first. */
-    static int shroudRain(Ossuarch b, ServerLevel sl, Player t) {
+    static int shroudRain(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 18);
         b.setPose(P_RAISE);
         b.getNavigation().stop();
@@ -654,7 +654,7 @@ public final class OssuarchAI {
     }
 
     /** He marks the ground round you with devil power; when the mark fills, it bursts. */
-    static int devilPulse(Ossuarch b, ServerLevel sl, Player t) {
+    static int devilPulse(Zenon b, ServerLevel sl, Player t) {
         int T = tel(b, 28);
         b.setPose(P_CAST);
         b.getNavigation().stop();
@@ -683,7 +683,7 @@ public final class OssuarchAI {
     }
 
     /** His great move: the sky darkens, a huge ring hunts you, then locks - and a colossus of bone falls on it. */
-    static int ossuaryFall(Ossuarch b, ServerLevel sl, Player t) {
+    static int ossuaryFall(Zenon b, ServerLevel sl, Player t) {
         int follow = tel(b, 24), lock = tel(b, 18);
         b.setPose(P_RAISE);
         b.getNavigation().stop();
@@ -738,7 +738,7 @@ public final class OssuarchAI {
     }
 
     // ================================================================== the arena wakes
-    private static void hazards(Ossuarch b, ServerLevel sl) {
+    private static void hazards(Zenon b, ServerLevel sl) {
         State s = b.ai;
         if (--s.hazard > 0) return;
         ThreadLocalRandom r = ThreadLocalRandom.current();
@@ -806,7 +806,7 @@ public final class OssuarchAI {
     }
 
     // ================================================================== transformations
-    public static void transform(Ossuarch b, int phase) {
+    public static void transform(Zenon b, int phase) {
         if (b.transforming() > 0 || b.phase() >= phase) return;
         ServerLevel sl = (ServerLevel) b.level();
         b.setPhase(phase);
@@ -869,7 +869,7 @@ public final class OssuarchAI {
     }
 
     // ================================================================== death
-    public static void dying(Ossuarch b, int t) {
+    public static void dying(Zenon b, int t) {
         ServerLevel sl = (ServerLevel) b.level();
         Vec3 c = b.position();
         ThreadLocalRandom r = ThreadLocalRandom.current();
@@ -886,7 +886,7 @@ public final class OssuarchAI {
             if (t % 9 == 0) sound(sl, c, SoundEvents.BONE_BLOCK_BREAK, 1.0f, 0.6f + t * 0.01f);
         }
         if (t == 56) {   // the last of him falls in on itself - and what he leaves is lying in the dust
-            OssuarchDrops.drop(sl, c);
+            ZenonDrops.drop(sl, c);
             FxSend.ring(sl, BONE, c.add(0, 0.1, 0), 0.3f, 5f, 0.2f, 16);
             FxSend.ring(sl, DARK, c.add(0, 0.12, 0), 0.3f, 3.5f, 0.12f, 14);
             for (int k = 0; k < 8; k++) {

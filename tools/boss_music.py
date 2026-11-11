@@ -1,4 +1,4 @@
-"""Boss music for the Ossuarch, synthesised from scratch (original, free to use): three seamless loops, one per phase.
+"""Boss music for the Zenon, synthesised from scratch (original, free to use): three seamless loops, one per phase.
  1 - a slow dread: a low drone, a heartbeat drum, a cold bell melody in D phrygian.
  2 - faster and tighter: driving toms, a pulsing bass, tense strings sliding a semitone.
  3 - all out: heavy drums, a dark choir pad, tritone stabs, a racing ostinato."""
@@ -150,13 +150,13 @@ def write(name, x):
 
 p1 = track(72, 16, [drone(0.32), heartbeat(0.55), bells(0.5, [0, None, 1, None, 3, None, 1, 0, None, None, 4, None, 3, 1, None, None], 1),
                     strings(0.25, [[0, 3, 7], [1, 5, 8], [0, 3, 7], [-2, 1, 5]], 4, 500)])
-write('ossuarch_1', p1)
+write('zenon_1', p1)
 p2 = track(112, 16, [drone(0.22), toms(0.55, [1, 0, 0.6, 0, 1, 0.5, 0, 0.7]), bass(0.35, [0, 0, 1, -2]),
                      strings(0.32, [[0, 3, 7], [1, 4, 8], [0, 3, 7], [1, 5, 8]], 2, 1100),
                      bells(0.3, [7, 8, 7, 5, 7, 8, 10, 8], 2)])
-write('ossuarch_2', p2)
+write('zenon_2', p2)
 p3 = track(140, 16, [drone(0.2, D - 24), kicks(0.6, [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1]),
                      bass(0.3, [0, 1, 0, 6], 0.25), strings(0.35, [[0, 3, 6, 12], [1, 4, 8, 13], [0, 3, 6, 12], [-1, 3, 6, 11]], 2, 1500),
                      ostinato(0.16, [0, 1, 3, 1, 7, 8, 7, 3, 0, 1, 3, 1, 8, 7, 5, 1]), stabs(0.35, [0, 2.5], [0, 6, 13])])
-write('ossuarch_3', p3)
+write('zenon_3', p3)
 print('ok', [len(x) / SR for x in (p1, p2, p3)])

@@ -29,12 +29,12 @@ import net.minecraftforge.fml.common.Mod;
 import top.theillusivec4.curios.api.CuriosApi;
 
 /**
- * What the Ossuarch leaves, and what it does: the Phylactery (cheats death once every 5 minutes) and Devil Shards
+ * What Zenon leaves, and what it does: the Phylactery (cheats death once every 5 minutes) and Devil Shards
  * (forged into a grimoire at the altar for permanent spell power and cooldown reduction).
  */
 @Mod.EventBusSubscriber(modid = IronSpellGrimoire.MODID)
-public final class OssuarchDrops {
-    private OssuarchDrops() {}
+public final class ZenonDrops {
+    private ZenonDrops() {}
 
     public static final int MAX_SHARDS = 5;
     private static final UUID SHARD_POWER = UUID.fromString("5a0c0001-0000-4000-8000-0000000000e1");
