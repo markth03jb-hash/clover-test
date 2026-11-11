@@ -731,5 +731,8 @@
   "spell.iron_spell_grimoire.imperial_swords_of_conviction.guide": "A storm of swords circles your target and closes in, wave after wave, then one giant sword falls. Surpassing Limits: Sovereign of Light - a wider storm, a bigger sword and a pillar of light.",
   "tooltip.iron_spell_grimoire.light_grimoire.passive": "Passive - Radiance",
   "tooltip.iron_spell_grimoire.light_grimoire.desc": "Every Light spell leaves you moving at light speed for a moment. Ten spells of Light Magic, from Light Sword to Imperial Swords of Conviction.",
-  "tooltip.iron_spell_grimoire.light_grimoire.lore": "Light is the fastest magic there is. By the time they see it, it has already struck."
+  "tooltip.iron_spell_grimoire.light_grimoire.lore": "Light is the fastest magic there is. By the time they see it, it has already struck.",
+  "entity.iron_spell_grimoire.vetto": "Vetto, Beast of Despair",
+  "item.iron_spell_grimoire.vetto_spawn_egg": "Vetto Spawn Egg",
+  "subtitles.iron_spell_grimoire.music.vetto": "Vetto's theme"
 }

@@ -17,5 +17,6 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.MAGIC_BOLT.get(), NoopRenderer::new);
         e.registerEntityRenderer(AddonEntities.MAGE.get(), MageRenderer::new);
         e.registerEntityRenderer(AddonEntities.OSSUARCH.get(), OssuarchRenderer::new);
+        e.registerEntityRenderer(AddonEntities.VETTO.get(), VettoRenderer::new);
     }
 }
