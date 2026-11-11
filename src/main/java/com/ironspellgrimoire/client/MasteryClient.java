@@ -37,6 +37,13 @@ public final class MasteryClient {
         int xp = GrimoireMastery.xp(stack), lvl = GrimoireMastery.levelFor(xp);
         int[] th = GrimoireMastery.THRESHOLDS;
         boolean max = lvl >= GrimoireMastery.MAX_LEVEL;
+        // the rank, beside the name: stars filled to the level, in the rank's colour
+        if (!tip.isEmpty()) {
+            int col = GrimoireMastery.RANK_COLORS[lvl];
+            tip.set(0, tip.get(0).copy().append(Component.literal("  " + "\u2605".repeat(lvl)).withStyle(s -> s.withColor(col)))
+                    .append(Component.literal("\u2606".repeat(GrimoireMastery.MAX_LEVEL - lvl)).withStyle(ChatFormatting.DARK_GRAY)));
+        }
+        tip.add(GrimoireMastery.rankName(lvl).withStyle(ChatFormatting.BOLD));
         tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.level", lvl, GrimoireMastery.MAX_LEVEL).withStyle(ChatFormatting.GOLD));
         // a text XP bar
         float frac = max ? 1f : (xp - th[lvl]) / (float) Math.max(1, th[lvl + 1] - th[lvl]);

@@ -18,5 +18,6 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.MAGE.get(), MageRenderer::new);
         e.registerEntityRenderer(AddonEntities.ZENON.get(), ZenonRenderer::new);
         e.registerEntityRenderer(AddonEntities.VETTO.get(), VettoRenderer::new);
+        e.registerEntityRenderer(AddonEntities.RHYA.get(), RhyaRenderer::new);
     }
 }
