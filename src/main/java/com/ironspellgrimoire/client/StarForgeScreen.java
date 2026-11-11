@@ -20,6 +20,8 @@ public class StarForgeScreen extends Screen {
     private static final int PW = BW / 2 - 30, ROW = 13;
     private StarForgePackets.Open data;
     private int ticks;
+    /** The spell being mutated (the right page shows the choice), or null. */
+    private String mutating;
 
     private StarForgeScreen(StarForgePackets.Open d) { super(Component.literal("Star Forge")); this.data = d; }
 
@@ -40,6 +42,8 @@ public class StarForgeScreen extends Screen {
     private int top() { return y0(height) + 14; }
     private int rowY(int i) { return top() + 16 + i * ROW; }
     private int sigilY(int i) { return top() + 92 + i * 17; }
+    private int mutY(int m) { return top() + 40 + (m - 1) * 50; }
+    private void page() { if (minecraft != null && minecraft.player != null) minecraft.player.playSound(net.minecraft.sounds.SoundEvents.BOOK_PAGE_TURN, 0.8F, 1.1F); }
     private void send(int action, String arg) { AddonNetwork.CHANNEL.sendToServer(new StarForgePackets.Act(action, arg)); }
 
     @Override
@@ -48,7 +52,14 @@ public class StarForgeScreen extends Screen {
         int lx = lx(), rx = rx(), t = top();
         for (int i = 0; i < data.spells.size(); i++) {
             StarForgePackets.Spell s = data.spells.get(i);
-            if (s.level() < StarForge.MAX_BOOST && in(mx, my, lx + PW - 26, rowY(i) - 1, 26, 11)) { send(0, s.id()); return true; }
+            if (!in(mx, my, lx + PW - 26, rowY(i) - 1, 26, 11)) continue;
+            if (s.level() < StarForge.MAX_BOOST) { send(0, s.id()); return true; }
+            if (s.mut() == 0) { mutating = s.id(); page(); return true; }   // fully empowered: open its mutation
+        }
+        if (mutating != null) {
+            for (int m = 1; m <= 2; m++) if (data.cores > 0 && in(mx, my, rx, mutY(m), PW, 44)) { send(3, mutating + "|" + m); mutating = null; return true; }
+            if (in(mx, my, rx + PW / 2 - 22, t + 140, 44, 13)) { mutating = null; page(); return true; }
+            return super.mouseClicked(mx, my, btn);
         }
         if (!data.slot2 && in(mx, my, rx + 20, t + 42, PW - 40, 14)) { send(1, ""); return true; }
         for (int i = 0; i < StarForge.SIGIL_NAMES.length; i++) {
@@ -95,11 +106,27 @@ public class StarForgeScreen extends Screen {
                 frame(g, px, y + 2, 6, 6, INK_SOFT);
                 if (k < s.level()) g.fill(px + 1, y + 3, px + 5, y + 7, RED_INK);
             }
-            if (s.level() >= StarForge.MAX_BOOST) g.drawString(font, "max", lx + PW - 22, y + 1, INK_SOFT, false);
-            else {
+            if (s.level() >= StarForge.MAX_BOOST) {   // fully empowered: mutate it (once), or show its mutation
+                if (s.mut() > 0) g.drawString(font, s.mut() == StarForge.MUT_ECHO ? "Echo" : "Siph", lx + PW - 24, y + 1, RED_INK, false);
+                else button(g, font, lx + PW - 26, y - 1, 26, 11, "Mut", in(mx, my, lx + PW - 26, y - 1, 26, 11) || s.id().equals(mutating), true);
+            } else {
                 int cost = StarForge.boostCost(s.level() + 1);
                 button(g, font, lx + PW - 26, y - 1, 26, 11, cost + "★", in(mx, my, lx + PW - 26, y - 1, 26, 11), data.stars >= cost);
             }
+        }
+
+        if (mutating != null) {   // right page: mutate the chosen spell
+            heading(g, font, "Mutation", rx, PW, t);
+            String nm = Component.translatable("spell.iron_spell_grimoire." + mutating).getString();
+            g.drawString(font, nm, rx + (PW - font.width(nm)) / 2, t + 12, INK, false);
+            String cost = "1 Mana Core (you have " + data.cores + ")";
+            text(g, font, cost, rx + Math.max(0, (PW - font.width(cost)) / 2), t + 24, PW, data.cores > 0 ? INK_SOFT : RED_INK);
+            for (int m = 1; m <= 2; m++)
+                choice(g, font, rx, mutY(m), PW, 44, StarForge.MUT_NAMES[m], StarForge.MUT_TEXT[m], in(mx, my, rx, mutY(m), PW, 44), data.cores > 0);
+            button(g, font, rx + PW / 2 - 22, t + 140, 44, 13, "Back", in(mx, my, rx + PW / 2 - 22, t + 140, 44, 13), true);
+            turning(g, width, height, (ticks + pt) / 5F);
+            super.render(g, mx, my, pt);
+            return;
         }
 
         // right page: the second ink page, the star sigils

@@ -34,9 +34,10 @@ public final class MasteryClient {
             tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.off").withStyle(ChatFormatting.DARK_GRAY));
             return;
         }
-        int xp = GrimoireMastery.xp(stack), lvl = GrimoireMastery.levelFor(xp);
+        int xp = GrimoireMastery.xp(stack), cap = GrimoireMastery.cap(stack), lvl = GrimoireMastery.levelFor(xp, cap);
         int[] th = GrimoireMastery.THRESHOLDS;
-        boolean max = lvl >= GrimoireMastery.MAX_LEVEL;
+        boolean max = lvl >= cap;
+        if (GrimoireMastery.ascended(stack)) tip.add(Component.literal("\u2694 Magic Knight - passed the exam").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
         if (stack.hasTag() && stack.getTag().getInt("RiftInk2") > 0) {
             int ink2 = Math.min(3, stack.getTag().getInt("RiftInk2") - 1);
             tip.add(Component.literal("Inscribed: " + com.ironspellgrimoire.item.RiftInkItem.NAMES[ink2] + " - " + com.ironspellgrimoire.item.RiftInkItem.TEXT[ink2])
@@ -55,13 +56,15 @@ public final class MasteryClient {
             tip.add(Component.literal("Inscribed: " + com.ironspellgrimoire.item.RiftInkItem.NAMES[ink] + " - " + com.ironspellgrimoire.item.RiftInkItem.TEXT[ink])
                     .withStyle(s -> s.withColor(com.ironspellgrimoire.item.RiftInkItem.COLORS[ink])));
         }
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.level", lvl, GrimoireMastery.MAX_LEVEL).withStyle(ChatFormatting.GOLD));
+        tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.level", lvl, cap).withStyle(ChatFormatting.GOLD));
         // a text XP bar
         float frac = max ? 1f : (xp - th[lvl]) / (float) Math.max(1, th[lvl + 1] - th[lvl]);
         int filled = Math.round(frac * 20);
         tip.add(Component.literal("|".repeat(filled)).withStyle(ChatFormatting.YELLOW)
                 .append(Component.literal("|".repeat(20 - filled)).withStyle(ChatFormatting.DARK_GRAY))
                 .append(Component.literal(max ? "  MASTERED" : "  " + (xp - th[lvl]) + " / " + (th[lvl + 1] - th[lvl]) + " XP").withStyle(ChatFormatting.GRAY)));
+        if (lvl > GrimoireMastery.MAX_LEVEL) tip.add(Component.literal("Ultimate: +" + (lvl >= 7 ? 50 : 25) + "% damage").withStyle(ChatFormatting.GOLD));
+        if (max && cap == GrimoireMastery.MAX_LEVEL) tip.add(Component.literal("Pass the Magic Knight Exam at the altar to go beyond.").withStyle(ChatFormatting.DARK_AQUA));
         if (lvl > 1) tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.bonus", 4 * (lvl - 1), 3 * (lvl - 1), 50 * (lvl - 1)).withStyle(ChatFormatting.DARK_GREEN));
         if (!max) {
             List<String> next = GrimoireMastery.unlockedAt(b, lvl + 1);

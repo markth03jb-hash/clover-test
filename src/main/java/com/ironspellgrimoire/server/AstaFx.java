@@ -140,14 +140,40 @@ public class AstaFx {
         return spell;
     }
 
+    private static boolean echoing;
+
     static void damage(ServerPlayer p, LivingEntity t, float dmg0, String id) {
         if (CastSync.clashLost(p)) return;   // the move was broken in a Spell Clash
-        final float dmg = dmg0 * StarForge.boost(p, id);   // empowered at the Star Forge
+        // empowered at the Star Forge; a grimoire's ultimate hits harder at mastery 6 and 7
+        final float dmg = dmg0 * StarForge.boost(p, id) * GrimoireMastery.ultimateBoost(io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p), id);
         if (CastSync.deferDamage(p, t, () -> { if (t.isAlive()) damage(p, t, dmg0, id); })) return;   // lands when the move reaches it
         var spell = spellById(id);
+        float before = t.getHealth();
         if (spell != null) DamageSources.applyDamage(t, dmg, spell.getDamageSource(p));
         else t.hurt(p.damageSources().playerAttack(p), dmg);
         if (!"thirst".equals(id)) HitFx.land(p, t, dmg);   // the weight of the hit (not for Bleed's own ticks)
+        if (echoing) return;
+        switch (StarForge.mutation(p, id)) {   // a spell mutated at the Star Forge
+            case StarForge.MUT_ECHO -> {   // the hit lands again, weaker, half a second later
+                Vec3 at = t.position().add(0, t.getBbHeight() * 0.5, 0);
+                FxSend.ring(p.serverLevel(), Fx.GOLD, at, 0.2f, 1.1f, 0.05f, 10);
+                later(10, () -> {
+                    if (!t.isAlive() || !p.isAlive()) return;
+                    echoing = true;
+                    try { damage(p, t, dmg0 * 0.4f, id); } finally { echoing = false; }
+                    FxSend.ring(p.serverLevel(), Fx.GOLD, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.3f, 1.6f, 0.06f, 10);
+                });
+            }
+            case StarForge.MUT_SIPHON -> {   // the damage done flows back as mana
+                float dealt = Math.max(0f, before - t.getHealth());
+                if (dealt <= 0f) return;
+                var md = io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p);
+                float max = (float) p.getAttributeValue(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA.get());
+                md.setMana(Math.min(max, md.getMana() + dealt * 0.15f));
+                Kit.orb(p.serverLevel(), 19, t.position().add(0, t.getBbHeight() * 0.6, 0), p.position().add(0, 1, 0).subtract(t.position()).normalize().scale(0.25), 0.18f, 12);
+            }
+            default -> {}
+        }
     }
 
     private static void variantMsg(ServerPlayer p) {

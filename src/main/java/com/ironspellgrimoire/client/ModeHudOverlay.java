@@ -56,7 +56,7 @@ public final class ModeHudOverlay {
             if (lastXp >= 0 && mxp > lastXp && mb == lastBook) xpShownUntil = now + 100;
             lastXp = mxp; lastBook = mb;
         }
-        boolean gold = mastery && com.ironspellgrimoire.server.GrimoireMastery.levelFor(mxp) >= com.ironspellgrimoire.server.GrimoireMastery.MAX_LEVEL;
+        boolean gold = mastery && com.ironspellgrimoire.server.GrimoireMastery.levelFor(mxp, com.ironspellgrimoire.server.GrimoireMastery.cap(book)) >= com.ironspellgrimoire.server.GrimoireMastery.MAX_LEVEL;
         boolean showXp = mastery && now < xpShownUntil;
         if (ACTIVE.isEmpty() && !showXp) return;
         GuiGraphics g = e.getGuiGraphics();
@@ -102,9 +102,10 @@ public final class ModeHudOverlay {
             y += 26;
         }
         if (showXp) {   // mastery XP popup: level and progress to the next one
-            int lvl = com.ironspellgrimoire.server.GrimoireMastery.levelFor(mxp);
+            int cap = com.ironspellgrimoire.server.GrimoireMastery.cap(book);
+            int lvl = com.ironspellgrimoire.server.GrimoireMastery.levelFor(mxp, cap);
             int[] th = com.ironspellgrimoire.server.GrimoireMastery.THRESHOLDS;
-            boolean max = lvl >= com.ironspellgrimoire.server.GrimoireMastery.MAX_LEVEL;
+            boolean max = lvl >= cap;
             float frac = max ? 1f : (mxp - th[lvl]) / (float) Math.max(1, th[lvl + 1] - th[lvl]);
             Component label = Component.translatable("ui.iron_spell_grimoire.mastery.hud", lvl);
             String nums = max ? "MAX" : (mxp - th[lvl]) + " / " + (th[lvl + 1] - th[lvl]);

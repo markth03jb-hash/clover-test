@@ -72,6 +72,11 @@ import net.minecraftforge.network.PacketDistributor;
  *       closes.</li>
  * </ul>
  * Each rift has its own region of the Rift dimension (1024 blocks apart); regions are never reused.
+ * <p>
+ * <b>The Magic Knight Exam</b> is a rift of its own, opened from the Grimoire Altar for a grimoire at mastery 5: five
+ * floors in a straight line, each under its own law (Mana Burn, Low Gravity, Echo with traps, Hunted, then Mana Burn
+ * and Echo together against a shade), then the Exam Hall - three boss shades one after another. Pass and the grimoire
+ * is Ascended: its mastery goes on to 7. Die and you are thrown back out to the altar; you can try again.
  */
 @Mod.EventBusSubscriber(modid = IronSpellGrimoire.MODID)
 public final class Rifts {
@@ -82,8 +87,11 @@ public final class Rifts {
     public static final String[] RULE_NAMES = {"Mana Burn", "Low Gravity", "Echo", "Hunted"};
     static final String[] RULE_TEXT = {"Spells cost health instead of mana.", "You fall slowly and jump high.",
             "Every spell hit lands again a second later - on friends nearby too.", "A shade you cannot kill drifts after you through the walls."};
-    static final int START = 0, COMBAT = 1, TRAP = 2, REST = 3, ELITE = 4, RELIC = 5;
-    static final String[] ROOM_NAMES = {"Entrance", "Combat", "Traps", "Rest", "Elite", "Relic Chamber"};
+    static final int START = 0, COMBAT = 1, TRAP = 2, REST = 3, ELITE = 4, RELIC = 5, EXAM = 6;
+    static final String[] ROOM_NAMES = {"Entrance", "Combat", "Traps", "Rest", "Elite", "Relic Chamber", "Exam Hall"};
+    /** The exam's rooms in order and the law each floor is under. */
+    private static final int[] EXAM_ROOMS = {START, COMBAT, COMBAT, TRAP, COMBAT, ELITE, EXAM};
+    private static final int[] FLOOR_LAWS = {0, MANA_BURN, LOW_GRAVITY, ECHO, HUNTED, MANA_BURN | ECHO, 0};
     private static final int CELL = 24, HALF = 8, H = 8, Y = 80, SPACING = 1024;
     private static final UUID GRAV = UUID.fromString("a1f70000-0000-4000-8000-0000000000d1");
     private static final String RETURN = "isg_rift_return";
@@ -103,8 +111,10 @@ public final class Rifts {
         String dim;
         double x, y, z;
         long until;
-        boolean built, closed, relicTaken;
+        boolean built, closed, relicTaken, exam;
+        String owner = "";
         final List<Room> rooms = new ArrayList<>();
+        int floor = -1;   // runtime: the exam floor whose law is in force
         // runtime only
         final Map<Integer, List<UUID>> mobs = new HashMap<>();
         Vec3 shade;
@@ -126,6 +136,7 @@ public final class Rifts {
                 r.id = c.getInt("Id"); r.rank = c.getInt("Rank"); r.rules = c.getInt("Rules"); r.dim = c.getString("Dim");
                 r.x = c.getDouble("X"); r.y = c.getDouble("Y"); r.z = c.getDouble("Z"); r.until = c.getLong("Until");
                 r.built = c.getBoolean("Built"); r.closed = c.getBoolean("Closed"); r.relicTaken = c.getBoolean("Relic");
+                r.exam = c.getBoolean("Exam"); r.owner = c.getString("Owner");
                 for (Tag re : c.getList("Rooms", Tag.TAG_COMPOUND)) {
                     CompoundTag rc = (CompoundTag) re;
                     Room room = new Room(rc.getInt("GX"), rc.getInt("GZ"), rc.getInt("T"));
@@ -148,6 +159,7 @@ public final class Rifts {
                 c.putInt("Id", r.id); c.putInt("Rank", r.rank); c.putInt("Rules", r.rules); c.putString("Dim", r.dim);
                 c.putDouble("X", r.x); c.putDouble("Y", r.y); c.putDouble("Z", r.z); c.putLong("Until", r.until);
                 c.putBoolean("Built", r.built); c.putBoolean("Closed", r.closed); c.putBoolean("Relic", r.relicTaken);
+                c.putBoolean("Exam", r.exam); c.putString("Owner", r.owner);
                 ListTag rl = new ListTag();
                 for (Room room : r.rooms) {
                     CompoundTag rc = new CompoundTag();
@@ -206,6 +218,85 @@ public final class Rifts {
         sl.playSound(null, BlockPos.containing(at), SoundEvents.END_PORTAL_SPAWN, SoundSource.AMBIENT, 0.6f, 1.6f);
         near.displayClientMessage(Component.literal("A rift has torn open nearby...").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), true);
         return r;
+    }
+
+    // ================================================================== the Magic Knight Exam
+    /** Opens the exam for {@code p}'s equipped grimoire and takes them straight in. The altar checks they may take it. */
+    public static void startExam(ServerPlayer p) {
+        Data d = data(p.server);
+        Rift r = new Rift();
+        r.id = d.next++;
+        r.rank = 4;
+        r.exam = true;
+        r.owner = p.getUUID().toString();
+        r.dim = p.level().dimension().location().toString();
+        r.x = p.getX() - 2.5; r.y = p.getY(); r.z = p.getZ() - 2.5;   // enter() puts the way back at +2.5: right where they stood
+        r.until = p.level().getGameTime() + 24000;
+        Room prev = null;
+        for (int i = 0; i < EXAM_ROOMS.length; i++) {
+            Room room = new Room(i, 0, EXAM_ROOMS[i]);
+            if (prev != null) link(prev, room);
+            r.rooms.add(room);
+            prev = room;
+        }
+        d.rifts.add(r);
+        d.setDirty();
+        ServerLevel sl = p.serverLevel();
+        FxSend.impactFrame(sl, p.position().add(0, 1.2, 0), 4, FxSend.FRAME_GOLD, 16);
+        FxSend.ring(sl, Fx.GOLD, p.position().add(0, 0.1, 0), 0.3f, 4f, 0.12f, 16);
+        RiftFx.cut(sl, p.position().add(0, 1.6, 0), new Vec3(0, 1, 0), new Vec3(1, 0, 0), 1.8f, 20);
+        enter(p, r);
+    }
+
+    /** Each floor of the exam puts its own law in force as you reach it. */
+    private static void examFloor(Rift r, List<ServerPlayer> inside) {
+        int furthest = 0;
+        for (ServerPlayer p : inside) { Room room = roomOf(r, p.position()); if (room != null) furthest = Math.max(furthest, r.rooms.indexOf(room)); }
+        if (furthest == r.floor) return;
+        r.floor = furthest;
+        int law = FLOOR_LAWS[Math.min(furthest, FLOOR_LAWS.length - 1)];
+        r.shade = (law & HUNTED) == 0 ? null : r.centre(r.rooms.get(Math.max(0, furthest - 1))).add(0, 1.2, 0);   // it comes in behind you
+        r.rules = law;
+        for (ServerPlayer p : inside) {
+            if (furthest == EXAM_ROOMS.length - 1) {
+                p.sendSystemMessage(Component.literal("FINAL TRIAL  ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
+                        .append(Component.literal("Defeat three shades, one after another.").withStyle(ChatFormatting.YELLOW)));
+                continue;
+            }
+            if (furthest == 0) continue;
+            p.sendSystemMessage(Component.literal("FLOOR " + furthest + "/5  ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
+                    .append(Component.literal(law == 0 ? "No law." : lawText(law)).withStyle(ChatFormatting.GRAY)));
+        }
+    }
+
+    private static String lawText(int law) {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < 4; i++) if ((law & (1 << i)) != 0) s.append(s.length() > 0 ? "  " : "").append(RULE_NAMES[i]).append(": ").append(RULE_TEXT[i]);
+        return s.toString();
+    }
+
+    /** The exam is passed: the grimoire is Ascended (mastery goes on to 7). */
+    private static void passExam(ServerLevel sl, Rift r, Room room) {
+        Vec3 c = r.centre(room);
+        FxSend.impactFrame(sl, c.add(0, 1.5, 0), 5, FxSend.FRAME_GOLD, 24);
+        FxSend.ring(sl, Fx.GOLD, c.add(0, 0.1, 0), 0.5f, 8f, 0.18f, 20);
+        FxSend.beam(sl, Fx.GOLD, c, c.add(0, 30, 0), 0.8f, 40);
+        sl.playSound(null, BlockPos.containing(c), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.2f, 0.9f);
+        sl.playSound(null, BlockPos.containing(c), SoundEvents.BELL_RESONATE, SoundSource.PLAYERS, 1.2f, 1.2f);
+        for (ServerPlayer p : sl.players()) {
+            if (riftAt(sl.getServer(), p.position()) != r) continue;
+            boolean owner = p.getUUID().toString().equals(r.owner);
+            ItemStack book = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            if (owner && book != null && GrimoireMastery.bookOf(book) != null && !GrimoireMastery.ascended(book)) {
+                book.getOrCreateTag().putBoolean("Ascended", true);
+                p.sendSystemMessage(Component.literal("MAGIC KNIGHT EXAM PASSED  ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
+                        .append(Component.literal(book.getHoverName().getString() + " is Ascended - its mastery can now reach 7.").withStyle(ChatFormatting.YELLOW)));
+                GrimoireMastery.bountyXp(p, 1);   // nudges the level along if it already had the XP for more
+            }
+            Bounties.addStars(p, 10);
+            p.sendSystemMessage(Component.literal("+10 merit stars. Stand on the circle to leave.").withStyle(ChatFormatting.YELLOW));
+        }
+        r.relicTaken = true;
     }
 
     /** The rooms: a random walk on a grid, an elite room hung off the side. */
@@ -279,6 +370,8 @@ public final class Rifts {
         for (Room room : r.rooms) {
             Vec3 c = r.centre(room);
             int cx = (int) Math.floor(c.x), cz = (int) Math.floor(c.z);
+            int keep = r.rules;
+            if (r.exam) r.rules = FLOOR_LAWS[Math.min(r.rooms.indexOf(room), FLOOR_LAWS.length - 1)];   // each exam floor shows its own law
             for (int dx = -HALF; dx <= HALF; dx++) for (int dz = -HALF; dz <= HALF; dz++) for (int dy = -1; dy <= H; dy++) {
                 boolean shell = Math.abs(dx) == HALF || Math.abs(dz) == HALF || dy == -1 || dy == H;
                 BlockState s;
@@ -296,7 +389,13 @@ public final class Rifts {
                 for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) set(sl, cx + dx, Y - 1, cz + dz, Blocks.POLISHED_BLACKSTONE.defaultBlockState());
             }
             if (room.type == REST) for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) set(sl, cx + dx, Y - 1, cz + dz, Blocks.CRYING_OBSIDIAN.defaultBlockState());
+            if (room.type == EXAM) {   // the Exam Hall: a gilded dais and gold-capped pillars
+                for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++)
+                    set(sl, cx + dx, Y - 1, cz + dz, (Math.abs(dx) == 3 || Math.abs(dz) == 3 ? Blocks.GILDED_BLACKSTONE : Blocks.POLISHED_BLACKSTONE).defaultBlockState());
+                for (int[] p : new int[][]{{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) set(sl, cx + p[0], Y + 3, cz + p[1], Blocks.GOLD_BLOCK.defaultBlockState());
+            }
             decorate(sl, r, room, cx, cz, rnd);
+            r.rules = keep;
             // doorways and the corridors to the next rooms
             for (int dd : room.doors) {
                 int ax = dd == 0 ? 1 : dd == 1 ? -1 : 0, az = dd == 2 ? 1 : dd == 3 ? -1 : 0;
@@ -396,6 +495,12 @@ public final class Rifts {
         Vec3 c = r.centre(r.rooms.get(0));
         p.teleportTo(rift, c.x, Y, c.z, p.getYRot(), p.getXRot());
         rift.playSound(null, BlockPos.containing(c), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1f, 0.6f);
+        if (r.exam) {
+            p.sendSystemMessage(Component.literal("THE MAGIC KNIGHT EXAM").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+            p.sendSystemMessage(Component.literal("  Five floors, each under its own law, then three shades in the Exam Hall.").withStyle(ChatFormatting.GRAY));
+            p.sendSystemMessage(Component.literal("  Fall and you are sent back to the altar. Pass and your grimoire's mastery goes on to 7.").withStyle(ChatFormatting.DARK_GRAY));
+            return;
+        }
         p.sendSystemMessage(Component.literal(stars(r.rank) + "  RIFT").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
         for (int i = 0; i < 4; i++) if ((r.rules & (1 << i)) != 0)
             p.sendSystemMessage(Component.literal("  " + RULE_NAMES[i] + ": ").withStyle(ChatFormatting.RED).append(Component.literal(RULE_TEXT[i]).withStyle(ChatFormatting.GRAY)));
@@ -446,7 +551,7 @@ public final class Rifts {
             if (rift != null) for (ServerPlayer p : rift.players()) if (riftAt(s, p.position()) == r) inside.add(p);
             ServerLevel world = s.getLevel(ResourceKey.create(Registries.DIMENSION, new ResourceLocation(r.dim)));
             long now = s.overworld().getGameTime();
-            boolean open = now < r.until && !r.relicTaken;
+            boolean open = now < r.until && !r.relicTaken && !r.exam;   // the exam has no crack in the world: the altar takes you in
             if (world != null && open) entrance(world, r, tick);
             if (inside.isEmpty()) {
                 if (!open || r.relicTaken) close(s, r);
@@ -495,6 +600,7 @@ public final class Rifts {
 
     private static void run(ServerLevel sl, Rift r, List<ServerPlayer> inside, long tick) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        if (r.exam) examFloor(r, inside);
         // laws that act on everyone inside
         if ((r.rules & LOW_GRAVITY) != 0 && tick % 20 == 0) for (ServerPlayer p : inside)
             TimedModifiers.apply(p, ForgeMod.ENTITY_GRAVITY.get(), GRAV, "Rift: low gravity", -0.65, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
@@ -508,7 +614,7 @@ public final class Rifts {
             List<ServerPlayer> here = in.getOrDefault(room, List.of());
             if (!room.cleared && !room.active && !here.isEmpty()) activate(sl, r, i, room, inside.size());
             if (room.active) tickRoom(sl, r, i, room, here, inside.size(), tick, rnd);
-            if (room.type == REST || (room.type == RELIC && room.cleared)) pad(sl, r, room, here, tick);
+            if (room.type == REST || ((room.type == RELIC || room.type == EXAM) && room.cleared)) pad(sl, r, room, here, tick);
         }
         if (tick % 20 == 0) for (ServerPlayer p : inside) objective(p, r, roomOf(r, p.position()));
         if (tick % 15 == 0) for (Room room : in.keySet()) ambience(sl, r, room, rnd);
@@ -527,6 +633,7 @@ public final class Rifts {
             case COMBAT -> { room.active = true; room.wave = 0; seal(sl, r, room, true); wave(sl, r, idx, room, players); }
             case TRAP -> { room.active = true; room.timer = 20 * (18 + r.rank * 2); seal(sl, r, room, true); }
             case ELITE, RELIC -> { room.active = true; seal(sl, r, room, true); guardian(sl, r, idx, room); }
+            case EXAM -> { room.active = true; room.wave = 0; seal(sl, r, room, true); examShade(sl, r, idx, room, 0); }
             default -> room.cleared = true;
         }
     }
@@ -576,7 +683,17 @@ public final class Rifts {
             case ELITE, RELIC -> {
                 if (tick % 10 != 0 || alive(sl, r, idx) > 0) return;
                 clear(sl, r, idx, room);
-                reward(sl, r, room, here.isEmpty() ? null : here.get(0), room.type == RELIC);
+                if (!r.exam) reward(sl, r, room, here.isEmpty() ? null : here.get(0), room.type == RELIC);
+            }
+            case EXAM -> {   // three shades, one after the other, with a breath between them
+                if (tick % 10 != 0) return;
+                if (room.timer > 0) { if (--room.timer == 0) examShade(sl, r, idx, room, room.wave); return; }
+                if (alive(sl, r, idx) > 0) return;
+                if (room.wave >= 2) { clear(sl, r, idx, room); passExam(sl, r, room); return; }
+                room.wave++;
+                room.timer = 4;
+                FxSend.ring(sl, Fx.GOLD, c.add(0, 0.1, 0), 0.4f, 6f, 0.12f, 14);
+                for (ServerPlayer p : here) p.displayClientMessage(Component.literal("Shade " + (room.wave + 1) + "/3 approaches...").withStyle(ChatFormatting.GOLD), true);
             }
             default -> {}
         }
@@ -616,6 +733,17 @@ public final class Rifts {
         sl.playSound(null, BlockPos.containing(c), SoundEvents.EVOKER_PREPARE_SUMMON, SoundSource.HOSTILE, 1.2f, 0.8f);
     }
 
+    /** The Exam Hall's shades: a lesser boss, then a greater, then one of the strongest. */
+    private static void examShade(ServerLevel sl, Rift r, int idx, Room room, int n) {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        EntityType<? extends Mob> t = switch (n) {
+            case 0 -> rnd.nextBoolean() ? AddonEntities.REVENANT.get() : AddonEntities.CURSE_WITCH.get();
+            case 1 -> rnd.nextBoolean() ? AddonEntities.BEAST_OF_DESPAIR.get() : AddonEntities.RHYA.get();
+            default -> rnd.nextBoolean() ? AddonEntities.ZENON.get() : AddonEntities.LICHT.get();
+        };
+        shade(sl, r, idx, room, t, n == 0 ? 0.45f : n == 1 ? 0.4f : 0.5f, "Examiner");
+    }
+
     /** A shade of one of the bosses, at a fraction of its strength. */
     private static void guardian(ServerLevel sl, Rift r, int idx, Room room) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
@@ -631,14 +759,18 @@ public final class Rifts {
             case 2 -> AddonEntities.BEAST_OF_DESPAIR.get();
             default -> AddonEntities.RHYA.get();
         };
+        shade(sl, r, idx, room, t, room.type == RELIC ? 0.3f + r.rank * 0.06f : 0.18f + r.rank * 0.03f, "Shade");
+    }
+
+    private static void shade(ServerLevel sl, Rift r, int idx, Room room, EntityType<? extends Mob> t, float frac, String title) {
+        Vec3 c = r.centre(room);
         Mob m = t.create(sl);
         if (m == null) return;
         m.moveTo(c.x, Y, c.z + 3, 180, 0);
         m.finalizeSpawn(sl, sl.getCurrentDifficultyAt(m.blockPosition()), MobSpawnType.EVENT, null, null);
         sl.addFreshEntity(m);
-        float frac = room.type == RELIC ? 0.3f + r.rank * 0.06f : 0.18f + r.rank * 0.03f;
         m.setHealth(m.getMaxHealth() * Math.min(1f, frac));
-        m.setCustomName(Component.literal("Shade of " + m.getType().getDescription().getString()).withStyle(ChatFormatting.LIGHT_PURPLE));
+        m.setCustomName(Component.literal(title + " of " + m.getType().getDescription().getString()).withStyle(r.exam ? ChatFormatting.GOLD : ChatFormatting.LIGHT_PURPLE));
         r.mobs.computeIfAbsent(idx, k -> new ArrayList<>()).add(m.getUUID());
         RiftFx.cut(sl, m.position().add(0, 1.4, 0), new Vec3(0, 1, 0), new Vec3(1, 0, 0), 2.0f, 20);
         FxSend.impactFrame(sl, m.position().add(0, 1.5, 0), 3, FxSend.FRAME_FINRAL, 24);
@@ -704,9 +836,11 @@ public final class Rifts {
             case REST -> "Rest - stand on the circle to leave the rift";
             case ELITE -> room.cleared ? "Elite - cleared" : "Elite - defeat the shade";
             case RELIC -> room.cleared ? "Relic Chamber - stand on the circle to leave" : "Relic Chamber - defeat the guardian";
-            default -> "Find the relic chamber";
+            case EXAM -> room.cleared ? "Exam passed - stand on the circle to leave" : "Exam Hall - shade " + (room.wave + 1) + "/3";
+            default -> r.exam ? "The Magic Knight Exam - go on through the floors" : "Find the relic chamber";
         };
-        p.displayClientMessage(Component.literal(s).withStyle(ChatFormatting.LIGHT_PURPLE), true);
+        if (r.exam && room.type != EXAM && room.type != START) s = "Floor " + r.rooms.indexOf(room) + "/5 - " + s;
+        p.displayClientMessage(Component.literal(s).withStyle(r.exam ? ChatFormatting.GOLD : ChatFormatting.LIGHT_PURPLE), true);
     }
 
     /** Hunted: a shade that drifts through the walls after the nearest of you. It can't be hurt; it can hurt you. */
@@ -742,7 +876,7 @@ public final class Rifts {
         if (p.tickCount % 10 == 0 && (p.getMainHandItem().is(AddonItemRegistry.RIFT_COMPASS.get()) || p.getOffhandItem().is(AddonItemRegistry.RIFT_COMPASS.get()))) compass(p);
         if (p.tickCount % 6000 != 3000 || !p.level().dimension().equals(Level.OVERWORLD) || p.isSpectator()) return;
         if (ThreadLocalRandom.current().nextInt(4) != 0) return;
-        for (Rift r : data(p.server).rifts) if (!r.closed && r.dim.equals(p.level().dimension().location().toString()) && new Vec3(r.x, r.y, r.z).distanceToSqr(p.position()) < 400 * 400) return;
+        for (Rift r : data(p.server).rifts) if (!r.closed && !r.exam && r.dim.equals(p.level().dimension().location().toString()) && new Vec3(r.x, r.y, r.z).distanceToSqr(p.position()) < 400 * 400) return;
         Vec3 at = spot(p.serverLevel(), p.position(), 25, 50);
         int cap = Bounties.stars(p) >= 60 ? 5 : Bounties.stars(p) >= 30 ? 4 : 3;   // rank 4 rifts from 30 merit stars, rank 5 from 60
         if (at != null) open(p, at, Math.min(cap, 1 + Bounties.stars(p) / 15 + ThreadLocalRandom.current().nextInt(3)));
@@ -767,7 +901,7 @@ public final class Rifts {
         String dim = p.level().dimension().location().toString();
         long now = p.server.overworld().getGameTime();
         for (Rift r : data(p.server).rifts) {
-            if (r.closed || !r.dim.equals(dim) || now >= r.until || r.relicTaken) continue;
+            if (r.closed || r.exam || !r.dim.equals(dim) || now >= r.until || r.relicTaken) continue;
             double d = new Vec3(r.x, r.y, r.z).distanceToSqr(p.position());
             if (d < bd) { bd = d; best = r; }
         }
@@ -786,8 +920,10 @@ public final class Rifts {
         p.setHealth(Math.max(2f, p.getMaxHealth() * 0.3f));
         p.removeAllEffects();
         p.invulnerableTime = 60;
+        Rift r = riftOf(p);
         leave(p);
-        p.sendSystemMessage(Component.literal("The rift threw you out.").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
+        if (r != null && r.exam) p.sendSystemMessage(Component.literal("You fell in the Magic Knight Exam. The altar will let you try again.").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
+        else p.sendSystemMessage(Component.literal("The rift threw you out.").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
     }
 
     // ================================================================== the rift can't be broken
