@@ -51,6 +51,7 @@ public final class BossCores {
             com.ironspellgrimoire.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> p), k);
         for (LivingEntity e : sl.getEntitiesOfClass(LivingEntity.class, b.getBoundingBox().inflate(16), x -> x != b && x.isAlive() && !(x instanceof ServerPlayer)))
             TimeStop.freeze(killer, e, 10, false, null);   // the hitstop
+        final boolean g0 = gold;
         int pal = gold ? Fx.GOLD : Fx.SILVER, K = com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE;
         java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
         AstaFx.later(8, () -> {   // after the frozen beat: the shatter
@@ -60,7 +61,7 @@ public final class BossCores {
             }
             FxSend.ring(sl, pal | K, c, 0.4f, 7f, 0.15f, 14);
             FxSend.beam(sl, pal | K, c.add(0, -1, 0), c.add(0, 30, 0), 0.9f, 16);
-            FxSend.impactFrame(sl, c, 4, gold ? FxSend.FRAME_GOLD : FxSend.FRAME_LIGHT, 40);
+            FxSend.impactFrame(sl, c, 4, g0 ? FxSend.FRAME_GOLD : FxSend.FRAME_LIGHT, 40);
             FxSend.shake(sl, c, 1.0f, 14, 40);
             sl.playSound(null, b.blockPosition(), net.minecraft.sounds.SoundEvents.GLASS_BREAK, net.minecraft.sounds.SoundSource.HOSTILE, 1.6f, 0.4f);
             sl.playSound(null, b.blockPosition(), net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, net.minecraft.sounds.SoundSource.HOSTILE, 1.0f, 1.2f);
