@@ -73,6 +73,19 @@ public class ArcaneAnimations {
                 float rel = net.minecraft.util.Mth.wrapDegrees((float) bearing - holder.getYRot());
                 return (float) (((rel / 360.0) % 1.0 + 1.0) % 1.0);
             });
+            var tower = com.ironspellgrimoire.registry.AddonItemRegistry.TOWER_COMPASS.get();   // the Grimoire Tower Compass: the tower is kept on it
+            net.minecraft.client.renderer.item.ItemProperties.register(tower, ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "angle"), (stack, level, entity, seed) -> {
+                net.minecraft.world.entity.Entity holder = entity != null ? entity : stack.getEntityRepresentation();
+                net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+                if (!stack.hasTag() || !stack.getTag().contains("TowerX") || holder == null) return mc.level == null ? 0F : (float) ((mc.level.getGameTime() % 40) / 40.0);
+                double bearing = Math.toDegrees(Math.atan2(-(stack.getTag().getInt("TowerX") + 0.5 - holder.getX()), stack.getTag().getInt("TowerZ") + 0.5 - holder.getZ()));
+                float rel = net.minecraft.util.Mth.wrapDegrees((float) bearing - holder.getYRot());
+                return (float) (((rel / 360.0) % 1.0 + 1.0) % 1.0);
+            });
+            net.minecraft.client.renderer.item.ItemProperties.register(tower, ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "near"), (stack, level, entity, seed) -> {
+                net.minecraft.world.entity.Entity holder = entity != null ? entity : stack.getEntityRepresentation();
+                return stack.hasTag() && holder != null && Math.hypot(stack.getTag().getInt("TowerX") - holder.getX(), stack.getTag().getInt("TowerZ") - holder.getZ()) < 64 ? 1F : 0F;
+            });
             net.minecraft.client.renderer.item.ItemProperties.register(compass, ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "near"), (stack, level, entity, seed) -> {
                 net.minecraft.world.phys.Vec3 t = BountyHud.riftTarget();
                 net.minecraft.world.entity.Entity holder = entity != null ? entity : stack.getEntityRepresentation();
