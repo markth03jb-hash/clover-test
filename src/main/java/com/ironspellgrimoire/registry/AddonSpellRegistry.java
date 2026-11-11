@@ -454,6 +454,20 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> LIGHT_SPELLS = List.of(
             LIGHT_SWORD, LIGHT_SPEED_STEP, ARROWS_OF_JUDGMENT, BRIGHT_JUDGMENT_WHIP, HEALING_RAY, BLINDING_FLASH, LIGHT_SWORDS_OF_JUDGMENT, LIGHT_SHAFT, DEMON_LIGHT, IMPERIAL_SWORDS_OF_CONVICTION);
 
+    // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
+    private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,
+                                                                   String only, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, school, book, only, cd, mana, power, com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> ABSOLUTE_ZETTEN = registerSpell(awakened("absolute_zetten", io.redspace.ironsspellbooks.api.registry.SchoolRegistry.EVOCATION_RESOURCE,
+            com.ironspellgrimoire.item.BlackGrimoireItem.class, "ui.iron_spell_grimoire.grimoire_only", 40, 0, 40, "iron_spell_grimoire:awakened_zetten", com.ironspellgrimoire.server.AwakenedSpells::absoluteZetten));
+    public static final RegistryObject<AbstractSpell> MOON_SEVERING_IAI = registerSpell(awakened("moon_severing_iai", io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
+            com.ironspellgrimoire.item.DarkGrimoireItem.class, "ui.iron_spell_grimoire.dark_grimoire_only", 50, 150, 38, "iron_spell_grimoire:awakened_iai", com.ironspellgrimoire.server.AwakenedSpells::moonSeveringIai));
+    public static final RegistryObject<AbstractSpell> NEVER_NEVER_LAND = registerSpell(awakened("never_never_land", io.redspace.ironsspellbooks.api.registry.SchoolRegistry.EVOCATION_RESOURCE,
+            com.ironspellgrimoire.item.WindGrimoireItem.class, "ui.iron_spell_grimoire.wind_grimoire_only", 60, 160, 10, "iron_spell_grimoire:awakened_star", com.ironspellgrimoire.server.AwakenedSpells::neverNeverLand));
+    public static final RegistryObject<AbstractSpell> LAMP_OF_AVIOR = registerSpell(awakened("lamp_of_avior", io.redspace.ironsspellbooks.api.registry.SchoolRegistry.HOLY_RESOURCE,
+            com.ironspellgrimoire.item.LightGrimoireItem.class, "ui.iron_spell_grimoire.light_grimoire_only", 45, 140, 42, "iron_spell_grimoire:awakened_lamp", com.ironspellgrimoire.server.AwakenedSpells::lampOfAvior));
+
     private static RegistryObject<AbstractSpell> registerSpell(AbstractSpell spell) {
         return SPELLS.register(spell.getSpellName(), () -> spell);
     }

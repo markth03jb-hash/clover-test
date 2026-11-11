@@ -60,6 +60,7 @@ public class GrimoireBookScreen extends Screen {
         GrimoireMastery.Book b = GrimoireMastery.bookOf(stack);
         this.book = b == null ? 0 : Math.max(0, GrimoireMastery.BOOKS.indexOf(b));
         if (b != null) for (Map.Entry<String, Integer> e : b.unlocks().entrySet()) { ids.add(e.getKey()); unlockAt.add(e.getValue()); }
+        if (com.ironspellgrimoire.server.Awakening.awakened(stack)) { ids.add(com.ironspellgrimoire.server.Awakening.spellFor(stack)); unlockAt.add(6); }   // the page it wrote when it awakened
     }
 
     public static void open(ItemStack stack) {
@@ -224,7 +225,7 @@ public class GrimoireBookScreen extends Screen {
         try { info.add(Component.translatable("ui.irons_spellbooks.mana_cost", sp.getManaCost(lvl))); } catch (Throwable ignored) {}
         try { info.add(Component.translatable("tooltip.irons_spellbooks.cooldown_length_seconds", Utils.timeFromTicks(sp.getSpellCooldown(), 1))); } catch (Throwable ignored) {}
         try { info.add(Component.literal("Cast: " + pretty(sp.getCastType().name()))); } catch (Throwable ignored) {}
-        info.add(Component.literal("Unlocks at mastery " + unlockAt.get(i)));
+        info.add(Component.literal(com.ironspellgrimoire.server.Awakening.isAwakenedSpell(ids.get(i)) ? "Unlocks at: Awakening" : "Unlocks at mastery " + unlockAt.get(i)));
         int yy = y;
         g.drawString(f, Component.literal("Spell").withStyle(ChatFormatting.BOLD), x, yy, RED_INK, false);
         yy += 12;

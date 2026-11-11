@@ -71,6 +71,8 @@ public final class GrimoireMastery {
     public static final int MAX_LEVEL = 5;
     /** After passing the Magic Knight Exam with it (server/KnightExam), a grimoire's mastery goes on to 7. */
     public static final int ASCENDED_MAX = 7;
+    /** After its Awakening (server/Awakening), 8. */
+    public static final int AWAKENED_MAX = 8;
     private static java.util.Set<String> ULTIMATES;
 
     /** Whether this damage comes from a grimoire's ultimate (the spell its book unlocks at the top level). Bosses' damage caps don't apply to it. */
@@ -78,7 +80,7 @@ public final class GrimoireMastery {
         if (!(src instanceof SpellDamageSource s) || s.spell() == null) return false;
         String id = s.spell().getSpellId();
         int i = id.indexOf(':');
-        return ultimates().contains(i < 0 ? id : id.substring(i + 1));
+        return ultimates().contains(i < 0 ? id : id.substring(i + 1)) || Awakening.isAwakenedSpell(id);
     }
 
     private static java.util.Set<String> ultimates() {
@@ -90,7 +92,7 @@ public final class GrimoireMastery {
         return ULTIMATES;
     }
     /** Total XP needed to reach level 2, 3, 4, 5. */
-    public static final int[] THRESHOLDS = {0, 0, 800, 2400, 5200, 9000, 14000, 20000};
+    public static final int[] THRESHOLDS = {0, 0, 800, 2400, 5200, 9000, 14000, 20000, 28000};
     private static final String TAG = "arcane_mastery";
     /** Hooded mages teach more than ordinary mobs: their damage counts triple and a kill adds a bonus. */
     private static final float MAGE_XP_MULT = 3f, MAGE_KILL_XP = 60f;
@@ -243,7 +245,7 @@ public final class GrimoireMastery {
     public static boolean ascended(ItemStack stack) { return stack != null && stack.hasTag() && stack.getTag().getBoolean("Ascended"); }
 
     /** How far this grimoire's mastery can go: 5, or 7 once it has passed the exam. */
-    public static int cap(ItemStack stack) { return ascended(stack) ? ASCENDED_MAX : MAX_LEVEL; }
+    public static int cap(ItemStack stack) { return Awakening.awakened(stack) ? AWAKENED_MAX : ascended(stack) ? ASCENDED_MAX : MAX_LEVEL; }
 
     public static int levelFor(int xp) { return levelFor(xp, MAX_LEVEL); }
 
@@ -256,6 +258,7 @@ public final class GrimoireMastery {
     /** How much more a grimoire's ultimate hits for at mastery 6 (+25%) and 7 (+50%). */
     public static float ultimateBoost(ItemStack book, String spellId) {
         if (book == null || !ascended(book)) return 1f;
+        if (Awakening.isAwakenedSpell(spellId)) return level(book) >= AWAKENED_MAX ? 1.3f : 1f;   // the awakened spell, at mastery 8
         int i = spellId.indexOf(':');
         if (!ultimates().contains(i < 0 ? spellId : spellId.substring(i + 1))) return 1f;
         int l = level(book);
@@ -272,6 +275,7 @@ public final class GrimoireMastery {
     /** Spell id (path) -> the level that unlocks it in this book, or 0 when the book doesn't gate it. */
     public static int required(Book b, String spell) {
         if (b == null) return 0;
+        if (Awakening.isAwakenedSpell(spell)) return 6;   // the awakened page sits after everything else
         return b.unlocks().getOrDefault(spell, 0);
     }
 
@@ -470,7 +474,8 @@ public final class GrimoireMastery {
         if (level > MAX_LEVEL) FxSend.shake(sl, at, 0.45f, 12, 14);
         List<String> unlocked = unlockedAt(b, level);
         MutableComponent msg = Component.translatable("ui.iron_spell_grimoire.mastery.level_up", level).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
-        if (level > MAX_LEVEL) msg.append(Component.literal(" — your ultimate hits " + (level >= 7 ? "+50%" : "+25%") + " harder").withStyle(ChatFormatting.YELLOW));
+        if (level >= AWAKENED_MAX) msg.append(Component.literal(" — your awakened spell hits 30% harder").withStyle(ChatFormatting.YELLOW));
+        else if (level > MAX_LEVEL) msg.append(Component.literal(" — your ultimate hits " + (level >= 7 ? "+50%" : "+25%") + " harder").withStyle(ChatFormatting.YELLOW));
         else if (!unlocked.isEmpty()) msg.append(Component.literal(" — ").withStyle(ChatFormatting.GRAY))
                 .append(Component.translatable("ui.iron_spell_grimoire.mastery.unlocked", spellNames(unlocked)).withStyle(ChatFormatting.YELLOW));
         p.displayClientMessage(msg, true);
@@ -504,7 +509,7 @@ public final class GrimoireMastery {
                             return 1;
                         }))
                 .then(Commands.literal("mastery")
-                        .then(Commands.literal("set").then(Commands.argument("level", IntegerArgumentType.integer(1, ASCENDED_MAX))
+                        .then(Commands.literal("set").then(Commands.argument("level", IntegerArgumentType.integer(1, AWAKENED_MAX))
                                 .executes(c -> setLevel(c, c.getSource().getPlayerOrException()))
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(c -> setLevel(c, EntityArgument.getPlayer(c, "player"))))))

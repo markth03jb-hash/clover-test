@@ -759,5 +759,13 @@
   "item.iron_spell_grimoire.licht_dweller_sword": "Licht's Second Sword",
   "block.iron_spell_grimoire.poster_board": "Poster Board",
   "block.iron_spell_grimoire.poster_board_part": "Poster Board",
-  "block.iron_spell_grimoire.rift_seal": "Rift Seal"
+  "block.iron_spell_grimoire.rift_seal": "Rift Seal",
+  "spell.iron_spell_grimoire.absolute_zetten": "Demon-Destroyer: Absolute Zetten",
+  "spell.iron_spell_grimoire.absolute_zetten.guide": "AWAKENED. Settle into a still stance for a second: a blow that lands on you in it is turned aside and answered at once, and magic flying at you is cut out of the air. Then one cut through everything ahead for 18 blocks - and a beat later the world catches up and splits along the line.",
+  "spell.iron_spell_grimoire.moon_severing_iai": "Dark Cloaked Mana Zone: Moon-Severing Iai",
+  "spell.iron_spell_grimoire.moon_severing_iai.guide": "AWAKENED. A black moon rises over you and drags at everything within 16 blocks while you hold your blade at your hip. Then the draw: one ring of darkness cut round you in every direction, and the moon breaks and rains its shards down.",
+  "spell.iron_spell_grimoire.never_never_land": "Star Magic: Never-Never Land",
+  "spell.iron_spell_grimoire.never_never_land.guide": "AWAKENED. Star and Wind magic together: a dome of stars 16 blocks across for ten seconds. Foes inside are slowed, you and your friends cast 20% stronger, and the stars fire beams of starlight at whoever is inside.",
+  "spell.iron_spell_grimoire.lamp_of_avior": "Light Magic: Lamp of Avior",
+  "spell.iron_spell_grimoire.lamp_of_avior.guide": "AWAKENED. Light gathers round you from every side, then you throw it as one star-bright lamp. Where it lands it bursts - an explosion of light strong enough to stop a tornado, a star's cross flaring over it."
 }
