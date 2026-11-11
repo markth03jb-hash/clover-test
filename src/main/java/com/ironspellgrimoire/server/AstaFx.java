@@ -145,7 +145,9 @@ public class AstaFx {
     static void damage(ServerPlayer p, LivingEntity t, float dmg0, String id) {
         if (CastSync.clashLost(p)) return;   // the move was broken in a Spell Clash
         // empowered at the Star Forge; a grimoire's ultimate hits harder at mastery 6 and 7
-        final float dmg = dmg0 * StarForge.boost(p, id) * GrimoireMastery.ultimateBoost(io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p), id);
+        // ... an evolved spell harder still, and everything from an Ascended grimoire
+        final float dmg = dmg0 * StarForge.boost(p, id) * GrimoireMastery.ultimateBoost(io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p), id)
+                * SpellEvolution.boost(p, id) * Ascension.boost(p, id);
         if (CastSync.deferDamage(p, t, () -> { if (t.isAlive()) damage(p, t, dmg0, id); })) return;   // lands when the move reaches it
         var spell = spellById(id);
         float before = t.getHealth();
@@ -153,6 +155,17 @@ public class AstaFx {
         else t.hurt(p.damageSources().playerAttack(p), dmg);
         if (!"thirst".equals(id)) HitFx.land(p, t, dmg);   // the weight of the hit (not for Bleed's own ticks)
         if (echoing) return;
+        Ascension.afterHit(p, t, id);
+        if (SpellEvolution.afterHit(p, t, id)) {   // an evolved spell on an Ascended grimoire: the hit strikes again, gold
+            later(8, () -> {
+                if (!t.isAlive() || !p.isAlive()) return;
+                echoing = true;
+                try { damage(p, t, dmg0 * 0.25f, id); } finally { echoing = false; }
+                Vec3 at = t.position().add(0, t.getBbHeight() * 0.5, 0);
+                FxSend.ring(p.serverLevel(), Fx.GOLD | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, at, 0.3f, 1.6f, 0.06f, 8);
+                FxSend.slash(p.serverLevel(), Fx.GOLD, at, p.getLookAngle(), new Vec3(0, 1, 0), 0.8f, 1.4f, 6, 0);
+            });
+        }
         switch (StarForge.mutation(p, id)) {   // a spell mutated at the Star Forge
             case StarForge.MUT_ECHO -> {   // the hit lands again, weaker, half a second later
                 Vec3 at = t.position().add(0, t.getBbHeight() * 0.5, 0);

@@ -37,6 +37,9 @@ public final class MasteryClient {
         int xp = GrimoireMastery.xp(stack), cap = GrimoireMastery.cap(stack), lvl = GrimoireMastery.levelFor(xp, cap);
         int[] th = GrimoireMastery.THRESHOLDS;
         boolean max = lvl >= cap;
+        if (com.ironspellgrimoire.server.Ascension.ascended(stack)) tip.add(Component.literal("\u2727 Ascended Grimoire - every spell +15%").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+        if (stack.hasTag() && !stack.getTag().getCompound("Evolved").isEmpty())
+            tip.add(Component.literal("\u2726 " + stack.getTag().getCompound("Evolved").size() + " evolved spell" + (stack.getTag().getCompound("Evolved").size() == 1 ? "" : "s")).withStyle(ChatFormatting.LIGHT_PURPLE));
         if (com.ironspellgrimoire.server.Awakening.awakened(stack)) tip.add(Component.literal("\u2726 Awakened - " + Component.translatable("spell.iron_spell_grimoire." + com.ironspellgrimoire.server.Awakening.spellFor(stack)).getString()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
         else if (com.ironspellgrimoire.server.Awakening.canAwaken(stack)) tip.add(Component.literal("\u2726 Ready to awaken - in a desperate fight against a boss").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
         if (GrimoireMastery.ascended(stack)) tip.add(Component.literal("\u2694 Magic Knight - passed the exam").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));

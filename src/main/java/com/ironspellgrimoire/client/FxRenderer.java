@@ -108,6 +108,9 @@ public class FxRenderer extends FxBase {
       if (p.shape == 44) { PixelFx.ghostBlade(p); return; }   // Equinox's invisible sword
       if (p.shape == 45) { GrimoireCeremonyRenderer.start(p); return; }   // the grimoire tower ceremony
       if (p.shape == 70) { AwakeningScene.start(p); return; }   // a Grimoire Awakening (server/Awakening)
+      if (p.shape == 71) { EvolutionToast.start(p); return; }   // a spell evolving (server/SpellEvolution)
+      if (p.shape == 73) { BossIntroCard.start(p); return; }    // a boss's title card (server/BossIntro)
+      if (p.shape == 74) { FinisherFrame.start(p); return; }    // the killing blow on a boss (server/BossCores)
       if (p.shape == 46) { PortalRenderer.spawn(p); return; }   // Finral's gates of space
       if (p.shape == 47) { ThreadForms.set(p); return; }        // the String Grimoire's thread forms
       if (p.shape == 3 && PortalRenderer.kill(p.id)) return;    // closing a gate   // Equinox hit you: your screen is cut in two   // a move's cast animation started (effect timing)

@@ -21,6 +21,7 @@ public final class MageSetup {
         e.put(AddonEntities.LICHT.get(), com.ironspellgrimoire.entity.Licht.attributes().build());
         e.put(AddonEntities.REVENANT.get(), com.ironspellgrimoire.entity.Revenant.attributes().build());
         e.put(AddonEntities.CURSE_WITCH.get(), com.ironspellgrimoire.entity.CurseWitch.attributes().build());
+        e.put(AddonEntities.REFLECTION.get(), com.ironspellgrimoire.entity.Reflection.attributes().build());
     }
 
     @SubscribeEvent

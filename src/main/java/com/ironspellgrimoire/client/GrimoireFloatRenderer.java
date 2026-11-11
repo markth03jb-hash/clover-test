@@ -456,6 +456,10 @@ public class GrimoireFloatRenderer {
                   float breath = 0.6F + 0.4F * Mth.sin((float) time * 0.12F);
                   FxRenderer.queueBook(bookPos, yawS - turn, tilt, s * 1.35F, k * breath, cyc, 0.46F, 0.375F, 22.5F, au[0], au[1], light);
                }
+               if (com.ironspellgrimoire.server.Ascension.ascended(book)) {   // ascended: crowned with a third aura, in gold
+                  float breath = 0.7F + 0.3F * Mth.sin((float) time * 0.09F + 1.5F);
+                  FxRenderer.queueBook(bookPos, yawS - turn, tilt, s * 1.7F, k * breath, cyc, 0.46F, 0.375F, 22.5F, 8, au[1], light);
+               }
             }
          }
          ps.popPose();
