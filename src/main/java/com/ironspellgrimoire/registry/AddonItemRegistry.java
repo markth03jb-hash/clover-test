@@ -195,6 +195,7 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(MANA_CORE.get()));
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());
                 out.accept(AddonBlocks.POSTER_BOARD_ITEM.get());
+                out.accept(AddonBlocks.QUEST_BOARD_ITEM.get());
             })
             .build());
 }

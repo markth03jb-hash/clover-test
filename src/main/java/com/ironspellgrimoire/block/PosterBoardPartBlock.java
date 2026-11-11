@@ -39,7 +39,7 @@ public class PosterBoardPartBlock extends HorizontalDirectionalBlock {
         Direction side = f.getClockWise();
         for (BlockPos c : new BlockPos[]{pos.relative(side), pos.relative(side.getOpposite()), pos.below(), pos.below().relative(side), pos.below().relative(side.getOpposite())}) {
             BlockState s = level.getBlockState(c);
-            if (s.is(AddonBlocks.POSTER_BOARD.get()) && s.getValue(FACING) == f) return c;
+            if (s.getBlock() instanceof PosterBoardBlock && s.getValue(FACING) == f) return c;   // a Poster Board or a Quest Board
         }
         return null;
     }
@@ -64,7 +64,8 @@ public class PosterBoardPartBlock extends HorizontalDirectionalBlock {
 
     @Override
     public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
-        return new ItemStack(AddonBlocks.POSTER_BOARD_ITEM.get());
+        BlockPos m = main(level, pos, state.getValue(FACING));
+        return new ItemStack(m != null ? level.getBlockState(m).getBlock().asItem() : AddonBlocks.POSTER_BOARD_ITEM.get());
     }
 
     @Override

@@ -55,8 +55,11 @@ public class PosterBoardBlock extends HorizontalDirectionalBlock {
     }
 
     /** Puts a whole board in the world (for villages: server/VillageBoards). */
-    public static void placeAt(Level level, BlockPos pos, Direction f) {
-        level.setBlock(pos, AddonBlocks.POSTER_BOARD.get().defaultBlockState().setValue(FACING, f), 3);
+    public static void placeAt(Level level, BlockPos pos, Direction f) { placeAt(level, pos, f, AddonBlocks.POSTER_BOARD.get()); }
+
+    /** The same for any board on this frame (the Quest Board). */
+    public static void placeAt(Level level, BlockPos pos, Direction f, Block board) {
+        level.setBlock(pos, board.defaultBlockState().setValue(FACING, f), 3);
         for (BlockPos p : parts(pos, f)) level.setBlock(p, AddonBlocks.POSTER_BOARD_PART.get().defaultBlockState().setValue(FACING, f), 3);
     }
 
