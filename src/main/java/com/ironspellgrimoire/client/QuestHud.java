@@ -24,7 +24,7 @@ import org.joml.Matrix4f;
 public final class QuestHud {
     private QuestHud() {}
 
-    private static int type = -1, state, have, need;
+    private static int type = -1, state, have, need, flags;
     private static double tx, tz;
     private static long deadline, doneAt;
 
@@ -35,7 +35,7 @@ public final class QuestHud {
         type = p.sweep;
         state = p.life;
         if (state == Quests.DONE) { have = need; doneAt = now; return; }
-        have = (int) p.a0; need = (int) p.a1;
+        have = (int) p.a0; need = (int) p.a1; flags = (int) p.h;
         tx = p.c.x; tz = p.c.z;
         deadline = now + (long) p.r;
     }
@@ -48,17 +48,19 @@ public final class QuestHud {
         if (state == Quests.DONE && now - doneAt > 80) { type = -1; return; }
         GuiGraphics g = e.getGuiGraphics();
         Font f = mc.font;
-        int w = 168, x = g.guiWidth() - w - 4, y = BountyHud.shown() ? 70 : 4, h = 40;
-        int head = state == Quests.DONE ? 0xFF60FF80 : 0xFF50C8FF;
+        boolean daily = (flags & 16) != 0;
+        int w = 168, x = g.guiWidth() - w - 4, y = BountyHud.shown() ? 70 : 4, h = daily && state != Quests.DONE ? 51 : 40;
+        int head = state == Quests.DONE ? 0xFF60FF80 : daily ? 0xFFFFC840 : 0xFF50C8FF;
         g.fill(x, y, x + w, y + h, 0xA0081018);
-        g.renderOutline(x, y, w, h, 0xC060A8D8);
+        g.renderOutline(x, y, w, h, daily ? 0xC0E8B84A : 0xC060A8D8);
         g.fill(x, y, x + 3, y + h, head);
-        g.drawString(f, state == Quests.DONE ? "QUEST COMPLETE" : "QUEST", x + 8, y + 4, head, false);
+        g.drawString(f, state == Quests.DONE ? "QUEST COMPLETE" : daily ? "DAILY SPECIAL" : "QUEST", x + 8, y + 4, head, false);
+        if (daily && state != Quests.DONE) g.drawString(f, Quests.modsText(flags & 15), x + 8, y + 40, 0xFFFF9060, false);
         String title = Quests.TITLES[Math.max(0, Math.min(Quests.TITLES.length - 1, type))];
         g.drawString(f, title, x + w - 6 - f.width(title), y + 4, 0xFFFFFFFF, false);
         if (state == Quests.TRAVEL) {
             double dx = tx - mc.player.getX(), dz = tz - mc.player.getZ();
-            String line = (int) Math.sqrt(dx * dx + dz * dz) + " m " + Bounties.direction(dx, dz);
+            String line = (type == Quests.BEAST ? "Roaming: " : "") + (int) Math.sqrt(dx * dx + dz * dz) + " m " + Bounties.direction(dx, dz);
             g.drawString(f, line, x + 24, y + 16, 0xFFFFFFFF, false);
             String left = "Time left: " + com.ironspellgrimoire.item.WantedPosterItem.time(Math.max(0, deadline - now));
             g.drawString(f, left, x + 8, y + 28, 0xFFB0C8D8, false);
@@ -74,9 +76,11 @@ public final class QuestHud {
             g.pose().popPose();
             return;
         }
+        boolean taken = (flags & 32) != 0;
         String what = switch (type) {
             case Quests.RIFT -> "Reach the rift's relic chamber";
-            case Quests.BOSS -> "Bring it down";
+            case Quests.BOSS, Quests.BEAST -> "Bring it down";
+            case Quests.PAGE -> taken ? "Hold the ground: " + have + " / " + need + " s" : "Take the page from its guards";
             default -> "Defeat them all";
         };
         g.drawString(f, what, x + 8, y + 16, 0xFFB0C8D8, false);

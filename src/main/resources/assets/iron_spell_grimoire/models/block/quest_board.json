@@ -11,7 +11,9 @@
   "wanted_b": "iron_spell_grimoire:block/quest_board_supply",
   "wanted_c": "iron_spell_grimoire:block/quest_board_notice",
   "pin": "minecraft:block/light_blue_wool",
-  "lantern": "minecraft:block/shroomlight"
+  "lantern": "minecraft:block/shroomlight",
+  "special": "iron_spell_grimoire:block/quest_board_special",
+  "gold": "minecraft:block/gold_block"
  },
  "elements": [
   {
@@ -2047,6 +2049,106 @@
       3,
       16,
       4
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    21.5,
+    5.6,
+    6.6
+   ],
+   "to": [
+    27.5,
+    11.6,
+    7
+   ],
+   "faces": {
+    "north": {
+     "texture": "#special",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "rotation": {
+    "origin": [
+     24.5,
+     8.6,
+     6.8
+    ],
+    "axis": "z",
+    "angle": -22.5
+   }
+  },
+  {
+   "from": [
+    24,
+    10,
+    6.2
+   ],
+   "to": [
+    25,
+    11,
+    6.6
+   ],
+   "faces": {
+    "north": {
+     "texture": "#gold",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#gold",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#gold",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#gold",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#gold",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#gold",
+     "uv": [
+      0,
+      0,
+      16,
+      16
      ]
     }
    }

@@ -55,12 +55,27 @@ for i in range(4):
     d.line([(6, y + 1), (13 - i, y + 1)], fill=INK)
 save('quest_board_check', c)
 
+# the Daily Special: a gold-edged note with a star on it, pinned with gold
+sp = paper(15, (238, 226, 190)); d = ImageDraw.Draw(sp)
+d.rectangle([0, 0, 15, 15], outline=(210, 160, 40, 255)); d.rectangle([1, 1, 14, 14], outline=(240, 200, 80, 255))
+for (x, y) in ((7, 3), (8, 3), (6, 5), (7, 5), (8, 5), (9, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (9, 6), (10, 6), (11, 6),
+               (6, 7), (7, 7), (8, 7), (9, 7), (5, 8), (6, 8), (9, 8), (10, 8), (7, 4), (8, 4)):
+    sp.putpixel((x, y), (230, 170, 30, 255))
+for y in (11, 13): d.line([(3, y), (12, y)], fill=INK)
+save('quest_board_special', sp)
+
 # the model: the Poster Board's, with these pictures
 src = json.load(open(os.path.join(A, 'models/block/poster_board.json')))
 model = copy.deepcopy(src)
 model['textures'].update({'sign': 'iron_spell_grimoire:block/quest_board_sign', 'note': 'iron_spell_grimoire:block/quest_board_check',
                           'wanted_a': 'iron_spell_grimoire:block/quest_board_map', 'wanted_b': 'iron_spell_grimoire:block/quest_board_supply',
                           'wanted_c': 'iron_spell_grimoire:block/quest_board_notice', 'pin': 'minecraft:block/light_blue_wool'})
+model['textures']['special'] = 'iron_spell_grimoire:block/quest_board_special'
+model['textures']['gold'] = 'minecraft:block/gold_block'
+# the gold-pinned Daily Special, low on the right of the board
+model['elements'].append({'from': [21.5, 5.6, 6.6], 'to': [27.5, 11.6, 7], 'faces': {'north': {'texture': '#special', 'uv': [0, 0, 16, 16]}},
+                          'rotation': {'origin': [24.5, 8.6, 6.8], 'axis': 'z', 'angle': -22.5}})
+model['elements'].append({'from': [24, 10, 6.2], 'to': [25, 11, 6.6], 'faces': {f: {'texture': '#gold', 'uv': [0, 0, 16, 16]} for f in ('north', 'south', 'east', 'west', 'up', 'down')}})
 json.dump(model, open(os.path.join(A, 'models/block/quest_board.json'), 'w'), indent=1)
 json.dump({'parent': 'iron_spell_grimoire:block/quest_board'}, open(os.path.join(A, 'models/item/quest_board.json'), 'w'))
 rot = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
