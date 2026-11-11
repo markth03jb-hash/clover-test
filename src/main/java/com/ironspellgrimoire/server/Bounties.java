@@ -287,6 +287,7 @@ public final class Bounties {
     /** Bosses on a poster hit harder when Enraged, and the unbound one harder still. */
     public static float damageMult(Entity boss) {
         float k = (boss.getPersistentData().getInt("isg_bounty_mods") & ENRAGED) != 0 ? 1.3f : 1f;
+        if (boss.getPersistentData().getBoolean("isg_raid_leader")) return k * 1.7f;   // Licht leading an Elf Raid
         return unbound(boss) ? k * 1.4f : k;
     }
 
