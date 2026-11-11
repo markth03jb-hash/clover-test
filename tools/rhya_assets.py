@@ -55,7 +55,8 @@ for (u, v) in ((40, 16), (32, 48)):
 for (u, v) in ((0, 16), (16, 48)):
     box(u, v, 4, 12, 4, {'*': lambda x, y, W, H: jit(BOOT, 4) if y >= 9 else jit(GREY_D if x == 0 else GREY, 4)})
 os.makedirs(os.path.join(A, 'textures/entity'), exist_ok=True)
-im.save(os.path.join(A, 'textures/entity/rhya.png'))
+# the skin is now the one supplied by the user; this script no longer overwrites it
+# im.save(os.path.join(A, 'textures/entity/rhya.png'))
 json.dump({'parent': 'minecraft:item/template_spawn_egg'}, open(os.path.join(A, 'models/item/rhya_spawn_egg.json'), 'w'), indent=1)
 SP = os.path.join(A, 'sounds.json'); s = json.load(open(SP))
 for i in (1, 2, 3):
