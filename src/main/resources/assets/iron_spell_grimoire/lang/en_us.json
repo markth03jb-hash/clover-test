@@ -738,5 +738,11 @@
   "entity.iron_spell_grimoire.rhya": "Rhya the Disloyal",
   "item.iron_spell_grimoire.rhya_spawn_egg": "Rhya Spawn Egg",
   "subtitles.iron_spell_grimoire.music.rhya": "Rhya's theme",
-  "item.iron_spell_grimoire.wanted_poster": "Wanted Poster"
+  "item.iron_spell_grimoire.wanted_poster": "Wanted Poster",
+  "item.iron_spell_grimoire.rift_compass": "Rift Compass",
+  "item.iron_spell_grimoire.rift_ink": "Rift Ink",
+  "item.iron_spell_grimoire.cracked_lens": "Cracked Lens",
+  "item.iron_spell_grimoire.rift_heart": "Rift Heart",
+  "item.iron_spell_grimoire.hollow_bell": "Hollow Bell",
+  "item.iron_spell_grimoire.shade_lantern": "Shade Lantern"
 }

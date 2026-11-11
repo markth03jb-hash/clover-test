@@ -77,6 +77,8 @@ public final class Bounties {
 
     public static int stars(ServerPlayer p) { return p.getPersistentData().getInt(STARS); }
 
+    public static void addStars(ServerPlayer p, int n) { p.getPersistentData().putInt(STARS, stars(p) + n); }
+
     /** A new bounty for {@code p}, sighted somewhere 400-900 blocks from {@code from}. */
     static CompoundTag create(ServerPlayer p, Vec3 from, int boss) {
         ThreadLocalRandom r = ThreadLocalRandom.current();

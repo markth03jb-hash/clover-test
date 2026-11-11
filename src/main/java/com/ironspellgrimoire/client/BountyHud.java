@@ -33,6 +33,21 @@ public final class BountyHud {
     private static int boss = -1, mods, state, stars;
     private static double tx, tz;
     private static long deadline, shownAt;
+    private static double rx, rz;
+    private static int riftRank;
+    private static long riftUntil;
+
+    /** The Rift Compass (FxPacket shape 68): the nearest open rift, while it's held. */
+    public static void rift(FxPacket p) {
+        Minecraft mc = Minecraft.getInstance();
+        long now = mc.level == null ? 0 : mc.level.getGameTime();
+        if (p.sweep <= 0) {
+            riftUntil = 0;
+            if (mc.player != null && now % 40 < 10) mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal("The compass needle spins - no rift is open nearby."), true);
+            return;
+        }
+        rx = p.c.x; rz = p.c.z; riftRank = p.sweep; riftUntil = now + p.life;
+    }
 
     public static void set(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
@@ -54,54 +69,69 @@ public final class BountyHud {
     @SubscribeEvent
     public static void onGui(RenderGuiEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null || boss < 0 || mc.options.hideGui) return;
+        if (mc.player == null || mc.level == null || mc.options.hideGui) return;
         long now = mc.level.getGameTime();
-        if (state >= Bounties.STATE_DONE && now - shownAt > 120) { boss = -1; return; }
         GuiGraphics g = e.getGuiGraphics();
         Font f = mc.font;
         int W = g.guiWidth();
+        float yaw = mc.player.getViewYRot(e.getPartialTick());
+        boolean rifting = now < riftUntil;
+        if (boss >= 0 && state >= Bounties.STATE_DONE && now - shownAt > 120) boss = -1;
+        if (hunting() || rifting) compassBar(g, f, W, yaw, now);
+        if (hunting()) {
+            double dx = tx - mc.player.getX(), dz = tz - mc.player.getZ();
+            mark(g, f, W, yaw, dx, dz, now, 0xFF2020, 0);
+        }
+        if (rifting) {
+            double dx = rx - mc.player.getX(), dz = rz - mc.player.getZ();
+            mark(g, f, W, yaw, dx, dz, now, 0xB060FF, hunting() ? 9 : 0);
+        }
+        if (boss < 0) return;
         double dx = tx - mc.player.getX(), dz = tz - mc.player.getZ();
         int dist = (int) Math.sqrt(dx * dx + dz * dz);
-        if (hunting()) compass(g, f, W, mc.player.getViewYRot(e.getPartialTick()), dx, dz, dist, now);
         tracker(g, f, W, dist, dx, dz, now);
     }
 
-    private static void compass(GuiGraphics g, Font f, int W, float yaw, double dx, double dz, int dist, long now) {
-        int bw = 200, x0 = (W - bw) / 2, y0 = 3, h = 13;
-        g.fill(x0 - 1, y0 - 1, x0 + bw + 1, y0 + h + 1, 0x90000000);
-        g.fill(x0, y0, x0 + bw, y0 + 1, 0x60E8B84A);
-        g.fill(x0, y0 + h - 1, x0 + bw, y0 + h, 0x60E8B84A);
-        int cx = x0 + bw / 2;
-        double span = 100.0;   // degrees either side shown
-        // ticks and letters: Minecraft yaw 0 = south, 90 = west, 180 = north, -90 = east
+    private static final int BW = 200, BY = 3, BH = 13;
+    private static final double SPAN = 100.0;   // degrees either side shown
+
+    /** The compass bar itself: N/E/S/W sliding as you turn (Minecraft yaw 0 = south, 90 = west, 180 = north). */
+    private static void compassBar(GuiGraphics g, Font f, int W, float yaw, long now) {
+        int x0 = (W - BW) / 2;
+        g.fill(x0 - 1, BY - 1, x0 + BW + 1, BY + BH + 1, 0x90000000);
+        g.fill(x0, BY, x0 + BW, BY + 1, 0x60E8B84A);
+        g.fill(x0, BY + BH - 1, x0 + BW, BY + BH, 0x60E8B84A);
+        int cx = x0 + BW / 2;
         String[] names = {"S", "SW", "W", "NW", "N", "NE", "E", "SE"};
         for (int deg = 0; deg < 360; deg += 15) {
             double rel = Mth.wrapDegrees(deg - yaw);
-            if (Math.abs(rel) > span) continue;
-            int x = cx + (int) (rel / span * (bw / 2.0 - 4));
-            boolean major = deg % 45 == 0;
-            if (major) {
+            if (Math.abs(rel) > SPAN) continue;
+            int x = cx + (int) (rel / SPAN * (BW / 2.0 - 4));
+            if (deg % 45 == 0) {
                 String s = names[deg / 45];
-                int col = s.equals("N") ? 0xFFFF6060 : s.length() == 1 ? 0xFFFFFFFF : 0xFFB0B0B0;
-                g.drawCenteredString(f, s, x, y0 + 3, col);
-            } else g.fill(x, y0 + 4, x + 1, y0 + h - 4, 0x80FFFFFF);
+                g.drawCenteredString(f, s, x, BY + 3, s.equals("N") ? 0xFFFF6060 : s.length() == 1 ? 0xFFFFFFFF : 0xFFB0B0B0);
+            } else g.fill(x, BY + 4, x + 1, BY + BH - 4, 0x80FFFFFF);
         }
-        g.fill(cx, y0 - 2, cx + 1, y0 + 1, 0xFFFFFFFF);   // where you face
-        // the bounty mark
+        g.fill(cx, BY - 2, cx + 1, BY + 1, 0xFFFFFFFF);   // where you face
+    }
+
+    /** A target on the bar: a pointer under it (or an arrow at the edge when it's behind you) and the distance. */
+    private static void mark(GuiGraphics g, Font f, int W, float yaw, double dx, double dz, long now, int rgb, int lower) {
+        int cx = W / 2;
+        int dist = (int) Math.sqrt(dx * dx + dz * dz);
         double bearing = Math.toDegrees(Math.atan2(-dx, dz));
         double rel = Mth.wrapDegrees(bearing - yaw);
-        boolean behind = Math.abs(rel) > span;
-        int mx = cx + (int) (Mth.clamp(rel, -span, span) / span * (bw / 2.0 - 4));
+        boolean behind = Math.abs(rel) > SPAN;
+        int mx = cx + (int) (Mth.clamp(rel, -SPAN, SPAN) / SPAN * (BW / 2.0 - 4));
         float pulse = 0.6F + 0.4F * (float) Math.sin(now * 0.3);
-        int red = 0xFF000000 | ((int) (200 + 55 * pulse) << 16) | 0x2020;
-        if (behind) {
-            String arrow = rel < 0 ? "<" : ">";
-            g.drawCenteredString(f, arrow, mx, y0 + 3, red);
-        } else {
-            for (int i = 0; i <= 4; i++) g.fill(mx - (4 - i), y0 + h + 1 + i, mx + (4 - i) + 1, y0 + h + 2 + i, red);   // a red pointer under the bar
-            g.fill(mx - 1, y0 + 1, mx + 2, y0 + h - 1, red);
+        int r = (int) (((rgb >> 16) & 255) * (0.7F + 0.3F * pulse)), gg = (int) (((rgb >> 8) & 255) * (0.7F + 0.3F * pulse)), b = (int) ((rgb & 255) * (0.7F + 0.3F * pulse));
+        int col = 0xFF000000 | r << 16 | gg << 8 | b;
+        if (behind) g.drawCenteredString(f, rel < 0 ? "<" : ">", mx, BY + 3, col);
+        else {
+            for (int i = 0; i <= 4; i++) g.fill(mx - (4 - i), BY + BH + 1 + i, mx + (4 - i) + 1, BY + BH + 2 + i, col);
+            g.fill(mx - 1, BY + 1, mx + 2, BY + BH - 1, col);
         }
-        g.drawCenteredString(f, dist + " m", mx, y0 + h + 7, 0xFFFFD27A);
+        g.drawCenteredString(f, dist + " m", mx, BY + BH + 7 + lower, col);
     }
 
     private static void tracker(GuiGraphics g, Font f, int W, int dist, double dx, double dz, long now) {
