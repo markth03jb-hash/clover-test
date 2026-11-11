@@ -435,6 +435,25 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> TIME_SPELLS = List.of(
             CLOCK_HAND_BOLT, TIME_STOP_POINT, TIME_SKIP, TIME_RECOVERY, CHRONO_ACCELERATION, TICKING_SNARE, TIME_THEFT, HOURGLASS_BARRAGE, REWIND_WARD, ECHO_OF_THE_PAST, CHRONOSTASIS_FIELD, ZENITH_HOUR);
 
+    // ---- Light Grimoire (Patolli)
+    private static com.ironspellgrimoire.spells.BookSpell light(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.HOLY_RESOURCE,
+                com.ironspellgrimoire.item.LightGrimoireItem.class, "ui.iron_spell_grimoire.light_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> LIGHT_SWORD = registerSpell(light("light_sword", 2, 15, 9, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.LightFx::lightSword));
+    public static final RegistryObject<AbstractSpell> LIGHT_SPEED_STEP = registerSpell(light("light_speed_step", 6, 20, 8, "iron_spell_grimoire:light_step", com.ironspellgrimoire.server.LightFx::lightSpeedStep));
+    public static final RegistryObject<AbstractSpell> ARROWS_OF_JUDGMENT = registerSpell(light("arrows_of_judgment", 9, 35, 9, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.LightFx::arrowsOfJudgment));
+    public static final RegistryObject<AbstractSpell> BRIGHT_JUDGMENT_WHIP = registerSpell(light("bright_judgment_whip", 8, 30, 10, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.LightFx::brightJudgmentWhip));
+    public static final RegistryObject<AbstractSpell> HEALING_RAY = registerSpell(light("healing_ray", 14, 40, 8, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.LightFx::healingRay));
+    public static final RegistryObject<AbstractSpell> BLINDING_FLASH = registerSpell(light("blinding_flash", 16, 35, 6, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.LightFx::blindingFlash));
+    public static final RegistryObject<AbstractSpell> LIGHT_SWORDS_OF_JUDGMENT = registerSpell(light("light_swords_of_judgment", 20, 70, 12, "iron_spell_grimoire:light_swords_judgment", com.ironspellgrimoire.server.LightFx::lightSwordsOfJudgment));
+    public static final RegistryObject<AbstractSpell> LIGHT_SHAFT = registerSpell(light("light_shaft", 18, 60, 14, "iron_spell_grimoire:light_shaft", com.ironspellgrimoire.server.LightFx::lightShaft));
+    public static final RegistryObject<AbstractSpell> DEMON_LIGHT = registerSpell(light("demon_light", 60, 80, 0, "iron_spell_grimoire:light_demon", com.ironspellgrimoire.server.LightFx::demonLight));
+    public static final RegistryObject<AbstractSpell> IMPERIAL_SWORDS_OF_CONVICTION = registerSpell(light("imperial_swords_of_conviction", 45, 120, 16, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.LightFx::imperialSwords));
+    public static final List<RegistryObject<AbstractSpell>> LIGHT_SPELLS = List.of(
+            LIGHT_SWORD, LIGHT_SPEED_STEP, ARROWS_OF_JUDGMENT, BRIGHT_JUDGMENT_WHIP, HEALING_RAY, BLINDING_FLASH, LIGHT_SWORDS_OF_JUDGMENT, LIGHT_SHAFT, DEMON_LIGHT, IMPERIAL_SWORDS_OF_CONVICTION);
+
     private static RegistryObject<AbstractSpell> registerSpell(AbstractSpell spell) {
         return SPELLS.register(spell.getSpellName(), () -> spell);
     }

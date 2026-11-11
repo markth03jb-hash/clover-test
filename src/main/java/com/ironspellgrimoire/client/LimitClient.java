@@ -44,6 +44,7 @@ public final class LimitClient {
             {0.36F, 1.0F, 0.48F},   // Jack: green
             {0.86F, 0.64F, 0.36F},  // Sol: ochre
             {0.3F, 0.86F, 1.0F},    // Julius: cyan
+            {1.0F, 0.9F, 0.5F},     // Patolli: light
     };
 
     public static void set(int id, int book, int life) {

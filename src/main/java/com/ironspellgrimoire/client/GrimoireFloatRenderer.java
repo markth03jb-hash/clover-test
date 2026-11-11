@@ -124,6 +124,7 @@ public class GrimoireFloatRenderer {
       if (item == AddonItemRegistry.SLASH_GRIMOIRE.get()) return new int[]{25, 2};
       if (item == AddonItemRegistry.EARTH_GRIMOIRE.get()) return new int[]{26, 2};
       if (item == AddonItemRegistry.TIME_GRIMOIRE.get()) return new int[]{29, 3};
+      if (item == AddonItemRegistry.LIGHT_GRIMOIRE.get()) return new int[]{8, 4};
       String id = BuiltInRegistries.ITEM.getKey(item).getPath();
       return switch (id) {
          default -> new int[]{8, 4};

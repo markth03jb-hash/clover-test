@@ -48,6 +48,7 @@ public final class ManaBarHud {
             {0xE8F0E8, 0x1EB040, 0x80FF90, 0x060E08, 0xC0FFCC},   // Jack (green)
             {0xD8B878, 0x8A6034, 0xD8B070, 0x140E07, 0xEBD0A0},   // Sol
             {0xC8F2FF, 0x22B8E8, 0x8CE6FF, 0x04101C, 0xE0FAFF},   // Julius
+            {0xFFF6D8, 0xE8C040, 0xFFFFFF, 0x141006, 0xFFF4C0},   // Patolli: light
     };
 
     private static float shown = -1F;

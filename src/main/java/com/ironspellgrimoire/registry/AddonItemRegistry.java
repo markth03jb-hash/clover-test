@@ -96,6 +96,9 @@ public class AddonItemRegistry {
     // ------------------------------------------------------------------ Julius Novachrono: Time Grimoire
     public static final RegistryObject<Item> TIME_GRIMOIRE = ITEMS.register("time_grimoire", com.ironspellgrimoire.item.TimeGrimoireItem::new);
 
+    // ------------------------------------------------------------------ Patolli: Light Grimoire
+    public static final RegistryObject<Item> LIGHT_GRIMOIRE = ITEMS.register("light_grimoire", com.ironspellgrimoire.item.LightGrimoireItem::new);
+
     /** The Ossuarch's drops. */
     public static final RegistryObject<Item> PHYLACTERY = ITEMS.register("ossuarch_phylactery", com.ironspellgrimoire.item.PhylacteryItem::new);
     public static final RegistryObject<Item> DEVIL_SHARD = ITEMS.register("devil_shard", com.ironspellgrimoire.item.DevilShardItem::new);
@@ -143,7 +146,7 @@ public class AddonItemRegistry {
                 ItemStack space = new ItemStack(SPACE_GRIMOIRE.get());
                 ((IPresetSpellContainer) SPACE_GRIMOIRE.get()).initializeSpellContainer(space);
                 out.accept(space);
-                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, TIME_GRIMOIRE)) {
+                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, TIME_GRIMOIRE, LIGHT_GRIMOIRE)) {
                     ItemStack st = new ItemStack(g.get());
                     ((IPresetSpellContainer) g.get()).initializeSpellContainer(st);
                     out.accept(st);

@@ -74,7 +74,8 @@ public final class ImpactFrames {
             {0xE6FAFF, 0x040E1C, 0x8CDFF5, 0x3CC8F0},   // 20 Julius
             {0xE2FFE6, 0x02140A, 0x44F06C, 0xFFFFFF},
             {0xFFD8DC, 0x140003, 0xE0102A, 0xFFF0F0},   // 22 Don Quixote: blood spattering out from the hit
-            {0xE8E8EE, 0x050506, 0x1C1C22, 0xFFFFFF}};  // 23 Rien: black-slime weapons converging  // 21 Jack's green horizon: the same long cuts, in green  // 20 Julius: clock marks closing in, a clock round the hit
+            {0xE8E8EE, 0x050506, 0x1C1C22, 0xFFFFFF},   // 23 Rien
+            {0xFFF8E0, 0x0C0800, 0xFFE9A0, 0xFFFFFF}};  // 24 Patolli: swords of light raining in on the hit, a star on it  // 23 Rien: black-slime weapons converging  // 21 Jack's green horizon: the same long cuts, in green  // 20 Julius: clock marks closing in, a clock round the hit
 
     public static void start(int ticks, int st, Vec3 where) {
         Minecraft mc = Minecraft.getInstance();
@@ -321,6 +322,18 @@ public final class ImpactFrames {
                     double a0 = j * Math.PI * 2 / 40, a1 = (j + 1) * Math.PI * 2 / 40;
                     taper(bb, m, fx + (float) Math.cos(a0) * cr, fy + (float) Math.sin(a0) * cr, 3F, fx + (float) Math.cos(a1) * cr, fy + (float) Math.sin(a1) * cr, 3F, acc, la);
                 }
+            }
+            case 24 -> {  // Patolli: swords of light raining down on the hit from above, in rows, a star where they land
+                for (int i = 0; i < 22; i++) {
+                    float sx = fx + (i - 10.5F) * (W / 18F) + (r.nextFloat() - 0.5F) * 20F;
+                    float drop = reach * (0.75F - 0.55F * (1F - rush) * 2F) * (0.6F + r.nextFloat() * 0.5F);
+                    float x0 = sx + (fx - sx) * 0.15F, y0 = fy - drop - 40F, x1 = sx + (fx - sx) * 0.45F, y1 = fy - drop * 0.25F;
+                    taper(bb, m, x0, y0, 1.5F, x1, y1, i % 3 == 0 ? 8F : 5F, i % 2 == 0 ? acc : line, la);
+                    float gx = x0 + (x1 - x0) * 0.2F, gy = y0 + (y1 - y0) * 0.2F;   // a crossguard on each
+                    taper(bb, m, gx - 8F, gy, 2.5F, gx + 8F, gy, 2.5F, acc, la);
+                }
+                star(bb, m, fx, fy, Math.min(W, H) * 0.14F, 4F, acc, la);
+                star(bb, m, fx, fy, Math.min(W, H) * 0.07F, 2F, line, la);
             }
             case 12 -> {  // Finral: rings of space closing in on the hit, a gold rim on the innermost
                 for (int q = 0; q < 7; q++) {

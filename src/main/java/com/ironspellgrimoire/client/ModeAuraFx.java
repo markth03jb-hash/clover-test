@@ -55,6 +55,7 @@ final class ModeAuraFx {
                 case 1 -> nean(m, cam, c, face, rt, h, now, pal, k, self);
                 case 2 -> salamander(m, cam, c, h, now, pal, k);
                 case 3 -> mane(m, cam, c, face, rt, h, now, pal, k, self);
+                case 5 -> demonLight(m, cam, c, face, rt, h, now, k, self);
                 default -> mantle(m, cam, c, h, now, pal, k);
             }
         }
@@ -158,5 +159,38 @@ final class ModeAuraFx {
             p = q;
         }
         if (p != null) FxBase.gline(m, cam, p, p.add(0, 0.12, 0), 0.1F, 8, k);
+    }
+
+    /**
+     * 5 Demon Light (Patolli): a black halo over a white one above the head, six small blades of light circling,
+     * and flickers of black light running up the body.
+     */
+    private static void demonLight(Matrix4f m, Vec3 cam, Vec3 c, Vec3 face, Vec3 rt, double h, double now, float k, boolean self) {
+        Vec3 top = c.add(0, h + 0.32, 0).subtract(face.scale(0.08));
+        for (int ring = 0; ring < 2; ring++) {
+            double r = ring == 0 ? 0.3 : 0.38, tilt = ring == 0 ? 0.0 : 0.06;
+            int pal = ring == 0 ? 6 : 10;
+            if (self && ring == 0) continue;
+            Vec3 prev = null;
+            for (int i = 0; i <= 20; i++) {
+                double a = i * TAU / 20 + now * (ring == 0 ? 0.05 : -0.04);
+                Vec3 q = top.add(rt.scale(Math.cos(a) * r)).add(face.scale(Math.sin(a) * r)).add(0, Math.sin(a) * tilt, 0);
+                if (prev != null) FxBase.gline(m, cam, prev, q, ring == 0 ? 0.05F : 0.08F, pal, (ring == 0 ? 0.95F : 0.8F) * k);
+                prev = q;
+            }
+        }
+        for (int i = 0; i < 6; i++) {   // the circling blades, point up, rising and falling
+            double a = i * TAU / 6 + now * 0.09;
+            Vec3 b = c.add(Math.cos(a) * 1.05, h * 0.45 + Math.sin(now * 0.2 + i) * 0.25, Math.sin(a) * 1.05);
+            Vec3 tip = b.add(0, 0.55, 0), guard = b.add(0, 0.08, 0), side = new Vec3(-Math.sin(a), 0, Math.cos(a)).scale(0.11);
+            FxBase.gline(m, cam, guard, tip, 0.07F, i % 2 == 0 ? 10 : 6, 0.85F * k);
+            FxBase.gline(m, cam, guard.add(side), guard.subtract(side), 0.04F, 6, 0.8F * k);
+            FxBase.gline(m, cam, b.subtract(0, 0.06, 0), guard, 0.03F, 6, 0.6F * k);
+        }
+        if (!self) for (int i = 0; i < 4; i++) {   // black light licking up the body
+            double ph = (now * 0.12 + i * 0.25) % 1.0, a = i * TAU / 4 + now * 0.03;
+            Vec3 b = c.add(Math.cos(a) * 0.36, ph * h, Math.sin(a) * 0.36);
+            FxBase.gline(m, cam, b, b.add(0, 0.35, 0), 0.06F, 10, (float) (Math.sin(ph * Math.PI) * 0.7) * k);
+        }
     }
 }

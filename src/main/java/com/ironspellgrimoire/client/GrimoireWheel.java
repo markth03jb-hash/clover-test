@@ -293,6 +293,8 @@ public final class GrimoireWheel {
             new Theme(c(0x120C06), c(0x3E2A14), c(0xD8B878), c(0xC8964E), c(0x6A4A26), 3, O_RIVETS, M_NOTCHES, true, 0x140E07, 0xEBD0A0),
             // Julius: midnight-blue pages, bright cyan trim, a little clock on every page
             new Theme(c(0x040E1C), c(0x0F3050), c(0xBDF0FF), c(0x3CC8F0), c(0x1A4A70), 3, O_RIVETS, M_NOTCHES, true, 0x05101E, 0xD8F8FF),
+            // Patolli: deep night pages, white-gold trim, a sword of light with a star on every page
+            new Theme(c(0x0C0A04), c(0x3A3010), c(0xFFF4C8), c(0xFFD860), c(0x5A4A18), 3, O_RIVETS, M_NOTCHES, true, 0x100C04, 0xFFF4C0),
     };
 
     /** {page inside, page edge, trim, accent, panel, title} as RGB ints, for the grimoire book screen and others. */
@@ -424,6 +426,14 @@ public final class GrimoireWheel {
                 seg(bb, m, cx, cy, pa, pr, Math.atan2(hx - cx, -(hy - cy)), Math.hypot(hx - cx, hy - cy), 0.9, t[0], t[1], t[2], 0.95F * A);
                 seg(bb, m, cx, cy, pa, pr, Math.atan2(mx - cx, -(my - cy)), Math.hypot(mx - cx, my - cy), 0.6, ac[0], ac[1], ac[2], 0.95F * A);
                 disc(bb, m, px, py, 0.8, t[0], t[1], t[2], A);
+            }
+            case 19 -> {   // Patolli: a sword of light pointing out of each page, a star glint on its tip
+                double tw = 0.7 + 0.3 * Math.sin(time * 3 + am * 5);
+                seg(bb, m, cx, cy, am, ri + 4, am, ro - 3, 1.3, ac[0], ac[1], ac[2], 0.9F * A);
+                seg(bb, m, cx, cy, am, ri + 4, am, ro - 3, 0.5, 1.0F, 1.0F, 1.0F, 0.95F * A);
+                seg(bb, m, cx, cy, am - w * 0.14, ri + 8, am + w * 0.14, ri + 8, 0.8, t[0], t[1], t[2], 0.9F * A);
+                double px = cx + Math.sin(am) * (ro - 3), py = cy - Math.cos(am) * (ro - 3);
+                disc(bb, m, px, py, 1.4 * tw, 1.0F, 1.0F, 0.9F, (float) tw * A);
             }
             case 13 -> {   // Langris: a straight cut of violet light across each page, with a crack off it
                 seg(bb, m, cx, cy, a0 + w * 0.12, ro - 3, a1 - w * 0.12, ri + 4, 1.4, ac[0], ac[1], ac[2], 0.9F * A);
