@@ -59,7 +59,8 @@ public final class GrimoireUpgrades {
             new Kind("wind_feather", "Wind Feather", 2, "+5% movement speed", "Quests (a chance)"),
             new Kind("bloodstone", "Bloodstone", 2, "+10% damage while you're below half health", "Quests, rift elite rooms"),
             new Kind("warding_glyph", "Warding Glyph", 3, "-6% damage taken from bosses", "Quests, bounties"),
-            new Kind("starlit_seal", "Starlit Seal", 1, "every quest and bounty pays one more merit star", "The Daily Special"));
+            new Kind("starlit_seal", "Starlit Seal", 1, "every quest and bounty pays one more merit star", "The Daily Special"),
+            new Kind("elf_kings_leaf", "Elf King's Leaf", 1, "+5% spell power, +5% cooldown reduction, +10% mana regen", "Elf Raids only"));
 
     public static Kind kind(String id) { for (Kind k : KINDS) if (k.id().equals(id)) return k; return null; }
 
@@ -117,7 +118,10 @@ public final class GrimoireUpgrades {
     private static final UUID BOOKMARK = UUID.fromString("7b1e0001-0000-4000-8000-0000000000a5");
     private static final UUID SPINE = UUID.fromString("7b1e0001-0000-4000-8000-0000000000a6");
     private static final UUID FEATHER = UUID.fromString("7b1e0001-0000-4000-8000-0000000000a7");
-    private static final List<UUID> MINE = List.of(MIRROR_POWER, MIRROR_CDR, CRYSTAL, CLASP, BOOKMARK, SPINE, FEATHER);
+    private static final UUID LEAF_P = UUID.fromString("7b1e0001-0000-4000-8000-0000000000a8");
+    private static final UUID LEAF_C = UUID.fromString("7b1e0001-0000-4000-8000-0000000000a9");
+    private static final UUID LEAF_R = UUID.fromString("7b1e0001-0000-4000-8000-0000000000aa");
+    private static final List<UUID> MINE = List.of(MIRROR_POWER, MIRROR_CDR, CRYSTAL, CLASP, BOOKMARK, SPINE, FEATHER, LEAF_P, LEAF_C, LEAF_R);
 
     private static void refresh(ItemStack book) {
         CompoundTag tag = book.getOrCreateTag();
@@ -135,6 +139,11 @@ public final class GrimoireUpgrades {
         if (spine > 0) add(book, AttributeRegistry.SPELL_POWER.get(), SPINE, 0.03 * spine, AttributeModifier.Operation.MULTIPLY_BASE);
         int feather = count(book, "wind_feather");
         if (feather > 0) add(book, Attributes.MOVEMENT_SPEED, FEATHER, 0.05 * feather, AttributeModifier.Operation.MULTIPLY_BASE);
+        if (count(book, "elf_kings_leaf") > 0) {
+            add(book, AttributeRegistry.SPELL_POWER.get(), LEAF_P, 0.05, AttributeModifier.Operation.MULTIPLY_BASE);
+            add(book, AttributeRegistry.COOLDOWN_REDUCTION.get(), LEAF_C, 0.05, AttributeModifier.Operation.MULTIPLY_BASE);
+            add(book, AttributeRegistry.MANA_REGEN.get(), LEAF_R, 0.1, AttributeModifier.Operation.MULTIPLY_BASE);
+        }
     }
 
     private static void add(ItemStack book, Attribute a, UUID id, double amt, AttributeModifier.Operation op) {

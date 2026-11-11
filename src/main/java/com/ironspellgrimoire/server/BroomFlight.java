@@ -42,6 +42,7 @@ public final class BroomFlight {
         if (p.tickCount % 20 == 0 && !p.isCreative()) {
             MagicData md = MagicData.getPlayerMagicData(p);
             float cost = sp > 0.1 ? 3f : 1f;
+            if (RiftRewards.wears(p, AddonItemRegistry.ELVEN_WIND_CHARM.get())) cost *= 0.5f;   // the Elven Wind Charm
             if (md.getMana() >= cost) { md.setMana(md.getMana() - cost); b.setNoMana(false); }
             else {
                 if (!b.noMana()) p.displayClientMessage(Component.literal("Your broom is out of mana - it can only glide down.").withStyle(ChatFormatting.GRAY), true);

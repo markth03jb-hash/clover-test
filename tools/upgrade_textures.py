@@ -247,6 +247,50 @@ d.polygon(star, fill=(255, 245, 200, 255), outline=(180, 120, 30, 255))
 px = im.load(); glint(px, 11, 8)
 T['starlit_seal'] = finish(im, glow=(255, 220, 110, 255))
 
+# ---------------------------------------------------------------- Elf King's Leaf: a broad golden leaf under a small crown
+def leaf(d, cx, cy, L, W, ang, c0, c1, vein):
+    pts = []
+    for i in range(25):
+        t = i / 24; r = math.sin(t * math.pi) * W
+        pts.append((t * L, r))
+    pts += [(t * L, -math.sin(t * math.pi) * W) for t in [i / 24 for i in range(24, -1, -1)]]
+    ca, sa = math.cos(ang), math.sin(ang)
+    P = [(cx + x * ca - y * sa, cy + x * sa + y * ca) for x, y in pts]
+    d.polygon(P, fill=c0)
+    half = [(cx + x * ca - y * sa, cy + x * sa + y * ca) for x, y in pts[:25]] + [(cx + L * ca, cy + L * sa), (cx, cy)]
+    d.polygon(half, fill=c1)
+    d.line([(cx, cy), (cx + L * ca, cy + L * sa)], fill=vein)
+    for k in range(1, 5):
+        t = k / 5; bx, by = cx + t * L * ca, cy + t * L * sa
+        for s_ in (1, -1):
+            d.line([(bx, by), (bx + (0.12 * L) * ca - s_ * (W * 0.6) * sa, by + (0.12 * L) * sa + s_ * (W * 0.6) * ca)], fill=vein)
+im, d = new()
+leaf(d, 6, 27, 25, 8, -0.95, (220, 170, 40, 255), (250, 210, 80, 255), (170, 120, 20, 255))
+d.polygon([(19, 2), (21, 6), (23, 3), (25, 6), (27, 2), (27, 9), (19, 9)], fill=(255, 220, 90, 255))   # the crown
+for (x, y) in ((21, 7), (25, 7)): d.point((x, y), fill=(80, 200, 120, 255))
+px = im.load(); glint(px, 12, 17, True)
+T['elf_kings_leaf'] = finish(im, glow=(255, 220, 110, 255))
+# ---------------------------------------------------------------- World Tree Leaf: a long green leaf, glowing at the veins, a dewdrop
+im, d = new()
+leaf(d, 5, 28, 27, 7, -0.85, (50, 140, 60, 255), (90, 190, 80, 255), (170, 255, 150, 255))
+d.ellipse([20, 19, 24, 23], fill=(180, 240, 255, 255))
+px = im.load(); glint(px, 21, 20)
+T['world_tree_leaf'] = finish(im, glow=(120, 255, 140, 255))
+# ---------------------------------------------------------------- Elven Wind Charm: a braided cord ring with a teal wind-stone and two feathers
+im, d = new()
+for i in range(36):   # the braid
+    a = i / 36 * math.tau
+    x, y = 16 + math.cos(a) * 10, 14 + math.sin(a) * 10
+    d.ellipse([x - 1.6, y - 1.6, x + 1.6, y + 1.6], fill=(200, 170, 110, 255) if i % 2 else (160, 125, 75, 255))
+d.ellipse([11, 9, 21, 19], fill=(60, 200, 190, 255)); d.ellipse([13, 11, 19, 17], fill=(150, 245, 230, 255))
+d.arc([12, 10, 20, 18], 30, 250, fill=(255, 255, 255, 255))
+for sx in (-1, 1):   # feathers hanging below
+    for k in range(7):
+        x = 16 + sx * (3 + k * 0.6); y = 23 + k
+        d.line([(x, y), (x + sx * 2, y - 1)], fill=(235, 245, 245, 255))
+px = im.load(); glint(px, 14, 12)
+T['elven_wind_charm'] = finish(im, glow=(120, 240, 230, 255))
+
 for name, img in T.items():
     img.save(os.path.join(TEX, name + '.png'))
     tex = {'layer0': 'iron_spell_grimoire:item/' + name}
@@ -254,7 +298,7 @@ for name, img in T.items():
     json.dump({'parent': 'minecraft:item/generated', 'textures': tex}, open(os.path.join(MOD, name + '.json'), 'w'), indent=1)
 FILL.save(os.path.join(TEX, 'rift_ink_fill.png'))
 # the preview shows the inks in their colours
-COLS = [(0xC0, 0x20, 0x2A), (0xBF, 0xE8, 0xFF), (0x9A, 0x5C, 0xFF), (0x5A, 0x5A, 0x70), (0x60, 0xD0, 0xFF), (0xA0, 0xF0, 0xFF), (0xD8, 0xD0, 0xFF), (0x60, 0xE0, 0x70), (0x3A, 0x8A, 0x30), (0xF0, 0xC0, 0x30)]
+COLS = [(0xC0, 0x20, 0x2A), (0xBF, 0xE8, 0xFF), (0x9A, 0x5C, 0xFF), (0x5A, 0x5A, 0x70), (0x60, 0xD0, 0xFF), (0xA0, 0xF0, 0xFF), (0xD8, 0xD0, 0xFF), (0x60, 0xE0, 0x70), (0x3A, 0x8A, 0x30), (0xF0, 0xC0, 0x30), (0xFF, 0xF0, 0xA0)]
 for i, c in enumerate(COLS):
     f = FILL.copy(); pf = f.load()
     for y in range(N):

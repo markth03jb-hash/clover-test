@@ -71,6 +71,7 @@ public final class ElfRaids {
         ServerBossEvent bar;
         UUID owner;
         boolean called;   // started by /raid elf: dawn doesn't end it
+        int level;        // how many raids its mage has broken before (up to 5): every one comes back harder
     }
 
     private static final Map<String, Raid> RAIDS = new HashMap<>();   // by dimension + village
@@ -108,6 +109,7 @@ public final class ElfRaids {
         r.centre = centre;
         r.owner = p.getUUID();
         r.called = called;
+        r.level = Math.min(5, p.getPersistentData().getInt("isg_raids_won"));
         r.pause = 80;
         r.bar = new ServerBossEvent(Component.literal("Elf Raid").withStyle(ChatFormatting.RED), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
         r.bar.setProgress(1f);
@@ -163,7 +165,7 @@ public final class ElfRaids {
         r.mobs.clear();
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         int elves = r.wave == WAVES ? 4 : 3 + r.wave * 3;
-        double hp = 1.2 + r.wave * 0.35;
+        double hp = 1.2 + r.wave * 0.35 + r.level * 0.15;
         for (int i = 0; i < elves; i++) {   // through rift-cuts round the village
             double a = (i % 4) * Math.PI / 2 + rnd.nextDouble(-0.4, 0.4), d = rnd.nextDouble(18, 28);
             Mob m = spawn(sl, AddonEntities.MAGE.get().create(sl), r.centre.add(Math.cos(a) * d, 0, Math.sin(a) * d));
@@ -179,7 +181,7 @@ public final class ElfRaids {
                 l.getPersistentData().putBoolean("isg_unbound", true);
                 l.getPersistentData().putBoolean("isg_raid_leader", true);
                 var h = l.getAttribute(Attributes.MAX_HEALTH);
-                if (h != null && h.getModifier(LEADER_HP) == null) h.addPermanentModifier(new AttributeModifier(LEADER_HP, "Raid leader", 1.5, AttributeModifier.Operation.MULTIPLY_TOTAL));
+                if (h != null && h.getModifier(LEADER_HP) == null) h.addPermanentModifier(new AttributeModifier(LEADER_HP, "Raid leader", 1.5 + r.level * 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL));
                 l.setHealth(l.getMaxHealth());
                 if (l instanceof AddonBoss ab) ab.setBarName(Component.literal("Licht, Leader of the Raid").withStyle(ChatFormatting.DARK_RED));
                 r.mobs.add(l.getUUID());
@@ -189,7 +191,7 @@ public final class ElfRaids {
             }
         }
         r.waveSize = r.mobs.size();
-        r.bar.setName(Component.literal("Elf Raid - wave " + r.wave + "/" + WAVES).withStyle(ChatFormatting.RED));
+        r.bar.setName(Component.literal("Elf Raid" + (r.level > 0 ? " " + roman(r.level + 1) : "") + " - wave " + r.wave + "/" + WAVES).withStyle(ChatFormatting.RED));
         r.bar.setProgress(1f);
         sl.playSound(null, BlockPos.containing(r.centre), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 48f, 0.9f + r.wave * 0.05f);
     }
@@ -215,20 +217,35 @@ public final class ElfRaids {
         FxSend.ring(sl, Fx.GOLD | FxPacket.KEEP_SHAPE, r.centre.add(0, 0.2, 0), 1f, 30f, 0.3f, 30);
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         for (ServerPlayer o : here) {
-            give(o, new ItemStack(Items.EMERALD, 24));
-            give(o, new ItemStack(AddonItemRegistry.ELVEN_BLADE_SHARD.get(), 2));
-            give(o, new ItemStack(AddonItemRegistry.MANA_CORE.get()));
+            int won = o.getPersistentData().getInt("isg_raids_won") + 1;
+            o.getPersistentData().putInt("isg_raids_won", won);
+            int stars = 12 + r.level * 2;
+            List<String> got = new ArrayList<>();
+            give(o, new ItemStack(Items.EMERALD, 24 + r.level * 8)); got.add((24 + r.level * 8) + " emeralds");
+            give(o, new ItemStack(AddonItemRegistry.ELVEN_BLADE_SHARD.get(), 2)); got.add("two Elven Blade Shards");
+            give(o, new ItemStack(AddonItemRegistry.MANA_CORE.get(), 1 + r.level / 2)); got.add("Mana Core" + (r.level >= 2 ? "s" : ""));
             var ups = AddonItemRegistry.UPGRADES;
-            give(o, new ItemStack(ups.get(rnd.nextInt(ups.size())).get()));
-            Bounties.addStars(o, 12);
-            GrimoireMastery.bountyXp(o, 1200);
+            give(o, new ItemStack(ups.get(rnd.nextInt(ups.size() - 1)).get())); got.add("an upgrade");
+            // the raid's own spoils, found nowhere else
+            if (won == 1 || rnd.nextInt(100) < 35) { give(o, new ItemStack(AddonItemRegistry.ELF_KINGS_LEAF.get())); got.add("the Elf King's Leaf"); }
+            if (rnd.nextInt(100) < 40 + r.level * 10) {
+                ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", 10);
+                give(o, ink); got.add("Elven Ink");
+            }
+            if (won == 2 || rnd.nextInt(100) < 25) { give(o, new ItemStack(AddonItemRegistry.WORLD_TREE_LEAF.get())); got.add("a World Tree Leaf"); }
+            if (won == 3 || rnd.nextInt(100) < 25) { give(o, new ItemStack(AddonItemRegistry.ELVEN_WIND_CHARM.get())); got.add("an Elven Wind Charm"); }
+            Bounties.addStars(o, stars);
+            GrimoireMastery.bountyXp(o, 1200 + r.level * 300);
             FxPacket pk = new FxPacket();
             pk.shape = SHAPE; pk.life = 60; pk.sweep = 1;
             AddonNetwork.send(PacketDistributor.PLAYER.with(() -> o), pk);
             o.sendSystemMessage(Component.literal("THE RAID IS BROKEN  ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-                    .append(Component.literal("+12 merit stars, 24 emeralds, two Elven Blade Shards, a Mana Core and an upgrade.").withStyle(ChatFormatting.YELLOW)));
+                    .append(Component.literal("+" + stars + " merit stars, " + String.join(", ", got) + ".").withStyle(ChatFormatting.YELLOW)));
+            o.sendSystemMessage(Component.literal("  Raids broken: " + won + (won < 6 ? " - the next will come back harder, and pay more." : "")).withStyle(ChatFormatting.GRAY));
         }
     }
+
+    private static String roman(int n) { return new String[]{"", "I", "II", "III", "IV", "V", "VI"}[Math.max(0, Math.min(6, n))]; }
 
     private static void fail(ServerLevel sl, String k, Raid r) {
         RAIDS.remove(k);

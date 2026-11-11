@@ -135,7 +135,9 @@ public final class RiftRewards {
         if (hasInk(p, 0)) {
             e.setNewMana(e.getOldMana() - cost * 0.75f);
             p.hurt(p.damageSources().magic(), 1f);
+            cost *= 0.75f;
         }
+        if (hasInk(p, 10)) e.setNewMana(e.getOldMana() - cost * 0.85f);   // Elven Ink
     }
 
     // ------------------------------------------------------------------ spell hits: Echo, the Cracked Lens; blows taken: the Rift Heart
@@ -241,6 +243,7 @@ public final class RiftRewards {
     public static void onTick(TickEvent.PlayerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || p.tickCount % 20 != 0) return;
         if (hasInk(p, 1)) TimedModifiers.apply(p, ForgeMod.ENTITY_GRAVITY.get(), FEATHER, "Feather Ink", -0.15, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
+        if (p.tickCount % 80 == 0 && p.getHealth() < p.getMaxHealth() && wears(p, AddonItemRegistry.WORLD_TREE_LEAF.get())) p.heal(1f);   // the World Tree Leaf
         if (p.getHealth() < p.getMaxHealth() * 0.5f && wears(p, AddonItemRegistry.SHADE_LANTERN.get()))
             for (LivingEntity t : Kit.near(p.serverLevel(), p, p.position().add(0, 1, 0), 6)) Moves.slow(t, 30, -0.25);
     }
