@@ -109,6 +109,8 @@ public class FxRenderer extends FxBase {
       if (p.shape == 47) { ThreadForms.set(p); return; }        // the String Grimoire's thread forms
       if (p.shape == 3 && PortalRenderer.kill(p.id)) return;    // closing a gate   // Equinox hit you: your screen is cut in two   // a move's cast animation started (effect timing)
       if (FxSync.defer(p)) return;   // held back to land on the swing
+      if (p.shape == 66) { LightFxClient.spawn(p); return; }   // Patolli's Light Magic (LightFxClient)
+      if (p.shape == 3 && LightFxClient.kill(p.id)) return;
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
       if (p.shape == 4) {   // Ki Sense mark: id = entity, palette = creature type, life = duration
          KiSenseRenderer.mark(p.id, p.palette, p.life);
@@ -295,7 +297,7 @@ public class FxRenderer extends FxBase {
             TRACK.clear();
             ORBITS.clear();
             WHIPS.clear();
-            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear();
+            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
@@ -502,6 +504,7 @@ public class FxRenderer extends FxBase {
             GolemFx.tick(now);
             AltarFx.draw(vc, m, cam, now, pt);
             ModeAuraFx.draw(m, cam, now, pt);
+            LightFxClient.draw(m, cam, now, pt);
             GrimoireCeremonyRenderer.glow(m, cam, now, pt);
             for (GolemFx.Golem g : GolemFx.GOLEMS) GolemFx.draw(vc, m, n, cam, g, now, pt);
             float pulse = 0.75F + 0.25F * (float)Math.sin(now * 0.35);

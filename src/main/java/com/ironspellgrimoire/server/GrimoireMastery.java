@@ -198,6 +198,10 @@ public final class GrimoireMastery {
                 "time_recovery", 2, "chrono_acceleration", 2, "ticking_snare", 2,
                 "time_theft", 3, "hourglass_barrage", 3, "rewind_ward", 3,
                 "echo_of_the_past", 4, "chronostasis_field", 4, "zenith_hour", 5);
+        book(AddonItemRegistry.LIGHT_GRIMOIRE::get, Fx.GOLD,
+                "light_sword", 1, "light_speed_step", 1, "arrows_of_judgment", 2,
+                "bright_judgment_whip", 2, "healing_ray", 2, "blinding_flash", 3,
+                "light_swords_of_judgment", 3, "light_shaft", 4, "demon_light", 4, "imperial_swords_of_conviction", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)
