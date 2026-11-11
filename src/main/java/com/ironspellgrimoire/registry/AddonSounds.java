@@ -26,6 +26,12 @@ public final class AddonSounds {
         }
     }
 
+    /** The Ossuarch's boss music, one loop per phase (synthesised for this mod: tools/boss_music.py). */
+    public static final java.util.List<RegistryObject<SoundEvent>> BOSS_MUSIC = java.util.List.of(
+            SOUNDS.register("music.ossuarch_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.ossuarch_1"))),
+            SOUNDS.register("music.ossuarch_2", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.ossuarch_2"))),
+            SOUNDS.register("music.ossuarch_3", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.ossuarch_3"))));
+
     /** The registered sound for a kind ("slash", "blast"...), or null. */
     public static SoundEvent get(String kind) {
         RegistryObject<SoundEvent> r = BY_KIND.get(kind);

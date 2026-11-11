@@ -149,5 +149,32 @@
       }
     ],
     "subtitle": "subtitles.iron_spell_grimoire.sfx.roar"
+  },
+  "music.ossuarch_1": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/ossuarch_1",
+        "stream": true
+      }
+    ]
+  },
+  "music.ossuarch_2": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/ossuarch_2",
+        "stream": true
+      }
+    ]
+  },
+  "music.ossuarch_3": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/ossuarch_3",
+        "stream": true
+      }
+    ]
   }
 }

@@ -15,6 +15,7 @@ public final class MageSetup {
     @SubscribeEvent
     public static void attributes(EntityAttributeCreationEvent e) {
         e.put(AddonEntities.MAGE.get(), com.ironspellgrimoire.entity.MageEnemy.attributes().build());
+        e.put(AddonEntities.OSSUARCH.get(), com.ironspellgrimoire.entity.Ossuarch.attributes().build());
     }
 
     @SubscribeEvent
