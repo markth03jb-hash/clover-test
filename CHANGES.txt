@@ -1,6 +1,16 @@
-Iron Spell Grimoire v1.90.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.91.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.91.0
+- Wanted Posters: ring a village bell for a bounty on a boss, with modifiers and three days to find it; a quest tracker,
+  a compass bar and a pillar of light lead you there. /bounty new|near|clear (op).
+- Dungeon Rifts: cracks open near you and lead into a pocket-dimension dungeon (combat, traps, rest, elite, relic chamber)
+  with laws like Mana Burn, Low Gravity, Echo and Hunted. Rewards: charm-slot relics and Rift Ink to write into your
+  grimoire at the altar. A craftable Rift Compass. /rift open|leave|closeall (op).
+- Rivals: a named mage who remembers every bout, challenges you to duels and races, grows stronger, and ends as an ally
+  (whistle) or an Eye of the Midnight Sun villain. /rival info, accept, refuse.
+- New bosses: Licht (four swords), Rades (portals and the dead) and Catherine (curses).
 
 NEW IN 1.90.0
 - Grimoire ranks I-V (Blank, Inked, Gilded, Radiant, Legendary), following mastery: stars and rank in the tooltip,
