@@ -89,7 +89,7 @@ public class AddonItemRegistry {
     // ------------------------------------------------------------------ Sol Marron: Earth Grimoire
     public static final RegistryObject<Item> EARTH_GRIMOIRE = ITEMS.register("earth_grimoire", com.ironspellgrimoire.item.EarthGrimoireItem::new);
 
-    // ------------------------------------------------------------------ Vetto: Beast Grimoire
+    // ------------------------------------------------------------------ BeastOfDespair: Beast Grimoire
 
     // ------------------------------------------------------------------ Charmy Pappitson: Cotton Grimoire
 
@@ -106,9 +106,9 @@ public class AddonItemRegistry {
     /** Spawns Zenon (the three-phase bone boss). */
     public static final RegistryObject<Item> ZENON_SPAWN_EGG = ITEMS.register("zenon_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.ZENON, 0x1A1418, 0xE8DCC4, new Item.Properties()));
-    /** Spawns Vetto, Beast of Despair. */
-    public static final RegistryObject<Item> VETTO_SPAWN_EGG = ITEMS.register("vetto_spawn_egg",
-            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.VETTO, 0x1E3A30, 0x5CE0B0, new Item.Properties()));
+    /** Spawns BeastOfDespair, Beast of Despair. */
+    public static final RegistryObject<Item> BEAST_OF_DESPAIR_SPAWN_EGG = ITEMS.register("beast_of_despair_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.BEAST_OF_DESPAIR, 0x1E3A30, 0x5CE0B0, new Item.Properties()));
     /** A Wanted Poster: a bounty on a boss, handed out by village bells (server/Bounties). */
     public static final RegistryObject<Item> WANTED_POSTER = ITEMS.register("wanted_poster", com.ironspellgrimoire.item.WantedPosterItem::new);
     /** Dungeon Rifts (server/Rifts): the compass, the ink and the relics. */
@@ -123,15 +123,15 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> SHADE_LANTERN = ITEMS.register("shade_lantern", () -> new com.ironspellgrimoire.item.RelicItem(
             "Below half health, foes near you slow down.", "Its light is darker than the dark around it."));
     public static final java.util.List<RegistryObject<Item>> RELICS = java.util.List.of(CRACKED_LENS, RIFT_HEART, HOLLOW_BELL, SHADE_LANTERN);
-    /** Rivals (server/RivalAI): the ally's whistle, and the bookmark at the end of a rivalry. */
-    public static final RegistryObject<Item> RIVAL_WHISTLE = ITEMS.register("rival_whistle", com.ironspellgrimoire.item.RivalWhistleItem::new);
-    public static final RegistryObject<Item> RIVAL_BOOKMARK = ITEMS.register("rival_bookmark", com.ironspellgrimoire.item.RivalBookmarkItem::new);
     public static final RegistryObject<Item> LICHT_SPAWN_EGG = ITEMS.register("licht_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.LICHT, 0xF0EEE0, 0xE8C860, new Item.Properties()));
-    public static final RegistryObject<Item> RADES_SPAWN_EGG = ITEMS.register("rades_spawn_egg",
-            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.RADES, 0x2A3A2A, 0x7AB060, new Item.Properties()));
-    public static final RegistryObject<Item> CATHERINE_SPAWN_EGG = ITEMS.register("catherine_spawn_egg",
-            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.CATHERINE, 0x3A1E4A, 0x8AE060, new Item.Properties()));
+    public static final RegistryObject<Item> REVENANT_SPAWN_EGG = ITEMS.register("revenant_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.REVENANT, 0x2A3A2A, 0x7AB060, new Item.Properties()));
+    public static final RegistryObject<Item> CURSE_WITCH_SPAWN_EGG = ITEMS.register("curse_witch_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.CURSE_WITCH, 0x3A1E4A, 0x8AE060, new Item.Properties()));
+    /** Licht's white swords (only he holds them; they look like Asta's, in white). */
+    public static final RegistryObject<Item> LICHT_SLAYER_SWORD = ITEMS.register("licht_slayer_sword", () -> new Item(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> LICHT_DWELLER_SWORD = ITEMS.register("licht_dweller_sword", () -> new Item(new Item.Properties().stacksTo(1)));
     /** Spawns Rhya the Disloyal. */
     public static final RegistryObject<Item> RHYA_SPAWN_EGG = ITEMS.register("rhya_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.RHYA, 0xD8D0C0, 0x7A5CD0, new Item.Properties()));
@@ -181,16 +181,17 @@ public class AddonItemRegistry {
                     out.accept(st);
                 }
                 out.accept(new ItemStack(ZENON_SPAWN_EGG.get()));
-                out.accept(new ItemStack(VETTO_SPAWN_EGG.get()));
+                out.accept(new ItemStack(BEAST_OF_DESPAIR_SPAWN_EGG.get()));
                 out.accept(new ItemStack(RHYA_SPAWN_EGG.get()));
                 out.accept(new ItemStack(LICHT_SPAWN_EGG.get()));
-                out.accept(new ItemStack(RADES_SPAWN_EGG.get()));
-                out.accept(new ItemStack(CATHERINE_SPAWN_EGG.get()));
+                out.accept(new ItemStack(REVENANT_SPAWN_EGG.get()));
+                out.accept(new ItemStack(CURSE_WITCH_SPAWN_EGG.get()));
                 out.accept(new ItemStack(RIFT_COMPASS.get()));
                 for (var r : RELICS) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());
+                out.accept(AddonBlocks.POSTER_BOARD_ITEM.get());
             })
             .build());
 }

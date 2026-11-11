@@ -1,0 +1,309 @@
+{
+ "render_type": "minecraft:translucent",
+ "ambientocclusion": false,
+ "textures": {
+  "particle": "minecraft:block/amethyst_block",
+  "bar": "minecraft:block/amethyst_block",
+  "rune": "minecraft:block/crying_obsidian",
+  "core": "minecraft:block/shroomlight"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    0,
+    7
+   ],
+   "to": [
+    2.5,
+    16,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#bar"
+    },
+    "south": {
+     "texture": "#bar"
+    },
+    "east": {
+     "texture": "#bar"
+    },
+    "west": {
+     "texture": "#bar"
+    },
+    "up": {
+     "texture": "#bar"
+    },
+    "down": {
+     "texture": "#bar"
+    }
+   }
+  },
+  {
+   "from": [
+    5.5,
+    0,
+    7
+   ],
+   "to": [
+    7.0,
+    16,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#bar"
+    },
+    "south": {
+     "texture": "#bar"
+    },
+    "east": {
+     "texture": "#bar"
+    },
+    "west": {
+     "texture": "#bar"
+    },
+    "up": {
+     "texture": "#bar"
+    },
+    "down": {
+     "texture": "#bar"
+    }
+   }
+  },
+  {
+   "from": [
+    10,
+    0,
+    7
+   ],
+   "to": [
+    11.5,
+    16,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#bar"
+    },
+    "south": {
+     "texture": "#bar"
+    },
+    "east": {
+     "texture": "#bar"
+    },
+    "west": {
+     "texture": "#bar"
+    },
+    "up": {
+     "texture": "#bar"
+    },
+    "down": {
+     "texture": "#bar"
+    }
+   }
+  },
+  {
+   "from": [
+    14.5,
+    0,
+    7
+   ],
+   "to": [
+    16.0,
+    16,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#bar"
+    },
+    "south": {
+     "texture": "#bar"
+    },
+    "east": {
+     "texture": "#bar"
+    },
+    "west": {
+     "texture": "#bar"
+    },
+    "up": {
+     "texture": "#bar"
+    },
+    "down": {
+     "texture": "#bar"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    2,
+    7.25
+   ],
+   "to": [
+    16,
+    3.2,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#bar"
+    },
+    "south": {
+     "texture": "#bar"
+    },
+    "east": {
+     "texture": "#bar"
+    },
+    "west": {
+     "texture": "#bar"
+    },
+    "up": {
+     "texture": "#bar"
+    },
+    "down": {
+     "texture": "#bar"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    8,
+    7.25
+   ],
+   "to": [
+    16,
+    9.2,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#bar"
+    },
+    "south": {
+     "texture": "#bar"
+    },
+    "east": {
+     "texture": "#bar"
+    },
+    "west": {
+     "texture": "#bar"
+    },
+    "up": {
+     "texture": "#bar"
+    },
+    "down": {
+     "texture": "#bar"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    14,
+    7.25
+   ],
+   "to": [
+    16,
+    15.2,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#bar"
+    },
+    "south": {
+     "texture": "#bar"
+    },
+    "east": {
+     "texture": "#bar"
+    },
+    "west": {
+     "texture": "#bar"
+    },
+    "up": {
+     "texture": "#bar"
+    },
+    "down": {
+     "texture": "#bar"
+    }
+   }
+  },
+  {
+   "from": [
+    5,
+    5,
+    6.6
+   ],
+   "to": [
+    11,
+    11,
+    9.4
+   ],
+   "faces": {
+    "north": {
+     "texture": "#rune"
+    },
+    "south": {
+     "texture": "#rune"
+    },
+    "east": {
+     "texture": "#rune"
+    },
+    "west": {
+     "texture": "#rune"
+    },
+    "up": {
+     "texture": "#rune"
+    },
+    "down": {
+     "texture": "#rune"
+    }
+   },
+   "rotation": {
+    "origin": [
+     8,
+     8,
+     8
+    ],
+    "axis": "z",
+    "angle": 45
+   }
+  },
+  {
+   "from": [
+    6.5,
+    6.5,
+    6.4
+   ],
+   "to": [
+    9.5,
+    9.5,
+    9.6
+   ],
+   "faces": {
+    "north": {
+     "texture": "#core"
+    },
+    "south": {
+     "texture": "#core"
+    },
+    "east": {
+     "texture": "#core"
+    },
+    "west": {
+     "texture": "#core"
+    },
+    "up": {
+     "texture": "#core"
+    },
+    "down": {
+     "texture": "#core"
+    }
+   }
+  }
+ ]
+}

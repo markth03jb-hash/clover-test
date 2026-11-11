@@ -1,0 +1,11 @@
+{
+ "variants": {
+  "axis=z": {
+   "model": "iron_spell_grimoire:block/rift_seal"
+  },
+  "axis=x": {
+   "model": "iron_spell_grimoire:block/rift_seal",
+   "y": 90
+  }
+ }
+}

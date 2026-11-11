@@ -49,7 +49,7 @@ public final class LightFx {
     private LightFx() {}
 
     public static final String MODE = "demon_light";
-    private static final int GOLD = Fx.GOLD, DARK = Fx.YAMI;
+    private static final int GOLD = Fx.GOLD, DARK = 31;   // Demon Light: black light with a white sheen
     private static final UUID DIM = UUID.fromString("5a7c2e10-9b44-4c1e-8f20-6c1d3e9a0011");
     private static final double TAU = Math.PI * 2;
 
@@ -157,10 +157,12 @@ public final class LightFx {
         final LivingEntity t = aimed(p, 32, 10);
         Vec3 look = p.getLookAngle(), rt = rightOf(look);
         final Vec3 aim = t != null ? mid(t) : Kit.aim(p, 32);
-        for (int i = 0; i < 3; i++) {
+        final int n = demon(p) ? 6 : 3;   // Demon Light: twice the swords
+        for (int i = 0; i < n; i++) {
             final int k = i;
-            Vec3 at = p.getEyePosition().add(look.scale(0.6)).add(rt.scale((i - 1) * 0.9)).add(0, 0.35 + (i == 1 ? 0.35 : 0), 0);
-            Vec3 to = t != null ? aim.add(rt.scale((i - 1) * 0.25)) : aim;
+            double off = (i % 3) - 1;
+            Vec3 at = p.getEyePosition().add(look.scale(0.6)).add(rt.scale(off * 0.9)).add(0, 0.35 + (i % 3 == 1 ? 0.35 : 0) + (i >= 3 ? 0.9 : 0), 0);
+            Vec3 to = t != null ? aim.add(rt.scale(off * 0.25)) : aim;
             int fly = Math.max(2, (int) Math.ceil(at.distanceTo(to) / 3.5));
             int hang = 6 + i * 2;
             int id = sword(sl, pal, at, to, look, 1.6f, 1f, hang, fly, 0, hang + fly + 6);
@@ -200,6 +202,14 @@ public final class LightFx {
         burst(sl, pal, from.add(0, 1, 0), 1.6f, 7);
         ray(sl, pal, from.add(0, 1, 0), safe.add(0, 1, 0), 0.35f, 6);
         SpaceFx.move(p, safe, yaw);
+        if (demon(p)) {   // Demon Light: you land in a burst of black light that hits everything round you
+            final Vec3 land = safe;
+            final float bp = pw(p, power);
+            AstaFx.later(1, () -> {
+                burst(sl, DARK, land.add(0, 1, 0), 3.5f, 9);
+                for (LivingEntity e : Kit.near(sl, p, land.add(0, 1, 0), 3.5)) hit(p, e, bp * 0.6f, "light_speed_step");
+            });
+        }
         burst(sl, pal, safe.add(0, 1, 0), 1.8f, 8);
         glint(sl, pal, safe.add(0, 1.2, 0), 1.2f, 8);
         sound(sl, from, SoundEvents.AMETHYST_BLOCK_RESONATE, 1.0f, 1.8f);
@@ -222,7 +232,7 @@ public final class LightFx {
         radiance(p);
         final int pal = pal(p);
         final float pow = pw(p, power);
-        final int N = 12;
+        final int N = demon(p) ? 24 : 12;   // Demon Light: twice the arrows
         Vec3 hand = Kit.hand(p);
         Vec3 c = p.position();
         double yaw0 = Math.toRadians(p.getYRot());
@@ -264,16 +274,25 @@ public final class LightFx {
         final float L = 16f;
         Vec3 look = p.getLookAngle();
         Vec3 right = rotY(look, -1.05), left = rotY(look, 1.05);
-        whip(sl, pal, p, right, left, L, 6, 12);
+        whip(sl, pal, p, left, right, L, 6, 12);   // left to right, with the arm
         sound(sl, p.position(), SoundEvents.TRIDENT_RIPTIDE_1, 0.8f, 1.6f);
         AstaFx.later(3, () -> lash(p, pow, L, 0));
         AstaFx.later(11, () -> {
             if (!alive(p)) return;
             Vec3 lk = p.getLookAngle();
-            whip(sl, pal, p, rotY(lk, 1.05), rotY(lk, -1.05), L, 6, 12);
+            whip(sl, pal, p, rotY(lk, -1.05), rotY(lk, 1.05), L, 6, 12);   // and back
             sound(sl, p.position(), SoundEvents.TRIDENT_RIPTIDE_2, 0.8f, 1.8f);
         });
         AstaFx.later(14, () -> lash(p, pow, L, 1));
+        if (demon(p)) {   // Demon Light: a third lash, straight down the middle
+            AstaFx.later(19, () -> {
+                if (!alive(p)) return;
+                Vec3 lk = p.getLookAngle();
+                whip(sl, pal, p, rotY(lk, -1.4).add(0, 0.6, 0).normalize(), rotY(lk, 0.0).add(0, -0.4, 0).normalize(), L * 1.2f, 5, 11);
+                sound(sl, p.position(), SoundEvents.TRIDENT_RIPTIDE_3, 0.8f, 1.6f);
+            });
+            AstaFx.later(22, () -> lash(p, pow * 1.2f, L * 1.2f, 0));
+        }
     }
 
     private static void lash(ServerPlayer p, float pow, float L, int n) {
@@ -285,7 +304,7 @@ public final class LightFx {
             if (to.lengthSqr() < 1.0E-4 || to.normalize().dot(look) < 0.45) continue;   // inside the arc it swept
             if (Math.abs(mid(e).y - eye.y) > 3.5) continue;
             hit(p, e, pow * 0.6f, "bright_judgment_whip");
-            Kit.push(e, rightOf(look).scale(n == 0 ? -1 : 1), 0.4, 0.15);
+            Kit.push(e, rightOf(look).scale(n == 0 ? 1 : -1), 0.4, 0.15);   // swept the way the lash went
             glint(sl, pal(p), mid(e), 0.8f, 6);
         }
         sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.0f, 1.4f);
@@ -306,7 +325,7 @@ public final class LightFx {
             if (d > best) { best = d; who = e; }
         }
         final LivingEntity t = who == null ? p : who;
-        final float amt = Math.max(2f, power);
+        final float amt = Math.max(2f, power) * (demon(p) ? 1.5f : 1f);
         if (t != p) ray(sl, pal, Kit.hand(p), mid(t), 0.25f, 14);
         circle(sl, pal, t.position(), Vec3.ZERO, 1.3f, 0.06f, 40, t, 0.05);
         t.heal(amt);
@@ -336,7 +355,7 @@ public final class LightFx {
         Fx.flash(sl, c, 2.0f);
         sound(sl, c, SoundEvents.BEACON_ACTIVATE, 1.0f, 2.0f);
         sound(sl, c, SoundEvents.AMETHYST_BLOCK_RESONATE, 1.0f, 1.6f);
-        for (LivingEntity e : Kit.near(sl, p, c, 8)) {
+        for (LivingEntity e : Kit.near(sl, p, c, demon(p) ? 12 : 8)) {
             Moves.slow(e, 60, -0.55);
             TimedModifiers.apply(e, Attributes.ATTACK_DAMAGE, DIM, "Blinded by light", -0.4, AttributeModifier.Operation.MULTIPLY_TOTAL, 60);
             if (e instanceof Mob mob) { mob.setTarget(null); mob.getNavigation().stop(); }
@@ -355,7 +374,7 @@ public final class LightFx {
         Vec3 f = flat(c.subtract(p.position()));
         final Vec3 fwd = f.lengthSqr() < 1.0E-4 ? flat(p.getLookAngle()).normalize() : f.normalize();
         final Vec3 side = rightOf(fwd);
-        final int ROWS = 4, COLS = 11, HANG = 26;
+        final int ROWS = demon(p) ? 6 : 4, COLS = demon(p) ? 13 : 11, HANG = 26;   // Demon Light: a bigger sky of swords
         Random r = new Random(sl.getGameTime());
         Set<UUID> struckBy = new HashSet<>();
         sound(sl, c, SoundEvents.BEACON_ACTIVATE, 1.0f, 1.4f);
@@ -389,13 +408,24 @@ public final class LightFx {
 
     // ================================================================== 8. Light Shaft of Divine Punishment
     public static void lightShaft(ServerPlayer p, float power) {
+        SHAFT_POWER.put(p.getUUID(), power);
         ServerLevel sl = p.serverLevel();
         radiance(p);
-        final int pal = pal(p);
-        final float pow = pw(p, power);
         final Vec3 c = target(p, 30);
+        shaft(p, c, 0);
+        if (demon(p)) {   // Demon Light: three pillars, the outer two a beat later
+            Vec3 side = rightOf(flat(c.subtract(p.position())).lengthSqr() < 1e-4 ? flat(p.getLookAngle()) : flat(c.subtract(p.position())).normalize());
+            shaft(p, ground(sl, c.add(side.scale(6))), 6);
+            shaft(p, ground(sl, c.add(side.scale(-6))), 6);
+        }
+    }
+
+    private static void shaft(ServerPlayer p, Vec3 c, int delay) {
+        ServerLevel sl = p.serverLevel();
+        final int pal = pal(p);
+        final float pow = pw(p, power(p));
         final float R = 3.5f;
-        final int WARN = 18;
+        final int WARN = 18 + delay;
         pillar(sl, pal, c.add(0, 0.05, 0), R, 34f, WARN, WARN + 24);
         sound(sl, c, SoundEvents.BEACON_POWER_SELECT, 1.0f, 0.8f);
         AstaFx.later(WARN, () -> {
@@ -412,6 +442,9 @@ public final class LightFx {
             for (LivingEntity e : Kit.near(sl, p, c.add(0, 1, 0), R)) hit(p, e, pow * 0.2f, "light_shaft");
         });
     }
+
+    private static final java.util.Map<UUID, Float> SHAFT_POWER = new java.util.HashMap<>();
+    private static float power(ServerPlayer p) { return SHAFT_POWER.getOrDefault(p.getUUID(), 14f); }
 
     // ================================================================== 9. Demon Light (mode)
     public static void demonLight(ServerPlayer p, float power) {
@@ -448,7 +481,7 @@ public final class LightFx {
         final float pow = pw(p, power);
         final Vec3 c = target(p, 34);
         final float R = sovereign ? 13f : 9f;
-        final int WAVES = sovereign ? 4 : 3, PER = 12;
+        final int WAVES = (sovereign ? 4 : 3) + (demon(p) ? 1 : 0), PER = 12;
         circle(sl, pal, c.add(0, 0.05, 0), Vec3.ZERO, R, 0.03f, 30 + WAVES * 10 + 40, null, 0);
         sound(sl, c, SoundEvents.BEACON_ACTIVATE, 1.2f, 1.0f);
         sound(sl, p.position(), SoundEvents.EVOKER_PREPARE_SUMMON, 0.8f, 1.4f);

@@ -1,0 +1,25 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  "DDD",
+  "PSP",
+  "L L"
+ ],
+ "key": {
+  "D": {
+   "item": "minecraft:dark_oak_planks"
+  },
+  "P": {
+   "item": "minecraft:paper"
+  },
+  "S": {
+   "item": "minecraft:spruce_planks"
+  },
+  "L": {
+   "item": "minecraft:dark_oak_log"
+  }
+ },
+ "result": {
+  "item": "iron_spell_grimoire:poster_board"
+ }
+}

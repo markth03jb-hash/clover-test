@@ -375,34 +375,12 @@ public class GrimoireFloatRenderer {
       Swing.retain(HOLDERS);
    }
 
-   /**
-    * Grimoire ranks, seen on the open book: loose pages of its magic circle it - two at Rank II, four at III, six at
-    * IV, eight at V - turning and fluttering; a Legendary book also has a ring of light turning under it.
-    */
-   private static void rankPages(Vec3 c, float k, double time, int seed, int lvl, int pal) {
-      if (lvl <= 1 || k <= 0.05F) return;
-      int n = (lvl - 1) * 2;
-      for (int i = 0; i < n; i++) {
-         double a = time * 0.035 + i * Math.PI * 2 / n + seed;
-         double r = 0.62 + 0.06 * Math.sin(time * 0.07 + i * 1.7);
-         Vec3 at = c.add(Math.cos(a) * r, 0.05 + 0.12 * Math.sin(time * 0.09 + i * 2.1), Math.sin(a) * r);
-         Vec3 tan = new Vec3(-Math.sin(a), 0.25 * Math.sin(time * 0.3 + i), Math.cos(a)).normalize().scale(0.075);
-         FxRenderer.queueAura(at.subtract(tan), at.add(tan), 0.11F, pal, 0.55F * k);
-      }
-      if (lvl >= com.ironspellgrimoire.server.GrimoireMastery.MAX_LEVEL) {
-         int seg = 24;
-         for (int i = 0; i < seg; i += 2) {
-            double a0 = i * Math.PI * 2 / seg + time * 0.02, a1 = (i + 1) * Math.PI * 2 / seg + time * 0.02;
-            FxRenderer.queueAura(c.add(Math.cos(a0) * 0.45, -0.28, Math.sin(a0) * 0.45), c.add(Math.cos(a1) * 0.45, -0.28, Math.sin(a1) * 0.45), 0.035F, 8, 0.8F * k);
-         }
-      }
-   }
 
    @SubscribeEvent
    public static void onRender(RenderLevelStageEvent e) {
       if (e.getStage() != Stage.AFTER_ENTITIES) return;
       Minecraft mc = Minecraft.getInstance();
-      if (mc.level == null || HOLDERS.isEmpty()) return;
+      if (mc.level == null) return;
       float pt = e.getPartialTick();
       PoseStack ps = e.getPoseStack();
       Vec3 cam = e.getCamera().getPosition();
@@ -472,7 +450,6 @@ public class GrimoireFloatRenderer {
             }
             if (timeBook) TimeFxClient.bookFan(bookPos, k, (fp ? FP_SCALE : OPEN_SCALE) / OPEN_SCALE, cast);   // steady: no overshoot pop, no idle page riffle   // Julius: covers folded back to back, pages fanned in a full circle
             else FxRenderer.queueBook(bookPos, yawS - turn, tilt, s, k * (mastered ? 1.5F : 1.0F), cyc, 0.46F, 0.375F, 22.5F, au[0], au[1], light);
-            if (!fp && MasteryClient.enabled() && com.ironspellgrimoire.server.GrimoireMastery.bookOf(book) != null) rankPages(bookPos, k, time, p.getId(), com.ironspellgrimoire.server.GrimoireMastery.level(book), au[0]);
          }
          ps.popPose();
 
@@ -493,6 +470,37 @@ public class GrimoireFloatRenderer {
             ps.popPose();
          }
       }
+      bossBooks(mc, ps, buf, cam, pt, time);
       buf.endBatch();
+   }
+
+   /**
+    * The grimoire a boss carries (Rhya's copied book) is drawn exactly like a player's open floating grimoire - the 3D
+    * open book and its aura - only a size bigger, beside his shoulder.
+    */
+   private static void bossBooks(Minecraft mc, PoseStack ps, BufferSource buf, Vec3 cam, float pt, double time) {
+      if (mc.player == null) return;
+      for (com.ironspellgrimoire.entity.Rhya r : mc.level.getEntitiesOfClass(com.ironspellgrimoire.entity.Rhya.class, mc.player.getBoundingBox().inflate(64))) {
+         ItemStack book = r.book();
+         if (book.isEmpty() || r.isInvisible() || r.deathTime > 20) continue;
+         float yaw = Mth.rotLerp(pt, r.yBodyRotO, r.yBodyRot);
+         Vec3 base = new Vec3(Mth.lerp(pt, r.xo, r.getX()), Mth.lerp(pt, r.yo, r.getY()), Mth.lerp(pt, r.zo, r.getZ()));
+         double bob = Math.sin(time * 0.08 + r.getId()) * 0.06;
+         Vec3 bookPos = base.add(leftOf(yaw).scale(0.95)).add(fwdOf(yaw).scale(0.35)).add(0, 1.55 + bob, 0);
+         int wl = LevelRenderer.getLightColor(mc.level, BlockPos.containing(bookPos));
+         int light = LightTexture.pack(Math.max(LightTexture.block(wl), 5), Math.max(LightTexture.sky(wl), 2));
+         float s = OPEN_SCALE * 1.35F, tilt = 35F;
+         ps.pushPose();
+         ps.translate(bookPos.x - cam.x, bookPos.y - cam.y, bookPos.z - cam.z);
+         ps.mulPose(Axis.YP.rotationDegrees(-yaw));
+         ps.mulPose(Axis.YP.rotationDegrees(180.0F));
+         ps.mulPose(Axis.XP.rotationDegrees(-tilt));
+         ps.scale(s, s, s);
+         renderOpen(mc, ps, buf, book, r.getId(), light);
+         int[] au = aura(book.getItem());
+         float cyc = (float) ((mc.level.getGameTime() + (long) r.getId() * 13L) % 50L) + pt;
+         FxRenderer.queueBook(bookPos, yaw, tilt, s, 1.0F, cyc, 0.46F, 0.375F, 22.5F, au[0], au[1], light);
+         ps.popPose();
+      }
    }
 }

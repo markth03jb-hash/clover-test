@@ -43,6 +43,7 @@ final class HitFx {
             ItemStack book = Utils.getPlayerSpellbookStack(p);
             GrimoireMastery.Book b = book == null ? null : GrimoireMastery.bookOf(book);
             if (b != null) pal = b.palette();
+            if (Moves.inMode(p, LightFx.MODE)) pal = 31;   // Demon Light: black light with a white sheen
         } catch (Throwable ignored) { }
 
         float s = Math.max(0.5f, Math.min(2.2f, dmg / 9f));

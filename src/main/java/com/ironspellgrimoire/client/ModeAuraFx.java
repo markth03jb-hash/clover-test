@@ -169,7 +169,7 @@ final class ModeAuraFx {
         Vec3 top = c.add(0, h + 0.32, 0).subtract(face.scale(0.08));
         for (int ring = 0; ring < 2; ring++) {
             double r = ring == 0 ? 0.3 : 0.38, tilt = ring == 0 ? 0.0 : 0.06;
-            int pal = ring == 0 ? 6 : 10;
+            int pal = ring == 0 ? 6 : 31;
             if (self && ring == 0) continue;
             Vec3 prev = null;
             for (int i = 0; i <= 20; i++) {
@@ -183,14 +183,14 @@ final class ModeAuraFx {
             double a = i * TAU / 6 + now * 0.09;
             Vec3 b = c.add(Math.cos(a) * 1.05, h * 0.45 + Math.sin(now * 0.2 + i) * 0.25, Math.sin(a) * 1.05);
             Vec3 tip = b.add(0, 0.55, 0), guard = b.add(0, 0.08, 0), side = new Vec3(-Math.sin(a), 0, Math.cos(a)).scale(0.11);
-            FxBase.gline(m, cam, guard, tip, 0.07F, i % 2 == 0 ? 10 : 6, 0.85F * k);
+            FxBase.gline(m, cam, guard, tip, 0.07F, i % 2 == 0 ? 31 : 6, 0.85F * k);
             FxBase.gline(m, cam, guard.add(side), guard.subtract(side), 0.04F, 6, 0.8F * k);
             FxBase.gline(m, cam, b.subtract(0, 0.06, 0), guard, 0.03F, 6, 0.6F * k);
         }
         if (!self) for (int i = 0; i < 4; i++) {   // black light licking up the body
             double ph = (now * 0.12 + i * 0.25) % 1.0, a = i * TAU / 4 + now * 0.03;
             Vec3 b = c.add(Math.cos(a) * 0.36, ph * h, Math.sin(a) * 0.36);
-            FxBase.gline(m, cam, b, b.add(0, 0.35, 0), 0.06F, 10, (float) (Math.sin(ph * Math.PI) * 0.7) * k);
+            FxBase.gline(m, cam, b, b.add(0, 0.35, 0), 0.06F, 31, (float) (Math.sin(ph * Math.PI) * 0.7) * k);
         }
     }
 }

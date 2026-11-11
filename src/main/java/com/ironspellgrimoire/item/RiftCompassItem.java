@@ -9,12 +9,12 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
-/** The Rift Compass: hold it and the compass bar at the top of the screen marks the nearest open rift (server/Rifts). */
+/** The Rift Compass: hold it and its needle points at the nearest open rift, glowing brighter within 64 blocks (server/Rifts, client/ArcaneAnimations). */
 public class RiftCompassItem extends Item {
     public RiftCompassItem() { super(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)); }
 
     @Override
     public void appendHoverText(ItemStack s, Level level, List<Component> tip, TooltipFlag flag) {
-        tip.add(Component.literal("Hold it: the nearest open rift shows on the compass bar.").withStyle(ChatFormatting.GRAY));
+        tip.add(Component.literal("Hold it: the needle points at the nearest open rift and glows brighter as you get close.").withStyle(ChatFormatting.GRAY));
     }
 }

@@ -42,7 +42,7 @@ import net.minecraftforge.network.PacketDistributor;
 /**
  * Wanted Posters: bounties on the bosses, run like a quest.
  * <ul>
- *   <li><b>Getting one:</b> ring a village bell. If you have no bounty and your last one ended over a day ago, the bell
+ *   <li><b>Getting one:</b> right-click a Poster Board. If you have no bounty and your last one ended over a day ago, the bell
  *       hands you a Wanted Poster: a boss, where it was sighted (400-900 blocks away), one or two modifiers, and three
  *       days to find it.</li>
  *   <li><b>Finding it:</b> the quest tracker and the compass bar at the top of the screen lead you there
@@ -59,8 +59,8 @@ import net.minecraftforge.network.PacketDistributor;
 public final class Bounties {
     private Bounties() {}
 
-    public static final String[] BOSSES = {"zenon", "vetto", "rhya", "licht", "rades", "catherine"};
-    public static final String[] NAMES = {"Zenon", "Vetto", "Rhya the Disloyal", "Licht", "Rades", "Catherine"};
+    public static final String[] BOSSES = {"zenon", "beast_of_despair", "rhya", "licht", "revenant", "curse_witch"};
+    public static final String[] NAMES = {"Zenon", "The Beast of Despair", "Rhya the Disloyal", "Licht", "The Revenant", "The Curse Witch"};
     public static final int ENRAGED = 1, ARMOURED = 2, ESCORTED = 4, WOUNDED = 8;
     public static final String[] MOD_NAMES = {"Enraged", "Armoured", "Escorted", "Wounded"};
     public static final int STATE_HUNT = 0, STATE_FOUND = 1, STATE_DONE = 2, STATE_EXPIRED = 3;
@@ -77,7 +77,7 @@ public final class Bounties {
 
     public static int stars(ServerPlayer p) { return p.getPersistentData().getInt(STARS); }
 
-    public static void addStars(ServerPlayer p, int n) { p.getPersistentData().putInt(STARS, stars(p) + n); }
+    public static void addStars(ServerPlayer p, int n) { p.getPersistentData().putInt(STARS, stars(p) + n); sync(p); }
 
     /** A new bounty for {@code p}, sighted somewhere 400-900 blocks from {@code from}. */
     static CompoundTag create(ServerPlayer p, Vec3 from, int boss) {
@@ -143,14 +143,12 @@ public final class Bounties {
     }
 
     // ================================================================== ringing a bell
-    @SubscribeEvent
-    public static void onUse(PlayerInteractEvent.RightClickBlock e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || e.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND) return;
-        if (!p.level().getBlockState(e.getPos()).is(Blocks.BELL)) return;
+    /** Right-clicking a Poster Board: a new poster, if you have no bounty and the board has one for you. */
+    public static void fromBoard(ServerPlayer p, net.minecraft.core.BlockPos pos) {
         long now = p.level().getGameTime();
         CompoundTag b = bounty(p);
         if (b != null) {
-            p.displayClientMessage(Component.literal("You're already hunting " + NAMES[b.getInt("Boss")] + ".").withStyle(ChatFormatting.GRAY), true);
+            p.displayClientMessage(Component.literal("You're already hunting " + NAMES[Math.min(NAMES.length - 1, b.getInt("Boss"))] + ". (Sneak and right-click your poster twice to tear it up.)").withStyle(ChatFormatting.GRAY), true);
             return;
         }
         long next = p.getPersistentData().getLong(NEXT);
@@ -159,7 +157,26 @@ public final class Bounties {
             p.displayClientMessage(Component.literal("No new posters yet - come back in about " + Math.max(1, h) + " h.").withStyle(ChatFormatting.GRAY), true);
             return;
         }
-        give(p, Vec3.atCenterOf(e.getPos()), ThreadLocalRandom.current().nextInt(BOSSES.length));
+        give(p, Vec3.atCenterOf(pos), ThreadLocalRandom.current().nextInt(BOSSES.length));
+    }
+
+    /** Tearing up your poster: the bounty is dropped, with no penalty, and the board has a new one sooner. */
+    public static void cancel(ServerPlayer p) {
+        CompoundTag b = bounty(p);
+        if (b == null) return;
+        ServerLevel sl = p.serverLevel();
+        if (b.hasUUID("BossUUID")) {
+            Entity m = sl.getEntity(b.getUUID("BossUUID"));
+            if (m != null) { FxSend.ring(sl, 18, m.position().add(0, 1, 0), 2f, 0.3f, 0.1f, 12); m.discard(); }
+        }
+        removePoster(p, b.getInt("Id"));
+        p.getPersistentData().remove(TAG);
+        p.getPersistentData().putLong(NEXT, sl.getGameTime() + DAY / 4);
+        sl.playSound(null, p.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1f, 0.6f);
+        p.displayClientMessage(Component.literal("You tore up the poster for " + NAMES[Math.min(NAMES.length - 1, b.getInt("Boss"))] + ".").withStyle(ChatFormatting.GRAY), true);
+        FxPacket k = new FxPacket();
+        k.shape = 67; k.a1 = stars(p);
+        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), k);
     }
 
     static void give(ServerPlayer p, Vec3 from, int boss) {
@@ -174,7 +191,7 @@ public final class Bounties {
                 .append(Component.literal(NAMES[boss]).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
                 .append(Component.literal("  (").withStyle(ChatFormatting.GRAY)).append(modsText(b.getInt("Mods"))).append(Component.literal(")").withStyle(ChatFormatting.GRAY)));
         p.sendSystemMessage(Component.literal("Last sighted about " + (int) Math.hypot(dx, dz) + " blocks " + direction(dx, dz)
-                + ". Three days to bring him down - follow the compass at the top of your screen.").withStyle(ChatFormatting.GRAY));
+                + ". Three days to bring them down - the tracker at the top right shows the way.").withStyle(ChatFormatting.GRAY));
         sync(p);
     }
 
@@ -202,11 +219,11 @@ public final class Bounties {
         int boss = b.getInt("Boss"), mods = b.getInt("Mods");
         EntityType<? extends Mob> type = switch (boss) {
             case 0 -> AddonEntities.ZENON.get();
-            case 1 -> AddonEntities.VETTO.get();
+            case 1 -> AddonEntities.BEAST_OF_DESPAIR.get();
             case 2 -> AddonEntities.RHYA.get();
             case 3 -> AddonEntities.LICHT.get();
-            case 4 -> AddonEntities.RADES.get();
-            default -> AddonEntities.CATHERINE.get();
+            case 4 -> AddonEntities.REVENANT.get();
+            default -> AddonEntities.CURSE_WITCH.get();
         };
         Mob m = type.create(sl);
         if (m == null) return;

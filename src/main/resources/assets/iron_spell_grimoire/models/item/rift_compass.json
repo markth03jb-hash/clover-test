@@ -1,6 +1,246 @@
 {
  "parent": "minecraft:item/generated",
  "textures": {
-  "layer0": "iron_spell_grimoire:item/rift_compass"
- }
+  "layer0": "iron_spell_grimoire:item/rift_compass/far_00"
+ },
+ "overrides": [
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_00"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.03125
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_01"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.09375
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_02"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.15625
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_03"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.21875
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_04"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.28125
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_05"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.34375
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_06"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.40625
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_07"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.46875
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_08"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.53125
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_09"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.59375
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_10"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.65625
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_11"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.71875
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_12"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.78125
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_13"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.84375
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_14"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.90625
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_15"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 0,
+    "iron_spell_grimoire:angle": 0.96875
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_far_00"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_00"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.03125
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_01"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.09375
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_02"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.15625
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_03"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.21875
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_04"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.28125
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_05"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.34375
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_06"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.40625
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_07"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.46875
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_08"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.53125
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_09"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.59375
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_10"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.65625
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_11"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.71875
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_12"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.78125
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_13"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.84375
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_14"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.90625
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_15"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:near": 1,
+    "iron_spell_grimoire:angle": 0.96875
+   },
+   "model": "iron_spell_grimoire:item/rift_compass_near_00"
+  }
+ ]
 }

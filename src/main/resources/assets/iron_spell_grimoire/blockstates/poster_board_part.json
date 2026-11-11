@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "iron_spell_grimoire:block/poster_board_part"
+  },
+  "facing=east": {
+   "model": "iron_spell_grimoire:block/poster_board_part"
+  },
+  "facing=south": {
+   "model": "iron_spell_grimoire:block/poster_board_part"
+  },
+  "facing=west": {
+   "model": "iron_spell_grimoire:block/poster_board_part"
+  }
+ }
+}

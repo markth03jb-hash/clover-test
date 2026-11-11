@@ -62,6 +62,22 @@ public class ArcaneAnimations {
                     (stack, level, entity, seed) -> glowLeft(stack, level, entity) > 0 ? 0.2F * stack.getTag().getInt(com.ironspellgrimoire.item.DemonDwellerSwordItem.GLOW) : 0.0F);   // property values are clamped to 0..1, so element n is 0.2*n
             net.minecraft.client.renderer.item.ItemProperties.register(sword, ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "glow"),
                     (stack, level, entity, seed) -> Math.min(1.0F, glowLeft(stack, level, entity) / (float) com.ironspellgrimoire.item.DemonDwellerSwordItem.FADE_TICKS));
+            // the Rift Compass: its needle points at the nearest open rift (spinning when there is none), and it glows brighter within 64 blocks
+            var compass = com.ironspellgrimoire.registry.AddonItemRegistry.RIFT_COMPASS.get();
+            net.minecraft.client.renderer.item.ItemProperties.register(compass, ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "angle"), (stack, level, entity, seed) -> {
+                net.minecraft.world.entity.Entity holder = entity != null ? entity : stack.getEntityRepresentation();
+                net.minecraft.world.phys.Vec3 t = BountyHud.riftTarget();
+                net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+                if (t == null || holder == null) return mc.level == null ? 0F : (float) ((mc.level.getGameTime() % 40) / 40.0);
+                double bearing = Math.toDegrees(Math.atan2(-(t.x - holder.getX()), t.z - holder.getZ()));
+                float rel = net.minecraft.util.Mth.wrapDegrees((float) bearing - holder.getYRot());
+                return (float) (((rel / 360.0) % 1.0 + 1.0) % 1.0);
+            });
+            net.minecraft.client.renderer.item.ItemProperties.register(compass, ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "near"), (stack, level, entity, seed) -> {
+                net.minecraft.world.phys.Vec3 t = BountyHud.riftTarget();
+                net.minecraft.world.entity.Entity holder = entity != null ? entity : stack.getEntityRepresentation();
+                return t != null && holder != null && Math.hypot(t.x - holder.getX(), t.z - holder.getZ()) < 64 ? 1F : 0F;
+            });
         });
     }
 

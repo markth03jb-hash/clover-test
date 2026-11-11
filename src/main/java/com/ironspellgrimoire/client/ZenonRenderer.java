@@ -93,6 +93,9 @@ public class ZenonRenderer extends HumanoidMobRenderer<Zenon, PlayerModel<Zenon>
                 }
                 default -> { }
             }
+            // bosses never bend or twist at the torso: only arms, legs and head move (the torso stays with the arms)
+            this.body.xRot = 0; this.body.yRot = 0; this.body.zRot = 0;
+            this.rightArm.x = -5; this.rightArm.z = 0; this.leftArm.x = 5; this.leftArm.z = 0;
             this.hat.copyFrom(this.head);
             this.jacket.copyFrom(this.body);
             this.rightSleeve.copyFrom(this.rightArm);

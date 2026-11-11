@@ -83,10 +83,12 @@ public final class LichtAI {
 
     private static void arm(Licht b) {
         switch (b.phase()) {
-            case 1 -> b.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(AddonItemRegistry.DEMON_SLAYER_SWORD.get()));
-            case 2 -> b.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(AddonItemRegistry.DEMON_DWELLER_SWORD.get()));
-            case 3 -> { b.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(AddonItemRegistry.DEMON_SLAYER_SWORD.get())); b.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(AddonItemRegistry.DEMON_DWELLER_SWORD.get())); }
-            default -> { b.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(AddonItemRegistry.DARK_KATANA.get())); b.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY); }
+            case 1 -> b.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(AddonItemRegistry.LICHT_SLAYER_SWORD.get()));
+            case 2 -> b.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(AddonItemRegistry.LICHT_DWELLER_SWORD.get()));
+            default -> {   // both swords from phase 3 on (in Forbidden Magic they're wrapped in black light - the effects, not the blades)
+                b.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(AddonItemRegistry.LICHT_SLAYER_SWORD.get()));
+                b.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(AddonItemRegistry.LICHT_DWELLER_SWORD.get()));
+            }
         }
         b.setDropChance(EquipmentSlot.MAINHAND, 0f);
         b.setDropChance(EquipmentSlot.OFFHAND, 0f);

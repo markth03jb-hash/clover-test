@@ -29,7 +29,6 @@ public class RhyaRenderer extends HumanoidMobRenderer<Rhya, PlayerModel<Rhya>> {
 
     public RhyaRenderer(EntityRendererProvider.Context ctx) {
         super(ctx, new Model(ctx.bakeLayer(ModelLayers.PLAYER)), 0.5f);
-        this.addLayer(new BookLayer(this));
     }
 
     @Override public ResourceLocation getTextureLocation(Rhya e) { return TEX; }
@@ -87,6 +86,9 @@ public class RhyaRenderer extends HumanoidMobRenderer<Rhya, PlayerModel<Rhya>> {
                 }
                 default -> this.leftArm.xRot += 0.1F;   // a slouch
             }
+            // bosses never bend or twist at the torso: only arms, legs and head move (the torso stays with the arms)
+            this.body.xRot = 0; this.body.yRot = 0; this.body.zRot = 0;
+            this.rightArm.x = -5; this.rightArm.z = 0; this.leftArm.x = 5; this.leftArm.z = 0;
             this.hat.copyFrom(this.head);
             this.jacket.copyFrom(this.body);
             this.rightSleeve.copyFrom(this.rightArm);

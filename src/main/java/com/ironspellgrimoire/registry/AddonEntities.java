@@ -26,31 +26,27 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Zenon>of(com.ironspellgrimoire.entity.Zenon::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
                     .fireImmune().clientTrackingRange(10).build("zenon"));
 
-    /** Vetto, Beast of Despair: a three-phase Beast Magic boss (spawn egg or /summon only). */
-    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Vetto>> VETTO = ENTITIES.register("vetto",
-            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Vetto>of(com.ironspellgrimoire.entity.Vetto::new, MobCategory.MONSTER).sized(0.9F, 2.6F)
-                    .fireImmune().clientTrackingRange(10).build("vetto"));
+    /** BeastOfDespair, Beast of Despair: a three-phase Beast Magic boss (spawn egg or /summon only). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.BeastOfDespair>> BEAST_OF_DESPAIR = ENTITIES.register("beast_of_despair",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.BeastOfDespair>of(com.ironspellgrimoire.entity.BeastOfDespair::new, MobCategory.MONSTER).sized(0.9F, 2.6F)
+                    .fireImmune().clientTrackingRange(10).build("beast_of_despair"));
 
     /** Rhya the Disloyal: a three-phase Copy Magic boss that fights with your own grimoire (spawn egg or /summon only). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Rhya>> RHYA = ENTITIES.register("rhya",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Rhya>of(com.ironspellgrimoire.entity.Rhya::new, MobCategory.MONSTER).sized(0.6F, 2.0F)
                     .fireImmune().clientTrackingRange(10).build("rhya"));
 
-    /** Your rival's body for one encounter (server/RivalAI). */
-    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Rival>> RIVAL = ENTITIES.register("rival",
-            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Rival>of(com.ironspellgrimoire.entity.Rival::new, MobCategory.MONSTER).sized(0.6F, 1.8F)
-                    .clientTrackingRange(10).build("rival"));
 
-    /** Licht, Rades and Catherine (entity/AddonBoss). */
+    /** Licht, Revenant and CurseWitch (entity/AddonBoss). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Licht>> LICHT = ENTITIES.register("licht",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Licht>of(com.ironspellgrimoire.entity.Licht::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
                     .fireImmune().clientTrackingRange(10).build("licht"));
 
-    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Rades>> RADES = ENTITIES.register("rades",
-            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Rades>of(com.ironspellgrimoire.entity.Rades::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
-                    .fireImmune().clientTrackingRange(10).build("rades"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Revenant>> REVENANT = ENTITIES.register("revenant",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Revenant>of(com.ironspellgrimoire.entity.Revenant::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("revenant"));
 
-    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Catherine>> CATHERINE = ENTITIES.register("catherine",
-            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Catherine>of(com.ironspellgrimoire.entity.Catherine::new, MobCategory.MONSTER).sized(0.6F, 1.9F)
-                    .fireImmune().clientTrackingRange(10).build("catherine"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.CurseWitch>> CURSE_WITCH = ENTITIES.register("curse_witch",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.CurseWitch>of(com.ironspellgrimoire.entity.CurseWitch::new, MobCategory.MONSTER).sized(0.6F, 1.9F)
+                    .fireImmune().clientTrackingRange(10).build("curse_witch"));
 }

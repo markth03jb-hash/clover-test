@@ -70,7 +70,7 @@ public final class ZenonAI {
         Player t = target(b);
         if (t == null) {
             b.getNavigation().stop();
-            if (sl.getGameTime() - s.lastSeen > 600 && b.getHealth() < b.getMaxHealth()) b.heal(0.5f);   // left alone, he mends
+            if (sl.getGameTime() - s.lastSeen > 600 && sl.getGameTime() % 200 == 0 && b.getHealth() < b.getMaxHealth()) b.heal(1f);   // left alone, he mends - slowly (1 health every 10 s)
             return;
         }
         s.lastSeen = sl.getGameTime();

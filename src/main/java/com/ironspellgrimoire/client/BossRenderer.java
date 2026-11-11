@@ -13,7 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 /**
- * The later bosses on screen (Licht, Rades, Catherine): a player-shaped body in its own skin
+ * The later bosses on screen (Licht, Revenant, CurseWitch): a player-shaped body in its own skin
  * (textures/entity/&lt;name&gt;.png), posed by the fight - casting, slashing, dashing, raising, roaring, spinning,
  * cackling - and kneeling as it dies. Weapons are the mob's own hands.
  */
@@ -72,6 +72,9 @@ public class BossRenderer<T extends AddonBoss> extends HumanoidMobRenderer<T, Pl
                 case -1 -> { this.head.xRot = 0.5F; this.rightArm.xRot = 0.2F; this.leftArm.xRot = 0.2F; }
                 default -> { }
             }
+            // bosses never bend or twist at the torso: only arms, legs and head move (the torso stays with the arms)
+            this.body.xRot = 0; this.body.yRot = 0; this.body.zRot = 0;
+            this.rightArm.x = -5; this.rightArm.z = 0; this.leftArm.x = 5; this.leftArm.z = 0;
             this.hat.copyFrom(this.head);
             this.jacket.copyFrom(this.body);
             this.rightSleeve.copyFrom(this.rightArm);

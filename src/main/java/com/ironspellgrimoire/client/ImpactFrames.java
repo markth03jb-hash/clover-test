@@ -69,7 +69,7 @@ public final class ImpactFrames {
             {0xD6FFC8, 0x03200A, 0x62E050, 0xFFF4B0},   // 15 William: spiralling leaves
             {0xD6FFDC, 0x00140A, 0x44FF6C, 0xFFFFFF},   // 16 Jack: cuts, green
             {0xF2DFC0, 0x1C1208, 0xB88A4E, 0xFFFFFF},   // 17 Sol: slabs
-            {0xCFFFF0, 0x021C16, 0x3CD4A8, 0xFFE7A0},   // 18 Vetto: fangs
+            {0xCFFFF0, 0x021C16, 0x3CD4A8, 0xFFE7A0},   // 18 BeastOfDespair: fangs
             {0xFFE4F0, 0x2A0E1E, 0xFF8CC6, 0xFFFFFF},   // 19 Charmy: threads of cream
             {0xE6FAFF, 0x040E1C, 0x8CDFF5, 0x3CC8F0},   // 20 Julius
             {0xE2FFE6, 0x02140A, 0x44F06C, 0xFFFFFF},
@@ -202,7 +202,7 @@ public final class ImpactFrames {
                     }
                 }
             }
-            case 6, 18 -> {   // Nozel / Vetto: silver spikes stabbing in from every edge, needle tips at the hit
+            case 6, 18 -> {   // Nozel / BeastOfDespair: silver spikes stabbing in from every edge, needle tips at the hit
                 for (int i = 0; i < 22; i++) {
                     double a = i * Math.PI * 2 / 22 + r.nextDouble() * 0.18;
                     float ex = fx + (float) Math.cos(a) * reach, ey = fy + (float) Math.sin(a) * reach;
