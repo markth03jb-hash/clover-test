@@ -61,7 +61,8 @@ def l_body(x, y, W, H):
     return jit(WHITE if x not in (0, 7) else WHITE_D, 5)
 def l_arm(x, y, W, H): return jit(DARK, 4) if y >= 9 else jit(GOLD, 6) if y == 2 else jit(WHITE, 5)
 def l_leg(x, y, W, H): return jit(DARK, 4) if y >= 9 else jit(WHITE_D, 5)
-skin('licht', False, l_face, l_side, lambda *a: jit(HAIR, 8), lambda x, y, W, H: jit(HAIR, 8) if y <= 2 else T(), l_body, lambda x, y, W, H: jit(WHITE_D if y < 10 else GOLD_D, 5), l_arm, None, l_leg)
+# Licht now wears the user's own skin (tools/licht_skin.py adds the detail); this original is no longer written
+if False: skin('licht', False, l_face, l_side, lambda *a: jit(HAIR, 8), lambda x, y, W, H: jit(HAIR, 8) if y <= 2 else T(), l_body, lambda x, y, W, H: jit(WHITE_D if y < 10 else GOLD_D, 5), l_arm, None, l_leg)
 
 # Rades (original look): ashen skin, a ragged dark-green coat with stitched seams, a hood, hollow eyes that glow
 ASH, COAT, COAT_D, STITCH, GLOW = (150, 160, 150), (40, 66, 44), (24, 40, 28), (150, 140, 110), (140, 255, 120)
