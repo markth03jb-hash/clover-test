@@ -134,12 +134,16 @@ public final class Quests {
             double dx = q.getInt("X") + 0.5 - p.getX(), dz = q.getInt("Z") + 0.5 - p.getZ();
             if (dx * dx + dz * dz < 28 * 28) arrive(p, sl, q);
         }
-        if (q.getInt("State") == FIGHT && q.getInt("Type") != RIFT && p.tickCount % 100 == 7) {   // keep the count true (despawned or lost ones)
-            int alive = 0;
-            for (Tag t : q.getList("Mobs", Tag.TAG_INT_ARRAY)) { Entity m = sl.getEntity(net.minecraft.nbt.NbtUtils.loadUUID(t)); if (m != null && m.isAlive()) alive++; }
-            if (alive == 0 && sl.dimension().location().toString().equals(q.getString("Dim"))) {
-                double dx = q.getInt("X") + 0.5 - p.getX(), dz = q.getInt("Z") + 0.5 - p.getZ();
-                if (dx * dx + dz * dz < 64 * 64) complete(p, q);
+        // keep the count true, whoever (or whatever) brought them down - a friend, a golem, lava, while you were away:
+        // near the place (where their chunks are loaded) the quest counts the foes still standing
+        if (q.getInt("State") == FIGHT && q.getInt("Type") != RIFT && p.tickCount % 40 == 7 && sl.dimension().location().toString().equals(q.getString("Dim"))) {
+            double dx = q.getInt("X") + 0.5 - p.getX(), dz = q.getInt("Z") + 0.5 - p.getZ();
+            if (dx * dx + dz * dz < 64 * 64) {
+                int alive = 0;
+                for (Tag t : q.getList("Mobs", Tag.TAG_INT_ARRAY)) { Entity m = sl.getEntity(net.minecraft.nbt.NbtUtils.loadUUID(t)); if (m != null && m.isAlive()) alive++; }
+                int have = Math.max(q.getInt("Have"), q.getInt("Need") - alive);
+                if (have != q.getInt("Have")) { q.putInt("Have", have); sync(p); }
+                if (alive == 0) { complete(p, q); return; }
             }
         }
         if (p.tickCount % 200 == 7) sync(p);
@@ -224,6 +228,7 @@ public final class Quests {
     }
 
     // ------------------------------------------------------------------ progress
+    /** Any death of a quest's foe counts for the quest - it doesn't matter who or what landed the blow. */
     @SubscribeEvent
     public static void onKill(LivingDeathEvent e) {
         var t = e.getEntity();
