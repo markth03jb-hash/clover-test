@@ -50,6 +50,11 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.CurseWitch>of(com.ironspellgrimoire.entity.CurseWitch::new, MobCategory.MONSTER).sized(0.6F, 1.9F)
                     .fireImmune().clientTrackingRange(10).build("curse_witch"));
 
+    /** A mana familiar (entity/FamiliarEntity, server/Familiars). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.FamiliarEntity>> FAMILIAR = ENTITIES.register("familiar",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.FamiliarEntity>of(com.ironspellgrimoire.entity.FamiliarEntity::new, MobCategory.MISC).sized(0.5F, 0.5F)
+                    .fireImmune().clientTrackingRange(8).updateInterval(2).build("familiar"));
+
     /** A Magic Broom, ridden (entity/BroomEntity). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.BroomEntity>> BROOM = ENTITIES.register("broom",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.BroomEntity>of(com.ironspellgrimoire.entity.BroomEntity::new, MobCategory.MISC).sized(0.9F, 0.4F)

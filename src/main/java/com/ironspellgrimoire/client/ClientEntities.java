@@ -24,5 +24,6 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.CURSE_WITCH.get(), c -> new BossRenderer<>(c, "curse_witch", true, 0.95F));
         e.registerEntityRenderer(AddonEntities.REFLECTION.get(), ReflectionRenderer::new);
         e.registerEntityRenderer(AddonEntities.BROOM.get(), BroomRenderer::new);
+        e.registerEntityRenderer(AddonEntities.FAMILIAR.get(), FamiliarRenderer::new);
     }
 }
