@@ -22,9 +22,9 @@ public final class AddonEntities {
                     .clientTrackingRange(8).build("hooded_mage"));
 
     /** The Ossuarch: a three-phase boss of bone, space and devil power (spawn egg or /summon only). */
-    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Ossuarch>> OSSUARCH = ENTITIES.register("ossuarch",
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Ossuarch>> OSSUARCH = ENTITIES.register("zenon",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Ossuarch>of(com.ironspellgrimoire.entity.Ossuarch::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
-                    .fireImmune().clientTrackingRange(10).build("ossuarch"));
+                    .fireImmune().clientTrackingRange(10).build("zenon"));
 
     /** Vetto, Beast of Despair: a three-phase Beast Magic boss (spawn egg or /summon only). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Vetto>> VETTO = ENTITIES.register("vetto",

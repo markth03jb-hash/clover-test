@@ -104,7 +104,7 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> DEVIL_SHARD = ITEMS.register("devil_shard", com.ironspellgrimoire.item.DevilShardItem::new);
 
     /** Spawns the Ossuarch (the three-phase bone boss). */
-    public static final RegistryObject<Item> OSSUARCH_SPAWN_EGG = ITEMS.register("ossuarch_spawn_egg",
+    public static final RegistryObject<Item> OSSUARCH_SPAWN_EGG = ITEMS.register("zenon_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.OSSUARCH, 0x1A1418, 0xE8DCC4, new Item.Properties()));
     /** Spawns Vetto, Beast of Despair. */
     public static final RegistryObject<Item> VETTO_SPAWN_EGG = ITEMS.register("vetto_spawn_egg",
