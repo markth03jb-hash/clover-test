@@ -71,6 +71,7 @@ public final class Awakening {
         SPELLS.put(AddonItemRegistry.DARK_GRIMOIRE::get, "moon_severing_iai");
         SPELLS.put(AddonItemRegistry.WIND_GRIMOIRE::get, "never_never_land");
         SPELLS.put(AddonItemRegistry.LIGHT_GRIMOIRE::get, "lamp_of_avior");
+        SPELLS.put(AddonItemRegistry.TIME_GRIMOIRE::get, "chrono_anastasis");
     }
 
     /** The awakened spell's id (path) for this grimoire, or null when it has none yet. */

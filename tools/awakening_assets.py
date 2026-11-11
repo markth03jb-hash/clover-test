@@ -37,6 +37,11 @@ A['awakened_lamp'] = anim(1.7,
     right_arm=dict(rotation=[(0, Z), (0.3, (-60, -30, 0)), (1.05, (-62, -32, 0)), (1.2, (-95, 0, 0)), (1.45, (-92, 0, 0)), (1.7, Z)]),
     left_arm=dict(rotation=[(0, Z), (0.3, (-60, 30, 0)), (1.05, (-62, 32, 0)), (1.2, (-30, 0, -30)), (1.7, Z)]),
     torso=dict(rotation=[(0, Z), (0.3, (6, 0, 0)), (1.05, (8, 0, 0)), (1.2, (-6, -16, 0)), (1.7, Z)]))
+# Chrono Anastasis - the right hand raised, fingers turning the hands back (a slow circle), then a snap of the hand down
+A['awakened_rewind'] = anim(1.8,
+    right_arm=dict(rotation=[(0, Z), (0.3, (-150, 0, 20)), (0.6, (-160, 30, 30)), (0.9, (-150, -20, 10)), (1.2, (-160, 30, 30)), (1.4, (-90, 0, 0)), (1.6, (-88, 0, 0)), (1.8, Z)]),
+    left_arm=dict(rotation=[(0, Z), (0.3, (-40, 0, -30)), (1.4, (-40, 0, -30)), (1.8, Z)]),
+    torso=dict(rotation=[(0, Z), (0.3, (-8, 0, 0)), (1.4, (4, 0, 0)), (1.8, Z)]))
 P = os.path.join(R, 'player_animation/arcane_animations.json')
 d = json.load(open(P)); d['animations'].update(A); json.dump(d, open(P, 'w'), indent=1)
 
@@ -55,6 +60,10 @@ make('lamp_of_avior', (60, 48, 14), (8, 6, 2), (255, 214, 96), (255, 250, 220),
      [('m', 'l', 7, 0, 7, 15), ('m', 'l', 0, 7, 15, 7), ('a', 'l', 3, 3, 11, 11), ('a', 'l', 3, 11, 11, 3), ('m', 'E', 5, 5, 10, 10), ('w', 'E', 6, 6, 9, 9),
       ('a', 'e', 2, 2, 13, 13)])
 
+make('chrono_anastasis', (20, 60, 70), (2, 8, 12), (120, 240, 230), (255, 230, 150),
+     [('m', 'e', 1, 1, 14, 14), ('a', 'e', 3, 3, 12, 12), ('w', 'l', 7, 7, 7, 2), ('w', 'l', 7, 7, 3, 9), ('m', 'p', 7, 0), ('m', 'p', 15, 7), ('m', 'p', 7, 15), ('m', 'p', 0, 7),
+      ('a', 'a', 0, 0, 15, 15, 200, 300), ('a', 'l', 1, 4, 3, 3), ('a', 'l', 1, 4, 3, 6)])
+
 # ------------------------------------------------------------------ lang
 L = os.path.join(R, 'lang/en_us.json')
 lang = json.load(open(L))
@@ -67,5 +76,7 @@ lang.update({
     'spell.iron_spell_grimoire.never_never_land.guide': 'AWAKENED. Star and Wind magic together: a dome of stars 16 blocks across for ten seconds. Foes inside are slowed, you and your friends cast 20% stronger, and the stars fire beams of starlight at whoever is inside.',
     'spell.iron_spell_grimoire.lamp_of_avior': 'Light Magic: Lamp of Avior',
     'spell.iron_spell_grimoire.lamp_of_avior.guide': 'AWAKENED. Light gathers round you from every side, then you throw it as one star-bright lamp. Where it lands it bursts - an explosion of light strong enough to stop a tornado, a star\'s cross flaring over it.',
+    'spell.iron_spell_grimoire.chrono_anastasis': 'Time Reversal Magic: Chrono Anastasis',
+    'spell.iron_spell_grimoire.chrono_anastasis.guide': 'AWAKENED. A clock face spreads over the ground 18 blocks round you and its hands run backwards. You and your friends inside are rewound to the healthiest you were in the last six seconds, your cooldowns run back twenty seconds and the book fills its stored time. Foes inside are caught in the reversed moment - frozen, your blows on them held - until the hands snap forward and it all lands at once.',
 })
 json.dump(lang, open(L, 'w'), indent=2, ensure_ascii=False)

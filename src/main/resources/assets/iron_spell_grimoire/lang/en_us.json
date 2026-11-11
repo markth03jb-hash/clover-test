@@ -767,5 +767,7 @@
   "spell.iron_spell_grimoire.never_never_land": "Star Magic: Never-Never Land",
   "spell.iron_spell_grimoire.never_never_land.guide": "AWAKENED. Star and Wind magic together: a dome of stars 16 blocks across for ten seconds. Foes inside are slowed, you and your friends cast 20% stronger, and the stars fire beams of starlight at whoever is inside.",
   "spell.iron_spell_grimoire.lamp_of_avior": "Light Magic: Lamp of Avior",
-  "spell.iron_spell_grimoire.lamp_of_avior.guide": "AWAKENED. Light gathers round you from every side, then you throw it as one star-bright lamp. Where it lands it bursts - an explosion of light strong enough to stop a tornado, a star's cross flaring over it."
+  "spell.iron_spell_grimoire.lamp_of_avior.guide": "AWAKENED. Light gathers round you from every side, then you throw it as one star-bright lamp. Where it lands it bursts - an explosion of light strong enough to stop a tornado, a star's cross flaring over it.",
+  "spell.iron_spell_grimoire.chrono_anastasis": "Time Reversal Magic: Chrono Anastasis",
+  "spell.iron_spell_grimoire.chrono_anastasis.guide": "AWAKENED. A clock face spreads over the ground 18 blocks round you and its hands run backwards. You and your friends inside are rewound to the healthiest you were in the last six seconds, your cooldowns run back twenty seconds and the book fills its stored time. Foes inside are caught in the reversed moment - frozen, your blows on them held - until the hands snap forward and it all lands at once."
 }
