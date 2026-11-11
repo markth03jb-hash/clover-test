@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level;
  * server/RiftRewards.
  */
 public class RiftInkItem extends Item {
-    public static final String[] NAMES = {"Blood Ink", "Feather Ink", "Echo Ink", "Shade Ink", "Storm Ink", "Frost Ink", "Moon Ink", "Vital Ink"};
+    public static final String[] NAMES = {"Blood Ink", "Feather Ink", "Echo Ink", "Shade Ink", "Storm Ink", "Frost Ink", "Moon Ink", "Vital Ink", "Thorn Ink", "Gold Ink"};
     public static final String[] TEXT = {
             "Your spells cost a quarter less mana - and a sliver of health each.",
             "No fall damage, and you fall slower.",
@@ -27,8 +27,10 @@ public class RiftInkItem extends Item {
             "Your spell hits sometimes arc to a second foe nearby, for 30%.",
             "Your spell hits slow foes by a quarter for two seconds.",
             "Your spells hit 15% harder at night.",
-            "Your spell hits heal you for 3% of the damage they deal."};
-    public static final int[] COLORS = {0xC0202A, 0xBFE8FF, 0x9A5CFF, 0x5A5A70, 0x60D0FF, 0xA0F0FF, 0xD8D0FF, 0x60E070};
+            "Your spell hits heal you for 3% of the damage they deal.",
+            "Whatever strikes you in close is hurt for a fifth of the blow.",
+            "Foes you defeat sometimes leave an emerald."};
+    public static final int[] COLORS = {0xC0202A, 0xBFE8FF, 0x9A5CFF, 0x5A5A70, 0x60D0FF, 0xA0F0FF, 0xD8D0FF, 0x60E070, 0x3A8A30, 0xF0C030};
     /** How many inks there are (the first four are the rift laws, bottled; the rest are found on quests and in elite rooms). */
     public static final int COUNT = NAMES.length;
 

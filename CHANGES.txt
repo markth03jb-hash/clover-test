@@ -1,6 +1,20 @@
-Iron Spell Grimoire v1.92.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.93.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.93.0
+- Big fix round: Light grimoire fixes, bosses keep their torso still, The Beast of Despair / The Revenant / The Curse Witch
+  renamed, rivals and grimoire ranks removed, bounties from the Poster Board (3x2 block), cancellable, cooler rifts, Iron's
+  mana bar position, bigger boss grimoires, white Licht swords.
+- Merit stars unlock rank 4-5 rifts, two-modifier bounties and a secret bounty; the Star Forge at the altar (empower spells,
+  ink pages, sigils, mutations with Mana Cores); a right-click altar menu drawn as your grimoire's open book.
+- Magic Knight Exam (mastery to 7), Grimoire Awakening (cutscene, extra spell page, mastery 8) with awakened spells for
+  Black, Dark, Wind, Light and Time; Spell Evolution (500 casts); Grimoire Ascension (fight your Reflection).
+- Boss intro cards, finisher frames, solid boss effects and readable telegraphs; Mana Cores from every boss.
+- Quest Board (spawns in villages with the Poster Board): Hooded Mages, Monster Hunt, Rift Watch, Great Beast, Lost
+  Grimoire Page, Wandering Beast, and a Daily Special.
+- Grimoire upgrades bound at the altar: a trophy from each boss (Devil Shards only from Zenon) and many found ones; ten Rift
+  Inks; eight sigils; eight mutations. Rift rooms rebuilt (octagonal, vaulted, furnished, floating islands).
 
 NEW IN 1.92.0
 - Licht wears your skin, with added shading, cloth texture, hair strands and gold highlights.

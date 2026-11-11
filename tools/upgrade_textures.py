@@ -209,6 +209,44 @@ for k in range(4): d.line([(7 + k * 2, 25 + k), (6 + k * 2, 22 + k)], fill=(255,
 px = im.load(); glint(px, 9, 12)
 T['phoenix_ribbon'] = finish(im, glow=(255, 120, 40, 255))
 
+# ---------------------------------------------------------------- Wind Feather: a long pale feather, teal at the tip, a swirl of wind
+im, d = new()
+for i in range(22):
+    t = i / 21; x = 6 + t * 20; y = 27 - t * 22
+    w = 4 * math.sin(t * math.pi) + 0.5
+    d.line([(x - w * 0.7, y - w * 0.7), (x + w * 0.7, y + w * 0.7)], fill=lerp((235, 245, 245, 255), (90, 210, 200, 255), t))
+d.line([(5, 28), (26, 5)], fill=(150, 160, 170, 255))
+d.arc([2, 6, 14, 18], 90, 300, fill=(140, 230, 220, 255))
+px = im.load(); glint(px, 20, 11)
+T['wind_feather'] = finish(im, glow=(120, 240, 230, 255))
+# ---------------------------------------------------------------- Bloodstone: a dark red cut gem in a black iron setting, a drop of light
+im, d = new()
+d.polygon([(16, 3), (26, 10), (26, 22), (16, 29), (6, 22), (6, 10)], fill=(40, 40, 46, 255))
+d.polygon([(16, 6), (23, 11), (23, 21), (16, 26), (9, 21), (9, 11)], fill=(150, 20, 30, 255))
+d.polygon([(16, 6), (23, 11), (16, 15), (9, 11)], fill=(220, 50, 60, 255))
+d.polygon([(16, 15), (23, 21), (16, 26)], fill=(90, 10, 20, 255))
+d.line([(16, 15), (16, 26)], fill=(120, 15, 25, 255))
+px = im.load(); glint(px, 13, 10, True)
+T['bloodstone'] = finish(im, glow=(255, 50, 60, 255))
+# ---------------------------------------------------------------- Warding Glyph: a round stone tablet with a glowing shield rune
+im, d = new()
+d.ellipse([3, 3, 28, 28], fill=(130, 130, 140, 255))
+d.ellipse([6, 6, 25, 25], fill=(105, 105, 118, 255))
+d.polygon([(16, 9), (22, 11), (21, 18), (16, 23), (11, 18), (10, 11)], fill=None, outline=(110, 220, 255, 255))
+d.line([(16, 11), (16, 21)], fill=(110, 220, 255, 255)); d.line([(12, 14), (20, 14)], fill=(110, 220, 255, 255))
+for a in range(0, 360, 45): d.point((16 + 11 * math.cos(math.radians(a)), 16 + 11 * math.sin(math.radians(a))), fill=(170, 240, 255, 255))
+px = im.load(); glint(px, 10, 9)
+T['warding_glyph'] = finish(im, glow=(110, 220, 255, 255))
+# ---------------------------------------------------------------- Starlit Seal: a gold wax seal stamped with a star, a ribbon below
+im, d = new()
+d.polygon([(10, 20), (14, 30), (16, 26), (18, 30), (22, 20)], fill=(40, 70, 150, 255))
+d.ellipse([5, 4, 27, 24], fill=(220, 170, 50, 255))
+d.ellipse([8, 7, 24, 21], fill=(240, 200, 80, 255))
+star = [(16 + (6 if k % 2 == 0 else 2.6) * math.cos(-math.pi / 2 + k * math.pi / 5), 14 + (6 if k % 2 == 0 else 2.6) * math.sin(-math.pi / 2 + k * math.pi / 5)) for k in range(10)]
+d.polygon(star, fill=(255, 245, 200, 255), outline=(180, 120, 30, 255))
+px = im.load(); glint(px, 11, 8)
+T['starlit_seal'] = finish(im, glow=(255, 220, 110, 255))
+
 for name, img in T.items():
     img.save(os.path.join(TEX, name + '.png'))
     tex = {'layer0': 'iron_spell_grimoire:item/' + name}
@@ -216,7 +254,7 @@ for name, img in T.items():
     json.dump({'parent': 'minecraft:item/generated', 'textures': tex}, open(os.path.join(MOD, name + '.json'), 'w'), indent=1)
 FILL.save(os.path.join(TEX, 'rift_ink_fill.png'))
 # the preview shows the inks in their colours
-COLS = [(0xC0, 0x20, 0x2A), (0xBF, 0xE8, 0xFF), (0x9A, 0x5C, 0xFF), (0x5A, 0x5A, 0x70), (0x60, 0xD0, 0xFF), (0xA0, 0xF0, 0xFF), (0xD8, 0xD0, 0xFF), (0x60, 0xE0, 0x70)]
+COLS = [(0xC0, 0x20, 0x2A), (0xBF, 0xE8, 0xFF), (0x9A, 0x5C, 0xFF), (0x5A, 0x5A, 0x70), (0x60, 0xD0, 0xFF), (0xA0, 0xF0, 0xFF), (0xD8, 0xD0, 0xFF), (0x60, 0xE0, 0x70), (0x3A, 0x8A, 0x30), (0xF0, 0xC0, 0x30)]
 for i, c in enumerate(COLS):
     f = FILL.copy(); pf = f.load()
     for y in range(N):

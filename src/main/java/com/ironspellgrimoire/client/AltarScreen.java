@@ -61,7 +61,7 @@ public class AltarScreen extends Screen {
     }
     private static final int IW = PW / 4;
     private int inkX(int r) { return rx() + (r % 4) * IW; }
-    private int inkY(int r) { return choiceY(3) + 16 + (r / 4) * 15; }
+    private int inkY(int r) { return choiceY(3) + 13 + (r / 4) * 12; }
     private void send(int action, int arg) { AddonNetwork.CHANNEL.sendToServer(new AltarPackets.Act(data.pos, action, arg)); }
     private void click() { if (minecraft != null && minecraft.player != null) minecraft.player.playSound(SoundEvents.BOOK_PAGE_TURN, 0.8F, 1.2F); }
 
@@ -74,7 +74,7 @@ public class AltarScreen extends Screen {
             if (in(mx, my, rx(), choiceY(2), PW, CH) && hasBook() && data.shards > 0) { click(); send(2, 0); return true; }
             if (in(mx, my, rx(), ascY(), PW, 36) && data.ascend == 2) { click(); send(5, 0); onClose(); return true; }
             for (int r = 0; r < data.inks.length; r++) {
-                if (in(mx, my, inkX(r), inkY(r), IW - 1, 14) && hasBook() && data.inks[r] > 0) { click(); send(3, r); return true; }
+                if (in(mx, my, inkX(r), inkY(r), IW - 1, 11) && hasBook() && data.inks[r] > 0) { click(); send(3, r); return true; }
             }
         }
         return super.mouseClicked(mx, my, btn);
@@ -110,12 +110,12 @@ public class AltarScreen extends Screen {
         int hover = -1;
         for (int r = 0; r < data.inks.length && r < RiftInkItem.COUNT; r++) {   // every ink: a drop of its colour and how many you carry
             int x = inkX(r), y = inkY(r), w = IW - 1;
-            boolean can = hasBook() && data.inks[r] > 0, hot = in(mx, my, x, y, w, 14);
+            boolean can = hasBook() && data.inks[r] > 0, hot = in(mx, my, x, y, w, 11);
             if (hot) hover = r;
-            g.fill(x + 3, y + 4, x + 8, y + 10, (can ? 0xFF000000 : 0x50000000) | RiftInkItem.COLORS[r]);
-            g.fill(x + 4, y + 3, x + 7, y + 4, (can ? 0xFF000000 : 0x50000000) | RiftInkItem.COLORS[r]);
-            if (hot && can) { g.fill(x, y, x + w, y + 14, 0x287A1A12); frame(g, x, y, w, 14, RED_INK); }
-            g.drawString(font, "" + data.inks[r], x + 11, y + 3, can ? (hot ? RED_INK : INK) : INK_FAINT, false);
+            g.fill(x + 3, y + 3, x + 8, y + 9, (can ? 0xFF000000 : 0x50000000) | RiftInkItem.COLORS[r]);
+            g.fill(x + 4, y + 2, x + 7, y + 3, (can ? 0xFF000000 : 0x50000000) | RiftInkItem.COLORS[r]);
+            if (hot && can) { g.fill(x, y, x + w, y + 11, 0x287A1A12); frame(g, x, y, w, 11, RED_INK); }
+            g.drawString(font, "" + data.inks[r], x + 11, y + 2, can ? (hot ? RED_INK : INK) : INK_FAINT, false);
         }
         final int hv = hover;
         if (hv >= 0) g.renderTooltip(font, java.util.List.of(Component.literal(RiftInkItem.NAMES[hv]).withStyle(s -> s.withColor(RiftInkItem.COLORS[hv])),

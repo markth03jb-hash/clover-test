@@ -34,15 +34,16 @@ public final class StarForge {
     private StarForge() {}
 
     public static final int MAX_BOOST = 3, SLOT_COST = 40, SLOT3_COST = 80, SIGIL_COST = 25;
-    public static final String[] SIGIL_NAMES = {"the Well", "Haste", "the Spring", "the Hunt", "the Bulwark", "the Wind"};
-    public static final String[] SIGIL_SHORT = {"Well", "Haste", "Spring", "Hunt", "Bulwark", "Wind"};
-    public static final String[] SIGIL_EFFECTS = {"+20% max mana", "+8% cooldowns", "+30% mana regen", "+10% vs bosses", "+4 armour", "+10% speed"};
+    public static final String[] SIGIL_NAMES = {"the Well", "Haste", "the Spring", "the Hunt", "the Bulwark", "the Wind", "the Phoenix", "the Edge"};
+    public static final String[] SIGIL_SHORT = {"Well", "Haste", "Spring", "Hunt", "Bulwark", "Wind", "Phoenix", "Edge"};
+    public static final String[] SIGIL_EFFECTS = {"+20% max mana", "+8% cooldowns", "+30% mana regen", "+10% vs bosses", "+4 armour", "+10% speed", "+4 max health", "+5% spell power"};
     private static final java.util.UUID SIGIL_ID = java.util.UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a1001a1");
 
-    public static final int MUT_ECHO = 1, MUT_SIPHON = 2, MUT_BLAST = 3, MUT_FROST = 4, MUT_EXECUTE = 5, MUT_LEECH = 6;
-    public static final String[] MUT_NAMES = {"", "Echo", "Siphon", "Blast", "Frost", "Execute", "Leech"};
+    public static final int MUT_ECHO = 1, MUT_SIPHON = 2, MUT_BLAST = 3, MUT_FROST = 4, MUT_EXECUTE = 5, MUT_LEECH = 6, MUT_CHAIN = 7, MUT_WEAKEN = 8;
+    public static final String[] MUT_NAMES = {"", "Echo", "Siphon", "Blast", "Frost", "Execute", "Leech", "Chain", "Weaken"};
     public static final String[] MUT_TEXT = {"", "Each hit lands again for 40%.", "15% of the damage returns as mana.",
-            "Hits burst: 30% to foes near the target.", "Hits slow foes by 30% for 2 s.", "+40% damage to foes below 30% health.", "5% of the damage heals you."};
+            "Hits burst: 30% to foes near the target.", "Hits slow foes by 30% for 2 s.", "+40% damage to foes below 30% health.", "5% of the damage heals you.",
+            "Hits leap to one more foe for 50%.", "Hit foes strike 20% softer for 3 s."};
 
     public static int boostCost(int toLevel) { return 10 * toLevel; }
 
@@ -140,10 +141,12 @@ public final class StarForge {
                 : g == 1 ? io.redspace.ironsspellbooks.api.registry.AttributeRegistry.COOLDOWN_REDUCTION.get()
                 : g == 2 ? io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MANA_REGEN.get()
                 : g == 4 ? net.minecraft.world.entity.ai.attributes.Attributes.ARMOR
+                : g == 6 ? net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH
+                : g == 7 ? io.redspace.ironsspellbooks.api.registry.AttributeRegistry.SPELL_POWER.get()
                 : net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED;
-        double amt = g == 0 ? 0.2 : g == 1 ? 0.08 : g == 2 ? 0.3 : g == 4 ? 4 : 0.1;
+        double amt = g == 0 ? 0.2 : g == 1 ? 0.08 : g == 2 ? 0.3 : g == 4 ? 4 : g == 6 ? 4 : g == 7 ? 0.05 : 0.1;
         top.theillusivec4.curios.api.CuriosApi.addModifier(book, attr, "Star Sigil", SIGIL_ID, amt,
-                g == 4 ? net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION
+                g == 4 || g == 6 ? net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION
                         : net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_BASE, "spellbook");
     }
 

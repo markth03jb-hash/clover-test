@@ -55,7 +55,11 @@ public final class GrimoireUpgrades {
             new Kind("silver_clasp", "Silver Clasp", 2, "+2 armour", "Quests (a chance)"),
             new Kind("swift_bookmark", "Swift Bookmark", 3, "+8% mana regeneration", "Quests (a chance)"),
             new Kind("runed_spine", "Runed Spine", 3, "+3% spell power", "Quests, rift elite rooms, bounties"),
-            new Kind("phoenix_ribbon", "Phoenix Ribbon", 1, "a killing blow leaves you at 1 health instead (once every 5 min)", "Big quests and the Daily Special"));
+            new Kind("phoenix_ribbon", "Phoenix Ribbon", 1, "a killing blow leaves you at 1 health instead (once every 5 min)", "Big quests and the Daily Special"),
+            new Kind("wind_feather", "Wind Feather", 2, "+5% movement speed", "Quests (a chance)"),
+            new Kind("bloodstone", "Bloodstone", 2, "+10% damage while you're below half health", "Quests, rift elite rooms"),
+            new Kind("warding_glyph", "Warding Glyph", 3, "-6% damage taken from bosses", "Quests, bounties"),
+            new Kind("starlit_seal", "Starlit Seal", 1, "every quest and bounty pays one more merit star", "The Daily Special"));
 
     public static Kind kind(String id) { for (Kind k : KINDS) if (k.id().equals(id)) return k; return null; }
 
@@ -112,7 +116,8 @@ public final class GrimoireUpgrades {
     private static final UUID CLASP = UUID.fromString("7b1e0001-0000-4000-8000-0000000000a4");
     private static final UUID BOOKMARK = UUID.fromString("7b1e0001-0000-4000-8000-0000000000a5");
     private static final UUID SPINE = UUID.fromString("7b1e0001-0000-4000-8000-0000000000a6");
-    private static final List<UUID> MINE = List.of(MIRROR_POWER, MIRROR_CDR, CRYSTAL, CLASP, BOOKMARK, SPINE);
+    private static final UUID FEATHER = UUID.fromString("7b1e0001-0000-4000-8000-0000000000a7");
+    private static final List<UUID> MINE = List.of(MIRROR_POWER, MIRROR_CDR, CRYSTAL, CLASP, BOOKMARK, SPINE, FEATHER);
 
     private static void refresh(ItemStack book) {
         CompoundTag tag = book.getOrCreateTag();
@@ -128,6 +133,8 @@ public final class GrimoireUpgrades {
         if (clasp > 0) add(book, Attributes.ARMOR, CLASP, 2.0 * clasp, AttributeModifier.Operation.ADDITION);
         if (mark > 0) add(book, AttributeRegistry.MANA_REGEN.get(), BOOKMARK, 0.08 * mark, AttributeModifier.Operation.MULTIPLY_BASE);
         if (spine > 0) add(book, AttributeRegistry.SPELL_POWER.get(), SPINE, 0.03 * spine, AttributeModifier.Operation.MULTIPLY_BASE);
+        int feather = count(book, "wind_feather");
+        if (feather > 0) add(book, Attributes.MOVEMENT_SPEED, FEATHER, 0.05 * feather, AttributeModifier.Operation.MULTIPLY_BASE);
     }
 
     private static void add(ItemStack book, Attribute a, UUID id, double amt, AttributeModifier.Operation op) {
@@ -146,6 +153,8 @@ public final class GrimoireUpgrades {
         boolean boss = TimeStop.isBoss(t) || BossCores.isBoss(t.getType());
         if (blade > 0 && boss) m *= 1f + 0.08f * blade;
         if (boss && book != null && book.hasTag() && book.getTag().getInt("Sigil") == 4) m *= 1.1f;   // the Star Forge's Sigil of the Hunt
+        int blood = count(book, "bloodstone");
+        if (blood > 0 && p.getHealth() < p.getMaxHealth() * 0.5f) m *= 1f + 0.1f * blood;
         Long until = CURSED.get(t.getUUID());
         if (until != null) { if (t.level().getGameTime() < until) m *= 1.2f; else CURSED.remove(t.getUUID()); }
         return m;
@@ -194,6 +203,17 @@ public final class GrimoireUpgrades {
         md.setMana(Math.min(max, md.getMana() + max * 0.04f * ember));
         BossFx.orb(p.serverLevel(), Fx.VOID, e.getEntity().position().add(0, 1, 0), p.position().add(0, 1, 0).subtract(e.getEntity().position()).normalize().scale(0.3), 0.2f, 10);
     }
+
+    /** Warding Glyphs: bosses' blows land softer. */
+    @SubscribeEvent
+    public static void onHurt(net.minecraftforge.event.entity.living.LivingHurtEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || !(e.getSource().getEntity() instanceof LivingEntity by)) return;
+        int ward = count(p, "warding_glyph");
+        if (ward > 0 && (TimeStop.isBoss(by) || BossCores.isBoss(by.getType()))) e.setAmount(e.getAmount() * (1f - 0.06f * ward));
+    }
+
+    /** The Starlit Seal: one more merit star from every quest and bounty. */
+    public static int bonusStars(ServerPlayer p) { return count(p, "starlit_seal"); }
 
     /** The Phoenix Ribbon: once every five minutes, a blow that would kill you leaves you at 1 health. */
     @SubscribeEvent(priority = EventPriority.LOW)
