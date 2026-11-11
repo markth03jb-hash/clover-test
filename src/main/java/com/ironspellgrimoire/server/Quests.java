@@ -400,7 +400,7 @@ public final class Quests {
         String extra = "";
         if (daily) {   // the Daily Special: a Mana Core and a Rift Ink for sure
             give(p, new ItemStack(AddonItemRegistry.MANA_CORE.get()));
-            ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(com.ironspellgrimoire.item.RiftInkItem.COUNT));
+            ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(10));
             give(p, ink);
             extra = ", a Mana Core, a Rift Ink";
             if (r.nextInt(3) == 0) { give(p, new ItemStack(AddonItemRegistry.PHOENIX_RIBBON.get())); extra += ", a Phoenix Ribbon"; }
@@ -412,7 +412,7 @@ public final class Quests {
         }
         if (r.nextInt(big ? 3 : 4) != 0) {   // most quests leave something for your grimoire
             ItemStack s = switch (r.nextInt(big ? 11 : 10)) {
-                case 0 -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(com.ironspellgrimoire.item.RiftInkItem.COUNT)); yield ink; }
+                case 0 -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(10)); yield ink; }
                 case 1 -> new ItemStack(AddonItemRegistry.RUNED_SPINE.get());
                 case 2 -> new ItemStack(AddonItemRegistry.MANA_CORE.get());
                 case 3 -> new ItemStack(AddonItemRegistry.MANA_CRYSTAL_BINDING.get());
@@ -422,7 +422,7 @@ public final class Quests {
                 case 8 -> new ItemStack(AddonItemRegistry.BLOODSTONE.get());
                 case 9 -> new ItemStack(AddonItemRegistry.WARDING_GLYPH.get());
                 case 10 -> new ItemStack(AddonItemRegistry.PHOENIX_RIBBON.get());   // rare: only from the big quests
-                default -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", 4 + r.nextInt(com.ironspellgrimoire.item.RiftInkItem.COUNT - 4)); yield ink; }   // a rare ink
+                default -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", 4 + r.nextInt(6)); yield ink; }   // a rare ink
             };
             give(p, s);
             extra = ", " + s.getHoverName().getString();

@@ -124,7 +124,13 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> BLOODSTONE = ITEMS.register("bloodstone", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("bloodstone", false));
     public static final RegistryObject<Item> WARDING_GLYPH = ITEMS.register("warding_glyph", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("warding_glyph", false));
     public static final RegistryObject<Item> STARLIT_SEAL = ITEMS.register("starlit_seal", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("starlit_seal", false));
-    public static final java.util.List<RegistryObject<Item>> UPGRADES = java.util.List.of(DESPAIR_FANG, COPIED_SIGIL, ELVEN_BLADE_SHARD, GRAVE_EMBER, CURSE_THREAD, MIRROR_SHARD, MANA_CRYSTAL_BINDING, SILVER_CLASP, SWIFT_BOOKMARK, RUNED_SPINE, PHOENIX_RIBBON, WIND_FEATHER, BLOODSTONE, WARDING_GLYPH, STARLIT_SEAL);
+    /** Elf Raid exclusives (server/ElfRaids). */
+    public static final RegistryObject<Item> ELF_KINGS_LEAF = ITEMS.register("elf_kings_leaf", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("elf_kings_leaf", true));
+    public static final RegistryObject<Item> WORLD_TREE_LEAF = ITEMS.register("world_tree_leaf", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Slowly mends you: one health every four seconds.", "Plucked from the tree the elves remember."));
+    public static final RegistryObject<Item> ELVEN_WIND_CHARM = ITEMS.register("elven_wind_charm", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Your Magic Broom flies 40% faster, on half the mana.", "Elven wind, braided into a charm."));
+    public static final java.util.List<RegistryObject<Item>> UPGRADES = java.util.List.of(DESPAIR_FANG, COPIED_SIGIL, ELVEN_BLADE_SHARD, GRAVE_EMBER, CURSE_THREAD, MIRROR_SHARD, MANA_CRYSTAL_BINDING, SILVER_CLASP, SWIFT_BOOKMARK, RUNED_SPINE, PHOENIX_RIBBON, WIND_FEATHER, BLOODSTONE, WARDING_GLYPH, STARLIT_SEAL, ELF_KINGS_LEAF);
 
     /** Spawns Zenon (the three-phase bone boss). */
     public static final RegistryObject<Item> ZENON_SPAWN_EGG = ITEMS.register("zenon_spawn_egg",
@@ -211,6 +217,8 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(CURSE_WITCH_SPAWN_EGG.get()));
                 out.accept(new ItemStack(RIFT_COMPASS.get()));
                 for (var r : RELICS) out.accept(new ItemStack(r.get()));
+                out.accept(new ItemStack(WORLD_TREE_LEAF.get()));
+                out.accept(new ItemStack(ELVEN_WIND_CHARM.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(new ItemStack(MANA_CORE.get()));

@@ -1039,7 +1039,7 @@ public final class Rifts {
             if (rnd.nextInt(3) == 0) loot.add(new ItemStack((rnd.nextBoolean() ? AddonItemRegistry.RUNED_SPINE : AddonItemRegistry.BLOODSTONE).get()));   // the elite's spoils (Devil Shards come only from Zenon)
             if (rnd.nextInt(4) == 0) {
                 ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get());
-                ink.getOrCreateTag().putInt("Rule", r.rank >= 3 && rnd.nextBoolean() ? 4 + rnd.nextInt(com.ironspellgrimoire.item.RiftInkItem.COUNT - 4) : Integer.numberOfTrailingZeros(r.rules));   // deeper rifts: sometimes a rare ink
+                ink.getOrCreateTag().putInt("Rule", r.rank >= 3 && rnd.nextBoolean() ? 4 + rnd.nextInt(6) : Integer.numberOfTrailingZeros(r.rules));   // deeper rifts: sometimes a rare ink
                 loot.add(ink);
             }
         }

@@ -67,7 +67,9 @@ public class BroomEntity extends Entity {
             setYRot(rider.getYRot());
             Vec3 look = rider.getLookAngle();
             boolean empty = noMana();
-            double sp = empty ? 0.25 : 0.75;
+            boolean charm = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(rider).resolve()
+                    .flatMap(h -> h.findFirstCurio(com.ironspellgrimoire.registry.AddonItemRegistry.ELVEN_WIND_CHARM.get())).isPresent();   // elven wind: faster
+            double sp = empty ? 0.25 : charm ? 1.05 : 0.75;
             Vec3 want = rider.zza > 0 ? look.scale(sp) : rider.zza < 0 ? look.scale(-0.15) : Vec3.ZERO;
             if (rider.xxa != 0) {   // strafing drifts it sideways a little
                 Vec3 side = new Vec3(look.z, 0, -look.x).normalize().scale(rider.xxa * 0.3);
