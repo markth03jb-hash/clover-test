@@ -238,6 +238,15 @@ for k in range(5):   # five pedestals round the dais, one for each leaf of the c
     x2, z2 = int(round(C + math.cos(a + 0.63) * 7.2)), int(round(C + math.sin(a + 0.63) * 7.2))
     put(x2, G + 1, z2, 'minecraft:polished_blackstone_wall', {'up': 'true', 'north': 'none', 'south': 'none', 'east': 'none', 'west': 'none', 'waterlogged': 'false'})
     put(x2, G + 2, z2, 'minecraft:soul_lantern', {'hanging': 'false', 'waterlogged': 'false'})
+# the Grimoire Archive: a wall of black-and-gold shelves on the ground floor opposite the door, under the stair,
+# where the Grimoire Library is read (server/GrimoireLibrary) - every mage the tower's grimoires have chosen
+for x in range(C - 1, C + 2):
+    for y in (G + 1, G + 2):
+        put(x, y, C - 11, NS + ':grimoire_archive', {'facing': 'south'})
+    put(x, G + 3, C - 11, 'minecraft:gilded_blackstone' if x == C else 'minecraft:polished_blackstone_bricks')
+for x in (C - 2, C + 2):
+    put(x, G + 1, C - 11, 'minecraft:polished_blackstone_wall', {'up': 'true', 'north': 'none', 'south': 'none', 'east': 'none', 'west': 'none', 'waterlogged': 'false'})
+    put(x, G + 2, C - 11, 'minecraft:soul_lantern', {'hanging': 'false', 'waterlogged': 'false'})
 # chandeliers: a great ring of lanterns and a central chain down the atrium
 for y in range(G + 16, CEIL):
     put(C, y, C, 'minecraft:chain', {'axis': 'y', 'waterlogged': 'false'})

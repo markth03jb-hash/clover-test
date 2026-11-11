@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/orientable",
+ "textures": {
+  "front": "iron_spell_grimoire:block/grimoire_archive",
+  "side": "iron_spell_grimoire:block/grimoire_archive_side",
+  "top": "minecraft:block/polished_blackstone_bricks"
+ }
+}

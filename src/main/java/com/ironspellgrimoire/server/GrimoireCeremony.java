@@ -96,6 +96,7 @@ public final class GrimoireCeremony {
             if (!p.isAlive() || p.isRemoved()) return;
             give(p, pick);
             persisted(p).putInt(KEY, pick + 1);
+            GrimoireLibrary.chosen(p);
             sl.playSound(null, p.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.8f, 1f);
             sl.playSound(null, p.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1f, 0.8f);
             Fx.flash(sl, p.position().add(0, 1.2, 0), 1.6f);

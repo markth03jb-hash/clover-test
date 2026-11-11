@@ -229,6 +229,7 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(MAGIC_BROOM.get()));
                 for (var u : UPGRADES) out.accept(new ItemStack(u.get()));
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());
+                out.accept(AddonBlocks.GRIMOIRE_ARCHIVE_ITEM.get());
                 out.accept(AddonBlocks.POSTER_BOARD_ITEM.get());
                 out.accept(AddonBlocks.QUEST_BOARD_ITEM.get());
             })
