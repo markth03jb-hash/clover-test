@@ -68,6 +68,7 @@ public final class AltarMenu {
                 ItemStack book = Utils.getPlayerSpellbookStack(p);
                 if (Ascension.canAscend(book)) { p.closeContainer(); Rifts.startAscension(p); }
             }
+            case 6 -> GrimoireLibrary.open(p);   // the Grimoire Library
             default -> {}
         }
     }

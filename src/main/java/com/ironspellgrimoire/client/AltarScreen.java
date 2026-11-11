@@ -65,9 +65,12 @@ public class AltarScreen extends Screen {
     private void send(int action, int arg) { AddonNetwork.CHANNEL.sendToServer(new AltarPackets.Act(data.pos, action, arg)); }
     private void click() { if (minecraft != null && minecraft.player != null) minecraft.player.playSound(SoundEvents.BOOK_PAGE_TURN, 0.8F, 1.2F); }
 
+    private boolean onRibbon(double mx, double my) { return in(mx, my, x0(width) + BW + 7, y0(height) + 24, 50, 16); }
+
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
         if (btn == 0) {
+            if (onRibbon(mx, my)) { click(); send(6, 0); return true; }
             if (in(mx, my, lx(), choiceY(0), PW, LCH)) { click(); send(0, 0); onClose(); return true; }
             if (in(mx, my, lx(), choiceY(1), PW, LCH) && hasBook()) { click(); send(1, 0); return true; }
             if (in(mx, my, lx(), examY(), PW, LCH) && data.exam == 2) { click(); send(4, 0); onClose(); return true; }
@@ -122,6 +125,12 @@ public class AltarScreen extends Screen {
                 Component.literal(RiftInkItem.TEXT[hv]).withStyle(net.minecraft.ChatFormatting.GRAY)), java.util.Optional.empty(), mx, my);
         choice(g, font, rx, ascY(), PW, 36, data.ascend == 3 ? "\u2727 Ascended" : "\u2727 Ascension", ascLine(), in(mx, my, rx, ascY(), PW, 36), data.ascend == 2);
 
+        // the Library ribbon on the book's edge
+        boolean rh = onRibbon(mx, my);
+        int bx = x0(width) + BW, by = y0(height);
+        g.fill(bx + 5, by + 24, bx + 58, by + 40, 0xFF000000 | dark(c[2], 0.35F));
+        g.fill(bx + 6, by + 25, bx + 57, by + 39, 0xFF000000 | (rh ? c[2] : c[4]));
+        g.drawString(font, "Library", bx + 32 - font.width("Library") / 2, by + 29, rh ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
         turning(g, width, height, (ticks + pt) / 5F);
         super.render(g, mx, my, pt);
     }

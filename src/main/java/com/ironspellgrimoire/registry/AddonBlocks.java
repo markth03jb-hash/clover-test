@@ -27,6 +27,11 @@ public final class AddonBlocks {
     public static final RegistryObject<Item> QUEST_BOARD_ITEM = AddonItemRegistry.ITEMS.register("quest_board",
             () -> new BlockItem(QUEST_BOARD.get(), new Item.Properties()));
 
+    /** A Grimoire Archive: the Grimoire Library's shelves (server/GrimoireLibrary). */
+    public static final RegistryObject<Block> GRIMOIRE_ARCHIVE = BLOCKS.register("grimoire_archive", com.ironspellgrimoire.block.GrimoireArchiveBlock::new);
+    public static final RegistryObject<Item> GRIMOIRE_ARCHIVE_ITEM = AddonItemRegistry.ITEMS.register("grimoire_archive",
+            () -> new BlockItem(GRIMOIRE_ARCHIVE.get(), new Item.Properties()));
+
     /** A rift's door seal (server/Rifts). */
     public static final RegistryObject<Block> RIFT_SEAL = BLOCKS.register("rift_seal", com.ironspellgrimoire.block.RiftSealBlock::new);
 

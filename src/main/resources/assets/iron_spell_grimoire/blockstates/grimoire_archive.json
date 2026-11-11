@@ -1,0 +1,20 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "iron_spell_grimoire:block/grimoire_archive",
+   "y": 0
+  },
+  "facing=east": {
+   "model": "iron_spell_grimoire:block/grimoire_archive",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "iron_spell_grimoire:block/grimoire_archive",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "iron_spell_grimoire:block/grimoire_archive",
+   "y": 270
+  }
+ }
+}
