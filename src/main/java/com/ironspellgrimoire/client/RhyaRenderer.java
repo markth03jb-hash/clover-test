@@ -20,15 +20,15 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Rhya on screen: a lanky player-shaped body in an original skin (textures/entity/rhya.png: a patchwork coat of every
- * grimoire's colours and a blank mirror mask), posed by the fight. The grimoire he copied floats open at his shoulder,
+ * Rhya on screen: a player-shaped body wearing the skin you gave (textures/entity/rhya.png), posed by the fight. The
+ * grimoire he copied floats open at his shoulder,
  * turning slowly; in phase 3 he holds the copied anti-magic sword (the mob's own main hand).
  */
 public class RhyaRenderer extends HumanoidMobRenderer<Rhya, PlayerModel<Rhya>> {
     private static final ResourceLocation TEX = new ResourceLocation("iron_spell_grimoire", "textures/entity/rhya.png");
 
     public RhyaRenderer(EntityRendererProvider.Context ctx) {
-        super(ctx, new Model(ctx.bakeLayer(ModelLayers.PLAYER_SLIM)), 0.5f);
+        super(ctx, new Model(ctx.bakeLayer(ModelLayers.PLAYER)), 0.5f);
         this.addLayer(new BookLayer(this));
     }
 
@@ -51,7 +51,7 @@ public class RhyaRenderer extends HumanoidMobRenderer<Rhya, PlayerModel<Rhya>> {
     protected void scale(Rhya e, PoseStack ps, float pt) { ps.scale(1.05F, 1.05F, 1.05F); }
 
     static class Model extends PlayerModel<Rhya> {
-        Model(ModelPart root) { super(root, true); }
+        Model(ModelPart root) { super(root, false); }
 
         @Override
         public void setupAnim(Rhya e, float limbSwing, float limbAmount, float age, float headYaw, float headPitch) {

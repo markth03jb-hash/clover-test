@@ -305,6 +305,13 @@ public final class GrimoireMastery {
 
     private static final Map<UUID, Float> FRACTION = new java.util.HashMap<>();
 
+    /** Mastery XP for the equipped grimoire from outside a fight (a bounty's reward). */
+    public static void bountyXp(ServerPlayer p, int amount) {
+        ItemStack book = equipped(p);
+        Book b = book.isEmpty() ? null : bookOf(book);
+        if (b != null) addXp(p, book, b, amount);
+    }
+
     private static void addXp(ServerPlayer p, ItemStack book, Book b, double amount) {
         float acc = FRACTION.getOrDefault(p.getUUID(), 0f) + (float) amount;
         int whole = (int) acc;

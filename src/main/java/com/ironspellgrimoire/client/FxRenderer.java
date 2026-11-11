@@ -101,6 +101,7 @@ public class FxRenderer extends FxBase {
       if (p.shape >= 49 && p.shape <= 58) { TimeFxClient.spawn(p); return; }   // Julius's Time Magic (TimeFxClient)
       if (p.shape == 3 && TimeFxClient.kill(p.id)) return;
       if (p.shape == 42) { FxSync.cast(p.id, p.sweep, p.life); return; }
+      if (p.shape == 67) { BountyHud.set(p); return; }   // the bounty tracker and compass
       if (p.shape == 48) { ComboHint.set(p.sweep, p.life); return; }   // combo hint: the spell that finishes a combo pulses on the wheel
       if (p.shape == 43) { ScreenCut.start(p.life, p.sweep); return; }
       if (p.shape == 44) { PixelFx.ghostBlade(p); return; }   // Equinox's invisible sword
@@ -505,6 +506,7 @@ public class FxRenderer extends FxBase {
             AltarFx.draw(vc, m, cam, now, pt);
             ModeAuraFx.draw(m, cam, now, pt);
             LightFxClient.draw(m, cam, now, pt);
+            BountyHud.drawBeacon(m, cam, now);
             GrimoireCeremonyRenderer.glow(m, cam, now, pt);
             for (GolemFx.Golem g : GolemFx.GOLEMS) GolemFx.draw(vc, m, n, cam, g, now, pt);
             float pulse = 0.75F + 0.25F * (float)Math.sin(now * 0.35);
