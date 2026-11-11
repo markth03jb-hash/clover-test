@@ -160,6 +160,7 @@ public final class Familiars {
         if (p.getLastHurtMob() != null && p.tickCount - p.getLastHurtMobTimestamp() < 120) t = p.getLastHurtMob();
         if ((t == null || !t.isAlive()) && p.getLastHurtByMob() != null) t = p.getLastHurtByMob();
         if (t == null || !t.isAlive() || t.distanceToSqr(p) > 20 * 20 || !(t instanceof Enemy || t == p.getLastHurtByMob())) return;
+        final LivingEntity tgt = t;
         int pal = PAL[kind];
         Vec3 from = f.position(), to = t.position().add(0, t.getBbHeight() * 0.55, 0);
         FxSend.beam(sl, pal | FxPacket.KEEP_SHAPE, from, to, 0.14f + stage * 0.04f, 8);
@@ -175,7 +176,7 @@ public final class Familiars {
             case 1 -> { Vec3 away = t.position().subtract(p.position()); if (away.lengthSqr() > 1e-4) { t.setDeltaMovement(t.getDeltaMovement().add(away.normalize().scale(0.8).add(0, 0.3, 0))); t.hurtMarked = true; } }
             case 3 -> TimedModifiers.apply(t, Attributes.ATTACK_DAMAGE, WEAK, "Shadow Moth", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 80);
             case 6 -> {   // the spark jumps on
-                for (LivingEntity o : sl.getEntitiesOfClass(LivingEntity.class, t.getBoundingBox().inflate(5), x -> x != t && x != p && x.isAlive() && x instanceof Enemy)) {
+                for (LivingEntity o : sl.getEntitiesOfClass(LivingEntity.class, t.getBoundingBox().inflate(5), x -> x != tgt && x != p && x.isAlive() && x instanceof Enemy)) {
                     FxSend.beam(sl, pal | FxPacket.KEEP_SHAPE, to, o.position().add(0, o.getBbHeight() * 0.5, 0), 0.1f, 6);
                     o.hurt(p.damageSources().indirectMagic(f, p), dmg * 0.6f);
                     break;
