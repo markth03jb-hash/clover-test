@@ -111,7 +111,8 @@ public class FxRenderer extends FxBase {
       if (p.shape == 71) { EvolutionToast.start(p); return; }   // a spell evolving (server/SpellEvolution)
       if (p.shape == 73) { BossIntroCard.start(p); return; }    // a boss's title card (server/BossIntro)
       if (p.shape == 74) { FinisherFrame.start(p); return; }
-      if (p.shape == 75) { QuestHud.set(p); return; }           // the quest tracker (server/Quests)    // the killing blow on a boss (server/BossCores)
+      if (p.shape == 75) { QuestHud.set(p); return; }
+      if (p.shape == 76) { RaidBanner.start(p); return; }       // the Elf Raid (server/ElfRaids)           // the quest tracker (server/Quests)    // the killing blow on a boss (server/BossCores)
       if (p.shape == 46) { PortalRenderer.spawn(p); return; }   // Finral's gates of space
       if (p.shape == 47) { ThreadForms.set(p); return; }        // the String Grimoire's thread forms
       if (p.shape == 3 && PortalRenderer.kill(p.id)) return;    // closing a gate   // Equinox hit you: your screen is cut in two   // a move's cast animation started (effect timing)

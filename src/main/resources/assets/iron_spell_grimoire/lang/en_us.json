@@ -786,5 +786,7 @@
   "item.iron_spell_grimoire.wind_feather": "Wind Feather",
   "item.iron_spell_grimoire.bloodstone": "Bloodstone",
   "item.iron_spell_grimoire.warding_glyph": "Warding Glyph",
-  "item.iron_spell_grimoire.starlit_seal": "Starlit Seal"
+  "item.iron_spell_grimoire.starlit_seal": "Starlit Seal",
+  "item.iron_spell_grimoire.magic_broom": "Magic Broom",
+  "entity.iron_spell_grimoire.broom": "Magic Broom"
 }

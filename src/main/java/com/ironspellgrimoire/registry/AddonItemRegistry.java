@@ -104,6 +104,8 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> DEVIL_SHARD = ITEMS.register("devil_shard", com.ironspellgrimoire.item.DevilShardItem::new);
     /** Every boss drops one (server/BossCores); the Star Forge spends it to mutate a spell. */
     public static final RegistryObject<Item> MANA_CORE = ITEMS.register("mana_core", com.ironspellgrimoire.item.ManaCoreItem::new);
+    /** One per player, given the first time they hold a grimoire (server/BroomFlight). */
+    public static final RegistryObject<Item> MAGIC_BROOM = ITEMS.register("magic_broom", com.ironspellgrimoire.item.MagicBroomItem::new);
     /** Grimoire upgrades (server/GrimoireUpgrades): each boss's own, and the crafted and found ones. */
     public static final RegistryObject<Item> DESPAIR_FANG = ITEMS.register("despair_fang", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("despair_fang", true));
     public static final RegistryObject<Item> COPIED_SIGIL = ITEMS.register("copied_sigil", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("copied_sigil", true));
@@ -210,6 +212,7 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(new ItemStack(MANA_CORE.get()));
+                out.accept(new ItemStack(MAGIC_BROOM.get()));
                 for (var u : UPGRADES) out.accept(new ItemStack(u.get()));
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());
                 out.accept(AddonBlocks.POSTER_BOARD_ITEM.get());
