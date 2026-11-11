@@ -96,6 +96,10 @@ public class AddonItemRegistry {
     // ------------------------------------------------------------------ Julius Novachrono: Time Grimoire
     public static final RegistryObject<Item> TIME_GRIMOIRE = ITEMS.register("time_grimoire", com.ironspellgrimoire.item.TimeGrimoireItem::new);
 
+    /** The Ossuarch's drops. */
+    public static final RegistryObject<Item> PHYLACTERY = ITEMS.register("ossuarch_phylactery", com.ironspellgrimoire.item.PhylacteryItem::new);
+    public static final RegistryObject<Item> DEVIL_SHARD = ITEMS.register("devil_shard", com.ironspellgrimoire.item.DevilShardItem::new);
+
     /** Spawns the Ossuarch (the three-phase bone boss). */
     public static final RegistryObject<Item> OSSUARCH_SPAWN_EGG = ITEMS.register("ossuarch_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.OSSUARCH, 0x1A1418, 0xE8DCC4, new Item.Properties()));
@@ -145,6 +149,8 @@ public class AddonItemRegistry {
                     out.accept(st);
                 }
                 out.accept(new ItemStack(OSSUARCH_SPAWN_EGG.get()));
+                out.accept(new ItemStack(PHYLACTERY.get()));
+                out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());
             })
             .build());
