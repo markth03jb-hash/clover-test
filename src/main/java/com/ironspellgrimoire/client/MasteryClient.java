@@ -38,6 +38,13 @@ public final class MasteryClient {
         int[] th = GrimoireMastery.THRESHOLDS;
         boolean max = lvl >= cap;
         if (com.ironspellgrimoire.server.Ascension.ascended(stack)) tip.add(Component.literal("\u2727 Ascended Grimoire - every spell +15%").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+        if (stack.hasTag()) {   // what's bound into it at the altar
+            var ups = stack.getTag().getCompound("Upgrades");
+            for (var k : com.ironspellgrimoire.server.GrimoireUpgrades.KINDS) {
+                int n = ups.getInt(k.id());
+                if (n > 0) tip.add(Component.literal("\u271A " + k.name() + " " + n + "/" + k.max() + " - " + k.each()).withStyle(ChatFormatting.DARK_AQUA));
+            }
+        }
         if (stack.hasTag() && !stack.getTag().getCompound("Evolved").isEmpty())
             tip.add(Component.literal("\u2726 " + stack.getTag().getCompound("Evolved").size() + " evolved spell" + (stack.getTag().getCompound("Evolved").size() == 1 ? "" : "s")).withStyle(ChatFormatting.LIGHT_PURPLE));
         if (com.ironspellgrimoire.server.Awakening.awakened(stack)) tip.add(Component.literal("\u2726 Awakened - " + Component.translatable("spell.iron_spell_grimoire." + com.ironspellgrimoire.server.Awakening.spellFor(stack)).getString()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));

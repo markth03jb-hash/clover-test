@@ -147,7 +147,7 @@ public class AstaFx {
         // empowered at the Star Forge; a grimoire's ultimate hits harder at mastery 6 and 7
         // ... an evolved spell harder still, and everything from an Ascended grimoire
         final float dmg = dmg0 * StarForge.boost(p, id) * GrimoireMastery.ultimateBoost(io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p), id)
-                * SpellEvolution.boost(p, id) * Ascension.boost(p, id);
+                * SpellEvolution.boost(p, id) * Ascension.boost(p, id) * GrimoireUpgrades.damageMult(p, t);
         if (CastSync.deferDamage(p, t, () -> { if (t.isAlive()) damage(p, t, dmg0, id); })) return;   // lands when the move reaches it
         var spell = spellById(id);
         float before = t.getHealth();
@@ -156,6 +156,7 @@ public class AstaFx {
         if (!"thirst".equals(id)) HitFx.land(p, t, dmg);   // the weight of the hit (not for Bleed's own ticks)
         if (echoing) return;
         Ascension.afterHit(p, t, id);
+        GrimoireUpgrades.afterHit(p, t);
         if (SpellEvolution.afterHit(p, t, id)) {   // an evolved spell on an Ascended grimoire: the hit strikes again, gold
             later(8, () -> {
                 if (!t.isAlive() || !p.isAlive()) return;

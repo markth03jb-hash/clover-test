@@ -26,11 +26,11 @@ public final class AltarMenu {
         var inv = p.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack s = inv.getItem(i);
-            if (s.is(AddonItemRegistry.DEVIL_SHARD.get())) shards += s.getCount();
+            if (s.is(AddonItemRegistry.DEVIL_SHARD.get()) || s.getItem() instanceof com.ironspellgrimoire.item.GrimoireUpgradeItem) shards += s.getCount();
             else if (s.is(AddonItemRegistry.RIFT_INK.get())) inks[RiftInkItem.rule(s)] += s.getCount();
         }
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new AltarPackets.Open(pos, has ? book.getHoverName().getString() : "",
-                shards, has ? book.getOrCreateTag().getInt("DevilShards") : 0, Bounties.stars(p), examState(book, has), ascendState(book, has), inks));
+                shards, has ? GrimoireUpgrades.total(book) : 0, Bounties.stars(p), examState(book, has), ascendState(book, has), inks));
     }
 
     private static int ascendState(ItemStack book, boolean has) {
@@ -50,7 +50,14 @@ public final class AltarMenu {
         switch (action) {
             case 0 -> { p.closeContainer(); GrimoireCeremony.begin(p, pos); }
             case 1 -> StarForge.open(p);
-            case 2 -> { ItemStack s = find(p, -1); if (s != null) ZenonDrops.forge(p, s); open(p, pos); }
+            case 2 -> {   // bind everything you carry that the grimoire still has room for
+                int bound = 0;
+                for (ItemStack s : new java.util.ArrayList<>(p.getInventory().items)) {
+                    while (!s.isEmpty() && (s.is(AddonItemRegistry.DEVIL_SHARD.get()) ? ZenonDrops.forge(p, s) : GrimoireUpgrades.bind(p, s))) bound++;
+                }
+                if (bound == 0) p.displayClientMessage(net.minecraft.network.chat.Component.literal("Nothing you carry fits this grimoire any more.").withStyle(net.minecraft.ChatFormatting.GRAY), true);
+                open(p, pos);
+            }
             case 3 -> { ItemStack s = find(p, arg); if (s != null) RiftRewards.inscribe(p, s); open(p, pos); }
             case 4 -> {   // the Magic Knight Exam, for a grimoire at mastery 5
                 ItemStack book = Utils.getPlayerSpellbookStack(p);

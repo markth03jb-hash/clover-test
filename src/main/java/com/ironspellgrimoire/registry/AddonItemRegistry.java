@@ -104,6 +104,19 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> DEVIL_SHARD = ITEMS.register("devil_shard", com.ironspellgrimoire.item.DevilShardItem::new);
     /** Every boss drops one (server/BossCores); the Star Forge spends it to mutate a spell. */
     public static final RegistryObject<Item> MANA_CORE = ITEMS.register("mana_core", com.ironspellgrimoire.item.ManaCoreItem::new);
+    /** Grimoire upgrades (server/GrimoireUpgrades): each boss's own, and the crafted and found ones. */
+    public static final RegistryObject<Item> DESPAIR_FANG = ITEMS.register("despair_fang", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("despair_fang", true));
+    public static final RegistryObject<Item> COPIED_SIGIL = ITEMS.register("copied_sigil", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("copied_sigil", true));
+    public static final RegistryObject<Item> ELVEN_BLADE_SHARD = ITEMS.register("elven_blade_shard", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("elven_blade_shard", true));
+    public static final RegistryObject<Item> GRAVE_EMBER = ITEMS.register("grave_ember", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("grave_ember", true));
+    public static final RegistryObject<Item> CURSE_THREAD = ITEMS.register("curse_thread", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("curse_thread", true));
+    public static final RegistryObject<Item> MIRROR_SHARD = ITEMS.register("mirror_shard", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("mirror_shard", true));
+    public static final RegistryObject<Item> MANA_CRYSTAL_BINDING = ITEMS.register("mana_crystal_binding", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("mana_crystal_binding", false));
+    public static final RegistryObject<Item> SILVER_CLASP = ITEMS.register("silver_clasp", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("silver_clasp", false));
+    public static final RegistryObject<Item> SWIFT_BOOKMARK = ITEMS.register("swift_bookmark", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("swift_bookmark", false));
+    public static final RegistryObject<Item> RUNED_SPINE = ITEMS.register("runed_spine", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("runed_spine", false));
+    public static final RegistryObject<Item> PHOENIX_RIBBON = ITEMS.register("phoenix_ribbon", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("phoenix_ribbon", false));
+    public static final java.util.List<RegistryObject<Item>> UPGRADES = java.util.List.of(DESPAIR_FANG, COPIED_SIGIL, ELVEN_BLADE_SHARD, GRAVE_EMBER, CURSE_THREAD, MIRROR_SHARD, MANA_CRYSTAL_BINDING, SILVER_CLASP, SWIFT_BOOKMARK, RUNED_SPINE, PHOENIX_RIBBON);
 
     /** Spawns Zenon (the three-phase bone boss). */
     public static final RegistryObject<Item> ZENON_SPAWN_EGG = ITEMS.register("zenon_spawn_egg",
@@ -193,6 +206,7 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(new ItemStack(MANA_CORE.get()));
+                for (var u : UPGRADES) out.accept(new ItemStack(u.get()));
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());
                 out.accept(AddonBlocks.POSTER_BOARD_ITEM.get());
                 out.accept(AddonBlocks.QUEST_BOARD_ITEM.get());

@@ -50,6 +50,10 @@ public class GrimoireAltarBlock extends Block {
             if (!level.isClientSide && player instanceof ServerPlayer sp) com.ironspellgrimoire.server.ZenonDrops.forge(sp, held);
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
+        if (held.getItem() instanceof com.ironspellgrimoire.item.GrimoireUpgradeItem) {   // bind an upgrade into your grimoire
+            if (!level.isClientSide && player instanceof ServerPlayer sp) com.ironspellgrimoire.server.GrimoireUpgrades.bind(sp, held);
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if (held.is(com.ironspellgrimoire.registry.AddonItemRegistry.RIFT_INK.get())) {   // write a Rift Ink into your grimoire
             if (!level.isClientSide && player instanceof ServerPlayer sp) com.ironspellgrimoire.server.RiftRewards.inscribe(sp, held);
             return InteractionResult.sidedSuccess(level.isClientSide);

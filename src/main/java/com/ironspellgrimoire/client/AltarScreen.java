@@ -5,7 +5,6 @@ import static com.ironspellgrimoire.client.BookUi.*;
 import com.ironspellgrimoire.item.RiftInkItem;
 import com.ironspellgrimoire.network.AddonNetwork;
 import com.ironspellgrimoire.network.AltarPackets;
-import com.ironspellgrimoire.server.ZenonDrops;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -101,9 +100,9 @@ public class AltarScreen extends Screen {
         // right page: what you bring to it
         heading(g, font, "Offerings", rx, PW, t);
         boolean shard = hasBook() && data.shards > 0;
-        String sl = !hasBook() ? "Equip a grimoire first." : data.shards <= 0 ? "You carry no Devil Shards."
-                : "Carrying " + data.shards + ". Bound: " + data.bookShards + " / " + ZenonDrops.MAX_SHARDS + ".";
-        choice(g, font, rx, choiceY(2), PW, CH, "Forge a Devil Shard", sl, in(mx, my, rx, choiceY(2), PW, CH), shard);
+        String sl = !hasBook() ? "Equip a grimoire first." : data.shards <= 0 ? "You carry no upgrades. Bound: " + data.bookShards + "."
+                : "Carrying " + data.shards + ". Bound: " + data.bookShards + ".";
+        choice(g, font, rx, choiceY(2), PW, CH, "Bind Upgrades", sl, in(mx, my, rx, choiceY(2), PW, CH), shard);
         boolean anyInk = data.inks[0] + data.inks[1] + data.inks[2] + data.inks[3] > 0;
         choice(g, font, rx, choiceY(3), PW, CH + 2, "Write a Rift Ink", null, false, hasBook() && anyInk);
         for (int r = 0; r < 4; r++) {
