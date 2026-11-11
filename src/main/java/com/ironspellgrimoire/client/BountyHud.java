@@ -36,6 +36,15 @@ public final class BountyHud {
     private static double rx, rz;
     private static int riftRank;
     private static long riftUntil;
+    private static double gx, gz;
+    private static long raceUntil;
+
+    /** A rival race's finish (FxPacket shape 69): a gold mark on the compass bar. */
+    public static void race(FxPacket p) {
+        Minecraft mc = Minecraft.getInstance();
+        long now = mc.level == null ? 0 : mc.level.getGameTime();
+        gx = p.c.x; gz = p.c.z; raceUntil = p.life > 0 ? now + p.life : 0;
+    }
 
     /** The Rift Compass (FxPacket shape 68): the nearest open rift, while it's held. */
     public static void rift(FxPacket p) {
@@ -75,9 +84,10 @@ public final class BountyHud {
         Font f = mc.font;
         int W = g.guiWidth();
         float yaw = mc.player.getViewYRot(e.getPartialTick());
-        boolean rifting = now < riftUntil;
+        boolean rifting = now < riftUntil, racing = now < raceUntil;
         if (boss >= 0 && state >= Bounties.STATE_DONE && now - shownAt > 120) boss = -1;
-        if (hunting() || rifting) compassBar(g, f, W, yaw, now);
+        if (hunting() || rifting || racing) compassBar(g, f, W, yaw, now);
+        if (racing) mark(g, f, W, yaw, gx - mc.player.getX(), gz - mc.player.getZ(), now, 0xFFD040, (hunting() ? 9 : 0) + (rifting ? 9 : 0));
         if (hunting()) {
             double dx = tx - mc.player.getX(), dz = tz - mc.player.getZ();
             mark(g, f, W, yaw, dx, dz, now, 0xFF2020, 0);

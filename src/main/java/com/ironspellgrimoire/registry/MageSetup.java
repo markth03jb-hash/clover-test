@@ -18,6 +18,7 @@ public final class MageSetup {
         e.put(AddonEntities.ZENON.get(), com.ironspellgrimoire.entity.Zenon.attributes().build());
         e.put(AddonEntities.VETTO.get(), com.ironspellgrimoire.entity.Vetto.attributes().build());
         e.put(AddonEntities.RHYA.get(), com.ironspellgrimoire.entity.Rhya.attributes().build());
+        e.put(AddonEntities.RIVAL.get(), com.ironspellgrimoire.entity.Rival.attributes().build());
     }
 
     @SubscribeEvent

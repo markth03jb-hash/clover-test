@@ -103,6 +103,7 @@ public class FxRenderer extends FxBase {
       if (p.shape == 42) { FxSync.cast(p.id, p.sweep, p.life); return; }
       if (p.shape == 67) { BountyHud.set(p); return; }   // the bounty tracker and compass
       if (p.shape == 68) { BountyHud.rift(p); return; }  // the Rift Compass
+      if (p.shape == 69) { BountyHud.race(p); return; }  // a rival's race
       if (p.shape == 48) { ComboHint.set(p.sweep, p.life); return; }   // combo hint: the spell that finishes a combo pulses on the wheel
       if (p.shape == 43) { ScreenCut.start(p.life, p.sweep); return; }
       if (p.shape == 44) { PixelFx.ghostBlade(p); return; }   // Equinox's invisible sword

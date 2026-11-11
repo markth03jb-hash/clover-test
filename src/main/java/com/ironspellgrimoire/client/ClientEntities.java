@@ -19,5 +19,6 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.ZENON.get(), ZenonRenderer::new);
         e.registerEntityRenderer(AddonEntities.VETTO.get(), VettoRenderer::new);
         e.registerEntityRenderer(AddonEntities.RHYA.get(), RhyaRenderer::new);
+        e.registerEntityRenderer(AddonEntities.RIVAL.get(), RivalRenderer::new);
     }
 }

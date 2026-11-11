@@ -123,6 +123,9 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> SHADE_LANTERN = ITEMS.register("shade_lantern", () -> new com.ironspellgrimoire.item.RelicItem(
             "Below half health, foes near you slow down.", "Its light is darker than the dark around it."));
     public static final java.util.List<RegistryObject<Item>> RELICS = java.util.List.of(CRACKED_LENS, RIFT_HEART, HOLLOW_BELL, SHADE_LANTERN);
+    /** Rivals (server/RivalAI): the ally's whistle, and the bookmark at the end of a rivalry. */
+    public static final RegistryObject<Item> RIVAL_WHISTLE = ITEMS.register("rival_whistle", com.ironspellgrimoire.item.RivalWhistleItem::new);
+    public static final RegistryObject<Item> RIVAL_BOOKMARK = ITEMS.register("rival_bookmark", com.ironspellgrimoire.item.RivalBookmarkItem::new);
     /** Spawns Rhya the Disloyal. */
     public static final RegistryObject<Item> RHYA_SPAWN_EGG = ITEMS.register("rhya_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.RHYA, 0xD8D0C0, 0x7A5CD0, new Item.Properties()));
