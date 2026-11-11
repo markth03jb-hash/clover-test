@@ -514,6 +514,7 @@ public class FxRenderer extends FxBase {
             ModeAuraFx.draw(m, cam, now, pt);
             LightFxClient.draw(m, cam, now, pt);
             BountyHud.drawBeacon(m, cam, now);
+            QuestHud.drawBeacon(m, cam, now);
             GrimoireCeremonyRenderer.glow(m, cam, now, pt);
             for (GolemFx.Golem g : GolemFx.GOLEMS) GolemFx.draw(vc, m, n, cam, g, now, pt);
             float pulse = 0.75F + 0.25F * (float)Math.sin(now * 0.35);

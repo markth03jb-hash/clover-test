@@ -3,21 +3,31 @@ package com.ironspellgrimoire.server;
 import com.ironspellgrimoire.IronSpellGrimoire;
 import com.ironspellgrimoire.network.AddonNetwork;
 import com.ironspellgrimoire.network.FxPacket;
+import com.ironspellgrimoire.registry.AddonEntities;
 import com.ironspellgrimoire.registry.AddonItemRegistry;
-import io.redspace.ironsspellbooks.api.events.SpellOnCastEvent;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.monster.Enemy;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -25,53 +35,48 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 
 /**
- * Quests from the Quest Board - the village's own requests, one at a time, shown under the bounty tracker
- * (client/QuestHud):
+ * Quests from the Quest Board - the village's own requests, one at a time. Every quest is a place: the board marks
+ * where, 150-350 blocks away, and the quest tracker (client/QuestHud) points the way with a blue pillar of light over
+ * it. When you get there, the trouble shows itself:
  * <ul>
- *   <li><b>Hooded Mages</b> - drive off the hooded mages troubling the roads (defeat 6-10).</li>
- *   <li><b>Monster Hunt</b> - thin out the monsters (defeat 15-25).</li>
- *   <li><b>Practice</b> - the village's young mages want to see your grimoire at work (cast 30-60 of its spells).</li>
- *   <li><b>Supply Run</b> - bring the board what it asks for (bread, iron, wheat, coal, leather...). Hand it in by
- *       right-clicking any Quest Board with it in your pack.</li>
- *   <li><b>Rift Watch</b> - close a rift (reach its relic chamber).</li>
- *   <li><b>Great Beast</b> - bring down any boss (from 10 merit stars).</li>
+ *   <li><b>Hooded Mages</b> - a band of 6-9 hooded mages camped there. Defeat them all.</li>
+ *   <li><b>Monster Hunt</b> - a pack of 10-14 monsters (zombies, skeletons, spiders, husks, a witch). Defeat them all.</li>
+ *   <li><b>Rift Watch</b> - a rift tears open there. Go in and reach its relic chamber.</li>
+ *   <li><b>Great Beast</b> - one of the bosses is waiting (from 10 merit stars). Bring it down.</li>
  * </ul>
- * Done quests pay emeralds, mastery XP for the equipped grimoire and merit stars - sometimes a Rift Ink, a Devil Shard
- * or a Mana Core. Sneak and right-click the board to give a quest up.
+ * Two days to finish it. Done quests pay emeralds, mastery XP for the equipped grimoire and merit stars - sometimes a
+ * Rift Ink, a Devil Shard or a Mana Core. Sneak and right-click the board to give a quest up.
  */
 @Mod.EventBusSubscriber(modid = IronSpellGrimoire.MODID)
 public final class Quests {
     private Quests() {}
 
-    public static final int MAGES = 0, MONSTERS = 1, PRACTICE = 2, SUPPLY = 3, RIFT = 4, BOSS = 5;
-    public static final String[] TITLES = {"Hooded Mages", "Monster Hunt", "Practice", "Supply Run", "Rift Watch", "Great Beast"};
+    public static final int MAGES = 0, MONSTERS = 1, RIFT = 2, BOSS = 3;
+    public static final String[] TITLES = {"Hooded Mages", "Monster Hunt", "Rift Watch", "Great Beast"};
+    /** state: travelling to the place, fighting there, done. */
+    public static final int TRAVEL = 1, FIGHT = 3, DONE = 2;
     public static final int SHAPE = 75;
-    private static final String TAG = "isg_quest", NEXT = "isg_quest_next";
-    /** What a Supply Run can ask for, and how many. */
-    private static final Item[] SUPPLY_ITEMS = {Items.BREAD, Items.IRON_INGOT, Items.WHEAT, Items.COAL, Items.LEATHER, Items.COBBLESTONE, Items.OAK_LOG, Items.PAPER};
-    private static final int[] SUPPLY_COUNT = {12, 8, 32, 16, 8, 64, 32, 24};
-
-    public static Item supplyItem(int i) { return SUPPLY_ITEMS[Math.max(0, Math.min(SUPPLY_ITEMS.length - 1, i))]; }
+    private static final String TAG = "isg_quest", NEXT = "isg_quest_next", MARK = "isg_quest_owner";
+    private static final long LIMIT = 48000;
 
     private static CompoundTag quest(ServerPlayer p) {
         CompoundTag t = p.getPersistentData().getCompound(TAG);
         return t.isEmpty() ? null : t;
     }
 
+    // ------------------------------------------------------------------ the board
     public static void fromBoard(ServerPlayer p, BlockPos pos) {
         CompoundTag q = quest(p);
         ServerLevel sl = p.serverLevel();
         if (q != null && p.isShiftKeyDown()) {   // give it up
-            p.getPersistentData().remove(TAG);
+            clear(p, q);
             p.getPersistentData().putLong(NEXT, sl.getGameTime() + 600);
             sl.playSound(null, p.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1f, 0.6f);
-            p.displayClientMessage(Component.literal("You took your note off the board's list: " + TITLES[q.getInt("Type")] + ".").withStyle(ChatFormatting.GRAY), true);
-            sync(p);
+            p.displayClientMessage(Component.literal("You gave up the quest: " + TITLES[q.getInt("Type")] + ".").withStyle(ChatFormatting.GRAY), true);
             return;
         }
         if (q != null) {
-            if (q.getInt("Type") == SUPPLY) { handIn(p, q); return; }
-            p.displayClientMessage(Component.literal("Your quest: " + text(q) + " (" + q.getInt("Have") + "/" + q.getInt("Need") + "). Sneak + right-click the board to give it up.").withStyle(ChatFormatting.GRAY), true);
+            p.displayClientMessage(Component.literal("Your quest: " + TITLES[q.getInt("Type")] + " - follow the tracker. Sneak + right-click the board to give it up.").withStyle(ChatFormatting.GRAY), true);
             return;
         }
         long now = sl.getGameTime(), next = p.getPersistentData().getLong(NEXT);
@@ -80,79 +85,179 @@ public final class Quests {
             return;
         }
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        int type = r.nextInt(Bounties.stars(p) >= 10 ? 6 : 5);
+        int type = r.nextInt(Bounties.stars(p) >= 10 ? 4 : 3);
+        double a = r.nextDouble(Math.PI * 2), d = r.nextDouble(150, 350);
         q = new CompoundTag();
         q.putInt("Type", type);
-        switch (type) {
-            case MAGES -> q.putInt("Need", 6 + r.nextInt(5));
-            case MONSTERS -> q.putInt("Need", 15 + r.nextInt(11));
-            case PRACTICE -> q.putInt("Need", 30 + r.nextInt(31));
-            case SUPPLY -> { int i = r.nextInt(SUPPLY_ITEMS.length); q.putInt("Item", i); q.putInt("Need", SUPPLY_COUNT[i]); }
-            default -> q.putInt("Need", 1);
-        }
-        q.putInt("Have", 0);
+        q.putInt("State", TRAVEL);
+        q.putInt("X", (int) (pos.getX() + Math.cos(a) * d));
+        q.putInt("Z", (int) (pos.getZ() + Math.sin(a) * d));
+        q.putString("Dim", sl.dimension().location().toString());
+        q.putLong("Deadline", now + LIMIT);
+        q.putInt("Id", r.nextInt(1, Integer.MAX_VALUE));
         p.getPersistentData().put(TAG, q);
         sl.playSound(null, p.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1f, 0.9f);
-        sl.playSound(null, p.blockPosition(), SoundEvents.VILLAGER_WORK_LIBRARIAN, SoundSource.PLAYERS, 1f, 1f);
+        sl.playSound(null, p.blockPosition(), SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.PLAYERS, 1f, 1f);
+        double dx = q.getInt("X") - p.getX(), dz = q.getInt("Z") - p.getZ();
         p.sendSystemMessage(Component.literal("QUEST: ").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD)
                 .append(Component.literal(TITLES[type]).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
-                .append(Component.literal("  " + text(q)).withStyle(ChatFormatting.GRAY)));
-        if (type == SUPPLY) p.sendSystemMessage(Component.literal("Hand it in at any Quest Board.").withStyle(ChatFormatting.DARK_GRAY));
+                .append(Component.literal("  " + brief(type)).withStyle(ChatFormatting.GRAY)));
+        p.sendSystemMessage(Component.literal("About " + (int) Math.hypot(dx, dz) + " blocks " + Bounties.direction(dx, dz)
+                + ". Two days - the quest tracker and the blue pillar show the way.").withStyle(ChatFormatting.DARK_GRAY));
         sync(p);
     }
 
-    /** What the quest asks, in words. */
-    public static String text(CompoundTag q) {
-        int n = q.getInt("Need");
-        return switch (q.getInt("Type")) {
-            case MAGES -> "Defeat " + n + " hooded mages.";
-            case MONSTERS -> "Defeat " + n + " monsters.";
-            case PRACTICE -> "Cast " + n + " spells with your grimoire.";
-            case SUPPLY -> "Bring " + n + " " + supplyItem(q.getInt("Item")).getDescription().getString() + ".";
-            case RIFT -> "Close a rift: reach its relic chamber.";
-            default -> "Bring down any boss.";
+    private static String brief(int type) {
+        return switch (type) {
+            case MAGES -> "Hooded mages have made camp out there. Drive them off.";
+            case MONSTERS -> "Monsters are gathering out there. Thin them out.";
+            case RIFT -> "Something is about to tear open out there. Close the rift.";
+            default -> "Something big has been seen out there. Bring it down.";
         };
     }
 
-    private static void handIn(ServerPlayer p, CompoundTag q) {
-        Item want = supplyItem(q.getInt("Item"));
-        int need = q.getInt("Need") - q.getInt("Have");
-        int took = 0;
-        for (ItemStack s : p.getInventory().items) {
-            if (took >= need) break;
-            if (!s.is(want)) continue;
-            int n = Math.min(s.getCount(), need - took);
-            s.shrink(n);
-            took += n;
+    // ------------------------------------------------------------------ getting there
+    @SubscribeEvent
+    public static void onTick(TickEvent.PlayerTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || p.tickCount % 20 != 7) return;
+        CompoundTag q = quest(p);
+        if (q == null) return;
+        ServerLevel sl = p.serverLevel();
+        long now = sl.getGameTime();
+        if (q.getInt("State") == 0) { p.getPersistentData().remove(TAG); sync(p); return; }   // a quest from before quests had places
+        if (now > q.getLong("Deadline")) {
+            clear(p, q);
+            p.sendSystemMessage(Component.literal("Your quest ran out of time: " + TITLES[q.getInt("Type")] + ".").withStyle(ChatFormatting.GRAY));
+            return;
         }
-        if (took == 0) { p.displayClientMessage(Component.literal("The board still wants " + need + " " + want.getDescription().getString() + ".").withStyle(ChatFormatting.GRAY), true); return; }
-        p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 1f, 0.8f);
-        progress(p, SUPPLY, took);
+        if (q.getInt("State") == TRAVEL && sl.dimension().location().toString().equals(q.getString("Dim"))) {
+            double dx = q.getInt("X") + 0.5 - p.getX(), dz = q.getInt("Z") + 0.5 - p.getZ();
+            if (dx * dx + dz * dz < 28 * 28) arrive(p, sl, q);
+        }
+        if (q.getInt("State") == FIGHT && q.getInt("Type") != RIFT && p.tickCount % 100 == 7) {   // keep the count true (despawned or lost ones)
+            int alive = 0;
+            for (Tag t : q.getList("Mobs", Tag.TAG_INT_ARRAY)) { Entity m = sl.getEntity(net.minecraft.nbt.NbtUtils.loadUUID(t)); if (m != null && m.isAlive()) alive++; }
+            if (alive == 0 && sl.dimension().location().toString().equals(q.getString("Dim"))) {
+                double dx = q.getInt("X") + 0.5 - p.getX(), dz = q.getInt("Z") + 0.5 - p.getZ();
+                if (dx * dx + dz * dz < 64 * 64) complete(p, q);
+            }
+        }
+        if (p.tickCount % 200 == 7) sync(p);
     }
 
-    /** Counts toward the player's quest if it's of this kind. */
-    public static void progress(ServerPlayer p, int type, int n) {
+    /** You've reached the place: the trouble shows itself. */
+    private static void arrive(ServerPlayer p, ServerLevel sl, CompoundTag q) {
+        int x = q.getInt("X"), z = q.getInt("Z");
+        if (!sl.hasChunk(x >> 4, z >> 4)) return;
+        int y = sl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+        Vec3 at = new Vec3(x + 0.5, y, z + 0.5);
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        int type = q.getInt("Type");
+        ListTag mobs = new ListTag();
+        q.putInt("State", FIGHT);
+        switch (type) {
+            case MAGES -> {
+                int n = 6 + r.nextInt(4);
+                for (int i = 0; i < n; i++) spawn(sl, p, q, AddonEntities.MAGE.get(), at, 3 + r.nextDouble(5), mobs, 1.0);
+                p.sendSystemMessage(Component.literal("The hooded mages turn on you!").withStyle(ChatFormatting.AQUA));
+            }
+            case MONSTERS -> {
+                int n = 10 + r.nextInt(5);
+                List<EntityType<? extends Mob>> kinds = List.of(EntityType.ZOMBIE, EntityType.SKELETON, EntityType.SPIDER, EntityType.HUSK, EntityType.ZOMBIE, EntityType.SKELETON);
+                for (int i = 0; i < n; i++) spawn(sl, p, q, kinds.get(r.nextInt(kinds.size())), at, 3 + r.nextDouble(8), mobs, 1.5);
+                spawn(sl, p, q, EntityType.WITCH, at, 2, mobs, 1.5);
+                p.sendSystemMessage(Component.literal("The pack has your scent!").withStyle(ChatFormatting.AQUA));
+            }
+            case RIFT -> {
+                Rifts.Rift rift = Rifts.open(p, at, Math.max(2, Math.min(4, 1 + Bounties.stars(p) / 15)));
+                q.putInt("Rift", rift.id);
+                p.sendSystemMessage(Component.literal("A rift tears open! Step in and reach its relic chamber.").withStyle(ChatFormatting.AQUA));
+            }
+            default -> {
+                EntityType<? extends Mob> t = switch (r.nextInt(6)) {
+                    case 0 -> AddonEntities.ZENON.get();
+                    case 1 -> AddonEntities.BEAST_OF_DESPAIR.get();
+                    case 2 -> AddonEntities.RHYA.get();
+                    case 3 -> AddonEntities.LICHT.get();
+                    case 4 -> AddonEntities.REVENANT.get();
+                    default -> AddonEntities.CURSE_WITCH.get();
+                };
+                spawn(sl, p, q, t, at, 0, mobs, 1.0);
+            }
+        }
+        q.put("Mobs", mobs);
+        q.putInt("Need", type == MAGES || type == MONSTERS ? mobs.size() : 1);
+        q.putInt("Have", 0);
+        FxSend.ring(sl, Fx.WATER | FxPacket.KEEP_SHAPE, at.add(0, 0.1, 0), 0.5f, 8f, 0.2f, 18);
+        sl.playSound(null, BlockPos.containing(at), SoundEvents.EVOKER_PREPARE_SUMMON, SoundSource.HOSTILE, 1.4f, 0.8f);
+        sync(p);
+    }
+
+    private static void spawn(ServerLevel sl, ServerPlayer p, CompoundTag q, EntityType<? extends Mob> type, Vec3 at, double rad, ListTag mobs, double hp) {
+        Mob m = type.create(sl);
+        if (m == null) return;
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        double a = r.nextDouble(Math.PI * 2);
+        int x = (int) Math.floor(at.x + Math.cos(a) * rad), z = (int) Math.floor(at.z + Math.sin(a) * rad);
+        m.moveTo(x + 0.5, sl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z), z + 0.5, r.nextFloat() * 360f, 0);
+        m.finalizeSpawn(sl, sl.getCurrentDifficultyAt(m.blockPosition()), MobSpawnType.EVENT, null, null);
+        m.setPersistenceRequired();
+        m.getPersistentData().putUUID(MARK, p.getUUID());
+        m.getPersistentData().putInt("isg_quest_id", q.getInt("Id"));
+        var h = m.getAttribute(Attributes.MAX_HEALTH);
+        if (h != null && hp != 1.0) { h.setBaseValue(h.getBaseValue() * hp); m.setHealth(m.getMaxHealth()); }
+        m.setTarget(p);
+        sl.addFreshEntity(m);
+        mobs.add(net.minecraft.nbt.NbtUtils.createUUID(m.getUUID()));
+        FxSend.ring(sl, Fx.WATER | FxPacket.KEEP_SHAPE, m.position().add(0, 0.05, 0), 0.2f, 1.4f, 0.06f, 12);
+    }
+
+    /** Gone: the quest's foes vanish, the record is cleared. */
+    private static void clear(ServerPlayer p, CompoundTag q) {
+        ServerLevel sl = p.serverLevel();
+        for (Tag t : q.getList("Mobs", Tag.TAG_INT_ARRAY)) {
+            Entity m = sl.getEntity(net.minecraft.nbt.NbtUtils.loadUUID(t));
+            if (m != null) m.discard();
+        }
+        p.getPersistentData().remove(TAG);
+        sync(p);
+    }
+
+    // ------------------------------------------------------------------ progress
+    @SubscribeEvent
+    public static void onKill(LivingDeathEvent e) {
+        var t = e.getEntity();
+        if (!t.getPersistentData().hasUUID(MARK) || !(t.level() instanceof ServerLevel sl)) return;
+        ServerPlayer p = sl.getServer().getPlayerList().getPlayer(t.getPersistentData().getUUID(MARK));
+        if (p == null) return;
         CompoundTag q = quest(p);
-        if (q == null || q.getInt("Type") != type) return;
-        int have = Math.min(q.getInt("Need"), q.getInt("Have") + n);
+        if (q == null || q.getInt("Id") != t.getPersistentData().getInt("isg_quest_id") || q.getInt("State") != FIGHT) return;
+        int have = q.getInt("Have") + 1;
         q.putInt("Have", have);
         if (have >= q.getInt("Need")) complete(p, q);
         else sync(p);
+    }
+
+    /** A rift's relic chamber was won (server/Rifts): if it's the quest's rift, the quest is done. */
+    static void riftCleared(ServerPlayer p, int riftId) {
+        CompoundTag q = quest(p);
+        if (q == null || q.getInt("Type") != RIFT || q.getInt("State") != FIGHT || q.getInt("Rift") != riftId) return;
+        q.putInt("Have", 1);
+        complete(p, q);
     }
 
     private static void complete(ServerPlayer p, CompoundTag q) {
         int type = q.getInt("Type");
         ThreadLocalRandom r = ThreadLocalRandom.current();
         boolean big = type == RIFT || type == BOSS;
-        int emeralds = big ? 12 + r.nextInt(8) : 4 + r.nextInt(6);
+        int emeralds = big ? 12 + r.nextInt(8) : 6 + r.nextInt(6);
         int stars = big ? 3 : 1;
         give(p, new ItemStack(Items.EMERALD, emeralds));
-        GrimoireMastery.bountyXp(p, big ? 500 : 150 + r.nextInt(100));
+        GrimoireMastery.bountyXp(p, big ? 500 : 200 + r.nextInt(100));
         Bounties.addStars(p, stars);
         String extra = "";
-        if (r.nextInt(big ? 2 : 5) == 0) {
-            int k = r.nextInt(3);
-            ItemStack s = switch (k) {
+        if (r.nextInt(big ? 2 : 4) == 0) {
+            ItemStack s = switch (r.nextInt(3)) {
                 case 0 -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(4)); yield ink; }
                 case 1 -> new ItemStack(AddonItemRegistry.DEVIL_SHARD.get());
                 default -> new ItemStack(AddonItemRegistry.MANA_CORE.get());
@@ -168,34 +273,23 @@ public final class Quests {
         p.sendSystemMessage(Component.literal("QUEST COMPLETE  ").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD)
                 .append(Component.literal(TITLES[type] + ": " + emeralds + " emeralds, +" + stars + " merit star" + (stars > 1 ? "s" : "") + extra + ".").withStyle(ChatFormatting.YELLOW)));
         FxPacket k = new FxPacket();
-        k.shape = SHAPE; k.life = 2; k.sweep = type;   // the tracker shows DONE for a moment
+        k.shape = SHAPE; k.life = DONE; k.sweep = type;
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), k);
     }
 
     private static void give(ServerPlayer p, ItemStack s) { if (!p.getInventory().add(s)) p.drop(s, false); }
 
-    /** The tracker on the client: type, have/need (life 1 = active, 0 = none, 2 = just done). */
+    /** The tracker on the client: life = state (0 none), sweep = type, c = the place, a0/a1 = defeated/total. */
     public static void sync(ServerPlayer p) {
         CompoundTag q = quest(p);
         FxPacket k = new FxPacket();
         k.shape = SHAPE;
-        if (q != null) { k.life = 1; k.sweep = q.getInt("Type"); k.a0 = q.getInt("Have"); k.a1 = q.getInt("Need"); k.h = q.getInt("Item"); }
+        if (q != null) {
+            k.life = q.getInt("State"); k.sweep = q.getInt("Type"); k.a0 = q.getInt("Have"); k.a1 = q.getInt("Need");
+            k.c = new Vec3(q.getInt("X") + 0.5, 0, q.getInt("Z") + 0.5);
+            k.r = Math.max(0, q.getLong("Deadline") - p.serverLevel().getGameTime());
+        }
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), k);
-    }
-
-    // ------------------------------------------------------------------ progress
-    @SubscribeEvent
-    public static void onKill(LivingDeathEvent e) {
-        if (!(e.getSource().getEntity() instanceof ServerPlayer p) || e.getEntity() == p) return;
-        var t = e.getEntity();
-        if (t instanceof com.ironspellgrimoire.entity.MageEnemy) progress(p, MAGES, 1);
-        if (BossCores.isBoss(t.getType())) progress(p, BOSS, 1);
-        else if (t instanceof Enemy) progress(p, MONSTERS, 1);
-    }
-
-    @SubscribeEvent
-    public static void onCast(SpellOnCastEvent e) {
-        if (e.getEntity() instanceof ServerPlayer p && e.getSpellId() != null && e.getSpellId().startsWith(IronSpellGrimoire.MODID + ":")) progress(p, PRACTICE, 1);
     }
 
     @SubscribeEvent

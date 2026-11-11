@@ -13,7 +13,7 @@ import net.minecraft.world.phys.BlockHitResult;
 /**
  * The Quest Board: the Poster Board's frame (3 wide, 2 tall, the same invisible parts), its banner blue and its notes
  * villagers' requests - a map, a supply list, a sword notice, a checklist (tools/quest_board.py). Right-click it for
- * a quest, to hand in what a supply quest asks for, or (sneaking) to give up your quest (server/Quests).
+ * a quest, or (sneaking) to give up your quest (server/Quests).
  */
 public class QuestBoardBlock extends PosterBoardBlock {
     @Override
