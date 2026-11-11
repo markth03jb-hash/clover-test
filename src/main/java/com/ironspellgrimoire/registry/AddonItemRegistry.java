@@ -106,6 +106,8 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> MANA_CORE = ITEMS.register("mana_core", com.ironspellgrimoire.item.ManaCoreItem::new);
     /** One per player, given the first time they hold a grimoire (server/BroomFlight). */
     public static final RegistryObject<Item> MAGIC_BROOM = ITEMS.register("magic_broom", com.ironspellgrimoire.item.MagicBroomItem::new);
+    /** Every new player's way to the Grimoire Tower (server/TowerCompass). */
+    public static final RegistryObject<Item> TOWER_COMPASS = ITEMS.register("tower_compass", com.ironspellgrimoire.item.TowerCompassItem::new);
     /** Grimoire upgrades (server/GrimoireUpgrades): each boss's own, and the crafted and found ones. */
     public static final RegistryObject<Item> DESPAIR_FANG = ITEMS.register("despair_fang", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("despair_fang", true));
     public static final RegistryObject<Item> COPIED_SIGIL = ITEMS.register("copied_sigil", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("copied_sigil", true));
