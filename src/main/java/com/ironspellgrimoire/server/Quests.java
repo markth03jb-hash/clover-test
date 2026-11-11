@@ -393,7 +393,7 @@ public final class Quests {
         boolean big = type == RIFT || type == BOSS || type == BEAST || type == PAGE;
         boolean daily = q.getBoolean("Daily");
         int emeralds = (big ? 12 + r.nextInt(8) : 6 + r.nextInt(6)) * (daily ? 2 : 1);
-        int stars = (big ? 3 : 1) * (daily ? 2 : 1);
+        int stars = (big ? 3 : 1) * (daily ? 2 : 1) + GrimoireUpgrades.bonusStars(p);
         give(p, new ItemStack(Items.EMERALD, emeralds));
         GrimoireMastery.bountyXp(p, (type == PAGE ? 900 : big ? 500 : 200 + r.nextInt(100)) * (daily ? 2 : 1));   // a lost page teaches your grimoire most
         Bounties.addStars(p, stars);
@@ -404,21 +404,25 @@ public final class Quests {
             give(p, ink);
             extra = ", a Mana Core, a Rift Ink";
             if (r.nextInt(3) == 0) { give(p, new ItemStack(AddonItemRegistry.PHOENIX_RIBBON.get())); extra += ", a Phoenix Ribbon"; }
+            if (r.nextInt(4) == 0) { give(p, new ItemStack(AddonItemRegistry.STARLIT_SEAL.get())); extra += ", a Starlit Seal"; }
         }
         for (Tag t : q.getList("Mobs", Tag.TAG_INT_ARRAY)) {   // whatever is left of it fades away
             Entity m = p.serverLevel().getEntity(net.minecraft.nbt.NbtUtils.loadUUID(t));
             if (m != null && m.isAlive()) m.discard();
         }
         if (r.nextInt(big ? 3 : 4) != 0) {   // most quests leave something for your grimoire
-            ItemStack s = switch (r.nextInt(big ? 8 : 7)) {
+            ItemStack s = switch (r.nextInt(big ? 11 : 10)) {
                 case 0 -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(com.ironspellgrimoire.item.RiftInkItem.COUNT)); yield ink; }
                 case 1 -> new ItemStack(AddonItemRegistry.RUNED_SPINE.get());
                 case 2 -> new ItemStack(AddonItemRegistry.MANA_CORE.get());
                 case 3 -> new ItemStack(AddonItemRegistry.MANA_CRYSTAL_BINDING.get());
                 case 4 -> new ItemStack(AddonItemRegistry.SILVER_CLASP.get());
                 case 5 -> new ItemStack(AddonItemRegistry.SWIFT_BOOKMARK.get());
-                case 7 -> new ItemStack(AddonItemRegistry.PHOENIX_RIBBON.get());   // rare: only from the big quests
-                default -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", 4 + r.nextInt(4)); yield ink; }   // a rare ink
+                case 7 -> new ItemStack(AddonItemRegistry.WIND_FEATHER.get());
+                case 8 -> new ItemStack(AddonItemRegistry.BLOODSTONE.get());
+                case 9 -> new ItemStack(AddonItemRegistry.WARDING_GLYPH.get());
+                case 10 -> new ItemStack(AddonItemRegistry.PHOENIX_RIBBON.get());   // rare: only from the big quests
+                default -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", 4 + r.nextInt(com.ironspellgrimoire.item.RiftInkItem.COUNT - 4)); yield ink; }   // a rare ink
             };
             give(p, s);
             extra = ", " + s.getHoverName().getString();

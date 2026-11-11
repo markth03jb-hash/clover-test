@@ -116,7 +116,11 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> SWIFT_BOOKMARK = ITEMS.register("swift_bookmark", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("swift_bookmark", false));
     public static final RegistryObject<Item> RUNED_SPINE = ITEMS.register("runed_spine", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("runed_spine", false));
     public static final RegistryObject<Item> PHOENIX_RIBBON = ITEMS.register("phoenix_ribbon", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("phoenix_ribbon", false));
-    public static final java.util.List<RegistryObject<Item>> UPGRADES = java.util.List.of(DESPAIR_FANG, COPIED_SIGIL, ELVEN_BLADE_SHARD, GRAVE_EMBER, CURSE_THREAD, MIRROR_SHARD, MANA_CRYSTAL_BINDING, SILVER_CLASP, SWIFT_BOOKMARK, RUNED_SPINE, PHOENIX_RIBBON);
+    public static final RegistryObject<Item> WIND_FEATHER = ITEMS.register("wind_feather", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("wind_feather", false));
+    public static final RegistryObject<Item> BLOODSTONE = ITEMS.register("bloodstone", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("bloodstone", false));
+    public static final RegistryObject<Item> WARDING_GLYPH = ITEMS.register("warding_glyph", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("warding_glyph", false));
+    public static final RegistryObject<Item> STARLIT_SEAL = ITEMS.register("starlit_seal", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("starlit_seal", false));
+    public static final java.util.List<RegistryObject<Item>> UPGRADES = java.util.List.of(DESPAIR_FANG, COPIED_SIGIL, ELVEN_BLADE_SHARD, GRAVE_EMBER, CURSE_THREAD, MIRROR_SHARD, MANA_CRYSTAL_BINDING, SILVER_CLASP, SWIFT_BOOKMARK, RUNED_SPINE, PHOENIX_RIBBON, WIND_FEATHER, BLOODSTONE, WARDING_GLYPH, STARLIT_SEAL);
 
     /** Spawns Zenon (the three-phase bone boss). */
     public static final RegistryObject<Item> ZENON_SPAWN_EGG = ITEMS.register("zenon_spawn_egg",

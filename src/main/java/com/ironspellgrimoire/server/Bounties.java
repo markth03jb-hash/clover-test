@@ -50,7 +50,7 @@ import net.minecraftforge.network.PacketDistributor;
  *       boss is there.</li>
  *   <li><b>Modifiers:</b> Enraged (faster, hits harder), Armoured (heavy armour), Escorted (Hooded Mages with him),
  *       Wounded (starts at 70% health, but the reward is smaller).</li>
- *   <li><b>Reward:</b> merit stars, emeralds, mastery XP for your grimoire, sometimes a Devil Shard, and the poster
+ *   <li><b>Reward:</b> merit stars, emeralds, mastery XP for your grimoire, sometimes a Runed Spine or Warding Glyph, and the poster
  *       comes back stamped SUBJUGATED with your name on it. Miss the deadline and the poster burns up - nothing else.</li>
  * </ul>
  * One bounty at a time, kept on the player (persistent data), so it survives logging out.
@@ -307,7 +307,7 @@ public final class Bounties {
         int mods = b.getInt("Mods"), boss = b.getInt("Boss");
         int hard = Integer.bitCount(mods & ~WOUNDED);
         boolean wounded = (mods & WOUNDED) != 0;
-        int stars = 3 + hard * 2 - (wounded ? 1 : 0) + (boss == SECRET ? 15 : 0);
+        int stars = 3 + hard * 2 - (wounded ? 1 : 0) + (boss == SECRET ? 15 : 0) + GrimoireUpgrades.bonusStars(p);
         p.getPersistentData().putInt(STARS, stars(p) + stars);
         ItemStack trophy = poster(b);
         CompoundTag pt = trophy.getOrCreateTag().getCompound("Bounty");
@@ -317,7 +317,8 @@ public final class Bounties {
         removePoster(p, b.getInt("Id"));
         giveItem(p, trophy);
         giveItem(p, new ItemStack(Items.EMERALD, 8 + hard * 6 - (wounded ? 3 : 0)));
-        if (ThreadLocalRandom.current().nextInt(3) == 0 || hard >= 2) giveItem(p, new ItemStack(AddonItemRegistry.RUNED_SPINE.get()));   // (Devil Shards come only from Zenon)
+        if (ThreadLocalRandom.current().nextInt(3) == 0 || hard >= 2)
+            giveItem(p, new ItemStack((ThreadLocalRandom.current().nextBoolean() ? AddonItemRegistry.RUNED_SPINE : AddonItemRegistry.WARDING_GLYPH).get()));   // (Devil Shards come only from Zenon)
         if (boss == SECRET) {   // the secret poster: a relic as well
             var relics = AddonItemRegistry.RELICS;
             giveItem(p, new ItemStack(relics.get(ThreadLocalRandom.current().nextInt(relics.size())).get()));

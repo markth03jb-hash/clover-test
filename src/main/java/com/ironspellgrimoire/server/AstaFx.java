@@ -197,6 +197,20 @@ public class AstaFx {
                 TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, MUT_FROST_ID, "Frost mutation", -0.3, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
                 FxSend.ring(p.serverLevel(), Fx.ICE | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, t.position().add(0, 0.1, 0), 0.3f, 1.3f, 0.05f, 10);
             }
+            case StarForge.MUT_CHAIN -> {   // the hit leaps on to the next foe
+                LivingEntity next = null; double best = 7 * 7;
+                for (LivingEntity o : Kit.near(p.serverLevel(), p, t.position(), 7)) { double d = o.distanceToSqr(t); if (o != t && d < best) { best = d; next = o; } }
+                if (next != null) {
+                    final LivingEntity n2 = next;
+                    FxSend.beam(p.serverLevel(), Fx.LIGHTNING | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), n2.position().add(0, n2.getBbHeight() * 0.5, 0), 0.12f, 6);
+                    echoing = true;
+                    try { damage(p, n2, dmg0 * 0.5f, id); } finally { echoing = false; }
+                }
+            }
+            case StarForge.MUT_WEAKEN -> {   // the hit saps its strength
+                TimedModifiers.apply(t, Attributes.ATTACK_DAMAGE, MUT_WEAKEN_ID, "Weaken mutation", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 60);
+                FxSend.ring(p.serverLevel(), Fx.DARK | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() + 0.2, 0), 0.3f, 0.5f, 0.04f, 20);
+            }
             case StarForge.MUT_LEECH -> {   // the damage heals you
                 float dealt = Math.max(0f, before - t.getHealth());
                 if (dealt > 0 && p.getHealth() < p.getMaxHealth()) p.heal(dealt * 0.05f);
@@ -204,6 +218,7 @@ public class AstaFx {
             default -> {}
         }
     }
+    private static final java.util.UUID MUT_WEAKEN_ID = java.util.UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a1001e2");
     private static final java.util.UUID MUT_FROST_ID = java.util.UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a1001e1");
 
     private static void variantMsg(ServerPlayer p) {

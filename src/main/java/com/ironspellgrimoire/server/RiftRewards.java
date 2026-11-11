@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -200,6 +201,21 @@ public final class RiftRewards {
                 }
             }
         }
+    }
+
+    /** Thorn Ink: what strikes you up close is hurt back. */
+    @SubscribeEvent
+    public static void onThorn(LivingDamageEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer v) || !hasInk(v, 8) || !(e.getSource().getDirectEntity() instanceof LivingEntity by) || by == v) return;
+        if (by.distanceToSqr(v) > 16) return;
+        by.hurt(v.damageSources().thorns(v), Math.max(1f, e.getAmount() * 0.2f));
+    }
+
+    /** Gold Ink: the fallen sometimes leave an emerald. */
+    @SubscribeEvent
+    public static void onGold(net.minecraftforge.event.entity.living.LivingDeathEvent e) {
+        if (!(e.getSource().getEntity() instanceof ServerPlayer p) || !hasInk(p, 9) || !(e.getEntity() instanceof net.minecraft.world.entity.monster.Enemy)) return;
+        if (ThreadLocalRandom.current().nextInt(5) == 0) e.getEntity().spawnAtLocation(new ItemStack(net.minecraft.world.item.Items.EMERALD));
     }
 
     /** Shade Ink: now and then a blow passes straight through you. */
