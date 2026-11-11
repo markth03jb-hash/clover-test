@@ -74,20 +74,21 @@ d.line([(4, 16), (28, 16)], fill=(200, 150, 50, 255), width=2)
 for (x, y) in ((16, 3), (16, 29), (3, 16), (29, 16)): d.rectangle([x - 1, y - 1, x + 1, y + 1], fill=(255, 220, 110, 255))
 px = im.load(); glint(px, 13, 12, True)
 T['mana_core'] = finish(im, glow=(170, 110, 255, 255))
-# ---------------------------------------------------------------- Rift Ink: a round flask of swirling void, a cork, stars inside
+# ---------------------------------------------------------------- Rift Ink: a round flask (layer 0) and its ink (layer 1, grey, tinted per ink by the client)
 im, d = new()
 d.rectangle([13, 3, 19, 8], fill=(150, 105, 60, 255)); d.rectangle([13, 3, 19, 4], fill=(190, 140, 90, 255))   # cork
 d.rectangle([12, 8, 20, 11], fill=(170, 200, 230, 255))                                                        # neck
 d.ellipse([5, 10, 27, 30], fill=(170, 200, 230, 255))
-radial(d, 16, 21, 9, (190, 120, 255, 255), (30, 10, 70, 255))
+d.ellipse([7, 13, 25, 28], fill=(120, 140, 170, 255))
+T['rift_ink'] = finish(im)
+fill, d = new()
+radial(d, 16, 21, 9, (255, 255, 255, 255), (70, 70, 70, 255))
 for i in range(40):   # the swirl
     a = i * 0.32; r = 1 + i * 0.2
-    x, y = 16 + math.cos(a) * r, 21 + math.sin(a) * r * 0.8
-    d.point((x, y), fill=(230, 180, 255, 255))
-px = im.load()
-for (x, y) in ((12, 18), (20, 24), (17, 15)): px[x, y] = (255, 255, 255, 255)
-glint(px, 9, 16)
-T['rift_ink'] = finish(im, glow=(150, 80, 255, 255))
+    d.point((16 + math.cos(a) * r, 21 + math.sin(a) * r * 0.8), fill=(255, 255, 255, 255))
+pf = fill.load()
+for (x, y) in ((12, 18), (20, 24), (17, 15)): pf[x, y] = (255, 255, 255, 255)
+FILL = fill
 # ---------------------------------------------------------------- Despair Fang: a long curved fang, teal-white, green cracks
 im, d = new()
 pts = []
@@ -210,7 +211,20 @@ T['phoenix_ribbon'] = finish(im, glow=(255, 120, 40, 255))
 
 for name, img in T.items():
     img.save(os.path.join(TEX, name + '.png'))
-    json.dump({'parent': 'minecraft:item/generated', 'textures': {'layer0': 'iron_spell_grimoire:item/' + name}}, open(os.path.join(MOD, name + '.json'), 'w'), indent=1)
+    tex = {'layer0': 'iron_spell_grimoire:item/' + name}
+    if name == 'rift_ink': tex['layer1'] = 'iron_spell_grimoire:item/rift_ink_fill'
+    json.dump({'parent': 'minecraft:item/generated', 'textures': tex}, open(os.path.join(MOD, name + '.json'), 'w'), indent=1)
+FILL.save(os.path.join(TEX, 'rift_ink_fill.png'))
+# the preview shows the inks in their colours
+COLS = [(0xC0, 0x20, 0x2A), (0xBF, 0xE8, 0xFF), (0x9A, 0x5C, 0xFF), (0x5A, 0x5A, 0x70), (0x60, 0xD0, 0xFF), (0xA0, 0xF0, 0xFF), (0xD8, 0xD0, 0xFF), (0x60, 0xE0, 0x70)]
+for i, c in enumerate(COLS):
+    f = FILL.copy(); pf = f.load()
+    for y in range(N):
+        for x in range(N):
+            r, g, b, a = pf[x, y]
+            if a: pf[x, y] = (r * c[0] // 255, g * c[1] // 255, b * c[2] // 255, a)
+    ink = T['rift_ink'].copy(); ink.alpha_composite(f)
+    T['ink_' + str(i)] = ink
 # preview sheet
 cols = 7; S = 6
 sheet = Image.new('RGBA', (cols * (N * S + 10) + 10, ((len(T) + cols - 1) // cols) * (N * S + 10) + 10), (60, 60, 66, 255))

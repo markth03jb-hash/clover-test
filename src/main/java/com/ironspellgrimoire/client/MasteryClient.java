@@ -50,8 +50,8 @@ public final class MasteryClient {
         if (com.ironspellgrimoire.server.Awakening.awakened(stack)) tip.add(Component.literal("\u2726 Awakened - " + Component.translatable("spell.iron_spell_grimoire." + com.ironspellgrimoire.server.Awakening.spellFor(stack)).getString()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
         else if (com.ironspellgrimoire.server.Awakening.canAwaken(stack)) tip.add(Component.literal("\u2726 Ready to awaken - in a desperate fight against a boss").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
         if (GrimoireMastery.ascended(stack)) tip.add(Component.literal("\u2694 Magic Knight - passed the exam").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
-        if (stack.hasTag() && stack.getTag().getInt("RiftInk2") > 0) {
-            int ink2 = Math.min(3, stack.getTag().getInt("RiftInk2") - 1);
+        for (String page : new String[]{"RiftInk2", "RiftInk3"}) if (stack.hasTag() && stack.getTag().getInt(page) > 0) {
+            int ink2 = Math.min(com.ironspellgrimoire.item.RiftInkItem.COUNT - 1, stack.getTag().getInt(page) - 1);
             tip.add(Component.literal("Inscribed: " + com.ironspellgrimoire.item.RiftInkItem.NAMES[ink2] + " - " + com.ironspellgrimoire.item.RiftInkItem.TEXT[ink2])
                     .withStyle(s -> s.withColor(com.ironspellgrimoire.item.RiftInkItem.COLORS[ink2])));
         }
@@ -59,12 +59,13 @@ public final class MasteryClient {
             var boost = stack.getTag().getCompound("StarBoost");
             for (String k : boost.getAllKeys()) if (boost.getInt(k) > 0)
                 tip.add(Component.literal("\u2605 " + Component.translatable("spell.iron_spell_grimoire." + k).getString() + " +" + boost.getInt(k) * 10 + "%").withStyle(ChatFormatting.YELLOW));
-            if (stack.getTag().getBoolean("InkSlot2")) tip.add(Component.literal("\u2605 Two ink pages").withStyle(ChatFormatting.YELLOW));
+            if (stack.getTag().getBoolean("InkSlot3")) tip.add(Component.literal("\u2605 Three ink pages").withStyle(ChatFormatting.YELLOW));
+            else if (stack.getTag().getBoolean("InkSlot2")) tip.add(Component.literal("\u2605 Two ink pages").withStyle(ChatFormatting.YELLOW));
             int sg = stack.getTag().getInt("Sigil");
             if (sg > 0 && sg <= com.ironspellgrimoire.server.StarForge.SIGIL_NAMES.length) tip.add(Component.literal("\u2605 Sigil of " + com.ironspellgrimoire.server.StarForge.SIGIL_NAMES[sg - 1] + ": " + com.ironspellgrimoire.server.StarForge.SIGIL_EFFECTS[sg - 1]).withStyle(ChatFormatting.YELLOW));
         }
         if (stack.hasTag() && stack.getTag().getInt("RiftInk") > 0) {
-            int ink = Math.min(3, stack.getTag().getInt("RiftInk") - 1);
+            int ink = Math.min(com.ironspellgrimoire.item.RiftInkItem.COUNT - 1, stack.getTag().getInt("RiftInk") - 1);
             tip.add(Component.literal("Inscribed: " + com.ironspellgrimoire.item.RiftInkItem.NAMES[ink] + " - " + com.ironspellgrimoire.item.RiftInkItem.TEXT[ink])
                     .withStyle(s -> s.withColor(com.ironspellgrimoire.item.RiftInkItem.COLORS[ink])));
         }

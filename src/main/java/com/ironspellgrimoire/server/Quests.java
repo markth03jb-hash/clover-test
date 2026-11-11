@@ -400,7 +400,7 @@ public final class Quests {
         String extra = "";
         if (daily) {   // the Daily Special: a Mana Core and a Rift Ink for sure
             give(p, new ItemStack(AddonItemRegistry.MANA_CORE.get()));
-            ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(4));
+            ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(com.ironspellgrimoire.item.RiftInkItem.COUNT));
             give(p, ink);
             extra = ", a Mana Core, a Rift Ink";
             if (r.nextInt(3) == 0) { give(p, new ItemStack(AddonItemRegistry.PHOENIX_RIBBON.get())); extra += ", a Phoenix Ribbon"; }
@@ -409,13 +409,16 @@ public final class Quests {
             Entity m = p.serverLevel().getEntity(net.minecraft.nbt.NbtUtils.loadUUID(t));
             if (m != null && m.isAlive()) m.discard();
         }
-        if (r.nextInt(big ? 2 : 4) == 0) {
-            ItemStack s = switch (r.nextInt(big ? 5 : 4)) {
-                case 0 -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(4)); yield ink; }
+        if (r.nextInt(big ? 3 : 4) != 0) {   // most quests leave something for your grimoire
+            ItemStack s = switch (r.nextInt(big ? 8 : 7)) {
+                case 0 -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", r.nextInt(com.ironspellgrimoire.item.RiftInkItem.COUNT)); yield ink; }
                 case 1 -> new ItemStack(AddonItemRegistry.RUNED_SPINE.get());
                 case 2 -> new ItemStack(AddonItemRegistry.MANA_CORE.get());
-                case 4 -> new ItemStack(AddonItemRegistry.PHOENIX_RIBBON.get());   // rare: only from the big quests
-                default -> new ItemStack(AddonItemRegistry.SWIFT_BOOKMARK.get());
+                case 3 -> new ItemStack(AddonItemRegistry.MANA_CRYSTAL_BINDING.get());
+                case 4 -> new ItemStack(AddonItemRegistry.SILVER_CLASP.get());
+                case 5 -> new ItemStack(AddonItemRegistry.SWIFT_BOOKMARK.get());
+                case 7 -> new ItemStack(AddonItemRegistry.PHOENIX_RIBBON.get());   // rare: only from the big quests
+                default -> { ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", 4 + r.nextInt(4)); yield ink; }   // a rare ink
             };
             give(p, s);
             extra = ", " + s.getHoverName().getString();

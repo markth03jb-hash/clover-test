@@ -1,6 +1,7 @@
 {
  "parent": "minecraft:item/generated",
  "textures": {
-  "layer0": "iron_spell_grimoire:item/rift_ink"
+  "layer0": "iron_spell_grimoire:item/rift_ink",
+  "layer1": "iron_spell_grimoire:item/rift_ink_fill"
  }
 }
