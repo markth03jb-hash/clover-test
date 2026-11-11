@@ -506,13 +506,13 @@ public final class RhyaAI {
                 FxSend.trail(sl, Fx.RIPPER, l[0].add(0, 1.0, 0), l[1].add(0, 1.0, 0), 0.5f, 10);
                 FxSend.trail(sl, Fx.RIPPER, l[0].add(0, 0.2, 0), l[1].add(0, 0.2, 0), 0.25f, 8);
                 for (Player p : along(b, l[0].add(0, 1, 0), l[1].add(0, 1, 0), 1.0)) hurt(b, p, 10f);
-                sound(sl, mid(l), SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 1.3f);
+                sound(sl, centre(l), SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 1.3f);
             });
         }
         return T + 12;
     }
 
-    private static Vec3 mid(Vec3[] l) { return l[0].add(l[1]).scale(0.5); }
+    private static Vec3 centre(Vec3[] l) { return l[0].add(l[1]).scale(0.5); }
 
     /** Silver: a rain of silver spikes over where you stand and around it. */
     static int silverRain(Rhya b, ServerLevel sl, Player t) {
