@@ -99,10 +99,11 @@ public abstract class AddonBoss extends Monster {
         if (src.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return super.hurt(src, amount);
         if (transforming() > 0 || isDeadOrDying()) return false;
         float max = getMaxHealth();
-        amount = Math.min(amount, max * 0.15f) * damageTaken(src);
+        boolean ult = com.ironspellgrimoire.server.GrimoireMastery.isUltimate(src);   // a grimoire's ultimate isn't capped
+        amount = (ult ? amount : Math.min(amount, max * 0.15f)) * damageTaken(src);
         long now = level().getGameTime();
         if (now - windowStart >= 20) { windowStart = now; windowDmg = 0; }
-        amount = Math.min(amount, 120f - windowDmg);
+        if (!ult) amount = Math.min(amount, 120f - windowDmg);
         float[] lines = phaseLines();
         float floor = phase() <= lines.length ? max * lines[phase() - 1] : 0f;
         if (phase() <= lines.length && getHealth() - amount < floor) amount = Math.max(0f, getHealth() - floor);

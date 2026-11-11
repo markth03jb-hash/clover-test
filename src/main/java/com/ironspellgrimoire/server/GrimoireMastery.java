@@ -68,6 +68,20 @@ public final class GrimoireMastery {
     private GrimoireMastery() {}
 
     public static final int MAX_LEVEL = 5;
+    private static java.util.Set<String> ULTIMATES;
+
+    /** Whether this damage comes from a grimoire's ultimate (the spell its book unlocks at the top level). Bosses' damage caps don't apply to it. */
+    public static boolean isUltimate(net.minecraft.world.damagesource.DamageSource src) {
+        if (!(src instanceof SpellDamageSource s) || s.spell() == null) return false;
+        if (ULTIMATES == null) {
+            java.util.Set<String> u = new java.util.HashSet<>();
+            for (Book b : BOOKS) for (Map.Entry<String, Integer> e : b.unlocks().entrySet()) if (e.getValue() >= MAX_LEVEL) u.add(e.getKey());
+            ULTIMATES = u;
+        }
+        String id = s.spell().getSpellId();
+        int i = id.indexOf(':');
+        return ULTIMATES.contains(i < 0 ? id : id.substring(i + 1));
+    }
     /** Grimoire ranks, one per level: the book itself changes as it climbs (GrimoireFloatRenderer, RankPips). */
     public static final String[] RANKS = {"", "I", "II", "III", "IV", "V"};
     public static final String[] RANK_NAMES = {"", "Blank", "Inked", "Gilded", "Radiant", "Legendary"};

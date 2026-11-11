@@ -91,10 +91,11 @@ public class Zenon extends Monster {
         if (src.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return super.hurt(src, amount);   // /kill still works
         if (transforming() > 0 || this.isDeadOrDying()) return false;
         float max = this.getMaxHealth();
-        amount = Math.min(amount, max * 0.15f);                       // no hit takes more than 15%
+        boolean ult = com.ironspellgrimoire.server.GrimoireMastery.isUltimate(src);   // a grimoire's ultimate isn't capped
+        if (!ult) amount = Math.min(amount, max * 0.15f);                       // no hit takes more than 15%
         long now = this.level().getGameTime();
         if (now - windowStart >= 20) { windowStart = now; windowDmg = 0; }
-        amount = Math.min(amount, 120f - windowDmg);                    // no more than 120 a second
+        if (!ult) amount = Math.min(amount, 120f - windowDmg);                    // no more than 120 a second
         float floor = phase() == 1 ? max * 0.75f : phase() == 2 ? max * 0.25f : 0f;
         float hp = this.getHealth();
         if (phase() < 3 && hp - amount < floor) amount = Math.max(0f, hp - floor);   // a blow can't skip a phase
