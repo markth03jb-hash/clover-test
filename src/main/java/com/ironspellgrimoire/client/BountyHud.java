@@ -146,7 +146,7 @@ public final class BountyHud {
 
     private static void tracker(GuiGraphics g, Font f, int W, int dist, double dx, double dz, long now) {
         int w = 156, x = W - w - 4, y = 4;
-        String name = Bounties.NAMES[Math.max(0, Math.min(2, boss))];
+        String name = Bounties.NAMES[Math.max(0, Math.min(Bounties.NAMES.length - 1, boss))];
         String line1, line2;
         int head;
         if (state == Bounties.STATE_DONE) { head = 0xFF60FF80; line1 = "SUBJUGATED"; line2 = "+ merit stars (" + stars + " total)"; }

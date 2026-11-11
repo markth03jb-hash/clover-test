@@ -59,8 +59,8 @@ import net.minecraftforge.network.PacketDistributor;
 public final class Bounties {
     private Bounties() {}
 
-    public static final String[] BOSSES = {"zenon", "vetto", "rhya"};
-    public static final String[] NAMES = {"Zenon", "Vetto", "Rhya the Disloyal"};
+    public static final String[] BOSSES = {"zenon", "vetto", "rhya", "licht", "rades", "catherine"};
+    public static final String[] NAMES = {"Zenon", "Vetto", "Rhya the Disloyal", "Licht", "Rades", "Catherine"};
     public static final int ENRAGED = 1, ARMOURED = 2, ESCORTED = 4, WOUNDED = 8;
     public static final String[] MOD_NAMES = {"Enraged", "Armoured", "Escorted", "Wounded"};
     public static final int STATE_HUNT = 0, STATE_FOUND = 1, STATE_DONE = 2, STATE_EXPIRED = 3;
@@ -203,7 +203,10 @@ public final class Bounties {
         EntityType<? extends Mob> type = switch (boss) {
             case 0 -> AddonEntities.ZENON.get();
             case 1 -> AddonEntities.VETTO.get();
-            default -> AddonEntities.RHYA.get();
+            case 2 -> AddonEntities.RHYA.get();
+            case 3 -> AddonEntities.LICHT.get();
+            case 4 -> AddonEntities.RADES.get();
+            default -> AddonEntities.CATHERINE.get();
         };
         Mob m = type.create(sl);
         if (m == null) return;
@@ -332,7 +335,7 @@ public final class Bounties {
     @SubscribeEvent
     public static void onCommands(RegisterCommandsEvent e) {
         e.getDispatcher().register(Commands.literal("bounty").requires(s -> s.hasPermission(2))
-                .then(Commands.literal("new").then(Commands.argument("boss", IntegerArgumentType.integer(0, 2)).executes(c -> {
+                .then(Commands.literal("new").then(Commands.argument("boss", IntegerArgumentType.integer(0, 5)).executes(c -> {
                     ServerPlayer p = c.getSource().getPlayerOrException();
                     p.getPersistentData().remove(TAG);
                     give(p, p.position(), IntegerArgumentType.getInteger(c, "boss"));

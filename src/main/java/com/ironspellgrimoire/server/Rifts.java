@@ -547,9 +547,15 @@ public final class Rifts {
     private static void guardian(ServerLevel sl, Rift r, int idx, Room room) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         Vec3 c = r.centre(room);
-        EntityType<? extends Mob> t = switch (rnd.nextInt(3)) {
+        EntityType<? extends Mob> t = room.type == RELIC ? switch (rnd.nextInt(4)) {   // the big ones guard relics; the lesser ones, the elite rooms
             case 0 -> AddonEntities.ZENON.get();
             case 1 -> AddonEntities.VETTO.get();
+            case 2 -> AddonEntities.RHYA.get();
+            default -> AddonEntities.LICHT.get();
+        } : switch (rnd.nextInt(4)) {
+            case 0 -> AddonEntities.RADES.get();
+            case 1 -> AddonEntities.CATHERINE.get();
+            case 2 -> AddonEntities.VETTO.get();
             default -> AddonEntities.RHYA.get();
         };
         Mob m = t.create(sl);

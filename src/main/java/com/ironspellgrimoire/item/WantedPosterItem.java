@@ -30,7 +30,7 @@ public class WantedPosterItem extends Item {
         if (b.isEmpty()) return super.getName(s);
         boolean done = b.getInt("State") == Bounties.STATE_DONE;
         return Component.literal(done ? "Subjugated: " : "Wanted: ").withStyle(done ? ChatFormatting.GREEN : ChatFormatting.DARK_RED)
-                .append(Component.literal(Bounties.NAMES[Math.max(0, Math.min(2, b.getInt("Boss")))]).withStyle(ChatFormatting.GOLD));
+                .append(Component.literal(Bounties.NAMES[Math.max(0, Math.min(Bounties.NAMES.length - 1, b.getInt("Boss")))]).withStyle(ChatFormatting.GOLD));
     }
 
     @Override public boolean isFoil(ItemStack s) { return bounty(s).getInt("State") == Bounties.STATE_DONE; }

@@ -236,5 +236,55 @@
         "stream": true
       }
     ]
+  },
+  "music.licht_1": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.licht",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/licht_1",
+        "stream": true
+      }
+    ]
+  },
+  "music.licht_2": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.licht",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/licht_2",
+        "stream": true
+      }
+    ]
+  },
+  "music.licht_3": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.licht",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/licht_3",
+        "stream": true
+      }
+    ]
+  },
+  "music.rades_1": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.rades",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/rades_1",
+        "stream": true
+      }
+    ]
+  },
+  "music.catherine_1": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.catherine",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/catherine_1",
+        "stream": true
+      }
+    ]
   }
 }

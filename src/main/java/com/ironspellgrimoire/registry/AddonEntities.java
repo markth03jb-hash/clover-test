@@ -40,4 +40,17 @@ public final class AddonEntities {
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Rival>> RIVAL = ENTITIES.register("rival",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Rival>of(com.ironspellgrimoire.entity.Rival::new, MobCategory.MONSTER).sized(0.6F, 1.8F)
                     .clientTrackingRange(10).build("rival"));
+
+    /** Licht, Rades and Catherine (entity/AddonBoss). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Licht>> LICHT = ENTITIES.register("licht",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Licht>of(com.ironspellgrimoire.entity.Licht::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("licht"));
+
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Rades>> RADES = ENTITIES.register("rades",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Rades>of(com.ironspellgrimoire.entity.Rades::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("rades"));
+
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Catherine>> CATHERINE = ENTITIES.register("catherine",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Catherine>of(com.ironspellgrimoire.entity.Catherine::new, MobCategory.MONSTER).sized(0.6F, 1.9F)
+                    .fireImmune().clientTrackingRange(10).build("catherine"));
 }

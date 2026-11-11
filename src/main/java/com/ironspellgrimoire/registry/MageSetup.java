@@ -19,6 +19,9 @@ public final class MageSetup {
         e.put(AddonEntities.VETTO.get(), com.ironspellgrimoire.entity.Vetto.attributes().build());
         e.put(AddonEntities.RHYA.get(), com.ironspellgrimoire.entity.Rhya.attributes().build());
         e.put(AddonEntities.RIVAL.get(), com.ironspellgrimoire.entity.Rival.attributes().build());
+        e.put(AddonEntities.LICHT.get(), com.ironspellgrimoire.entity.Licht.attributes().build());
+        e.put(AddonEntities.RADES.get(), com.ironspellgrimoire.entity.Rades.attributes().build());
+        e.put(AddonEntities.CATHERINE.get(), com.ironspellgrimoire.entity.Catherine.attributes().build());
     }
 
     @SubscribeEvent
