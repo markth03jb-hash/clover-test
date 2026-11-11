@@ -41,8 +41,9 @@ public class StarForgeScreen extends Screen {
     private int rx() { return x0(width) + BW / 2 + 14; }
     private int top() { return y0(height) + 14; }
     private int rowY(int i) { return top() + 16 + i * ROW; }
-    private int sigilY(int i) { return top() + 92 + i * 17; }
-    private int mutY(int m) { return top() + 40 + (m - 1) * 50; }
+    private int sigilY(int i) { return top() + 58 + i * 16; }
+    private int mutY(int m) { return top() + 34 + (m - 1) * 20; }
+    private int pageX(int k) { return rx() + k * (PW / 2 + 2); }
     private void page() { if (minecraft != null && minecraft.player != null) minecraft.player.playSound(net.minecraft.sounds.SoundEvents.BOOK_PAGE_TURN, 0.8F, 1.1F); }
     private void send(int action, String arg) { AddonNetwork.CHANNEL.sendToServer(new StarForgePackets.Act(action, arg)); }
 
@@ -57,11 +58,12 @@ public class StarForgeScreen extends Screen {
             if (s.mut() == 0) { mutating = s.id(); page(); return true; }   // fully empowered: open its mutation
         }
         if (mutating != null) {
-            for (int m = 1; m <= 2; m++) if (data.cores > 0 && in(mx, my, rx, mutY(m), PW, 44)) { send(3, mutating + "|" + m); mutating = null; return true; }
-            if (in(mx, my, rx + PW / 2 - 22, t + 140, 44, 13)) { mutating = null; page(); return true; }
+            for (int m = 1; m < StarForge.MUT_NAMES.length; m++) if (data.cores > 0 && in(mx, my, rx, mutY(m), PW, 19)) { send(3, mutating + "|" + m); mutating = null; return true; }
+            if (in(mx, my, rx + PW - 30, t - 1, 30, 11)) { mutating = null; page(); return true; }
             return super.mouseClicked(mx, my, btn);
         }
-        if (!data.slot2 && in(mx, my, rx + 20, t + 42, PW - 40, 14)) { send(1, ""); return true; }
+        if (!data.slot2 && in(mx, my, pageX(0), t + 24, PW / 2 - 2, 14)) { send(1, ""); return true; }
+        if (data.slot2 && !data.slot3 && in(mx, my, pageX(1), t + 24, PW / 2 - 2, 14)) { send(4, ""); return true; }
         for (int i = 0; i < StarForge.SIGIL_NAMES.length; i++) {
             if (data.sigil != i + 1 && in(mx, my, rx, sigilY(i), PW, 15)) { send(2, String.valueOf(i)); return true; }
         }
@@ -78,11 +80,20 @@ public class StarForgeScreen extends Screen {
                 g.fill(x + k * 5 + d, y + 1 + d, x + k * 5 + d + 2, y + 2 + d, col);
                 g.fill(x + k * 5 + d, y + 9 - d, x + k * 5 + d + 2, y + 10 - d, col);
             }
-        } else {   // the spring: three drops rising
+        } else if (i == 2) {   // the spring: three drops rising
             for (int k = 0; k < 3; k++) {
                 int dy = (int) ((time * 0.3 + k * 4) % 10);
                 g.fill(x + 1 + k * 4, y + 9 - dy, x + 3 + k * 4, y + 11 - dy, col);
             }
+        } else if (i == 3) {   // the hunt: a sight
+            frame(g, x + 1, y + 1, 9, 9, col);
+            g.fill(x + 5, y, x + 6, y + 11, col); g.fill(x, y + 5, x + 11, y + 6, col);
+        } else if (i == 4) {   // the bulwark: a shield
+            g.fill(x + 1, y + 1, x + 10, y + 6, col); g.fill(x + 2, y + 6, x + 9, y + 8, col); g.fill(x + 4, y + 8, x + 7, y + 10, col);
+            g.fill(x + 5, y + 2, x + 6, y + 8, col & 0x80FFFFFF);
+        } else {   // the wind: three streaks, drifting
+            int o = (int) (time * 0.2) % 3;
+            for (int k = 0; k < 3; k++) g.fill(x + (k + o) % 3, y + 2 + k * 3, x + 8 + (k + o) % 3, y + 3 + k * 3, col);
         }
     }
 
@@ -118,25 +129,37 @@ public class StarForgeScreen extends Screen {
         if (mutating != null) {   // right page: mutate the chosen spell
             heading(g, font, "Mutation", rx, PW, t);
             String nm = Component.translatable("spell.iron_spell_grimoire." + mutating).getString();
-            g.drawString(font, nm, rx + (PW - font.width(nm)) / 2, t + 12, INK, false);
+            if (font.width(nm) > PW) nm = font.plainSubstrByWidth(nm, PW - 8) + "..";
+            g.drawString(font, nm, rx + (PW - font.width(nm)) / 2, t + 11, INK, false);
             String cost = "1 Mana Core (you have " + data.cores + ")";
-            text(g, font, cost, rx + Math.max(0, (PW - font.width(cost)) / 2), t + 24, PW, data.cores > 0 ? INK_SOFT : RED_INK);
-            for (int m = 1; m <= 2; m++)
-                choice(g, font, rx, mutY(m), PW, 44, StarForge.MUT_NAMES[m], StarForge.MUT_TEXT[m], in(mx, my, rx, mutY(m), PW, 44), data.cores > 0);
-            button(g, font, rx + PW / 2 - 22, t + 140, 44, 13, "Back", in(mx, my, rx + PW / 2 - 22, t + 140, 44, 13), true);
+            g.drawString(font, cost, rx + Math.max(0, (PW - font.width(cost)) / 2), t + 21, data.cores > 0 ? INK_SOFT : RED_INK, false);
+            for (int m = 1; m < StarForge.MUT_NAMES.length; m++) {   // six mutations, a line each
+                int y = mutY(m);
+                boolean hot = in(mx, my, rx, y, PW, 19), can = data.cores > 0;
+                if (hot && can) { g.fill(rx, y, rx + PW, y + 19, 0x287A1A12); frame(g, rx, y, PW, 19, RED_INK); }
+                g.drawString(font, StarForge.MUT_NAMES[m], rx + 3, y + 1, can ? RED_INK : INK_FAINT, false);
+                String tx = StarForge.MUT_TEXT[m];
+                g.pose().pushPose();
+                g.pose().translate(rx + 3, y + 10, 0);
+                g.pose().scale(0.75f, 0.75f, 1);
+                g.drawString(font, tx, 0, 0, can ? INK : INK_FAINT, false);
+                g.pose().popPose();
+            }
+            button(g, font, rx + PW - 30, t - 1, 30, 11, "Back", in(mx, my, rx + PW - 30, t - 1, 30, 11), true);
             turning(g, width, height, (ticks + pt) / 5F);
             super.render(g, mx, my, pt);
             return;
         }
 
-        // right page: the second ink page, the star sigils
-        heading(g, font, "Second Ink Page", rx, PW, t);
-        text(g, font, "Your grimoire holds two Rift Inks.", rx, t + 13, PW, INK_SOFT);
-        if (data.slot2) heading(g, font, "✔ Bound", rx, PW, t + 45);
-        else button(g, font, rx + 20, t + 42, PW - 40, 14, "Bind - " + StarForge.SLOT_COST + "★", in(mx, my, rx + 20, t + 42, PW - 40, 14), data.stars >= StarForge.SLOT_COST);
-        rule(g, rx, PW, t + 64);
-        heading(g, font, "Star Sigil - " + StarForge.SIGIL_COST + "\u2605", rx, PW, t + 70);
-        text(g, font, "One on the cover at a time.", rx + (PW - font.width("One on the cover at a time.")) / 2, t + 80, PW, INK_SOFT);
+        // right page: the ink pages, the star sigils
+        heading(g, font, "Ink Pages", rx, PW, t);
+        g.drawString(font, "Hold more Rift Inks.", rx + (PW - font.width("Hold more Rift Inks.")) / 2, t + 12, INK_SOFT, false);
+        if (data.slot2) g.drawString(font, "\u2714 Second", pageX(0) + 8, t + 27, RED_INK, false);
+        else button(g, font, pageX(0), t + 24, PW / 2 - 2, 14, "2nd " + StarForge.SLOT_COST + "\u2605", in(mx, my, pageX(0), t + 24, PW / 2 - 2, 14), data.stars >= StarForge.SLOT_COST);
+        if (data.slot3) g.drawString(font, "\u2714 Third", pageX(1) + 8, t + 27, RED_INK, false);
+        else button(g, font, pageX(1), t + 24, PW / 2 - 2, 14, "3rd " + StarForge.SLOT3_COST + "\u2605", in(mx, my, pageX(1), t + 24, PW / 2 - 2, 14), data.slot2 && data.stars >= StarForge.SLOT3_COST);
+        rule(g, rx, PW, t + 42);
+        heading(g, font, "Star Sigil - " + StarForge.SIGIL_COST + "\u2605", rx, PW, t + 46);
         for (int i = 0; i < StarForge.SIGIL_NAMES.length; i++) {
             int y = sigilY(i);
             boolean set = data.sigil == i + 1, can = !set && data.stars >= StarForge.SIGIL_COST, hot = !set && in(mx, my, rx, y, PW, 15);
@@ -144,12 +167,11 @@ public class StarForgeScreen extends Screen {
             if (set || hot) frame(g, rx, y, PW, 15, set ? RED_INK : can ? INK_SOFT : INK_FAINT);
             glyph(g, i, rx + 3, y + 2, set ? RED_INK : INK, time);
             int col = set ? RED_INK : can ? INK : INK_FAINT;
-            String nm = i == 0 ? "Well" : i == 1 ? "Haste" : "Spring";
-            g.drawString(font, nm, rx + 17, y + 4, col, false);
-            String fx = i == 2 ? "+30% regen" : StarForge.SIGIL_EFFECTS[i];
+            g.drawString(font, StarForge.SIGIL_SHORT[i], rx + 17, y + 4, col, false);
+            String fx = StarForge.SIGIL_EFFECTS[i].replace(" mana regen", " regen");
             g.drawString(font, fx, rx + PW - 3 - font.width(fx), y + 4, set ? RED_INK : INK_SOFT, false);
         }
-        if (data.stars <= 0) text(g, font, "Earn stars from bounties and rifts.", rx, t + 146, PW, RED_INK);
+        if (data.stars <= 0) text(g, font, "Earn stars from bounties and quests.", rx, t + 156, PW, RED_INK);
 
         turning(g, width, height, (ticks + pt) / 5F);
         super.render(g, mx, my, pt);

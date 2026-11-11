@@ -147,7 +147,8 @@ public class AstaFx {
         // empowered at the Star Forge; a grimoire's ultimate hits harder at mastery 6 and 7
         // ... an evolved spell harder still, and everything from an Ascended grimoire
         final float dmg = dmg0 * StarForge.boost(p, id) * GrimoireMastery.ultimateBoost(io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p), id)
-                * SpellEvolution.boost(p, id) * Ascension.boost(p, id) * GrimoireUpgrades.damageMult(p, t);
+                * SpellEvolution.boost(p, id) * Ascension.boost(p, id) * GrimoireUpgrades.damageMult(p, t)
+                * (StarForge.mutation(p, id) == StarForge.MUT_EXECUTE && t.getHealth() < t.getMaxHealth() * 0.3f ? 1.4f : 1f);   // Execute
         if (CastSync.deferDamage(p, t, () -> { if (t.isAlive()) damage(p, t, dmg0, id); })) return;   // lands when the move reaches it
         var spell = spellById(id);
         float before = t.getHealth();
@@ -186,9 +187,24 @@ public class AstaFx {
                 md.setMana(Math.min(max, md.getMana() + dealt * 0.15f));
                 Kit.orb(p.serverLevel(), 19, t.position().add(0, t.getBbHeight() * 0.6, 0), p.position().add(0, 1, 0).subtract(t.position()).normalize().scale(0.25), 0.18f, 12);
             }
+            case StarForge.MUT_BLAST -> {   // the hit bursts round the target
+                Vec3 at = t.position().add(0, t.getBbHeight() * 0.5, 0);
+                FxSend.ring(p.serverLevel(), Fx.FIRE | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, at, 0.3f, 3f, 0.08f, 8);
+                echoing = true;
+                try { for (LivingEntity o : Kit.near(p.serverLevel(), p, at, 3)) if (o != t) damage(p, o, dmg0 * 0.3f, id); } finally { echoing = false; }
+            }
+            case StarForge.MUT_FROST -> {   // the hit slows
+                TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, MUT_FROST_ID, "Frost mutation", -0.3, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
+                FxSend.ring(p.serverLevel(), Fx.ICE | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, t.position().add(0, 0.1, 0), 0.3f, 1.3f, 0.05f, 10);
+            }
+            case StarForge.MUT_LEECH -> {   // the damage heals you
+                float dealt = Math.max(0f, before - t.getHealth());
+                if (dealt > 0 && p.getHealth() < p.getMaxHealth()) p.heal(dealt * 0.05f);
+            }
             default -> {}
         }
     }
+    private static final java.util.UUID MUT_FROST_ID = java.util.UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a1001e1");
 
     private static void variantMsg(ServerPlayer p) {
         p.displayClientMessage(Component.translatable("ui.iron_spell_grimoire.variant.dweller").withStyle(ChatFormatting.DARK_PURPLE), true);

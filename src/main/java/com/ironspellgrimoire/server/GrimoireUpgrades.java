@@ -35,7 +35,7 @@ import top.theillusivec4.curios.api.CuriosApi;
 /**
  * Grimoire upgrades: things you bind into your grimoire at the Grimoire Altar (with it equipped), kept on the book
  * ("Upgrades"), each up to a limit. Every boss leaves its own (only that boss - Zenon's is the Devil Shard, in
- * ZenonDrops); others are crafted, or found in rifts, on bounties and on quests.
+ * ZenonDrops); none are crafted: the rest are found on quests, in rifts and on bounties.
  */
 @Mod.EventBusSubscriber(modid = IronSpellGrimoire.MODID)
 public final class GrimoireUpgrades {
@@ -51,10 +51,10 @@ public final class GrimoireUpgrades {
             new Kind("grave_ember", "Grave Ember", 3, "each kill restores 4% of your max mana", "The Revenant"),
             new Kind("curse_thread", "Curse Thread", 3, "8% chance a hit curses: +20% damage taken for 4 s", "The Curse Witch"),
             new Kind("mirror_shard", "Mirror Shard", 1, "+8% spell power, +8% cooldown reduction", "Your Reflection (the Ascension Trial)"),
-            new Kind("mana_crystal_binding", "Mana Crystal Binding", 3, "+40 max mana", "Crafted"),
-            new Kind("silver_clasp", "Silver Clasp", 2, "+2 armour", "Crafted"),
-            new Kind("swift_bookmark", "Swift Bookmark", 3, "+8% mana regeneration", "Crafted, or a quest's reward"),
-            new Kind("runed_spine", "Runed Spine", 3, "+3% spell power", "Rift elite rooms, bounties, quests"),
+            new Kind("mana_crystal_binding", "Mana Crystal Binding", 3, "+40 max mana", "Quests (a chance)"),
+            new Kind("silver_clasp", "Silver Clasp", 2, "+2 armour", "Quests (a chance)"),
+            new Kind("swift_bookmark", "Swift Bookmark", 3, "+8% mana regeneration", "Quests (a chance)"),
+            new Kind("runed_spine", "Runed Spine", 3, "+3% spell power", "Quests, rift elite rooms, bounties"),
             new Kind("phoenix_ribbon", "Phoenix Ribbon", 1, "a killing blow leaves you at 1 health instead (once every 5 min)", "Big quests and the Daily Special"));
 
     public static Kind kind(String id) { for (Kind k : KINDS) if (k.id().equals(id)) return k; return null; }
@@ -143,7 +143,9 @@ public final class GrimoireUpgrades {
         float m = 1f;
         int fang = count(book, "despair_fang"), blade = count(book, "elven_blade_shard");
         if (fang > 0 && t.getHealth() < t.getMaxHealth() * 0.5f) m *= 1f + 0.06f * fang;
-        if (blade > 0 && (TimeStop.isBoss(t) || BossCores.isBoss(t.getType()))) m *= 1f + 0.08f * blade;
+        boolean boss = TimeStop.isBoss(t) || BossCores.isBoss(t.getType());
+        if (blade > 0 && boss) m *= 1f + 0.08f * blade;
+        if (boss && book != null && book.hasTag() && book.getTag().getInt("Sigil") == 4) m *= 1.1f;   // the Star Forge's Sigil of the Hunt
         Long until = CURSED.get(t.getUUID());
         if (until != null) { if (t.level().getGameTime() < until) m *= 1.2f; else CURSED.remove(t.getUUID()); }
         return m;

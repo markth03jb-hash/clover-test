@@ -22,7 +22,7 @@ public final class AltarMenu {
         ItemStack book = Utils.getPlayerSpellbookStack(p);
         boolean has = book != null && !book.isEmpty() && GrimoireMastery.bookOf(book) != null;
         int shards = 0;
-        int[] inks = new int[4];
+        int[] inks = new int[RiftInkItem.COUNT];
         var inv = p.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack s = inv.getItem(i);

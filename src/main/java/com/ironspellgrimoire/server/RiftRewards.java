@@ -51,6 +51,7 @@ public final class RiftRewards {
     private static final Map<UUID, Long> CAST = new HashMap<>(), FREE = new HashMap<>(), HEART = new HashMap<>(), SHADE = new HashMap<>();
     private static final Map<UUID, Integer> COUNT = new HashMap<>();
     private static final UUID FEATHER = UUID.fromString("a1f70000-0000-4000-8000-0000000000d2");
+    private static final UUID FROST = UUID.fromString("a1f70000-0000-4000-8000-0000000000d3");
 
     static boolean wears(Player p, Item item) {
         return CuriosApi.getCuriosInventory(p).resolve().flatMap(h -> h.findFirstCurio(item)).isPresent();
@@ -61,7 +62,9 @@ public final class RiftRewards {
     static boolean hasInk(Player p, int rule) {
         ItemStack b = Utils.getPlayerSpellbookStack(p);
         if (b == null || !b.hasTag()) return false;
-        return b.getTag().getInt("RiftInk") - 1 == rule || (b.getTag().getBoolean("InkSlot2") && b.getTag().getInt("RiftInk2") - 1 == rule);
+        CompoundTag t = b.getTag();
+        return t.getInt("RiftInk") - 1 == rule || (t.getBoolean("InkSlot2") && t.getInt("RiftInk2") - 1 == rule)
+                || (t.getBoolean("InkSlot3") && t.getInt("RiftInk3") - 1 == rule);
     }
 
     static int ink(Player p) {
@@ -78,7 +81,16 @@ public final class RiftRewards {
         }
         int r = RiftInkItem.rule(ink);
         CompoundTag bt = book.getOrCreateTag();
-        if (bt.getBoolean("InkSlot2") && bt.getInt("RiftInk") > 0 && bt.getInt("RiftInk") != r + 1) bt.putInt("RiftInk2", r + 1);   // the second page takes it (replacing what was there)
+        if (bt.getInt("RiftInk") == r + 1 || bt.getInt("RiftInk2") == r + 1 && bt.getBoolean("InkSlot2") || bt.getInt("RiftInk3") == r + 1 && bt.getBoolean("InkSlot3")) {
+            p.displayClientMessage(Component.literal("Your grimoire already carries " + RiftInkItem.NAMES[r] + ".").withStyle(ChatFormatting.GRAY), true);
+            return;
+        }
+        // the first empty page takes it; with every page full, the last page is written over
+        if (bt.getInt("RiftInk") == 0) bt.putInt("RiftInk", r + 1);
+        else if (bt.getBoolean("InkSlot2") && bt.getInt("RiftInk2") == 0) bt.putInt("RiftInk2", r + 1);
+        else if (bt.getBoolean("InkSlot3") && bt.getInt("RiftInk3") == 0) bt.putInt("RiftInk3", r + 1);
+        else if (bt.getBoolean("InkSlot3")) bt.putInt("RiftInk3", r + 1);
+        else if (bt.getBoolean("InkSlot2")) bt.putInt("RiftInk2", r + 1);
         else bt.putInt("RiftInk", r + 1);
         if (!p.isCreative()) ink.shrink(1);
         ServerLevel sl = p.serverLevel();
@@ -137,6 +149,22 @@ public final class RiftRewards {
                 e.setAmount(e.getAmount() * 1.5f);
                 FxSend.ring(sl, Fx.SILVER, FxUtil.mid(t), 0.2f, 1.4f, 0.06f, 8);
                 sl.playSound(null, t.blockPosition(), SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.PLAYERS, 1f, 1.6f);
+            }
+            if (hasInk(p, 6) && sl.isNight()) e.setAmount(e.getAmount() * 1.15f);   // Moon Ink
+            if (hasInk(p, 5)) TimedModifiers.apply(t, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED, FROST, "Frost Ink", -0.25, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
+            if (hasInk(p, 7) && p.getHealth() < p.getMaxHealth()) p.heal(e.getAmount() * 0.03f);   // Vital Ink
+            if (hasInk(p, 4) && r.nextFloat() < 0.2f) {   // Storm Ink: the hit arcs to someone else nearby
+                LivingEntity next = null; double best = 36;
+                for (LivingEntity o : sl.getEntitiesOfClass(LivingEntity.class, t.getBoundingBox().inflate(6), o -> o != t && o != p && o.isAlive() && o instanceof net.minecraft.world.entity.monster.Enemy)) {
+                    double d = o.distanceToSqr(t);
+                    if (d < best) { best = d; next = o; }
+                }
+                if (next != null) {
+                    final LivingEntity n2 = next;
+                    final float amt = e.getAmount() * 0.3f;
+                    FxSend.beam(sl, Fx.LIGHTNING | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, FxUtil.mid(t), FxUtil.mid(n2), 0.12f, 6);
+                    AstaFx.later(2, () -> { if (n2.isAlive()) { n2.invulnerableTime = 0; n2.hurt(p.damageSources().indirectMagic(p, p), amt); } });
+                }
             }
             boolean rule = Rifts.inRule(p, Rifts.ECHO);
             boolean inked = hasInk(p, 2) && r.nextFloat() < 0.15f;

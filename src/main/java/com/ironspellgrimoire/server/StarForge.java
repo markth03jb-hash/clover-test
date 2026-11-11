@@ -22,22 +22,27 @@ import net.minecraftforge.network.PacketDistributor;
  *   <li>Empower a spell: +10% damage, up to three times per spell (10, 20, 30 stars) - "StarBoost".</li>
  *   <li>A second ink page: the book can hold two Rift Inks at once (40 stars) - "InkSlot2".</li>
  *   <li>A star sigil on the cover, one at a time (25 stars to set or change) - "Sigil": the Well (+20% max mana),
- *   Haste (+8% cooldown reduction) or the Spring (+30% mana regeneration).</li>
+ *   Haste (+8% cooldown reduction), the Spring (+30% mana regeneration), the Hunt (+10% damage to bosses), the
+ *   Bulwark (+4 armour) or the Wind (+10% movement speed).</li>
+ *   <li>A third ink page, after the second (80 stars) - "InkSlot3".</li>
  *   <li>Mutate a fully empowered spell, once, with a Mana Core (a boss's drop): Echo (each hit lands again for 40%
- *   half a second later) or Siphon (15% of the damage it deals comes back as mana) - "StarMut".</li>
+ *   half a second later), Siphon (15% of the damage comes back as mana), Blast (hits burst for 30% round the target),
+ *   Frost (hits slow by 30%), Execute (+40% on foes below 30% health) or Leech (5% of the damage heals you) - "StarMut".</li>
  * </ul>
  */
 public final class StarForge {
     private StarForge() {}
 
-    public static final int MAX_BOOST = 3, SLOT_COST = 40, SIGIL_COST = 25;
-    public static final String[] SIGIL_NAMES = {"the Well", "Haste", "the Spring"};
-    public static final String[] SIGIL_EFFECTS = {"+20% max mana", "+8% cooldowns", "+30% mana regen"};
+    public static final int MAX_BOOST = 3, SLOT_COST = 40, SLOT3_COST = 80, SIGIL_COST = 25;
+    public static final String[] SIGIL_NAMES = {"the Well", "Haste", "the Spring", "the Hunt", "the Bulwark", "the Wind"};
+    public static final String[] SIGIL_SHORT = {"Well", "Haste", "Spring", "Hunt", "Bulwark", "Wind"};
+    public static final String[] SIGIL_EFFECTS = {"+20% max mana", "+8% cooldowns", "+30% mana regen", "+10% vs bosses", "+4 armour", "+10% speed"};
     private static final java.util.UUID SIGIL_ID = java.util.UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a1001a1");
 
-    public static final int MUT_ECHO = 1, MUT_SIPHON = 2;
-    public static final String[] MUT_NAMES = {"", "Echo", "Siphon"};
-    public static final String[] MUT_TEXT = {"", "Each hit lands again for 40% half a second later.", "15% of the damage dealt returns as mana."};
+    public static final int MUT_ECHO = 1, MUT_SIPHON = 2, MUT_BLAST = 3, MUT_FROST = 4, MUT_EXECUTE = 5, MUT_LEECH = 6;
+    public static final String[] MUT_NAMES = {"", "Echo", "Siphon", "Blast", "Frost", "Execute", "Leech"};
+    public static final String[] MUT_TEXT = {"", "Each hit lands again for 40%.", "15% of the damage returns as mana.",
+            "Hits burst: 30% to foes near the target.", "Hits slow foes by 30% for 2 s.", "+40% damage to foes below 30% health.", "5% of the damage heals you."};
 
     public static int boostCost(int toLevel) { return 10 * toLevel; }
 
@@ -59,7 +64,7 @@ public final class StarForge {
         List<StarForgePackets.Spell> spells = new ArrayList<>();
         for (String id : GrimoireMastery.bookOf(b).unlocks().keySet()) spells.add(new StarForgePackets.Spell(id, boost.getInt(id), mut.getInt(id)));
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p),
-                new StarForgePackets.Open(Bounties.stars(p), t.getBoolean("InkSlot2"), t.getInt("Sigil"), cores(p), b.getHoverName().getString(), spells));
+                new StarForgePackets.Open(Bounties.stars(p), t.getBoolean("InkSlot2"), t.getBoolean("InkSlot3"), t.getInt("Sigil"), cores(p), b.getHoverName().getString(), spells));
     }
 
     public static void act(ServerPlayer p, int action, String arg) {
@@ -92,13 +97,18 @@ public final class StarForge {
                 sigil(b, g);
                 done(p, "Sigil of " + SIGIL_NAMES[g] + " pressed into the cover: " + SIGIL_EFFECTS[g] + ".");
             }
+            case 4 -> {   // the third ink page
+                if (!t.getBoolean("InkSlot2") || t.getBoolean("InkSlot3") || !pay(p, stars, SLOT3_COST)) return;
+                t.putBoolean("InkSlot3", true);
+                done(p, "A third ink page is bound into the grimoire.");
+            }
             case 3 -> {   // mutate a fully empowered spell with a Mana Core
                 int bar = arg.indexOf('|');
                 if (bar < 0) return;
                 String id = arg.substring(0, bar);
                 int m;
                 try { m = Integer.parseInt(arg.substring(bar + 1)); } catch (NumberFormatException e) { return; }
-                if ((m != MUT_ECHO && m != MUT_SIPHON) || !GrimoireMastery.bookOf(b).unlocks().containsKey(id)) return;
+                if (m < 1 || m >= MUT_NAMES.length || !GrimoireMastery.bookOf(b).unlocks().containsKey(id)) return;
                 if (t.getCompound("StarBoost").getInt(id) < MAX_BOOST || t.getCompound("StarMut").getInt(id) != 0) return;
                 ItemStack core = null;
                 for (ItemStack s : p.getInventory().items) if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_CORE.get())) { core = s; break; }
@@ -125,12 +135,16 @@ public final class StarForge {
             tag.getList("CurioAttributeModifiers", net.minecraft.nbt.Tag.TAG_COMPOUND)
                     .removeIf(x -> x instanceof CompoundTag ct && ct.hasUUID("UUID") && ct.getUUID("UUID").equals(SIGIL_ID));
         }
+        if (g == 3) return;   // the Hunt works on the blow itself (GrimoireUpgrades.damageMult)
         var attr = g == 0 ? io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA.get()
                 : g == 1 ? io.redspace.ironsspellbooks.api.registry.AttributeRegistry.COOLDOWN_REDUCTION.get()
-                : io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MANA_REGEN.get();
-        double amt = g == 0 ? 0.2 : g == 1 ? 0.08 : 0.3;
+                : g == 2 ? io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MANA_REGEN.get()
+                : g == 4 ? net.minecraft.world.entity.ai.attributes.Attributes.ARMOR
+                : net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED;
+        double amt = g == 0 ? 0.2 : g == 1 ? 0.08 : g == 2 ? 0.3 : g == 4 ? 4 : 0.1;
         top.theillusivec4.curios.api.CuriosApi.addModifier(book, attr, "Star Sigil", SIGIL_ID, amt,
-                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_BASE, "spellbook");
+                g == 4 ? net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION
+                        : net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_BASE, "spellbook");
     }
 
     private static boolean pay(ServerPlayer p, int have, int cost) {
