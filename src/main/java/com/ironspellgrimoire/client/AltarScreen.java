@@ -42,6 +42,15 @@ public class AltarScreen extends Screen {
     private int top() { return y0(height) + 14; }
     /** Left page rows 0-2 (grimoire, forge, exam); right page rows 2-3 (shard, ink). */
     private int choiceY(int i) { return i < 2 ? top() + 30 + i * (LCH + 4) : top() + 14 + (i - 2) * (CH + 8); }
+    private int ascY() { return top() + 14 + 2 * (CH + 8) + 6; }
+    private String ascLine() {
+        return switch (data.ascend) {
+            case 0 -> "Awaken your grimoire first.";
+            case 1 -> "Reach mastery 8 first.";
+            case 3 -> "Your grimoire has ascended.";
+            default -> "Face your Reflection.";
+        };
+    }
     private int examY() { return top() + 30 + 2 * (LCH + 4); }
     private String examLine() {
         return switch (data.exam) {
@@ -63,6 +72,7 @@ public class AltarScreen extends Screen {
             if (in(mx, my, lx(), choiceY(1), PW, LCH) && hasBook()) { click(); send(1, 0); return true; }
             if (in(mx, my, lx(), examY(), PW, LCH) && data.exam == 2) { click(); send(4, 0); onClose(); return true; }
             if (in(mx, my, rx(), choiceY(2), PW, CH) && hasBook() && data.shards > 0) { click(); send(2, 0); return true; }
+            if (in(mx, my, rx(), ascY(), PW, 36) && data.ascend == 2) { click(); send(5, 0); onClose(); return true; }
             for (int r = 0; r < 4; r++) {
                 if (in(mx, my, inkX(r), inkY(r), PW / 2 - 2, 14) && hasBook() && data.inks[r] > 0) { click(); send(3, r); return true; }
             }
@@ -105,7 +115,7 @@ public class AltarScreen extends Screen {
             String n = RiftInkItem.NAMES[r].replace(" Ink", "") + " " + data.inks[r];
             g.drawString(font, n, x + 11, y + 3, can ? (hot ? RED_INK : INK) : INK_FAINT, false);
         }
-        if (!hasBook()) text(g, font, "Equip a grimoire first.", rx + 5, choiceY(3) + CH + 6, PW, INK_SOFT);
+        choice(g, font, rx, ascY(), PW, 36, data.ascend == 3 ? "\u2727 Ascended" : "\u2727 Ascension", ascLine(), in(mx, my, rx, ascY(), PW, 36), data.ascend == 2);
 
         turning(g, width, height, (ticks + pt) / 5F);
         super.render(g, mx, my, pt);

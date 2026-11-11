@@ -30,7 +30,13 @@ public final class AltarMenu {
             else if (s.is(AddonItemRegistry.RIFT_INK.get())) inks[RiftInkItem.rule(s)] += s.getCount();
         }
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new AltarPackets.Open(pos, has ? book.getHoverName().getString() : "",
-                shards, has ? book.getOrCreateTag().getInt("DevilShards") : 0, Bounties.stars(p), examState(book, has), inks));
+                shards, has ? book.getOrCreateTag().getInt("DevilShards") : 0, Bounties.stars(p), examState(book, has), ascendState(book, has), inks));
+    }
+
+    private static int ascendState(ItemStack book, boolean has) {
+        if (!has || !Awakening.awakened(book)) return 0;
+        if (Ascension.ascended(book)) return 3;
+        return Ascension.canAscend(book) ? 2 : 1;
     }
 
     private static int examState(ItemStack book, boolean has) {
@@ -50,6 +56,10 @@ public final class AltarMenu {
                 ItemStack book = Utils.getPlayerSpellbookStack(p);
                 boolean has = book != null && !book.isEmpty() && GrimoireMastery.bookOf(book) != null;
                 if (examState(book, has) == 2) { p.closeContainer(); Rifts.startExam(p); }
+            }
+            case 5 -> {   // the Ascension Trial, for an awakened grimoire at mastery 8
+                ItemStack book = Utils.getPlayerSpellbookStack(p);
+                if (Ascension.canAscend(book)) { p.closeContainer(); Rifts.startAscension(p); }
             }
             default -> {}
         }

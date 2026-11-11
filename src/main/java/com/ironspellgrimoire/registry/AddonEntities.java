@@ -49,4 +49,9 @@ public final class AddonEntities {
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.CurseWitch>> CURSE_WITCH = ENTITIES.register("curse_witch",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.CurseWitch>of(com.ironspellgrimoire.entity.CurseWitch::new, MobCategory.MONSTER).sized(0.6F, 1.9F)
                     .fireImmune().clientTrackingRange(10).build("curse_witch"));
+
+    /** The Ascension Trial's examiner: you, in your own skin (server/Ascension). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Reflection>> REFLECTION = ENTITIES.register("reflection",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Reflection>of(com.ironspellgrimoire.entity.Reflection::new, MobCategory.MONSTER).sized(0.6F, 1.8F)
+                    .fireImmune().clientTrackingRange(10).build("reflection"));
 }

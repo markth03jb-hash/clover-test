@@ -30,6 +30,8 @@ public final class AwakeningScene {
     private AwakeningScene() {}
 
     private static int age = -1, life;
+    /** 0: an Awakening; 1: an Ascension (server/Ascension) - the same scene in gold, and the page writes "Ascended". */
+    private static int mode;
     private static String spellName = "", bookName = "";
     private static int[] col = {0, 0, 0xE0B060, 0xFFD27A, 0x2A1A10, 0xF0E0B0};
 
@@ -38,9 +40,11 @@ public final class AwakeningScene {
         if (mc.player == null || p.id != mc.player.getId()) return;
         ItemStack book = Utils.getPlayerSpellbookStack(mc.player);
         String id = Awakening.spellFor(book);
-        spellName = id == null ? "" : Component.translatable("spell.iron_spell_grimoire." + id).getString();
+        mode = p.sweep;
+        spellName = mode == 1 ? "Ascended" : id == null ? "" : Component.translatable("spell.iron_spell_grimoire." + id).getString();
         bookName = book == null ? "" : book.getHoverName().getString();
-        col = colours();
+        col = colours().clone();
+        if (mode == 1) col[3] = 0xFFD870;
         life = p.life;
         age = 0;
         mc.player.playSound(SoundEvents.BOOK_PAGE_TURN, 1f, 0.6f);
@@ -112,13 +116,14 @@ public final class AwakeningScene {
                 g.pose().pushPose();
                 g.pose().translate(w / 2f, h * 0.2f, 0);
                 g.pose().scale(3.2f, 3.2f, 1);
-                String title = "A W A K E N I N G";
+                String title = mode == 1 ? "A S C E N S I O N" : "A W A K E N I N G";
                 g.drawString(f, title, -f.width(title) / 2, 0, a << 24 | (col[3] & 0xFFFFFF), true);
                 g.pose().popPose();
                 g.pose().pushPose();
                 g.pose().translate(w / 2f, h * 0.8f, 0);
                 g.pose().scale(1.6f, 1.6f, 1);
-                g.drawString(f, spellName, -f.width(spellName) / 2, 0, a << 24 | 0xFFFFFF, true);
+                String sub = mode == 1 ? bookName : spellName;
+                g.drawString(f, sub, -f.width(sub) / 2, 0, a << 24 | 0xFFFFFF, true);
                 g.pose().popPose();
             }
         }
@@ -160,7 +165,7 @@ public final class AwakeningScene {
         for (int i = 0; i < steps; i++) {   // the sigil's circle
             double a = -Math.PI / 2 + i * Math.PI * 2 / 180;
             int x = cx + (int) Math.round(Math.cos(a) * r), y = cy + (int) Math.round(Math.sin(a) * r);
-            g.fill(x, y, x + 2, y + 2, RED_INK);
+            g.fill(x, y, x + 2, y + 2, mode == 1 ? 0xFFB8860B : RED_INK);
             int x2 = cx + (int) Math.round(Math.cos(a) * (r - 5)), y2 = cy + (int) Math.round(Math.sin(a) * (r - 5));
             if (i % 2 == 0) g.fill(x2, y2, x2 + 1, y2 + 1, RED_INK);
         }

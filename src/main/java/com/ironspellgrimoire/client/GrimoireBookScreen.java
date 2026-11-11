@@ -226,11 +226,14 @@ public class GrimoireBookScreen extends Screen {
         try { info.add(Component.translatable("tooltip.irons_spellbooks.cooldown_length_seconds", Utils.timeFromTicks(sp.getSpellCooldown(), 1))); } catch (Throwable ignored) {}
         try { info.add(Component.literal("Cast: " + pretty(sp.getCastType().name()))); } catch (Throwable ignored) {}
         info.add(Component.literal(com.ironspellgrimoire.server.Awakening.isAwakenedSpell(ids.get(i)) ? "Unlocks at: Awakening" : "Unlocks at mastery " + unlockAt.get(i)));
+        if (com.ironspellgrimoire.server.SpellEvolution.evolved(stack, ids.get(i)))   // its evolution
+            info.add(Component.literal("\u2726 Evolved: +" + (com.ironspellgrimoire.server.Ascension.ascended(stack) ? "35% and a gold echo" : "20%")).withStyle(ChatFormatting.DARK_PURPLE));
+        else info.add(Component.literal("Evolution: " + com.ironspellgrimoire.server.SpellEvolution.casts(stack, ids.get(i)) + " / " + com.ironspellgrimoire.server.SpellEvolution.EVOLVE_AT + " casts"));
         int yy = y;
         g.drawString(f, Component.literal("Spell").withStyle(ChatFormatting.BOLD), x, yy, RED_INK, false);
         yy += 12;
         for (Component cmp : info) {
-            boolean always = cmp.getString().startsWith("Unlocks at");   // when you'll get it stays readable
+            boolean always = cmp.getString().startsWith("Unlocks at") || cmp.getString().startsWith("Evolution");   // when you'll get it stays readable
             for (FormattedCharSequence l : f.split(always ? cmp : ink(cmp), w)) {
                 if (yy > y + h - 8) return;
                 g.drawString(f, l, x, yy, INK, false);

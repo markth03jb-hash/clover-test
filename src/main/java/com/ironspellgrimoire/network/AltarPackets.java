@@ -16,17 +16,18 @@ public final class AltarPackets {
         public final BlockPos pos;
         public final String book;
         /** exam: 0 no grimoire, 1 below mastery 5, 2 ready to take the Magic Knight Exam, 3 already passed. */
-        public final int shards, bookShards, stars, exam;
+        /** ascend: 0 no grimoire / not awakened, 1 awakened but below mastery 8, 2 ready for the Ascension Trial, 3 ascended. */
+        public final int shards, bookShards, stars, exam, ascend;
         public final int[] inks;
-        public Open(BlockPos pos, String book, int shards, int bookShards, int stars, int exam, int[] inks) {
-            this.pos = pos; this.book = book; this.shards = shards; this.bookShards = bookShards; this.stars = stars; this.exam = exam; this.inks = inks;
+        public Open(BlockPos pos, String book, int shards, int bookShards, int stars, int exam, int ascend, int[] inks) {
+            this.pos = pos; this.book = book; this.shards = shards; this.bookShards = bookShards; this.stars = stars; this.exam = exam; this.ascend = ascend; this.inks = inks;
         }
         public static void encode(Open p, FriendlyByteBuf b) {
-            b.writeBlockPos(p.pos); b.writeUtf(p.book, 120); b.writeVarInt(p.shards); b.writeVarInt(p.bookShards); b.writeVarInt(p.stars); b.writeVarInt(p.exam);
+            b.writeBlockPos(p.pos); b.writeUtf(p.book, 120); b.writeVarInt(p.shards); b.writeVarInt(p.bookShards); b.writeVarInt(p.stars); b.writeVarInt(p.exam); b.writeVarInt(p.ascend);
             b.writeVarIntArray(p.inks);
         }
         public static Open decode(FriendlyByteBuf b) {
-            return new Open(b.readBlockPos(), b.readUtf(120), b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarIntArray());
+            return new Open(b.readBlockPos(), b.readUtf(120), b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarIntArray());
         }
         public static void handle(Open p, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.AltarScreen.show(p)));
@@ -34,7 +35,7 @@ public final class AltarPackets {
         }
     }
 
-    /** Client -> server: 0 receive a grimoire, 1 the Star Forge, 2 forge a Devil Shard, 3 inscribe Rift Ink {@code arg}, 4 the Magic Knight Exam. */
+    /** Client -> server: 0 receive a grimoire, 1 the Star Forge, 2 forge a Devil Shard, 3 inscribe Rift Ink {@code arg}, 4 the Magic Knight Exam, 5 the Ascension Trial. */
     public static class Act {
         public final BlockPos pos;
         public final int action, arg;
