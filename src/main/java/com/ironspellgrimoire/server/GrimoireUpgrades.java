@@ -63,6 +63,7 @@ public final class GrimoireUpgrades {
             new Kind("elf_kings_leaf", "Elf King's Leaf", 1, "+5% spell power, +5% cooldown reduction, +10% mana regen", "Elf Raids only"),
             new Kind("binders_quill", "Binder's Quill", 1, "+50 max mana, +4% spell power", "The Copyist's Echo (Lost Memory Pages, chapter I)"),
             new Kind("wardens_key", "Warden's Key", 1, "the first hit you take every 20 s is halved", "Taddeus, Warden of the Stair (chapter II)"),
+            new Kind("sovereign_ember", "Sovereign's Ember", 3, "+4% spell power and +2 armour each", "The Cinder Sovereign (world boss)"),
             new Kind("binders_pen", "Binder's Pen", 1, "every 6th spell you cast: its hits land 40% harder for 3 s", "Elowen, the First Binder (chapter III)"));
 
     public static Kind kind(String id) { for (Kind k : KINDS) if (k.id().equals(id)) return k; return null; }
@@ -126,7 +127,9 @@ public final class GrimoireUpgrades {
     private static final UUID LEAF_R = UUID.fromString("7b1e0001-0000-4000-8000-0000000000aa");
     private static final UUID QUILL_M = UUID.fromString("7b1e0001-0000-4000-8000-0000000000ab");
     private static final UUID QUILL_P = UUID.fromString("7b1e0001-0000-4000-8000-0000000000ac");
-    private static final List<UUID> MINE = List.of(MIRROR_POWER, MIRROR_CDR, CRYSTAL, CLASP, BOOKMARK, SPINE, FEATHER, LEAF_P, LEAF_C, LEAF_R, QUILL_M, QUILL_P);
+    private static final UUID EMBER_P = UUID.fromString("7b1e0001-0000-4000-8000-0000000000ad");
+    private static final UUID EMBER_A = UUID.fromString("7b1e0001-0000-4000-8000-0000000000ae");
+    private static final List<UUID> MINE = List.of(MIRROR_POWER, MIRROR_CDR, CRYSTAL, CLASP, BOOKMARK, SPINE, FEATHER, LEAF_P, LEAF_C, LEAF_R, QUILL_M, QUILL_P, EMBER_P, EMBER_A);
 
     private static void refresh(ItemStack book) {
         CompoundTag tag = book.getOrCreateTag();
@@ -148,6 +151,11 @@ public final class GrimoireUpgrades {
             add(book, AttributeRegistry.SPELL_POWER.get(), LEAF_P, 0.05, AttributeModifier.Operation.MULTIPLY_BASE);
             add(book, AttributeRegistry.COOLDOWN_REDUCTION.get(), LEAF_C, 0.05, AttributeModifier.Operation.MULTIPLY_BASE);
             add(book, AttributeRegistry.MANA_REGEN.get(), LEAF_R, 0.1, AttributeModifier.Operation.MULTIPLY_BASE);
+        }
+        int ember = count(book, "sovereign_ember");
+        if (ember > 0) {
+            add(book, AttributeRegistry.SPELL_POWER.get(), EMBER_P, 0.04 * ember, AttributeModifier.Operation.MULTIPLY_BASE);
+            add(book, Attributes.ARMOR, EMBER_A, 2.0 * ember, AttributeModifier.Operation.ADDITION);
         }
         if (count(book, "binders_quill") > 0) {
             add(book, AttributeRegistry.MAX_MANA.get(), QUILL_M, 50.0, AttributeModifier.Operation.ADDITION);

@@ -359,7 +359,7 @@ def export_geo(UV, path, TH):
         B = BONES[bn]
         e = {'name': bn, 'pivot': [-B['pivot'][0], B['pivot'][1], B['pivot'][2]]}
         if B['parent']: e['parent'] = B['parent']
-        if any(B['rot']): e['rotation'] = [B['rot'][0], -B['rot'][1], -B['rot'][2]]
+        if any(B['rot']): e['rotation'] = [-B['rot'][0], -B['rot'][1], B['rot'][2]]   # GeckoLib reads x and y negated
         cs = []
         for ci, (o, s, m, inf) in enumerate(B['cubes']):
             u, v, w, h, d = UV[(bn, ci)]
@@ -693,8 +693,8 @@ def export_anims(path):
         for bn, chans in A['bones'].items():
             e = {}
             for c, ks in chans.items():
-                f = (lambda v: [v[0], -v[1], -v[2]]) if c == 'rot' else (lambda v: [-v[0], v[1], v[2]]) if c == 'pos' else (lambda v: list(v))
-                e[{'rot': 'rotation', 'pos': 'position', 'scale': 'scale'}[c]] = {'%.4f' % t: {'vector': [round(x, 3) for x in f(v)], 'lerp_mode': 'catmullrom'} for t, v in ks}
+                f = (lambda v: [-v[0], -v[1], v[2]]) if c == 'rot' else (lambda v: [-v[0], v[1], v[2]]) if c == 'pos' else (lambda v: list(v))
+                e[{'rot': 'rotation', 'pos': 'position', 'scale': 'scale'}[c]] = {'%.4f' % t: {'post': [round(x, 3) for x in f(v)], 'lerp_mode': 'catmullrom'} for t, v in ks}
             bones[bn] = e
         out['animation.%s.%s' % (NAME, name)] = {'loop': True if A['loop'] else 'hold_on_last_frame', 'animation_length': A['length'], 'bones': bones}
     json.dump({'format_version': '1.8.0', 'animations': out}, open(path, 'w'))

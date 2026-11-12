@@ -133,8 +133,9 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> MEMORY_PAGE = ITEMS.register("memory_page", com.ironspellgrimoire.item.MemoryPageItem::new);
     public static final RegistryObject<Item> BINDERS_QUILL = ITEMS.register("binders_quill", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("binders_quill", true));
     public static final RegistryObject<Item> WARDENS_KEY = ITEMS.register("wardens_key", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("wardens_key", true));
+    public static final RegistryObject<Item> SOVEREIGN_EMBER = ITEMS.register("sovereign_ember", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("sovereign_ember", true));
     public static final RegistryObject<Item> BINDERS_PEN = ITEMS.register("binders_pen", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("binders_pen", true));
-    public static final java.util.List<RegistryObject<Item>> UPGRADES = java.util.List.of(DESPAIR_FANG, COPIED_SIGIL, ELVEN_BLADE_SHARD, GRAVE_EMBER, CURSE_THREAD, MIRROR_SHARD, MANA_CRYSTAL_BINDING, SILVER_CLASP, SWIFT_BOOKMARK, RUNED_SPINE, PHOENIX_RIBBON, WIND_FEATHER, BLOODSTONE, WARDING_GLYPH, STARLIT_SEAL, ELF_KINGS_LEAF, BINDERS_QUILL, WARDENS_KEY, BINDERS_PEN);
+    public static final java.util.List<RegistryObject<Item>> UPGRADES = java.util.List.of(DESPAIR_FANG, COPIED_SIGIL, ELVEN_BLADE_SHARD, GRAVE_EMBER, CURSE_THREAD, MIRROR_SHARD, MANA_CRYSTAL_BINDING, SILVER_CLASP, SWIFT_BOOKMARK, RUNED_SPINE, PHOENIX_RIBBON, WIND_FEATHER, BLOODSTONE, WARDING_GLYPH, STARLIT_SEAL, ELF_KINGS_LEAF, BINDERS_QUILL, WARDENS_KEY, BINDERS_PEN, SOVEREIGN_EMBER);
 
     /** Spawns Zenon (the three-phase bone boss). */
     public static final RegistryObject<Item> ZENON_SPAWN_EGG = ITEMS.register("zenon_spawn_egg",

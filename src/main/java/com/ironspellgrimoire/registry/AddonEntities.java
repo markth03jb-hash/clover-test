@@ -50,6 +50,11 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.CurseWitch>of(com.ironspellgrimoire.entity.CurseWitch::new, MobCategory.MONSTER).sized(0.6F, 1.9F)
                     .fireImmune().clientTrackingRange(10).build("curse_witch"));
 
+    /** The Cinder Sovereign, the world boss (entity/CinderSovereign, server/WorldBoss). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.CinderSovereign>> CINDER_SOVEREIGN = ENTITIES.register("cinder_sovereign",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.CinderSovereign>of(com.ironspellgrimoire.entity.CinderSovereign::new, MobCategory.MONSTER).sized(4.5F, 12.5F)
+                    .fireImmune().clientTrackingRange(16).build("cinder_sovereign"));
+
     /** A Memory Guardian (entity/MemoryGuardian, server/MemoryPages). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MemoryGuardian>> MEMORY_GUARDIAN = ENTITIES.register("memory_guardian",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.MemoryGuardian>of(com.ironspellgrimoire.entity.MemoryGuardian::new, MobCategory.MONSTER).sized(0.6F, 1.8F)
