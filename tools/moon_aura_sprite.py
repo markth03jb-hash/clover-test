@@ -1,113 +1,104 @@
-"""The Scarlet Moon aura as a 2D pixel-art sprite: N looping frames (a vertical strip) of a teardrop of white-blue
-flame around the body (moon_aura.png, drawn behind you, alpha-blended) and the white streaks rising through it with
-the odd crackle of lightning (moon_aura_front.png, drawn over you, additive). Self-made, no outside art."""
-import math, random, sys
+"""The Scarlet Moon aura as a smooth, high-resolution 2D sprite (self-made, no outside art).
+
+N looping frames, stacked top to bottom:
+  moon_aura.png        the flame body, alpha-blended behind you: a soft blue haze, rising streaks of light, and the
+                       flame tongues licking up the sides to points above the head, edged in a bright cyan-white rim
+  moon_aura_glow.png   the same flame's light, added on top (additive): the white-hot rim and streaks, so it glows
+  moon_aura_front.png  faint rising streaks and the glowing rim, added over your body (additive)
+The noise is built from waves whose vertical frequencies and scroll speeds are whole numbers, so every frame loops.
+"""
+import math, sys
+import numpy as np
 from PIL import Image
 
-W, H, N = 40, 64, 12
+W, H, N = 160, 256, 16
 OUT = sys.argv[1] if len(sys.argv) > 1 else "src/main/resources/assets/iron_spell_grimoire/textures/effect"
-
-OUTLINE = (22, 44, 150, 255)
-RIM = (215, 240, 255, 250)
-MID = (120, 185, 255, 200)
-INNER = (175, 215, 255, 110)
-CORE = (235, 245, 255, 55)
+rng = np.random.default_rng(11)
 TAU = math.tau
 
-
-def half_width(y):          # y: 0 feet .. 1 tip, as a fraction of the frame's half-width
-    w = 0.4 * (1 - y ** 2.0) * (0.86 + 0.26 * math.sin(math.pi * y * 0.8))
-    if y < 0.07:
-        w *= math.sqrt(max(0.0, y / 0.07)) * 0.5 + 0.5
-    return max(0.0, w)
+ys, xs = np.mgrid[0:H, 0:W].astype(np.float64)
+U = (xs + 0.5) / W - 0.5            # -0.5 .. 0.5 across
+Y = 1 - (ys + 0.5) / H              # 0 at the feet .. 1 at the top
+SIDE = np.sign(U)
 
 
-def edge(y, T, side):       # flame spikes running up the sides: each widens as it rises and breaks off in a point
-    out = 0.0
-    for k, amp, ph in ((4, 0.62, 0.0), (7, 0.22, 0.41)):
-        f = (k * y - T * (k - 1) + ph + (0.37 if side > 0 else 0)) % 1.0
-        out += amp * f ** 4
-    return (out - 0.16) * (0.45 + 0.9 * y)
+def waves(count, fx, fy, speed, seed):
+    r = np.random.default_rng(seed)
+    comps = []
+    for _ in range(count):
+        comps.append((r.uniform(-fx, fx), r.integers(1, fy + 1), r.integers(1, speed + 1), r.uniform(0, TAU), r.uniform(0.5, 1.0)))
+    total = sum(c[4] for c in comps)
+
+    def f(T, warp=0.0):
+        out = np.zeros_like(U)
+        for kx, ky, sp, ph, a in comps:
+            out += a * np.sin(TAU * (kx * U + ky * (Y + warp) - sp * T) + ph)
+        return out / total
+    return f
+
+
+streak = waves(14, 9.0, 4, 2, 1)       # tall vertical streaks (high across, low up)
+lick = waves(12, 4.0, 5, 2, 2)         # the big tongues on the edge
+fine = waves(12, 14.0, 7, 3, 3)        # fine flicker
+warpn = waves(6, 2.0, 2, 1, 4)
+
+
+def smooth(e0, e1, x):
+    t = np.clip((x - e0) / (e1 - e0), 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def half_width(y):
+    y = y / 0.84
+    w = 0.31 * (1 - np.clip(y, 0, 1) ** 1.8) * (0.9 + 0.22 * np.sin(np.pi * y * 0.85))
+    return np.maximum(w, 0.0) * (0.55 + 0.45 * smooth(0.0, 0.1, y))
 
 
 def frame(T):
-    back = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    d = {}
-    for py in range(1, H - 1):
-        y = 1 - (py + 0.5) / H
-        for px in range(1, W - 1):
-            u = (px + 0.5) / W - 0.5
-            side = 1 if u > 0 else -1
-            w = half_width(y) * (1 + edge(y, T, side))
-            # tongues licking above the tip
-            if y > 0.6:   # flame points round the top, flickering up
-                for c, ph in ((-0.2, 0.0), (-0.09, 0.5), (0.1, 0.25), (0.21, 0.75)):
-                    tip = 0.84 + 0.13 * (0.5 + 0.5 * math.sin(TAU * (T * 2 + ph)))
-                    if y < tip:
-                        hw = 0.075 * (tip - y) / (tip - 0.6)
-                        if abs(u - c) < hw:
-                            w = max(w, abs(u) + 0.01)
-            if w <= 0:
-                continue
-            dd = 1 - abs(u) / w
-            if dd > 0:
-                d[(px, py)] = dd
-    px_ = back.load()
-    for (x, y), dd in d.items():
-        border = any((x + dx, y + dy) not in d for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
-        if border:
-            c = OUTLINE
-        elif dd < 0.12:
-            c = RIM
-        elif dd < 0.3:
-            c = MID if (x + y) % 2 == 0 or dd < 0.24 else INNER   # dithered step
-        elif dd < 0.55:
-            c = INNER
-        else:
-            c = CORE
-        px_[x, y] = c
-    # the front layer: white streaks rising through the aura, and now and then a crackle of lightning
-    front = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    fp = front.load()
-    rnd = random.Random(7)
-    for s in range(9):
-        cx = rnd.uniform(-0.32, 0.32)
-        y0, k, ln = rnd.random(), rnd.choice((1, 2)), rnd.randint(5, 10)
-        head = (y0 + k * T) % 1.0
-        for j in range(ln):
-            y = head - j / H
-            if y < 0:
-                continue
-            w = half_width(y)
-            u = cx * w / 0.47
-            x, py = int((u + 0.5) * W), int((1 - y) * H)
-            if (x, py) in d and 0 <= py < H:
-                a = int(230 * (1 - j / ln))
-                fp[x, py] = (255, 255, 255, a)
-    fi = round(T * N)
-    if fi in (2, 3, 8):     # lightning: a jagged white bolt with a blue fringe
-        r2 = random.Random(fi * 31)
-        x, y = r2.randint(10, 29), r2.randint(14, 24)
-        for _ in range(r2.randint(14, 20)):
-            if (x, y) in d:
-                fp[x, y] = (255, 255, 255, 255)
-                for dx in (-1, 1):
-                    if (x + dx, y) in d and fp[x + dx, y][3] == 0:
-                        fp[x + dx, y] = (90, 150, 255, 200)
-            x += r2.choice((-1, 0, 1, 1)) * (1 if fi != 8 else -1)
-            y += 1
-    return back, front
+    wy = 0.05 * warpn(T)
+    hw = half_width(Y + wy * 0.5)
+    # tongues: the edge pushed out in long upward licks, more so higher up; they rise as the frame turns
+    ln = lick(T, wy)
+    tongue = 1.5 * np.clip(ln, 0, None) ** 1.8 * (0.35 + 1.3 * Y)
+    edge = hw * (1 + tongue) + 0.012 * fine(T) * (hw > 0.01)
+    # flame points over the head: thin tall licks rising from the top
+    d = (edge - np.abs(U)) / 0.03 - np.clip(Y + wy * 0.5 - 0.8, 0, None) / 0.012                                 # >0 inside, in units of the soft edge
+    for c, ph, hgt in ((-0.12, 0.0, 0.14), (-0.045, 0.4, 0.2), (0.05, 0.7, 0.17), (0.13, 0.2, 0.12)):
+        top = 0.72 + hgt * (0.6 + 0.4 * np.sin(TAU * (2 * T + ph)))   # thin licks rising over the head
+        k = np.clip((top - Y) / (top - 0.5), 0, 1)
+        sway = 0.015 * np.sin(TAU * (3 * Y - 2 * T + ph))
+        d = np.maximum(d, (0.042 * k ** 1.3 - np.abs(U - c - sway)) / 0.03 - np.clip(Y - top, 0, None) / 0.012)
+    inside = smooth(-0.6, 0.6, d)
+    rim = np.exp(-((d - 0.4) / 0.55) ** 2)                          # the bright band hugging the edge
+    halo = smooth(-4.0, 0.0, d) ** 2 * (1 - inside)                      # the soft glow just outside it
+    st = np.clip(streak(T) * 0.5 + 0.5, 0, 1) ** 3                  # streaks of light running up through it
+    depth = smooth(0.0, 6.0, d)                                     # how far in from the edge
+    fade_bottom = smooth(0.0, 0.08, Y)
+
+    # body: a deep-to-light blue haze, more see-through towards the middle, streaked with light
+    a_body = inside * (0.14 + 0.32 * (1 - depth) + 0.22 * st) + 0.3 * halo
+    col = np.stack([0.30 + 0.45 * st, 0.62 + 0.3 * st, np.ones_like(st)], -1)
+    col = col * (1 - rim[..., None] * 0.7) + np.array([0.85, 0.96, 1.0]) * rim[..., None] * 0.7
+    a_body = np.clip(np.maximum(a_body, rim * 0.85) * fade_bottom, 0, 1)
+    body = np.dstack([col * 255, a_body[..., None] * 255])
+
+    # glow: what's added on top - the white-hot rim, the streaks and a whisper of the halo
+    g = np.clip((rim * 0.75 + inside * st * 0.35 * (1 - 0.5 * depth) + halo * 0.3) * fade_bottom, 0, 1)
+    glow = np.dstack([np.stack([0.75 + 0.25 * rim, 0.9 + 0.1 * rim, np.ones_like(rim)], -1) * 255, g[..., None] * 255])
+
+    # front: just faint streaks and the rim, over your body
+    fr = np.clip((inside * st * 0.45 * (0.3 + 0.7 * (1 - depth)) + rim * 0.35) * fade_bottom, 0, 1)
+    front = np.dstack([np.full((H, W, 3), 255.0) * np.array([0.85, 0.95, 1.0]), fr[..., None] * 255])
+    return [Image.fromarray(np.clip(x, 0, 255).astype(np.uint8), "RGBA") for x in (body, glow, front)]
 
 
 def main():
-    back = Image.new("RGBA", (W, H * N), (0, 0, 0, 0))
-    front = Image.new("RGBA", (W, H * N), (0, 0, 0, 0))
+    sheets = [Image.new("RGBA", (W, H * N), (0, 0, 0, 0)) for _ in range(3)]
     for i in range(N):
-        b, f = frame(i / N)
-        back.paste(b, (0, i * H))
-        front.paste(f, (0, i * H))
-    back.save(f"{OUT}/moon_aura.png")
-    front.save(f"{OUT}/moon_aura_front.png")
+        for s, im in zip(sheets, frame(i / N)):
+            s.paste(im, (0, i * H))
+    for s, name in zip(sheets, ("moon_aura", "moon_aura_glow", "moon_aura_front")):
+        s.save(f"{OUT}/{name}.png", optimize=True)
 
 
 if __name__ == "__main__":

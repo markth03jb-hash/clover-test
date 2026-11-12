@@ -987,16 +987,19 @@ public final class BloodFxClient {
     private static double hs(int a, int b) { return FxBase.h2(a, b, 911); }
 
     // ------------------------------------------------------------------ the Moon's aura: a 2D pixel-art sprite
-    private static final net.minecraft.resources.ResourceLocation AURA_BACK = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/effect/moon_aura.png");
-    private static final net.minecraft.resources.ResourceLocation AURA_FRONT = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/effect/moon_aura_front.png");
-    private static final int AURA_FRAMES = 12;
-    /** Auras to draw this frame: {feet x, y, z, scale, alpha, frame}. Queued by whiteAura, drawn by renderSprites. */
+    private static final net.minecraft.resources.ResourceLocation[] AURA_TEX = {
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/effect/moon_aura.png"),
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/effect/moon_aura_glow.png"),
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/effect/moon_aura_front.png")};
+    private static final int AURA_FRAMES = 16;
+    /** Auras to draw this frame: {feet x, y, z, scale, alpha, frame (fractional: crossfaded)}. Queued by whiteAura. */
     private static final List<double[]> AURA_Q = new ArrayList<>();
 
     /**
-     * The Scarlet Moon aura is one flat sprite, nothing else: an animated pixel-art flame of white and ice-blue
-     * standing round you, turned to face the camera (staying upright), behind your body - and its rising streaks and
-     * crackles drawn faintly over you. It swells a little on the heartbeat; awakened, it stands taller.
+     * The Scarlet Moon aura is one flat painted sprite, nothing else: a smooth, glowing flame of ice-blue light with
+     * a white-hot rim, standing round you and turned to face the camera (staying upright). Its body is drawn just
+     * behind you, its light added on top, and faint rising streaks over you; the animation frames blend into each
+     * other so it flows. It swells a little on the heartbeat; awakened, it stands taller.
      */
     private static void whiteAura(Matrix4f m, Vec3 cam, Minecraft mc, L l, double age, double now, float pt, float out) {
         FxPacket p = l.p;
@@ -1008,34 +1011,37 @@ public final class BloodFxClient {
         if (k <= 0.01F) return;
         float hb = heartbeat(now + p.id);
         double scale = e.getBbHeight() / 1.8 * (p.a0 > 0 ? 1.15 : 1.0) * (1 + 0.05 * hb);
-        int fr = (int) ((now + p.id * 7) / 1.6) % AURA_FRAMES;
+        double fr = ((now + p.id * 7) / 1.25) % AURA_FRAMES;
         if (AURA_Q.size() > 64) AURA_Q.clear();
-        AURA_Q.add(new double[]{f.x, f.y, f.z, scale, k, fr});
+        AURA_Q.add(new double[]{f.x, f.y, f.z, scale, k * (0.9F + 0.1F * hb), fr});
     }
 
-    /** Draws the queued Moon auras (called once the world's effects are drawn, with a real texture bound). */
+    /** Draws the queued Moon auras (called once the world's effects are drawn). */
     public static void renderSprites(com.mojang.blaze3d.vertex.PoseStack ps, net.minecraft.client.renderer.MultiBufferSource.BufferSource buf, Vec3 cam) {
         if (AURA_Q.isEmpty()) return;
         Matrix4f m = ps.last().pose();
         Matrix3f n = ps.last().normal();
-        for (int layer = 0; layer < 2; layer++) {
-            net.minecraft.client.renderer.RenderType rt = layer == 0
-                    ? net.minecraft.client.renderer.RenderType.entityTranslucentEmissive(AURA_BACK)
-                    : net.minecraft.client.renderer.RenderType.eyes(AURA_FRONT);
+        for (int layer = 0; layer < 3; layer++) {   // body (blended, behind you), its light (added, behind you), streaks (added, over you)
+            net.minecraft.client.renderer.RenderType rt = GlowRenderType.smoothSprite(AURA_TEX[layer], layer > 0);
             VertexConsumer vc = buf.getBuffer(rt);
             for (double[] q : AURA_Q) {
                 Vec3 feet = new Vec3(q[0], q[1], q[2]);
                 Vec3 to = new Vec3(cam.x - feet.x, 0, cam.z - feet.z);
                 to = to.lengthSqr() < 1.0E-6 ? new Vec3(0, 0, 1) : to.normalize();
                 Vec3 side = new Vec3(-to.z, 0, to.x);
-                double s = q[3], hw = 0.85 * s, h = hw * 2 * 64 / 40.0;
-                // the back sprite stands just behind you, the front one just before you
-                Vec3 base = feet.add(to.scale(layer == 0 ? -0.42 : 0.42)).add(0, -0.12 * s, 0);
-                float a = (float) q[4] * (layer == 0 ? 1F : 0.55F);
-                double v0 = q[5] / AURA_FRAMES, v1 = (q[5] + 1) / AURA_FRAMES;
-                Vec3 bl = base.subtract(side.scale(hw)), br = base.add(side.scale(hw)), tr = br.add(0, h, 0), tl = bl.add(0, h, 0);
-                spv(vc, m, n, cam, bl, a, 0, v1); spv(vc, m, n, cam, br, a, 1, v1); spv(vc, m, n, cam, tr, a, 1, v0); spv(vc, m, n, cam, tl, a, 0, v0);
-                spv(vc, m, n, cam, tl, a, 0, v0); spv(vc, m, n, cam, tr, a, 1, v0); spv(vc, m, n, cam, br, a, 1, v1); spv(vc, m, n, cam, bl, a, 0, v1);
+                double s = q[3], hw = 0.82 * s, h = hw * 2 * 256 / 160.0;
+                Vec3 base = feet.add(to.scale(layer < 2 ? -0.42 : 0.42)).add(0, -0.12 * s, 0);
+                float a = (float) q[4] * (layer == 2 ? 0.6F : 1F);
+                int f0 = (int) q[5];
+                float mix = (float) (q[5] - f0);
+                for (int fi = 0; fi < 2; fi++) {   // this frame fading into the next
+                    int fr = (f0 + fi) % AURA_FRAMES;
+                    float fa = a * (fi == 0 ? 1 - mix : mix);
+                    if (fa < 0.01F) continue;
+                    double v0 = fr / (double) AURA_FRAMES + 0.5 / (256.0 * AURA_FRAMES), v1 = (fr + 1) / (double) AURA_FRAMES - 0.5 / (256.0 * AURA_FRAMES);
+                    Vec3 bl = base.subtract(side.scale(hw)), br = base.add(side.scale(hw)), tr = br.add(0, h, 0), tl = bl.add(0, h, 0);
+                    spv(vc, m, n, cam, bl, fa, 0, v1); spv(vc, m, n, cam, br, fa, 1, v1); spv(vc, m, n, cam, tr, fa, 1, v0); spv(vc, m, n, cam, tl, fa, 0, v0);
+                }
             }
             buf.endBatch(rt);
         }
