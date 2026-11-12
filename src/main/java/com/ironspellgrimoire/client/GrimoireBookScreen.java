@@ -354,7 +354,7 @@ public class GrimoireBookScreen extends Screen {
             boolean hot = open && inside(mx, my, x - 2, yy - 2, w + 4, 19), on = chosen == i + 1;
             if (on) g.fill(x - 2, yy - 2, x + w + 2, yy + 17, 0x40A0101E);
             else if (hot) g.fill(x - 2, yy - 2, x + w + 2, yy + 17, 0x20000000);
-            g.drawString(f, (on ? "\u25C6 " : "\u25C7 ") + p[i * 2], x, yy, on ? RED_INK : open ? INK : INK_FAINT, false);
+            g.drawString(f, (on ? "\u25C6 " : "\u25C7 ") + p[i * 2], x, yy, on ? RED_INK : open ? INK : INK_SOFT, false);
             List<FormattedCharSequence> lines = f.split(Component.literal(p[i * 2 + 1]), w - 6);
             if (!lines.isEmpty()) {
                 g.pose().pushPose(); g.pose().translate(x + 6, yy + 9, 0); g.pose().scale(0.75F, 0.75F, 1F);
