@@ -121,7 +121,7 @@ public final class UiShots {
         steps.add(new Step("blood_drain_hit", () -> {}, 13, true));
         steps.add(new Step("blood_pact", () -> onServer(p -> UiShotsServer.bloodSpell(p, "blood_pact")), 8, true));
         steps.add(new Step("blood_wheel", () -> { mc.options.hideGui = false; GrimoireWheel.forceOpen = true; }, 12, true));
-        steps.add(new Step("blood_wheel_done", () -> { GrimoireWheel.forceOpen = false; mc.options.hideGui = true; }, 4, true));
+        steps.add(new Step("blood_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); mc.options.hideGui = true; }, 4, true));
         steps.add(new Step("blood_awaken", () -> {
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
             mc.player.setXRot(10);
@@ -140,8 +140,8 @@ public final class UiShots {
         steps.add(new Step("ice_impact", () -> {}, 9, true));
         steps.add(new Step("ice_hud", () -> { mc.options.hideGui = false; }, 20, true));
         steps.add(new Step("ice_wheel", () -> GrimoireWheel.forceOpen = true, 12, true));
+        steps.add(new Step("ice_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); }, 4, true));
         steps.add(new Step("ice_book", () -> {
-            GrimoireWheel.forceOpen = false;
             var bk = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(mc.player);
             GrimoireBookScreen b = new GrimoireBookScreen(bk == null ? new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.BLOOD_GRIMOIRE.get()) : bk);
             mc.setScreen(b);
