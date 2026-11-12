@@ -114,6 +114,7 @@ public class FxRenderer extends FxBase {
       if (p.shape == 75) { QuestHud.set(p); return; }
       if (p.shape == 77) { MemoryClient.set(p); return; }
       if (p.shape == 78) { WorldBossHud.set(p); return; }
+      if (p.shape == 81) { BloodHud.set(p); return; }      // the Blood Gauge (server/BloodFx)
       if (p.shape == 79) { RiftMap.set(p); return; }        // the rift's room map (server/Rifts)   // the world boss tracker (server/WorldBoss)      // your Lost Memory Pages (server/MemoryPages)
       if (p.shape == 76) { RaidBanner.start(p); return; }       // the Elf Raid (server/ElfRaids)           // the quest tracker (server/Quests)    // the killing blow on a boss (server/BossCores)
       if (p.shape == 46) { PortalRenderer.spawn(p); return; }   // Finral's gates of space
@@ -122,6 +123,7 @@ public class FxRenderer extends FxBase {
       if (FxSync.defer(p)) return;   // held back to land on the swing
       if (p.shape == 66) { LightFxClient.spawn(p); return; }
       if (p.shape == 80) { BloodFxClient.spawn(p); return; }
+      if (p.shape == 82) { IceFxClient.spawn(p); return; }
    // Patolli's Light Magic (LightFxClient)
       if (p.shape == 3 && LightFxClient.kill(p.id)) return;
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
@@ -310,7 +312,7 @@ public class FxRenderer extends FxBase {
             TRACK.clear();
             ORBITS.clear();
             WHIPS.clear();
-            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear();
+            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
@@ -519,6 +521,7 @@ public class FxRenderer extends FxBase {
             ModeAuraFx.draw(m, cam, now, pt);
             LightFxClient.draw(m, cam, now, pt);
             BloodFxClient.draw(vc, m, n, cam, now, pt);
+            IceFxClient.draw(vc, m, n, cam, now, pt);
             BountyHud.drawBeacon(m, cam, now);
             QuestHud.drawBeacon(m, cam, now);
             WorldBossHud.drawBeacon(m, cam, now);

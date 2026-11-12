@@ -103,8 +103,13 @@ public final class UiShots {
         }, 20, true));
         steps.add(new Step("hud_compact", () -> TrackerMode.set(1), 10, true));
         // the Blood Grimoire: Scarlet Moon seen from the front and behind (third person), then two spells
+        steps.add(new Step("blood_gauge", () -> {
+            TrackerMode.set(2); mc.options.hideGui = false; mc.setScreen(null);
+            mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+            onServer(p -> UiShotsServer.bloodSpell(p, "gauge"));
+        }, 30, true));
         steps.add(new Step("blood_edge", () -> {
-            TrackerMode.set(2); mc.options.hideGui = true; mc.setScreen(null);
+            mc.options.hideGui = true;
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.player.setXRot(22);
             onServer(p -> { p.setXRot(22); UiShotsServer.bloodSpell(p, "crimson_edge"); });
@@ -123,6 +128,15 @@ public final class UiShots {
         steps.add(new Step("blood_burst", () -> {}, 14, true));
         steps.add(new Step("blood_moon_front", () -> {}, 30, true));
         steps.add(new Step("blood_moon_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 12, true));
+        // under the Moon every spell is ice
+        steps.add(new Step("ice_crescent", () -> { mc.player.setXRot(22); onServer(p -> { p.setXRot(22); UiShotsServer.bloodSpell(p, "crimson_edge"); }); }, 5, true));
+        steps.add(new Step("ice_spires", () -> onServer(p -> UiShotsServer.bloodSpell(p, "thorned_veins")), 14, true));
+        steps.add(new Step("ice_avalanche", () -> onServer(p -> UiShotsServer.bloodSpell(p, "red_tide")), 8, true));
+        steps.add(new Step("ice_zero", () -> onServer(p -> UiShotsServer.bloodSpell(p, "exsanguinate")), 18, true));
+        steps.add(new Step("ice_shatter", () -> {}, 26, true));
+        steps.add(new Step("ice_moonfall", () -> onServer(p -> UiShotsServer.bloodSpell(p, "moonfall")), 12, true));
+        steps.add(new Step("ice_impact", () -> {}, 9, true));
+        steps.add(new Step("ice_hud", () -> { mc.options.hideGui = false; }, 30, true));
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)
         steps.add(new Step("dante_front", () -> { TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.dante(p, false, false); }); }, 30, true));
@@ -160,7 +174,7 @@ public final class UiShots {
         if (step.startsWith("board_")) return new Class<?>[]{BoardScreen.class, com.ironspellgrimoire.server.Boards.class};
         if (step.startsWith("hud_")) return new Class<?>[]{BountyHud.class, QuestHud.class, WorldBossHud.class, RiftMap.class, BroomHud.class, ModeHudOverlay.class, RaidBanner.class, TrackerMode.class};
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
-        if (step.startsWith("blood_")) return new Class<?>[]{com.ironspellgrimoire.server.BloodFx.class, BloodFxClient.class, AuraOutlineLayer.class};
+        if (step.startsWith("blood_") || step.startsWith("ice_")) return new Class<?>[]{com.ironspellgrimoire.server.BloodFx.class, BloodFxClient.class, AuraOutlineLayer.class, IceFxClient.class, BloodHud.class};
         return switch (step) {
             case "star_forge" -> new Class<?>[]{StarForgeScreen.class, com.ironspellgrimoire.server.StarForge.class};
             case "altar" -> new Class<?>[]{AltarScreen.class, com.ironspellgrimoire.server.AltarMenu.class};

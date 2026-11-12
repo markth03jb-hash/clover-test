@@ -49,6 +49,7 @@ public final class UiShotsServer {
     public static void scarletMoon(ServerPlayer p) {
         ItemStack book = new ItemStack(AddonItemRegistry.BLOOD_GRIMOIRE.get());
         CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+        BloodFx.showGauge(p, BloodFx.MAX);
         BloodFx.scarletMoon(p, 10f);
     }
     /** One Blood spell, cast where the player looks. */
@@ -57,6 +58,12 @@ public final class UiShotsServer {
             case "thorned_veins" -> BloodFx.thornedVeins(p, 10f);
             case "red_tide" -> BloodFx.redTide(p, 10f);
             case "blood_pact" -> BloodFx.bloodPact(p, 10f);
+            case "gauge" -> {
+                ItemStack book = new ItemStack(AddonItemRegistry.BLOOD_GRIMOIRE.get());
+                CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+                BloodFx.showGauge(p, 68f);
+            }
+            case "moonfall" -> { p.setXRot(20); BloodFx.scarletMoon(p, 10f); }
             case "exsanguinate" -> {   // two still zombies to draw from
                 p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
                 var look = p.getLookAngle().multiply(1, 0, 1).normalize();

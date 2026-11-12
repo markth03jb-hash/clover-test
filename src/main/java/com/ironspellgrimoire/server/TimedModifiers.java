@@ -48,6 +48,9 @@ public final class TimedModifiers {
     public static final UUID KNIGHT_WEIGHT = UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a100011");
     public static final UUID CART_RIDE = UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a100012");
     public static final UUID HORIZON_CHARGE = UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a100013");
+    public static final UUID FROST_SLOW = UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a100014");
+    public static final UUID FROST_ROOT = UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a100015");
+    public static final UUID WINTER_ARMOR = UUID.fromString("b7d3c1a0-3f1e-4a7b-9c11-5e0d6a100016");
 
     private record Entry(ServerLevel level, UUID entity, Attribute attribute, UUID id, long until, boolean negative) {}
     private static final List<Entry> ACTIVE = new ArrayList<>();

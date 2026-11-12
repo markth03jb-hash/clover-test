@@ -33,7 +33,8 @@ import net.minecraftforge.fml.common.Mod;
  *  7 Thorned Veins     - thorns of blood burst out of the ground along a line, flinging foes up
  *  8 Crimson Bulwark   - a shell of hardened blood: absorbs damage, and breaks outward when it's gone
  *  9 Exsanguinate      - blood is torn out of every foe around you and pours into you
- * 10 Scarlet Moon (mode) - 30 s: a white aura blazes round you. Blood spells hit
+ * 10 Scarlet Moon (mode) - needs a full Blood Gauge. 60 s: a white aura blazes round you and every spell turns to ice
+ *                       (server/IceFx) - no health cost, much stronger; cast it again for Moonfall. Blood spells hit
  *                       35% harder and heal you for a quarter of what they deal; you move faster and hold your ground.
  *
  * Passive "Blood Price": up to +80% power as your health runs low.
@@ -54,7 +55,9 @@ public final class BloodFx {
 
     /** Pays the spell's price in health (a share of max health; double under the Scarlet Moon). Never kills. */
     private static void price(ServerPlayer p, float share) {
-        float cost = p.getMaxHealth() * share * (moon(p) ? 2f : 1f);
+        if (moon(p)) return;   // under the Moon nothing costs blood
+        float cost = p.getMaxHealth() * share;
+        addGauge(p, 5f + cost * 3f);
         if (p.isCreative()) return;
         p.setHealth(Math.max(1f, p.getHealth() - cost));
     }
@@ -78,10 +81,7 @@ public final class BloodFx {
         FxPacket b = fx(13, mid(t), 6);   // the wound opens: blood thrown out the way the blow went, mist, a splash below
         b.d = mid(t).subtract(p.position().add(0, 1, 0)); b.a0 = Math.max(0.45f, Math.min(1.4f, amt / 8f));
         send(p.serverLevel(), b);
-        if (moon(p)) {   // under the Moon, blood spilled comes back to you
-            float dealt = Math.max(0f, before - t.getHealth());
-            if (dealt > 0) p.heal(dealt * 0.25f);
-        }
+        addGauge(p, Math.max(0f, before - t.getHealth()) * 0.8f);   // blood spilled fills the gauge
     }
 
     // ================================================================== the look (BloodFxClient, FxPacket shape 80)
@@ -132,6 +132,7 @@ public final class BloodFx {
 
     // ================================================================== 1. Crimson Edge
     public static void crimsonEdge(ServerPlayer p, float power) {
+        if (moon(p)) { IceFx.frostCrescent(p, power); return; }   // under the Scarlet Moon it's ice
         ServerLevel sl = p.serverLevel();
         price(p, 0.02f);
         float pow = pw(p, power);
@@ -153,6 +154,7 @@ public final class BloodFx {
 
     // ================================================================== 2. Hemorrhage
     public static void hemorrhage(ServerPlayer p, float power) {
+        if (moon(p)) { IceFx.rimeSpear(p, power); return; }   // under the Scarlet Moon it's ice
         ServerLevel sl = p.serverLevel();
         LivingEntity t = aimed(p, 24, 14);
         if (t == null) { p.displayClientMessage(Component.literal("No one to mark.").withStyle(ChatFormatting.GRAY), true); return; }
@@ -179,6 +181,7 @@ public final class BloodFx {
 
     // ================================================================== 3. Sanguine Volley
     public static void sanguineVolley(ServerPlayer p, float power) {
+        if (moon(p)) { IceFx.glacialVolley(p, power); return; }   // under the Scarlet Moon it's ice
         ServerLevel sl = p.serverLevel();
         price(p, 0.03f);
         float pow = pw(p, power);
@@ -210,6 +213,7 @@ public final class BloodFx {
 
     // ================================================================== 4. Transfusion
     public static void transfusion(ServerPlayer p, float power) {
+        if (moon(p)) { IceFx.frostbind(p, power); return; }   // under the Scarlet Moon it's ice
         ServerLevel sl = p.serverLevel();
         LivingEntity t = aimed(p, 16, 16);
         if (t == null) { p.displayClientMessage(Component.literal("No one to draw from.").withStyle(ChatFormatting.GRAY), true); return; }
@@ -231,6 +235,7 @@ public final class BloodFx {
 
     // ================================================================== 5. Blood Pact
     public static void bloodPact(ServerPlayer p, float power) {
+        if (moon(p)) { IceFx.wintersPact(p, power); return; }   // under the Scarlet Moon it's ice
         ServerLevel sl = p.serverLevel();
         price(p, 0.2f);
         PACT.put(p.getUUID(), true);
@@ -253,6 +258,7 @@ public final class BloodFx {
 
     // ================================================================== 6. Red Tide
     public static void redTide(ServerPlayer p, float power) {
+        if (moon(p)) { IceFx.whiteAvalanche(p, power); return; }   // under the Scarlet Moon it's ice
         ServerLevel sl = p.serverLevel();
         price(p, 0.04f);
         float pow = pw(p, power);
@@ -282,6 +288,7 @@ public final class BloodFx {
 
     // ================================================================== 7. Thorned Veins
     public static void thornedVeins(ServerPlayer p, float power) {
+        if (moon(p)) { IceFx.glacierSpires(p, power); return; }   // under the Scarlet Moon it's ice
         ServerLevel sl = p.serverLevel();
         price(p, 0.04f);
         float pow = pw(p, power);
@@ -319,6 +326,7 @@ public final class BloodFx {
 
     // ================================================================== 8. Crimson Bulwark
     public static void crimsonBulwark(ServerPlayer p, float power) {
+        if (moon(p)) { IceFx.frozenBastion(p, power); return; }   // under the Scarlet Moon it's ice
         ServerLevel sl = p.serverLevel();
         price(p, 0.06f);
         float shield = 6f + power * 0.5f + (moon(p) ? 4f : 0f);
@@ -345,6 +353,7 @@ public final class BloodFx {
 
     // ================================================================== 9. Exsanguinate
     public static void exsanguinate(ServerPlayer p, float power) {
+        if (moon(p)) { IceFx.absoluteZero(p, power); return; }   // under the Scarlet Moon it's ice
         ServerLevel sl = p.serverLevel();
         price(p, 0.05f);
         float pow = pw(p, power);
@@ -373,7 +382,7 @@ public final class BloodFx {
     }
 
     // ================================================================== 10. Scarlet Moon
-    private static final int MOON_T = 600, FORM = 30;
+    private static final int MOON_T = 1200, FORM = 30;
 
     /**
      * The mode. White light is drawn in from all round you for a second and a half, then a pillar of it strikes you and
@@ -383,7 +392,14 @@ public final class BloodFx {
      */
     public static void scarletMoon(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        price(p, 0.1f);
+        if (moon(p)) { IceFx.moonfall(p, power); return; }
+        if (gauge(p) < MAX && !p.isCreative()) {
+            p.displayClientMessage(Component.literal("Your Blood Gauge isn't full yet (" + (int) gauge(p) + "%)").withStyle(ChatFormatting.DARK_RED), true);
+            return;
+        }
+        setGauge(p, 0);
+        p.getPersistentData().putLong(MOON_KEY, sl.getGameTime() + FORM + MOON_T);
+        syncGauge(p);
         Vec3 c0 = p.position();
         sound(sl, c0, SoundEvents.WARDEN_HEARTBEAT, 1.6f, 0.8f);
         sound(sl, c0, SoundEvents.BEACON_ACTIVATE, 0.8f, 0.6f);
@@ -405,15 +421,66 @@ public final class BloodFx {
             com.ironspellgrimoire.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), a);
             Moves.stance(p, 4, 2, 0.25, 0.6, 0, MOON_T);
             Moves.mode(p, MODE, MOON_T, 10, pl -> {});
+            p.heal(p.getMaxHealth() * 0.5f);   // the blood you paid comes back as the cold takes you
+            syncGauge(p);
             FxSend.shake(sl, c, 0.6f, 10, 20);
             for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(4))) {   // the shockwave throws back anyone close
                 Vec3 away = flat(e.position().subtract(c));
                 if (away.lengthSqr() > 1e-4) { e.setDeltaMovement(away.normalize().scale(1.2).add(0, 0.4, 0)); e.hurtMarked = true; }
             }
-            p.displayClientMessage(Component.literal("SCARLET MOON").withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD), true);
+            p.displayClientMessage(Component.literal("SCARLET MOON - your blood turns to ice").withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD), true);
             sound(sl, c, SoundEvents.WITHER_SPAWN, 0.7f, 1.4f);
             sound(sl, c, SoundEvents.BEACON_POWER_SELECT, 1.0f, 0.5f);
         });
+    }
+
+    // ================================================================== the Blood Gauge
+    public static final float MAX = 100f;
+    private static final String GAUGE_KEY = "isg_blood_gauge", MOON_KEY = "isg_moon_until";
+
+    public static float gauge(ServerPlayer p) { return p.getPersistentData().getFloat(GAUGE_KEY); }
+
+    public static void setGauge(ServerPlayer p, float v) {
+        p.getPersistentData().putFloat(GAUGE_KEY, Math.max(0f, Math.min(MAX, v)));
+    }
+
+    /** Sets the gauge and shows it (UI pictures, tests). */
+    public static void showGauge(ServerPlayer p, float v) { setGauge(p, v); syncGauge(p); }
+
+    /** Fills the gauge (never while the Moon is up). */
+    static void addGauge(ServerPlayer p, float v) {
+        if (v <= 0 || moon(p)) return;
+        float before = gauge(p);
+        setGauge(p, before + v);
+        if (before < MAX && gauge(p) >= MAX) {
+            p.displayClientMessage(Component.literal("The Blood Gauge is full - cast Scarlet Moon").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
+            sound(p.serverLevel(), p.position(), SoundEvents.WARDEN_HEARTBEAT, 1.4f, 1.3f);
+        }
+        syncGauge(p);
+    }
+
+    /** Sends the gauge (and how long the Moon has left) to the player's HUD (client/BloodHud, FxPacket shape 81). */
+    static void syncGauge(ServerPlayer p) {
+        FxPacket h = new FxPacket();
+        h.shape = 81; h.a0 = gauge(p) + 0.001f; h.r = holding(p) ? 1 : 0;
+        long left = p.getPersistentData().getLong(MOON_KEY) - p.serverLevel().getGameTime();
+        h.sweep = (int) Math.max(0, Math.min(MOON_T + FORM, left)); h.life = MOON_T + FORM;
+        com.ironspellgrimoire.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> p), h);
+    }
+
+    private static boolean holding(ServerPlayer p) {
+        net.minecraft.world.item.ItemStack s = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+        return s != null && s.is(com.ironspellgrimoire.registry.AddonItemRegistry.BLOOD_GRIMOIRE.get());
+    }
+
+    @SubscribeEvent
+    public static void onTick(net.minecraftforge.event.TickEvent.PlayerTickEvent e) {
+        if (e.phase != net.minecraftforge.event.TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || p.tickCount % 20 != 7) return;
+        long left = p.getPersistentData().getLong(MOON_KEY) - p.serverLevel().getGameTime();
+        if (left > 0 && left < MOON_T && !moon(p)) p.getPersistentData().remove(MOON_KEY);   // the mode was lost (a relog): the HUD lets go of it
+        if (holding(p) || p.getPersistentData().getLong(MOON_KEY) > p.serverLevel().getGameTime() - 40) syncGauge(p);
+        else if (p.getPersistentData().getBoolean("isg_gauge_shown")) syncGauge(p);
+        p.getPersistentData().putBoolean("isg_gauge_shown", holding(p));
     }
 
     /** Marked foes take 25% more from Blood spells - and hits taken by a Scarlet Moon caster are lessened a little. */

@@ -469,7 +469,7 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> THORNED_VEINS = registerSpell(blood("thorned_veins", 14, 45, 12, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.BloodFx::thornedVeins));
     public static final RegistryObject<AbstractSpell> CRIMSON_BULWARK = registerSpell(blood("crimson_bulwark", 24, 40, 8, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.BloodFx::crimsonBulwark));
     public static final RegistryObject<AbstractSpell> EXSANGUINATE = registerSpell(blood("exsanguinate", 22, 60, 12, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.BloodFx::exsanguinate));
-    public static final RegistryObject<AbstractSpell> SCARLET_MOON = registerSpell(blood("scarlet_moon", 90, 100, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BloodFx::scarletMoon));
+    public static final RegistryObject<AbstractSpell> SCARLET_MOON = registerSpell(blood("scarlet_moon", 3, 100, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BloodFx::scarletMoon));
     /** The ten Blood Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> BLOOD_SPELLS = List.of(
             CRIMSON_EDGE, HEMORRHAGE, SANGUINE_VOLLEY, TRANSFUSION, BLOOD_PACT, RED_TIDE, THORNED_VEINS, CRIMSON_BULWARK, EXSANGUINATE, SCARLET_MOON);
