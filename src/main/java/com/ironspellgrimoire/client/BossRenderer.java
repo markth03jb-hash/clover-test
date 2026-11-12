@@ -29,6 +29,9 @@ public class BossRenderer<T extends AddonBoss> extends HumanoidMobRenderer<T, Pl
 
     @Override public ResourceLocation getTextureLocation(T e) { return tex; }
 
+    /** Adds a layer drawn over this boss (Dante's cloak). */
+    public BossRenderer<T> with(net.minecraft.client.renderer.entity.layers.RenderLayer<T, PlayerModel<T>> layer) { addLayer(layer); return this; }
+
     @Override protected void scale(T e, PoseStack ps, float pt) { ps.scale(size, size, size); }
 
     @Override

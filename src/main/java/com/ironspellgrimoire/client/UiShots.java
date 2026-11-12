@@ -102,6 +102,10 @@ public final class UiShots {
             FxPacket rb = fx(76); rb.sweep = 2; rb.h = 2; rb.life = 400; RaidBanner.start(rb);
         }, 20, true));
         steps.add(new Step("hud_compact", () -> TrackerMode.set(1), 10, true));
+        // Dante's cloak: front, back, and flared (no HUD in these pictures)
+        steps.add(new Step("dante_front", () -> { TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.dante(p, false, false); }); }, 30, true));
+        steps.add(new Step("dante_back", () -> onServer(p -> UiShotsServer.dante(p, true, false)), 30, true));
+        steps.add(new Step("dante_flare", () -> onServer(p -> UiShotsServer.dante(p, true, true)), 26, true));
         steps.add(new Step("hud_hidden", () -> TrackerMode.set(2), 10, true));
     }
 
