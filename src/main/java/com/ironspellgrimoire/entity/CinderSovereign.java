@@ -58,7 +58,7 @@ public class CinderSovereign extends AddonBoss implements GeoEntity {
     public void registerControllers(AnimatableManager.ControllerRegistrar c) {
         AnimationController<CinderSovereign> main = new AnimationController<>(this, "main", 6,
                 s -> s.setAndContinue(s.isMoving() && !isDeadOrDying() ? WALK : IDLE));
-        for (String m : MOVES) main.triggerableAnim(m, RawAnimation.begin().thenPlay(A + m));
+        for (String m : MOVES) main.triggerableAnim(m, m.equals("death") ? RawAnimation.begin().thenPlayAndHold(A + m) : RawAnimation.begin().thenPlay(A + m));
         c.add(main);
     }
 
