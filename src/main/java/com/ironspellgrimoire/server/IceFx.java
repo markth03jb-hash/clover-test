@@ -26,16 +26,17 @@ import net.minecraft.world.phys.Vec3;
  * freezes white, nothing costs you health, and everything hits far harder (x1.6) and freezes what it touches (slowed;
  * encased foes can't move at all until the ice shatters - for a second, big hit).
  *
- *  1 Crimson Edge     -> Frost Crescent:   a crescent of cut ice flies 16 blocks, freezing the ground it passes
- *  2 Hemorrhage       -> Rime Spear:       a lance of ice encases the foe you aim at; the ice shatters for a heavy hit
- *  3 Sanguine Volley  -> Glacial Volley:   a fan of thirteen ice lances
- *  4 Transfusion      -> Frostbind:        a beam of cold binds the foe you aim at, freezing it more and more, then encases it
- *  5 Blood Pact       -> Winter's Pact:    six shards of ice circle you for 10 s, cutting anything close; +6 armour
- *  6 Red Tide         -> White Avalanche:  a wall of ice bursts up and races forward, throwing foes
- *  7 Thorned Veins    -> Glacier Spires:   three ranks of great spires burst out of a frozen field ahead of you
- *  8 Crimson Bulwark  -> Frozen Bastion:   a dome of ice (a big shield); when it breaks it explodes outward
- *  9 Exsanguinate     -> Absolute Zero:    frost spreads 10 blocks round you, everything in it is encased, then all of it shatters
- * 10 Scarlet Moon     -> Moonfall:         a comet of ice falls where you aim - a crater, a crown of spires, everything frozen
+ *  1 Crimson Edge     -> Frost Step:      break into ice and re-form 9 blocks ahead, cutting through all between; a statue shatters behind
+ *  2 Hemorrhage       -> Icicle Rain:     fourteen great icicles fall on where you aim
+ *  3 Sanguine Volley  -> Frost Sentries:  three crystals hang round you for 8 s, shooting the nearest foe
+ *  4 Transfusion      -> Glacier Prison:  a ring of ice pillars holds the foe you aim at (and its neighbours), then crushes in
+ *  5 Blood Pact       -> Snow Veil:       become a whirl of snow for 3 s: untouchable, faster, a blizzard round you
+ *  6 Red Tide         -> Frost Nova:      leap on a column of ice and slam down - a ring of frost and spires flings foes
+ *  7 Thorned Veins    -> Ice Serpent:     a serpent of ice burrows through the ground, hunting and biting
+ *  8 Crimson Bulwark  -> Glacier Wall:    a wall of ice they can't pass; it explodes outward when it ends
+ *  9 Exsanguinate     -> Absolute Zero:   frost spreads 10 blocks round you, everything in it is encased, then it all shatters
+ * 10 Scarlet Moon     -> Moonfall:        a comet of ice falls where you aim - a crater, a crown of spires, everything frozen
+ * Every ice hit chills; the next ice hit on a chilled foe Shatters (+25%).
  */
 @net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "iron_spell_grimoire")
 public final class IceFx {
@@ -200,228 +201,320 @@ public final class IceFx {
         e.setAmount(e.getAmount() * 1.15f);
     }
 
-    // ================================================================== 1. Frost Crescent
-    public static void frostCrescent(ServerPlayer p, float power) {
-        ServerLevel sl = p.serverLevel();
-        float pow = pw(p, power) * 1.2f;
-        Vec3 d = flatLook(p), c = p.position().add(0, 1.1, 0).add(d.scale(0.8));
-        FxPacket cr = fx(2, c, 14);
-        cr.d = d; cr.u = new Vec3(0, 1, 0); cr.r = 2.4f; cr.a0 = 16; cr.speed = 10;
-        send(sl, cr);
-        Set<UUID> struck = new HashSet<>();
-        for (int k = 0; k <= 10; k++) {
-            final double kk = k / 10.0;
-            AstaFx.later(k, () -> {
-                if (!alive(p)) return;
-                Vec3 at = c.add(d.scale(16 * kk * (2 - kk)));
-                for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(2.6, 1.6, 2.6))) {
-                    if (!struck.add(e.getUUID())) continue;
-                    hit(p, e, pow, "frost_crescent");
-                    shards(sl, mid(e), d.scale(0.1), 0.1f, 8, 0.07f);
-                }
-            });
-        }
-        says(p, "Frost Crescent");
-        sound(sl, c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.0f, 1.4f);
-        coldSound(sl, c, 1.4f);
-    }
-
-    // ================================================================== 2. Rime Spear
-    public static void rimeSpear(ServerPlayer p, float power) {
-        ServerLevel sl = p.serverLevel();
-        LivingEntity t = aimed(p, 28, 14);
-        if (t == null) { p.displayClientMessage(Component.literal("No one to freeze.").withStyle(ChatFormatting.GRAY), true); return; }
-        float pow = pw(p, power);
-        Vec3 from = p.getEyePosition().subtract(0, 0.2, 0);
-        int flight = Math.max(2, (int) (from.distanceTo(mid(t)) / 3.5));
-        FxPacket l = fx(3, from, flight + 2);
-        l.u = mid(t); l.r = 1.6f; l.speed = flight;
-        send(sl, l);
-        AstaFx.later(flight, () -> {
-            if (!t.isAlive() || !alive(p)) return;
-            hit(p, t, pow * 0.8f, "rime_spear");
-            encase(p, t, 50, pow * 1.6f, "rime_spear");
-            coldSound(sl, t.position(), 0.8f);
-        });
-        says(p, "Rime Spear");
-        sound(sl, from, SoundEvents.TRIDENT_THROW, 1.0f, 1.3f);
-    }
-
-    // ================================================================== 3. Glacial Volley
-    public static void glacialVolley(ServerPlayer p, float power) {
-        ServerLevel sl = p.serverLevel();
-        float pow = pw(p, power) * 0.45f;
-        Vec3 eye = p.getEyePosition().subtract(0, 0.2, 0), look = p.getLookAngle();
-        int n = 13;
-        for (int i = 0; i < n; i++) {
-            Vec3 d = rotY(look, (i - (n - 1) / 2.0) * 0.09).normalize();
-            final int delay = i % 3;
-            final boolean[] spent = {false};
-            final int[] id = {0};
-            AstaFx.later(delay, () -> {
-                if (!alive(p)) return;
-                FxPacket l = fx(3, eye, 10);
-                l.u = eye.add(d.scale(24)); l.r = 1.1f; l.speed = 8;
-                id[0] = send(sl, l);
-            });
-            for (int k = 0; k < 8; k++) {
-                final int kk = k;
-                AstaFx.later(k + delay, () -> {
-                    if (spent[0] || !alive(p)) return;
-                    Vec3 a0 = eye.add(d.scale(3 * kk)), a1 = eye.add(d.scale(3 * (kk + 1)));
-                    for (LivingEntity e : Kit.along(sl, p, a0, a1, 0.7)) {
-                        hit(p, e, pow, "glacial_volley");
-                        if (id[0] != 0) end(sl, mid(e), id[0]);
-                        spent[0] = true;
-                        break;
-                    }
-                });
-            }
-        }
-        says(p, "Glacial Volley");
-        coldSound(sl, eye, 1.6f);
-        sound(sl, eye, SoundEvents.TRIDENT_THROW, 1.0f, 1.7f);
-    }
-
-    // ================================================================== 4. Frostbind
-    public static void frostbind(ServerPlayer p, float power) {
-        ServerLevel sl = p.serverLevel();
-        LivingEntity t = aimed(p, 18, 16);
-        if (t == null) { p.displayClientMessage(Component.literal("No one to bind.").withStyle(ChatFormatting.GRAY), true); return; }
-        float pow = pw(p, power);
-        FxPacket th = fx(6, p.position(), 50);
-        th.v = new Vec3(p.getId(), t.getId(), 0);
-        send(sl, th);
-        for (int k = 10; k <= 40; k += 10) {
-            final int kk = k;
-            AstaFx.later(k, () -> {
-                if (!alive(p) || !t.isAlive() || t.distanceTo(p) > 22) return;
-                hit(p, t, pow * 0.3f, "frostbind");
-                TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, TimedModifiers.FROST_SLOW, "Frozen", -0.2 - kk * 0.015, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
-            });
-        }
-        AstaFx.later(48, () -> {
-            if (!alive(p) || !t.isAlive()) return;
-            encase(p, t, 30, pow * 0.9f, "frostbind");
-        });
-        says(p, "Frostbind");
-        coldSound(sl, p.position(), 0.7f);
-    }
-
-    // ================================================================== 5. Winter's Pact
-    public static void wintersPact(ServerPlayer p, float power) {
-        ServerLevel sl = p.serverLevel();
-        float pow = pw(p, power == 0 ? 8f : power) * 0.25f;
-        FxPacket o = fx(7, p.position(), 200);
-        o.v = new Vec3(p.getId(), 0, 0); o.r = 1.7f; o.sweep = 6;
-        send(sl, o);
-        TimedModifiers.apply(p, Attributes.ARMOR, TimedModifiers.WINTER_ARMOR, "Winter's Pact", 6, AttributeModifier.Operation.ADDITION, 200);
-        Map<UUID, Long> last = new HashMap<>();
-        for (int k = 5; k <= 200; k += 5) {
-            AstaFx.later(k, () -> {
-                if (!alive(p)) return;
-                Vec3 c = p.position().add(0, 1, 0);
-                long now = sl.getGameTime();
-                for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(2.4))) {
-                    if (now - last.getOrDefault(e.getUUID(), -99L) < 10) continue;
-                    last.put(e.getUUID(), now);
-                    hit(p, e, pow, "winters_pact");
-                    shards(sl, mid(e), Vec3.ZERO, 0.08f, 5, 0.06f);
-                }
-            });
-        }
-        says(p, "Winter's Pact");
-        coldSound(sl, p.position(), 1.0f);
-        sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_DIAMOND, 1.0f, 0.8f);
-    }
-
-    // ================================================================== 6. White Avalanche
-    public static void whiteAvalanche(ServerPlayer p, float power) {
-        ServerLevel sl = p.serverLevel();
-        float pow = pw(p, power) * 1.3f;
-        Vec3 d = flatLook(p), start = p.position();
-        FxPacket g = fx(9, ZenonAI.ground(sl, start.add(d.scale(1.2))), 15);
-        g.d = d; g.r = 3f; g.r2 = 3.2f; g.speed = 1.1f;
-        send(sl, g);
-        Set<UUID> struck = new HashSet<>();
-        for (int k = 0; k < 13; k++) {
-            final int kk = k;
-            AstaFx.later(k, () -> {
-                if (!alive(p)) return;
-                Vec3 at = ZenonAI.ground(sl, start.add(d.scale(1.2 + kk * 1.1)));
-                for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(3.2, 2.5, 1.6))) {
-                    if (!struck.add(e.getUUID())) continue;
-                    hit(p, e, pow, "white_avalanche");
-                    e.setDeltaMovement(d.scale(1.1).add(0, 0.7, 0));
-                    e.hurtMarked = true;
-                }
-                if (kk % 3 == 0) BloodFx.play(sl, at, "ice_shatter", 1.0f, 0.5f + kk * 0.04f);
-            });
-        }
-        says(p, "White Avalanche");
-        coldSound(sl, start, 0.6f);
-    }
-
-    // ================================================================== 7. Glacier Spires
-    public static void glacierSpires(ServerPlayer p, float power) {
+    // ================================================================== 1. Frost Step
+    /**
+     * You break into ice and re-form up to 9 blocks ahead: an ice statue of you stays where you stood and shatters,
+     * a line of spires bursts up along the way, and everything you passed through is cut and chilled.
+     */
+    public static void frostStep(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         float pow = pw(p, power) * 1.1f;
-        Vec3 d = flatLook(p), rt = rightOf(d);
-        Vec3 start = p.position();
-        frost(sl, ZenonAI.ground(sl, start.add(d.scale(6))), 7f, 8, 70);
+        Vec3 d = flatLook(p), from = p.position();
+        Vec3 eye = from.add(0, 1.0, 0);
+        net.minecraft.world.phys.HitResult hr = sl.clip(new net.minecraft.world.level.ClipContext(eye, eye.add(d.scale(9)),
+                net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, p));
+        double dist = hr.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? 9 : Math.max(0, hr.getLocation().distanceTo(eye) - 0.8);
+        Vec3 to = ZenonAI.ground(sl, from.add(d.scale(dist)));
+        if (Math.abs(to.y - from.y) > 3) to = from.add(d.scale(dist));
+        FxPacket st = fx(21, from, 26);   // the statue you leave behind
+        st.d = d; st.v = new Vec3(p.getId(), 0, 0);
+        send(sl, st);
+        p.teleportTo(to.x, to.y, to.z);
+        p.fallDistance = 0;
         Set<UUID> struck = new HashSet<>();
-        for (int rank = 0; rank < 3; rank++) {
-            final int rk = rank;
-            AstaFx.later(3 + rank * 4, () -> {
-                if (!alive(p)) return;
-                ThreadLocalRandom r = ThreadLocalRandom.current();
-                double dist = 3.5 + rk * 3.2;
-                int count = 4 + rk * 2;
-                for (int i = 0; i < count; i++) {
-                    double s = count == 1 ? 0 : (double) i / (count - 1) * 2 - 1;
-                    Vec3 b = ZenonAI.ground(sl, start.add(d.scale(dist + r.nextDouble(-0.6, 0.6))).add(rt.scale(s * (1.6 + rk * 1.4))));
-                    Vec3 dir = new Vec3(r.nextDouble(-0.25, 0.25), 1, r.nextDouble(-0.25, 0.25)).add(d.scale(0.25)).add(rt.scale(s * 0.3)).normalize();
-                    spire(sl, b.subtract(0, 0.3, 0), dir, 2.6f + rk * 0.9f + r.nextFloat() * 1.2f, 0.32f + rk * 0.06f, 36 + r.nextInt(10), 3);
-                    for (LivingEntity e : enemies(sl, p, new AABB(b, b).inflate(1.4, 3, 1.4))) {
-                        if (!struck.add(e.getUUID())) continue;
-                        hit(p, e, pow, "glacier_spires");
-                        e.setDeltaMovement(e.getDeltaMovement().add(0, 0.9, 0));
-                        e.hurtMarked = true;
-                    }
-                }
-                BloodFx.play(sl, start.add(d.scale(dist)), "ice_shatter", 1.3f, 0.6f + rk * 0.15f);
-                coldSound(sl, start.add(d.scale(dist)), 0.7f + rk * 0.1f);
-            });
+        for (int i = 1; i <= (int) dist; i++) {
+            Vec3 at = ZenonAI.ground(sl, from.add(d.scale(i)));
+            final int ii = i;
+            AstaFx.later(i / 2, () -> spire(sl, at.subtract(0, 0.2, 0), new Vec3((ThreadLocalRandom.current().nextDouble() - 0.5) * 0.5, 1, 0).add(d.scale(-0.3)).normalize(),
+                    0.7f + ThreadLocalRandom.current().nextFloat() * 0.8f + (ii % 3 == 0 ? 0.6f : 0), 0.14f, 30, 2));
+            for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(1.3, 2, 1.3)))
+                if (struck.add(e.getUUID())) hit(p, e, pow, "frost_step");
         }
-        says(p, "Glacier Spires");
+        AstaFx.later(20, () -> BloodFx.play(sl, from, "ice_shatter", 1.0f, 1.1f));
+        says(p, "Frost Step");
+        BloodFx.play(sl, from, "freeze", 1.0f, 1.5f);
+        BloodFx.play(sl, to, "ice_crack", 1.0f, 1.3f);
     }
 
-    // ================================================================== 8. Frozen Bastion
-    public static void frozenBastion(ServerPlayer p, float power) {
+    // ================================================================== 2. Icicle Rain
+    /** Great icicles fall out of a clear sky onto where you aim - fourteen of them in a second and a half. */
+    public static void icicleRain(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        float pow = pw(p, power == 0 ? 8f : power);
-        p.setAbsorptionAmount(Math.max(p.getAbsorptionAmount(), 12f + power * 0.6f));
-        FxPacket dm = fx(8, p.position(), 200);
-        dm.v = new Vec3(p.getId(), 0, 0); dm.r = 2.2f;
-        final int dome = send(sl, dm);
-        frost(sl, ZenonAI.ground(sl, p.position()), 3.2f, 6, 200);
-        p.getPersistentData().remove("isg_bastion_broke");
-        for (int k = 5; k < 200; k += 5) {
-            AstaFx.later(k, () -> {
-                if (!alive(p) || p.getAbsorptionAmount() > 0.5f || p.getPersistentData().getBoolean("isg_bastion_broke")) return;
-                p.getPersistentData().putBoolean("isg_bastion_broke", true);
-                Vec3 at = p.position().add(0, 1, 0);
-                end(sl, at, dome);
-                for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(5))) {
-                    hit(p, e, pow * 0.8f, "frozen_bastion");
-                    Vec3 away = flat(e.position().subtract(at));
-                    if (away.lengthSqr() > 1e-4) { e.setDeltaMovement(away.normalize().scale(1.0).add(0, 0.4, 0)); e.hurtMarked = true; }
-                }
-                BloodFx.play(sl, at, "ice_shatter", 1.4f, 0.5f);
+        float pow = pw(p, power) * 0.5f;
+        Vec3 eye = p.getEyePosition(), look = p.getLookAngle();
+        LivingEntity aim = aimed(p, 32, 12);
+        Vec3 at;
+        if (aim != null) at = aim.position();
+        else {
+            net.minecraft.world.phys.HitResult hr = sl.clip(new net.minecraft.world.level.ClipContext(eye, eye.add(look.scale(28)),
+                    net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, p));
+            at = ZenonAI.ground(sl, hr.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? eye.add(look.scale(14)) : hr.getLocation());
+        }
+        final Vec3 c = ZenonAI.ground(sl, at);
+        FxPacket mark = fx(20, c, 34);   // a ring of cold on the ground where it will fall
+        mark.r = 4f; mark.sweep = 6;
+        send(sl, mark);
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        for (int i = 0; i < 14; i++) {
+            double an = r.nextDouble() * Math.PI * 2, rr = Math.sqrt(r.nextDouble()) * 3.8;
+            Vec3 land = ZenonAI.ground(sl, c.add(Math.cos(an) * rr, 1, Math.sin(an) * rr));
+            Vec3 sky = land.add(r.nextDouble(-1.5, 1.5), 14 + r.nextDouble(4), r.nextDouble(-1.5, 1.5));
+            int delay = 4 + i * 2, fall = 7;
+            AstaFx.later(delay, () -> {
+                if (!alive(p)) return;
+                FxPacket ic = fx(3, sky, fall + 2);
+                ic.u = land; ic.r = 1.6f + r.nextFloat() * 0.8f; ic.speed = fall;
+                send(sl, ic);
+            });
+            AstaFx.later(delay + fall, () -> {
+                if (!alive(p)) return;
+                spire(sl, land.subtract(0, 0.6, 0), new Vec3(r.nextDouble(-0.3, 0.3), 1, r.nextDouble(-0.3, 0.3)).normalize(), 0.9f + r.nextFloat() * 0.5f, 0.16f, 40, 1);   // it stands in the ground where it struck
+                for (LivingEntity e : enemies(sl, p, new AABB(land, land).inflate(1.5, 2.5, 1.5))) hit(p, e, pow, "icicle_rain");
+                if (r.nextInt(3) == 0) BloodFx.play(sl, land, "ice_crack", 0.8f, 1.0f + r.nextFloat() * 0.4f);
             });
         }
-        says(p, "Frozen Bastion");
-        coldSound(sl, p.position(), 0.8f);
+        says(p, "Icicle Rain");
+        BloodFx.play(sl, c, "freeze", 1.2f, 0.7f);
+    }
+
+    // ================================================================== 3. Frost Sentries
+    /** Three crystals of ice rise and hang round you for 8 s, each loosing a shard at the nearest foe every second. */
+    public static void frostSentries(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        float pow = pw(p, power) * 0.4f;
+        Vec3 base = p.position();
+        Vec3 d = flatLook(p), rt = rightOf(d);
+        Vec3[] spots = {base.add(d.scale(1.5)).add(rt.scale(-2)).add(0, 2.2, 0), base.add(d.scale(-1.6)).add(0, 2.8, 0), base.add(d.scale(1.5)).add(rt.scale(2)).add(0, 2.2, 0)};
+        for (int s = 0; s < 3; s++) {
+            Vec3 at = spots[s];
+            FxPacket se = fx(14, at, 164);
+            se.r = 0.9f;
+            send(sl, se);
+            for (int k = 10 + s * 4; k < 160; k += 20) {
+                AstaFx.later(k, () -> {
+                    if (!alive(p)) return;
+                    LivingEntity t = null;
+                    double best = 16 * 16;
+                    for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(16))) { double dd = e.distanceToSqr(at); if (dd < best) { best = dd; t = e; } }
+                    if (t == null) return;
+                    final LivingEntity tt = t;
+                    int flight = Math.max(2, (int) (at.distanceTo(mid(tt)) / 4.5));
+                    FxPacket l = fx(3, at, flight + 2);
+                    l.u = mid(tt); l.r = 0.9f; l.speed = flight;
+                    send(sl, l);
+                    AstaFx.later(flight, () -> { if (tt.isAlive() && alive(p)) hit(p, tt, pow, "frost_sentries"); });
+                    BloodFx.play(sl, at, "ice_crack", 0.5f, 1.8f);
+                });
+            }
+            AstaFx.later(162, () -> shards(sl, at, Vec3.ZERO, 0.15f, 14, 0.09f));
+        }
+        says(p, "Frost Sentries");
+        BloodFx.play(sl, base, "freeze", 1.0f, 1.2f);
+    }
+
+    // ================================================================== 4. Glacier Prison
+    /** Pillars of ice burst up in a ring round the foe you aim at, holding it and everything beside it - then crush inward. */
+    public static void glacierPrison(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        LivingEntity t = aimed(p, 22, 16);
+        if (t == null) { p.displayClientMessage(Component.literal("No one to imprison.").withStyle(ChatFormatting.GRAY), true); return; }
+        float pow = pw(p, power);
+        Vec3 c = ZenonAI.ground(sl, t.position());
+        FxPacket pr = fx(15, c, 56);
+        pr.r = 2.6f; pr.r2 = 4.2f;
+        send(sl, pr);
+        List<LivingEntity> held = enemies(sl, p, new AABB(c, c).inflate(2.8, 3, 2.8));
+        for (LivingEntity e : held) {
+            if (boss(e)) { CRACKED.put(e.getUUID(), sl.getGameTime() + 100); continue; }
+            TimedModifiers.apply(e, Attributes.MOVEMENT_SPEED, TimedModifiers.FROST_ROOT, "Imprisoned in ice", -1.0, AttributeModifier.Operation.MULTIPLY_TOTAL, 50);
+            e.setDeltaMovement(Vec3.ZERO); e.hurtMarked = true;
+        }
+        for (int k = 10; k <= 40; k += 15) AstaFx.later(k, () -> { for (LivingEntity e : held) if (e.isAlive() && alive(p)) hit(p, e, pow * 0.25f, "glacier_prison"); });
+        AstaFx.later(50, () -> {   // the walls crush in
+            if (!alive(p)) return;
+            for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(3, 3, 3))) hit(p, e, pow * 1.3f, "glacier_prison");
+            BloodFx.play(sl, c, "ice_shatter", 1.5f, 0.6f);
+            FxSend.shake(sl, c, 0.4f, 6, 14);
+        });
+        says(p, "Glacier Prison");
+        BloodFx.play(sl, c, "ice_crack", 1.4f, 0.6f);
+    }
+
+    // ================================================================== 5. Snow Veil
+    /**
+     * You come apart into a whirl of snow for 3 s: blows pass through you, you move half again as fast, and the
+     * blizzard you've become cuts everything within 3 blocks. You re-form in a burst of frost.
+     */
+    public static void snowVeil(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        float pow = pw(p, power == 0 ? 8f : power) * 0.2f;
+        FxPacket v = fx(18, p.position(), 62);
+        v.v = new Vec3(p.getId(), 0, 0);
+        com.ironspellgrimoire.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), v);
+        VEIL.put(p.getUUID(), sl.getGameTime() + 60);
+        TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, TimedModifiers.WINTER_ARMOR, "Snow Veil", 0.5, AttributeModifier.Operation.MULTIPLY_BASE, 60);
+        for (int k = 5; k <= 60; k += 5) {
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                for (LivingEntity e : enemies(sl, p, p.getBoundingBox().inflate(3))) hit(p, e, pow, "snow_veil");
+            });
+        }
+        AstaFx.later(60, () -> {
+            if (!alive(p)) return;
+            frost(sl, ZenonAI.ground(sl, p.position()), 3.5f, 4, 40);
+            shards(sl, p.position().add(0, 1, 0), new Vec3(0, 0.15, 0), 0.25f, 18, 0.08f);
+            BloodFx.play(sl, p.position(), "ice_crack", 1.0f, 1.2f);
+        });
+        says(p, "Snow Veil");
+        BloodFx.play(sl, p.position(), "freeze", 1.4f, 0.9f);
+    }
+
+    private static final Map<UUID, Long> VEIL = new HashMap<>();
+
+    /** Under the Snow Veil blows pass through you. */
+    static boolean veiled(ServerPlayer p) { return VEIL.getOrDefault(p.getUUID(), 0L) > p.serverLevel().getGameTime(); }
+
+    // ================================================================== 6. Frost Nova
+    /** You leap up on a column of ice and come down hard: a ring of frost and spires bursts out 7 blocks and flings foes. */
+    public static void frostNova(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        float pow = pw(p, power) * 1.4f;
+        Vec3 start = p.position();
+        spire(sl, start.subtract(0, 0.5, 0), new Vec3(0, 1, 0), 2.6f, 0.45f, 18, 2);
+        p.setDeltaMovement(p.getDeltaMovement().x * 0.3, 1.05, p.getDeltaMovement().z * 0.3);
+        p.hurtMarked = true;
+        final boolean[] done = {false};
+        for (int k = 6; k <= 44; k++) {
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (done[0] || !alive(p)) return;
+                if (kk == 10) { p.setDeltaMovement(p.getDeltaMovement().x, -1.6, p.getDeltaMovement().z); p.hurtMarked = true; }   // driven down
+                if (!p.onGround() && kk < 44) return;
+                done[0] = true;
+                p.fallDistance = 0;
+                Vec3 c = ZenonAI.ground(sl, p.position());
+                FxPacket w = fx(20, c, 22);   // the shockwave of frost
+                w.r = 7f; w.sweep = 0; w.a0 = 1;
+                send(sl, w);
+                frost(sl, c, 6f, 6, 40);
+                for (int i = 0; i < 12; i++) {
+                    double an = i * Math.PI * 2 / 12;
+                    Vec3 o = new Vec3(Math.cos(an), 0, Math.sin(an));
+                    final Vec3 at = ZenonAI.ground(sl, c.add(o.scale(2.5 + (i % 2) * 2)));
+                    final int ii = i;
+                    AstaFx.later(1 + ii % 3, () -> spire(sl, at.subtract(0, 0.3, 0), o.scale(0.6).add(0, 1, 0).normalize(), 1.4f + (float) (ii % 3) * 0.5f, 0.24f, 30, 2));
+                }
+                for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(7, 3, 7))) {
+                    if (e.position().distanceTo(c) > 7.2) continue;
+                    hit(p, e, pow, "frost_nova");
+                    Vec3 away = flat(e.position().subtract(c));
+                    e.setDeltaMovement((away.lengthSqr() < 1e-4 ? Vec3.ZERO : away.normalize().scale(0.8)).add(0, 0.8, 0));
+                    e.hurtMarked = true;
+                }
+                FxSend.shake(sl, c, 0.7f, 10, 20);
+                BloodFx.play(sl, c, "ice_shatter", 1.6f, 0.6f);
+                BloodFx.play(sl, c, "ice_crack", 1.4f, 0.5f);
+            });
+        }
+        says(p, "Frost Nova");
+        BloodFx.play(sl, start, "freeze", 1.0f, 1.4f);
+    }
+
+    // ================================================================== 7. Ice Serpent
+    /** A serpent of ice crystals burrows forward through the ground, hunting the nearest foe and biting up out of the frost. */
+    public static void iceSerpent(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        float pow = pw(p, power) * 0.9f;
+        final Vec3[] head = {ZenonAI.ground(sl, p.position().add(flatLook(p).scale(1.5)))};
+        final Vec3[] dir = {flatLook(p)};
+        Set<UUID> bitten = new HashSet<>();
+        for (int k = 1; k <= 36; k++) {
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                LivingEntity t = null;
+                double best = 20 * 20;
+                for (LivingEntity e : enemies(sl, p, new AABB(head[0], head[0]).inflate(20))) {
+                    if (bitten.contains(e.getUUID())) continue;
+                    double dd = e.distanceToSqr(head[0]);
+                    if (dd < best) { best = dd; t = e; }
+                }
+                if (t != null) {   // it turns toward its prey, a little at a time
+                    Vec3 want = flat(t.position().subtract(head[0]));
+                    if (want.lengthSqr() > 1e-4) dir[0] = dir[0].scale(0.6).add(want.normalize().scale(0.4)).normalize();
+                }
+                double wig = Math.sin(kk * 0.8) * 0.35;
+                Vec3 side = new Vec3(-dir[0].z, 0, dir[0].x);
+                head[0] = ZenonAI.ground(sl, head[0].add(dir[0].scale(0.9)).add(side.scale(wig * 0.4)));
+                spire(sl, head[0].subtract(0, 0.25, 0), dir[0].scale(0.7).add(0, 1, 0).normalize(), 0.5f + 0.25f * (kk % 3), 0.13f + (kk % 4 == 0 ? 0.06f : 0), 22, 2);
+                if (kk % 2 == 0) spire(sl, head[0].add(side.scale(0.4)).subtract(0, 0.25, 0), side.add(0, 1.4, 0).normalize(), 0.35f, 0.08f, 18, 2);
+                for (LivingEntity e : enemies(sl, p, new AABB(head[0], head[0]).inflate(1.2, 2, 1.2))) {
+                    if (!bitten.add(e.getUUID())) continue;
+                    hit(p, e, pow, "ice_serpent");   // the bite: jaws of ice snap up round it
+                    spire(sl, e.position().add(dir[0].scale(-0.5)).subtract(0, 0.3, 0), dir[0].add(0, 1.2, 0).normalize(), 2.2f, 0.25f, 26, 2);
+                    spire(sl, e.position().add(dir[0].scale(0.5)).subtract(0, 0.3, 0), dir[0].scale(-1).add(0, 1.2, 0).normalize(), 2.2f, 0.25f, 26, 2);
+                    e.setDeltaMovement(e.getDeltaMovement().add(0, 0.6, 0)); e.hurtMarked = true;
+                    BloodFx.play(sl, e.position(), "ice_shatter", 1.0f, 1.3f);
+                }
+                if (kk % 4 == 0) BloodFx.play(sl, head[0], "ice_crack", 0.6f, 1.5f);
+            });
+        }
+        says(p, "Ice Serpent");
+    }
+
+    // ================================================================== 8. Glacier Wall
+    /**
+     * A wall of ice 7 wide and 4 high bursts up in front of you for 6 s: foes can't come through it (they're thrown
+     * back, chilled), and you take 30% less from the front. When it ends it explodes outward in shards.
+     */
+    public static void glacierWall(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        float pow = pw(p, power == 0 ? 8f : power);
+        Vec3 d = flatLook(p);
+        Vec3 c = ZenonAI.ground(sl, p.position().add(d.scale(2.5)));
+        FxPacket w = fx(17, c, 124);
+        w.d = d; w.r = 3.5f; w.r2 = 4f;
+        send(sl, w);
+        Vec3 side = new Vec3(-d.z, 0, d.x);
+        WALLS.put(p.getUUID(), new Object[]{c, d, sl.getGameTime() + 120});
+        for (int k = 2; k < 120; k += 2) {
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(4, 3, 4))) {
+                    Vec3 rel = e.position().subtract(c);
+                    if (Math.abs(rel.dot(side)) > 3.8 || Math.abs(rel.dot(d)) > 1.0) continue;
+                    double front = Math.signum(rel.dot(d));
+                    e.setDeltaMovement(d.scale((front == 0 ? 1 : front) * 0.7).add(0, 0.2, 0));   // thrown back off the ice
+                    e.hurtMarked = true;
+                    chill(e, 30);
+                }
+            });
+        }
+        AstaFx.later(120, () -> {   // it bursts outward
+            WALLS.remove(p.getUUID());
+            if (!alive(p)) return;
+            for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(5, 3, 5))) {
+                if (e.position().subtract(c).dot(d) < -0.5) continue;
+                hit(p, e, pow * 0.9f, "glacier_wall");
+                e.setDeltaMovement(d.scale(1.0).add(0, 0.4, 0)); e.hurtMarked = true;
+            }
+            BloodFx.play(sl, c, "ice_shatter", 1.6f, 0.7f);
+        });
+        says(p, "Glacier Wall");
+        BloodFx.play(sl, c, "ice_crack", 1.5f, 0.6f);
+    }
+
+    private static final Map<UUID, Object[]> WALLS = new HashMap<>();
+
+    /** Glacier Wall: hits coming from the wall's far side are lessened; Snow Veil: hits pass through. */
+    static float guard(ServerPlayer p, net.minecraft.world.damagesource.DamageSource src, float amt) {
+        if (veiled(p)) return 0f;
+        Object[] w = WALLS.get(p.getUUID());
+        if (w == null || (long) w[2] < p.serverLevel().getGameTime()) return amt;
+        Vec3 from = src.getSourcePosition();
+        if (from == null && src.getEntity() != null) from = src.getEntity().position();
+        if (from == null) return amt;
+        return from.subtract((Vec3) w[0]).dot((Vec3) w[1]) > 0 ? amt * 0.7f : amt;
     }
 
     // ================================================================== 9. Absolute Zero

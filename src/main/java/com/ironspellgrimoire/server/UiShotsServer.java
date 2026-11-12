@@ -66,6 +66,20 @@ public final class UiShotsServer {
             case "moonfall" -> { p.setXRot(20); BloodFx.scarletMoon(p, 10f); }
             case "overflow" -> BloodFx.showGauge(p, 132f);
             case "throne" -> IceFx.iceThrone(p, 10f);
+            case "hemorrhage" -> BloodFx.hemorrhage(p, 10f);
+            case "sanguine_volley" -> BloodFx.sanguineVolley(p, 10f);
+            case "crimson_bulwark" -> BloodFx.crimsonBulwark(p, 10f);
+            case "prison" -> {   // a still zombie straight ahead to hold
+                var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+                var z = net.minecraft.world.entity.EntityType.HUSK.create(p.serverLevel());
+                if (z != null) {
+                    var at = p.position().add(look.scale(6));
+                    z.moveTo(at.x, p.getY(), at.z, 0, 0); z.setNoAi(true);
+                    p.serverLevel().addFreshEntity(z);
+                    p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, z.position().add(0, 1, 0));
+                }
+                BloodFx.transfusion(p, 10f);
+            }
             case "master" -> {   // the equipped Blood Grimoire mastered, with a path or two chosen (the book pictures)
                 ItemStack bk = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
                 if (bk == null) return;

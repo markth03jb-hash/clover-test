@@ -239,7 +239,7 @@ public final class BloodFx {
 
     // ================================================================== 1. Crimson Edge
     public static void crimsonEdge(ServerPlayer p, float power) {
-        if (moon(p)) { IceFx.frostCrescent(p, power); return; }   // under the Scarlet Moon it's ice
+        if (moon(p)) { IceFx.frostStep(p, power); return; }   // under the Scarlet Moon it's ice
         ServerLevel sl = p.serverLevel();
         price(p, 0.02f);
         float pow = pw(p, power);
@@ -267,7 +267,7 @@ public final class BloodFx {
 
     // ================================================================== 2. Hemorrhage
     public static void hemorrhage(ServerPlayer p, float power) {
-        if (moon(p)) { IceFx.rimeSpear(p, power); return; }
+        if (moon(p)) { IceFx.icicleRain(p, power); return; }
         ServerLevel sl = p.serverLevel();
         List<LivingEntity> targets = new ArrayList<>();
         if (path(p, "hemorrhage", 2)) {   // Triple Needle: the three nearest foes in front of you
@@ -315,7 +315,7 @@ public final class BloodFx {
 
     // ================================================================== 3. Sanguine Volley
     public static void sanguineVolley(ServerPlayer p, float power) {
-        if (moon(p)) { IceFx.glacialVolley(p, power); return; }
+        if (moon(p)) { IceFx.frostSentries(p, power); return; }
         ServerLevel sl = p.serverLevel();
         price(p, 0.03f);
         float pow = pw(p, power);
@@ -351,7 +351,7 @@ public final class BloodFx {
 
     // ================================================================== 4. Transfusion
     public static void transfusion(ServerPlayer p, float power) {
-        if (moon(p)) { IceFx.frostbind(p, power); return; }
+        if (moon(p)) { IceFx.glacierPrison(p, power); return; }
         ServerLevel sl = p.serverLevel();
         LivingEntity t = aimed(p, 16, 16);
         if (t == null) { p.displayClientMessage(Component.literal("No one to draw from.").withStyle(ChatFormatting.GRAY), true); return; }
@@ -382,7 +382,7 @@ public final class BloodFx {
 
     // ================================================================== 5. Blood Pact
     public static void bloodPact(ServerPlayer p, float power) {
-        if (moon(p)) { IceFx.wintersPact(p, power); return; }
+        if (moon(p)) { IceFx.snowVeil(p, power); return; }
         ServerLevel sl = p.serverLevel();
         boolean greater = path(p, "blood_pact", 1), twin = path(p, "blood_pact", 2);
         price(p, greater ? 0.3f : 0.2f);
@@ -406,7 +406,7 @@ public final class BloodFx {
 
     // ================================================================== 6. Red Tide
     public static void redTide(ServerPlayer p, float power) {
-        if (moon(p)) { IceFx.whiteAvalanche(p, power); return; }
+        if (moon(p)) { IceFx.frostNova(p, power); return; }
         ServerLevel sl = p.serverLevel();
         price(p, 0.04f);
         float pow = pw(p, power);
@@ -449,7 +449,7 @@ public final class BloodFx {
 
     // ================================================================== 7. Thorned Veins
     public static void thornedVeins(ServerPlayer p, float power) {
-        if (moon(p)) { IceFx.glacierSpires(p, power); return; }
+        if (moon(p)) { IceFx.iceSerpent(p, power); return; }
         ServerLevel sl = p.serverLevel();
         price(p, 0.04f);
         float pow = pw(p, power);
@@ -491,7 +491,7 @@ public final class BloodFx {
 
     // ================================================================== 8. Crimson Bulwark
     public static void crimsonBulwark(ServerPlayer p, float power) {
-        if (moon(p)) { IceFx.frozenBastion(p, power); return; }
+        if (moon(p)) { IceFx.glacierWall(p, power); return; }
         ServerLevel sl = p.serverLevel();
         price(p, 0.06f);
         float shield = (6f + power * 0.5f) * (path(p, "crimson_bulwark", 1) ? 1.5f : 1f);
@@ -693,6 +693,7 @@ public final class BloodFx {
     public static void onHurt(LivingHurtEvent e) {
         if (e.getEntity() instanceof ServerPlayer p) {
             if (Moves.inMode(p, MODE)) e.setAmount(e.getAmount() * (0.85f - tree(p, "moonguard")));
+            if (Moves.inMode(p, MODE)) e.setAmount(IceFx.guard(p, e.getSource(), e.getAmount()));   // Snow Veil, Glacier Wall
             Long shell = THORN_SHELL.get(p.getUUID());
             if (shell != null && shell > p.serverLevel().getGameTime() && e.getSource().getEntity() instanceof LivingEntity a && a != p && p.getAbsorptionAmount() > 0) {
                 a.hurt(p.damageSources().thorns(p), e.getAmount() * 0.2f);

@@ -141,9 +141,14 @@ public final class UiShots {
         steps.add(new Step("blood_moon_front", () -> {}, 30, true));
         steps.add(new Step("blood_moon_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 12, true));
         // under the Moon every spell is ice
-        steps.add(new Step("ice_crescent", () -> { mc.player.setXRot(22); onServer(p -> { p.setXRot(22); UiShotsServer.bloodSpell(p, "crimson_edge"); }); }, 5, true));
-        steps.add(new Step("ice_spires", () -> onServer(p -> UiShotsServer.bloodSpell(p, "thorned_veins")), 14, true));
-        steps.add(new Step("ice_avalanche", () -> onServer(p -> UiShotsServer.bloodSpell(p, "red_tide")), 8, true));
+        steps.add(new Step("ice_step", () -> { mc.player.setXRot(22); onServer(p -> { p.setXRot(22); UiShotsServer.bloodSpell(p, "crimson_edge"); }); }, 6, true));
+        steps.add(new Step("ice_serpent", () -> onServer(p -> UiShotsServer.bloodSpell(p, "thorned_veins")), 16, true));
+        steps.add(new Step("ice_nova", () -> onServer(p -> UiShotsServer.bloodSpell(p, "red_tide")), 22, true));
+        steps.add(new Step("ice_wall", () -> onServer(p -> UiShotsServer.bloodSpell(p, "crimson_bulwark")), 14, true));
+        steps.add(new Step("ice_sentries", () -> onServer(p -> UiShotsServer.bloodSpell(p, "sanguine_volley")), 24, true));
+        steps.add(new Step("ice_veil", () -> onServer(p -> UiShotsServer.bloodSpell(p, "blood_pact")), 12, true));
+        steps.add(new Step("ice_prison", () -> onServer(p -> UiShotsServer.bloodSpell(p, "prison")), 16, true));
+        steps.add(new Step("ice_icicles", () -> onServer(p -> UiShotsServer.bloodSpell(p, "hemorrhage")), 18, true));
         steps.add(new Step("ice_zero", () -> onServer(p -> UiShotsServer.bloodSpell(p, "exsanguinate")), 18, true));
         steps.add(new Step("ice_shatter", () -> {}, 26, true));
         steps.add(new Step("ice_moonfall", () -> onServer(p -> UiShotsServer.bloodSpell(p, "moonfall")), 12, true));
