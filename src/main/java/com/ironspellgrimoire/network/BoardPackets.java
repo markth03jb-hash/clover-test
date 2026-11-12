@@ -53,8 +53,8 @@ public final class BoardPackets {
     public static class Pick {
         public final int kind, index;
         public Pick(int kind, int index) { this.kind = kind; this.index = index; }
-        public static void encode(Pick p, FriendlyByteBuf b) { b.writeVarInt(p.kind); b.writeVarInt(p.index + 1); }
-        public static Pick decode(FriendlyByteBuf b) { return new Pick(b.readVarInt(), b.readVarInt() - 1); }
+        public static void encode(Pick p, FriendlyByteBuf b) { b.writeVarInt(p.kind); b.writeVarInt(p.index + 2); }
+        public static Pick decode(FriendlyByteBuf b) { return new Pick(b.readVarInt(), b.readVarInt() - 2); }
         public static void handle(Pick p, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> { var sp = ctx.get().getSender(); if (sp != null) com.ironspellgrimoire.server.Boards.pick(sp, p.kind, p.index); });
             ctx.get().setPacketHandled(true);

@@ -132,8 +132,19 @@ public final class Boards {
         p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 0.8f, 1.0f);
     }
 
-    /** A note taken (index), or the current one given up (-1). */
+    public static final int REROLL_COST = 2;
+
+    /** A note taken (index), the current one given up (-1), or fresh notes for {@link #REROLL_COST} merit stars (-2). */
     public static void pick(ServerPlayer p, int kind, int index) {
+        if (index == -2) {
+            if (Bounties.stars(p) < REROLL_COST) { p.displayClientMessage(net.minecraft.network.chat.Component.literal("New notes cost " + REROLL_COST + " merit stars.").withStyle(net.minecraft.ChatFormatting.GRAY), true); return; }
+            CompoundTag box = p.getPersistentData().getCompound(KEY[kind]);
+            if (!box.contains("List")) return;
+            Bounties.addStars(p, -REROLL_COST);
+            p.getPersistentData().remove(KEY[kind]);
+            open(p, kind, new BlockPos(box.getInt("BX"), p.getBlockY(), box.getInt("BZ")));
+            return;
+        }
         if (index < 0) {
             if (kind == BOUNTY) Bounties.cancel(p); else Quests.giveUp(p);
             return;
