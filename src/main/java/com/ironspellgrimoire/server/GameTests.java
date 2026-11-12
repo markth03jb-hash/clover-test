@@ -260,6 +260,7 @@ public final class GameTests {
         @Override void start() {
             cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
             before = snapshot(); pe = effects(p); de = effects(dummy);
+            Moves.ends(p, BloodFx.MODE);   // the grimoire's own spell test may have left the Moon up
             BloodFx.setGauge(p, 0);
             BloodFx.scarletMoon(p, 10f);   // not full: must refuse
             if (Moves.inMode(p, BloodFx.MODE)) bad.add("transformed with an empty gauge");
@@ -325,8 +326,11 @@ public final class GameTests {
             CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
             book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
             top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+            Moves.ends(p, BloodFx.MODE);
+            BloodFx.setGauge(p, 0);
             before = snapshot();
         }
+        float last = -1;
         @Override boolean tick(int t) {
             p.setHealth(p.getMaxHealth());
             if (t % 22 == 1) {
@@ -335,9 +339,10 @@ public final class GameTests {
                     String sp = spells[i % spells.length];
                     BloodPaths.choose(p, sp, i < spells.length ? 1 : 2);
                     if (BloodPaths.path(p, sp) != (i < spells.length ? 1 : 2)) bad.add(sp + ": the path didn't take");
+                    if (dummy != null && last > 0) dealt += last - dummy.getHealth();   // what the last cast did, all of it
                     ensureDummy();
                     p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
-                    float hp = dummy.getHealth();
+                    last = dummy.getHealth();
                     try {
                         switch (sp) {
                             case "crimson_edge" -> BloodFx.crimsonEdge(p, 10f);
@@ -351,10 +356,11 @@ public final class GameTests {
                             default -> BloodFx.exsanguinate(p, 10f);
                         }
                     } catch (Throwable x) { bad.add(sp + " (path " + (i < spells.length ? 1 : 2) + ") threw " + x); }
-                    dealt += hp - dummy.getHealth();
                 }
             }
             if (t < spells.length * 2 * 22 + 30) return false;
+            if (dummy != null && last > 0) dealt += last - dummy.getHealth();
+            if (dealt <= 0) bad.add("no path did any damage");
             String ch = changes(before);
             if (!ch.isEmpty()) bad.add("changed the world: " + ch);
             if (BloodFx.gauge(p) <= 0) bad.add("the Blood Gauge never filled");
