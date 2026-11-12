@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import com.ironspellgrimoire.network.AddonNetwork;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -63,10 +66,24 @@ public final class ZenonAI {
         if (b.transforming() > 0) {
             b.setTransforming(b.transforming() - 1);
             b.getNavigation().stop();
-            b.setDeltaMovement(0, Math.min(0, b.getDeltaMovement().y), 0);
-            if (b.transforming() == 0) b.setPose(P_IDLE);
+            int tr = b.transforming();
+            if (b.phase() == 3 && tr > 12) {   // the third form: he rises off the ground while the grave pours into him...
+                b.setNoGravity(true);
+                b.setDeltaMovement(0, tr > 30 ? 0.045 : 0, 0);
+                if (tr % 4 == 0) {
+                    Vec3 c = b.position();
+                    double a = tr * 0.7;
+                    BossFx.trail(sl, Fx.CRIMSON, c.add(Math.cos(a) * 2.2, 0.1, Math.sin(a) * 2.2), c.add(0, 1.2, 0), 0.06f, 8);
+                }
+            } else if (b.phase() == 3 && tr == 12) {   // ...then drops like a stone
+                b.setNoGravity(false);
+                b.setDeltaMovement(0, -1.6, 0);
+                b.hurtMarked = true;
+            } else b.setDeltaMovement(0, Math.min(0, b.getDeltaMovement().y), 0);
+            if (tr == 0) { b.setNoGravity(false); b.setPose(P_IDLE); }
             return;
         }
+        if (b.phase() == 3) aura(b, sl);
         Player t = target(b);
         if (t == null) {
             b.getNavigation().stop();
@@ -170,6 +187,7 @@ public final class ZenonAI {
                 if (dist > 6) pool.add(ZenonAI::spaceFold);
             }
             if (ph == 3) {
+                pool.add(ZenonAI::marrowCrown);
                 pool.add(ZenonAI::grasp);
                 pool.add(ZenonAI::shroudRain);
                 pool.add(ZenonAI::devilPulse);
@@ -875,6 +893,11 @@ public final class ZenonAI {
                 });
             }
             AstaFx.later(60, () -> {
+                for (ServerPlayer o : sl.getEntitiesOfClass(ServerPlayer.class, b.getBoundingBox().inflate(40))) {   // his third form gets its own card
+                    FxPacket k = new FxPacket();
+                    k.shape = BossIntro.SHAPE; k.id = b.getId(); k.sweep = 0; k.life = BossIntro.QUICK + 14; k.h = 0; k.a0 = 2;
+                    AddonNetwork.send(PacketDistributor.PLAYER.with(() -> o), k);
+                }
                 FxSend.impactFrame(sl, c.add(0, 1.5, 0), 5, FxSend.FRAME_ZENON, 34);
                 BossFx.ring(sl, DARK, c.add(0, 0.1, 0), 0.5f, 12f, 0.4f, 18);
                 BossFx.ring(sl, Fx.CRIMSON, c.add(0, 0.12, 0), 0.5f, 9f, 0.15f, 16);
@@ -884,6 +907,74 @@ public final class ZenonAI {
                 sound(sl, c, SoundEvents.ENDER_DRAGON_GROWL, 1.0f, 0.6f);
             });
         }
+    }
+
+    /** His third form's presence: red grave-light drifting up off him, and a dark ring breathing at his feet. */
+    private static void aura(Zenon b, ServerLevel sl) {
+        if (b.tickCount % 8 == 0) {
+            ThreadLocalRandom r = ThreadLocalRandom.current();
+            for (int i = 0; i < 2; i++) {
+                double a = r.nextDouble(Math.PI * 2), d = r.nextDouble(0.3, 0.7);
+                Vec3 p0 = b.position().add(Math.cos(a) * d, r.nextDouble(0.2, 1.6), Math.sin(a) * d);
+                BossFx.trail(sl, i == 0 ? Fx.CRIMSON : DARK, p0, p0.add(0, 0.9 + r.nextDouble(0.6), 0), 0.035f, 10);
+            }
+        }
+        if (b.tickCount % 30 == 0) BossFx.ring(sl, DARK, b.position().add(0, 0.06, 0), 1.4f, 2.0f, 0.04f, 26);
+    }
+
+    /**
+     * Marrow Crown (third form only): eight bone spears rise and turn in a ring above his head, faster and faster - then
+     * he points, and they fall on you one after another, each down its own red line.
+     */
+    static int marrowCrown(Zenon b, ServerLevel sl, Player t) {
+        int T = tel(b, 30);
+        b.setPose(P_RAISE);
+        b.getNavigation().stop();
+        say(b, "Kneel under the crown.");
+        sound(sl, b.position(), SoundEvents.BONE_BLOCK_PLACE, 1.6f, 0.4f);
+        final int N = 8;
+        for (int k = 0; k < T; k += 2) {   // the ring, turning faster as it fills
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (!ok(b)) return;
+                Vec3 c = b.position().add(0, 3.6, 0);
+                double spin = kk * kk * 0.004;
+                int shown = Math.min(N, 1 + kk * N / Math.max(1, T / 2));
+                for (int i = 0; i < shown; i++) {
+                    double a = spin + i * Math.PI * 2 / N;
+                    Vec3 at = c.add(Math.cos(a) * 1.8, Math.sin(kk * 0.2 + i) * 0.15, Math.sin(a) * 1.8);
+                    Vec3 d = new Vec3(Math.cos(a), -0.35, Math.sin(a)).normalize();
+                    BoneFx.bone(sl, BoneFx.SPEAR, at, d, rightOf(flat(d).normalize()), 0.7f, 0.08f, 3, 0, FxPacket.HOLD, 0, Vec3.ZERO, 0);
+                }
+                if (kk % 8 == 0) sound(sl, c, SoundEvents.SKELETON_AMBIENT, 0.8f, 0.5f + kk * 0.02f);
+            });
+        }
+        for (int i = 0; i < N; i++) {   // then down, one by one, each where you're about to be
+            final int ii = i;
+            AstaFx.later(T + i * 5, () -> {
+                if (!ok(b)) return;
+                Player tt = target(b);
+                if (tt == null) return;
+                Vec3 from = b.position().add(Math.cos(ii * Math.PI * 2 / N) * 1.8, 3.6, Math.sin(ii * Math.PI * 2 / N) * 1.8);
+                Vec3 aim = mid(tt).add(tt.getDeltaMovement().multiply(6, 0, 6));
+                Vec3 d = aim.subtract(from).normalize();
+                warnLine(sl, from, from.add(d.scale(18)), 0.05f, 6);
+                AstaFx.later(6, () -> {
+                    if (!b.isAlive()) return;
+                    sound(sl, from, SoundEvents.TRIDENT_THROW, 1.1f, 0.7f + ii * 0.04f);
+                    BoneFx.bone(sl, BoneFx.SPEAR, from, d, rightOf(d), 1.0f, 0.1f, 10, 0, FxPacket.HOLD, 0, d.scale(2.0), 9);
+                    for (int k = 0; k < 9; k++) {
+                        final int kk = k;
+                        AstaFx.later(k, () -> {
+                            if (!b.isAlive()) return;
+                            Vec3 a = from.add(d.scale(2.0 * kk)), c = from.add(d.scale(2.0 * (kk + 1)));
+                            for (Player p : along(b, a, c, 0.9)) if (p.invulnerableTime <= 10) { hurt(b, p, 5f); Fx.spark(sl, BONE, mid(p), 0.6f); }
+                        });
+                    }
+                });
+            });
+        }
+        return T + N * 5 + 14;
     }
 
     // ================================================================== death
