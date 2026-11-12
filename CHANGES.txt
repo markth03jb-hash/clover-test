@@ -1,6 +1,17 @@
-Iron Spell Grimoire v1.96.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.97.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.97.0
+- Blood Grimoire, reworked: every spell drawn as real liquid blood (streams, drops that splash into pools, thorns that
+  melt, a curling wave, splash crowns, mist). Bleed stacks (Exsanguinate drinks them); pools you can walk through to drink.
+- Blood Gauge (a vial beside the hotbar): fills as you pay and spill blood, overflows up to +50%. Full: Scarlet Moon.
+- Scarlet Moon (1 min, longer with overflow): a white aura, and every spell turns to ice - ten ice moves, no health
+  cost, much stronger; frozen ground; bosses get Cracked Armour. Cast again for Moonfall. 20 transformations awaken it
+  (frost crown, wings, the Ice Throne). Every menu (wheel, spell bar, mana bar, book, mode timer) turns to ice.
+- Evolution paths at mastery 5 (two per spell), its own Mana Tree and crown, an Ice view in the book.
+- New self-made sounds: ice crack, ice shatter, heartbeat, freezing hiss, blood splash.
+- The Blood Grimoire's wheel and mana bar have their own colours (they borrowed Light's).
 
 NEW IN 1.96.0
 - New boss: Dante (spawn egg). Body magic mends him from his mana - drain it (spells drain it faster) and he's exhausted:
