@@ -36,6 +36,8 @@ public class BoardScreen extends Screen {
     private int noteY() { return y0() + 32; }
     private static boolean in(double mx, double my, int x, int y, int w, int h) { return mx >= x && mx < x + w && my >= y && my < y + h; }
     private boolean history;
+    /** Shows the record instead of the notes (the automatic screenshot run, UiShots). */
+    public void showRecord(boolean on) { history = on; }
     private int[] histBtn() { return new int[]{x0() + 10, y0() + H - 19, 70, 14}; }
     private int[] reroll() { return new int[]{x0() + W - 112, y0() + H - 19, 102, 14}; }
     private int[] button(int i) { return data.active.isEmpty() ? new int[]{noteX(i) + 18, noteY() + NH - 22, NW - 36, 15} : new int[]{x0() + W / 2 - 45, noteY() + NH - 22, 90, 15}; }

@@ -71,6 +71,17 @@ public class GrimoireBookScreen extends Screen {
         if (com.ironspellgrimoire.server.Awakening.awakened(stack)) { ids.add(com.ironspellgrimoire.server.Awakening.spellFor(stack)); unlockAt.add(6); }   // the page it wrote when it awakened
     }
 
+    /** Turns straight to a part of the book (the automatic screenshot run, UiShots): spells:N, combos, path, upgrades, tree, memories:N. */
+    public void showPart(String part) {
+        memories = treeMode = pathMode = upgMode = false; flipAt = -100;
+        if (part.startsWith("spells:")) page = Math.min(pages() - 1, Integer.parseInt(part.substring(7)));
+        else if (part.equals("combos")) page = ids.size();
+        else if (part.equals("path")) pathMode = true;
+        else if (part.equals("upgrades")) upgMode = true;
+        else if (part.equals("tree")) treeMode = true;
+        else if (part.startsWith("memories:")) { memories = true; mpage = Math.min(MSPREADS - 1, Integer.parseInt(part.substring(9))); }
+    }
+
     public static void open(ItemStack stack) {
         Minecraft mc = Minecraft.getInstance();
         if (GrimoireMastery.bookOf(stack) == null) return;
@@ -193,7 +204,8 @@ public class GrimoireBookScreen extends Screen {
         g.fill(x0 + BW + 5, y0 + 24, x0 + BW + 54, y0 + 40, 0xFF000000 | dark(c[2], 0.35F));
         g.fill(x0 + BW + 6, y0 + 25, x0 + BW + 53, y0 + 39, 0xFF000000 | (tabHot || (onCombos() && !memories && !treeMode && !pathMode && !upgMode) ? c[2] : c[4]));
         String tab = onCombos() && !memories && !treeMode && !pathMode && !upgMode ? "Spells" : "Combos";
-        g.drawString(f, tab, x0 + BW + 30 - f.width(tab) / 2, y0 + 29, tabHot ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
+        boolean tabOn = tabHot || (onCombos() && !memories && !treeMode && !pathMode && !upgMode);
+        g.drawString(f, tab, x0 + BW + 30 - f.width(tab) / 2, y0 + 29, tabOn ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
         // the second ribbon: Memories
         boolean memHot = inside(mx, my, x0 + BW + 7, y0 + 46, 54, 16);
         g.fill(x0 + BW + 5, y0 + 46, x0 + BW + 62, y0 + 62, 0xFF000000 | dark(c[2], 0.35F));

@@ -116,8 +116,9 @@ public class LibraryScreen extends Screen {
             }
         }
         if (entries.isEmpty()) {
-            String e = "The shelves are empty. No grimoire has chosen anyone yet.";
-            g.drawString(font, e, cx + (CASE_W - font.width(e)) / 2, cy + ch / 2 - 4, 0xFFB09060, false);
+            var lines = font.split(Component.literal("The shelves are empty. No grimoire has chosen anyone yet."), CASE_W - 24);
+            int ly = cy + SHELF_H + (SHELF_H - lines.size() * 10) / 2;   // in the middle of the second shelf, clear of the planks
+            for (var l : lines) { g.drawString(font, l, cx + (CASE_W - font.width(l)) / 2, ly, 0xFFB09060, false); ly += 10; }
         }
         // page turns
         int by = y0 + H - 16;

@@ -16,7 +16,9 @@ import java.util.List;
  * panel with a gilded frame and drifting motes, rows you click to open a gate, and no vanilla buttons anywhere.
  */
 public class WaypointScreen extends Screen {
-    private static final int ROWS = 7, ROW_H = 26, W = 270;
+    private static final int MAX_ROWS = 7, ROW_H = 26, W = 270;
+    /** As many rows as fit the screen (7 at most, 3 at least). */
+    private int rows() { return Math.max(3, Math.min(MAX_ROWS, (height - 118) / ROW_H)); }
     private static final int GOLD = 0xFFE7C766, VIOLET = 0xFF6A48D8, LILAC = 0xFFC8B4FF, INK = 0xF0090620, TEXT = 0xFFE6DAFF, DIM = 0xFF9C78FF;
     private List<WaypointPackets.Entry> list;
     private int scroll = 0;
@@ -32,14 +34,14 @@ public class WaypointScreen extends Screen {
     /** Opens the menu, or refreshes it if it is already open. */
     public static void show(List<WaypointPackets.Entry> list) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.screen instanceof WaypointScreen s) { s.list = list; s.scroll = Math.max(0, Math.min(s.scroll, Math.max(0, list.size() - ROWS))); }
+        if (mc.screen instanceof WaypointScreen s) { s.list = list; s.scroll = Math.max(0, Math.min(s.scroll, Math.max(0, list.size() - s.rows()))); }
         else mc.setScreen(new WaypointScreen(list));
     }
 
     private int left() { return (width - W) / 2; }
-    private int top() { return height / 2 - 110; }
+    private int top() { return Math.max(4, (height - (34 + rows() * ROW_H + 64)) / 2); }
     private int listTop() { return top() + 34; }
-    private int saveY() { return listTop() + ROWS * ROW_H + 10; }
+    private int saveY() { return listTop() + rows() * ROW_H + 10; }
 
     @Override protected void init() {
         int by = saveY();
@@ -61,7 +63,7 @@ public class WaypointScreen extends Screen {
     @Override public boolean mouseClicked(double mx, double my, int btn) {
         if (btn == 0) {
             int l = left(), lt = listTop();
-            for (int i = 0; i < ROWS; i++) {
+            for (int i = 0; i < rows(); i++) {
                 int idx = scroll + i;
                 if (idx >= list.size()) break;
                 int y = lt + i * ROW_H;
@@ -75,7 +77,7 @@ public class WaypointScreen extends Screen {
     }
 
     @Override public boolean mouseScrolled(double mx, double my, double d) {
-        scroll = Math.max(0, Math.min(Math.max(0, list.size() - ROWS), scroll - (int) Math.signum(d)));
+        scroll = Math.max(0, Math.min(Math.max(0, list.size() - rows()), scroll - (int) Math.signum(d)));
         return true;
     }
 
@@ -106,7 +108,7 @@ public class WaypointScreen extends Screen {
         float open = Mth.clamp((float) ((time - opened) / 6.0), 0F, 1F);
         g.fill(0, 0, width, height, (int) (0x90 * open) << 24 | 0x04020E);   // dim the world, deep violet
         int l = left(), t = top();
-        int pw = W + 16, ph = 34 + ROWS * ROW_H + 48;
+        int pw = W + 16, ph = 34 + rows() * ROW_H + 64;
         int px = l - 8, py = t - 4;
         // drifting motes of space behind the panel
         for (int i = 0; i < 26; i++) {
@@ -126,7 +128,7 @@ public class WaypointScreen extends Screen {
             g.drawCenteredString(font, "No places saved yet.", width / 2, lt + 40, DIM);
             g.drawCenteredString(font, "Name where you stand below and save it.", width / 2, lt + 54, 0xFF7A5CD0);
         }
-        for (int i = 0; i < ROWS; i++) {
+        for (int i = 0; i < rows(); i++) {
             int idx = scroll + i;
             if (idx >= list.size()) break;
             WaypointPackets.Entry e = list.get(idx);
@@ -145,11 +147,11 @@ public class WaypointScreen extends Screen {
             g.drawCenteredString(font, "x", l + W - 18, y + 7, del ? 0xFFFFFFFF : 0xFFFF8090);
         }
         // a slim scroll rail
-        if (list.size() > ROWS) {
-            int rx = l + W + 1, rh = ROWS * ROW_H - 4;
+        if (list.size() > rows()) {
+            int rx = l + W + 1, rh = rows() * ROW_H - 4;
             g.fill(rx, lt, rx + 3, lt + rh, 0x80281E6A);
-            int kh = Math.max(12, rh * ROWS / list.size());
-            int ky = lt + (rh - kh) * scroll / Math.max(1, list.size() - ROWS);
+            int kh = Math.max(12, rh * rows() / list.size());
+            int ky = lt + (rh - kh) * scroll / Math.max(1, list.size() - rows());
             g.fill(rx, ky, rx + 3, ky + kh, GOLD);
         }
         // the name field and the save plate
@@ -160,7 +162,10 @@ public class WaypointScreen extends Screen {
         g.fill(l + W - 104, by, l + W - 8, by + 24, sv ? 0xE06A48D8 : 0xA04A32B0);
         g.renderOutline(l + W - 104, by, 96, 24, sv ? 0xFFFFFFFF : GOLD);
         g.drawCenteredString(font, "SAVE HERE", l + W - 56, by + 8, sv ? 0xFFFFFFFF : LILAC);
-        g.drawCenteredString(font, "Click a place to open a gate to it - it stays open, and anyone can walk through.", width / 2, by + 32, 0xFF7A5CD0);
+        int hy = by + 29;   // the hint, wrapped inside the panel
+        for (var hl : font.split(Component.literal("Click a place to open a gate to it - it stays open, and anyone can walk through."), W - 8)) {
+            g.drawString(font, hl, width / 2 - font.width(hl) / 2, hy, 0xFF7A5CD0, false); hy += 10;
+        }
         super.render(g, mx, my, pt);
     }
 }

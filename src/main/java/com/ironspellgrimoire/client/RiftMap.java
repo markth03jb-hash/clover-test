@@ -56,7 +56,7 @@ public final class RiftMap {
         int cell = TrackerMode.compact() ? 8 : 11, step = cell + (TrackerMode.compact() ? 4 : 6);
         int mw = (maxX - minX) * step + cell, mh = (maxZ - minZ) * step + cell;
         int pad = 6, w = Math.max(mw + pad * 2, 70), h = mh + pad * 2 + 12;
-        int x = g.guiWidth() - w - 4, y = TrackerMode.worldY();
+        int x = g.guiWidth() - w - 4, y = TrackerMode.riftY();
         g.fill(x, y, x + w, y + h, 0xA0100818);
         g.renderOutline(x, y, w, h, 0xC07A5AC8);
         int done = 0;

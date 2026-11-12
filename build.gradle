@@ -17,9 +17,18 @@ minecraft {
         configureEach {
             workingDirectory project.file('run')
             property 'forge.logging.console.level', 'debug'
+            // let the dependencies' mixins find their targets in the dev (mapped) game
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             mods { "${mod_id}" { source sourceSets.main } }
         }
-        client { property 'forge.enabledGameTestNamespaces', mod_id }
+        client {
+            property 'forge.enabledGameTestNamespaces', mod_id
+            if (System.getenv('ISG_UISHOTS')) {   // the automatic screenshot run (client/UiShots, .github/workflows/ui.yml)
+                property 'isg.uishots', 'true'
+                args '--width', '1920', '--height', '1080', '--username', 'UiTester'
+            }
+        }
         server { property 'forge.enabledGameTestNamespaces', mod_id; args '--nogui' }
     }
 }

@@ -125,6 +125,7 @@ public class StarForgeScreen extends Screen {
             StarForgePackets.Spell s = data.spells.get(i);
             int y = rowY(i);
             String name = Component.translatable("spell.iron_spell_grimoire." + s.id()).getString();
+            if (font.width(name) > 64 && name.indexOf(": ") > 0) name = name.substring(name.indexOf(": ") + 2);   // "Time Magic: Clock Hand Bolt" -> "Clock Hand Bolt"
             if (font.width(name) > 64) name = font.plainSubstrByWidth(name, 58) + "..";
             g.drawString(font, name, lx, y + 1, s.level() > 0 ? RED_INK : INK, false);
             for (int k = 0; k < StarForge.MAX_BOOST; k++) {   // three inked pips

@@ -26,6 +26,8 @@ public final class TrackerMode {
 
     public static final KeyMapping KEY = new KeyMapping("key.iron_spell_grimoire.trackers", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "key.categories.iron_spell_grimoire");
     private static int mode;   // 0 full, 1 compact, 2 hidden
+    /** Sets the mode directly (the automatic screenshot run, UiShots). */
+    public static void set(int m) { mode = m; }
 
     public static boolean hidden() { return mode == 2; }
     public static boolean compact() { return mode == 1; }
@@ -33,6 +35,7 @@ public final class TrackerMode {
     /** Where each tracker starts: the bounty at the top, the quest under it, the world boss under both. */
     public static int questY() { return 4 + (BountyHud.shown() ? (compact() ? 16 : 66) : 0); }
     public static int worldY() { return questY() + (QuestHud.shown() ? (compact() ? 16 : QuestHud.height() + 4) : 0); }
+    public static int riftY() { return worldY() + (WorldBossHud.shown() ? (compact() ? 16 : 44) : 0); }
 
     /** One compact line: a coloured edge, a label, a name, and the way to go (an arrow that turns as you do). */
     static void line(GuiGraphics g, Font f, int y, int head, String label, String text, double dx, double dz, boolean arrow, long now, float yaw) {

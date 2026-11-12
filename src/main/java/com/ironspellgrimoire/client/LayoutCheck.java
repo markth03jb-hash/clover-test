@@ -110,7 +110,7 @@ public final class LayoutCheck {
         @Override
         public void fill(RenderType type, int x0, int y0, int x1, int y1, int z, int color) {
             int a = color >>> 24;
-            if (a >= 0xB0 && Math.abs(x1 - x0) >= 30 && Math.abs(y1 - y0) >= 12) {
+            if (a >= 0xB0 && Math.abs(x1 - x0) >= 30 && Math.abs(y1 - y0) >= 24) {
                 float[] b = box(Math.min(x0, x1), Math.min(y0, y1), Math.max(x0, x1), Math.max(y0, y1));
                 panels.add(new Panel(b[0], b[1], b[2], b[3]));
             }
@@ -186,7 +186,7 @@ public final class LayoutCheck {
 
     private static int maxScale() { Window w = Minecraft.getInstance().getWindow(); return w.calculateScale(0, Minecraft.getInstance().isEnforceUnicode()); }
 
-    private static void runScreen(Screen s, boolean every, int mx, int my, float pt) {
+    private static List<Issue> runScreen(Screen s, boolean every, int mx, int my, float pt) {
         Minecraft mc = Minecraft.getInstance();
         int ow = s.width, oh = s.height;
         List<Issue> now = new ArrayList<>();
@@ -194,16 +194,16 @@ public final class LayoutCheck {
         for (int sc = every ? 1 : cur; sc <= (every ? maxScale() : cur); sc++) {
             final int scale = sc;
             int w = (int) Math.ceil(mc.getWindow().getWidth() / (double) scale), h = (int) Math.ceil(mc.getWindow().getHeight() / (double) scale);
-            Recorder r = record(scale == cur ? 0 : scale, g -> { s.width = w; s.height = h; s.render(g, mx, my, pt); });
-            s.width = ow; s.height = oh;
+            Recorder r = record(scale == cur ? 0 : scale, g -> { if (scale != cur) s.resize(mc, w, h); s.render(g, mx, my, pt); });
+            if (scale != cur) s.resize(mc, ow, oh);
             List<Issue> is = check(r, w, h, false);
             if (scale == cur) { marksScreen.clear(); for (Issue i : is) marksScreen.add(i.rect); }
             for (Issue i : is) now.add(new Issue(i.kind, "[scale " + scale + "] " + i.detail, i.rect));
         }
-        report(s.getClass().getSimpleName(), now);
+        return now;
     }
 
-    private static void runHud(boolean every, float pt) {
+    private static List<Issue> runHud(boolean every, float pt) {
         Minecraft mc = Minecraft.getInstance();
         List<Issue> now = new ArrayList<>();
         int cur = (int) mc.getWindow().getGuiScale();
@@ -219,7 +219,7 @@ public final class LayoutCheck {
             if (scale == cur) { marksHud.clear(); for (Issue i : is) marksHud.add(i.rect); }
             for (Issue i : is) now.add(new Issue(i.kind, "[scale " + scale + "] " + i.detail, i.rect));
         }
-        report("HUD", now);
+        return now;
     }
 
     private static void report(String where, List<Issue> issues) {
@@ -239,6 +239,13 @@ public final class LayoutCheck {
         } catch (IOException ignored) {}
         if (mc.player != null) mc.player.displayClientMessage(Component.literal("Layout check: " + fresh.size() + " new problem(s) in " + where
                 + " - outlined in red, listed in isg_layout_report.txt").withStyle(ChatFormatting.RED), false);
+    }
+
+    /** For the automatic screenshot run (UiShots): every problem in this screen (or, with null, the HUD) at every GUI scale. */
+    public static List<String> audit(@Nullable Screen s) {
+        List<String> out = new ArrayList<>();
+        for (Issue i : s != null ? runScreen(s, true, -1, -1, 0f) : runHud(true, 0f)) out.add(i.kind + " | " + i.detail);
+        return out;
     }
 
     // ------------------------------------------------------------------ hooks
@@ -265,7 +272,7 @@ public final class LayoutCheck {
         if (screenDue) {
             screenDue = false;
             boolean every = allScales; allScales = false;
-            runScreen(e.getScreen(), every, e.getMouseX(), e.getMouseY(), e.getPartialTick());
+            report(e.getScreen().getClass().getSimpleName(), runScreen(e.getScreen(), every, e.getMouseX(), e.getMouseY(), e.getPartialTick()));
         }
         outline(e.getGuiGraphics(), marksScreen);
     }
@@ -276,7 +283,7 @@ public final class LayoutCheck {
         if (hudDue) {
             hudDue = false;
             boolean every = allScales; allScales = false;
-            runHud(every, e.getPartialTick());
+            report("HUD", runHud(every, e.getPartialTick()));
         }
         outline(e.getGuiGraphics(), marksHud);
     }
