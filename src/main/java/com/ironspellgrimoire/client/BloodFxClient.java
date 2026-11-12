@@ -187,7 +187,7 @@ public final class BloodFxClient {
         float spec = (float) Math.pow(Math.max(0, refl.dot(FxBase.LIGHT)), 28) * 0.95F;
         float fres = (float) Math.pow(1 - Math.abs(nrm.dot(view)), 3) * 0.18F;
         float[] c = new float[3];
-        for (int i = 0; i < 3; i++) c[i] = (DEEP[i] + (MID[i] - DEEP[i]) * k) * light + (SPEC[i] * spec + 0.4F * fres) * (0.35F + 0.65F * light);
+        for (int i = 0; i < 3; i++) c[i] = Math.min(1F, (DEEP[i] + (MID[i] - DEEP[i]) * k) * light + (SPEC[i] * spec + 0.4F * fres) * (0.35F + 0.65F * light));
         return c;
     }
 
