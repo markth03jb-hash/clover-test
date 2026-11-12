@@ -81,13 +81,12 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
         PlayerModel<AbstractClientPlayer> m = getParentModel();
         VertexConsumer vc = buf.getBuffer(RenderType.entityTranslucentEmissive(WHITE));
         float flick = (float) (Math.sin(now * 0.9 + p.getId()) * 0.012 + Math.sin(now * 2.3) * 0.008);
-        if ((int) f[2] == 12) {   // Scarlet Moon: a blazing white aura round a thin blood-red skin - layered, flaring and pulsing
-            float beat = (float) Math.pow(Math.max(0, Math.sin(now * 0.32)), 6);   // a heartbeat runs through it
-            float flare = 0.85F + 0.15F * (float) Math.sin(now * 1.7 + p.getId()) + 0.25F * beat;
-            shell(ps, m, vc, 1.03F, 0.6F, 0.02F, 0.04F, 0.35F * a);                                        // blood-red skin
-            shell(ps, m, vc, 1.08F + flick * 0.6F, 1.0F, 1.0F, 1.0F, 0.42F * a * flare);                   // bright white
-            shell(ps, m, vc, 1.16F + flick * 1.4F + 0.03F * beat, 1.0F, 0.97F, 0.97F, 0.22F * a * flare);  // white haze
-            shell(ps, m, vc, 1.28F + flick * 2.2F + 0.06F * beat, 1.0F, 0.85F, 0.88F, 0.08F * a);          // the wide outer glow
+        if ((int) f[2] == 12) {   // Scarlet Moon: a blazing white aura - a white-hot skin, layered haze, flaring on a heartbeat
+            float beat = (float) Math.pow(Math.max(0, Math.sin(now * 0.26)), 8);   // a heartbeat runs through it
+            float flare = 0.85F + 0.15F * (float) Math.sin(now * 1.7 + p.getId()) + 0.3F * beat;
+            shell(ps, m, vc, 1.04F + flick * 0.4F, 1.0F, 1.0F, 1.0F, 0.34F * a * flare);                   // white-hot skin
+            shell(ps, m, vc, 1.11F + flick * 1.0F + 0.02F * beat, 0.9F, 0.94F, 1.0F, 0.2F * a * flare);    // cold white haze
+            shell(ps, m, vc, 1.22F + flick * 2.0F + 0.07F * beat, 0.8F, 0.86F, 1.0F, 0.07F * a * flare);   // the wide outer glow
             return;
         }
         if ((int) f[2] == 2) {   // Silver Guardian: a skin of liquid mercury, bright and rippling, hugging the body

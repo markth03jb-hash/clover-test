@@ -33,17 +33,17 @@ import net.minecraftforge.fml.common.Mod;
  *  7 Thorned Veins     - thorns of blood burst out of the ground along a line, flinging foes up
  *  8 Crimson Bulwark   - a shell of hardened blood: absorbs damage, and breaks outward when it's gone
  *  9 Exsanguinate      - blood is torn out of every foe around you and pours into you
- * 10 Scarlet Moon (mode) - 30 s: a white aura blazes round you and a red moon hangs over your head. Blood spells hit
+ * 10 Scarlet Moon (mode) - 30 s: a white aura blazes round you. Blood spells hit
  *                       35% harder and heal you for a quarter of what they deal; you move faster and hold your ground.
  *
  * Passive "Blood Price": up to +80% power as your health runs low.
+ * Everything is drawn as liquid blood by client/BloodFxClient (no shared effect shapes).
  */
 @Mod.EventBusSubscriber(modid = "iron_spell_grimoire")
 public final class BloodFx {
     private BloodFx() {}
 
     public static final String MODE = "scarlet_moon";
-    private static final int RED = Fx.CRIMSON, WHITE = Fx.SILVER, DARK = Fx.DARK;
     private static final double TAU = Math.PI * 2;
     /** Hemorrhage marks: target -> until (game time). */
     private static final Map<UUID, Long> MARKED = new HashMap<>();
@@ -66,7 +66,7 @@ public final class BloodFx {
         if (moon(p)) k *= 1.35f;
         if (PACT.remove(p.getUUID()) != null) {
             k *= 1.6f;
-            FxSend.ring(p.serverLevel(), RED | FxPacket.KEEP_SHAPE, p.position().add(0, 1, 0), 0.2f, 2.2f, 0.08f, 8);
+            spray(p.serverLevel(), p.position().add(0, 1.1, 0), new Vec3(0, 0.12, 0), 0.1f, 10, 0.06f);
         }
         return power * k;
     }
@@ -81,9 +81,50 @@ public final class BloodFx {
         }
     }
 
-    /** A drop of blood: a small crimson orb, falling a little. */
-    private static void drop(ServerLevel sl, Vec3 at, float r, int life) {
-        BossFx.orb(sl, RED, at, new Vec3(0, -0.04, 0), r, life);
+    // ================================================================== the look (BloodFxClient, FxPacket shape 80)
+    private static FxPacket fx(int kind, Vec3 c, int life) {
+        FxPacket p = new FxPacket();
+        p.shape = 80; p.id = FxSend.nextId(); p.h = kind; p.c = c; p.life = life;
+        return p;
+    }
+
+    private static int send(ServerLevel sl, FxPacket p) {
+        Vec3 at = p.c;
+        com.ironspellgrimoire.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.NEAR.with(
+                () -> new net.minecraftforge.network.PacketDistributor.TargetPoint(at.x, at.y, at.z, 96, sl.dimension())), p);
+        return p.id;
+    }
+
+    /** Blood thrown out from a point: drops that fall and splash into pools where they land. */
+    private static void spray(ServerLevel sl, Vec3 c, Vec3 vel, float spread, int n, float size) {
+        FxPacket p = fx(1, c, 1);
+        p.d = vel; p.r = spread; p.sweep = n; p.a0 = size;
+        send(sl, p);
+    }
+
+    /** A stream of blood flowing from a to b (each following an entity if its id isn't 0). */
+    private static int stream(ServerLevel sl, Vec3 a, Vec3 b, int fromId, int toId, float thick, float arc, int flow, int life) {
+        FxPacket p = fx(0, a, life);
+        p.u = b; p.v = new Vec3(toId, fromId, 0); p.r = thick; p.r2 = arc; p.speed = flow;
+        return send(sl, p);
+    }
+
+    private static int needle(ServerLevel sl, Vec3 a, Vec3 b, float len, int flight) {
+        FxPacket p = fx(7, a, flight + 2);
+        p.u = b; p.r = len; p.speed = flight;
+        return send(sl, p);
+    }
+
+    private static void end(ServerLevel sl, Vec3 near, int id) {
+        FxPacket p = fx(99, near, 1);
+        p.id = id;
+        send(sl, p);
+    }
+
+    private static void bleed(ServerLevel sl, LivingEntity t, int life) {
+        FxPacket p = fx(11, t.position(), life);
+        p.v = new Vec3(t.getId(), 0, 0);
+        send(sl, p);
     }
 
     // ================================================================== 1. Crimson Edge
@@ -94,15 +135,15 @@ public final class BloodFx {
         Vec3 look = flat(p.getLookAngle());
         if (look.lengthSqr() < 1e-4) look = new Vec3(0, 0, 1);
         look = look.normalize();
-        Vec3 c = p.position().add(0, 1.1, 0).add(look.scale(1.6));
-        FxSend.slash(sl, RED | FxPacket.KEEP_SHAPE, c, look, new Vec3(0, 1, 0).add(rightOf(look).scale(0.25)).normalize(), 3.4f, 0.5f, 9, 1.4f, 0.35f);
-        FxSend.slash(sl, DARK | FxPacket.KEEP_SHAPE, c.add(0, -0.05, 0), look, new Vec3(0, 1, 0), 3.0f, 0.25f, 7, 1.4f, 0.2f);
-        if (moon(p)) FxSend.slash(sl, WHITE | FxPacket.KEEP_SHAPE, c.add(0, 0.05, 0), look, new Vec3(0, 1, 0), 3.7f, 0.12f, 8, 1.4f, 0.12f);
+        Vec3 c = p.position().add(0, 1.1, 0).add(look.scale(0.4));
+        FxPacket b = fx(2, c, 16);   // a crescent of liquid blood swung round, flinging drops, then falling apart
+        b.d = look; b.u = new Vec3(0, 1, 0).add(rightOf(look).scale(0.25)).normalize(); b.r = 3.0f; b.speed = 5; b.a1 = moon(p) ? 1 : 0;
+        send(sl, b);
         for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(3.6))) {
             Vec3 to = flat(mid(e).subtract(p.position()));
             if (to.lengthSqr() < 1e-4 || to.normalize().dot(look) < 0.2) continue;
             hit(p, e, pow, "crimson_edge");
-            drop(sl, mid(e), 0.3f, 10);
+            spray(sl, mid(e), look.scale(0.12).add(0, 0.08, 0), 0.07f, 8, 0.07f);
         }
         sound(sl, c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.0f, 0.7f);
         sound(sl, c, SoundEvents.HONEY_BLOCK_BREAK, 0.8f, 0.6f);
@@ -117,15 +158,20 @@ public final class BloodFx {
         float pow = pw(p, power);
         long until = sl.getGameTime() + 160;
         MARKED.put(t.getUUID(), until);
-        BossFx.trail(sl, RED, p.getEyePosition().subtract(0, 0.2, 0), mid(t), 0.06f, 8);
-        FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, mid(t), 1.6f, 0.2f, 0.08f, 10);
+        Vec3 from = p.getEyePosition().subtract(0, 0.2, 0);
+        int flight = Math.max(2, (int) (from.distanceTo(mid(t)) / 3.0));
+        needle(sl, from, mid(t), 0.9f, flight);   // one needle of hardened blood, and the wound it leaves keeps bleeding
+        AstaFx.later(flight, () -> {
+            if (!t.isAlive()) return;
+            bleed(sl, t, 160);
+            spray(sl, mid(t), p.getLookAngle().scale(0.1), 0.06f, 10, 0.06f);
+        });
         sound(sl, mid(t), SoundEvents.HONEY_DRINK, 1.2f, 0.5f);
         for (int k = 20; k <= 160; k += 20) {   // it bleeds: a little every second
             AstaFx.later(k, () -> {
                 if (!t.isAlive() || !alive(p)) return;
                 hit(p, t, pow * 0.22f, "hemorrhage");
-                for (int i = 0; i < 3; i++) drop(sl, mid(t).add(Math.random() - 0.5, Math.random() * 0.6, Math.random() - 0.5), 0.12f, 14);
-                FxSend.ring(sl, RED, t.position().add(0, 0.05, 0), 0.3f, 0.8f, 0.03f, 12);
+                spray(sl, mid(t), Vec3.ZERO, 0.05f, 3, 0.05f);
             });
         }
     }
@@ -141,16 +187,18 @@ public final class BloodFx {
             double a = (i - (n - 1) / 2.0) * 0.12;
             Vec3 d = rotY(look, a).normalize();
             final boolean[] spent = {false};
+            final int[] id = {0};
+            final int delay = i / 3;
+            AstaFx.later(delay, () -> { if (alive(p)) id[0] = needle(sl, eye, eye.add(d.scale(2.2 * 9)), 0.7f, 9); });
             for (int k = 0; k < 9; k++) {
                 final int kk = k;
-                AstaFx.later(k + i / 3, () -> {
+                AstaFx.later(k + delay, () -> {
                     if (spent[0] || !alive(p)) return;
                     Vec3 a0 = eye.add(d.scale(2.2 * kk)), a1 = eye.add(d.scale(2.2 * (kk + 1)));
-                    BossFx.trail(sl, RED, a0, a1, 0.07f, 5);
-                    if (kk % 2 == 0) BossFx.trail(sl, WHITE, a0.add(d.scale(1.6)), a1, 0.025f, 3);
                     for (LivingEntity e : Kit.along(sl, p, a0, a1, 0.6)) {
                         hit(p, e, pow * 0.35f, "sanguine_volley");
-                        drop(sl, mid(e), 0.2f, 10);
+                        spray(sl, mid(e), d.scale(0.1), 0.05f, 4, 0.05f);
+                        if (id[0] != 0) end(sl, mid(e), id[0]);
                         spent[0] = true;
                         break;
                     }
@@ -168,21 +216,15 @@ public final class BloodFx {
         price(p, 0.02f);
         float pow = pw(p, power);
         sound(sl, p.position(), SoundEvents.HONEY_DRINK, 1.2f, 0.4f);
-        for (int k = 0; k < 40; k += 2) {
-            final int kk = k;
+        FxPacket th = fx(8, p.position(), 42);   // a thread of blood from it to you, beads of its blood drawn along it
+        th.v = new Vec3(p.getId(), t.getId(), 0); th.u = mid(t);
+        send(sl, th);
+        for (int k = 0; k < 40; k += 10) {
             AstaFx.later(k, () -> {
                 if (!alive(p) || !t.isAlive() || t.distanceTo(p) > 20) return;
-                Vec3 a = mid(t), b = p.position().add(0, 1.1, 0);
-                double w = Math.sin(kk * 0.5) * 0.25;
-                Vec3 m = a.add(b).scale(0.5).add(0, 0.6 + w, 0);
-                BossFx.trail(sl, RED, a, m, 0.07f, 3);
-                BossFx.trail(sl, RED, m, b, 0.07f, 3);
-                drop(sl, a.add(b.subtract(a).scale((kk % 10) / 10.0)), 0.14f, 4);
-                if (kk % 10 == 0) {
-                    float before = t.getHealth();
-                    hit(p, t, pow * 0.25f, "transfusion");
-                    p.heal(Math.max(0f, before - t.getHealth()) * 0.6f);
-                }
+                float before = t.getHealth();
+                hit(p, t, pow * 0.25f, "transfusion");
+                p.heal(Math.max(0f, before - t.getHealth()) * 0.6f);
             });
         }
     }
@@ -193,16 +235,18 @@ public final class BloodFx {
         price(p, 0.2f);
         PACT.put(p.getUUID(), true);
         Vec3 c = p.position();
-        for (int i = 0; i < 10; i++) {   // blood rises off you in a spiral and sinks into the grimoire
+        Vec3 look = flat(p.getLookAngle());
+        if (look.lengthSqr() < 1e-4) look = new Vec3(0, 0, 1);
+        Vec3 book = c.add(0, 1.0, 0).add(look.normalize().scale(0.6)).add(rightOf(look.normalize()).scale(0.35));
+        for (int i = 0; i < 4; i++) {   // blood drawn out of you in four streams into the grimoire
+            double a = i * TAU / 4 + 0.4;
+            Vec3 from = c.add(Math.cos(a) * 0.35, 0.7 + i * 0.25, Math.sin(a) * 0.35);
             final int ii = i;
-            AstaFx.later(i, () -> {
-                double a = ii * 0.7;
-                Vec3 q = c.add(Math.cos(a) * 0.8, 0.2 + ii * 0.16, Math.sin(a) * 0.8);
-                drop(sl, q, 0.18f, 10);
-            });
+            AstaFx.later(i * 2, () -> stream(sl, from, book, 0, 0, 0.05f, 0.5f, 6, 16 + ii));
         }
-        FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, c.add(0, 0.05, 0), 0.3f, 2.4f, 0.06f, 14);
-        FxSend.impactFrame(sl, c.add(0, 1, 0), 2, FxSend.FRAME_BLOOD, 16);
+        FxPacket pl = fx(5, ZenonAI.ground(sl, c), 140);
+        pl.r = 1.1f;
+        send(sl, pl);
         p.displayClientMessage(Component.literal("Blood Pact: your next Blood spell is 60% stronger").withStyle(ChatFormatting.DARK_RED), true);
         sound(sl, c, SoundEvents.WARDEN_HEARTBEAT, 1.2f, 1.0f);
     }
@@ -214,17 +258,17 @@ public final class BloodFx {
         float pow = pw(p, power);
         Vec3 look = flat(p.getLookAngle());
         if (look.lengthSqr() < 1e-4) look = new Vec3(0, 0, 1);
-        final Vec3 d = look.normalize(), rt = rightOf(d);
+        final Vec3 d = look.normalize();
         Vec3 start = p.position();
+        FxPacket w = fx(4, ZenonAI.ground(sl, start.add(d.scale(1.5))), 15);   // a curling wave of blood, spraying off its crest
+        w.d = d; w.r = 2.6f; w.r2 = 2.4f; w.speed = 1.1f;
+        send(sl, w);
         java.util.Set<UUID> struck = new java.util.HashSet<>();
         for (int k = 0; k < 12; k++) {
             final int kk = k;
             AstaFx.later(k, () -> {
                 if (!alive(p)) return;
-                Vec3 c = start.add(d.scale(1.5 + kk * 1.1));
-                Vec3 g = ZenonAI.ground(sl, c);
-                FxSend.wall(sl, RED | FxPacket.KEEP_SHAPE, g.add(0, 0.05, 0), d, new Vec3(0, 1, 0), 2.6f, 2.6f, -40, 40, 1.6f - kk * 0.04f, 6, 0, 0);
-                if (kk % 2 == 0) FxSend.wall(sl, WHITE | FxPacket.KEEP_SHAPE, g.add(d.scale(0.2)).add(0, 1.4, 0), d, new Vec3(0, 1, 0), 2.4f, 2.4f, -35, 35, 0.15f, 4, 0, 0);
+                Vec3 g = ZenonAI.ground(sl, start.add(d.scale(1.5 + kk * 1.1)));
                 for (LivingEntity e : enemies(sl, p, new AABB(g, g).inflate(2.8, 2, 2.8))) {
                     if (!struck.add(e.getUUID())) continue;
                     hit(p, e, pow, "red_tide");
@@ -234,7 +278,6 @@ public final class BloodFx {
                 if (kk % 3 == 0) sound(sl, g, SoundEvents.GENERIC_SPLASH, 1.0f, 0.5f);
             });
         }
-        for (int s = -1; s <= 1; s += 2) drop(sl, start.add(rt.scale(s)).add(0, 1, 0), 0.2f, 8);
     }
 
     // ================================================================== 7. Thorned Veins
@@ -252,12 +295,14 @@ public final class BloodFx {
                 if (!alive(p)) return;
                 Vec3 g = ZenonAI.ground(sl, p.position().add(d.scale(2 + kk * 1.4)));
                 ThreadLocalRandom r = ThreadLocalRandom.current();
-                for (int i = 0; i < 3; i++) {   // a cluster of crimson thorns, leaning out
+                for (int i = 0; i < 3; i++) {   // thorns of blood set hard, leaning out - later they melt back into pools
                     Vec3 base = g.add(rt.scale(r.nextDouble(-0.8, 0.8))).add(d.scale(r.nextDouble(-0.5, 0.5)));
-                    Vec3 dir = new Vec3(r.nextDouble(-0.35, 0.35), 1, r.nextDouble(-0.35, 0.35)).normalize();
-                    FxSend.spike(sl, RED | FxPacket.KEEP_SHAPE, base, dir, 1.6f + r.nextFloat() * 1.2f, 0.22f, 22, 3, FxPacket.GROUND);
+                    FxPacket th = fx(3, base, 34 + r.nextInt(10));
+                    th.d = new Vec3(r.nextDouble(-0.35, 0.35), 1, r.nextDouble(-0.35, 0.35)).normalize();
+                    th.r = 1.5f + r.nextFloat() * 1.2f; th.r2 = 0.2f + r.nextFloat() * 0.08f; th.sweep = 3;
+                    send(sl, th);
                 }
-                FxSend.cracks(sl, RED, g.add(0, 0.04, 0), d, new Vec3(0, 1, 0), 1.6f, 30, false, kk * 31 + p.getId());
+                spray(sl, g.add(0, 0.2, 0), new Vec3(0, 0.2, 0), 0.09f, 6, 0.06f);
                 for (LivingEntity e : enemies(sl, p, new AABB(g, g).inflate(1.6, 2.5, 1.6))) {
                     if (!struck.add(e.getUUID())) continue;
                     hit(p, e, pow, "thorned_veins");
@@ -276,27 +321,23 @@ public final class BloodFx {
         float shield = 6f + power * 0.5f + (moon(p) ? 4f : 0f);
         p.setAbsorptionAmount(Math.max(p.getAbsorptionAmount(), shield));
         Vec3 c = p.position();
-        FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, c.add(0, 1, 0), 1.6f, 1.0f, 1.6f, 14);
-        FxSend.ring(sl, DARK, c.add(0, 0.05, 0), 0.4f, 1.6f, 0.05f, 12);
+        FxPacket sh = fx(6, c, 200);   // a shell of blood round you, running over its own surface
+        sh.v = new Vec3(p.getId(), 0, 0); sh.r = 1.05f;
+        final int shell = send(sl, sh);
         sound(sl, c, SoundEvents.ARMOR_EQUIP_NETHERITE, 1.0f, 0.7f);
         final float pow = pw(p, power);
-        for (int k = 10; k <= 200; k += 10) {   // while it holds, it drips; when it's gone, it breaks outward
-            final int kk = k;
+        p.getPersistentData().remove("isg_bulwark_broke");
+        for (int k = 5; k < 200; k += 5) {   // while it holds it stays; when it's gone it bursts outward
             AstaFx.later(k, () -> {
-                if (!alive(p)) return;
-                if (p.getAbsorptionAmount() > 0.5f) {
-                    if (kk % 20 == 0) FxSend.ring(sl, RED, p.position().add(0, 1.0, 0), 0.75f, 0.8f, 1.4f, 10);
-                    return;
-                }
-                if (kk == 200 || p.getPersistentData().getBoolean("isg_bulwark_broke")) return;
+                if (!alive(p) || p.getAbsorptionAmount() > 0.5f || p.getPersistentData().getBoolean("isg_bulwark_broke")) return;
                 p.getPersistentData().putBoolean("isg_bulwark_broke", true);
                 Vec3 at = p.position().add(0, 1, 0);
-                FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, at, 0.5f, 4f, 0.2f, 10);
+                end(sl, at, shell);
                 for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(4))) hit(p, e, pow * 0.6f, "crimson_bulwark");
                 sound(sl, at, SoundEvents.GLASS_BREAK, 1.0f, 0.6f);
+                sound(sl, at, SoundEvents.GENERIC_SPLASH, 1.0f, 0.6f);
             });
         }
-        p.getPersistentData().remove("isg_bulwark_broke");
     }
 
     // ================================================================== 9. Exsanguinate
@@ -306,20 +347,10 @@ public final class BloodFx {
         float pow = pw(p, power);
         Vec3 c = p.position().add(0, 1.1, 0);
         List<LivingEntity> foes = enemies(sl, p, new AABB(c, c).inflate(9));
-        FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, p.position().add(0, 0.05, 0), 9f, 0.5f, 0.08f, 16);
         sound(sl, c, SoundEvents.WARDEN_HEARTBEAT, 1.4f, 0.7f);
-        for (int k = 0; k < 20; k += 2) {
-            final int kk = k;
-            AstaFx.later(k, () -> {
-                if (!alive(p)) return;
-                for (LivingEntity e : foes) {
-                    if (!e.isAlive()) continue;
-                    Vec3 a = mid(e), b = p.position().add(0, 1.1, 0);
-                    Vec3 m = a.add(b).scale(0.5).add(0, 1.0 + Math.sin(kk * 0.4) * 0.3, 0);
-                    BossFx.trail(sl, RED, a, m, 0.06f, 3);
-                    BossFx.trail(sl, RED, m, b, 0.06f, 3);
-                }
-            });
+        for (LivingEntity e : foes) {   // blood torn out of each of them, arcing into you
+            spray(sl, mid(e), new Vec3(0, 0.12, 0), 0.06f, 6, 0.06f);
+            stream(sl, mid(e), c, e.getId(), p.getId(), 0.075f, 1.4f, 10, 22);
         }
         AstaFx.later(20, () -> {
             if (!alive(p)) return;
@@ -329,10 +360,8 @@ public final class BloodFx {
                 float before = e.getHealth();
                 hit(p, e, pow, "exsanguinate");
                 healed += Math.max(0f, before - e.getHealth()) * 0.5f;
-                FxSend.ring(sl, RED, mid(e), 0.2f, 1.2f, 0.06f, 8);
             }
             p.heal(healed);
-            FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, p.position().add(0, 1, 0), 2.2f, 0.2f, 0.1f, 10);
             sound(sl, p.position(), SoundEvents.HONEY_DRINK, 1.4f, 0.6f);
         });
     }
@@ -341,10 +370,10 @@ public final class BloodFx {
     private static final int MOON_T = 600, FORM = 30;
 
     /**
-     * The mode. It forms over a second and a half: blood is drawn up out of the ground to you in streams, a red moon
-     * opens in the sky above your head, and a white aura blazes up round you in one shockwave. Then for 30 s: the aura
-     * and the moon stay with you, white light licks up your body and blood circles you; your Blood spells hit 35%
-     * harder and heal you for a quarter of what they deal (their price is doubled); you're faster and hard to move.
+     * The mode. White light is drawn in from all round you for a second and a half, then a pillar of it strikes you and
+     * a white shockwave rolls out. For 30 s a white aura blazes round you: white flame licking up your body, streaks
+     * spiralling round you, rising sparks, crackling arcs and a ground glow beating like a heart. Your Blood spells hit
+     * 35% harder and heal you for a quarter of what they deal (their price is doubled); you're faster and hard to move.
      */
     public static void scarletMoon(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
@@ -352,39 +381,24 @@ public final class BloodFx {
         Vec3 c0 = p.position();
         sound(sl, c0, SoundEvents.WARDEN_HEARTBEAT, 1.6f, 0.8f);
         sound(sl, c0, SoundEvents.BEACON_ACTIVATE, 0.8f, 0.6f);
-        for (int k = 0; k < FORM; k += 2) {   // blood drawn up to you from the ground in streams
+        FxPacket aw = fx(10, c0, FORM + 18);
+        aw.r = 6f; aw.sweep = FORM;
+        send(sl, aw);
+        for (int k = 10; k < FORM; k += 10) {
             final int kk = k;
-            AstaFx.later(k, () -> {
-                if (!alive(p)) return;
-                Vec3 c = p.position().add(0, 1.1, 0);
-                for (int i = 0; i < 3; i++) {
-                    double a = kk * 0.45 + i * TAU / 3;
-                    double r = 5.5 - kk * 0.15;
-                    Vec3 from = p.position().add(Math.cos(a) * r, 0.1, Math.sin(a) * r);
-                    BossFx.trail(sl, RED, from, c, 0.07f, 5);
-                }
-                if (kk % 6 == 0) FxSend.ring(sl, RED, p.position().add(0, 0.05, 0), 5.5f - kk * 0.15f, 5.7f - kk * 0.15f, 0.04f, 6);
-                if (kk % 10 == 0) sound(sl, c, SoundEvents.WARDEN_HEARTBEAT, 1.2f, 0.9f + kk * 0.02f);
-            });
+            AstaFx.later(k, () -> { if (alive(p)) sound(sl, p.position(), SoundEvents.WARDEN_HEARTBEAT, 1.2f, 0.9f + kk * 0.02f); });
         }
         AstaFx.later(FORM, () -> {
             if (!alive(p)) return;
             Vec3 c = p.position();
-            Moves.aura(p, 6, RED, MOON_T);   // the red moon overhead, white wisps and circling blood (ModeAuraFx style 6)
-            com.ironspellgrimoire.network.FxPacket a = new com.ironspellgrimoire.network.FxPacket();
-            a.shape = 14; a.id = p.getId(); a.palette = 12; a.life = MOON_T;   // the white aura on your body (AuraOutlineLayer 12)
+            FxPacket au = fx(9, c, MOON_T);   // the white aura round you (BloodFxClient kind 9)
+            au.v = new Vec3(p.getId(), 0, 0);
+            com.ironspellgrimoire.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), au);
+            FxPacket a = new FxPacket();
+            a.shape = 14; a.id = p.getId(); a.palette = 12; a.life = MOON_T;   // and the white glow on your body (AuraOutlineLayer 12)
             com.ironspellgrimoire.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), a);
             Moves.stance(p, 4, 2, 0.25, 0.6, 0, MOON_T);
-            Moves.mode(p, MODE, MOON_T, 10, pl -> {
-                if (sl.getGameTime() % 40 == 0) FxSend.ring(sl, RED, pl.position().add(0, 0.05, 0), 1.3f, 1.6f, 0.03f, 30);
-            });
-            // the moment it opens: a white pillar into you, a shockwave of white and red, a crack in the ground
-            BossFx.beam(sl, WHITE, c.add(0, 18, 0), c.add(0, 0.5, 0), 0.6f, 10);
-            BossFx.beam(sl, RED, c.add(0, 18, 0), c.add(0, 0.5, 0), 0.25f, 12);
-            FxSend.ring(sl, WHITE | FxPacket.KEEP_SHAPE, c.add(0, 0.1, 0), 0.5f, 8f, 0.3f, 14);
-            FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, c.add(0, 0.12, 0), 0.5f, 6f, 0.15f, 16);
-            FxSend.cracks(sl, RED, c.add(0, 0.04, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 4.5f, 60, false, p.getId() * 7);
-            FxSend.impactFrame(sl, c.add(0, 1.2, 0), 4, FxSend.FRAME_BLOOD, 28);
+            Moves.mode(p, MODE, MOON_T, 10, pl -> {});
             FxSend.shake(sl, c, 0.6f, 10, 20);
             for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(4))) {   // the shockwave throws back anyone close
                 Vec3 away = flat(e.position().subtract(c));
@@ -394,7 +408,6 @@ public final class BloodFx {
             sound(sl, c, SoundEvents.WITHER_SPAWN, 0.7f, 1.4f);
             sound(sl, c, SoundEvents.BEACON_POWER_SELECT, 1.0f, 0.5f);
         });
-        AstaFx.later(FORM + MOON_T, () -> { if (alive(p)) Moves.aura(p, 6, RED, 0); });
     }
 
     /** Marked foes take 25% more from Blood spells - and hits taken by a Scarlet Moon caster are lessened a little. */

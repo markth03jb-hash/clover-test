@@ -56,7 +56,6 @@ final class ModeAuraFx {
                 case 2 -> salamander(m, cam, c, h, now, pal, k);
                 case 3 -> mane(m, cam, c, face, rt, h, now, pal, k, self);
                 case 5 -> demonLight(m, cam, c, face, rt, h, now, k, self);
-                case 6 -> scarletMoon(m, cam, c, face, rt, h, now, k, self);
                 default -> mantle(m, cam, c, h, now, pal, k);
             }
         }
@@ -192,43 +191,6 @@ final class ModeAuraFx {
             double ph = (now * 0.12 + i * 0.25) % 1.0, a = i * TAU / 4 + now * 0.03;
             Vec3 b = c.add(Math.cos(a) * 0.36, ph * h, Math.sin(a) * 0.36);
             FxBase.gline(m, cam, b, b.add(0, 0.35, 0), 0.06F, 31, (float) (Math.sin(ph * Math.PI) * 0.7) * k);
-        }
-    }
-
-    /**
-     * Scarlet Moon (Blood Grimoire): a red moon hangs high over your head - a disc of crimson rings round a white-hot
-     * core, slowly turning - white flames lick up your body, and drops of blood circle you, rising and falling.
-     */
-    private static void scarletMoon(Matrix4f m, Vec3 cam, Vec3 c, Vec3 face, Vec3 rt, double h, double now, float k, boolean self) {
-        Vec3 moon = c.add(0, h + 1.9 + Math.sin(now * 0.05) * 0.08, 0).subtract(face.scale(0.15));
-        Vec3 up = new Vec3(0, 1, 0);
-        for (int ring = 0; ring < 6; ring++) {   // the disc, facing out to the side so it reads from any angle
-            double r = 0.12 + ring * 0.1;
-            int pal = ring <= 1 ? 6 : 0;
-            Vec3 prev = null;
-            for (int i = 0; i <= 24; i++) {
-                double a = i * TAU / 24 + now * 0.02 * (ring % 2 == 0 ? 1 : -1);
-                Vec3 q = moon.add(rt.scale(Math.cos(a) * r)).add(up.scale(Math.sin(a) * r));
-                if (prev != null) FxBase.gline(m, cam, prev, q, ring <= 1 ? 0.1F : 0.075F, pal, (ring == 5 ? 0.55F : 0.9F) * k);
-                prev = q;
-            }
-        }
-        Vec3 prev = null;
-        for (int i = 0; i <= 32; i++) {   // a thin halo ring round the moon
-            double a = i * TAU / 32;
-            Vec3 q = moon.add(rt.scale(Math.cos(a) * 0.82)).add(up.scale(Math.sin(a) * 0.82));
-            if (prev != null) FxBase.gline(m, cam, prev, q, 0.03F, 6, 0.5F * k);
-            prev = q;
-        }
-        if (!self) for (int i = 0; i < 6; i++) {   // white flames licking up the body
-            double ph = (now * 0.1 + i / 6.0) % 1.0, a = i * TAU / 6 + now * 0.04;
-            Vec3 b = c.add(Math.cos(a) * 0.38, ph * h * 1.1, Math.sin(a) * 0.38);
-            FxBase.gline(m, cam, b, b.add(0, 0.42, 0), 0.07F, 6, (float) (Math.sin(ph * Math.PI) * 0.8) * k);
-        }
-        for (int i = 0; i < 8; i++) {   // drops of blood circling, rising and falling
-            double a = i * TAU / 8 + now * 0.07;
-            Vec3 b = c.add(Math.cos(a) * 1.1, h * 0.5 + Math.sin(now * 0.15 + i * 0.8) * 0.45, Math.sin(a) * 1.1);
-            FxBase.gline(m, cam, b, b.add(0, -0.14, 0), 0.07F, 0, 0.9F * k);
         }
     }
 }

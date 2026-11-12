@@ -121,6 +121,7 @@ public class FxRenderer extends FxBase {
       if (p.shape == 3 && PortalRenderer.kill(p.id)) return;    // closing a gate   // Equinox hit you: your screen is cut in two   // a move's cast animation started (effect timing)
       if (FxSync.defer(p)) return;   // held back to land on the swing
       if (p.shape == 66) { LightFxClient.spawn(p); return; }
+      if (p.shape == 80) { BloodFxClient.spawn(p); return; }
    // Patolli's Light Magic (LightFxClient)
       if (p.shape == 3 && LightFxClient.kill(p.id)) return;
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
@@ -309,7 +310,7 @@ public class FxRenderer extends FxBase {
             TRACK.clear();
             ORBITS.clear();
             WHIPS.clear();
-            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear();
+            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
@@ -517,6 +518,7 @@ public class FxRenderer extends FxBase {
             AltarFx.draw(vc, m, cam, now, pt);
             ModeAuraFx.draw(m, cam, now, pt);
             LightFxClient.draw(m, cam, now, pt);
+            BloodFxClient.draw(vc, m, n, cam, now, pt);
             BountyHud.drawBeacon(m, cam, now);
             QuestHud.drawBeacon(m, cam, now);
             WorldBossHud.drawBeacon(m, cam, now);
