@@ -12,8 +12,12 @@ public class AddonNetwork {
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
 
     /** Send a packet; effect packets are also shown to CastSync so damage can follow the move's swing. */
+    /** Effect packets sent so far (the game tests measure how heavy each spell and boss is). */
+    public static int fxSent;
+
     public static <M> void send(net.minecraftforge.network.PacketDistributor.PacketTarget target, M msg) {
         if (msg instanceof FxPacket fx) {
+            fxSent++;
             com.ironspellgrimoire.server.CastSync.onSend(fx);
             if (worldShape(fx.shape) && fromMeteor()) fx.palette = (byte) (fx.palette | FxPacket.PIXEL_ONLY);   // Black Meteorite: all pixel style
         }

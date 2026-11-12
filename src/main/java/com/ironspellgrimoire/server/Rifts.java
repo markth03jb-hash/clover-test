@@ -175,6 +175,11 @@ public final class Rifts {
         }
     }
 
+    // the game tests (GameTests): the rifts written out and read back
+    static CompoundTag saveForTest(MinecraftServer s) { return data(s).save(new CompoundTag()); }
+    static Data loadForTest(CompoundTag t) { return Data.load(t); }
+    static CompoundTag saveForTest(Data d) { return d.save(new CompoundTag()); }
+
     private static Data data(MinecraftServer s) {
         return s.overworld().getDataStorage().computeIfAbsent(Data::load, Data::new, "isg_rifts");
     }

@@ -28,6 +28,10 @@ minecraft {
                 property 'isg.uishots', 'true'
                 args '--width', '1920', '--height', '1080', '--username', 'UiTester'
             }
+            if (System.getenv('ISG_GAMETESTS')) {   // the automatic game tests (server/GameTests, .github/workflows/tests.yml)
+                property 'isg.gametests', 'true'
+                args '--width', '854', '--height', '480', '--username', 'Tester'
+            }
         }
         server { property 'forge.enabledGameTestNamespaces', mod_id; args '--nogui' }
     }
