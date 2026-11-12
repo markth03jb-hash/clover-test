@@ -214,6 +214,7 @@ public final class BloodFxClient {
             L l = it.next();
             double age = now - l.born;
             double end = l.killAt >= 0 ? l.killAt + 2 : l.born + l.p.life;
+            if ((int) l.p.h == 0) System.out.println("ISGDBG live kind0 age=" + age + " end=" + (end - now) + " done=" + l.done);
             if (now > end || l.done) { it.remove(); continue; }
             float out = l.killAt >= 0 ? (float) Mth.clamp((l.killAt + 2 - now) / 2.0, 0, 1) : 1F;
             boolean tick = Math.floor(now) > Math.floor(l.lastSpawn);
@@ -387,7 +388,7 @@ public final class BloodFxClient {
         lightAt(mc, a.add(b).scale(0.5));
         double fly = Math.max(1, p.speed), life = p.life;
         double head = Mth.clamp(age / fly, 0, 1), tail = Mth.clamp((age - (life - fly)) / fly, 0, 1);
-        if (age < 1.5 || (age > 8 && age < 8.3)) System.out.println("ISGDBG stream draw age=" + age + " head=" + head + " tail=" + tail + " a=" + a + " b=" + b);
+        if (l.lastSpawn - l.born < 3) System.out.println("ISGDBG stream draw age=" + age + " head=" + head + " tail=" + tail + " a=" + a + " b=" + b);
         if (head - tail < 0.01) return;
         Vec3 side = b.subtract(a).cross(UP);
         side = side.lengthSqr() < 1e-6 ? new Vec3(1, 0, 0) : side.normalize();
