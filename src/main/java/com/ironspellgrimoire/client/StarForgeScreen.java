@@ -173,8 +173,18 @@ public class StarForgeScreen extends Screen {
             glyph(g, i, rx + 3, y + 1, set ? RED_INK : INK, time);
             int col = set ? RED_INK : can ? INK : INK_FAINT;
             g.drawString(font, StarForge.SIGIL_SHORT[i], rx + 17, y + 2, col, false);
-            String fx = StarForge.SIGIL_EFFECTS[i].replace(" mana regen", " regen");
-            g.drawString(font, fx, rx + PW - 3 - font.width(fx), y + 2, set ? RED_INK : INK_SOFT, false);
+            String fx = StarForge.SIGIL_EFFECTS[i].replace(" mana regen", " regen").replace(" max health", " health").replace(" spell power", " power")
+                    .replace(" max mana", " mana").replace(" cooldowns", " CDR").replace(" vs bosses", " bosses");
+            int nameEnd = rx + 17 + font.width(StarForge.SIGIL_SHORT[i]) + 4, room = rx + PW - 3 - nameEnd, fw = font.width(fx);
+            if (fw <= room) g.drawString(font, fx, rx + PW - 3 - fw, y + 2, set ? RED_INK : INK_SOFT, false);
+            else {   // too long for the row: written smaller
+                float k = Math.max(0.6F, room / (float) fw);
+                g.pose().pushPose();
+                g.pose().translate(rx + PW - 3 - fw * k, y + 2 + (1 - k) * 4, 0);
+                g.pose().scale(k, k, 1F);
+                g.drawString(font, fx, 0, 0, set ? RED_INK : INK_SOFT, false);
+                g.pose().popPose();
+            }
         }
         if (data.stars <= 0) text(g, font, "Earn stars from bounties and quests.", rx, t + 156, PW, RED_INK);
 
