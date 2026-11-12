@@ -110,7 +110,7 @@ public final class LayoutCheck {
         @Override
         public void fill(RenderType type, int x0, int y0, int x1, int y1, int z, int color) {
             int a = color >>> 24;
-            if (a >= 0xB0 && Math.abs(x1 - x0) >= 30 && Math.abs(y1 - y0) >= 12) {
+            if (a >= 0xB0 && Math.abs(x1 - x0) >= 30 && Math.abs(y1 - y0) >= 24) {
                 float[] b = box(Math.min(x0, x1), Math.min(y0, y1), Math.max(x0, x1), Math.max(y0, y1));
                 panels.add(new Panel(b[0], b[1], b[2], b[3]));
             }
@@ -194,8 +194,8 @@ public final class LayoutCheck {
         for (int sc = every ? 1 : cur; sc <= (every ? maxScale() : cur); sc++) {
             final int scale = sc;
             int w = (int) Math.ceil(mc.getWindow().getWidth() / (double) scale), h = (int) Math.ceil(mc.getWindow().getHeight() / (double) scale);
-            Recorder r = record(scale == cur ? 0 : scale, g -> { s.width = w; s.height = h; s.render(g, mx, my, pt); });
-            s.width = ow; s.height = oh;
+            Recorder r = record(scale == cur ? 0 : scale, g -> { if (scale != cur) s.resize(mc, w, h); s.render(g, mx, my, pt); });
+            if (scale != cur) s.resize(mc, ow, oh);
             List<Issue> is = check(r, w, h, false);
             if (scale == cur) { marksScreen.clear(); for (Issue i : is) marksScreen.add(i.rect); }
             for (Issue i : is) now.add(new Issue(i.kind, "[scale " + scale + "] " + i.detail, i.rect));

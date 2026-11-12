@@ -41,6 +41,14 @@ public final class WorldBossHud {
         return on && mc.player != null && mc.level != null && mc.level.dimension().equals(net.minecraft.world.level.Level.OVERWORLD);
     }
 
+    /** Whether its box is on screen now (TrackerMode stacks the rift map under it). */
+    public static boolean shown() {
+        Minecraft mc = Minecraft.getInstance();
+        if (!here() || TrackerMode.hidden()) return false;
+        double dx = tx - mc.player.getX(), dz = tz - mc.player.getZ();
+        return !(risen && dx * dx + dz * dz < 40 * 40);
+    }
+
     @SubscribeEvent
     public static void onGui(RenderGuiEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();

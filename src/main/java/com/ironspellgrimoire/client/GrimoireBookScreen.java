@@ -204,7 +204,8 @@ public class GrimoireBookScreen extends Screen {
         g.fill(x0 + BW + 5, y0 + 24, x0 + BW + 54, y0 + 40, 0xFF000000 | dark(c[2], 0.35F));
         g.fill(x0 + BW + 6, y0 + 25, x0 + BW + 53, y0 + 39, 0xFF000000 | (tabHot || (onCombos() && !memories && !treeMode && !pathMode && !upgMode) ? c[2] : c[4]));
         String tab = onCombos() && !memories && !treeMode && !pathMode && !upgMode ? "Spells" : "Combos";
-        g.drawString(f, tab, x0 + BW + 30 - f.width(tab) / 2, y0 + 29, tabHot ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
+        boolean tabOn = tabHot || (onCombos() && !memories && !treeMode && !pathMode && !upgMode);
+        g.drawString(f, tab, x0 + BW + 30 - f.width(tab) / 2, y0 + 29, tabOn ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
         // the second ribbon: Memories
         boolean memHot = inside(mx, my, x0 + BW + 7, y0 + 46, 54, 16);
         g.fill(x0 + BW + 5, y0 + 46, x0 + BW + 62, y0 + 62, 0xFF000000 | dark(c[2], 0.35F));

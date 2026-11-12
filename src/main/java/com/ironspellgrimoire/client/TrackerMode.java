@@ -35,6 +35,7 @@ public final class TrackerMode {
     /** Where each tracker starts: the bounty at the top, the quest under it, the world boss under both. */
     public static int questY() { return 4 + (BountyHud.shown() ? (compact() ? 16 : 66) : 0); }
     public static int worldY() { return questY() + (QuestHud.shown() ? (compact() ? 16 : QuestHud.height() + 4) : 0); }
+    public static int riftY() { return worldY() + (WorldBossHud.shown() ? (compact() ? 16 : 44) : 0); }
 
     /** One compact line: a coloured edge, a label, a name, and the way to go (an arrow that turns as you do). */
     static void line(GuiGraphics g, Font f, int y, int head, String label, String text, double dx, double dz, boolean arrow, long now, float yaw) {
