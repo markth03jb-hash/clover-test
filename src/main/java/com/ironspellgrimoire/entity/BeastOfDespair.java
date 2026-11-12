@@ -18,6 +18,11 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
  * BeastOfDespair, the Beast of Despair: a three-phase boss built on Beast Magic.
@@ -32,7 +37,14 @@ import net.minecraft.world.phys.Vec3;
  * line, nothing while he transforms). Rhinoceros Armor takes 70% off what gets through. Spawned only by egg or
  * command. His fight is in {@link BeastAI}.
  */
-public class BeastOfDespair extends Monster {
+public class BeastOfDespair extends Monster implements software.bernie.geckolib.animatable.GeoEntity {
+    private static final String A = "animation.beast_of_despair.";
+    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop(A + "idle"), WALK = RawAnimation.begin().thenLoop(A + "walk"),
+            TRANSFORM = RawAnimation.begin().thenLoop(A + "transform"), GATHER = RawAnimation.begin().thenLoop(A + "gather"),
+            BROKEN = RawAnimation.begin().thenLoop(A + "broken"), DEATH = RawAnimation.begin().thenPlayAndHold(A + "death");
+    /** The moves, by pose (BeastAI.P_*): played once when the pose is set. */
+    private static final String[] MOVE = {null, "claw", "charge", "roar", "slam", "guard", "throw", "bite", null, null};
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     public static final float MAX_HP = 500f;
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(BeastOfDespair.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> POSE = SynchedEntityData.defineId(BeastOfDespair.class, EntityDataSerializers.INT);
@@ -75,7 +87,25 @@ public class BeastOfDespair extends Monster {
     public void setPhase(int p) { this.entityData.set(PHASE, p); }
     public int pose() { return this.entityData.get(POSE); }
     public int poseAt() { return this.entityData.get(POSE_AT); }
-    public void setPose(int pose) { this.entityData.set(POSE, pose); this.entityData.set(POSE_AT, this.tickCount); }
+    public void setPose(int pose) {
+        this.entityData.set(POSE, pose); this.entityData.set(POSE_AT, this.tickCount);
+        if (!this.level().isClientSide && transforming() == 0 && pose >= 0 && pose < MOVE.length && MOVE[pose] != null) triggerAnim("main", MOVE[pose]);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar c) {
+        AnimationController<BeastOfDespair> main = new AnimationController<>(this, "main", 4, s -> {
+            if (isDeadOrDying()) return s.setAndContinue(DEATH);
+            if (transforming() > 0) return s.setAndContinue(TRANSFORM);
+            if (charging() > 0) return s.setAndContinue(GATHER);
+            if (pose() == BeastAI.P_BROKEN) return s.setAndContinue(BROKEN);
+            return s.setAndContinue(s.isMoving() ? WALK : IDLE);
+        });
+        for (String m : MOVE) if (m != null) main.triggerableAnim(m, RawAnimation.begin().thenPlay(A + m));
+        c.add(main);
+    }
+
+    @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
     public int transforming() { return this.entityData.get(TRANSFORM); }
     public void setTransforming(int t) { this.entityData.set(TRANSFORM, t); }
     /** Ticks of Rhinoceros Armor left. */
