@@ -1,6 +1,22 @@
-Iron Spell Grimoire v1.94.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.95.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.95.0
+- Boards: pick a bounty or quest from three notes (Take, Give Up, New notes for 2 stars), a Record page with your past hunts
+  and quests; boards are put up as villages generate.
+- Grimoire book: Path (the checklist to Ascension) and Upgrades pages. Star Forge: before/after numbers, remove a mutation
+  for a Mana Core, readable spell names.
+- Elf Raids: wave banner, villagers hide, a Raid Spoils chest. Bounty twists on the boss bar. Memory Guardian arrival and
+  a "return" link after falling to one. Broom: sprint boost, mana readout, grimoire-coloured trim.
+- HUD: rift room map, trackers stack without overlapping, H cycles full/compact/hidden. World boss tracker.
+- The Beast of Despair has a new GeckoLib model with 13 animations (armour, third eye and Despair glow by phase).
+- Zenon is the Ossuarch again (name only; same skin). His third form rises and crashes down, gets a Grave-Bound title
+  card, a grave-light aura, and a new move, Marrow Crown.
+- Own synthesised sounds for familiar casts, board notes and the Sovereign's footsteps.
+- Fixes: menu text overlaps, the library and waypoint screens on small windows, Magic Bolt's missing name.
+- Tools: a rule and asset checker before every build, an in-game layout checker (/isglayout, F9), automatic UI
+  screenshots and automatic game tests on the build server.
 
 NEW IN 1.94.0
 - World boss: the Cinder Sovereign, a 15-block winged demon lord (GeckoLib model and animations) that rises somewhere in
