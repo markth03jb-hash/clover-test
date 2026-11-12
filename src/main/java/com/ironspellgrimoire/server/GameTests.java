@@ -172,8 +172,12 @@ public final class GameTests {
             else if (c == String.class) args[i] = "mainhand";
             else args[i] = null;
         }
-        m.invoke(s, args);
+        Object r = m.invoke(s, args);
+        if (!castInfoShown) { castInfoShown = true; info("casting", "using " + m.toGenericString() + " -> " + r); }
+        lastCastResult = String.valueOf(r);
     }
+    private static boolean castInfoShown;
+    private static String lastCastResult = "";
 
     private static void cancelCast() {
         try {
@@ -202,7 +206,10 @@ public final class GameTests {
             mana0 = MagicData.getPlayerMagicData(p).getMana(); hp0 = dummy == null ? 0 : dummy.getHealth();
             fx0 = AddonNetwork.fxSent;
             try { cast(spell); } catch (Throwable x) { castErr = (x.getCause() != null ? x.getCause() : x).toString(); }
+            MagicData d = MagicData.getPlayerMagicData(p);
+            castState = "cast returned " + lastCastResult + ", casting=" + d.isCasting() + " " + d.getCastingSpellId();
         }
+        String castState = "";
         @Override boolean tick(int t) {
             p.setHealth(p.getMaxHealth());
             if (t < 60) return false;
@@ -217,7 +224,7 @@ public final class GameTests {
             np.removeAll(pe); nd.removeAll(de);
             if (!np.isEmpty() || !nd.isEmpty()) { fail(name, "gave status effects: " + np + " " + nd); ok = false; }
             if (fx > 360) warn(name, "heavy: " + fx + " effect packets in 3 s (" + fx / 3 + "/s)");
-            if (fx == 0 && spent <= 0 && dealt <= 0) warn(name, "did nothing visible (no effects, no mana, no damage) - it may need a target, a form or a condition");
+            if (fx <= 1 && spent <= 0 && dealt <= 0) warn(name, "did nothing visible (no effects, no mana, no damage; " + castState + ") - it may need a target, a form or a condition");
             if (ok) pass(name, String.format("%d fx packets, %.0f mana, %.1f damage", fx, spent, dealt));
             return true;
         }
@@ -348,6 +355,7 @@ public final class GameTests {
                         if (elf || e.getPersistentData().getBoolean("isg_raid_leader")) { any = true; e.kill(); }
                     }
                     if (any && !elvesSeen) waves++;
+                    p.teleportTo(home.x, home.y, home.z);
                     elvesSeen = any;
                 }
                 if (t % 40 == 0) {
@@ -355,7 +363,8 @@ public final class GameTests {
                     for (BlockPos q : BlockPos.betweenClosed(c.offset(-12, -3, -12), c.offset(12, 4, 12))) {
                         BlockEntity be = sl().getBlockEntity(q);
                         if (be instanceof ChestBlockEntity ch && ch.getCustomName() != null && ch.getCustomName().getString().contains("Spoils")) {
-                            pass(name, waves + " wave(s) beaten, spoils chest at " + q.getX() + "," + q.getY() + "," + q.getZ());
+                            if (waves >= 4) pass(name, waves + " wave(s) beaten, spoils chest at " + q.getX() + "," + q.getY() + "," + q.getZ());
+                            else fail(name, "the spoils chest came after only " + waves + " wave(s) of elves were seen (did they spawn?)");
                             sl().removeBlock(q, false);
                             return true;
                         }
@@ -392,6 +401,8 @@ public final class GameTests {
         BlockPos g = sl().getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(player.position()));
         home = new Vec3(g.getX() + 0.5, g.getY(), g.getZ() + 0.5);
         queue.clear(); results.clear(); index = 0; t = 0;
+        p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete every boss and elf at once
+        sl().setDayTime(6000);
         UiShotsServer.prepare(p);
         queue.add(saving());
         queue.add(boards());
