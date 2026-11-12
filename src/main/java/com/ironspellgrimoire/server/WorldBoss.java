@@ -198,7 +198,8 @@ public final class WorldBoss {
         for (Map.Entry<UUID, Float> e : b.dealt.entrySet()) if (e.getValue() > best) { best = e.getValue(); top = e.getKey(); }
         List<String> names = new ArrayList<>();
         for (Map.Entry<UUID, Float> e : b.dealt.entrySet()) {
-            if (!(s.getPlayerList().getPlayer(e.getKey()) instanceof ServerPlayer p)) continue;
+            ServerPlayer p = s.getPlayerList().getPlayer(e.getKey());
+            if (p == null) continue;
             float share = e.getValue() / total;
             if (share < 0.02f && e.getValue() < 60) continue;
             names.add(p.getGameProfile().getName());
