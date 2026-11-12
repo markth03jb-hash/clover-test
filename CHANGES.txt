@@ -1,6 +1,13 @@
-Iron Spell Grimoire v1.95.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.96.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.96.0
+- New boss: Dante (spawn egg). Body magic mends him from his mana - drain it (spells drain it faster) and he's exhausted:
+  no mending, +50% damage taken. Flesh lance, thorns, a severed hand that hunts you, a rebuild you can interrupt; then
+  gravity: well, heavy field, thrown rubble, lift-and-slam; in his last phase the Singularity. Wears a long oxblood cloak.
+- Fix: a thrown-rubble effect could crash the game; effect colours can no longer crash the renderer.
+- Tools: the automatic game tests and screenshots skip whatever passed before and hasn't changed.
 
 NEW IN 1.95.0
 - Boards: pick a bounty or quest from three notes (Take, Give Up, New notes for 2 stars), a Record page with your past hunts
