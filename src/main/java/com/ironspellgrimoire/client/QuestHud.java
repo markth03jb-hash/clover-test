@@ -28,6 +28,8 @@ public final class QuestHud {
     private static double tx, tz;
     private static long deadline, doneAt;
 
+    public static boolean shown() { return type >= 0; }
+
     public static void set(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
         long now = mc.level == null ? 0 : mc.level.getGameTime();

@@ -134,10 +134,10 @@ public final class Familiars {
                 FxSend.ring(p.serverLevel(), PAL[kind] | FxPacket.KEEP_SHAPE, f.position(), 0.2f, 1.6f, 0.06f, 12);
                 if (grew) p.displayClientMessage(Component.literal("Your " + NAMES[kind] + " grows stronger! (stage " + stage + ")").withStyle(ChatFormatting.GOLD), true);
             }
-            if (stage >= 2) {
-                f.setCustomName(Component.literal(p.getGameProfile().getName() + "'s " + NAMES[kind]).withStyle(ChatFormatting.GRAY));
-                f.setCustomNameVisible(false);
-            }
+            String own = p.getPersistentData().getString("isg_familiar_name");
+            if (!own.isEmpty()) f.setCustomName(Component.literal(own).withStyle(ChatFormatting.GOLD));
+            else if (stage >= 2) f.setCustomName(Component.literal(p.getGameProfile().getName() + "'s " + NAMES[kind]).withStyle(ChatFormatting.GRAY));
+            f.setCustomNameVisible(false);
         }
         int every = f.stage() == 3 ? 100 : f.stage() == 2 ? 130 : 160;
         if (p.tickCount % every == 0) assist(p, f);
@@ -166,7 +166,7 @@ public final class Familiars {
         FxSend.beam(sl, pal | FxPacket.KEEP_SHAPE, from, to, 0.14f + stage * 0.04f, 8);
         FxSend.ring(sl, pal | FxPacket.KEEP_SHAPE, to, 0.2f, 0.9f + stage * 0.3f, 0.05f, 10);
         f.markCast();
-        float dmg = 3f + stage * 2f;
+        float dmg = (3f + stage * 2f) * (float) Math.max(1.0, p.getAttributeValue(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.SPELL_POWER.get()));   // grows with your spell power
         t.hurt(p.damageSources().indirectMagic(f, p), dmg);
         sl.playSound(null, f.blockPosition(), SoundEvents.EVOKER_CAST_SPELL, SoundSource.PLAYERS, 0.5f, 1.8f);
         // each kind's own touch (from stage 2 on, Wind and Lightning and Dark and Time get theirs at once; others at 3)
@@ -205,6 +205,13 @@ public final class Familiars {
                 p.displayClientMessage(Component.literal("Your familiar comes back to you.").withStyle(ChatFormatting.GOLD), true);
             } else sendHome(p);
             return 1;
-        }));
+        }).then(Commands.literal("name").then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.greedyString()).executes(c -> {
+            ServerPlayer p = c.getSource().getPlayerOrException();
+            String n = com.mojang.brigadier.arguments.StringArgumentType.getString(c, "name").trim();
+            if (n.length() > 24) n = n.substring(0, 24);
+            p.getPersistentData().putString("isg_familiar_name", n);
+            p.displayClientMessage(Component.literal(n.isEmpty() ? "Your familiar has no name again." : "Your familiar is called " + n + ".").withStyle(ChatFormatting.GOLD), true);
+            return 1;
+        }))));
     }
 }

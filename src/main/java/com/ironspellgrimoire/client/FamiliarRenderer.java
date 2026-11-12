@@ -61,5 +61,5 @@ public class FamiliarRenderer extends EntityRenderer<FamiliarEntity> {
 
     @Override public ResourceLocation getTextureLocation(FamiliarEntity e) { return TEX[Mth.clamp(e.kind(), 0, KINDS.length - 1)]; }
 
-    @Override protected boolean shouldShowName(FamiliarEntity e) { return e.hasCustomName() && e.stage() >= 2 && this.entityRenderDispatcher.distanceToSqr(e) < 64; }
+    @Override protected boolean shouldShowName(FamiliarEntity e) { return e.hasCustomName() && this.entityRenderDispatcher.distanceToSqr(e) < 64; }
 }

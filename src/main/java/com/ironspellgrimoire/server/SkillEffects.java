@@ -348,6 +348,14 @@ public final class SkillEffects {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p)) return;
         long now = now(p);
         if (now % 20 != 0) return;
+        if (now % 100 == 0) {   // a new leaf grown: say so (once per leaf)
+            ItemStack bk = Utils.getPlayerSpellbookStack(p);
+            if (SkillTree.bookIndex(bk) >= 0) {
+                int free = SkillTree.earned(bk, MemoryPages.chapter(p)) - SkillTree.spent(bk), seen = bk.getOrCreateTag().getInt("TreeSeen");
+                if (free > seen) p.displayClientMessage(Component.literal("\u2618 Your grimoire grew a leaf - " + free + " to spend on its Mana Tree (open it, then the Tree ribbon).").withStyle(ChatFormatting.GREEN), false);
+                if (free != seen) bk.getOrCreateTag().putInt("TreeSeen", free);
+            }
+        }
         ItemStack book = treeBook(p);
         if (book == null) { if (now % 200 == 0) STATE.remove(p.getUUID()); return; }
         int crown = crownOf(book);

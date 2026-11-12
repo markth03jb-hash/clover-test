@@ -92,6 +92,7 @@ public final class WorldBoss {
             return;
         }
         CinderSovereign b = find(s, d);
+        if (s.getTickCount() % 200 == 7) for (ServerPlayer p : s.getPlayerList().getPlayers()) track(p, d);
         if (!d.risen) {   // it waits under the ground until a mage comes near
             for (ServerPlayer p : ow.players()) {
                 double dx = p.getX() - d.x, dz = p.getZ() - d.z;
@@ -129,7 +130,24 @@ public final class WorldBoss {
             p.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal("is rising").withStyle(ChatFormatting.GOLD)));
             p.playNotifySound(SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 0.8f, 0.5f);
             p.sendSystemMessage(where(p, d));
+            track(p, d);
         }
+    }
+
+    /** The tracker at the top right (client/WorldBossHud): where it is and how long it waits - or, ended, gone. */
+    static void track(ServerPlayer p, Data d) {
+        com.ironspellgrimoire.network.FxPacket k = new com.ironspellgrimoire.network.FxPacket();
+        k.shape = 78; k.id = p.getId();
+        k.life = d.active ? 1 : 0;
+        k.c = new Vec3(d.x + 0.5, 0, d.z + 0.5);
+        k.sweep = d.risen ? 1 : 0;
+        k.r = (float) Math.max(0, (d.expires - System.currentTimeMillis()) / 50L);
+        com.ironspellgrimoire.network.AddonNetwork.send(net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> p), k);
+    }
+
+    @SubscribeEvent
+    public static void onLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) {
+        if (e.getEntity() instanceof ServerPlayer p) { Data d = data(p.server); if (d.active) { track(p, d); p.sendSystemMessage(where(p, d)); } }
     }
 
     static Component where(ServerPlayer p, Data d) {
@@ -158,6 +176,7 @@ public final class WorldBoss {
         sl.addFreshEntity(b);
         b.play("roar");
         d.risen = true; d.boss = b.getUUID(); d.setDirty();
+        for (ServerPlayer p : sl.getServer().getPlayerList().getPlayers()) track(p, d);
         BossFx.ring(sl, Fx.FIRE, at.add(0, 0.2, 0), 1f, 18f, 0.6f, 24);
         BossFx.beam(sl, Fx.FUEGO, at, at.add(0, 50, 0), 4f, 30);
         FxSend.shake(sl, at, 1.6f, 30, 96);
@@ -181,6 +200,7 @@ public final class WorldBoss {
         d.active = false; d.risen = false; d.boss = null;
         d.nextAt = System.currentTimeMillis() + 20 * HOUR + ThreadLocalRandom.current().nextLong(8 * HOUR);
         d.setDirty();
+        for (ServerPlayer p : s.getPlayerList().getPlayers()) track(p, d);
     }
 
     private static void broadcast(MinecraftServer s, Component c) { for (ServerPlayer p : s.getPlayerList().getPlayers()) p.sendSystemMessage(c); }
