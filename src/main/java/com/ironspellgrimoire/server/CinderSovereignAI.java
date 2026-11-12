@@ -77,6 +77,14 @@ public final class CinderSovereignAI {
         if (b.phase() >= 2) pool.add(CinderSovereignAI::heartBeam);
         int took = pool.get(r.nextInt(pool.size())).applyAsInt(b, t);
         b.busy = took + (b.phase() == 1 ? 24 : b.phase() == 2 ? 16 : 10);
+        if (b.tickCount > 12000) {   // ten minutes and still standing: it burns hotter, and faster
+            if (!b.getPersistentData().getBoolean("isg_enraged")) {
+                b.getPersistentData().putBoolean("isg_enraged", true);
+                line(b, "You have kept me waiting long enough.");
+                BossFx.ring(sl, Fx.FIRE, b.position().add(0, 0.2, 0), 1f, 14f, 0.5f, 18);
+            }
+            b.busy = Math.max(6, b.busy * 2 / 3);
+        }
     }
 
     /** Slam: a crater before it, a shockwave to jump, and magma cracking out. */

@@ -35,6 +35,7 @@ public class BoardScreen extends Screen {
     private int noteX(int i) { return x0() + 10 + i * (NW + 9); }
     private int noteY() { return y0() + 32; }
     private static boolean in(double mx, double my, int x, int y, int w, int h) { return mx >= x && mx < x + w && my >= y && my < y + h; }
+    private int[] reroll() { return new int[]{x0() + W - 112, y0() + H - 19, 102, 14}; }
     private int[] button(int i) { return data.active.isEmpty() ? new int[]{noteX(i) + 18, noteY() + NH - 22, NW - 36, 15} : new int[]{x0() + W / 2 - 45, noteY() + NH - 22, 90, 15}; }
 
     @Override
@@ -47,6 +48,12 @@ public class BoardScreen extends Screen {
             for (int i = 0; i < data.notes.size(); i++) {
                 int[] b = button(i);
                 if (in(mx, my, b[0], b[1], b[2], b[3])) { send(i); return true; }
+            }
+            int[] rr = reroll();
+            if (in(mx, my, rr[0], rr[1], rr[2], rr[3]) && data.stars >= com.ironspellgrimoire.server.Boards.REROLL_COST) {
+                AddonNetwork.CHANNEL.sendToServer(new BoardPackets.Pick(data.kind, -2));
+                mc.player.playSound(SoundEvents.BOOK_PAGE_TURN, 1F, 1.3F);
+                return true;
             }
         }
         return super.mouseClicked(mx, my, btn);
@@ -79,6 +86,8 @@ public class BoardScreen extends Screen {
             note(g, x0 + (W - NW) / 2 - 0, -1, null, mx, my);
         } else {
             for (int i = 0; i < data.notes.size(); i++) note(g, noteX(i), i, data.notes.get(i), mx, my);
+            if (data.wait.isEmpty()) buttonDraw(g, reroll(), "New notes (" + com.ironspellgrimoire.server.Boards.REROLL_COST + "\u2605)", mx, my,
+                    data.stars >= com.ironspellgrimoire.server.Boards.REROLL_COST, 0xFF6A4A20);
             if (!data.wait.isEmpty()) {
                 int ww = font.width(data.wait) + 12;
                 g.fill(x0 + (W - ww) / 2, y0 + H - 18, x0 + (W + ww) / 2, y0 + H - 4, 0xC0180E08);
