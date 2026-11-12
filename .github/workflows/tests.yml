@@ -2,7 +2,10 @@ name: Game tests
 # Starts the real game (no screen: a virtual display with software OpenGL) and runs server/GameTests: every spell,
 # every boss, the boards, a rift, an Elf Raid, saving and loading. The job fails if any test fails.
 # Runs on every push to main, when started by hand, or on a push whose commit message has [test] in it.
-on: [push, workflow_dispatch]
+on:
+  workflow_dispatch:
+  push:
+    paths: ['src/**', 'build.gradle', 'gradle.properties', '.github/workflows/tests.yml']
 permissions:
   contents: write
 jobs:
@@ -21,6 +24,9 @@ jobs:
         env: { ISG_GAMETESTS: '1', LIBGL_ALWAYS_SOFTWARE: '1', MESA_GL_VERSION_OVERRIDE: '4.5' }
         run: |
           mkdir -p run && echo "eula=true" > run/eula.txt
+          # what passed last time (and its pictures): skipped this time unless its code changed
+          git fetch -q origin game-tests:prev 2>/dev/null && mkdir -p /tmp/prev && git --work-tree=/tmp/prev checkout prev -- . 2>/dev/null || true
+          cp /tmp/prev/isg_test_cache.txt run/ 2>/dev/null || true
           xvfb-run -a -s "-screen 0 1920x1080x24" gradle runClient --no-daemon 2>&1 | tail -n 400 > run/console_tail.txt || true
           cat run/isg_gametests_report.txt || echo "no report written"
           echo "----- console (last 120 lines)"; tail -n 120 run/console_tail.txt
@@ -28,7 +34,7 @@ jobs:
       - name: Keep the results on the game-tests branch
         if: always()
         run: |
-          mkdir -p /tmp/out && cp run/isg_gametests_report.txt run/console_tail.txt /tmp/out/ 2>/dev/null || true
+          mkdir -p /tmp/out && cp run/isg_gametests_report.txt run/isg_test_cache.txt run/console_tail.txt /tmp/out/ 2>/dev/null || true
           cp run/logs/latest.log /tmp/out/ 2>/dev/null || true
           cd /tmp/out && git init -q && git checkout -q -b game-tests && git add -A
           git -c user.name=ci -c user.email=ci@localhost commit -qm "Game tests for ${GITHUB_SHA}" || exit 0

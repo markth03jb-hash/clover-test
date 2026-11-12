@@ -454,6 +454,26 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> LIGHT_SPELLS = List.of(
             LIGHT_SWORD, LIGHT_SPEED_STEP, ARROWS_OF_JUDGMENT, BRIGHT_JUDGMENT_WHIP, HEALING_RAY, BLINDING_FLASH, LIGHT_SWORDS_OF_JUDGMENT, LIGHT_SHAFT, DEMON_LIGHT, IMPERIAL_SWORDS_OF_CONVICTION);
 
+    // ------------------------------------------------------------------ Blood Grimoire (an original grimoire: BloodFx)
+    private static com.ironspellgrimoire.spells.BookSpell blood(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.BLOOD_RESOURCE,
+                com.ironspellgrimoire.item.BloodGrimoireItem.class, "ui.iron_spell_grimoire.blood_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> CRIMSON_EDGE = registerSpell(blood("crimson_edge", 2, 15, 9, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.BloodFx::crimsonEdge));
+    public static final RegistryObject<AbstractSpell> HEMORRHAGE = registerSpell(blood("hemorrhage", 8, 20, 8, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.BloodFx::hemorrhage));
+    public static final RegistryObject<AbstractSpell> SANGUINE_VOLLEY = registerSpell(blood("sanguine_volley", 6, 25, 9, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.BloodFx::sanguineVolley));
+    public static final RegistryObject<AbstractSpell> TRANSFUSION = registerSpell(blood("transfusion", 12, 30, 8, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.BloodFx::transfusion));
+    public static final RegistryObject<AbstractSpell> BLOOD_PACT = registerSpell(blood("blood_pact", 20, 10, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.BloodFx::bloodPact));
+    public static final RegistryObject<AbstractSpell> RED_TIDE = registerSpell(blood("red_tide", 12, 40, 11, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.BloodFx::redTide));
+    public static final RegistryObject<AbstractSpell> THORNED_VEINS = registerSpell(blood("thorned_veins", 14, 45, 12, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.BloodFx::thornedVeins));
+    public static final RegistryObject<AbstractSpell> CRIMSON_BULWARK = registerSpell(blood("crimson_bulwark", 24, 40, 8, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.BloodFx::crimsonBulwark));
+    public static final RegistryObject<AbstractSpell> EXSANGUINATE = registerSpell(blood("exsanguinate", 22, 60, 12, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.BloodFx::exsanguinate));
+    public static final RegistryObject<AbstractSpell> SCARLET_MOON = registerSpell(blood("scarlet_moon", 90, 100, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BloodFx::scarletMoon));
+    /** The ten Blood Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> BLOOD_SPELLS = List.of(
+            CRIMSON_EDGE, HEMORRHAGE, SANGUINE_VOLLEY, TRANSFUSION, BLOOD_PACT, RED_TIDE, THORNED_VEINS, CRIMSON_BULWARK, EXSANGUINATE, SCARLET_MOON);
+
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,
                                                                    String only, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {

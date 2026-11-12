@@ -39,6 +39,7 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             {1.0F, 0.78F, 0.25F},    // 9 liquid gold (Rien's Golden Shell)
             {0.7F, 0.0F, 0.06F},     // 10 blood (Don Quixote's Vampire Mode)
             {0.05F, 0.05F, 0.07F},   // 11 black slime (Rien's shell)
+            {1.0F, 1.0F, 1.0F},      // 12 white (Scarlet Moon, the Blood Grimoire)
     };
 
     public AuraOutlineLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
@@ -80,6 +81,15 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
         PlayerModel<AbstractClientPlayer> m = getParentModel();
         VertexConsumer vc = buf.getBuffer(RenderType.entityTranslucentEmissive(WHITE));
         float flick = (float) (Math.sin(now * 0.9 + p.getId()) * 0.012 + Math.sin(now * 2.3) * 0.008);
+        if ((int) f[2] == 12) {   // Scarlet Moon: a blazing white aura round a thin blood-red skin - layered, flaring and pulsing
+            float beat = (float) Math.pow(Math.max(0, Math.sin(now * 0.32)), 6);   // a heartbeat runs through it
+            float flare = 0.85F + 0.15F * (float) Math.sin(now * 1.7 + p.getId()) + 0.25F * beat;
+            shell(ps, m, vc, 1.03F, 0.6F, 0.02F, 0.04F, 0.35F * a);                                        // blood-red skin
+            shell(ps, m, vc, 1.08F + flick * 0.6F, 1.0F, 1.0F, 1.0F, 0.42F * a * flare);                   // bright white
+            shell(ps, m, vc, 1.16F + flick * 1.4F + 0.03F * beat, 1.0F, 0.97F, 0.97F, 0.22F * a * flare);  // white haze
+            shell(ps, m, vc, 1.28F + flick * 2.2F + 0.06F * beat, 1.0F, 0.85F, 0.88F, 0.08F * a);          // the wide outer glow
+            return;
+        }
         if ((int) f[2] == 2) {   // Silver Guardian: a skin of liquid mercury, bright and rippling, hugging the body
             float shine = 0.75F + 0.25F * (float) Math.sin(now * 0.5);
             shell(ps, m, vc, 1.03F + flick * 0.3F, 0.62F * shine, 0.66F * shine, 0.72F * shine, 0.62F * a);

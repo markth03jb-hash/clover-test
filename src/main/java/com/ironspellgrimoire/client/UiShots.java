@@ -102,6 +102,16 @@ public final class UiShots {
             FxPacket rb = fx(76); rb.sweep = 2; rb.h = 2; rb.life = 400; RaidBanner.start(rb);
         }, 20, true));
         steps.add(new Step("hud_compact", () -> TrackerMode.set(1), 10, true));
+        // the Blood Grimoire: Scarlet Moon seen from the front and behind (third person), then two spells
+        steps.add(new Step("blood_moon_front", () -> {
+            TrackerMode.set(2); mc.options.hideGui = true; mc.setScreen(null);
+            mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+            onServer(p -> { p.setXRot(10); UiShotsServer.scarletMoon(p); });
+        }, 70, true));
+        steps.add(new Step("blood_moon_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 12, true));
+        steps.add(new Step("blood_thorns", () -> onServer(p -> UiShotsServer.bloodSpell(p, "thorned_veins")), 12, true));
+        steps.add(new Step("blood_tide", () -> onServer(p -> UiShotsServer.bloodSpell(p, "red_tide")), 6, true));
+        steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)
         steps.add(new Step("dante_front", () -> { TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.dante(p, false, false); }); }, 30, true));
         steps.add(new Step("dante_back", () -> onServer(p -> UiShotsServer.dante(p, true, false)), 30, true));
@@ -123,12 +133,38 @@ public final class UiShots {
         mc.stop();
     }
 
+    // ------------------------------------------------------------------ skipping what hasn't changed (server/ClassKey)
+    private static String stepKey;
+    private static com.ironspellgrimoire.server.ClassKey.Cache cacheObj;
+    private static final String HARNESS = com.ironspellgrimoire.server.ClassKey.single(UiShots.class) + com.ironspellgrimoire.server.ClassKey.single(LayoutCheck.class);
+    private static com.ironspellgrimoire.server.ClassKey.Cache cache() {
+        if (cacheObj == null) cacheObj = new com.ironspellgrimoire.server.ClassKey.Cache(Minecraft.getInstance().gameDirectory.toPath().resolve("isg_ui_cache.txt"));
+        return cacheObj;
+    }
+
+    /** The code each picture depends on (null: always taken - the steps that set things up). */
+    private static Class<?>[] rootsFor(String step) {
+        if (step.startsWith("book_")) return new Class<?>[]{GrimoireBookScreen.class};
+        if (step.startsWith("board_")) return new Class<?>[]{BoardScreen.class, com.ironspellgrimoire.server.Boards.class};
+        if (step.startsWith("hud_")) return new Class<?>[]{BountyHud.class, QuestHud.class, WorldBossHud.class, RiftMap.class, BroomHud.class, ModeHudOverlay.class, RaidBanner.class, TrackerMode.class};
+        if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
+        if (step.startsWith("blood_")) return new Class<?>[]{com.ironspellgrimoire.server.BloodFx.class, ModeAuraFx.class, AuraOutlineLayer.class};
+        return switch (step) {
+            case "star_forge" -> new Class<?>[]{StarForgeScreen.class, com.ironspellgrimoire.server.StarForge.class};
+            case "altar" -> new Class<?>[]{AltarScreen.class, com.ironspellgrimoire.server.AltarMenu.class};
+            case "library" -> new Class<?>[]{LibraryScreen.class, com.ironspellgrimoire.server.GrimoireLibrary.class};
+            case "waypoints" -> new Class<?>[]{WaypointScreen.class, com.ironspellgrimoire.server.Waypoints.class};
+            default -> null;
+        };
+    }
+
     private static void finish() {
         Minecraft mc = Minecraft.getInstance();
         Path out = mc.gameDirectory.toPath().resolve("isg_uishots_report.txt");
         List<String> lines = new ArrayList<>();
         lines.add("Iron Spell Grimoire - automatic UI check: " + steps.size() + " steps, " + report.size() + " problem(s)");
         lines.addAll(report);
+        cache().save();
         try { Files.write(out, lines, StandardCharsets.UTF_8); } catch (IOException ignored) {}
         mc.stop();
     }
@@ -179,13 +215,25 @@ public final class UiShots {
         }
         if (index >= steps.size()) { phase = 3; finish(); return; }
         Step s = steps.get(index);
-        if (wait == 0) { try { s.action().run(); } catch (Throwable t) { report.add(s.name() + " | failed to set up: " + t); } }
+        if (wait == 0) {
+            Class<?>[] roots = rootsFor(s.name());   // passed before and nothing it shows has changed: keep the old pictures
+            stepKey = roots == null ? null : com.ironspellgrimoire.server.ClassKey.of(s.name() + "|" + HARNESS, roots);
+            if (stepKey != null && cache().unchanged(s.name(), stepKey)) {
+                report.add(s.name() + " | SKIP | unchanged since it passed");
+                cache().passed(s.name(), stepKey);
+                index++;
+                return;
+            }
+            try { s.action().run(); } catch (Throwable t) { report.add(s.name() + " | failed to set up: " + t); }
+        }
         if (++wait < s.delay()) return;
         wait = 0;
         if (s.name().equals("setup") || s.name().equals("take_hunt_and_quest")) { index++; return; }
         Screen sc = mc.screen;
         if (!s.hud() && sc == null) { report.add(s.name() + " | the menu didn't open"); index++; return; }
-        for (String issue : LayoutCheck.audit(s.hud() ? null : sc)) report.add(s.name() + " | " + issue);
+        List<String> issues = LayoutCheck.audit(s.hud() ? null : sc);
+        for (String issue : issues) report.add(s.name() + " | " + issue);
+        if (issues.isEmpty() && stepKey != null) cache().passed(s.name(), stepKey);
         shot = 0; scale(SHOT_SCALES[0]); waitShot = 4;
     }
 

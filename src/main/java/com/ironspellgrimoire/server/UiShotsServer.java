@@ -45,6 +45,21 @@ public final class UiShotsServer {
     }
     public static BlockPos at(ServerPlayer p) { return p.blockPosition(); }
 
+    /** The Blood Grimoire's Scarlet Moon, on the test player (for the third-person pictures). */
+    public static void scarletMoon(ServerPlayer p) {
+        ItemStack book = new ItemStack(AddonItemRegistry.BLOOD_GRIMOIRE.get());
+        CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+        BloodFx.scarletMoon(p, 10f);
+    }
+    /** One Blood spell, cast where the player looks. */
+    public static void bloodSpell(ServerPlayer p, String which) {
+        switch (which) {
+            case "thorned_veins" -> BloodFx.thornedVeins(p, 10f);
+            case "red_tide" -> BloodFx.redTide(p, 10f);
+            default -> BloodFx.crimsonEdge(p, 10f);
+        }
+    }
+
     /** Dante, standing four blocks in front of the camera (facing it, or turned away), for a look at his cloak. */
     public static void dante(ServerPlayer p, boolean back, boolean flare) {
         p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete him at once

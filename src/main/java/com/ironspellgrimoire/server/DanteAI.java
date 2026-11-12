@@ -338,7 +338,7 @@ public final class DanteAI {
                 for (int i = 0; i < N; i++) {
                     double a = kk * 0.25 + i * Math.PI * 2 / N;
                     Vec3 at = b.position().add(Math.cos(a) * 2.4, 1.2 + Math.sin(kk * 0.3 + i) * 0.3 + kk * 0.03, Math.sin(a) * 2.4);
-                    FxSend.box(sl, Fx.STEEL | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, at, new Vec3(Math.cos(a), 0, Math.sin(a)), new Vec3(0, 1, 0), 0.3f, 0.25f, 0.25f, 3, 0, com.ironspellgrimoire.network.FxPacket.HOLD);
+                    FxSend.box(sl, Fx.STEEL, at, new Vec3(Math.cos(a), 0, Math.sin(a)), new Vec3(0, 1, 0), 0.3f, 0.25f, 0.25f, 3, 0, com.ironspellgrimoire.network.FxPacket.HOLD);
                 }
             });
         }
@@ -358,7 +358,7 @@ public final class DanteAI {
                         final int kk = k;
                         AstaFx.later(k, () -> {
                             Vec3 p0 = from.add(d.scale(2 * kk)), p1 = from.add(d.scale(2 * (kk + 1)));
-                            FxSend.box(sl, Fx.STEEL | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, p1, d, new Vec3(0, 1, 0), 0.32f, 0.26f, 0.26f, 2, 0, com.ironspellgrimoire.network.FxPacket.HOLD);
+                            FxSend.box(sl, Fx.STEEL, p1, d, new Vec3(0, 1, 0), 0.32f, 0.26f, 0.26f, 2, 0, com.ironspellgrimoire.network.FxPacket.HOLD);
                             BossFx.trail(sl, GRAV, p0, p1, 0.08f, 6);
                             for (Player p : along(b, p0, p1, 0.9)) if (p.invulnerableTime <= 10) hurt(b, p, 5f);
                         });
