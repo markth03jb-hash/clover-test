@@ -1029,8 +1029,8 @@ public final class BloodFxClient {
                 Vec3 to = new Vec3(cam.x - feet.x, 0, cam.z - feet.z);
                 to = to.lengthSqr() < 1.0E-6 ? new Vec3(0, 0, 1) : to.normalize();
                 Vec3 side = new Vec3(-to.z, 0, to.x);
-                double s = q[3], hw = 0.82 * s, h = hw * 2 * 256 / 160.0;
-                Vec3 base = feet.add(to.scale(layer < 2 ? -0.42 : 0.42)).add(0, -0.12 * s, 0);
+                double s = q[3], hw = 1.05 * s, h = hw * 2 * 256 / 160.0;
+                Vec3 base = feet.add(to.scale(layer < 2 ? -0.42 : 0.42)).add(0, -0.2 * s, 0);
                 float a = (float) q[4] * (layer == 2 ? 0.6F : 1F);
                 int f0 = (int) q[5];
                 float mix = (float) (q[5] - f0);

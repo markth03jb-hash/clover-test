@@ -79,7 +79,7 @@ def frame(T):
     a_body = inside * (0.14 + 0.32 * (1 - depth) + 0.22 * st) + 0.3 * halo
     col = np.stack([0.30 + 0.45 * st, 0.62 + 0.3 * st, np.ones_like(st)], -1)
     col = col * (1 - rim[..., None] * 0.7) + np.array([0.85, 0.96, 1.0]) * rim[..., None] * 0.7
-    a_body = np.clip(np.maximum(a_body, rim * 0.85) * fade_bottom, 0, 1)
+    a_body = np.clip(np.maximum(a_body * 1.5, rim * 0.9) * fade_bottom, 0, 1)
     body = np.dstack([col * 255, a_body[..., None] * 255])
 
     # glow: what's added on top - the white-hot rim, the streaks and a whisper of the halo
