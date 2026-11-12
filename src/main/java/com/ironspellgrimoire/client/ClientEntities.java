@@ -26,5 +26,6 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.BROOM.get(), BroomRenderer::new);
         e.registerEntityRenderer(AddonEntities.FAMILIAR.get(), FamiliarRenderer::new);
         e.registerEntityRenderer(AddonEntities.MEMORY_GUARDIAN.get(), MemoryGuardianRenderer::new);
+        e.registerEntityRenderer(AddonEntities.CINDER_SOVEREIGN.get(), CinderSovereignRenderer::new);
     }
 }

@@ -20,7 +20,7 @@ public final class BossCores {
     static boolean isBoss(EntityType<?> t) {
         return t == AddonEntities.ZENON.get() || t == AddonEntities.BEAST_OF_DESPAIR.get() || t == AddonEntities.RHYA.get()
                 || t == AddonEntities.LICHT.get() || t == AddonEntities.REVENANT.get() || t == AddonEntities.CURSE_WITCH.get()
-                || t == AddonEntities.REFLECTION.get() || t == AddonEntities.MEMORY_GUARDIAN.get();
+                || t == AddonEntities.REFLECTION.get() || t == AddonEntities.MEMORY_GUARDIAN.get() || t == AddonEntities.CINDER_SOVEREIGN.get();
     }
 
     @SubscribeEvent

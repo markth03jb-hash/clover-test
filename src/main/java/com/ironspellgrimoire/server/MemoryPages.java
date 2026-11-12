@@ -54,7 +54,7 @@ public final class MemoryPages {
 
     private static List<EntityType<?>> bosses() {
         return List.of(AddonEntities.ZENON.get(), AddonEntities.BEAST_OF_DESPAIR.get(), AddonEntities.RHYA.get(), AddonEntities.LICHT.get(),
-                AddonEntities.REVENANT.get(), AddonEntities.CURSE_WITCH.get(), AddonEntities.REFLECTION.get());
+                AddonEntities.REVENANT.get(), AddonEntities.CURSE_WITCH.get(), AddonEntities.REFLECTION.get(), AddonEntities.CINDER_SOVEREIGN.get());
     }
 
     static int get(ServerPlayer p, String k) { return p.getPersistentData().getInt(k); }

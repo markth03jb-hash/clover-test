@@ -23,6 +23,7 @@ public final class MageSetup {
         e.put(AddonEntities.CURSE_WITCH.get(), com.ironspellgrimoire.entity.CurseWitch.attributes().build());
         e.put(AddonEntities.REFLECTION.get(), com.ironspellgrimoire.entity.Reflection.attributes().build());
         e.put(AddonEntities.MEMORY_GUARDIAN.get(), com.ironspellgrimoire.entity.MemoryGuardian.attributes().build());
+        e.put(AddonEntities.CINDER_SOVEREIGN.get(), com.ironspellgrimoire.entity.CinderSovereign.attributes().build());
     }
 
     @SubscribeEvent
