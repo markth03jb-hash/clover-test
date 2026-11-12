@@ -59,6 +59,7 @@ public final class BloodFxClient {
         Vec3 pos, vel;
         final float r;
         final double born;
+        boolean close;   // off your own hand in first person: never faded out for being near the camera
         Drop(Vec3 pos, Vec3 vel, float r, double born) { this.pos = pos; this.vel = vel; this.r = r; this.born = born; }
     }
 
@@ -67,6 +68,8 @@ public final class BloodFxClient {
         final float r;
         final double born, life;
         final int seed;
+        int id;
+        double drainAt = -1;
         Pool(Vec3 c, float r, double born, double life, int seed) { this.c = c; this.r = r; this.born = born; this.life = life; this.seed = seed; }
     }
 
@@ -102,9 +105,14 @@ public final class BloodFxClient {
         if (mc.level == null) return;
         double now = mc.level.getGameTime();
         int k = (int) p.h;
-        if (k == 99) { for (L l : LIVE) if (l.p.id == p.id && l.killAt < 0) l.killAt = now; return; }
+        if (k == 99) {
+            for (L l : LIVE) if (l.p.id == p.id && l.killAt < 0) l.killAt = now;
+            for (Pool q : POOLS) if (q.id == p.id && q.drainAt < 0) q.drainAt = now;   // a pool drunk: it drains away
+            return;
+        }
+        if (k == 15) { handDrip(mc, p, now); return; }
         if (k == 1) { spray(p.c, p.d, p.r, Math.max(1, p.sweep), p.a0 > 0 ? p.a0 : 0.07F, now); return; }
-        if (k == 5) { pool(p.c, p.r, now, Math.max(20, p.life)); return; }
+        if (k == 5) { pool(p.c, p.r, now, Math.max(20, p.life)); POOLS.get(POOLS.size() - 1).id = p.id; return; }
         if (k == 13) { burst(mc, p, now); }
         if (k == 3) {   // a thorn bursts out of the ground: the ground splashes round it
             crown(p.c, p.r2 * 3.2F, now);
@@ -170,7 +178,7 @@ public final class BloodFxClient {
         while (pi.hasNext()) {
             Pool q = pi.next();
             double age = now - q.born;
-            if (age > q.life) { pi.remove(); continue; }
+            if (age > q.life || (q.drainAt >= 0 && now - q.drainAt > 6)) { pi.remove(); continue; }
             drawPool(vc, m, n, cam, q, age);
         }
         // drops fall, and splash where they land
@@ -190,7 +198,9 @@ public final class BloodFxClient {
                 }
                 continue;
             }
+            if (d.close) FxBase.nearFade = false;
             drip(vc, m, n, cam, d.pos, d.vel, d.r);
+            FxBase.nearFade = true;
         }
         Iterator<Crown> ci = CROWNS.iterator();
         while (ci.hasNext()) {
@@ -341,7 +351,7 @@ public final class BloodFxClient {
         double dry = Mth.clamp((age - q.life * 0.6) / (q.life * 0.4), 0, 1);
         float a = (float) (0.94 * (1 - dry * dry));
         float tone = (float) (1 - 0.55 * dry);
-        double R = q.r * grow * (1 + 0.15 * dry);
+        double R = q.r * grow * (1 + 0.15 * dry) * (q.drainAt >= 0 ? Mth.clamp(1 - (lastNow - q.drainAt) / 6.0, 0, 1) : 1);
         int seg = 14;
         double y = q.c.y + 0.015 + (q.seed % 7) * 0.0006;
         Vec3 ctr = new Vec3(q.c.x, y + 0.008, q.c.z);
@@ -692,14 +702,15 @@ public final class BloodFxClient {
         Vec3 feet = follow(mc, p.v.x, p.c, pt, 0);
         double h = en.getBbHeight(), w = en.getBbWidth() * 0.5 + 0.03;
         lightAt(mc, feet.add(0, h * 0.5, 0));
-        for (int i = 0; i < 3; i++) {   // blood running down its sides
+        int stacks = Math.max(1, Math.min(5, Math.round(p.a0)));   // more stacks: more blood running, faster drips
+        for (int i = 0; i < 1 + stacks; i++) {   // blood running down its sides
             double an = i * 2.1 + p.id;
             double t = ((age * 0.05 + i * 0.37) % 1.0);
             Vec3 o = new Vec3(Math.cos(an) * w, 0, Math.sin(an) * w);
             Vec3 top = feet.add(o).add(0, h * (0.75 - t * 0.6), 0), bot = top.add(0, -0.25 - t * 0.2, 0);
             tube(vc, m, n, cam, new Vec3[]{top, top.add(bot).scale(0.5).add(o.scale(0.05)), bot}, new double[]{0.0, 0.03, 0.045}, 4, 0.95F, 1F);
         }
-        if (tick && Math.random() < 0.55) {
+        if (tick && Math.random() < 0.3 + 0.14 * stacks) {
             double an = Math.random() * TAU;
             drop(feet.add(Math.cos(an) * w, h * (0.3 + Math.random() * 0.4), Math.sin(an) * w), new Vec3(Math.cos(an) * 0.02, 0, Math.sin(an) * 0.02), 0.05F + (float) Math.random() * 0.03F, now);
         }
@@ -1064,10 +1075,63 @@ public final class BloodFxClient {
                 prev = q;
             }
         }
+        if (p.a0 > 0 && !self) {   // awakened: a crown of frost - a ring of ice spikes turning over the head - and wings of cold light
+            Vec3 cr = f.add(0, H + 0.35, 0);
+            for (int i = 0; i < 9; i++) {
+                double an = now * 0.03 + i * TAU / 9;
+                Vec3 b0 = cr.add(Math.cos(an) * 0.42, 0, Math.sin(an) * 0.42);
+                double hh = (i % 2 == 0 ? 0.42 : 0.26) * (1 + 0.15 * hb);
+                gseg(m, cam, b0, b0.add(Math.cos(an) * 0.08, hh, Math.sin(an) * 0.08), 0.05, 0.9F * k, 0.2F * k, W_CORE);
+            }
+            gring3(m, cam, cr, 0.42, 0.04, 0.8F * k);
+            double yaw = Math.toRadians(e.getYRot());
+            Vec3 back = new Vec3(Math.sin(yaw), 0, -Math.cos(yaw)), side = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
+            for (int s = -1; s <= 1; s += 2) for (int fth = 0; fth < 5; fth++) {   // wings: feathers of light swept back and out
+                Vec3 root = f.add(0, H * 0.72, 0).add(back.scale(0.25)).add(side.scale(s * 0.18));
+                double spread = 0.35 + fth * 0.28, lift = 0.5 - fth * 0.18 + 0.08 * Math.sin(now * 0.12 + fth);
+                Vec3 tip = root.add(side.scale(s * (0.6 + fth * 0.3))).add(back.scale(spread * 0.6)).add(0, lift, 0);
+                gseg(m, cam, root, tip, 0.06, 0.55F * k, 0.05F * k, W_SOFT);
+                gseg(m, cam, root, tip, 0.02, 0.8F * k, 0.1F * k, W_CORE);
+            }
+        }
         // a crown of light over the head
         Vec3 head = f.add(0, H + 0.05, 0);
         gseg(m, cam, head, head.add(0, 0.7 + 0.4 * hb, 0), 0.12, (0.35F + 0.3F * hb) * k, 0, W_SOFT);
         gseg(m, cam, head, head.add(0, 0.5 + 0.3 * hb, 0), 0.035, 0.8F * k, 0, W_CORE);
+    }
+
+    /** A ring of light lying flat (the frost crown's band). */
+    private static void gring3(Matrix4f m, Vec3 cam, Vec3 c, double r, double w, float a) {
+        Vec3 prev = null;
+        for (int i = 0; i <= 24; i++) {
+            double an = i * TAU / 24;
+            Vec3 q = c.add(Math.cos(an) * r, 0, Math.sin(an) * r);
+            if (prev != null) gseg(m, cam, prev, q, w, a, a, W_CORE);
+            prev = q;
+        }
+    }
+
+    // ================================================================== 15 the price: blood off the casting hand
+    /** Blood running off your casting hand: in first person from the hand you see, otherwise from the body's right hand. */
+    private static void handDrip(Minecraft mc, FxPacket p, double now) {
+        Entity e = mc.level.getEntity((int) p.v.x);
+        if (e == null) return;
+        Vec3 hand;
+        if (e == mc.player && mc.options.getCameraType().isFirstPerson()) {
+            net.minecraft.client.Camera cm = mc.gameRenderer.getMainCamera();
+            org.joml.Vector3f lv = cm.getLeftVector(), uv = cm.getUpVector(), fv = cm.getLookVector();
+            Vec3 left = new Vec3(lv.x(), lv.y(), lv.z()), up = new Vec3(uv.x(), uv.y(), uv.z()), fw = new Vec3(fv.x(), fv.y(), fv.z());
+            hand = cm.getPosition().add(fw.scale(0.75)).subtract(left.scale(0.42)).subtract(up.scale(0.38));
+        } else {
+            double yaw = Math.toRadians(e.getYRot());
+            Vec3 face = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw)), rt = new Vec3(-face.z, 0, face.x);
+            hand = e.position().add(0, e.getBbHeight() * 0.45, 0).add(face.scale(0.3)).add(rt.scale(-0.38));
+        }
+        boolean close = e == mc.player && mc.options.getCameraType().isFirstPerson();
+        for (int i = 0; i < 5; i++) {
+            drop(hand.add((Math.random() - 0.5) * 0.08, -Math.random() * 0.1, (Math.random() - 0.5) * 0.08), new Vec3((Math.random() - 0.5) * 0.02, -0.02 - Math.random() * 0.04, (Math.random() - 0.5) * 0.02), 0.035F + (float) Math.random() * 0.025F, now + i * 2);
+            DROPS.get(DROPS.size() - 1).close = close;
+        }
     }
 
     private static void awakening(Matrix4f m, Vec3 cam, L l, double age, double now) {

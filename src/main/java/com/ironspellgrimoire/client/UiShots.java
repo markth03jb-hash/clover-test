@@ -108,6 +108,16 @@ public final class UiShots {
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             onServer(p -> UiShotsServer.bloodSpell(p, "gauge"));
         }, 30, true));
+        steps.add(new Step("blood_overflow", () -> onServer(p -> UiShotsServer.bloodSpell(p, "overflow")), 16, true));
+        steps.add(new Step("blood_master", () -> onServer(p -> UiShotsServer.bloodSpell(p, "master")), 6, true));
+        steps.add(new Step("blood_book", () -> {
+            var bk = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(mc.player);
+            GrimoireBookScreen b = new GrimoireBookScreen(bk);
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 12, false));
+        steps.add(new Step("blood_book_ice", () -> { if (mc.screen instanceof GrimoireBookScreen b) b.iceView(true); }, 12, false));
+        steps.add(new Step("blood_book_done", () -> mc.setScreen(null), 4, true));
         steps.add(new Step("blood_edge", () -> {
             mc.options.hideGui = true;
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
@@ -138,6 +148,8 @@ public final class UiShots {
         steps.add(new Step("ice_shatter", () -> {}, 26, true));
         steps.add(new Step("ice_moonfall", () -> onServer(p -> UiShotsServer.bloodSpell(p, "moonfall")), 12, true));
         steps.add(new Step("ice_impact", () -> {}, 9, true));
+        steps.add(new Step("ice_throne", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.bloodSpell(p, "throne")); }, 24, true));
+        steps.add(new Step("ice_throne_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 6, true));
         steps.add(new Step("ice_hud", () -> { mc.options.hideGui = false; }, 20, true));
         steps.add(new Step("ice_wheel", () -> GrimoireWheel.forceOpen = true, 12, true));
         steps.add(new Step("ice_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); }, 4, true));

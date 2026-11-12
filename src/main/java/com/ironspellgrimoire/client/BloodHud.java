@@ -21,14 +21,16 @@ public final class BloodHud {
     private BloodHud() {}
 
     private static float gauge, shown = -1;
-    private static boolean equipped;
+    private static boolean equipped, awakened;
+    private static long nextBeat;
     private static long moonEnd;
     private static int moonLen = 1;
 
     public static void set(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
-        gauge = Mth.clamp(p.a0, 0F, 100F);
+        gauge = Mth.clamp(p.a0, 0F, 150F);
+        awakened = p.a1 > 0.5F;
         equipped = p.r > 0.5F;
         moonEnd = p.sweep > 0 ? mc.level.getGameTime() + p.sweep : 0;
         moonLen = Math.max(1, p.life);
@@ -44,6 +46,15 @@ public final class BloodHud {
     public static void onTick(net.minecraftforge.event.TickEvent.ClientTickEvent e) {
         if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
         com.ironspellgrimoire.spells.IceView.on = moon();
+        // the heartbeat quickens as the gauge fills (from half full; quiet - you feel it more than hear it)
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null || !equipped || moon() || gauge < 50F) return;
+        long now = mc.level.getGameTime();
+        if (now < nextBeat) return;
+        float k = Mth.clamp((gauge - 50F) / 60F, 0F, 1F);
+        nextBeat = now + Math.round(Mth.lerp(k, 46F, 13F));
+        net.minecraft.sounds.SoundEvent beat = com.ironspellgrimoire.registry.AddonSounds.get("heartbeat");
+        if (beat != null) mc.player.playSound(beat, 0.18F + 0.3F * k, 0.9F + 0.25F * k);
     }
 
     /** Is the vial on screen (for anything that would sit in the same place)? */
@@ -65,7 +76,8 @@ public final class BloodHud {
         double time = mc.level.getGameTime() + e.getPartialTick();
         long now = mc.level.getGameTime();
         boolean moon = now < moonEnd;
-        float frac = moon ? (float) Mth.clamp((moonEnd - time) / moonLen, 0, 1) : gauge / 100F;
+        float frac = moon ? (float) Mth.clamp((moonEnd - time) / moonLen, 0, 1) : Math.min(100F, gauge) / 100F;
+        float over = moon ? 0F : Mth.clamp((gauge - 100F) / 50F, 0F, 1F);   // overflow: a darker layer rising through the blood
         shown = shown < 0 ? frac : shown + (frac - shown) * 0.15F;
         boolean full = !moon && gauge >= 99.9F;
         float beat = (float) Math.pow(Math.max(0, Math.sin(time * 0.26)), 6);
@@ -99,6 +111,11 @@ public final class BloodHud {
             }
             if (s < innerBot) g.fill(cx, s, cx + 1, s + 1, surf);
         }
+        if (over > 0F) {   // overflow: thick dark blood welling up from the bottom, with a bright seam on top of it
+            int oy = innerBot - Math.round(ih * over);
+            g.fill(x + 1, oy, x + W - 1, innerBot, 0xFF2A0006);
+            g.fill(x + 1, oy, x + W - 1, oy + 1, lerp(0xFF7A0A14, 0xFFFF6070, beat));
+        }
         if (shown > 0.05F) for (int b = 0; b < 3; b++) {   // bubbles rising (snowflake glints under the Moon)
             double ph = (time * 0.035 + b * 0.37) % 1.0;
             int by = innerBot - 1 - (int) (ph * (innerBot - level - 1));
@@ -113,7 +130,10 @@ public final class BloodHud {
             g.fill(x + W - 3, my, x + W - 1, my + 1, 0x90000000 | (glass & 0xFFFFFF));
         }
         // the label above it
-        String label = moon ? Math.max(0, (moonEnd - now + 19) / 20) + "s" : full ? "READY" : (int) gauge + "%";
+        String label = moon ? Math.max(0, (moonEnd - now + 19) / 20) + "s" : over > 0 ? "READY+" + Math.round(over * 50) : full ? "READY" : (int) gauge + "%";
+        if (awakened && !moon) {   // an awakened Moon: a small frost star on the stopper
+            g.fill(x + W / 2 - 1, y - 1, x + W / 2 + 1, y + 1, 0xFFDDEEFF);
+        }
         int lc = moon ? 0xFFEAF2FF : full ? lerp(0xFFB3121E, 0xFFFFD0D4, beat) : 0xFFC9A0A6;
         int lw = mc.font.width(label);
         g.drawString(mc.font, label, x + W / 2 - lw / 2, y - 10, lc, true);

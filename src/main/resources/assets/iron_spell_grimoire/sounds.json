@@ -331,5 +331,70 @@
       }
     ],
     "subtitle": "subtitles.iron_spell_grimoire.sfx.sovereign_step"
+  },
+  "sfx.ice_crack": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/ice_crack_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/ice_crack_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/ice_crack_3"
+      }
+    ]
+  },
+  "sfx.ice_shatter": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/ice_shatter_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/ice_shatter_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/ice_shatter_3"
+      }
+    ]
+  },
+  "sfx.heartbeat": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/heartbeat_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/heartbeat_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/heartbeat_3"
+      }
+    ]
+  },
+  "sfx.freeze": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/freeze_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/freeze_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/freeze_3"
+      }
+    ]
+  },
+  "sfx.blood_splash": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/blood_splash_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/blood_splash_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/blood_splash_3"
+      }
+    ]
   }
 }

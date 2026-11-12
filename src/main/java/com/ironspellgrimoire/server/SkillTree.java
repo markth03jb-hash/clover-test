@@ -73,7 +73,8 @@ public final class SkillTree {
             /* 16 Slash */ {"Phantom Slash", "crit", .10f, "Shadow Step", "dodge", .07f, "Bleeding Edge", "burn", .15f, "Thousand Cuts", "echo", .10f, "Bloodlust", "killheal", 3, "Cross Reaper", "execute", .30f, "Frenzy", "hastecast", .20f},
             /* 17 Earth */ {"Stone Fist", "knock", .5f, "Bedrock Skin", "armor", 5, "Rock Spike", "crit", .08f, "Earth Wall", "shield", 6, "Quake", "slow", .25f, "Golem's Strength", "health", 6, "Mountain Fall", "boss", .12f},
             /* 18 Time */ {"Clock Hand", "refund", .06f, "Chrono Acceleration", "hastecast", .20f, "Ticking Snare", "slow", .25f, "Time Theft", "manasteal", .06f, "Hourglass", "cdr", .08f, "Echo of the Past", "echo", .12f, "Zenith Hour", "first", .25f},
-            /* 19 Light */ {"Light Speed", "hastecast", .25f, "Judgment", "crit", .10f, "Healing Ray", "regenhp", 1, "Blinding Flash", "weaken", .20f, "Arrows of Judgment", "chain", .15f, "Light Shaft", "first", .25f, "Imperial Conviction", "boss", .12f}};
+            /* 19 Light */ {"Light Speed", "hastecast", .25f, "Judgment", "crit", .10f, "Healing Ray", "regenhp", 1, "Blinding Flash", "weaken", .20f, "Arrows of Judgment", "chain", .15f, "Light Shaft", "first", .25f, "Imperial Conviction", "boss", .12f},
+            /* 20 Blood (BloodFx/IceFx read its own three) */ {"Thirst", "gaugefill", .15f, "Hard Freeze", "encase", 20, "Pale Ward", "moonguard", .10f, "Blood Price", "lowhp", .15f, "Sanguine Drain", "lifesteal", .05f, "Frostbite", "slow", .20f, "Red Moon Rising", "power", .08f}};
 
     /** The crowns (server/SkillEffects does what they say). */
     public static final String[][] CROWNS = {
@@ -96,7 +97,8 @@ public final class SkillTree {
             {"Ripper's Hunger", "Each hit in a row on the same foe: +4% damage, up to +48%."},
             {"Mountain's Root", "You can't be knocked back, and standing still you take 25% less damage."},
             {"Rewind", "Once a minute, a killing blow is undone: you return to where you stood, with the health you had, 3 s ago."},
-            {"Speed of Light", "Your first spell after 3 s without casting lands 60% harder, and you gain +40% speed for 2 s."}};
+            {"Speed of Light", "Your first spell after 3 s without casting lands 60% harder, and you gain +40% speed for 2 s."},
+            {"Eternal Night", "Every Scarlet Moon lasts 15 s longer, and Moonfall returns twice as fast."}};
 
     private static final List<List<Node>> TREES = new ArrayList<>();
     static {
@@ -207,6 +209,9 @@ public final class SkillTree {
             case "refund" -> pct + "% chance a spell comes straight off cooldown";
             case "killheal" -> "Kills heal " + v;
             case "stacking" -> "Each cast in a fight: +" + pct + "% damage (up to 5)";
+            case "gaugefill" -> "The Blood Gauge fills " + pct + "% faster";
+            case "encase" -> "Ice encases foes " + (v / 20f) + " s longer";
+            case "moonguard" -> "Under the Scarlet Moon you take " + pct + "% less damage";
             case "crown" -> CROWNS[Math.max(0, Math.min(CROWNS.length - 1, book))][1];
             default -> "";
         };

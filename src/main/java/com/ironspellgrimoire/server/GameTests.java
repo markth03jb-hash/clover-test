@@ -254,7 +254,7 @@ public final class GameTests {
     private static final class IceTest extends Test {
         IceTest() { super("blood: Scarlet Moon ice moveset"); }
         @Override Class<?>[] roots() { return new Class<?>[]{BloodFx.class, IceFx.class}; }
-        final String[] names = {"crimson_edge", "hemorrhage", "sanguine_volley", "transfusion", "blood_pact", "red_tide", "thorned_veins", "crimson_bulwark", "exsanguinate", "moonfall"};
+        final String[] names = {"crimson_edge", "hemorrhage", "sanguine_volley", "transfusion", "blood_pact", "red_tide", "thorned_veins", "crimson_bulwark", "exsanguinate", "moonfall", "ice_throne"};
         BlockState[] before; Set<MobEffect> pe, de; final java.util.List<String> bad = new java.util.ArrayList<>(), done = new java.util.ArrayList<>();
         float hp; String err;
         @Override void start() {
@@ -287,7 +287,8 @@ public final class GameTests {
                         case 6 -> BloodFx.thornedVeins(p, 10f);
                         case 7 -> BloodFx.crimsonBulwark(p, 10f);
                         case 8 -> BloodFx.exsanguinate(p, 10f);
-                        default -> { p.setXRot(15); BloodFx.scarletMoon(p, 10f); }
+                        case 9 -> { p.setXRot(15); BloodFx.scarletMoon(p, 10f); }
+                        default -> IceFx.iceThrone(p, 10f);
                     }
                 } catch (Throwable x) { bad.add(names[i] + " threw " + x); }
                 if (p.getHealth() < h0) bad.add(names[i] + " cost health under the Moon");
@@ -307,6 +308,59 @@ public final class GameTests {
             if (bad.isEmpty()) pass(name, "damage dealt: " + String.join(", ", done));
             else fail(name, String.join("; ", bad));
             Moves.ends(p, BloodFx.MODE);
+            return true;
+        }
+    }
+
+    /** The Blood Grimoire's paths: every spell cast both ways (a mastered book) - nothing may throw, change the world or give effects. */
+    private static final class PathTest extends Test {
+        PathTest() { super("blood: evolution paths"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{BloodFx.class, BloodPaths.class}; }
+        final String[] spells = {"crimson_edge", "hemorrhage", "sanguine_volley", "transfusion", "blood_pact", "red_tide", "thorned_veins", "crimson_bulwark", "exsanguinate"};
+        BlockState[] before; final java.util.List<String> bad = new java.util.ArrayList<>();
+        float dealt;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.BLOOD_GRIMOIRE.get());
+            CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+            book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+            before = snapshot();
+        }
+        @Override boolean tick(int t) {
+            p.setHealth(p.getMaxHealth());
+            if (t % 22 == 1) {
+                int i = t / 22;
+                if (i < spells.length * 2) {
+                    String sp = spells[i % spells.length];
+                    BloodPaths.choose(p, sp, i < spells.length ? 1 : 2);
+                    if (BloodPaths.path(p, sp) != (i < spells.length ? 1 : 2)) bad.add(sp + ": the path didn't take");
+                    ensureDummy();
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    float hp = dummy.getHealth();
+                    try {
+                        switch (sp) {
+                            case "crimson_edge" -> BloodFx.crimsonEdge(p, 10f);
+                            case "hemorrhage" -> BloodFx.hemorrhage(p, 10f);
+                            case "sanguine_volley" -> BloodFx.sanguineVolley(p, 10f);
+                            case "transfusion" -> BloodFx.transfusion(p, 10f);
+                            case "blood_pact" -> BloodFx.bloodPact(p, 10f);
+                            case "red_tide" -> BloodFx.redTide(p, 10f);
+                            case "thorned_veins" -> BloodFx.thornedVeins(p, 10f);
+                            case "crimson_bulwark" -> BloodFx.crimsonBulwark(p, 10f);
+                            default -> BloodFx.exsanguinate(p, 10f);
+                        }
+                    } catch (Throwable x) { bad.add(sp + " (path " + (i < spells.length ? 1 : 2) + ") threw " + x); }
+                    dealt += hp - dummy.getHealth();
+                }
+            }
+            if (t < spells.length * 2 * 22 + 30) return false;
+            String ch = changes(before);
+            if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+            if (BloodFx.gauge(p) <= 0) bad.add("the Blood Gauge never filled");
+            if (bad.isEmpty()) pass(name, String.format("18 casts, %.0f damage, gauge %.0f", dealt, BloodFx.gauge(p)));
+            else fail(name, String.join("; ", bad));
+            BloodFx.setGauge(p, 0);
             return true;
         }
     }
@@ -500,6 +554,7 @@ public final class GameTests {
         queue.add(boards());
         for (var e : AddonSpellRegistry.SPELLS.getEntries()) queue.add(new SpellTest(e.get()));
         queue.add(new IceTest());
+        queue.add(new PathTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

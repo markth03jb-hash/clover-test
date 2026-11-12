@@ -50,6 +50,8 @@ public class GrimoireBookScreen extends Screen {
     private boolean hidden = false;
     /** The Memories tab (the Lost Memory Pages, server/MemoryPages): which spread of it is open. */
     private boolean memories = false;
+    /** The Blood Grimoire: read its pages as the Scarlet Moon's ice moves without being in the mode. */
+    private boolean iceView = false;
     /** The Tree tab (the Mana Tree, server/SkillTree). */
     private boolean treeMode = false;
     /** The Path tab (what's left on the way to Ascension) and the Upgrades tab (everything bound into this grimoire). */
@@ -70,6 +72,9 @@ public class GrimoireBookScreen extends Screen {
         if (b != null) for (Map.Entry<String, Integer> e : b.unlocks().entrySet()) { ids.add(e.getKey()); unlockAt.add(e.getValue()); }
         if (com.ironspellgrimoire.server.Awakening.awakened(stack)) { ids.add(com.ironspellgrimoire.server.Awakening.spellFor(stack)); unlockAt.add(6); }   // the page it wrote when it awakened
     }
+
+    /** The Blood Grimoire's ice view (the automatic screenshot run). */
+    public void iceView(boolean on) { iceView = on; }
 
     /** Turns straight to a part of the book (the automatic screenshot run, UiShots): spells:N, combos, path, upgrades, tree, memories:N. */
     public void showPart(String part) {
@@ -135,6 +140,12 @@ public class GrimoireBookScreen extends Screen {
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
         int x0 = (width - BW) / 2, y0 = (height - BH) / 2;
+        if (book == GrimoireWheel.BLOOD && inside(mx, my, x0 + BW + 7, y0 + 134, 54, 16)) {   // the Blood Grimoire's sixth ribbon: Ice / Blood
+            iceView = !iceView; flipAt = ticks; flipDir = iceView ? 1 : -1;
+            Minecraft.getInstance().player.playSound(iceView ? SoundEvents.AMETHYST_BLOCK_CHIME : SoundEvents.BOOK_PAGE_TURN, 1.0F, iceView ? 1.4F : 0.8F);
+            return true;
+        }
+        if (pathClick(mx, my, x0, y0)) return true;
         if (inside(mx, my, x0 - 2, y0 + BH - 20, 22, 16)) { turn(-1); return true; }
         if (inside(mx, my, x0 + BW - 20, y0 + BH - 20, 22, 16)) { turn(1); return true; }
         if (inside(mx, my, x0 + BW + 7, y0 + 90, 54, 16)) {   // the fourth ribbon: the Path
@@ -179,7 +190,7 @@ public class GrimoireBookScreen extends Screen {
     public void render(GuiGraphics g, int mx, int my, float pt) {
         renderBackground(g);
         Font f = font;
-        int[] c = GrimoireWheel.themeColors(GrimoireWheel.themeFor(book));   // pageIn, pageOut, trim, accent, panel, title
+        int[] c = GrimoireWheel.themeColors(iceView ? GrimoireWheel.ICE : GrimoireWheel.themeFor(book));   // pageIn, pageOut, trim, accent, panel, title
         int x0 = (width - BW) / 2, y0 = (height - BH) / 2, mid = x0 + BW / 2;
         float flip = (float) Mth.clamp(1.0 - (ticks + pt - flipAt) / 5.0, 0.0, 1.0);
 
@@ -219,6 +230,7 @@ public class GrimoireBookScreen extends Screen {
         g.drawString(f, mt, x0 + BW + 34 - f.width(mt) / 2, y0 + 51, memHot || memories ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
         ribbon(g, f, x0, y0 + 90, pathMode ? "Spells" : "Path", pathMode, mx, my, c);
         ribbon(g, f, x0, y0 + 112, upgMode ? "Spells" : "Upgrades", upgMode, mx, my, c);
+        if (book == GrimoireWheel.BLOOD) ribbon(g, f, x0, y0 + 134, iceView ? "Blood" : "\u2744 Ice", iceView, mx, my, c);
         if (treeMode) { drawTree(g, f, x0, y0, mid, mx, my, c); return; }
         if (pathMode) { drawPath(g, f, x0, y0, mid); return; }
         if (upgMode) { drawUpgrades(g, f, x0, y0, mid); return; }
@@ -245,9 +257,14 @@ public class GrimoireBookScreen extends Screen {
             drawCombos(g, f, x0 + 16, mid + 14, y0 + 14, BW / 2 - 30, BH - 34);
         } else if (sp != null) {
             hidden = !unlocked(page);   // not unlocked yet: the page is written, but scribbled - you can't read it
-            drawLeft(g, f, sp, x0 + 16, y0 + 14, BW / 2 - 30, BH - 34, c);
-            drawRight(g, f, sp, page, mid + 14, y0 + 14, BW / 2 - 30, BH - 34);
+            boolean was = com.ironspellgrimoire.spells.IceView.on;
+            if (iceView) com.ironspellgrimoire.spells.IceView.on = true;   // the ice move's name and picture
+            try {
+                drawLeft(g, f, sp, x0 + 16, y0 + 14, BW / 2 - 30, BH - 34, c);
+                drawRight(g, f, sp, page, mid + 14, y0 + 14, BW / 2 - 30, book == GrimoireWheel.BLOOD ? BH - 84 : BH - 34);   // the Blood pages keep room for the paths
+            } finally { com.ironspellgrimoire.spells.IceView.on = was; }
             hidden = false;
+            drawPaths(g, f, mid + 14, y0, BW / 2 - 30, mx, my);
         }
         if (flip > 0F) {   // a page turning over
             float k = 1F - flip;
@@ -277,7 +294,7 @@ public class GrimoireBookScreen extends Screen {
         yy += 28;
         g.fill(x + 10, yy, x + w - 10, yy + 1, 0x60000000 | (INK & 0xFFFFFF));
         yy += 5;
-        String key = "spell.iron_spell_grimoire." + (GrimoireWheel.themeFor(book) == GrimoireWheel.ICE && net.minecraft.client.resources.language.I18n.exists("spell.iron_spell_grimoire.ice_" + ids.get(page) + ".guide") ? "ice_" : "") + ids.get(page) + ".guide";   // under the Scarlet Moon: the ice move
+        String key = "spell.iron_spell_grimoire." + ((iceView || GrimoireWheel.themeFor(book) == GrimoireWheel.ICE) && net.minecraft.client.resources.language.I18n.exists("spell.iron_spell_grimoire.ice_" + ids.get(page) + ".guide") ? "ice_" : "") + ids.get(page) + ".guide";   // under the Scarlet Moon: the ice move
         if (I18n.exists(key)) {
             for (FormattedCharSequence l : f.split(ink(Component.translatable(key)), w)) {
                 if (yy > y + h - 8) break;
@@ -316,6 +333,53 @@ public class GrimoireBookScreen extends Screen {
                 yy += 10;
             }
         }
+    }
+
+    // ------------------------------------------------------------------ the Blood Grimoire's paths (server/BloodPaths)
+    private int chosenPath(String spell) {
+        return stack.hasTag() ? stack.getTag().getCompound("BloodPaths").getInt(spell) : 0;
+    }
+
+    /** At the foot of a Blood spell's right page: its two paths, the chosen one marked; open at mastery 5. */
+    private void drawPaths(GuiGraphics g, Font f, int x, int y0, int w, int mx, int my) {
+        if (book != GrimoireWheel.BLOOD || onCombos() || page >= ids.size()) return;
+        String[] p = com.ironspellgrimoire.server.BloodPaths.PATHS.get(ids.get(page));
+        if (p == null) return;
+        boolean open = GrimoireMastery.level(stack) >= com.ironspellgrimoire.server.BloodPaths.NEEDS;
+        int y = y0 + BH - 62, chosen = chosenPath(ids.get(page));
+        g.fill(x, y - 3, x + w, y - 2, 0x60000000 | (INK & 0xFFFFFF));
+        g.drawString(f, open ? "Path - choose one:" : "Paths open at mastery " + com.ironspellgrimoire.server.BloodPaths.NEEDS, x, y, RED_INK, false);
+        for (int i = 0; i < 2; i++) {
+            int yy = y + 11 + i * 20;
+            boolean hot = open && inside(mx, my, x - 2, yy - 2, w + 4, 19), on = chosen == i + 1;
+            if (on) g.fill(x - 2, yy - 2, x + w + 2, yy + 17, 0x40A0101E);
+            else if (hot) g.fill(x - 2, yy - 2, x + w + 2, yy + 17, 0x20000000);
+            g.drawString(f, (on ? "\u25C6 " : "\u25C7 ") + p[i * 2], x, yy, on ? RED_INK : open ? INK : INK_FAINT, false);
+            List<FormattedCharSequence> lines = f.split(Component.literal(p[i * 2 + 1]), w - 6);
+            if (!lines.isEmpty()) {
+                g.pose().pushPose(); g.pose().translate(x + 6, yy + 9, 0); g.pose().scale(0.75F, 0.75F, 1F);
+                g.drawString(f, lines.get(0), 0, 0, INK_SOFT, false);
+                g.pose().popPose();
+            }
+        }
+    }
+
+    private boolean pathClick(double mx, double my, int x0, int y0) {
+        if (book != GrimoireWheel.BLOOD || memories || treeMode || pathMode || upgMode || onCombos() || page >= ids.size()) return false;
+        if (!com.ironspellgrimoire.server.BloodPaths.PATHS.containsKey(ids.get(page)) || GrimoireMastery.level(stack) < com.ironspellgrimoire.server.BloodPaths.NEEDS) return false;
+        int x = x0 + BW / 2 + 14, w = BW / 2 - 30, y = y0 + BH - 62;
+        for (int i = 0; i < 2; i++) {
+            int yy = y + 11 + i * 20;
+            if (!inside(mx, my, x - 2, yy - 2, w + 4, 19)) continue;
+            String id = ids.get(page);
+            com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.TreePackets.Act(11 + i, id));
+            net.minecraft.nbt.CompoundTag t = stack.getOrCreateTag().getCompound("BloodPaths");   // shown at once; the server keeps the real one
+            t.putInt(id, i + 1);
+            stack.getOrCreateTag().put("BloodPaths", t);
+            Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 1.2F);
+            return true;
+        }
+        return false;
     }
 
     private void ribbon(GuiGraphics g, Font f, int x0, int y, String label, boolean on, int mx, int my, int[] c) {

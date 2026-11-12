@@ -64,6 +64,16 @@ public final class UiShotsServer {
                 BloodFx.showGauge(p, 68f);
             }
             case "moonfall" -> { p.setXRot(20); BloodFx.scarletMoon(p, 10f); }
+            case "overflow" -> BloodFx.showGauge(p, 132f);
+            case "throne" -> IceFx.iceThrone(p, 10f);
+            case "master" -> {   // the equipped Blood Grimoire mastered, with a path or two chosen (the book pictures)
+                ItemStack bk = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+                if (bk == null) return;
+                net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
+                bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+                BloodPaths.choose(p, "crimson_edge", 1);
+                BloodFx.setMoonCount(p, 25);   // and an awakened Moon for the mode pictures
+            }
             case "exsanguinate" -> {   // two still zombies to draw from
                 p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
                 var look = p.getLookAngle().multiply(1, 0, 1).normalize();

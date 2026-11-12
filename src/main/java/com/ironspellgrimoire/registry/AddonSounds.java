@@ -20,7 +20,7 @@ public final class AddonSounds {
     private static final Map<String, RegistryObject<SoundEvent>> BY_KIND = new HashMap<>();
 
     static {
-        for (String k : new String[]{"slash", "blast", "whoosh", "impact", "charge", "fire", "thunder", "roar", "familiar", "board_note", "sovereign_step"}) {
+        for (String k : new String[]{"slash", "blast", "whoosh", "impact", "charge", "fire", "thunder", "roar", "familiar", "board_note", "sovereign_step", "ice_crack", "ice_shatter", "heartbeat", "freeze", "blood_splash"}) {
             String key = "sfx." + k;
             BY_KIND.put(k, SOUNDS.register(key, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", key))));
         }

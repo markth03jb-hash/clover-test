@@ -37,8 +37,15 @@ import net.minecraft.world.phys.Vec3;
  *  9 Exsanguinate     -> Absolute Zero:    frost spreads 10 blocks round you, everything in it is encased, then all of it shatters
  * 10 Scarlet Moon     -> Moonfall:         a comet of ice falls where you aim - a crater, a crown of spires, everything frozen
  */
+@net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "iron_spell_grimoire")
 public final class IceFx {
     private IceFx() {}
+
+    /** Frozen ground left by frost fields: foes on it slide and slow, you hit 20% harder standing on it. */
+    private record Frozen(net.minecraft.server.level.ServerLevel level, Vec3 c, double r, long until) {}
+    private static final java.util.List<Frozen> FROZEN = new java.util.ArrayList<>();
+    /** Cracked Armour: bosses can't be encased - the ice cracks their armour instead (+15% damage taken). */
+    private static final Map<UUID, Long> CRACKED = new HashMap<>();
 
     private static final float POWER = 1.6f;
     private static final Map<UUID, Long> MOONFALL = new HashMap<>();
@@ -70,6 +77,9 @@ public final class IceFx {
     }
 
     private static int frost(ServerLevel sl, Vec3 ground, float r, int spread, int life) {
+        life = Math.max(life, spread + 200);   // the ground stays frozen for 10 s
+        if (FROZEN.size() > 40) FROZEN.remove(0);
+        FROZEN.add(new Frozen(sl, ground, r, sl.getGameTime() + life));
         FxPacket p = fx(5, ground, life);
         p.r = r; p.speed = spread;
         return send(sl, p);
@@ -82,7 +92,20 @@ public final class IceFx {
     }
 
     // ================================================================== hitting and freezing
-    private static float pw(float power) { return power * POWER; }
+    private static float pw(ServerPlayer p, float power) {
+        float k = POWER;
+        if (BloodFx.path(p, "scarlet_moon", 2)) k *= 1.15f;   // Cold Blood
+        if (onFrozen(p)) k *= 1.2f;                           // standing on your own frozen ground
+        return power * k;
+    }
+
+    static boolean onFrozen(LivingEntity e) {
+        long now = e.level().getGameTime();
+        for (Frozen f : FROZEN) if (f.level() == e.level() && f.until() > now && f.c().distanceToSqr(e.position()) < f.r() * f.r() && Math.abs(f.c().y - e.getY()) < 1.5) return true;
+        return false;
+    }
+
+    static boolean boss(LivingEntity t) { return TimeStop.isBoss(t) || BossCores.isBoss(t.getType()) || t.getMaxHealth() >= 200; }
 
     private static void hit(ServerPlayer p, LivingEntity t, float amt, String id) {
         AstaFx.damage(p, t, amt, id);
@@ -96,17 +119,27 @@ public final class IceFx {
     /** Encased: held fast in ice for {@code ticks}, then it shatters for {@code burst} damage. */
     private static void encase(ServerPlayer p, LivingEntity t, int ticks, float burst, String id) {
         ServerLevel sl = p.serverLevel();
+        ticks += Math.round(BloodFx.tree(p, "encase"));   // Hard Freeze
+        boolean big = boss(t);
         FxPacket e = fx(4, t.position(), ticks);
-        e.v = new Vec3(t.getId(), 0, 0);
+        e.v = new Vec3(t.getId(), 0, 0); e.a0 = big ? 1 : 0;   // a boss: only a crust of ice on it
         send(sl, e);
-        TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, TimedModifiers.FROST_ROOT, "Encased in ice", -1.0, AttributeModifier.Operation.MULTIPLY_TOTAL, ticks);
-        t.setDeltaMovement(0, Math.min(0, t.getDeltaMovement().y), 0);
-        t.hurtMarked = true;
+        if (big) {   // a boss can't be held: its armour cracks instead, and the shatter lands for half
+            CRACKED.put(t.getUUID(), sl.getGameTime() + ticks + 60);
+            burst *= 0.5f;
+            if (p.tickCount % 3 == 0) p.displayClientMessage(Component.literal("Cracked Armour: +15% damage taken").withStyle(ChatFormatting.AQUA), true);
+        } else {
+            TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, TimedModifiers.FROST_ROOT, "Encased in ice", -1.0, AttributeModifier.Operation.MULTIPLY_TOTAL, ticks);
+            t.setDeltaMovement(0, Math.min(0, t.getDeltaMovement().y), 0);
+            t.hurtMarked = true;
+        }
+        BloodFx.play(sl, t.position(), "freeze", 1.0f, 1.0f);
+        final float shatter = burst;
         AstaFx.later(ticks, () -> {
             if (!t.isAlive()) return;
             TimedModifiers.remove(t, Attributes.MOVEMENT_SPEED, TimedModifiers.FROST_ROOT);
-            if (alive(p)) hit(p, t, burst, id);
-            sound(sl, t.position(), SoundEvents.GLASS_BREAK, 1.2f, 0.7f);
+            if (alive(p)) hit(p, t, shatter, id);
+            BloodFx.play(sl, t.position(), "ice_shatter", 1.3f, 0.9f + ThreadLocalRandom.current().nextFloat() * 0.2f);
         });
     }
 
@@ -120,14 +153,42 @@ public final class IceFx {
     }
 
     private static void coldSound(ServerLevel sl, Vec3 at, float pitch) {
-        sound(sl, at, SoundEvents.AMETHYST_BLOCK_RESONATE, 1.2f, pitch);
-        sound(sl, at, SoundEvents.GLASS_PLACE, 0.8f, pitch * 0.8f);
+        BloodFx.play(sl, at, "ice_crack", 1.2f, pitch);
+        BloodFx.play(sl, at, "freeze", 0.7f, pitch * 1.1f);
+    }
+
+    // ================================================================== frozen ground, cracked armour
+    @net.minecraftforge.eventbus.api.SubscribeEvent
+    public static void onServerTick(net.minecraftforge.event.TickEvent.ServerTickEvent e) {
+        if (e.phase != net.minecraftforge.event.TickEvent.Phase.END || FROZEN.isEmpty()) return;
+        Frozen any = FROZEN.get(0);
+        long now = any.level().getGameTime();
+        FROZEN.removeIf(f -> f.until() < now);
+        if (now % 5 != 0) return;
+        for (Frozen f : FROZEN) {
+            AABB box = new AABB(f.c(), f.c()).inflate(f.r(), 1.5, f.r());
+            for (LivingEntity t : f.level().getEntitiesOfClass(LivingEntity.class, box, x -> !(x instanceof net.minecraft.world.entity.player.Player) && x.isAlive()
+                    && !(x instanceof net.minecraft.world.entity.decoration.ArmorStand) && x.position().distanceToSqr(f.c()) < f.r() * f.r())) {
+                TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, TimedModifiers.FROST_SLOW, "Frozen ground", -0.4, AttributeModifier.Operation.MULTIPLY_TOTAL, 12);
+                Vec3 v = t.getDeltaMovement();   // it slides: the way it was going carries on
+                if (v.x * v.x + v.z * v.z > 0.0004 && t.onGround()) { t.setDeltaMovement(v.x * 1.6, v.y, v.z * 1.6); t.hurtMarked = true; }
+            }
+        }
+    }
+
+    /** Cracked Armour: +15% damage taken. */
+    static void onHurt(net.minecraftforge.event.entity.living.LivingHurtEvent e) {
+        if (CRACKED.isEmpty()) return;
+        Long until = CRACKED.get(e.getEntity().getUUID());
+        if (until == null) return;
+        if (until < e.getEntity().level().getGameTime()) { CRACKED.remove(e.getEntity().getUUID()); return; }
+        e.setAmount(e.getAmount() * 1.15f);
     }
 
     // ================================================================== 1. Frost Crescent
     public static void frostCrescent(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        float pow = pw(power) * 1.2f;
+        float pow = pw(p, power) * 1.2f;
         Vec3 d = flatLook(p), c = p.position().add(0, 1.1, 0).add(d.scale(0.8));
         FxPacket cr = fx(2, c, 14);
         cr.d = d; cr.u = new Vec3(0, 1, 0); cr.r = 2.4f; cr.a0 = 16; cr.speed = 10;
@@ -155,7 +216,7 @@ public final class IceFx {
         ServerLevel sl = p.serverLevel();
         LivingEntity t = aimed(p, 28, 14);
         if (t == null) { p.displayClientMessage(Component.literal("No one to freeze.").withStyle(ChatFormatting.GRAY), true); return; }
-        float pow = pw(power);
+        float pow = pw(p, power);
         Vec3 from = p.getEyePosition().subtract(0, 0.2, 0);
         int flight = Math.max(2, (int) (from.distanceTo(mid(t)) / 3.5));
         FxPacket l = fx(3, from, flight + 2);
@@ -174,7 +235,7 @@ public final class IceFx {
     // ================================================================== 3. Glacial Volley
     public static void glacialVolley(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        float pow = pw(power) * 0.45f;
+        float pow = pw(p, power) * 0.45f;
         Vec3 eye = p.getEyePosition().subtract(0, 0.2, 0), look = p.getLookAngle();
         int n = 13;
         for (int i = 0; i < n; i++) {
@@ -212,7 +273,7 @@ public final class IceFx {
         ServerLevel sl = p.serverLevel();
         LivingEntity t = aimed(p, 18, 16);
         if (t == null) { p.displayClientMessage(Component.literal("No one to bind.").withStyle(ChatFormatting.GRAY), true); return; }
-        float pow = pw(power);
+        float pow = pw(p, power);
         FxPacket th = fx(6, p.position(), 50);
         th.v = new Vec3(p.getId(), t.getId(), 0);
         send(sl, th);
@@ -235,7 +296,7 @@ public final class IceFx {
     // ================================================================== 5. Winter's Pact
     public static void wintersPact(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        float pow = pw(power == 0 ? 8f : power) * 0.25f;
+        float pow = pw(p, power == 0 ? 8f : power) * 0.25f;
         FxPacket o = fx(7, p.position(), 200);
         o.v = new Vec3(p.getId(), 0, 0); o.r = 1.7f; o.sweep = 6;
         send(sl, o);
@@ -262,7 +323,7 @@ public final class IceFx {
     // ================================================================== 6. White Avalanche
     public static void whiteAvalanche(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        float pow = pw(power) * 1.3f;
+        float pow = pw(p, power) * 1.3f;
         Vec3 d = flatLook(p), start = p.position();
         FxPacket g = fx(9, ZenonAI.ground(sl, start.add(d.scale(1.2))), 15);
         g.d = d; g.r = 3f; g.r2 = 3.2f; g.speed = 1.1f;
@@ -279,7 +340,7 @@ public final class IceFx {
                     e.setDeltaMovement(d.scale(1.1).add(0, 0.7, 0));
                     e.hurtMarked = true;
                 }
-                if (kk % 3 == 0) sound(sl, at, SoundEvents.GLASS_BREAK, 1.0f, 0.5f + kk * 0.04f);
+                if (kk % 3 == 0) BloodFx.play(sl, at, "ice_shatter", 1.0f, 0.5f + kk * 0.04f);
             });
         }
         says(p, "White Avalanche");
@@ -289,7 +350,7 @@ public final class IceFx {
     // ================================================================== 7. Glacier Spires
     public static void glacierSpires(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        float pow = pw(power) * 1.1f;
+        float pow = pw(p, power) * 1.1f;
         Vec3 d = flatLook(p), rt = rightOf(d);
         Vec3 start = p.position();
         frost(sl, ZenonAI.ground(sl, start.add(d.scale(6))), 7f, 8, 70);
@@ -313,7 +374,7 @@ public final class IceFx {
                         e.hurtMarked = true;
                     }
                 }
-                sound(sl, start.add(d.scale(dist)), SoundEvents.GLASS_BREAK, 1.3f, 0.6f + rk * 0.15f);
+                BloodFx.play(sl, start.add(d.scale(dist)), "ice_shatter", 1.3f, 0.6f + rk * 0.15f);
                 coldSound(sl, start.add(d.scale(dist)), 0.7f + rk * 0.1f);
             });
         }
@@ -323,7 +384,7 @@ public final class IceFx {
     // ================================================================== 8. Frozen Bastion
     public static void frozenBastion(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        float pow = pw(power == 0 ? 8f : power);
+        float pow = pw(p, power == 0 ? 8f : power);
         p.setAbsorptionAmount(Math.max(p.getAbsorptionAmount(), 12f + power * 0.6f));
         FxPacket dm = fx(8, p.position(), 200);
         dm.v = new Vec3(p.getId(), 0, 0); dm.r = 2.2f;
@@ -341,7 +402,7 @@ public final class IceFx {
                     Vec3 away = flat(e.position().subtract(at));
                     if (away.lengthSqr() > 1e-4) { e.setDeltaMovement(away.normalize().scale(1.0).add(0, 0.4, 0)); e.hurtMarked = true; }
                 }
-                sound(sl, at, SoundEvents.GLASS_BREAK, 1.4f, 0.5f);
+                BloodFx.play(sl, at, "ice_shatter", 1.4f, 0.5f);
             });
         }
         says(p, "Frozen Bastion");
@@ -351,7 +412,7 @@ public final class IceFx {
     // ================================================================== 9. Absolute Zero
     public static void absoluteZero(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        float pow = pw(power);
+        float pow = pw(p, power);
         Vec3 c = p.position();
         frost(sl, ZenonAI.ground(sl, c), 10f, 14, 80);
         FxPacket ms = fx(11, c.add(0, 0.5, 0), 40);
@@ -365,13 +426,70 @@ public final class IceFx {
                 hit(p, e, pow * 0.4f, "absolute_zero");
                 encase(p, e, 30, pow * 2.2f, "absolute_zero");
             }
-            sound(sl, c, SoundEvents.GLASS_PLACE, 1.6f, 0.5f);
+            BloodFx.play(sl, c, "ice_crack", 1.6f, 0.5f);
             FxSend.shake(sl, c, 0.4f, 8, 16);
         });
         says(p, "Absolute Zero");
         coldSound(sl, c, 0.5f);
         sound(sl, c, SoundEvents.BEACON_DEACTIVATE, 0.8f, 1.6f);
     }
+
+    // ================================================================== Ice Throne (an awakened Moon: sneak + Scarlet Moon)
+    /**
+     * A throne of ice rises under you and holds you 3 blocks up for 8 s; every 3/4 s it looses a lance of ice at the
+     * nearest foe within 18 blocks. Once every 30 s.
+     */
+    public static void iceThrone(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        long now = sl.getGameTime();
+        long ready = THRONE.getOrDefault(p.getUUID(), 0L);
+        if (now < ready) {
+            p.displayClientMessage(Component.literal("The Ice Throne returns in " + (ready - now + 19) / 20 + " s").withStyle(ChatFormatting.GRAY), true);
+            return;
+        }
+        THRONE.put(p.getUUID(), now + 600);
+        float pow = pw(p, Math.max(power, 10f)) * 0.55f;
+        Vec3 base = ZenonAI.ground(sl, p.position());
+        FxPacket th = fx(12, base, 164);
+        th.v = new Vec3(p.getId(), 0, 0);
+        send(sl, th);
+        frost(sl, base, 4f, 8, 160);
+        double topY = base.y + 3.0;
+        for (int k = 1; k <= 160; k++) {
+            final int kk = k;
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                double y = p.getY(), want = kk < 10 ? base.y + 3.0 * kk / 10.0 : topY;
+                Vec3 v = p.getDeltaMovement();
+                p.setDeltaMovement(v.x * 0.6, (want - y) * 0.5, v.z * 0.6);   // held up on the throne
+                p.hurtMarked = true;
+                p.fallDistance = 0;
+                if (kk % 15 == 0) {
+                    LivingEntity t = null;
+                    double best = 18 * 18;
+                    for (LivingEntity e : enemies(sl, p, p.getBoundingBox().inflate(18))) {
+                        double d = e.distanceToSqr(p);
+                        if (d < best) { best = d; t = e; }
+                    }
+                    if (t != null) {
+                        final LivingEntity tt = t;
+                        Vec3 from = p.position().add(0, 2.4, 0);
+                        int flight = Math.max(2, (int) (from.distanceTo(mid(tt)) / 4));
+                        FxPacket l = fx(3, from, flight + 2);
+                        l.u = mid(tt); l.r = 1.3f; l.speed = flight;
+                        send(sl, l);
+                        AstaFx.later(flight, () -> { if (tt.isAlive() && alive(p)) hit(p, tt, pow, "ice_throne"); });
+                        BloodFx.play(sl, from, "ice_crack", 0.8f, 1.5f);
+                    }
+                }
+            });
+        }
+        AstaFx.later(161, () -> { if (alive(p)) { p.fallDistance = 0; shards(sl, p.position(), new Vec3(0, 0.1, 0), 0.3f, 30, 0.12f); BloodFx.play(sl, p.position(), "ice_shatter", 1.6f, 0.7f); } });
+        says(p, "ICE THRONE");
+        coldSound(sl, base, 0.5f);
+    }
+
+    private static final Map<UUID, Long> THRONE = new HashMap<>();
 
     // ================================================================== 10. Moonfall (Scarlet Moon cast again under the moon)
     public static void moonfall(ServerPlayer p, float power) {
@@ -382,8 +500,8 @@ public final class IceFx {
             p.displayClientMessage(Component.literal("Moonfall returns in " + (ready - now + 19) / 20 + " s").withStyle(ChatFormatting.GRAY), true);
             return;
         }
-        MOONFALL.put(p.getUUID(), now + 300);
-        float pow = pw(Math.max(power, 14f)) * 3f;
+        MOONFALL.put(p.getUUID(), now + (BloodFx.crown(p) ? 150 : 300));   // Eternal Night: twice as fast
+        float pow = pw(p, Math.max(power, 14f)) * 3f;
         Vec3 eye = p.getEyePosition(), look = p.getLookAngle();
         net.minecraft.world.phys.HitResult hr = sl.clip(new net.minecraft.world.level.ClipContext(eye, eye.add(look.scale(30)),
                 net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, p));
@@ -405,7 +523,7 @@ public final class IceFx {
             }
             FxSend.shake(sl, at, 1.0f, 14, 26);
             sound(sl, at, SoundEvents.GENERIC_EXPLODE, 1.6f, 1.3f);
-            sound(sl, at, SoundEvents.GLASS_BREAK, 2.0f, 0.4f);
+            BloodFx.play(sl, at, "ice_shatter", 2.0f, 0.4f);
             coldSound(sl, at, 0.5f);
         });
         says(p, "MOONFALL");

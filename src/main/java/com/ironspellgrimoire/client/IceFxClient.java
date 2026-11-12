@@ -126,6 +126,7 @@ public final class IceFxClient {
         if (mc.level == null) { clear(); return; }
         double dt = lastNow < 0 ? 0 : Mth.clamp(now - lastNow, 0, 3);
         lastNow = now;
+        if (BloodHud.moon() && mc.options.getCameraType().isFirstPerson() && !mc.options.hideGui) frostHands(vc, m, n, cam, mc, now);
         if (LIVE.isEmpty() && SHARDS.isEmpty() && SPIRES.isEmpty() && MISTS.isEmpty()) return;
 
         List<L> live = new ArrayList<>(LIVE);   // effects may add to LIVE while drawing
@@ -145,6 +146,7 @@ public final class IceFxClient {
                 case 8 -> dome(vc, m, n, cam, mc, l, age, now, pt);
                 case 9 -> glacier(vc, m, n, cam, mc, l, age, now, tick);
                 case 10 -> comet(vc, m, n, cam, mc, l, age, now, tick);
+                case 12 -> throne(vc, m, n, cam, mc, l, age, now, pt);
                 default -> l.done = true;
             }
         }
@@ -432,6 +434,15 @@ public final class IceFxClient {
         }
         if (l.burst) return;
         double g = FxBase.backOut(age / 4.0);
+        if (p.a0 > 0) {   // a boss: no prison - a crust of ice cracking across it (Cracked Armour)
+            for (int i = 0; i < 6; i++) {
+                double an = i * TAU / 6 + hs(i, p.id) * 0.8;
+                Vec3 o = new Vec3(Math.cos(an), 0, Math.sin(an));
+                Vec3 base = f.add(o.scale(W * 0.45)).add(0, H * (0.15 + 0.7 * hs(i + 9, p.id)), 0);
+                crystal(vc, m, n, cam, base, o.add(0, 0.4, 0).normalize(), (0.4 + 0.4 * hs(i, p.id + 3)) * g, 0.12 * Math.min(1, g), 5, i + p.id, 0.8F, true);
+            }
+            return;
+        }
         for (int i = 0; i < 9; i++) {
             double an = i * TAU / 9 + hs(i, p.id) * 0.6;
             double y = H * (0.05 + 0.85 * hs(i + 9, p.id));
@@ -613,6 +624,63 @@ public final class IceFxClient {
             }
             mist(front.add(0, p.r2 * 0.5, 0), d.scale(0.08), (float) p.r * 0.6F, now, 16);
         }
+    }
+
+    // ================================================================== frost on your hand (first person, under the Moon)
+    private static void frostHands(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, double now) {
+        net.minecraft.client.Camera cm = mc.gameRenderer.getMainCamera();
+        org.joml.Vector3f lv = cm.getLeftVector(), uv = cm.getUpVector(), fv = cm.getLookVector();
+        Vec3 left = new Vec3(lv.x(), lv.y(), lv.z()), up = new Vec3(uv.x(), uv.y(), uv.z()), fw = new Vec3(fv.x(), fv.y(), fv.z());
+        boolean was = FxBase.nearFade;
+        FxBase.nearFade = false;
+        Vec3 hand = cam.add(fw.scale(0.72)).subtract(left.scale(0.44)).subtract(up.scale(0.46));
+        for (int i = 0; i < 6; i++) {   // little crystals of ice grown over the knuckles and wrist
+            double an = i * 1.05 + 0.3;
+            Vec3 o = left.scale(-Math.cos(an) * 0.06).add(up.scale(Math.sin(an) * 0.05 + 0.04)).add(fw.scale(-0.05 * i));
+            Vec3 dir = o.normalize().add(up.scale(0.6)).normalize();
+            double len = 0.05 + 0.04 * hs(i, 7) + 0.01 * Math.sin(now * 0.2 + i);
+            crystal(vc, m, n, cam, hand.add(o), dir, len, 0.012, 5, i, 0.75F, false);
+        }
+        gglow(m, cam, hand.add(up.scale(0.05)), 0.12, 0.18F + 0.06F * (float) Math.sin(now * 0.3), W_SOFT);
+        if ((long) now % 12 == 0 && Math.random() < 0.35) mist(hand, up.scale(0.01).add(fw.scale(0.01)), 0.08F, now, 10);
+        FxBase.nearFade = was;
+    }
+
+    // ================================================================== 12 the Ice Throne
+    private static void throne(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, L l, double age, double now, float pt) {
+        FxPacket p = l.p;
+        Entity e = mc.level.getEntity((int) p.v.x);
+        if (e == null) return;
+        Vec3 f = feet(mc, p.v.x, pt);
+        if (age > p.life - 4 && !l.burst) {   // it shatters, and you drop
+            l.burst = true;
+            shards(new Vec3(f.x, p.c.y + 1.5, f.z), new Vec3(0, 0.1, 0), 0.3F, 40, 0.13F, now);
+            mist(new Vec3(f.x, p.c.y + 1.5, f.z), Vec3.ZERO, 3F, now, 24);
+            return;
+        }
+        if (l.burst) return;
+        double g = FxBase.backOut(Math.min(1, age / 10.0));
+        Vec3 base = new Vec3(f.x, p.c.y, f.z);
+        double seat = Math.max(0.2, f.y - p.c.y);
+        double yaw = Math.toRadians(e.getYRot());
+        Vec3 face = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw)), rt = new Vec3(-face.z, 0, face.x);
+        boolean self = e == mc.player && mc.options.getCameraType().isFirstPerson();
+        float a = self ? 0.45F : 0.9F;
+        for (int i = 0; i < 8; i++) {   // the pillar of crystals rising under you
+            double an = i * TAU / 8 + hs(i, p.id) * 0.4;
+            Vec3 o = new Vec3(Math.cos(an), 0, Math.sin(an));
+            crystal(vc, m, n, cam, base.add(o.scale(0.35)), o.scale(0.25).add(0, 1, 0).normalize(), seat * g * (0.85 + 0.25 * hs(i, p.id + 1)), 0.22, 6, i + p.id, a, i % 2 == 0);
+        }
+        crystal(vc, m, n, cam, base, UP, seat * g, 0.45, 8, p.id, a * 0.8F, false);
+        Vec3 top = base.add(0, seat * g, 0);
+        for (int i = -2; i <= 2; i++) {   // the back of the throne: tall crystals fanning up behind you
+            Vec3 b0 = top.subtract(face.scale(0.42)).add(rt.scale(i * 0.16));
+            Vec3 dir = new Vec3(0, 1, 0).add(rt.scale(i * 0.22)).subtract(face.scale(0.15)).normalize();
+            crystal(vc, m, n, cam, b0, dir, (1.6 - Math.abs(i) * 0.3) * g, 0.12, 6, i + 40 + p.id, a, true);
+        }
+        for (int s = -1; s <= 1; s += 2)   // the arms
+            crystal(vc, m, n, cam, top.add(rt.scale(s * 0.5)).subtract(face.scale(0.2)), face.add(0, 0.35, 0).normalize(), 0.7 * g, 0.09, 5, s + 60 + p.id, a, false);
+        gring(m, cam, base.add(0, 0.05, 0), 1.6 + 0.2 * Math.sin(now * 0.2), 0.3, 0.45F, W_SOFT);
     }
 
     // ================================================================== 10 comet
