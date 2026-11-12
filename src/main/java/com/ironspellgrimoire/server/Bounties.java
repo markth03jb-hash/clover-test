@@ -174,6 +174,7 @@ public final class Bounties {
             Entity m = sl.getEntity(b.getUUID("BossUUID"));
             if (m != null) { FxSend.ring(sl, 18, m.position().add(0, 1, 0), 2f, 0.3f, 0.1f, 12); m.discard(); }
         }
+        Boards.log(p, Boards.BOUNTY, Boards.GAVE_UP, b.getInt("Boss") == SECRET ? "Licht, the Unbound" : NAMES[Math.min(NAMES.length - 1, b.getInt("Boss"))], 0);
         removePoster(p, b.getInt("Id"));
         p.getPersistentData().remove(TAG);
         p.getPersistentData().putLong(NEXT, sl.getGameTime() + DAY / 4);
@@ -358,6 +359,7 @@ public final class Bounties {
             giveItem(p, new ItemStack(relics.get(ThreadLocalRandom.current().nextInt(relics.size())).get()));
         }
         GrimoireMastery.bountyXp(p, 600 + hard * 300);
+        Boards.log(p, Boards.BOUNTY, Boards.DONE, boss == SECRET ? "Licht, the Unbound" : NAMES[boss], stars);
         p.getPersistentData().remove(TAG);
         p.getPersistentData().putLong(NEXT, p.level().getGameTime() + DAY);
         ServerLevel sl = p.serverLevel();
@@ -373,6 +375,7 @@ public final class Bounties {
 
     private static void expire(ServerPlayer p, CompoundTag b) {
         ServerLevel sl = p.serverLevel();
+        Boards.log(p, Boards.BOUNTY, Boards.EXPIRED, b.getInt("Boss") == SECRET ? "Licht, the Unbound" : NAMES[Math.min(NAMES.length - 1, b.getInt("Boss"))], 0);
         if (b.hasUUID("BossUUID")) {   // he moves on
             Entity m = sl.getEntity(b.getUUID("BossUUID"));
             if (m != null) {

@@ -113,7 +113,8 @@ public class FxRenderer extends FxBase {
       if (p.shape == 74) { FinisherFrame.start(p); return; }
       if (p.shape == 75) { QuestHud.set(p); return; }
       if (p.shape == 77) { MemoryClient.set(p); return; }
-      if (p.shape == 78) { WorldBossHud.set(p); return; }   // the world boss tracker (server/WorldBoss)      // your Lost Memory Pages (server/MemoryPages)
+      if (p.shape == 78) { WorldBossHud.set(p); return; }
+      if (p.shape == 79) { RiftMap.set(p); return; }        // the rift's room map (server/Rifts)   // the world boss tracker (server/WorldBoss)      // your Lost Memory Pages (server/MemoryPages)
       if (p.shape == 76) { RaidBanner.start(p); return; }       // the Elf Raid (server/ElfRaids)           // the quest tracker (server/Quests)    // the killing blow on a boss (server/BossCores)
       if (p.shape == 46) { PortalRenderer.spawn(p); return; }   // Finral's gates of space
       if (p.shape == 47) { ThreadForms.set(p); return; }        // the String Grimoire's thread forms

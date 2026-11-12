@@ -286,5 +286,50 @@
         "stream": true
       }
     ]
+  },
+  "sfx.familiar": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/familiar_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/familiar_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/familiar_3"
+      }
+    ],
+    "subtitle": "subtitles.iron_spell_grimoire.sfx.familiar"
+  },
+  "sfx.board_note": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/board_note_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/board_note_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/board_note_3"
+      }
+    ],
+    "subtitle": "subtitles.iron_spell_grimoire.sfx.board_note"
+  },
+  "sfx.sovereign_step": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/sovereign_step_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/sovereign_step_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/sovereign_step_3"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/sovereign_step_4"
+      }
+    ],
+    "subtitle": "subtitles.iron_spell_grimoire.sfx.sovereign_step"
   }
 }

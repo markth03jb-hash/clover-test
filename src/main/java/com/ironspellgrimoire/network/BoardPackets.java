@@ -21,6 +21,8 @@ public final class BoardPackets {
         public int kind, stars;
         public String active = "", wait = "";
         public final List<Note> notes = new ArrayList<>();
+        public int done, gave, lost, earned;            // the record: totals
+        public final List<String> log = new ArrayList<>();   // and the last few: "outcome|day|stars|title"
 
         public static void encode(Open p, FriendlyByteBuf b) {
             b.writeVarInt(p.kind); b.writeVarInt(p.stars); b.writeUtf(p.active, 200); b.writeUtf(p.wait, 200);
@@ -29,6 +31,9 @@ public final class BoardPackets {
                 b.writeUtf(n.title, 100); b.writeUtf(n.twist, 200); b.writeUtf(n.text, 400); b.writeUtf(n.where, 100); b.writeUtf(n.pay, 100);
                 b.writeVarInt(n.special); b.writeVarInt(n.icon);
             }
+            b.writeVarInt(p.done); b.writeVarInt(p.gave); b.writeVarInt(p.lost); b.writeVarInt(p.earned);
+            b.writeVarInt(p.log.size());
+            for (String s : p.log) b.writeUtf(s, 160);
         }
 
         public static Open decode(FriendlyByteBuf b) {
@@ -41,6 +46,9 @@ public final class BoardPackets {
                 x.special = b.readVarInt(); x.icon = b.readVarInt();
                 p.notes.add(x);
             }
+            p.done = b.readVarInt(); p.gave = b.readVarInt(); p.lost = b.readVarInt(); p.earned = b.readVarInt();
+            int m = Math.min(8, b.readVarInt());
+            for (int i = 0; i < m; i++) p.log.add(b.readUtf(160));
             return p;
         }
 

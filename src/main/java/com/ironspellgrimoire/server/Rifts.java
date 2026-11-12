@@ -829,7 +829,7 @@ public final class Rifts {
             if (room.active) tickRoom(sl, r, i, room, here, inside.size(), tick, rnd);
             if (room.type == REST || ((room.type == RELIC || room.type == EXAM || room.type == MIRROR) && room.cleared)) pad(sl, r, room, here, tick);
         }
-        if (tick % 20 == 0) for (ServerPlayer p : inside) objective(p, r, roomOf(r, p.position()));
+        if (tick % 20 == 0) for (ServerPlayer p : inside) { Room at = roomOf(r, p.position()); objective(p, r, at); map(p, r, at); }
         if (tick % 15 == 0) for (Room room : in.keySet()) ambience(sl, r, room, rnd);
     }
 
@@ -1072,6 +1072,27 @@ public final class Rifts {
                 if (t >= 60) { r.padTicks.remove(p.getUUID()); leave(p); }
             } else r.padTicks.remove(p.getUUID());
         }
+    }
+
+    /**
+     * The rift's map for the HUD (client/RiftMap, shape 79): every room packed into one int - grid x and z, its kind,
+     * cleared, and its doors - carried in the packet's 18 number slots. id = how many rooms, sweep = the one you're in + 1.
+     */
+    private static void map(ServerPlayer p, Rift r, Room at) {
+        FxPacket k = new FxPacket();
+        k.shape = 79; k.life = 40;
+        int n = Math.min(18, r.rooms.size());
+        k.id = n; k.sweep = at == null ? 0 : r.rooms.indexOf(at) + 1;
+        double[] v = new double[18];
+        for (int i = 0; i < n; i++) {
+            Room room = r.rooms.get(i);
+            int doors = 0;
+            for (int dd : room.doors) doors |= 1 << dd;
+            v[i] = ((room.gx + 16) & 31) | ((room.gz + 16) & 31) << 5 | (room.type & 7) << 10 | (room.cleared ? 1 : 0) << 13 | (room.active ? 1 : 0) << 14 | doors << 15;
+        }
+        k.c = new Vec3(v[0], v[1], v[2]); k.d = new Vec3(v[3], v[4], v[5]); k.u = new Vec3(v[6], v[7], v[8]); k.v = new Vec3(v[9], v[10], v[11]);
+        k.r = (float) v[12]; k.r2 = (float) v[13]; k.a0 = (float) v[14]; k.a1 = (float) v[15]; k.h = (float) v[16]; k.speed = (float) v[17];
+        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), k);
     }
 
     private static void objective(ServerPlayer p, Rift r, Room room) {

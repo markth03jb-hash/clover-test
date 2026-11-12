@@ -1,9 +1,9 @@
-"""16x16 pixel-art spell icons (scaled to 64x64) for Julius Novachrono's Time Grimoire: midnight blue, gold, ivory."""
+"""16x16 pixel-art spell icons (scaled to 64x64) for Julius Novachrono's Time Grimoire: midnight blue, cyan, ice white."""
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from icons import make
 
-J = ((22, 30, 78), (4, 6, 22), (255, 200, 68), (244, 232, 190))
+J = ((14, 52, 100), (3, 10, 26), (80, 222, 255), (226, 248, 255))
 
 def clock(x0, y0, x1, y1, k='m'):
     cx, cy = (x0 + x1) // 2, (y0 + y1) // 2

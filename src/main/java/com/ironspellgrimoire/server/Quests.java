@@ -123,6 +123,7 @@ public final class Quests {
         CompoundTag q = quest(p);
         if (q == null) return;
         ServerLevel sl = p.serverLevel();
+        Boards.log(p, Boards.QUEST, Boards.GAVE_UP, TITLES[q.getInt("Type")], 0);
         clear(p, q);
         p.getPersistentData().putLong(NEXT, sl.getGameTime() + 600);
         sl.playSound(null, p.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1f, 0.6f);
@@ -190,6 +191,7 @@ public final class Quests {
         long now = sl.getGameTime();
         if (q.getInt("State") == 0) { p.getPersistentData().remove(TAG); sync(p); return; }   // a quest from before quests had places
         if (now > q.getLong("Deadline")) {
+            Boards.log(p, Boards.QUEST, Boards.EXPIRED, TITLES[q.getInt("Type")], 0);
             clear(p, q);
             p.sendSystemMessage(Component.literal("Your quest ran out of time: " + TITLES[q.getInt("Type")] + ".").withStyle(ChatFormatting.GRAY));
             return;
@@ -459,6 +461,7 @@ public final class Quests {
             give(p, s);
             extra = ", " + s.getHoverName().getString();
         }
+        Boards.log(p, Boards.QUEST, Boards.DONE, (daily ? "Daily: " : "") + TITLES[type], stars);
         p.getPersistentData().remove(TAG);
         p.getPersistentData().putLong(NEXT, p.serverLevel().getGameTime() + 1200);
         ServerLevel sl = p.serverLevel();
