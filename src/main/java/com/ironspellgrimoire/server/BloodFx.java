@@ -75,6 +75,9 @@ public final class BloodFx {
         if (MARKED.getOrDefault(t.getUUID(), 0L) > p.serverLevel().getGameTime()) amt *= 1.25f;
         float before = t.getHealth();
         AstaFx.damage(p, t, amt, id);
+        FxPacket b = fx(13, mid(t), 6);   // the wound opens: blood thrown out the way the blow went, mist, a splash below
+        b.d = mid(t).subtract(p.position().add(0, 1, 0)); b.a0 = Math.max(0.45f, Math.min(1.4f, amt / 8f));
+        send(p.serverLevel(), b);
         if (moon(p)) {   // under the Moon, blood spilled comes back to you
             float dealt = Math.max(0f, before - t.getHealth());
             if (dealt > 0) p.heal(dealt * 0.25f);
@@ -143,7 +146,6 @@ public final class BloodFx {
             Vec3 to = flat(mid(e).subtract(p.position()));
             if (to.lengthSqr() < 1e-4 || to.normalize().dot(look) < 0.2) continue;
             hit(p, e, pow, "crimson_edge");
-            spray(sl, mid(e), look.scale(0.12).add(0, 0.08, 0), 0.07f, 8, 0.07f);
         }
         sound(sl, c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.0f, 0.7f);
         sound(sl, c, SoundEvents.HONEY_BLOCK_BREAK, 0.8f, 0.6f);
@@ -171,7 +173,6 @@ public final class BloodFx {
             AstaFx.later(k, () -> {
                 if (!t.isAlive() || !alive(p)) return;
                 hit(p, t, pow * 0.22f, "hemorrhage");
-                spray(sl, mid(t), Vec3.ZERO, 0.05f, 3, 0.05f);
             });
         }
     }
@@ -197,7 +198,6 @@ public final class BloodFx {
                     Vec3 a0 = eye.add(d.scale(2.2 * kk)), a1 = eye.add(d.scale(2.2 * (kk + 1)));
                     for (LivingEntity e : Kit.along(sl, p, a0, a1, 0.6)) {
                         hit(p, e, pow * 0.35f, "sanguine_volley");
-                        spray(sl, mid(e), d.scale(0.1), 0.05f, 4, 0.05f);
                         if (id[0] != 0) end(sl, mid(e), id[0]);
                         spent[0] = true;
                         break;
@@ -244,8 +244,8 @@ public final class BloodFx {
             final int ii = i;
             AstaFx.later(i * 2, () -> stream(sl, from, book, 0, 0, 0.05f, 0.5f, 6, 16 + ii));
         }
-        FxPacket pl = fx(5, ZenonAI.ground(sl, c), 140);
-        pl.r = 1.1f;
+        FxPacket pl = fx(14, ZenonAI.ground(sl, c), 34);   // your blood draws a small circle round your feet
+        pl.r = 1.5f; pl.speed = 10;
         send(sl, pl);
         p.displayClientMessage(Component.literal("Blood Pact: your next Blood spell is 60% stronger").withStyle(ChatFormatting.DARK_RED), true);
         sound(sl, c, SoundEvents.WARDEN_HEARTBEAT, 1.2f, 1.0f);
@@ -288,6 +288,9 @@ public final class BloodFx {
         Vec3 look = flat(p.getLookAngle());
         if (look.lengthSqr() < 1e-4) look = new Vec3(0, 0, 1);
         final Vec3 d = look.normalize(), rt = rightOf(d);
+        FxPacket vein = fx(12, ZenonAI.ground(sl, p.position().add(d.scale(0.8))), 52);   // a vein of blood racing along the ground; the thorns burst out of it
+        vein.u = ZenonAI.ground(sl, p.position().add(d.scale(2 + 9 * 1.4 + 0.6))); vein.speed = 19;
+        send(sl, vein);
         java.util.Set<UUID> struck = new java.util.HashSet<>();
         for (int k = 0; k < 10; k++) {
             final int kk = k;
@@ -348,6 +351,9 @@ public final class BloodFx {
         Vec3 c = p.position().add(0, 1.1, 0);
         List<LivingEntity> foes = enemies(sl, p, new AABB(c, c).inflate(9));
         sound(sl, c, SoundEvents.WARDEN_HEARTBEAT, 1.4f, 0.7f);
+        FxPacket sg = fx(14, ZenonAI.ground(sl, p.position()), 30);   // a circle of blood drawn round you on the ground
+        sg.r = 3.2f; sg.speed = 8;
+        send(sl, sg);
         for (LivingEntity e : foes) {   // blood torn out of each of them, arcing into you
             spray(sl, mid(e), new Vec3(0, 0.12, 0), 0.06f, 6, 0.06f);
             stream(sl, mid(e), c, e.getId(), p.getId(), 0.075f, 1.4f, 10, 22);

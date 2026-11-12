@@ -109,9 +109,11 @@ public final class UiShots {
             mc.player.setXRot(22);
             onServer(p -> { p.setXRot(22); UiShotsServer.bloodSpell(p, "crimson_edge"); });
         }, 4, true));
-        steps.add(new Step("blood_thorns", () -> onServer(p -> UiShotsServer.bloodSpell(p, "thorned_veins")), 12, true));
+        steps.add(new Step("blood_thorns", () -> onServer(p -> UiShotsServer.bloodSpell(p, "thorned_veins")), 9, true));
         steps.add(new Step("blood_tide", () -> onServer(p -> UiShotsServer.bloodSpell(p, "red_tide")), 7, true));
         steps.add(new Step("blood_pools", () -> {}, 30, true));
+        steps.add(new Step("blood_drain", () -> onServer(p -> UiShotsServer.bloodSpell(p, "exsanguinate")), 9, true));
+        steps.add(new Step("blood_drain_hit", () -> {}, 13, true));
         steps.add(new Step("blood_awaken", () -> {
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
             mc.player.setXRot(10);

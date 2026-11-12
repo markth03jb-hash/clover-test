@@ -56,6 +56,21 @@ public final class UiShotsServer {
         switch (which) {
             case "thorned_veins" -> BloodFx.thornedVeins(p, 10f);
             case "red_tide" -> BloodFx.redTide(p, 10f);
+            case "exsanguinate" -> {   // two still zombies to draw from
+                p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+                var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+                var right = new net.minecraft.world.phys.Vec3(-look.z, 0, look.x);
+                for (int i = -1; i <= 1; i += 2) {
+                    var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(p.serverLevel());
+                    if (z == null) continue;
+                    var at = p.position().add(look.scale(3.5)).add(right.scale(i * 1.6));
+                    z.moveTo(at.x, p.getY(), at.z, 0, 0);
+                    z.setNoAi(true);
+                    z.setHealth(z.getMaxHealth());
+                    p.serverLevel().addFreshEntity(z);
+                }
+                BloodFx.exsanguinate(p, 4f);
+            }
             default -> BloodFx.crimsonEdge(p, 10f);
         }
     }

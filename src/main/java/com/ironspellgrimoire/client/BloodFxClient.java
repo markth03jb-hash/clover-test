@@ -70,7 +70,27 @@ public final class BloodFxClient {
         Pool(Vec3 c, float r, double born, double life, int seed) { this.c = c; this.r = r; this.born = born; this.life = life; this.seed = seed; }
     }
 
+    /** A splash where a drop lands hard: a crown of blood thrown up round the impact, a ripple, then it falls. */
+    private static final class Crown {
+        final Vec3 c;
+        final float r;
+        final double born;
+        final int seed;
+        Crown(Vec3 c, float r, double born, int seed) { this.c = c; this.r = r; this.born = born; this.seed = seed; }
+    }
+
+    /** A puff of fine blood mist hanging in the air after a hit. */
+    private static final class Mist {
+        Vec3 c;
+        final Vec3 vel;
+        final float r;
+        final double born, life;
+        Mist(Vec3 c, Vec3 vel, float r, double born, double life) { this.c = c; this.vel = vel; this.r = r; this.born = born; this.life = life; }
+    }
+
     private static final List<L> LIVE = new ArrayList<>();
+    private static final List<Crown> CROWNS = new ArrayList<>();
+    private static final List<Mist> MISTS = new ArrayList<>();
     private static final List<Drop> DROPS = new ArrayList<>();
     private static final List<Pool> POOLS = new ArrayList<>();
     private static double lastNow = -1;
@@ -85,11 +105,16 @@ public final class BloodFxClient {
         if (k == 99) { for (L l : LIVE) if (l.p.id == p.id && l.killAt < 0) l.killAt = now; return; }
         if (k == 1) { spray(p.c, p.d, p.r, Math.max(1, p.sweep), p.a0 > 0 ? p.a0 : 0.07F, now); return; }
         if (k == 5) { pool(p.c, p.r, now, Math.max(20, p.life)); return; }
+        if (k == 13) { burst(mc, p, now); }
+        if (k == 3) {   // a thorn bursts out of the ground: the ground splashes round it
+            crown(p.c, p.r2 * 3.2F, now);
+            mist(p.c.add(0, 0.3, 0), new Vec3(0, 0.03, 0), 0.5F, now, 18);
+        }
         if (LIVE.size() > 400) LIVE.remove(0);
         LIVE.add(new L(p, now));
     }
 
-    static void clear() { LIVE.clear(); DROPS.clear(); POOLS.clear(); }
+    static void clear() { LIVE.clear(); DROPS.clear(); POOLS.clear(); CROWNS.clear(); MISTS.clear(); }
 
     private static void spray(Vec3 c, Vec3 v, float spread, int n, float size, double now) {
         java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
@@ -104,6 +129,28 @@ public final class BloodFxClient {
         DROPS.add(new Drop(at, vel, r, now));
     }
 
+    private static void crown(Vec3 c, float r, double now) {
+        if (CROWNS.size() > 60) CROWNS.remove(0);
+        CROWNS.add(new Crown(c, r, now, seedN++ * 104729));
+    }
+
+    private static void mist(Vec3 c, Vec3 vel, float r, double now, double life) {
+        if (MISTS.size() > 80) MISTS.remove(0);
+        MISTS.add(new Mist(c, vel, r, now, life));
+    }
+
+    /** A hit: blood thrown out of the wound the way the blow went, a puff of mist, and a splash on the ground below. */
+    private static void burst(Minecraft mc, FxPacket p, double now) {
+        float s = p.a0 > 0 ? p.a0 : 1F;
+        Vec3 d = p.d.lengthSqr() < 1e-6 ? Vec3.ZERO : p.d.normalize();
+        spray(p.c, d.scale(0.16 * s).add(0, 0.1, 0), 0.07F * s, (int) (8 + 8 * s), 0.055F + 0.02F * s, now);
+        spray(p.c, d.scale(0.32 * s).add(0, 0.04, 0), 0.03F, (int) (3 + 3 * s), 0.035F, now);   // a fast jet straight out
+        mist(p.c, d.scale(0.03).add(0, 0.01, 0), 0.45F * s, now, 16);
+        mist(p.c.add(d.scale(0.4)), d.scale(0.05), 0.3F * s, now, 12);
+        double g = ground(mc, p.c);
+        if (p.c.y - g < 3) crown(new Vec3(p.c.x + d.x * 0.6, g, p.c.z + d.z * 0.6), 0.35F + 0.25F * s, now);
+    }
+
     private static void pool(Vec3 c, float r, double now, double life) {
         if (POOLS.size() > 180) POOLS.remove(0);
         POOLS.add(new Pool(c, r, now, life, seedN++ * 7919));
@@ -115,7 +162,7 @@ public final class BloodFxClient {
         if (mc.level == null) { clear(); return; }
         double dt = lastNow < 0 ? 0 : Mth.clamp(now - lastNow, 0, 3);
         lastNow = now;
-        if (LIVE.isEmpty() && DROPS.isEmpty() && POOLS.isEmpty()) return;
+        if (LIVE.isEmpty() && DROPS.isEmpty() && POOLS.isEmpty() && CROWNS.isEmpty() && MISTS.isEmpty()) return;
         sky = mc.level.getSkyDarken(pt);
 
         // pools first (they lie under everything)
@@ -137,10 +184,28 @@ public final class BloodFxClient {
             double g = ground(mc, d.pos);
             if (d.pos.y <= g || now - d.born > 90) {
                 di.remove();
-                if (d.pos.y <= g + 0.3) pool(new Vec3(d.pos.x, g, d.pos.z), d.r * (3.2F + (float) Math.min(1.5, d.vel.length() * 2)), now, 60 + d.r * 300);
+                if (d.pos.y <= g + 0.3) {
+                    pool(new Vec3(d.pos.x, g, d.pos.z), d.r * (3.2F + (float) Math.min(1.5, d.vel.length() * 2)), now, 60 + d.r * 300);
+                    if (d.vel.y < -0.22 && d.r > 0.045 && Math.random() < 0.55) crown(new Vec3(d.pos.x, g, d.pos.z), d.r * 3.6F, now);   // it lands hard: a little crown
+                }
                 continue;
             }
             drip(vc, m, n, cam, d.pos, d.vel, d.r);
+        }
+        Iterator<Crown> ci = CROWNS.iterator();
+        while (ci.hasNext()) {
+            Crown cr = ci.next();
+            double age = now - cr.born;
+            if (age > 12) { ci.remove(); continue; }
+            drawCrown(vc, m, n, cam, mc, cr, age, now);
+        }
+        Iterator<Mist> mi = MISTS.iterator();
+        while (mi.hasNext()) {
+            Mist ms = mi.next();
+            double age = now - ms.born;
+            if (age > ms.life) { mi.remove(); continue; }
+            if (dt > 0) ms.c = ms.c.add(ms.vel.scale(dt * Math.max(0, 1 - age / ms.life)));
+            drawMist(vc, m, n, cam, mc, ms, age);
         }
         List<L> add = null;
         Iterator<L> it = LIVE.iterator();
@@ -163,6 +228,9 @@ public final class BloodFxClient {
                 case 9 -> whiteAura(m, cam, mc, l, age, now, pt, out);
                 case 10 -> awakening(m, cam, l, age, now);
                 case 11 -> bleeding(vc, m, n, cam, mc, l, age, now, pt, tick);
+                case 12 -> vein(vc, m, n, cam, mc, l, age, now, tick);
+                case 13 -> spatter(m, cam, l, age);
+                case 14 -> sigil(vc, m, n, cam, mc, l, age, now, tick);
                 default -> l.done = true;
             }
         }
@@ -332,6 +400,7 @@ public final class BloodFxClient {
         }
         r[k] = p.r * 1.35;   // a swelling head
         tube(vc, m, n, cam, c, r, 6, 0.96F, 1F);
+        glowAlong(m, cam, c, p.r * 2.6, 0.22F * (0.75F + 0.25F * beat(now)));
         drip(vc, m, n, cam, c[k], c[k].subtract(c[k - 1]), (float) (p.r * 1.3));
         if (tick && Math.random() < 0.6) {   // drops fall off it
             int i = 1 + (int) (Math.random() * (k - 1));
@@ -343,6 +412,34 @@ public final class BloodFxClient {
     private static void blade(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, L l, double age, double now, boolean tick) {
         FxPacket p = l.p;
         lightAt(Minecraft.getInstance(), p.c);
+        double swing = Math.max(1, p.speed);
+        // two thinning afterimages of where it just was, then the blade itself
+        if (age < swing + 2) for (int g = 2; g >= 1; g--) if (age - g * 1.1 > 0) bladeSheet(vc, m, n, cam, p, age - g * 1.1, now, g == 1 ? 0.42F : 0.2F);
+        Vec3[] c = bladeSheet(vc, m, n, cam, p, age, now, 0.97F);
+        Vec3 d = p.d.normalize(), u = p.u.normalize();
+        int seg = c.length - 1;
+        double collapse = Mth.clamp((age - swing) / Math.max(1, p.life - swing), 0, 1);
+        Vec3 o = p.c.add(d.scale(age * 0.12)).add(0, -collapse * collapse * 1.2, 0);
+        // a dark crimson glow along the cutting lip
+        Vec3[] lip = new Vec3[seg - 3];
+        for (int i = 0; i < lip.length; i++) lip[i] = c[i + 2].add(c[i + 2].subtract(o).normalize().scale(0.05));
+        glowAlong(m, cam, lip, 0.22, (float) (0.55 * (1 - collapse)));
+        if (p.a1 > 0) {   // under the Moon: a white-hot edge on the leading side
+            for (int i = seg / 2; i < seg; i++) FxBase.gquad(m, cam, c[i].add(u.scale(0.03)), c[i + 1].add(u.scale(0.03)), c[i + 1].subtract(u.scale(0.03)), c[i].subtract(u.scale(0.03)), W_CORE, 0.6F, 0.6F, 0.6F, 0.6F);
+        }
+        if (tick && age < swing) {   // drops flung off the leading tip, and mist off the edge
+            Vec3 tip = c[seg - 1], fl = c[seg].subtract(c[seg - 2]).normalize();
+            for (int i = 0; i < 3; i++) drop(tip, fl.scale(0.18 + Math.random() * 0.12).add(d.scale(0.08)).add(0, 0.05, 0), 0.04F + (float) Math.random() * 0.05F, now);
+            mist(c[seg / 2], d.scale(0.04), 0.35F, now, 12);
+        }
+        if (!l.done && collapse > 0 && l.killAt < 0 && p.a0 == 0) {   // it falls apart into blood
+            p.a0 = 1;
+            for (int i = 1; i < seg; i++) drop(c[i], c[i].subtract(o).normalize().scale(0.06 + Math.random() * 0.06).add(d.scale(0.06)), 0.05F + (float) Math.random() * 0.06F, now);
+        }
+    }
+
+    /** The crescent sheet of liquid at one moment of the swing; returns its centre line. */
+    private static Vec3[] bladeSheet(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, double now, float alpha) {
         Vec3 d = p.d.normalize(), u = p.u.normalize(), sd = d.cross(u).normalize();
         double swing = Math.max(1, p.speed), k = FxBase.smooth(age / swing);
         double span = Math.toRadians(150), front = -span / 2 + span * k, back = Math.max(-span / 2, front - Math.toRadians(125));
@@ -352,13 +449,14 @@ public final class BloodFxClient {
         int seg = 22;
         Vec3[] c = new Vec3[seg + 1], out = new Vec3[seg + 1];
         double[] r = new double[seg + 1];
+        double throb = 1 + 0.08 * beat(now);
         for (int i = 0; i <= seg; i++) {
             double t = (double) i / seg, an = back + (front - back) * t;
             out[i] = d.scale(Math.cos(an)).add(sd.scale(Math.sin(an)));
             c[i] = o.add(out[i].scale(R)).add(u.scale(Math.sin(t * 7 + now * 0.5) * 0.04));
-            r[i] = p.r * Math.pow(Math.sin(t * Math.PI), 0.6) * (0.35 + 0.65 * t) * (1 - collapse * 0.85);
+            r[i] = p.r * throb * Math.pow(Math.sin(t * Math.PI), 0.6) * (0.35 + 0.65 * t) * (1 - collapse * 0.85);
         }
-        // a crescent sheet of liquid: tall across the swing, thin through it, its outer edge thinned to a cutting lip
+        // tall across the swing, thin through it, its outer edge thinned to a cutting lip
         for (int i = 0; i < seg; i++) {
             double h0 = r[i] * 0.16, h1 = r[i + 1] * 0.16, w0 = r[i] * 0.03, w1 = r[i + 1] * 0.03;
             Vec3 a0 = c[i], a1 = c[i + 1], o0 = out[i], o1 = out[i + 1];
@@ -366,22 +464,12 @@ public final class BloodFxClient {
             Vec3 f0 = a0.add(o0.scale(w0 * 2.5)), f1 = a1.add(o1.scale(w1 * 2.5)), k0 = a0.subtract(o0.scale(w0)), k1 = a1.subtract(o1.scale(w1));
             Vec3 nu0 = o0.add(u.scale(0.8)).normalize(), nu1 = o1.add(u.scale(0.8)).normalize(), nd0 = o0.subtract(u.scale(0.8)).normalize(), nd1 = o1.subtract(u.scale(0.8)).normalize();
             Vec3 iu0 = o0.scale(-1).add(u.scale(0.8)).normalize(), iu1 = o1.scale(-1).add(u.scale(0.8)).normalize(), id0 = o0.scale(-1).subtract(u.scale(0.8)).normalize(), id1 = o1.scale(-1).subtract(u.scale(0.8)).normalize();
-            q(vc, m, n, cam, t0, nu0, t1, nu1, f1, o1, f0, o0, 0.97F, 1F);
-            q(vc, m, n, cam, f0, o0, f1, o1, b1, nd1, b0, nd0, 0.97F, 1F);
-            q(vc, m, n, cam, t1, iu1, t0, iu0, k0, o0.scale(-1), k1, o1.scale(-1), 0.97F, 0.85F);
-            q(vc, m, n, cam, k1, o1.scale(-1), k0, o0.scale(-1), b0, id0, b1, id1, 0.97F, 0.85F);
+            q(vc, m, n, cam, t0, nu0, t1, nu1, f1, o1, f0, o0, alpha, 1F);
+            q(vc, m, n, cam, f0, o0, f1, o1, b1, nd1, b0, nd0, alpha, 1F);
+            q(vc, m, n, cam, t1, iu1, t0, iu0, k0, o0.scale(-1), k1, o1.scale(-1), alpha, 0.85F);
+            q(vc, m, n, cam, k1, o1.scale(-1), k0, o0.scale(-1), b0, id0, b1, id1, alpha, 0.85F);
         }
-        if (p.a1 > 0) {   // under the Moon: a white-hot edge on the leading side
-            for (int i = seg / 2; i < seg; i++) FxBase.gquad(m, cam, c[i].add(u.scale(0.03)), c[i + 1].add(u.scale(0.03)), c[i + 1].subtract(u.scale(0.03)), c[i].subtract(u.scale(0.03)), W_CORE, 0.6F, 0.6F, 0.6F, 0.6F);
-        }
-        if (tick && age < swing) {   // drops flung off the leading tip
-            Vec3 tip = c[seg - 1], fl = c[seg].subtract(c[seg - 2]).normalize();
-            for (int i = 0; i < 2; i++) drop(tip, fl.scale(0.18 + Math.random() * 0.1).add(d.scale(0.08)).add(0, 0.05, 0), 0.05F + (float) Math.random() * 0.04F, now);
-        }
-        if (!l.done && collapse > 0 && l.killAt < 0 && p.a0 == 0) {   // it falls apart into blood
-            p.a0 = 1;
-            for (int i = 2; i < seg; i += 2) drop(c[i], c[i].subtract(o).normalize().scale(0.08).add(d.scale(0.06)), 0.07F + (float) Math.random() * 0.05F, now);
-        }
+        return c;
     }
 
     // ================================================================== 3 thorn
@@ -395,7 +483,7 @@ public final class BloodFxClient {
             pool(p.c, p.r2 * 2.6F, now, 120);
             for (int i = 0; i < 4; i++) drop(p.c.add(p.d.scale(p.r * (0.3 + 0.15 * i))), new Vec3((Math.random() - 0.5) * 0.06, 0, (Math.random() - 0.5) * 0.06), 0.06F, now);
         }
-        double len = p.r * grow * (1 - melt * 0.92), w = p.r2 * Math.min(1, grow) * (1 + melt * 0.6) * (1 - melt * 0.5);
+        double len = p.r * grow * (1 - melt * 0.92) * (1 + 0.04 * beat(now + p.id)), w = p.r2 * Math.min(1, grow) * (1 + melt * 0.6) * (1 - melt * 0.5);
         if (len < 0.02) return;
         Vec3 ax = p.d.normalize();
         Vec3[] f = frame(ax);
@@ -418,6 +506,9 @@ public final class BloodFxClient {
             if (nt.dot(midR[i].subtract(p.c.add(ax.scale(len * 0.35)))) < 0) nt = nt.scale(-1);
             tri(vc, m, n, cam, midR[i], nt, midR[j], nt, tip, nt, 0.97F, tone);
         }
+        float ga = (float) ((1 - melt) * (0.3 + 0.25 * beat(now + p.id)));   // a pulse of dark light running up its ridges
+        for (int i = 0; i < s; i += 2) glowAlong(m, cam, new Vec3[]{base[i], midR[i], tip}, 0.07, ga);
+        if (age < 3) glowAlong(m, cam, new Vec3[]{p.c, tip}, w * 2.2, (float) (0.5 * (1 - age / 3)));   // the flash as it bursts out
     }
 
     private static Vec3 rot(Vec3 o, Vec3 ax) { return ax.cross(o); }
@@ -453,7 +544,23 @@ public final class BloodFxClient {
             q(vc, m, n, cam, a, nr, b, nr, c, nr, dd, nr, 0.95F, 1F);
             q(vc, m, n, cam, dd, nr.scale(-1), c, nr.scale(-1), b, nr.scale(-1), a, nr.scale(-1), 0.95F, 0.6F);   // its underside
         }
+        Vec3[] crestLine = new Vec3[ws + 1];
+        for (int i = 0; i <= ws; i++) crestLine[i] = P[i][6];
+        glowAlong(m, cam, crestLine, 0.3, 0.35F * e);
+        if (!l.done && age > p.life - 3 && p.a0 == 0) {   // at the end it crashes down: a wall of spray and a splash all along it
+            p.a0 = 1;
+            for (int i = 0; i <= ws; i += 2) {
+                spray(P[i][5], d.scale(0.12).add(0, 0.15, 0), 0.09F, 4, 0.06F, now);
+                crown(new Vec3(P[i][0].x, p.c.y, P[i][0].z).add(d.scale(3)), 0.6F, now);
+            }
+            mist(front.add(0, H * 0.6, 0), d.scale(0.05), 1.6F, now, 20);
+        }
         if (tick) {
+            for (int i = 0; i < 4; i++) {   // a curtain of drops falling off the curled lip
+                Vec3 lip = P[1 + (int) (Math.random() * (ws - 1))][8];
+                drop(lip, d.scale(0.05).add(0, -0.05, 0), 0.04F + (float) Math.random() * 0.04F, now);
+            }
+            if ((long) now % 2 == 0) mist(P[ws / 2][5].add(sd.scale((Math.random() * 2 - 1) * p.r * 0.6)), d.scale(0.06).add(0, 0.02, 0), 0.6F, now, 14);
             for (int i = 0; i < 3; i++) {   // spray off the crest
                 Vec3 crest = P[1 + (int) (Math.random() * (ws - 1))][5];
                 drop(crest, d.scale(0.15 + Math.random() * 0.1).add(0, 0.12 + Math.random() * 0.1, 0), 0.05F + (float) Math.random() * 0.05F, now);
@@ -501,6 +608,12 @@ public final class BloodFxClient {
             int j2 = (j + 1) % lon;
             q(vc, m, n, cam, P[i][j], N[i][j], P[i + 1][j], N[i + 1][j], P[i + 1][j2], N[i + 1][j2], P[i][j2], N[i][j2], a, 1.15F);
         }
+        float hb = beat(now);
+        for (int j = 0; j < lon; j += 2) {   // veins over its surface, beating
+            Vec3[] v = new Vec3[lat + 1];
+            for (int i = 0; i <= lat; i++) v[i] = P[i][(j + i / 3) % lon];
+            glowAlong(m, cam, v, 0.06, (0.18F + 0.32F * hb) * a / 0.42F);
+        }
     }
 
     private static double lastTickFrame = -1;
@@ -527,6 +640,7 @@ public final class BloodFxClient {
         double[] r = {0, 0.045, 0.06, 0.05, 0.03, 0};
         for (int i = 0; i < 6; i++) c[i] = pos.subtract(dir.scale(len * (5 - i) / 5.0));
         tube(vc, m, n, cam, c, r, 5, 0.98F, 0.9F);
+        glowAlong(m, cam, new Vec3[]{c[0], c[5]}, 0.16, 0.4F);
         // a liquid tail, thinning and wavering behind it
         int t = 8;
         Vec3[] tc = new Vec3[t];
@@ -559,6 +673,7 @@ public final class BloodFxClient {
             r[i] = 0.03 * e * (0.7 + 0.3 * Math.sin(t * 20 - now * 1.4));
         }
         tube(vc, m, n, cam, c, r, 5, 0.95F, 1F);
+        glowAlong(m, cam, c, 0.12, 0.25F * e * (0.6F + 0.4F * beat(now)));
         if (reach < 1) return;
         float beat = (float) Math.pow(Math.max(0, Math.sin(now * 0.35)), 4);
         for (int i = 0; i < 5; i++) {   // beads of blood drawn along it into the caster
@@ -587,6 +702,211 @@ public final class BloodFxClient {
         if (tick && Math.random() < 0.55) {
             double an = Math.random() * TAU;
             drop(feet.add(Math.cos(an) * w, h * (0.3 + Math.random() * 0.4), Math.sin(an) * w), new Vec3(Math.cos(an) * 0.02, 0, Math.sin(an) * 0.02), 0.05F + (float) Math.random() * 0.03F, now);
+        }
+    }
+
+    // ================================================================== crimson glow, crowns, mist
+    private static final float[] CRIMSON = {0.62F, 0.0F, 0.05F}, CRIMSON_HOT = {0.95F, 0.12F, 0.12F};
+
+    /** A heartbeat: two quick pulses every 1.3 s, 0..1. */
+    private static float beat(double now) {
+        double t = now % 26;
+        return (float) Math.min(1, Math.exp(-Math.pow(t / 1.4, 2)) + 0.6 * Math.exp(-Math.pow((t - 4.5) / 1.4, 2)));
+    }
+
+    /** A soft dark-crimson glow along a line: the life still in the blood. */
+    private static void glowAlong(Matrix4f m, Vec3 cam, Vec3[] pts, double w, float a) {
+        if (a <= 0.01F || pts.length < 2) return;
+        double[] ww = new double[pts.length], wc = new double[pts.length];
+        float[] al = new float[pts.length], ac = new float[pts.length];
+        for (int i = 0; i < pts.length; i++) {
+            double t = pts.length == 1 ? 0 : (double) i / (pts.length - 1);
+            double tap = 0.5 + 0.5 * Math.sin(t * Math.PI);
+            ww[i] = w * tap; wc[i] = w * 0.25 * tap;
+            al[i] = a * 0.55F; ac[i] = a * 0.7F;
+        }
+        gstrip(m, cam, pts, ww, al, CRIMSON);
+        gstrip(m, cam, pts, wc, ac, CRIMSON_HOT);
+    }
+
+    private static void drawCrown(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, Crown cr, double age, double now) {
+        if (cr.c.distanceToSqr(cam) > 32 * 32) return;
+        lightAt(mc, cr.c.add(0, 0.3, 0));
+        double k = age / 12.0;
+        double R = cr.r * (0.35 + 0.75 * Math.sqrt(k)), rise = Math.sin(Math.min(1, k * 1.6) * Math.PI);
+        float a = (float) (1 - k * k) * 0.96F;
+        int spikes = 9;
+        Vec3 base = cr.c.add(0, 0.02, 0);
+        Vec3[] rim = new Vec3[spikes * 2 + 1];
+        double[] rr = new double[rim.length];
+        for (int i = 0; i <= spikes * 2; i++) {   // the thin wall of the crown
+            double an = i * TAU / (spikes * 2) + cr.seed;
+            rim[i] = base.add(Math.cos(an) * R, cr.r * 0.35 * rise, Math.sin(an) * R);
+            rr[i] = cr.r * 0.07 * (1 - k);
+        }
+        tube(vc, m, n, cam, rim, rr, 4, a, 1F);
+        for (int i = 0; i < spikes; i++) {   // the points of the crown, each with a bead of blood on top
+            double an = i * TAU / spikes + cr.seed + 0.17;
+            double hh = cr.r * (0.6 + 0.6 * FxBase.h2(cr.seed, i, 5)) * rise;
+            if (hh < 0.01) continue;
+            Vec3 o = new Vec3(Math.cos(an), 0, Math.sin(an));
+            Vec3 b0 = base.add(o.scale(R)), b1 = b0.add(o.scale(cr.r * 0.25 * k)).add(0, hh, 0);
+            tube(vc, m, n, cam, new Vec3[]{b0, b0.add(b1).scale(0.5), b1}, new double[]{cr.r * 0.07, cr.r * 0.05, cr.r * 0.03}, 4, a, 1F);
+            drip(vc, m, n, cam, b1.add(0, cr.r * 0.06, 0), new Vec3(o.x * 0.02, 0.04 * (1 - 2 * k), o.z * 0.02), cr.r * 0.09F);
+        }
+        // a ripple running out across the ground
+        double rp = cr.r * (0.5 + 2.2 * k);
+        Vec3[] ring = new Vec3[25];
+        double[] r2 = new double[25];
+        for (int i = 0; i < 25; i++) {
+            double an = i * TAU / 24;
+            ring[i] = base.add(Math.cos(an) * rp, 0.01, Math.sin(an) * rp);
+            r2[i] = 0.02 * (1 - k);
+        }
+        tube(vc, m, n, cam, ring, r2, 3, a * 0.8F, 0.9F);
+    }
+
+    /** Fine mist: a soft, dark, see-through cloud (never a glow), swelling and thinning away. */
+    private static void drawMist(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, Mist ms, double age) {
+        Vec3 view = ms.c.subtract(cam);
+        double dist = view.length();
+        if (dist < 1.2 || dist > 40) return;
+        lightAt(mc, ms.c);
+        double k = age / ms.life;
+        float a = (float) (Math.min(1, age / 2.0) * (1 - k) * (1 - k)) * 0.38F;
+        double R = ms.r * (0.6 + 1.1 * Math.sqrt(k));
+        Vec3[] f = frame(view.scale(1 / dist));
+        float[] col = {0.36F * light, 0.01F * light, 0.03F * light};
+        int seg = 12;
+        for (int lay = 0; lay < 2; lay++) {   // two offset lobes so it's never a perfect circle
+            Vec3 c = ms.c.add(f[0].scale(R * 0.25 * (lay == 0 ? 1 : -1))).add(f[1].scale(R * 0.15 * (lay == 0 ? -1 : 1)));
+            double rr = R * (lay == 0 ? 1 : 0.75);
+            for (int i = 0; i < seg; i++) {
+                double a0 = i * TAU / seg, a1 = (i + 1) * TAU / seg;
+                Vec3 p0 = c.add(f[0].scale(Math.cos(a0) * rr)).add(f[1].scale(Math.sin(a0) * rr)), p1 = c.add(f[0].scale(Math.cos(a1) * rr)).add(f[1].scale(Math.sin(a1) * rr));
+                FxBase.vtx(vc, m, n, cam, c, col, a);
+                FxBase.vtx(vc, m, n, cam, c, col, a);
+                FxBase.vtx(vc, m, n, cam, p1, col, 0);
+                FxBase.vtx(vc, m, n, cam, p0, col, 0);
+            }
+        }
+    }
+
+    // ================================================================== 12 vein: blood running along the ground
+    private static Vec3 veinAt(FxPacket p, Vec3 ab, Vec3 side, double t, double len) {
+        double wig = Math.sin(t * len * 1.7 + p.id) * 0.35 + Math.sin(t * len * 4.3 + p.id * 0.7) * 0.12;
+        Vec3 q = p.c.add(ab.scale(t)).add(side.scale(wig * Math.min(1, t * 6)));
+        return new Vec3(q.x, Mth.lerp(t, p.c.y, p.u.y) + 0.05, q.z);
+    }
+
+    private static void vein(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, L l, double age, double now, boolean tick) {
+        FxPacket p = l.p;
+        Vec3 ab = p.u.subtract(p.c);
+        double len = ab.length();
+        if (len < 0.1) { l.done = true; return; }
+        Vec3 side = ab.cross(UP).normalize();
+        lightAt(mc, p.c.add(ab.scale(0.5)).add(0, 0.5, 0));
+        double head = Mth.clamp(age / Math.max(1, p.speed), 0, 1);
+        double drain = Mth.clamp((age - (p.life - 14)) / 14.0, 0, 1);
+        float hb = beat(now);
+        int k = Math.max(4, (int) (40 * head));
+        Vec3[] c = new Vec3[k + 1];
+        double[] r = new double[k + 1];
+        for (int i = 0; i <= k; i++) {
+            double t = head * i / k;
+            c[i] = veinAt(p, ab, side, t, len);
+            r[i] = 0.075 * (1 - drain * 0.8) * (0.8 + 0.25 * Math.sin(t * len * 3 - now * 0.9)) * (i == k ? 0.4 : 1);
+        }
+        tube(vc, m, n, cam, c, r, 5, 0.97F, (float) (1 - drain * 0.4));
+        glowAlong(m, cam, c, 0.35, (float) ((0.22 + 0.3 * hb) * (1 - drain)));
+        for (int b = 0; b < 7; b++) {   // branches split off it as the head passes, and grow out across the ground
+            double tb = (b + 0.6) / 7.6;
+            if (tb > head) break;
+            double gl = Mth.clamp((head - tb) * 5, 0, 1) * (1 - drain);
+            if (gl < 0.05) continue;
+            Vec3 b0 = veinAt(p, ab, side, tb, len);
+            double sgn = b % 2 == 0 ? 1 : -1;
+            Vec3 dir = side.scale(sgn).add(ab.normalize().scale(0.6)).normalize();
+            Vec3[] bc = new Vec3[5];
+            double[] br = new double[5];
+            for (int i = 0; i < 5; i++) {
+                double u = i / 4.0 * gl;
+                bc[i] = b0.add(dir.scale(u * 1.3)).add(side.scale(Math.sin(u * 5 + b) * 0.1));
+                br[i] = 0.045 * (1 - i / 4.0) + 0.005;
+            }
+            tube(vc, m, n, cam, bc, br, 4, 0.97F, 0.9F);
+        }
+        for (int i = 0; i < 4; i++) {   // pulses of blood racing along it
+            double t = ((now * 0.06 + i / 4.0) % 1.0) * head;
+            Vec3 at = veinAt(p, ab, side, t, len), nx = veinAt(p, ab, side, Math.min(head, t + 0.01), len);
+            drip(vc, m, n, cam, at.add(0, 0.04, 0), nx.subtract(at).scale(6), (float) (0.09 * (1 - drain)));
+        }
+    }
+
+    // ================================================================== 13 spatter: the flash of a wound opening
+    private static void spatter(Matrix4f m, Vec3 cam, L l, double age) {
+        FxPacket p = l.p;
+        double k = age / Math.max(1, p.life);
+        float a = (float) (1 - k);
+        if (a <= 0.01F) return;
+        float s = p.a0 > 0 ? p.a0 : 1F;
+        Vec3 d = p.d.lengthSqr() < 1e-6 ? new Vec3(0, 0, 1) : p.d.normalize();
+        Vec3[] f = frame(d);
+        for (int i = 0; i < 7; i++) {   // streaks thrown out of the wound, mostly the way the blow went
+            double an = i * TAU / 7 + p.id;
+            Vec3 dir = d.scale(1.2).add(f[0].scale(Math.cos(an))).add(f[1].scale(Math.sin(an))).normalize();
+            double r0 = 0.15 + k * 0.5, r1 = r0 + (0.5 + 0.4 * FxBase.h2(p.id, i, 1)) * s * (0.5 + k);
+            glowAlong(m, cam, new Vec3[]{p.c.add(dir.scale(r0)), p.c.add(dir.scale(r1))}, 0.09 * s, a * 0.9F);
+        }
+        glowAlong(m, cam, new Vec3[]{p.c.subtract(d.scale(0.25)), p.c.add(d.scale(0.25))}, 0.6 * s * (1 - k), a * 0.6F);
+    }
+
+    // ================================================================== 14 sigil: a circle drawn on the ground in blood
+    private static void sigil(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, L l, double age, double now, boolean tick) {
+        FxPacket p = l.p;
+        Vec3 c = p.c.add(0, 0.04, 0);
+        lightAt(mc, c.add(0, 0.5, 0));
+        double draw = FxBase.smooth(age / Math.max(1, p.speed));
+        double drain = Mth.clamp((age - (p.life - 10)) / 10.0, 0, 1);
+        float hb = beat(now);
+        double R = p.r;
+        for (int ring = 0; ring < 2; ring++) {   // two rings of blood running round, drawing themselves
+            double rr = R * (ring == 0 ? 1 : 0.8), dirn = ring == 0 ? 1 : -1;
+            int seg = 48, k = Math.max(2, (int) (seg * draw));
+            Vec3[] pts = new Vec3[k + 1];
+            double[] rad = new double[k + 1];
+            for (int i = 0; i <= k; i++) {
+                double an = dirn * i * TAU / seg + p.id;
+                double wob = 1 + 0.02 * Math.sin(an * 7 + now * 0.2);
+                pts[i] = c.add(Math.cos(an) * rr * wob, 0, Math.sin(an) * rr * wob);
+                rad[i] = (ring == 0 ? 0.08 : 0.055) * (1 - drain * 0.85) * (i == k && draw < 1 ? 0.6 : 1);
+            }
+            tube(vc, m, n, cam, pts, rad, 5, 0.97F, 1F);
+            glowAlong(m, cam, pts, ring == 0 ? 0.5 : 0.35, (float) ((0.18 + 0.32 * hb) * (1 - drain)));
+        }
+        int spokes = 8;   // channels running in to the middle, the blood flowing along them toward the centre
+        for (int i = 0; i < spokes; i++) {
+            double an = i * TAU / spokes + p.id + 0.2;
+            double g = Mth.clamp((draw - 0.3) / 0.7, 0, 1) * (1 - drain * 0.7);
+            if (g <= 0.02) continue;
+            Vec3 o = new Vec3(Math.cos(an), 0, Math.sin(an)), sd = new Vec3(-o.z, 0, o.x);
+            Vec3[] pts = new Vec3[6];
+            double[] rad = new double[6];
+            for (int j = 0; j < 6; j++) {
+                double t = j / 5.0;
+                double rr = R * 0.8 * (1 - t * g * 0.85);
+                pts[j] = c.add(o.scale(rr)).add(sd.scale(Math.sin(t * 5 + i) * 0.12 * R / 4));
+                rad[j] = 0.04 * (1 - t * 0.5);
+            }
+            tube(vc, m, n, cam, pts, rad, 4, 0.96F, 0.9F);
+            double t = (now * 0.08 + i * 0.37) % 1.0;
+            drip(vc, m, n, cam, c.add(o.scale(R * 0.8 * (1 - t * g * 0.85))).add(0, 0.04, 0), o.scale(-0.2), 0.07F * (float) (1 - drain));
+        }
+        if (draw > 0.5) {   // the centre fills into a pool, beating
+            double pr = R * 0.18 * (0.9 + 0.1 * hb) * Mth.clamp((draw - 0.5) * 2, 0, 1) * (1 + drain);
+            Pool fake = new Pool(p.c, (float) pr, -1000, 1e9, p.id * 31);
+            drawPool(vc, m, n, cam, fake, 1000);
+            glowAlong(m, cam, new Vec3[]{c.add(-pr, 0.02, 0), c.add(pr, 0.02, 0)}, pr * 1.6, (0.15F + 0.35F * hb) * (float) (1 - drain));
         }
     }
 
