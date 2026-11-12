@@ -45,23 +45,24 @@ box('hips', -4.5, 22, -2.5, 4.5, 26, 2.5, 'cloth2')
 box('hips', -4.8, 24.5, -2.8, 4.8, 25.5, 2.8, 'leather')
 def legs(s, sx):
     bone('thigh' + s, 'hips', (2.2 * sx, 23, 0))
-    box('thigh' + s, 0.2, 12, -2.2, 4.4, 24, 2.2, 'cloth2', sx)
+    box('thigh' + s, 0.4, 12, -1.9, 4.2, 24, 1.9, 'cloth2', sx)
     bone('shin' + s, 'thigh' + s, (2.3 * sx, 12, 0))
-    box('shin' + s, 0.3, 1.5, -2.1, 4.3, 12.5, 2.1, 'cloth2', sx)
+    box('shin' + s, 0.6, 1.5, -1.7, 4.0, 12.5, 1.7, 'cloth2', sx)
     box('shin' + s, 0.1, 1.5, -2.3, 4.5, 6, 2.3, 'leather', sx)  # boots
     bone('foot' + s, 'shin' + s, (2.3 * sx, 1.5, 0))
     box('foot' + s, 0.1, 0, -3.6, 4.5, 1.6, 2.3, 'leather', sx)
 sym(legs)
 bone('body', 'hips', (0, 26, 0))
-box('body', -4.5, 26, -2.4, 4.5, 38, 2.4, 'cloth2')
+box('body', -3.8, 26, -2.2, 3.8, 32, 2.2, 'cloth2')
+box('body', -4.6, 32, -2.5, 4.6, 38, 2.5, 'cloth2')
 box('body', -4.6, 26, -2.6, -1.0, 38, -2.4, 'cloth'); box('body', 1.0, 26, -2.6, 4.6, 38, -2.4, 'cloth')   # the coat, open at the front
 box('body', -4.6, 26, 2.4, 4.6, 38, 2.6, 'cloth')
-box('body', -5, 36, -2.8, 5, 38.5, 2.8, 'cloth')                  # its high collar
-box('body', -3, 38, -3, 3, 40.5, 3, 'cloth')
+box('body', -4.8, 36.5, -2.7, 4.8, 38.5, 2.7, 'cloth')                  # its collar
+box('body', -1.2, 38, -1.2, 1.2, 40.8, 1.2, 'skin')                    # the neck
 for i, (x0, y0, x1, y1) in enumerate([(-0.8, 29, 0.2, 35), (0.2, 31, 1.2, 33), (-0.4, 26.5, 0.4, 29)]):   # cracks glowing on the chest
     box('body', x0, y0, -2.5, x1, y1, -2.42, 'glow')
 bone('coattail', 'body', (0, 26, 0))                               # the coat's long tails, to swing
-box('coattail', -4.6, 9, 2.4, 4.6, 26, 2.8, 'cloth')
+box('coattail', -5.2, 9, 2.4, 5.2, 26, 2.8, 'cloth')
 box('coattail', -4.6, 9, -2.8, -1.2, 26, -2.4, 'cloth'); box('coattail', 1.2, 9, -2.8, 4.6, 26, -2.4, 'cloth')
 for x in (-4.4, -1.6, 1.2):
     box('coattail', x, 6 + rnd.randint(0, 3), 2.45, x + 2.6, 9, 2.75, 'cloth')
@@ -80,39 +81,47 @@ for side in (-1, 1):
 
 # the right arm: a man's arm in the coat's sleeve
 bone('arm_r', 'body', (5.5, 37, 0), (0, 0, 6))
-box('arm_r', 4.5, 26, -2, 8, 38, 2, 'cloth', 1)
+box('arm_r', 4.6, 26, -1.7, 7.8, 38, 1.7, 'cloth', 1)
 bone('forearm_r', 'arm_r', (6.2, 26, 0), (-8, 0, 0))
-box('forearm_r', 4.6, 16, -1.8, 7.8, 26.5, 1.8, 'cloth', 1)
-box('forearm_r', 4.4, 16, -2.0, 8.0, 18, 2.0, 'cloth2', 1)
+box('forearm_r', 4.8, 16, -1.5, 7.6, 26.5, 1.5, 'cloth', 1)
+box('forearm_r', 4.6, 16, -1.8, 7.8, 18, 1.8, 'cloth2', 1)
 bone('hand_r', 'forearm_r', (6.2, 16, 0))
-box('hand_r', 4.9, 12.5, -1.5, 7.5, 16, 1.5, 'skin', 1)
+box('hand_r', 5.1, 13, -1.2, 7.3, 16, 1.2, 'skin', 1)
+for z in (-0.9, -0.3, 0.3, 0.9): box('hand_r', 5.2 + 0.6 * abs(z), 11.6, z - 0.25, 5.8 + 0.6 * abs(z), 13, z + 0.25, 'skin', 1)
 # the left arm: the demon's - heavier than a man's, black stone split with thin lines of light, long claws
 bone('arm_l', 'body', (-5.5, 37, 0), (0, 0, -10))
-box('arm_l', -9.5, 27, -2.6, -4.5, 39, 2.6, 'stone')
-box('arm_l', -10, 35, -3, -4, 40.5, 3, 'stone')                    # the shoulder's swell
-for i in range(3): box('arm_l', -9.6 + i * 1.8, 40.5, -0.6, -8.8 + i * 1.8, 43.5 - i * 0.7, 0.6, 'stonetip')   # spurs
-box('arm_l', -9.6, 31, -2.65, -9.5, 37, -1.6, 'glow')
-bone('forearm_l', 'arm_l', (-7, 27, 0), (-10, 0, 3))
-box('forearm_l', -9.6, 14, -2.7, -4.4, 27.5, 2.7, 'stone')
-box('forearm_l', -10, 15, -3.1, -4, 18, 3.1, 'stone')
-box('forearm_l', -9.7, 19, -2.75, -9.6, 25, -1.8, 'glow')
-bone('hand_l', 'forearm_l', (-7, 14.5, 0), (8, 0, 0))
-box('hand_l', -9.8, 10, -3, -4.2, 14.5, 3, 'stone')
-for i, z in enumerate((-2.2, -0.75, 0.75, 2.2)):                   # long claws
+box('arm_l', -9, 33, -2.6, -4.6, 39.5, 2.6, 'stone')               # a swollen shoulder...
+box('arm_l', -8.4, 27, -2.0, -5.0, 33, 2.0, 'stone')               # ...narrowing to the elbow
+for i in range(3): box('arm_l', -9.2 + i * 1.6, 39.5, -0.5, -8.4 + i * 1.6, 42 - i * 0.6, 0.5, 'stonetip')   # spurs
+box('arm_l', -9.05, 34, -2.65, -8.95, 38.5, -1.8, 'glow')
+bone('forearm_l', 'arm_l', (-6.7, 27, 0), (-10, 0, 3))
+box('forearm_l', -9.0, 21, -2.6, -4.4, 27.5, 2.6, 'stone')         # the forearm thickens toward the hand
+box('forearm_l', -9.4, 15, -2.9, -4.0, 21, 2.9, 'stone')
+box('forearm_l', -9.45, 17, -2.95, -9.35, 24, -2.0, 'glow')
+bone('hand_l', 'forearm_l', (-6.7, 15, 0), (8, 0, 0))
+box('hand_l', -9.4, 11, -2.8, -4.0, 15.2, 2.8, 'stone')
+for i, z in enumerate((-2.1, -0.7, 0.7, 2.1)):                      # knuckles and long claws
+    box('hand_l', -7.5, 10.4, z - 0.6, -6.1, 11.4, z + 0.6, 'stonetip')
     c = 'claw%d_l' % i
-    bone(c, 'hand_l', (-7, 10.5, z), (12, 0, 0))
-    box(c, -7.7, 4, z - 0.55, -6.3, 11, z + 0.55, 'stonetip')
-    box(c, -7.35, 1.5, z - 0.3, -6.65, 4, z + 0.3, 'clawglow')
-box('hand_l', -4.6, 10.5, -3, -3.6, 13.5, -1.6, 'stonetip')          # the thumb
+    bone(c, 'hand_l', (-6.8, 10.8, z), (14, 0, 0))
+    box(c, -7.4, 5, z - 0.5, -6.2, 11, z + 0.5, 'stone')
+    box(c, -7.1, 2, z - 0.3, -6.5, 5, z + 0.3, 'clawglow')
+box('hand_l', -4.4, 11.4, -2.8, -3.4, 14, -1.6, 'stonetip')          # the thumb
 
 bone('head', 'body', (0, 40.5, 0))
-box('head', -3, 40.5, -3, 3, 47, 3, 'skin')
-box('head', -3.6, 40.5, -3.4, 3.6, 49, 3.8, 'cloth')               # a deep hood, its opening in shadow
-box('head', -3.8, 47.5, -3.8, 3.8, 49.4, 2.6, 'cloth')
-box('head', -2.6, 40.8, -3.5, 2.6, 47, -3.35, 'socket')
-box('head', -2.2, 41.2, -3.7, 2.2, 46.4, -3.5, 'bone')              # a smooth bone mask filling it
-box('head', -1.4, 44.2, -3.85, 1.4, 44.8, -3.65, 'glow')            # one level slit of light
-box('head', -3.9, 38.5, 3.4, 3.9, 47, 4.2, 'cloth')                 # the hood falling down his back
+box('head', -2.6, 40.6, -2.6, 2.6, 46.6, 2.6, 'skin')             # a man's face, gaunt
+box('head', -2.0, 40.4, -2.8, 2.0, 41.4, -2.5, 'skin')            # the jaw
+box('head', -0.4, 42.6, -3.0, 0.4, 44.2, -2.6, 'skin')            # the nose
+box('head', -1.9, 43.9, -2.65, -0.7, 44.5, -2.55, 'eye'); box('head', 0.7, 43.9, -2.65, 1.9, 44.5, -2.55, 'eye')   # pale burning eyes
+box('head', -2.2, 44.7, -2.7, -0.5, 45.0, -2.6, 'brow'); box('head', 0.5, 44.7, -2.7, 2.2, 45.0, -2.6, 'brow')
+box('head', -1.2, 41.6, -2.65, 1.2, 41.9, -2.58, 'lip')
+box('head', -2.8, 45.6, -2.8, 2.8, 47.4, 2.9, 'ash')              # ash-white hair, drained by the grave, swept back
+box('head', -2.8, 42.5, 0.4, 2.8, 46.0, 3.1, 'ash')
+box('head', -2.0, 40.0, 2.2, 2.0, 43.0, 3.4, 'ash')               # tied at the nape
+box('head', 1.8, 40.9, -2.66, 2.2, 42.4, -2.58, 'glow')           # one crack of grave-light on his cheek
+bone('hood', 'body', (0, 39, 2))                                   # the hood, down round his shoulders
+box('hood', -4.2, 37.5, -1, 4.2, 40, 4, 'cloth')
+box('hood', -3.6, 34, 2.6, 3.6, 39, 4.2, 'cloth')
 
 bone('halo', 'body', (0, 38, 4.5))                                  # bone shards turning behind his shoulders
 for i in range(12):
@@ -127,7 +136,7 @@ for i in range(24):
     box('halo', _m.cos(a) * 7.2 - 0.4, 38 + _m.sin(a) * 7.2 - 0.4, 4.5, _m.cos(a) * 7.2 + 0.4, 38 + _m.sin(a) * 7.2 + 0.4, 4.9, 'glow2' if i % 4 == 0 else 'bonedark')
 
 # ---------------------------------------------------------------------------------------------------------- materials
-EMISSIVE = {'glow', 'glow2', 'clawglow'}
+EMISSIVE = {'glow', 'glow2', 'clawglow', 'eye'}
 def lerp(a, b, t): return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
 def paint(mat, x, y, w, h, seed):
     r = random.Random(seed * 7919 + x * 131 + y)
@@ -138,6 +147,10 @@ def paint(mat, x, y, w, h, seed):
     if mat == 'bonetip': t = y / max(1, h - 1); return lerp((70, 62, 58), (36, 32, 32), t * 0.6 + r.random() * 0.3)
     if mat == 'cloth2': return lerp((34, 30, 34), (52, 46, 50), r.random() * 0.6)
     if mat == 'skin': return lerp((214, 186, 168), (196, 166, 148), r.random() * 0.5)
+    if mat == 'ash': return lerp((200, 200, 206), (232, 232, 236), r.random() * 0.6) if y < h - 1 or r.random() < 0.7 else (170, 170, 178)
+    if mat == 'eye': return (210, 240, 255)
+    if mat == 'brow': return (150, 148, 156)
+    if mat == 'lip': return (150, 104, 100)
     if mat == 'hair': return lerp((20, 18, 22), (40, 36, 40), r.random() * 0.6)
     if mat == 'stone': return lerp((24, 20, 26), (46, 40, 48), r.random() * 0.6)
     if mat == 'stonetip': t = y / max(1, h - 1); return lerp((60, 54, 60), (20, 16, 20), t * 0.7 + r.random() * 0.2)
@@ -481,7 +494,7 @@ if __name__ == '__main__':
         scene(hero, feet, 600 + 18 * S, S * 16 / 2.4)
         ImageDraw.Draw(hero).text((24, 24), "The Ossuarch, third phase: the Grave-Bound  -  concept  (the dark figure is a player)", fill=(255, 220, 160))
         small = []
-        for y, p, lab, sc, cc in [(0, 4, 'Front', 12, 26), (20, 4, 'Head', 45, 44), (90, 4, 'Side', 12, 26), (180, 6, 'Back', 12, 26)]:
+        for y, p, lab, sc, cc in [(0, 4, 'Front', 12, 26), (20, 4, 'Head', 60, 44), (90, 4, 'Side', 12, 26), (180, 6, 'Back', 12, 26)]:
             im = render(tex, glow, UV, yaw=y, pitch=p, size=(800, 800), scale=sc, cy=0.5 + (cc - 45) * sc / 800)
             ImageDraw.Draw(im).text((20, 20), lab, fill=(255, 220, 160))
             small.append(im.resize((300, 300)))

@@ -40,7 +40,7 @@ public final class BossIntroCard {
     private static final int[] ACCENT = {0xE8DCC4, 0x5CE0B0, 0xC8A0FF, 0xFFE6A0, 0x9A7CFF, 0x8AE060, 0xFFFFFF, 0xD8D8E8, 0xA8C8E8, 0xFFD27A, 0xFF7A2A};
 
     private static int age = -1, life, idx, bossId;
-    private static boolean full, unbound;
+    private static boolean full, unbound, third;
     private static String name = "";
     private static float yaw0, pitch0;
 
@@ -51,7 +51,8 @@ public final class BossIntroCard {
         idx = Mth.clamp(p.sweep, 0, EPITHET.length - 1);
         bossId = p.id;
         full = p.h > 0.5f;
-        unbound = p.a0 > 0.5f;
+        unbound = p.a0 > 0.5f && p.a0 < 1.5f;
+        third = p.a0 > 1.5f;   // a boss's last form (the Ossuarch's Grave-Bound)
         name = e == null ? "???" : e.getDisplayName().getString();
         life = p.life;
         age = 0;
@@ -132,7 +133,7 @@ public final class BossIntroCard {
         g.drawString(f, nm, -f.width(nm) / 2, 0, ta << 24 | 0xFFFFFF, true);
         g.pose().popPose();
         {
-            String ep = unbound ? "Unbound  -  nothing holds him back now" : EPITHET[idx];
+            String ep = third ? "Grave-Bound  -  what waited under the bone" : unbound ? "Unbound  -  nothing holds him back now" : EPITHET[idx];
             float es = full ? 1.2f : 0.9f;
             g.pose().pushPose();
             g.pose().translate(w / 2f - slide * w * 0.3f, cy + (full ? 13 : 9), 0);
