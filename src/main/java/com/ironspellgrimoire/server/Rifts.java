@@ -118,6 +118,8 @@ public final class Rifts {
         // runtime only
         final Map<Integer, List<UUID>> mobs = new HashMap<>();
         Vec3 shade;
+        /** The furthest exam floor already announced (walking back to an earlier floor says nothing again). */
+        transient int announced;
         final Map<UUID, Integer> padTicks = new HashMap<>();
 
         Vec3 centre(Room r) { return new Vec3(id * (double) SPACING + r.gx * CELL + 0.5, Y, r.gz * CELL + 0.5); }
@@ -285,6 +287,8 @@ public final class Rifts {
         int law = FLOOR_LAWS[Math.min(furthest, FLOOR_LAWS.length - 1)];
         r.shade = (law & HUNTED) == 0 ? null : r.centre(r.rooms.get(Math.max(0, furthest - 1))).add(0, 1.2, 0);   // it comes in behind you
         r.rules = law;
+        if (furthest <= r.announced) return;   // back on a floor you've already been told about
+        r.announced = furthest;
         for (ServerPlayer p : inside) {
             if (furthest == EXAM_ROOMS.length - 1) {
                 p.sendSystemMessage(Component.literal("FINAL TRIAL  ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
@@ -1012,12 +1016,28 @@ public final class Rifts {
         shade(sl, r, idx, room, t, room.type == RELIC ? 0.3f + r.rank * 0.06f : 0.18f + r.rank * 0.03f, "Shade");
     }
 
+    public static final String SHADE_TAG = "isg_rift_shade";
+
+    /** A boss's shade from a rift: it drops nothing - no core, no trophy, no memory page, none of its own loot. */
+    public static boolean isShade(net.minecraft.world.entity.Entity e) { return e != null && e.getPersistentData().getBoolean(SHADE_TAG); }
+
+    @SubscribeEvent
+    public static void onShadeDrops(net.minecraftforge.event.entity.living.LivingDropsEvent e) {
+        if (isShade(e.getEntity())) e.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onShadeXp(net.minecraftforge.event.entity.living.LivingExperienceDropEvent e) {
+        if (isShade(e.getEntity())) e.setDroppedExperience(Math.min(e.getDroppedExperience(), 20));
+    }
+
     private static void shade(ServerLevel sl, Rift r, int idx, Room room, EntityType<? extends Mob> t, float frac, String title) {
         Vec3 c = r.centre(room);
         Mob m = t.create(sl);
         if (m == null) return;
         m.moveTo(c.x, Y, c.z + 3, 180, 0);
         m.finalizeSpawn(sl, sl.getCurrentDifficultyAt(m.blockPosition()), MobSpawnType.EVENT, null, null);
+        m.getPersistentData().putBoolean(SHADE_TAG, true);   // a shade: it leaves nothing behind (no boss drops)
         sl.addFreshEntity(m);
         m.setHealth(m.getMaxHealth() * Math.min(1f, frac));
         m.setCustomName(Component.literal(title + " of " + m.getType().getDescription().getString()).withStyle(r.exam ? ChatFormatting.GOLD : ChatFormatting.LIGHT_PURPLE));

@@ -372,7 +372,7 @@ public class GrimoireBookScreen extends Screen {
             int yy = y + 11 + i * 20;
             if (!inside(mx, my, x - 2, yy - 2, w + 4, 19)) continue;
             String id = ids.get(page);
-            com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.TreePackets.Act(11 + i, id));
+            com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.TreePackets.Act(11 + i, id + "@" + book));
             net.minecraft.nbt.CompoundTag t = stack.getOrCreateTag().getCompound("BloodPaths");   // shown at once; the server keeps the real one
             t.putInt(id, i + 1);
             stack.getOrCreateTag().put("BloodPaths", t);
@@ -486,15 +486,16 @@ public class GrimoireBookScreen extends Screen {
     // ------------------------------------------------------------------ the Mana Tree
     private ItemStack treeBook() {
         Minecraft mc = Minecraft.getInstance();
-        ItemStack live = mc.player == null ? null : Utils.getPlayerSpellbookStack(mc.player);
-        return live != null && live.is(stack.getItem()) ? live : stack;
+        if (mc.player == null) return stack;
+        ItemStack live = Utils.getPlayerSpellbookStack(mc.player);   // equipped, or held, or carried: the real one, as the server changes it
+        if (live != null && live.is(stack.getItem())) return live;
+        for (ItemStack s : new ItemStack[]{mc.player.getMainHandItem(), mc.player.getOffhandItem()}) if (s.is(stack.getItem())) return s;
+        for (ItemStack s : mc.player.getInventory().items) if (s.is(stack.getItem())) return s;
+        return stack;
     }
 
-    private boolean equipped() {
-        Minecraft mc = Minecraft.getInstance();
-        ItemStack live = mc.player == null ? null : Utils.getPlayerSpellbookStack(mc.player);
-        return live != null && live.is(stack.getItem());
-    }
+    /** The grimoire is on you (equipped, held or carried): its tree can grow from here. */
+    private boolean equipped() { return treeBook() != stack; }
 
     private int[] nodeXY(com.ironspellgrimoire.server.SkillTree.Node n, int x0, int y0) {
         int mid = x0 + BW / 2;
@@ -517,7 +518,7 @@ public class GrimoireBookScreen extends Screen {
         var n = nodeAt(mx, my, x0, y0);
         if (n != null) {
             if (equipped() && com.ironspellgrimoire.server.SkillTree.blocked(treeBook(), n, MemoryClient.chapter()) == null) {
-                com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.TreePackets.Act(0, n.id()));
+                com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.TreePackets.Act(0, n.id() + "@" + book));
                 mc.player.playSound(SoundEvents.AMETHYST_BLOCK_CHIME, 0.8F, 1.3F);
             } else mc.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.3F, 0.6F);
             return true;
@@ -525,7 +526,7 @@ public class GrimoireBookScreen extends Screen {
         String rs = "Reset tree";
         int rw = font.width(rs);
         if (inside(mx, my, x0 + BW / 2 - rw / 2 - 2, y0 + BH - 14, rw + 4, 11)) {
-            com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.TreePackets.Act(1, ""));
+            com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.TreePackets.Act(1, "@" + book));
             mc.player.playSound(SoundEvents.BOOK_PAGE_TURN, 0.8F, 0.7F);
             return true;
         }
@@ -605,7 +606,7 @@ public class GrimoireBookScreen extends Screen {
                 tip.add(Component.literal(toStr(l)).withStyle(ChatFormatting.GRAY));
             tip.add(Component.literal("Cost: " + hover.cost() + (hover.cost() == 1 ? " leaf" : " leaves")).withStyle(ChatFormatting.DARK_GREEN));
             String why = com.ironspellgrimoire.server.SkillTree.blocked(bk, hover, mem);
-            tip.add(why == null ? Component.literal(eq ? "Click to learn" : "Equip the grimoire to learn").withStyle(ChatFormatting.YELLOW)
+            tip.add(why == null ? Component.literal(eq ? "Click to learn" : "Carry the grimoire to learn").withStyle(ChatFormatting.YELLOW)
                     : Component.literal(why).withStyle(why.equals("Learned") ? ChatFormatting.GREEN : ChatFormatting.RED));
             g.renderComponentTooltip(f, tip, mx, my);
         } else if (inside(mx, my, x0 + BW - 26 - f.width(lv), y0 + 8, f.width(lv), 12)) {

@@ -78,7 +78,7 @@ public final class MemoryPages {
     @SubscribeEvent
     public static void onBossDeath(LivingDeathEvent e) {
         LivingEntity b = e.getEntity();
-        if (!(b.level() instanceof ServerLevel sl)) return;
+        if (!(b.level() instanceof ServerLevel sl) || Rifts.isShade(b)) return;   // a rift's shade drops no page
         if (b instanceof MemoryGuardian g) { guardianFell(sl, g); return; }
         int idx = bosses().indexOf(b.getType());
         if (idx < 0) return;

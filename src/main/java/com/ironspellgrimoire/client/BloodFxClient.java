@@ -122,6 +122,12 @@ public final class BloodFxClient {
         LIVE.add(new L(p, now));
     }
 
+    /** Is this player under the Scarlet Moon (its white aura is up)? */
+    static boolean hasMoonAura(int entityId) {
+        for (L l : LIVE) if ((int) l.p.h == 9 && (int) l.p.v.x == entityId && l.killAt < 0) return true;
+        return false;
+    }
+
     static void clear() { LIVE.clear(); DROPS.clear(); POOLS.clear(); CROWNS.clear(); MISTS.clear(); }
 
     private static void spray(Vec3 c, Vec3 v, float spread, int n, float size, double now) {
@@ -133,17 +139,17 @@ public final class BloodFxClient {
     }
 
     private static void drop(Vec3 at, Vec3 vel, float r, double now) {
-        if (DROPS.size() > 500) DROPS.remove(0);
+        if (DROPS.size() > 240) DROPS.remove(0);
         DROPS.add(new Drop(at, vel, r, now));
     }
 
     private static void crown(Vec3 c, float r, double now) {
-        if (CROWNS.size() > 60) CROWNS.remove(0);
+        if (CROWNS.size() > 18) CROWNS.remove(0);
         CROWNS.add(new Crown(c, r, now, seedN++ * 104729));
     }
 
     private static void mist(Vec3 c, Vec3 vel, float r, double now, double life) {
-        if (MISTS.size() > 80) MISTS.remove(0);
+        if (MISTS.size() > 36) MISTS.remove(0);
         MISTS.add(new Mist(c, vel, r, now, life));
     }
 
@@ -151,16 +157,15 @@ public final class BloodFxClient {
     private static void burst(Minecraft mc, FxPacket p, double now) {
         float s = p.a0 > 0 ? p.a0 : 1F;
         Vec3 d = p.d.lengthSqr() < 1e-6 ? Vec3.ZERO : p.d.normalize();
-        spray(p.c, d.scale(0.16 * s).add(0, 0.1, 0), 0.07F * s, (int) (8 + 8 * s), 0.055F + 0.02F * s, now);
-        spray(p.c, d.scale(0.32 * s).add(0, 0.04, 0), 0.03F, (int) (3 + 3 * s), 0.035F, now);   // a fast jet straight out
-        mist(p.c, d.scale(0.03).add(0, 0.01, 0), 0.45F * s, now, 16);
-        mist(p.c.add(d.scale(0.4)), d.scale(0.05), 0.3F * s, now, 12);
+        spray(p.c, d.scale(0.16 * s).add(0, 0.1, 0), 0.07F * s, (int) (4 + 5 * s), 0.06F + 0.02F * s, now);
+        spray(p.c, d.scale(0.32 * s).add(0, 0.04, 0), 0.03F, (int) (1 + 2 * s), 0.04F, now);   // a fast jet straight out
+        mist(p.c, d.scale(0.03).add(0, 0.01, 0), 0.5F * s, now, 14);
         double g = ground(mc, p.c);
-        if (p.c.y - g < 3) crown(new Vec3(p.c.x + d.x * 0.6, g, p.c.z + d.z * 0.6), 0.35F + 0.25F * s, now);
+        if (s > 0.8F && p.c.y - g < 3 && CROWNS.size() < 10) crown(new Vec3(p.c.x + d.x * 0.6, g, p.c.z + d.z * 0.6), 0.35F + 0.25F * s, now);
     }
 
     private static void pool(Vec3 c, float r, double now, double life) {
-        if (POOLS.size() > 180) POOLS.remove(0);
+        if (POOLS.size() > 90) POOLS.remove(0);
         POOLS.add(new Pool(c, r, now, life, seedN++ * 7919));
     }
 
@@ -194,7 +199,7 @@ public final class BloodFxClient {
                 di.remove();
                 if (d.pos.y <= g + 0.3) {
                     pool(new Vec3(d.pos.x, g, d.pos.z), d.r * (3.2F + (float) Math.min(1.5, d.vel.length() * 2)), now, 60 + d.r * 300);
-                    if (d.vel.y < -0.22 && d.r > 0.045 && Math.random() < 0.55) crown(new Vec3(d.pos.x, g, d.pos.z), d.r * 3.6F, now);   // it lands hard: a little crown
+                    if (d.vel.y < -0.25 && d.r > 0.055 && Math.random() < 0.15) crown(new Vec3(d.pos.x, g, d.pos.z), d.r * 3.6F, now);   // it lands hard: a little crown
                 }
                 continue;
             }
@@ -325,7 +330,8 @@ public final class BloodFxClient {
         Vec3 ax = sp < 1e-4 ? new Vec3(0, -1, 0) : vel.scale(1 / sp);
         double stretch = 1 + Math.min(2.2, sp * 5);
         Vec3[] f = frame(ax);
-        int lat = 4, lon = 6;
+        boolean far = c.distanceToSqr(cam) > 16 * 16;   // far drops: a simpler shape
+        int lat = far ? 2 : 4, lon = far ? 4 : 6;
         Vec3[][] P = new Vec3[lat + 1][lon], N = new Vec3[lat + 1][lon];
         for (int i = 0; i <= lat; i++) {
             double th = Math.PI * i / lat, ca = Math.cos(th), sa = Math.sin(th);
@@ -741,12 +747,12 @@ public final class BloodFxClient {
     }
 
     private static void drawCrown(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, Crown cr, double age, double now) {
-        if (cr.c.distanceToSqr(cam) > 32 * 32) return;
+        if (cr.c.distanceToSqr(cam) > 24 * 24) return;
         lightAt(mc, cr.c.add(0, 0.3, 0));
         double k = age / 12.0;
         double R = cr.r * (0.35 + 0.75 * Math.sqrt(k)), rise = Math.sin(Math.min(1, k * 1.6) * Math.PI);
         float a = (float) (1 - k * k) * 0.96F;
-        int spikes = 9;
+        int spikes = 6;
         Vec3 base = cr.c.add(0, 0.02, 0);
         Vec3[] rim = new Vec3[spikes * 2 + 1];
         double[] rr = new double[rim.length];

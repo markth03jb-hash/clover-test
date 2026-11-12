@@ -995,7 +995,7 @@ public final class ZenonAI {
             if (t % 9 == 0) sound(sl, c, SoundEvents.BONE_BLOCK_BREAK, 1.0f, 0.6f + t * 0.01f);
         }
         if (t == 56) {   // the last of him falls in on itself - and what he leaves is lying in the dust
-            ZenonDrops.drop(sl, c);
+            if (!Rifts.isShade(b)) ZenonDrops.drop(sl, c);   // a rift's shade leaves nothing
             BossFx.ring(sl, BONE, c.add(0, 0.1, 0), 0.3f, 5f, 0.2f, 16);
             BossFx.ring(sl, DARK, c.add(0, 0.12, 0), 0.3f, 3.5f, 0.12f, 14);
             for (int k = 0; k < 8; k++) {

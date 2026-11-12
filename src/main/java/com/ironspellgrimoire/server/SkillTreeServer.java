@@ -17,11 +17,27 @@ import net.minecraft.world.phys.Vec3;
 public final class SkillTreeServer {
     private SkillTreeServer() {}
 
+    /** The grimoire the book screen is about: the equipped one, else the one in hand, else the first in the inventory. */
+    public static ItemStack findBook(ServerPlayer p) { return findBook(p, -1); }
+
+    /** ... of grimoire {@code want} (GrimoireMastery.BOOKS index; -1 = any). */
+    public static ItemStack findBook(ServerPlayer p, int want) {
+        ItemStack eq = Utils.getPlayerSpellbookStack(p);
+        if (ok(eq, want)) return eq;
+        for (ItemStack s : new ItemStack[]{p.getMainHandItem(), p.getOffhandItem()}) if (ok(s, want)) return s;
+        for (ItemStack s : p.getInventory().items) if (ok(s, want)) return s;
+        return ItemStack.EMPTY;
+    }
+
+    private static boolean ok(ItemStack s, int want) { int b = SkillTree.bookIndex(s); return b >= 0 && (want < 0 || b == want); }
+
     public static void act(ServerPlayer p, int action, String id) {
+        int want = -1, at = id.lastIndexOf('@');   // "id@book": which grimoire the screen was showing
+        if (at >= 0) { try { want = Integer.parseInt(id.substring(at + 1)); } catch (NumberFormatException ignored) {} id = id.substring(0, at); }
         if (action == 11 || action == 12) { BloodPaths.choose(p, id, action - 10); return; }   // a Blood Grimoire spell's path
-        ItemStack book = Utils.getPlayerSpellbookStack(p);
+        ItemStack book = findBook(p, want);
         int b = SkillTree.bookIndex(book);
-        if (b < 0) { p.displayClientMessage(Component.literal("Equip the grimoire to grow its tree.").withStyle(ChatFormatting.GRAY), true); return; }
+        if (b < 0) { p.displayClientMessage(Component.literal("Hold or equip the grimoire to grow its tree.").withStyle(ChatFormatting.GRAY), true); return; }
         ServerLevel sl = p.serverLevel();
         int pal = GrimoireMastery.BOOKS.get(b).palette();
         if (action == 0) {

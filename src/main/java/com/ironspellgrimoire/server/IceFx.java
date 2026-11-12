@@ -107,8 +107,23 @@ public final class IceFx {
 
     static boolean boss(LivingEntity t) { return TimeStop.isBoss(t) || BossCores.isBoss(t.getType()) || t.getMaxHealth() >= 200; }
 
+    /** Chilled foes (hit by ice in the last 3 s): the next ice hit on them Shatters - +25%, and the ice bursts off them. */
+    private static final Map<UUID, Long> CHILLED = new HashMap<>();
+
     private static void hit(ServerPlayer p, LivingEntity t, float amt, String id) {
+        ServerLevel sl = p.serverLevel();
+        long now = sl.getGameTime();
+        boolean shatter = CHILLED.getOrDefault(t.getUUID(), 0L) > now;
+        if (shatter) amt *= 1.25f;
         AstaFx.damage(p, t, amt, id);
+        FxPacket h = fx(13, mid(t), shatter ? 9 : 6);   // the ice hit: shards break off, a frost star flares (bigger for a Shatter)
+        h.d = mid(t).subtract(p.position().add(0, 1, 0)); h.a0 = Math.max(0.5f, Math.min(1.4f, amt / 10f)); h.a1 = shatter ? 1 : 0;
+        send(sl, h);
+        if (shatter) {
+            CHILLED.remove(t.getUUID());
+            BloodFx.play(sl, mid(t), "ice_shatter", 0.9f, 1.2f + ThreadLocalRandom.current().nextFloat() * 0.2f);
+        } else CHILLED.put(t.getUUID(), now + 60);
+        if (CHILLED.size() > 300) CHILLED.values().removeIf(u -> u < now);
         chill(t, 60);
     }
 

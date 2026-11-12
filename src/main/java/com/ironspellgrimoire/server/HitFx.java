@@ -43,6 +43,7 @@ final class HitFx {
             ItemStack book = Utils.getPlayerSpellbookStack(p);
             GrimoireMastery.Book b = book == null ? null : GrimoireMastery.bookOf(book);
             if (b != null) pal = b.palette();
+            if (b != null && GrimoireMastery.BOOKS.indexOf(b) == 20) return;   // the Blood Grimoire draws its own hits (blood, or ice under the Moon)
             if (Moves.inMode(p, LightFx.MODE)) pal = 31;   // Demon Light: black light with a white sheen
         } catch (Throwable ignored) { }
 
