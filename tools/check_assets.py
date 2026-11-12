@@ -28,7 +28,7 @@ RES = os.path.join(ROOT, 'src/main/resources/assets/iron_spell_grimoire')
 NS = 'iron_spell_grimoire'
 
 # world-building that is allowed to change blocks (not spells): the rift dungeons, a raid's spoils chest, the boards
-WORLD_OK = ('server/Rifts.java', 'server/ElfRaids.java', 'server/VillageBoards.java', 'block/')
+WORLD_OK = ('server/Rifts.java', 'server/ElfRaids.java', 'server/VillageBoards.java', 'block/', 'server/GameTests.java')   # the tests put back what a spell changed
 
 errors, warnings = [], []
 def err(where, msg): errors.append('%s: %s' % (where, msg))

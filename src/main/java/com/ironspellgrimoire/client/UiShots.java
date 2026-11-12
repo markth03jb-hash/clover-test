@@ -41,7 +41,8 @@ import net.minecraftforge.fml.common.Mod;
 public final class UiShots {
     private UiShots() {}
 
-    static final boolean ON = Boolean.getBoolean("isg.uishots");
+    static final boolean TESTS = Boolean.getBoolean("isg.gametests");
+    static final boolean ON = Boolean.getBoolean("isg.uishots") || TESTS;
     private static final int[] SHOT_SCALES = {2, 4};
 
     private record Step(String name, Runnable action, int delay, boolean hud) {}
@@ -104,6 +105,20 @@ public final class UiShots {
         steps.add(new Step("hud_hidden", () -> TrackerMode.set(2), 10, true));
     }
 
+    private static void writeTests(String extra) {
+        Minecraft mc = Minecraft.getInstance();
+        List<String> res = new ArrayList<>(com.ironspellgrimoire.server.GameTests.results);
+        if (extra != null) res.add(extra);
+        long f = res.stream().filter(l -> l.startsWith("FAIL") || l.startsWith("CRASH")).count(), w = res.stream().filter(l -> l.startsWith("WARN")).count(),
+                ps = res.stream().filter(l -> l.startsWith("PASS")).count();
+        List<String> lines = new ArrayList<>();
+        lines.add("Iron Spell Grimoire - game tests: " + ps + " passed, " + f + " failed, " + w + " warning(s)");
+        lines.addAll(res);
+        try { Files.write(mc.gameDirectory.toPath().resolve("isg_gametests_report.txt"), lines, StandardCharsets.UTF_8); } catch (IOException ignored) {}
+        phase = 6;
+        mc.stop();
+    }
+
     private static void finish() {
         Minecraft mc = Minecraft.getInstance();
         Path out = mc.gameDirectory.toPath().resolve("isg_uishots_report.txt");
@@ -120,7 +135,8 @@ public final class UiShots {
         if (!ON || e.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         ticks++;
-        if (ticks > 20 * 60 * 15) { report.add("run | gave up after 15 minutes at step " + index); finish(); return; }
+        if (!TESTS && ticks > 20 * 60 * 15) { report.add("run | gave up after 15 minutes at step " + index); finish(); return; }
+        if (TESTS && ticks > 20 * 60 * 40 && phase < 6) { writeTests("CRASH | run | gave up after 40 minutes at test " + com.ironspellgrimoire.server.GameTests.progress()); return; }
         if (phase == 0) {   // wait for the title screen (or the first-launch screens), then make the world
             if (mc.getOverlay() != null || mc.screen == null || mc.level != null) return;
             if (!(mc.screen instanceof TitleScreen) && !mc.screen.getClass().getSimpleName().contains("Onboarding")) return;
@@ -138,7 +154,16 @@ public final class UiShots {
                 return;
             }
             if (++wait < 100) return;
-            phase = 2; wait = 0; plan();
+            wait = 0;
+            if (TESTS) { phase = 5; onServer(com.ironspellgrimoire.server.GameTests::start); return; }
+            phase = 2; plan();
+            return;
+        }
+        if (phase == 5) {   // the game tests (server/GameTests) run on the server; wait for them
+            var server = mc.getSingleplayerServer();
+            if (ticks % 400 == 0) System.out.println("[isg game tests] " + com.ironspellgrimoire.server.GameTests.progress());
+            if (server == null || !server.isRunning()) { writeTests("CRASH | run | the game's server stopped at test " + com.ironspellgrimoire.server.GameTests.progress() + " - see latest.log"); return; }
+            if (com.ironspellgrimoire.server.GameTests.done) writeTests(null);
             return;
         }
         if (phase != 2) return;
