@@ -111,6 +111,7 @@ public final class BloodFxClient {
             mist(p.c.add(0, 0.3, 0), new Vec3(0, 0.03, 0), 0.5F, now, 18);
         }
         if (LIVE.size() > 400) LIVE.remove(0);
+        if (k == 0) System.out.println("ISGDBG stream spawn " + p.c + " " + p.u + " v=" + p.v + " life=" + p.life + " speed=" + p.speed + " r=" + p.r);
         LIVE.add(new L(p, now));
     }
 
@@ -386,6 +387,7 @@ public final class BloodFxClient {
         lightAt(mc, a.add(b).scale(0.5));
         double fly = Math.max(1, p.speed), life = p.life;
         double head = Mth.clamp(age / fly, 0, 1), tail = Mth.clamp((age - (life - fly)) / fly, 0, 1);
+        if (age < 1.5 || (age > 8 && age < 8.3)) System.out.println("ISGDBG stream draw age=" + age + " head=" + head + " tail=" + tail + " a=" + a + " b=" + b);
         if (head - tail < 0.01) return;
         Vec3 side = b.subtract(a).cross(UP);
         side = side.lengthSqr() < 1e-6 ? new Vec3(1, 0, 0) : side.normalize();
@@ -506,7 +508,7 @@ public final class BloodFxClient {
             if (nt.dot(midR[i].subtract(p.c.add(ax.scale(len * 0.35)))) < 0) nt = nt.scale(-1);
             tri(vc, m, n, cam, midR[i], nt, midR[j], nt, tip, nt, 0.97F, tone);
         }
-        float ga = (float) ((1 - melt) * (0.3 + 0.25 * beat(now + p.id)));   // a pulse of dark light running up its ridges
+        float ga = (float) ((1 - melt) * (0.12 + 0.18 * beat(now + p.id)));   // a pulse of dark light running up its ridges
         for (int i = 0; i < s; i += 2) glowAlong(m, cam, new Vec3[]{base[i], midR[i], tip}, 0.07, ga);
         if (age < 3) glowAlong(m, cam, new Vec3[]{p.c, tip}, w * 2.2, (float) (0.5 * (1 - age / 3)));   // the flash as it bursts out
     }

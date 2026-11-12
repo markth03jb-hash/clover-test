@@ -114,6 +114,7 @@ public final class UiShots {
         steps.add(new Step("blood_pools", () -> {}, 30, true));
         steps.add(new Step("blood_drain", () -> onServer(p -> UiShotsServer.bloodSpell(p, "exsanguinate")), 9, true));
         steps.add(new Step("blood_drain_hit", () -> {}, 13, true));
+        steps.add(new Step("blood_pact", () -> onServer(p -> UiShotsServer.bloodSpell(p, "blood_pact")), 8, true));
         steps.add(new Step("blood_awaken", () -> {
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
             mc.player.setXRot(10);

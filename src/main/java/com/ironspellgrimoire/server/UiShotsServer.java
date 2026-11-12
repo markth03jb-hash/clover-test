@@ -56,6 +56,7 @@ public final class UiShotsServer {
         switch (which) {
             case "thorned_veins" -> BloodFx.thornedVeins(p, 10f);
             case "red_tide" -> BloodFx.redTide(p, 10f);
+            case "blood_pact" -> BloodFx.bloodPact(p, 10f);
             case "exsanguinate" -> {   // two still zombies to draw from
                 p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
                 var look = p.getLookAngle().multiply(1, 0, 1).normalize();
