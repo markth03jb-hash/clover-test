@@ -123,7 +123,11 @@ public class StarForgeScreen extends Screen {
                 if (k < s.level()) g.fill(px + 1, y + 3, px + 5, y + 7, RED_INK);
             }
             if (s.level() >= StarForge.MAX_BOOST) {   // fully empowered: mutate it (once), or show its mutation
-                if (s.mut() > 0) g.drawString(font, s.mut() == StarForge.MUT_ECHO ? "Echo" : "Siph", lx + PW - 24, y + 1, RED_INK, false);
+                if (s.mut() > 0) {   // its mutation, by name (shortened to fit)
+                    String mn = StarForge.MUT_NAMES[Math.min(StarForge.MUT_NAMES.length - 1, s.mut())];
+                    if (font.width(mn) > 26) mn = font.plainSubstrByWidth(mn, 22) + ".";
+                    g.drawString(font, mn, lx + PW - font.width(mn), y + 1, RED_INK, false);
+                }
                 else button(g, font, lx + PW - 26, y - 1, 26, 11, "Mut", in(mx, my, lx + PW - 26, y - 1, 26, 11) || s.id().equals(mutating), true);
             } else {
                 int cost = StarForge.boostCost(s.level() + 1);
@@ -136,7 +140,7 @@ public class StarForgeScreen extends Screen {
             String nm = Component.translatable("spell.iron_spell_grimoire." + mutating).getString();
             if (font.width(nm) > PW) nm = font.plainSubstrByWidth(nm, PW - 8) + "..";
             g.drawString(font, nm, rx + (PW - font.width(nm)) / 2, t + 11, INK, false);
-            String cost = "1 Mana Core (you have " + data.cores + ")";
+            String cost = "1 Mana Core (have " + data.cores + ")";
             g.drawString(font, cost, rx + Math.max(0, (PW - font.width(cost)) / 2), t + 21, data.cores > 0 ? INK_SOFT : RED_INK, false);
             for (int m = 1; m < StarForge.MUT_NAMES.length; m++) {   // six mutations, a line each
                 int y = mutY(m);
@@ -145,8 +149,9 @@ public class StarForgeScreen extends Screen {
                 g.drawString(font, StarForge.MUT_NAMES[m], rx + 3, y + 1, can ? RED_INK : INK_FAINT, false);
                 String tx = StarForge.MUT_TEXT[m];
                 g.pose().pushPose();
+                float k = Math.min(0.75f, (PW - 6) / (float) Math.max(1, font.width(tx)));   // small enough to fit the row
                 g.pose().translate(rx + 3, y + 9, 0);
-                g.pose().scale(0.75f, 0.75f, 1);
+                g.pose().scale(k, k, 1);
                 g.drawString(font, tx, 0, 0, can ? INK : INK_FAINT, false);
                 g.pose().popPose();
             }
@@ -186,7 +191,7 @@ public class StarForgeScreen extends Screen {
                 g.pose().popPose();
             }
         }
-        if (data.stars <= 0) text(g, font, "Earn stars from bounties and quests.", rx, t + 156, PW, RED_INK);
+        if (data.stars <= 0) text(g, font, "Earn stars from bounties and quests.", rx, t + 163, PW, RED_INK);
 
         turning(g, width, height, (ticks + pt) / 5F);
         super.render(g, mx, my, pt);
