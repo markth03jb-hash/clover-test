@@ -47,6 +47,7 @@ public final class UiShotsServer {
 
     /** Dante, standing four blocks in front of the camera (facing it, or turned away), for a look at his cloak. */
     public static void dante(ServerPlayer p, boolean back, boolean flare) {
+        p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete him at once
         for (var e : p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.Dante.class, p.getBoundingBox().inflate(30))) e.discard();
         var d = com.ironspellgrimoire.registry.AddonEntities.DANTE.get().create(p.serverLevel());
         if (d == null) return;
