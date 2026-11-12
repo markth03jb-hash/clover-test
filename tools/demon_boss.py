@@ -56,7 +56,8 @@ box('body', -16, 51, -9, 16, 65, 9, 'hide')
 box('body', -18, 54, -6, 18, 64, 7, 'hide')                       # the lats flaring under the arms
 box('body', -15, 57, -11, -1, 65, -9, 'hide'); box('body', 1, 57, -11, 15, 65, -9, 'hide')   # the chest
 box('body', -15, 56, -10.5, -1, 57, -9, 'plate'); box('body', 1, 56, -10.5, 15, 57, -9, 'plate')
-box('body', -5, 50, -10.5, 5, 57, -9.5, 'core')                   # the furnace in its chest...
+bone('heart', 'body', (0, 53.5, -10))
+box('heart', -5, 50, -10.5, 5, 57, -9.5, 'core')                  # the furnace in its chest...
 for y in (51, 53.5, 56):                                          # ...caged by ribs
     box('body', -9, y, -11, -3.5, y + 1.2, -10, 'rib'); box('body', 3.5, y, -11, 9, y + 1.2, -10, 'rib')
 box('body', -1, 50, -11, 1, 57, -10.2, 'rib')
@@ -403,7 +404,7 @@ def world_transforms(pose):
         T[bn] = (M, t)
     return T
 
-def render(tex, glow, UV, yaw=25, pitch=8, size=(900, 900), scale=4.2, pose=None, bg=True, cy=0.55):
+def render(tex, glow, UV, yaw=25, pitch=8, size=(900, 900), scale=4.2, pose=None, bg=True, cy=0.55, ground_y=None, effects=()):
     pose = pose or {}
     T = world_transforms(pose)
     W, H = size
@@ -449,6 +450,12 @@ def render(tex, glow, UV, yaw=25, pitch=8, size=(900, 900), scale=4.2, pose=None
     def P(v):
         x, y, z = cam(v)
         return (W / 2 + x * scale, H * cy - (y - 45) * scale)
+    if ground_y is not None:   # scorched ground to a flat horizon, with a soft shadow under it
+        hy = P((0, ground_y, 60))[1]
+        for yy in range(int(hy), H):
+            t = min(1, (yy - hy) / max(1, H - hy))
+            d.line([(0, yy), (W, yy)], fill=lerp((70, 24, 14), (30, 12, 10), t))
+        d.polygon([P((x * 30, ground_y, z * 22 + 4)) for x, z in ((math.cos(a), math.sin(a)) for a in [i * math.pi / 16 for i in range(32)])], fill=(22, 8, 6))
     for depth, wc, wu, wv, fx, fy, fw, fh, n, mat in faces:
         sh = 0.35 + 0.65 * max(0.0, -(n[0] * light[0] + n[1] * light[1] + n[2] * light[2]) * -1 if False else (n[0] * light[0] + n[1] * light[1] - n[2] * light[2]))
         sh = max(0.3, min(1.0, sh))
@@ -466,6 +473,14 @@ def render(tex, glow, UV, yaw=25, pitch=8, size=(900, 900), scale=4.2, pose=None
                     d.polygon(poly, fill=col[:3]); dg.polygon(poly, fill=g[:3])
                 else:
                     d.polygon(poly, fill=tuple(int(cv * sh) for cv in col[:3]))
+    for f in effects:   # effects drawn over the model: shockwave rings on the ground, rising embers
+        if f[0] == 'ring':
+            _, c, r, col, wd = f
+            pts = [P((c[0] + math.cos(a) * r, c[1], c[2] + math.sin(a) * r)) for a in [i * math.pi / 24 for i in range(49)]]
+            d.line(pts, fill=col, width=wd); dg.line(pts, fill=col, width=wd)
+        elif f[0] == 'dot':
+            _, c, rad, col = f
+            q = P(c); d.ellipse([q[0] - rad, q[1] - rad, q[0] + rad, q[1] + rad], fill=col); dg.ellipse([q[0] - rad, q[1] - rad, q[0] + rad, q[1] + rad], fill=col)
     # bloom
     from PIL import ImageChops
     blur = gl.filter(ImageFilter.GaussianBlur(10))
@@ -498,11 +513,15 @@ def scene(img, feet_y, x, px_per_block):
 # Each animation: its length, whether it loops, and per bone the keyframes of rotation (degrees), position (pixels)
 # and scale, on top of the rest pose. Right-side bones are written once and mirrored to the left ('_r' -> '_l').
 ANIMS = {}
+# parts that stand up from their pivot (or, like the jaw, hang forward of it) turn the other way about x
+FLIP_X = {'body', 'head', 'jaw', 'hips'}
 def anim(name, length, loop):
     A = dict(length=length, loop=loop, bones={}); ANIMS[name] = A; return A
 def key(A, bone, chan, keys, mirror=True, shift=0.0):
     """keys: [(time, (x, y, z)), ...]. With mirror, also the '_l' twin (rotation y/z and position x flipped); shift
     offsets the twin's timing (a walk's other leg), wrapping round a looping animation."""
+    if chan == 'rot' and bone in FLIP_X:   # authored as "+ leans forward / looks down / opens the jaw"
+        keys = [(t, (-v[0], v[1], v[2])) for t, v in keys]
     A['bones'].setdefault(bone, {})[chan] = keys
     if mirror and bone.endswith('_r'):
         f = (lambda v: (v[0], -v[1], -v[2])) if chan == 'rot' else (lambda v: (-v[0], v[1], v[2])) if chan == 'pos' else (lambda v: v)
@@ -594,19 +613,26 @@ key(A, 'wingfore_r', 'rot', [(0, Z), (0.6, (0, 0, 14)), (1.0, (0, 0, -14)), (2.4
 for i in range(5): key(A, 'flame%d' % i, 'scale', [(0, (1, 1, 1)), (0.9, (1, 1, 1)), (1.1, (1.5, 2.0, 1.5)), (2.4, (1.4, 1.8, 1.4)), (3.2, (1, 1, 1))], False)
 for k in range(6): key(A, 'tail%d' % k, 'rot', [(0, Z), (1.0, (-6 - k, 0, 0)), (2.4, (-6 - k, 0, 0)), (3.2, Z)], False)
 
-# slam: both fists raised high overhead, then brought down on the ground before it, its whole body behind the blow
-A = anim('slam', 2.6, False)
-key(A, 'arm_r', 'rot', [(0, Z), (0.9, (160, 0, -36)), (1.15, (60, 0, -30)), (1.3, (38, 0, -26)), (1.9, (38, 0, -26)), (2.6, Z)])
-key(A, 'forearm_r', 'rot', [(0, Z), (0.9, (-10, 0, 0)), (1.15, (-14, 0, 0)), (1.3, (-18, 0, 0)), (1.9, (-18, 0, 0)), (2.6, Z)])
-key(A, 'body', 'rot', [(0, Z), (0.9, (-14, 0, 0)), (1.15, (14, 0, 0)), (1.3, (24, 0, 0)), (1.9, (22, 0, 0)), (2.6, Z)])
-key(A, 'hips', 'pos', [(0, Z), (0.9, (0, 1, 0)), (1.3, (0, -4, -2)), (1.9, (0, -4, -2)), (2.6, Z)])
-key(A, 'thigh_r', 'rot', [(0, Z), (0.9, (-4, 0, 0)), (1.3, (22, 0, 0)), (1.9, (22, 0, 0)), (2.6, Z)])
-key(A, 'shin_r', 'rot', [(0, Z), (1.3, (-24, 0, 0)), (1.9, (-24, 0, 0)), (2.6, Z)])
-key(A, 'foot_r', 'rot', [(0, Z), (1.3, (4, 0, 0)), (1.9, (4, 0, 0)), (2.6, Z)])
-key(A, 'head', 'rot', [(0, Z), (0.9, (-20, 0, 0)), (1.3, (-8, 0, 0)), (1.9, (-10, 0, 0)), (2.6, Z)])
-key(A, 'jaw', 'rot', [(0, Z), (0.9, (16, 0, 0)), (1.3, (30, 0, 0)), (1.9, (10, 0, 0)), (2.6, Z)])
-key(A, 'wing_r', 'rot', [(0, Z), (0.9, (0, -10, 20)), (1.3, (0, 14, -14)), (1.9, (0, 10, -10)), (2.6, Z)])
-for i in range(5): key(A, 'flame%d' % i, 'scale', [(0, (1, 1, 1)), (1.2, (1, 1, 1)), (1.35, (1.4, 1.7, 1.4)), (2.0, (1, 1, 1)), (2.6, (1, 1, 1))], False)
+# slam: both fists raised high overhead, then the whole body comes down behind them - a deep crouch, the fists driven
+# into the ground before it, the wings snapping up; a shockwave runs out from the blow
+A = anim('slam', 2.8, False)
+A['fx'] = [('shock', 1.15, 0.9, (0, -0.5, -32))]
+key(A, 'arm_r', 'rot', [(0, Z), (0.9, (165, 0, -34)), (1.05, (80, 0, -34)), (1.15, (4, 0, -36)), (1.25, (6, 0, -36)), (1.9, (6, 0, -36)), (2.8, Z)])
+key(A, 'forearm_r', 'rot', [(0, Z), (0.9, (-14, 0, 0)), (1.15, (-6, 0, 10)), (1.9, (-6, 0, 10)), (2.8, Z)])
+key(A, 'hand_r', 'rot', [(0, Z), (1.15, (-30, 0, 0)), (1.9, (-30, 0, 0)), (2.8, Z)])
+key(A, 'body', 'rot', [(0, Z), (0.9, (-16, 0, 0)), (1.05, (8, 0, 0)), (1.15, (40, 0, 0)), (1.3, (36, 0, 0)), (1.9, (36, 0, 0)), (2.8, Z)])
+key(A, 'hips', 'pos', [(0, Z), (0.9, (0, 2, 2)), (1.15, (0, -10, -4)), (1.25, (0, -9.5, -4)), (1.9, (0, -9.5, -4)), (2.8, Z)])
+key(A, 'hips', 'rot', [(0, Z), (0.9, (-6, 0, 0)), (1.15, (14, 0, 0)), (1.9, (14, 0, 0)), (2.8, Z)])
+key(A, 'thigh_r', 'rot', [(0, Z), (0.9, (-6, 0, 0)), (1.15, (40, 0, -6)), (1.9, (40, 0, -6)), (2.8, Z)])
+key(A, 'shin_r', 'rot', [(0, Z), (1.15, (-58, 0, 0)), (1.9, (-58, 0, 0)), (2.8, Z)])
+key(A, 'foot_r', 'rot', [(0, Z), (1.15, (6, 0, 0)), (1.9, (6, 0, 0)), (2.8, Z)])
+key(A, 'head', 'rot', [(0, Z), (0.9, (-26, 0, 0)), (1.15, (-24, 0, 0)), (1.6, (-30, 0, 0)), (2.8, Z)])
+key(A, 'jaw', 'rot', [(0, Z), (0.9, (18, 0, 0)), (1.15, (40, 0, 0)), (1.8, (24, 0, 0)), (2.8, Z)])
+key(A, 'wing_r', 'rot', [(0, Z), (0.9, (0, -8, 22)), (1.15, (0, 16, 28)), (1.4, (0, 12, 18)), (2.8, Z)])
+key(A, 'wingfore_r', 'rot', [(0, Z), (1.15, (0, 0, -18)), (1.5, (0, 0, -8)), (2.8, Z)])
+key(A, 'tail0', 'rot', [(0, Z), (1.15, (-34, 0, 0)), (1.9, (-34, 0, 0)), (2.8, Z)], False)
+for k in range(1, 6): key(A, 'tail%d' % k, 'rot', [(0, Z), (1.15, (-6, 0, 0)), (1.35, (2, 0, 0)), (2.8, Z)], False)
+for i in range(5): key(A, 'flame%d' % i, 'scale', [(0, (1, 1, 1)), (1.1, (1, 1, 1)), (1.2, (1.6, 2.2, 1.6)), (2.0, (1.1, 1.2, 1.1)), (2.8, (1, 1, 1))], False)
 
 # swipe: the right arm wound back and torn across its front, the torso turning into it
 A = anim('swipe', 1.8, False)
@@ -627,22 +653,38 @@ key(A, 'hips', 'pos', [(0, Z), (0.9, (0, -1.5, 0)), (1.15, (0, 1.5, 0)), (2.4, Z
 key(A, 'head', 'rot', [(0, Z), (0.9, (10, 0, 0)), (1.15, (-14, 0, 0)), (2.4, Z)])
 key(A, 'jaw', 'rot', [(0, Z), (1.15, (24, 0, 0)), (1.7, (6, 0, 0)), (2.4, Z)])
 
-# death: it staggers, drops to its knees, and slumps forward as its wings droop and its fires gutter out
-A = anim('death', 4.0, False)
-key(A, 'body', 'rot', [(0, Z), (0.8, (-16, 6, 0)), (1.8, (-4, 0, 0)), (3.0, (24, 0, 0)), (4.0, (26, 0, 0))])
-key(A, 'hips', 'pos', [(0, Z), (0.8, (0, 0, 2)), (1.8, (0, -11, -2)), (3.0, (0, -12, -3)), (4.0, (0, -12, -3))])
-key(A, 'thigh_r', 'rot', [(0, Z), (0.8, (-6, 0, 0)), (1.8, (70, 0, -4)), (4.0, (72, 0, -4))])
-key(A, 'shin_r', 'rot', [(0, Z), (1.8, (-80, 0, 0)), (4.0, (-82, 0, 0))])
-key(A, 'foot_r', 'rot', [(0, Z), (1.8, (40, 0, 0)), (4.0, (40, 0, 0))])
-key(A, 'head', 'rot', [(0, Z), (0.8, (-28, 0, 0)), (1.8, (-10, 0, 0)), (3.0, (30, 0, 8)), (4.0, (32, 0, 10))])
-key(A, 'jaw', 'rot', [(0, Z), (0.8, (40, 0, 0)), (1.8, (20, 0, 0)), (3.0, (12, 0, 0)), (4.0, (12, 0, 0))])
-key(A, 'arm_r', 'rot', [(0, Z), (0.8, (-20, 0, 26)), (1.8, (10, 0, -10)), (3.0, (24, 0, -22)), (4.0, (24, 0, -22))])
-key(A, 'forearm_r', 'rot', [(0, Z), (1.8, (-10, 0, 0)), (4.0, (-14, 0, 0))])
-key(A, 'wing_r', 'rot', [(0, Z), (0.8, (0, -10, 14)), (1.8, (0, 10, -24)), (3.0, (0, 18, -46)), (4.0, (0, 18, -48))])
-key(A, 'wingfore_r', 'rot', [(0, Z), (1.8, (0, 0, 20)), (4.0, (0, 0, 36))])
-for i in range(5): key(A, 'flame%d' % i, 'scale', [(0, (1, 1, 1)), (1.0, (1.3, 1.6, 1.3)), (2.5, (0.7, 0.6, 0.7)), (4.0, (0.05, 0.05, 0.05))], False)
-key(A, 'tail0', 'rot', [(0, Z), (1.8, (-30, 0, 0)), (4.0, (-34, 0, 6))], False)
-for k in range(1, 6): key(A, 'tail%d' % k, 'rot', [(0, Z), (1.8, (4, 0, 0)), (4.0, (6, 4, 0))], False)
+# death: struck, it staggers and clutches at the furnace in its chest as it gutters; it drops to its knees and roars at
+# the sky with its arms flung wide - its braziers burst - and then it comes apart: the wings crumble to ash from the
+# tips inward, the heart goes out, and the husk pitches forward onto its face
+A = anim('death', 6.4, False)
+A['fx'] = [('embers', 2.6, 6.4)]
+key(A, 'body', 'rot', [(0, Z), (0.5, (-16, 8, 0)), (1.3, (18, 0, 0)), (2.2, (-20, 0, 0)), (3.2, (-22, 0, 0)), (4.4, (14, 0, 0)), (5.4, (60, 0, 0)), (5.7, (66, 0, 0)), (6.4, (64, 0, 0))])
+key(A, 'hips', 'pos', [(0, Z), (0.5, (0, 0, 3)), (1.3, (0, -1, 0)), (2.0, (0, -16.5, -2)), (4.4, (0, -16.5, -2)), (5.4, (0, -15, -6)), (5.7, (0, -15.5, -7)), (6.4, (0, -15, -7))])
+key(A, 'thigh_r', 'rot', [(0, Z), (0.5, (-8, 0, 0)), (1.3, (6, 0, 0)), (2.0, (70, 0, -6)), (6.4, (74, 0, -6))])
+key(A, 'hips', 'rot', [(0, Z), (4.4, Z), (5.4, (22, 0, 0)), (5.7, (30, 0, 0)), (6.4, (29, 0, 0))])
+key(A, 'shin_r', 'rot', [(0, Z), (2.0, (-80, 0, 0)), (6.4, (-84, 0, 0))])
+key(A, 'foot_r', 'rot', [(0, Z), (2.0, (40, 0, 0)), (6.4, (44, 0, 0))])
+key(A, 'head', 'rot', [(0, Z), (0.5, (-24, -10, 0)), (1.3, (26, 0, 0)), (2.2, (-44, 0, 0)), (3.2, (-46, 0, 0)), (4.4, (10, 0, 0)), (5.4, (24, 0, 10)), (6.4, (26, 0, 12))])
+key(A, 'jaw', 'rot', [(0, Z), (0.5, (30, 0, 0)), (1.3, (10, 0, 0)), (2.2, (46, 0, 0)), (3.4, (44, 0, 0)), (4.6, (14, 0, 0)), (6.4, (18, 0, 0))])
+key(A, 'arm_r', 'rot', [(0, Z), (0.5, (-20, 0, 20)), (1.3, (60, 0, -48)), (2.2, (-50, 0, 54)), (3.2, (-54, 0, 52)), (4.4, (10, 0, 6)), (5.4, (0, 0, 30)), (5.7, (-4, 0, 40)), (6.4, (-4, 0, 40))])
+key(A, 'forearm_r', 'rot', [(0, Z), (1.3, (60, 0, -10)), (2.2, (-20, 0, 0)), (4.4, (0, 0, 0)), (6.4, (0, 0, 0))])
+key(A, 'hand_r', 'rot', [(0, Z), (1.3, (20, 0, 0)), (2.2, (-26, 0, 0)), (4.4, Z), (6.4, (30, 0, 0))])
+key(A, 'heart', 'scale', [(0, (1, 1, 1)), (0.5, (1.5, 1.5, 1.5)), (1.3, (0.8, 0.8, 0.8)), (2.2, (1.8, 1.8, 1.8)), (3.2, (1.4, 1.4, 1.4)), (4.6, (0.6, 0.6, 0.6)), (5.4, (0.02, 0.02, 0.02)), (6.4, (0.02, 0.02, 0.02))], False)
+key(A, 'wing_r', 'rot', [(0, Z), (0.5, (0, -10, 12)), (1.3, (0, 16, -14)), (2.2, (0, -16, 30)), (3.2, (0, -14, 28)), (4.4, (0, 10, -20)), (6.4, (0, 14, -34))])
+key(A, 'wingfore_r', 'rot', [(0, Z), (2.2, (0, 0, -16)), (3.2, (0, 0, -12)), (4.4, (0, 0, 20)), (6.4, (0, 0, 30))])
+GONE = (0.02, 0.02, 0.02)
+for i in range(5):   # the wings crumble from the outermost finger in
+    t0 = 3.0 + (4 - i) * 0.32
+    for k in range(1, 8):
+        if i < 4: key(A, 'mem%d_%d_r' % (i, k), 'scale', [(0, (1, 1, 1)), (t0 + k * 0.03, (1, 1, 1)), (t0 + 0.45 + k * 0.03, GONE), (6.4, GONE)])
+    key(A, 'finger%d_r' % i, 'scale', [(0, (1, 1, 1)), (t0 + 0.3, (1, 1, 1)), (t0 + 0.75, GONE), (6.4, GONE)])
+for k in range(1, 7): key(A, 'memarm%d_r' % k, 'scale', [(0, (1, 1, 1)), (4.3 + k * 0.05, (1, 1, 1)), (4.8 + k * 0.05, GONE), (6.4, GONE)])
+key(A, 'wingfore_r', 'scale', [(0, (1, 1, 1)), (4.6, (1, 1, 1)), (5.0, GONE), (6.4, GONE)])
+key(A, 'wing_r', 'scale', [(0, (1, 1, 1)), (4.9, (1, 1, 1)), (5.3, GONE), (6.4, GONE)])
+for i in range(5):   # the braziers burst at the height of the roar, and go out
+    key(A, 'flame%d' % i, 'scale', [(0, (1, 1, 1)), (1.3, (0.7, 0.6, 0.7)), (2.2, (1.5, 2.0, 1.5)), (2.7 + i * 0.06, (2.6, 3.4, 2.6)), (2.95 + i * 0.06, GONE), (6.4, GONE)], False)
+key(A, 'tail0', 'rot', [(0, Z), (2.0, (-30, 0, 0)), (4.4, (-32, 0, 0)), (5.4, (-14, 0, 0)), (5.7, (-10, 0, 4)), (6.4, (-10, 0, 6))], False)
+for k in range(1, 6): key(A, 'tail%d' % k, 'rot', [(0, Z), (2.0, (4, 0, 0)), (6.4, (6, 4, 0))], False)
 
 def export_anims(path):
     out = {}
@@ -657,13 +699,35 @@ def export_anims(path):
         out['animation.%s.%s' % (NAME, name)] = {'loop': True if A['loop'] else 'hold_on_last_frame', 'animation_length': A['length'], 'bones': bones}
     json.dump({'format_version': '1.8.0', 'animations': out}, open(path, 'w'))
 
-def gif(tex, glow, UV, name, fps=12, size=(680, 560), scale=2.15, yaw=28, pitch=6):
+def fx_at(A, t):
+    out = []
+    for f in A.get('fx', ()):
+        if f[0] == 'shock' and f[1] <= t <= f[1] + f[2]:
+            k = (t - f[1]) / f[2]
+            c = f[3]
+            out.append(('ring', c, 6 + k * 70, (255, int(200 - 120 * k), 60), max(1, int(6 * (1 - k)))))
+            out.append(('ring', c, 3 + k * 42, (255, 150, 40), max(1, int(4 * (1 - k)))))
+        if f[0] == 'embers' and f[1] <= t:
+            r = random.Random(7)
+            for i in range(90):
+                born = f[1] + r.random() * (f[2] - f[1] - 0.5)
+                if t < born: continue
+                age = t - born
+                x0, y0, z0 = r.uniform(-60, 60), r.uniform(20, 90), r.uniform(-6, 16)
+                out.append(('dot', (x0 + math.sin(age * 2 + i) * 3, y0 + age * 14, z0), max(1.0, 3.2 - age * 1.2),
+                            (255, int(140 + 80 * r.random()), 40) if age < 1.2 else (120, 110, 104)))
+    return out
+
+def gif(tex, glow, UV, name, fps=12, size=(680, 560), scale=2.15, yaw=28, pitch=8):
     A = ANIMS[name]
     n = int(A['length'] * fps)
     frames = []
-    for i in range(n + (0 if A['loop'] else 6)):
+    for i in range(n + (0 if A['loop'] else 8)):
         t = min(A['length'], i / fps)
-        im = render(tex, glow, UV, yaw=yaw, pitch=pitch, size=size, scale=scale, pose=pose_at(A, t), cy=0.6)
+        shake = 0
+        for f in A.get('fx', ()):
+            if f[0] == 'shock' and f[1] <= t <= f[1] + 0.35: shake = 6 * (1 - (t - f[1]) / 0.35) * (1 if i % 2 else -1)
+        im = render(tex, glow, UV, yaw=yaw, pitch=pitch, size=size, scale=scale, pose=pose_at(A, t), cy=0.6 + shake / 560, ground_y=-0.5, effects=fx_at(A, t))
         ImageDraw.Draw(im).text((12, 10), name, fill=(255, 220, 160))
         frames.append(im.convert('P', palette=Image.ADAPTIVE, colors=200))
     path = os.path.join(OUT, 'demon_%s.gif' % name)
