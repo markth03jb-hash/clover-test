@@ -257,7 +257,7 @@ public final class ZenonAI {
 
     static void say(Zenon b, String line) {
         for (Player p : b.level().getEntitiesOfClass(Player.class, b.getBoundingBox().inflate(48))) {
-            p.sendSystemMessage(Component.literal("Zenon: ").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD)
+            p.sendSystemMessage(Component.literal("The Ossuarch: ").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD)
                     .append(Component.literal(line).withStyle(ChatFormatting.WHITE, ChatFormatting.ITALIC)));
         }
     }

@@ -407,7 +407,7 @@ public final class GameTests {
         queue.add(saving());
         queue.add(boards());
         for (var e : AddonSpellRegistry.SPELLS.getEntries()) queue.add(new SpellTest(e.get()));
-        queue.add(new BossTest("Zenon", AddonEntities.ZENON));
+        queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));
         queue.add(new BossTest("Licht", AddonEntities.LICHT));

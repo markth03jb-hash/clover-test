@@ -60,7 +60,7 @@ public final class Bounties {
     private Bounties() {}
 
     public static final String[] BOSSES = {"zenon", "beast_of_despair", "rhya", "licht", "revenant", "curse_witch", "unbound"};
-    public static final String[] NAMES = {"Zenon", "The Beast of Despair", "Rhya the Disloyal", "Licht", "The Revenant", "The Curse Witch", "???"};
+    public static final String[] NAMES = {"The Ossuarch", "The Beast of Despair", "Rhya the Disloyal", "Licht", "The Revenant", "The Curse Witch", "???"};
     /** Merit gates: two modifiers on a poster from 20 stars; the secret "???" poster can turn up from 50. */
     public static final int TWO_MODS_AT = 20, SECRET_AT = 50, SECRET = 6;
     public static final int ENRAGED = 1, ARMOURED = 2, ESCORTED = 4, WOUNDED = 8;
