@@ -1,6 +1,18 @@
-Iron Spell Grimoire v1.93.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.94.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.94.0
+- World boss: the Cinder Sovereign, a 15-block winged demon lord (GeckoLib model and animations) that rises somewhere in
+  the world about once a real day - slam, swipe, wing gust, pyre volley, ember rain, heart beam, descent; rewards by damage
+  share and the Sovereign's Ember upgrade. /worldboss (start|end for ops).
+- Mana Tree: a skill tree on every grimoire (Tree ribbon in the grimoire screen) - shared Root and Body branches, a unique
+  Element branch and Crown per grimoire, Grimoire Leaves from mastery and milestones, resets at the altar.
+- Lost Memory Pages: boss-dropped story pages read in a Memories ribbon; three chapters, each leading the Tower Compass to a
+  Memory Guardian boss (unique upgrades, and the Binder's Aura at the end). /memory.
+- Mana Familiars (hatch from a Mana Core at the altar; ten elemental forms), the Grimoire Library (Grimoire Archive shelves
+  and the altar's Library ribbon), Elf Raids with exclusive rewards, the Magic Broom, a Tower Compass for new players, and a
+  rebuilt Grimoire Tower (gold dais, floating grimoires, book cyclone, rose window, spire halo).
 
 NEW IN 1.93.0
 - Big fix round: Light grimoire fixes, bosses keep their torso still, The Beast of Despair / The Revenant / The Curse Witch
