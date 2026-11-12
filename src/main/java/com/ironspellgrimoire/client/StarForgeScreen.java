@@ -42,6 +42,7 @@ public class StarForgeScreen extends Screen {
     private int top() { return y0(height) + 14; }
     private int rowY(int i) { return top() + 16 + i * ROW; }
     private static final int SROW = 13, MROW = 17;
+    private java.util.List<Component> tip;
     private int sigilY(int i) { return top() + 57 + i * SROW; }
     private int mutY(int m) { return top() + 32 + (m - 1) * MROW; }
     private int pageX(int k) { return rx() + k * (PW / 2 + 2); }
@@ -56,10 +57,13 @@ public class StarForgeScreen extends Screen {
             StarForgePackets.Spell s = data.spells.get(i);
             if (!in(mx, my, lx + PW - 26, rowY(i) - 1, 26, 11)) continue;
             if (s.level() < StarForge.MAX_BOOST) { send(0, s.id()); return true; }
-            if (s.mut() == 0) { mutating = s.id(); page(); return true; }   // fully empowered: open its mutation
+            mutating = s.id(); page(); return true;   // fully empowered: open its mutation (choose one, or remove it)
         }
         if (mutating != null) {
-            for (int m = 1; m < StarForge.MUT_NAMES.length; m++) if (data.cores > 0 && in(mx, my, rx, mutY(m), PW, MROW - 1)) { send(3, mutating + "|" + m); mutating = null; return true; }
+            int cur = currentMut();
+            if (cur > 0) {   // already mutated: remove it, for a Mana Core
+                if (data.cores > 0 && in(mx, my, rx + 10, t + 70, PW - 20, 14)) { send(5, mutating); mutating = null; return true; }
+            } else for (int m = 1; m < StarForge.MUT_NAMES.length; m++) if (data.cores > 0 && in(mx, my, rx, mutY(m), PW, MROW - 1)) { send(3, mutating + "|" + m); mutating = null; return true; }
             if (in(mx, my, rx + PW - 30, t - 1, 30, 11)) { mutating = null; page(); return true; }
             return super.mouseClicked(mx, my, btn);
         }
@@ -69,6 +73,11 @@ public class StarForgeScreen extends Screen {
             if (data.sigil != i + 1 && in(mx, my, rx, sigilY(i), PW, SROW - 1)) { send(2, String.valueOf(i)); return true; }
         }
         return super.mouseClicked(mx, my, btn);
+    }
+
+    private int currentMut() {
+        for (StarForgePackets.Spell s : data.spells) if (s.id().equals(mutating)) return s.mut();
+        return 0;
     }
 
     /** Each sigil's mark, inked small: the Well a cup, Haste a pair of chevrons, the Spring rising drops. */
@@ -110,6 +119,7 @@ public class StarForgeScreen extends Screen {
         int lx = lx(), rx = rx(), t = top();
 
         // left page: empower a spell
+        tip = null;
         heading(g, font, "Empower (+10% each)", lx, PW, t);
         for (int i = 0; i < data.spells.size(); i++) {
             StarForgePackets.Spell s = data.spells.get(i);
@@ -131,7 +141,11 @@ public class StarForgeScreen extends Screen {
                 else button(g, font, lx + PW - 26, y - 1, 26, 11, "Mut", in(mx, my, lx + PW - 26, y - 1, 26, 11) || s.id().equals(mutating), true);
             } else {
                 int cost = StarForge.boostCost(s.level() + 1);
-                button(g, font, lx + PW - 26, y - 1, 26, 11, cost + "★", in(mx, my, lx + PW - 26, y - 1, 26, 11), data.stars >= cost);
+                boolean hb = in(mx, my, lx + PW - 26, y - 1, 26, 11);
+                button(g, font, lx + PW - 26, y - 1, 26, 11, cost + "★", hb, data.stars >= cost);
+                if (hb) tip = java.util.List.of(Component.literal("Empower " + name).withStyle(net.minecraft.ChatFormatting.GOLD),
+                        Component.literal("Damage: +" + s.level() * 10 + "%  \u2192  +" + (s.level() + 1) * 10 + "%").withStyle(net.minecraft.ChatFormatting.WHITE),
+                        Component.literal("Costs " + cost + " merit stars (you have " + data.stars + ")").withStyle(net.minecraft.ChatFormatting.GRAY));
             }
         }
 
@@ -142,6 +156,18 @@ public class StarForgeScreen extends Screen {
             g.drawString(font, nm, rx + (PW - font.width(nm)) / 2, t + 11, INK, false);
             String cost = "1 Mana Core (have " + data.cores + ")";
             g.drawString(font, cost, rx + Math.max(0, (PW - font.width(cost)) / 2), t + 21, data.cores > 0 ? INK_SOFT : RED_INK, false);
+            int cur = currentMut();
+            if (cur > 0) {   // mutated already: what it is, and the way to remove it
+                String a = "Mutated: " + StarForge.MUT_NAMES[Math.min(StarForge.MUT_NAMES.length - 1, cur)];
+                g.drawString(font, a, rx + (PW - font.width(a)) / 2, t + 38, RED_INK, false);
+                text(g, font, StarForge.MUT_TEXT[Math.min(StarForge.MUT_TEXT.length - 1, cur)], rx, t + 50, PW, INK_SOFT);
+                button(g, font, rx + 10, t + 70, PW - 20, 14, "Remove it", in(mx, my, rx + 10, t + 70, PW - 20, 14), data.cores > 0);
+                text(g, font, "Then choose another, for another Mana Core.", rx, t + 90, PW, INK_FAINT);
+                button(g, font, rx + PW - 30, t - 1, 30, 11, "Back", in(mx, my, rx + PW - 30, t - 1, 30, 11), true);
+                turning(g, width, height, (ticks + pt) / 5F);
+                super.render(g, mx, my, pt);
+                return;
+            }
             for (int m = 1; m < StarForge.MUT_NAMES.length; m++) {   // six mutations, a line each
                 int y = mutY(m);
                 boolean hot = in(mx, my, rx, y, PW, MROW - 1), can = data.cores > 0;
@@ -195,5 +221,6 @@ public class StarForgeScreen extends Screen {
 
         turning(g, width, height, (ticks + pt) / 5F);
         super.render(g, mx, my, pt);
+        if (tip != null) g.renderComponentTooltip(font, tip, mx, my);
     }
 }

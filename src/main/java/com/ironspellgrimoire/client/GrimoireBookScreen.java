@@ -52,6 +52,8 @@ public class GrimoireBookScreen extends Screen {
     private boolean memories = false;
     /** The Tree tab (the Mana Tree, server/SkillTree). */
     private boolean treeMode = false;
+    /** The Path tab (what's left on the way to Ascension) and the Upgrades tab (everything bound into this grimoire). */
+    private boolean pathMode = false, upgMode = false;
     private int mpage = 0;
     private static final int MSPREADS = com.ironspellgrimoire.server.MemoryStory.CH * 3;
 
@@ -124,19 +126,29 @@ public class GrimoireBookScreen extends Screen {
         int x0 = (width - BW) / 2, y0 = (height - BH) / 2;
         if (inside(mx, my, x0 - 2, y0 + BH - 20, 22, 16)) { turn(-1); return true; }
         if (inside(mx, my, x0 + BW - 20, y0 + BH - 20, 22, 16)) { turn(1); return true; }
+        if (inside(mx, my, x0 + BW + 7, y0 + 90, 54, 16)) {   // the fourth ribbon: the Path
+            pathMode = !pathMode; upgMode = false; treeMode = false; memories = false; flipAt = ticks; flipDir = pathMode ? 1 : -1;
+            Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.65F);
+            return true;
+        }
+        if (inside(mx, my, x0 + BW + 7, y0 + 112, 54, 16)) {   // the fifth ribbon: the Upgrades
+            upgMode = !upgMode; pathMode = false; treeMode = false; memories = false; flipAt = ticks; flipDir = upgMode ? 1 : -1;
+            Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.75F);
+            return true;
+        }
         if (inside(mx, my, x0 + BW + 7, y0 + 68, 54, 16)) {   // the third ribbon: the Mana Tree (or back to the spells)
-            treeMode = !treeMode; memories = false; flipAt = ticks; flipDir = treeMode ? 1 : -1;
+            treeMode = !treeMode; memories = false; pathMode = false; upgMode = false; flipAt = ticks; flipDir = treeMode ? 1 : -1;
             Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.6F);
             return true;
         }
         if (treeMode && treeClick(mx, my, x0, y0)) return true;
         if (inside(mx, my, x0 + BW + 7, y0 + 46, 54, 16)) {   // the second ribbon: the Memories (or back to the spells)
-            memories = !memories; treeMode = false; flipAt = ticks; flipDir = memories ? 1 : -1;
+            memories = !memories; treeMode = false; pathMode = false; upgMode = false; flipAt = ticks; flipDir = memories ? 1 : -1;
             Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.7F);
             return true;
         }
         if (inside(mx, my, x0 + BW + 7, y0 + 24, 46, 16)) {   // the ribbon tab on the edge of the book: jump to the combos (or back to the spells)
-            if (memories || treeMode) { memories = false; treeMode = false; page = ids.size(); flipAt = ticks; flipDir = -1; Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.8F); return true; }
+            if (memories || treeMode || pathMode || upgMode) { memories = false; treeMode = false; pathMode = false; upgMode = false; page = ids.size(); flipAt = ticks; flipDir = -1; Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.8F); return true; }
             int to = onCombos() ? 0 : ids.size();
             if (to != page) { flipDir = to > page ? 1 : -1; page = to; flipAt = ticks; Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.8F); }
             return true;
@@ -179,8 +191,8 @@ public class GrimoireBookScreen extends Screen {
         // the ribbon tab on the book's edge: Combos (or back to the Spells)
         boolean tabHot = inside(mx, my, x0 + BW + 7, y0 + 24, 46, 16);
         g.fill(x0 + BW + 5, y0 + 24, x0 + BW + 54, y0 + 40, 0xFF000000 | dark(c[2], 0.35F));
-        g.fill(x0 + BW + 6, y0 + 25, x0 + BW + 53, y0 + 39, 0xFF000000 | (tabHot || (onCombos() && !memories && !treeMode) ? c[2] : c[4]));
-        String tab = onCombos() && !memories && !treeMode ? "Spells" : "Combos";
+        g.fill(x0 + BW + 6, y0 + 25, x0 + BW + 53, y0 + 39, 0xFF000000 | (tabHot || (onCombos() && !memories && !treeMode && !pathMode && !upgMode) ? c[2] : c[4]));
+        String tab = onCombos() && !memories && !treeMode && !pathMode && !upgMode ? "Spells" : "Combos";
         g.drawString(f, tab, x0 + BW + 30 - f.width(tab) / 2, y0 + 29, tabHot ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
         // the second ribbon: Memories
         boolean memHot = inside(mx, my, x0 + BW + 7, y0 + 46, 54, 16);
@@ -193,7 +205,11 @@ public class GrimoireBookScreen extends Screen {
         g.drawString(f, tt, x0 + BW + 34 - f.width(tt) / 2, y0 + 73, treeHot || treeMode ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
         String mt = memories ? "Spells" : "Memories";
         g.drawString(f, mt, x0 + BW + 34 - f.width(mt) / 2, y0 + 51, memHot || memories ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
+        ribbon(g, f, x0, y0 + 90, pathMode ? "Spells" : "Path", pathMode, mx, my, c);
+        ribbon(g, f, x0, y0 + 112, upgMode ? "Spells" : "Upgrades", upgMode, mx, my, c);
         if (treeMode) { drawTree(g, f, x0, y0, mid, mx, my, c); return; }
+        if (pathMode) { drawPath(g, f, x0, y0, mid); return; }
+        if (upgMode) { drawUpgrades(g, f, x0, y0, mid); return; }
         if (memories) {
             drawMemories(g, f, x0, y0, mid, mx, my);
             if (flip > 0F) {
@@ -288,6 +304,107 @@ public class GrimoireBookScreen extends Screen {
                 yy += 10;
             }
         }
+    }
+
+    private void ribbon(GuiGraphics g, Font f, int x0, int y, String label, boolean on, int mx, int my, int[] c) {
+        boolean hot = inside(mx, my, x0 + BW + 7, y, 54, 16);
+        g.fill(x0 + BW + 5, y, x0 + BW + 62, y + 16, 0xFF000000 | dark(c[2], 0.35F));
+        g.fill(x0 + BW + 6, y + 1, x0 + BW + 61, y + 15, 0xFF000000 | (hot || on ? c[2] : c[4]));
+        g.drawString(f, label, x0 + BW + 34 - f.width(label) / 2, y + 5, hot || on ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
+    }
+
+    // ------------------------------------------------------------------ the Path: what's done, and what's next
+    private void drawPath(GuiGraphics g, Font f, int x0, int y0, int mid) {
+        ItemStack bk = treeBook();
+        int lv = com.ironspellgrimoire.server.GrimoireMastery.level(bk), cap = com.ironspellgrimoire.server.GrimoireMastery.cap(bk);
+        boolean exam = com.ironspellgrimoire.server.GrimoireMastery.ascended(bk), awake = com.ironspellgrimoire.server.Awakening.awakened(bk),
+                asc = com.ironspellgrimoire.server.Ascension.ascended(bk);
+        java.util.List<String> sp = com.ironspellgrimoire.server.SpellEvolution.spells(bk);
+        int evolved = 0, best = 0;
+        for (String id : sp) {
+            if (com.ironspellgrimoire.server.SpellEvolution.evolved(bk, id)) evolved++;
+            else best = Math.max(best, com.ironspellgrimoire.server.SpellEvolution.casts(bk, id));
+        }
+        boolean crown = com.ironspellgrimoire.server.SkillTree.has(bk, "crown");
+        int mem = 0;
+        for (int ch = 0; ch < com.ironspellgrimoire.server.MemoryStory.CH; ch++) if (MemoryClient.done(ch)) mem++;
+        String[][] steps = {
+                {lv >= 5 ? "y" : "n", "Mastery 5", "Cast this grimoire's spells: it grows with use. (" + lv + " / " + cap + ")"},
+                {exam ? "y" : "n", "Magic Knight Exam", "At mastery 5, take the Exam at a Grimoire Altar. Pass it and mastery can reach 7."},
+                {awake ? "y" : "n", "Awakening", "Pass the Exam and reach mastery 6, then awaken the grimoire at a Grimoire Altar."},
+                {lv >= 8 ? "y" : "n", "Mastery 8", "An awakened grimoire grows to mastery 8."},
+                {asc ? "y" : "n", "Ascension", "Awakened and at mastery 8: face your Reflection in the Ascension Trial, from the altar."},
+                {evolved >= sp.size() && !sp.isEmpty() ? "y" : evolved > 0 ? "h" : "n", "Spell Evolution (" + evolved + " / " + sp.size() + ")",
+                        "Each spell evolves after " + com.ironspellgrimoire.server.SpellEvolution.EVOLVE_AT + " casts. Closest: " + best + " / " + com.ironspellgrimoire.server.SpellEvolution.EVOLVE_AT + "."},
+                {crown ? "y" : "n", "Crown of the Tree", "Learn five Element nodes on the Mana Tree, then its Crown."},
+                {mem >= 3 ? "y" : mem > 0 ? "h" : "n", "Lost Memories (" + mem + " / 3)", "Bosses drop torn Memory Pages; each chapter ends with a Memory Guardian."}};
+        int lx = x0 + 16, y = y0 + 12;
+        g.drawString(f, Component.literal("The Path").withStyle(ChatFormatting.BOLD), lx, y, RED_INK, false);
+        y += 14;
+        int next = -1;
+        for (int i = 0; i < steps.length; i++) {
+            boolean ok = steps[i][0].equals("y"), half = steps[i][0].equals("h");
+            if (!ok && next < 0) next = i;
+            String mark = ok ? "\u2714" : half ? "\u25D0" : "\u2610";
+            g.drawString(f, mark, lx, y, ok ? 0xFF2A6A20 : half ? 0xFF9A6A10 : INK_SOFT, false);
+            g.drawString(f, steps[i][1], lx + 12, y, ok ? INK_SOFT : i == next ? RED_INK : INK, false);
+            y += 15;
+        }
+        int rx = mid + 14, ry = y0 + 12, w = BW / 2 - 30;
+        g.drawString(f, Component.literal(next < 0 ? "Every step taken" : "Next: " + steps[next][1]).withStyle(ChatFormatting.BOLD), rx, ry, RED_INK, false);
+        ry += 16;
+        String body = next < 0 ? "This grimoire has gone as far as a grimoire can. Its mage is a legend now." : steps[next][2];
+        for (FormattedCharSequence l : f.split(Component.literal(body), w)) { g.drawString(f, l, rx, ry, INK, false); ry += 10; }
+        ry += 8;
+        for (FormattedCharSequence l : f.split(Component.literal("Mastery " + lv + " of " + cap + (awake ? " (awakened)" : exam ? " (Magic Knight)" : "") + "."), w)) { g.drawString(f, l, rx, ry, INK_SOFT, false); ry += 10; }
+    }
+
+    // ------------------------------------------------------------------ the Upgrades: everything bound into the grimoire, and what it adds up to
+    private void drawUpgrades(GuiGraphics g, Font f, int x0, int y0, int mid) {
+        ItemStack bk = treeBook();
+        net.minecraft.nbt.CompoundTag t = bk.hasTag() ? bk.getTag() : new net.minecraft.nbt.CompoundTag();
+        int lx = x0 + 16, y = y0 + 12, w = BW / 2 - 30;
+        g.drawString(f, Component.literal("Bound Upgrades").withStyle(ChatFormatting.BOLD), lx, y, RED_INK, false);
+        y += 14;
+        boolean any = false;
+        for (var k : com.ironspellgrimoire.server.GrimoireUpgrades.KINDS) {
+            int n = com.ironspellgrimoire.server.GrimoireUpgrades.count(bk, k.id());
+            if (n <= 0) continue;
+            any = true;
+            if (y > y0 + BH - 30) { g.drawString(f, "...", lx, y, INK_SOFT, false); break; }
+            String head = k.name() + (k.max() > 1 ? "  \u00D7" + n : "");
+            g.drawString(f, head, lx, y, INK, false);
+            y += 9;
+            g.pose().pushPose();
+            g.pose().translate(lx + 4, y, 0);
+            g.pose().scale(0.75F, 0.75F, 1F);
+            String each = k.each();
+            int ww = (int) ((w - 4) / 0.75F);
+            if (f.width(each) > ww) each = f.plainSubstrByWidth(each, ww - 8) + "..";
+            g.drawString(f, each, 0, 0, INK_SOFT, false);
+            g.pose().popPose();
+            y += 9;
+        }
+        if (!any) for (FormattedCharSequence l : f.split(Component.literal("Nothing bound yet. Bosses, bounties, quests and rifts give upgrades; bind them at a Grimoire Altar."), w)) { g.drawString(f, l, lx, y, INK_SOFT, false); y += 10; }
+        int rx = mid + 14, ry = y0 + 12;
+        g.drawString(f, Component.literal("On the Book").withStyle(ChatFormatting.BOLD), rx, ry, RED_INK, false);
+        ry += 14;
+        int sig = t.getInt("Sigil");
+        String[] lines = {
+                "Sigil: " + (sig > 0 && sig <= com.ironspellgrimoire.server.StarForge.SIGIL_SHORT.length ? com.ironspellgrimoire.server.StarForge.SIGIL_SHORT[sig - 1] + " (" + com.ironspellgrimoire.server.StarForge.SIGIL_EFFECTS[sig - 1] + ")" : "none"),
+                "Ink: " + ink(t, "RiftInk", true) + ink(t, "RiftInk2", t.getBoolean("InkSlot2")) + ink(t, "RiftInk3", t.getBoolean("InkSlot3")),
+                "Devil Shards: " + t.getInt("DevilShards"),
+                "Empowered spells: " + t.getCompound("StarBoost").size() + ", mutated: " + t.getCompound("StarMut").size(),
+                "Evolved spells: " + t.getCompound("Evolved").size(),
+                "Mana Tree: " + com.ironspellgrimoire.server.SkillTree.spent(bk) + " leaves spent"};
+        for (String ln : lines) for (FormattedCharSequence l : f.split(Component.literal(ln), w)) { g.drawString(f, l, rx, ry, INK, false); ry += 10; }
+    }
+
+    private static String ink(net.minecraft.nbt.CompoundTag t, String key, boolean open) {
+        if (!open) return "";
+        int r = t.getInt(key) - 1;
+        String n = r >= 0 && r < com.ironspellgrimoire.item.RiftInkItem.NAMES.length ? com.ironspellgrimoire.item.RiftInkItem.NAMES[r] : "(empty page)";
+        return (key.equals("RiftInk") ? "" : ", ") + n;
     }
 
     // ------------------------------------------------------------------ the Mana Tree

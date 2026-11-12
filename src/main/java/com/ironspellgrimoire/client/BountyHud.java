@@ -74,6 +74,14 @@ public final class BountyHud {
         long now = mc.level.getGameTime();
         if (state >= Bounties.STATE_DONE && now - shownAt > 120) { boss = -1; return; }
         double dx = tx - mc.player.getX(), dz = tz - mc.player.getZ();
+        if (TrackerMode.hidden()) return;
+        if (TrackerMode.compact()) {
+            String name = Bounties.NAMES[Math.max(0, Math.min(Bounties.NAMES.length - 1, boss))];
+            boolean hunt = state == Bounties.STATE_HUNT;
+            String t = state == Bounties.STATE_DONE ? name + " - subjugated" : state == Bounties.STATE_EXPIRED ? "the trail went cold" : state == Bounties.STATE_FOUND ? name + " - fight!" : name + "  " + (int) Math.sqrt(dx * dx + dz * dz) + " m";
+            TrackerMode.line(e.getGuiGraphics(), mc.font, 4, state == Bounties.STATE_DONE ? 0xFF60FF80 : 0xFFFF4040, "WANTED", t, dx, dz, hunt, now, mc.player.getViewYRot(e.getPartialTick()));
+            return;
+        }
         tracker(e.getGuiGraphics(), mc.font, e.getGuiGraphics().guiWidth(), (int) Math.sqrt(dx * dx + dz * dz), dx, dz, now, mc.player.getViewYRot(e.getPartialTick()));
     }
 

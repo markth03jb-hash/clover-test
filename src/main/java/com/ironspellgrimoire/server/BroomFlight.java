@@ -33,6 +33,11 @@ public final class BroomFlight {
         if (p.tickCount % 100 == 13 && !p.getPersistentData().getBoolean("isg_broom_given") && holdsGrimoire(p)) give(p);
         if (!(p.getVehicle() instanceof BroomEntity b)) return;
         double sp = b.getDeltaMovement().length();
+        if (p.tickCount % 20 == 0) {   // its bands in the rider's grimoire colours
+            GrimoireMastery.Book bk0 = GrimoireMastery.bookOf(Utils.getPlayerSpellbookStack(p));
+            int bi = bk0 == null ? -1 : GrimoireMastery.BOOKS.indexOf(bk0);
+            if (b.book() != bi) b.setBook(bi);
+        }
         if (p.tickCount % 2 == 0 && sp > 0.3) {   // the trail, in the grimoire's colours
             GrimoireMastery.Book bk = GrimoireMastery.bookOf(Utils.getPlayerSpellbookStack(p));
             int pal = bk == null ? Fx.SILVER : bk.palette();
@@ -41,7 +46,7 @@ public final class BroomFlight {
         }
         if (p.tickCount % 20 == 0 && !p.isCreative()) {
             MagicData md = MagicData.getPlayerMagicData(p);
-            float cost = sp > 0.1 ? 3f : 1f;
+            float cost = sp > 0.95 ? 5f : sp > 0.1 ? 3f : 1f;   // boosting burns more
             if (RiftRewards.wears(p, AddonItemRegistry.ELVEN_WIND_CHARM.get())) cost *= 0.5f;   // the Elven Wind Charm
             if (md.getMana() >= cost) { md.setMana(md.getMana() - cost); b.setNoMana(false); }
             else {

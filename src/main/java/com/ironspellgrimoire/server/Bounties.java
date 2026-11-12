@@ -273,6 +273,13 @@ public final class Bounties {
             if (ar != null && ar.getModifier(ARMOR) == null) ar.addPermanentModifier(new AttributeModifier(ARMOR, "Bounty: armoured", 10, AttributeModifier.Operation.ADDITION));
         }
         if (boss == SECRET) unbind(m);
+        // its modifiers written on its boss bar, so they can be seen in the fight
+        Component bar = Component.literal(boss == SECRET ? "Licht, the Unbound" : NAMES[boss]).append(Component.literal("  [").withStyle(ChatFormatting.GRAY))
+                .append(modsText(mods)).append(Component.literal("]").withStyle(ChatFormatting.GRAY));
+        if (m instanceof com.ironspellgrimoire.entity.AddonBoss ab) ab.setBarName(bar);
+        else if (m instanceof com.ironspellgrimoire.entity.Zenon z) z.setBarName(bar);
+        else if (m instanceof com.ironspellgrimoire.entity.BeastOfDespair bd) bd.setBarName(bar);
+        else if (m instanceof com.ironspellgrimoire.entity.Rhya rh) rh.setBarName(bar);
         sl.addFreshEntity(m);
         if ((mods & WOUNDED) != 0) m.setHealth(m.getMaxHealth() * 0.7f);
         if ((mods & ESCORTED) != 0) {

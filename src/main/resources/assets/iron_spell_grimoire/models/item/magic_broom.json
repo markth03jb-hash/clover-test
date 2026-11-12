@@ -93,7 +93,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "south": {
      "texture": "#gold",
@@ -102,7 +103,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "east": {
      "texture": "#gold",
@@ -111,7 +113,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "west": {
      "texture": "#gold",
@@ -120,7 +123,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "up": {
      "texture": "#gold",
@@ -129,7 +133,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "down": {
      "texture": "#gold",
@@ -138,7 +143,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     }
    }
   },
@@ -161,7 +167,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "south": {
      "texture": "#gold",
@@ -170,7 +177,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "east": {
      "texture": "#gold",
@@ -179,7 +187,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "west": {
      "texture": "#gold",
@@ -188,7 +197,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "up": {
      "texture": "#gold",
@@ -197,7 +207,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "down": {
      "texture": "#gold",
@@ -206,7 +217,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     }
    }
   },
@@ -229,7 +241,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "south": {
      "texture": "#gold",
@@ -238,7 +251,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "east": {
      "texture": "#gold",
@@ -247,7 +261,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "west": {
      "texture": "#gold",
@@ -256,7 +271,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "up": {
      "texture": "#gold",
@@ -265,7 +281,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     },
     "down": {
      "texture": "#gold",
@@ -274,7 +291,8 @@
       0,
       16,
       16
-     ]
+     ],
+     "tintindex": 0
     }
    }
   },

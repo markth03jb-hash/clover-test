@@ -48,9 +48,11 @@ public final class WorldBossHud {
         long now = mc.level.getGameTime();
         GuiGraphics g = e.getGuiGraphics();
         Font f = mc.font;
-        int w = 168, h = 40, x = g.guiWidth() - w - 4, y = 4 + (BountyHud.shown() ? 66 : 0) + (QuestHud.shown() ? 56 : 0);
+        int w = 168, h = 40, x = g.guiWidth() - w - 4, y = TrackerMode.worldY();
         double dx = tx - mc.player.getX(), dz = tz - mc.player.getZ(), d = Math.sqrt(dx * dx + dz * dz);
         if (d < 40 && risen) return;   // you're there: its boss bar says the rest
+        if (TrackerMode.hidden()) return;
+        if (TrackerMode.compact()) { TrackerMode.line(g, f, y, 0xFFFF5A2A, "WORLD BOSS", (int) d + " m", dx, dz, true, now, mc.player.getViewYRot(e.getPartialTick())); return; }
         int head = 0xFFFF5A2A;
         g.fill(x, y, x + w, y + h, 0xA0180806);
         g.renderOutline(x, y, w, h, 0xC0D84A2A);

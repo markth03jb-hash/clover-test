@@ -23,6 +23,8 @@ public class BroomRenderer extends EntityRenderer<BroomEntity> {
     @Override
     public void render(BroomEntity e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
         if (stack == null) stack = new ItemStack(AddonItemRegistry.MAGIC_BROOM.get());
+        int tint = e.book() < 0 ? 0xFFFFFF : GrimoireWheel.themeColors(e.book())[3];
+        if (stack.getOrCreateTag().getInt("Tint") != tint) stack.getOrCreateTag().putInt("Tint", tint);
         ps.pushPose();
         float bob = Mth.sin((e.tickCount + pt) * 0.12f) * 0.04f;
         ps.translate(0, 0.35 + bob, 0);

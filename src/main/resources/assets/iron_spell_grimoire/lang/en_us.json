@@ -792,6 +792,8 @@
   "entity.iron_spell_grimoire.familiar": "Familiar",
   "entity.iron_spell_grimoire.memory_guardian": "Memory Guardian",
   "entity.iron_spell_grimoire.cinder_sovereign": "The Cinder Sovereign",
+  "key.iron_spell_grimoire.trackers": "Trackers: full / compact / hidden",
+  "key.categories.iron_spell_grimoire": "Iron Spell Grimoire",
   "item.iron_spell_grimoire.sovereign_ember": "Sovereign's Ember",
   "item.iron_spell_grimoire.memory_page": "Torn Memory Page",
   "block.iron_spell_grimoire.grimoire_archive": "Grimoire Archive",

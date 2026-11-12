@@ -30,7 +30,13 @@ public class BroomEntity extends Entity {
 
     public BroomEntity(EntityType<?> type, Level level) { super(type, level); }
 
-    @Override protected void defineSynchedData() { this.entityData.define(NO_MANA, false); }
+    private static final EntityDataAccessor<Integer> BOOK = SynchedEntityData.defineId(BroomEntity.class, EntityDataSerializers.INT);
+    /** Set each tick by the client while its sprint key is held: the broom boosts (and the server drains more mana). */
+    public static volatile boolean CLIENT_BOOST;
+    @Override protected void defineSynchedData() { this.entityData.define(NO_MANA, false); this.entityData.define(BOOK, -1); }
+    /** The rider's grimoire (GrimoireMastery.BOOKS index, -1 none): its bands take that grimoire's colour. */
+    public int book() { return this.entityData.get(BOOK); }
+    public void setBook(int b) { this.entityData.set(BOOK, b); }
     public boolean noMana() { return this.entityData.get(NO_MANA); }
     public void setNoMana(boolean b) { this.entityData.set(NO_MANA, b); }
 
@@ -69,7 +75,7 @@ public class BroomEntity extends Entity {
             boolean empty = noMana();
             boolean charm = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(rider).resolve()
                     .flatMap(h -> h.findFirstCurio(com.ironspellgrimoire.registry.AddonItemRegistry.ELVEN_WIND_CHARM.get())).isPresent();   // elven wind: faster
-            double sp = empty ? 0.25 : charm ? 1.05 : 0.75;
+            double sp = (empty ? 0.25 : charm ? 1.05 : 0.75) * (!empty && level().isClientSide && CLIENT_BOOST ? 1.5 : 1.0);   // sprint: a boost
             Vec3 want = rider.zza > 0 ? look.scale(sp) : rider.zza < 0 ? look.scale(-0.15) : Vec3.ZERO;
             if (rider.xxa != 0) {   // strafing drifts it sideways a little
                 Vec3 side = new Vec3(look.z, 0, -look.x).normalize().scale(rider.xxa * 0.3);
