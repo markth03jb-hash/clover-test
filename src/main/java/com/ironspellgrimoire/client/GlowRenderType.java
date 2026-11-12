@@ -29,15 +29,19 @@ public final class GlowRenderType extends RenderType {
      * high-resolution painted effects like the Scarlet Moon aura.
      */
     public static RenderType smoothSprite(net.minecraft.resources.ResourceLocation tex, boolean additive) {
-        return SMOOTH.computeIfAbsent(tex + (additive ? "+" : ""), k -> create("iron_spell_grimoire_smooth_" + (additive ? "add" : "blend"),
-                DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 4096, false, true,
-                RenderType.CompositeState.builder()
-                        .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
-                        .setTextureState(new RenderStateShard.TextureStateShard(tex, true, false))
-                        .setTransparencyState(additive ? LIGHTNING_TRANSPARENCY : TRANSLUCENT_TRANSPARENCY)
-                        .setWriteMaskState(COLOR_WRITE)
-                        .setCullState(NO_CULL)
-                        .setOverlayState(OVERLAY)
-                        .createCompositeState(false)));
+        String key = tex + (additive ? "+" : "");
+        RenderType rt = SMOOTH.get(key);
+        if (rt != null) return rt;
+        RenderType.CompositeState state = RenderType.CompositeState.builder()
+                .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                .setTextureState(new TextureStateShard(tex, true, false))
+                .setTransparencyState(additive ? LIGHTNING_TRANSPARENCY : TRANSLUCENT_TRANSPARENCY)
+                .setWriteMaskState(COLOR_WRITE)
+                .setCullState(NO_CULL)
+                .setOverlayState(OVERLAY)
+                .createCompositeState(false);
+        rt = create("iron_spell_grimoire_smooth_" + (additive ? "add" : "blend"), DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 4096, false, true, state);
+        SMOOTH.put(key, rt);
+        return rt;
     }
 }
