@@ -91,7 +91,7 @@ public final class ManaBarHud {
         }
     }
 
-    private static float mana(Minecraft mc) {
+    static float mana(Minecraft mc) {
         try {
             if (getMana == null) getMana = ClientMagicData.class.getMethod("getPlayerMana");
             return ((Number) getMana.invoke(null)).floatValue();

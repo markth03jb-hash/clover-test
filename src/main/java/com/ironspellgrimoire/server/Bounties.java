@@ -174,6 +174,7 @@ public final class Bounties {
             Entity m = sl.getEntity(b.getUUID("BossUUID"));
             if (m != null) { FxSend.ring(sl, 18, m.position().add(0, 1, 0), 2f, 0.3f, 0.1f, 12); m.discard(); }
         }
+        Boards.log(p, Boards.BOUNTY, Boards.GAVE_UP, b.getInt("Boss") == SECRET ? "Licht, the Unbound" : NAMES[Math.min(NAMES.length - 1, b.getInt("Boss"))], 0);
         removePoster(p, b.getInt("Id"));
         p.getPersistentData().remove(TAG);
         p.getPersistentData().putLong(NEXT, sl.getGameTime() + DAY / 4);
@@ -273,6 +274,13 @@ public final class Bounties {
             if (ar != null && ar.getModifier(ARMOR) == null) ar.addPermanentModifier(new AttributeModifier(ARMOR, "Bounty: armoured", 10, AttributeModifier.Operation.ADDITION));
         }
         if (boss == SECRET) unbind(m);
+        // its modifiers written on its boss bar, so they can be seen in the fight
+        Component bar = Component.literal(boss == SECRET ? "Licht, the Unbound" : NAMES[boss]).append(Component.literal("  [").withStyle(ChatFormatting.GRAY))
+                .append(modsText(mods)).append(Component.literal("]").withStyle(ChatFormatting.GRAY));
+        if (m instanceof com.ironspellgrimoire.entity.AddonBoss ab) ab.setBarName(bar);
+        else if (m instanceof com.ironspellgrimoire.entity.Zenon zn) zn.setBarName(bar);
+        else if (m instanceof com.ironspellgrimoire.entity.BeastOfDespair bd) bd.setBarName(bar);
+        else if (m instanceof com.ironspellgrimoire.entity.Rhya rh) rh.setBarName(bar);
         sl.addFreshEntity(m);
         if ((mods & WOUNDED) != 0) m.setHealth(m.getMaxHealth() * 0.7f);
         if ((mods & ESCORTED) != 0) {
@@ -351,6 +359,7 @@ public final class Bounties {
             giveItem(p, new ItemStack(relics.get(ThreadLocalRandom.current().nextInt(relics.size())).get()));
         }
         GrimoireMastery.bountyXp(p, 600 + hard * 300);
+        Boards.log(p, Boards.BOUNTY, Boards.DONE, boss == SECRET ? "Licht, the Unbound" : NAMES[boss], stars);
         p.getPersistentData().remove(TAG);
         p.getPersistentData().putLong(NEXT, p.level().getGameTime() + DAY);
         ServerLevel sl = p.serverLevel();
@@ -366,6 +375,7 @@ public final class Bounties {
 
     private static void expire(ServerPlayer p, CompoundTag b) {
         ServerLevel sl = p.serverLevel();
+        Boards.log(p, Boards.BOUNTY, Boards.EXPIRED, b.getInt("Boss") == SECRET ? "Licht, the Unbound" : NAMES[Math.min(NAMES.length - 1, b.getInt("Boss"))], 0);
         if (b.hasUUID("BossUUID")) {   // he moves on
             Entity m = sl.getEntity(b.getUUID("BossUUID"));
             if (m != null) {

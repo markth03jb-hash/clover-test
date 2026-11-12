@@ -35,12 +35,17 @@ public class BoardScreen extends Screen {
     private int noteX(int i) { return x0() + 10 + i * (NW + 9); }
     private int noteY() { return y0() + 32; }
     private static boolean in(double mx, double my, int x, int y, int w, int h) { return mx >= x && mx < x + w && my >= y && my < y + h; }
+    private boolean history;
+    private int[] histBtn() { return new int[]{x0() + 10, y0() + H - 19, 70, 14}; }
     private int[] reroll() { return new int[]{x0() + W - 112, y0() + H - 19, 102, 14}; }
     private int[] button(int i) { return data.active.isEmpty() ? new int[]{noteX(i) + 18, noteY() + NH - 22, NW - 36, 15} : new int[]{x0() + W / 2 - 45, noteY() + NH - 22, 90, 15}; }
 
     @Override
     public boolean mouseClicked(double mx, double my, int btn) {
         Minecraft mc = Minecraft.getInstance();
+        int[] hb = histBtn();
+        if (in(mx, my, hb[0], hb[1], hb[2], hb[3])) { history = !history; mc.player.playSound(SoundEvents.BOOK_PAGE_TURN, 0.8F, 1.2F); return true; }
+        if (history) return super.mouseClicked(mx, my, btn);
         if (!data.active.isEmpty()) {
             int[] b = button(0);
             if (in(mx, my, b[0], b[1], b[2], b[3])) { send(-1); return true; }
@@ -61,7 +66,8 @@ public class BoardScreen extends Screen {
 
     private void send(int index) {
         AddonNetwork.CHANNEL.sendToServer(new BoardPackets.Pick(data.kind, index));
-        Minecraft.getInstance().player.playSound(SoundEvents.BOOK_PAGE_TURN, 1F, index < 0 ? 0.6F : 1.0F);
+        net.minecraft.sounds.SoundEvent note = com.ironspellgrimoire.registry.AddonSounds.get("board_note");
+        Minecraft.getInstance().player.playSound(note != null ? note : SoundEvents.BOOK_PAGE_TURN, 1F, index < 0 ? 0.7F : 1.1F);
         onClose();
     }
 
@@ -82,7 +88,10 @@ public class BoardScreen extends Screen {
         String st = "★ " + data.stars + " merit stars";
         g.drawString(font, st, x0 + W - 10 - font.width(st), y0 + 10, 0xFFE8D090, true);
 
-        if (!data.active.isEmpty()) {   // the one under way
+        buttonDraw(g, histBtn(), history ? "Notes" : "Record", mx, my, true, 0xFF6A4A20);
+        if (history) {
+            record(g, x0, y0);
+        } else if (!data.active.isEmpty()) {   // the one under way
             note(g, x0 + (W - NW) / 2 - 0, -1, null, mx, my);
         } else {
             for (int i = 0; i < data.notes.size(); i++) note(g, noteX(i), i, data.notes.get(i), mx, my);
@@ -134,6 +143,38 @@ public class BoardScreen extends Screen {
         text(g, Component.literal("Pays: " + n.pay), tx, ty, w, ink);
         buttonDraw(g, button(i), "Take", mx, my, data.wait.isEmpty(), secret ? 0xFF505050 : 0xFF2A6A20);
         g.pose().popPose();
+    }
+
+    /** The board's record: the totals, and the last eight hunts or quests with how each one ended. */
+    private void record(GuiGraphics g, int x0, int y0) {
+        int x = x0 + 40, y = noteY(), w = W - 80, h = NH;
+        g.fill(x + 3, y + 3, x + w + 3, y + h + 3, 0x60000000);
+        g.fill(x, y, x + w, y + h, PAPER);
+        g.fill(x + w / 2 - 3, y - 2, x + w / 2 + 3, y + 4, 0xFFB02020);
+        int tx = x + 10, ty = y + 10;
+        g.drawString(font, Component.literal(data.kind == 0 ? "YOUR HUNTS" : "YOUR QUESTS").withStyle(ChatFormatting.BOLD), tx, ty, RED, false);
+        ty += 13;
+        int total = data.done + data.gave + data.lost;
+        String sum = data.done + " done   " + data.gave + " given up   " + data.lost + " ran out";
+        g.drawString(font, sum, tx, ty, INK, false); ty += 10;
+        String rate = total == 0 ? "Nothing taken from this board yet." : "Success " + Math.round(100f * data.done / total) + "%   ★ " + data.earned + " earned here";
+        g.drawString(font, rate, tx, ty, INK_SOFT, false); ty += 12;
+        g.fill(tx, ty, x + w - 10, ty + 1, 0x40000000); ty += 5;
+        for (String s : data.log) {
+            String[] f = s.split("\\|", 4);
+            if (f.length < 4) continue;
+            int o = Integer.parseInt(f[0]);
+            String mark = o == 0 ? "✔" : o == 1 ? "✖" : "⌛";
+            int col = o == 0 ? 0xFF2A6A20 : o == 1 ? 0xFF6A5638 : RED;
+            g.drawString(font, mark, tx, ty, col, false);
+            String title = f[3];
+            int maxW = w - 110;
+            if (font.width(title) > maxW) title = font.plainSubstrByWidth(title, maxW - 6) + "..";
+            g.drawString(font, title, tx + 12, ty, INK, false);
+            String right = "Day " + f[1] + (o == 0 ? "  +" + f[2] + "★" : o == 1 ? "  gave up" : "  ran out");
+            g.drawString(font, right, x + w - 10 - font.width(right), ty, INK_SOFT, false);
+            ty += 12;
+        }
     }
 
     private int text(GuiGraphics g, Component c, int x, int y, int w, int col) {

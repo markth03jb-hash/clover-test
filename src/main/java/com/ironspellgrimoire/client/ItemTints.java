@@ -15,5 +15,7 @@ public final class ItemTints {
     @SubscribeEvent
     public static void items(RegisterColorHandlersEvent.Item e) {
         e.register((stack, tint) -> tint == 1 ? 0xFF000000 | RiftInkItem.COLORS[RiftInkItem.rule(stack)] : -1, AddonItemRegistry.RIFT_INK.get());
+        // a broom's bands, in its rider's grimoire colours (client/BroomRenderer writes "Tint"); gold in the hand
+        e.register((stack, tint) -> tint == 0 && stack.hasTag() && stack.getTag().contains("Tint") ? 0xFF000000 | stack.getTag().getInt("Tint") : -1, AddonItemRegistry.MAGIC_BROOM.get());
     }
 }

@@ -141,6 +141,10 @@ public final class ElfRaids {
             if (!en.getKey().startsWith(sl.dimension().location() + "@")) continue;
             Raid r = en.getValue();
             List<ServerPlayer> here = near(sl, r);
+            if (sl.getGameTime() % 40 < 10) {   // the villagers hear the horn and hide indoors (as from their bell) till it's over
+                for (net.minecraft.world.entity.npc.Villager v : sl.getEntitiesOfClass(net.minecraft.world.entity.npc.Villager.class, new net.minecraft.world.phys.AABB(r.centre, r.centre).inflate(64)))
+                    v.getBrain().setMemory(net.minecraft.world.entity.ai.memory.MemoryModuleType.HEARD_BELL_TIME, sl.getGameTime());
+            }
             for (ServerPlayer o : here) if (!r.bar.getPlayers().contains(o)) r.bar.addPlayer(o);
             for (ServerPlayer o : new ArrayList<>(r.bar.getPlayers())) if (!here.contains(o)) r.bar.removePlayer(o);
             long time = sl.getDayTime() % 24000;
@@ -191,6 +195,11 @@ public final class ElfRaids {
             }
         }
         r.waveSize = r.mobs.size();
+        for (ServerPlayer o : near(sl, r)) {   // the wave, across the screen
+            FxPacket pk = new FxPacket();
+            pk.shape = SHAPE; pk.life = 45; pk.sweep = 2; pk.h = r.wave;
+            AddonNetwork.send(PacketDistributor.PLAYER.with(() -> o), pk);
+        }
         r.bar.setName(Component.literal("Elf Raid" + (r.level > 0 ? " " + roman(r.level + 1) : "") + " - wave " + r.wave + "/" + WAVES).withStyle(ChatFormatting.RED));
         r.bar.setProgress(1f);
         sl.playSound(null, BlockPos.containing(r.centre), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 48f, 0.9f + r.wave * 0.05f);
@@ -216,6 +225,7 @@ public final class ElfRaids {
         sl.playSound(null, BlockPos.containing(r.centre), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 2f, 0.9f);
         FxSend.ring(sl, Fx.GOLD | FxPacket.KEEP_SHAPE, r.centre.add(0, 0.2, 0), 1f, 30f, 0.3f, 30);
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        spoils(sl, r, here.size());
         for (ServerPlayer o : here) {
             int won = o.getPersistentData().getInt("isg_raids_won") + 1;
             o.getPersistentData().putInt("isg_raids_won", won);
@@ -243,6 +253,39 @@ public final class ElfRaids {
                     .append(Component.literal("+" + stars + " merit stars, " + String.join(", ", got) + ".").withStyle(ChatFormatting.YELLOW)));
             o.sendSystemMessage(Component.literal("  Raids broken: " + won + (won < 6 ? " - the next will come back harder, and pay more." : "")).withStyle(ChatFormatting.GRAY));
         }
+    }
+
+    /** The village's thanks: a chest of spoils left at its meeting place for everyone who stood with it. */
+    private static void spoils(ServerLevel sl, Raid r, int defenders) {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        BlockPos at = null;
+        BlockPos c = BlockPos.containing(r.centre);
+        search:
+        for (int d = 1; d <= 8; d++) for (int k = 0; k < 12; k++) {
+            double a = k * Math.PI / 6;
+            int x = c.getX() + (int) Math.round(Math.cos(a) * d), z = c.getZ() + (int) Math.round(Math.sin(a) * d);
+            if (!sl.hasChunk(x >> 4, z >> 4)) continue;
+            BlockPos p = new BlockPos(x, sl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z), z);
+            if (sl.getBlockState(p).isAir() && sl.getBlockState(p.below()).isFaceSturdy(sl, p.below(), net.minecraft.core.Direction.UP)
+                    && sl.getBlockState(p.below()).getFluidState().isEmpty()) { at = p; break search; }
+        }
+        if (at == null) return;
+        sl.setBlock(at, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(), 3);
+        if (!(sl.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest)) return;
+        chest.setCustomName(Component.literal("Raid Spoils").withStyle(ChatFormatting.GOLD));
+        List<ItemStack> loot = new ArrayList<>();
+        loot.add(new ItemStack(Items.EMERALD, Math.min(64, 12 + defenders * 8 + r.level * 4)));
+        loot.add(new ItemStack(Items.GOLDEN_CARROT, 8 + rnd.nextInt(8)));
+        loot.add(new ItemStack(Items.BREAD, 12));
+        loot.add(new ItemStack(Items.EXPERIENCE_BOTTLE, 4 + r.level * 2));
+        loot.add(new ItemStack(AddonItemRegistry.MANA_CORE.get(), 1 + r.level / 2));
+        ItemStack ink = new ItemStack(AddonItemRegistry.RIFT_INK.get()); ink.getOrCreateTag().putInt("Rule", 4 + rnd.nextInt(6)); loot.add(ink);
+        if (r.level >= 2) loot.add(new ItemStack(AddonItemRegistry.ELVEN_BLADE_SHARD.get(), 2));
+        for (int i = 0; i < loot.size(); i++) chest.setItem(i * 3 % 27, loot.get(i));
+        Vec3 v = Vec3.atCenterOf(at);
+        FxSend.ring(sl, Fx.GOLD | FxPacket.KEEP_SHAPE, v.add(0, -0.4, 0), 0.3f, 2.5f, 0.08f, 20);
+        FxSend.beam(sl, Fx.GOLD | FxPacket.KEEP_SHAPE, v, v.add(0, 8, 0), 0.3f, 30);
+        for (ServerPlayer o : near(sl, r)) o.sendSystemMessage(Component.literal("  The village leaves its thanks in a chest of Raid Spoils by the meeting place.").withStyle(ChatFormatting.GOLD));
     }
 
     private static String roman(int n) { return new String[]{"", "I", "II", "III", "IV", "V", "VI"}[Math.max(0, Math.min(6, n))]; }

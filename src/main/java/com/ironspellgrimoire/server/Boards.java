@@ -87,12 +87,42 @@ public final class Boards {
         return l;
     }
 
+    // ------------------------------------------------------------------ the board's record of your hunts and quests
+    public static final int DONE = 0, GAVE_UP = 1, EXPIRED = 2;
+    private static final String[] LOG = {"isg_bounty_log", "isg_quest_log"};
+
+    /** One hunt or quest ended: it goes on the board's record (the last eight), and into the totals. */
+    static void log(ServerPlayer p, int kind, int outcome, String title, int stars) {
+        CompoundTag box = p.getPersistentData().getCompound(LOG[kind]);
+        ListTag l = box.getList("List", Tag.TAG_COMPOUND);
+        CompoundTag e = new CompoundTag();
+        e.putString("T", title); e.putInt("O", outcome); e.putInt("S", stars);
+        e.putLong("Day", p.serverLevel().getDayTime() / 24000L + 1);
+        l.add(0, e);
+        while (l.size() > 8) l.remove(l.size() - 1);
+        box.put("List", l);
+        String k = outcome == DONE ? "Done" : outcome == GAVE_UP ? "Gave" : "Lost";
+        box.putInt(k, box.getInt(k) + 1);
+        box.putInt("Stars", box.getInt("Stars") + stars);
+        p.getPersistentData().put(LOG[kind], box);
+    }
+
+    private static void fillLog(ServerPlayer p, int kind, BoardPackets.Open o) {
+        CompoundTag box = p.getPersistentData().getCompound(LOG[kind]);
+        o.done = box.getInt("Done"); o.gave = box.getInt("Gave"); o.lost = box.getInt("Lost"); o.earned = box.getInt("Stars");
+        for (Tag t : box.getList("List", Tag.TAG_COMPOUND)) {
+            CompoundTag e = (CompoundTag) t;
+            o.log.add(e.getInt("O") + "|" + e.getLong("Day") + "|" + e.getInt("S") + "|" + e.getString("T"));
+        }
+    }
+
     /** The board is read: its menu opens. */
     public static void open(ServerPlayer p, int kind, BlockPos pos) {
         long now = p.serverLevel().getGameTime();
         BoardPackets.Open o = new BoardPackets.Open();
         o.kind = kind;
         o.stars = Bounties.stars(p);
+        fillLog(p, kind, o);
         if (kind == BOUNTY ? Bounties.hunting(p) : Quests.questing(p)) {
             o.active = kind == BOUNTY ? "Hunting " + Bounties.huntingName(p) : Quests.questTitle(p);
         } else {
@@ -129,7 +159,8 @@ public final class Boards {
             }
         }
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), o);
-        p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 0.8f, 1.0f);
+        net.minecraft.sounds.SoundEvent note = com.ironspellgrimoire.registry.AddonSounds.get("board_note");   // paper and a pin (tools/sfx_synth2.py)
+        p.serverLevel().playSound(null, p.blockPosition(), note != null ? note : SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 0.8f, 1.0f);
     }
 
     public static final int REROLL_COST = 2;

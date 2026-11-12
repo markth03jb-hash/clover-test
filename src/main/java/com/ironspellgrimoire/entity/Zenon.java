@@ -39,6 +39,8 @@ public class Zenon extends Monster {
     private static final EntityDataAccessor<Integer> TRANSFORM = SynchedEntityData.defineId(Zenon.class, EntityDataSerializers.INT);
 
     private final ServerBossEvent bar = new ServerBossEvent(Component.literal("Zenon"), BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.NOTCHED_10);
+    /** Renames the boss bar (a bounty's modifiers are written on it). */
+    public void setBarName(Component name) { bar.setName(name); }
     private long windowStart = -100;
     private float windowDmg = 0;
     /** The fight's own state, kept by ZenonAI. */

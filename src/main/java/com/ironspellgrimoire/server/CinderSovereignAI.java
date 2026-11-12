@@ -51,6 +51,10 @@ public final class CinderSovereignAI {
         if (b.tickCount % 10 == 0) {   // the ground smoulders round its feet
             BossFx.ring(sl, Fx.FIRE, b.position().add(0, 0.1, 0), 3.4f, 3.8f, 0.05f, 12);
         }
+        if (b.tickCount % 13 == 0 && b.onGround() && b.getDeltaMovement().horizontalDistanceSqr() > 0.0016) {   // its own heavy tread
+            net.minecraft.sounds.SoundEvent step = com.ironspellgrimoire.registry.AddonSounds.get("sovereign_step");
+            if (step != null) sl.playSound(null, b.getX(), b.getY(), b.getZ(), step, SoundSource.HOSTILE, 2.2f, 0.9f + b.getRandom().nextFloat() * 0.2f);
+        }
         if (t == null) { b.getNavigation().stop(); b.idleFor++; return; }
         b.idleFor = 0;
         Vec3 dir = dirTo(b, t);

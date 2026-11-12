@@ -226,13 +226,34 @@ public final class MemoryPages {
         }
         g.setup(ch, p.getUUID());
         g.moveTo(at.x, at.y, at.z, (float) Math.toDegrees(Math.atan2(-(p.getX() - at.x), p.getZ() - at.z)), 0);
+        // its arrival: pages whirl up out of the ground in a narrowing spiral, and the memory takes shape in the middle
+        g.setInvisible(true);
+        g.setTransforming(50);
         sl.addFreshEntity(g);
         int pal = MemoryGuardianAI.palette(ch);
-        for (int i = 0; i < 3; i++) FxSend.ring(sl, pal | FxPacket.KEEP_SHAPE, at.add(0, 0.1 + i * 0.9, 0), 0.4f, 3.5f - i, 0.08f, 24);
-        FxSend.beam(sl, pal | FxPacket.KEEP_SHAPE, at, at.add(0, 22, 0), 0.9f, 26);
+        final Vec3 c = at;
+        p.displayClientMessage(Component.literal("Pages whirl up out of the ground...").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), true);
         sl.playSound(null, at.x, at.y, at.z, SoundEvents.BOOK_PAGE_TURN, SoundSource.HOSTILE, 1.6f, 0.5f);
-        sl.playSound(null, at.x, at.y, at.z, SoundEvents.BELL_RESONATE, SoundSource.HOSTILE, 1.2f, 0.6f);
-        p.displayClientMessage(Component.literal("Pages whirl up out of the ground and take a shape...").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), true);
+        for (int s = 0; s < 40; s += 2) {
+            final int ss = s;
+            AstaFx.later(s, () -> {
+                double k = ss / 40.0;
+                for (int j = 0; j < 3; j++) {
+                    double a = ss * 0.45 + j * Math.PI * 2 / 3, r = 5.5 * (1 - k) + 0.6;
+                    Vec3 q = c.add(Math.cos(a) * r, 0.3 + k * 2.6 + j * 0.3, Math.sin(a) * r);
+                    FxSend.trail(sl, (j == 0 ? Fx.SILVER : pal) | FxPacket.KEEP_SHAPE, q, q.add(-Math.sin(a) * 0.5, 0.15, Math.cos(a) * 0.5), 0.18f, 8);
+                }
+                if (ss % 8 == 0) { FxSend.ring(sl, pal | FxPacket.KEEP_SHAPE, c.add(0, 0.1, 0), 5.5f * (float) (1 - k) + 0.5f, 5.5f * (float) (1 - k), 0.06f, 8); sl.playSound(null, c.x, c.y, c.z, SoundEvents.BOOK_PAGE_TURN, SoundSource.HOSTILE, 0.8f, 0.6f + (float) k); }
+            });
+        }
+        AstaFx.later(42, () -> {
+            if (!g.isAlive()) return;
+            g.setInvisible(false);
+            for (int i = 0; i < 3; i++) FxSend.ring(sl, pal | FxPacket.KEEP_SHAPE, c.add(0, 0.1 + i * 0.9, 0), 0.4f, 3.5f - i, 0.08f, 24);
+            FxSend.beam(sl, pal | FxPacket.KEEP_SHAPE, c, c.add(0, 22, 0), 0.9f, 26);
+            FxSend.impactFrame(sl, c.add(0, 1.2, 0), 3, FxSend.FRAME_GOLD, 30);
+            sl.playSound(null, c.x, c.y, c.z, SoundEvents.BELL_RESONATE, SoundSource.HOSTILE, 1.2f, 0.6f);
+        });
     }
 
     /** A guardian falls: its owner is rewarded (whoever struck the last blow). */
@@ -256,6 +277,26 @@ public final class MemoryPages {
                     .append(Component.literal("Ink and gold now turn round your grimoire, whichever you carry. The story is complete.").withStyle(ChatFormatting.GOLD)));
         } else p.sendSystemMessage(Component.literal("  Chapter " + ROMAN[ch + 1] + " begins: its pages are with the great foes again.").withStyle(ChatFormatting.GRAY));
         sync(p);
+    }
+
+    // ------------------------------------------------------------------ fallen to a guardian: a way back
+    @SubscribeEvent
+    public static void onPlayerDeath(LivingDeathEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || !p.getPersistentData().contains(SITE)) return;
+        CompoundTag site = p.getPersistentData().getCompound(SITE);
+        double dx = site.getInt("X") - p.getX(), dz = site.getInt("Z") - p.getZ();
+        if (dx * dx + dz * dz < 100 * 100) p.getPersistentData().putLong("isg_mem_retry", p.serverLevel().getGameTime());
+    }
+
+    @SubscribeEvent
+    public static void onRespawn(PlayerEvent.PlayerRespawnEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || e.isEndConquered()) return;
+        long at = p.getPersistentData().getLong("isg_mem_retry");
+        if (at == 0 || p.serverLevel().getGameTime() - at > 6000) return;
+        p.sendSystemMessage(Component.literal("The memory still waits. ").withStyle(ChatFormatting.GOLD)
+                .append(Component.literal("[Return to it]").withStyle(s -> s.withColor(ChatFormatting.YELLOW).withUnderlined(true)
+                        .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.RUN_COMMAND, "/memory return"))))
+                .append(Component.literal("  (within five minutes)").withStyle(ChatFormatting.GRAY)));
     }
 
     // ------------------------------------------------------------------ the client's copy, and /memory
@@ -291,7 +332,23 @@ public final class MemoryPages {
                 p.sendSystemMessage(Component.literal("  Bosses still holding a page of it: " + left).withStyle(ChatFormatting.GRAY));
             }
             return 1;
-        }).then(Commands.literal("give").requires(s -> s.hasPermission(2)).then(Commands.argument("chapter", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 3))
+        }).then(Commands.literal("return").executes(c -> {   // back to the guardian's place, once, within five minutes of falling there
+            ServerPlayer p = c.getSource().getPlayerOrException();
+            long at = p.getPersistentData().getLong("isg_mem_retry");
+            if (at == 0 || p.serverLevel().getGameTime() - at > 6000 || !p.getPersistentData().contains(SITE)) {
+                c.getSource().sendFailure(Component.literal("There's no memory to return to now."));
+                return 0;
+            }
+            p.getPersistentData().remove("isg_mem_retry");
+            CompoundTag site = p.getPersistentData().getCompound(SITE);
+            ServerLevel ow = p.server.getLevel(Level.OVERWORLD);
+            if (ow == null) return 0;
+            ow.getChunk(site.getInt("X") >> 4, site.getInt("Z") >> 4);
+            Vec3 to = ZenonAI.ground(ow, new Vec3(site.getInt("X") + 12.5, ow.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, site.getInt("X") + 12, site.getInt("Z")) + 2, site.getInt("Z") + 0.5));
+            p.teleportTo(ow, to.x, to.y, to.z, p.getYRot(), p.getXRot());
+            FxSend.ring(ow, Fx.GOLD | FxPacket.KEEP_SHAPE, to.add(0, 0.1, 0), 0.3f, 2.5f, 0.08f, 16);
+            return 1;
+        })).then(Commands.literal("give").requires(s -> s.hasPermission(2)).then(Commands.argument("chapter", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 3))
                 .executes(c -> {   // ops, for testing: the chapter's five boss pages
                     ServerPlayer p = c.getSource().getPlayerOrException();
                     int ch = com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "chapter") - 1;

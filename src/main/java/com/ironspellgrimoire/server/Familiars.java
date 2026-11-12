@@ -168,7 +168,8 @@ public final class Familiars {
         f.markCast();
         float dmg = (3f + stage * 2f) * (float) Math.max(1.0, p.getAttributeValue(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.SPELL_POWER.get()));   // grows with your spell power
         t.hurt(p.damageSources().indirectMagic(f, p), dmg);
-        sl.playSound(null, f.blockPosition(), SoundEvents.EVOKER_CAST_SPELL, SoundSource.PLAYERS, 0.5f, 1.8f);
+        net.minecraft.sounds.SoundEvent cast = com.ironspellgrimoire.registry.AddonSounds.get("familiar");   // its own chirp (tools/sfx_synth2.py)
+        sl.playSound(null, f.blockPosition(), cast != null ? cast : SoundEvents.EVOKER_CAST_SPELL, SoundSource.PLAYERS, 0.6f, 0.9f + (float) Math.random() * 0.25f);
         // each kind's own touch (from stage 2 on, Wind and Lightning and Dark and Time get theirs at once; others at 3)
         boolean extra = stage >= 3 || (stage >= 2 && (kind == 1 || kind == 3 || kind == 6 || kind == 7));
         if (!extra) return;

@@ -29,6 +29,8 @@ public final class QuestHud {
     private static long deadline, doneAt;
 
     public static boolean shown() { return type >= 0; }
+    /** Its full height (the day's special has a line more). */
+    public static int height() { return (flags & 16) != 0 && state != Quests.DONE ? 51 : 40; }
 
     public static void set(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
@@ -51,7 +53,15 @@ public final class QuestHud {
         GuiGraphics g = e.getGuiGraphics();
         Font f = mc.font;
         boolean daily = (flags & 16) != 0;
-        int w = 168, x = g.guiWidth() - w - 4, y = BountyHud.shown() ? 70 : 4, h = daily && state != Quests.DONE ? 51 : 40;
+        if (TrackerMode.hidden()) return;
+        if (TrackerMode.compact()) {
+            String title = Quests.TITLES[Math.max(0, Math.min(Quests.TITLES.length - 1, type))];
+            double dx = tx - mc.player.getX(), dz = tz - mc.player.getZ();
+            String t = state == Quests.DONE ? title + " - done" : state == Quests.TRAVEL ? title + "  " + (int) Math.sqrt(dx * dx + dz * dz) + " m" : title + "  " + have + "/" + need;
+            TrackerMode.line(g, f, TrackerMode.questY(), state == Quests.DONE ? 0xFF60FF80 : daily ? 0xFFFFC840 : 0xFF50C8FF, daily ? "DAILY" : "QUEST", t, dx, dz, state == Quests.TRAVEL, now, mc.player.getViewYRot(e.getPartialTick()));
+            return;
+        }
+        int w = 168, x = g.guiWidth() - w - 4, y = TrackerMode.questY(), h = height();
         int head = state == Quests.DONE ? 0xFF60FF80 : daily ? 0xFFFFC840 : 0xFF50C8FF;
         g.fill(x, y, x + w, y + h, 0xA0081018);
         g.renderOutline(x, y, w, h, daily ? 0xC0E8B84A : 0xC060A8D8);

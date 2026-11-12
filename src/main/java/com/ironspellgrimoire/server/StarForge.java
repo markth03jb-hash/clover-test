@@ -124,6 +124,21 @@ public final class StarForge {
                 sl.playSound(null, p.blockPosition(), SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.PLAYERS, 1f, 0.8f);
                 done(p, Component.translatable("spell.iron_spell_grimoire." + id).getString() + " mutated: " + MUT_NAMES[m] + ".");
             }
+            case 5 -> {   // remove a spell's mutation, for a Mana Core
+                String id = arg;
+                if (t.getCompound("StarMut").getInt(id) == 0) return;
+                ItemStack core = null;
+                for (ItemStack s : p.getInventory().items) if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_CORE.get())) { core = s; break; }
+                if (core == null) { p.displayClientMessage(Component.literal("You need a Mana Core - bosses drop them.").withStyle(ChatFormatting.RED), true); return; }
+                if (!p.isCreative()) core.shrink(1);
+                CompoundTag mut = t.getCompound("StarMut");
+                mut.remove(id);
+                t.put("StarMut", mut);
+                ServerLevel sl = p.serverLevel();
+                FxSend.ring(sl, Fx.SILVER, p.position().add(0, 1, 0), 0.2f, 1.6f, 0.08f, 14);
+                sl.playSound(null, p.blockPosition(), SoundEvents.GRINDSTONE_USE, SoundSource.PLAYERS, 1f, 1.1f);
+                done(p, Component.translatable("spell.iron_spell_grimoire." + id).getString() + " is no longer mutated.");
+            }
             default -> { return; }
         }
         open(p);   // refresh the forge

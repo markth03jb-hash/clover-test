@@ -41,6 +41,8 @@ public class Rhya extends Monster {
     private static final EntityDataAccessor<net.minecraft.world.item.ItemStack> BOOK = SynchedEntityData.defineId(Rhya.class, EntityDataSerializers.ITEM_STACK);
 
     private final ServerBossEvent bar = new ServerBossEvent(Component.literal("Rhya the Disloyal"), BossEvent.BossBarColor.YELLOW, BossEvent.BossBarOverlay.NOTCHED_10);
+    /** Renames the boss bar (a bounty's modifiers are written on it). */
+    public void setBarName(Component name) { bar.setName(name); }
     private long windowStart = -100;
     private float windowDmg = 0;
     public final RhyaAI.State ai = new RhyaAI.State();

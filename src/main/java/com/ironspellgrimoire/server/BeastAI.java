@@ -72,6 +72,7 @@ public final class BeastAI {
             if (b.pose() != P_BROKEN) b.setPose(P_BROKEN);
             return;
         }
+        if (b.pose() == P_BROKEN) b.setPose(P_IDLE);   // back on his feet
         Player t = target(b);
         if (t == null) {
             b.getNavigation().stop();
