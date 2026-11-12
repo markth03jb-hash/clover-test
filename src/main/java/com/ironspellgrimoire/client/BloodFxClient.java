@@ -111,7 +111,6 @@ public final class BloodFxClient {
             mist(p.c.add(0, 0.3, 0), new Vec3(0, 0.03, 0), 0.5F, now, 18);
         }
         if (LIVE.size() > 400) LIVE.remove(0);
-        if (k == 0) System.out.println("ISGDBG stream spawn " + p.c + " " + p.u + " v=" + p.v + " life=" + p.life + " speed=" + p.speed + " r=" + p.r);
         LIVE.add(new L(p, now));
     }
 
@@ -387,7 +386,6 @@ public final class BloodFxClient {
         lightAt(mc, a.add(b).scale(0.5));
         double fly = Math.max(1, p.speed), life = p.life;
         double head = Mth.clamp(age / fly, 0, 1), tail = Mth.clamp((age - (life - fly)) / fly, 0, 1);
-        if (!l.done && l.killAt < -0.5 && age > 5 && age < 12 && l.p.a1 == 0) System.out.println("ISGDBG stream draw age=" + age + " head=" + head + " tail=" + tail + " a=" + a + " b=" + b);
         if (head - tail < 0.01) return;
         Vec3 side = b.subtract(a).cross(UP);
         side = side.lengthSqr() < 1e-6 ? new Vec3(1, 0, 0) : side.normalize();
@@ -401,7 +399,6 @@ public final class BloodFxClient {
             r[i] = p.r * (0.55 + 0.45 * Math.sin(u * Math.PI)) * (0.85 + 0.15 * Math.sin(t * 14 - now * 0.9)) * (i == 0 && tail > 0 ? 0.2 : 1);
         }
         r[k] = p.r * 1.35;   // a swelling head
-        if (age > 5 && age < 12 && l.p.a1 == 0) { l.p.a1 = 1; System.out.println("ISGDBG c0=" + c[0] + " ck=" + c[k] + " r0=" + r[0] + " r5=" + r[5] + " cam=" + cam); }
         tube(vc, m, n, cam, c, r, 6, 0.96F, 1F);
         glowAlong(m, cam, c, p.r * 2.6, 0.22F * (0.75F + 0.25F * beat(now)));
         drip(vc, m, n, cam, c[k], c[k].subtract(c[k - 1]), (float) (p.r * 1.3));
@@ -821,7 +818,7 @@ public final class BloodFxClient {
             r[i] = 0.075 * (1 - drain * 0.8) * (0.8 + 0.25 * Math.sin(t * len * 3 - now * 0.9)) * (i == k ? 0.4 : 1);
         }
         tube(vc, m, n, cam, c, r, 5, 0.97F, (float) (1 - drain * 0.4));
-        glowAlong(m, cam, c, 0.35, (float) ((0.22 + 0.3 * hb) * (1 - drain)));
+        glowAlong(m, cam, c, 0.15, (float) ((0.22 + 0.3 * hb) * (1 - drain)));
         for (int b = 0; b < 7; b++) {   // branches split off it as the head passes, and grow out across the ground
             double tb = (b + 0.6) / 7.6;
             if (tb > head) break;
@@ -885,7 +882,7 @@ public final class BloodFxClient {
                 rad[i] = (ring == 0 ? 0.08 : 0.055) * (1 - drain * 0.85) * (i == k && draw < 1 ? 0.6 : 1);
             }
             tube(vc, m, n, cam, pts, rad, 5, 0.97F, 1F);
-            glowAlong(m, cam, pts, ring == 0 ? 0.5 : 0.35, (float) ((0.18 + 0.32 * hb) * (1 - drain)));
+            glowAlong(m, cam, pts, ring == 0 ? 0.16 : 0.12, (float) ((0.2 + 0.3 * hb) * (1 - drain)));
         }
         int spokes = 8;   // channels running in to the middle, the blood flowing along them toward the centre
         for (int i = 0; i < spokes; i++) {
@@ -909,7 +906,7 @@ public final class BloodFxClient {
             double pr = R * 0.18 * (0.9 + 0.1 * hb) * Mth.clamp((draw - 0.5) * 2, 0, 1) * (1 + drain);
             Pool fake = new Pool(p.c, (float) pr, -1000, 1e9, p.id * 31);
             drawPool(vc, m, n, cam, fake, 1000);
-            glowAlong(m, cam, new Vec3[]{c.add(-pr, 0.02, 0), c.add(pr, 0.02, 0)}, pr * 1.6, (0.15F + 0.35F * hb) * (float) (1 - drain));
+            
         }
     }
 
