@@ -154,8 +154,9 @@ public final class GameTests {
         for (Entity e : sl().getEntities((Entity) null, new AABB(home, home).inflate(80), e -> !(e instanceof Player) && e != dummy)) e.discard();
     }
 
+    private static ItemStack testBook = ItemStack.EMPTY;
     private static void cast(AbstractSpell s) throws Exception {
-        ItemStack book = UiShotsServer.book(p);
+        ItemStack book = testBook.isEmpty() ? UiShotsServer.book(p) : testBook;
         Method m = null;
         for (Method x : AbstractSpell.class.getMethods()) if (x.getName().equals("attemptInitiateCast")) { m = x; break; }
         if (m == null) throw new IllegalStateException("Iron's attemptInitiateCast not found");
@@ -200,8 +201,22 @@ public final class GameTests {
         final AbstractSpell spell;
         BlockState[] before; Set<MobEffect> pe, de; int fx0; float mana0, hp0; String castErr;
         SpellTest(AbstractSpell s) { super("spell " + s.getSpellId()); spell = s; }
+        boolean skip;
         @Override void start() {
             cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            // equip the grimoire this spell belongs to, fully mastered (else its lock or another grimoire stops it)
+            String path = spell.getSpellResource().getPath();
+            GrimoireMastery.Book owner = null;
+            for (GrimoireMastery.Book b : GrimoireMastery.BOOKS) if (b.unlocks().containsKey(path)) { owner = b; break; }
+            if (owner == null) { skip = true; info(name, "not in any grimoire (a form's or a union's version) - cast through its form, not tested alone"); return; }
+            ItemStack book = new ItemStack(owner.item().get());
+            CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+            book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            book.getOrCreateTag().putBoolean("Ascended", true);
+            final ItemStack bk = book;
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, bk));
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            testBook = bk;
             before = snapshot(); pe = effects(p); de = effects(dummy);
             mana0 = MagicData.getPlayerMagicData(p).getMana(); hp0 = dummy == null ? 0 : dummy.getHealth();
             fx0 = AddonNetwork.fxSent;
@@ -211,6 +226,7 @@ public final class GameTests {
         }
         String castState = "";
         @Override boolean tick(int t) {
+            if (skip) return true;
             p.setHealth(p.getMaxHealth());
             if (t < 60) return false;
             cancelCast();
@@ -407,7 +423,7 @@ public final class GameTests {
         queue.add(saving());
         queue.add(boards());
         for (var e : AddonSpellRegistry.SPELLS.getEntries()) queue.add(new SpellTest(e.get()));
-        queue.add(new BossTest("Zenon", AddonEntities.ZENON));
+        queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));
         queue.add(new BossTest("Licht", AddonEntities.LICHT));

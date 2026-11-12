@@ -46,6 +46,6 @@ public class PhylacteryItem extends Item implements ICurioItem {
         tip.add(Component.literal("Then it mends for 5 minutes.").withStyle(ChatFormatting.GRAY));
         int c = charge(s);
         tip.add(c >= 100 ? Component.literal("Ready.").withStyle(ChatFormatting.GREEN) : Component.literal("Mending: " + c + "%").withStyle(ChatFormatting.DARK_RED));
-        tip.add(Component.literal("Taken from Zenon.").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+        tip.add(Component.literal("Taken from the Ossuarch.").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
     }
 }
