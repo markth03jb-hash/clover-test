@@ -142,7 +142,8 @@ public final class UiShots {
         steps.add(new Step("ice_wheel", () -> GrimoireWheel.forceOpen = true, 12, true));
         steps.add(new Step("ice_book", () -> {
             GrimoireWheel.forceOpen = false;
-            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.BLOOD_GRIMOIRE.get()));
+            var bk = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(mc.player);
+            GrimoireBookScreen b = new GrimoireBookScreen(bk == null ? new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.BLOOD_GRIMOIRE.get()) : bk);
             mc.setScreen(b);
             b.showPart("spells:0");
         }, 15, false));
