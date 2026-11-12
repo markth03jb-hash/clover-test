@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 OUT = '/tmp/claude-0/-home-claude/267cab68-cab5-5d3b-ab2c-ac307f4fb5bc/scratchpad'
 R = os.path.join(os.path.dirname(__file__), '..', 'src/main/resources/assets/iron_spell_grimoire')
-NAME = 'ossuarch_ascended'
+NAME = 'ossuarch_knight'
 rnd = random.Random(777)
 
 # ---------------------------------------------------------------------------------------------------------------- model
@@ -33,105 +33,103 @@ def box(b, x0, y0, z0, x1, y1, z1, mat, sx=1):
 
 
 # ---------------------------------------------------------------------------------------------------------------- model
-# The Marrow Colossus: in his last phase the Ossuarch pulls the bones of the arena's dead into one body. He walks on four
-# long stilt-legs of fused bone like a spider's; above a wide bone basin hung with maroon rags rises a bare spine, then a
-# great open ribcage with a lantern of cold grave-light burning inside it. Heavy shoulders of stacked bone carry two long
-# arms ending in rakes of finger-bones, and a smaller pair of arms folds out from under the ribs. His neck is a column of
-# vertebrae ending not in a face but in a crown of upright finger-bones round three glowing slits. Behind him turns a
-# wheel of bone shards.
+# The Bone Knight: in his last phase the Ossuarch armours himself in the bones of the arena's dead and rises as a
+# towering knight. A great helm of bone with one burning visor slit and a crest of bone spines; layered pauldrons; a
+# breastplate ridged like ribs with a grave-light gem at its heart; faulds of bone over a maroon tabard; heavy greaves
+# and sabatons; a long tattered maroon cape; and a greatsword whose blade is a column of vertebrae, with a crossguard of
+# two jawbones.
+import math as _m
 bone('root', None, (0, 0, 0))
-bone('hips', 'root', (0, 34, 0))
-box('hips', -9, 31, -6, 9, 37, 6, 'bone')                        # the basin
-box('hips', -11, 33, -7, 11, 35, 7, 'bonedark')
-for x in (-9, -5, -1, 3, 7):                                      # rags hanging off it
-    box('hips', x, 22 + rnd.randint(0, 5), -7.6, x + 3, 33, -6.8, 'cloth')
-    box('hips', x, 21 + rnd.randint(0, 6), 6.8, x + 3, 33, 7.6, 'cloth')
-LEGS = [(1, -1), (1, 1), (-1, -1), (-1, 1)]                      # (side, front/back)
-for i, (sx, sz) in enumerate(LEGS):
-    n = 'leg%d' % i
-    bone(n, 'hips', (8 * sx, 33, 4 * sz), (-22 * sz, 0, 70 * sx))   # the upper leg reaches out sideways
-    box(n, 8 * sx - 1.6, 14, 4 * sz - 1.6, 8 * sx + 1.6, 33, 4 * sz + 1.6, 'bone')
-    box(n, 8 * sx - 2.2, 22, 4 * sz - 2.2, 8 * sx + 2.2, 25, 4 * sz + 2.2, 'bonedark')
-    k = 'knee%d' % i
-    bone(k, n, (8 * sx, 14.5, 4 * sz), (16 * sz, 0, -86 * sx))      # the lower leg comes down to the ground
-    box(k, 8 * sx - 2.2, 12, 4 * sz - 2.2, 8 * sx + 2.2, 16.5, 4 * sz + 2.2, 'bonedark')
-    box(k, 8 * sx - 1.3, -11, 4 * sz - 1.3, 8 * sx + 1.3, 14.5, 4 * sz + 1.3, 'bone')
-    box(k, 8 * sx - 0.7, -14, 4 * sz - 0.7, 8 * sx + 0.7, -11, 4 * sz + 0.7, 'bonetip')
-bone('body', 'hips', (0, 37, 0))
-for k in range(4):                                               # the bare spine at the waist
-    y = 37 + k * 3
-    box('body', -2, y, 1, 2, y + 2.4, 5, 'bone')
-    box('body', -3.5, y + 0.6, 2, 3.5, y + 1.6, 4, 'bonedark')
-box('body', -1.2, 37, -0.5, 1.2, 49, 1.2, 'bonedark')
-bone('heart', 'body', (0, 57, 0))
-box('heart', -3, 53, -3, 3, 61, 3, 'glow')                        # the grave-light in the ribs
-box('heart', -1.5, 51, -1.5, 1.5, 63, 1.5, 'glow2')
-for k, y in enumerate((49, 52.5, 56, 59.5, 63)):                  # the open ribcage
-    w = 9 + min(k, 3) * 1.6
-    box('body', -w, y, -6, -w + 1.4, y + 1.6, 6, 'bone'); box('body', w - 1.4, y, -6, w, y + 1.6, 6, 'bone')   # the sides
-    box('body', -w, y, -7, -2, y + 1.6, -5.6, 'bone'); box('body', 2, y, -7, w, y + 1.6, -5.6, 'bone')          # round the front
-    box('body', -w, y, 5.6, w, y + 1.6, 7, 'bone')                                                               # and the back
-box('body', -1.5, 48, -7.6, 1.5, 66, -6, 'bonedark')              # the sternum
-box('body', -3, 48, 3, 3, 68, 7, 'bone')                          # the thick spine behind
-box('body', -13, 65, -7, 13, 70, 7, 'bone')                       # the collar
-def shoulders(s, sx):
-    box('body', 11, 64, -7, 20, 73, 7, 'bone', sx)               # stacked bone over the shoulder
-    box('body', 12, 73, -5, 18, 76, 5, 'bonedark', sx)
-    box('body', 14, 76, -2, 16, 82, 0, 'bonetip', sx)
-    box('body', 16, 74, 2, 18, 79, 4, 'bonetip', sx)
-sym(shoulders)
+bone('hips', 'root', (0, 44, 0))
+box('hips', -9, 40, -5.5, 9, 48, 5.5, 'leather')
+for i, x in enumerate((-9, -4.5, 0, 4.5)):                         # faulds: overlapping bone plates round the waist
+    box('hips', x, 36, -6.5, x + 4.6, 44, -5.3, 'bone' if i % 2 == 0 else 'bonedark')
+    box('hips', x, 36, 5.3, x + 4.6, 44, 6.5, 'bonedark' if i % 2 == 0 else 'bone')
+box('hips', -3.5, 20, -6.8, 3.5, 40, -6.0, 'cloth')               # the tabard, front and back
+box('hips', -3.5, 22, 6.0, 3.5, 40, 6.8, 'cloth')
+box('hips', -9.4, 43, -6, 9.4, 45, 6, 'bonedark')                  # the belt
+
+def legs(s, sx):
+    bone('thigh' + s, 'hips', (5 * sx, 41, 0), (0, 0, 2 * sx))
+    box('thigh' + s, 1.5, 24, -4.5, 9, 42, 4.5, 'leather', sx)
+    box('thigh' + s, 1.2, 27, -5.2, 9.3, 38, -4.2, 'bone', sx)     # the cuisse over the front
+    bone('shin' + s, 'thigh' + s, (5.2 * sx, 24.5, 0), (0, 0, -2 * sx))
+    box('shin' + s, 1.8, 4, -4.6, 8.6, 25, 4.2, 'bone', sx)        # greaves
+    box('shin' + s, 1.2, 22, -5.6, 9.2, 27, 2, 'bonedark', sx)    # the knee cop
+    box('shin' + s, 4.4, 23, -6.6, 6.0, 28, -5.4, 'bonetip', sx)
+    for y in (8, 13, 18): box('shin' + s, 1.6, y, -4.9, 8.8, y + 1, 4.4, 'bonedark', sx)
+    bone('foot' + s, 'shin' + s, (5.2 * sx, 4, 0))
+    box('foot' + s, 1.4, 0, -8, 9, 4, 4.4, 'bonedark', sx)          # sabatons
+    box('foot' + s, 2, 0, -10, 8.4, 2.6, -8, 'bone', sx)
+sym(legs)
+
+bone('body', 'hips', (0, 48, 0))
+box('body', -10, 48, -6, 10, 74, 6, 'leather')
+box('body', -11, 56, -7.2, 11, 74, -6, 'bone')                    # the breastplate
+for k, y in enumerate((57, 60.5, 64)):                            # ridged like ribs
+    box('body', -9 + k, y, -7.8, -1.2, y + 1.6, -7.0, 'bonedark'); box('body', 1.2, y, -7.8, 9 - k, y + 1.6, -7.0, 'bonedark')
+box('body', -1, 55, -7.9, 1, 73, -7.1, 'bonedark')
+bone('heart', 'body', (0, 68, -8))
+box('heart', -2, 66, -8.6, 2, 70, -7.6, 'glow')                   # the grave-light gem
+box('body', -9, 48, -6.8, 9, 56, -6, 'bonedark')                  # the plackart below it
+box('body', -11, 56, 6, 11, 74, 7.4, 'bone')                      # the backplate
+for y in (52, 58, 64, 70): box('body', -1.4, y, 7.4, 1.4, y + 3, 9.4, 'bonetip')   # spine knobs down the back
+box('body', -6, 74, -5, 6, 78, 5, 'bonedark')                      # the gorget
+def pauldrons(s, sx):
+    for k in range(3):                                             # three layers of bone over each shoulder
+        box('body', 9 + k * 0.6, 70 - k * 3.4, -7 + k * 0.4, 19 - k * 0.4, 75 - k * 3.4, 7 - k * 0.4, 'bone' if k % 2 == 0 else 'bonedark', sx)
+    box('body', 11, 75, -6, 18, 77, 6, 'bonedark', sx)
+    for i, z in enumerate((-4, 0, 4)):                             # spikes along the top
+        box('body', 14 - i * 0.5, 77, z - 0.8, 15.6 - i * 0.5, 81 + (i == 1) * 2, z + 0.8, 'bonetip', sx)
+sym(pauldrons)
+
+bone('cape', 'body', (0, 73, 8))                                   # the cape: two parts, so it can swing
+box('cape', -11, 52, 7.6, 11, 73, 8.6, 'cloth')
+bone('cape2', 'cape', (0, 52, 8.1))
+box('cape2', -11, 30, 7.6, 11, 52, 8.6, 'cloth')
+for x in (-10, -6, -2, 2, 6):                                      # its torn hem
+    box('cape2', x, 25 + rnd.randint(0, 4), 7.7, x + 3.4, 30, 8.5, 'cloth')
 
 def arms(s, sx):
-    bone('arm' + s, 'body', (16 * sx, 68, 0), (-8, 0, 18 * sx))
-    box('arm' + s, 14, 50, -2.6, 18, 69, 2.6, 'bone', sx)
-    box('arm' + s, 13.4, 58, -3.2, 18.6, 61, 3.2, 'bonedark', sx)
-    bone('forearm' + s, 'arm' + s, (16 * sx, 50, 0), (-28, 0, -10 * sx))
-    box('forearm' + s, 14.6, 30, -2, 17.4, 51, 2, 'bone', sx)
-    box('forearm' + s, 13.6, 32, -3, 18.4, 36, 3, 'bonedark', sx)
-    bone('hand' + s, 'forearm' + s, (16 * sx, 30, 0), (10, 0, 0))
-    box('hand' + s, 13.5, 26, -4, 18.5, 31, 4, 'bonedark', sx)
-    for i, z in enumerate((-3.4, -1.2, 1.2, 3.4)):                # a rake of long finger-bones
-        f = 'finger%d%s' % (i, s)
-        bone(f, 'hand' + s, (16 * sx, 26.5, z), (12 - i * 3, 0, (4 - i * 2) * sx))
-        box(f, 15.3, 14 - abs(i - 1.5), z - 0.7, 16.7, 27, z + 0.7, 'bone', sx)
-        box(f, 15.6, 9 - abs(i - 1.5), z - 0.4, 16.4, 14 - abs(i - 1.5), z + 0.4, 'bonetip', sx)
-    bone('small' + s, 'body', (9 * sx, 52, -3), (40, 0, 30 * sx))   # the lesser arms from under the ribs
-    box('small' + s, 8.2, 40, -4, 9.8, 52, -2, 'bonedark', sx)
-    for z in (-3.6, -2.4):
-        box('small' + s, 8.6, 35, z - 0.35, 9.4, 40, z + 0.35, 'bonetip', sx)
+    bone('arm' + s, 'body', (14 * sx, 70, 0), (0, 0, 8 * sx))
+    box('arm' + s, 10.5, 54, -3.8, 17.5, 70, 3.8, 'leather', sx)
+    box('arm' + s, 10, 56, -4.4, 18, 62, 4.4, 'bone', sx)          # the rerebrace
+    bone('forearm' + s, 'arm' + s, (14 * sx, 54, 0), (-10, 0, -4 * sx))
+    box('forearm' + s, 10.5, 39, -3.8, 17.5, 55, 3.8, 'bone', sx)  # the vambrace
+    box('forearm' + s, 10, 50, -5, 18, 56, 4.4, 'bonedark', sx)    # the elbow cop
+    box('forearm' + s, 13, 51, 4.4, 15, 54, 8, 'bonetip', sx)
+    for y in (42, 46): box('forearm' + s, 10.2, y, -4.1, 17.8, y + 1, 4.1, 'bonedark', sx)
+    bone('hand' + s, 'forearm' + s, (14 * sx, 39, 0))
+    box('hand' + s, 10.5, 32, -4, 17.5, 39.5, 4, 'bonedark', sx)   # the gauntlet
+    for i, z in enumerate((-3, -1, 1, 3)): box('hand' + s, 10.2, 30, z - 0.8, 11.6, 34, z + 0.8, 'bone', sx)
 sym(arms)
 
-bone('neck', 'body', (0, 70, 2))
-for k in range(4):                                               # a column of vertebrae
-    y = 70 + k * 3.2
-    box('neck', -1.8, y, 0.2 - k * 0.6, 1.8, y + 2.6, 3.8 - k * 0.6, 'bone')
-    box('neck', -3, y + 0.8, 1 - k * 0.6, 3, y + 1.8, 3 - k * 0.6, 'bonedark')
-bone('head', 'neck', (0, 83, 0))
-box('head', -4.5, 82, -3.5, 4.5, 86, 3.5, 'bonedark')             # the socket
-for i, x in enumerate((-1.6, 0, 1.6)):                            # three glowing slits
-    box('head', x - 0.4, 83.6 - (i == 1) * 0.6, -3.7, x + 0.4, 85.4 + (i == 1) * 0.6, -3.5, 'glow')
-import math as _m
-for i in range(9):                                               # a ring of upright finger-bones, splayed like a broken crown
-    a = _m.pi * (0.05 + 0.9 * i / 8)
-    x, z = -_m.cos(a) * 4.4, -_m.sin(a) * 3.4 + 1.4
-    h = 5 + (i % 3) * 2.2
-    bn = 'crown%d' % i
-    bone(bn, 'head', (x, 86, z), ((z - 1.4) * 7, 0, -x * 8))
-    box(bn, x - 0.6, 86, z - 0.6, x + 0.6, 86 + h, z + 0.6, 'bone')
-    box(bn, x - 0.35, 86 + h, z - 0.35, x + 0.35, 88 + h, z + 0.35, 'bonetip')
+bone('sword', 'hand_r', (14, 35, 0), (180, 0, 0))                   # the vertebra greatsword, held point-down at his side
+box('sword', 13, 31, -1.6, 15, 39, 1.6, 'leather')                # the grip
+box('sword', 12.4, 28.6, -2.2, 15.6, 31.4, 2.2, 'bonedark')       # the pommel
+box('sword', 6, 39, -1.6, 22, 41.5, 1.6, 'bone')                  # a crossguard of two jawbones
+box('sword', 5, 40.5, -1.2, 7, 44, 1.2, 'bonetip'); box('sword', 21, 40.5, -1.2, 23, 44, 1.2, 'bonetip')
+for k in range(8):                                                 # the blade: a column of vertebrae
+    y = 41.5 + k * 4
+    w = 3.8 - k * 0.2
+    box('sword', 14 - w, y, -1.5, 14 + w, y + 3, 1.5, 'bone')
+    box('sword', 14 - w - 1.6, y + 0.8, -0.7, 14 + w + 1.6, y + 2, 0.7, 'bonedark')   # the side processes
+    box('sword', 14 - 0.5, y + 3, -0.9, 14 + 0.5, y + 4, 0.9, 'glow2' if k % 3 == 1 else 'bonedark')
+box('sword', 12.6, 73.5, -1, 15.4, 77, 1, 'bonetip')
 
-bone('wheel', 'body', (0, 66, 12))                                # a wheel of bone shards turning slowly behind him
-for i in range(14):
-    a = 2 * _m.pi * i / 14
-    ln = 3 if i % 2 else 5
-    for k in range(ln):                                           # each shard: small blocks stepping outward
-        r0 = 18 + k * 2.4
-        x, y = _m.cos(a) * r0, 66 + _m.sin(a) * r0
-        sz = 2.2 - k * 0.35
-        box('wheel', x - sz, y - sz, 11.3, x + sz, y + sz, 12.7, 'bonetip' if k == ln - 1 else ('bone' if i % 2 else 'bonedark'))
-for i in range(36):                                               # the rim
-    a = 2 * _m.pi * (i + 0.5) / 36
-    box('wheel', _m.cos(a) * 17 - 1.5, 66 + _m.sin(a) * 17 - 1.5, 11.4, _m.cos(a) * 17 + 1.5, 66 + _m.sin(a) * 17 + 1.5, 12.6, 'glow2' if i % 6 == 0 else 'bonedark')
+bone('head', 'body', (0, 78, 0))
+box('head', -5.5, 77, -6, 5.5, 91, 5.5, 'bone')                   # the great helm
+box('head', -5.8, 77, -6.4, 5.8, 80, 5.8, 'bonedark')             # its rim
+box('head', -4.8, 85, -6.5, 4.8, 86.6, -6.0, 'socket')            # the visor slit...
+box('head', -4.0, 85.3, -6.7, 4.0, 86.3, -6.4, 'glow')            # ...burning inside
+box('head', -0.8, 79, -6.9, 0.8, 85, -6.2, 'bonedark')            # the nasal bar
+for x in (-4, -2, 2, 4):                                           # breathing holes
+    box('head', x - 0.4, 80.5, -6.5, x + 0.4, 82.5, -6.1, 'socket')
+for k in range(7):                                                 # a crest of bone spines from brow to nape
+    z = -4.5 + k * 1.6
+    h = 3 + (3 - abs(k - 3)) * 1.4
+    box('head', -0.9, 91, z - 0.7, 0.9, 91 + h, z + 0.7, 'bone' if k % 2 == 0 else 'bonedark')
+    box('head', -0.5, 91 + h, z - 0.4, 0.5, 92.5 + h, z + 0.4, 'bonetip')
 
 # ---------------------------------------------------------------------------------------------------------- materials
 EMISSIVE = {'glow', 'glow2'}
@@ -143,6 +141,8 @@ def paint(mat, x, y, w, h, seed):
         return lerp(c, (120, 110, 96), 0.5) if r.random() < 0.06 else c          # pits and stains
     if mat == 'bonedark': return lerp((120, 108, 94), (82, 74, 66), r.random() * 0.7)
     if mat == 'bonetip': t = y / max(1, h - 1); return lerp((70, 62, 58), (36, 32, 32), t * 0.6 + r.random() * 0.3)
+    if mat == 'leather': return lerp((46, 36, 34), (66, 52, 46), r.random() * 0.6)
+    if mat == 'socket': return (10, 8, 10)
     if mat == 'cloth': return lerp((88, 16, 24), (120, 26, 34), r.random() * 0.7) if (y < h - 2 or r.random() < 0.6) else (48, 8, 12)
     if mat == 'glow': return lerp((190, 236, 255), (240, 252, 255), r.random())
     if mat == 'glow2': return lerp((120, 200, 255), (170, 225, 255), r.random())
@@ -477,9 +477,9 @@ if __name__ == '__main__':
         feet = HH * cy + 45 * S
         ground(hero, feet)
         scene(hero, feet, 600 + 34 * S, S * 16 / 1.5)
-        ImageDraw.Draw(hero).text((24, 24), "The Ossuarch, third phase: the Marrow Colossus  -  concept  (the dark figure is a player)", fill=(255, 220, 160))
+        ImageDraw.Draw(hero).text((24, 24), "The Ossuarch, third phase: the Bone Knight  -  concept  (the dark figure is a player)", fill=(255, 220, 160))
         small = []
-        for y, p, lab, sc, cc in [(0, 4, 'Front', 6.5, 48), (20, 4, 'Head', 26, 84), (90, 4, 'Side', 6.5, 48), (180, 6, 'Back', 6.5, 48)]:
+        for y, p, lab, sc, cc in [(0, 4, 'Front', 6.5, 50), (20, 4, 'Head', 26, 86), (90, 4, 'Side', 6.5, 50), (180, 6, 'Back', 6.5, 50)]:
             im = render(tex, glow, UV, yaw=y, pitch=p, size=(800, 800), scale=sc, cy=0.5 + (cc - 45) * sc / 800)
             ImageDraw.Draw(im).text((20, 20), lab, fill=(255, 220, 160))
             small.append(im.resize((300, 300)))
