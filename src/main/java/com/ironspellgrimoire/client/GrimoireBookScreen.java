@@ -71,6 +71,17 @@ public class GrimoireBookScreen extends Screen {
         if (com.ironspellgrimoire.server.Awakening.awakened(stack)) { ids.add(com.ironspellgrimoire.server.Awakening.spellFor(stack)); unlockAt.add(6); }   // the page it wrote when it awakened
     }
 
+    /** Turns straight to a part of the book (the automatic screenshot run, UiShots): spells:N, combos, path, upgrades, tree, memories:N. */
+    public void showPart(String part) {
+        memories = treeMode = pathMode = upgMode = false; flipAt = -100;
+        if (part.startsWith("spells:")) page = Math.min(pages() - 1, Integer.parseInt(part.substring(7)));
+        else if (part.equals("combos")) page = ids.size();
+        else if (part.equals("path")) pathMode = true;
+        else if (part.equals("upgrades")) upgMode = true;
+        else if (part.equals("tree")) treeMode = true;
+        else if (part.startsWith("memories:")) { memories = true; mpage = Math.min(MSPREADS - 1, Integer.parseInt(part.substring(9))); }
+    }
+
     public static void open(ItemStack stack) {
         Minecraft mc = Minecraft.getInstance();
         if (GrimoireMastery.bookOf(stack) == null) return;

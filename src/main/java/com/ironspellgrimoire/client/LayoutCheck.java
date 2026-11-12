@@ -186,7 +186,7 @@ public final class LayoutCheck {
 
     private static int maxScale() { Window w = Minecraft.getInstance().getWindow(); return w.calculateScale(0, Minecraft.getInstance().isEnforceUnicode()); }
 
-    private static void runScreen(Screen s, boolean every, int mx, int my, float pt) {
+    private static List<Issue> runScreen(Screen s, boolean every, int mx, int my, float pt) {
         Minecraft mc = Minecraft.getInstance();
         int ow = s.width, oh = s.height;
         List<Issue> now = new ArrayList<>();
@@ -200,10 +200,10 @@ public final class LayoutCheck {
             if (scale == cur) { marksScreen.clear(); for (Issue i : is) marksScreen.add(i.rect); }
             for (Issue i : is) now.add(new Issue(i.kind, "[scale " + scale + "] " + i.detail, i.rect));
         }
-        report(s.getClass().getSimpleName(), now);
+        return now;
     }
 
-    private static void runHud(boolean every, float pt) {
+    private static List<Issue> runHud(boolean every, float pt) {
         Minecraft mc = Minecraft.getInstance();
         List<Issue> now = new ArrayList<>();
         int cur = (int) mc.getWindow().getGuiScale();
@@ -219,7 +219,7 @@ public final class LayoutCheck {
             if (scale == cur) { marksHud.clear(); for (Issue i : is) marksHud.add(i.rect); }
             for (Issue i : is) now.add(new Issue(i.kind, "[scale " + scale + "] " + i.detail, i.rect));
         }
-        report("HUD", now);
+        return now;
     }
 
     private static void report(String where, List<Issue> issues) {
@@ -239,6 +239,13 @@ public final class LayoutCheck {
         } catch (IOException ignored) {}
         if (mc.player != null) mc.player.displayClientMessage(Component.literal("Layout check: " + fresh.size() + " new problem(s) in " + where
                 + " - outlined in red, listed in isg_layout_report.txt").withStyle(ChatFormatting.RED), false);
+    }
+
+    /** For the automatic screenshot run (UiShots): every problem in this screen (or, with null, the HUD) at every GUI scale. */
+    public static List<String> audit(@Nullable Screen s) {
+        List<String> out = new ArrayList<>();
+        for (Issue i : s != null ? runScreen(s, true, -1, -1, 0f) : runHud(true, 0f)) out.add(i.kind + " | " + i.detail);
+        return out;
     }
 
     // ------------------------------------------------------------------ hooks
@@ -265,7 +272,7 @@ public final class LayoutCheck {
         if (screenDue) {
             screenDue = false;
             boolean every = allScales; allScales = false;
-            runScreen(e.getScreen(), every, e.getMouseX(), e.getMouseY(), e.getPartialTick());
+            report(e.getScreen().getClass().getSimpleName(), runScreen(e.getScreen(), every, e.getMouseX(), e.getMouseY(), e.getPartialTick()));
         }
         outline(e.getGuiGraphics(), marksScreen);
     }
@@ -276,7 +283,7 @@ public final class LayoutCheck {
         if (hudDue) {
             hudDue = false;
             boolean every = allScales; allScales = false;
-            runHud(every, e.getPartialTick());
+            report("HUD", runHud(every, e.getPartialTick()));
         }
         outline(e.getGuiGraphics(), marksHud);
     }

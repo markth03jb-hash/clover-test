@@ -26,6 +26,8 @@ public final class TrackerMode {
 
     public static final KeyMapping KEY = new KeyMapping("key.iron_spell_grimoire.trackers", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "key.categories.iron_spell_grimoire");
     private static int mode;   // 0 full, 1 compact, 2 hidden
+    /** Sets the mode directly (the automatic screenshot run, UiShots). */
+    public static void set(int m) { mode = m; }
 
     public static boolean hidden() { return mode == 2; }
     public static boolean compact() { return mode == 1; }
