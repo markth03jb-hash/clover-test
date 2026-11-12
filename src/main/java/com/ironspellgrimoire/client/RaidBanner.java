@@ -17,8 +17,9 @@ public final class RaidBanner {
 
     private static int age = -1, life;
     private static boolean won;
+    private static int wave;   // 0: the raid's start or end; 1-4: a wave beginning
 
-    public static void start(FxPacket p) { life = p.life; won = p.sweep == 1; age = 0; }
+    public static void start(FxPacket p) { life = p.life; won = p.sweep == 1; wave = p.sweep == 2 ? (int) p.h : 0; age = 0; }
 
     @SubscribeEvent
     public static void onTick(TickEvent.ClientTickEvent e) { if (e.phase == TickEvent.Phase.END && age >= 0 && ++age >= life) age = -1; }
@@ -43,14 +44,14 @@ public final class RaidBanner {
         }
         g.fill(0, cy - bh / 2 - 1, (int) (w * ease(t / 8f)), cy - bh / 2, (int) (0xFF * a) << 24 | col);
         g.fill(0, cy + bh / 2, (int) (w * ease(t / 8f)), cy + bh / 2 + 1, (int) (0xFF * a) << 24 | col);
-        String s = won ? "RAID BROKEN" : "ELF RAID";
-        float sc = 3.2f * (1f + 0.3f * (1f - ease(t / 6f)));
+        String s = wave > 0 ? (wave >= 4 ? "THEIR LEADER" : "WAVE " + wave + " / 4") : won ? "RAID BROKEN" : "ELF RAID";
+        float sc = (wave > 0 ? 2.4f : 3.2f) * (1f + 0.3f * (1f - ease(t / 6f)));
         g.pose().pushPose();
         g.pose().translate(w / 2f, cy - 4 * sc / 1.0f + 2, 0);
         g.pose().scale(sc, sc, 1);
         g.drawString(mc.font, s, -mc.font.width(s) / 2, 0, Math.max(4, (int) (255 * a)) << 24 | col, true);
         g.pose().popPose();
-        String sub = won ? "The village stands." : "Defend the village - four waves, then their leader.";
+        String sub = wave > 0 ? (wave >= 4 ? "Licht leads the last wave himself." : "The rift opens again.") : won ? "The village stands." : "Defend the village - four waves, then their leader.";
         g.drawString(mc.font, sub, (w - mc.font.width(sub)) / 2, cy + bh / 2 + 8, Math.max(4, (int) (255 * a)) << 24 | 0xE0E0E0, true);
     }
 }
