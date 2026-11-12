@@ -6,7 +6,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class AddonNetwork {
-    private static final String PROTOCOL = "5";   // 2: compact FxPacket encoding (server and client must match)
+    private static final String PROTOCOL = "6";   // 2: compact FxPacket encoding (server and client must match)
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(IronSpellGrimoire.MODID, "main"),
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
@@ -41,6 +41,8 @@ public class AddonNetwork {
         CHANNEL.registerMessage(6, StarForgePackets.Act.class, StarForgePackets.Act::encode, StarForgePackets.Act::decode, StarForgePackets.Act::handle);
         CHANNEL.registerMessage(7, AltarPackets.Open.class, AltarPackets.Open::encode, AltarPackets.Open::decode, AltarPackets.Open::handle);
         CHANNEL.registerMessage(8, AltarPackets.Act.class, AltarPackets.Act::encode, AltarPackets.Act::decode, AltarPackets.Act::handle);
+        CHANNEL.registerMessage(11, BoardPackets.Open.class, BoardPackets.Open::encode, BoardPackets.Open::decode, BoardPackets.Open::handle);
+        CHANNEL.registerMessage(12, BoardPackets.Pick.class, BoardPackets.Pick::encode, BoardPackets.Pick::decode, BoardPackets.Pick::handle);
         CHANNEL.registerMessage(10, TreePackets.Act.class, TreePackets.Act::encode, TreePackets.Act::decode, TreePackets.Act::handle);
         CHANNEL.registerMessage(9, LibraryPackets.Open.class, LibraryPackets.Open::encode, LibraryPackets.Open::decode, LibraryPackets.Open::handle);
     }

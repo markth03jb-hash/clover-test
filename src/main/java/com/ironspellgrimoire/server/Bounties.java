@@ -184,8 +184,34 @@ public final class Bounties {
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), k);
     }
 
-    static void give(ServerPlayer p, Vec3 from, int boss) {
-        CompoundTag b = create(p, from, boss);
+    static void give(ServerPlayer p, Vec3 from, int boss) { deliver(p, create(p, from, boss)); }
+
+    /** A poster chosen from the board (server/Boards): exactly the bounty it showed. */
+    static void takeOffer(ServerPlayer p, CompoundTag o) {
+        int boss = o.getInt("Boss");
+        CompoundTag b = create(p, Vec3.ZERO, boss);
+        b.putInt("Mods", o.getInt("Mods")); b.putInt("X", o.getInt("X")); b.putInt("Z", o.getInt("Z"));
+        p.getPersistentData().put(TAG, b);
+        deliver(p, b);
+    }
+
+    static boolean hunting(ServerPlayer p) { return bounty(p) != null; }
+    static String huntingName(ServerPlayer p) { CompoundTag b = bounty(p); return b == null ? "" : NAMES[Math.min(NAMES.length - 1, b.getInt("Boss"))]; }
+    static long nextAt(ServerPlayer p) { return p.getPersistentData().getLong(NEXT); }
+    /** Merit stars a bounty with these modifiers pays. */
+    static int starsFor(int boss, int mods) { int hard = Integer.bitCount(mods & ~WOUNDED); return 3 + hard * 2 - ((mods & WOUNDED) != 0 ? 1 : 0) + (boss == SECRET ? 15 : 0); }
+    /** Modifiers for a new poster (as {@link #create} rolls them). */
+    static int rollMods(ServerPlayer p, int boss) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        int mods = 1 << r.nextInt(4);
+        if (stars(p) >= TWO_MODS_AT && r.nextInt(3) == 0) mods |= 1 << r.nextInt(4);
+        if (boss == SECRET) mods = ENRAGED | ARMOURED;
+        if ((mods & WOUNDED) != 0 && (mods & ~WOUNDED) != 0 && r.nextBoolean()) mods &= ~WOUNDED;
+        return mods;
+    }
+
+    private static void deliver(ServerPlayer p, CompoundTag b) {
+        int boss = b.getInt("Boss");
         ItemStack poster = poster(b);
         if (!p.getInventory().add(poster)) p.drop(poster, false);
         ServerLevel sl = p.serverLevel();

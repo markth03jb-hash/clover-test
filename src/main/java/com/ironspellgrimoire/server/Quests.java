@@ -98,22 +98,54 @@ public final class Quests {
         }
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int[] pool = Bounties.stars(p) >= 10 ? new int[]{MAGES, MONSTERS, RIFT, PAGE, BEAST, BOSS} : new int[]{MAGES, MONSTERS, RIFT, PAGE, BEAST};
-        int type = pool[r.nextInt(pool.length)];
         double a = r.nextDouble(Math.PI * 2), d = r.nextDouble(150, 350);
-        q = new CompoundTag();
+        CompoundTag o = new CompoundTag();
+        o.putInt("Type", pool[r.nextInt(pool.length)]);
+        if (dailyDue(p)) { o.putBoolean("Daily", true); o.putInt("Mods", rollDaily()); }
+        o.putInt("X", (int) (pos.getX() + Math.cos(a) * d));
+        o.putInt("Z", (int) (pos.getZ() + Math.sin(a) * d));
+        takeOffer(p, o);
+    }
+
+    static boolean dailyDue(ServerPlayer p) { return p.getPersistentData().getLong("isg_quest_daily") != p.serverLevel().getGameTime() / 24000 + 1; }
+    static int rollDaily() {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        int m1 = r.nextInt(4), m2;
+        do m2 = r.nextInt(4); while (m2 == m1);
+        return (1 << m1) | (1 << m2);
+    }
+    static boolean questing(ServerPlayer p) { return quest(p) != null; }
+    static String questTitle(ServerPlayer p) { CompoundTag q = quest(p); return q == null ? "" : TITLES[q.getInt("Type")]; }
+    static long nextAt(ServerPlayer p) { return p.getPersistentData().getLong(NEXT); }
+    static String briefOf(int type) { return brief(type); }
+    /** Gives up the current quest (from the board's menu). */
+    static void giveUp(ServerPlayer p) {
+        CompoundTag q = quest(p);
+        if (q == null) return;
+        ServerLevel sl = p.serverLevel();
+        clear(p, q);
+        p.getPersistentData().putLong(NEXT, sl.getGameTime() + 600);
+        sl.playSound(null, p.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1f, 0.6f);
+        p.displayClientMessage(Component.literal("You gave up the quest: " + TITLES[q.getInt("Type")] + ".").withStyle(ChatFormatting.GRAY), true);
+    }
+
+    /** A quest chosen from the board (server/Boards): exactly the note it showed. */
+    static void takeOffer(ServerPlayer p, CompoundTag o) {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        ServerLevel sl = p.serverLevel();
+        long now = sl.getGameTime();
+        int type = o.getInt("Type");
+        CompoundTag q = new CompoundTag();
         q.putInt("Type", type);
         q.putInt("State", TRAVEL);
-        long day = now / 24000;
-        boolean daily = p.getPersistentData().getLong("isg_quest_daily") != day + 1;   // the gold-pinned note: once a day
+        boolean daily = o.getBoolean("Daily") && dailyDue(p);   // the gold-pinned note: once a day
         if (daily) {
-            p.getPersistentData().putLong("isg_quest_daily", day + 1);
-            int m1 = r.nextInt(4), m2;
-            do m2 = r.nextInt(4); while (m2 == m1);
+            p.getPersistentData().putLong("isg_quest_daily", now / 24000 + 1);
             q.putBoolean("Daily", true);
-            q.putInt("Mods", (1 << m1) | (1 << m2));
+            q.putInt("Mods", o.getInt("Mods"));
         }
-        q.putInt("X", (int) (pos.getX() + Math.cos(a) * d));
-        q.putInt("Z", (int) (pos.getZ() + Math.sin(a) * d));
+        q.putInt("X", o.getInt("X"));
+        q.putInt("Z", o.getInt("Z"));
         q.putString("Dim", sl.dimension().location().toString());
         q.putLong("Deadline", now + (type == BEAST ? LIMIT / 2 : LIMIT));
         q.putFloat("Head", (float) r.nextDouble(Math.PI * 2));

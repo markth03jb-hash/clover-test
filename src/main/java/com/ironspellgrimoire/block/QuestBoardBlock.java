@@ -20,7 +20,7 @@ public class QuestBoardBlock extends PosterBoardBlock {
     @SuppressWarnings("deprecation")
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
-        if (!level.isClientSide && player instanceof ServerPlayer sp) Quests.fromBoard(sp, pos);
+        if (!level.isClientSide && player instanceof ServerPlayer sp) com.ironspellgrimoire.server.Boards.open(sp, com.ironspellgrimoire.server.Boards.QUEST, pos);
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 }

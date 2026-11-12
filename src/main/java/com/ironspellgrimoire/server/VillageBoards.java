@@ -23,9 +23,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * Every village gets a Poster Board and a Quest Board. The first time a player walks into a village, a board is put up on open, flat
- * ground near its meeting place (the village's centre piece, where the bell is), facing it, off the paths. Each
- * village is only ever given one, remembered by where it starts (saved per dimension as "isg_village_boards").
+ * Every village gets a Poster Board and a Quest Board, put up as the village is generated: when the chunk a village
+ * starts in is made, the village is noted, and as soon as the ground round its meeting place (the centre piece, where
+ * the bell is) is there too - a moment later, long before anyone walks in - the boards go up on open, flat ground near
+ * it, facing it, off the paths. Villages from before this (already generated) get theirs the first time a player walks
+ * in. Each village is only ever given one of each, remembered by where it starts ("isg_village_boards", per dimension).
  */
 @Mod.EventBusSubscriber(modid = IronSpellGrimoire.MODID)
 public final class VillageBoards {
@@ -43,6 +45,47 @@ public final class VillageBoards {
     }
 
     private static Data data(ServerLevel sl) { return sl.getDataStorage().computeIfAbsent(Data::load, Data::new, "isg_village_boards"); }
+
+    /** Villages just generated, waiting for the ground round their meeting place: (dimension, start). */
+    private static final java.util.Map<net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level>, java.util.Map<Long, StructureStart>> PENDING = new java.util.HashMap<>();
+
+    @SubscribeEvent
+    public static void onChunk(net.minecraftforge.event.level.ChunkEvent.Load e) {
+        if (!e.isNewChunk() || !(e.getLevel() instanceof ServerLevel sl)) return;
+        var reg = sl.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.STRUCTURE);
+        for (var en : e.getChunk().getAllStarts().entrySet()) {
+            StructureStart st = en.getValue();
+            if (st == null || !st.isValid() || st.getPieces().isEmpty()) continue;
+            if (!reg.wrapAsHolder(en.getKey()).is(StructureTags.VILLAGE)) continue;
+            PENDING.computeIfAbsent(sl.dimension(), k -> new java.util.HashMap<>()).put(st.getChunkPos().toLong(), st);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLevelTick(TickEvent.LevelTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || !(e.level instanceof ServerLevel sl) || sl.getGameTime() % 10 != 3) return;
+        var m = PENDING.get(sl.dimension());
+        if (m == null || m.isEmpty()) return;
+        Data d = data(sl);
+        var it = m.entrySet().iterator();
+        while (it.hasNext()) {
+            var en = it.next();
+            long key = en.getKey();
+            boolean poster = !d.done.contains(key), quest = !d.doneQuest.contains(key);
+            if (!poster && !quest) { it.remove(); continue; }
+            BoundingBox centre = en.getValue().getPieces().get(0).getBoundingBox();
+            int cx = (centre.minX() + centre.maxX()) / 2, cz = (centre.minZ() + centre.maxZ()) / 2;
+            int half = Math.max(centre.getXSpan(), centre.getZSpan()) / 2, r = half + 11;
+            boolean ready = true;
+            for (int x = cx - r; x <= cx + r && ready; x += 16) for (int z = cz - r; z <= cz + r && ready; z += 16) ready = sl.hasChunk(x >> 4, z >> 4);
+            if (!ready || !sl.hasChunk((cx + r) >> 4, (cz + r) >> 4)) continue;   // its ground isn't all made yet
+            if (poster && place(sl, cx, cz, half, AddonBlocks.POSTER_BOARD.get())) d.done.add(key);
+            if (quest && place(sl, cx, cz, half, AddonBlocks.QUEST_BOARD.get())) d.doneQuest.add(key);
+            // (if no spot fit, the first player to walk in tries again with the old way)
+            d.setDirty();
+            it.remove();
+        }
+    }
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent e) {

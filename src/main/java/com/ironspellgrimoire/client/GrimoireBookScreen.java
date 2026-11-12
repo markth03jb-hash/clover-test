@@ -176,6 +176,12 @@ public class GrimoireBookScreen extends Screen {
         String ms = "\u2605 " + BountyHud.stars() + " merit stars";
         g.drawString(f, ms, x0 + (BW - f.width(ms)) / 2, y0 + BH + 6, 0xFFFFD27A, true);
 
+        // the ribbon tab on the book's edge: Combos (or back to the Spells)
+        boolean tabHot = inside(mx, my, x0 + BW + 7, y0 + 24, 46, 16);
+        g.fill(x0 + BW + 5, y0 + 24, x0 + BW + 54, y0 + 40, 0xFF000000 | dark(c[2], 0.35F));
+        g.fill(x0 + BW + 6, y0 + 25, x0 + BW + 53, y0 + 39, 0xFF000000 | (tabHot || (onCombos() && !memories && !treeMode) ? c[2] : c[4]));
+        String tab = onCombos() && !memories && !treeMode ? "Spells" : "Combos";
+        g.drawString(f, tab, x0 + BW + 30 - f.width(tab) / 2, y0 + 29, tabHot ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
         // the second ribbon: Memories
         boolean memHot = inside(mx, my, x0 + BW + 7, y0 + 46, 54, 16);
         g.fill(x0 + BW + 5, y0 + 46, x0 + BW + 62, y0 + 62, 0xFF000000 | dark(c[2], 0.35F));
@@ -185,9 +191,9 @@ public class GrimoireBookScreen extends Screen {
         g.fill(x0 + BW + 6, y0 + 69, x0 + BW + 61, y0 + 83, 0xFF000000 | (treeHot || treeMode ? c[2] : c[4]));
         String tt = treeMode ? "Spells" : "Tree";
         g.drawString(f, tt, x0 + BW + 34 - f.width(tt) / 2, y0 + 73, treeHot || treeMode ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
-        if (treeMode) { drawTree(g, f, x0, y0, mid, mx, my, c); return; }
         String mt = memories ? "Spells" : "Memories";
         g.drawString(f, mt, x0 + BW + 34 - f.width(mt) / 2, y0 + 51, memHot || memories ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
+        if (treeMode) { drawTree(g, f, x0, y0, mid, mx, my, c); return; }
         if (memories) {
             drawMemories(g, f, x0, y0, mid, mx, my);
             if (flip > 0F) {
@@ -205,12 +211,6 @@ public class GrimoireBookScreen extends Screen {
         if (page > 0) g.drawString(f, "<", x0 + 6, y0 + BH - 15, inside(mx, my, x0 - 2, y0 + BH - 20, 22, 16) ? RED_INK : INK, false);
         if (page < pages() - 1) g.drawString(f, ">", x0 + BW - 12, y0 + BH - 15, inside(mx, my, x0 + BW - 20, y0 + BH - 20, 22, 16) ? RED_INK : INK, false);
 
-        // the ribbon tab on the book's edge: Combos (or back to the Spells)
-        boolean tabHot = inside(mx, my, x0 + BW + 7, y0 + 24, 46, 16);
-        g.fill(x0 + BW + 5, y0 + 24, x0 + BW + 54, y0 + 40, 0xFF000000 | dark(c[2], 0.35F));
-        g.fill(x0 + BW + 6, y0 + 25, x0 + BW + 53, y0 + 39, 0xFF000000 | (tabHot ? c[2] : c[4]));
-        String tab = onCombos() ? "Spells" : "Combos";
-        g.drawString(f, tab, x0 + BW + 30 - f.width(tab) / 2, y0 + 29, tabHot ? 0xFF000000 | c[4] : 0xFF000000 | c[5], false);
         AbstractSpell sp = onCombos() ? null : spell(page);
         if (onCombos()) {
             hidden = false;
@@ -355,7 +355,7 @@ public class GrimoireBookScreen extends Screen {
         int earned = com.ironspellgrimoire.server.SkillTree.earned(bk, mem), free = earned - com.ironspellgrimoire.server.SkillTree.spent(bk);
         g.drawString(f, Component.literal("Mana Tree").withStyle(ChatFormatting.BOLD), x0 + 16, y0 + 10, RED_INK, false);
         String lv = "\u2618 " + free + " / " + earned + " leaves";
-        g.drawString(f, lv, x0 + BW - 16 - f.width(lv), y0 + 10, free > 0 ? 0xFF2A6A20 : INK_SOFT, false);
+        g.drawString(f, lv, x0 + BW - 26 - f.width(lv), y0 + 10, free > 0 ? 0xFF2A6A20 : INK_SOFT, false);
         String[] lab = {"Root", com.ironspellgrimoire.server.SkillTree.CROWNS.length > 0 ? "Element" : "", "Body"};
         g.drawString(f, lab[0], x0 + 66 - f.width(lab[0]) / 2, y0 + BH - 26, INK_SOFT, false);
         g.drawString(f, lab[1], mid - f.width(lab[1]) / 2, y0 + BH - 26, INK_SOFT, false);
@@ -401,9 +401,9 @@ public class GrimoireBookScreen extends Screen {
         int rw = f.width(rs);
         boolean rh = inside(mx, my, x0 + BW / 2 - rw / 2 - 2, y0 + BH - 14, rw + 4, 11);
         g.drawString(f, rs, x0 + BW / 2 - rw / 2, y0 + BH - 12, rh ? RED_INK : INK_SOFT, false);
-        if (!eq) {
-            String w = "Equip this grimoire to grow its tree.";
-            g.drawString(f, w, x0 + 16, y0 + 22, RED_INK, false);
+        if (!eq) {   // on the left page, clear of the crown in the middle
+            int wy = y0 + 22;
+            for (FormattedCharSequence l : f.split(Component.literal("Equip this grimoire to grow its tree."), mid - x0 - 50)) { g.drawString(f, l, x0 + 16, wy, RED_INK, false); wy += 9; }
         }
         if (hover != null) {
             java.util.List<Component> tip = new java.util.ArrayList<>();
@@ -415,7 +415,7 @@ public class GrimoireBookScreen extends Screen {
             tip.add(why == null ? Component.literal(eq ? "Click to learn" : "Equip the grimoire to learn").withStyle(ChatFormatting.YELLOW)
                     : Component.literal(why).withStyle(why.equals("Learned") ? ChatFormatting.GREEN : ChatFormatting.RED));
             g.renderComponentTooltip(f, tip, mx, my);
-        } else if (inside(mx, my, x0 + BW - 16 - f.width(lv), y0 + 8, f.width(lv), 12)) {
+        } else if (inside(mx, my, x0 + BW - 26 - f.width(lv), y0 + 8, f.width(lv), 12)) {
             g.renderComponentTooltip(f, java.util.List.of(Component.literal("Grimoire Leaves").withStyle(ChatFormatting.GREEN),
                     Component.literal("2 per mastery level, 1 per evolved spell (up to 6),").withStyle(ChatFormatting.GRAY),
                     Component.literal("2 each for the Exam, Awakening and Ascension,").withStyle(ChatFormatting.GRAY),
@@ -508,13 +508,14 @@ public class GrimoireBookScreen extends Screen {
             ly += 6; ry += 6;
             int used = Math.max(ly, ry);
             ly = ry = used;   // keep both pages' rows lined up
-            if (ly > y + h - 12) break;
+            if (ly > y + h - 50) break;
         }
         hidden = false;
         if (!any) g.drawString(f, "This grimoire has no combos.", lx, ly, INK_SOFT, false);
         String hint = "Cast the second spell within 4 seconds of the first.";
-        int hy = y + h - 12;
-        for (FormattedCharSequence l : f.split(Component.literal(hint), w)) { g.drawString(f, l, rx, hy, INK_SOFT, false); hy += 9; }
+        var hl = f.split(Component.literal(hint), w);
+        int hy = y + h - 18 - hl.size() * 9;   // kept clear of the page number below
+        for (FormattedCharSequence l : hl) { g.drawString(f, l, rx, hy, INK_SOFT, false); hy += 9; }
     }
 
     private static String pretty(String s) {
