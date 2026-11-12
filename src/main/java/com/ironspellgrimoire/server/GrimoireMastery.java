@@ -94,6 +94,8 @@ public final class GrimoireMastery {
     /** Total XP needed to reach level 2, 3, 4, 5. */
     public static final int[] THRESHOLDS = {0, 0, 800, 2400, 5200, 9000, 14000, 20000, 28000};
     private static final String TAG = "arcane_mastery";
+    /** The grimoire's mastery tag name (the game tests set a grimoire's mastery directly). */
+    static String masteryTag() { return TAG; }
     /** Hooded mages teach more than ordinary mobs: their damage counts triple and a kill adds a bonus. */
     private static final float MAGE_XP_MULT = 3f, MAGE_KILL_XP = 60f;
     private static final float KILL_XP = 15, BOSS_XP = 300, MODE_XP_PER_SECOND = 3;
