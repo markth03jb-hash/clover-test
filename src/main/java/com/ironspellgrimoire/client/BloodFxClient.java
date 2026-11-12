@@ -214,7 +214,6 @@ public final class BloodFxClient {
             L l = it.next();
             double age = now - l.born;
             double end = l.killAt >= 0 ? l.killAt + 2 : l.born + l.p.life;
-            if ((int) l.p.h == 0) System.out.println("ISGDBG live kind0 age=" + age + " end=" + (end - now) + " done=" + l.done);
             if (now > end || l.done) { it.remove(); continue; }
             float out = l.killAt >= 0 ? (float) Mth.clamp((l.killAt + 2 - now) / 2.0, 0, 1) : 1F;
             boolean tick = Math.floor(now) > Math.floor(l.lastSpawn);
@@ -388,7 +387,7 @@ public final class BloodFxClient {
         lightAt(mc, a.add(b).scale(0.5));
         double fly = Math.max(1, p.speed), life = p.life;
         double head = Mth.clamp(age / fly, 0, 1), tail = Mth.clamp((age - (life - fly)) / fly, 0, 1);
-        if (l.lastSpawn - l.born < 3) System.out.println("ISGDBG stream draw age=" + age + " head=" + head + " tail=" + tail + " a=" + a + " b=" + b);
+        if (!l.done && l.killAt < -0.5 && age > 5 && age < 12 && l.p.a1 == 0) System.out.println("ISGDBG stream draw age=" + age + " head=" + head + " tail=" + tail + " a=" + a + " b=" + b);
         if (head - tail < 0.01) return;
         Vec3 side = b.subtract(a).cross(UP);
         side = side.lengthSqr() < 1e-6 ? new Vec3(1, 0, 0) : side.normalize();
@@ -402,6 +401,7 @@ public final class BloodFxClient {
             r[i] = p.r * (0.55 + 0.45 * Math.sin(u * Math.PI)) * (0.85 + 0.15 * Math.sin(t * 14 - now * 0.9)) * (i == 0 && tail > 0 ? 0.2 : 1);
         }
         r[k] = p.r * 1.35;   // a swelling head
+        if (age > 5 && age < 12 && l.p.a1 == 0) { l.p.a1 = 1; System.out.println("ISGDBG c0=" + c[0] + " ck=" + c[k] + " r0=" + r[0] + " r5=" + r[5] + " cam=" + cam); }
         tube(vc, m, n, cam, c, r, 6, 0.96F, 1F);
         glowAlong(m, cam, c, p.r * 2.6, 0.22F * (0.75F + 0.25F * beat(now)));
         drip(vc, m, n, cam, c[k], c[k].subtract(c[k - 1]), (float) (p.r * 1.3));
