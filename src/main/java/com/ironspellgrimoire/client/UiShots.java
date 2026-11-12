@@ -44,7 +44,7 @@ public final class UiShots {
     static final boolean ON = Boolean.getBoolean("isg.uishots");
     private static final int[] SHOT_SCALES = {2, 4};
 
-    private record Step(String name, Runnable action, int wait, boolean hud) {}
+    private record Step(String name, Runnable action, int delay, boolean hud) {}
     private static final List<Step> steps = new ArrayList<>();
     private static final List<String> report = new ArrayList<>();
     private static int phase, wait, index, shot = -1, waitShot, ticks;
@@ -151,7 +151,7 @@ public final class UiShots {
         if (index >= steps.size()) { phase = 3; finish(); return; }
         Step s = steps.get(index);
         if (wait == 0) { try { s.action().run(); } catch (Throwable t) { report.add(s.name() + " | failed to set up: " + t); } }
-        if (++wait < s.wait()) return;
+        if (++wait < s.delay()) return;
         wait = 0;
         if (s.name().equals("setup") || s.name().equals("take_hunt_and_quest")) { index++; return; }
         Screen sc = mc.screen;
