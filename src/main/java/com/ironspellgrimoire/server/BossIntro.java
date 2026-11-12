@@ -41,7 +41,7 @@ public final class BossIntro {
     /** Which boss is which on the card: the client has the epithets and colours by this number. */
     private static List<EntityType<?>> types() {
         return List.of(AddonEntities.ZENON.get(), AddonEntities.BEAST_OF_DESPAIR.get(), AddonEntities.RHYA.get(), AddonEntities.LICHT.get(),
-                AddonEntities.REVENANT.get(), AddonEntities.CURSE_WITCH.get(), AddonEntities.REFLECTION.get(), AddonEntities.MEMORY_GUARDIAN.get(), AddonEntities.CINDER_SOVEREIGN.get());
+                AddonEntities.REVENANT.get(), AddonEntities.CURSE_WITCH.get(), AddonEntities.REFLECTION.get(), AddonEntities.MEMORY_GUARDIAN.get(), AddonEntities.CINDER_SOVEREIGN.get(), AddonEntities.DANTE.get());
     }
 
     /** Boss encounters already carded, per player (forgotten when the boss is). */
@@ -62,6 +62,7 @@ public final class BossIntro {
             int idx = types.indexOf(b.getType());
             if (b instanceof com.ironspellgrimoire.entity.MemoryGuardian mg) idx += mg.chapter();   // each memory has its own card
             if (b instanceof com.ironspellgrimoire.entity.CinderSovereign) idx = 10;
+            if (b instanceof com.ironspellgrimoire.entity.Dante) idx = 11;
             CompoundTag d = p.getPersistentData();
             int met = d.getInt(MET);
             boolean first = (met & (1 << idx)) == 0;

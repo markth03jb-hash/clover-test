@@ -431,6 +431,7 @@ public final class GameTests {
         queue.add(new BossTest("Curse Witch", AddonEntities.CURSE_WITCH));
         queue.add(new BossTest("Cinder Sovereign", AddonEntities.CINDER_SOVEREIGN));
         queue.add(new BossTest("Memory Guardian", AddonEntities.MEMORY_GUARDIAN));
+        queue.add(new BossTest("Dante", AddonEntities.DANTE));
         queue.add(exam());
         queue.add(raid());
         running = true;

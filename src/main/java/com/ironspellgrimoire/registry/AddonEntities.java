@@ -45,6 +45,9 @@ public final class AddonEntities {
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Revenant>> REVENANT = ENTITIES.register("revenant",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Revenant>of(com.ironspellgrimoire.entity.Revenant::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
                     .fireImmune().clientTrackingRange(10).build("revenant"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Dante>> DANTE = ENTITIES.register("dante",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Dante>of(com.ironspellgrimoire.entity.Dante::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("dante"));
 
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.CurseWitch>> CURSE_WITCH = ENTITIES.register("curse_witch",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.CurseWitch>of(com.ironspellgrimoire.entity.CurseWitch::new, MobCategory.MONSTER).sized(0.6F, 1.9F)
