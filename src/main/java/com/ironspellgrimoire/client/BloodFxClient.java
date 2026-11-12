@@ -996,115 +996,71 @@ public final class BloodFxClient {
         if (k <= 0.01F) return;
         float hb = heartbeat(now + p.id);
         boolean self = e == mc.player && mc.options.getCameraType().isFirstPerson();
+        double big = p.a0 > 0 ? 1.15 : 1.0;   // awakened: the same aura, only taller and fiercer
         Vec3 g = new Vec3(f.x, ground(mc, f.add(0, 0.5, 0)) + 0.03, f.z);
         if (g.y > f.y + 0.6 || f.y - g.y > 2.5) g = f.add(0, 0.03, 0);
 
-        // the ground beneath you lit white, beating like a heart, and rings sent out on every beat
-        gdisc(m, cam, g, 1.35 + 0.3 * hb, (0.22F + 0.32F * hb) * k, W_SOFT);
-        double t = (now + p.id) % 34;
-        for (int b = 0; b < 2; b++) {
-            double ph = t - b * 4;
-            if (ph < 0 || ph > 10) continue;
-            double rr = 0.5 + ph * 0.5;
-            gring(m, cam, g.add(0, 0.01, 0), rr, 0.1 + ph * 0.02, (float) Math.pow(1 - ph / 10, 1.5) * 0.8F * k * (b == 0 ? 1F : 0.75F), W_CORE);
+        // the ground under you lit by it, swelling on the beat
+        gdisc(m, cam, g, 1.1 + 0.25 * hb, (0.2F + 0.25F * hb) * k, W_SOFT);
+        // embers streaming straight up inside the aura
+        for (int i = 0; i < 20; i++) {
+            double ph = ((now / (10 + 6 * hs(i, 1)) + hs(i, 2)) % 1.0);
+            double an = hs(i, 3) * TAU, rad = auraR(ph) * (0.5 + 0.5 * hs(i, 4));
+            Vec3 s0 = f.add(Math.cos(an) * rad, ph * H * 1.3 * big, Math.sin(an) * rad);
+            gseg(m, cam, s0, s0.add(0, 0.3 + 0.2 * hs(i, 5), 0), 0.018, (float) Math.sin(ph * Math.PI) * k, 0, W_CORE);
         }
-        // rising sparks
-        for (int i = 0; i < 26; i++) {
-            double ph = ((now / (13 + 7 * hs(i, 1)) + hs(i, 2)) % 1.0);
-            double an = hs(i, 3) * TAU + ph * 2.4, rad = (0.35 + 0.8 * hs(i, 4)) * (1.1 - ph * 0.6);
-            Vec3 s0 = f.add(Math.cos(an) * rad, ph * H * 1.9, Math.sin(an) * rad);
-            float sa = (float) Math.sin(ph * Math.PI) * k;
-            gseg(m, cam, s0, s0.add(0, 0.3 + 0.25 * hs(i, 5), 0), 0.02, sa, 0, W_CORE);
-        }
-        if (self) return;   // in first person you see the ground light and the sparks, never a wall of white
+        if (self) return;   // in first person you see only the ground light and the embers, never a wall of white
 
-        // a soft bloom round the whole body
-        gglow(m, cam, f.add(0, H * 0.55, 0), H * 0.75, (0.04F + 0.1F * hb) * k, W_SOFT);
-        // white flame licking up the body: tongues born at the feet that rise, stretch and let go
-        for (int i = 0; i < 22; i++) {
-            double ph = ((now / (9.0 + 4 * hs(i, 6)) + hs(i, 7)) % 1.0);
-            double an = hs(i, 8) * TAU + now * 0.03;
-            double rad = 0.4 - 0.1 * ph;   // they lean in as they rise, closing round you
-            double y0 = ph * H * 0.8, len = H * (0.35 + 0.3 * hs(i, 9)) * Math.sin(ph * Math.PI) * (1 + 0.5 * hb);
-            if (len < 0.03) continue;
-            Vec3 b0 = f.add(Math.cos(an) * rad, y0, Math.sin(an) * rad);
-            Vec3 outv = new Vec3(Math.cos(an), 0, Math.sin(an));
-            Vec3[] pts = new Vec3[5];
-            double[] w = new double[5];
-            float[] al = new float[5], core = new float[5];
-            float flick = 0.55F + 0.45F * (float) hs((int) (now / 2) + i * 7, 11);   // a ragged, uneven flicker
+        gglow(m, cam, f.add(0, H * 0.6, 0), H * 0.8, (0.05F + 0.1F * hb) * k, W_SOFT);
+        // the aura: one blazing envelope hugging the body, a teardrop of white fire that closes to a point above the head.
+        // Every tongue runs up its surface from the feet and tears off at the top; the whole thing flares on the beat.
+        double top = H * (1.35 + 0.15 * hb) * big;
+        for (int i = 0; i < 34; i++) {
+            double ph = ((now / (7.0 + 4 * hs(i, 6)) + hs(i, 7)) % 1.0);
+            double an = hs(i, 8) * TAU + now * 0.015;
+            double ub = Math.max(0, ph * 1.3 - 0.55), ut = Math.min(1, ph * 1.3 + 0.12 * (1 + hb));
+            if (ut - ub < 0.05) continue;
+            float flick = 0.6F + 0.4F * (float) hs((int) (now / 2) + i * 7, 11);
             float fa = (float) Math.sin(ph * Math.PI) * k * flick;
-            for (int j = 0; j < 5; j++) {
-                double u = j / 4.0;
-                double sway = (Math.sin(now * 0.9 + i * 1.9 + u * 4) * 0.05 + (hs((int) (now / 2) + i, j + 12) - 0.5) * 0.06) * u;   // jagged, not soft
-                pts[j] = b0.add(0, len * u, 0).add(outv.scale(-0.12 * u * u + sway)).add(-outv.z * sway, 0, outv.x * sway);
-                w[j] = 0.085 * Math.pow(1 - u, 1.4) + 0.005;
-                al[j] = fa * 0.26F * (float) (1 - u);
-                core[j] = fa * 0.85F * (float) (1 - u * 0.8);
+            int n = 7;
+            Vec3[] pts = new Vec3[n];
+            double[] w = new double[n], wc = new double[n];
+            float[] al = new float[n], core = new float[n];
+            for (int j = 0; j < n; j++) {
+                double v = j / (double) (n - 1), u = ub + (ut - ub) * v;
+                double jit = (hs((int) (now / 2) + i, j + 12) - 0.5) * 0.05 * u;
+                double r = auraR(u) * (1 + 0.08 * hb), a2 = an + jit * 3;
+                pts[j] = f.add(Math.cos(a2) * r, u * top, Math.sin(a2) * r);
+                w[j] = (0.16 * Math.pow(1 - v, 1.2) + 0.008) * (1 - 0.5 * u);
+                wc[j] = w[j] * 0.3;
+                al[j] = fa * 0.2F * (float) (1 - v * 0.7);
+                core[j] = fa * 0.75F * (float) (1 - v * 0.8);
             }
             gstrip(m, cam, pts, w, al, W_SOFT);
-            double[] wc = new double[5];
-            for (int j = 0; j < 5; j++) wc[j] = w[j] * 0.3;
             gstrip(m, cam, pts, wc, core, W_CORE);
         }
-        // three spiralling streaks of light winding up round you
-        for (int s = 0; s < 3; s++) {
-            double head = ((now / 22.0 + s / 3.0) % 1.0);
-            int tr = 14;
-            Vec3[] pts = new Vec3[tr];
-            double[] w = new double[tr];
-            float[] al = new float[tr];
-            float fade = (float) Math.sin(Math.min(1, head * 1.15) * Math.PI);
-            for (int j = 0; j < tr; j++) {
-                double u = Math.max(0, head - j * 0.018);
-                double an = u * TAU * 2.8 + s * TAU / 3;
-                double rad = 0.72 - 0.4 * u;
-                pts[j] = f.add(Math.cos(an) * rad, u * H * 1.35, Math.sin(an) * rad);
-                w[j] = 0.045 * (1 - j / (double) tr);
-                al[j] = 0.9F * fade * k * (1 - j / (float) tr);
-            }
-            gstrip(m, cam, pts, w, al, W_CORE);
-        }
-        // crackling arcs of white power jumping over the body
+        // white sparks crackling over the body, inside the aura, surging on the beat
         long slot = (long) (now / 2);
         for (int i = 0; i < 2; i++) {
-            if (hs((int) slot, i + 20) < 0.4 - 0.4 * hb) continue;   // they surge on the beat
+            if (hs((int) slot, i + 20) < 0.45 - 0.4 * hb) continue;
             double a0 = hs((int) slot, i + 30) * TAU, a1 = a0 + 0.8 + hs((int) slot, i + 40) * 1.4;
-            double y0 = H * (0.2 + 0.6 * hs((int) slot, i + 50)), y1 = y0 + (hs((int) slot, i + 60) - 0.5) * H * 0.6;
-            Vec3 pa = f.add(Math.cos(a0) * 0.45, y0, Math.sin(a0) * 0.45), pb = f.add(Math.cos(a1) * 0.45, y1, Math.sin(a1) * 0.45);
+            double y0 = H * (0.2 + 0.6 * hs((int) slot, i + 50)), y1 = y0 + (hs((int) slot, i + 60) - 0.5) * H * 0.5;
+            Vec3 pa = f.add(Math.cos(a0) * 0.4, y0, Math.sin(a0) * 0.4), pb = f.add(Math.cos(a1) * 0.4, y1, Math.sin(a1) * 0.4);
             Vec3 prev = pa;
-            for (int j = 1; j <= 7; j++) {
-                double u = j / 7.0;
+            for (int j = 1; j <= 6; j++) {
+                double u = j / 6.0;
                 Vec3 q = pa.add(pb.subtract(pa).scale(u));
-                if (j < 7) q = q.add((hs((int) slot, i * 10 + j) - 0.5) * 0.4, (hs((int) slot, i * 10 + j + 5) - 0.5) * 0.4, (hs((int) slot, i * 10 + j + 7) - 0.5) * 0.4);
-                gseg(m, cam, prev, q, 0.02, 0.95F * k, 0.95F * k, W_CORE);
-                gseg(m, cam, prev, q, 0.07, 0.25F * k, 0.25F * k, W_SOFT);
+                if (j < 6) q = q.add((hs((int) slot, i * 10 + j) - 0.5) * 0.3, (hs((int) slot, i * 10 + j + 5) - 0.5) * 0.3, (hs((int) slot, i * 10 + j + 7) - 0.5) * 0.3);
+                gseg(m, cam, prev, q, 0.018, 0.95F * k, 0.95F * k, W_CORE);
+                gseg(m, cam, prev, q, 0.06, 0.22F * k, 0.22F * k, W_SOFT);
                 prev = q;
             }
         }
-        if (p.a0 > 0 && !self) {   // awakened: a crown of frost - a ring of ice spikes turning over the head - and wings of cold light
-            Vec3 cr = f.add(0, H + 0.35, 0);
-            for (int i = 0; i < 9; i++) {
-                double an = now * 0.03 + i * TAU / 9;
-                Vec3 b0 = cr.add(Math.cos(an) * 0.42, 0, Math.sin(an) * 0.42);
-                double hh = (i % 2 == 0 ? 0.6 : 0.32) * (1 + 0.25 * hb);
-                gseg(m, cam, b0, b0.add(Math.cos(an) * 0.12, hh, Math.sin(an) * 0.12), 0.04, 0.95F * k, 0.05F * k, W_CORE);
-            }
-            gring3(m, cam, cr, 0.42, 0.04, 0.8F * k);
-            double yaw = Math.toRadians(e.getYRot());
-            Vec3 back = new Vec3(Math.sin(yaw), 0, -Math.cos(yaw)), side = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
-            for (int s = -1; s <= 1; s += 2) for (int fth = 0; fth < 5; fth++) {   // wings: feathers of light swept back and out
-                Vec3 root = f.add(0, H * 0.72, 0).add(back.scale(0.25)).add(side.scale(s * 0.18));
-                double spread = 0.35 + fth * 0.28, lift = 0.5 - fth * 0.18 + 0.08 * Math.sin(now * 0.12 + fth);
-                Vec3 tip = root.add(side.scale(s * (0.6 + fth * 0.3))).add(back.scale(spread * 0.6)).add(0, lift, 0);
-                gseg(m, cam, root, tip, 0.06, 0.55F * k, 0.05F * k, W_SOFT);
-                gseg(m, cam, root, tip, 0.02, 0.8F * k, 0.1F * k, W_CORE);
-            }
-        }
-        // a crown of light over the head
-        Vec3 head = f.add(0, H + 0.05, 0);
-        gseg(m, cam, head, head.add(0, 0.9 + 0.7 * hb, 0), 0.09, (0.25F + 0.45F * hb) * k, 0, W_SOFT);
-        gseg(m, cam, head, head.add(0, 0.7 + 0.5 * hb, 0), 0.025, 0.9F * k, 0, W_CORE);
+    }
+
+    /** The aura's radius at height u (0 feet .. 1 tip): round the body, then closing to a point above the head. */
+    private static double auraR(double u) {
+        return 0.5 * (1 - Math.pow(u, 2.2)) * (0.85 + 0.3 * Math.sin(Math.PI * u * 0.8)) + 0.03;
     }
 
     /** A ring of light lying flat (the frost crown's band). */
