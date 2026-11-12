@@ -44,4 +44,19 @@ public final class UiShotsServer {
         return ItemStack.EMPTY;
     }
     public static BlockPos at(ServerPlayer p) { return p.blockPosition(); }
+
+    /** Dante, standing four blocks in front of the camera (facing it, or turned away), for a look at his cloak. */
+    public static void dante(ServerPlayer p, boolean back, boolean flare) {
+        for (var e : p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.Dante.class, p.getBoundingBox().inflate(30))) e.discard();
+        var d = com.ironspellgrimoire.registry.AddonEntities.DANTE.get().create(p.serverLevel());
+        if (d == null) return;
+        var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+        var at = p.position().add(look.scale(4.2));
+        float face = (float) Math.toDegrees(Math.atan2(look.x, -look.z)) + (back ? 180 : 0);
+        d.moveTo(at.x, p.getY(), at.z, face, 0);
+        d.setYHeadRot(face); d.yBodyRot = face;
+        d.setNoAi(true);
+        p.serverLevel().addFreshEntity(d);
+        if (flare) d.setPose(BossKit.P_RAISE);
+    }
 }
