@@ -277,7 +277,7 @@ public class GrimoireBookScreen extends Screen {
         yy += 28;
         g.fill(x + 10, yy, x + w - 10, yy + 1, 0x60000000 | (INK & 0xFFFFFF));
         yy += 5;
-        String key = "spell.iron_spell_grimoire." + ids.get(page) + ".guide";
+        String key = "spell.iron_spell_grimoire." + (GrimoireWheel.themeFor(book) == GrimoireWheel.ICE && net.minecraft.client.resources.language.I18n.exists("spell.iron_spell_grimoire.ice_" + ids.get(page) + ".guide") ? "ice_" : "") + ids.get(page) + ".guide";   // under the Scarlet Moon: the ice move
         if (I18n.exists(key)) {
             for (FormattedCharSequence l : f.split(ink(Component.translatable(key)), w)) {
                 if (yy > y + h - 8) break;
