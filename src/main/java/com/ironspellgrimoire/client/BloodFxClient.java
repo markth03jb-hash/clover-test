@@ -347,17 +347,30 @@ public final class BloodFxClient {
         double swing = Math.max(1, p.speed), k = FxBase.smooth(age / swing);
         double span = Math.toRadians(150), front = -span / 2 + span * k, back = Math.max(-span / 2, front - Math.toRadians(125));
         double collapse = Mth.clamp((age - swing) / Math.max(1, p.life - swing), 0, 1);
-        double R = p.r * (0.85 + 0.25 * k + 0.2 * collapse);
+        double R = p.r * (0.55 + 0.3 * k + 0.2 * collapse);
         Vec3 o = p.c.add(d.scale(age * 0.12)).add(0, -collapse * collapse * 1.2, 0);
         int seg = 22;
-        Vec3[] c = new Vec3[seg + 1];
+        Vec3[] c = new Vec3[seg + 1], out = new Vec3[seg + 1];
         double[] r = new double[seg + 1];
         for (int i = 0; i <= seg; i++) {
             double t = (double) i / seg, an = back + (front - back) * t;
-            c[i] = o.add(d.scale(Math.cos(an) * R)).add(sd.scale(Math.sin(an) * R)).add(u.scale(Math.sin(t * 7 + now * 0.5) * 0.04));
-            r[i] = p.r * 0.085 * Math.pow(Math.sin(t * Math.PI), 0.6) * (0.4 + 0.6 * t) * (1 - collapse * 0.85);
+            out[i] = d.scale(Math.cos(an)).add(sd.scale(Math.sin(an)));
+            c[i] = o.add(out[i].scale(R)).add(u.scale(Math.sin(t * 7 + now * 0.5) * 0.04));
+            r[i] = p.r * Math.pow(Math.sin(t * Math.PI), 0.6) * (0.35 + 0.65 * t) * (1 - collapse * 0.85);
         }
-        tube(vc, m, n, cam, c, r, 6, 0.97F, 1F);
+        // a crescent sheet of liquid: tall across the swing, thin through it, its outer edge thinned to a cutting lip
+        for (int i = 0; i < seg; i++) {
+            double h0 = r[i] * 0.16, h1 = r[i + 1] * 0.16, w0 = r[i] * 0.03, w1 = r[i + 1] * 0.03;
+            Vec3 a0 = c[i], a1 = c[i + 1], o0 = out[i], o1 = out[i + 1];
+            Vec3 t0 = a0.add(u.scale(h0)), t1 = a1.add(u.scale(h1)), b0 = a0.subtract(u.scale(h0)), b1 = a1.subtract(u.scale(h1));
+            Vec3 f0 = a0.add(o0.scale(w0 * 2.5)), f1 = a1.add(o1.scale(w1 * 2.5)), k0 = a0.subtract(o0.scale(w0)), k1 = a1.subtract(o1.scale(w1));
+            Vec3 nu0 = o0.add(u.scale(0.8)).normalize(), nu1 = o1.add(u.scale(0.8)).normalize(), nd0 = o0.subtract(u.scale(0.8)).normalize(), nd1 = o1.subtract(u.scale(0.8)).normalize();
+            Vec3 iu0 = o0.scale(-1).add(u.scale(0.8)).normalize(), iu1 = o1.scale(-1).add(u.scale(0.8)).normalize(), id0 = o0.scale(-1).subtract(u.scale(0.8)).normalize(), id1 = o1.scale(-1).subtract(u.scale(0.8)).normalize();
+            q(vc, m, n, cam, t0, nu0, t1, nu1, f1, o1, f0, o0, 0.97F, 1F);
+            q(vc, m, n, cam, f0, o0, f1, o1, b1, nd1, b0, nd0, 0.97F, 1F);
+            q(vc, m, n, cam, t1, iu1, t0, iu0, k0, o0.scale(-1), k1, o1.scale(-1), 0.97F, 0.85F);
+            q(vc, m, n, cam, k1, o1.scale(-1), k0, o0.scale(-1), b0, id0, b1, id1, 0.97F, 0.85F);
+        }
         if (p.a1 > 0) {   // under the Moon: a white-hot edge on the leading side
             for (int i = seg / 2; i < seg; i++) FxBase.gquad(m, cam, c[i].add(u.scale(0.03)), c[i + 1].add(u.scale(0.03)), c[i + 1].subtract(u.scale(0.03)), c[i].subtract(u.scale(0.03)), W_CORE, 0.6F, 0.6F, 0.6F, 0.6F);
         }
@@ -669,7 +682,7 @@ public final class BloodFxClient {
         if (self) return;   // in first person you see the ground light and the sparks, never a wall of white
 
         // a soft bloom round the whole body
-        gglow(m, cam, f.add(0, H * 0.55, 0), H * 0.85, (0.1F + 0.08F * hb) * k, W_SOFT);
+        gglow(m, cam, f.add(0, H * 0.55, 0), H * 0.85, (0.06F + 0.06F * hb) * k, W_SOFT);
         // white flame licking up the body: tongues born at the feet that rise, stretch and let go
         for (int i = 0; i < 22; i++) {
             double ph = ((now / 15.0 + hs(i, 7)) % 1.0);
@@ -688,8 +701,8 @@ public final class BloodFxClient {
                 double sway = Math.sin(now * 0.6 + i * 1.9 + u * 3) * 0.08 * u;
                 pts[j] = b0.add(0, len * u, 0).add(outv.scale(0.1 * u * u + sway)).add(-outv.z * sway, 0, outv.x * sway);
                 w[j] = 0.13 * (1 - u) + 0.01;
-                al[j] = fa * 0.32F * (float) (1 - u);
-                core[j] = fa * 0.85F * (float) (1 - u);
+                al[j] = fa * 0.22F * (float) (1 - u);
+                core[j] = fa * 0.6F * (float) (1 - u);
             }
             gstrip(m, cam, pts, w, al, W_SOFT);
             double[] wc = new double[5];

@@ -103,18 +103,23 @@ public final class UiShots {
         }, 20, true));
         steps.add(new Step("hud_compact", () -> TrackerMode.set(1), 10, true));
         // the Blood Grimoire: Scarlet Moon seen from the front and behind (third person), then two spells
-        steps.add(new Step("blood_awaken", () -> {
+        steps.add(new Step("blood_edge", () -> {
             TrackerMode.set(2); mc.options.hideGui = true; mc.setScreen(null);
+            mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+            mc.player.setXRot(22);
+            onServer(p -> { p.setXRot(22); UiShotsServer.bloodSpell(p, "crimson_edge"); });
+        }, 4, true));
+        steps.add(new Step("blood_thorns", () -> onServer(p -> UiShotsServer.bloodSpell(p, "thorned_veins")), 12, true));
+        steps.add(new Step("blood_tide", () -> onServer(p -> UiShotsServer.bloodSpell(p, "red_tide")), 7, true));
+        steps.add(new Step("blood_pools", () -> {}, 30, true));
+        steps.add(new Step("blood_awaken", () -> {
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+            mc.player.setXRot(10);
             onServer(p -> { p.setXRot(10); UiShotsServer.scarletMoon(p); });
         }, 22, true));
         steps.add(new Step("blood_burst", () -> {}, 14, true));
         steps.add(new Step("blood_moon_front", () -> {}, 30, true));
         steps.add(new Step("blood_moon_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 12, true));
-        steps.add(new Step("blood_edge", () -> onServer(p -> UiShotsServer.bloodSpell(p, "crimson_edge")), 4, true));
-        steps.add(new Step("blood_thorns", () -> onServer(p -> UiShotsServer.bloodSpell(p, "thorned_veins")), 12, true));
-        steps.add(new Step("blood_tide", () -> onServer(p -> UiShotsServer.bloodSpell(p, "red_tide")), 7, true));
-        steps.add(new Step("blood_pools", () -> {}, 30, true));
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)
         steps.add(new Step("dante_front", () -> { TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.dante(p, false, false); }); }, 30, true));

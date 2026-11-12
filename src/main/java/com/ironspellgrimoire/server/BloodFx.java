@@ -137,7 +137,7 @@ public final class BloodFx {
         look = look.normalize();
         Vec3 c = p.position().add(0, 1.1, 0).add(look.scale(0.4));
         FxPacket b = fx(2, c, 16);   // a crescent of liquid blood swung round, flinging drops, then falling apart
-        b.d = look; b.u = new Vec3(0, 1, 0).add(rightOf(look).scale(0.25)).normalize(); b.r = 3.0f; b.speed = 5; b.a1 = moon(p) ? 1 : 0;
+        b.d = look; b.u = new Vec3(0, 1, 0).add(rightOf(look).scale(0.5)).normalize(); b.r = 3.4f; b.speed = 5; b.a1 = moon(p) ? 1 : 0;
         send(sl, b);
         for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(3.6))) {
             Vec3 to = flat(mid(e).subtract(p.position()));
