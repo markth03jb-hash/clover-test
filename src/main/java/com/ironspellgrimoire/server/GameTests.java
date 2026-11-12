@@ -555,6 +555,9 @@ public final class GameTests {
         cache = new ClassKey.Cache(net.minecraftforge.fml.loading.FMLPaths.GAMEDIR.get().resolve("isg_test_cache.txt"));
         p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete every boss and elf at once
         sl().setDayTime(6000);
+        // a creeper wandering in (or an enderman) would "change the world" in some boss's test: no griefing, always noon
+        sl().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING).set(false, p.server);
+        sl().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_DAYLIGHT).set(false, p.server);
         UiShotsServer.prepare(p);
         queue.add(saving());
         queue.add(boards());
