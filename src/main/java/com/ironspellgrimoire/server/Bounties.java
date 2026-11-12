@@ -277,7 +277,7 @@ public final class Bounties {
         Component bar = Component.literal(boss == SECRET ? "Licht, the Unbound" : NAMES[boss]).append(Component.literal("  [").withStyle(ChatFormatting.GRAY))
                 .append(modsText(mods)).append(Component.literal("]").withStyle(ChatFormatting.GRAY));
         if (m instanceof com.ironspellgrimoire.entity.AddonBoss ab) ab.setBarName(bar);
-        else if (m instanceof com.ironspellgrimoire.entity.Zenon z) z.setBarName(bar);
+        else if (m instanceof com.ironspellgrimoire.entity.Zenon zn) zn.setBarName(bar);
         else if (m instanceof com.ironspellgrimoire.entity.BeastOfDespair bd) bd.setBarName(bar);
         else if (m instanceof com.ironspellgrimoire.entity.Rhya rh) rh.setBarName(bar);
         sl.addFreshEntity(m);
