@@ -40,7 +40,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public class BeastOfDespair extends Monster implements software.bernie.geckolib.animatable.GeoEntity {
     private static final String A = "animation.beast_of_despair.";
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop(A + "idle"), WALK = RawAnimation.begin().thenLoop(A + "walk"),
-            TRANSFORM = RawAnimation.begin().thenLoop(A + "transform"), GATHER = RawAnimation.begin().thenLoop(A + "gather"),
+            CHANGING = RawAnimation.begin().thenLoop(A + "transform"), GATHER = RawAnimation.begin().thenLoop(A + "gather"),
             BROKEN = RawAnimation.begin().thenLoop(A + "broken"), DEATH = RawAnimation.begin().thenPlayAndHold(A + "death");
     /** The moves, by pose (BeastAI.P_*): played once when the pose is set. */
     private static final String[] MOVE = {null, "claw", "charge", "roar", "slam", "guard", "throw", "bite", null, null};
@@ -96,7 +96,7 @@ public class BeastOfDespair extends Monster implements software.bernie.geckolib.
     public void registerControllers(AnimatableManager.ControllerRegistrar c) {
         AnimationController<BeastOfDespair> main = new AnimationController<>(this, "main", 4, s -> {
             if (isDeadOrDying()) return s.setAndContinue(DEATH);
-            if (transforming() > 0) return s.setAndContinue(TRANSFORM);
+            if (transforming() > 0) return s.setAndContinue(CHANGING);
             if (charging() > 0) return s.setAndContinue(GATHER);
             if (pose() == BeastAI.P_BROKEN) return s.setAndContinue(BROKEN);
             return s.setAndContinue(s.isMoving() ? WALK : IDLE);
