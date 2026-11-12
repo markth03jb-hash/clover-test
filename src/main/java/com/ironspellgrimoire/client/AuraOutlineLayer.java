@@ -81,16 +81,7 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
         PlayerModel<AbstractClientPlayer> m = getParentModel();
         VertexConsumer vc = buf.getBuffer(RenderType.entityTranslucentEmissive(WHITE));
         float flick = (float) (Math.sin(now * 0.9 + p.getId()) * 0.012 + Math.sin(now * 2.3) * 0.008);
-        if ((int) f[2] == 12) {   // Scarlet Moon: a blazing white aura - a white-hot skin, layered haze, flaring on a heartbeat
-            double tb = (now + p.getId()) % 34;   // the same slow, heavy double beat as the flames
-            float beat = (float) (Math.exp(-tb * tb) + 0.8 * Math.exp(-Math.pow((tb - 4) / 1.1, 2)));
-            float jag = (float) Math.sin(now * 3.1 + p.getId()) * (float) Math.sin(now * 1.3) ;   // an uneven, restless flicker
-            float flare = 0.75F + 0.18F * jag + 0.55F * beat;
-            shell(ps, m, vc, 1.035F + flick * 0.4F, 1.0F, 1.0F, 1.0F, 0.17F * a * flare);                   // white-hot skin
-            shell(ps, m, vc, 1.1F + flick * 1.2F + 0.03F * beat, 0.78F, 0.86F, 1.0F, 0.12F * a * flare);    // cold haze
-            shell(ps, m, vc, 1.19F + flick * 2.4F + 0.09F * beat, 0.62F, 0.74F, 1.0F, 0.06F * a * flare);   // the outer edge, colder still
-            return;
-        }
+        if ((int) f[2] == 12) return;   // Scarlet Moon: its aura is the 2D sprite alone (BloodFxClient)
         if ((int) f[2] == 2) {   // Silver Guardian: a skin of liquid mercury, bright and rippling, hugging the body
             float shine = 0.75F + 0.25F * (float) Math.sin(now * 0.5);
             shell(ps, m, vc, 1.03F + flick * 0.3F, 0.62F * shine, 0.66F * shine, 0.72F * shine, 0.62F * a);

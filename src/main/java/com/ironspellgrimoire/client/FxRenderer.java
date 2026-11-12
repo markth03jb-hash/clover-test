@@ -571,6 +571,7 @@ public class FxRenderer extends FxBase {
             gv = null;
             DarkSmoke.render(ps, e.getCamera(), buf, pt);
             PixelFx.render(ps, e.getCamera(), buf, pt);
+            BloodFxClient.renderSprites(ps, buf, e.getCamera().getPosition());
             if (!FxBooks.PAGES.isEmpty()) {   // turning pages, drawn with the book's own page art (front = right page, back = left page)
                for (int side = 0; side < 2; side++) {
                   RenderType prt = RenderType.entityCutout(side == 0 ? FxBooks.PAGE_R : FxBooks.PAGE_L);

@@ -986,81 +986,65 @@ public final class BloodFxClient {
     /** Hash in [0, 1). */
     private static double hs(int a, int b) { return FxBase.h2(a, b, 911); }
 
+    // ------------------------------------------------------------------ the Moon's aura: a 2D pixel-art sprite
+    private static final net.minecraft.resources.ResourceLocation AURA_BACK = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/effect/moon_aura.png");
+    private static final net.minecraft.resources.ResourceLocation AURA_FRONT = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/effect/moon_aura_front.png");
+    private static final int AURA_FRAMES = 12;
+    /** Auras to draw this frame: {feet x, y, z, scale, alpha, frame}. Queued by whiteAura, drawn by renderSprites. */
+    private static final List<double[]> AURA_Q = new ArrayList<>();
+
+    /**
+     * The Scarlet Moon aura is one flat sprite, nothing else: an animated pixel-art flame of white and ice-blue
+     * standing round you, turned to face the camera (staying upright), behind your body - and its rising streaks and
+     * crackles drawn faintly over you. It swells a little on the heartbeat; awakened, it stands taller.
+     */
     private static void whiteAura(Matrix4f m, Vec3 cam, Minecraft mc, L l, double age, double now, float pt, float out) {
         FxPacket p = l.p;
         Entity e = mc.level.getEntity((int) p.v.x);
         if (e == null) return;
+        if (e == mc.player && mc.options.getCameraType().isFirstPerson()) return;   // never in your own eyes
         Vec3 f = follow(mc, p.v.x, p.c, pt, 0);
-        double H = e.getBbHeight();
         float k = env(age, p.life, 8, 20) * out;
         if (k <= 0.01F) return;
         float hb = heartbeat(now + p.id);
-        boolean self = e == mc.player && mc.options.getCameraType().isFirstPerson();
-        double big = p.a0 > 0 ? 1.15 : 1.0;   // awakened: the same aura, only taller and fiercer
-        Vec3 g = new Vec3(f.x, ground(mc, f.add(0, 0.5, 0)) + 0.03, f.z);
-        if (g.y > f.y + 0.6 || f.y - g.y > 2.5) g = f.add(0, 0.03, 0);
-
-        // the ground under you lit by it, swelling on the beat
-        gdisc(m, cam, g, 1.1 + 0.25 * hb, (0.2F + 0.25F * hb) * k, W_SOFT);
-        // embers streaming straight up inside the aura
-        for (int i = 0; i < 20; i++) {
-            double ph = ((now / (10 + 6 * hs(i, 1)) + hs(i, 2)) % 1.0);
-            double an = hs(i, 3) * TAU, rad = auraR(ph) * (0.5 + 0.5 * hs(i, 4));
-            Vec3 s0 = f.add(Math.cos(an) * rad, ph * H * 1.3 * big, Math.sin(an) * rad);
-            gseg(m, cam, s0, s0.add(0, 0.3 + 0.2 * hs(i, 5), 0), 0.018, (float) Math.sin(ph * Math.PI) * k, 0, W_CORE);
-        }
-        if (self) return;   // in first person you see only the ground light and the embers, never a wall of white
-
-        gglow(m, cam, f.add(0, H * 0.6, 0), H * 0.8, (0.05F + 0.1F * hb) * k, W_SOFT);
-        // the aura: one blazing envelope hugging the body, a teardrop of white fire that closes to a point above the head.
-        // Every tongue runs up its surface from the feet and tears off at the top; the whole thing flares on the beat.
-        double top = H * (1.35 + 0.15 * hb) * big;
-        for (int i = 0; i < 34; i++) {
-            double ph = ((now / (7.0 + 4 * hs(i, 6)) + hs(i, 7)) % 1.0);
-            double an = hs(i, 8) * TAU + now * 0.015;
-            double ub = Math.max(0, ph * 1.3 - 0.55), ut = Math.min(1, ph * 1.3 + 0.12 * (1 + hb));
-            if (ut - ub < 0.05) continue;
-            float flick = 0.6F + 0.4F * (float) hs((int) (now / 2) + i * 7, 11);
-            float fa = (float) Math.sin(ph * Math.PI) * k * flick;
-            int n = 7;
-            Vec3[] pts = new Vec3[n];
-            double[] w = new double[n], wc = new double[n];
-            float[] al = new float[n], core = new float[n];
-            for (int j = 0; j < n; j++) {
-                double v = j / (double) (n - 1), u = ub + (ut - ub) * v;
-                double jit = (hs((int) (now / 2) + i, j + 12) - 0.5) * 0.05 * u;
-                double r = auraR(u) * (1 + 0.08 * hb), a2 = an + jit * 3;
-                pts[j] = f.add(Math.cos(a2) * r, u * top, Math.sin(a2) * r);
-                w[j] = (0.16 * Math.pow(1 - v, 1.2) + 0.008) * (1 - 0.5 * u);
-                wc[j] = w[j] * 0.3;
-                al[j] = fa * 0.2F * (float) (1 - v * 0.7);
-                core[j] = fa * 0.75F * (float) (1 - v * 0.8);
-            }
-            gstrip(m, cam, pts, w, al, W_SOFT);
-            gstrip(m, cam, pts, wc, core, W_CORE);
-        }
-        // white sparks crackling over the body, inside the aura, surging on the beat
-        long slot = (long) (now / 2);
-        for (int i = 0; i < 2; i++) {
-            if (hs((int) slot, i + 20) < 0.45 - 0.4 * hb) continue;
-            double a0 = hs((int) slot, i + 30) * TAU, a1 = a0 + 0.8 + hs((int) slot, i + 40) * 1.4;
-            double y0 = H * (0.2 + 0.6 * hs((int) slot, i + 50)), y1 = y0 + (hs((int) slot, i + 60) - 0.5) * H * 0.5;
-            Vec3 pa = f.add(Math.cos(a0) * 0.4, y0, Math.sin(a0) * 0.4), pb = f.add(Math.cos(a1) * 0.4, y1, Math.sin(a1) * 0.4);
-            Vec3 prev = pa;
-            for (int j = 1; j <= 6; j++) {
-                double u = j / 6.0;
-                Vec3 q = pa.add(pb.subtract(pa).scale(u));
-                if (j < 6) q = q.add((hs((int) slot, i * 10 + j) - 0.5) * 0.3, (hs((int) slot, i * 10 + j + 5) - 0.5) * 0.3, (hs((int) slot, i * 10 + j + 7) - 0.5) * 0.3);
-                gseg(m, cam, prev, q, 0.018, 0.95F * k, 0.95F * k, W_CORE);
-                gseg(m, cam, prev, q, 0.06, 0.22F * k, 0.22F * k, W_SOFT);
-                prev = q;
-            }
-        }
+        double scale = e.getBbHeight() / 1.8 * (p.a0 > 0 ? 1.15 : 1.0) * (1 + 0.05 * hb);
+        int fr = (int) ((now + p.id * 7) / 1.6) % AURA_FRAMES;
+        if (AURA_Q.size() > 64) AURA_Q.clear();
+        AURA_Q.add(new double[]{f.x, f.y, f.z, scale, k, fr});
     }
 
-    /** The aura's radius at height u (0 feet .. 1 tip): round the body, then closing to a point above the head. */
-    private static double auraR(double u) {
-        return 0.5 * (1 - Math.pow(u, 2.2)) * (0.85 + 0.3 * Math.sin(Math.PI * u * 0.8)) + 0.03;
+    /** Draws the queued Moon auras (called once the world's effects are drawn, with a real texture bound). */
+    public static void renderSprites(com.mojang.blaze3d.vertex.PoseStack ps, net.minecraft.client.renderer.MultiBufferSource.BufferSource buf, Vec3 cam) {
+        if (AURA_Q.isEmpty()) return;
+        Matrix4f m = ps.last().pose();
+        Matrix3f n = ps.last().normal();
+        for (int layer = 0; layer < 2; layer++) {
+            net.minecraft.client.renderer.RenderType rt = layer == 0
+                    ? net.minecraft.client.renderer.RenderType.entityTranslucentEmissive(AURA_BACK)
+                    : net.minecraft.client.renderer.RenderType.eyes(AURA_FRONT);
+            VertexConsumer vc = buf.getBuffer(rt);
+            for (double[] q : AURA_Q) {
+                Vec3 feet = new Vec3(q[0], q[1], q[2]);
+                Vec3 to = new Vec3(cam.x - feet.x, 0, cam.z - feet.z);
+                to = to.lengthSqr() < 1.0E-6 ? new Vec3(0, 0, 1) : to.normalize();
+                Vec3 side = new Vec3(-to.z, 0, to.x);
+                double s = q[3], hw = 0.85 * s, h = hw * 2 * 64 / 40.0;
+                // the back sprite stands just behind you, the front one just before you
+                Vec3 base = feet.add(to.scale(layer == 0 ? -0.42 : 0.42)).add(0, -0.12 * s, 0);
+                float a = (float) q[4] * (layer == 0 ? 1F : 0.55F);
+                double v0 = q[5] / AURA_FRAMES, v1 = (q[5] + 1) / AURA_FRAMES;
+                Vec3 bl = base.subtract(side.scale(hw)), br = base.add(side.scale(hw)), tr = br.add(0, h, 0), tl = bl.add(0, h, 0);
+                spv(vc, m, n, cam, bl, a, 0, v1); spv(vc, m, n, cam, br, a, 1, v1); spv(vc, m, n, cam, tr, a, 1, v0); spv(vc, m, n, cam, tl, a, 0, v0);
+                spv(vc, m, n, cam, tl, a, 0, v0); spv(vc, m, n, cam, tr, a, 1, v0); spv(vc, m, n, cam, br, a, 1, v1); spv(vc, m, n, cam, bl, a, 0, v1);
+            }
+            buf.endBatch(rt);
+        }
+        AURA_Q.clear();
+    }
+
+    private static void spv(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, float a, float u, double v) {
+        vc.vertex(m, (float) (w.x - cam.x), (float) (w.y - cam.y), (float) (w.z - cam.z)).color(1F, 1F, 1F, a).uv(u, (float) v)
+                .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).uv2(net.minecraft.client.renderer.LightTexture.FULL_BRIGHT).normal(n, 0, 1, 0).endVertex();
     }
 
     /** A ring of light lying flat (the frost crown's band). */
