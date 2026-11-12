@@ -75,6 +75,9 @@ public final class GameTests {
     private abstract static class Test {
         final String name;
         Test(String name) { this.name = name; }
+        /** The code this test depends on (its fingerprint, ClassKey); null = always run it. */
+        Class<?>[] roots() { return null; }
+        String extra() { return name; }
         abstract void start();
         /** Called every tick from 1; returns true when finished. */
         abstract boolean tick(int t);
@@ -201,6 +204,7 @@ public final class GameTests {
         final AbstractSpell spell;
         BlockState[] before; Set<MobEffect> pe, de; int fx0; float mana0, hp0; String castErr;
         SpellTest(AbstractSpell s) { super("spell " + s.getSpellId()); spell = s; }
+        @Override Class<?>[] roots() { return new Class<?>[]{spell.getClass()}; }
         boolean skip;
         @Override void start() {
             cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
@@ -250,6 +254,13 @@ public final class GameTests {
         final Supplier<? extends EntityType<?>> type;
         Mob boss; BlockState[] before; int fx0, hits0, maxPhase = -1; double moved; Vec3 last; float maxHp, lowHp; boolean oneShotOk = true; String err;
         BossTest(String n, Supplier<? extends EntityType<?>> type) { super("boss " + n); this.type = type; }
+        @Override Class<?>[] roots() {
+            Entity e = type.get().create(sl());
+            if (e == null) return null;
+            Class<?> c = e.getClass();
+            e.discard();
+            return new Class<?>[]{c};
+        }
         @Override void start() {
             cancelCast(); clearArea(); if (dummy != null) { dummy.discard(); dummy = null; }
             resetPlayer(true);
@@ -304,8 +315,9 @@ public final class GameTests {
     }
 
     /** A test that's just a check, run at once. */
-    private static Test check(String name, Runnable r) {
+    private static Test check(String name, Runnable r, Class<?>... roots) {
         return new Test(name) {
+            @Override Class<?>[] roots() { return roots.length == 0 ? null : roots; }
             @Override void start() {}
             @Override boolean tick(int t) {
                 try { r.run(); } catch (Throwable x) { fail(name, "threw: " + x); }
@@ -337,11 +349,12 @@ public final class GameTests {
             if (Quests.questing(p)) pass("boards: take a quest", Quests.questTitle(p)); else fail("boards: take a quest", "no quest after taking a note");
             Boards.pick(p, Boards.QUEST, -1);
             if (!Quests.questing(p)) pass("boards: give up a quest", ""); else fail("boards: give up a quest", "still on it");
-        });
+        }, Boards.class, Bounties.class, Quests.class);
     }
 
     private static Test exam() {
         return new Test("rift: Magic Knight Exam") {
+            @Override Class<?>[] roots() { return new Class<?>[]{Rifts.class}; }
             @Override void start() { clearArea(); resetPlayer(false); Rifts.startExam(p); }
             @Override boolean tick(int t) {
                 if (t == 60) {
@@ -360,6 +373,7 @@ public final class GameTests {
 
     private static Test raid() {
         return new Test("elf raid") {
+            @Override Class<?>[] roots() { return new Class<?>[]{ElfRaids.class}; }
             int waves; boolean elvesSeen;
             @Override void start() { clearArea(); resetPlayer(false); ElfRaids.start(p, home, true); }
             @Override boolean tick(int t) {
@@ -400,7 +414,7 @@ public final class GameTests {
             CompoundTag r1 = Rifts.saveForTest(p.server);
             CompoundTag r2 = Rifts.saveForTest(Rifts.loadForTest(roundTrip(r1)));
             if (r1.equals(r2)) pass("save: rifts", r1.getList("Rifts", 10).size() + " rift(s)"); else fail("save: rifts", "the rifts aren't the same after saving and loading");
-        });
+        }, Rifts.class, GrimoireMastery.class, Bounties.class, Quests.class);
     }
 
     private static CompoundTag roundTrip(CompoundTag t) {
@@ -417,6 +431,7 @@ public final class GameTests {
         BlockPos g = sl().getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(player.position()));
         home = new Vec3(g.getX() + 0.5, g.getY(), g.getZ() + 0.5);
         queue.clear(); results.clear(); index = 0; t = 0;
+        cache = new ClassKey.Cache(net.minecraftforge.fml.loading.FMLPaths.GAMEDIR.get().resolve("isg_test_cache.txt"));
         p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete every boss and elf at once
         sl().setDayTime(6000);
         UiShotsServer.prepare(p);
@@ -444,16 +459,39 @@ public final class GameTests {
             var l = e.getServer().getPlayerList().getPlayers();
             if (!l.isEmpty()) p = l.get(0);
         }
-        if (index >= queue.size()) { running = false; done = true; if (dummy != null) dummy.discard(); return; }
+        if (index >= queue.size()) { running = false; done = true; if (dummy != null) dummy.discard(); if (cache != null) cache.save(); return; }
         Test cur = queue.get(index);
         try {
-            if (t == 0) cur.start();
+            if (t == 0) {
+                Class<?>[] roots = cur.roots();
+                curKey = roots == null ? null : ClassKey.of(cur.extra() + "|" + HARNESS, roots);
+                if (curKey != null && cache != null && cache.unchanged(cur.name, curKey)) {   // passed before, nothing it depends on changed
+                    results.add("SKIP | " + cur.name + " | unchanged since it passed");
+                    cache.passed(cur.name, curKey);
+                    index++;
+                    return;
+                }
+                startAt = results.size();
+                cur.start();
+            }
             t++;
-            if (cur.tick(t)) { index++; t = 0; }
+            if (cur.tick(t)) { finished(cur); index++; t = 0; }
         } catch (Throwable x) {
             fail(cur.name, "the test itself threw: " + x);
             index++; t = 0;
         }
+    }
+
+    private static ClassKey.Cache cache;
+    private static String curKey;
+    private static int startAt;
+    private static final String HARNESS = ClassKey.single(GameTests.class);
+
+    /** A test is done: if nothing it added failed, its fingerprint is kept, so next time it's skipped unless its code changes. */
+    private static void finished(Test cur) {
+        if (curKey == null || cache == null) return;
+        for (int i = startAt; i < results.size(); i++) if (results.get(i).startsWith("FAIL")) return;
+        cache.passed(cur.name, curKey);
     }
 
     /** How far through: "n / total". */

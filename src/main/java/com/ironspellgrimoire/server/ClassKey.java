@@ -56,6 +56,18 @@ public final class ClassKey {
         }
     }
 
+    /** A key for one class's own code only (the test harness itself: changing the tests reruns them all). */
+    public static String single(Class<?> c) {
+        try {
+            byte[] b = bytes(c.getClassLoader(), c.getName().replace('.', '/'));
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            if (b != null) md.update(b);
+            StringBuilder sb = new StringBuilder();
+            for (byte x : md.digest()) sb.append(String.format("%02x", x));
+            return sb.substring(0, 12);
+        } catch (Exception e) { return "nokey"; }
+    }
+
     private static byte[] bytes(ClassLoader cl, String internal) {
         return BYTES.computeIfAbsent(internal, n -> {
             try (InputStream in = cl.getResourceAsStream(n + ".class")) {

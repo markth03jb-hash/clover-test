@@ -366,7 +366,7 @@ abstract class FxBase {
    }
 
    static float[] solidLo(int pal) {
-      float[] b = BODY[pal];
+      float[] b = BODY[pal & 0x1F];
       return new float[]{b[0] * 1.6F + 0.06F, b[1] * 1.6F + 0.06F, b[2] * 1.6F + 0.07F};
    }
 
@@ -537,7 +537,7 @@ abstract class FxBase {
    }
 
    static void crescent(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, Vec3 d, Vec3 u, double R, int pal, float env) {
-      float[] body = BODY[pal];
+      float[] body = BODY[pal & 0x1F];
       float[] rim = RIM[pal];
       int N = 16;
 
@@ -586,7 +586,7 @@ abstract class FxBase {
          Vec3 ref = Math.abs(d.y) > 0.95 ? new Vec3(1.0, 0.0, 0.0) : new Vec3(0.0, 1.0, 0.0);
          Vec3 n1 = d.cross(ref).normalize();
          Vec3 n2 = d.cross(n1).normalize();
-         float[] body = BODY[pal];
+         float[] body = BODY[pal & 0x1F];
          float[] rim = RIM[pal];
          int K = Math.max(4, Math.min(24, (int)(len * 2.0)));
          if (isFlame(pal) && width > 0.15F) {
