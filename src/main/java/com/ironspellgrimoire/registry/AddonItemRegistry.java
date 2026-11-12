@@ -161,6 +161,8 @@ public class AddonItemRegistry {
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.LICHT, 0xF0EEE0, 0xE8C860, new Item.Properties()));
     public static final RegistryObject<Item> REVENANT_SPAWN_EGG = ITEMS.register("revenant_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.REVENANT, 0x2A3A2A, 0x7AB060, new Item.Properties()));
+    public static final RegistryObject<Item> DANTE_SPAWN_EGG = ITEMS.register("dante_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.DANTE, 0x3C3C40, 0x9A9AA0, new Item.Properties()));
     public static final RegistryObject<Item> CURSE_WITCH_SPAWN_EGG = ITEMS.register("curse_witch_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.CURSE_WITCH, 0x3A1E4A, 0x8AE060, new Item.Properties()));
     /** Licht's white swords (only he holds them; they look like Asta's, in white). */
@@ -220,6 +222,7 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(LICHT_SPAWN_EGG.get()));
                 out.accept(new ItemStack(REVENANT_SPAWN_EGG.get()));
                 out.accept(new ItemStack(CURSE_WITCH_SPAWN_EGG.get()));
+                out.accept(new ItemStack(DANTE_SPAWN_EGG.get()));
                 out.accept(new ItemStack(RIFT_COMPASS.get()));
                 for (var r : RELICS) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(WORLD_TREE_LEAF.get()));

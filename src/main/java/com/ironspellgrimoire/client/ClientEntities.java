@@ -21,6 +21,7 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.RHYA.get(), RhyaRenderer::new);
         e.registerEntityRenderer(AddonEntities.LICHT.get(), c -> new BossRenderer<>(c, "licht", true, 1.05F));
         e.registerEntityRenderer(AddonEntities.REVENANT.get(), c -> new BossRenderer<>(c, "revenant", false, 1.0F));
+        e.registerEntityRenderer(AddonEntities.DANTE.get(), c -> new BossRenderer<>(c, "dante", false, 1.05F));   // a plain placeholder skin until his own is made
         e.registerEntityRenderer(AddonEntities.CURSE_WITCH.get(), c -> new BossRenderer<>(c, "curse_witch", true, 0.95F));
         e.registerEntityRenderer(AddonEntities.REFLECTION.get(), ReflectionRenderer::new);
         e.registerEntityRenderer(AddonEntities.BROOM.get(), BroomRenderer::new);
