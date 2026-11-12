@@ -179,7 +179,7 @@ public class GrimoireBookScreen extends Screen {
     public void render(GuiGraphics g, int mx, int my, float pt) {
         renderBackground(g);
         Font f = font;
-        int[] c = GrimoireWheel.themeColors(book);   // pageIn, pageOut, trim, accent, panel, title
+        int[] c = GrimoireWheel.themeColors(GrimoireWheel.themeFor(book));   // pageIn, pageOut, trim, accent, panel, title
         int x0 = (width - BW) / 2, y0 = (height - BH) / 2, mid = x0 + BW / 2;
         float flip = (float) Mth.clamp(1.0 - (ticks + pt - flipAt) / 5.0, 0.0, 1.0);
 

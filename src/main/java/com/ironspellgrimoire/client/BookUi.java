@@ -25,7 +25,7 @@ final class BookUi {
 
     /** The equipped grimoire's colours (as the grimoire screen uses them). */
     static int[] colours() {
-        int i = GrimoireWheel.grimoireIndex();
+        int i = GrimoireWheel.themeIndex();
         return i < 0 ? LEATHER : GrimoireWheel.themeColors(i);
     }
 

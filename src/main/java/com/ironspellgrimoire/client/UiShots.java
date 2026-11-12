@@ -120,6 +120,8 @@ public final class UiShots {
         steps.add(new Step("blood_drain", () -> onServer(p -> UiShotsServer.bloodSpell(p, "exsanguinate")), 9, true));
         steps.add(new Step("blood_drain_hit", () -> {}, 13, true));
         steps.add(new Step("blood_pact", () -> onServer(p -> UiShotsServer.bloodSpell(p, "blood_pact")), 8, true));
+        steps.add(new Step("blood_wheel", () -> { mc.options.hideGui = false; GrimoireWheel.forceOpen = true; }, 12, true));
+        steps.add(new Step("blood_wheel_done", () -> { GrimoireWheel.forceOpen = false; mc.options.hideGui = true; }, 4, true));
         steps.add(new Step("blood_awaken", () -> {
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
             mc.player.setXRot(10);
@@ -136,7 +138,15 @@ public final class UiShots {
         steps.add(new Step("ice_shatter", () -> {}, 26, true));
         steps.add(new Step("ice_moonfall", () -> onServer(p -> UiShotsServer.bloodSpell(p, "moonfall")), 12, true));
         steps.add(new Step("ice_impact", () -> {}, 9, true));
-        steps.add(new Step("ice_hud", () -> { mc.options.hideGui = false; }, 30, true));
+        steps.add(new Step("ice_hud", () -> { mc.options.hideGui = false; }, 20, true));
+        steps.add(new Step("ice_wheel", () -> GrimoireWheel.forceOpen = true, 12, true));
+        steps.add(new Step("ice_book", () -> {
+            GrimoireWheel.forceOpen = false;
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.BLOOD_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("ice_book_done", () -> mc.setScreen(null), 4, true));
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)
         steps.add(new Step("dante_front", () -> { TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.dante(p, false, false); }); }, 30, true));

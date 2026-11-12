@@ -34,6 +34,18 @@ public final class BloodHud {
         moonLen = Math.max(1, p.life);
     }
 
+    /** Is the Scarlet Moon up on this client (every menu shows the ice version)? */
+    public static boolean moon() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level != null && mc.level.getGameTime() < moonEnd;
+    }
+
+    @SubscribeEvent
+    public static void onTick(net.minecraftforge.event.TickEvent.ClientTickEvent e) {
+        if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+        com.ironspellgrimoire.spells.IceView.on = moon();
+    }
+
     /** Is the vial on screen (for anything that would sit in the same place)? */
     public static boolean shown() {
         Minecraft mc = Minecraft.getInstance();

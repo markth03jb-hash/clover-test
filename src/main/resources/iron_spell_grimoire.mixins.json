@@ -4,7 +4,8 @@
   "package": "com.ironspellgrimoire.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
-    "compat.EssentialProfileFix"
+    "compat.EssentialProfileFix",
+    "client.SpellIceViewMixin"
   ],
   "injectors": {
     "defaultRequire": 0

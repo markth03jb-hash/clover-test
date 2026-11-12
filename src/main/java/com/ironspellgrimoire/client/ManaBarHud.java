@@ -49,6 +49,8 @@ public final class ManaBarHud {
             {0xD8B878, 0x8A6034, 0xD8B070, 0x140E07, 0xEBD0A0},   // Sol
             {0xC8F2FF, 0x22B8E8, 0x8CE6FF, 0x04101C, 0xE0FAFF},   // Julius
             {0xFFF6D8, 0xE8C040, 0xFFFFFF, 0x141006, 0xFFF4C0},   // Patolli: light
+            {0xD8D0D8, 0xA8101E, 0xFF6A74, 0x12040A, 0xFFB0B8},   // Blood: oxblood well, silver casing, blood-red mana
+            {0xF2F8FF, 0x7FC4F4, 0xFFFFFF, 0x0A1424, 0xDDF2FF},   // the Scarlet Moon's ice: frosted silver, ice-blue mana
     };
 
     private static float shown = -1F;
@@ -62,7 +64,7 @@ public final class ManaBarHud {
     public static void onOverlay(RenderGuiOverlayEvent.Pre e) {
         var id = e.getOverlay().id();
         if (!"irons_spellbooks".equals(id.getNamespace()) || !id.getPath().contains("mana")) return;
-        int book = GrimoireWheel.grimoireIndex();
+        int book = GrimoireWheel.themeIndex();
         if (book < 0) { shown = -1F; return; }
         e.setCanceled(true);
         Minecraft mc = Minecraft.getInstance();
