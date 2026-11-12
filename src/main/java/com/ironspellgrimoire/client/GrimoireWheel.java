@@ -68,7 +68,7 @@ public final class GrimoireWheel {
         if (book < 0) return;   // a normal spellbook: Iron's own wheel
         e.setCanceled(true);
         try {
-            render(w, e.getGuiGraphics(), book);
+            render(w, e.getGuiGraphics(), themeFor(book));
         } catch (Throwable t) {
             // never leave the player without a wheel: fall back to Iron's from the next frame on
             failed = true;
@@ -77,7 +77,17 @@ public final class GrimoireWheel {
     }
 
     private static boolean failed = false;
+    /** Held open by the automatic UI pictures (client/UiShots). */
+    static boolean forceOpen = false;
     private static double leafLobe = 0.3;
+
+    /** The Blood Grimoire (GrimoireMastery.BOOKS) and the theme its menus take under the Scarlet Moon. */
+    static final int BLOOD = 20, ICE = 21;
+
+    /** The theme every menu should wear right now: the equipped grimoire's, or the ice one under the Scarlet Moon. */
+    static int themeIndex() { return themeFor(grimoireIndex()); }
+
+    static int themeFor(int book) { return book == BLOOD && BloodHud.moon() ? ICE : book; }
 
     static int grimoireIndex() {
         if (failed) return -1;
@@ -106,9 +116,10 @@ public final class GrimoireWheel {
         long now = System.nanoTime();
         float dt = lastNs == 0L ? 0.016F : Mth.clamp((now - lastNs) / 1.0E9F, 0.0F, 0.1F);
         lastNs = now;
+        if (forceOpen) w.active = true;   // the automatic UI pictures hold it open
         if (!w.active) { wasActive = false; open = 0.0F; return; }
         LocalPlayer pl = mc.player;
-        if (pl == null || mc.screen != null || mc.mouseHandler.isMouseGrabbed()) { w.close(); return; }
+        if (pl == null || mc.screen != null || (mc.mouseHandler.isMouseGrabbed() && !forceOpen)) { w.close(); return; }
         SpellSelectionManager sm = ClientMagicData.getSpellSelectionManager();
         int count = sm.getSpellCount();
         if (count <= 0) { w.close(); return; }
@@ -183,6 +194,20 @@ public final class GrimoireWheel {
         double rl = (rIn - 2.0) * 0.78;
         double spin = time * (book == 0 ? -0.25 : 0.25);
         leafLobe = th.leaves >= 5 ? 0.24 : 0.3;
+        if (book == ICE) {   // the Scarlet Moon: no clover, a snowflake, slowly turning
+            for (int arm = 0; arm < 6; arm++) {
+                double a = time * 0.2 + arm * TAU / 6;
+                line(bb, m, cx, cy, a, 0, rl * 1.15, 2.4, tr[0], tr[1], tr[2], 0.95F * A);
+                line(bb, m, cx, cy, a, 0, rl * 1.1, 1.1, 1.0F, 1.0F, 1.0F, 0.97F * A);
+                for (int b = 1; b <= 2; b++) {   // two pairs of branches on each arm
+                    double rb = rl * (0.4 + 0.3 * b);
+                    float bx = px(cx, a, rb), by = py(cy, a, rb);
+                    line(bb, m, Math.round(bx), Math.round(by), a + 0.8, 0, rl * 0.3 / b, 0.9, 0.85F, 0.93F, 1.0F, 0.95F * A);
+                    line(bb, m, Math.round(bx), Math.round(by), a - 0.8, 0, rl * 0.3 / b, 0.9, 0.85F, 0.93F, 1.0F, 0.95F * A);
+                }
+            }
+            ring(bb, m, cx, cy, 0, 2.6, 0, TAU, 1.0F, 1.0F, 1.0F, A, 0.75F, 0.9F, 1.0F, A, 12);
+        } else
         if (book == 18) {   // Julius: no clover, a clock - it keeps the real time, the second hand ticking round
             float[] pi = th.pageIn, ac = th.accent;
             double cr = rIn - 2.0;
@@ -245,7 +270,7 @@ public final class GrimoireWheel {
     }
 
     // ------------------------------------------------------------------ each grimoire's own wheel
-    private static final int O_BLACK_FLAME = 0, O_SMOKE = 1, O_WIND = 2, O_DROPS = 3, O_FIRE = 4, O_BOLTS = 5, O_MANE = 6, O_BONES = 7, O_RIVETS = 8;
+    private static final int O_BLACK_FLAME = 0, O_SMOKE = 1, O_WIND = 2, O_DROPS = 3, O_FIRE = 4, O_BOLTS = 5, O_MANE = 6, O_BONES = 7, O_RIVETS = 8, O_BLOOD = 9, O_FROST = 10;
     private static final int M_RUNES = 0, M_DOTS = 1, M_CRESCENTS = 2, M_NOTCHES = 3;
 
     /** pageIn / pageOut = page colour at the centre and the rim; trim = filigree; leaf = clover; title = name colour. */
@@ -295,6 +320,10 @@ public final class GrimoireWheel {
             new Theme(c(0x040E1C), c(0x0F3050), c(0xBDF0FF), c(0x3CC8F0), c(0x1A4A70), 3, O_RIVETS, M_NOTCHES, true, 0x05101E, 0xD8F8FF),
             // Patolli: deep night pages, white-gold trim, a sword of light with a star on every page
             new Theme(c(0x0C0A04), c(0x3A3010), c(0xFFF4C8), c(0xFFD860), c(0x5A4A18), 3, O_RIVETS, M_NOTCHES, true, 0x100C04, 0xFFF4C0),
+            // Blood: oxblood pages, cold silver trim, blood running down off the ring, a crescent mark on the turn
+            new Theme(c(0x120308), c(0x480A16), c(0xD8D0D8), c(0xE0182E), c(0x5A0612), 3, O_BLOOD, M_CRESCENTS, true, 0x12040A, 0xFFB0B8),
+            // the Scarlet Moon's ice (the Blood Grimoire under its mode): frosted blue pages, white trim, crystals of ice round the ring
+            new Theme(c(0x08142A), c(0x2E5884), c(0xF2F8FF), c(0xBFE6FF), c(0xDDEEFF), 6, O_FROST, M_DOTS, false, 0x0A1828, 0xEAF6FF),
     };
 
     /** {page inside, page edge, trim, accent, panel, title} as RGB ints, for the grimoire book screen and others. */
@@ -435,6 +464,20 @@ public final class GrimoireWheel {
                 double px = cx + Math.sin(am) * (ro - 3), py = cy - Math.cos(am) * (ro - 3);
                 disc(bb, m, px, py, 1.4 * tw, 1.0F, 1.0F, 0.9F, (float) tw * A);
             }
+            case 20 -> {   // Blood: a drop of blood hanging off each page's outer edge, a thin red vein down the page
+                seg(bb, m, cx, cy, am, ri + 4, am, ro - 2, 0.9, ac[0] * 0.7F, ac[1], ac[2], (0.5F + 0.4F * p) * A);
+                double px = cx + Math.sin(am) * (ro + 2 + 2 * p), py = cy - Math.cos(am) * (ro + 2 + 2 * p);
+                tri(bb, m, cx, cy, am - 0.03, ro - 1, am + 0.03, ro - 1, am, ro + 2 + 2 * p, 0.6F, 0.03F, 0.08F, 0.95F * A);
+                disc(bb, m, px, py, 2.0, 0.6F, 0.03F, 0.08F, 0.95F * A);
+                disc(bb, m, px - 0.6, py - 0.6, 0.6, 1.0F, 0.7F, 0.7F, 0.9F * A);
+            }
+            case 21 -> {   // ice: a crystal standing in each page, frost feathering out from its foot
+                double h = (ro - ri) * (0.62 + 0.12 * p);
+                tri(bb, m, cx, cy, am - w * 0.1, ri + 4, am + w * 0.1, ri + 4, am, ri + 4 + h, 0.62F, 0.8F, 0.96F, 0.75F * A);
+                tri(bb, m, cx, cy, am - w * 0.03, ri + 4, am + w * 0.05, ri + 4, am, ri + 4 + h * 0.96, 1.0F, 1.0F, 1.0F, 0.7F * A);
+                seg(bb, m, cx, cy, am - w * 0.1, ri + 4, am - w * 0.32, ri + 9, 0.6, 0.85F, 0.93F, 1.0F, 0.6F * A);
+                seg(bb, m, cx, cy, am + w * 0.1, ri + 4, am + w * 0.32, ri + 9, 0.6, 0.85F, 0.93F, 1.0F, 0.6F * A);
+            }
             case 13 -> {   // Langris: a straight cut of violet light across each page, with a crack off it
                 seg(bb, m, cx, cy, a0 + w * 0.12, ro - 3, a1 - w * 0.12, ri + 4, 1.4, ac[0], ac[1], ac[2], 0.9F * A);
                 seg(bb, m, cx, cy, a0 + w * 0.12, ro - 3, a1 - w * 0.12, ri + 4, 0.5, 1.0F, 0.9F, 1.0F, 0.9F * A);
@@ -530,6 +573,38 @@ public final class GrimoireWheel {
                     disc(bb, m, x - sx, y - sy, 1.3, t[0], t[1], t[2], 0.95F * A);
                 }
             }
+            case O_BLOOD -> {   // blood running down off the ring in drops that stretch, fall and gather again
+                for (int i = 0; i < 14; i++) {
+                    double a = i * TAU / 14 + 0.11 * i % 0.3;
+                    double ph = (time * 0.35 + i * 0.37) % 1.0;
+                    double len = (3.0 + 7.0 * ph) * ease;
+                    tri(bb, m, cx, cy, a - 0.035, base, a + 0.035, base, a, base + len, 0.55F, 0.02F, 0.06F, 0.95F * A);
+                    double x = cx + Math.sin(a) * (base + len), y = cy - Math.cos(a) * (base + len);
+                    disc(bb, m, x, y, 1.6 + 0.6 * ph, 0.6F, 0.03F, 0.08F, 0.95F * A);
+                    disc(bb, m, x - 0.5, y - 0.5, 0.5, 1.0F, 0.7F, 0.7F, 0.8F * A);
+                    if (ph > 0.75) {   // a drop letting go
+                        double d = base + len + (ph - 0.75) * 40 * ease;
+                        double dx = cx + Math.sin(a) * d, dy = cy - Math.cos(a) * d;
+                        disc(bb, m, dx, dy, 1.2, 0.6F, 0.03F, 0.08F, (float) (1 - (ph - 0.75) * 4) * 0.9F * A);
+                    }
+                }
+            }
+            case O_FROST -> {   // crystals of ice standing round the ring, glinting, with frost between them
+                ring(bb, m, cx, cy, base, base + 2.0, 0, TAU, 0.85F, 0.93F, 1.0F, 0.5F * A, 0.85F, 0.93F, 1.0F, 0.0F, 72);
+                for (int i = 0; i < 24; i++) {
+                    double a = i * TAU / 24 + time * 0.03;
+                    double h = (i % 3 == 0 ? 10.0 : i % 3 == 1 ? 6.0 : 4.0) * ease * (0.92 + 0.08 * Math.sin(time * 1.3 + i));
+                    double wa = i % 3 == 0 ? 0.05 : 0.035;
+                    tri(bb, m, cx, cy, a - wa, base, a + wa, base, a, base + h, 0.62F, 0.8F, 0.96F, 0.85F * A);
+                    tri(bb, m, cx, cy, a - wa * 0.4, base, a + wa * 0.15, base, a, base + h * 0.95, 1.0F, 1.0F, 1.0F, 0.75F * A);
+                    float tw = (float) Math.max(0, Math.sin(time * 2.2 + i * 1.7));
+                    if (i % 3 == 0 && tw > 0.6F) {   // a glint on the tip
+                        double x = cx + Math.sin(a) * (base + h), y = cy - Math.cos(a) * (base + h);
+                        line(bb, m, (int) Math.round(x), (int) Math.round(y), 0, -2.5 * tw, 2.5 * tw, 0.7, 1, 1, 1, tw * A);
+                        line(bb, m, (int) Math.round(x), (int) Math.round(y), Math.PI / 2, -2.5 * tw, 2.5 * tw, 0.7, 1, 1, 1, tw * A);
+                    }
+                }
+            }
             case O_RIVETS -> {   // a riveted steel band with seams
                 ring(bb, m, cx, cy, base + 1.0, base + 5.0, 0, TAU, 0.3F, 0.34F, 0.4F, 0.95F * A, 0.48F, 0.53F, 0.6F, 0.95F * A, 72);
                 for (int i = 0; i < 24; i++) {
@@ -607,6 +682,7 @@ public final class GrimoireWheel {
     }
 
     private static ResourceLocation icon(AbstractSpell sp) {
+        if (com.ironspellgrimoire.spells.IceView.applies(sp)) return com.ironspellgrimoire.spells.IceView.icon(sp);
         ResourceLocation id = sp.getSpellResource();
         return new ResourceLocation(id.getNamespace(), "textures/gui/spell_icons/" + id.getPath() + ".png");
     }

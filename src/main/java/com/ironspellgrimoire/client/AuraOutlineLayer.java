@@ -39,6 +39,7 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
             {1.0F, 0.78F, 0.25F},    // 9 liquid gold (Rien's Golden Shell)
             {0.7F, 0.0F, 0.06F},     // 10 blood (Don Quixote's Vampire Mode)
             {0.05F, 0.05F, 0.07F},   // 11 black slime (Rien's shell)
+            {1.0F, 1.0F, 1.0F},      // 12 white (Scarlet Moon, the Blood Grimoire)
     };
 
     public AuraOutlineLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
@@ -80,6 +81,14 @@ public class AuraOutlineLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
         PlayerModel<AbstractClientPlayer> m = getParentModel();
         VertexConsumer vc = buf.getBuffer(RenderType.entityTranslucentEmissive(WHITE));
         float flick = (float) (Math.sin(now * 0.9 + p.getId()) * 0.012 + Math.sin(now * 2.3) * 0.008);
+        if ((int) f[2] == 12) {   // Scarlet Moon: a blazing white aura - a white-hot skin, layered haze, flaring on a heartbeat
+            float beat = (float) Math.pow(Math.max(0, Math.sin(now * 0.26)), 8);   // a heartbeat runs through it
+            float flare = 0.85F + 0.15F * (float) Math.sin(now * 1.7 + p.getId()) + 0.3F * beat;
+            shell(ps, m, vc, 1.04F + flick * 0.4F, 1.0F, 1.0F, 1.0F, 0.14F * a * flare);                   // white-hot skin
+            shell(ps, m, vc, 1.11F + flick * 1.0F + 0.02F * beat, 0.9F, 0.94F, 1.0F, 0.13F * a * flare);    // cold white haze
+            shell(ps, m, vc, 1.22F + flick * 2.0F + 0.07F * beat, 0.8F, 0.86F, 1.0F, 0.07F * a * flare);   // the wide outer glow
+            return;
+        }
         if ((int) f[2] == 2) {   // Silver Guardian: a skin of liquid mercury, bright and rippling, hugging the body
             float shine = 0.75F + 0.25F * (float) Math.sin(now * 0.5);
             shell(ps, m, vc, 1.03F + flick * 0.3F, 0.62F * shine, 0.66F * shine, 0.72F * shine, 0.62F * a);

@@ -45,6 +45,54 @@ public final class UiShotsServer {
     }
     public static BlockPos at(ServerPlayer p) { return p.blockPosition(); }
 
+    /** The Blood Grimoire's Scarlet Moon, on the test player (for the third-person pictures). */
+    public static void scarletMoon(ServerPlayer p) {
+        ItemStack book = new ItemStack(AddonItemRegistry.BLOOD_GRIMOIRE.get());
+        CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+        BloodFx.showGauge(p, BloodFx.MAX);
+        BloodFx.scarletMoon(p, 10f);
+    }
+    /** One Blood spell, cast where the player looks. */
+    public static void bloodSpell(ServerPlayer p, String which) {
+        switch (which) {
+            case "thorned_veins" -> BloodFx.thornedVeins(p, 10f);
+            case "red_tide" -> BloodFx.redTide(p, 10f);
+            case "blood_pact" -> BloodFx.bloodPact(p, 10f);
+            case "gauge" -> {
+                ItemStack book = new ItemStack(AddonItemRegistry.BLOOD_GRIMOIRE.get());
+                CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+                BloodFx.showGauge(p, 68f);
+            }
+            case "moonfall" -> { p.setXRot(20); BloodFx.scarletMoon(p, 10f); }
+            case "overflow" -> BloodFx.showGauge(p, 132f);
+            case "throne" -> IceFx.iceThrone(p, 10f);
+            case "master" -> {   // the equipped Blood Grimoire mastered, with a path or two chosen (the book pictures)
+                ItemStack bk = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+                if (bk == null) return;
+                net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
+                bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+                BloodPaths.choose(p, "crimson_edge", 1);
+                BloodFx.setMoonCount(p, 25);   // and an awakened Moon for the mode pictures
+            }
+            case "exsanguinate" -> {   // two still zombies to draw from
+                p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+                var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+                var right = new net.minecraft.world.phys.Vec3(-look.z, 0, look.x);
+                for (int i = -1; i <= 1; i += 2) {
+                    var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(p.serverLevel());
+                    if (z == null) continue;
+                    var at = p.position().add(look.scale(3.5)).add(right.scale(i * 1.6));
+                    z.moveTo(at.x, p.getY(), at.z, 0, 0);
+                    z.setNoAi(true);
+                    z.setHealth(z.getMaxHealth());
+                    p.serverLevel().addFreshEntity(z);
+                }
+                BloodFx.exsanguinate(p, 4f);
+            }
+            default -> BloodFx.crimsonEdge(p, 10f);
+        }
+    }
+
     /** Dante, standing four blocks in front of the camera (facing it, or turned away), for a look at his cloak. */
     public static void dante(ServerPlayer p, boolean back, boolean flare) {
         p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete him at once

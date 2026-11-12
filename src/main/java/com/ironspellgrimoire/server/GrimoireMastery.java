@@ -227,6 +227,10 @@ public final class GrimoireMastery {
                 "light_sword", 1, "light_speed_step", 1, "arrows_of_judgment", 2,
                 "bright_judgment_whip", 2, "healing_ray", 2, "blinding_flash", 3,
                 "light_swords_of_judgment", 3, "light_shaft", 4, "demon_light", 4, "imperial_swords_of_conviction", 5);
+        book(AddonItemRegistry.BLOOD_GRIMOIRE::get, Fx.CRIMSON,
+                "crimson_edge", 1, "hemorrhage", 1, "sanguine_volley", 2,
+                "transfusion", 2, "blood_pact", 2, "red_tide", 3,
+                "thorned_veins", 3, "crimson_bulwark", 4, "exsanguinate", 4, "scarlet_moon", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

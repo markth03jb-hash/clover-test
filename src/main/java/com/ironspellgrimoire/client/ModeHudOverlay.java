@@ -87,14 +87,14 @@ public final class ModeHudOverlay {
                 g.fill(x - 1, y - 1, x, y + 25, 0xFFE8B830);
                 g.fill(right, y - 1, right + 1, y + 25, 0xFFE8B830);
             }
-            g.fill(x, y, right, y + 24, 0xB0100A16);
+            g.fill(x, y, right, y + 24, id.equals("scarlet_moon") ? 0xC00A1A2E : 0xB0100A16);   // the Moon's panel is frosted
             g.fill(x, y, right, y + 1, accent);
             g.fill(x, y + 23, right, y + 24, 0x60000000);
             g.fill(x, y, x + 1, y + 24, accent);
             float frac = (float) Mth.clamp(left / Math.max(1.0, f[2]), 0.0, 1.0);
             g.fill(x + 1, y + 21, x + 1 + (int) ((w - 2) * frac), y + 23, accent);
             if (!blink) {
-                ResourceLocation icon = new ResourceLocation("iron_spell_grimoire", "textures/gui/spell_icons/" + id + ".png");
+                ResourceLocation icon = new ResourceLocation("iron_spell_grimoire", "textures/gui/spell_icons/" + (id.equals("scarlet_moon") ? "ice_" : "") + id + ".png");
                 g.blit(icon, x + 4, y + 3, 0, 0, 16, 16, 16, 16);
             }
             g.drawString(font, name, x + 24, y + 3, 0xFFFFFF, true);
@@ -147,6 +147,7 @@ public final class ModeHudOverlay {
             case "instinct_guard" -> 0xFFD8F0FF;
             case "chronostasis_field" -> 0xFF6BE3FF;
             case "demon_light" -> 0xFFE8E8F0;
+            case "scarlet_moon" -> 0xFFBFE6FF;   // the Moon's ice
             case "vampire_mode", "hardblood_barricade" -> 0xFFE0182A;
             case "prescript_received", "golden_shell" -> 0xFFF2CC5A;
             case "surpassing_limits" -> 0xFFFFF4C0;

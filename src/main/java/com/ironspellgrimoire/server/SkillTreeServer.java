@@ -18,6 +18,7 @@ public final class SkillTreeServer {
     private SkillTreeServer() {}
 
     public static void act(ServerPlayer p, int action, String id) {
+        if (action == 11 || action == 12) { BloodPaths.choose(p, id, action - 10); return; }   // a Blood Grimoire spell's path
         ItemStack book = Utils.getPlayerSpellbookStack(p);
         int b = SkillTree.bookIndex(book);
         if (b < 0) { p.displayClientMessage(Component.literal("Equip the grimoire to grow its tree.").withStyle(ChatFormatting.GRAY), true); return; }

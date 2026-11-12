@@ -20,6 +20,8 @@ minecraft {
             // let the dependencies' mixins find their targets in the dev (mapped) game
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            // our own mixins (the jar names them in its manifest; the dev game needs telling)
+            arg '-mixin.config=iron_spell_grimoire.mixins.json'
             mods { "${mod_id}" { source sourceSets.main } }
         }
         client {
