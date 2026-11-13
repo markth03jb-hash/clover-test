@@ -93,6 +93,12 @@ public final class IceFxClient {
         if (k == 99) { for (L l : LIVE) if (l.p.id == p.id && l.killAt < 0) l.killAt = now; return; }
         if (k == 1) { shards(p.c, p.d, p.r, Math.max(1, p.sweep), p.a0 > 0 ? p.a0 : 0.08F, now); return; }
         if (k == 11) { mist(p.c, Vec3.ZERO, p.r, now, Math.max(10, p.life)); return; }
+        if (k == 13) {   // an ice hit: the blow breaks ice off it - shards, a breath of frost - and a frost star flares
+            Vec3 d = p.d.lengthSqr() < 1e-6 ? Vec3.ZERO : p.d.normalize();
+            float s = p.a0 > 0 ? p.a0 : 1F;
+            shards(p.c, d.scale(0.12).add(0, 0.06, 0), 0.1F, (int) (3 + 4 * s), 0.05F + 0.02F * s, now);
+            mist(p.c, d.scale(0.02), 0.35F * s, now, 12);
+        }
         if (k == 0) { spire(p.c, p.d, p.r, p.r2, now, Math.max(10, p.life), Math.max(1, p.sweep)); mist(p.c.add(0, 0.2, 0), new Vec3(0, 0.02, 0), p.r2 * 2.5F, now, 16); return; }
         if (LIVE.size() > 300) LIVE.remove(0);
         LIVE.add(new L(p, now));
@@ -105,18 +111,18 @@ public final class IceFxClient {
         for (int i = 0; i < n; i++) {
             Vec3 jit = new Vec3(r.nextGaussian(), r.nextGaussian() * 0.5 + 0.45, r.nextGaussian()).scale(spread);
             Vec3 ax = new Vec3(r.nextGaussian(), r.nextGaussian(), r.nextGaussian());
-            if (SHARDS.size() > 450) SHARDS.remove(0);
+            if (SHARDS.size() > 220) SHARDS.remove(0);
             SHARDS.add(new Shard(c.add(r.nextGaussian() * 0.12, r.nextGaussian() * 0.12, r.nextGaussian() * 0.12), v.add(jit), size * (0.5F + r.nextFloat()), now, 40 + r.nextInt(25), ax.lengthSqr() < 1e-6 ? UP : ax.normalize()));
         }
     }
 
     private static void spire(Vec3 c, Vec3 d, float len, float w, double now, double life, double grow) {
-        if (SPIRES.size() > 160) SPIRES.remove(0);
+        if (SPIRES.size() > 90) SPIRES.remove(0);
         SPIRES.add(new Spire(c, d.lengthSqr() < 1e-6 ? UP : d.normalize(), len, w, now, life, grow, seedN++ * 7919));
     }
 
     private static void mist(Vec3 c, Vec3 vel, float r, double now, double life) {
-        if (MISTS.size() > 90) MISTS.remove(0);
+        if (MISTS.size() > 45) MISTS.remove(0);
         MISTS.add(new Mist(c, vel, r, now, life));
     }
 
@@ -126,7 +132,6 @@ public final class IceFxClient {
         if (mc.level == null) { clear(); return; }
         double dt = lastNow < 0 ? 0 : Mth.clamp(now - lastNow, 0, 3);
         lastNow = now;
-        if (BloodHud.moon() && mc.options.getCameraType().isFirstPerson() && !mc.options.hideGui) frostHands(vc, m, n, cam, mc, now);
         if (LIVE.isEmpty() && SHARDS.isEmpty() && SPIRES.isEmpty() && MISTS.isEmpty()) return;
 
         List<L> live = new ArrayList<>(LIVE);   // effects may add to LIVE while drawing
@@ -147,6 +152,13 @@ public final class IceFxClient {
                 case 9 -> glacier(vc, m, n, cam, mc, l, age, now, tick);
                 case 10 -> comet(vc, m, n, cam, mc, l, age, now, tick);
                 case 12 -> throne(vc, m, n, cam, mc, l, age, now, pt);
+                case 13 -> iceHit(m, cam, l, age);
+                case 14 -> sentry(vc, m, n, cam, l, age, now);
+                case 15 -> prison(vc, m, n, cam, l, age, now);
+                case 17 -> wall(vc, m, n, cam, l, age, now);
+                case 18 -> veil(vc, m, n, cam, mc, l, age, now, pt);
+                case 20 -> shock(vc, m, n, cam, l, age, now);
+                case 21 -> statue(vc, m, n, cam, mc, l, age, now);
                 default -> l.done = true;
             }
         }
@@ -413,7 +425,7 @@ public final class IceFxClient {
             return;
         }
         double len = p.r;
-        crystal(vc, m, n, cam, pos.subtract(dir.scale(len)), dir, len, 0.09, 6, p.id, 0.95F, true);
+        crystal(vc, m, n, cam, pos.subtract(dir.scale(len)), dir, len, Math.max(0.09, len * 0.09), 6, p.id, 0.95F, true);
         double tl = Math.min(len * 3, ab.length() * k);
         gseg(m, cam, pos.subtract(dir.scale(len + tl)), pos.subtract(dir.scale(len * 0.6)), 0.06, 0, 0.6F, W_SOFT);
     }
@@ -624,6 +636,187 @@ public final class IceFxClient {
             }
             mist(front.add(0, p.r2 * 0.5, 0), d.scale(0.08), (float) p.r * 0.6F, now, 16);
         }
+    }
+
+    // ================================================================== 14 a frost sentry: a crystal hanging in the air, turning
+    private static void sentry(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, L l, double age, double now) {
+        FxPacket p = l.p;
+        if (age > p.life - 3) return;
+        float a = env(age, p.life, 5, 4);
+        double g = FxBase.backOut(Math.min(1, age / 8.0));
+        Vec3 c = p.c.add(0, Math.sin(now * 0.12 + p.id) * 0.12, 0);
+        double spin = now * 0.08 + p.id;
+        double s = p.r * g;
+        // a double-pointed crystal (up and down), with three small ones orbiting it
+        crystal(vc, m, n, cam, c, UP, s * 0.9, s * 0.22, 6, (int) (spin * 3), 0.9F * a, true);
+        crystal(vc, m, n, cam, c, UP.scale(-1), s * 0.6, s * 0.22, 6, (int) (spin * 3) + 1, 0.9F * a, false);
+        for (int i = 0; i < 3; i++) {
+            double an = spin * 1.6 + i * TAU / 3;
+            Vec3 o = new Vec3(Math.cos(an), 0.25 * Math.sin(an * 2), Math.sin(an));
+            crystal(vc, m, n, cam, c.add(o.scale(s * 0.75)), o.cross(UP).normalize(), s * 0.3, s * 0.06, 4, i + p.id, 0.8F * a, false);
+        }
+        gglow(m, cam, c, s * 0.9, 0.3F * a, W_ICE);
+        gseg(m, cam, c, new Vec3(c.x, c.y - 2.4, c.z), 0.04, 0.25F * a, 0, W_SOFT);   // a thread of cold light to the ground
+    }
+
+    // ================================================================== 15 glacier prison: a ring of pillars, then they crush in
+    private static void prison(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, L l, double age, double now) {
+        FxPacket p = l.p;
+        double crush = Mth.clamp((age - (p.life - 6)) / 5.0, 0, 1);
+        if (crush >= 1 && !l.burst) {
+            l.burst = true;
+            shards(p.c.add(0, 1.5, 0), new Vec3(0, 0.12, 0), 0.3F, 34, 0.12F, now);
+            mist(p.c.add(0, 1.2, 0), Vec3.ZERO, 2.5F, now, 24);
+            return;
+        }
+        if (l.burst) return;
+        double g = FxBase.backOut(Math.min(1, age / 4.0));
+        int pillars = 10;
+        double R = p.r * (1 - 0.8 * crush * crush);
+        for (int i = 0; i < pillars; i++) {
+            double an = i * TAU / pillars;
+            Vec3 o = new Vec3(Math.cos(an), 0, Math.sin(an));
+            Vec3 lean = o.scale(-0.12 - crush * 0.5).add(0, 1, 0).normalize();   // they lean in, and fall in
+            crystal(vc, m, n, cam, p.c.add(o.scale(R)).subtract(0, 0.4, 0), lean, p.r2 * g * (0.8 + 0.3 * hs(i, p.id)), 0.32, 6, i + p.id, 0.85F, i % 2 == 0);
+        }
+        // bars of frost between the pillars, a band near the top and one near the foot
+        for (int band = 0; band < 2; band++) {
+            double y = p.r2 * g * (band == 0 ? 0.25 : 0.7);
+            Vec3 prev = null;
+            for (int i = 0; i <= pillars; i++) {
+                double an = i * TAU / pillars;
+                Vec3 q = p.c.add(Math.cos(an) * R, y, Math.sin(an) * R);
+                if (prev != null) gseg(m, cam, prev, q, 0.05, 0.5F, 0.5F, W_SOFT);
+                prev = q;
+            }
+        }
+        gring(m, cam, p.c.add(0, 0.05, 0), R, 0.3, 0.5F, W_CORE);
+    }
+
+    // ================================================================== 17 glacier wall
+    private static void wall(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, L l, double age, double now) {
+        FxPacket p = l.p;
+        Vec3 d = p.d.normalize(), side = new Vec3(-d.z, 0, d.x);
+        if (age > p.life - 4 && !l.burst) {   // it bursts outward
+            l.burst = true;
+            for (int i = -3; i <= 3; i++) shards(p.c.add(side.scale(i)).add(0, 1.5, 0), d.scale(0.3).add(0, 0.1, 0), 0.15F, 8, 0.12F, now);
+            mist(p.c.add(0, 1.5, 0), d.scale(0.1), 3F, now, 24);
+            return;
+        }
+        if (l.burst) return;
+        double g = FxBase.backOut(Math.min(1, age / 6.0));
+        int cols = 9;
+        for (int i = 0; i < cols; i++) {   // a rank of great crystals, tallest in the middle, packed tight
+            double s = (double) i / (cols - 1) * 2 - 1;
+            double h = p.r2 * (1 - 0.35 * s * s) * (0.85 + 0.25 * hs(i, p.id)) * g;
+            Vec3 b = p.c.add(side.scale(s * p.r)).subtract(0, 0.4, 0);
+            crystal(vc, m, n, cam, b, d.scale(-0.08).add(side.scale(s * 0.12)).add(0, 1, 0).normalize(), h, 0.48, 6, i + p.id, 0.8F, true);
+            if (i % 2 == 0) crystal(vc, m, n, cam, b.add(d.scale(0.45)), d.scale(0.5).add(0, 1, 0).normalize(), h * 0.45, 0.22, 5, i + 30 + p.id, 0.8F, false);
+        }
+        float hb = (float) Math.pow(Math.max(0, Math.sin(now * 0.3)), 6);
+        gseg(m, cam, p.c.add(side.scale(-p.r)).add(0, p.r2 * 0.5 * g, 0), p.c.add(side.scale(p.r)).add(0, p.r2 * 0.5 * g, 0), 0.08, (0.2F + 0.3F * hb), (0.2F + 0.3F * hb), W_SOFT);
+    }
+
+    // ================================================================== 18 snow veil: you are a whirl of snow
+    private static void veil(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, L l, double age, double now, float pt) {
+        FxPacket p = l.p;
+        Entity e = mc.level.getEntity((int) p.v.x);
+        if (e == null) return;
+        Vec3 f = feet(mc, p.v.x, pt);
+        float a = env(age, p.life, 3, 6);
+        boolean self = e == mc.player && mc.options.getCameraType().isFirstPerson();
+        double H = e.getBbHeight();
+        for (int s = 0; s < 5; s++) {   // bands of snow whirling round and up
+            int k = 16;
+            Vec3[] pts = new Vec3[k];
+            double[] w = new double[k];
+            float[] al = new float[k];
+            for (int j = 0; j < k; j++) {
+                double u = (double) j / (k - 1);
+                double an = now * 0.45 + s * TAU / 5 - u * 2.4;
+                double rad = 0.9 + 0.5 * Math.sin(s + now * 0.1) + 0.6 * u;
+                pts[j] = f.add(Math.cos(an) * rad, H * (0.1 + 0.85 * ((s * 0.21 + u * 0.4 + now * 0.02) % 1.0)), Math.sin(an) * rad);
+                w[j] = 0.18 * (1 - u);
+                al[j] = (self ? 0.25F : 0.55F) * a * (1 - (float) u);
+            }
+            gstrip(m, cam, pts, w, al, W_SOFT);
+        }
+        if ((long) now % 3 == 0 && Math.random() < 0.6) mist(f.add((Math.random() - 0.5) * 2, Math.random() * H, (Math.random() - 0.5) * 2), new Vec3(0, 0.02, 0), 0.6F, now, 14);
+    }
+
+    // ================================================================== 20 a ring of cold on the ground (a0 = 1: a shockwave)
+    private static void shock(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, L l, double age, double now) {
+        FxPacket p = l.p;
+        Vec3 c = p.c.add(0, 0.05, 0);
+        if (p.a0 > 0) {   // a shockwave of frost rolling out, crystals popping up behind its front
+            double k = age / Math.max(1, p.life);
+            double R = p.r * Math.sqrt(k);
+            float a = (float) (1 - k);
+            gring(m, cam, c, R, 0.6, 0.85F * a, W_CORE);
+            gring(m, cam, c, R * 0.75, 0.3, 0.5F * a, W_ICE);
+            for (int i = 0; i < 24; i++) {
+                double an = i * TAU / 24 + p.id;
+                Vec3 b = c.add(Math.cos(an) * R * 0.92, -0.1, Math.sin(an) * R * 0.92);
+                crystal(vc, m, n, cam, b, new Vec3(Math.cos(an) * 0.6, 1, Math.sin(an) * 0.6).normalize(), 0.5 * a + 0.1, 0.09, 5, i, 0.85F * a, false);
+            }
+            gglow(m, cam, c.add(0, 1, 0), 2.5 * (1 - k), 0.5F * (float) Math.max(0, 1 - k * 3), W_CORE);
+            return;
+        }
+        // a warning: a ring of cold closing in, frost marks inside it
+        float a = env(age, p.life, 3, 4);
+        double R = p.r * (1.15 - 0.15 * Math.sin(now * 0.3));
+        gring(m, cam, c, R, 0.25, 0.6F * a, W_SOFT);
+        for (int i = 0; i < 8; i++) {
+            double an = i * TAU / 8 + now * 0.05;
+            gseg(m, cam, c.add(Math.cos(an) * R * 0.3, 0, Math.sin(an) * R * 0.3), c.add(Math.cos(an) * R * 0.85, 0, Math.sin(an) * R * 0.85), 0.04, 0.4F * a, 0, W_SOFT);
+        }
+    }
+
+    // ================================================================== 21 the ice statue Frost Step leaves behind
+    private static void statue(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, L l, double age, double now) {
+        FxPacket p = l.p;
+        Vec3 f = p.c;
+        if (age > p.life - 6 && !l.burst) {   // it shatters
+            l.burst = true;
+            shards(f.add(0, 1, 0), new Vec3(0, 0.08, 0), 0.22F, 26, 0.09F, now);
+            mist(f.add(0, 1, 0), Vec3.ZERO, 1.4F, now, 20);
+            return;
+        }
+        if (l.burst) return;
+        Vec3 d = p.d.normalize(), side = new Vec3(-d.z, 0, d.x);
+        float a = 0.6F;
+        // a figure roughly cut in ice: legs, body, arms flung back, head - each a crystal
+        crystal(vc, m, n, cam, f.add(side.scale(0.12)), new Vec3(0, 1, 0).add(d.scale(-0.15)).normalize(), 0.85, 0.12, 5, 1, a, false);
+        crystal(vc, m, n, cam, f.add(side.scale(-0.12)), new Vec3(0, 1, 0).add(d.scale(0.2)).normalize(), 0.85, 0.12, 5, 2, a, false);
+        crystal(vc, m, n, cam, f.add(0, 0.75, 0), UP, 0.75, 0.24, 6, 3, a, true);
+        crystal(vc, m, n, cam, f.add(0, 1.35, 0).add(side.scale(0.28)), side.add(d.scale(-0.8)).add(0, -0.3, 0).normalize(), 0.65, 0.08, 5, 4, a, false);
+        crystal(vc, m, n, cam, f.add(0, 1.35, 0).add(side.scale(-0.28)), side.scale(-1).add(d.scale(-0.8)).add(0, -0.3, 0).normalize(), 0.65, 0.08, 5, 5, a, false);
+        crystal(vc, m, n, cam, f.add(0, 1.45, 0), UP, 0.45, 0.17, 6, 6, a, true);
+        // the cold streak to where you re-formed
+        gseg(m, cam, f.add(0, 1, 0), f.add(0, 1, 0).add(d.scale(Math.min(9, age * 3))), 0.25 * (1 - age / p.life), 0.5F, 0, W_SOFT);
+    }
+
+    // ================================================================== 13 the frost star of an ice hit (a1 = 1: a Shatter)
+    private static void iceHit(Matrix4f m, Vec3 cam, L l, double age) {
+        FxPacket p = l.p;
+        double k = age / Math.max(1, p.life);
+        float a = (float) (1 - k);
+        if (a <= 0.01F) return;
+        float s = (p.a0 > 0 ? p.a0 : 1F) * (p.a1 > 0 ? 1.8F : 1F);
+        Vec3 view = p.c.subtract(cam);
+        if (view.lengthSqr() < 1e-6) return;
+        Vec3[] f = frame(view.normalize());
+        int rays = 6;
+        for (int i = 0; i < rays; i++) {   // a six-pointed star of frost, opening and fading
+            double an = i * TAU / rays + p.id;
+            Vec3 d = f[0].scale(Math.cos(an)).add(f[1].scale(Math.sin(an)));
+            double r1 = (0.25 + 0.55 * Math.sqrt(k)) * s;
+            gseg(m, cam, p.c.add(d.scale(0.05)), p.c.add(d.scale(r1)), 0.035 * s, 0.9F * a, 0.1F * a, W_CORE);
+            Vec3 b = p.c.add(d.scale(r1 * 0.6));   // little branches, like a snowflake's
+            gseg(m, cam, b, b.add(d.add(f[0].scale(Math.cos(an + 1.2)).add(f[1].scale(Math.sin(an + 1.2)))).normalize().scale(r1 * 0.25)), 0.02 * s, 0.7F * a, 0, W_SOFT);
+            gseg(m, cam, b, b.add(d.add(f[0].scale(Math.cos(an - 1.2)).add(f[1].scale(Math.sin(an - 1.2)))).normalize().scale(r1 * 0.25)), 0.02 * s, 0.7F * a, 0, W_SOFT);
+        }
+        gglow(m, cam, p.c, 0.45 * s * (1 - k * 0.5), 0.45F * a, W_ICE);
     }
 
     // ================================================================== frost on your hand (first person, under the Moon)

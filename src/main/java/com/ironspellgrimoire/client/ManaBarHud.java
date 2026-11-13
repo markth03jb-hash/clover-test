@@ -50,6 +50,19 @@ public final class ManaBarHud {
             {0xC8F2FF, 0x22B8E8, 0x8CE6FF, 0x04101C, 0xE0FAFF},   // Julius
             {0xFFF6D8, 0xE8C040, 0xFFFFFF, 0x141006, 0xFFF4C0},   // Patolli: light
             {0xD8D0D8, 0xA8101E, 0xFF6A74, 0x12040A, 0xFFB0B8},   // Blood: oxblood well, silver casing, blood-red mana
+            {0xD8CCFF, 0x6A3CE0, 0xB89CFF, 0x0A0614, 0xDCCBFF},   // Gravity: violet mana sinking in a black well
+            {0xD6FFF4, 0x22C8A0, 0x9CFFE4, 0x041412, 0xD6FFF4},   // Sound: sea-green
+            {0xEDE3CC, 0x2A2A50, 0x6A70FF, 0x06060C, 0xF0E8D8},   // Ink: ink with an indigo sheen in a paper casing
+            {0xFF9CE6, 0xD01CA0, 0x3CF0FF, 0x08040C, 0xFFD0F4},   // Error: magenta, glinting cyan
+            {0xFFE7A0, 0xE0A020, 0xFFF4C0, 0x140E04, 0xFFF0C0},   // Treasure: gold
+            {0xC8D0DC, 0x7A8696, 0xE8C66A, 0x0C0E12, 0xE6ECF4},   // Chain: steel links
+            {0xB8B0A8, 0x9A1020, 0xFF5060, 0x0E0606, 0xF0D0C8},   // Hunter: blood in a tarnished silver vial
+            {0xFFFFFF, 0x202020, 0xFFFFFF, 0x000000, 0xFFFFFF},   // Void: white in black
+            {0xF2CF5A, 0x1A8A44, 0xFFE890, 0x05160C, 0xFFF0B8},   // Gambler: felt green, gold casing
+            {0xE8C66A, 0x7A3CC8, 0xD8B8FF, 0x10071C, 0xF4E4FF},   // Tarot: violet, gold
+            {0x5C7A94, 0x0E5A6A, 0x34F0D2, 0x02040A, 0xA8FFF0},   // Abyss: teal glow in the black
+            {0xFFC21A, 0xD05A10, 0xFFA040, 0x0E1012, 0xFFE8A8},   // Mech: hazard yellow, hot orange core
+            {0xF2F8FF, 0x3A8AD0, 0xFFD34A, 0x0A1A2A, 0xEAF6FF},   // Weather: sky blue with a sun glint
             {0xF2F8FF, 0x7FC4F4, 0xFFFFFF, 0x0A1424, 0xDDF2FF},   // the Scarlet Moon's ice: frosted silver, ice-blue mana
     };
 

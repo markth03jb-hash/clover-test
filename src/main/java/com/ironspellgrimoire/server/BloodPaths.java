@@ -22,16 +22,16 @@ public final class BloodPaths {
     /** spell -> {A name, A text, B name, B text} */
     public static final Map<String, String[]> PATHS = new LinkedHashMap<>();
     static {
-        PATHS.put("crimson_edge", new String[]{"Twin Edge", "A second, mirrored arc follows for 60%.", "Long Edge", "The arc reaches half again as far."});
-        PATHS.put("hemorrhage", new String[]{"Contagion", "The bleeding spreads to two foes near the mark.", "Triple Needle", "Three needles: the three nearest foes in front of you."});
-        PATHS.put("sanguine_volley", new String[]{"Barrage", "Four more needles.", "Piercing", "Needles pass through everything in their path."});
-        PATHS.put("transfusion", new String[]{"Deep Draw", "Heals you for all it drains, not 60%.", "Chain", "Also draws from a second foe nearby."});
-        PATHS.put("blood_pact", new String[]{"Greater Pact", "+100% instead of +60% - it costs 30% of your health.", "Twin Pact", "Your next two Blood spells are 35% stronger."});
-        PATHS.put("red_tide", new String[]{"Riptide", "When the wave has passed, it drags foes back toward you.", "Crimson Flood", "The wave is half again as wide."});
-        PATHS.put("thorned_veins", new String[]{"Briar Field", "The thorns strike again a second later.", "Spiked Line", "The line of thorns runs half again as far."});
-        PATHS.put("crimson_bulwark", new String[]{"Iron Blood", "+50% shield.", "Thorn Shell", "While it holds, a fifth of every blow strikes back."});
-        PATHS.put("exsanguinate", new String[]{"Wide Reach", "Reaches 13 blocks instead of 9.", "Gluttony", "Heals you for all it drains, not half."});
-        PATHS.put("scarlet_moon", new String[]{"Long Night", "The Moon lasts 15 s longer.", "Cold Blood", "Ice moves hit 15% harder."});
+        PATHS.put("crimson_edge", new String[]{"Twin Edge", "A mirrored 2nd arc (60%)", "Long Edge", "50% longer reach"});
+        PATHS.put("hemorrhage", new String[]{"Contagion", "Bleed spreads to 2 foes", "Triple Needle", "Hits the 3 nearest foes"});
+        PATHS.put("sanguine_volley", new String[]{"Barrage", "4 more needles", "Piercing", "Needles pass through"});
+        PATHS.put("transfusion", new String[]{"Deep Draw", "Heals all it drains", "Chain", "Drains a 2nd foe too"});
+        PATHS.put("blood_pact", new String[]{"Greater Pact", "+100%, costs 30% health", "Twin Pact", "Next 2 spells +35%"});
+        PATHS.put("red_tide", new String[]{"Riptide", "Drags foes back to you", "Crimson Flood", "50% wider wave"});
+        PATHS.put("thorned_veins", new String[]{"Briar Field", "Thorns strike twice", "Spiked Line", "50% longer line"});
+        PATHS.put("crimson_bulwark", new String[]{"Iron Blood", "+50% shield", "Thorn Shell", "20% of blows strike back"});
+        PATHS.put("exsanguinate", new String[]{"Wide Reach", "Reaches 13 blocks", "Gluttony", "Heals all it drains"});
+        PATHS.put("scarlet_moon", new String[]{"Long Night", "The Moon lasts +15 s", "Cold Blood", "Ice moves +15% damage"});
     }
 
     /** The path this spell took on this book (0 = none: below mastery 5, or not chosen). */
@@ -51,7 +51,7 @@ public final class BloodPaths {
     /** From the grimoire screen (TreePackets action 11 / 12). */
     public static void choose(ServerPlayer p, String spell, int which) {
         if (!PATHS.containsKey(spell) || (which != 1 && which != 2)) return;
-        ItemStack b = Utils.getPlayerSpellbookStack(p);
+        ItemStack b = SkillTreeServer.findBook(p, 20);   // equipped, or in hand
         if (b == null || GrimoireMastery.bookOf(b) == null || GrimoireMastery.BOOKS.indexOf(GrimoireMastery.bookOf(b)) != 20) return;
         if (GrimoireMastery.level(b) < NEEDS) {
             p.displayClientMessage(Component.literal("Paths open at mastery " + NEEDS + ".").withStyle(ChatFormatting.GRAY), true);

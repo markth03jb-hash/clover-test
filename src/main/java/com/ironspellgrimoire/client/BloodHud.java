@@ -36,6 +36,9 @@ public final class BloodHud {
         moonLen = Math.max(1, p.life);
     }
 
+    /** Has this player drunk their fill (a full gauge)? Their eyes burn crimson (BloodFxClient). */
+    public static boolean full() { return equipped && gauge >= 99.9F; }
+
     /** Is the Scarlet Moon up on this client (every menu shows the ice version)? */
     public static boolean moon() {
         Minecraft mc = Minecraft.getInstance();

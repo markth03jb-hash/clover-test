@@ -1,6 +1,18 @@
-Iron Spell Grimoire v1.97.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.98.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.98.0
+- Thirteen new grimoires (original designs; each with ten spells, its own passive, sounds, cover, wheel theme, mana bar,
+  skill-tree row and crown):
+  Gravity, Sound, Ink, Error, Treasure, Chain (five chains, Five Rules), Blood Moon Hunter (trick weapon, Rally, a red
+  moon), Void (erase things into Nothing, Origin Zero), Gambler (coin flips, Luck, a slot machine and a jackpot), Tarot
+  (a 22-card deck, upright or reversed; finish the reading), Lightless Abyss (a Depth gauge in metres - deeper hits
+  harder and darkens the edges of your sight), Mech (each spell bolts on a part, shown as a blueprint; Pilot stands the
+  machine round you; Titan Buster spends it all), Weather (every spell changes your own forecast - a little cloud over
+  your head - and Cataclysm is a different disaster for each). Nothing they do breaks blocks or changes real weather.
+- Blood Grimoire: crimson eyes once the gauge is full, the more you've drunk the harder it hits, flowers on pools.
+- About 30 new self-made sounds.
 
 NEW IN 1.97.0
 - Blood Grimoire, reworked: every spell drawn as real liquid blood (streams, drops that splash into pools, thorns that

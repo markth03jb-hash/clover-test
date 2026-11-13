@@ -21,6 +21,19 @@
     "iron_spell_grimoire:earth_grimoire",
     "iron_spell_grimoire:time_grimoire",
     "iron_spell_grimoire:light_grimoire",
-    "iron_spell_grimoire:blood_grimoire"
+    "iron_spell_grimoire:blood_grimoire",
+    "iron_spell_grimoire:gravity_grimoire",
+    "iron_spell_grimoire:sound_grimoire",
+    "iron_spell_grimoire:ink_grimoire",
+    "iron_spell_grimoire:error_grimoire",
+    "iron_spell_grimoire:treasure_grimoire",
+    "iron_spell_grimoire:chain_grimoire",
+    "iron_spell_grimoire:hunter_grimoire",
+    "iron_spell_grimoire:void_grimoire",
+    "iron_spell_grimoire:gambler_grimoire",
+    "iron_spell_grimoire:tarot_grimoire",
+    "iron_spell_grimoire:abyss_grimoire",
+    "iron_spell_grimoire:mech_grimoire",
+    "iron_spell_grimoire:weather_grimoire"
   ]
 }

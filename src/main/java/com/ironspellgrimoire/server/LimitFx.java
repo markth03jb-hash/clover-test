@@ -90,7 +90,7 @@ public final class LimitFx {
         Vec3 c = p.position();
         // shared beat: the world goes white for an instant (Luck: his lightning frame), the ground shakes, the power erupts
         if (!foesNear(sl, p, c.add(0, 1, 0), 14).isEmpty()) FxSend.impactFrame(sl, c, 4, new int[]{FxSend.FRAME_ASTA, FxSend.FRAME_YAMI, FxSend.FRAME_YUNO, FxSend.FRAME_NOZEL, FxSend.FRAME_MAGNA,
-                FxSend.FRAME_LUCK, FxSend.FRAME_MEREOLEONA, FxSend.FRAME_ZENON, FxSend.FRAME_KLAUS, FxSend.FRAME_VANESSA, FxSend.FRAME_FINRAL, FxSend.FRAME_NOZEL, FxSend.FRAME_KLAUS, FxSend.FRAME_FINRAL, FxSend.FRAME_FUEGOLEON, FxSend.FRAME_LEOPOLD, FxSend.FRAME_JACK, FxSend.FRAME_SOL, FxSend.FRAME_JULIUS, FxSend.FRAME_LIGHT}[Math.max(0, Math.min(19, idx))], 24);   // each grimoire's own frame
+                FxSend.FRAME_LUCK, FxSend.FRAME_MEREOLEONA, FxSend.FRAME_ZENON, FxSend.FRAME_KLAUS, FxSend.FRAME_VANESSA, FxSend.FRAME_FINRAL, FxSend.FRAME_NOZEL, FxSend.FRAME_KLAUS, FxSend.FRAME_FINRAL, FxSend.FRAME_FUEGOLEON, FxSend.FRAME_LEOPOLD, FxSend.FRAME_JACK, FxSend.FRAME_SOL, FxSend.FRAME_JULIUS, FxSend.FRAME_LIGHT, FxSend.FRAME_BLOOD, FxSend.FRAME_YAMI, FxSend.FRAME_JULIUS, FxSend.FRAME_YAMI, FxSend.FRAME_RIPPER_GREEN, FxSend.FRAME_GOLD, FxSend.FRAME_KLAUS, FxSend.FRAME_BLOOD, FxSend.FRAME_YAMI, FxSend.FRAME_GOLD, FxSend.FRAME_JULIUS, FxSend.FRAME_YAMI, FxSend.FRAME_ASTA_SLASH, FxSend.FRAME_YUNO}[Math.max(0, Math.min(33, idx))], 24);   // each grimoire's own frame
         FxSend.shake(sl, c, 0.7f, 18, 32);
         sound(sl, c, SoundEvents.BEACON_ACTIVATE, 1f, 0.6f);
         sound(sl, c, SoundEvents.TOTEM_USE, 0.6f, 0.8f);
@@ -230,6 +230,19 @@ public final class LimitFx {
             case 14, 15, 16, 17 -> AwakenFx.awaken(p, idx);
             case 18 -> TimeFx.awaken(p);
             case 19 -> LightFx.awaken(p);
+            case 21 -> GravityFx.awaken(p);
+            case 22 -> SoundFx.awaken(p);
+            case 23 -> InkFx.awaken(p);
+            case 24 -> ErrorFx.awaken(p);
+            case 25 -> TreasureFx.awaken(p);
+            case 26 -> ChainFx.awaken(p);
+            case 27 -> HunterFx.awaken(p);
+            case 28 -> VoidFx.awaken(p);
+            case 29 -> GamblerFx.awaken(p);
+            case 30 -> TarotFx.awaken(p);
+            case 31 -> AbyssFx.awaken(p);
+            case 32 -> MechFx.awaken(p);
+            case 33 -> WeatherFx.awaken(p);
             case 8 -> {    // Klaus: steel plates rise around him in a circle, ringing like a bell
                 for (int k = 0; k < 8; k++) {
                     double a = Math.PI * 2 * k / 8;

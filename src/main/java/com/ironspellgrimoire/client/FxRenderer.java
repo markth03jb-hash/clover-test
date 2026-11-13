@@ -124,6 +124,21 @@ public class FxRenderer extends FxBase {
       if (p.shape == 66) { LightFxClient.spawn(p); return; }
       if (p.shape == 80) { BloodFxClient.spawn(p); return; }
       if (p.shape == 82) { IceFxClient.spawn(p); return; }
+      if (p.shape == 83) { GravityFxClient.spawn(p); return; }   // the Gravity Grimoire (server/GravityFx)
+      if (p.shape == 84) { SoundFxClient.spawn(p); return; }     // the Sound Grimoire (server/SoundFx)
+      if (p.shape == 85) { InkFxClient.spawn(p); return; }       // the Ink Grimoire (server/InkFx)
+      if (p.shape == 86) { ErrorFxClient.spawn(p); return; }     // the Error Grimoire (server/ErrorFx)
+      if (p.shape == 87) { TreasureFxClient.spawn(p); return; }  // the Treasure Grimoire (server/TreasureFx)
+      if (p.shape == 3) { ChainFxClient.kill(p.id); }
+      if (p.shape == 88) { ChainFxClient.spawn(p); return; }   // the Chain Grimoire (server/ChainFx)
+      if (p.shape == 89) { HunterFxClient.spawn(p); return; }   // the Hunter Grimoire (server/HunterFx)
+      if (p.shape == 90) { VoidFxClient.spawn(p); return; }   // the Void Grimoire (server/VoidFx)
+      if (p.shape == 91) { GamblerFxClient.spawn(p); return; }   // the Gambler Grimoire (server/GamblerFx)
+      if (p.shape == 92) { TarotFxClient.spawn(p); return; }   // the Tarot Grimoire (server/TarotFx)
+      if (p.shape == 93) { AbyssFxClient.spawn(p); return; }   // the Abyss Grimoire (server/AbyssFx)
+      if (p.shape == 94) { MechFxClient.spawn(p); return; }   // the Mech Grimoire (server/MechFx)
+      if (p.shape == 95) { WeatherFxClient.spawn(p); return; }   // the Weather Grimoire (server/WeatherFx)
+      if (p.shape == 3) { GravityFxClient.kill(p.id); }
    // Patolli's Light Magic (LightFxClient)
       if (p.shape == 3 && LightFxClient.kill(p.id)) return;
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
@@ -312,7 +327,7 @@ public class FxRenderer extends FxBase {
             TRACK.clear();
             ORBITS.clear();
             WHIPS.clear();
-            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear();
+            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear(); GravityFxClient.clear(); SoundFxClient.clear(); InkFxClient.clear(); ErrorFxClient.clear(); TreasureFxClient.clear(); ChainFxClient.clear(); HunterFxClient.clear(); VoidFxClient.clear(); GamblerFxClient.clear(); TarotFxClient.clear(); AbyssFxClient.clear(); MechFxClient.clear(); WeatherFxClient.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
@@ -522,6 +537,19 @@ public class FxRenderer extends FxBase {
             LightFxClient.draw(m, cam, now, pt);
             BloodFxClient.draw(vc, m, n, cam, now, pt);
             IceFxClient.draw(vc, m, n, cam, now, pt);
+            GravityFxClient.draw(vc, m, n, cam, now, pt);
+            SoundFxClient.draw(m, cam, now, pt);
+            InkFxClient.draw(vc, m, n, cam, now, pt);
+            ErrorFxClient.draw(vc, m, n, cam, now, pt);
+            TreasureFxClient.draw(vc, m, n, cam, now, pt);
+            ChainFxClient.draw(vc, m, n, cam, now, pt);
+            HunterFxClient.draw(vc, m, n, cam, now, pt);
+            VoidFxClient.draw(vc, m, n, cam, now, pt);
+            GamblerFxClient.draw(vc, m, n, cam, now, pt);
+            TarotFxClient.draw(vc, m, n, cam, now, pt);
+            AbyssFxClient.draw(vc, m, n, cam, now, pt);
+            MechFxClient.draw(vc, m, n, cam, now, pt);
+            WeatherFxClient.draw(vc, m, n, cam, now, pt);
             BountyHud.drawBeacon(m, cam, now);
             QuestHud.drawBeacon(m, cam, now);
             WorldBossHud.drawBeacon(m, cam, now);

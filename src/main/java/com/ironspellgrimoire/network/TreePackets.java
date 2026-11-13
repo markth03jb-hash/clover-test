@@ -12,8 +12,8 @@ public final class TreePackets {
         public final int action;
         public final String id;
         public Act(int action, String id) { this.action = action; this.id = id; }
-        public static void encode(Act p, FriendlyByteBuf b) { b.writeVarInt(p.action); b.writeUtf(p.id, 16); }
-        public static Act decode(FriendlyByteBuf b) { return new Act(b.readVarInt(), b.readUtf(16)); }
+        public static void encode(Act p, FriendlyByteBuf b) { b.writeVarInt(p.action); b.writeUtf(p.id, 48); }
+        public static Act decode(FriendlyByteBuf b) { return new Act(b.readVarInt(), b.readUtf(48)); }
         public static void handle(Act p, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> {
                 var sp = ctx.get().getSender();

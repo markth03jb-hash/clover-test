@@ -397,6 +397,8 @@ public class GrimoireFloatRenderer {
          Vec3[] sp = SMOOTH_POS.get(p.getId());
          if (pr == null || sp == null) continue;
          ItemStack book = BOOK_STACK.getOrDefault(p.getId(), fallback);
+         // under the Scarlet Moon the Blood Grimoire is put away: the ice comes from you, not from the book
+         if (book.is(AddonItemRegistry.BLOOD_GRIMOIRE.get()) && (p == mc.player ? BloodHud.moon() : BloodFxClient.hasMoonAura(p.getId()))) continue;
          float prog = ease(Mth.lerp(pt, pr[0], pr[1]));
          boolean fp = firstPerson(mc, p);
          float yaw = p.getViewYRot(pt);

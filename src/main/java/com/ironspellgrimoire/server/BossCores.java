@@ -27,6 +27,7 @@ public final class BossCores {
     public static void onDeath(LivingDeathEvent e) {
         LivingEntity b = e.getEntity();
         if (!(b.level() instanceof ServerLevel sl) || !isBoss(b.getType()) || !(e.getSource().getEntity() instanceof ServerPlayer killer)) return;
+        if (Rifts.isShade(b)) { finisher(sl, b, killer, e.getSource()); return; }   // a rift's shade: the finish, but no core or trophy
         b.spawnAtLocation(new ItemStack(AddonItemRegistry.MANA_CORE.get()), 1f);
         ItemStack trophy = GrimoireUpgrades.trophy(b.getType());   // and its own grimoire upgrade
         if (!trophy.isEmpty()) b.spawnAtLocation(trophy, 1.4f);

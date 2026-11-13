@@ -66,9 +66,11 @@ public final class QuestHud {
         g.fill(x, y, x + w, y + h, 0xA0081018);
         g.renderOutline(x, y, w, h, daily ? 0xC0E8B84A : 0xC060A8D8);
         g.fill(x, y, x + 3, y + h, head);
-        g.drawString(f, state == Quests.DONE ? "QUEST COMPLETE" : daily ? "DAILY SPECIAL" : "QUEST", x + 8, y + 4, head, false);
-        if (daily && state != Quests.DONE) g.drawString(f, Quests.modsText(flags & 15), x + 8, y + 40, 0xFFFF9060, false);
         String title = Quests.TITLES[Math.max(0, Math.min(Quests.TITLES.length - 1, type))];
+        String label = state == Quests.DONE ? "QUEST COMPLETE" : daily ? "DAILY SPECIAL" : "QUEST";
+        if (f.width(label) + f.width(title) + 18 > w) label = state == Quests.DONE ? "DONE" : daily ? "DAILY" : "QUEST";   // a long title: the heading shortens so they never touch
+        g.drawString(f, label, x + 8, y + 4, head, false);
+        if (daily && state != Quests.DONE) g.drawString(f, Quests.modsText(flags & 15), x + 8, y + 40, 0xFFFF9060, false);
         g.drawString(f, title, x + w - 6 - f.width(title), y + 4, 0xFFFFFFFF, false);
         if (state == Quests.TRAVEL) {
             double dx = tx - mc.player.getX(), dz = tz - mc.player.getZ();

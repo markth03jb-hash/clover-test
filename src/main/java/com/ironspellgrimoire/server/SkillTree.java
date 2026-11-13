@@ -74,7 +74,20 @@ public final class SkillTree {
             /* 17 Earth */ {"Stone Fist", "knock", .5f, "Bedrock Skin", "armor", 5, "Rock Spike", "crit", .08f, "Earth Wall", "shield", 6, "Quake", "slow", .25f, "Golem's Strength", "health", 6, "Mountain Fall", "boss", .12f},
             /* 18 Time */ {"Clock Hand", "refund", .06f, "Chrono Acceleration", "hastecast", .20f, "Ticking Snare", "slow", .25f, "Time Theft", "manasteal", .06f, "Hourglass", "cdr", .08f, "Echo of the Past", "echo", .12f, "Zenith Hour", "first", .25f},
             /* 19 Light */ {"Light Speed", "hastecast", .25f, "Judgment", "crit", .10f, "Healing Ray", "regenhp", 1, "Blinding Flash", "weaken", .20f, "Arrows of Judgment", "chain", .15f, "Light Shaft", "first", .25f, "Imperial Conviction", "boss", .12f},
-            /* 20 Blood (BloodFx/IceFx read its own three) */ {"Thirst", "gaugefill", .15f, "Hard Freeze", "encase", 20, "Pale Ward", "moonguard", .10f, "Blood Price", "lowhp", .15f, "Sanguine Drain", "lifesteal", .05f, "Frostbite", "slow", .20f, "Red Moon Rising", "power", .08f}};
+            /* 20 Blood (BloodFx/IceFx read its own three) */ {"Thirst", "gaugefill", .15f, "Hard Freeze", "encase", 20, "Pale Ward", "moonguard", .10f, "Blood Price", "lowhp", .15f, "Sanguine Drain", "lifesteal", .05f, "Frostbite", "slow", .20f, "Red Moon Rising", "power", .08f},
+            /* 21 Gravity */ {"Dense Shot", "crit", .08f, "Heavy Hand", "slow", .25f, "Event Pull", "pull", .6f, "Featherfall", "dodge", .08f, "Crushing Weight", "boss", .12f, "Orbit", "echo", .10f, "Singularity", "chain", .15f},
+            /* 22 Sound */ {"Sharp Note", "crit", .10f, "Quick Tempo", "hastecast", .20f, "Echo", "echo", .12f, "Rebound", "thorns", .15f, "Deafening", "weaken", .20f, "Wide Chorus", "chain", .15f, "Tuned Ear", "dodge", .08f},
+            /* 23 Ink */ {"Bold Stroke", "crit", .10f, "Quick Brush", "hastecast", .20f, "Bleeding Ink", "burn", .12f, "Soaked", "slow", .25f, "Second Copy", "echo", .12f, "Spatter", "chain", .15f, "Finished Work", "execute", .20f},
+            /* 24 Error */ {"Bad Sector", "crit", .10f, "Overclock", "cdr", .08f, "Memory Leak", "manasteal", .06f, "Stack Overflow", "echo", .12f, "Null Pointer", "weaken", .20f, "Fork Bomb", "chain", .15f, "Exploit", "first", .25f},
+            /* 25 Treasure */ {"Fine Edge", "crit", .10f, "Golden Hoard", "refund", .06f, "Royal Guard", "shield", 5, "Collector", "killheal", 3, "Heavy Spear", "knock", .5f, "Endless Armory", "chain", .15f, "King's Due", "boss", .12f},
+            /* 26 Chain */ {"Tight Links", "slow", .20f, "Dowsing Sense", "dodge", .07f, "Mending Chain", "regenhp", 1, "Stealing Hook", "lifesteal", .05f, "Judgment Blade", "execute", .20f, "Chain Reaction", "chain", .15f, "Anchor Weight", "knock", .5f},
+            /* 27 Hunter */ {"Serrated Edge", "crit", .10f, "Quickstep", "dodge", .08f, "Rally", "lifesteal", .06f, "Silver Bullet", "boss", .12f, "Visceral", "execute", .25f, "Nightmare Pace", "hastecast", .20f, "Hunter's Resolve", "lowhp", .15f},
+            /* 28 Void */ {"Erosion", "weaken", .20f, "Unmade", "crit", .10f, "Null Field", "slow", .20f, "Hollow Ward", "shield", 5, "Seamless", "cdr", .08f, "Gone", "execute", .25f, "Empty Hand", "manasteal", .06f},
+            /* 29 Gambler */ {"Loaded", "crit", .12f, "House Money", "refund", .07f, "Ricochet", "chain", .15f, "Hedge Bet", "shield", 5, "Winning Streak", "echo", .10f, "Cash Out", "killheal", 3, "High Roller", "boss", .12f},
+            /* 30 Tarot */ {"Upright", "power", .06f, "Foresight", "dodge", .08f, "The Lovers", "lifesteal", .05f, "Temperance", "regenhp", 1, "The Chariot", "hastecast", .20f, "The Devil", "weaken", .20f, "The Sun", "first", .25f},
+            /* 31 Abyss */ {"Pressure", "slow", .25f, "Cold Blood", "armor", 4, "Lure Light", "pull", .5f, "Many Arms", "chain", .15f, "Undertow", "knock", .5f, "Hunger of the Deep", "lifesteal", .05f, "Leviathan Bite", "boss", .12f},
+            /* 32 Mech */ {"Reinforced Frame", "armor", 5, "Rivet Gun", "crit", .10f, "Thrusters", "hastecast", .20f, "Plating", "shield", 6, "Heavy Hitter", "knock", .6f, "Missile Pod", "chain", .15f, "Cooling System", "cdr", .08f},
+            /* 33 Weather */ {"Tailwind", "dodge", .07f, "Static", "chain", .15f, "Hail", "slow", .20f, "Downpour", "regenhp", 1, "Heatwave", "burn", .12f, "Gale Force", "knock", .5f, "Calm Eye", "fullhp", .12f}};
 
     /** The crowns (server/SkillEffects does what they say). */
     public static final String[][] CROWNS = {
@@ -98,7 +111,20 @@ public final class SkillTree {
             {"Mountain's Root", "You can't be knocked back, and standing still you take 25% less damage."},
             {"Rewind", "Once a minute, a killing blow is undone: you return to where you stood, with the health you had, 3 s ago."},
             {"Speed of Light", "Your first spell after 3 s without casting lands 60% harder, and you gain +40% speed for 2 s."},
-            {"Eternal Night", "Every Scarlet Moon lasts 15 s longer, and Moonfall returns twice as fast."}};
+            {"Eternal Night", "Every Scarlet Moon lasts 15 s longer, and Moonfall returns twice as fast."},
+            {"Event Horizon", "Hits on foes off the ground land 30% harder, and pull everything within 3 blocks of them in."},
+            {"Perfect Pitch", "Every 4th spell hit on the same foe strikes the perfect note: it lands 80% harder."},
+            {"Living Signature", "Every 6th spell hit signs your name on the foe: it lands 70% harder."},
+            {"Kernel Panic", "Hits on foes below half health land 25% harder, and one hit in ten lands three times over."},
+            {"Gate of Plenty", "Every 5th spell hit is followed by a sword from the vault: it lands 60% harder."},
+            {"Bound Fate", "Hits on foes that are slowed or held land 30% harder."},
+            {"Hunter's Dream", "Every third hit in quick succession on the same foe is a visceral blow: it lands 60% harder."},
+            {"Zero Point", "Hits on foes with no armour left land 40% harder."},
+            {"House Edge", "Every hit is a bet: one in four lands twice as hard, one in twenty three times."},
+            {"Fated Meeting", "Your first hit on each new foe lands 40% harder."},
+            {"Crushing Depths", "The deeper you stand below sea level, the harder you hit: +1% a block, up to +40%."},
+            {"Overdrive", "Every 10th spell hit discharges the core: it lands twice as hard."},
+            {"Lightning Rod", "Under real rain your hits land 30% harder; under any open sky, 10%."}};
 
     private static final List<List<Node>> TREES = new ArrayList<>();
     static {

@@ -45,6 +45,20 @@ public final class LimitClient {
             {0.86F, 0.64F, 0.36F},  // Sol: ochre
             {0.3F, 0.86F, 1.0F},    // Julius: cyan
             {1.0F, 0.9F, 0.5F},     // Patolli: light
+            {1.0F, 0.12F, 0.18F},   // Blood
+            {0.62F, 0.38F, 1.0F},   // Gravity: violet
+            {0.4F, 1.0F, 0.82F},    // Sound: sea green
+            {0.42F, 0.44F, 1.0F},   // Ink: indigo
+            {1.0F, 0.2F, 0.8F},     // Error: magenta
+            {1.0F, 0.8F, 0.3F},     // Treasure: gold
+            {0.78F, 0.82F, 0.88F},  // Chain: steel
+            {0.85F, 0.08F, 0.16F},  // Hunter: blood red
+            {1.0F, 1.0F, 1.0F},     // Void: white
+            {0.95F, 0.8F, 0.3F},    // Gambler: gold
+            {0.75F, 0.55F, 1.0F},   // Tarot: violet
+            {0.2F, 0.95F, 0.82F},   // Abyss: teal
+            {1.0F, 0.55F, 0.12F},   // Mech: orange
+            {0.5F, 0.8F, 1.0F},     // Weather: sky
     };
 
     public static void set(int id, int book, int life) {
