@@ -615,21 +615,21 @@ public class AddonSpellRegistry {
             SAW_CLEAVE, TRICK_SWITCH, SILVER_SHOT, HUNTER_QUICKSTEP, VISCERAL_STRIKE, HUNTERS_MARK, RENDING_SPIN, BLOOD_VOLLEY, BLOOD_MOON_HUNT, NIGHTMARE_CLEAVE);
 
     // ------------------------------------------------------------------ Void Grimoire (an original grimoire: VoidFx)
-    private static com.ironspellgrimoire.spells.BookSpell void(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+    private static com.ironspellgrimoire.spells.BookSpell voidBook(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
         return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
                 com.ironspellgrimoire.item.VoidGrimoireItem.class, "ui.iron_spell_grimoire.void_grimoire_only", cd, mana, power,
                 com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
     }
-    public static final RegistryObject<AbstractSpell> VOID_ERASE = registerSpell(void("erase", 3, 15, 10, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.VoidFx::erase));
-    public static final RegistryObject<AbstractSpell> NULL_STEP = registerSpell(void("null_step", 7, 20, 8, "iron_spell_grimoire:light_step", com.ironspellgrimoire.server.VoidFx::nullStep));
-    public static final RegistryObject<AbstractSpell> VOID_UNMAKE = registerSpell(void("unmake", 12, 35, 9, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.VoidFx::unmakeSpell));
-    public static final RegistryObject<AbstractSpell> VOID_NULLIFY = registerSpell(void("nullify", 14, 35, 9, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.VoidFx::nullify));
-    public static final RegistryObject<AbstractSpell> VOID_SEAM = registerSpell(void("seam", 12, 35, 10, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.VoidFx::seamSpell));
-    public static final RegistryObject<AbstractSpell> VOID_ABSENCE = registerSpell(void("absence", 20, 45, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.VoidFx::absenceSpell));
-    public static final RegistryObject<AbstractSpell> VOID_LANCE = registerSpell(void("void_lance", 14, 45, 11, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.VoidFx::voidLance));
-    public static final RegistryObject<AbstractSpell> VOID_DELETE = registerSpell(void("delete", 18, 50, 12, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.VoidFx::deleteSpell));
-    public static final RegistryObject<AbstractSpell> VOID_EMPTINESS = registerSpell(void("emptiness", 60, 80, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.VoidFx::emptinessMode));
-    public static final RegistryObject<AbstractSpell> ORIGIN_ZERO = registerSpell(void("origin_zero", 45, 120, 16, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.VoidFx::originZero));
+    public static final RegistryObject<AbstractSpell> VOID_ERASE = registerSpell(voidBook("erase", 3, 15, 10, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.VoidFx::erase));
+    public static final RegistryObject<AbstractSpell> NULL_STEP = registerSpell(voidBook("null_step", 7, 20, 8, "iron_spell_grimoire:light_step", com.ironspellgrimoire.server.VoidFx::nullStep));
+    public static final RegistryObject<AbstractSpell> VOID_UNMAKE = registerSpell(voidBook("unmake", 12, 35, 9, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.VoidFx::unmakeSpell));
+    public static final RegistryObject<AbstractSpell> VOID_NULLIFY = registerSpell(voidBook("nullify", 14, 35, 9, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.VoidFx::nullify));
+    public static final RegistryObject<AbstractSpell> VOID_SEAM = registerSpell(voidBook("seam", 12, 35, 10, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.VoidFx::seamSpell));
+    public static final RegistryObject<AbstractSpell> VOID_ABSENCE = registerSpell(voidBook("absence", 20, 45, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.VoidFx::absenceSpell));
+    public static final RegistryObject<AbstractSpell> VOID_LANCE = registerSpell(voidBook("void_lance", 14, 45, 11, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.VoidFx::voidLance));
+    public static final RegistryObject<AbstractSpell> VOID_DELETE = registerSpell(voidBook("delete", 18, 50, 12, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.VoidFx::deleteSpell));
+    public static final RegistryObject<AbstractSpell> VOID_EMPTINESS = registerSpell(voidBook("emptiness", 60, 80, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.VoidFx::emptinessMode));
+    public static final RegistryObject<AbstractSpell> ORIGIN_ZERO = registerSpell(voidBook("origin_zero", 45, 120, 16, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.VoidFx::originZero));
     /** The ten Void Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> VOID_SPELLS = List.of(
             VOID_ERASE, NULL_STEP, VOID_UNMAKE, VOID_NULLIFY, VOID_SEAM, VOID_ABSENCE, VOID_LANCE, VOID_DELETE, VOID_EMPTINESS, ORIGIN_ZERO);
