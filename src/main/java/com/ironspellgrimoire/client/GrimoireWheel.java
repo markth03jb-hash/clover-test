@@ -82,7 +82,7 @@ public final class GrimoireWheel {
     private static double leafLobe = 0.3;
 
     /** The Blood Grimoire (GrimoireMastery.BOOKS) and the theme its menus take under the Scarlet Moon. */
-    static final int BLOOD = 20, ICE = 21;
+    static final int BLOOD = 20, GRAVITY = 21, SOUND = 22, ICE = 23;
 
     /** The theme every menu should wear right now: the equipped grimoire's, or the ice one under the Scarlet Moon. */
     static int themeIndex() { return themeFor(grimoireIndex()); }
@@ -322,6 +322,10 @@ public final class GrimoireWheel {
             new Theme(c(0x0C0A04), c(0x3A3010), c(0xFFF4C8), c(0xFFD860), c(0x5A4A18), 3, O_RIVETS, M_NOTCHES, true, 0x100C04, 0xFFF4C0),
             // Blood: oxblood pages, cold silver trim, blood running down off the ring, a crescent mark on the turn
             new Theme(c(0x120308), c(0x480A16), c(0xD8D0D8), c(0xE0182E), c(0x5A0612), 3, O_BLOOD, M_CRESCENTS, true, 0x12040A, 0xFFB0B8),
+            // Gravity: near-black pages, cold violet trim, a little world held in orbit on every page
+            new Theme(c(0x07040E), c(0x241640), c(0xC9B8FF), c(0x8A5CFF), c(0x3A2266), 3, O_SMOKE, M_DOTS, true, 0x0A0614, 0xDCCBFF),
+            // Sound: deep sea-green pages, pale jade trim, sound rippling out of every page
+            new Theme(c(0x03100E), c(0x0E3A34), c(0xC8FFF0), c(0x5CFFD0), c(0x16564C), 3, O_WIND, M_NOTCHES, true, 0x041412, 0xD6FFF4),
             // the Scarlet Moon's ice (the Blood Grimoire under its mode): frosted blue pages, white trim, crystals of ice round the ring
             new Theme(c(0x08142A), c(0x2E5884), c(0xF2F8FF), c(0xBFE6FF), c(0xDDEEFF), 6, O_FROST, M_DOTS, false, 0x0A1828, 0xEAF6FF),
     };
@@ -471,7 +475,32 @@ public final class GrimoireWheel {
                 disc(bb, m, px, py, 2.0, 0.6F, 0.03F, 0.08F, 0.95F * A);
                 disc(bb, m, px - 0.6, py - 0.6, 0.6, 1.0F, 0.7F, 0.7F, 0.9F * A);
             }
-            case 21 -> {   // ice: a crystal standing in each page, frost feathering out from its foot
+            case 21 -> {   // Gravity: a small black world in each page, a violet ring orbiting it
+                double rr = mid + (ro - ri) * 0.08;
+                double px = cx + Math.sin(am) * rr, py = cy - Math.cos(am) * rr;
+                double tilt = time * 1.6 + am * 3;
+                for (int k = 0; k < 10; k++) {
+                    double q0 = k * Math.PI / 5 + tilt, q1 = (k + 1) * Math.PI / 5 + tilt;
+                    double ax = px + Math.cos(q0) * 4.2, ay = py + Math.sin(q0) * 1.5, bx = px + Math.cos(q1) * 4.2, by = py + Math.sin(q1) * 1.5;
+                    seg(bb, m, cx, cy, Math.atan2(ax - cx, -(ay - cy)), Math.hypot(ax - cx, ay - cy), Math.atan2(bx - cx, -(by - cy)), Math.hypot(bx - cx, by - cy), 0.5, ac[0], ac[1], ac[2], (0.5F + 0.4F * p) * A);
+                }
+                disc(bb, m, px, py, 2.4, 0.03F, 0.01F, 0.06F, A);
+                disc(bb, m, px - 0.7, py - 0.7, 0.7, t[0], t[1], t[2], 0.8F * A);
+            }
+            case 22 -> {   // Sound: three arcs of sound rippling out of each page, the outer ones fainter
+                for (int k = 0; k < 3; k++) {
+                    double ph = (time * 0.8 + k / 3.0) % 1.0;
+                    double rr = ri + 5 + (ro - ri - 8) * ph;
+                    double half = w * (0.12 + 0.22 * ph);
+                    for (int s = 0; s < 4; s++) {
+                        double q0 = am - half + 2 * half * s / 4, q1 = am - half + 2 * half * (s + 1) / 4;
+                        seg(bb, m, cx, cy, q0, rr, q1, rr, 0.7, ac[0], ac[1], ac[2], (float) (1 - ph) * 0.95F * A);
+                    }
+                }
+                double px = cx + Math.sin(am) * (ri + 4), py = cy - Math.cos(am) * (ri + 4);
+                disc(bb, m, px, py, 1.3, 1.0F, 1.0F, 1.0F, 0.9F * A);
+            }
+            case 23 -> {   // ice: a crystal standing in each page, frost feathering out from its foot
                 double h = (ro - ri) * (0.62 + 0.12 * p);
                 tri(bb, m, cx, cy, am - w * 0.1, ri + 4, am + w * 0.1, ri + 4, am, ri + 4 + h, 0.62F, 0.8F, 0.96F, 0.75F * A);
                 tri(bb, m, cx, cy, am - w * 0.03, ri + 4, am + w * 0.05, ri + 4, am, ri + 4 + h * 0.96, 1.0F, 1.0F, 1.0F, 0.7F * A);

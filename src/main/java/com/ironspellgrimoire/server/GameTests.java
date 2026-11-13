@@ -313,6 +313,68 @@ public final class GameTests {
         }
     }
 
+    /** The Gravity and Sound Grimoires: every spell cast straight at the dummy; the attacks must hurt it, none may throw,
+     *  change the world or give status effects. Close-range spells get the dummy brought in to 2.5 blocks. */
+    private static final class BookMovesTest extends Test {
+        final String book; final java.util.function.Supplier<net.minecraft.world.item.Item> item;
+        final String[] names; final java.util.List<java.util.function.BiConsumer<ServerPlayer, Float>> moves; final java.util.Set<String> quiet, close;
+        BookMovesTest(String book, java.util.function.Supplier<net.minecraft.world.item.Item> item, Class<?> root, Object... spec) {
+            super(book + ": every move");
+            this.book = book; this.item = item; this.root = root;
+            java.util.List<String> n = new java.util.ArrayList<>(); moves = new java.util.ArrayList<>(); quiet = new java.util.HashSet<>(); close = new java.util.HashSet<>();
+            for (int i = 0; i < spec.length; i += 3) {
+                String nm = (String) spec[i];
+                n.add(nm);
+                @SuppressWarnings("unchecked") java.util.function.BiConsumer<ServerPlayer, Float> f = (java.util.function.BiConsumer<ServerPlayer, Float>) spec[i + 1];
+                moves.add(f);
+                String flag = (String) spec[i + 2];
+                if (flag.contains("q")) quiet.add(nm);
+                if (flag.contains("c")) close.add(nm);
+            }
+            names = n.toArray(new String[0]);
+        }
+        final Class<?> root;
+        @Override Class<?>[] roots() { return new Class<?>[]{root}; }
+        BlockState[] before; Set<MobEffect> pe, de; final java.util.List<String> bad = new java.util.ArrayList<>(), done = new java.util.ArrayList<>();
+        float hp;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            ItemStack bk = new ItemStack(item.get());
+            CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+            bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, bk));
+            before = snapshot(); pe = effects(p); de = effects(dummy);
+        }
+        @Override boolean tick(int t) {
+            p.setHealth(p.getMaxHealth());
+            MagicData.getPlayerMagicData(p).setMana(1000);
+            int i = t / 50;
+            if (t % 50 == 0 && i < names.length) {
+                ensureDummy();
+                p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                if (close.contains(names[i])) dummy.teleportTo(home.x, home.y, home.z + 2.5);
+                hp = dummy.getHealth();
+                try { moves.get(i).accept(p, 10f); } catch (Throwable x) { bad.add(names[i] + " threw " + x); }
+            }
+            if (t % 50 == 49 && i < names.length) {
+                float dealt = hp - (dummy == null ? hp : dummy.getHealth());
+                if (!quiet.contains(names[i]) && dealt <= 0) bad.add(names[i] + " did no damage to the dummy");
+                done.add(names[i] + String.format(" %.0f", dealt));
+            }
+            if (t < names.length * 50 + 10) return false;
+            String ch = changes(before);
+            if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+            Set<MobEffect> np = effects(p), nd = effects(dummy);
+            np.removeAll(pe); nd.removeAll(de);
+            if (!np.isEmpty() || !nd.isEmpty()) bad.add("gave status effects: " + np + " " + nd);
+            if (bad.isEmpty()) pass(name, "damage dealt: " + String.join(", ", done));
+            else fail(name, String.join("; ", bad));
+            Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER);
+            return true;
+        }
+    }
+
     /** The Blood Grimoire's paths: every spell cast both ways (a mastered book) - nothing may throw, change the world or give effects. */
     private static final class PathTest extends Test {
         PathTest() { super("blood: evolution paths"); }
@@ -564,6 +626,28 @@ public final class GameTests {
         for (var e : AddonSpellRegistry.SPELLS.getEntries()) queue.add(new SpellTest(e.get()));
         queue.add(new IceTest());
         queue.add(new PathTest());
+        queue.add(new BookMovesTest("gravity", com.ironspellgrimoire.registry.AddonItemRegistry.GRAVITY_GRIMOIRE::get, GravityFx.class,
+                "gravity_bullet", (java.util.function.BiConsumer<ServerPlayer, Float>) GravityFx::gravityBullet, "",
+                "weightless_step", (java.util.function.BiConsumer<ServerPlayer, Float>) GravityFx::weightlessStep, "c",
+                "crushing_field", (java.util.function.BiConsumer<ServerPlayer, Float>) GravityFx::crushingField, "",
+                "repulse", (java.util.function.BiConsumer<ServerPlayer, Float>) GravityFx::repulse, "c",
+                "gravity_well", (java.util.function.BiConsumer<ServerPlayer, Float>) GravityFx::gravityWell, "",
+                "gravity_lift", (java.util.function.BiConsumer<ServerPlayer, Float>) GravityFx::gravityLift, "",
+                "orbiting_mass", (java.util.function.BiConsumer<ServerPlayer, Float>) GravityFx::orbitingMass, "",
+                "heavy_descent", (java.util.function.BiConsumer<ServerPlayer, Float>) GravityFx::heavyDescent, "",
+                "mass_domain", (java.util.function.BiConsumer<ServerPlayer, Float>) GravityFx::massDomain, "q",
+                "starfall_collapse", (java.util.function.BiConsumer<ServerPlayer, Float>) GravityFx::starfallCollapse, ""));
+        queue.add(new BookMovesTest("sound", com.ironspellgrimoire.registry.AddonItemRegistry.SOUND_GRIMOIRE::get, SoundFx.class,
+                "sonic_pulse", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::sonicPulse, "",
+                "echo_step", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::echoStep, "",
+                "tuning_strike", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::tuningStrike, "",
+                "sound_barrier", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::soundBarrier, "c",
+                "silence_field", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::silenceField, "",
+                "thunderclap", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::thunderclap, "c",
+                "sonic_lance", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::sonicLance, "",
+                "echo_chamber", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::echoChamber, "",
+                "crescendo", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::crescendoMode, "q",
+                "final_chord", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::finalChord, ""));
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

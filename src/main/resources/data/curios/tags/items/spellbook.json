@@ -21,6 +21,8 @@
     "iron_spell_grimoire:earth_grimoire",
     "iron_spell_grimoire:time_grimoire",
     "iron_spell_grimoire:light_grimoire",
-    "iron_spell_grimoire:blood_grimoire"
+    "iron_spell_grimoire:blood_grimoire",
+    "iron_spell_grimoire:gravity_grimoire",
+    "iron_spell_grimoire:sound_grimoire"
   ]
 }

@@ -474,6 +474,46 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> BLOOD_SPELLS = List.of(
             CRIMSON_EDGE, HEMORRHAGE, SANGUINE_VOLLEY, TRANSFUSION, BLOOD_PACT, RED_TIDE, THORNED_VEINS, CRIMSON_BULWARK, EXSANGUINATE, SCARLET_MOON);
 
+    // ------------------------------------------------------------------ Gravity Grimoire (an original grimoire: GravityFx)
+    private static com.ironspellgrimoire.spells.BookSpell gravity(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
+                com.ironspellgrimoire.item.GravityGrimoireItem.class, "ui.iron_spell_grimoire.gravity_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> GRAVITY_BULLET = registerSpell(gravity("gravity_bullet", 3, 15, 9, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.GravityFx::gravityBullet));
+    public static final RegistryObject<AbstractSpell> WEIGHTLESS_STEP = registerSpell(gravity("weightless_step", 7, 20, 8, "iron_spell_grimoire:light_step", com.ironspellgrimoire.server.GravityFx::weightlessStep));
+    public static final RegistryObject<AbstractSpell> CRUSHING_FIELD = registerSpell(gravity("crushing_field", 12, 35, 10, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.GravityFx::crushingField));
+    public static final RegistryObject<AbstractSpell> REPULSE = registerSpell(gravity("repulse", 10, 30, 9, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.GravityFx::repulse));
+    public static final RegistryObject<AbstractSpell> GRAVITY_WELL = registerSpell(gravity("gravity_well", 16, 45, 11, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.GravityFx::gravityWell));
+    public static final RegistryObject<AbstractSpell> GRAVITY_LIFT = registerSpell(gravity("gravity_lift", 14, 40, 11, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.GravityFx::gravityLift));
+    public static final RegistryObject<AbstractSpell> ORBITING_MASS = registerSpell(gravity("orbiting_mass", 18, 45, 10, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.GravityFx::orbitingMass));
+    public static final RegistryObject<AbstractSpell> HEAVY_DESCENT = registerSpell(gravity("heavy_descent", 14, 40, 12, "iron_spell_grimoire:light_step", com.ironspellgrimoire.server.GravityFx::heavyDescent));
+    public static final RegistryObject<AbstractSpell> MASS_DOMAIN = registerSpell(gravity("mass_domain", 60, 80, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.GravityFx::massDomain));
+    public static final RegistryObject<AbstractSpell> STARFALL_COLLAPSE = registerSpell(gravity("starfall_collapse", 45, 120, 16, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.GravityFx::starfallCollapse));
+    /** The ten Gravity Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> GRAVITY_SPELLS = List.of(
+            GRAVITY_BULLET, WEIGHTLESS_STEP, CRUSHING_FIELD, REPULSE, GRAVITY_WELL, GRAVITY_LIFT, ORBITING_MASS, HEAVY_DESCENT, MASS_DOMAIN, STARFALL_COLLAPSE);
+
+    // ------------------------------------------------------------------ Sound Grimoire (an original grimoire: SoundFx)
+    private static com.ironspellgrimoire.spells.BookSpell sound(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.EVOCATION_RESOURCE,
+                com.ironspellgrimoire.item.SoundGrimoireItem.class, "ui.iron_spell_grimoire.sound_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> SONIC_PULSE = registerSpell(sound("sonic_pulse", 3, 15, 9, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.SoundFx::sonicPulse));
+    public static final RegistryObject<AbstractSpell> ECHO_STEP = registerSpell(sound("echo_step", 6, 20, 8, "iron_spell_grimoire:light_step", com.ironspellgrimoire.server.SoundFx::echoStep));
+    public static final RegistryObject<AbstractSpell> TUNING_STRIKE = registerSpell(sound("tuning_strike", 5, 20, 9, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.SoundFx::tuningStrike));
+    public static final RegistryObject<AbstractSpell> SOUND_BARRIER = registerSpell(sound("sound_barrier", 24, 40, 8, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.SoundFx::soundBarrier));
+    public static final RegistryObject<AbstractSpell> SILENCE_FIELD = registerSpell(sound("silence_field", 18, 40, 9, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.SoundFx::silenceField));
+    public static final RegistryObject<AbstractSpell> THUNDERCLAP = registerSpell(sound("thunderclap", 10, 30, 11, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.SoundFx::thunderclap));
+    public static final RegistryObject<AbstractSpell> SONIC_LANCE = registerSpell(sound("sonic_lance", 12, 40, 12, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.SoundFx::sonicLance));
+    public static final RegistryObject<AbstractSpell> ECHO_CHAMBER = registerSpell(sound("echo_chamber", 18, 50, 11, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.SoundFx::echoChamber));
+    public static final RegistryObject<AbstractSpell> CRESCENDO = registerSpell(sound("crescendo", 60, 80, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.SoundFx::crescendoMode));
+    public static final RegistryObject<AbstractSpell> FINAL_CHORD = registerSpell(sound("final_chord", 45, 120, 16, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.SoundFx::finalChord));
+    /** The ten Sound Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> SOUND_SPELLS = List.of(
+            SONIC_PULSE, ECHO_STEP, TUNING_STRIKE, SOUND_BARRIER, SILENCE_FIELD, THUNDERCLAP, SONIC_LANCE, ECHO_CHAMBER, CRESCENDO, FINAL_CHORD);
+
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,
                                                                    String only, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {

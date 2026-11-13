@@ -231,6 +231,14 @@ public final class GrimoireMastery {
                 "crimson_edge", 1, "hemorrhage", 1, "sanguine_volley", 2,
                 "transfusion", 2, "blood_pact", 2, "red_tide", 3,
                 "thorned_veins", 3, "crimson_bulwark", 4, "exsanguinate", 4, "scarlet_moon", 5);
+        book(AddonItemRegistry.GRAVITY_GRIMOIRE::get, Fx.DARK,
+                "gravity_bullet", 1, "weightless_step", 1, "crushing_field", 2,
+                "repulse", 2, "gravity_well", 2, "gravity_lift", 3,
+                "orbiting_mass", 3, "heavy_descent", 4, "mass_domain", 4, "starfall_collapse", 5);
+        book(AddonItemRegistry.SOUND_GRIMOIRE::get, Fx.WIND,
+                "sonic_pulse", 1, "echo_step", 1, "tuning_strike", 2,
+                "sound_barrier", 2, "silence_field", 2, "thunderclap", 3,
+                "sonic_lance", 3, "echo_chamber", 4, "crescendo", 4, "final_chord", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

@@ -396,5 +396,70 @@
         "name": "iron_spell_grimoire:sfx/blood_splash_3"
       }
     ]
+  },
+  "sfx.gravity_hum": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/gravity_hum_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/gravity_hum_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/gravity_hum_3"
+      }
+    ]
+  },
+  "sfx.gravity_crush": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/gravity_crush_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/gravity_crush_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/gravity_crush_3"
+      }
+    ]
+  },
+  "sfx.sonic_boom": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/sonic_boom_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/sonic_boom_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/sonic_boom_3"
+      }
+    ]
+  },
+  "sfx.sound_ping": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/sound_ping_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/sound_ping_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/sound_ping_3"
+      }
+    ]
+  },
+  "sfx.sound_chord": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/sound_chord_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/sound_chord_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/sound_chord_3"
+      }
+    ]
   }
 }

@@ -21,27 +21,4 @@ public final class GlowRenderType extends RenderType {
                     .setWriteMaskState(COLOR_WRITE)
                     .setCullState(NO_CULL)
                     .createCompositeState(false));
-
-    private static final java.util.Map<String, RenderType> SMOOTH = new java.util.HashMap<>();
-
-    /**
-     * A smooth (linear-filtered, not pixelated) full-bright sprite: alpha-blended, or added on as light. Used for the
-     * high-resolution painted effects like the Scarlet Moon aura.
-     */
-    public static RenderType smoothSprite(net.minecraft.resources.ResourceLocation tex, boolean additive) {
-        String key = tex + (additive ? "+" : "");
-        RenderType rt = SMOOTH.get(key);
-        if (rt != null) return rt;
-        RenderType.CompositeState state = RenderType.CompositeState.builder()
-                .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
-                .setTextureState(new TextureStateShard(tex, true, false))
-                .setTransparencyState(additive ? LIGHTNING_TRANSPARENCY : TRANSLUCENT_TRANSPARENCY)
-                .setWriteMaskState(COLOR_WRITE)
-                .setCullState(NO_CULL)
-                .setOverlayState(OVERLAY)
-                .createCompositeState(false);
-        rt = create("iron_spell_grimoire_smooth_" + (additive ? "add" : "blend"), DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 4096, false, true, state);
-        SMOOTH.put(key, rt);
-        return rt;
-    }
 }

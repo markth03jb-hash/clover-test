@@ -147,6 +147,8 @@ public final class ModeHudOverlay {
             case "instinct_guard" -> 0xFFD8F0FF;
             case "chronostasis_field" -> 0xFF6BE3FF;
             case "demon_light" -> 0xFFE8E8F0;
+            case "mass_domain" -> 0xFFB89CFF;
+            case "sound_barrier", "crescendo" -> 0xFF9CFFE4;
             case "scarlet_moon" -> 0xFFBFE6FF;   // the Moon's ice
             case "vampire_mode", "hardblood_barricade" -> 0xFFE0182A;
             case "prescript_received", "golden_shell" -> 0xFFF2CC5A;

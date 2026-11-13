@@ -124,6 +124,9 @@ public class FxRenderer extends FxBase {
       if (p.shape == 66) { LightFxClient.spawn(p); return; }
       if (p.shape == 80) { BloodFxClient.spawn(p); return; }
       if (p.shape == 82) { IceFxClient.spawn(p); return; }
+      if (p.shape == 83) { GravityFxClient.spawn(p); return; }   // the Gravity Grimoire (server/GravityFx)
+      if (p.shape == 84) { SoundFxClient.spawn(p); return; }     // the Sound Grimoire (server/SoundFx)
+      if (p.shape == 3) { GravityFxClient.kill(p.id); }
    // Patolli's Light Magic (LightFxClient)
       if (p.shape == 3 && LightFxClient.kill(p.id)) return;
       PixelFx.onPacket(p);   // forms, auras and held weapons shed pixel sprites too
@@ -312,7 +315,7 @@ public class FxRenderer extends FxBase {
             TRACK.clear();
             ORBITS.clear();
             WHIPS.clear();
-            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear();
+            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear(); GravityFxClient.clear(); SoundFxClient.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
@@ -522,6 +525,8 @@ public class FxRenderer extends FxBase {
             LightFxClient.draw(m, cam, now, pt);
             BloodFxClient.draw(vc, m, n, cam, now, pt);
             IceFxClient.draw(vc, m, n, cam, now, pt);
+            GravityFxClient.draw(vc, m, n, cam, now, pt);
+            SoundFxClient.draw(m, cam, now, pt);
             BountyHud.drawBeacon(m, cam, now);
             QuestHud.drawBeacon(m, cam, now);
             WorldBossHud.drawBeacon(m, cam, now);
@@ -571,7 +576,6 @@ public class FxRenderer extends FxBase {
             gv = null;
             DarkSmoke.render(ps, e.getCamera(), buf, pt);
             PixelFx.render(ps, e.getCamera(), buf, pt);
-            BloodFxClient.renderSprites(ps, buf, e.getCamera().getPosition());
             if (!FxBooks.PAGES.isEmpty()) {   // turning pages, drawn with the book's own page art (front = right page, back = left page)
                for (int side = 0; side < 2; side++) {
                   RenderType prt = RenderType.entityCutout(side == 0 ? FxBooks.PAGE_R : FxBooks.PAGE_L);

@@ -121,6 +121,19 @@ public final class SkillEffects {
             case 14 -> { if (hits % 6 == 0) burst = true; }
             case 15 -> { if (now - s.getLong("riseAt") < 160) add += Math.min(0.3f, 0.02f * s.getInt("rise")); }
             case 19 -> { if (s.getBoolean("lightReady")) { add += 0.6f; s.putBoolean("lightReady", false); } }
+            case 21 -> {   // Event Horizon: foes off the ground take more, and drag what's round them in
+                if (!t.onGround()) {
+                    add += 0.3f;
+                    Vec3 tm = t.position().add(0, t.getBbHeight() * 0.5, 0);
+                    for (LivingEntity o : Kit.near(sl, p, tm, 3)) if (o != t) GravityFx.pull(o, tm, 0.4);
+                }
+            }
+            case 22 -> {   // Perfect Pitch: every 4th hit on the same foe
+                boolean same = t.getUUID().toString().equals(s.getString("last")) && now - s.getLong("lastAt") < 100;
+                int n = same ? s.getInt("pitch") + 1 : 1;
+                s.putInt("pitch", n);
+                if (n % 4 == 0) { add += 0.8f; FxSend.ring(sl, Fx.WIND | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.3f, 1.6f, 0.05f, 8); }
+            }
             default -> {}
         }
         s.putString("last", t.getUUID().toString()); s.putLong("lastAt", now);

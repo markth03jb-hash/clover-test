@@ -986,71 +986,125 @@ public final class BloodFxClient {
     /** Hash in [0, 1). */
     private static double hs(int a, int b) { return FxBase.h2(a, b, 911); }
 
-    // ------------------------------------------------------------------ the Moon's aura: a 2D pixel-art sprite
-    private static final net.minecraft.resources.ResourceLocation[] AURA_TEX = {
-            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/effect/moon_aura.png"),
-            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/effect/moon_aura_glow.png"),
-            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/effect/moon_aura_front.png")};
-    private static final int AURA_FRAMES = 16;
-    /** Auras to draw this frame: {feet x, y, z, scale, alpha, frame (fractional: crossfaded)}. Queued by whiteAura. */
-    private static final List<double[]> AURA_Q = new ArrayList<>();
-
-    /**
-     * The Scarlet Moon aura is one flat painted sprite, nothing else: a smooth, glowing flame of ice-blue light with
-     * a white-hot rim, standing round you and turned to face the camera (staying upright). Its body is drawn just
-     * behind you, its light added on top, and faint rising streaks over you; the animation frames blend into each
-     * other so it flows. It swells a little on the heartbeat; awakened, it stands taller.
-     */
     private static void whiteAura(Matrix4f m, Vec3 cam, Minecraft mc, L l, double age, double now, float pt, float out) {
         FxPacket p = l.p;
         Entity e = mc.level.getEntity((int) p.v.x);
         if (e == null) return;
-        if (e == mc.player && mc.options.getCameraType().isFirstPerson()) return;   // never in your own eyes
         Vec3 f = follow(mc, p.v.x, p.c, pt, 0);
+        double H = e.getBbHeight();
         float k = env(age, p.life, 8, 20) * out;
         if (k <= 0.01F) return;
         float hb = heartbeat(now + p.id);
-        double scale = e.getBbHeight() / 1.8 * (p.a0 > 0 ? 1.15 : 1.0) * (1 + 0.05 * hb);
-        double fr = ((now + p.id * 7) / 1.25) % AURA_FRAMES;
-        if (AURA_Q.size() > 64) AURA_Q.clear();
-        AURA_Q.add(new double[]{f.x, f.y, f.z, scale, k * (0.9F + 0.1F * hb), fr});
-    }
+        boolean self = e == mc.player && mc.options.getCameraType().isFirstPerson();
+        Vec3 g = new Vec3(f.x, ground(mc, f.add(0, 0.5, 0)) + 0.03, f.z);
+        if (g.y > f.y + 0.6 || f.y - g.y > 2.5) g = f.add(0, 0.03, 0);
 
-    /** Draws the queued Moon auras (called once the world's effects are drawn). */
-    public static void renderSprites(com.mojang.blaze3d.vertex.PoseStack ps, net.minecraft.client.renderer.MultiBufferSource.BufferSource buf, Vec3 cam) {
-        if (AURA_Q.isEmpty()) return;
-        Matrix4f m = ps.last().pose();
-        Matrix3f n = ps.last().normal();
-        for (int layer = 0; layer < 3; layer++) {   // body (blended, behind you), its light (added, behind you), streaks (added, over you)
-            net.minecraft.client.renderer.RenderType rt = GlowRenderType.smoothSprite(AURA_TEX[layer], layer > 0);
-            VertexConsumer vc = buf.getBuffer(rt);
-            for (double[] q : AURA_Q) {
-                Vec3 feet = new Vec3(q[0], q[1], q[2]);
-                Vec3 to = new Vec3(cam.x - feet.x, 0, cam.z - feet.z);
-                to = to.lengthSqr() < 1.0E-6 ? new Vec3(0, 0, 1) : to.normalize();
-                Vec3 side = new Vec3(-to.z, 0, to.x);
-                double s = q[3], hw = 1.05 * s, h = hw * 2 * 256 / 160.0;
-                Vec3 base = feet.add(to.scale(layer < 2 ? -0.42 : 0.42)).add(0, -0.2 * s, 0);
-                float a = (float) q[4] * (layer == 2 ? 0.6F : 1F);
-                int f0 = (int) q[5];
-                float mix = (float) (q[5] - f0);
-                for (int fi = 0; fi < 2; fi++) {   // this frame fading into the next
-                    int fr = (f0 + fi) % AURA_FRAMES;
-                    float fa = a * (fi == 0 ? 1 - mix : mix);
-                    if (fa < 0.01F) continue;
-                    double v0 = fr / (double) AURA_FRAMES + 0.5 / (256.0 * AURA_FRAMES), v1 = (fr + 1) / (double) AURA_FRAMES - 0.5 / (256.0 * AURA_FRAMES);
-                    Vec3 bl = base.subtract(side.scale(hw)), br = base.add(side.scale(hw)), tr = br.add(0, h, 0), tl = bl.add(0, h, 0);
-                    spv(vc, m, n, cam, bl, fa, 0, v1); spv(vc, m, n, cam, br, fa, 1, v1); spv(vc, m, n, cam, tr, fa, 1, v0); spv(vc, m, n, cam, tl, fa, 0, v0);
-                }
-            }
-            buf.endBatch(rt);
+        // the ground beneath you lit white, beating like a heart, and rings sent out on every beat
+        gdisc(m, cam, g, 1.35 + 0.3 * hb, (0.22F + 0.32F * hb) * k, W_SOFT);
+        double t = (now + p.id) % 34;
+        for (int b = 0; b < 2; b++) {
+            double ph = t - b * 4;
+            if (ph < 0 || ph > 10) continue;
+            double rr = 0.5 + ph * 0.5;
+            gring(m, cam, g.add(0, 0.01, 0), rr, 0.1 + ph * 0.02, (float) Math.pow(1 - ph / 10, 1.5) * 0.8F * k * (b == 0 ? 1F : 0.75F), W_CORE);
         }
-        AURA_Q.clear();
-    }
+        // rising sparks
+        for (int i = 0; i < 26; i++) {
+            double ph = ((now / (13 + 7 * hs(i, 1)) + hs(i, 2)) % 1.0);
+            double an = hs(i, 3) * TAU + ph * 2.4, rad = (0.35 + 0.8 * hs(i, 4)) * (1.1 - ph * 0.6);
+            Vec3 s0 = f.add(Math.cos(an) * rad, ph * H * 1.9, Math.sin(an) * rad);
+            float sa = (float) Math.sin(ph * Math.PI) * k;
+            gseg(m, cam, s0, s0.add(0, 0.3 + 0.25 * hs(i, 5), 0), 0.02, sa, 0, W_CORE);
+        }
+        if (self) return;   // in first person you see the ground light and the sparks, never a wall of white
 
-    private static void spv(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 w, float a, float u, double v) {
-        vc.vertex(m, (float) (w.x - cam.x), (float) (w.y - cam.y), (float) (w.z - cam.z)).color(1F, 1F, 1F, a).uv(u, (float) v)
-                .overlayCoords(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).uv2(net.minecraft.client.renderer.LightTexture.FULL_BRIGHT).normal(n, 0, 1, 0).endVertex();
+        // a soft bloom round the whole body
+        gglow(m, cam, f.add(0, H * 0.55, 0), H * 0.75, (0.04F + 0.1F * hb) * k, W_SOFT);
+        // white flame licking up the body: tongues born at the feet that rise, stretch and let go
+        for (int i = 0; i < 22; i++) {
+            double ph = ((now / (9.0 + 4 * hs(i, 6)) + hs(i, 7)) % 1.0);
+            double an = hs(i, 8) * TAU + now * 0.03;
+            double rad = 0.4 - 0.1 * ph;   // they lean in as they rise, closing round you
+            double y0 = ph * H * 0.8, len = H * (0.35 + 0.3 * hs(i, 9)) * Math.sin(ph * Math.PI) * (1 + 0.5 * hb);
+            if (len < 0.03) continue;
+            Vec3 b0 = f.add(Math.cos(an) * rad, y0, Math.sin(an) * rad);
+            Vec3 outv = new Vec3(Math.cos(an), 0, Math.sin(an));
+            Vec3[] pts = new Vec3[5];
+            double[] w = new double[5];
+            float[] al = new float[5], core = new float[5];
+            float flick = 0.55F + 0.45F * (float) hs((int) (now / 2) + i * 7, 11);   // a ragged, uneven flicker
+            float fa = (float) Math.sin(ph * Math.PI) * k * flick;
+            for (int j = 0; j < 5; j++) {
+                double u = j / 4.0;
+                double sway = (Math.sin(now * 0.9 + i * 1.9 + u * 4) * 0.05 + (hs((int) (now / 2) + i, j + 12) - 0.5) * 0.06) * u;   // jagged, not soft
+                pts[j] = b0.add(0, len * u, 0).add(outv.scale(-0.12 * u * u + sway)).add(-outv.z * sway, 0, outv.x * sway);
+                w[j] = 0.085 * Math.pow(1 - u, 1.4) + 0.005;
+                al[j] = fa * 0.26F * (float) (1 - u);
+                core[j] = fa * 0.85F * (float) (1 - u * 0.8);
+            }
+            gstrip(m, cam, pts, w, al, W_SOFT);
+            double[] wc = new double[5];
+            for (int j = 0; j < 5; j++) wc[j] = w[j] * 0.3;
+            gstrip(m, cam, pts, wc, core, W_CORE);
+        }
+        // three spiralling streaks of light winding up round you
+        for (int s = 0; s < 3; s++) {
+            double head = ((now / 22.0 + s / 3.0) % 1.0);
+            int tr = 14;
+            Vec3[] pts = new Vec3[tr];
+            double[] w = new double[tr];
+            float[] al = new float[tr];
+            float fade = (float) Math.sin(Math.min(1, head * 1.15) * Math.PI);
+            for (int j = 0; j < tr; j++) {
+                double u = Math.max(0, head - j * 0.018);
+                double an = u * TAU * 2.8 + s * TAU / 3;
+                double rad = 0.72 - 0.4 * u;
+                pts[j] = f.add(Math.cos(an) * rad, u * H * 1.35, Math.sin(an) * rad);
+                w[j] = 0.045 * (1 - j / (double) tr);
+                al[j] = 0.9F * fade * k * (1 - j / (float) tr);
+            }
+            gstrip(m, cam, pts, w, al, W_CORE);
+        }
+        // crackling arcs of white power jumping over the body
+        long slot = (long) (now / 2);
+        for (int i = 0; i < 2; i++) {
+            if (hs((int) slot, i + 20) < 0.4 - 0.4 * hb) continue;   // they surge on the beat
+            double a0 = hs((int) slot, i + 30) * TAU, a1 = a0 + 0.8 + hs((int) slot, i + 40) * 1.4;
+            double y0 = H * (0.2 + 0.6 * hs((int) slot, i + 50)), y1 = y0 + (hs((int) slot, i + 60) - 0.5) * H * 0.6;
+            Vec3 pa = f.add(Math.cos(a0) * 0.45, y0, Math.sin(a0) * 0.45), pb = f.add(Math.cos(a1) * 0.45, y1, Math.sin(a1) * 0.45);
+            Vec3 prev = pa;
+            for (int j = 1; j <= 7; j++) {
+                double u = j / 7.0;
+                Vec3 q = pa.add(pb.subtract(pa).scale(u));
+                if (j < 7) q = q.add((hs((int) slot, i * 10 + j) - 0.5) * 0.4, (hs((int) slot, i * 10 + j + 5) - 0.5) * 0.4, (hs((int) slot, i * 10 + j + 7) - 0.5) * 0.4);
+                gseg(m, cam, prev, q, 0.02, 0.95F * k, 0.95F * k, W_CORE);
+                gseg(m, cam, prev, q, 0.07, 0.25F * k, 0.25F * k, W_SOFT);
+                prev = q;
+            }
+        }
+        if (p.a0 > 0 && !self) {   // awakened: a crown of frost - a ring of ice spikes turning over the head - and wings of cold light
+            Vec3 cr = f.add(0, H + 0.35, 0);
+            for (int i = 0; i < 9; i++) {
+                double an = now * 0.03 + i * TAU / 9;
+                Vec3 b0 = cr.add(Math.cos(an) * 0.42, 0, Math.sin(an) * 0.42);
+                double hh = (i % 2 == 0 ? 0.6 : 0.32) * (1 + 0.25 * hb);
+                gseg(m, cam, b0, b0.add(Math.cos(an) * 0.12, hh, Math.sin(an) * 0.12), 0.04, 0.95F * k, 0.05F * k, W_CORE);
+            }
+            gring3(m, cam, cr, 0.42, 0.04, 0.8F * k);
+            double yaw = Math.toRadians(e.getYRot());
+            Vec3 back = new Vec3(Math.sin(yaw), 0, -Math.cos(yaw)), side = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
+            for (int s = -1; s <= 1; s += 2) for (int fth = 0; fth < 5; fth++) {   // wings: feathers of light swept back and out
+                Vec3 root = f.add(0, H * 0.72, 0).add(back.scale(0.25)).add(side.scale(s * 0.18));
+                double spread = 0.35 + fth * 0.28, lift = 0.5 - fth * 0.18 + 0.08 * Math.sin(now * 0.12 + fth);
+                Vec3 tip = root.add(side.scale(s * (0.6 + fth * 0.3))).add(back.scale(spread * 0.6)).add(0, lift, 0);
+                gseg(m, cam, root, tip, 0.06, 0.55F * k, 0.05F * k, W_SOFT);
+                gseg(m, cam, root, tip, 0.02, 0.8F * k, 0.1F * k, W_CORE);
+            }
+        }
+        // a crown of light over the head
+        Vec3 head = f.add(0, H + 0.05, 0);
+        gseg(m, cam, head, head.add(0, 0.9 + 0.7 * hb, 0), 0.09, (0.25F + 0.45F * hb) * k, 0, W_SOFT);
+        gseg(m, cam, head, head.add(0, 0.7 + 0.5 * hb, 0), 0.025, 0.9F * k, 0, W_CORE);
     }
 
     /** A ring of light lying flat (the frost crown's band). */
