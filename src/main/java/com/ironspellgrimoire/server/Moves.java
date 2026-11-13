@@ -315,7 +315,7 @@ public final class Moves {
         if (was) {   // the newer grimoires (FxPacket shapes 83-95) draw their modes on the player: clear them now, not when they'd have run out
             for (int shape = 83; shape <= 95; shape++) {
                 com.ironspellgrimoire.network.FxPacket k = new com.ironspellgrimoire.network.FxPacket();
-                k.shape = shape; k.h = 98; k.v = new net.minecraft.world.phys.Vec3(p.getId(), 1, 0); k.c = p.position(); k.life = 1;
+                k.shape = (byte) shape; k.h = 98; k.v = new net.minecraft.world.phys.Vec3(p.getId(), 1, 0); k.c = p.position(); k.life = 1;
                 FxSend.sendNear(p.serverLevel(), p.position(), k);
             }
         }
