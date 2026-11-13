@@ -251,6 +251,38 @@ public final class GrimoireMastery {
                 "vault_volley", 1, "gilded_spear", 1, "vault_chains", 2,
                 "blade_wall", 2, "blade_rain", 2, "seeking_blades", 3,
                 "treasure_barrage", 3, "vault_aegis", 4, "kings_vault", 4, "vault_breaker", 5);
+        book(AddonItemRegistry.CHAIN_GRIMOIRE::get, Fx.STEEL,
+                "chain_lash", 1, "binding_chain", 1, "dowsing_chain", 2,
+                "healing_chain", 2, "judgment_chain", 2, "stealing_chain", 3,
+                "chain_net", 3, "anchor_chain", 4, "restriction", 4, "thousand_chains", 5);
+        book(AddonItemRegistry.HUNTER_GRIMOIRE::get, Fx.CRIMSON,
+                "saw_cleave", 1, "trick_switch", 1, "silver_shot", 2,
+                "quickstep", 2, "visceral_strike", 2, "hunters_mark", 3,
+                "rending_spin", 3, "blood_volley", 4, "blood_moon_hunt", 4, "nightmare_cleave", 5);
+        book(AddonItemRegistry.VOID_GRIMOIRE::get, Fx.VOID,
+                "erase", 1, "null_step", 1, "unmake", 2,
+                "nullify", 2, "seam", 2, "absence", 3,
+                "void_lance", 3, "delete", 4, "emptiness", 4, "origin_zero", 5);
+        book(AddonItemRegistry.GAMBLER_GRIMOIRE::get, Fx.GOLD,
+                "coin_toss", 1, "double_or_nothing", 1, "roulette", 2,
+                "chip_shot", 2, "lucky_seven", 2, "slot_machine", 3,
+                "loaded_dice", 3, "insurance", 4, "all_in", 4, "jackpot", 5);
+        book(AddonItemRegistry.TAROT_GRIMOIRE::get, Fx.MIRROR,
+                "draw_card", 1, "the_magician", 1, "the_tower", 2,
+                "the_star", 2, "death_card", 2, "wheel_of_fortune", 3,
+                "the_hanged_man", 3, "three_card_spread", 4, "the_world", 4, "judgement", 5);
+        book(AddonItemRegistry.ABYSS_GRIMOIRE::get, Fx.WATER,
+                "crushing_pressure", 1, "anglers_lure", 1, "abyssal_grasp", 2,
+                "undertow", 2, "abyssal_dive", 2, "depth_charge", 3,
+                "leviathan", 3, "hadal_weight", 4, "bioluminescence", 4, "the_trench", 5);
+        book(AddonItemRegistry.MECH_GRIMOIRE::get, Fx.STEEL,
+                "rivet_barrage", 1, "thruster_dash", 1, "rocket_fist", 2,
+                "piston_stomp", 2, "bulwark_plating", 2, "missile_swarm", 3,
+                "overclock", 3, "rail_cannon", 4, "pilot", 4, "titan_buster", 5);
+        book(AddonItemRegistry.WEATHER_GRIMOIRE::get, Fx.LIGHTNING,
+                "sunbeam", 1, "downpour", 1, "thunder_strike", 2,
+                "hailstorm", 2, "gale", 2, "fog_bank", 3,
+                "cyclone", 3, "rainbow", 4, "eye_of_the_storm", 4, "cataclysm", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

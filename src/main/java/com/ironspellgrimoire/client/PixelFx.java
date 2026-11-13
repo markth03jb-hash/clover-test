@@ -1223,7 +1223,7 @@ public final class PixelFx {
     /** Aura-outline colours (AuraOutlineLayer) to palettes. */
     private static final int[] OUTLINE_PAL = {10, 9, 11, 13, 14, 0, 15, 6, 9};
     /** Grimoire (GrimoireMastery.BOOKS order) to palette: Asta, Yami, Yuno, Nozel, Magna, Luck, Mereoleona, Zenon, Klaus. */
-    private static final int[] BOOK_PAL = {0, 10, 5, 11, 2, 13, 14, 15, 7, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 8, 18, 1, 5, 10, 21, 8};
+    private static final int[] BOOK_PAL = {0, 10, 5, 11, 2, 13, 14, 15, 7, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 8, 18, 1, 5, 10, 21, 8, 7, 0, 21, 8, 20, 19, 2, 4};
 
     /** Ki Sense colours by creature: hostile red, passive green (wind), neutral yellow (lightning), players blue. */
     private static final int[] KI_PAL = {14, 5, 4, 13};

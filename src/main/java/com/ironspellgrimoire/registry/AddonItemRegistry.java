@@ -104,6 +104,14 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> INK_GRIMOIRE = ITEMS.register("ink_grimoire", com.ironspellgrimoire.item.InkGrimoireItem::new);
     public static final RegistryObject<Item> ERROR_GRIMOIRE = ITEMS.register("error_grimoire", com.ironspellgrimoire.item.ErrorGrimoireItem::new);
     public static final RegistryObject<Item> TREASURE_GRIMOIRE = ITEMS.register("treasure_grimoire", com.ironspellgrimoire.item.TreasureGrimoireItem::new);
+    public static final RegistryObject<Item> CHAIN_GRIMOIRE = ITEMS.register("chain_grimoire", com.ironspellgrimoire.item.ChainGrimoireItem::new);
+    public static final RegistryObject<Item> HUNTER_GRIMOIRE = ITEMS.register("hunter_grimoire", com.ironspellgrimoire.item.HunterGrimoireItem::new);
+    public static final RegistryObject<Item> VOID_GRIMOIRE = ITEMS.register("void_grimoire", com.ironspellgrimoire.item.VoidGrimoireItem::new);
+    public static final RegistryObject<Item> GAMBLER_GRIMOIRE = ITEMS.register("gambler_grimoire", com.ironspellgrimoire.item.GamblerGrimoireItem::new);
+    public static final RegistryObject<Item> TAROT_GRIMOIRE = ITEMS.register("tarot_grimoire", com.ironspellgrimoire.item.TarotGrimoireItem::new);
+    public static final RegistryObject<Item> ABYSS_GRIMOIRE = ITEMS.register("abyss_grimoire", com.ironspellgrimoire.item.AbyssGrimoireItem::new);
+    public static final RegistryObject<Item> MECH_GRIMOIRE = ITEMS.register("mech_grimoire", com.ironspellgrimoire.item.MechGrimoireItem::new);
+    public static final RegistryObject<Item> WEATHER_GRIMOIRE = ITEMS.register("weather_grimoire", com.ironspellgrimoire.item.WeatherGrimoireItem::new);
 
     /** Zenon's drops. */
     public static final RegistryObject<Item> PHYLACTERY = ITEMS.register("zenon_phylactery", com.ironspellgrimoire.item.PhylacteryItem::new);
@@ -217,7 +225,7 @@ public class AddonItemRegistry {
                 ItemStack space = new ItemStack(SPACE_GRIMOIRE.get());
                 ((IPresetSpellContainer) SPACE_GRIMOIRE.get()).initializeSpellContainer(space);
                 out.accept(space);
-                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, TIME_GRIMOIRE, LIGHT_GRIMOIRE, BLOOD_GRIMOIRE, GRAVITY_GRIMOIRE, SOUND_GRIMOIRE, INK_GRIMOIRE, ERROR_GRIMOIRE, TREASURE_GRIMOIRE)) {
+                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, TIME_GRIMOIRE, LIGHT_GRIMOIRE, BLOOD_GRIMOIRE, GRAVITY_GRIMOIRE, SOUND_GRIMOIRE, INK_GRIMOIRE, ERROR_GRIMOIRE, TREASURE_GRIMOIRE, CHAIN_GRIMOIRE, HUNTER_GRIMOIRE, VOID_GRIMOIRE, GAMBLER_GRIMOIRE, TAROT_GRIMOIRE, ABYSS_GRIMOIRE, MECH_GRIMOIRE, WEATHER_GRIMOIRE)) {
                     ItemStack st = new ItemStack(g.get());
                     ((IPresetSpellContainer) g.get()).initializeSpellContainer(st);
                     out.accept(st);

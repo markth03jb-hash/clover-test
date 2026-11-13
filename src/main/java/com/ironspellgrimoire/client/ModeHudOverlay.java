@@ -152,6 +152,14 @@ public final class ModeHudOverlay {
             case "masterpiece" -> 0xFFB8BCFF;
             case "fatal_error" -> 0xFFFF6AD8;
             case "kings_vault", "vault_aegis" -> 0xFFFFD86A;
+            case "restriction" -> 0xFFC8D0DC;
+            case "blood_moon_hunt" -> 0xFFD0182A;
+            case "emptiness", "absence" -> 0xFFFFFFFF;
+            case "all_in", "insurance" -> 0xFFF2CF5A;
+            case "the_world" -> 0xFFC8A0FF;
+            case "bioluminescence" -> 0xFF34F0D2;
+            case "pilot", "bulwark_plating" -> 0xFFFFC21A;
+            case "eye_of_the_storm", "fog_bank" -> 0xFF8CC8FF;
             case "scarlet_moon" -> 0xFFBFE6FF;   // the Moon's ice
             case "vampire_mode", "hardblood_barricade" -> 0xFFE0182A;
             case "prescript_received", "golden_shell" -> 0xFFF2CC5A;

@@ -140,6 +140,30 @@ public final class SkillEffects {
                 if (r.nextFloat() < 0.1f) add += 2f;
             }
             case 25 -> { if (hits % 5 == 0) { add += 0.6f; FxSend.ring(sl, Fx.GOLD | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.3f, 1.2f, 0.05f, 8); } }
+            case 26 -> {   // Bound Fate: slowed or held foes
+                var ms = t.getAttribute(Attributes.MOVEMENT_SPEED);
+                if (ms != null && ms.getValue() < ms.getBaseValue() * 0.95) add += 0.3f;
+            }
+            case 27 -> {   // Hunter's Dream: three quick hits on the same foe
+                boolean same = t.getUUID().toString().equals(s.getString("last")) && now - s.getLong("lastAt") < 30;
+                int n = same ? s.getInt("hunt") + 1 : 1;
+                s.putInt("hunt", n);
+                if (n % 3 == 0) { add += 0.6f; FxSend.ring(sl, Fx.CRIMSON | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.3f, 1.3f, 0.05f, 8); }
+            }
+            case 28 -> { if (t.getArmorValue() <= 1) add += 0.4f; }
+            case 29 -> {   // House Edge
+                float roll = r.nextFloat();
+                if (roll < 0.05f) { add += 2f; FxSend.ring(sl, Fx.GOLD | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.3f, 1.8f, 0.07f, 10); }
+                else if (roll < 0.25f) add += 1f;
+            }
+            case 30 -> { if (!t.getUUID().toString().equals(s.getString("last")) && !t.getUUID().toString().equals(s.getString("fated"))) { add += 0.4f; s.putString("fated", t.getUUID().toString()); } }
+            case 31 -> { if (p.getY() < 63) add += (float) Math.min(0.4, (63 - p.getY()) * 0.01); }
+            case 32 -> { if (hits % 10 == 0) { add += 1f; FxSend.ring(sl, Fx.FIRE | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.3f, 1.6f, 0.06f, 10); } }
+            case 33 -> {
+                net.minecraft.core.BlockPos bp = p.blockPosition();
+                if (sl.isRainingAt(bp.above())) add += 0.3f;
+                else if (sl.canSeeSky(bp.above())) add += 0.1f;
+            }
             default -> {}
         }
         s.putString("last", t.getUUID().toString()); s.putLong("lastAt", now);

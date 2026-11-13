@@ -227,6 +227,12 @@ public final class GameTests {
             try { cast(spell); } catch (Throwable x) { castErr = (x.getCause() != null ? x.getCause() : x).toString(); }
             MagicData d = MagicData.getPlayerMagicData(p);
             castState = "cast returned " + lastCastResult + ", casting=" + d.isCasting() + " " + d.getCastingSpellId();
+            if (!lastCastResult) {
+                try {
+                    var cr = spell.canBeCastedBy(1, io.redspace.ironsspellbooks.api.spells.CastSource.SPELLBOOK, d, p);
+                    castState += "; refused: " + cr.type + " " + (cr.message == null ? "" : cr.message.getString()) + " school=" + spell.getSchoolType().getId();
+                } catch (Throwable x) { castState += "; " + x; }
+            }
         }
         String castState = "";
         @Override boolean tick(int t) {
@@ -370,7 +376,7 @@ public final class GameTests {
             if (!np.isEmpty() || !nd.isEmpty()) bad.add("gave status effects: " + np + " " + nd);
             if (bad.isEmpty()) pass(name, "damage dealt: " + String.join(", ", done));
             else fail(name, String.join("; ", bad));
-            Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, TreasureFx.AEGIS);
+            Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, TreasureFx.AEGIS); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK);
             return true;
         }
     }
@@ -681,6 +687,94 @@ public final class GameTests {
                 "vault_aegis", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::vaultAegis, "q",
                 "kings_vault", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::kingsVault, "",
                 "vault_breaker", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::vaultBreaker, ""));
+        queue.add(new BookMovesTest("chain", com.ironspellgrimoire.registry.AddonItemRegistry.CHAIN_GRIMOIRE::get, ChainFx.class,
+                "chain_lash", (java.util.function.BiConsumer<ServerPlayer, Float>) ChainFx::chainLash, "",
+                "binding_chain", (java.util.function.BiConsumer<ServerPlayer, Float>) ChainFx::bindingChain, "",
+                "dowsing_chain", (java.util.function.BiConsumer<ServerPlayer, Float>) ChainFx::dowsingChain, "",
+                "healing_chain", (java.util.function.BiConsumer<ServerPlayer, Float>) ChainFx::healingChain, "q",
+                "judgment_chain", (java.util.function.BiConsumer<ServerPlayer, Float>) ChainFx::judgmentChain, "",
+                "stealing_chain", (java.util.function.BiConsumer<ServerPlayer, Float>) ChainFx::stealingChain, "",
+                "chain_net", (java.util.function.BiConsumer<ServerPlayer, Float>) ChainFx::chainNet, "",
+                "anchor_chain", (java.util.function.BiConsumer<ServerPlayer, Float>) ChainFx::anchorChain, "",
+                "restriction", (java.util.function.BiConsumer<ServerPlayer, Float>) ChainFx::restriction, "q",
+                "thousand_chains", (java.util.function.BiConsumer<ServerPlayer, Float>) ChainFx::thousandChains, ""));
+        queue.add(new BookMovesTest("hunter", com.ironspellgrimoire.registry.AddonItemRegistry.HUNTER_GRIMOIRE::get, HunterFx.class,
+                "saw_cleave", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterFx::sawCleave, "c",
+                "trick_switch", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterFx::trickSwitch, "c",
+                "silver_shot", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterFx::silverShot, "",
+                "quickstep", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterFx::quickstep, "q",
+                "visceral_strike", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterFx::visceralStrike, "c",
+                "hunters_mark", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterFx::huntersMark, "",
+                "rending_spin", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterFx::rendingSpin, "c",
+                "blood_volley", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterFx::bloodVolley, "",
+                "blood_moon_hunt", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterFx::bloodMoonHunt, "q",
+                "nightmare_cleave", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterFx::nightmareCleave, ""));
+        queue.add(new BookMovesTest("void", com.ironspellgrimoire.registry.AddonItemRegistry.VOID_GRIMOIRE::get, VoidFx.class,
+                "erase", (java.util.function.BiConsumer<ServerPlayer, Float>) VoidFx::erase, "",
+                "null_step", (java.util.function.BiConsumer<ServerPlayer, Float>) VoidFx::nullStep, "",
+                "unmake", (java.util.function.BiConsumer<ServerPlayer, Float>) VoidFx::unmakeSpell, "",
+                "nullify", (java.util.function.BiConsumer<ServerPlayer, Float>) VoidFx::nullify, "c",
+                "seam", (java.util.function.BiConsumer<ServerPlayer, Float>) VoidFx::seamSpell, "",
+                "absence", (java.util.function.BiConsumer<ServerPlayer, Float>) VoidFx::absenceSpell, "q",
+                "void_lance", (java.util.function.BiConsumer<ServerPlayer, Float>) VoidFx::voidLance, "",
+                "delete", (java.util.function.BiConsumer<ServerPlayer, Float>) VoidFx::deleteSpell, "",
+                "emptiness", (java.util.function.BiConsumer<ServerPlayer, Float>) VoidFx::emptinessMode, "q",
+                "origin_zero", (java.util.function.BiConsumer<ServerPlayer, Float>) VoidFx::originZero, ""));
+        queue.add(new BookMovesTest("gambler", com.ironspellgrimoire.registry.AddonItemRegistry.GAMBLER_GRIMOIRE::get, GamblerFx.class,
+                "coin_toss", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::coinToss, "",
+                "double_or_nothing", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::doubleOrNothing, "",
+                "roulette", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::roulette, "",
+                "chip_shot", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::chipShot, "",
+                "lucky_seven", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::luckySeven, "",
+                "slot_machine", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::slotMachine, "",
+                "loaded_dice", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::loadedDice, "",
+                "insurance", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::insurance, "q",
+                "all_in", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::allInMode, "q",
+                "jackpot", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::jackpot, ""));
+        queue.add(new BookMovesTest("tarot", com.ironspellgrimoire.registry.AddonItemRegistry.TAROT_GRIMOIRE::get, TarotFx.class,
+                "draw_card", (java.util.function.BiConsumer<ServerPlayer, Float>) TarotFx::drawCard, "q",
+                "the_magician", (java.util.function.BiConsumer<ServerPlayer, Float>) TarotFx::magicianCard, "",
+                "the_tower", (java.util.function.BiConsumer<ServerPlayer, Float>) TarotFx::towerCard, "",
+                "the_star", (java.util.function.BiConsumer<ServerPlayer, Float>) TarotFx::starCard, "q",
+                "death_card", (java.util.function.BiConsumer<ServerPlayer, Float>) TarotFx::deathCard, "c",
+                "wheel_of_fortune", (java.util.function.BiConsumer<ServerPlayer, Float>) TarotFx::wheelCard, "cq",
+                "the_hanged_man", (java.util.function.BiConsumer<ServerPlayer, Float>) TarotFx::hangedCard, "",
+                "three_card_spread", (java.util.function.BiConsumer<ServerPlayer, Float>) TarotFx::threeCardSpread, "q",
+                "the_world", (java.util.function.BiConsumer<ServerPlayer, Float>) TarotFx::worldMode, "q",
+                "judgement", (java.util.function.BiConsumer<ServerPlayer, Float>) TarotFx::judgementCard, ""));
+        queue.add(new BookMovesTest("abyss", com.ironspellgrimoire.registry.AddonItemRegistry.ABYSS_GRIMOIRE::get, AbyssFx.class,
+                "crushing_pressure", (java.util.function.BiConsumer<ServerPlayer, Float>) AbyssFx::crushingPressure, "",
+                "anglers_lure", (java.util.function.BiConsumer<ServerPlayer, Float>) AbyssFx::anglersLure, "",
+                "abyssal_grasp", (java.util.function.BiConsumer<ServerPlayer, Float>) AbyssFx::abyssalGrasp, "",
+                "undertow", (java.util.function.BiConsumer<ServerPlayer, Float>) AbyssFx::undertowSpell, "",
+                "abyssal_dive", (java.util.function.BiConsumer<ServerPlayer, Float>) AbyssFx::abyssalDive, "",
+                "depth_charge", (java.util.function.BiConsumer<ServerPlayer, Float>) AbyssFx::depthCharge, "",
+                "leviathan", (java.util.function.BiConsumer<ServerPlayer, Float>) AbyssFx::leviathanSpell, "",
+                "hadal_weight", (java.util.function.BiConsumer<ServerPlayer, Float>) AbyssFx::hadalWeight, "",
+                "bioluminescence", (java.util.function.BiConsumer<ServerPlayer, Float>) AbyssFx::bioluminescence, "q",
+                "the_trench", (java.util.function.BiConsumer<ServerPlayer, Float>) AbyssFx::theTrench, ""));
+        queue.add(new BookMovesTest("mech", com.ironspellgrimoire.registry.AddonItemRegistry.MECH_GRIMOIRE::get, MechFx.class,
+                "rivet_barrage", (java.util.function.BiConsumer<ServerPlayer, Float>) MechFx::rivetBarrage, "",
+                "thruster_dash", (java.util.function.BiConsumer<ServerPlayer, Float>) MechFx::thrusterDash, "",
+                "rocket_fist", (java.util.function.BiConsumer<ServerPlayer, Float>) MechFx::rocketFist, "",
+                "piston_stomp", (java.util.function.BiConsumer<ServerPlayer, Float>) MechFx::pistonStomp, "c",
+                "bulwark_plating", (java.util.function.BiConsumer<ServerPlayer, Float>) MechFx::bulwarkPlating, "q",
+                "missile_swarm", (java.util.function.BiConsumer<ServerPlayer, Float>) MechFx::missileSwarm, "",
+                "overclock", (java.util.function.BiConsumer<ServerPlayer, Float>) MechFx::overclockSpell, "q",
+                "rail_cannon", (java.util.function.BiConsumer<ServerPlayer, Float>) MechFx::railCannon, "",
+                "pilot", (java.util.function.BiConsumer<ServerPlayer, Float>) MechFx::pilotMode, "q",
+                "titan_buster", (java.util.function.BiConsumer<ServerPlayer, Float>) MechFx::titanBuster, ""));
+        queue.add(new BookMovesTest("weather", com.ironspellgrimoire.registry.AddonItemRegistry.WEATHER_GRIMOIRE::get, WeatherFx.class,
+                "sunbeam", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::sunbeamSpell, "",
+                "downpour", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::downpour, "",
+                "thunder_strike", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::thunderclap, "",
+                "hailstorm", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::hailstorm, "",
+                "gale", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::galeSpell, "",
+                "fog_bank", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::fogBank, "q",
+                "cyclone", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::cycloneSpell, "",
+                "rainbow", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::rainbowSpell, "",
+                "eye_of_the_storm", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::eyeOfTheStorm, "q",
+                "cataclysm", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::cataclysmSpell, ""));
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

@@ -82,7 +82,8 @@ public final class GrimoireWheel {
     private static double leafLobe = 0.3;
 
     /** The Blood Grimoire (GrimoireMastery.BOOKS) and the theme its menus take under the Scarlet Moon. */
-    static final int BLOOD = 20, GRAVITY = 21, SOUND = 22, INK = 23, ERROR = 24, TREASURE = 25, ICE = 26;
+    static final int BLOOD = 20, GRAVITY = 21, SOUND = 22, INK = 23, ERROR = 24, TREASURE = 25,
+            CHAIN = 26, HUNTER = 27, VOID = 28, GAMBLER = 29, TAROT = 30, ABYSS = 31, MECH = 32, WEATHER = 33, ICE = 34;
 
     /** The theme every menu should wear right now: the equipped grimoire's, or the ice one under the Scarlet Moon. */
     static int themeIndex() { return themeFor(grimoireIndex()); }
@@ -332,6 +333,22 @@ public final class GrimoireWheel {
             new Theme(c(0x050208), c(0x200A26), c(0xFF3CC8), c(0x3CF0FF), c(0x180818), 3, O_BOLTS, M_NOTCHES, false, 0x08040C, 0xFFD0F4),
             // Treasure: deep gold pages, bright gold trim, rivets like a vault door
             new Theme(c(0x140E02), c(0x4A3608), c(0xFFE7A0), c(0xFFC23C), c(0x6A4C10), 3, O_RIVETS, M_DOTS, true, 0x140E04, 0xFFF0C0),
+            // Chain: gunmetal pages, steel trim, a pale gold glint - links of chain on every page
+            new Theme(c(0x0A0C10), c(0x2C323C), c(0xC8D0DC), c(0xE8C66A), c(0x3A4250), 3, O_RIVETS, M_NOTCHES, true, 0x0C0E12, 0xE6ECF4),
+            // Hunter: soot-black pages, tarnished silver trim, a blood-red moon glint, a saw's teeth on every page
+            new Theme(c(0x0C0606), c(0x2E1414), c(0xB8B0A8), c(0xD0182A), c(0x3A1A1A), 3, O_BLOOD, M_CRESCENTS, true, 0x0E0606, 0xF0D0C8),
+            // Void: pure black pages, hard white trim, a hole of nothing on every page
+            new Theme(c(0x000000), c(0x101010), c(0xFFFFFF), c(0xFFFFFF), c(0x0A0A0A), 3, O_SMOKE, M_NOTCHES, false, 0x050505, 0xFFFFFF),
+            // Gambler: casino-green felt pages, gold trim, a die on every page
+            new Theme(c(0x04140A), c(0x0E4A26), c(0xF2CF5A), c(0xE8344A), c(0x0A3A1C), 3, O_RIVETS, M_DOTS, true, 0x05160C, 0xFFF0B8),
+            // Tarot: deep violet pages, gold trim, a card with a star on every page
+            new Theme(c(0x0E0618), c(0x341450), c(0xE8C66A), c(0xC8A0FF), c(0x2A0E44), 3, O_SMOKE, M_CRESCENTS, true, 0x10071C, 0xF4E4FF),
+            // Abyss: black-blue pages, dull steel-blue trim, a teal lure light glowing on every page
+            new Theme(c(0x02040A), c(0x08182C), c(0x5C7A94), c(0x34F0D2), c(0x0A1C30), 3, O_DROPS, M_DOTS, false, 0x03060C, 0xA8FFF0),
+            // Mech: gunmetal pages, hazard-yellow trim, an orange visor light, a gear on every page
+            new Theme(c(0x0C0E10), c(0x30363E), c(0xFFC21A), c(0xFF7A20), c(0x3C434C), 3, O_RIVETS, M_NOTCHES, true, 0x0E1012, 0xFFE8A8),
+            // Weather: sky-blue pages, cloud-white trim, a sun-gold glint, a little sky on every page
+            new Theme(c(0x081828), c(0x2A6496), c(0xF2F8FF), c(0xFFD34A), c(0x1C4A72), 3, O_WIND, M_DOTS, true, 0x0A1A2A, 0xEAF6FF),
             // the Scarlet Moon's ice (the Blood Grimoire under its mode): frosted blue pages, white trim, crystals of ice round the ring
             new Theme(c(0x08142A), c(0x2E5884), c(0xF2F8FF), c(0xBFE6FF), c(0xDDEEFF), 6, O_FROST, M_DOTS, false, 0x0A1828, 0xEAF6FF),
     };
@@ -532,7 +549,83 @@ public final class GrimoireWheel {
                 seg(bb, m, cx, cy, am, rr, am, rr + 6 + 2 * p, 1.2, 0.85F, 0.88F, 0.95F, 0.95F * A);
                 disc(bb, m, px, py, 1.0, 1.0F, 0.95F, 0.75F, A);
             }
-            case 26 -> {   // ice: a crystal standing in each page, frost feathering out from its foot
+            case 26 -> {   // Chain: three links of chain hanging down each page, a gold glint on the last
+                for (int k = 0; k < 3; k++) {
+                    double r0 = ri + 5 + k * 5.2, ex = cx + Math.sin(am) * r0, ey = cy - Math.cos(am) * r0;
+                    for (int q = 0; q < 8; q++) {
+                        double b0 = q * Math.PI / 4, b1 = (q + 1) * Math.PI / 4, sx = k % 2 == 0 ? 1.6 : 0.9, sy = 2.9;
+                        double x0 = ex + Math.cos(b0) * sx * Math.cos(am) - Math.sin(b0) * sy * Math.sin(am), y0 = ey + Math.cos(b0) * sx * Math.sin(am) + Math.sin(b0) * sy * Math.cos(am);
+                        double x1 = ex + Math.cos(b1) * sx * Math.cos(am) - Math.sin(b1) * sy * Math.sin(am), y1 = ey + Math.cos(b1) * sx * Math.sin(am) + Math.sin(b1) * sy * Math.cos(am);
+                        seg(bb, m, cx, cy, Math.atan2(x0 - cx, -(y0 - cy)), Math.hypot(x0 - cx, y0 - cy), Math.atan2(x1 - cx, -(y1 - cy)), Math.hypot(x1 - cx, y1 - cy), 0.7, t[0], t[1], t[2], 0.9F * A);
+                    }
+                }
+                disc(bb, m, cx + Math.sin(am) * (ri + 15.4), cy - Math.cos(am) * (ri + 15.4), 0.9, ac[0], ac[1], ac[2], (0.5F + 0.5F * p) * A);
+            }
+            case 27 -> {   // Hunter: a saw's teeth along each page's outer edge, a drop of blood at its middle
+                int teeth = 5;
+                for (int k = 0; k < teeth; k++) {
+                    double q0 = a0 + w * (0.1 + 0.8 * k / teeth), q1 = a0 + w * (0.1 + 0.8 * (k + 1) / teeth);
+                    tri(bb, m, cx, cy, q0, ro - 5, q1, ro - 5, q1, ro - 1.5, t[0], t[1], t[2], 0.85F * A);
+                }
+                disc(bb, m, cx + Math.sin(am) * (mid - 2), cy - Math.cos(am) * (mid - 2), 1.3 + 0.3 * p, ac[0], ac[1], ac[2], 0.95F * A);
+            }
+            case 28 -> {   // Void: a square hole of nothing on each page, edged in white
+                double px = cx + Math.sin(am) * mid, py = cy - Math.cos(am) * mid, s2 = 3.2 + 0.6 * p;
+                for (int k = 0; k < 4; k++) {   // its white edge
+                    double c0 = k * Math.PI / 2 + am + Math.PI / 4, c1 = c0 + Math.PI / 2;
+                    double x0 = px + Math.cos(c0) * s2 * 1.41, y0 = py + Math.sin(c0) * s2 * 1.41, x1 = px + Math.cos(c1) * s2 * 1.41, y1 = py + Math.sin(c1) * s2 * 1.41;
+                    seg(bb, m, cx, cy, Math.atan2(x0 - cx, -(y0 - cy)), Math.hypot(x0 - cx, y0 - cy), Math.atan2(x1 - cx, -(y1 - cy)), Math.hypot(x1 - cx, y1 - cy), 0.6, 1.0F, 1.0F, 1.0F, 0.95F * A);
+                }
+                disc(bb, m, px, py, s2 * 0.9, 0.0F, 0.0F, 0.0F, A);
+            }
+            case 29 -> {   // Gambler: a die on each page, a different face on each
+                double px = cx + Math.sin(am) * mid, py = cy - Math.cos(am) * mid;
+                disc(bb, m, px, py, 4.2, 0.96F, 0.94F, 0.88F, 0.95F * A);
+                int face = 1 + (int) Math.floor(Math.abs(am) * 7.3) % 6;
+                double[] pips = new double[][]{{0, 0}, {-1, -1, 1, 1}, {-1, -1, 0, 0, 1, 1}, {-1, -1, 1, -1, -1, 1, 1, 1}, {-1, -1, 1, -1, 0, 0, -1, 1, 1, 1}, {-1, -1, 1, -1, -1, 0, 1, 0, -1, 1, 1, 1}}[face - 1];
+                for (int k = 0; k + 1 < pips.length; k += 2) disc(bb, m, px + pips[k] * 1.9, py + pips[k + 1] * 1.9, 0.75, face == 1 ? ac[0] : 0.1F, face == 1 ? ac[1] : 0.1F, face == 1 ? ac[2] : 0.1F, A);
+            }
+            case 30 -> {   // Tarot: a little card standing on each page, a gold star on it
+                double r0 = ri + 4, r1 = ro - 4, half = w * 0.18;
+                tri(bb, m, cx, cy, am - half, r0, am + half, r0, am + half, r1, 0.95F, 0.9F, 0.8F, 0.9F * A);
+                tri(bb, m, cx, cy, am - half, r0, am + half, r1, am - half, r1, 0.95F, 0.9F, 0.8F, 0.9F * A);
+                double px = cx + Math.sin(am) * mid, py = cy - Math.cos(am) * mid;
+                for (int k = 0; k < 4; k++) {
+                    double sa = k * Math.PI / 4 + time * 0.5;
+                    double x0 = px + Math.cos(sa) * 2.4, y0 = py + Math.sin(sa) * 2.4, x1 = px - Math.cos(sa) * 2.4, y1 = py - Math.sin(sa) * 2.4;
+                    seg(bb, m, cx, cy, Math.atan2(x0 - cx, -(y0 - cy)), Math.hypot(x0 - cx, y0 - cy), Math.atan2(x1 - cx, -(y1 - cy)), Math.hypot(x1 - cx, y1 - cy), 0.5, t[0], t[1], t[2], 0.95F * A);
+                }
+            }
+            case 31 -> {   // Abyss: a lure on a curving stalk hanging into each page, glowing
+                seg(bb, m, cx, cy, a0 + w * 0.2, ro - 3, am, ro - 8, 0.6, 0.1F, 0.18F, 0.28F, 0.95F * A);
+                seg(bb, m, cx, cy, am, ro - 8, am + w * 0.12, mid - 2, 0.6, 0.1F, 0.18F, 0.28F, 0.95F * A);
+                double px = cx + Math.sin(am + w * 0.12) * (mid - 3), py = cy - Math.cos(am + w * 0.12) * (mid - 3);
+                float glow = 0.6F + 0.4F * (float) Math.sin(time * 3 + am * 5);
+                disc(bb, m, px, py, 2.6, ac[0], ac[1], ac[2], 0.3F * glow * A);
+                disc(bb, m, px, py, 1.3, 0.85F, 1.0F, 0.95F, glow * A);
+            }
+            case 32 -> {   // Mech: a gear turning on each page
+                double px = cx + Math.sin(am) * mid, py = cy - Math.cos(am) * mid, spin = time * 1.5;
+                for (int k = 0; k < 8; k++) {
+                    double ga = spin + k * Math.PI / 4;
+                    double x0 = px + Math.cos(ga) * 2.6, y0 = py + Math.sin(ga) * 2.6, x1 = px + Math.cos(ga) * 4.4, y1 = py + Math.sin(ga) * 4.4;
+                    seg(bb, m, cx, cy, Math.atan2(x0 - cx, -(y0 - cy)), Math.hypot(x0 - cx, y0 - cy), Math.atan2(x1 - cx, -(y1 - cy)), Math.hypot(x1 - cx, y1 - cy), 0.9, t[0], t[1], t[2], 0.9F * A);
+                }
+                disc(bb, m, px, py, 3.0, t[0], t[1], t[2], 0.9F * A);
+                disc(bb, m, px, py, 1.2, 0.05F, 0.05F, 0.06F, A);
+            }
+            case 33 -> {   // Weather: a little cloud on each page, and under it sun, rain or a bolt by turns
+                double px = cx + Math.sin(am) * (mid + 2), py = cy - Math.cos(am) * (mid + 2);
+                int kind = (int) Math.floor(Math.abs(am) * 5.1 + time * 0.25) % 3;
+                if (kind == 0) disc(bb, m, px + 2.2, py - 1.8, 2.0, 1.0F, 0.83F, 0.3F, A);
+                disc(bb, m, px - 1.6, py, 2.0, 0.95F, 0.97F, 1.0F, 0.95F * A);
+                disc(bb, m, px + 0.8, py - 0.8, 2.5, 0.95F, 0.97F, 1.0F, 0.95F * A);
+                disc(bb, m, px + 2.8, py + 0.2, 1.8, 0.95F, 0.97F, 1.0F, 0.95F * A);
+                double rr = Math.hypot(px - cx, py - cy);
+                if (kind == 1) for (int k = -1; k <= 1; k++) seg(bb, m, cx, cy, am + k * w * 0.1, rr - 3, am + k * w * 0.1 - 0.02, rr - 6.5, 0.5, 0.55F, 0.75F, 1.0F, 0.9F * A);
+                if (kind == 2) { seg(bb, m, cx, cy, am, rr - 3, am + w * 0.06, rr - 5, 0.7, 1.0F, 0.9F, 0.3F, A); seg(bb, m, cx, cy, am + w * 0.06, rr - 5, am - w * 0.02, rr - 7.5, 0.7, 1.0F, 0.9F, 0.3F, A); }
+            }
+            case 34 -> {   // ice: a crystal standing in each page, frost feathering out from its foot
                 double h = (ro - ri) * (0.62 + 0.12 * p);
                 tri(bb, m, cx, cy, am - w * 0.1, ri + 4, am + w * 0.1, ri + 4, am, ri + 4 + h, 0.62F, 0.8F, 0.96F, 0.75F * A);
                 tri(bb, m, cx, cy, am - w * 0.03, ri + 4, am + w * 0.05, ri + 4, am, ri + 4 + h * 0.96, 1.0F, 1.0F, 1.0F, 0.7F * A);
