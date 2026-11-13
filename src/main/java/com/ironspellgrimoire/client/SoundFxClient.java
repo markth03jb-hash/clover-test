@@ -36,6 +36,7 @@ public final class SoundFxClient {
     public static void spawn(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
+        if ((int) p.h == 98) { LIVE.removeIf(l -> (int) l.p.v.x == (int) p.v.x); return; }   // a mode was ended early: drop what hangs on that player
         int k = (int) p.h;
         if (k == 8 && p.life <= 1) {   // Crescendo grew louder: only the tier changes
             for (L l : LIVE) if ((int) l.p.h == 8 && l.p.v.x == p.v.x) l.p.a0 = p.a0;

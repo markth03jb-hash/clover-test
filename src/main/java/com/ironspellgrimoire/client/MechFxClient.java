@@ -43,6 +43,7 @@ public final class MechFxClient {
     public static void spawn(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
+        if ((int) p.h == 98) { LIVE.removeIf(l -> (int) l.p.v.x == (int) p.v.x); return; }   // a mode was ended early: drop what hangs on that player
         if ((int) p.h == 99) {
             int m = (int) p.a0;
             for (int i = 0; i < 8; i++) if ((m & 1 << i) != 0 && (lastMask & 1 << i) == 0) LIT[i] = mc.level.getGameTime();

@@ -39,6 +39,7 @@ public final class GamblerFxClient {
     public static void spawn(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
+        if ((int) p.h == 98) { LIVE.removeIf(l -> (int) l.p.v.x == (int) p.v.x); return; }   // a mode was ended early: drop what hangs on that player
         if ((int) p.h == 0) LIVE.removeIf(l -> (int) l.p.h == 0 && l.p.v.x == p.v.x);   // one coin over a head at a time
         if (LIVE.size() > 300) LIVE.remove(0);
         LIVE.add(new L(p, mc.level.getGameTime()));
@@ -75,7 +76,7 @@ public final class GamblerFxClient {
                 case 6 -> payout(vc, m, n, cam, p, age);
                 case 7 -> aura(vc, m, n, cam, mc, p, age, now, pt);
                 case 8 -> shield(vc, m, n, cam, mc, p, age, now, pt);
-                case 9 -> reels(vc, m, n, cam, p.c, p, age, 1.9, true);
+                case 9 -> reels(vc, m, n, cam, p.c, p, age, 1.6, true);
                 default -> LIVE.remove(l);
             }
         }

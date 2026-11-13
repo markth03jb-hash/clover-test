@@ -434,6 +434,17 @@ public final class UiShots {
         if (step.startsWith("board_")) return new Class<?>[]{BoardScreen.class, com.ironspellgrimoire.server.Boards.class};
         if (step.startsWith("hud_")) return new Class<?>[]{BountyHud.class, QuestHud.class, WorldBossHud.class, RiftMap.class, BroomHud.class, ModeHudOverlay.class, RaidBanner.class, TrackerMode.class};
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
+        Class<?>[] shared = {GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class, FxBase.class, GravityFxClient.class};
+        String[][] books = {{"grav_", "Gravity"}, {"snd_", "Sound"}, {"ink_", "Ink"}, {"err_", "Error"}, {"tre_", "Treasure"}, {"chn_", "Chain"}, {"hun_", "Hunter"},
+                {"voi_", "Void"}, {"gam_", "Gambler"}, {"tar_", "Tarot"}, {"aby_", "Abyss"}, {"mec_", "Mech"}, {"wea_", "Weather"}};
+        for (String[] b : books) if (step.startsWith(b[0])) {   // each book's pictures depend on its own two classes and the shared drawing code
+            try {
+                Class<?>[] r = java.util.Arrays.copyOf(shared, shared.length + 2);
+                r[shared.length] = Class.forName("com.ironspellgrimoire.server." + b[1] + "Fx");
+                r[shared.length + 1] = Class.forName("com.ironspellgrimoire.client." + b[1] + "FxClient");
+                return r;
+            } catch (ClassNotFoundException ex) { return null; }
+        }
         if (step.startsWith("blood_") || step.startsWith("ice_")) return new Class<?>[]{com.ironspellgrimoire.server.BloodFx.class, BloodFxClient.class, AuraOutlineLayer.class, IceFxClient.class, BloodHud.class, GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class};
         return switch (step) {
             case "star_forge" -> new Class<?>[]{StarForgeScreen.class, com.ironspellgrimoire.server.StarForge.class};
@@ -537,7 +548,8 @@ public final class UiShots {
         Step s = steps.get(index);
         Screenshot.grab(mc.gameDirectory, "isg_" + s.name() + "_x" + SHOT_SCALES[shot] + ".png", mc.getMainRenderTarget(), c -> {});
         shot++;
-        if (shot < SHOT_SCALES.length) { scale(SHOT_SCALES[shot]); waitShot = 4; }
+        boolean worldOnly = mc.options.hideGui && mc.screen == null;   // nothing on screen changes with the GUI scale: one picture is enough
+        if (shot < SHOT_SCALES.length && !worldOnly) { scale(SHOT_SCALES[shot]); waitShot = 4; }
         else { shot = -1; scale(2); index++; }
     }
 }

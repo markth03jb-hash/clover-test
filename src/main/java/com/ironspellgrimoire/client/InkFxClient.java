@@ -35,6 +35,7 @@ public final class InkFxClient {
     public static void spawn(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
+        if ((int) p.h == 98) { LIVE.removeIf(l -> (int) l.p.v.x == (int) p.v.x); return; }   // a mode was ended early: drop what hangs on that player
         if (LIVE.size() > 400) LIVE.remove(0);
         LIVE.add(new L(p, mc.level.getGameTime()));
     }

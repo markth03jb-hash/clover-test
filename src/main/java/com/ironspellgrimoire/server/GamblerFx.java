@@ -393,7 +393,7 @@ public final class GamblerFx {
         boolean heads = flip(p);
         final float pow = stake(p, power, heads) * (limit ? 1.3f : 1f);
         int[] s = spin(heads, sure);
-        final Vec3 c = p.position().add(look(p).scale(2.5)).add(0, 3.6, 0);
+        final Vec3 c = p.position().add(look(p).scale(6)).add(0, 4.6, 0);   // up and out ahead, so it never fills your view
         final int STOP = 24;
         machine(sl, c, s, STOP, STOP + 18 + 14);
         play(sl, c, "slot", 1.4f, 0.8f);
