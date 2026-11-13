@@ -167,6 +167,7 @@ public final class UiShots {
         steps.add(new Step("ice_book_done", () -> mc.setScreen(null), 4, true));
         // the Gravity Grimoire
         steps.add(new Step("grav_bullet", () -> {
+            BloodFxClient.clear(); IceFxClient.clear();   // the Scarlet Moon from the shots before
             mc.options.hideGui = true;
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.player.setXRot(14);

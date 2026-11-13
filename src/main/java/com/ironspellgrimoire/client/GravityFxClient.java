@@ -274,7 +274,7 @@ public final class GravityFxClient {
             Vec3 pnt = q.add(tgt.subtract(q).scale(ph));
             gseg(m, cam, pnt, pnt.add(tgt.subtract(q).normalize().scale(0.7)), 0.035, (float) Math.sin(ph * Math.PI) * 0.8F, 0, PALE);
         }
-        gseg(m, cam, at, at.add(0, r * 4, 0), r * 0.9, 0.35F, 0, VIO);   // the air it drags down behind it
+        gseg(m, cam, at.add(0, r * 1.05, 0), at.add(0, r * 4.5, 0), r * 0.6, 0.35F, 0, VIO);   // the air it drags down behind it
     }
 
     // ================================================================== 8 slam
