@@ -93,10 +93,13 @@ public final class BloodFx {
         p.setHealth(Math.max(1f, p.getHealth() - cost));
     }
 
-    /** The spell's power: higher the lower your health, higher still with a Pact. */
+    /**
+     * The spell's power: higher the lower your health, higher still with a Pact - and it depends on how much blood
+     * you've drunk. A reluctant vampire is weak with an empty gauge (-15%) and grows strong as it fills (+25% full).
+     */
     private static float pw(ServerPlayer p, float power) {
         float missing = 1f - p.getHealth() / Math.max(1f, p.getMaxHealth());
-        float k = 1f + 0.8f * missing;
+        float k = (1f + 0.8f * missing) * thirst(p);
         float[] pact = PACT.get(p.getUUID());
         if (pact != null) {
             k *= 1f + pact[1];
@@ -631,6 +634,9 @@ public final class BloodFx {
 
     public static float gauge(ServerPlayer p) { return p.getPersistentData().getFloat(GAUGE_KEY); }
 
+    /** Thirst: weak until you've drunk (x0.85 empty), strong when you have (x1.25 full). */
+    static float thirst(ServerPlayer p) { return 0.85f + 0.4f * Math.min(1f, gauge(p) / MAX); }
+
     public static void setGauge(ServerPlayer p, float v) {
         p.getPersistentData().putFloat(GAUGE_KEY, Math.max(0f, Math.min(MAX + OVER, v)));
     }
@@ -651,7 +657,7 @@ public final class BloodFx {
         float after = before >= MAX ? before + v * 0.5f : before + v > MAX ? MAX + (before + v - MAX) * 0.5f : before + v;
         setGauge(p, after);
         if (before < MAX && gauge(p) >= MAX) {
-            p.displayClientMessage(Component.literal("The Blood Gauge is full - cast Scarlet Moon").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
+            p.displayClientMessage(Component.literal("You've drunk your fill - your eyes burn crimson. Cast Scarlet Moon").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
             play(p.serverLevel(), p.position(), "heartbeat", 1.4f, 1.3f);
         }
         syncGauge(p);

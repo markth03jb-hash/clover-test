@@ -536,7 +536,7 @@ public class AddonSpellRegistry {
 
     // ------------------------------------------------------------------ Error Grimoire (an original grimoire: ErrorFx)
     private static com.ironspellgrimoire.spells.BookSpell error(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
-        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ELDRITCH_RESOURCE,
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
                 com.ironspellgrimoire.item.ErrorGrimoireItem.class, "ui.iron_spell_grimoire.error_grimoire_only", cd, mana, power,
                 com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
     }

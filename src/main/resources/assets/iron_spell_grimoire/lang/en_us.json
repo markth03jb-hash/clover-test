@@ -812,7 +812,7 @@
   "item.iron_spell_grimoire.world_tree_leaf": "World Tree Leaf",
   "item.iron_spell_grimoire.elven_wind_charm": "Elven Wind Charm",
   "item.iron_spell_grimoire.blood_grimoire": "Blood Grimoire",
-  "tooltip.iron_spell_grimoire.blood_grimoire.passive": "Passive - Blood Price: every spell costs a little of your health as well as mana (never your last heart), and the lower your health, the harder it hits (up to +80%).",
+  "tooltip.iron_spell_grimoire.blood_grimoire.passive": "Passive - Blood Price and Thirst: every spell costs a little of your health as well as mana (never your last heart), and the lower your health, the harder it hits (up to +80%). A reluctant vampire: with an empty Blood Gauge your spells are 15% weaker, and they grow to 25% stronger as you drink your fill - when it is full, your eyes burn crimson.",
   "tooltip.iron_spell_grimoire.blood_grimoire.desc": "Ten pages of Blood Magic: blades and needles of blood, a tide that throws foes back, thorns from the ground, and the Scarlet Moon.",
   "tooltip.iron_spell_grimoire.blood_grimoire.lore": "Every page is written in the reader's own blood. It reads better the more you bleed.",
   "ui.iron_spell_grimoire.blood_grimoire_only": "Only the Blood Grimoire can cast this.",

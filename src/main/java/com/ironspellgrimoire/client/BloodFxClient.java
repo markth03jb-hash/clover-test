@@ -175,6 +175,7 @@ public final class BloodFxClient {
         if (mc.level == null) { clear(); return; }
         double dt = lastNow < 0 ? 0 : Mth.clamp(now - lastNow, 0, 3);
         lastNow = now;
+        eyes(mc, m, cam, now, pt);
         if (LIVE.isEmpty() && DROPS.isEmpty() && POOLS.isEmpty() && CROWNS.isEmpty() && MISTS.isEmpty()) return;
         sky = mc.level.getSkyDarken(pt);
 
@@ -373,6 +374,19 @@ public final class BloodFxClient {
             tri(vc, m, n, cam, ctr, UP, in[i], UP, in[j], UP, a, tone);
             Vec3 ni = in[i].subtract(ctr).normalize().scale(0.6).add(UP).normalize(), nj = in[j].subtract(ctr).normalize().scale(0.6).add(UP).normalize();
             q(vc, m, n, cam, in[i], ni, o[i], ni, o[j], nj, in[j], nj, a, tone);
+        }
+        if (q.r >= 0.6 && R > 0.3) {   // a big pool blooms: a crimson flower opens on it, five petals, a bright heart
+            double bloom = FxBase.backOut(Mth.clamp((age - 4) / 10.0, 0, 1)) * R;
+            double rot = (q.seed % 360) * 0.0174;
+            Vec3 heart = ctr.add(0, 0.01, 0);
+            for (int k = 0; k < 5; k++) {
+                double ak = rot + k * TAU / 5;
+                Vec3 l0 = heart.add(Math.cos(ak - 0.42) * bloom * 0.32, 0.004, Math.sin(ak - 0.42) * bloom * 0.32);
+                Vec3 tip = heart.add(Math.cos(ak) * bloom * 0.62, 0.006, Math.sin(ak) * bloom * 0.62);
+                Vec3 r0 = heart.add(Math.cos(ak + 0.42) * bloom * 0.32, 0.004, Math.sin(ak + 0.42) * bloom * 0.32);
+                tri(vc, m, n, cam, heart, UP, l0, UP, tip, UP, a, tone * 1.45F);
+                tri(vc, m, n, cam, heart, UP, tip, UP, r0, UP, a, tone * 1.3F);
+            }
         }
     }
 
@@ -1141,6 +1155,33 @@ public final class BloodFxClient {
         }
     }
 
+    // ================================================================== crimson eyes
+    private static final float[] EYE = {1.0F, 0.08F, 0.12F}, EYE_SOFT = {0.8F, 0.0F, 0.05F};
+
+    /**
+     * The vampire's eyes: once you've drunk your fill (a full gauge) and all through the Scarlet Moon, your eyes burn
+     * crimson - two points of red light on your face, trailing a little when you turn. Others see them on you under the
+     * Moon.
+     */
+    private static void eyes(Minecraft mc, Matrix4f m, Vec3 cam, double now, float pt) {
+        for (net.minecraft.world.entity.player.Player pl : mc.level.players()) {
+            boolean self = pl == mc.player;
+            boolean lit = self ? BloodHud.full() || BloodHud.moon() : hasMoonAura(pl.getId());
+            if (!lit || (self && mc.options.getCameraType().isFirstPerson()) || pl.isInvisible()) continue;
+            double yaw = Math.toRadians(Mth.rotLerp(pt, pl.yHeadRotO, pl.yHeadRot)), pitch = Math.toRadians(Mth.lerp(pt, pl.xRotO, pl.getXRot()));
+            Vec3 fwd = new Vec3(-Math.sin(yaw) * Math.cos(pitch), -Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
+            Vec3 right = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
+            Vec3 head = new Vec3(Mth.lerp(pt, pl.xo, pl.getX()), Mth.lerp(pt, pl.yo, pl.getY()) + pl.getEyeHeight(pl.getPose()), Mth.lerp(pt, pl.zo, pl.getZ()));
+            float pulse = 0.85F + 0.15F * (float) Math.sin(now * 0.3);
+            for (int s = -1; s <= 1; s += 2) {
+                Vec3 e = head.add(fwd.scale(0.265)).add(right.scale(0.11 * s)).add(0, -0.02, 0);
+                gglow(m, cam, e, 0.055, 0.95F * pulse, EYE);
+                gglow(m, cam, e, 0.16, 0.35F * pulse, EYE_SOFT);
+                gseg(m, cam, e, e.add(right.scale(0.14 * s)).add(0, 0.015, 0), 0.012, 0.6F * pulse, 0, EYE);   // a thin flare off the outer corner
+            }
+        }
+    }
+
     private static void awakening(Matrix4f m, Vec3 cam, L l, double age, double now) {
         FxPacket p = l.p;
         Vec3 c = p.c;
@@ -1162,6 +1203,13 @@ public final class BloodFxClient {
             }
             gring(m, cam, c.add(0, 0.03, 0), R * (1 - k * 0.9), 0.15, (float) (0.5 * Math.sin(k * Math.PI)), W_CORE);
             gglow(m, cam, c.add(0, 1.1, 0), 0.6 + k * 1.4, (float) (0.15 + 0.35 * k), W_SOFT);
+            for (int i = 0; i < 26; i++) {   // and crimson petals - the blood you drank - whirling up round you before it turns to ice
+                double an = hs(i, 90) * TAU + k * (3 + hs(i, 91) * 2), rad = 0.7 + 1.6 * (1 - k) * hs(i, 92), y = 0.2 + k * 2.2 * hs(i, 93);
+                Vec3 q = c.add(Math.cos(an) * rad, y, Math.sin(an) * rad);
+                Vec3 tw = new Vec3(-Math.sin(an), 0.3, Math.cos(an)).scale(0.14);
+                float pa = (float) (0.9 * Math.sin(Math.min(1, k * 1.3) * Math.PI));
+                gseg(m, cam, q.subtract(tw), q.add(tw), 0.07, pa, pa * 0.6F, EYE);
+            }
             return;
         }
         double t = age - gather;
