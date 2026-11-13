@@ -227,7 +227,7 @@ public final class GameTests {
             try { cast(spell); } catch (Throwable x) { castErr = (x.getCause() != null ? x.getCause() : x).toString(); }
             MagicData d = MagicData.getPlayerMagicData(p);
             castState = "cast returned " + lastCastResult + ", casting=" + d.isCasting() + " " + d.getCastingSpellId();
-            if (!lastCastResult) {
+            if (!"true".equals(lastCastResult)) {
                 try {
                     var cr = spell.canBeCastedBy(1, io.redspace.ironsspellbooks.api.spells.CastSource.SPELLBOOK, d, p);
                     castState += "; refused: " + cr.type + " " + (cr.message == null ? "" : cr.message.getString()) + " school=" + spell.getSchoolType().getId();

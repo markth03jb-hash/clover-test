@@ -272,8 +272,8 @@ public final class MechFxClient {
         if (age >= fly) return;   // the landing is its own burst
         Vec3 d = p.u.subtract(p.c);
         double side0 = (FxBase.h2(p.id, (int) p.a0, 4) - 0.5) * 6;
-        Vec3 sd = UP.cross(d.lengthSqr() < 1e-6 ? new Vec3(0, 0, 1) : d.normalize());
-        sd = sd.lengthSqr() < 1e-6 ? new Vec3(1, 0, 0) : sd.normalize();
+        Vec3 sd0 = UP.cross(d.lengthSqr() < 1e-6 ? new Vec3(0, 0, 1) : d.normalize());
+        final Vec3 sd = sd0.lengthSqr() < 1e-6 ? new Vec3(1, 0, 0) : sd0.normalize();
         java.util.function.DoubleFunction<Vec3> path = u -> p.c.add(d.scale(u)).add(0, Math.sin(u * Math.PI) * 3.5, 0).add(sd.scale(Math.sin(u * Math.PI) * side0));
         double k = age / fly;
         Vec3 at = path.apply(k), nx = path.apply(Math.min(1, k + 0.03));
