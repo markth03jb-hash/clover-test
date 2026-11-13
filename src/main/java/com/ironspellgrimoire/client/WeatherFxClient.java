@@ -44,6 +44,7 @@ public final class WeatherFxClient {
     public static void spawn(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
+        if ((int) p.h == 98) { LIVE.removeIf(l -> (int) l.p.v.x == (int) p.v.x); return; }   // a mode was ended early: drop what hangs on that player
         if ((int) p.h == 99) {
             int f = Mth.clamp((int) p.a0, 0, 5);
             if (f != forecast) changed = mc.level.getGameTime();
@@ -120,7 +121,7 @@ public final class WeatherFxClient {
             FxPacket p = l.p;
             switch ((int) p.h) {
                 case 0 -> sunbeam(m, cam, p.c, p.r, age, p.life, p.id, now);
-                case 1 -> rain(vc, m, n, cam, p.c, p.r, age, p.life, p.id, now, GREY, true);
+                case 1 -> rain(vc, m, n, cam, p.c, p.r, age, p.life, p.id, now, new float[]{0.74F, 0.77F, 0.83F}, true);
                 case 2 -> bolt(m, cam, p, age);
                 case 3 -> hail(vc, m, n, cam, p.c, p.r, age, p.life, p.id, now);
                 case 4 -> gale(m, cam, p, age, now);
