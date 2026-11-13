@@ -395,9 +395,9 @@ public final class GamblerFx {
         int[] s = spin(heads, sure);
         final Vec3 c = p.position().add(look(p).scale(2.5)).add(0, 3.6, 0);
         final int STOP = 24;
-        machine(sl, c, s, STOP, STOP + 30 + 14);
+        machine(sl, c, s, STOP, STOP + 18 + 14);
         play(sl, c, "slot", 1.4f, 0.8f);
-        AstaFx.later(STOP + 30, () -> {
+        AstaFx.later(STOP + 18, () -> {
             if (!alive(p)) return;
             float k = Math.max(1.8f, payoutFor(s) * 1.1f);
             boolean big = s[0] == SEVEN && s[1] == SEVEN && s[2] == SEVEN;

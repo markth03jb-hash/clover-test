@@ -722,7 +722,7 @@ public final class GameTests {
                 "origin_zero", (java.util.function.BiConsumer<ServerPlayer, Float>) VoidFx::originZero, ""));
         queue.add(new BookMovesTest("gambler", com.ironspellgrimoire.registry.AddonItemRegistry.GAMBLER_GRIMOIRE::get, GamblerFx.class,
                 "coin_toss", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::coinToss, "",
-                "double_or_nothing", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::doubleOrNothing, "",
+                "double_or_nothing", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::doubleOrNothing, "q",
                 "roulette", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::roulette, "",
                 "chip_shot", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::chipShot, "",
                 "lucky_seven", (java.util.function.BiConsumer<ServerPlayer, Float>) GamblerFx::luckySeven, "",

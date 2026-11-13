@@ -393,6 +393,7 @@ public final class HunterFx {
         final Vec3 lk = look(p);
         final int N = limit ? 5 : 3;
         final float L = limit ? 18f : 14f;
+        final double groundY = p.getY();
         p.setDeltaMovement(lk.x * 0.3, 0.9, lk.z * 0.3);
         p.hurtMarked = true;
         p.fallDistance = 0;
@@ -400,7 +401,7 @@ public final class HunterFx {
         play(sl, p.position(), "trick", 1.2f, 0.6f);
         AstaFx.later(10, () -> {   // and down
             if (!alive(p)) return;
-            Vec3 c = p.position();
+            Vec3 c = new Vec3(p.getX(), Math.min(p.getY(), groundY), p.getZ());   // the arcs roll along the ground, not the air you leapt into
             p.setDeltaMovement(0, -1.6, 0);
             p.hurtMarked = true;
             p.fallDistance = 0;
