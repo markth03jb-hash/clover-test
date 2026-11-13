@@ -348,8 +348,8 @@ public final class GameTests {
         @Override boolean tick(int t) {
             p.setHealth(p.getMaxHealth());
             MagicData.getPlayerMagicData(p).setMana(1000);
-            int i = t / 50;
-            if (t % 50 == 0 && i < names.length) {
+            int i = (t - 1) / 50;
+            if ((t - 1) % 50 == 0 && i < names.length) {
                 ensureDummy();
                 p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
                 p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
@@ -357,7 +357,7 @@ public final class GameTests {
                 hp = dummy.getHealth();
                 try { moves.get(i).accept(p, 10f); } catch (Throwable x) { bad.add(names[i] + " threw " + x); }
             }
-            if (t % 50 == 49 && i < names.length) {
+            if ((t - 1) % 50 == 49 && i < names.length) {
                 float dealt = hp - (dummy == null ? hp : dummy.getHealth());
                 if (!quiet.contains(names[i]) && dealt <= 0) bad.add(names[i] + " did no damage to the dummy");
                 done.add(names[i] + String.format(" %.0f", dealt));

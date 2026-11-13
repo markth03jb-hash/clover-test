@@ -52,6 +52,50 @@ public final class UiShotsServer {
         BloodFx.showGauge(p, BloodFx.MAX);
         BloodFx.scarletMoon(p, 10f);
     }
+    /** The Gravity or Sound Grimoire equipped, and one of its spells cast where the player looks ("target" puts a still husk 6 ahead). */
+    public static void element(ServerPlayer p, String which) {
+        Moves.ends(p, BloodFx.MODE);
+        boolean grav = which.startsWith("g:");
+        String w = which.substring(2);
+        ItemStack book = new ItemStack(grav ? AddonItemRegistry.GRAVITY_GRIMOIRE.get() : AddonItemRegistry.SOUND_GRIMOIRE.get());
+        net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
+        book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+        ItemStack cur = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+        if (cur == null || !cur.is(book.getItem())) CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+        io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).setMana(2000);
+        switch (w) {
+            case "target" -> {
+                var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+                var z = net.minecraft.world.entity.EntityType.HUSK.create(p.serverLevel());
+                if (z != null) {
+                    var at = p.position().add(look.scale(7));
+                    z.moveTo(at.x, p.getY(), at.z, 0, 0); z.setNoAi(true);
+                    z.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000); z.setHealth(1000);
+                    p.serverLevel().addFreshEntity(z);
+                }
+            }
+            case "gravity_bullet" -> GravityFx.gravityBullet(p, 10f);
+            case "crushing_field" -> GravityFx.crushingField(p, 10f);
+            case "gravity_well" -> GravityFx.gravityWell(p, 10f);
+            case "gravity_lift" -> GravityFx.gravityLift(p, 10f);
+            case "orbiting_mass" -> GravityFx.orbitingMass(p, 10f);
+            case "repulse" -> GravityFx.repulse(p, 10f);
+            case "mass_domain" -> GravityFx.massDomain(p, 10f);
+            case "starfall_collapse" -> GravityFx.starfallCollapse(p, 10f);
+            case "sonic_pulse" -> SoundFx.sonicPulse(p, 10f);
+            case "sonic_lance" -> SoundFx.sonicLance(p, 10f);
+            case "sound_barrier" -> SoundFx.soundBarrier(p, 10f);
+            case "silence_field" -> SoundFx.silenceField(p, 10f);
+            case "echo_chamber" -> SoundFx.echoChamber(p, 10f);
+            case "tuning_strike" -> SoundFx.tuningStrike(p, 10f);
+            case "thunderclap" -> SoundFx.thunderclap(p, 10f);
+            case "crescendo" -> SoundFx.crescendoMode(p, 10f);
+            case "final_chord" -> SoundFx.finalChord(p, 10f);
+            case "end" -> { Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); }
+            default -> {}
+        }
+    }
+
     /** One Blood spell, cast where the player looks. */
     public static void bloodSpell(ServerPlayer p, String which) {
         switch (which) {

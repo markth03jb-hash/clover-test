@@ -165,6 +165,48 @@ public final class UiShots {
             b.showPart("spells:0");
         }, 15, false));
         steps.add(new Step("ice_book_done", () -> mc.setScreen(null), 4, true));
+        // the Gravity Grimoire
+        steps.add(new Step("grav_bullet", () -> {
+            mc.options.hideGui = true;
+            mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+            mc.player.setXRot(14);
+            onServer(p -> { p.setXRot(14); UiShotsServer.element(p, "g:target"); UiShotsServer.element(p, "g:gravity_bullet"); });
+        }, 7, true));
+        steps.add(new Step("grav_well", () -> onServer(p -> UiShotsServer.element(p, "g:gravity_well")), 22, true));
+        steps.add(new Step("grav_field", () -> onServer(p -> UiShotsServer.element(p, "g:crushing_field")), 26, true));
+        steps.add(new Step("grav_lift", () -> onServer(p -> UiShotsServer.element(p, "g:gravity_lift")), 12, true));
+        steps.add(new Step("grav_repulse", () -> onServer(p -> UiShotsServer.element(p, "g:repulse")), 4, true));
+        steps.add(new Step("grav_orbit", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "g:orbiting_mass")); }, 14, true));
+        steps.add(new Step("grav_domain", () -> onServer(p -> UiShotsServer.element(p, "g:mass_domain")), 22, true));
+        steps.add(new Step("grav_star", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "g:starfall_collapse")); }, 24, true));
+        steps.add(new Step("grav_implode", () -> {}, 9, true));
+        steps.add(new Step("grav_wheel", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "g:end")); GrimoireWheel.forceOpen = true; }, 14, true));
+        steps.add(new Step("grav_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); }, 4, true));
+        steps.add(new Step("grav_book", () -> {
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.GRAVITY_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("grav_book_done", () -> mc.setScreen(null), 4, true));
+        // the Sound Grimoire
+        steps.add(new Step("snd_pulse", () -> { mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "s:sonic_pulse")); }, 7, true));
+        steps.add(new Step("snd_strike", () -> onServer(p -> UiShotsServer.element(p, "s:tuning_strike")), 6, true));
+        steps.add(new Step("snd_lance", () -> onServer(p -> UiShotsServer.element(p, "s:sonic_lance")), 5, true));
+        steps.add(new Step("snd_silence", () -> onServer(p -> UiShotsServer.element(p, "s:silence_field")), 16, true));
+        steps.add(new Step("snd_chamber", () -> onServer(p -> UiShotsServer.element(p, "s:echo_chamber")), 24, true));
+        steps.add(new Step("snd_clap", () -> onServer(p -> UiShotsServer.element(p, "s:thunderclap")), 4, true));
+        steps.add(new Step("snd_barrier", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "s:sound_barrier")); }, 14, true));
+        steps.add(new Step("snd_crescendo", () -> onServer(p -> UiShotsServer.element(p, "s:crescendo")), 18, true));
+        steps.add(new Step("snd_chord", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:final_chord")); }, 16, true));
+        steps.add(new Step("snd_blast", () -> {}, 9, true));
+        steps.add(new Step("snd_wheel", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:end")); GrimoireWheel.forceOpen = true; }, 14, true));
+        steps.add(new Step("snd_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); }, 4, true));
+        steps.add(new Step("snd_book", () -> {
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.SOUND_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("snd_book_done", () -> mc.setScreen(null), 4, true));
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)
         steps.add(new Step("dante_front", () -> { TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.dante(p, false, false); }); }, 30, true));
