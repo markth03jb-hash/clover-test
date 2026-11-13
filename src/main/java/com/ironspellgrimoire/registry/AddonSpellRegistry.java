@@ -514,6 +514,66 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> SOUND_SPELLS = List.of(
             SONIC_PULSE, ECHO_STEP, TUNING_STRIKE, SOUND_BARRIER, SILENCE_FIELD, THUNDERCLAP, SONIC_LANCE, ECHO_CHAMBER, CRESCENDO, FINAL_CHORD);
 
+    // ------------------------------------------------------------------ Ink Grimoire (an original grimoire: InkFx)
+    private static com.ironspellgrimoire.spells.BookSpell ink(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.EVOCATION_RESOURCE,
+                com.ironspellgrimoire.item.InkGrimoireItem.class, "ui.iron_spell_grimoire.ink_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> BRUSH_STROKE = registerSpell(ink("brush_stroke", 3, 15, 10, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.InkFx::brushStroke));
+    public static final RegistryObject<AbstractSpell> INK_SPLASH = registerSpell(ink("ink_splash", 5, 20, 9, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.InkFx::inkSplash));
+    public static final RegistryObject<AbstractSpell> INK_SERPENT = registerSpell(ink("ink_serpent", 9, 30, 10, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.InkFx::inkSerpent));
+    public static final RegistryObject<AbstractSpell> INK_BLOT = registerSpell(ink("ink_blot", 14, 35, 9, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.InkFx::inkBlot));
+    public static final RegistryObject<AbstractSpell> SEAL_SCRIPT = registerSpell(ink("seal_script", 12, 35, 11, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.InkFx::sealScript));
+    public static final RegistryObject<AbstractSpell> INK_BEASTS = registerSpell(ink("ink_beasts", 14, 40, 10, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.InkFx::inkBeasts));
+    public static final RegistryObject<AbstractSpell> INK_RAIN = registerSpell(ink("ink_rain", 16, 45, 10, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.InkFx::inkRain));
+    public static final RegistryObject<AbstractSpell> INK_WAVE = registerSpell(ink("ink_wave", 14, 45, 11, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.InkFx::inkWave));
+    public static final RegistryObject<AbstractSpell> MASTERPIECE = registerSpell(ink("masterpiece", 60, 80, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.InkFx::masterpieceMode));
+    public static final RegistryObject<AbstractSpell> GRAND_CALLIGRAPHY = registerSpell(ink("grand_calligraphy", 45, 120, 16, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.InkFx::grandCalligraphy));
+    /** The ten Ink Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> INK_SPELLS = List.of(
+            BRUSH_STROKE, INK_SPLASH, INK_SERPENT, INK_BLOT, SEAL_SCRIPT, INK_BEASTS, INK_RAIN, INK_WAVE, MASTERPIECE, GRAND_CALLIGRAPHY);
+
+    // ------------------------------------------------------------------ Error Grimoire (an original grimoire: ErrorFx)
+    private static com.ironspellgrimoire.spells.BookSpell error(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ELDRITCH_RESOURCE,
+                com.ironspellgrimoire.item.ErrorGrimoireItem.class, "ui.iron_spell_grimoire.error_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> GLITCH_BOLT = registerSpell(error("glitch_bolt", 3, 15, 9, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.ErrorFx::glitchBolt));
+    public static final RegistryObject<AbstractSpell> FRAME_SKIP = registerSpell(error("frame_skip", 7, 20, 8, "iron_spell_grimoire:light_step", com.ironspellgrimoire.server.ErrorFx::frameSkip));
+    public static final RegistryObject<AbstractSpell> CORRUPTED_THREADS = registerSpell(error("corrupted_threads", 12, 35, 10, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.ErrorFx::corruptedThreads));
+    public static final RegistryObject<AbstractSpell> LAG_SPIKE = registerSpell(error("lag_spike", 12, 35, 10, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.ErrorFx::lagSpike));
+    public static final RegistryObject<AbstractSpell> COPY_PASTE = registerSpell(error("copy_paste", 10, 30, 10, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.ErrorFx::copyPaste));
+    public static final RegistryObject<AbstractSpell> CRASH_ZONE = registerSpell(error("crash_zone", 16, 40, 10, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.ErrorFx::crashZone));
+    public static final RegistryObject<AbstractSpell> ERROR_WINDOWS = registerSpell(error("error_windows", 14, 40, 11, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.ErrorFx::errorWindows));
+    public static final RegistryObject<AbstractSpell> BLUE_SCREEN = registerSpell(error("blue_screen", 18, 50, 12, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.ErrorFx::blueScreen));
+    public static final RegistryObject<AbstractSpell> FATAL_ERROR = registerSpell(error("fatal_error", 60, 80, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ErrorFx::fatalError));
+    public static final RegistryObject<AbstractSpell> SYSTEM_CRASH = registerSpell(error("system_crash", 45, 120, 16, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.ErrorFx::systemCrash));
+    /** The ten Error Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> ERROR_SPELLS = List.of(
+            GLITCH_BOLT, FRAME_SKIP, CORRUPTED_THREADS, LAG_SPIKE, COPY_PASTE, CRASH_ZONE, ERROR_WINDOWS, BLUE_SCREEN, FATAL_ERROR, SYSTEM_CRASH);
+
+    // ------------------------------------------------------------------ Treasure Grimoire (an original grimoire: TreasureFx)
+    private static com.ironspellgrimoire.spells.BookSpell treasure(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.HOLY_RESOURCE,
+                com.ironspellgrimoire.item.TreasureGrimoireItem.class, "ui.iron_spell_grimoire.treasure_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> VAULT_VOLLEY = registerSpell(treasure("vault_volley", 3, 15, 10, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.TreasureFx::vaultVolley));
+    public static final RegistryObject<AbstractSpell> GILDED_SPEAR = registerSpell(treasure("gilded_spear", 6, 25, 11, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.TreasureFx::gildedSpear));
+    public static final RegistryObject<AbstractSpell> VAULT_CHAINS = registerSpell(treasure("vault_chains", 14, 35, 9, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.TreasureFx::vaultChains));
+    public static final RegistryObject<AbstractSpell> BLADE_WALL = registerSpell(treasure("blade_wall", 18, 40, 9, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.TreasureFx::bladeWall));
+    public static final RegistryObject<AbstractSpell> BLADE_RAIN = registerSpell(treasure("blade_rain", 14, 40, 10, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.TreasureFx::bladeRain));
+    public static final RegistryObject<AbstractSpell> SEEKING_BLADES = registerSpell(treasure("seeking_blades", 12, 40, 10, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.TreasureFx::seekingBlades));
+    public static final RegistryObject<AbstractSpell> TREASURE_BARRAGE = registerSpell(treasure("treasure_barrage", 16, 50, 11, "iron_spell_grimoire:light_arrows", com.ironspellgrimoire.server.TreasureFx::treasureBarrage));
+    public static final RegistryObject<AbstractSpell> VAULT_AEGIS = registerSpell(treasure("vault_aegis", 24, 45, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.TreasureFx::vaultAegis));
+    public static final RegistryObject<AbstractSpell> KINGS_VAULT = registerSpell(treasure("kings_vault", 60, 80, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.TreasureFx::kingsVault));
+    public static final RegistryObject<AbstractSpell> VAULT_BREAKER = registerSpell(treasure("vault_breaker", 45, 120, 16, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.TreasureFx::vaultBreaker));
+    /** The ten Treasure Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> TREASURE_SPELLS = List.of(
+            VAULT_VOLLEY, GILDED_SPEAR, VAULT_CHAINS, BLADE_WALL, BLADE_RAIN, SEEKING_BLADES, TREASURE_BARRAGE, VAULT_AEGIS, KINGS_VAULT, VAULT_BREAKER);
+
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,
                                                                    String only, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {

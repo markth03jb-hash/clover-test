@@ -370,7 +370,7 @@ public final class GameTests {
             if (!np.isEmpty() || !nd.isEmpty()) bad.add("gave status effects: " + np + " " + nd);
             if (bad.isEmpty()) pass(name, "damage dealt: " + String.join(", ", done));
             else fail(name, String.join("; ", bad));
-            Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER);
+            Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, TreasureFx.AEGIS);
             return true;
         }
     }
@@ -648,6 +648,39 @@ public final class GameTests {
                 "echo_chamber", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::echoChamber, "",
                 "crescendo", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::crescendoMode, "q",
                 "final_chord", (java.util.function.BiConsumer<ServerPlayer, Float>) SoundFx::finalChord, ""));
+        queue.add(new BookMovesTest("ink", com.ironspellgrimoire.registry.AddonItemRegistry.INK_GRIMOIRE::get, InkFx.class,
+                "brush_stroke", (java.util.function.BiConsumer<ServerPlayer, Float>) InkFx::brushStroke, "c",
+                "ink_splash", (java.util.function.BiConsumer<ServerPlayer, Float>) InkFx::inkSplash, "",
+                "ink_serpent", (java.util.function.BiConsumer<ServerPlayer, Float>) InkFx::inkSerpent, "",
+                "ink_blot", (java.util.function.BiConsumer<ServerPlayer, Float>) InkFx::inkBlot, "",
+                "seal_script", (java.util.function.BiConsumer<ServerPlayer, Float>) InkFx::sealScript, "",
+                "ink_beasts", (java.util.function.BiConsumer<ServerPlayer, Float>) InkFx::inkBeasts, "",
+                "ink_rain", (java.util.function.BiConsumer<ServerPlayer, Float>) InkFx::inkRain, "",
+                "ink_wave", (java.util.function.BiConsumer<ServerPlayer, Float>) InkFx::inkWave, "",
+                "masterpiece", (java.util.function.BiConsumer<ServerPlayer, Float>) InkFx::masterpieceMode, "q",
+                "grand_calligraphy", (java.util.function.BiConsumer<ServerPlayer, Float>) InkFx::grandCalligraphy, ""));
+        queue.add(new BookMovesTest("error", com.ironspellgrimoire.registry.AddonItemRegistry.ERROR_GRIMOIRE::get, ErrorFx.class,
+                "glitch_bolt", (java.util.function.BiConsumer<ServerPlayer, Float>) ErrorFx::glitchBolt, "",
+                "frame_skip", (java.util.function.BiConsumer<ServerPlayer, Float>) ErrorFx::frameSkip, "",
+                "corrupted_threads", (java.util.function.BiConsumer<ServerPlayer, Float>) ErrorFx::corruptedThreads, "",
+                "lag_spike", (java.util.function.BiConsumer<ServerPlayer, Float>) ErrorFx::lagSpike, "",
+                "copy_paste", (java.util.function.BiConsumer<ServerPlayer, Float>) ErrorFx::copyPaste, "",
+                "crash_zone", (java.util.function.BiConsumer<ServerPlayer, Float>) ErrorFx::crashZone, "",
+                "error_windows", (java.util.function.BiConsumer<ServerPlayer, Float>) ErrorFx::errorWindows, "",
+                "blue_screen", (java.util.function.BiConsumer<ServerPlayer, Float>) ErrorFx::blueScreen, "",
+                "fatal_error", (java.util.function.BiConsumer<ServerPlayer, Float>) ErrorFx::fatalError, "q",
+                "system_crash", (java.util.function.BiConsumer<ServerPlayer, Float>) ErrorFx::systemCrash, ""));
+        queue.add(new BookMovesTest("treasure", com.ironspellgrimoire.registry.AddonItemRegistry.TREASURE_GRIMOIRE::get, TreasureFx.class,
+                "vault_volley", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::vaultVolley, "",
+                "gilded_spear", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::gildedSpear, "",
+                "vault_chains", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::vaultChains, "",
+                "blade_wall", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::bladeWall, "c",
+                "blade_rain", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::bladeRain, "",
+                "seeking_blades", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::seekingBlades, "",
+                "treasure_barrage", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::treasureBarrage, "",
+                "vault_aegis", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::vaultAegis, "q",
+                "kings_vault", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::kingsVault, "",
+                "vault_breaker", (java.util.function.BiConsumer<ServerPlayer, Float>) TreasureFx::vaultBreaker, ""));
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

@@ -126,6 +126,9 @@ public class FxRenderer extends FxBase {
       if (p.shape == 82) { IceFxClient.spawn(p); return; }
       if (p.shape == 83) { GravityFxClient.spawn(p); return; }   // the Gravity Grimoire (server/GravityFx)
       if (p.shape == 84) { SoundFxClient.spawn(p); return; }     // the Sound Grimoire (server/SoundFx)
+      if (p.shape == 85) { InkFxClient.spawn(p); return; }       // the Ink Grimoire (server/InkFx)
+      if (p.shape == 86) { ErrorFxClient.spawn(p); return; }     // the Error Grimoire (server/ErrorFx)
+      if (p.shape == 87) { TreasureFxClient.spawn(p); return; }  // the Treasure Grimoire (server/TreasureFx)
       if (p.shape == 3) { GravityFxClient.kill(p.id); }
    // Patolli's Light Magic (LightFxClient)
       if (p.shape == 3 && LightFxClient.kill(p.id)) return;
@@ -315,7 +318,7 @@ public class FxRenderer extends FxBase {
             TRACK.clear();
             ORBITS.clear();
             WHIPS.clear();
-            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear(); GravityFxClient.clear(); SoundFxClient.clear();
+            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear(); GravityFxClient.clear(); SoundFxClient.clear(); InkFxClient.clear(); ErrorFxClient.clear(); TreasureFxClient.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
@@ -527,6 +530,9 @@ public class FxRenderer extends FxBase {
             IceFxClient.draw(vc, m, n, cam, now, pt);
             GravityFxClient.draw(vc, m, n, cam, now, pt);
             SoundFxClient.draw(m, cam, now, pt);
+            InkFxClient.draw(vc, m, n, cam, now, pt);
+            ErrorFxClient.draw(vc, m, n, cam, now, pt);
+            TreasureFxClient.draw(vc, m, n, cam, now, pt);
             BountyHud.drawBeacon(m, cam, now);
             QuestHud.drawBeacon(m, cam, now);
             WorldBossHud.drawBeacon(m, cam, now);

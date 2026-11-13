@@ -52,6 +52,9 @@ public final class ManaBarHud {
             {0xD8D0D8, 0xA8101E, 0xFF6A74, 0x12040A, 0xFFB0B8},   // Blood: oxblood well, silver casing, blood-red mana
             {0xD8CCFF, 0x6A3CE0, 0xB89CFF, 0x0A0614, 0xDCCBFF},   // Gravity: violet mana sinking in a black well
             {0xD6FFF4, 0x22C8A0, 0x9CFFE4, 0x041412, 0xD6FFF4},   // Sound: sea-green
+            {0xEDE3CC, 0x2A2A50, 0x6A70FF, 0x06060C, 0xF0E8D8},   // Ink: ink with an indigo sheen in a paper casing
+            {0xFF9CE6, 0xD01CA0, 0x3CF0FF, 0x08040C, 0xFFD0F4},   // Error: magenta, glinting cyan
+            {0xFFE7A0, 0xE0A020, 0xFFF4C0, 0x140E04, 0xFFF0C0},   // Treasure: gold
             {0xF2F8FF, 0x7FC4F4, 0xFFFFFF, 0x0A1424, 0xDDF2FF},   // the Scarlet Moon's ice: frosted silver, ice-blue mana
     };
 

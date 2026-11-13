@@ -48,6 +48,9 @@ public final class LimitClient {
             {1.0F, 0.12F, 0.18F},   // Blood
             {0.62F, 0.38F, 1.0F},   // Gravity: violet
             {0.4F, 1.0F, 0.82F},    // Sound: sea green
+            {0.42F, 0.44F, 1.0F},   // Ink: indigo
+            {1.0F, 0.2F, 0.8F},     // Error: magenta
+            {1.0F, 0.8F, 0.3F},     // Treasure: gold
     };
 
     public static void set(int id, int book, int life) {

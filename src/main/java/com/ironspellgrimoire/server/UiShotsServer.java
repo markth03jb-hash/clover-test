@@ -55,9 +55,14 @@ public final class UiShotsServer {
     /** The Gravity or Sound Grimoire equipped, and one of its spells cast where the player looks ("target" puts a still husk 6 ahead). */
     public static void element(ServerPlayer p, String which) {
         Moves.ends(p, BloodFx.MODE);
-        boolean grav = which.startsWith("g:");
         String w = which.substring(2);
-        ItemStack book = new ItemStack(grav ? AddonItemRegistry.GRAVITY_GRIMOIRE.get() : AddonItemRegistry.SOUND_GRIMOIRE.get());
+        ItemStack book = new ItemStack(switch (which.charAt(0)) {
+            case 'g' -> AddonItemRegistry.GRAVITY_GRIMOIRE.get();
+            case 'i' -> AddonItemRegistry.INK_GRIMOIRE.get();
+            case 'e' -> AddonItemRegistry.ERROR_GRIMOIRE.get();
+            case 't' -> AddonItemRegistry.TREASURE_GRIMOIRE.get();
+            default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
+        });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
         book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
         ItemStack cur = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
@@ -91,7 +96,31 @@ public final class UiShotsServer {
             case "thunderclap" -> SoundFx.thunderclap(p, 10f);
             case "crescendo" -> SoundFx.crescendoMode(p, 10f);
             case "final_chord" -> SoundFx.finalChord(p, 10f);
-            case "end" -> { Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); }
+            case "brush_stroke" -> InkFx.brushStroke(p, 10f);
+            case "ink_splash" -> InkFx.inkSplash(p, 10f);
+            case "ink_serpent" -> InkFx.inkSerpent(p, 10f);
+            case "seal_script" -> InkFx.sealScript(p, 10f);
+            case "ink_beasts" -> InkFx.inkBeasts(p, 10f);
+            case "ink_wave" -> InkFx.inkWave(p, 10f);
+            case "masterpiece" -> InkFx.masterpieceMode(p, 10f);
+            case "grand_calligraphy" -> InkFx.grandCalligraphy(p, 10f);
+            case "glitch_bolt" -> ErrorFx.glitchBolt(p, 10f);
+            case "corrupted_threads" -> ErrorFx.corruptedThreads(p, 10f);
+            case "lag_spike" -> ErrorFx.lagSpike(p, 10f);
+            case "crash_zone" -> ErrorFx.crashZone(p, 10f);
+            case "error_windows" -> ErrorFx.errorWindows(p, 10f);
+            case "blue_screen" -> ErrorFx.blueScreen(p, 10f);
+            case "fatal_error" -> ErrorFx.fatalError(p, 10f);
+            case "system_crash" -> ErrorFx.systemCrash(p, 10f);
+            case "vault_volley" -> TreasureFx.vaultVolley(p, 10f);
+            case "gilded_spear" -> TreasureFx.gildedSpear(p, 10f);
+            case "vault_chains" -> TreasureFx.vaultChains(p, 10f);
+            case "blade_wall" -> TreasureFx.bladeWall(p, 10f);
+            case "blade_rain" -> TreasureFx.bladeRain(p, 10f);
+            case "treasure_barrage" -> TreasureFx.treasureBarrage(p, 10f);
+            case "kings_vault" -> TreasureFx.kingsVault(p, 10f);
+            case "vault_breaker" -> TreasureFx.vaultBreaker(p, 10f);
+            case "end" -> { Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); }
             default -> {}
         }
     }

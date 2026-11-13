@@ -76,7 +76,10 @@ public final class SkillTree {
             /* 19 Light */ {"Light Speed", "hastecast", .25f, "Judgment", "crit", .10f, "Healing Ray", "regenhp", 1, "Blinding Flash", "weaken", .20f, "Arrows of Judgment", "chain", .15f, "Light Shaft", "first", .25f, "Imperial Conviction", "boss", .12f},
             /* 20 Blood (BloodFx/IceFx read its own three) */ {"Thirst", "gaugefill", .15f, "Hard Freeze", "encase", 20, "Pale Ward", "moonguard", .10f, "Blood Price", "lowhp", .15f, "Sanguine Drain", "lifesteal", .05f, "Frostbite", "slow", .20f, "Red Moon Rising", "power", .08f},
             /* 21 Gravity */ {"Dense Shot", "crit", .08f, "Heavy Hand", "slow", .25f, "Event Pull", "pull", .6f, "Featherfall", "dodge", .08f, "Crushing Weight", "boss", .12f, "Orbit", "echo", .10f, "Singularity", "chain", .15f},
-            /* 22 Sound */ {"Sharp Note", "crit", .10f, "Quick Tempo", "hastecast", .20f, "Echo", "echo", .12f, "Rebound", "thorns", .15f, "Deafening", "weaken", .20f, "Wide Chorus", "chain", .15f, "Tuned Ear", "dodge", .08f}};
+            /* 22 Sound */ {"Sharp Note", "crit", .10f, "Quick Tempo", "hastecast", .20f, "Echo", "echo", .12f, "Rebound", "thorns", .15f, "Deafening", "weaken", .20f, "Wide Chorus", "chain", .15f, "Tuned Ear", "dodge", .08f},
+            /* 23 Ink */ {"Bold Stroke", "crit", .10f, "Quick Brush", "hastecast", .20f, "Bleeding Ink", "burn", .12f, "Soaked", "slow", .25f, "Second Copy", "echo", .12f, "Spatter", "chain", .15f, "Finished Work", "execute", .20f},
+            /* 24 Error */ {"Bad Sector", "crit", .10f, "Overclock", "cdr", .08f, "Memory Leak", "manasteal", .06f, "Stack Overflow", "echo", .12f, "Null Pointer", "weaken", .20f, "Fork Bomb", "chain", .15f, "Exploit", "first", .25f},
+            /* 25 Treasure */ {"Fine Edge", "crit", .10f, "Golden Hoard", "refund", .06f, "Royal Guard", "shield", 5, "Collector", "killheal", 3, "Heavy Spear", "knock", .5f, "Endless Armory", "chain", .15f, "King's Due", "boss", .12f}};
 
     /** The crowns (server/SkillEffects does what they say). */
     public static final String[][] CROWNS = {
@@ -102,7 +105,10 @@ public final class SkillTree {
             {"Speed of Light", "Your first spell after 3 s without casting lands 60% harder, and you gain +40% speed for 2 s."},
             {"Eternal Night", "Every Scarlet Moon lasts 15 s longer, and Moonfall returns twice as fast."},
             {"Event Horizon", "Hits on foes off the ground land 30% harder, and pull everything within 3 blocks of them in."},
-            {"Perfect Pitch", "Every 4th spell hit on the same foe strikes the perfect note: it lands 80% harder."}};
+            {"Perfect Pitch", "Every 4th spell hit on the same foe strikes the perfect note: it lands 80% harder."},
+            {"Living Signature", "Every 6th spell hit signs your name on the foe: it lands 70% harder."},
+            {"Kernel Panic", "Hits on foes below half health land 25% harder, and one hit in ten lands three times over."},
+            {"Gate of Plenty", "Every 5th spell hit is followed by a sword from the vault: it lands 60% harder."}};
 
     private static final List<List<Node>> TREES = new ArrayList<>();
     static {

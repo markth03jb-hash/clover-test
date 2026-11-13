@@ -134,6 +134,12 @@ public final class SkillEffects {
                 s.putInt("pitch", n);
                 if (n % 4 == 0) { add += 0.8f; FxSend.ring(sl, Fx.WIND | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.3f, 1.6f, 0.05f, 8); }
             }
+            case 23 -> { if (hits % 6 == 0) { add += 0.7f; FxSend.ring(sl, 10 | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.3f, 1.4f, 0.06f, 8); } }
+            case 24 -> {
+                if (t.getHealth() < t.getMaxHealth() * 0.5f) add += 0.25f;
+                if (r.nextFloat() < 0.1f) add += 2f;
+            }
+            case 25 -> { if (hits % 5 == 0) { add += 0.6f; FxSend.ring(sl, Fx.GOLD | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.3f, 1.2f, 0.05f, 8); } }
             default -> {}
         }
         s.putString("last", t.getUUID().toString()); s.putLong("lastAt", now);

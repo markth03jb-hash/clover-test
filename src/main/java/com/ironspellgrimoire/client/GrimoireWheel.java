@@ -82,7 +82,7 @@ public final class GrimoireWheel {
     private static double leafLobe = 0.3;
 
     /** The Blood Grimoire (GrimoireMastery.BOOKS) and the theme its menus take under the Scarlet Moon. */
-    static final int BLOOD = 20, GRAVITY = 21, SOUND = 22, ICE = 23;
+    static final int BLOOD = 20, GRAVITY = 21, SOUND = 22, INK = 23, ERROR = 24, TREASURE = 25, ICE = 26;
 
     /** The theme every menu should wear right now: the equipped grimoire's, or the ice one under the Scarlet Moon. */
     static int themeIndex() { return themeFor(grimoireIndex()); }
@@ -326,6 +326,12 @@ public final class GrimoireWheel {
             new Theme(c(0x07040E), c(0x241640), c(0xC9B8FF), c(0x8A5CFF), c(0x3A2266), 3, O_SMOKE, M_DOTS, true, 0x0A0614, 0xDCCBFF),
             // Sound: deep sea-green pages, pale jade trim, sound rippling out of every page
             new Theme(c(0x03100E), c(0x0E3A34), c(0xC8FFF0), c(0x5CFFD0), c(0x16564C), 3, O_WIND, M_NOTCHES, true, 0x041412, 0xD6FFF4),
+            // Ink: ink-black pages, paper-white trim, an indigo sheen, ink drops round the ring
+            new Theme(c(0x08080F), c(0x1C1C2E), c(0xEDE3CC), c(0x6A70FF), c(0x101018), 3, O_DROPS, M_RUNES, true, 0x0C0C14, 0xF0E8D8),
+            // Error: black pages, magenta trim slipping off cyan, broken lines round the ring
+            new Theme(c(0x050208), c(0x200A26), c(0xFF3CC8), c(0x3CF0FF), c(0x180818), 3, O_BOLTS, M_NOTCHES, false, 0x08040C, 0xFFD0F4),
+            // Treasure: deep gold pages, bright gold trim, rivets like a vault door
+            new Theme(c(0x140E02), c(0x4A3608), c(0xFFE7A0), c(0xFFC23C), c(0x6A4C10), 3, O_RIVETS, M_DOTS, true, 0x140E04, 0xFFF0C0),
             // the Scarlet Moon's ice (the Blood Grimoire under its mode): frosted blue pages, white trim, crystals of ice round the ring
             new Theme(c(0x08142A), c(0x2E5884), c(0xF2F8FF), c(0xBFE6FF), c(0xDDEEFF), 6, O_FROST, M_DOTS, false, 0x0A1828, 0xEAF6FF),
     };
@@ -500,7 +506,33 @@ public final class GrimoireWheel {
                 double px = cx + Math.sin(am) * (ri + 4), py = cy - Math.cos(am) * (ri + 4);
                 disc(bb, m, px, py, 1.3, 1.0F, 1.0F, 1.0F, 0.9F * A);
             }
-            case 23 -> {   // ice: a crystal standing in each page, frost feathering out from its foot
+            case 23 -> {   // Ink: a brush stroke across each page, thick then thin, a drop hanging off its end
+                double a2 = a0 + w * 0.2, a3 = a1 - w * 0.2;
+                seg(bb, m, cx, cy, a2, mid - 4, am, mid + 2, 2.2, 0.02F, 0.02F, 0.06F, 0.95F * A);
+                seg(bb, m, cx, cy, am, mid + 2, a3, mid + 5, 1.0, 0.02F, 0.02F, 0.06F, 0.95F * A);
+                seg(bb, m, cx, cy, a2, mid - 4, a3, mid + 5, 0.4, ac[0], ac[1], ac[2], 0.5F * A);
+                double px = cx + Math.sin(a3) * (mid + 8 + 2 * p), py = cy - Math.cos(a3) * (mid + 8 + 2 * p);
+                disc(bb, m, px, py, 1.4, 0.02F, 0.02F, 0.06F, 0.95F * A);
+            }
+            case 24 -> {   // Error: a broken bar on each page, its colours slipping apart; it jumps now and then
+                double jump = Math.floor(time * 4 + am * 7) % 3 - 1;
+                double r0 = mid - 3 + jump, r1 = mid + 3 + jump;
+                seg(bb, m, cx, cy, am - w * 0.25 + 0.03, r0, am + w * 0.1 + 0.03, r0, 1.4, 1.0F, 0.2F, 0.8F, 0.85F * A);
+                seg(bb, m, cx, cy, am - w * 0.25 - 0.03, r0, am + w * 0.1 - 0.03, r0, 1.4, 0.2F, 0.95F, 1.0F, 0.85F * A);
+                seg(bb, m, cx, cy, am - w * 0.05, r1, am + w * 0.28, r1, 1.0, 1.0F, 1.0F, 1.0F, 0.8F * A);
+            }
+            case 25 -> {   // Treasure: a gold ripple on each page, a blade point coming out of it
+                double rr = mid + 1;
+                double px = cx + Math.sin(am) * rr, py = cy - Math.cos(am) * rr;
+                for (int k = 0; k < 10; k++) {
+                    double q0 = k * Math.PI / 5, q1 = (k + 1) * Math.PI / 5;
+                    double ax = px + Math.cos(q0) * 3.4, ay = py + Math.sin(q0) * 3.4, bx = px + Math.cos(q1) * 3.4, by = py + Math.sin(q1) * 3.4;
+                    seg(bb, m, cx, cy, Math.atan2(ax - cx, -(ay - cy)), Math.hypot(ax - cx, ay - cy), Math.atan2(bx - cx, -(by - cy)), Math.hypot(bx - cx, by - cy), 0.6, ac[0], ac[1], ac[2], (0.6F + 0.3F * p) * A);
+                }
+                seg(bb, m, cx, cy, am, rr, am, rr + 6 + 2 * p, 1.2, 0.85F, 0.88F, 0.95F, 0.95F * A);
+                disc(bb, m, px, py, 1.0, 1.0F, 0.95F, 0.75F, A);
+            }
+            case 26 -> {   // ice: a crystal standing in each page, frost feathering out from its foot
                 double h = (ro - ri) * (0.62 + 0.12 * p);
                 tri(bb, m, cx, cy, am - w * 0.1, ri + 4, am + w * 0.1, ri + 4, am, ri + 4 + h, 0.62F, 0.8F, 0.96F, 0.75F * A);
                 tri(bb, m, cx, cy, am - w * 0.03, ri + 4, am + w * 0.05, ri + 4, am, ri + 4 + h * 0.96, 1.0F, 1.0F, 1.0F, 0.7F * A);

@@ -208,6 +208,60 @@ public final class UiShots {
             b.showPart("spells:0");
         }, 15, false));
         steps.add(new Step("snd_book_done", () -> mc.setScreen(null), 4, true));
+        steps.add(new Step("ink_target", () -> { mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "i:target")); }, 3, true));
+        steps.add(new Step("ink_stroke", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "i:brush_stroke")); }, 5, true));
+        steps.add(new Step("ink_splash", () -> { onServer(p -> UiShotsServer.element(p, "i:ink_splash")); }, 14, true));
+        steps.add(new Step("ink_serpent", () -> { onServer(p -> UiShotsServer.element(p, "i:ink_serpent")); }, 14, true));
+        steps.add(new Step("ink_seal", () -> { onServer(p -> UiShotsServer.element(p, "i:seal_script")); }, 16, true));
+        steps.add(new Step("ink_burst", () -> { }, 8, true));
+        steps.add(new Step("ink_beasts", () -> { onServer(p -> UiShotsServer.element(p, "i:ink_beasts")); }, 12, true));
+        steps.add(new Step("ink_wave", () -> { onServer(p -> UiShotsServer.element(p, "i:ink_wave")); }, 10, true));
+        steps.add(new Step("ink_master", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "i:masterpiece")); }, 16, true));
+        steps.add(new Step("ink_grand", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "i:grand_calligraphy")); }, 20, true));
+        steps.add(new Step("ink_fall", () -> { }, 13, true));
+        steps.add(new Step("ink_wheel", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "i:end")); GrimoireWheel.forceOpen = true; }, 14, true));
+        steps.add(new Step("ink_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); mc.options.hideGui = true; }, 4, true));
+        steps.add(new Step("ink_book", () -> {
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.INK_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("ink_book_done", () -> mc.setScreen(null), 4, true));
+        steps.add(new Step("err_bolt", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "e:glitch_bolt")); }, 3, true));
+        steps.add(new Step("err_threads", () -> { onServer(p -> UiShotsServer.element(p, "e:corrupted_threads")); }, 10, true));
+        steps.add(new Step("err_lag", () -> { onServer(p -> UiShotsServer.element(p, "e:lag_spike")); }, 12, true));
+        steps.add(new Step("err_zone", () -> { onServer(p -> UiShotsServer.element(p, "e:crash_zone")); }, 14, true));
+        steps.add(new Step("err_windows", () -> { onServer(p -> UiShotsServer.element(p, "e:error_windows")); }, 12, true));
+        steps.add(new Step("err_cube", () -> { onServer(p -> UiShotsServer.element(p, "e:blue_screen")); }, 14, true));
+        steps.add(new Step("err_fatal", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "e:fatal_error")); }, 14, true));
+        steps.add(new Step("err_crash", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "e:system_crash")); }, 20, true));
+        steps.add(new Step("err_crashed", () -> { }, 10, true));
+        steps.add(new Step("err_wheel", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "e:end")); GrimoireWheel.forceOpen = true; }, 14, true));
+        steps.add(new Step("err_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); mc.options.hideGui = true; }, 4, true));
+        steps.add(new Step("err_book", () -> {
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ERROR_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("err_book_done", () -> mc.setScreen(null), 4, true));
+        steps.add(new Step("tre_volley", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "t:vault_volley")); }, 8, true));
+        steps.add(new Step("tre_spear", () -> { onServer(p -> UiShotsServer.element(p, "t:gilded_spear")); }, 8, true));
+        steps.add(new Step("tre_chains", () -> { onServer(p -> UiShotsServer.element(p, "t:vault_chains")); }, 10, true));
+        steps.add(new Step("tre_wall", () -> { onServer(p -> UiShotsServer.element(p, "t:blade_wall")); }, 10, true));
+        steps.add(new Step("tre_rain", () -> { onServer(p -> UiShotsServer.element(p, "t:blade_rain")); }, 16, true));
+        steps.add(new Step("tre_barrage", () -> { onServer(p -> UiShotsServer.element(p, "t:treasure_barrage")); }, 14, true));
+        steps.add(new Step("tre_kings", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "t:kings_vault")); }, 16, true));
+        steps.add(new Step("tre_breaker", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "t:vault_breaker")); }, 22, true));
+        steps.add(new Step("tre_torn", () -> { }, 8, true));
+        steps.add(new Step("tre_wheel", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "t:end")); GrimoireWheel.forceOpen = true; }, 14, true));
+        steps.add(new Step("tre_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); mc.options.hideGui = true; }, 4, true));
+        steps.add(new Step("tre_book", () -> {
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.TREASURE_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("tre_book_done", () -> mc.setScreen(null), 4, true));
+
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)
         steps.add(new Step("dante_front", () -> { TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.dante(p, false, false); }); }, 30, true));

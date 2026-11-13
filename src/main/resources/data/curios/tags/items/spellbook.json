@@ -23,6 +23,9 @@
     "iron_spell_grimoire:light_grimoire",
     "iron_spell_grimoire:blood_grimoire",
     "iron_spell_grimoire:gravity_grimoire",
-    "iron_spell_grimoire:sound_grimoire"
+    "iron_spell_grimoire:sound_grimoire",
+    "iron_spell_grimoire:ink_grimoire",
+    "iron_spell_grimoire:error_grimoire",
+    "iron_spell_grimoire:treasure_grimoire"
   ]
 }

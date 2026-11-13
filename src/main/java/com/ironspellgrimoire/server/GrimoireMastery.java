@@ -239,6 +239,18 @@ public final class GrimoireMastery {
                 "sonic_pulse", 1, "echo_step", 1, "tuning_strike", 2,
                 "sound_barrier", 2, "silence_field", 2, "thunderclap", 3,
                 "sonic_lance", 3, "echo_chamber", 4, "crescendo", 4, "final_chord", 5);
+        book(AddonItemRegistry.INK_GRIMOIRE::get, 10,
+                "brush_stroke", 1, "ink_splash", 1, "ink_serpent", 2,
+                "ink_blot", 2, "seal_script", 2, "ink_beasts", 3,
+                "ink_rain", 3, "ink_wave", 4, "masterpiece", 4, "grand_calligraphy", 5);
+        book(AddonItemRegistry.ERROR_GRIMOIRE::get, Fx.VOID,
+                "glitch_bolt", 1, "frame_skip", 1, "corrupted_threads", 2,
+                "lag_spike", 2, "copy_paste", 2, "crash_zone", 3,
+                "error_windows", 3, "blue_screen", 4, "fatal_error", 4, "system_crash", 5);
+        book(AddonItemRegistry.TREASURE_GRIMOIRE::get, Fx.GOLD,
+                "vault_volley", 1, "gilded_spear", 1, "vault_chains", 2,
+                "blade_wall", 2, "blade_rain", 2, "seeking_blades", 3,
+                "treasure_barrage", 3, "vault_aegis", 4, "kings_vault", 4, "vault_breaker", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

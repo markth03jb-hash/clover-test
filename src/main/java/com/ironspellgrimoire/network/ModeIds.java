@@ -11,7 +11,7 @@ public final class ModeIds {
             "lion_mana_zone", "hellfire_incarnate", "marrow_regeneration", "beelzebub_union",
             "surpassing_limits", "thread_cocoon", "battle_dress", "red_thread_of_fate", "evasion_gate", "waypoint",
             "spatial_gate", "thread_cage", "thread_net", "mana_zone", "valkyrie_dress", "reflect_guard",
-            "salamander_spirit", "mane_blaze", "world_tree_mantle", "ripper_frenzy", "bedrock_armor", "beast_instinct", "nean_armor", "chronostasis_field", "instinct_guard", "vampire_mode", "hardblood_barricade", "prescript_received", "golden_shell", "demon_light", "scarlet_moon", "mass_domain", "sound_barrier", "crescendo"
+            "salamander_spirit", "mane_blaze", "world_tree_mantle", "ripper_frenzy", "bedrock_armor", "beast_instinct", "nean_armor", "chronostasis_field", "instinct_guard", "vampire_mode", "hardblood_barricade", "prescript_received", "golden_shell", "demon_light", "scarlet_moon", "mass_domain", "sound_barrier", "crescendo", "masterpiece", "fatal_error", "kings_vault", "vault_aegis"
     };
 
     public static int index(String id) {
