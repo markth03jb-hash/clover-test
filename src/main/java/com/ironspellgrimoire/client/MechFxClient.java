@@ -41,6 +41,8 @@ public final class MechFxClient {
     private static final List<L> LIVE = new ArrayList<>();
     /** Who is piloting: player id -> {when he climbed in, when it ends, the parts built}. GeoFormLayer draws the titan from this. */
     private static final java.util.Map<Integer, double[]> PILOTS = new java.util.HashMap<>();
+    /** When each player's machine was last stood down (a refresh already on its way mustn't bring it back). */
+    private static final java.util.Map<Integer, Double> ENDED = new java.util.HashMap<>();
 
     /** {started, end, mask} of this player's machine, or null. */
     static double[] pilot(int id) {
@@ -57,12 +59,14 @@ public final class MechFxClient {
     public static void spawn(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
-        if ((int) p.h == 98) { LIVE.removeIf(l -> (int) l.p.v.x == (int) p.v.x); PILOTS.remove((int) p.v.x); return; }   // a mode was ended early: drop what hangs on that player
+        if ((int) p.h == 98) { LIVE.removeIf(l -> (int) l.p.v.x == (int) p.v.x); PILOTS.remove((int) p.v.x); ENDED.put((int) p.v.x, (double) mc.level.getGameTime()); return; }   // a mode was ended early: drop what hangs on that player
         if ((int) p.h == 8) {   // Pilot: the first packet climbs in (and assembles the machine), the refreshes keep it standing
             double now0 = mc.level.getGameTime();
             int id = (int) p.v.x;
             double[] f = PILOTS.get(id);
-            if (f == null || p.life > 44 || now0 > f[1] + 4) PILOTS.put(id, new double[]{now0, now0 + p.life, p.a0});
+            Double ended = ENDED.get(id);
+            if (p.life <= 44 && ended != null && now0 - ended < 20) { /* a refresh still on its way after the mode ended: don't bring the machine back */ }
+            else if (f == null || p.life > 44 || now0 > f[1] + 4) PILOTS.put(id, new double[]{now0, now0 + p.life, p.a0});
             else { f[1] = now0 + p.life; f[2] = p.a0; }
         }
         if ((int) p.h == 99) {
