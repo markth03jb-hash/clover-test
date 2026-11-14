@@ -163,8 +163,8 @@ model = {
     "elements": els,
     "display": {
         # the grip sits at the model's centre, so it lands in the hand; the blade raised forward-up like a drawn sword
-        "thirdperson_righthand": {"rotation": [0, -90, 45], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
-        "thirdperson_lefthand": {"rotation": [0, 90, -45], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
+        "thirdperson_righthand": {"rotation": [0, -90, -40], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
+        "thirdperson_lefthand": {"rotation": [0, 90, 40], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
         "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 1.2, 1.13], "scale": [0.95, 0.95, 0.95]},
         "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 1.2, 1.13], "scale": [0.95, 0.95, 0.95]},
         "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.8, 0.8, 0.8]},

@@ -866,7 +866,7 @@
       "rotation": [
         0,
         -90,
-        45
+        -40
       ],
       "translation": [
         0,
@@ -883,7 +883,7 @@
       "rotation": [
         0,
         90,
-        -45
+        40
       ],
       "translation": [
         0,
