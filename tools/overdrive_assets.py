@@ -4,7 +4,7 @@ inventory icon, models, the curios tag, the sword's 3D model and texture, and th
   Heartline - a black katana, inspired by an anime swordsman's black blade but with its own details: jet-black steel
               with a thin bright edge and a crimson heartbeat trace down the flat, an oval guard and a brass collar, a
               long grip of black cord over white diamonds, a red tassel at the pommel - a classic katana build. (The model is made at half size and
-              drawn bigger - item models can't be longer than 48 units - with the grip at the model's centre so it sits
+              drawn to scale - with the grip at the model's centre so it sits
               in the hand; the hotbar shows a flat drawn icon.)
 python3 tools/overdrive_assets.py"""
 import json, os, sys, math
@@ -152,7 +152,7 @@ els = [   # katana proportions: a long two-hand grip, an oval guard, a brass col
 # the blade: many thin sections following one smooth curve (item models only turn in 22.5-degree steps, so the curve is
 # built from small offsets instead), with the texture running on continuously from the collar to the point. The spine
 # curves back gently (more toward the tip); near the end the edge sweeps up to meet the spine in a sharp point (kissaki).
-B0, B1, P0 = 12.2, 29.2, 26.2            # blade start, the very tip, where the point begins
+B0, B1, P0 = 12.2, 27.2, 24.6            # blade start, the very tip, where the point begins
 def spine_z(y): t = (y - B0) / (B1 - B0); return 8.65 + 0.95 * t * t
 def width(y):
     t = (y - B0) / (B1 - B0)
@@ -179,10 +179,10 @@ model = {
     "display": {
         # the grip sits at the model's centre, so it lands in the hand; held in a ready stance - blade raised forward-up,
         # the edge facing the foe (forward-down) and the spine toward you
-        "thirdperson_righthand": {"rotation": [40, 0, 0], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
-        "thirdperson_lefthand": {"rotation": [40, 0, 0], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
-        "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 1.2, 1.13], "scale": [0.95, 0.95, 0.95]},
-        "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 1.2, 1.13], "scale": [0.95, 0.95, 0.95]},
+        "thirdperson_righthand": {"rotation": [40, 0, 0], "translation": [0, 1.0, 0.5], "scale": [0.95, 0.95, 0.95]},
+        "thirdperson_lefthand": {"rotation": [40, 0, 0], "translation": [0, 1.0, 0.5], "scale": [0.95, 0.95, 0.95]},
+        "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 1.6, 1.13], "scale": [0.72, 0.72, 0.72]},
+        "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 1.6, 1.13], "scale": [0.72, 0.72, 0.72]},
         "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.8, 0.8, 0.8]},
         "head": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
     },

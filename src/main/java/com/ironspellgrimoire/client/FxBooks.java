@@ -113,6 +113,7 @@ final class FxBooks extends FxBase {
     *  4 Three-leaf - a turning golden halo behind it and motes of light rising (hope)
     *  5 Mana Zone Codex - two cyan rune circles turning opposite ways behind it
     *  6 Spirit-bound - three pale spirit wisps orbiting with comet tails
+    *  7+ every other grimoire's own - see FxBookAuras
     */
    static void bookAura(VertexConsumer vc, Matrix4f m, Matrix3f n, FxRenderer.BookDraw b, float HW, float HH, float V, float al) {
       double t = bookTime;
@@ -219,7 +220,7 @@ final class FxBooks extends FxBase {
                lline(m, new Vec3(Math.cos(a0) * 0.6, Math.sin(a0) * 0.6, -0.1), new Vec3(Math.cos(a1) * 0.6, Math.sin(a1) * 0.6, -0.1), 0.01F, pal, al * 0.45F, al * 0.45F);
             }
          }
-         default -> {
+         case 6 -> {
             underglow(m, HW, HH, pal, 0.25F * al);
             for (int k = 0; k < 3; k++) {
                Vec3 prev = null;
@@ -232,6 +233,7 @@ final class FxBooks extends FxBase {
                }
             }
          }
+         default -> FxBookAuras.draw(vc, m, n, b, HW, HH, al);   // 7 and up: one per grimoire
       }
    }
 
