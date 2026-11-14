@@ -1,6 +1,11 @@
-Iron Spell Grimoire v1.100.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.100.1 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.100.1
+- Mech: the machine has knees, ankles and elbows now - it walks with real strides (knees lifting, feet planted
+  flat, arms swinging against the legs, the hull rolling with each step) at the pace you actually move, and its punch
+  winds up before it drives forward.
 
 NEW IN 1.100.0
 - Mech Grimoire rebuilt as a heavy war machine in a grounded military style (an original design): Pilot's machine is

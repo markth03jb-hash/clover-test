@@ -41,6 +41,7 @@ public final class MechModels {
     private MechModels() {}
 
     /** The bones of each buildable part, in MechFx's part order: arms, thrusters, fists, legs, plating, launchers, core, cannon. */
+    /** (Each part's bone hides everything under it too: the shins and feet with the legs, the forearms and hands with the arms.) */
     static final String[][] PART_BONES = {
             {"arm_l", "arm_r"}, {"thrusters"}, {"fist_l", "fist_r"}, {"leg_l", "leg_r"}, {"plating"}, {"launcher"}, {"core"}, {"cannon"}};
 
@@ -51,6 +52,7 @@ public final class MechModels {
         String loop;
         final double started;
         int mask = 0xFF;
+        double speed = 1;   // how fast the animation plays (the walk keeps pace with the pilot, so the feet don't slide)
         boolean forearm = true;
         private String currentKey;
         private RawAnimation current;
@@ -67,6 +69,7 @@ public final class MechModels {
                 String base = "animation." + model + ".";
                 current = intro != null && !introDone ? RawAnimation.begin().thenPlay(base + intro).thenLoop(base + loop) : RawAnimation.begin().thenLoop(base + loop);
             }
+            state.getController().setAnimationSpeed(speed);
             return state.setAndContinue(current);
         }
 
@@ -147,6 +150,8 @@ public final class MechModels {
     static void drawTitan(PoseStack ps, MultiBufferSource buf, Vec3 cam, net.minecraft.world.entity.player.Player p, int mask, double started, String loop, float scale, float pt) {
         Anim a = anim("titan#" + p.getId(), "mech_titan", "assemble", loop, started);
         a.mask = mask;
+        double v = Math.sqrt((p.getX() - p.xo) * (p.getX() - p.xo) + (p.getZ() - p.zo) * (p.getZ() - p.zo)) * 20;   // blocks a second
+        a.speed = "walk".equals(loop) ? net.minecraft.util.Mth.clamp(v / 1.47, 0.6, 4.0) : 1.0;   // a stride covers ~1.47 blocks a second at speed 1
         Renderer r = RENDERERS.computeIfAbsent("mech_titan", Renderer::new);
         double x = net.minecraft.util.Mth.lerp(pt, p.xo, p.getX()), y = net.minecraft.util.Mth.lerp(pt, p.yo, p.getY()), z = net.minecraft.util.Mth.lerp(pt, p.zo, p.getZ());
         float yaw = net.minecraft.util.Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot);

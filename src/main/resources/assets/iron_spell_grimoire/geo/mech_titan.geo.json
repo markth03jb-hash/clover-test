@@ -2369,7 +2369,18 @@
          ]
         }
        }
-      },
+      }
+     ],
+     "parent": "frame"
+    },
+    {
+     "name": "forearm_l",
+     "pivot": [
+      15.5,
+      6,
+      0
+     ],
+     "cubes": [
       {
        "origin": [
         12,
@@ -2593,7 +2604,7 @@
        }
       }
      ],
-     "parent": "frame"
+     "parent": "arm_l"
     },
     {
      "name": "fist_l",
@@ -3048,7 +3059,7 @@
        }
       }
      ],
-     "parent": "arm_l"
+     "parent": "forearm_l"
     },
     {
      "name": "arm_r",
@@ -3427,7 +3438,18 @@
          ]
         }
        }
-      },
+      }
+     ],
+     "parent": "frame"
+    },
+    {
+     "name": "forearm_r",
+     "pivot": [
+      -15.5,
+      6,
+      0
+     ],
+     "cubes": [
       {
        "origin": [
         -20,
@@ -3651,7 +3673,7 @@
        }
       }
      ],
-     "parent": "frame"
+     "parent": "arm_r"
     },
     {
      "name": "fist_r",
@@ -4106,7 +4128,7 @@
        }
       }
      ],
-     "parent": "arm_r"
+     "parent": "forearm_r"
     },
     {
      "name": "leg_l",
@@ -4411,7 +4433,18 @@
          ]
         }
        }
-      },
+      }
+     ],
+     "parent": "frame"
+    },
+    {
+     "name": "shin_l",
+     "pivot": [
+      6.5,
+      -12.5,
+      0
+     ],
+     "cubes": [
       {
        "origin": [
         2.5,
@@ -4707,7 +4740,18 @@
          ]
         }
        }
-      },
+      }
+     ],
+     "parent": "leg_l"
+    },
+    {
+     "name": "foot_l",
+     "pivot": [
+      6.5,
+      -21,
+      0
+     ],
+     "cubes": [
       {
        "origin": [
         2,
@@ -5153,7 +5197,7 @@
        }
       }
      ],
-     "parent": "frame"
+     "parent": "shin_l"
     },
     {
      "name": "leg_r",
@@ -5458,7 +5502,18 @@
          ]
         }
        }
-      },
+      }
+     ],
+     "parent": "frame"
+    },
+    {
+     "name": "shin_r",
+     "pivot": [
+      -6.5,
+      -12.5,
+      0
+     ],
+     "cubes": [
       {
        "origin": [
         -10.5,
@@ -5754,7 +5809,18 @@
          ]
         }
        }
-      },
+      }
+     ],
+     "parent": "leg_r"
+    },
+    {
+     "name": "foot_r",
+     "pivot": [
+      -6.5,
+      -21,
+      0
+     ],
+     "cubes": [
       {
        "origin": [
         -12,
@@ -6200,7 +6266,7 @@
        }
       }
      ],
-     "parent": "frame"
+     "parent": "shin_r"
     },
     {
      "name": "thrusters",
