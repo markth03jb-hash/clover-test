@@ -138,9 +138,12 @@ def make_texture(path, glow_path):
     for cx in (b[0] + 14, b[0] + 46):
         d.line([(cx, b[1]), (cx, b[3] - 1)], fill=(140, 40, 30, 255), width=3)
     # hazard: worn yellow/black stripes
-    b = box("hazard"); noise_fill(img, b[:4], (28, 28, 30), 4, rnd)
+    b = box("hazard")
+    tile = Image.new("RGBA", (T, T), (28, 28, 30, 255))   # drawn on its own so the stripes can't spill into the next tile
+    td = ImageDraw.Draw(tile)
     for k in range(-T, 2 * T, 16):
-        d.polygon([(b[0] + k, b[1]), (b[0] + k + 8, b[1]), (b[0] + k + 8 - T, b[3]), (b[0] + k - T, b[3])], fill=(214, 168, 40, 255))
+        td.polygon([(k, 0), (k + 8, 0), (k + 8 - T, T), (k - T, T)], fill=(214, 168, 40, 255))
+    img.paste(tile, (b[0], b[1]))
     chips(d, b, rnd, 20); grime(img, b, rnd, 40)
     # vent: slots
     b = box("vent"); panel(img, d, b, SLATE, rnd, lines=False)

@@ -30,7 +30,8 @@ import software.bernie.geckolib.util.RenderUtils;
 
 /**
  * The Mech Grimoire's GeckoLib models (made by tools/mech_models.py): an original heavy war machine in painted
- * sand-and-slate armour, lit by the world, its lenses, reactor and thruster throats glowing (the _glowmask texture):
+ * sand-and-slate armour, lit by the world, its lenses, reactor and thruster throats glowing (drawn again from the
+ * _glowmask texture, full bright):
  *   mech_titan - the war machine standing round a pilot, only the parts he has built (each part is a bone: the rest
  *                are hidden). It's printed in from the feet up, idles, strides when he walks and punches when he swings.
  *   mech_fist  - the Rocket Fist flying out and back, and the Titan Buster's giant fist dropping out of the sky.
@@ -91,7 +92,16 @@ public final class MechModels {
     private static final class Renderer extends GeoObjectRenderer<Anim> {
         Renderer(String name) {
             super(new Model(name));
-            addRenderLayer(new software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer<>(this));
+            final ResourceLocation glow = ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/geo/" + name + "_glowmask.png");
+            // the lenses, reactor and thruster throats drawn again on top, full bright (GeckoLib's own glow layer cuts
+            // those pixels out of the base texture, and they came out black on some drivers)
+            addRenderLayer(new software.bernie.geckolib.renderer.layer.GeoRenderLayer<Anim>(this) {
+                @Override
+                public void render(PoseStack ps, Anim a, BakedGeoModel model, RenderType rt, MultiBufferSource buf, VertexConsumer vc, float pt, int light, int overlay) {
+                    RenderType g = RenderType.entityTranslucentEmissive(glow);
+                    getRenderer().reRender(model, ps, buf, a, g, buf.getBuffer(g), pt, LightTexture.FULL_BRIGHT, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+                }
+            });
         }
 
         @Override
