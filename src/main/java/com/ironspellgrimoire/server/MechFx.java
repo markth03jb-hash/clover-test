@@ -159,6 +159,10 @@ public final class MechFx {
     public static void onTick(TickEvent.PlayerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p)) return;
         if (p.tickCount % 40 == 7 && (equipped(p) || mask(p) != 0)) sync(p);
+        if (p.tickCount % 5 == 0 && !equipped(p)) {   // switched to another grimoire: the machine goes with the book
+            if (Moves.inMode(p, MODE)) { Moves.ends(p, MODE); sync(p); }
+            if (Moves.inMode(p, PLATING)) Moves.ends(p, PLATING);
+        }
     }
 
     private static Vec3 look(ServerPlayer p) {

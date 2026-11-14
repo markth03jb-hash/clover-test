@@ -1156,7 +1156,7 @@ public final class BloodFxClient {
     }
 
     // ================================================================== crimson eyes
-    private static final float[] EYE = {1.0F, 0.08F, 0.12F}, EYE_SOFT = {0.8F, 0.0F, 0.05F};
+    private static final float[] EYE = {1.0F, 0.08F, 0.12F}, EYE_SOFT = {0.8F, 0.0F, 0.05F}, ICE_EYE = {0.85F, 0.95F, 1.0F}, ICE_EYE_SOFT = {0.45F, 0.7F, 1.0F};
 
     /**
      * The vampire's eyes: once you've drunk your fill (a full gauge) and all through the Scarlet Moon, your eyes burn
@@ -1166,8 +1166,11 @@ public final class BloodFxClient {
     private static void eyes(Minecraft mc, Matrix4f m, Vec3 cam, double now, float pt) {
         for (net.minecraft.world.entity.player.Player pl : mc.level.players()) {
             boolean self = pl == mc.player;
-            boolean lit = self ? BloodHud.full() || BloodHud.moon() : hasMoonAura(pl.getId());
+            // red only while you hunger (a full gauge); under the Scarlet Moon your blood is ice, and so are your eyes
+            boolean moon = self ? BloodHud.moon() : hasMoonAura(pl.getId());
+            boolean lit = moon || (self && BloodHud.full());
             if (!lit || (self && mc.options.getCameraType().isFirstPerson()) || pl.isInvisible()) continue;
+            float[] eye = moon ? ICE_EYE : EYE, soft = moon ? ICE_EYE_SOFT : EYE_SOFT;
             double yaw = Math.toRadians(Mth.rotLerp(pt, pl.yHeadRotO, pl.yHeadRot)), pitch = Math.toRadians(Mth.lerp(pt, pl.xRotO, pl.getXRot()));
             Vec3 fwd = new Vec3(-Math.sin(yaw) * Math.cos(pitch), -Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
             Vec3 right = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
@@ -1175,9 +1178,9 @@ public final class BloodFxClient {
             float pulse = 0.85F + 0.15F * (float) Math.sin(now * 0.3);
             for (int s = -1; s <= 1; s += 2) {
                 Vec3 e = head.add(fwd.scale(0.265)).add(right.scale(0.11 * s)).add(0, -0.02, 0);
-                gglow(m, cam, e, 0.055, 0.95F * pulse, EYE);
-                gglow(m, cam, e, 0.16, 0.35F * pulse, EYE_SOFT);
-                gseg(m, cam, e, e.add(right.scale(0.14 * s)).add(0, 0.015, 0), 0.012, 0.6F * pulse, 0, EYE);   // a thin flare off the outer corner
+                gglow(m, cam, e, 0.055, 0.95F * pulse, eye);
+                gglow(m, cam, e, 0.16, 0.35F * pulse, soft);
+                gseg(m, cam, e, e.add(right.scale(0.14 * s)).add(0, 0.015, 0), 0.012, 0.6F * pulse, 0, eye);   // a thin flare off the outer corner
             }
         }
     }

@@ -68,6 +68,7 @@ public final class ModeHudOverlay {
             if (mi.getEffect().isBeneficial()) good = true; else bad = true;
         }
         int y = 2 + (good ? 26 : 0) + (bad ? 26 : 0);
+        y = Math.max(y, TrackerMode.bottom() + 2);   // and under the bounty / quest / world boss / rift trackers, never on top of them
         int right = g.guiWidth() - 2;
         for (Map.Entry<Integer, double[]> en : ACTIVE.entrySet()) {
             String id = ModeIds.MODES[en.getKey()];

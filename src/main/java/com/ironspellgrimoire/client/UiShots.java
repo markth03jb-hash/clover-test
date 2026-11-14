@@ -149,9 +149,11 @@ public final class UiShots {
         steps.add(new Step("ice_veil", () -> onServer(p -> UiShotsServer.bloodSpell(p, "blood_pact")), 12, true));
         steps.add(new Step("ice_prison", () -> onServer(p -> UiShotsServer.bloodSpell(p, "prison")), 16, true));
         steps.add(new Step("ice_icicles", () -> onServer(p -> UiShotsServer.bloodSpell(p, "hemorrhage")), 18, true));
-        steps.add(new Step("ice_zero", () -> onServer(p -> UiShotsServer.bloodSpell(p, "exsanguinate")), 18, true));
-        steps.add(new Step("ice_shatter", () -> {}, 26, true));
-        steps.add(new Step("ice_moonfall", () -> onServer(p -> UiShotsServer.bloodSpell(p, "moonfall")), 12, true));
+        steps.add(new Step("ice_zero", () -> onServer(p -> UiShotsServer.bloodSpell(p, "exsanguinate")), 10, true));   // the snowflake etching out, the air freezing
+        steps.add(new Step("ice_zero_freeze", () -> {}, 6, true));                                                        // the dome and the crown of spears
+        steps.add(new Step("ice_shatter", () -> {}, 20, true));
+        steps.add(new Step("ice_moonfall", () -> onServer(p -> UiShotsServer.bloodSpell(p, "moonfall")), 11, true));     // the moon hanging, cracking
+        steps.add(new Step("ice_moon_fall", () -> {}, 9, true));                                                          // falling
         steps.add(new Step("ice_impact", () -> {}, 9, true));
         steps.add(new Step("ice_throne", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.bloodSpell(p, "throne")); }, 24, true));
         steps.add(new Step("ice_throne_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 6, true));
@@ -247,12 +249,14 @@ public final class UiShots {
         steps.add(new Step("tre_volley", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "t:vault_volley")); }, 8, true));
         steps.add(new Step("tre_spear", () -> { onServer(p -> UiShotsServer.element(p, "t:gilded_spear")); }, 8, true));
         steps.add(new Step("tre_chains", () -> { onServer(p -> UiShotsServer.element(p, "t:vault_chains")); }, 10, true));
-        steps.add(new Step("tre_wall", () -> { onServer(p -> UiShotsServer.element(p, "t:blade_wall")); }, 10, true));
+        steps.add(new Step("tre_wall", () -> { onServer(p -> UiShotsServer.element(p, "t:blade_wall")); }, 14, true));
+        steps.add(new Step("tre_wall_fire", () -> { }, 49, true));   // the line lets go
         steps.add(new Step("tre_rain", () -> { onServer(p -> UiShotsServer.element(p, "t:blade_rain")); }, 16, true));
         steps.add(new Step("tre_barrage", () -> { onServer(p -> UiShotsServer.element(p, "t:treasure_barrage")); }, 14, true));
         steps.add(new Step("tre_kings", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "t:kings_vault")); }, 16, true));
-        steps.add(new Step("tre_breaker", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "t:vault_breaker")); }, 22, true));
-        steps.add(new Step("tre_torn", () -> { }, 8, true));
+        steps.add(new Step("tre_breaker", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "t:vault_breaker")); }, 22, true));   // the key winding up
+        steps.add(new Step("tre_torn", () -> { }, 11, true));     // the storm
+        steps.add(new Step("tre_cracks", () -> { }, 24, true));   // the cracks it leaves
         steps.add(new Step("tre_wheel", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "t:end")); GrimoireWheel.forceOpen = true; }, 14, true));
         steps.add(new Step("tre_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); mc.options.hideGui = true; }, 4, true));
         steps.add(new Step("tre_book", () -> {

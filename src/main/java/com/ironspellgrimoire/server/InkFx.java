@@ -197,7 +197,8 @@ public final class InkFx {
         look = look.normalize();
         Vec3 c = p.position().add(0, 1.1, 0);
         Vec3 start = rotY(look, 1.2);
-        stroke(sl, c, start, new Vec3(0.25, 1, 0).normalize(), 3.6f, -2.4f, 4, 22);
+        // the arc turns from 70 degrees on one side, across the front, to 70 on the other (a negative sweep went round behind you)
+        stroke(sl, c, start, new Vec3(0, 1, 0).add(rightOf(look).scale(0.25)).normalize(), 3.6f, 2.4f, 4, 22);
         final Vec3 lk = look;
         AstaFx.later(2, () -> {
             if (!alive(p)) return;

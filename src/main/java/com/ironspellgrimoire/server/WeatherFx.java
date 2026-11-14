@@ -194,6 +194,10 @@ public final class WeatherFx {
             personal(p.serverLevel(), p, forecast(p), 44);   // your little sky, for everyone to see
             if (forecast(p) == WIND) TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, TAILWIND, "Tailwind", 0.1, AttributeModifier.Operation.MULTIPLY_TOTAL, 45);
         }
+        if (p.tickCount % 5 == 0 && !equipped(p)) {   // switched to another grimoire: its weather goes with the book
+            if (Moves.inMode(p, MODE)) Moves.ends(p, MODE);
+            if (Moves.inMode(p, FOG_BANK)) Moves.ends(p, FOG_BANK);
+        }
         if (Moves.inMode(p, FOG_BANK) && p.tickCount % 10 == 0) {   // lost in the fog
             for (LivingEntity t : Kit.near(p.serverLevel(), p, p.position().add(0, 1, 0), 7)) if (t instanceof Mob mob && mob.getTarget() == p) mob.setTarget(null);
         }

@@ -522,10 +522,12 @@ public final class IceFx {
         ServerLevel sl = p.serverLevel();
         float pow = pw(p, power);
         Vec3 c = p.position();
-        frost(sl, ZenonAI.ground(sl, c), 10f, 14, 80);
-        FxPacket ms = fx(11, c.add(0, 0.5, 0), 40);
-        ms.r = 5f;
-        send(sl, ms);
+        Vec3 g = ZenonAI.ground(sl, c);
+        FxPacket az = fx(22, g, 70);   // the snowflake, the frozen air, the dome and the crown of spears (IceFxClient kind 22)
+        az.r = 10f; az.sweep = 14;
+        send(sl, az);
+        AstaFx.later(14, () -> { if (alive(p)) frost(sl, g, 10f, 6, 70); });
+        for (int k = 2; k < 14; k += 4) { final float pitch = 1.8f - k * 0.06f; AstaFx.later(k, () -> { if (alive(p)) BloodFx.play(sl, c, "freeze", 0.7f, pitch); }); }   // the cold drawing in
         AstaFx.later(14, () -> {
             if (!alive(p)) return;
             List<LivingEntity> foes = enemies(sl, p, new AABB(c, c).inflate(10, 4, 10));
@@ -616,11 +618,13 @@ public final class IceFx {
         Vec3 hitAt = hr.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? eye.add(look.scale(18)) : hr.getLocation();
         Vec3 at = ZenonAI.ground(sl, hitAt);
         Vec3 back = flatLook(p).scale(-7);
-        FxPacket cm = fx(10, at.add(back).add(0, 28, 0), 90);
-        cm.u = at; cm.r = 1.3f; cm.speed = 18;
+        final int HANG = 12, IMPACT = 26;
+        FxPacket cm = fx(23, at.add(back).add(0, 26, 0), 110);   // the moon itself (IceFxClient kind 23)
+        cm.u = at; cm.r = 3.2f; cm.sweep = HANG; cm.speed = IMPACT;
         send(sl, cm);
         sound(sl, at, SoundEvents.BEACON_ACTIVATE, 1.5f, 1.8f);
-        AstaFx.later(18, () -> {
+        AstaFx.later(HANG, () -> { if (alive(p)) { BloodFx.play(sl, at, "ice_crack", 1.6f, 0.4f); sound(sl, at, SoundEvents.ELYTRA_FLYING, 0.8f, 1.4f); } });   // it cracks and starts to fall
+        AstaFx.later(IMPACT, () -> {
             if (!alive(p)) return;
             for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(7, 5, 7))) {
                 if (e.position().distanceTo(at) > 7.5) continue;
