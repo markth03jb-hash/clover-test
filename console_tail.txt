@@ -1,0 +1,400 @@
+	at com.google.gson.internal.bind.TreeTypeAdapter.read(TreeTypeAdapter.java:76) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.internal.bind.TypeAdapterRuntimeTypeWrapper.read(TypeAdapterRuntimeTypeWrapper.java:40) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.internal.bind.ArrayTypeAdapter.read(ArrayTypeAdapter.java:72) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1214) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1319) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1290) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.internal.bind.TreeTypeAdapter$GsonContextImpl.deserialize(TreeTypeAdapter.java:179) ~[gson-2.10.jar%23118!/:?] {}
+	at net.minecraft.util.GsonHelper.convertToObject(GsonHelper.java:463) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.util.GsonHelper.getAsObject(GsonHelper.java:481) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer$Serializer.deserializeCustom(LootPoolSingletonContainer.java:149) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer$Serializer.deserializeCustom(LootPoolSingletonContainer.java:129) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer$Serializer.deserialize(LootPoolEntryContainer.java:86) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer$Serializer.deserialize(LootPoolEntryContainer.java:74) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.world.level.storage.loot.GsonAdapterFactory$JsonAdapter.deserialize(GsonAdapterFactory.java:102) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at com.google.gson.internal.bind.TreeTypeAdapter.read(TreeTypeAdapter.java:76) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.internal.bind.TypeAdapterRuntimeTypeWrapper.read(TypeAdapterRuntimeTypeWrapper.java:40) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.internal.bind.ArrayTypeAdapter.read(ArrayTypeAdapter.java:72) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1214) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1319) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1290) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.internal.bind.TreeTypeAdapter$GsonContextImpl.deserialize(TreeTypeAdapter.java:179) ~[gson-2.10.jar%23118!/:?] {}
+	at net.minecraft.util.GsonHelper.convertToObject(GsonHelper.java:463) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.util.GsonHelper.getAsObject(GsonHelper.java:471) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.world.level.storage.loot.LootPool$Serializer.deserialize(LootPool.java:192) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.world.level.storage.loot.LootPool$Serializer.deserialize(LootPool.java:189) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at com.google.gson.internal.bind.TreeTypeAdapter.read(TreeTypeAdapter.java:76) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.internal.bind.TypeAdapterRuntimeTypeWrapper.read(TypeAdapterRuntimeTypeWrapper.java:40) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.internal.bind.ArrayTypeAdapter.read(ArrayTypeAdapter.java:72) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1214) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1319) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1290) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.internal.bind.TreeTypeAdapter$GsonContextImpl.deserialize(TreeTypeAdapter.java:179) ~[gson-2.10.jar%23118!/:?] {}
+	at net.minecraft.util.GsonHelper.convertToObject(GsonHelper.java:463) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.util.GsonHelper.getAsObject(GsonHelper.java:481) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.world.level.storage.loot.LootTable$Serializer.deserialize(LootTable.java:294) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.world.level.storage.loot.LootTable$Serializer.deserialize(LootTable.java:291) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at com.google.gson.internal.bind.TreeTypeAdapter.read(TreeTypeAdapter.java:76) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1214) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1319) ~[gson-2.10.jar%23118!/:?] {}
+	at com.google.gson.Gson.fromJson(Gson.java:1261) ~[gson-2.10.jar%23118!/:?] {}
+	at net.minecraftforge.common.ForgeHooks.loadLootTable(ForgeHooks.java:871) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23180%23187!/:?] {re:classloading}
+	at net.minecraftforge.common.ForgeHooks.lambda$getLootTableDeserializer$3(ForgeHooks.java:848) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23180%23187!/:?] {re:classloading}
+	at net.minecraft.world.level.storage.loot.LootDataType.deserialize(LootDataType.java:45) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at net.minecraft.world.level.storage.loot.LootDataManager.lambda$scheduleElementParse$4(LootDataManager.java:56) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at java.util.HashMap.forEach(HashMap.java:1421) ~[?:?] {re:mixin}
+	at net.minecraft.world.level.storage.loot.LootDataManager.lambda$scheduleElementParse$5(LootDataManager.java:55) ~[forge-1.20.1-47.4.0_mapped_official_1.20.1.jar%23181!/:?] {re:classloading}
+	at java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804) ~[?:?] {}
+	at java.util.concurrent.CompletableFuture$AsyncRun.exec(CompletableFuture.java:1796) ~[?:?] {}
+	at java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:373) ~[?:?] {}
+	at java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1182) ~[?:?] {}
+	at java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1655) ~[?:?] {}
+	at java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1622) ~[?:?] {}
+	at java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:165) ~[?:?] {}
+[15:39:47] [Render thread/WARN] [minecraft/LootDataManager]: Found loot table element validation problem in {loot_tables:irons_spellbooks:chests/citadel/citadel_bookshelf}.pools[8].entries[0]: Unknown loot table called irons_spellbooks:chests/citadel/citadel_tomes
+[15:39:47] [Render thread/DEBUG] [mixin/]: Mixing SmithingRecipeMixin from mixins.irons_spellbooks.json into net.minecraft.world.item.crafting.SmithingTransformRecipe
+[15:39:47] [Render thread/INFO] [minecraft/RecipeManager]: Loaded 10 recipes
+[15:39:47] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 1301 advancements
+[15:39:47] [Render thread/INFO] [to.th.cu.Curios/]: Loaded 11 curio slots
+[15:39:47] [Render thread/INFO] [to.th.cu.Curios/]: Loaded 1 curio entities
+[15:39:47] [Render thread/DEBUG] [io.re.ir.IronsSpellbooks/]: ClientPlayerNetworkEvent onPlayerLogOut
+[15:39:47] [Render thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1794670785388
+[15:39:47] [Render thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1794670785388
+[15:39:48] [Server thread/INFO] [minecraft/IntegratedServer]: Starting integrated minecraft server version 1.20.1
+[15:39:48] [Server thread/INFO] [minecraft/MinecraftServer]: Generating keypair
+[15:39:48] [Server thread/DEBUG] [ne.mi.fm.co.ConfigTracker/CONFIG]: Loading configs type SERVER
+[15:39:48] [Server thread/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Built TOML config for ./saves/isg_uishots_1794670785388/serverconfig/forge-server.toml
+[15:39:48] [Server thread/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Loaded TOML config file ./saves/isg_uishots_1794670785388/serverconfig/forge-server.toml
+[15:39:48] [Server thread/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Watching TOML config file ./saves/isg_uishots_1794670785388/serverconfig/forge-server.toml for changes
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file ./saves/isg_uishots_1794670785388/serverconfig/forge-server.toml is not correct. Correcting
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key server.removeErroringBlockEntities does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key server.removeErroringEntities does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key server.fullBoundingBoxLadders does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key server.zombieBaseSummonChance does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key server.zombieBabyChance does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key server.permissionHandler does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key server.advertiseDedicatedServerToLan does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key server.useItemWithDurationZero does not match the spec. This may create a backup.
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key server does not match the spec. This may create a backup.
+[15:39:48] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file forge-server.toml changed, sending notifies
+[15:39:48] [Thread-4/DEBUG] [ne.mi.co.ForgeConfig/FORGEMOD]: Forge config just got changed on the file system!
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfig/FORGEMOD]: Loaded forge config file forge-server.toml
+[15:39:48] [Server thread/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Built TOML config for ./saves/isg_uishots_1794670785388/serverconfig/curios-server.toml
+[15:39:48] [Server thread/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Loaded TOML config file ./saves/isg_uishots_1794670785388/serverconfig/curios-server.toml
+[15:39:48] [Server thread/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Watching TOML config file ./saves/isg_uishots_1794670785388/serverconfig/curios-server.toml for changes
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file ./saves/isg_uishots_1794670785388/serverconfig/curios-server.toml is not correct. Correcting
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key keepCurios was corrected from null to its default, DEFAULT. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key keepCurios does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key menu was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key menu.enableLegacyMenu was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key menu.enableLegacyMenu does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key menu.experimental was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key menu.experimental.minimumColumns was corrected from null to its default, 1. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key menu.experimental.minimumColumns does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key menu.experimental.maxSlotsPerPage was corrected from null to its default, 48. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key menu.experimental.maxSlotsPerPage does not match the spec. This may create a backup.
+[15:39:48] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file curios-server.toml changed, sending notifies
+[15:39:48] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file curios-server.toml changed, sending notifies
+[15:39:48] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file curios-server.toml changed, sending notifies
+[15:39:48] [Server thread/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Built TOML config for ./saves/isg_uishots_1794670785388/serverconfig/irons_spellbooks-server.toml
+[15:39:48] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file curios-server.toml changed, sending notifies
+[15:39:48] [Server thread/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Loaded TOML config file ./saves/isg_uishots_1794670785388/serverconfig/irons_spellbooks-server.toml
+[15:39:48] [Server thread/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Watching TOML config file ./saves/isg_uishots_1794670785388/serverconfig/irons_spellbooks-server.toml for changes
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file ./saves/isg_uishots_1794670785388/serverconfig/irons_spellbooks-server.toml is not correct. Correcting
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Blocks was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Blocks.portalFrameRestrictDye was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Blocks.portalFrameRestrictDye does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Blocks.portalFrameRestrictBreaking was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Blocks.portalFrameRestrictBreaking does not match the spec. This may create a backup.
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Blocks does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: List on key rarityConfig is deemed to need correction. It is null, not a list, or an empty list. Modders, consider defineListAllowEmpty?
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.rarityConfig was corrected from null to its default, [0.3, 0.25, 0.2, 0.15, 0.1]. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.rarityConfig does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.swordsConsumeMana was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.swordsConsumeMana does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.swordsCooldownMultiplier was corrected from null to its default, 0.5. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.swordsCooldownMultiplier does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.canAttackOwnSummons was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.canAttackOwnSummons does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.maxUpgrades was corrected from null to its default, 3. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.maxUpgrades does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.manaSpawnPercent was corrected from null to its default, 0.0. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.manaSpawnPercent does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.scrollRecycleChance was corrected from null to its default, 0.5. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.scrollRecycleChance does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.allowCauldronBrewing was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.allowCauldronBrewing does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.furledMapSkipsExistingChunks was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.furledMapSkipsExistingChunks does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.applyAllMultihandAttributes was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.applyAllMultihandAttributes does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.betterCreeperThunderHit was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.betterCreeperThunderHit does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.spellGriefing was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.spellGriefing does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.additionalWanderingTraderTrades was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.additionalWanderingTraderTrades does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.disableAdventureModeCasting was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.disableAdventureModeCasting does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.hoglinOffspringProtection was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.hoglinOffspringProtection does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.manaRegenMultiplier was corrected from null to its default, 1.0. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.manaRegenMultiplier does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.scrollMerging was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.scrollMerging does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.creativeMana was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.creativeMana does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.creativeCooldowns was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.creativeCooldowns does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Upgrade Overrides was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: List on key upgradeWhitelist is deemed to need correction, as it is null or not a list.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Upgrade Overrides.upgradeWhitelist was corrected from null to its default, []. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Upgrade Overrides.upgradeWhitelist does not match the spec. This may create a backup.
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: List on key upgradeBlacklist is deemed to need correction, as it is null or not a list.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Upgrade Overrides.upgradeBlacklist was corrected from null to its default, []. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Upgrade Overrides.upgradeBlacklist does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Imbue Overrides was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: List on key imbueWhitelist is deemed to need correction, as it is null or not a list.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Imbue Overrides.imbueWhitelist was corrected from null to its default, []. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Imbue Overrides.imbueWhitelist does not match the spec. This may create a backup.
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: List on key imbueBlacklist is deemed to need correction, as it is null or not a list.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Imbue Overrides.imbueBlacklist was corrected from null to its default, []. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Imbue Overrides.imbueBlacklist does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Worldgen was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Worldgen.priestHouseWeight was corrected from null to its default, 4. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Worldgen.priestHouseWeight does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Worldgen.aquiferDetection was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Worldgen.aquiferDetection does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Worldgen.iceSpiderPatrols was corrected from null to its default, true. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Worldgen.iceSpiderPatrols does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Tyros was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Tyros.additionalHealth was corrected from null to its default, 0.0. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Tyros.additionalHealth does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Tyros.additionalAttackDamage was corrected from null to its default, 0.0. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Tyros.additionalAttackDamage does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Tyros.additionalSpellPower was corrected from null to its default, 0.0. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Tyros.additionalSpellPower does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Tyros.tyrosOminousEnabled was corrected from null to its default, false. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Tyros.tyrosOminousEnabled does not match the spec. This may create a backup.
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Tyros does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Dead King was corrected from null to its default, SimpleCommentedConfig:{}. 
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Dead King.additionalHealth was corrected from null to its default, 0.0. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Dead King.additionalHealth does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Dead King.additionalAttackDamage was corrected from null to its default, 0.0. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Dead King.additionalAttackDamage does not match the spec. This may create a backup.
+[15:39:48] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Dead King.additionalSpellPower was corrected from null to its default, 0.0. 
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Dead King.additionalSpellPower does not match the spec. This may create a backup.
+[15:39:48] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file irons_spellbooks-server.toml changed, sending notifies
+[15:39:48] [Thread-4/DEBUG] [io.re.ir.IronsSpellbooks/]: ServerConfigs load item blacklists:
+[15:39:48] [Server thread/DEBUG] [io.re.ir.IronsSpellbooks/]: ServerConfigs load item blacklists:
+[15:39:48] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file irons_spellbooks-server.toml changed, sending notifies
+[15:39:48] [Thread-4/DEBUG] [io.re.ir.IronsSpellbooks/]: ServerConfigs load item blacklists:
+[15:39:48] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file irons_spellbooks-server.toml changed, sending notifies
+[15:39:48] [Thread-4/DEBUG] [io.re.ir.IronsSpellbooks/]: ServerConfigs load item blacklists:
+[15:39:48] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file irons_spellbooks-server.toml changed, sending notifies
+[15:39:48] [Thread-4/DEBUG] [io.re.ir.IronsSpellbooks/]: ServerConfigs load item blacklists:
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.tr.CoreModBaseTransformer/COREMOD]: Transforming net/minecraft/world/level/levelgen/PhantomSpawner
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.tr.CoreModBaseTransformer/COREMOD]: Transforming net/minecraft/world/level/levelgen/PatrolSpawner
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.tr.CoreModBaseTransformer/COREMOD]: Transforming net/minecraft/world/entity/npc/CatSpawner
+[15:39:48] [Server thread/DEBUG] [ne.mi.co.tr.CoreModBaseTransformer/COREMOD]: Transforming net/minecraft/world/entity/ai/village/VillageSiege
+[15:39:48] [Server thread/DEBUG] [mixin/]: Mixing MapDataMixin from moonlight-common.mixins.json into net.minecraft.world.level.saveddata.maps.MapItemSavedData
+[15:39:48] [Server thread/DEBUG] [mixin/]: Renaming synthetic method lambda$save$3(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/resources/ResourceLocation;Lnet/mehvahdjukaar/moonlight/api/map/CustomMapData;)V to md781aec$lambda$save$3$0 in moonlight-common.mixins.json:MapDataMixin
+[15:39:48] [Server thread/DEBUG] [mixin/]: Renaming synthetic method lambda$load$2(Lnet/minecraft/nbt/CompoundTag;Lnet/mehvahdjukaar/moonlight/api/map/CustomMapData;)V to md781aec$lambda$load$2$1 in moonlight-common.mixins.json:MapDataMixin
+[15:39:48] [Server thread/DEBUG] [mixin/]: Renaming synthetic method lambda$setCustomDataDirty$1(Lnet/mehvahdjukaar/moonlight/api/map/CustomMapData$Type;Ljava/util/function/Consumer;Lnet/minecraft/world/level/saveddata/maps/MapItemSavedData$HoldingPlayer;)V to md781aec$lambda$setCustomDataDirty$1$2 in moonlight-common.mixins.json:MapDataMixin
+[15:39:48] [Server thread/DEBUG] [mixin/]: Renaming synthetic method lambda$setCustomDecorationsDirty$0(Lnet/minecraft/world/level/saveddata/maps/MapItemSavedData$HoldingPlayer;)V to md781aec$lambda$setCustomDecorationsDirty$0$3 in moonlight-common.mixins.json:MapDataMixin
+[15:39:49] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[15:39:50] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[15:39:50] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[15:39:50] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[15:39:50] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 4%
+[15:39:51] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 35%
+[15:39:51] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 72%
+[15:39:51] [Server thread/INFO] [ne.mi.se.pe.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[15:39:51] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 2693 ms
+[15:39:51] [Server thread/DEBUG] [io.ne.bu.AbstractByteBuf/]: -Dio.netty.buffer.checkAccessible: true
+[15:39:51] [Server thread/DEBUG] [io.ne.bu.AbstractByteBuf/]: -Dio.netty.buffer.checkBounds: true
+[15:39:51] [Server thread/DEBUG] [io.ne.ut.ResourceLeakDetectorFactory/]: Loaded default ResourceLeakDetector: io.netty.util.ResourceLeakDetector@52287ef1
+[15:39:51] [Server thread/DEBUG] [ne.mi.co.tr.CoreModBaseTransformer/COREMOD]: Transforming net/minecraft/world/level/NaturalSpawner
+[15:39:52] [Server thread/INFO] [minecraft/IntegratedServer]: Changing view distance to 12, from 10
+[15:39:52] [Server thread/INFO] [minecraft/IntegratedServer]: Changing simulation distance to 12, from 0
+[15:39:52] [Render thread/DEBUG] [io.ne.ch.MultithreadEventLoopGroup/]: -Dio.netty.eventLoopThreads: 8
+[15:39:52] [Render thread/DEBUG] [io.ne.ch.ni.NioEventLoop/]: -Dio.netty.noKeySetOptimization: false
+[15:39:52] [Render thread/DEBUG] [io.ne.ch.ni.NioEventLoop/]: -Dio.netty.selectorAutoRebuildThreshold: 512
+[15:39:52] [Render thread/DEBUG] [io.ne.ut.in.PlatformDependent/]: org.jctools-core.MpscChunkedArrayQueue: available
+[15:39:52] [Render thread/DEBUG] [io.ne.ch.DefaultChannelId/]: -Dio.netty.processId: 3188 (auto-detected)
+[15:39:52] [Render thread/WARN] [io.ne.ut.in.SystemPropertyUtil/]: Unable to parse the boolean system property 'java.net.preferIPv6Addresses':system - using the default value: false
+[15:39:52] [Render thread/DEBUG] [io.ne.ut.NetUtil/]: -Djava.net.preferIPv4Stack: false
+[15:39:52] [Render thread/DEBUG] [io.ne.ut.NetUtil/]: -Djava.net.preferIPv6Addresses: false
+[15:39:52] [Render thread/DEBUG] [io.ne.ut.NetUtilInitializations/]: Loopback interface: lo (lo, 0:0:0:0:0:0:0:1%lo)
+[15:39:52] [Render thread/DEBUG] [io.ne.ut.NetUtil/]: /proc/sys/net/core/somaxconn: 4096
+[15:39:52] [Render thread/DEBUG] [io.ne.ch.DefaultChannelId/]: -Dio.netty.machineId: 00:0d:3a:ff:fe:e2:ac:ad (auto-detected)
+[15:39:52] [ForkJoinPool.commonPool-worker-1/INFO] [io.re.ir.IronsLib/]: Loaded 273
+[15:39:52] [Server thread/DEBUG] [mixin/]: Mixing PacketDistributorHackMixin from moonlight.mixins.json into net.minecraftforge.network.PacketDistributor
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numHeapArenas: 8
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numDirectArenas: 8
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.pageSize: 8192
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxOrder: 9
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.chunkSize: 4194304
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.smallCacheSize: 256
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.normalCacheSize: 64
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedBufferCapacity: 32768
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimInterval: 8192
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimIntervalMillis: 0
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.useCacheForAllThreads: false
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedByteBuffersPerChunk: 1023
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.allocator.type: pooled
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.threadLocalDirectBufferSize: 0
+[15:39:52] [Render thread/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.maxThreadLocalCharBufferSize: 16384
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Starting local connection.
+[15:39:52] [Netty Server IO #1/DEBUG] [mixin/]: Mixing MapItemDataPacketMixin from moonlight-common.mixins.json into net.minecraft.network.protocol.game.ClientboundMapItemDataPacket
+[15:39:52] [Netty Server IO #1/DEBUG] [mixin/]: Renaming synthetic method lambda$moonlight$sendCustomDecorations$1(I)[Lnet/mehvahdjukaar/moonlight/api/map/CustomMapDecoration; to md781aec$lambda$moonlight$sendCustomDecorations$1$0 in moonlight-common.mixins.json:MapItemDataPacketMixin
+[15:39:52] [Netty Server IO #1/DEBUG] [mixin/]: Renaming synthetic method lambda$moonlight$sendCustomDecorations$0(Lnet/minecraft/network/FriendlyByteBuf;Lnet/mehvahdjukaar/moonlight/api/map/CustomMapDecoration;)Lnet/mehvahdjukaar/moonlight/api/map/CustomMapDecoration; to md781aec$lambda$moonlight$sendCustomDecorations$0$1 in moonlight-common.mixins.json:MapItemDataPacketMixin
+[15:39:52] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.maxCapacityPerThread: 4096
+[15:39:52] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.ratio: 8
+[15:39:52] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.chunkSize: 32
+[15:39:52] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.blocking: false
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Starting local connection.
+[15:39:52] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'net.minecraftforge.network.HandshakeMessages$S2CModData' to 'fml:handshake' sequence 0
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 0
+[15:39:52] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'net.minecraftforge.network.HandshakeMessages$S2CModList' to 'fml:handshake' sequence 1
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 1
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Logging into server with mod list [minecraft, moonlight, mixinsquared, geckolib, playeranimator, irons_spellbooks, iron_spell_grimoire, irons_lib, forge, curios]
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_spellbooks:messages' : Version test of '1.0' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:loginwrapper' : Version test of 'FML3' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:tier_sorting' : Version test of '1.0' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:unregister' : Version test of 'FML3' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:play' : Version test of 'FML3' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_lib:messages' : Version test of '1.0' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:handshake' : Version test of 'FML3' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'curios:main' : Version test of '1' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'iron_spell_grimoire:main' : Version test of '6' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:register' : Version test of 'FML3' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:split' : Version test of '1.1' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'geckolib:main' : Version test of '1' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'moonlight:channel' : Version test of '0' from server : ACCEPTED
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Accepting channel list from server
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Dispatching wrapped packet reply for channel fml:handshake with index 1
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Accepted server connection
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 1
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client indexed reply 1 of type net.minecraftforge.network.HandshakeMessages$C2SModListReply
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client connection with modlist [minecraft, moonlight, mixinsquared, geckolib, playeranimator, irons_spellbooks, iron_spell_grimoire, irons_lib, forge, curios]
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_spellbooks:messages' : Version test of '1.0' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:loginwrapper' : Version test of 'FML3' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:tier_sorting' : Version test of '1.0' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:unregister' : Version test of 'FML3' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:play' : Version test of 'FML3' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_lib:messages' : Version test of '1.0' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:handshake' : Version test of 'FML3' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'curios:main' : Version test of '1' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'iron_spell_grimoire:main' : Version test of '6' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:register' : Version test of 'FML3' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:split' : Version test of '1.1' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'geckolib:main' : Version test of '1' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'moonlight:channel' : Version test of '0' from client : ACCEPTED
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Accepting channel list from client
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Accepted client connection mod list
+[15:39:52] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'Config curios-server.toml' to 'fml:handshake' sequence 2
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 2
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received config sync from server
+[15:39:52] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Dispatching wrapped packet reply for channel fml:handshake with index 2
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 2
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client indexed reply 2 of type net.minecraftforge.network.HandshakeMessages$C2SAcknowledge
+[15:39:52] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received acknowledgement from client
+[15:39:53] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'Config irons_spellbooks-server.toml' to 'fml:handshake' sequence 3
+[15:39:53] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 3
+[15:39:53] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received config sync from server
+[15:39:53] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Dispatching wrapped packet reply for channel fml:handshake with index 3
+[15:39:53] [Netty Server IO #1/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 3
+[15:39:53] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client indexed reply 3 of type net.minecraftforge.network.HandshakeMessages$C2SAcknowledge
+[15:39:53] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received acknowledgement from client
+[15:39:53] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'Config forge-server.toml' to 'fml:handshake' sequence 4
+[15:39:53] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 4
+[15:39:53] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received config sync from server
+[15:39:53] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Dispatching wrapped packet reply for channel fml:handshake with index 4
+[15:39:53] [Netty Server IO #1/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 4
+[15:39:53] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client indexed reply 4 of type net.minecraftforge.network.HandshakeMessages$C2SAcknowledge
+[15:39:53] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received acknowledgement from client
+[15:39:53] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Handshake complete!
+[15:39:53] [Netty Local Client IO #0/INFO] [ne.mi.ne.NetworkHooks/]: Connected to a modded server.
+[15:39:53] [Netty Local Client IO #0/DEBUG] [mixin/]: Mixing ClientPacketListenerMixin from moonlight-common.mixins.json into net.minecraft.client.multiplayer.ClientPacketListener
+[15:39:53] [Server thread/DEBUG] [mixin/]: Mixing CurioHooksMixin from mixins.irons_spellbooks.json into top.theillusivec4.curios.mixin.CuriosImplMixinHooks
+[15:39:53] [Server thread/INFO] [minecraft/PlayerList]: UiTester[local:E:3cc960ad] logged in with entity id 1 at (-3.5, -60.0, -0.5)
+[15:39:53] [Server thread/INFO] [minecraft/MinecraftServer]: UiTester joined the game
+[15:39:54] [Render thread/INFO] [io.re.ir.IronsSpellbooks/]: Handling spell config sync 0 files
+[15:39:54] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 2 advancements
+[15:39:55] [Render thread/DEBUG] [mixin/]: Mixing ScreenEffectRendererMixin from irons_lib.mixins.json into net.minecraft.client.renderer.ScreenEffectRenderer
+[15:40:00] [Server thread/INFO] [minecraft/MinecraftServer]: UiTester has made the advancement [Magery]
+[15:40:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] UiTester has made the advancement [Magery]
+[15:40:00] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 6 advancements
+[15:40:01] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] A Magic Broom for a new mage. Use it to fly - it runs on your mana. You only get one, so keep it safe.
+[15:40:04] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 2 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:40:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] WANTED: The Ossuarch  (Armoured, Escorted)
+[15:40:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Last sighted about 521 blocks east. Three days to bring them down - the tracker at the top right shows the way.
+[15:40:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] DAILY SPECIAL: Rift Watch  Something is about to tear open out there. Close the rift.
+[15:40:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT]   Twists: Armoured, Twice as many. Double reward, and a Mana Core and a Rift Ink for sure.
+[15:40:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] About 170 blocks south-west. Two days - the quest tracker and the blue pillar show the way.
+[15:40:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:40:44] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 2 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:40:48] [Server thread/INFO] [minecraft/MinecraftServer]: UiTester has made the advancement [Monster Hunter]
+[15:40:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] UiTester has made the advancement [Monster Hunter]
+[15:40:49] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 37 advancements
+[15:40:52] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 37 advancements
+[15:40:56] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 37 advancements
+[15:41:09] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:41:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:41:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:41:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:41:59] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:42:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:42:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:42:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:42:44] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:42:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:43:04] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:43:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:43:20] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 40 advancements
+[15:43:29] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:43:39] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:43:59] [Render thread/INFO] [minecraft/Minecraft]: Stopping!
+[15:43:59] [Render thread/DEBUG] [io.re.ir.IronsSpellbooks/]: ClientPlayerNetworkEvent onPlayerLogOut
+[15:43:59] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: UiTester lost connection: Disconnected
+[15:43:59] [Server thread/INFO] [minecraft/MinecraftServer]: UiTester left the game
+[15:43:59] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: Stopping singleplayer server as player logged out
+[15:43:59] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[15:43:59] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[15:43:59] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[15:44:01] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1794670785388]'/minecraft:overworld
+[15:44:01] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1794670785388]'/irons_spellbooks:pocket_dimension
+[15:44:01] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1794670785388]'/minecraft:the_nether
+[15:44:01] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1794670785388]'/iron_spell_grimoire:rift
+[15:44:01] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1794670785388]'/minecraft:the_end
+[15:44:01] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1794670785388
+[15:44:01] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1794670785388
+[15:44:01] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (isg_uishots_1794670785388): All chunks are saved
+[15:44:01] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (pocket_dimension): All chunks are saved
+[15:44:01] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[15:44:01] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (rift): All chunks are saved
+[15:44:01] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[15:44:01] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[15:44:01] [Server thread/DEBUG] [ne.mi.fm.co.ConfigTracker/CONFIG]: Unloading configs type SERVER
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1794670727191.json
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+See https://docs.gradle.org/8.1.1/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 5m 18s
+10 actionable tasks: 10 executed
