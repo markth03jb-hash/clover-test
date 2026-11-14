@@ -345,7 +345,7 @@ public final class GameTests {
         final Class<?> root;
         @Override Class<?>[] roots() { return new Class<?>[]{root}; }
         BlockState[] before; Set<MobEffect> pe, de; final java.util.List<String> bad = new java.util.ArrayList<>(), done = new java.util.ArrayList<>();
-        float hp;
+        float hp; String castNote = "";
         @Override void start() {
             cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
             ItemStack bk = new ItemStack(item.get());
@@ -364,11 +364,14 @@ public final class GameTests {
                 p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
                 if (close.contains(names[i])) dummy.teleportTo(home.x, home.y, home.z + 2.5);
                 hp = dummy.getHealth();
+                net.minecraft.world.entity.LivingEntity seen = FxUtil.aimed(p, 28, 12);
+                castNote = String.format("at cast: aimed %s, sees dummy %s, %d near, look %.2f %.2f %.2f", seen == null ? "nothing" : seen == dummy ? "the dummy" : seen.getName().getString(),
+                        dummy != null && p.hasLineOfSight(dummy), sl().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, p.getBoundingBox().inflate(28), x -> x != p).size(), p.getLookAngle().x, p.getLookAngle().y, p.getLookAngle().z);
                 try { moves.get(i).accept(p, 10f); } catch (Throwable x) { bad.add(names[i] + " threw " + x); }
             }
             if ((t - 1) % 50 == 49 && i < names.length) {
                 float dealt = hp - (dummy == null ? hp : dummy.getHealth());
-                if (!quiet.contains(names[i]) && dealt <= 0) bad.add(names[i] + " did no damage to the dummy" + (dummy == null ? " (no dummy)" : String.format(" (dummy at %.1f %.1f %.1f, alive %s, hp %.0f, invuln %d; player yaw %.0f pitch %.0f at %.1f %.1f %.1f)", dummy.getX() - home.x, dummy.getY() - home.y, dummy.getZ() - home.z, dummy.isAlive(), dummy.getHealth(), dummy.invulnerableTime, p.getYRot(), p.getXRot(), p.getX() - home.x, p.getY() - home.y, p.getZ() - home.z)));
+                if (!quiet.contains(names[i]) && dealt <= 0) bad.add(names[i] + " did no damage to the dummy [" + castNote + "]" + (dummy == null ? " (no dummy)" : String.format(" (dummy at %.1f %.1f %.1f, alive %s, hp %.0f, invuln %d; player yaw %.0f pitch %.0f at %.1f %.1f %.1f)", dummy.getX() - home.x, dummy.getY() - home.y, dummy.getZ() - home.z, dummy.isAlive(), dummy.getHealth(), dummy.invulnerableTime, p.getYRot(), p.getXRot(), p.getX() - home.x, p.getY() - home.y, p.getZ() - home.z)));
                 done.add(names[i] + String.format(" %.0f", dealt));
             }
             if (t < names.length * 50 + 10) return false;

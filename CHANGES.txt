@@ -1,6 +1,15 @@
-Iron Spell Grimoire v1.99.1 - all changed files since v1.0.0
+Iron Spell Grimoire v1.100.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.100.0
+- Mech Grimoire rebuilt as a heavy war machine in a grounded military style (an original design): Pilot's machine is
+  now a real animated model (GeckoLib) - layered sand-and-slate armour with panel lines, rivets, chipped paint and
+  grime, hydraulic pistons, cable joints, three-fingered hands, a red unit stencil and a visor bar of three amber
+  lenses, its reactor and thrusters glowing. It's bolted together from the feet up, breathes and scans when idle,
+  strides when you walk and punches when you swing, showing only the parts you've built; in first person you get a
+  cockpit frame instead. Rocket Fist and Titan Buster's giant fist are a proper armoured fist model; Titan Buster
+  rides a targeting laser down onto a reticle. Plating locks armour plates round you.
 
 NEW IN 1.99.1
 - Scarlet Moon no longer sheds Devil Union's black-and-red sprites: its white glow now sheds white ones (the gold,
