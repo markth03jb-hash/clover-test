@@ -29,8 +29,8 @@ import software.bernie.geckolib.renderer.GeoObjectRenderer;
 import software.bernie.geckolib.util.RenderUtils;
 
 /**
- * The Mech Grimoire's GeckoLib models (made by tools/mech_models.py), drawn as hard light - see-through, glowing,
- * full bright:
+ * The Mech Grimoire's GeckoLib models (made by tools/mech_models.py): an original heavy war machine in painted
+ * sand-and-slate armour, lit by the world, its lenses, reactor and thruster throats glowing (the _glowmask texture):
  *   mech_titan - the war machine standing round a pilot, only the parts he has built (each part is a bone: the rest
  *                are hidden). It's printed in from the feet up, idles, strides when he walks and punches when he swings.
  *   mech_fist  - the Rocket Fist flying out and back, and the Titan Buster's giant fist dropping out of the sky.
@@ -85,13 +85,17 @@ public final class MechModels {
         @Override public ResourceLocation getAnimationResource(Anim a) { return anim; }
     }
 
-    /** Hard light: translucent and emissive, and only the built parts shown. No block-centring: we place it ourselves. */
+    /** Solid painted armour lit by the world, the glowing bits on top (AutoGlowingGeoLayer reads the _glowmask), and
+     *  only the built parts shown. No block-centring: we place it ourselves. */
     private static final class Renderer extends GeoObjectRenderer<Anim> {
-        Renderer(String name) { super(new Model(name)); }
+        Renderer(String name) {
+            super(new Model(name));
+            addRenderLayer(new software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer<>(this));
+        }
 
         @Override
         public RenderType getRenderType(Anim a, ResourceLocation texture, MultiBufferSource buf, float partialTick) {
-            return RenderType.entityTranslucentEmissive(texture);
+            return RenderType.entityCutoutNoCull(texture);
         }
 
         @Override
@@ -128,7 +132,7 @@ public final class MechModels {
      * Draw the titan in the player model's space (as GeoFormLayer gives it). {@code started} restarts it (and its
      * assembly) when the pilot climbs in again; {@code alpha} fades it in and out.
      */
-    static void drawTitan(PoseStack ps, MultiBufferSource buf, int owner, int mask, double started, String loop, float scale) {
+    static void drawTitan(PoseStack ps, MultiBufferSource buf, int owner, int mask, double started, String loop, float scale, int light) {
         Anim a = anim("titan#" + owner, "mech_titan", "assemble", loop, started);
         a.mask = mask;
         Renderer r = RENDERERS.computeIfAbsent("mech_titan", Renderer::new);
@@ -137,7 +141,7 @@ public final class MechModels {
         ps.translate(0, -1.5, 0);                        // its origin is the player model's (24 px above the feet)
         ps.scale(scale, scale, scale);
         ps.translate(0, 1.5, 0);
-        r.render(ps, a, buf, null, null, LightTexture.FULL_BRIGHT);
+        r.render(ps, a, buf, null, null, light);
         ps.popPose();
     }
 
@@ -164,7 +168,9 @@ public final class MechModels {
             ps.mulPose(new Quaternionf().rotationTo(new Vector3f(0, 0, -1), new Vector3f((float) d.x, (float) d.y, (float) d.z)));
             ps.scale(f.scale, f.scale, f.scale);
             ps.translate(0, 0, 0.6);   // the knuckles (z -9 px) sit at the point given
-            r.render(ps, a, buf, null, null, LightTexture.FULL_BRIGHT);
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            int light = mc.level == null ? LightTexture.FULL_BRIGHT : net.minecraft.client.renderer.LevelRenderer.getLightColor(mc.level, net.minecraft.core.BlockPos.containing(f.at));
+            r.render(ps, a, buf, null, null, light);
             ps.popPose();
         }
         FISTS.clear();

@@ -17,7 +17,7 @@ import net.minecraft.util.Mth;
  *                  beats slowly at rest, sweeps back while running, flaps hard in the air, spreads to glide when
  *                  falling and folds in when crouching (bending along its length as it moves)
  *   Beelzebub    - skeletal wings (open, idle, flap in the air) and horns that grow from the temples
- *   Pilot        - the Mech Grimoire's hard-light war machine round its pilot (MechModels)
+ *   Pilot        - the Mech Grimoire's war machine round its pilot (MechModels)
  * The crown, mantle and burst of the Devil Union stay as effects (FxRenderer.devilForm).
  */
 public class GeoFormLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
@@ -53,7 +53,7 @@ public class GeoFormLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<
                 double speed = Math.sqrt((p.getX() - p.xo) * (p.getX() - p.xo) + (p.getZ() - p.zo) * (p.getZ() - p.zo));
                 String loop = p.swinging ? "punch" : speed > 0.04 ? "walk" : "idle";
                 ps.pushPose();
-                MechModels.drawTitan(ps, buf, p.getId(), (int) mech[2], mech[0], loop, out);
+                MechModels.drawTitan(ps, buf, p.getId(), (int) mech[2], mech[0], loop, out, light);
                 ps.popPose();
             }
         }

@@ -12,8 +12,8 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 /**
- * The Mech Grimoire, drawn as hard light: see-through blue plates with bright cyan seams, hex panels, hazard-yellow
- * trim and an orange visor and core; blue thruster flame, rivet tracers and sparks. Pilot's machine and the fists are
+ * The Mech Grimoire, drawn: an original heavy war machine in painted sand-and-slate armour with hazard-yellow trim
+ * and amber lenses; blue thruster flame, rivet tracers and sparks, smoke rings. Pilot's machine and the fists are
  * GeckoLib models (MechModels) - the machine standing round you with only the parts you have built (no torso without
  * Plating, no arms without Arms...); in first person, a cockpit frame instead - and while the book is equipped your
  * screen shows the blueprint of the whole frame, each part lighting up as it's bolted on and blinking out as it runs
@@ -26,9 +26,9 @@ public final class MechFxClient {
 
     private static final double TAU = Math.PI * 2;
     private static final Vec3 UP = new Vec3(0, 1, 0);
-    // hard light: see-through blue plates with bright cyan edges (the boxes), hazard yellow, an orange visor and core
-    static final float[] METAL = {0.22F, 0.5F, 0.85F}, METAL_D = {0.1F, 0.2F, 0.34F}, STEEL = {0.5F, 0.82F, 1.0F}, HAZARD = {1.0F, 0.76F, 0.1F},
-            EDGE = {0.55F, 0.9F, 1.0F}, HEX = {0.4F, 0.8F, 1.0F},
+    // the machine's paint: sand plates over a slate frame, gunmetal, hazard yellow, amber lenses
+    static final float[] METAL = {0.69F, 0.61F, 0.45F}, METAL_D = {0.29F, 0.33F, 0.36F}, STEEL = {0.55F, 0.58F, 0.62F}, HAZARD = {0.84F, 0.66F, 0.16F},
+            EDGE = {1.0F, 0.62F, 0.2F}, HEX = {1.0F, 0.55F, 0.15F},
             VISOR = {1.0F, 0.45F, 0.12F}, FLAME = {0.35F, 0.65F, 1.0F}, FLAME_W = {0.85F, 0.95F, 1.0F}, SPARK = {1.0F, 0.85F, 0.45F},
             SMOKE = {0.55F, 0.55F, 0.58F}, BLUEPRINT = {0.35F, 0.75F, 1.0F};
 
@@ -205,28 +205,19 @@ public final class MechFxClient {
         for (int i = 0; i < 8; i++) v[i] = c.add(X.scale((i & 1) == 0 ? -1 : 1)).add(Y.scale((i & 2) == 0 ? -1 : 1)).add(Z.scale((i & 4) == 0 ? -1 : 1));
         int[][] faces = {{0, 1, 3, 2}, {4, 6, 7, 5}, {0, 4, 5, 1}, {2, 3, 7, 6}, {0, 2, 6, 4}, {1, 5, 7, 3}};
         float[][] shade = {col, col, darker(col), top, darker(col), col};
-        float fill = col == HAZARD ? a : a * 0.55F;   // hard light: the plates are see-through, the hazard trim solid
         for (int f = 0; f < 6; f++) {
             int[] q = faces[f];
-            FxBase.quad(vc, m, n, cam, v[q[0]], v[q[1]], v[q[2]], v[q[3]], shade[f], fill, fill, fill, fill);
-            FxBase.quad(vc, m, n, cam, v[q[3]], v[q[2]], v[q[1]], v[q[0]], shade[f], fill, fill, fill, fill);
+            FxBase.quad(vc, m, n, cam, v[q[0]], v[q[1]], v[q[2]], v[q[3]], shade[f], a, a, a, a);
+            FxBase.quad(vc, m, n, cam, v[q[3]], v[q[2]], v[q[1]], v[q[0]], shade[f], a, a, a, a);
         }
-        if (col == HAZARD) return;
-        double w = Math.min(0.03, Math.min(hx, Math.min(hy, hz)) * 0.25 + 0.005);
-        int[][] edges = {{0, 1}, {2, 3}, {4, 5}, {6, 7}, {0, 2}, {1, 3}, {4, 6}, {5, 7}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
-        for (int[] e : edges) GravityFxClient.gseg(m, cam, v[e[0]], v[e[1]], w, 0.85F * a, 0.85F * a, EDGE);   // the bright seams
     }
 
-    /** A glowing hexagon (outline, and a faint see-through fill) at c in the plane of x, y. */
+    /** An armour plate: a sand slab with a slate backing and a hazard edge, at c in the plane of x, y. */
     static void hexPanel(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, Vec3 x, Vec3 y, double r, float a) {
-        Vec3[] q = new Vec3[6];
-        for (int i = 0; i < 6; i++) { double an = i * TAU / 6 + TAU / 12; q[i] = c.add(x.scale(Math.cos(an) * r)).add(y.scale(Math.sin(an) * r)); }
-        for (int i = 0; i < 6; i++) {
-            Vec3 b = q[(i + 1) % 6];
-            FxBase.quad(vc, m, n, cam, c, q[i], b, b, METAL, 0.25F * a, 0.25F * a, 0.25F * a, 0.25F * a);
-            FxBase.quad(vc, m, n, cam, c, b, q[i], q[i], METAL, 0.25F * a, 0.25F * a, 0.25F * a, 0.25F * a);
-            GravityFxClient.gseg(m, cam, q[i], b, 0.025, 0.9F * a, 0.9F * a, EDGE);
-        }
+        Vec3 z = x.cross(y).normalize();
+        box(vc, m, n, cam, c, x, y, z, r, r * 0.8, 0.035, METAL, METAL, a);
+        box(vc, m, n, cam, c.subtract(z.scale(0.04)), x, y, z, r * 0.9, r * 0.7, 0.02, METAL_D, METAL_D, a);
+        box(vc, m, n, cam, c.add(y.scale(r * 0.8)).add(z.scale(0.01)), x, y, z, r, 0.035, 0.036, HAZARD, HAZARD, a);
     }
 
     private static float[] darker(float[] c) { return new float[]{c[0] * 0.7F, c[1] * 0.7F, c[2] * 0.75F}; }
@@ -289,11 +280,11 @@ public final class MechFxClient {
         Vec3 side = Math.abs(dir.y) > 0.95 ? new Vec3(1, 0, 0) : UP.cross(dir).normalize(), up = dir.cross(side).normalize();
         double s = 0.32 * p.r;
         float a = (float) Mth.clamp((p.life - age) / 3, 0, 1);
-        float sc = (float) (0.9 * p.r * Math.min(1, age / 2 + 0.3) * (0.4 + 0.6 * a));   // it pops out, and breaks up into light on its way home
+        float sc = (float) (0.9 * p.r * Math.min(1, age / 2 + 0.3));   // it fires out of your arm and swells to full size
         MechModels.fist("r" + p.id, at.add(dir.scale(s)), dir, sc, false, p.id);
-        for (int i = 1; i <= 3; i++) {   // afterimage plates left behind it
-            Vec3 ai = at.subtract(dir.scale(s * (1.5 + i * 1.4)));
-            hexPanel(vc, m, n, cam, ai, side, up, s * (0.9 - i * 0.18), a * (0.5F - i * 0.12F));
+        for (int i = 1; i <= 4; i++) {   // the rocket's smoke rings left behind it
+            Vec3 ai = at.subtract(dir.scale(s * (2.5 + i * 1.6)));
+            GravityFxClient.ring(m, cam, ai, dir, s * (0.4 + i * 0.25), 0.08, SMOKE, a * (0.55F - i * 0.1F));
         }
         Vec3 nozzle = at.subtract(dir.scale(s * 2.3));
         double fl = 0.7 + 0.25 * Math.sin(now * 3);
@@ -437,12 +428,9 @@ public final class MechFxClient {
         Vec3 f = pos(e, pt);
         float a = (float) (Mth.clamp(age / 6, 0, 1) * Mth.clamp((p.life - age) / 6, 0, 1));
         if (p.life <= 44) a = 1;   // the refresh packets keep it standing without blinking
-        // the machine itself is a GeckoLib model on the player (GeoFormLayer / MechModels); here, the ground under it
-        for (int i = 0; i < 6; i++) {
-            double a0 = now * 0.02 + i * TAU / 6, a1 = a0 + TAU / 6;
-            GravityFxClient.gseg(m, cam, f.add(Math.cos(a0) * 1.6, 0.05, Math.sin(a0) * 1.6), f.add(Math.cos(a1) * 1.6, 0.05, Math.sin(a1) * 1.6), 0.07, 0.6F * a, 0.6F * a, EDGE);
-        }
-        GravityFxClient.ring(m, cam, f.add(0, 0.05, 0), UP, 1.15, 0.1, HAZARD, 0.4F * a);
+        // the machine itself is a GeckoLib model on the player (GeoFormLayer / MechModels); here, just the dust its
+        // weight presses out of the ground when it's first built
+        if (age < 20) GravityFxClient.ring(m, cam, f.add(0, 0.05, 0), UP, 1.0 + age * 0.12, 0.25, SMOKE, (float) (1 - age / 20) * 0.6F);
     }
 
     // ================================================================== 9 the titan fist
@@ -455,7 +443,7 @@ public final class MechFxClient {
             double y = 26 * (1 - k * k) + s;
             Vec3 c = p.c.add(0, y, 0);
             Vec3 x = new Vec3(1, 0, 0), z = new Vec3(0, 0, 1);
-            // the target: a hex sigil of hard light turning on the ground, closing in, with a hazard ring
+            // the target: a targeting reticle laid on the ground, turning and closing in, in hazard yellow and laser orange
             Vec3 g = p.c.add(0, 0.07, 0);
             for (int ring = 0; ring < 3; ring++) {
                 double rr = R * (1.05 - ring * 0.3) * (1.25 - 0.25 * k), turn = now * (ring % 2 == 0 ? 0.03 : -0.04);
@@ -468,7 +456,7 @@ public final class MechFxClient {
                 double an = now * 0.03 + i * TAU / 6;
                 GravityFxClient.gseg(m, cam, g.add(Math.cos(an) * R * 0.15, 0, Math.sin(an) * R * 0.15), g.add(Math.cos(an) * R * 0.75, 0, Math.sin(an) * R * 0.75), 0.05, 0.7F, 0.2F, EDGE);
             }
-            GravityFxClient.gseg(m, cam, g, c, s * 0.5, 0.25F * (float) k, 0.05F, HEX);   // the light it rides down
+            GravityFxClient.gseg(m, cam, g.add(0, 0.1, 0), g.add(0, 40, 0), 0.06, 0.8F, 0.1F, EDGE);   // the targeting laser it rides down
             // the giant fist itself (the model), knuckles down, its forearm rising out of sight
             MechModels.fist("t" + p.id, c.add(0, -s * 0.9, 0), new Vec3(0, -1, 0), (float) (s * 2.6), true, p.id);
             for (int i = 0; i < 4; i++) {   // thrusters on the forearm pushing it down
