@@ -159,6 +159,7 @@ public final class SkillEffects {
             case 30 -> { if (!t.getUUID().toString().equals(s.getString("last")) && !t.getUUID().toString().equals(s.getString("fated"))) { add += 0.4f; s.putString("fated", t.getUUID().toString()); } }
             case 31 -> { if (p.getY() < 63) add += (float) Math.min(0.4, (63 - p.getY()) * 0.01); }
             case 32 -> { if (hits % 10 == 0) { add += 1f; FxSend.ring(sl, Fx.FIRE | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.3f, 1.6f, 0.06f, 10); } }
+            case 34 -> { float b = OverdriveFx.bpm(p); if (b >= OverdriveFx.RED) add += 0.3f; else if (b >= OverdriveFx.HOT) add += 0.15f; }
             case 33 -> {
                 net.minecraft.core.BlockPos bp = p.blockPosition();
                 if (sl.isRainingAt(bp.above())) add += 0.3f;

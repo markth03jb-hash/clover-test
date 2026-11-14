@@ -382,7 +382,7 @@ public final class GameTests {
             if (!np.isEmpty() || !nd.isEmpty()) bad.add("gave status effects: " + np + " " + nd);
             if (bad.isEmpty()) pass(name, "damage dealt: " + String.join(", ", done));
             else fail(name, String.join("; ", bad));
-            Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, TreasureFx.AEGIS); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK);
+            Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, TreasureFx.AEGIS); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); Moves.ends(p, OverdriveFx.MODE);
             return true;
         }
     }
@@ -781,6 +781,17 @@ public final class GameTests {
                 "rainbow", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::rainbowSpell, "",
                 "eye_of_the_storm", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::eyeOfTheStorm, "q",
                 "cataclysm", (java.util.function.BiConsumer<ServerPlayer, Float>) WeatherFx::cataclysmSpell, ""));
+        queue.add(new BookMovesTest("overdrive", com.ironspellgrimoire.registry.AddonItemRegistry.OVERDRIVE_GRIMOIRE::get, OverdriveFx.class,
+                "draw_heartline", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::drawHeartline, "q",
+                "pulse_cut", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::thunderDraw, "",
+                "adrenaline_rush", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::adrenalineRush, "",
+                "heartbeat", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::readPulse, "q",
+                "flatline", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::flatlineThrust, "",
+                "tachycardia", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::tachycardia, "",
+                "second_wind", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::secondWind, "q",
+                "ribbon_bind", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::ribbonBind, "",
+                "redline", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::lastMinute, "q",
+                "final_beat", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::finalBeat, ""));
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

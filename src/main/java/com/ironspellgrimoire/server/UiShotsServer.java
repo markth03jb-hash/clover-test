@@ -69,6 +69,7 @@ public final class UiShotsServer {
             case 'a' -> AddonItemRegistry.ABYSS_GRIMOIRE.get();
             case 'm' -> AddonItemRegistry.MECH_GRIMOIRE.get();
             case 'w' -> AddonItemRegistry.WEATHER_GRIMOIRE.get();
+            case 'o' -> AddonItemRegistry.OVERDRIVE_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -209,7 +210,17 @@ public final class UiShotsServer {
             case "rainbow" -> WeatherFx.rainbowSpell(p, 10f);
             case "eye_of_the_storm" -> WeatherFx.eyeOfTheStorm(p, 10f);
             case "cataclysm" -> WeatherFx.cataclysmSpell(p, 10f);
-            case "end" -> { Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); }
+            case "draw_heartline" -> OverdriveFx.drawHeartline(p, 10f);
+            case "pulse_cut" -> OverdriveFx.thunderDraw(p, 10f);
+            case "adrenaline_rush" -> OverdriveFx.adrenalineRush(p, 10f);
+            case "heartbeat" -> OverdriveFx.readPulse(p, 10f);
+            case "flatline" -> OverdriveFx.flatlineThrust(p, 10f);
+            case "tachycardia" -> OverdriveFx.tachycardia(p, 10f);
+            case "second_wind" -> OverdriveFx.secondWind(p, 10f);
+            case "ribbon_bind" -> OverdriveFx.ribbonBind(p, 10f);
+            case "redline" -> OverdriveFx.lastMinute(p, 10f);
+            case "final_beat" -> OverdriveFx.finalBeat(p, 10f);
+            case "end" -> { Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); Moves.ends(p, OverdriveFx.MODE); }
             default -> {}
         }
     }

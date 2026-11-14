@@ -308,12 +308,19 @@ public final class Moves {
         return r != null && p.serverLevel().getGameTime() < r.until();
     }
 
+    /** Ticks left on {@code id} (0 when it isn't running). */
+    static long left(ServerPlayer p, String id) {
+        Map<String, ModeRun> m = MODES.get(p.getUUID());
+        ModeRun r = m == null ? null : m.get(id);
+        return r == null ? 0 : Math.max(0, r.until() - p.serverLevel().getGameTime());
+    }
+
     static void ends(ServerPlayer p, String id) {
         Map<String, ModeRun> m = MODES.get(p.getUUID());
         boolean was = m != null && m.remove(id) != null;
         ModeHud.hide(p, id);
         if (was) {   // the newer grimoires (FxPacket shapes 83-95) draw their modes on the player: clear them now, not when they'd have run out
-            for (int shape = 83; shape <= 95; shape++) {
+            for (int shape = 83; shape <= 96; shape++) {
                 com.ironspellgrimoire.network.FxPacket k = new com.ironspellgrimoire.network.FxPacket();
                 k.shape = (byte) shape; k.h = 98; k.v = new net.minecraft.world.phys.Vec3(p.getId(), 1, 0); k.c = p.position(); k.life = 1;
                 FxSend.sendNear(p.serverLevel(), p.position(), k);

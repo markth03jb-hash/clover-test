@@ -283,6 +283,10 @@ public final class GrimoireMastery {
                 "sunbeam", 1, "downpour", 1, "thunder_strike", 2,
                 "hailstorm", 2, "gale", 2, "fog_bank", 3,
                 "cyclone", 3, "rainbow", 4, "eye_of_the_storm", 4, "cataclysm", 5);
+        book(AddonItemRegistry.OVERDRIVE_GRIMOIRE::get, Fx.CRIMSON,
+                "draw_heartline", 1, "pulse_cut", 1, "adrenaline_rush", 2,
+                "heartbeat", 2, "flatline", 2, "tachycardia", 3,
+                "second_wind", 3, "ribbon_bind", 4, "redline", 4, "final_beat", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

@@ -734,6 +734,27 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> WEATHER_SPELLS = List.of(
             WEATHER_SUNBEAM, WEATHER_DOWNPOUR, THUNDER_STRIKE, WEATHER_HAILSTORM, WEATHER_GALE, FOG_BANK, WEATHER_CYCLONE, WEATHER_RAINBOW, EYE_OF_THE_STORM, WEATHER_CATACLYSM);
 
+    // ------------------------------------------------------------------ Overdrive Grimoire (an original grimoire: OverdriveFx)
+    private static com.ironspellgrimoire.spells.BookSpell overdrive(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx, boolean sword) {
+        com.ironspellgrimoire.spells.BookSpell s = new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ELDRITCH_RESOURCE,
+                com.ironspellgrimoire.item.OverdriveGrimoireItem.class, "ui.iron_spell_grimoire.overdrive_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+        return sword ? s.gate(com.ironspellgrimoire.server.OverdriveFx::holding, "Needs the Heartline in your hand - draw it first") : s;   // sword-only pages
+    }
+    public static final RegistryObject<AbstractSpell> OVERDRIVE_DRAW_HEARTLINE = registerSpell(overdrive("draw_heartline", 2, 10, 0, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.OverdriveFx::drawHeartline, false));
+    public static final RegistryObject<AbstractSpell> OVERDRIVE_PULSE_CUT = registerSpell(overdrive("pulse_cut", 3, 15, 10, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.OverdriveFx::thunderDraw, true));
+    public static final RegistryObject<AbstractSpell> OVERDRIVE_ADRENALINE_RUSH = registerSpell(overdrive("adrenaline_rush", 6, 20, 9, "iron_spell_grimoire:light_step", com.ironspellgrimoire.server.OverdriveFx::adrenalineRush, true));
+    public static final RegistryObject<AbstractSpell> OVERDRIVE_HEARTBEAT = registerSpell(overdrive("heartbeat", 10, 30, 9, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.OverdriveFx::readPulse, true));
+    public static final RegistryObject<AbstractSpell> OVERDRIVE_FLATLINE = registerSpell(overdrive("flatline", 10, 30, 11, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.OverdriveFx::flatlineThrust, true));
+    public static final RegistryObject<AbstractSpell> OVERDRIVE_TACHYCARDIA = registerSpell(overdrive("tachycardia", 14, 40, 10, "iron_spell_grimoire:light_sword", com.ironspellgrimoire.server.OverdriveFx::tachycardia, true));
+    public static final RegistryObject<AbstractSpell> OVERDRIVE_SECOND_WIND = registerSpell(overdrive("second_wind", 20, 30, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.OverdriveFx::secondWind, true));
+    public static final RegistryObject<AbstractSpell> OVERDRIVE_RIBBON_BIND = registerSpell(overdrive("ribbon_bind", 10, 25, 9, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.OverdriveFx::ribbonBind, true));
+    public static final RegistryObject<AbstractSpell> OVERDRIVE_REDLINE = registerSpell(overdrive("redline", 150, 90, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.OverdriveFx::lastMinute, true));
+    public static final RegistryObject<AbstractSpell> OVERDRIVE_FINAL_BEAT = registerSpell(overdrive("final_beat", 45, 120, 16, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.OverdriveFx::finalBeat, true));
+    /** The ten Overdrive Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> OVERDRIVE_SPELLS = List.of(
+            OVERDRIVE_DRAW_HEARTLINE, OVERDRIVE_PULSE_CUT, OVERDRIVE_ADRENALINE_RUSH, OVERDRIVE_HEARTBEAT, OVERDRIVE_FLATLINE, OVERDRIVE_TACHYCARDIA, OVERDRIVE_SECOND_WIND, OVERDRIVE_RIBBON_BIND, OVERDRIVE_REDLINE, OVERDRIVE_FINAL_BEAT);
+
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,
                                                                    String only, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {

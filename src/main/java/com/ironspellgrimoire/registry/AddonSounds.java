@@ -20,7 +20,7 @@ public final class AddonSounds {
     private static final Map<String, RegistryObject<SoundEvent>> BY_KIND = new HashMap<>();
 
     static {
-        for (String k : new String[]{"slash", "blast", "whoosh", "impact", "charge", "fire", "thunder", "roar", "familiar", "board_note", "sovereign_step", "ice_crack", "ice_shatter", "heartbeat", "freeze", "blood_splash", "gravity_hum", "gravity_crush", "sonic_boom", "sound_ping", "sound_chord", "brush", "ink_splash", "glitch", "error_beep", "portal_open", "blade_fly", "chain_rattle", "saw", "trick", "gunshot", "quickstep", "erase", "coin", "roulette", "slot", "dice", "jackpot", "card", "current", "deep_boom", "jaws", "leviathan", "lure_hum", "splash_deep", "tentacle", "clank", "missile", "railgun", "rivet", "rocket", "servo", "stomp", "hail", "rain", "sun_chime", "wind"}) {
+        for (String k : new String[]{"slash", "blast", "whoosh", "impact", "charge", "fire", "thunder", "roar", "familiar", "board_note", "sovereign_step", "ice_crack", "ice_shatter", "heartbeat", "freeze", "blood_splash", "gravity_hum", "gravity_crush", "sonic_boom", "sound_ping", "sound_chord", "brush", "ink_splash", "glitch", "error_beep", "portal_open", "blade_fly", "chain_rattle", "saw", "trick", "gunshot", "quickstep", "erase", "coin", "roulette", "slot", "dice", "jackpot", "card", "current", "deep_boom", "jaws", "leviathan", "lure_hum", "splash_deep", "tentacle", "clank", "missile", "railgun", "rivet", "rocket", "servo", "stomp", "hail", "rain", "sun_chime", "wind", "blade_draw", "rush", "flatline", "breath", "ribbon"}) {
             String key = "sfx." + k;
             BY_KIND.put(k, SOUNDS.register(key, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", key))));
         }
