@@ -617,9 +617,8 @@ public final class IceFx {
                 net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, p));
         Vec3 hitAt = hr.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? eye.add(look.scale(18)) : hr.getLocation();
         Vec3 at = ZenonAI.ground(sl, hitAt);
-        Vec3 back = flatLook(p).scale(-7);
         final int HANG = 12, IMPACT = 26;
-        FxPacket cm = fx(23, at.add(back).add(0, 26, 0), 110);   // the moon itself (IceFxClient kind 23)
+        FxPacket cm = fx(23, at.add(flatLook(p).scale(16)).add(0, 10, 0), 110);   // it hangs low over the far horizon, where you can see it, and comes down at you   // the moon itself (IceFxClient kind 23)
         cm.u = at; cm.r = 3.2f; cm.sweep = HANG; cm.speed = IMPACT;
         send(sl, cm);
         sound(sl, at, SoundEvents.BEACON_ACTIVATE, 1.5f, 1.8f);

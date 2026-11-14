@@ -60,7 +60,7 @@ public final class TreasureFxClient {
                 case 1 -> weapon(vc, m, n, cam, p, age);
                 case 2 -> chain(m, cam, mc, p, age, pt);
                 case 3 -> wall(vc, m, n, cam, p, age);
-                case 4 -> spiral(m, cam, p, age, now);
+                case 4 -> spiral(vc, m, n, cam, p, age, now);
                 case 5 -> sky(m, cam, mc, p, age, now, pt);
                 case 6 -> aegis(m, cam, mc, p, age, now, pt);
                 case 7 -> key(vc, m, n, cam, mc, p, age, now, pt);
@@ -216,7 +216,7 @@ public final class TreasureFxClient {
     // ================================================================== 4 the Sundering Key's storm
     /** c = the key's point, d = the way it tears, r = length, r2 = width, sweep = charge ticks. The storm itself runs to
      *  30 ticks before the end; the last 30 are the cracks it leaves in the air. */
-    private static void spiral(Matrix4f m, Vec3 cam, FxPacket p, double age, double now) {
+    private static void spiral(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, double now) {
         Vec3 d = p.d.normalize();
         Vec3[] f = frame(d);
         double charge = Math.max(1, p.sweep), stormEnd = Math.max(charge + 4, p.life - 30);
@@ -253,6 +253,29 @@ public final class TreasureFxClient {
                     al[i] = a * (float) (0.95 - 0.45 * u);
                 }
                 GravityFxClient.gstrip(m, cam, pts, w, al, s == 4 ? GOLD : s % 2 == 0 ? CRIMSON : EMBER);
+            }
+            // two dark ribbons of torn space wound through it: solid, so the storm reads black-and-red even against a bright sky
+            for (int s = 0; s < 2; s++) {
+                int N = Math.max(8, (int) (L * 2));
+                Vec3 prev = null;
+                for (int i = 0; i < N; i++) {
+                    double u = i / (double) (N - 1), x = u * L;
+                    double an = s * Math.PI + (s == 0 ? 1 : -1) * (x * 0.55 - now * 0.9);
+                    double rr = W * 0.45 * Math.min(1, u * 5);
+                    Vec3 q = p.c.add(d.scale(x)).add(f[0].scale(Math.cos(an) * rr)).add(f[1].scale(Math.sin(an) * rr));
+                    if (prev != null) {
+                        Vec3 ax = q.subtract(prev), side = ax.cross(prev.subtract(cam));
+                        if (side.lengthSqr() > 1e-8) {
+                            double near = Mth.clamp((prev.distanceTo(cam) - 2.5) / 4.0, 0, 1);   // never a dark wall in your face
+                            float al = a * 0.8F * (float) near * (float) (1 - 0.5 * u);
+                            side = side.normalize().scale(W * 0.09 * (1.2 - 0.6 * u));
+                            float[] col = s == 0 ? BLOOD : BLACK;
+                            FxBase.quad(vc, m, n, cam, prev.add(side), q.add(side), q.subtract(side), prev.subtract(side), col, al, al, al, al);
+                            FxBase.quad(vc, m, n, cam, prev.subtract(side), q.subtract(side), q.add(side), prev.add(side), col, al, al, al, al);
+                        }
+                    }
+                    prev = q;
+                }
             }
             // the rings of the storm racing ahead
             for (int i = 0; i < (int) (L / 2.5); i++) {

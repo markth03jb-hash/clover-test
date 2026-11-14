@@ -1144,11 +1144,11 @@ public final class IceFxClient {
                     double an = i * TAU / N + hs(i + wave * 50, p.id) * 0.3;
                     double rr = R * (wave == 0 ? 1.3 : 2.6) * (1 + 0.15 * hs(i + 20, p.id));
                     Vec3 o = new Vec3(Math.cos(an), 0, Math.sin(an));
-                    float len = (float) (R * (wave == 0 ? 1.3 : 0.9) * (1 + 0.6 * hs(i + 40, p.id)));
+                    float len = (float) (R * (wave == 0 ? 1.05 : 0.7) * (1 + 0.5 * hs(i + 40, p.id)));
                     SPIRES.add(new Spire(p.u.add(o.scale(rr)).subtract(0, 0.3, 0), o.scale(wave == 0 ? 0.6 : 0.8).add(0, 1, 0).normalize(), len, len * 0.22F, now + wave * 5, 34 + hs(i, 7) * 12, 3, seedN++ * 7919));
                 }
             }
-            spire(p.u.subtract(0, 0.4, 0), UP, (float) R * 2.6F, (float) R * 0.55F, now, 48, 4);
+            spire(p.u.subtract(0, 0.4, 0), UP, (float) R * 2.2F, (float) R * 0.5F, now, 48, 4);
             shards(p.u.add(0, 0.6, 0), new Vec3(0, 0.3, 0), 0.35F, 60, 0.14F, now);
             mist(p.u.add(0, 1, 0), Vec3.ZERO, (float) R * 3.4F, now, 40);
         }

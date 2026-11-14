@@ -254,8 +254,8 @@ public final class UiShots {
         steps.add(new Step("tre_rain", () -> { onServer(p -> UiShotsServer.element(p, "t:blade_rain")); }, 16, true));
         steps.add(new Step("tre_barrage", () -> { onServer(p -> UiShotsServer.element(p, "t:treasure_barrage")); }, 14, true));
         steps.add(new Step("tre_kings", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "t:kings_vault")); }, 16, true));
-        steps.add(new Step("tre_breaker", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "t:vault_breaker")); }, 22, true));   // the key winding up
-        steps.add(new Step("tre_torn", () -> { }, 11, true));     // the storm
+        steps.add(new Step("tre_breaker", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "t:end"); UiShotsServer.element(p, "t:vault_breaker"); }); }, 22, true));   // the key winding up
+        steps.add(new Step("tre_torn", () -> { mc.player.setYRot(mc.player.getYRot() + 65); mc.player.setXRot(10); }, 11, true));     // the storm, seen from the side
         steps.add(new Step("tre_cracks", () -> { }, 24, true));   // the cracks it leaves
         steps.add(new Step("tre_wheel", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "t:end")); GrimoireWheel.forceOpen = true; }, 14, true));
         steps.add(new Step("tre_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); mc.options.hideGui = true; }, 4, true));
