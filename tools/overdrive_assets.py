@@ -153,8 +153,11 @@ segs = [(12.2, 16.5, 0.0), (16.5, 20.5, 0.12), (20.5, 24.0, 0.35), (24.0, 26.4, 
 for i, (y0, y1, dz) in enumerate(segs):
     w = 1.3 - 0.06 * i
     els.append(el([7.85, y0, 7.35 + dz], [8.15, y1, 7.35 + dz + w], BLADE(), name=f"blade{i}"))
-# the point: cut at an angle from the edge up to the spine, as a katana's is
-els.append(el([7.85, 26.4, 7.35 + 1.0], [8.15, 27.6, 7.35 + 1.0 + 0.9], BLADE(), rot={"angle": 45, "axis": "x", "origin": [8, 26.4, 8.35]}, name="tip"))
+# the point (kissaki): the spine runs on straight while the edge sweeps up to meet it, narrowing to a fine point
+spine = 7.35 + 0.68 + (1.3 - 0.06 * 3)   # where the last section's spine is
+for k, (y0, y1, w) in enumerate([(26.4, 27.2, 0.85), (27.2, 27.85, 0.58), (27.85, 28.4, 0.34), (28.4, 28.8, 0.16), (28.8, 29.05, 0.06)]):
+    sz = spine + 0.08 * (k + 1)   # still curving back a little
+    els.append(el([7.86 + 0.01 * k, y0, sz - w], [8.14 - 0.01 * k, y1, sz], BLADE(), name=f"point{k}"))
 els.append(el([7.95, 2.6, 8.2], [8.05, 4.9, 8.75], CLOTH(), rot={"angle": 22.5, "axis": "x", "origin": [8, 4.9, 8.5]}, name="tassel_a"))   # the tassel at the pommel
 els.append(el([7.95, 0.6, 8.6], [8.05, 2.8, 9.05], CLOTH(), rot={"angle": -22.5, "axis": "x", "origin": [8, 2.8, 8.85]}, name="tassel_b"))
 model = {
@@ -162,9 +165,10 @@ model = {
     "textures": {"0": "iron_spell_grimoire:item/heartline", "particle": "iron_spell_grimoire:item/heartline"},
     "elements": els,
     "display": {
-        # the grip sits at the model's centre, so it lands in the hand; the blade raised forward-up like a drawn sword
-        "thirdperson_righthand": {"rotation": [0, -90, -40], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
-        "thirdperson_lefthand": {"rotation": [0, 90, 40], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
+        # the grip sits at the model's centre, so it lands in the hand; held in a ready stance - blade raised forward-up,
+        # the edge facing the foe (forward-down) and the spine toward you
+        "thirdperson_righthand": {"rotation": [40, 0, 0], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
+        "thirdperson_lefthand": {"rotation": [40, 0, 0], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
         "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 1.2, 1.13], "scale": [0.95, 0.95, 0.95]},
         "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 1.2, 1.13], "scale": [0.95, 0.95, 0.95]},
         "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.8, 0.8, 0.8]},
