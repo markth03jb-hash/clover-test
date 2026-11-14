@@ -34,6 +34,7 @@
     "iron_spell_grimoire:tarot_grimoire",
     "iron_spell_grimoire:abyss_grimoire",
     "iron_spell_grimoire:mech_grimoire",
-    "iron_spell_grimoire:weather_grimoire"
+    "iron_spell_grimoire:weather_grimoire",
+    "iron_spell_grimoire:overdrive_grimoire"
   ]
 }

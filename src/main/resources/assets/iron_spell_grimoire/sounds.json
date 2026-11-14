@@ -929,5 +929,70 @@
         "name": "iron_spell_grimoire:sfx/wind_3"
       }
     ]
+  },
+  "sfx.blade_draw": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/blade_draw_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/blade_draw_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/blade_draw_3"
+      }
+    ]
+  },
+  "sfx.rush": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rush_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rush_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rush_3"
+      }
+    ]
+  },
+  "sfx.flatline": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/flatline_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/flatline_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/flatline_3"
+      }
+    ]
+  },
+  "sfx.breath": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/breath_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/breath_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/breath_3"
+      }
+    ]
+  },
+  "sfx.ribbon": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/ribbon_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/ribbon_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/ribbon_3"
+      }
+    ]
   }
 }

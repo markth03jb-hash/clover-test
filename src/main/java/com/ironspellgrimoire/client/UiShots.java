@@ -406,6 +406,30 @@ public final class UiShots {
             b.showPart("spells:0");
         }, 15, false));
         steps.add(new Step("wea_book_done", () -> mc.setScreen(null), 4, true));
+        steps.add(new Step("ovd_draw_heartline", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "o:draw_heartline")); }, 14, true));
+        steps.add(new Step("ovd_pulse_cut", () -> { onServer(p -> UiShotsServer.element(p, "o:pulse_cut")); }, 10, true));
+        steps.add(new Step("ovd_adrenaline_rush", () -> { onServer(p -> UiShotsServer.element(p, "o:adrenaline_rush")); }, 10, true));
+        steps.add(new Step("ovd_heartbeat", () -> { onServer(p -> UiShotsServer.element(p, "o:heartbeat")); }, 12, true));
+        steps.add(new Step("ovd_flatline", () -> { onServer(p -> UiShotsServer.element(p, "o:flatline")); }, 12, true));
+        steps.add(new Step("ovd_tachycardia", () -> { onServer(p -> UiShotsServer.element(p, "o:tachycardia")); }, 14, true));
+        steps.add(new Step("ovd_second_wind", () -> { onServer(p -> UiShotsServer.element(p, "o:second_wind")); }, 12, true));
+        steps.add(new Step("ovd_ribbon_bind", () -> { onServer(p -> UiShotsServer.element(p, "o:ribbon_bind")); }, 14, true));
+        steps.add(new Step("ovd_heartline_held", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 6, true));   // the sword in hand, from the front
+        steps.add(new Step("ovd_heartline_side", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); mc.player.setYRot(mc.player.getYRot() + 90); }, 6, true));   // ...and from the side
+        steps.add(new Step("ovd_heartline_fp", () -> { mc.player.setYRot(mc.player.getYRot() - 90); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 6, true));   // ...and in first person
+        steps.add(new Step("ovd_redline", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "o:redline")); }, 16, true));
+        steps.add(new Step("ovd_final_beat", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "o:final_beat")); }, 10, true));   // the silence
+        steps.add(new Step("ovd_final_cut", () -> { }, 9, true));   // the cut
+        steps.add(new Step("ovd_after", () -> { }, 10, true));
+        steps.add(new Step("ovd_hud", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 8, true));   // the heart monitor
+        steps.add(new Step("ovd_wheel", () -> { onServer(p -> UiShotsServer.element(p, "o:end")); GrimoireWheel.forceOpen = true; }, 14, true));
+        steps.add(new Step("ovd_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); mc.options.hideGui = true; }, 4, true));
+        steps.add(new Step("ovd_book", () -> {
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.OVERDRIVE_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("ovd_book_done", () -> mc.setScreen(null), 4, true));
 
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)
@@ -446,7 +470,7 @@ public final class UiShots {
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
         Class<?>[] shared = {GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class, FxBase.class, GravityFxClient.class};
         String[][] books = {{"grav_", "Gravity"}, {"snd_", "Sound"}, {"ink_", "Ink"}, {"err_", "Error"}, {"tre_", "Treasure"}, {"chn_", "Chain"}, {"hun_", "Hunter"},
-                {"voi_", "Void"}, {"gam_", "Gambler"}, {"tar_", "Tarot"}, {"aby_", "Abyss"}, {"mec_", "Mech"}, {"wea_", "Weather"}};
+                {"voi_", "Void"}, {"gam_", "Gambler"}, {"tar_", "Tarot"}, {"aby_", "Abyss"}, {"mec_", "Mech"}, {"wea_", "Weather"}, {"ovd_", "Overdrive"}};
         for (String[] b : books) if (step.startsWith(b[0])) {   // each book's pictures depend on its own two classes and the shared drawing code
             try {
                 Class<?>[] r = java.util.Arrays.copyOf(shared, shared.length + 2);

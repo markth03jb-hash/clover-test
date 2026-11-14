@@ -87,7 +87,8 @@ public final class SkillTree {
             /* 30 Tarot */ {"Upright", "power", .06f, "Foresight", "dodge", .08f, "The Lovers", "lifesteal", .05f, "Temperance", "regenhp", 1, "The Chariot", "hastecast", .20f, "The Devil", "weaken", .20f, "The Sun", "first", .25f},
             /* 31 Abyss */ {"Pressure", "slow", .25f, "Cold Blood", "armor", 4, "Lure Light", "pull", .5f, "Many Arms", "chain", .15f, "Undertow", "knock", .5f, "Hunger of the Deep", "lifesteal", .05f, "Leviathan Bite", "boss", .12f},
             /* 32 Mech */ {"Reinforced Frame", "armor", 5, "Rivet Gun", "crit", .10f, "Thrusters", "hastecast", .20f, "Plating", "shield", 6, "Heavy Hitter", "knock", .6f, "Missile Pod", "chain", .15f, "Cooling System", "cdr", .08f},
-            /* 33 Weather */ {"Tailwind", "dodge", .07f, "Static", "chain", .15f, "Hail", "slow", .20f, "Downpour", "regenhp", 1, "Heatwave", "burn", .12f, "Gale Force", "knock", .5f, "Calm Eye", "fullhp", .12f}};
+            /* 33 Weather */ {"Tailwind", "dodge", .07f, "Static", "chain", .15f, "Hail", "slow", .20f, "Downpour", "regenhp", 1, "Heatwave", "burn", .12f, "Gale Force", "knock", .5f, "Calm Eye", "fullhp", .12f},
+            /* 34 Overdrive */ {"Racing Pulse", "hastecast", .20f, "Adrenaline", "dodge", .07f, "Clean Cut", "crit", .10f, "Bloodrush", "lifesteal", .05f, "Last Breath", "lowhp", .15f, "Afterimage", "echo", .10f, "Flatliner", "execute", .20f}};
 
     /** The crowns (server/SkillEffects does what they say). */
     public static final String[][] CROWNS = {
@@ -124,7 +125,8 @@ public final class SkillTree {
             {"Fated Meeting", "Your first hit on each new foe lands 40% harder."},
             {"Crushing Depths", "The deeper you stand below sea level, the harder you hit: +1% a block, up to +40%."},
             {"Overdrive", "Every 10th spell hit discharges the core: it lands twice as hard."},
-            {"Lightning Rod", "Under real rain your hits land 30% harder; under any open sky, 10%."}};
+            {"Lightning Rod", "Under real rain your hits land 30% harder; under any open sky, 10%."},
+            {"Engine Heart", "Above 150 bpm your hits land 15% harder; at the Redline, 30%."}};
 
     private static final List<List<Node>> TREES = new ArrayList<>();
     static {

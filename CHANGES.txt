@@ -1,6 +1,17 @@
-Iron Spell Grimoire v1.100.1 - all changed files since v1.0.0
+Iron Spell Grimoire v1.101.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.101.0
+- New: the Overdrive Grimoire (crimson heart on black leather) - a swordsman's book, for a fighter with almost no magic
+  who wins on technique and one all-out minute. Its first page draws the Heartline, a long nodachi with a white-wrapped
+  grip and a trailing ribbon, out of your chest into your hand; every other page needs it in your hand (it fades if
+  it leaves your hand). Passive - Heart Rate: casting, hitting and being hit raise your heart rate (an ECG monitor by
+  the hotbar); Hot above 150 (hits +20%, quicker), the Redline above 200 (+40%, quicker hands, but it strains you).
+  Pages: Draw the Heartline, Thunderclap Draw (a draw-cut faster than its own sound), Adrenaline Rush, Read the Pulse
+  (the next attack on you misses and you're behind the attacker, cutting), Flatline, Tachycardia, Second Wind, Ribbon
+  Bind, Last Minute (60 s with every limit off - then you collapse) and Final Beat (one enormous cut; inside Last
+  Minute it spends the rest of the minute on that one cut).
 
 NEW IN 1.100.1
 - Mech: the machine has knees, ankles and elbows now - it walks with real strides (knees lifting, feet planted
