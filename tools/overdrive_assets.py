@@ -149,15 +149,27 @@ els = [   # katana proportions: a long two-hand grip, an oval guard, a brass col
     el([7.25, 11.0, 5.95], [8.75, 11.4, 10.05], METAL(), name="guard_ends"),                         # its rounded ends
     el([7.75, 11.4, 7.3], [8.25, 12.2, 8.75], BRASS(), name="collar"),
 ]
-segs = [(12.2, 16.5, 0.0), (16.5, 20.5, 0.12), (20.5, 24.0, 0.35), (24.0, 26.4, 0.68)]   # the blade, a gentle curve back
-for i, (y0, y1, dz) in enumerate(segs):
-    w = 1.3 - 0.06 * i
-    els.append(el([7.85, y0, 7.35 + dz], [8.15, y1, 7.35 + dz + w], BLADE(), name=f"blade{i}"))
-# the point (kissaki): the spine runs on straight while the edge sweeps up to meet it, narrowing to a fine point
-spine = 7.35 + 0.68 + (1.3 - 0.06 * 3)   # where the last section's spine is
-for k, (y0, y1, w) in enumerate([(26.4, 27.2, 0.85), (27.2, 27.85, 0.58), (27.85, 28.4, 0.34), (28.4, 28.8, 0.16), (28.8, 29.05, 0.06)]):
-    sz = spine + 0.08 * (k + 1)   # still curving back a little
-    els.append(el([7.86 + 0.01 * k, y0, sz - w], [8.14 - 0.01 * k, y1, sz], BLADE(), name=f"point{k}"))
+# the blade: many thin sections following one smooth curve (item models only turn in 22.5-degree steps, so the curve is
+# built from small offsets instead), with the texture running on continuously from the collar to the point. The spine
+# curves back gently (more toward the tip); near the end the edge sweeps up to meet the spine in a sharp point (kissaki).
+B0, B1, P0 = 12.2, 29.2, 26.2            # blade start, the very tip, where the point begins
+def spine_z(y): t = (y - B0) / (B1 - B0); return 8.65 + 0.95 * t * t
+def width(y):
+    t = (y - B0) / (B1 - B0)
+    w = 1.3 - 0.2 * t
+    if y > P0: w *= max(0.0, 1 - ((y - P0) / (B1 - P0)) ** 1.35)   # the point: narrowing smoothly to nothing
+    return w
+def vv(y): return round(16 * (y - B0) / (B1 - B0), 3)
+cuts = [B0 + (P0 - B0) * i / 26 for i in range(26)] + [P0 + (B1 - P0) * i / 12 for i in range(13)]
+for i, (y0, y1) in enumerate(zip(cuts, cuts[1:])):
+    ym = (y0 + y1) / 2
+    w = width(ym)
+    if w < 0.03: continue
+    sz = spine_z(ym)
+    th = 0.3 if y0 < P0 else max(0.12, 0.3 * (w / width(P0)) ** 0.5)   # thinning toward the point too
+    faces = {"east": face(0, vv(y0), 4, vv(y1)), "west": face(4, vv(y0), 0, vv(y1)), "north": face(4, vv(y0), 5, vv(y1)),
+             "south": face(4, vv(y0), 5, vv(y1)), "up": face(4, 0, 5, 1), "down": face(4, 0, 5, 1)}
+    els.append(el([round(8 - th / 2, 4), round(y0, 4), round(sz - w, 4)], [round(8 + th / 2, 4), round(y1, 4), round(sz, 4)], faces, name=f"blade{i}"))
 els.append(el([7.95, 2.6, 8.2], [8.05, 4.9, 8.75], CLOTH(), rot={"angle": 22.5, "axis": "x", "origin": [8, 4.9, 8.5]}, name="tassel_a"))   # the tassel at the pommel
 els.append(el([7.95, 0.6, 8.6], [8.05, 2.8, 9.05], CLOTH(), rot={"angle": -22.5, "axis": "x", "origin": [8, 2.8, 8.85]}, name="tassel_b"))
 model = {
