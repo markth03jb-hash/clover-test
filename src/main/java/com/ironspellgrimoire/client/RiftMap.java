@@ -45,9 +45,13 @@ public final class RiftMap {
     private static final int[] TINT = {0xFF9A88C8, 0xFFB0A8B8, 0xFFD89040, 0xFF60A8E0, 0xFFE04848, 0xFFF0C040, 0xFFF0C040, 0xFFC8D8F0};
     private static final String[] MARK = {"", "", "!", "+", "☠", "★", "★", "★"};
 
+    /** How tall the map was last frame (+ its gap), so the mode timers can sit under it. */
+    static int drawnH;
+
     @SubscribeEvent
     public static void onGui(RenderGuiEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
+        drawnH = 0;
         if (left <= 0 || rooms.length == 0 || mc.player == null || mc.options.hideGui || TrackerMode.hidden()) return;
         GuiGraphics g = e.getGuiGraphics();
         Font f = mc.font;
@@ -57,6 +61,7 @@ public final class RiftMap {
         int mw = (maxX - minX) * step + cell, mh = (maxZ - minZ) * step + cell;
         int pad = 6, w = Math.max(mw + pad * 2, 70), h = mh + pad * 2 + 12;
         int x = g.guiWidth() - w - 4, y = TrackerMode.riftY();
+        drawnH = h + 4;
         g.fill(x, y, x + w, y + h, 0xA0100818);
         g.renderOutline(x, y, w, h, 0xC07A5AC8);
         int done = 0;

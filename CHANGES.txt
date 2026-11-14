@@ -1,6 +1,20 @@
-Iron Spell Grimoire v1.98.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.99.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.99.0
+- Treasure: Blade Wall is now a line of golden ripples with weapons half out of them, points forward; missiles break on
+  it, and when it closes every blade fires straight ahead.
+- Treasure's ultimate is now the Sundering Key: a drill-blade of three counter-turning drums slides out of a dark ripple,
+  spins up and lets go a black-and-crimson storm that tears through everything ahead, leaving the air cracked.
+- Scarlet Moon: Absolute Zero and Moonfall redone. Absolute Zero etches a great snowflake out from your feet, freezes the
+  air, then a dome of cold and a crown of ice spears; Moonfall brings down a cracking moon of ice onto a turning sigil,
+  with two waves of spires round the crater. No red left in the mode (your eyes go ice-blue under the Moon).
+- Ink: Brush Stroke sweeps in front of you (it went round behind).
+- The world boss tracker can be closed on its own (J, under Controls); the mode timers now sit under the trackers
+  instead of on top of them.
+- The Weather forecast, Mech blueprint, Abyss and Void HUDs go away the moment you switch to another grimoire, and
+  Pilot / Bulwark Plating / Eye of the Storm / Fog Bank end when you switch.
 
 NEW IN 1.98.0
 - Thirteen new grimoires (original designs; each with ten spells, its own passive, sounds, cover, wheel theme, mana bar,

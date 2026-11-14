@@ -48,6 +48,12 @@ public final class AbyssFxClient {
         LIVE.add(new L(p, mc.level.getGameTime()));
     }
 
+    /** Checked on the client every frame, so the HUD goes the moment you switch to another grimoire (the server's sync can lag up to 2 s). */
+    private static boolean held(Minecraft mc) {
+        var b = mc.player == null ? null : io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(mc.player);
+        return b != null && b.is(com.ironspellgrimoire.registry.AddonItemRegistry.ABYSS_GRIMOIRE.get());
+    }
+
     static void clear() { LIVE.clear(); }
 
     // ================================================================== the screen: the dark at the edges and the gauge
@@ -58,7 +64,7 @@ public final class AbyssFxClient {
         var g = e.getGuiGraphics();
         float f = Mth.clamp(depth / 100F, 0, 1);
         shown = shown < 0 ? f : shown + (f - shown) * 0.12F;
-        float want = equipped && !glowing ? shown * 0.42F : 0;
+        float want = equipped && held(mc) && !glowing ? shown * 0.42F : 0;
         dark += (want - dark) * 0.05F;
         int W = g.guiWidth(), H = g.guiHeight();
         if (dark > 0.01F) {   // the dark closing in from the edges - only the outer fifth of the screen
@@ -75,7 +81,7 @@ public final class AbyssFxClient {
                 g.fill(W - s2, s2, W - s, H - s2, col);
             }
         }
-        if (mc.options.hideGui || !equipped) return;
+        if (mc.options.hideGui || !equipped || !held(mc)) return;
         // the gauge: a slim tube left of the hotbar, sunlit at the top, black at the bottom, with a marker sinking in it
         int x = W / 2 - 91 - 29 - 16, top = H - 40, bot = H - 4, w = 6;
         double t = mc.level.getGameTime() + e.getPartialTick();

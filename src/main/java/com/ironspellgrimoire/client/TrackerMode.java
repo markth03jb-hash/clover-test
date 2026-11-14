@@ -36,6 +36,15 @@ public final class TrackerMode {
     public static int questY() { return 4 + (BountyHud.shown() ? (compact() ? 16 : 66) : 0); }
     public static int worldY() { return questY() + (QuestHud.shown() ? (compact() ? 16 : QuestHud.height() + 4) : 0); }
     public static int riftY() { return worldY() + (WorldBossHud.shown() ? (compact() ? 16 : 44) : 0); }
+    /** Where the trackers end (0 when none is on screen): the mode timers start under this, so they never overlap. */
+    public static int bottom() {
+        if (hidden()) return 0;
+        int y = riftY() + RiftMap.drawnH;
+        return y > 4 ? y : 0;
+    }
+
+    /** Closes (or reopens) just the world boss box - default J. A new world boss opens it again. */
+    public static final KeyMapping BOSS_KEY = new KeyMapping("key.iron_spell_grimoire.world_boss", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J, "key.categories.iron_spell_grimoire");
 
     /** One compact line: a coloured edge, a label, a name, and the way to go (an arrow that turns as you do). */
     static void line(GuiGraphics g, Font f, int y, int head, String label, String text, double dx, double dz, boolean arrow, long now, float yaw) {
@@ -60,7 +69,7 @@ public final class TrackerMode {
 
     @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static final class Keys {
-        @SubscribeEvent public static void register(RegisterKeyMappingsEvent e) { e.register(KEY); }
+        @SubscribeEvent public static void register(RegisterKeyMappingsEvent e) { e.register(KEY); e.register(BOSS_KEY); }
     }
 
     @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = Dist.CLIENT)
@@ -72,6 +81,10 @@ public final class TrackerMode {
             while (KEY.consumeClick()) {
                 mode = (mode + 1) % 3;
                 if (mc.player != null) mc.player.displayClientMessage(Component.literal("Trackers: " + (mode == 0 ? "full" : mode == 1 ? "compact" : "hidden")).withStyle(ChatFormatting.GRAY), true);
+            }
+            while (BOSS_KEY.consumeClick()) {
+                WorldBossHud.closed = !WorldBossHud.closed;
+                if (mc.player != null) mc.player.displayClientMessage(Component.literal("World boss tracker: " + (WorldBossHud.closed ? "closed (press " + BOSS_KEY.getTranslatedKeyMessage().getString() + " to open)" : "open")).withStyle(ChatFormatting.GRAY), true);
             }
         }
     }

@@ -47,13 +47,19 @@ public final class VoidFxClient {
         LIVE.add(new L(p, mc.level.getGameTime()));
     }
 
+    /** Checked on the client every frame, so the HUD goes the moment you switch to another grimoire (the server's sync can lag up to 2 s). */
+    private static boolean held(Minecraft mc) {
+        var b = mc.player == null ? null : io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(mc.player);
+        return b != null && b.is(com.ironspellgrimoire.registry.AddonItemRegistry.VOID_GRIMOIRE.get());
+    }
+
     static void clear() { LIVE.clear(); }
 
     /** The Nothing meter, where the Blood Gauge would be: a white ring filling with white from its middle. */
     @net.minecraftforge.eventbus.api.SubscribeEvent
     public static void onGui(net.minecraftforge.client.event.RenderGuiEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null || mc.options.hideGui || !equipped) return;
+        if (mc.player == null || mc.level == null || mc.options.hideGui || !equipped || !held(mc)) return;
         var g = e.getGuiGraphics();
         float f = Mth.clamp(nothing / 100F, 0, 1);
         shown = shown < 0 ? f : shown + (f - shown) * 0.15F;

@@ -54,6 +54,12 @@ public final class MechFxClient {
         LIVE.add(new L(p, mc.level.getGameTime()));
     }
 
+    /** Checked on the client every frame, so the HUD goes the moment you switch to another grimoire (the server's sync can lag up to 2 s). */
+    private static boolean held(Minecraft mc) {
+        var b = mc.player == null ? null : io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(mc.player);
+        return b != null && b.is(com.ironspellgrimoire.registry.AddonItemRegistry.MECH_GRIMOIRE.get());
+    }
+
     static void clear() { LIVE.clear(); }
 
     // ================================================================== the blueprint on the screen
@@ -73,7 +79,7 @@ public final class MechFxClient {
     @net.minecraftforge.eventbus.api.SubscribeEvent
     public static void onGui(net.minecraftforge.client.event.RenderGuiEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null || mc.options.hideGui || !equipped) return;
+        if (mc.player == null || mc.level == null || mc.options.hideGui || !equipped || !held(mc)) return;
         var g = e.getGuiGraphics();
         double t = mc.level.getGameTime() + e.getPartialTick();
         int ox = g.guiWidth() / 2 - 91 - 29 - 30, oy = g.guiHeight() - 38;

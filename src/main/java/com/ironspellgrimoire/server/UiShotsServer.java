@@ -225,7 +225,7 @@ public final class UiShotsServer {
                 CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
                 BloodFx.showGauge(p, 68f);
             }
-            case "moonfall" -> { p.setXRot(20); BloodFx.scarletMoon(p, 10f); }
+            case "moonfall" -> { p.setXRot(5); BloodFx.scarletMoon(p, 10f); }
             case "overflow" -> BloodFx.showGauge(p, 132f);
             case "throne" -> IceFx.iceThrone(p, 10f);
             case "hemorrhage" -> BloodFx.hemorrhage(p, 10f);

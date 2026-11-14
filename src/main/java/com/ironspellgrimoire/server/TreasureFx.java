@@ -34,15 +34,17 @@ import java.util.concurrent.ThreadLocalRandom;
  *  1 Vault Volley       - four portals open behind you and each fires a weapon at your target
  *  2 Gilded Spear       - one heavy spear from one portal, straight through everything in a line
  *  3 Vault Chains       - chains shoot from portals round your target and hold it fast
- *  4 Blade Wall         - a wall of crossed blades stands in front of you: missiles break on it, foes are cut
+ *  4 Blade Wall         - a line of ripples opens in front of you, weapons half out and pointing forward: missiles
+ *                         break on it, foes are cut; when it closes every blade fires straight ahead
  *  5 Blade Rain         - portals open in the sky over your target and blades rain down
  *  6 Seeking Blades     - six weapons fly out, each hunting a different foe
  *  7 Treasure Barrage   - ten portals behind you fire as fast as they can at your target for two seconds
  *  8 Vault Aegis        - 10 s: a golden shield; every blow you take is answered by a weapon from the vault
  *  9 King's Vault (mode)- 20 s: portals fill the sky behind you and fire on their own at foes near you;
  *                         Treasure spells hit 25% harder
- * 10 Vault Breaker      - the vault's key turns: a spiral of tearing golden wind rips forward through everything.
- *                         Surpassing Limits: wider and longer.
+ * 10 Sundering Key      - (id vault_breaker) a drill-blade of three counter-turning drums slides out of a dark ripple,
+ *                         spins up, and lets go a black-and-crimson storm that tears through everything ahead and leaves
+ *                         the air cracked. Surpassing Limits: wider and longer.
  *
  * Passive "Open Vault": every Treasure spell leaves one more portal open (up to five, for 8 s); each makes the
  * weapons hit 5% harder.
@@ -225,33 +227,62 @@ public final class TreasureFx {
     }
 
     // ================================================================== 4. Blade Wall
+    /** A row of golden ripples opens in front of you and the vault's weapons come half out of them, points forward:
+     *  a bristling line that cuts anything that walks into it and breaks every missile on it. When it closes, every
+     *  weapon in the line fires straight ahead. */
     public static void bladeWall(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         final float pow = open(p, power);
         Vec3 d = flat(p.getLookAngle());
         if (d.lengthSqr() < 1.0E-4) d = new Vec3(0, 0, 1);
-        final Vec3 dd = d.normalize();
+        final Vec3 dd = d.normalize(), rt = rightOf(dd);
         final Vec3 c = p.position().add(dd.scale(2.2));
-        final float W = 5f;
-        final int T = 120;
-        wall(sl, c, dd, W, T);
+        final float W = 5.2f;
+        final int HOLD = 60, N = 9;
+        final double RANGE = 14;
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        for (int i = 0; i < N; i++) {   // two staggered rows: low and high, like a phalanx of blades
+            double s = (i / (double) (N - 1) - 0.5) * W;
+            double y = 0.6 + (i % 2) * 1.1 + r.nextDouble() * 0.2;
+            Vec3 at = c.add(rt.scale(s)).add(0, y, 0);
+            Vec3 to = at.add(dd.scale(RANGE)).add(0, -0.25, 0);
+            int open = i * 2 > N ? (N - i) : i;   // they open from the middle outwards
+            int type = i % 3 == 1 ? SPEAR : i % 3 == 2 ? AXE : SWORD;
+            final int wait = HOLD - open;
+            AstaFx.later(open, () -> {
+                if (!alive(p)) return;
+                portal(sl, at, dd, 0.75f, wait + 12);
+                weapon(sl, at.subtract(dd.scale(0.15)), to, type, 1.15f, wait, 5);
+            });
+        }
         play(sl, c, "portal_open", 1.0f, 0.9f);
         play(sl, c, "blade_fly", 0.8f, 0.7f);
-        for (int k = 0; k < T; k += 2) {
+        for (int k = 0; k < HOLD; k += 2) {
             final int kk = k;
             AstaFx.later(k + 1, () -> {
                 if (!alive(p)) return;
-                Vec3 a = c.add(rightOf(dd).scale(-W / 2)).add(0, 1, 0), b = c.add(rightOf(dd).scale(W / 2)).add(0, 1, 0);
+                Vec3 a = c.add(rt.scale(-W / 2)).add(0, 1, 0), b = c.add(rt.scale(W / 2)).add(0, 1, 0);
                 for (Projectile pr : sl.getEntitiesOfClass(Projectile.class, new AABB(a, b).inflate(1.2, 1.5, 1.2), x -> x.getOwner() != p)) {
                     blade(sl, pr.position());
                     pr.discard();
                 }
-                if (kk % 10 == 0) for (LivingEntity e : Kit.along(sl, p, a, b, 1.2)) {
+                if (kk % 10 == 0) for (LivingEntity e : Kit.along(sl, p, a, b, 1.3)) {
                     hit(p, e, pow * 0.25f, "blade_wall");
                     Kit.push(e, dd, 0.5 * GravityFx.give(e), 0.15);
                 }
             });
         }
+        AstaFx.later(HOLD, () -> {   // the line lets go: every blade flies forward at once
+            if (!alive(p)) return;
+            play(sl, c, "blade_fly", 1.2f, 0.9f);
+            sound(sl, c, SoundEvents.TRIDENT_THROW, 1.0f, 0.8f);
+            java.util.Set<LivingEntity> struck = new java.util.HashSet<>();
+            for (int j = -2; j <= 2; j++) {
+                Vec3 a = c.add(rt.scale(j * W / 4)).add(0, 1, 0);
+                for (LivingEntity e : Kit.along(sl, p, a, a.add(dd.scale(RANGE)), 1.3)) struck.add(e);
+            }
+            AstaFx.later(4, () -> { for (LivingEntity e : struck) if (alive(p) && e.isAlive()) { hit(p, e, pow * 0.9f, "blade_wall"); Kit.push(e, dd, 0.7 * GravityFx.give(e), 0.2); } });
+        });
     }
 
     private static void blade(ServerLevel sl, Vec3 at) {
@@ -355,37 +386,56 @@ public final class TreasureFx {
         sound(sl, p.position(), SoundEvents.BEACON_ACTIVATE, 0.8f, 1.2f);
     }
 
-    // ================================================================== 10. Vault Breaker
+    // ================================================================== 10. Sundering Key (id vault_breaker)
+    /** The deepest thing in the vault: a key that is also a blade. A dark ripple opens at your side and it slides out -
+     *  a long drill of three stacked drums turning against each other, scored with red lines. The drums spin faster,
+     *  the air is pulled into them, and then it lets go: a twisting storm of black and crimson that tears a line
+     *  through everything ahead and leaves the air itself cracked for a moment after. */
     public static void vaultBreaker(ServerPlayer p, float power) {
         boolean limit = LimitBreak.active(p);
         ServerLevel sl = p.serverLevel();
         final float pow = open(p, power) * (limit ? 1.3f : 1f);
-        Vec3 d = p.getLookAngle();
-        final Vec3 from = p.getEyePosition().add(d.scale(1.2)).add(0, -0.3, 0), dd = d;
-        final float L = limit ? 40f : 30f, W = limit ? 4f : 3f;
-        final int CHARGE = 20;
+        final Vec3 d = p.getLookAngle().normalize();
+        Vec3 flatD = flat(d);
+        if (flatD.lengthSqr() < 1.0E-4) flatD = new Vec3(0, 0, 1);
+        final Vec3 rt = rightOf(flatD.normalize());
+        final Vec3 hand = p.getEyePosition().add(rt.scale(0.55)).add(0, -0.45, 0).add(d.scale(0.9));
+        final Vec3 from = hand.add(d.scale(2.6));   // the storm leaves from the key's point
+        final float L = limit ? 42f : 32f, W = limit ? 4f : 3f;
+        final int CHARGE = 30, BLAST = 22;
         Vec3 end = clip(sl, p, from, from.add(d.scale(L)));
         final float len = (float) from.distanceTo(end);
-        portal(sl, from, d, 1.4f, CHARGE + 20);
-        spiral(sl, from, d, len, W, CHARGE, CHARGE + 18);
-        play(sl, from, "portal_open", 1.4f, 0.4f);
-        sound(sl, from, SoundEvents.BEACON_POWER_SELECT, 1.0f, 0.5f);
-        for (int k = 0; k < 8; k++) {   // the tearing wind lasts a moment and drags along
+        key(sl, p, hand, d, CHARGE, CHARGE + BLAST + 16, limit);
+        spiral(sl, from, d, len, W, CHARGE, CHARGE + BLAST + 30);
+        play(sl, hand, "portal_open", 1.4f, 0.35f);
+        sound(sl, hand, SoundEvents.BEACON_POWER_SELECT, 1.0f, 0.4f);
+        for (int k = 0; k < 3; k++) { final float pitch = 0.5f + 0.3f * k; AstaFx.later(8 + k * 7, () -> { if (alive(p)) sound(sl, p.position(), SoundEvents.GRINDSTONE_USE, 0.6f, pitch); }); }   // the drums winding up
+        for (int k = 0; k < 10; k++) {   // the storm lasts and drags along everything in it
             final int kk = k;
             AstaFx.later(CHARGE + k * 2, () -> {
                 if (!alive(p)) return;
-                for (LivingEntity e : Kit.along(sl, p, from, from.add(dd.scale(len)), W)) {
+                for (LivingEntity e : Kit.along(sl, p, from.subtract(d.scale(2)), from.add(d.scale(len)), W)) {
                     hit(p, e, pow * (kk == 0 ? 1.4f : 0.12f), "vault_breaker");
-                    Kit.push(e, dd, 0.35 * GravityFx.give(e), 0.08);
+                    Kit.push(e, d, 0.35 * GravityFx.give(e), 0.08);
                 }
             });
         }
         AstaFx.later(CHARGE, () -> {
-            FxSend.impactFrame(sl, from.add(dd.scale(6)), 3, FxSend.FRAME_GOLD, 26);
-            FxSend.shake(sl, from, 0.8f, 14, 30);
-            play(sl, from, "blade_fly", 1.4f, 0.4f);
-            sound(sl, from, SoundEvents.GENERIC_EXPLODE, 0.8f, 0.8f);
+            FxSend.impactFrame(sl, from.add(d.scale(6)), 3, FxSend.FRAME_GOLD, 26);
+            FxSend.shake(sl, from, 0.9f, 16, 30);
+            play(sl, from, "blade_fly", 1.4f, 0.35f);
+            sound(sl, from, SoundEvents.GENERIC_EXPLODE, 0.9f, 0.6f);
+            sound(sl, from, SoundEvents.WITHER_SHOOT, 0.6f, 0.5f);
         });
+        AstaFx.later(CHARGE + BLAST, () -> sound(sl, from.add(d.scale(len * 0.5)), SoundEvents.GLASS_BREAK, 0.9f, 0.5f));
+    }
+
+    /** 7 the Sundering Key itself, at a player's side: hand = where it sits, d = where it points. sweep = charge ticks, r2 = 1 when Surpassing Limits. */
+    static void key(ServerLevel sl, ServerPlayer pl, Vec3 hand, Vec3 d, int charge, int life, boolean limit) {
+        FxPacket p = pk(7, hand, life);
+        p.d = d; p.sweep = charge; p.r = 1; p.r2 = limit ? 1 : 0;
+        p.v = new Vec3(pl.getId(), 1, 0); p.u = hand.subtract(pl.position());
+        send(sl, p);
     }
 
     /** Surpassing Limits: the vault opens wide behind you. */

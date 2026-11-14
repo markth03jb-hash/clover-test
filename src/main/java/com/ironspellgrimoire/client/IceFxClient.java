@@ -32,6 +32,8 @@ import org.joml.Matrix4f;
  *   <li>9 glacier: c = ground, d = forward, r = half width, r2 = height, speed = blocks per tick</li>
  *   <li>10 comet: c = from, u = impact, r = size, speed = ticks of fall</li>
  *   <li>11 mist: c, r</li>
+ *   <li>22 Absolute Zero: c = ground at the caster, r = radius, sweep = ticks until everything freezes</li>
+ *   <li>23 Moonfall: c = where the moon hangs, u = where it strikes, r = moon radius, sweep = ticks it hangs, speed = ticks to impact</li>
  *   <li>99 end the effect with this id early</li>
  * </ul>
  */
@@ -117,7 +119,7 @@ public final class IceFxClient {
     }
 
     private static void spire(Vec3 c, Vec3 d, float len, float w, double now, double life, double grow) {
-        if (SPIRES.size() > 90) SPIRES.remove(0);
+        if (SPIRES.size() > 140) SPIRES.remove(0);
         SPIRES.add(new Spire(c, d.lengthSqr() < 1e-6 ? UP : d.normalize(), len, w, now, life, grow, seedN++ * 7919));
     }
 
@@ -159,6 +161,8 @@ public final class IceFxClient {
                 case 18 -> veil(vc, m, n, cam, mc, l, age, now, pt);
                 case 20 -> shock(vc, m, n, cam, l, age, now);
                 case 21 -> statue(vc, m, n, cam, mc, l, age, now);
+                case 22 -> absoluteZero(vc, m, n, cam, mc, l, age, now, tick);
+                case 23 -> moon(vc, m, n, cam, mc, l, age, now, tick);
                 default -> l.done = true;
             }
         }
@@ -166,6 +170,7 @@ public final class IceFxClient {
         while (si.hasNext()) {
             Spire s = si.next();
             double age = now - s.born;
+            if (age < 0) continue;   // a spire queued to rise a moment later (the waves round a crater)
             if (age > s.life) {   // it shatters
                 si.remove();
                 shards(s.c.add(s.d.scale(s.len * 0.5)), new Vec3(0, 0.05, 0), 0.12F, Math.min(14, 4 + (int) (s.len * 3)), Math.max(0.06F, s.w * 0.4F), now);
@@ -926,6 +931,272 @@ public final class IceFxClient {
             double an = i * TAU / 18;
             Vec3 b = p.u.add(Math.cos(an) * p.r * (1 + t * 0.3), t * 0.6, Math.sin(an) * p.r * (1 + t * 0.3));
             gseg(m, cam, b, b.add(0, 1.2 + hs(i, 99) * 1.5, 0), 0.05, 0.9F * a, 0, W_CORE);
+        }
+    }
+
+    // ================================================================== 22 Absolute Zero
+    private static final float[] FROZEN = {0.55F, 0.78F, 1.0F};
+
+    /**
+     * The cold stops everything. A great snowflake etches itself into the ground out from your feet, pillars of pale
+     * light rise from its six points and the air itself freezes - a thousand glints hanging still. Then it lands: a
+     * dome of cold sweeps out, a crown of ice spears bursts up round the edge, and the frozen air shatters into snow.
+     */
+    private static void absoluteZero(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, L l, double age, double now, boolean tick) {
+        FxPacket p = l.p;
+        double R = p.r, charge = Math.max(1, p.sweep);
+        Vec3 c = p.c.add(0, 0.04, 0);
+        float a = env(age, p.life, 2, 18);
+        double draw = FxBase.smooth(Mth.clamp(age / charge, 0, 1));
+        double after = age - charge;
+        float flare = after < 0 ? 0F : (float) Math.max(0, 1 - after / 10.0);
+        double rot = now * 0.006 + p.id;
+        // ---- the snowflake on the ground
+        float sa = a * (0.55F + 0.45F * flare);
+        for (int arm = 0; arm < 6; arm++) {
+            double an = rot + arm * TAU / 6;
+            Vec3 dir = new Vec3(Math.cos(an), 0, Math.sin(an)), side = new Vec3(-dir.z, 0, dir.x);
+            double len = R * draw;
+            gseg(m, cam, c, c.add(dir.scale(len)), 0.16, sa * 0.5F, sa * 0.35F, FROZEN);
+            gseg(m, cam, c, c.add(dir.scale(len)), 0.045, sa, sa * 0.8F, W_CORE);
+            double[] at = {0.3, 0.55, 0.8};
+            double[] bl = {0.22, 0.18, 0.12};
+            for (int b = 0; b < 3; b++) {
+                double u = at[b] * R;
+                if (u > len) continue;
+                double grow = Mth.clamp((len - u) / (R * 0.15), 0, 1);
+                Vec3 o = c.add(dir.scale(u));
+                for (int sg = -1; sg <= 1; sg += 2) {
+                    Vec3 bd = dir.scale(0.5).add(side.scale(sg * 0.866));
+                    Vec3 tip = o.add(bd.scale(bl[b] * R * grow));
+                    gseg(m, cam, o, tip, 0.03, sa * 0.85F, sa * 0.4F, W_CORE);
+                    gseg(m, cam, o, tip, 0.1, sa * 0.35F, 0, FROZEN);
+                    if (b == 0) {   // the inner branches fork again
+                        Vec3 mid = o.add(bd.scale(bl[b] * R * grow * 0.55));
+                        gseg(m, cam, mid, mid.add(dir.scale(bl[b] * R * 0.35 * grow)), 0.02, sa * 0.6F, 0, W_CORE);
+                    }
+                }
+            }
+        }
+        // hexagons: one inside, one at the rim; and the rim circle
+        for (int ring = 0; ring < 2; ring++) {
+            double hr = (ring == 0 ? 0.35 : 1.0) * R * draw;
+            for (int k = 0; k < 6; k++) {
+                double a0 = rot + k * TAU / 6 + TAU / 12, a1 = rot + (k + 1) * TAU / 6 + TAU / 12;
+                gseg(m, cam, c.add(Math.cos(a0) * hr, 0, Math.sin(a0) * hr), c.add(Math.cos(a1) * hr, 0, Math.sin(a1) * hr), 0.03, sa * 0.7F, sa * 0.7F, W_SOFT);
+            }
+        }
+        gring(m, cam, c, R * draw * 1.04, 0.22, sa * 0.6F, FROZEN);
+        // ---- pillars of light from the six points
+        for (int arm = 0; arm < 6; arm++) {
+            double an = rot + arm * TAU / 6;
+            Vec3 b = c.add(Math.cos(an) * R * draw, 0, Math.sin(an) * R * draw);
+            double h = (1.5 + 3.5 * draw) * (1 + flare);
+            float pa = a * (float) (0.25 + 0.5 * draw) * (after < 0 ? 1F : Math.max(0.15F, flare));
+            gseg(m, cam, b, b.add(0, h, 0), 0.35, pa * 0.45F, 0, FROZEN);
+            gseg(m, cam, b, b.add(0, h * 0.8, 0), 0.07, pa, 0, W_CORE);
+            gglow(m, cam, b.add(0, 0.2, 0), 0.6 + flare, pa * 0.8F, W_SOFT);
+        }
+        // ---- the frozen air: glints hanging still, then falling as snow when it lands
+        for (int i = 0; i < 70; i++) {
+            double born = hs(i, p.id + 300) * charge * 0.9;
+            if (age < born) continue;
+            double an = hs(i, p.id + 301) * TAU, rr = R * Math.sqrt(hs(i, p.id + 302));
+            double y = 0.3 + 3.2 * hs(i, p.id + 303);
+            float ga;
+            if (after < 0) { y += Math.sin(now * 0.05 + i) * 0.02; ga = (float) Mth.clamp((age - born) / 4, 0, 1) * a; }
+            else { y -= after * after * 0.004 * (0.6 + hs(i, p.id + 304)); ga = a * (float) Math.max(0, 1 - after / 40.0); }
+            if (y < 0.05) continue;
+            Vec3 q = c.add(Math.cos(an) * rr, y, Math.sin(an) * rr);
+            float tw = 0.6F + 0.4F * (float) Math.sin(now * 0.7 + i * 2.3);
+            gglow(m, cam, q, 0.06 + 0.03 * tw, ga * tw, W_CORE);
+            if (after < 0 && i % 3 == 0) {   // a tiny frost cross on some of them
+                gseg(m, cam, q.add(-0.09, 0, 0), q.add(0.09, 0, 0), 0.01, ga * 0.8F, ga * 0.8F, W_CORE);
+                gseg(m, cam, q.add(0, -0.09, 0), q.add(0, 0.09, 0), 0.01, ga * 0.8F, ga * 0.8F, W_CORE);
+            }
+        }
+        // ---- the moment it freezes
+        if (after >= 0) {
+            if (!l.burst) {
+                l.burst = true;
+                for (int i = 0; i < 26; i++) {   // the crown of ice spears round the edge, leaning out
+                    double an = rot + i * TAU / 26 + hs(i, p.id + 310) * 0.12;
+                    Vec3 o = new Vec3(Math.cos(an), 0, Math.sin(an));
+                    double rr = R * (0.97 + 0.08 * hs(i, p.id + 311));
+                    float len = (float) (1.6 + 1.8 * hs(i, p.id + 312)) * (i % 2 == 0 ? 1.3F : 1F);
+                    SPIRES.add(new Spire(c.add(o.scale(rr)).subtract(0, 0.3, 0), o.scale(0.55).add(0, 1, 0).normalize(), len, len * 0.2F, now + hs(i, p.id + 313) * 3, 40 + hs(i, p.id + 314) * 10, 3, seedN++ * 7919));
+                }
+                for (int arm = 0; arm < 6; arm++) {   // and a great one at each point of the flake
+                    double an = rot + arm * TAU / 6;
+                    Vec3 o = new Vec3(Math.cos(an), 0, Math.sin(an));
+                    spire(c.add(o.scale(R * 0.82)).subtract(0, 0.3, 0), o.scale(0.25).add(0, 1, 0), 3.6F, 0.7F, now, 46, 4);
+                    shards(c.add(o.scale(R * 0.8)).add(0, 0.5, 0), o.scale(0.08).add(0, 0.2, 0), 0.2F, 8, 0.1F, now);
+                }
+                mist(c.add(0, 0.8, 0), Vec3.ZERO, (float) R * 0.5F, now, 40);
+            }
+            // the dome of cold sweeping out (thin rims only: you can see through it)
+            double sr = R * 1.05 * FxBase.smooth(Mth.clamp(after / 7, 0, 1));
+            float da = a * (float) Math.max(0, 1 - after / 12.0);
+            for (int lat = 0; lat < 5; lat++) {
+                double phi = lat * (Math.PI / 2) / 5;
+                gring(m, cam, c.add(0, Math.sin(phi) * sr * 0.55, 0), Math.cos(phi) * sr, 0.18, da * (lat == 0 ? 0.9F : 0.45F), lat == 0 ? W_CORE : FROZEN);
+            }
+            gglow(m, cam, c.add(0, 1.0, 0), 2.5 + after * 0.3, 0.6F * (float) Math.max(0, 1 - after / 5.0), W_CORE);
+        }
+    }
+
+    // ================================================================== 23 Moonfall
+    /**
+     * The Moon comes down. A great pale moon of ice opens in the sky over the place, a sigil of cold turning on the
+     * ground under it; cracks of light split its face; then it falls, crystals bristling off it and the air ringing
+     * round it, and lands - a white flash, a dome of cold, two waves of spires bursting up round the crater.
+     */
+    private static void moon(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Minecraft mc, L l, double age, double now, boolean tick) {
+        FxPacket p = l.p;
+        double hang = Math.max(1, p.sweep), hit = Math.max(hang + 2, p.speed);
+        double R = p.r;
+        Vec3 ab = p.u.subtract(p.c), dir = ab.normalize();
+        if (age < hit) {
+            Vec3 pos;
+            double fallK = 0;
+            if (age < hang) pos = p.c.add(0, Math.sin(now * 0.08) * 0.15, 0);
+            else { fallK = (age - hang) / (hit - hang); pos = p.c.add(ab.scale(fallK * fallK)); }
+            double grow = FxBase.backOut(Mth.clamp(age / 8, 0, 1));
+            double rr = R * grow;
+            double crack = Mth.clamp((age - hang * 0.35) / (hang * 0.65), 0, 1);
+            // its halo and the shaft of cold light down to the place
+            gglow(m, cam, pos, rr * 2.4, 0.3F, W_SOFT);
+            gglow(m, cam, pos, rr * 1.4, 0.35F, FROZEN);
+            gseg(m, cam, pos, p.u, rr * 0.5, 0.18F * (float) grow, 0.32F * (float) grow, W_SOFT);
+            sphere(vc, m, n, cam, pos, rr, now * 0.01 + p.id, 0.95F);
+            gglow(m, cam, pos, rr * 0.75, 0.35F + 0.4F * (float) crack, W_CORE);   // the light inside it
+            // craters: rings of rime on its face
+            Vec3 toCam = cam.subtract(pos).normalize();
+            for (int i = 0; i < 7; i++) {
+                Vec3 nrm = new Vec3(hs(i, p.id + 400) - 0.5, hs(i, p.id + 401) - 0.5, hs(i, p.id + 402) - 0.5).normalize();
+                if (nrm.dot(toCam) < 0.15) nrm = nrm.add(toCam.scale(0.9)).normalize();
+                double cr = rr * (0.12 + 0.16 * hs(i, p.id + 403));
+                ringOn(m, cam, pos.add(nrm.scale(rr * 1.005)), nrm, cr, 0.05, 0.5F, W_SOFT);
+            }
+            // cracks of light spreading across it
+            if (crack > 0) for (int i = 0; i < 6; i++) {
+                Vec3 nrm0 = toCam.add(new Vec3(hs(i, p.id + 410) - 0.5, hs(i, p.id + 411) - 0.5, hs(i, p.id + 412) - 0.5).scale(0.6)).normalize();
+                Vec3 prev = pos.add(nrm0.scale(rr * 1.01));
+                Vec3 walk = nrm0;
+                int steps = (int) Math.ceil(6 * crack);
+                for (int j = 1; j <= steps; j++) {
+                    walk = walk.add(new Vec3(hs(i * 9 + j, p.id + 413) - 0.5, hs(i * 9 + j, p.id + 414) - 0.5, hs(i * 9 + j, p.id + 415) - 0.5).scale(0.45)).normalize();
+                    Vec3 q = pos.add(walk.scale(rr * 1.01));
+                    float ca = (float) (0.95 - 0.1 * j) * (0.6F + 0.4F * (float) fallK);
+                    gseg(m, cam, prev, q, rr * 0.045, ca, ca, W_CORE);
+                    gseg(m, cam, prev, q, rr * 0.12, ca * 0.4F, ca * 0.4F, FROZEN);
+                    prev = q;
+                }
+            }
+            if (age >= hang) {   // falling: crystals bristle off its back, the air rings behind it, a long trail
+                Vec3[] f = frame(dir);
+                for (int i = 0; i < 10; i++) {
+                    double an = i * TAU / 10 + p.id;
+                    Vec3 o = f[0].scale(Math.cos(an)).add(f[1].scale(Math.sin(an)));
+                    crystal(vc, m, n, cam, pos.add(o.scale(rr * 0.7)).subtract(dir.scale(rr * 0.3)), o.scale(0.7).subtract(dir.scale(0.7)).normalize(), rr * (0.7 + 0.4 * hs(i, p.id + 420)), rr * 0.16, 5, i + p.id, 0.9F, true);
+                }
+                gseg(m, cam, pos.subtract(dir.scale(rr * 9)), pos, rr * 0.9, 0, 0.5F, W_SOFT);
+                gseg(m, cam, pos.subtract(dir.scale(rr * 6)), pos, rr * 0.3, 0, 0.9F, W_CORE);
+                for (int k = 1; k <= 3; k++) {
+                    double back = ((age * 0.9 + k * 1.6) % 5) * rr;
+                    ringOn(m, cam, pos.subtract(dir.scale(back + rr)), dir, rr * (1.1 + back / rr * 0.25), 0.12, (float) (0.6 * (1 - back / (5 * rr))), W_SOFT);
+                }
+                if (tick) shards(pos.subtract(dir.scale(rr)), dir.scale(-0.06), 0.25F, 3, 0.12F, now);
+            }
+            // the sigil on the ground, turning and closing in
+            double sk = Mth.clamp(age / hit, 0, 1);
+            Vec3 g = p.u.add(0, 0.05, 0);
+            double sr = R * 2.4 * (1.15 - 0.3 * sk);
+            gring(m, cam, g, sr, 0.25, 0.55F * (float) sk + 0.15F, FROZEN);
+            gring(m, cam, g, sr * 0.72, 0.12, 0.6F * (float) sk + 0.1F, W_CORE);
+            double spin = now * 0.04;
+            for (int k = 0; k < 12; k++) {
+                double an = spin + k * TAU / 12;
+                Vec3 o = new Vec3(Math.cos(an), 0, Math.sin(an));
+                gseg(m, cam, g.add(o.scale(sr * 0.76)), g.add(o.scale(sr * (k % 3 == 0 ? 0.98 : 0.88))), 0.04, 0.7F * (float) sk + 0.15F, 0.3F, W_CORE);
+            }
+            for (int k = 0; k < 2; k++) {   // a crescent within, turning the other way
+                double an0 = -spin * 1.5 + k * Math.PI;
+                Vec3 prev = null;
+                for (int j = 0; j <= 10; j++) {
+                    double an = an0 + j * Math.PI / 10 * 0.9;
+                    Vec3 q = g.add(Math.cos(an) * sr * 0.45, 0, Math.sin(an) * sr * 0.45);
+                    if (prev != null) gseg(m, cam, prev, q, 0.05, 0.6F * (float) sk, 0.6F * (float) sk, W_SOFT);
+                    prev = q;
+                }
+            }
+            return;
+        }
+        double t = age - hit;
+        if (!l.burst) {   // impact
+            l.burst = true;
+            FxPacket fr = new FxPacket();
+            fr.h = 5; fr.c = p.u; fr.r = (float) R * 3.4F; fr.speed = 10; fr.life = Math.max(40, p.life - (int) hit); fr.id = p.id + 1;
+            LIVE.add(new L(fr, now));
+            for (int wave = 0; wave < 2; wave++) {   // two rings of great spires thrown up round the crater, the outer one a moment later
+                int N = wave == 0 ? 14 : 22;
+                for (int i = 0; i < N; i++) {
+                    double an = i * TAU / N + hs(i + wave * 50, p.id) * 0.3;
+                    double rr = R * (wave == 0 ? 1.3 : 2.6) * (1 + 0.15 * hs(i + 20, p.id));
+                    Vec3 o = new Vec3(Math.cos(an), 0, Math.sin(an));
+                    float len = (float) (R * (wave == 0 ? 1.05 : 0.7) * (1 + 0.5 * hs(i + 40, p.id)));
+                    SPIRES.add(new Spire(p.u.add(o.scale(rr)).subtract(0, 0.3, 0), o.scale(wave == 0 ? 0.6 : 0.8).add(0, 1, 0).normalize(), len, len * 0.22F, now + wave * 5, 34 + hs(i, 7) * 12, 3, seedN++ * 7919));
+                }
+            }
+            spire(p.u.subtract(0, 0.4, 0), UP, (float) R * 2.2F, (float) R * 0.5F, now, 48, 4);
+            shards(p.u.add(0, 0.6, 0), new Vec3(0, 0.3, 0), 0.35F, 60, 0.14F, now);
+            mist(p.u.add(0, 1, 0), Vec3.ZERO, (float) R * 3.4F, now, 40);
+        }
+        float a = (float) Mth.clamp(1 - t / 16.0, 0, 1);
+        gglow(m, cam, p.u.add(0, 1.5, 0), R * (2.5 + t * 0.6), 0.85F * (float) Math.max(0, 1 - t / 6.0), W_CORE);
+        double dome = R * (1 + t * 1.1);
+        for (int lat = 0; lat < 4; lat++) {   // the dome of cold rolling out
+            double phi = lat * (Math.PI / 2) / 4;
+            gring(m, cam, p.u.add(0, 0.06 + Math.sin(phi) * dome * 0.5, 0), Math.cos(phi) * dome, 0.35, a * (lat == 0 ? 0.85F : 0.4F), lat == 0 ? W_CORE : FROZEN);
+        }
+        gring(m, cam, p.u.add(0, 0.07, 0), R * (0.8 + t * 0.7), 0.3, 0.5F * a, W_ICE);
+        for (int i = 0; i < 24; i++) {   // light thrown up out of the crater
+            double an = i * TAU / 24;
+            Vec3 b = p.u.add(Math.cos(an) * R * (0.6 + t * 0.25), t * 0.7, Math.sin(an) * R * (0.6 + t * 0.25));
+            gseg(m, cam, b, b.add(0, 1.6 + hs(i, 99) * 2, 0), 0.06, 0.9F * a, 0, W_CORE);
+        }
+        // a moon-pale glow lingering over the crater
+        float linger = env(t, p.life - hit, 4, 20);
+        gring(m, cam, p.u.add(0, 0.08, 0), R * 2.4, 0.4, 0.3F * linger, FROZEN);
+    }
+
+    /** A ball of clear ice (the moon): flat-shaded facets lit like cut ice. */
+    private static void sphere(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, double r, double turn, float a) {
+        int lon = 16, lat = 10;
+        for (int i = 0; i < lat; i++) {
+            double t0 = -Math.PI / 2 + i * Math.PI / lat, t1 = t0 + Math.PI / lat;
+            for (int j = 0; j < lon; j++) {
+                double p0 = turn + j * TAU / lon, p1 = p0 + TAU / lon;
+                Vec3 v00 = sp(t0, p0), v01 = sp(t0, p1), v10 = sp(t1, p0), v11 = sp(t1, p1);
+                Vec3 nrm = v00.add(v01).add(v10).add(v11).normalize();
+                q(vc, m, n, cam, c.add(v00.scale(r)), c.add(v01.scale(r)), c.add(v11.scale(r)), c.add(v10.scale(r)), nrm, a, 1.15F);
+            }
+        }
+    }
+
+    private static Vec3 sp(double t, double p) { return new Vec3(Math.cos(t) * Math.cos(p), Math.sin(t), Math.cos(t) * Math.sin(p)); }
+
+    /** A glowing ring of radius r round {@code nrm} at c (in any orientation, unlike gring which lies flat). */
+    private static void ringOn(Matrix4f m, Vec3 cam, Vec3 c, Vec3 nrm, double r, double w, float a, float[] col) {
+        if (a <= 0.01F) return;
+        Vec3[] f = frame(nrm);
+        int seg = 24;
+        Vec3 prev = null;
+        for (int i = 0; i <= seg; i++) {
+            double an = i * TAU / seg;
+            Vec3 q = c.add(f[0].scale(Math.cos(an) * r)).add(f[1].scale(Math.sin(an) * r));
+            if (prev != null) gseg(m, cam, prev, q, w, a, a, col);
+            prev = q;
         }
     }
 }

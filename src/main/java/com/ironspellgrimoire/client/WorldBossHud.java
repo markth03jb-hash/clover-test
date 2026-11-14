@@ -27,11 +27,15 @@ public final class WorldBossHud {
     private static boolean on, risen;
     private static double tx, tz;
     private static long until;
+    /** Closed with its own key (TrackerMode.BOSS_KEY); a new world boss opens it again. */
+    static boolean closed;
 
     public static void set(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
+        boolean was = on;
         on = p.life > 0;
         if (!on) return;
+        if (!was) closed = false;   // a new boss: show it again
         tx = p.c.x; tz = p.c.z; risen = p.sweep == 1;
         until = (mc.level == null ? 0 : mc.level.getGameTime()) + (long) p.r;
     }
@@ -44,7 +48,7 @@ public final class WorldBossHud {
     /** Whether its box is on screen now (TrackerMode stacks the rift map under it). */
     public static boolean shown() {
         Minecraft mc = Minecraft.getInstance();
-        if (!here() || TrackerMode.hidden()) return false;
+        if (!here() || TrackerMode.hidden() || closed) return false;
         double dx = tx - mc.player.getX(), dz = tz - mc.player.getZ();
         return !(risen && dx * dx + dz * dz < 40 * 40);
     }
@@ -52,7 +56,7 @@ public final class WorldBossHud {
     @SubscribeEvent
     public static void onGui(RenderGuiEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
-        if (!here() || mc.options.hideGui) return;
+        if (!here() || mc.options.hideGui || closed) return;
         long now = mc.level.getGameTime();
         GuiGraphics g = e.getGuiGraphics();
         Font f = mc.font;
