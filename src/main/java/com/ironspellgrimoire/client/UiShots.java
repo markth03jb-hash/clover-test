@@ -367,12 +367,14 @@ public final class UiShots {
         steps.add(new Step("aby_book_done", () -> mc.setScreen(null), 4, true));
         steps.add(new Step("mec_target", () -> { mc.options.hideGui = true; onServer(p -> { p.setXRot(0); UiShotsServer.element(p, "m:target"); }); }, 3, true));
         steps.add(new Step("mec_rivet_barrage", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "m:rivet_barrage")); }, 12, true));
-        steps.add(new Step("mec_rocket_fist", () -> { onServer(p -> UiShotsServer.element(p, "m:rocket_fist")); }, 12, true));
+        steps.add(new Step("mec_rocket_fist", () -> { onServer(p -> UiShotsServer.element(p, "m:rocket_fist")); }, 5, true));   // in flight
         steps.add(new Step("mec_piston_stomp", () -> { onServer(p -> UiShotsServer.element(p, "m:piston_stomp")); }, 12, true));
         steps.add(new Step("mec_missile_swarm", () -> { onServer(p -> UiShotsServer.element(p, "m:missile_swarm")); }, 12, true));
         steps.add(new Step("mec_rail_cannon", () -> { onServer(p -> UiShotsServer.element(p, "m:rail_cannon")); }, 12, true));
-        steps.add(new Step("mec_pilot", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "m:pilot")); }, 16, true));
-        steps.add(new Step("mec_titan_buster", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "m:titan_buster")); }, 22, true));
+        steps.add(new Step("mec_pilot", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "m:pilot")); }, 30, true));
+        steps.add(new Step("mec_pilot_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 6, true));
+        steps.add(new Step("mec_pilot_punch", () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND), 4, true));
+        steps.add(new Step("mec_titan_buster", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "m:end"); p.setXRot(-15); UiShotsServer.element(p, "m:titan_buster"); }); }, 14, true));   // the fist coming down
         steps.add(new Step("mec_after", () -> { }, 10, true));
         steps.add(new Step("mec_wheel", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "m:end")); GrimoireWheel.forceOpen = true; }, 14, true));
         steps.add(new Step("mec_wheel_done", () -> { GrimoireWheel.forceOpen = false; io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); mc.options.hideGui = true; }, 4, true));

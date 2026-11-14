@@ -35,6 +35,7 @@ import software.bernie.geckolib.util.RenderUtils;
  *                are hidden). It's printed in from the feet up, idles, strides when he walks and punches when he swings.
  *   mech_fist  - the Rocket Fist flying out and back, and the Titan Buster's giant fist dropping out of the sky.
  */
+@net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = net.minecraftforge.api.distmarker.Dist.CLIENT)
 public final class MechModels {
     private MechModels() {}
 
@@ -127,22 +128,50 @@ public final class MechModels {
         return a;
     }
 
-    // ================================================================== the titan, round its pilot (GeoFormLayer)
+    // ================================================================== the titan: the pilot is inside it
     /**
-     * Draw the titan in the player model's space (as GeoFormLayer gives it). {@code started} restarts it (and its
-     * assembly) when the pilot climbs in again; {@code alpha} fades it in and out.
+     * The machine, drawn in the world where its pilot stands (the pilot himself is hidden - he's in the cockpit; see
+     * onRenderPlayer). Turned with his body, striding when he walks, punching when he swings. {@code started}
+     * restarts it (and its assembly) when he climbs in again; {@code scale} shrinks it away when the mode ends.
      */
-    static void drawTitan(PoseStack ps, MultiBufferSource buf, int owner, int mask, double started, String loop, float scale, int light) {
-        Anim a = anim("titan#" + owner, "mech_titan", "assemble", loop, started);
+    static void drawTitan(PoseStack ps, MultiBufferSource buf, Vec3 cam, net.minecraft.world.entity.player.Player p, int mask, double started, String loop, float scale, float pt) {
+        Anim a = anim("titan#" + p.getId(), "mech_titan", "assemble", loop, started);
         a.mask = mask;
         Renderer r = RENDERERS.computeIfAbsent("mech_titan", Renderer::new);
+        double x = net.minecraft.util.Mth.lerp(pt, p.xo, p.getX()), y = net.minecraft.util.Mth.lerp(pt, p.yo, p.getY()), z = net.minecraft.util.Mth.lerp(pt, p.zo, p.getZ());
+        float yaw = net.minecraft.util.Mth.rotLerp(pt, p.yBodyRotO, p.yBodyRot);
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        int light = mc.getEntityRenderDispatcher().getPackedLightCoords(p, pt);
         ps.pushPose();
-        ps.mulPose(Axis.ZP.rotationDegrees(180.0F));   // Blockbench's orientation to the player model's
-        ps.translate(0, -1.5, 0);                        // its origin is the player model's (24 px above the feet)
+        ps.translate(x - cam.x, y - cam.y, z - cam.z);
+        ps.mulPose(Axis.YP.rotationDegrees(180.0F - yaw));   // as GeckoLib turns its entities: the model's front (north) where he faces
         ps.scale(scale, scale, scale);
-        ps.translate(0, 1.5, 0);
+        ps.translate(0, 1.5, 0);                              // the model's feet are 24 px below its origin
         r.render(ps, a, buf, null, null, light);
         ps.popPose();
+    }
+
+    /** The pilot is inside his machine: don't draw him (the machine is drawn in his place by FxRenderer's level pass). */
+    @net.minecraftforge.eventbus.api.SubscribeEvent
+    public static void onRenderPlayer(net.minecraftforge.client.event.RenderPlayerEvent.Pre e) {
+        if (MechFxClient.pilot(e.getEntity().getId()) != null) e.setCanceled(true);
+    }
+
+    /** Every pilot's machine this frame (from FxRenderer, after its own effects). */
+    static void drawPilots(PoseStack ps, MultiBufferSource buf, Vec3 cam, float pt) {
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.level == null) return;
+        double now = mc.level.getGameTime() + pt;
+        for (net.minecraft.world.entity.player.Player p : mc.level.players()) {
+            double[] mech = MechFxClient.pilot(p.getId());
+            if (mech == null || p.isInvisible() || p.isSpectator()) continue;
+            if (p == mc.player && mc.options.getCameraType().isFirstPerson()) continue;   // you're in the cockpit: the HUD frame shows instead
+            float out = (float) net.minecraft.util.Mth.clamp((mech[1] + 8.0 - now) / 8.0, 0.0, 1.0);
+            if (out <= 0) continue;
+            double speed = Math.sqrt((p.getX() - p.xo) * (p.getX() - p.xo) + (p.getZ() - p.zo) * (p.getZ() - p.zo));
+            String loop = p.swinging ? "punch" : speed > 0.04 ? "walk" : "idle";
+            drawTitan(ps, buf, cam, p, (int) mech[2], mech[0], loop, out, pt);
+        }
     }
 
     // ================================================================== fists out in the world (FxRenderer's level pass)
