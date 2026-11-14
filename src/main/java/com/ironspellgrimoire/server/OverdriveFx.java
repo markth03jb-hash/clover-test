@@ -34,7 +34,7 @@ import java.util.UUID;
  * 150 you run Hot - Overdrive spells hit harder and you move quicker; above 200 you hit the Redline - harder and
  * quicker still, but your heart strains (a little damage every two seconds), and if you sit at the very top too
  * long it gives out: you Collapse, slowed and weak, back down at 90.
- * Its weapon is the Heartline, a long nodachi with a white-wrapped grip and a trailing ribbon, drawn out of your
+ * Its weapon is the Heartline, a black katana with a crimson heartbeat down the blade, drawn out of your
  * chest by the first page; every other page needs it in your hand.
  * Drawn by client/OverdriveFxClient (FxPacket shape 96).
  *

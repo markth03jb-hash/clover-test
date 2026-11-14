@@ -1,10 +1,11 @@
 """The Overdrive Grimoire (an original grimoire) and its sword, the Heartline: spell icons, the cover, leather, trim,
 inventory icon, models, the curios tag, the sword's 3D model and texture, and the text. Original designs:
   Overdrive - black leather, bone-white metal, a crimson heart with a heartbeat trace running through it
-  Heartline - a long, gently curved nodachi: dark spine, bright edge with a wavy temper line, a dark round guard,
-              a long grip wrapped in white cloth with black diamonds showing through, and a white ribbon tied at the
-              pommel. (The model is made at half size and drawn twice as big - item models can't be longer than
-              48 units - with the grip at the model's centre so it sits in the hand.)
+  Heartline - a black katana, inspired by an anime swordsman's black blade but with its own details: jet-black steel
+              with a thin bright edge and a crimson heartbeat trace down the flat, a black guard ringed in red, a
+              charcoal grip wrap with crimson diamonds, a red tassel at the pommel. (The model is made at half size and
+              drawn bigger - item models can't be longer than 48 units - with the grip at the model's centre so it sits
+              in the hand; the hotbar shows a flat drawn icon.)
 python3 tools/overdrive_assets.py"""
 import json, os, sys, math
 from PIL import Image, ImageDraw
@@ -85,30 +86,37 @@ json.dump(c, open(CT, 'w'), indent=2)
 
 # ------------------------------------------------------------------ the Heartline: texture (32x32 = uv 0-16, 2 px per unit) and model
 T = Image.new('RGBA', (32, 32), (0, 0, 0, 0)); td = ImageDraw.Draw(T)
-for y in range(32):   # the flat of the blade (uv 0-4): spine dark, a ridge line, steel, a wavy temper line, the bright edge
-    wave = int(round(math.sin(y * 0.9) * 0.6))
+# The Heartline: a black katana (inspired by an anime swordsman's black blade - the details are its own): a jet-black
+# blade with a gunmetal sheen and a thin bright edge, and instead of a temper line a crimson heartbeat trace running
+# its length; a charcoal grip wrap with crimson diamonds showing through, a black guard ringed in red, a red tassel.
+for y in range(32):   # the flat of the blade (uv 0-4)
     for x in range(8):
-        if x < 2: col = (40, 42, 48)
-        elif x == 2: col = (150, 156, 166)
-        elif x < 6 + wave: col = (176, 182, 192) if (x + y) % 5 else (188, 194, 204)
-        elif x == 6 + wave: col = (246, 248, 252)
-        else: col = (226, 232, 240)
+        if x < 2: col = (14, 14, 18)                                    # the spine
+        elif x < 6: col = (30, 31, 38) if (x + y) % 6 else (46, 48, 58)  # black steel with a sheen
+        elif x == 6: col = (120, 126, 140)                               # the edge's bevel
+        else: col = (214, 220, 232)                                      # the bright edge
         T.putpixel((x, y), col + (255,))
+    T.putpixel((4, y), (200, 22, 38, 255))                              # the crimson heartbeat: a fine line...
+    if y % 16 == 6:                                                     # ...and a beat, spiking across the flat
+        for x in range(2, 6): T.putpixel((x, y), (240, 40, 56, 255))
+    if y % 16 in (5, 7): T.putpixel((3, y), (220, 24, 40, 255))
 for y in range(32):   # the blade's back and edge strips (uv 4-5)
-    T.putpixel((8, y), (60, 62, 70, 255)); T.putpixel((9, y), (232, 236, 244, 255))
-for y in range(32):   # the grip (uv 6-10): white cloth wrapped in diamonds, black showing through
+    T.putpixel((8, y), (12, 12, 16, 255)); T.putpixel((9, y), (214, 220, 232, 255))
+for y in range(32):   # the grip (uv 6-10): charcoal cloth wrap, crimson diamonds showing through
     for x in range(12, 20):
         u, v = x - 12, y % 8
         dia = abs(u - 4) + abs(v - 4) <= 2
-        col = (22, 20, 22) if dia else ((236, 232, 220) if (u + y) % 7 else (214, 208, 196))
+        col = (150, 16, 30) if dia else ((34, 32, 36) if (u + y) % 7 else (48, 46, 52))
+        if dia and abs(u - 4) + abs(v - 4) == 2: col = (96, 8, 18)
         T.putpixel((x, y), col + (255,))
-for y in range(8):   # dark metal (uv 11-13, 0-4): the guard and the pommel cap
+for y in range(8):   # the guard and the pommel cap (uv 11-13, 0-4): black iron, ringed in red at the edge
     for x in range(22, 26):
-        T.putpixel((x, y), ((52, 46, 44) if (x + y) % 3 else (80, 70, 62)) + (255,))
-for y in range(32):   # the ribbon (uv 14-16): white cloth with soft folds
+        edge = y in (0, 7) or x in (22, 25)
+        T.putpixel((x, y), ((140, 18, 30) if edge else ((18, 18, 22) if (x + y) % 3 else (32, 32, 38))) + (255,))
+for y in range(32):   # the tassel (uv 14-16): red cord with soft folds
     for x in range(28, 32):
-        f = 230 - (18 if (y // 3) % 2 else 0) - (6 if x == 31 else 0)
-        T.putpixel((x, y), (f, f - 4, f - 12, 255))
+        f = 190 - (30 if (y // 3) % 2 else 0) - (14 if x == 31 else 0)
+        T.putpixel((x, y), (f, int(f * 0.1), int(f * 0.16), 255))
 T.save(os.path.join(TEX, 'heartline.png'))
 
 def face(u0, v0, u1, v1, rot=0):
@@ -127,19 +135,20 @@ BLADE = lambda: {"east": face(0, 0, 4, 16), "west": face(4, 0, 0, 16), "north": 
 GRIP = lambda: {d: face(6, 0, 10, 16) for d in ("north", "south", "east", "west")} | {"up": face(11, 0, 13, 2), "down": face(11, 0, 13, 2)}
 METAL = lambda: {d: face(11, 0, 13, 4) for d in ("north", "south", "east", "west", "up", "down")}
 CLOTH = lambda: {d: face(14, 0, 16, 16) for d in ("north", "south", "east", "west", "up", "down")}
-els = [
-    el([7.4, 4.25, 7.4], [8.6, 4.8, 8.6], METAL(), name="pommel"),
-    el([7.5, 4.75, 7.5], [8.5, 11.25, 8.5], GRIP(), name="grip"),                                  # the grip's centre is the model's centre
-    el([6.6, 11.25, 6.6], [9.4, 11.75, 9.4], METAL(), name="guard"),
-    el([7.7, 11.75, 7.25], [8.3, 12.6, 8.75], METAL(), name="collar"),
+els = [   # katana proportions: a two-hand grip, a round-ish guard, a blade about three times the grip
+    el([7.45, 5.25, 7.45], [8.55, 5.75, 8.55], METAL(), name="pommel"),
+    el([7.5, 5.75, 7.5], [8.5, 10.25, 8.5], GRIP(), name="grip"),                                  # the grip's centre is the model's centre
+    el([6.7, 10.25, 6.5], [9.3, 10.7, 9.5], METAL(), name="guard"),
+    el([7.25, 10.25, 6.7], [8.75, 10.7, 9.3], METAL(), name="guard_b"),                             # rounding the guard's corners off
+    el([7.7, 10.7, 7.3], [8.3, 11.4, 8.7], METAL(), name="collar"),
 ]
-segs = [(11.75, 16.5, 0.0), (16.5, 21.0, 0.25), (21.0, 25.25, 0.6), (25.25, 28.6, 1.05)]   # the blade, curving back a little toward the tip
+segs = [(10.7, 15.0, 0.0), (15.0, 19.0, 0.15), (19.0, 22.5, 0.4), (22.5, 25.0, 0.75)]   # the blade, a gentle curve back
 for i, (y0, y1, dz) in enumerate(segs):
-    w = 1.35 - 0.12 * i
-    els.append(el([7.85, y0, 7.3 + dz], [8.15, y1, 7.3 + dz + w], BLADE(), name=f"blade{i}"))
-els.append(el([7.85, 28.6, 7.3 + 1.5], [8.15, 29.6, 7.3 + 1.5 + 0.7], BLADE(), rot={"angle": 22.5, "axis": "x", "origin": [8, 28.6, 8.8]}, name="tip"))
-els.append(el([7.95, 0.5, 8.3], [8.05, 4.4, 9.1], CLOTH(), rot={"angle": 22.5, "axis": "x", "origin": [8, 4.4, 8.6]}, name="ribbon_a"))   # the ribbon tied at the pommel
-els.append(el([7.95, -3.2, 8.9], [8.05, 0.7, 9.6], CLOTH(), rot={"angle": -22.5, "axis": "x", "origin": [8, 0.7, 9.2]}, name="ribbon_b"))
+    w = 1.25 - 0.08 * i
+    els.append(el([7.85, y0, 7.35 + dz], [8.15, y1, 7.35 + dz + w], BLADE(), name=f"blade{i}"))
+els.append(el([7.85, 25.0, 7.35 + 1.05], [8.15, 26.1, 7.35 + 1.05 + 0.75], BLADE(), rot={"angle": 22.5, "axis": "x", "origin": [8, 25.0, 8.6]}, name="tip"))
+els.append(el([7.95, 2.6, 8.2], [8.05, 5.3, 8.8], CLOTH(), rot={"angle": 22.5, "axis": "x", "origin": [8, 5.3, 8.5]}, name="tassel_a"))   # the tassel at the pommel
+els.append(el([7.95, 0.4, 8.6], [8.05, 2.8, 9.1], CLOTH(), rot={"angle": -22.5, "axis": "x", "origin": [8, 2.8, 8.85]}, name="tassel_b"))
 model = {
     "credit": "Iron Spell Grimoire - the Heartline (tools/overdrive_assets.py)",
     "textures": {"0": "iron_spell_grimoire:item/heartline", "particle": "iron_spell_grimoire:item/heartline"},
@@ -161,26 +170,26 @@ json.dump({"parent": "minecraft:item/handheld", "loader": "forge:separate_transf
            "perspectives": {k: {"parent": "minecraft:item/generated", "textures": {"layer0": "iron_spell_grimoire:item/heartline_icon"}} for k in ("gui", "fixed", "ground")}},
           open(os.path.join(MD, 'heartline.json'), 'w'), indent=1)
 ic = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); px = ic.load()
-ICON = [   # k spine/outline, e edge, s shine, g guard, w white wrap, d black diamond, r ribbon
-    "..............ks",
-    ".............kse",
-    "............kse.",
-    "...........kse..",
-    "..........kse...",
-    ".........kse....",
-    "........kse.....",
-    ".......kse......",
-    "......kse.......",
-    "....g.ke........",
-    "....ggg.........",
-    "...kwdgg........",
-    "..kwdwk.........",
-    ".kwdwk..........",
-    "rkdwk...........",
-    ".rr.............",
+ICON = [   # k black blade, e edge, h crimson trace, g guard, r red ring, w charcoal wrap, d crimson diamond, t tassel
+    "................",
+    "..............ke",
+    ".............kke",
+    "............khe.",
+    "...........kke..",
+    "..........kke...",
+    ".........khe....",
+    "........kke.....",
+    ".......kke......",
+    "......rgr.......",
+    ".....rgggr......",
+    "....wdrgr.......",
+    "...wdw.r........",
+    "..wdw...........",
+    ".kdw............",
+    "t.t.............",
 ]
-PAL = {'k': (14, 14, 18, 255), 'e': (176, 184, 196, 255), 's': (240, 244, 250, 255), 'g': (64, 58, 56, 255),
-       'w': (236, 232, 222, 255), 'd': (24, 22, 24, 255), 'r': (250, 250, 250, 255)}
+PAL = {'k': (20, 20, 26, 255), 'e': (200, 208, 222, 255), 'h': (220, 24, 40, 255), 'g': (24, 24, 30, 255), 'r': (150, 18, 30, 255),
+       'w': (40, 38, 44, 255), 'd': (160, 18, 32, 255), 't': (190, 20, 34, 255)}
 for y, row in enumerate(ICON):
     for x, ch in enumerate(row):
         if ch in PAL: px[x, y] = PAL[ch]
@@ -198,8 +207,8 @@ lang['tooltip.iron_spell_grimoire.overdrive_grimoire.passive'] = ('Passive - Hea
 lang['tooltip.iron_spell_grimoire.overdrive_grimoire.desc'] = 'Ten pages for a swordsman with almost no magic and nothing but his technique - and one minute when he holds nothing back.'
 lang['tooltip.iron_spell_grimoire.overdrive_grimoire.lore'] = 'You can feel it beating through the cover.'
 lang['item.iron_spell_grimoire.heartline'] = 'Heartline'
-lang['tooltip.iron_spell_grimoire.heartline.1'] = 'Drawn out of your own chest. The Overdrive Grimoire\'s sword pages need it in your hand.'
-lang['tooltip.iron_spell_grimoire.heartline.2'] = 'The ribbon moves when your heart does.'
+lang['tooltip.iron_spell_grimoire.heartline.1'] = 'A black katana drawn out of your own chest, a crimson heartbeat running down the blade. The Overdrive Grimoire\'s sword pages need it in your hand.'
+lang['tooltip.iron_spell_grimoire.heartline.2'] = 'The trace on the blade beats when your heart does.'
 lang['key.iron_spell_grimoire.world_boss'] = lang.get('key.iron_spell_grimoire.world_boss', 'Close / open the world boss tracker')
 for k, (title, guide) in {
  'draw_heartline': ('Draw the Heartline', 'The Heartline is drawn out of your chest on a ribbon of red light, into your hand (what you held is put away). It fades if it leaves your hand.'),

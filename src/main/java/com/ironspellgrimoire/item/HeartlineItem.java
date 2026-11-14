@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * The Heartline: the Overdrive Grimoire's nodachi - a long curved blade, a white-wrapped grip and a trailing ribbon -
+ * The Heartline: the Overdrive Grimoire's black katana - a crimson heartbeat down the blade, a charcoal-and-crimson grip -
  * drawn out of your chest by Draw the Heartline. Every other Overdrive page needs it in your main hand.
  * Damage 1 + 4 (netherite) + 6 = 11, speed 4.0 - 2.6 = 1.4: long and heavy, but quicker than a greatsword.
  * Summoned, not made: it fades the moment it leaves your hand.
