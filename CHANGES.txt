@@ -1,6 +1,10 @@
-Iron Spell Grimoire v1.99.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.99.1 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.99.1
+- Scarlet Moon no longer sheds Devil Union's black-and-red sprites: its white glow now sheds white ones (the gold,
+  blood and black-slime outlines had the same fallback and get their own colours too).
 
 NEW IN 1.99.0
 - Treasure: Blade Wall is now a line of golden ripples with weapons half out of them, points forward; missiles break on

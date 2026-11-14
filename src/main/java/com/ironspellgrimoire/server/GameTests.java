@@ -86,6 +86,9 @@ public final class GameTests {
     private static void pass(String test, String what) { results.add("PASS | " + test + " | " + what); }
     private static void fail(String test, String what) { results.add("FAIL | " + test + " | " + what); }
     private static void warn(String test, String what) { results.add("WARN | " + test + " | " + what); }
+    /** A line of detail from inside a spell while the tests run (to explain a failure). */
+    static void note(String what) { if (p != null) results.add("NOTE | " + what); }
+    static boolean running() { return p != null; }
     private static void info(String test, String what) { results.add("INFO | " + test + " | " + what); }
 
     // ------------------------------------------------------------------ helpers
@@ -139,7 +142,7 @@ public final class GameTests {
     }
 
     private static void ensureDummy() {
-        if (dummy != null && dummy.isAlive()) { dummy.setHealth(dummy.getMaxHealth()); dummy.teleportTo(home.x, home.y, home.z + 6); return; }
+        if (dummy != null && dummy.isAlive()) { dummy.setHealth(dummy.getMaxHealth()); dummy.teleportTo(home.x, home.y, home.z + 6); dummy.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); dummy.hurtMarked = true; return; }   // still, too: a knock-back from the last move mustn't carry it out of the next one
         ServerLevel sl = sl();
         dummy = EntityType.HUSK.create(sl);
         if (dummy == null) return;
@@ -365,7 +368,7 @@ public final class GameTests {
             }
             if ((t - 1) % 50 == 49 && i < names.length) {
                 float dealt = hp - (dummy == null ? hp : dummy.getHealth());
-                if (!quiet.contains(names[i]) && dealt <= 0) bad.add(names[i] + " did no damage to the dummy");
+                if (!quiet.contains(names[i]) && dealt <= 0) bad.add(names[i] + " did no damage to the dummy" + (dummy == null ? " (no dummy)" : String.format(" (dummy at %.1f %.1f %.1f, alive %s, hp %.0f, invuln %d; player yaw %.0f pitch %.0f at %.1f %.1f %.1f)", dummy.getX() - home.x, dummy.getY() - home.y, dummy.getZ() - home.z, dummy.isAlive(), dummy.getHealth(), dummy.invulnerableTime, p.getYRot(), p.getXRot(), p.getX() - home.x, p.getY() - home.y, p.getZ() - home.z)));
                 done.add(names[i] + String.format(" %.0f", dealt));
             }
             if (t < names.length * 50 + 10) return false;
