@@ -4,7 +4,7 @@ inventory icon, models, the curios tag, the sword's 3D model and texture, and th
   Heartline - a black katana, inspired by an anime swordsman's black blade but with its own details: jet-black steel
               with a thin bright edge and a crimson heartbeat trace down the flat, an oval guard and a brass collar, a
               long grip of black cord over white diamonds, a red tassel at the pommel - a classic katana build. (The model is made at half size and
-              drawn bigger - item models can't be longer than 48 units - with the grip at the model's centre so it sits
+              drawn to scale - with the grip at the model's centre so it sits
               in the hand; the hotbar shows a flat drawn icon.)
 python3 tools/overdrive_assets.py"""
 import json, os, sys, math
@@ -149,12 +149,27 @@ els = [   # katana proportions: a long two-hand grip, an oval guard, a brass col
     el([7.25, 11.0, 5.95], [8.75, 11.4, 10.05], METAL(), name="guard_ends"),                         # its rounded ends
     el([7.75, 11.4, 7.3], [8.25, 12.2, 8.75], BRASS(), name="collar"),
 ]
-segs = [(12.2, 16.5, 0.0), (16.5, 20.5, 0.12), (20.5, 24.0, 0.35), (24.0, 26.4, 0.68)]   # the blade, a gentle curve back
-for i, (y0, y1, dz) in enumerate(segs):
-    w = 1.3 - 0.06 * i
-    els.append(el([7.85, y0, 7.35 + dz], [8.15, y1, 7.35 + dz + w], BLADE(), name=f"blade{i}"))
-# the point: cut at an angle from the edge up to the spine, as a katana's is
-els.append(el([7.85, 26.4, 7.35 + 1.0], [8.15, 27.6, 7.35 + 1.0 + 0.9], BLADE(), rot={"angle": 45, "axis": "x", "origin": [8, 26.4, 8.35]}, name="tip"))
+# the blade: many thin sections following one smooth curve (item models only turn in 22.5-degree steps, so the curve is
+# built from small offsets instead), with the texture running on continuously from the collar to the point. The spine
+# curves back gently (more toward the tip); near the end the edge sweeps up to meet the spine in a sharp point (kissaki).
+B0, B1, P0 = 12.2, 27.2, 24.6            # blade start, the very tip, where the point begins
+def spine_z(y): t = (y - B0) / (B1 - B0); return 8.65 + 0.95 * t * t
+def width(y):
+    t = (y - B0) / (B1 - B0)
+    w = 1.3 - 0.2 * t
+    if y > P0: w *= max(0.0, 1 - ((y - P0) / (B1 - P0)) ** 1.35)   # the point: narrowing smoothly to nothing
+    return w
+def vv(y): return round(16 * (y - B0) / (B1 - B0), 3)
+cuts = [B0 + (P0 - B0) * i / 26 for i in range(26)] + [P0 + (B1 - P0) * i / 12 for i in range(13)]
+for i, (y0, y1) in enumerate(zip(cuts, cuts[1:])):
+    ym = (y0 + y1) / 2
+    w = width(ym)
+    if w < 0.03: continue
+    sz = spine_z(ym)
+    th = 0.3 if y0 < P0 else max(0.12, 0.3 * (w / width(P0)) ** 0.5)   # thinning toward the point too
+    faces = {"east": face(0, vv(y0), 4, vv(y1)), "west": face(4, vv(y0), 0, vv(y1)), "north": face(4, vv(y0), 5, vv(y1)),
+             "south": face(4, vv(y0), 5, vv(y1)), "up": face(4, 0, 5, 1), "down": face(4, 0, 5, 1)}
+    els.append(el([round(8 - th / 2, 4), round(y0, 4), round(sz - w, 4)], [round(8 + th / 2, 4), round(y1, 4), round(sz, 4)], faces, name=f"blade{i}"))
 els.append(el([7.95, 2.6, 8.2], [8.05, 4.9, 8.75], CLOTH(), rot={"angle": 22.5, "axis": "x", "origin": [8, 4.9, 8.5]}, name="tassel_a"))   # the tassel at the pommel
 els.append(el([7.95, 0.6, 8.6], [8.05, 2.8, 9.05], CLOTH(), rot={"angle": -22.5, "axis": "x", "origin": [8, 2.8, 8.85]}, name="tassel_b"))
 model = {
@@ -162,11 +177,12 @@ model = {
     "textures": {"0": "iron_spell_grimoire:item/heartline", "particle": "iron_spell_grimoire:item/heartline"},
     "elements": els,
     "display": {
-        # the grip sits at the model's centre, so it lands in the hand; the blade raised forward-up like a drawn sword
-        "thirdperson_righthand": {"rotation": [0, -90, -40], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
-        "thirdperson_lefthand": {"rotation": [0, 90, 40], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
-        "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 1.2, 1.13], "scale": [0.95, 0.95, 0.95]},
-        "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 1.2, 1.13], "scale": [0.95, 0.95, 0.95]},
+        # the grip sits at the model's centre, so it lands in the hand; held in a ready stance - blade raised forward-up,
+        # the edge facing the foe (forward-down) and the spine toward you
+        "thirdperson_righthand": {"rotation": [40, 0, 0], "translation": [0, 1.0, 0.5], "scale": [0.95, 0.95, 0.95]},
+        "thirdperson_lefthand": {"rotation": [40, 0, 0], "translation": [0, 1.0, 0.5], "scale": [0.95, 0.95, 0.95]},
+        "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 1.6, 1.13], "scale": [0.72, 0.72, 0.72]},
+        "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 1.6, 1.13], "scale": [0.72, 0.72, 0.72]},
         "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.8, 0.8, 0.8]},
         "head": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
     },

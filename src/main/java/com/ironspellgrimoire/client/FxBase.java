@@ -69,7 +69,21 @@ abstract class FxBase {
       {0.55F, 0.5F, 0.55F},    // 28 cotton
       {0.02F, 0.13F, 0.22F},   // 29 Julius's time: deep clockwork blue
       {0.26F, 0.15F, 0.07F},   // 30 bark (the World Tree's wood)
-      {0.012F, 0.012F, 0.016F} // 31 black slime (Rien's Caduceus): glossy ink-black
+      {0.012F, 0.012F, 0.016F}, // 31 black slime (Rien's Caduceus): glossy ink-black
+      {0.084F, 0.076F, 0.200F},  // 32 gravity: deep indigo
+      {0.080F, 0.200F, 0.160F},  // 33 sound: mint
+      {0.110F, 0.120F, 0.150F},  // 34 ink: blue-grey wash
+      {0.200F, 0.040F, 0.150F},  // 35 error: glitch magenta
+      {0.200F, 0.160F, 0.050F},  // 36 treasure: rich gold
+      {0.150F, 0.144F, 0.190F},  // 37 chain: iron lilac
+      {0.180F, 0.020F, 0.030F},  // 38 hunter: blood moon
+      {0.170F, 0.170F, 0.184F},  // 39 void: pale ash
+      {0.040F, 0.200F, 0.090F},  // 40 gambler: emerald
+      {0.150F, 0.100F, 0.200F},  // 41 tarot: amethyst
+      {0.030F, 0.180F, 0.200F},  // 42 abyss: bioluminescent cyan
+      {0.200F, 0.130F, 0.030F},  // 43 mech: amber
+      {0.110F, 0.160F, 0.200F},  // 44 weather: sky blue
+      {0.200F, 0.030F, 0.050F}   // 45 overdrive: heart red
    };
    static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
@@ -97,7 +111,21 @@ abstract class FxBase {
       {1.0F, 0.97F, 0.99F},    // 28 cotton: clean white
       {0.3F, 0.86F, 1.0F},     // 29 Julius: cyan
       {0.66F, 0.44F, 0.22F},   // 30 bark: warm brown
-      {0.62F, 0.62F, 0.68F}    // 31 black slime: a cold grey-white sheen on the black
+      {0.62F, 0.62F, 0.68F},   // 31 black slime: a cold grey-white sheen on the black
+      {0.42F, 0.38F, 1.00F},  // 32 gravity: deep indigo
+      {0.40F, 1.00F, 0.80F},  // 33 sound: mint
+      {0.55F, 0.60F, 0.75F},  // 34 ink: blue-grey wash
+      {1.00F, 0.20F, 0.75F},  // 35 error: glitch magenta
+      {1.00F, 0.80F, 0.25F},  // 36 treasure: rich gold
+      {0.75F, 0.72F, 0.95F},  // 37 chain: iron lilac
+      {0.90F, 0.10F, 0.15F},  // 38 hunter: blood moon
+      {0.85F, 0.85F, 0.92F},  // 39 void: pale ash
+      {0.20F, 1.00F, 0.45F},  // 40 gambler: emerald
+      {0.75F, 0.50F, 1.00F},  // 41 tarot: amethyst
+      {0.15F, 0.90F, 1.00F},  // 42 abyss: bioluminescent cyan
+      {1.00F, 0.65F, 0.15F},  // 43 mech: amber
+      {0.55F, 0.80F, 1.00F},  // 44 weather: sky blue
+      {1.00F, 0.15F, 0.25F}   // 45 overdrive: heart red
    };
    /** Overall strength of every world effect. Lower = subtler. */
    static final float FX_ALPHA = 1.0F;

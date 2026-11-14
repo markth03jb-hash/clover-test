@@ -1,6 +1,19 @@
-Iron Spell Grimoire v1.101.1 - all changed files since v1.0.0
+Iron Spell Grimoire v1.102.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.102.0
+- Every grimoire now has its own aura round the open book while you cast - no more borrowed ones (the newer books all
+  wore the Light Grimoire's golden halo, and several older ones shared steel shards or wind). Mercury beads on a
+  quicksilver ring, flames licking up for Fire, crackling arcs for Lightning, a crimson crown for Hellfire, a spine
+  and ribs for Bone, weaving threads and a needle, an oval gate for Space, ripples and bubbles for Water, turning
+  mirror panes, a flaming mane for the Lion, flashing cuts for Slash, orbiting rocks for Earth, a ticking clock for
+  Time, a dripping blood ring, streaks pulled in for Gravity, sound waves, a brush-drawn ink circle, glitch blocks for
+  Error, golden ripples with blade points for Treasure, a loop of chain, a blood moon and claw marks for the Hunter,
+  a black hole for the Void, cards and dice for the Gambler, three fanned tarot cards, glowing jellyfish for the
+  Abyss, a gear and targeting brackets for the Mech, a raincloud for Weather and a heart-monitor trace for Overdrive.
+- The Heartline is katana-sized now (it was as long as you are tall), held in a proper ready stance with the edge
+  toward the foe, with a smooth curve and a sharp point.
 
 NEW IN 1.101.1
 - The Heartline is now a black katana: jet-black blade with a thin bright edge and a crimson heartbeat running down the

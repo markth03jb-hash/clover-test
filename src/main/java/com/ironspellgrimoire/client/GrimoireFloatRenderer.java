@@ -103,31 +103,45 @@ public class GrimoireFloatRenderer {
       return "iron_spell_grimoire".equals(BuiltInRegistries.ITEM.getKey(s.getItem()).getNamespace());
    }
 
-   /** {palette, aura style} per grimoire - see FxRenderer.bookAura. */
+   /** {palette, aura style} per grimoire - see FxBooks.bookAura and FxBookAuras. Every grimoire has its own style. */
    private static int[] aura(Item item) {
-      if (item == AddonItemRegistry.BLACK_GRIMOIRE.get()) return new int[]{0, 0};
-      if (item == AddonItemRegistry.DARK_GRIMOIRE.get()) return new int[]{1, 1};
-      if (item == AddonItemRegistry.STEEL_GRIMOIRE.get()) return new int[]{7, 2};
-      if (item == AddonItemRegistry.WIND_GRIMOIRE.get()) return new int[]{5, 3};
-      if (item == AddonItemRegistry.MERCURY_GRIMOIRE.get()) return new int[]{11, 2};
-      if (item == AddonItemRegistry.FIRE_GRIMOIRE.get()) return new int[]{2, 4};
-      if (item == AddonItemRegistry.LIGHTNING_GRIMOIRE.get()) return new int[]{4, 4};
-      if (item == AddonItemRegistry.HELLFIRE_GRIMOIRE.get()) return new int[]{14, 0};   // crimson hellfire, like her flames
-      if (item == AddonItemRegistry.BONE_GRIMOIRE.get()) return new int[]{15, 2};
-      if (item == AddonItemRegistry.THREAD_GRIMOIRE.get()) return new int[]{16, 3};
-      if (item == AddonItemRegistry.SPACE_GRIMOIRE.get()) return new int[]{17, 3};
-      if (item == AddonItemRegistry.WATER_GRIMOIRE.get()) return new int[]{19, 3};
-      if (item == AddonItemRegistry.MIRROR_GRIMOIRE.get()) return new int[]{20, 2};
-      if (item == AddonItemRegistry.RIFT_GRIMOIRE.get()) return new int[]{21, 4};
-      if (item == AddonItemRegistry.FLAME_SPIRIT_GRIMOIRE.get()) return new int[]{22, 4};
-      if (item == AddonItemRegistry.LION_FLAME_GRIMOIRE.get()) return new int[]{23, 0};
-      if (item == AddonItemRegistry.SLASH_GRIMOIRE.get()) return new int[]{25, 2};
-      if (item == AddonItemRegistry.EARTH_GRIMOIRE.get()) return new int[]{26, 2};
-      if (item == AddonItemRegistry.TIME_GRIMOIRE.get()) return new int[]{29, 3};
-      if (item == AddonItemRegistry.LIGHT_GRIMOIRE.get()) return new int[]{8, 4};
-      if (item == AddonItemRegistry.BLOOD_GRIMOIRE.get()) return new int[]{0, 2};
       String id = BuiltInRegistries.ITEM.getKey(item).getPath();
       return switch (id) {
+         case "black_grimoire" -> new int[]{0, 0};          // black flame
+         case "dark_grimoire" -> new int[]{1, 1};           // dark crescents
+         case "steel_grimoire" -> new int[]{7, 2};          // steel shards
+         case "wind_grimoire" -> new int[]{5, 3};           // wind and leaves
+         case "light_grimoire" -> new int[]{8, 4};          // golden halo, rising motes
+         case "rift_grimoire" -> new int[]{21, 5};          // turning rune circles
+         case "flame_spirit_grimoire" -> new int[]{22, 6};  // spirit wisps
+         case "mercury_grimoire" -> new int[]{11, 7};
+         case "fire_grimoire" -> new int[]{2, 8};
+         case "lightning_grimoire" -> new int[]{4, 9};
+         case "hellfire_grimoire" -> new int[]{14, 10};
+         case "bone_grimoire" -> new int[]{15, 11};
+         case "string_grimoire" -> new int[]{16, 12};
+         case "spatial_grimoire" -> new int[]{17, 13};
+         case "water_grimoire" -> new int[]{19, 14};
+         case "mirror_grimoire" -> new int[]{20, 15};
+         case "lions_flame_grimoire" -> new int[]{23, 16};
+         case "slash_grimoire" -> new int[]{25, 17};
+         case "earth_grimoire" -> new int[]{26, 18};
+         case "time_grimoire" -> new int[]{29, 19};
+         case "blood_grimoire" -> new int[]{18, 20};
+         case "gravity_grimoire" -> new int[]{32, 21};
+         case "sound_grimoire" -> new int[]{33, 22};
+         case "ink_grimoire" -> new int[]{34, 23};
+         case "error_grimoire" -> new int[]{35, 24};
+         case "treasure_grimoire" -> new int[]{36, 25};
+         case "chain_grimoire" -> new int[]{37, 26};
+         case "hunter_grimoire" -> new int[]{38, 27};
+         case "void_grimoire" -> new int[]{39, 28};
+         case "gambler_grimoire" -> new int[]{40, 29};
+         case "tarot_grimoire" -> new int[]{41, 30};
+         case "abyss_grimoire" -> new int[]{42, 31};
+         case "mech_grimoire" -> new int[]{43, 32};
+         case "weather_grimoire" -> new int[]{44, 33};
+         case "overdrive_grimoire" -> new int[]{45, 34};
          default -> new int[]{8, 4};
       };
    }
