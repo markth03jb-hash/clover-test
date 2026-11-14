@@ -139,7 +139,7 @@ public final class GameTests {
     }
 
     private static void ensureDummy() {
-        if (dummy != null && dummy.isAlive()) { dummy.setHealth(dummy.getMaxHealth()); dummy.teleportTo(home.x, home.y, home.z + 6); return; }
+        if (dummy != null && dummy.isAlive()) { dummy.setHealth(dummy.getMaxHealth()); dummy.teleportTo(home.x, home.y, home.z + 6); dummy.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); dummy.hurtMarked = true; return; }   // still, too: a knock-back from the last move mustn't carry it out of the next one
         ServerLevel sl = sl();
         dummy = EntityType.HUSK.create(sl);
         if (dummy == null) return;
