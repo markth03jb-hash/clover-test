@@ -145,17 +145,46 @@ model = {
     "textures": {"0": "iron_spell_grimoire:item/heartline", "particle": "iron_spell_grimoire:item/heartline"},
     "elements": els,
     "display": {
-        "thirdperson_righthand": {"rotation": [0, -90, 10], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
-        "thirdperson_lefthand": {"rotation": [0, 90, -10], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
-        "firstperson_righthand": {"rotation": [0, -90, -20], "translation": [1.13, 3.2, 1.13], "scale": [1.36, 1.36, 1.36]},
-        "firstperson_lefthand": {"rotation": [0, 90, 20], "translation": [1.13, 3.2, 1.13], "scale": [1.36, 1.36, 1.36]},
-        "gui": {"rotation": [0, 90, -45], "translation": [-4.6, -4.6, 0], "scale": [0.75, 0.75, 0.75]},
+        # the grip sits at the model's centre, so it lands in the hand; the blade raised forward-up like a drawn sword
+        "thirdperson_righthand": {"rotation": [0, -90, 45], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
+        "thirdperson_lefthand": {"rotation": [0, 90, -45], "translation": [0, 1.5, 0.5], "scale": [1.7, 1.7, 1.7]},
+        "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 1.2, 1.13], "scale": [0.95, 0.95, 0.95]},
+        "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 1.2, 1.13], "scale": [0.95, 0.95, 0.95]},
         "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.8, 0.8, 0.8]},
-        "fixed": {"rotation": [0, 90, -45], "translation": [-4.6, -4.6, 0], "scale": [0.9, 0.9, 0.9]},
         "head": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
     },
 }
-json.dump(model, open(os.path.join(MD, 'heartline.json'), 'w'), indent=2)
+json.dump(model, open(os.path.join(MD, 'heartline_3d.json'), 'w'), indent=2)
+# in the hotbar, item frames and on the ground: a flat drawn icon (the 3D blade is too thin to read edge-on)
+json.dump({"parent": "minecraft:item/handheld", "loader": "forge:separate_transforms",
+           "base": {"parent": "iron_spell_grimoire:item/heartline_3d"},
+           "perspectives": {k: {"parent": "minecraft:item/generated", "textures": {"layer0": "iron_spell_grimoire:item/heartline_icon"}} for k in ("gui", "fixed", "ground")}},
+          open(os.path.join(MD, 'heartline.json'), 'w'), indent=1)
+ic = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); px = ic.load()
+ICON = [   # k spine/outline, e edge, s shine, g guard, w white wrap, d black diamond, r ribbon
+    "..............ks",
+    ".............kse",
+    "............kse.",
+    "...........kse..",
+    "..........kse...",
+    ".........kse....",
+    "........kse.....",
+    ".......kse......",
+    "......kse.......",
+    "....g.ke........",
+    "....ggg.........",
+    "...kwdgg........",
+    "..kwdwk.........",
+    ".kwdwk..........",
+    "rkdwk...........",
+    ".rr.............",
+]
+PAL = {'k': (14, 14, 18, 255), 'e': (176, 184, 196, 255), 's': (240, 244, 250, 255), 'g': (64, 58, 56, 255),
+       'w': (236, 232, 222, 255), 'd': (24, 22, 24, 255), 'r': (250, 250, 250, 255)}
+for y, row in enumerate(ICON):
+    for x, ch in enumerate(row):
+        if ch in PAL: px[x, y] = PAL[ch]
+ic.save(os.path.join(TEX, 'heartline_icon.png'))
 
 
 # ------------------------------------------------------------------ text

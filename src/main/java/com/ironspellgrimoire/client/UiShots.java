@@ -415,7 +415,9 @@ public final class UiShots {
         steps.add(new Step("ovd_second_wind", () -> { onServer(p -> UiShotsServer.element(p, "o:second_wind")); }, 12, true));
         steps.add(new Step("ovd_ribbon_bind", () -> { onServer(p -> UiShotsServer.element(p, "o:ribbon_bind")); }, 14, true));
         steps.add(new Step("ovd_heartline_held", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 6, true));   // the sword in hand, from the front
-        steps.add(new Step("ovd_redline", () -> onServer(p -> UiShotsServer.element(p, "o:redline")), 16, true));
+        steps.add(new Step("ovd_heartline_side", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); mc.player.setYRot(mc.player.getYRot() + 90); }, 6, true));   // ...and from the side
+        steps.add(new Step("ovd_heartline_fp", () -> { mc.player.setYRot(mc.player.getYRot() - 90); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 6, true));   // ...and in first person
+        steps.add(new Step("ovd_redline", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "o:redline")); }, 16, true));
         steps.add(new Step("ovd_final_beat", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "o:final_beat")); }, 10, true));   // the silence
         steps.add(new Step("ovd_final_cut", () -> { }, 9, true));   // the cut
         steps.add(new Step("ovd_after", () -> { }, 10, true));
