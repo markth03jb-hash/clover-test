@@ -14,7 +14,7 @@ import org.joml.Matrix4f;
  *  8 Fire        - tongues of flame licking up all round it, embers rising
  *  9 Lightning   - jagged arcs crackling between points on a ring, re-striking every few ticks
  * 10 Hellfire    - a crown of crimson flame pointing outward, with black smoke between the tongues
- * 11 Bone        - a spine behind it with ribs curving out round the book
+ * 11 Bone        - vertebrae above and below it, bones circling it
  * 12 Thread      - three threads weaving across it, a needle running along one
  * 13 Space       - an oval gate behind it: gold rim, a violet swirl turning inside
  * 14 Water       - ripples spreading out from it, bubbles rising
@@ -88,6 +88,14 @@ final class FxBookAuras extends FxBase {
       for (int i = 0; i < seg; i++) {
          Vec3 q0 = c.add(polar(Math.PI * 2.0 * i / seg, rx, ry, 0)), q1 = c.add(polar(Math.PI * 2.0 * (i + 1) / seg, rx, ry, 0));
          quad(vc, m, n, Vec3.ZERO, c, c, q1, q0, col, al, al, al, al);
+      }
+   }
+
+   /** A solid band between two ellipses (a disc with the middle left open, so the book shows through). */
+   static void band(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 c, double r0, double r1, double sy, float[] col, float al, int seg) {
+      for (int i = 0; i < seg; i++) {
+         double a0 = Math.PI * 2.0 * i / seg, a1 = Math.PI * 2.0 * (i + 1) / seg;
+         quad(vc, m, n, Vec3.ZERO, c.add(polar(a0, r0, r0 * sy, 0)), c.add(polar(a1, r0, r0 * sy, 0)), c.add(polar(a1, r1, r1 * sy, 0)), c.add(polar(a0, r1, r1 * sy, 0)), col, al, al, al, al);
       }
    }
 
@@ -190,25 +198,25 @@ final class FxBookAuras extends FxBase {
                tongue(vc, m, n, base, polar(a, 1, 1, 0).add(0, 0.25, 0).normalize(), 0.12 + 0.14 * fl, 0.05, pal, al, true);
             }
          }
-         case 11 -> {   // Bone: spine and ribs
+         case 11 -> {   // Bone: vertebrae and circling bones
             FxBooks.underglow(m, HW, HH, pal, 0.14F * al);
             double breathe = 1.0 + 0.03 * Math.sin(t * 0.06);
-            for (int i = 0; i < 9; i++) {   // the vertebrae
-               double y = -0.62 + i * 0.155;
+            for (int i = 0; i < 9; i++) {   // the vertebrae - above and below the book, never across it
+               if (i >= 2 && i <= 6) continue;
+               double y = -0.82 + i * 0.205;
                disc(vc, m, n, P(0, y, Z - 0.02), 0.06, 0.045, IVORY_C, al * 0.9F, 10);
                stroke(vc, m, n, P(-0.08, y, Z - 0.02), P(0.08, y, Z - 0.02), 0.02F, 0.02F, IVORY_C, al * 0.8F);
             }
-            for (int r = 0; r < 4; r++) {   // the ribs, curving round the book
-               for (int s = -1; s <= 1; s += 2) {
-                  Vec3 prev = P(0.04 * s, 0.38 - r * 0.2, Z - 0.01);
-                  for (int i = 1; i <= 10; i++) {
-                     double u = i / 10.0;
-                     double ang = u * Math.PI * 0.85;
-                     double rx = (0.62 - r * 0.05) * breathe;
-                     Vec3 q = P(s * (0.04 + Math.sin(ang) * rx), 0.38 - r * 0.2 - (1 - Math.cos(ang)) * 0.16, Z - 0.01);
-                     stroke(vc, m, n, prev, q, (float)(0.045 * (1 - u * 0.6)), (float)(0.045 * (1 - u * 0.6)), IVORY_C, al * 0.85F);
-                     prev = q;
-                  }
+            for (int k = 0; k < 6; k++) {   // bones circling the book, outside its edge: a shaft with a knob at each end
+               double a = t * 0.02 + k * Math.PI / 3;
+               Vec3 c = polar(a, 0.76 * breathe, 0.62 * breathe, Z - 0.01);
+               Vec3 d = P(-Math.sin(a), Math.cos(a), 0).scale(0.075).add(polar(a + 1.2, 0.02, 0.02, 0));
+               stroke(vc, m, n, c.subtract(d), c.add(d), 0.026F, 0.026F, IVORY_C, al * 0.9F);
+               for (int e = -1; e <= 1; e += 2) {
+                  Vec3 end = c.add(d.scale(e));
+                  Vec3 nn = P(-d.y, d.x, 0).normalize().scale(0.018);
+                  disc(vc, m, n, end.add(nn), 0.02, 0.02, IVORY_C, al * 0.9F, 8);
+                  disc(vc, m, n, end.subtract(nn), 0.02, 0.02, IVORY_C, al * 0.9F, 8);
                }
             }
          }
@@ -234,14 +242,14 @@ final class FxBookAuras extends FxBase {
             }
          }
          case 13 -> {   // Space: an oval gate
-            disc(vc, m, n, P(0, 0.02, Z - 0.03), 0.62, 0.74, new float[]{0.05F, 0.02F, 0.1F}, al * 0.55F, 32);
+            band(vc, m, n, P(0, 0.02, Z - 0.03), 0.56, 0.64, 1.19, new float[]{0.05F, 0.02F, 0.1F}, al * 0.6F, 40);
             for (int k = 0; k < 3; k++) {   // the swirl inside
                Vec3 prev = null;
                for (int i = 0; i <= 16; i++) {
                   double u = i / 16.0;
                   double a = t * 0.05 + k * Math.PI * 2 / 3 + u * 3.2;
                   Vec3 q = polar(a, 0.08 + u * 0.5, (0.08 + u * 0.5) * 1.2, Z - 0.02).add(0, 0.02, 0);
-                  if (prev != null) gl(m, prev, q, 0.014F, pal, al * (float)(1 - u) * 0.8F);
+                  if (prev != null) gl(m, prev, q, 0.01F, pal, al * (float)(1 - u) * 0.4F);
                   prev = q;
                }
             }
@@ -315,7 +323,7 @@ final class FxBookAuras extends FxBase {
             FxBooks.underglow(m, HW, HH, pal, 0.18F * al);
             for (int k = 0; k < 7; k++) {
                double a = t * 0.03 + k * Math.PI * 2 / 7;
-               Vec3 c = P(Math.cos(a) * 0.72, Math.sin(a) * 0.3 - 0.05, Math.sin(a) * 0.25);
+               Vec3 c = P(Math.cos(a) * 0.78, Math.sin(a) * 0.62, Math.sin(a) * 0.15);
                double sz = 0.045 + 0.03 * h(k);
                Vec3[] r = rect(c, sz, sz * 0.8, t * 0.04 * (k % 2 == 0 ? 1 : -1) + k);
                fill(vc, m, n, r, ROCK, al);
@@ -375,7 +383,7 @@ final class FxBookAuras extends FxBase {
             }
             for (int k = 0; k < 5; k++) {
                double a = t * 0.12 + k * Math.PI * 2 / 5;
-               Vec3 c = polar(a, 0.42, 0.18, 0.12 * Math.sin(a));
+               Vec3 c = polar(a, 0.7, 0.56, 0.08 * Math.sin(a));
                fill(vc, m, n, rect(c, 0.025, 0.02, a), ROCK_D, al);
             }
          }
@@ -429,7 +437,7 @@ final class FxBookAuras extends FxBase {
                double s = g * 11 + k;
                if (h(s + 0.5) < 0.3) continue;   // some blink out
                Vec3 c = P((h(s) - 0.5) * 1.5, (h(s + 1) - 0.5) * 1.3, Z + 0.01 * k);
-               if (Math.abs(c.x) < 0.3 && Math.abs(c.y) < 0.35) c = c.add(c.x < 0 ? -0.35 : 0.35, 0, 0);   // keep off the pages
+               if (Math.abs(c.x) < 0.55 && Math.abs(c.y) < 0.5) c = c.add(c.x < 0 ? -0.55 : 0.55, 0, 0);   // keep off the pages
                Vec3[] r = rect(c, 0.03 + 0.09 * h(s + 2), 0.012 + 0.03 * h(s + 3), 0);
                gquad(m, Vec3.ZERO, r[0], r[1], r[2], r[3], k % 2 == 0 ? RIM[pal] : cyan, al * 0.6F, al * 0.6F, al * 0.6F, al * 0.6F);
                fill(vc, m, n, rect(c.add(0.015, -0.01, -0.003), 0.03 + 0.09 * h(s + 2), 0.012 + 0.03 * h(s + 3), 0), INK, al * 0.4F);
@@ -476,13 +484,13 @@ final class FxBookAuras extends FxBase {
             }
          }
          case 27 -> {   // Hunter: a blood moon and claw marks
-            Vec3 mc = P(0.28, 0.3, Z - 0.03);
-            glow(m, mc, 0.55, RIM[pal], al * 0.25F);
-            disc(vc, m, n, mc, 0.36, 0.36, RED, al * 0.8F, 32);
-            disc(vc, m, n, mc.add(0.12, 0.06, 0.003), 0.3, 0.3, new float[]{0.25F, 0.0F, 0.02F}, al * 0.55F, 32);   // its dark side
+            Vec3 mc = P(0.66, 0.6, Z - 0.03);   // up in the corner, clear of the pages
+            glow(m, mc, 0.34, RIM[pal], al * 0.25F);
+            disc(vc, m, n, mc, 0.2, 0.2, RED, al * 0.85F, 28);
+            disc(vc, m, n, mc.add(0.07, 0.035, 0.003), 0.17, 0.17, new float[]{0.25F, 0.0F, 0.02F}, al * 0.5F, 28);   // its dark side
             for (int k = 0; k < 3; k++) {
                double off = (k - 1) * 0.12;
-               Vec3 a0 = P(-0.6 + off, 0.55, 0.06), a1 = P(0.1 + off, -0.6, 0.06);
+               Vec3 a0 = P(-0.85 + off, 0.25, 0.06), a1 = P(-0.45 + off, -0.6, 0.06);   // raked down the left side
                Vec3 prev = a0;
                for (int i = 1; i <= 8; i++) {
                   double u = i / 8.0;
@@ -495,11 +503,12 @@ final class FxBookAuras extends FxBase {
          case 28 -> {   // Void: a black hole
             Vec3 c = P(0, 0, Z - 0.04);
             glow(m, c, 0.9, RIM[pal], al * 0.12F);
-            disc(vc, m, n, c, 0.5, 0.5, HOLE, al * 0.85F, 36);
-            ring(m, 0.52, 0.52, Z - 0.03, pal, al * 0.9F, 0.016F, 48, 0);
+            band(vc, m, n, c, 0.56, 0.72, 1.0, HOLE, al * 0.85F, 40);   // the event horizon, round the book
+            ring(m, 0.55, 0.55, Z - 0.03, pal, al * 0.9F, 0.016F, 48, 0);
+            ring(m, 0.73, 0.73, Z - 0.03, pal, al * 0.4F, 0.01F, 48, 0);
             for (int k = 0; k < 10; k++) {   // motes falling in
                double ph = (t * 0.01 + k / 10.0) % 1.0;
-               double r = 0.95 - 0.43 * ph;
+               double r = 1.05 - 0.35 * ph;
                double a = k * 2.4 + ph * 3.5;
                FxBooks.lstar(m, polar(a, r, r, Z - 0.02), (float)(0.03 * (1 - ph) + 0.008), pal, al * (float)(1 - ph));
             }
@@ -533,19 +542,19 @@ final class FxBookAuras extends FxBase {
             for (int k = -1; k <= 1; k++) {
                double sway = 0.04 * Math.sin(t * 0.03 + k);
                double ang = -k * 0.38 + sway;
-               Vec3 c = P(k * 0.36, 0.38 - Math.abs(k) * 0.06, Z - 0.02 - Math.abs(k) * 0.01);
-               Vec3[] r = rect(c, 0.15, 0.24, ang);
+               Vec3 c = P(k * 0.3, 0.78 - Math.abs(k) * 0.06, Z - 0.02 - Math.abs(k) * 0.01);   // fanned above the book
+               Vec3[] r = rect(c, 0.11, 0.17, ang);
                fill(vc, m, n, r, CARD_BACK, al * 0.95F);
                outline(m, r, 0.008F, 8, al * 0.9F);
                Vec3 g = c.add(0, 0, 0.004);
                if (k == -1) { // the moon
-                  disc(vc, m, n, g, 0.06, 0.06, GOLD, al, 16);
-                  disc(vc, m, n, g.add(0.03, 0.015, 0.001), 0.05, 0.05, CARD_BACK, al, 16);
-               } else if (k == 0) { // the star
-                  for (int s = 0; s < 4; s++) { double sa = s * Math.PI / 4 + ang; gl(m, g.add(Math.cos(sa) * -0.08, Math.sin(sa) * -0.08, 0), g.add(Math.cos(sa) * 0.08, Math.sin(sa) * 0.08, 0), 0.01F, 8, al); }
-               } else { // the sun
                   disc(vc, m, n, g, 0.045, 0.045, GOLD, al, 16);
-                  for (int s = 0; s < 8; s++) { double sa = s * Math.PI / 4 + t * 0.02; gl(m, g.add(Math.cos(sa) * 0.06, Math.sin(sa) * 0.06, 0), g.add(Math.cos(sa) * 0.09, Math.sin(sa) * 0.09, 0), 0.008F, 8, al); }
+                  disc(vc, m, n, g.add(0.022, 0.011, 0.001), 0.038, 0.038, CARD_BACK, al, 16);
+               } else if (k == 0) { // the star
+                  for (int s = 0; s < 4; s++) { double sa = s * Math.PI / 4 + ang; gl(m, g.add(Math.cos(sa) * -0.06, Math.sin(sa) * -0.06, 0), g.add(Math.cos(sa) * 0.06, Math.sin(sa) * 0.06, 0), 0.008F, 8, al); }
+               } else { // the sun
+                  disc(vc, m, n, g, 0.034, 0.034, GOLD, al, 16);
+                  for (int s = 0; s < 8; s++) { double sa = s * Math.PI / 4 + t * 0.02; gl(m, g.add(Math.cos(sa) * 0.045, Math.sin(sa) * 0.045, 0), g.add(Math.cos(sa) * 0.07, Math.sin(sa) * 0.07, 0), 0.007F, 8, al); }
                }
             }
          }
@@ -600,18 +609,18 @@ final class FxBookAuras extends FxBase {
          }
          case 33 -> {   // Weather: a raincloud
             FxBooks.underglow(m, HW, HH, pal, 0.18F * al);
-            Vec3 c = P(0.02 * Math.sin(t * 0.03), 0.62, Z + 0.02);
+            Vec3 c = P(0.02 * Math.sin(t * 0.03), 0.8, Z + 0.02);
             disc(vc, m, n, c.add(0, -0.03, 0), 0.34, 0.07, CLOUD_D, al * 0.95F, 20);
             double[][] puff = {{-0.2, 0.0, 0.11}, {-0.06, 0.06, 0.14}, {0.1, 0.04, 0.13}, {0.24, -0.01, 0.09}};
             for (double[] pf : puff) disc(vc, m, n, c.add(pf[0], pf[1], 0.002), pf[2], pf[2] * 0.85, CLOUD, al * 0.95F, 16);
             for (int k = 0; k < 10; k++) {   // rain
                double ph = (t * 0.05 + h(k)) % 1.0;
-               double x = -0.28 + 0.56 * h(k + 2);
-               Vec3 top = c.add(x, -0.08 - ph * 1.1, 0.01);
+               double x = (h(k + 2) < 0.5 ? -1 : 1) * (0.5 + 0.25 * h(k + 5)) - c.x;   // the rain falls either side of the book
+               Vec3 top = P(x * 0.9, 0.7 - ph * 1.3, c.z + 0.01);
                gl(m, top, top.add(-0.02, -0.08, 0), 0.006F, pal, al * (float)(1 - ph) * 0.9F);
             }
             if ((long)Math.floor(t / 6.0) % 13 == 0) {   // now and then, a flash
-               Vec3 p0 = c.add(0.05, -0.08, 0.02), p1 = p0.add(-0.08, -0.16, 0), p2 = p1.add(0.07, -0.02, 0), p3 = p2.add(-0.09, -0.2, 0);
+               Vec3 p0 = c.add(0.3, -0.08, 0.02), p1 = p0.add(0.1, -0.16, 0), p2 = p1.add(-0.05, -0.02, 0), p3 = p2.add(0.12, -0.22, 0);   // off to the side
                gl(m, p0, p1, 0.014F, 4, al); gl(m, p1, p2, 0.014F, 4, al); gl(m, p2, p3, 0.014F, 4, al);
             }
          }
