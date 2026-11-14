@@ -1221,7 +1221,9 @@ public final class PixelFx {
     private static final java.util.Map<Long, Att> ATTACH = new java.util.HashMap<>();
 
     /** Aura-outline colours (AuraOutlineLayer) to palettes. */
-    private static final int[] OUTLINE_PAL = {10, 9, 11, 13, 14, 0, 15, 6, 9};
+    /** Aura outline colour (AuraOutlineLayer) -> sprite palette. Every outline needs its own entry: a missing one fell back to
+     *  the last (Devil Union) and the Scarlet Moon shed black-and-red devil sprites. */
+    private static final int[] OUTLINE_PAL = {10, 9, 11, 13, 14, 0, 15, 6, 9, 8, 18, 31, 20};
     /** Grimoire (GrimoireMastery.BOOKS order) to palette: Asta, Yami, Yuno, Nozel, Magna, Luck, Mereoleona, Zenon, Klaus. */
     private static final int[] BOOK_PAL = {0, 10, 5, 11, 2, 13, 14, 15, 7, 16, 17, 19, 20, 21, 22, 23, 25, 26, 29, 8, 18, 1, 5, 10, 21, 8, 7, 0, 21, 8, 20, 19, 2, 4};
 
