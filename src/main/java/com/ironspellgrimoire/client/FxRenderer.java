@@ -598,6 +598,8 @@ public class FxRenderer extends FxBase {
             GLOW_SRC.endBatch(GlowRenderType.GLOW);
             gv = null;
             DarkSmoke.render(ps, e.getCamera(), buf, pt);
+            MechModels.drawWorld(ps, buf, cam);   // the Mech Grimoire's fists (GeckoLib models)
+            buf.endBatch();
             PixelFx.render(ps, e.getCamera(), buf, pt);
             if (!FxBooks.PAGES.isEmpty()) {   // turning pages, drawn with the book's own page art (front = right page, back = left page)
                for (int side = 0; side < 2; side++) {

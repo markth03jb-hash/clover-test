@@ -404,9 +404,7 @@ public final class GamblerFx {
             Vec3 g = InkFx.target(p, 26);
             float R = big ? 10f : 6f;
             payout(sl, g.add(0, 1, 0), R, 30);
-            java.util.List<LivingEntity> hitList = Kit.near(sl, p, g.add(0, 1, 0), R);
-            if (GameTests.running()) GameTests.note("jackpot payout at " + String.format("%.1f %.1f %.1f", g.x, g.y, g.z) + " pow " + pow + " k " + k + " targets " + hitList.size());
-            for (LivingEntity e : hitList) hit(p, e, pow * k, "jackpot");
+            for (LivingEntity e : Kit.near(sl, p, g.add(0, 1, 0), R)) hit(p, e, pow * k, "jackpot");
             if (big) {
                 FxSend.impactFrame(sl, g.add(0, 1, 0), 3, FxSend.FRAME_GOLD, 26);
                 p.displayClientMessage(Component.literal("JACKPOT").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);

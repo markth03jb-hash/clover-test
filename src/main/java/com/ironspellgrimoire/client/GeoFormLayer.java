@@ -17,6 +17,7 @@ import net.minecraft.util.Mth;
  *                  beats slowly at rest, sweeps back while running, flaps hard in the air, spreads to glide when
  *                  falling and folds in when crouching (bending along its length as it moves)
  *   Beelzebub    - skeletal wings (open, idle, flap in the air) and horns that grow from the temples
+ *   Pilot        - the Mech Grimoire's hard-light war machine round its pilot (MechModels)
  * The crown, mantle and burst of the Devil Union stay as effects (FxRenderer.devilForm).
  */
 public class GeoFormLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
@@ -44,6 +45,17 @@ public class GeoFormLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<
             ps.scale(fade, fade, fade);
             GeoForms.draw("devil_wings", p.getId(), dv[0], "open", motion(p, true), null, ps, buf, LightTexture.FULL_BRIGHT);
             ps.popPose();
+        }
+        double[] mech = MechFxClient.pilot(p.getId());
+        if (mech != null) {   // Pilot: the hard-light machine standing round you (only the parts you've built)
+            float out = (float) Mth.clamp((mech[1] + 8.0 - now) / 8.0, 0.0, 1.0);   // it shrinks away when the mode ends
+            if (out > 0) {
+                double speed = Math.sqrt((p.getX() - p.xo) * (p.getX() - p.xo) + (p.getZ() - p.zo) * (p.getZ() - p.zo));
+                String loop = p.swinging ? "punch" : speed > 0.04 ? "walk" : "idle";
+                ps.pushPose();
+                MechModels.drawTitan(ps, buf, p.getId(), (int) mech[2], mech[0], loop, out);
+                ps.popPose();
+            }
         }
         double[] bf = FxRenderer.boneFormTimes(p.getId());
         if (bf != null && now <= bf[1]) {
