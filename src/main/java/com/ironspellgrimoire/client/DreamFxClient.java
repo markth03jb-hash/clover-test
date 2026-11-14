@@ -188,12 +188,12 @@ public final class DreamFxClient {
             double u = (age - k * 4) / (p.life - 12.0);
             if (u < 0 || u > 1) continue;
             double hop = Math.abs(Math.sin(u * Math.PI * 5)) * 0.8;
-            Vec3 c = p.c.add(d.scale(u * p.r)).add(0, 0.55 + hop, 0);
-            for (int b = 0; b < 4; b++) blob(vc, m, n, cam, c.add(Math.cos(b * 1.6) * 0.18, Math.sin(b * 2.3) * 0.08, Math.sin(b * 1.6) * 0.18), 0.28, FLUFF, a);
-            blob(vc, m, n, cam, c.add(d.scale(0.38)).add(0, 0.06, 0), 0.14, DARK, a);   // the face
+            Vec3 c = p.c.add(d.scale(u * p.r)).add(0, 0.8 + hop, 0);
+            for (int b = 0; b < 4; b++) blob(vc, m, n, cam, c.add(Math.cos(b * 1.6) * 0.3, Math.sin(b * 2.3) * 0.13, Math.sin(b * 1.6) * 0.3), 0.46, FLUFF, a);
+            blob(vc, m, n, cam, c.add(d.scale(0.64)).add(0, 0.1, 0), 0.23, DARK, a);   // the face
             for (int s = -1; s <= 1; s += 2) {   // little legs
-                Vec3 leg = c.add(d.cross(UP).normalize().scale(0.1 * s)).add(0, -0.18, 0);
-                GravityFxClient.gseg(m, cam, leg, leg.add(0, -0.28, 0), 0.04, a * 0.6F, a * 0.6F, LAV);
+                Vec3 leg = c.add(d.cross(UP).normalize().scale(0.17 * s)).add(0, -0.3, 0);
+                GravityFxClient.gseg(m, cam, leg, leg.add(0, -0.45, 0), 0.07, a * 0.6F, a * 0.6F, LAV);
             }
             GravityFxClient.gglow(m, cam, c, 0.7, a * 0.25F, PINKF);
         }
@@ -203,13 +203,13 @@ public final class DreamFxClient {
     private static void pillow(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age, double now) {
         float a = fade(p, age, 6, 10);
         double r = p.r;
-        for (int ring = 0; ring < 3; ring++) {
-            double h = ring * r * 0.38, rr = r * Math.cos(ring * 0.5);
-            int N = ring == 2 ? 6 : 14;
+        for (int ring = 0; ring < 2; ring++) {   // a light ring of low pillow clouds round the edge (see-through: you can see the fight)
+            double rr = r * (ring == 0 ? 1.0 : 0.9);
+            int N = ring == 0 ? 16 : 10;
             for (int i = 0; i < N; i++) {
                 double an = i * TAU / N + ring * 0.3 + Math.sin(now * 0.02 + i) * 0.03;
-                Vec3 c = p.c.add(Math.cos(an) * rr, 0.4 + h + 0.08 * Math.sin(now * 0.05 + i), Math.sin(an) * rr);
-                blob(vc, m, n, cam, c, 0.55 - ring * 0.08, i % 3 == 0 ? PINKF : FLUFF, a * 0.32F);   // see-through: you can see past them
+                Vec3 c = p.c.add(Math.cos(an) * rr, 0.35 + ring * 0.6 + 0.08 * Math.sin(now * 0.05 + i), Math.sin(an) * rr);
+                blob(vc, m, n, cam, c, ring == 0 ? 0.42 : 0.3, i % 3 == 0 ? PINKF : FLUFF, a * (ring == 0 ? 0.22F : 0.15F));
             }
         }
         GravityFxClient.ring(m, cam, p.c.add(0, 0.05, 0), UP, r, 0.4, LAV, a * 0.5F);
@@ -292,32 +292,33 @@ public final class DreamFxClient {
 
     /** One plush toy: 0 bear, 1 bunny, 2 lamb, 3 star. */
     static void toy(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, int kind, float a) {
+        final double S = 1.7;   // big enough to read from where you stand
         switch (kind) {
             case 0 -> {   // a bear: round body, round head, round ears
-                blob(vc, m, n, cam, c, 0.32, BEAR, a);
-                blob(vc, m, n, cam, c.add(0, 0.42, 0), 0.24, BEAR, a);
-                blob(vc, m, n, cam, c.add(-0.17, 0.62, 0), 0.08, BEAR, a);
-                blob(vc, m, n, cam, c.add(0.17, 0.62, 0), 0.08, BEAR, a);
-                blob(vc, m, n, cam, c.add(0, 0.38, 0), 0.09, CREAM, a);
+                blob(vc, m, n, cam, c, 0.32 * S, BEAR, a);
+                blob(vc, m, n, cam, c.add((0) * S, (0.42) * S, (0) * S), 0.24 * S, BEAR, a);
+                blob(vc, m, n, cam, c.add((-0.17) * S, (0.62) * S, (0) * S), 0.08 * S, BEAR, a);
+                blob(vc, m, n, cam, c.add((0.17) * S, (0.62) * S, (0) * S), 0.08 * S, BEAR, a);
+                blob(vc, m, n, cam, c.add((0) * S, (0.38) * S, (0) * S), 0.09 * S, CREAM, a);
             }
             case 1 -> {   // a bunny: long ears
-                blob(vc, m, n, cam, c, 0.3, CREAM, a);
-                blob(vc, m, n, cam, c.add(0, 0.4, 0), 0.22, CREAM, a);
-                GravityFxClient.gseg(m, cam, c.add(-0.08, 0.55, 0), c.add(-0.12, 0.95, 0), 0.07, a, a, PINKF);
-                GravityFxClient.gseg(m, cam, c.add(0.08, 0.55, 0), c.add(0.12, 0.95, 0), 0.07, a, a, PINKF);
-                blob(vc, m, n, cam, c.add(0, 0.36, 0), 0.05, CORAL, a);
+                blob(vc, m, n, cam, c, 0.3 * S, CREAM, a);
+                blob(vc, m, n, cam, c.add((0) * S, (0.4) * S, (0) * S), 0.22 * S, CREAM, a);
+                GravityFxClient.gseg(m, cam, c.add((-0.08) * S, (0.55) * S, (0) * S), c.add((-0.12) * S, (0.95) * S, (0) * S), 0.07 * S, a, a, PINKF);
+                GravityFxClient.gseg(m, cam, c.add((0.08) * S, (0.55) * S, (0) * S), c.add((0.12) * S, (0.95) * S, (0) * S), 0.07 * S, a, a, PINKF);
+                blob(vc, m, n, cam, c.add((0) * S, (0.36) * S, (0) * S), 0.05 * S, CORAL, a);
             }
             case 2 -> {   // a lamb: all fluff
-                for (int b = 0; b < 5; b++) blob(vc, m, n, cam, c.add(Math.cos(b * 1.3) * 0.16, Math.sin(b * 2.1) * 0.1, 0), 0.24, FLUFF, a);
-                blob(vc, m, n, cam, c.add(0, 0.34, 0), 0.15, LAV, a);
+                for (int b = 0; b < 5; b++) blob(vc, m, n, cam, c.add((Math.cos(b * 1.3) * 0.16) * S, (Math.sin(b * 2.1) * 0.1) * S, (0) * S), 0.24 * S, FLUFF, a);
+                blob(vc, m, n, cam, c.add((0) * S, (0.34) * S, (0) * S), 0.15 * S, LAV, a);
             }
             default -> {   // a star-shaped plush
-                blob(vc, m, n, cam, c, 0.3, GOLD, a);
-                star(m, cam, c, 0.55, GOLD, a);
-                blob(vc, m, n, cam, c.add(0, 0.04, 0), 0.06, DARK, a);
+                blob(vc, m, n, cam, c, 0.3 * S, GOLD, a);
+                star(m, cam, c, 0.55 * S, GOLD, a);
+                blob(vc, m, n, cam, c.add((0) * S, (0.04) * S, (0) * S), 0.06 * S, DARK, a);
             }
         }
-        GravityFxClient.gglow(m, cam, c, 0.7, a * 0.25F, kind == 0 ? CORAL : TEAL);
+        GravityFxClient.gglow(m, cam, c, 0.7 * S, a * 0.25F, kind == 0 ? CORAL : TEAL);
     }
 
     // ---- 6 a dark dream lunging from behind

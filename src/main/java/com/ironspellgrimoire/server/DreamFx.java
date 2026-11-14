@@ -299,8 +299,8 @@ public final class DreamFx {
     // ================================================================== 5. Dream Clock
     public static void dreamClock(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        Vec3 at = Kit.aim(p, 14);
-        final Vec3 c = at;
+        LivingEntity aimedAt = aimed(p, 16, 12);   // over the foe you aim at, or where you look
+        final Vec3 c = aimedAt != null ? aimedAt.position() : Kit.aim(p, 14);
         final float R = 5f;
         final int T = 100;
         clock(sl, c, R, T);
