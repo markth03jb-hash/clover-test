@@ -64,6 +64,7 @@ public final class ManaBarHud {
             {0xFFC21A, 0xD05A10, 0xFFA040, 0x0E1012, 0xFFE8A8},   // Mech: hazard yellow, hot orange core
             {0xF2F8FF, 0x3A8AD0, 0xFFD34A, 0x0A1A2A, 0xEAF6FF},   // Weather: sky blue with a sun glint
             {0xFFB0B8, 0xD0102A, 0xFFFFFF, 0x0C0206, 0xFFE0E4},   // Overdrive: heart-red, a white glint
+            {0xFF9AA2, 0x7A5CE0, 0x3CE0D0, 0x140E28, 0xFFF0F4},   // Dream: lavender mana, coral trim, a teal glint
             {0xF2F8FF, 0x7FC4F4, 0xFFFFFF, 0x0A1424, 0xDDF2FF},   // the Scarlet Moon's ice: frosted silver, ice-blue mana
     };
 

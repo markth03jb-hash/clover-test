@@ -83,7 +83,7 @@ public final class GrimoireWheel {
 
     /** The Blood Grimoire (GrimoireMastery.BOOKS) and the theme its menus take under the Scarlet Moon. */
     static final int BLOOD = 20, GRAVITY = 21, SOUND = 22, INK = 23, ERROR = 24, TREASURE = 25,
-            CHAIN = 26, HUNTER = 27, VOID = 28, GAMBLER = 29, TAROT = 30, ABYSS = 31, MECH = 32, WEATHER = 33, OVERDRIVE = 34, ICE = 35;
+            CHAIN = 26, HUNTER = 27, VOID = 28, GAMBLER = 29, TAROT = 30, ABYSS = 31, MECH = 32, WEATHER = 33, OVERDRIVE = 34, DREAM = 35, ICE = 36;
 
     /** The theme every menu should wear right now: the equipped grimoire's, or the ice one under the Scarlet Moon. */
     static int themeIndex() { return themeFor(grimoireIndex()); }
@@ -351,6 +351,8 @@ public final class GrimoireWheel {
             new Theme(c(0x081828), c(0x2A6496), c(0xF2F8FF), c(0xFFD34A), c(0x1C4A72), 3, O_WIND, M_DOTS, true, 0x0A1A2A, 0xEAF6FF),
             // Overdrive: black pages, a crimson edge, bone-white trim, a heartbeat trace across every page
             new Theme(c(0x0A0204), c(0x3A0610), c(0xF2EEE6), c(0xFF2A3A), c(0x2A0810), 3, O_SMOKE, M_NOTCHES, true, 0x0C0306, 0xFFE8EA),
+            // Dream: night-lavender pages, coral and peacock-teal trim, a gold star, a little crescent moon on every page
+            new Theme(c(0x120C24), c(0x3A2A6A), c(0xFF9AA2), c(0x3CE0D0), c(0x281C4C), 3, O_DROPS, M_DOTS, true, 0x140E28, 0xFFF0F4),
             // the Scarlet Moon's ice (the Blood Grimoire under its mode): frosted blue pages, white trim, crystals of ice round the ring
             new Theme(c(0x08142A), c(0x2E5884), c(0xF2F8FF), c(0xBFE6FF), c(0xDDEEFF), 6, O_FROST, M_DOTS, false, 0x0A1828, 0xEAF6FF),
     };
@@ -636,6 +638,16 @@ public final class GrimoireWheel {
                 seg(bb, m, cx, cy, s2, rr + 6 + 2 * beatK, s3, rr - 5, 0.7, 1.0F, 1.0F, 1.0F, br * A);
                 seg(bb, m, cx, cy, s3, rr - 5, s4, rr, 0.7, ac[0], ac[1], ac[2], br * A);
                 seg(bb, m, cx, cy, s4, rr, s5, rr, 0.7, ac[0], ac[1], ac[2], br * A);
+            }
+            case 35 -> {   // Dream: a little crescent moon on each page with a star beside it, the stars twinkling in turn
+                double rr = mid, tw = 0.5 + 0.5 * Math.sin(time * 2.2 + am * 3);
+                for (int k = 0; k <= 8; k++) {
+                    double u0 = am - w * 0.12 + w * 0.24 * k / 8.0, u1 = am - w * 0.12 + w * 0.24 * (k + 1) / 8.0;
+                    double b0 = 4.5 * Math.sin(Math.PI * k / 8.0), b1 = 4.5 * Math.sin(Math.PI * (k + 1) / 8.0);
+                    if (k < 8) seg(bb, m, cx, cy, u0, rr + b0, u1, rr + b1, 0.9, 1.0F, 0.94F, 0.72F, 0.9F * A);
+                }
+                seg(bb, m, cx, cy, am + w * 0.2, rr + 5 - 2.5, am + w * 0.2, rr + 5 + 2.5, 0.6, ac[0], ac[1], ac[2], (float) (0.4 + 0.6 * tw) * A);
+                seg(bb, m, cx, cy, am + w * 0.17, rr + 5, am + w * 0.23, rr + 5, 0.6, ac[0], ac[1], ac[2], (float) (0.4 + 0.6 * tw) * A);
             }
             case ICE -> {   // ice: a crystal standing in each page, frost feathering out from its foot
                 double h = (ro - ri) * (0.62 + 0.12 * p);

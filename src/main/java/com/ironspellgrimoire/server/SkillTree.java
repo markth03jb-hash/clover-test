@@ -88,7 +88,8 @@ public final class SkillTree {
             /* 31 Abyss */ {"Pressure", "slow", .25f, "Cold Blood", "armor", 4, "Lure Light", "pull", .5f, "Many Arms", "chain", .15f, "Undertow", "knock", .5f, "Hunger of the Deep", "lifesteal", .05f, "Leviathan Bite", "boss", .12f},
             /* 32 Mech */ {"Reinforced Frame", "armor", 5, "Rivet Gun", "crit", .10f, "Thrusters", "hastecast", .20f, "Plating", "shield", 6, "Heavy Hitter", "knock", .6f, "Missile Pod", "chain", .15f, "Cooling System", "cdr", .08f},
             /* 33 Weather */ {"Tailwind", "dodge", .07f, "Static", "chain", .15f, "Hail", "slow", .20f, "Downpour", "regenhp", 1, "Heatwave", "burn", .12f, "Gale Force", "knock", .5f, "Calm Eye", "fullhp", .12f},
-            /* 34 Overdrive */ {"Racing Pulse", "hastecast", .20f, "Adrenaline", "dodge", .07f, "Clean Cut", "crit", .10f, "Bloodrush", "lifesteal", .05f, "Last Breath", "lowhp", .15f, "Afterimage", "echo", .10f, "Flatliner", "execute", .20f}};
+            /* 34 Overdrive */ {"Racing Pulse", "hastecast", .20f, "Adrenaline", "dodge", .07f, "Clean Cut", "crit", .10f, "Bloodrush", "lifesteal", .05f, "Last Breath", "lowhp", .15f, "Afterimage", "echo", .10f, "Flatliner", "execute", .20f},
+            /* 35 Dream */ {"Lullaby", "slow", .20f, "Sweet Dreams", "regenhp", 1, "Sleepwalker", "dodge", .07f, "Pillow Soft", "shield", 6, "Daydream", "cdr", .08f, "Lucid", "hastecast", .20f, "Nightmare", "execute", .20f}};
 
     /** The crowns (server/SkillEffects does what they say). */
     public static final String[][] CROWNS = {
@@ -126,7 +127,8 @@ public final class SkillTree {
             {"Crushing Depths", "The deeper you stand below sea level, the harder you hit: +1% a block, up to +40%."},
             {"Overdrive", "Every 10th spell hit discharges the core: it lands twice as hard."},
             {"Lightning Rod", "Under real rain your hits land 30% harder; under any open sky, 10%."},
-            {"Engine Heart", "Above 150 bpm your hits land 15% harder; at the Redline, 30%."}};
+            {"Engine Heart", "Above 150 bpm your hits land 15% harder; at the Redline, 30%."},
+            {"Sweet Dreams", "Your hits on a drowsy foe land up to 30% harder; on a sleeping one, 40%."}};
 
     private static final List<List<Node>> TREES = new ArrayList<>();
     static {

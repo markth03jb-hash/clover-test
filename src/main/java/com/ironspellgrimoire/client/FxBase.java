@@ -83,7 +83,8 @@ abstract class FxBase {
       {0.030F, 0.180F, 0.200F},  // 42 abyss: bioluminescent cyan
       {0.200F, 0.130F, 0.030F},  // 43 mech: amber
       {0.110F, 0.160F, 0.200F},  // 44 weather: sky blue
-      {0.200F, 0.030F, 0.050F}   // 45 overdrive: heart red
+      {0.200F, 0.030F, 0.050F},  // 45 overdrive: heart red
+      {0.150F, 0.120F, 0.200F}   // 46 dream: lavender
    };
    static final float[][] RIM = new float[][]{
       {1.0F, 0.1F, 0.06F}, {0.67F, 0.24F, 1.0F}, {1.0F, 0.6F, 0.12F}, {0.6F, 0.88F, 1.0F}, {1.0F, 0.96F, 0.44F}, {0.75F, 1.0F, 0.84F}, {0.95F, 0.95F, 1.0F},
@@ -125,7 +126,8 @@ abstract class FxBase {
       {0.15F, 0.90F, 1.00F},  // 42 abyss: bioluminescent cyan
       {1.00F, 0.65F, 0.15F},  // 43 mech: amber
       {0.55F, 0.80F, 1.00F},  // 44 weather: sky blue
-      {1.00F, 0.15F, 0.25F}   // 45 overdrive: heart red
+      {1.00F, 0.15F, 0.25F},  // 45 overdrive: heart red
+      {0.78F, 0.66F, 1.00F}   // 46 dream: lavender
    };
    /** Overall strength of every world effect. Lower = subtler. */
    static final float FX_ALPHA = 1.0F;

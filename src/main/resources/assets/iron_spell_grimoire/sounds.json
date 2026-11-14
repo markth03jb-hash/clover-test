@@ -994,5 +994,70 @@
         "name": "iron_spell_grimoire:sfx/ribbon_3"
       }
     ]
+  },
+  "sfx.dream_chime": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/dream_chime_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/dream_chime_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/dream_chime_3"
+      }
+    ]
+  },
+  "sfx.dream_boing": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/dream_boing_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/dream_boing_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/dream_boing_3"
+      }
+    ]
+  },
+  "sfx.dream_hush": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/dream_hush_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/dream_hush_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/dream_hush_3"
+      }
+    ]
+  },
+  "sfx.dream_tick": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/dream_tick_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/dream_tick_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/dream_tick_3"
+      }
+    ]
+  },
+  "sfx.dream_alarm": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/dream_alarm_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/dream_alarm_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/dream_alarm_3"
+      }
+    ]
   }
 }

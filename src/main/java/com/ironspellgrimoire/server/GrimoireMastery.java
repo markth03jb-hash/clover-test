@@ -287,6 +287,10 @@ public final class GrimoireMastery {
                 "draw_heartline", 1, "pulse_cut", 1, "adrenaline_rush", 2,
                 "heartbeat", 2, "flatline", 2, "tachycardia", 3,
                 "second_wind", 3, "ribbon_bind", 4, "redline", 4, "final_beat", 5);
+        book(AddonItemRegistry.DREAM_GRIMOIRE::get, Fx.VOID,
+                "dream_mote", 1, "counting_sheep", 1, "pillow_fortress", 2,
+                "sleepwalk", 2, "dream_clock", 2, "toy_parade", 3,
+                "nightmare_shard", 3, "rude_awakening", 4, "half_asleep", 4, "dream_world", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

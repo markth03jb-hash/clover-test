@@ -755,6 +755,26 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> OVERDRIVE_SPELLS = List.of(
             OVERDRIVE_DRAW_HEARTLINE, OVERDRIVE_PULSE_CUT, OVERDRIVE_ADRENALINE_RUSH, OVERDRIVE_HEARTBEAT, OVERDRIVE_FLATLINE, OVERDRIVE_TACHYCARDIA, OVERDRIVE_SECOND_WIND, OVERDRIVE_RIBBON_BIND, OVERDRIVE_REDLINE, OVERDRIVE_FINAL_BEAT);
 
+    // ------------------------------------------------------------------ Dream Grimoire (inspired by a sleepy captain's Dream Magic: DreamFx)
+    private static com.ironspellgrimoire.spells.BookSpell dream(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
+                com.ironspellgrimoire.item.DreamGrimoireItem.class, "ui.iron_spell_grimoire.dream_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> DREAM_MOTE = registerSpell(dream("dream_mote", 2, 15, 8, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.DreamFx::lullabyMote));
+    public static final RegistryObject<AbstractSpell> DREAM_SHEEP = registerSpell(dream("counting_sheep", 6, 25, 9, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.DreamFx::countingSheep));
+    public static final RegistryObject<AbstractSpell> DREAM_PILLOW = registerSpell(dream("pillow_fortress", 16, 35, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.DreamFx::pillowFortress));
+    public static final RegistryObject<AbstractSpell> DREAM_SLEEPWALK = registerSpell(dream("sleepwalk", 8, 20, 9, "iron_spell_grimoire:light_step", com.ironspellgrimoire.server.DreamFx::sleepwalk));
+    public static final RegistryObject<AbstractSpell> DREAM_CLOCK = registerSpell(dream("dream_clock", 14, 35, 8, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.DreamFx::dreamClock));
+    public static final RegistryObject<AbstractSpell> DREAM_PARADE = registerSpell(dream("toy_parade", 10, 30, 10, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.DreamFx::toyParade));
+    public static final RegistryObject<AbstractSpell> DREAM_NIGHTMARE = registerSpell(dream("nightmare_shard", 10, 30, 11, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.DreamFx::nightmareShard));
+    public static final RegistryObject<AbstractSpell> DREAM_AWAKENING = registerSpell(dream("rude_awakening", 14, 40, 12, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.DreamFx::rudeAwakening));
+    public static final RegistryObject<AbstractSpell> DREAM_HALF_ASLEEP = registerSpell(dream("half_asleep", 60, 80, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.DreamFx::halfAsleep));
+    public static final RegistryObject<AbstractSpell> DREAM_WORLD = registerSpell(dream("dream_world", 45, 120, 15, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.DreamFx::dreamWorld));
+    /** The ten Dream Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> DREAM_SPELLS = List.of(
+            DREAM_MOTE, DREAM_SHEEP, DREAM_PILLOW, DREAM_SLEEPWALK, DREAM_CLOCK, DREAM_PARADE, DREAM_NIGHTMARE, DREAM_AWAKENING, DREAM_HALF_ASLEEP, DREAM_WORLD);
+
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,
                                                                    String only, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
