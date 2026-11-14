@@ -489,11 +489,27 @@ public final class UiShots {
         };
     }
 
+    /** Textures and models a book's pictures show besides its code (a change to them must re-take the pictures). */
+    private static final String[][] ASSETS = {
+            {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"}};
+
+    private static String assetsKey(String step) {
+        long h = 1125899906842597L;
+        for (String[] a : ASSETS) if (step.startsWith(a[0])) for (int i = 1; i < a.length; i++) {
+            try (var in = UiShots.class.getResourceAsStream("/assets/iron_spell_grimoire/" + a[i])) {
+                if (in == null) { h = 31 * h + i; continue; }
+                for (byte x : in.readAllBytes()) h = 31 * h + x;
+            } catch (IOException ex) { h = 31 * h - i; }
+        }
+        return Long.toHexString(h);
+    }
+
     private static void finish() {
         Minecraft mc = Minecraft.getInstance();
         Path out = mc.gameDirectory.toPath().resolve("isg_uishots_report.txt");
         List<String> lines = new ArrayList<>();
-        lines.add("Iron Spell Grimoire - automatic UI check: " + steps.size() + " steps, " + report.size() + " problem(s)");
+        long problems = report.stream().filter(l -> !l.contains("| SKIP |")).count();   // a skipped picture isn't a problem
+        lines.add("Iron Spell Grimoire - automatic UI check: " + steps.size() + " steps, " + problems + " problem(s)");
         lines.addAll(report);
         cache().save();
         try { Files.write(out, lines, StandardCharsets.UTF_8); } catch (IOException ignored) {}
@@ -548,7 +564,7 @@ public final class UiShots {
         Step s = steps.get(index);
         if (wait == 0) {
             Class<?>[] roots = rootsFor(s.name());   // passed before and nothing it shows has changed: keep the old pictures
-            stepKey = roots == null ? null : com.ironspellgrimoire.server.ClassKey.of(s.name() + "|" + HARNESS, roots);
+            stepKey = roots == null ? null : com.ironspellgrimoire.server.ClassKey.of(s.name() + "|" + HARNESS + "|" + assetsKey(s.name()), roots);
             if (stepKey != null && cache().unchanged(s.name(), stepKey)) {
                 report.add(s.name() + " | SKIP | unchanged since it passed");
                 cache().passed(s.name(), stepKey);
