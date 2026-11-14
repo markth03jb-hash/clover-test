@@ -283,12 +283,14 @@ def titan():
         cube([-4, 19.5, -11.2], [8, 1, 1], "frame"),
     ]))
     # ---- arms (Arms) with hands (Fists): long and heavy, hanging forward of the body
-    arm_l = [
+    arm_l = [   # the upper arm, from the shoulder to the elbow
         cube([10, 17, -7], [10, 8, 12], "sand"),                # pauldron, two layers
         cube([11, 15, -6.5], [9, 3, 11], "sand2"),
         cube([13, 7, -3], [5, 10, 5], "frame"),                 # upper arm
         cube([18, 7, -2], [1.5, 9, 2], "piston"),               # biceps piston
         cube([12.5, 4, -3.5], [6, 4, 6], "joint"),              # elbow
+    ]
+    forearm_l = [   # the forearm, turning at the elbow
         cube([12, -9, -5], [8, 13, 9], "sand"),                 # forearm armour
         cube([11.5, -5, -5.5], [9, 2, 10], "hazard"),
         cube([13, -11, -3.5], [6, 3, 6], "joint"),              # wrist
@@ -302,19 +304,25 @@ def titan():
         cube([10, -17, -4], [2, 5, 3], "frame"),
     ]
     bones.append(bone("arm_l", "frame", [15, 21, 0], arm_l))
-    bones.append(bone("fist_l", "arm_l", [16, -11, 0], hand_l))
+    bones.append(bone("forearm_l", "arm_l", [15.5, 6, 0], forearm_l))
+    bones.append(bone("fist_l", "forearm_l", [16, -11, 0], hand_l))
     bones.append(bone("arm_r", "frame", [-15, 21, 0], mirror_x(arm_l)))
-    bones.append(bone("fist_r", "arm_r", [-16, -11, 0], mirror_x(hand_l)))
+    bones.append(bone("forearm_r", "arm_r", [-15.5, 6, 0], mirror_x(forearm_l)))
+    bones.append(bone("fist_r", "forearm_r", [-16, -11, 0], mirror_x(hand_l)))
     # ---- legs (Legs): thick, armoured, with a hydraulic ram down the back of each
-    leg_l = [
+    leg_l = [   # the thigh, from the hip to the knee
         cube([3, -11, -4], [7, 9, 7], "frame"),                 # thigh
         cube([2.5, -10, -5], [8, 7, 2], "sand"),                # thigh plate
         cube([9.5, -12, 0], [2, 10, 2], "piston"),              # hip-to-knee ram
         cube([3, -14, -5.5], [7, 4, 7], "joint"),               # knee
+    ]
+    shin_l = [   # the shin, bending at the knee
         cube([2.5, -15, -7], [8, 6, 3], "sand2"),               # knee cap
         cube([3, -21, -4], [7, 8, 7], "sand"),                  # shin armour
         cube([3.5, -19, -5], [6, 2, 1], "hazard"),
         cube([4, -22, -2], [5, 2, 5], "joint"),                 # ankle
+    ]
+    foot_l = [   # the foot, kept flat to the ground at the ankle
         cube([2, -24, -8], [10, 2.5, 13], "frame"),             # foot
         cube([2, -24.2, -8], [10, 0.6, 13], "rubber"),          # its sole
         cube([2.5, -23, -10], [2.5, 2, 2.5], "frame"),          # toes
@@ -322,8 +330,11 @@ def titan():
         cube([9, -23, -10], [2.5, 2, 2.5], "frame"),
         cube([5.5, -23.5, 5], [3, 2, 3], "frame"),              # heel spur
     ]
-    bones.append(bone("leg_l", "frame", [6.5, -1, 0], leg_l))
-    bones.append(bone("leg_r", "frame", [-6.5, -1, 0], mirror_x(leg_l)))
+    for side, sx in (("l", 1), ("r", -1)):
+        m = (lambda c: c) if sx > 0 else mirror_x
+        bones.append(bone("leg_" + side, "frame", [6.5 * sx, -1, 0], m(leg_l)))
+        bones.append(bone("shin_" + side, "leg_" + side, [6.5 * sx, -12.5, 0], m(shin_l)))
+        bones.append(bone("foot_" + side, "shin_" + side, [6.5 * sx, -21, 0], m(foot_l)))
     # ---- thrusters (Thrusters): a jump pack with two exhausts and a fuel tank
     bones.append(bone("thrusters", "frame", [0, 14, 9], [
         cube([-8, 8, 8], [16, 12, 5], "slate"),
@@ -414,19 +425,49 @@ def titan_anims():
         "arm_l": {"rotation": kf({0.0: [-6, 0, -4], 2.0: [-9, 0, -6], 4.0: [-6, 0, -4]})},
         "arm_r": {"rotation": kf({0.0: [-6, 0, 4], 2.0: [-9, 0, 6], 4.0: [-6, 0, 4]})},
     }}
-    # walk: heavy strides - the body dips on each footfall, the arms swing against the legs
-    A["animation.mech_titan.walk"] = {"loop": True, "animation_length": 1.4, "bones": {
-        "leg_l": {"rotation": kf({0.0: [24, 0, 0], 0.7: [-24, 0, 0], 1.4: [24, 0, 0]})},
-        "leg_r": {"rotation": kf({0.0: [-24, 0, 0], 0.7: [24, 0, 0], 1.4: [-24, 0, 0]})},
-        "arm_l": {"rotation": kf({0.0: [-18, 0, -4], 0.7: [12, 0, -4], 1.4: [-18, 0, -4]})},
-        "arm_r": {"rotation": kf({0.0: [12, 0, 4], 0.7: [-18, 0, 4], 1.4: [12, 0, 4]})},
-        "frame": {"rotation": kf({0.0: [0, 4, 0], 0.7: [0, -4, 0], 1.4: [0, 4, 0]})},
-        "root": {"position": kf({0.0: [0, 0, 0], 0.15: [0, -1, 0], 0.35: [0, 0.6, 0], 0.7: [0, 0, 0], 0.85: [0, -1, 0], 1.05: [0, 0.6, 0], 1.4: [0, 0, 0]})},
+    # walk: heavy strides. Negative X swings a limb forward (as in Blockbench). Each leg plants its foot ahead
+    # (heel strike), pushes it back under the body with the knee nearly straight, then lifts it - the knee bending
+    # high - and swings it forward again; the foot stays flat to the ground. The arms swing against the legs,
+    # elbows a little bent, the hull rolls with each step and dips as each foot lands.
+    L = 1.4
+    def leg(phase):
+        sh = lambda t: (t + phase) % L
+        thigh = {0.0: -22, 0.35: 0, 0.7: 20, 0.9: 4, 1.15: -20, 1.4: -22}          # stance 0-0.7, swing 0.7-1.4
+        shin = {0.0: 4, 0.35: 2, 0.7: 12, 0.9: 48, 1.15: 22, 1.4: 4}
+        def at(d, t):
+            ks = sorted(d.items())
+            for (t0, v0), (t1, v1) in zip(ks, ks[1:]):
+                if t0 <= t <= t1: return v0 + (v1 - v0) * (t - t0) / (t1 - t0)
+            return ks[-1][1]
+        times = sorted(set([0.0, 0.35, 0.7, 0.9, 1.15, 1.4] + [((t - phase) % L) for t in (0.0, 0.35, 0.7, 0.9, 1.15)]))
+        th, sn, ft = {}, {}, {}
+        for t in times:
+            u = sh(t)
+            a1, a2 = at(thigh, u), at(shin, u)
+            th[t], sn[t] = [round(a1, 2), 0, 0], [round(a2, 2), 0, 0]
+            ft[t] = [round(-(a1 + a2) * 0.9, 2), 0, 0]   # keep the sole (nearly) level
+        return kf(th), kf(sn), kf(ft)
+    tl, sl, fl = leg(0.0)
+    tr, sr, fr = leg(0.7)
+    A["animation.mech_titan.walk"] = {"loop": True, "animation_length": L, "bones": {
+        "leg_l": {"rotation": tl}, "shin_l": {"rotation": sl}, "foot_l": {"rotation": fl},
+        "leg_r": {"rotation": tr}, "shin_r": {"rotation": sr}, "foot_r": {"rotation": fr},
+        "arm_l": {"rotation": kf({0.0: [16, 0, -4], 0.7: [-16, 0, -4], 1.4: [16, 0, -4]})},
+        "forearm_l": {"rotation": kf({0.0: [-6, 0, 0], 0.7: [-22, 0, 0], 1.4: [-6, 0, 0]})},
+        "arm_r": {"rotation": kf({0.0: [-16, 0, 4], 0.7: [16, 0, 4], 1.4: [-16, 0, 4]})},
+        "forearm_r": {"rotation": kf({0.0: [-22, 0, 0], 0.7: [-6, 0, 0], 1.4: [-22, 0, 0]})},
+        "frame": {"rotation": kf({0.0: [0, -5, 2], 0.7: [0, 5, -2], 1.4: [0, -5, 2]})},
+        "root": {"position": kf({0.0: [0, -1.2, 0], 0.2: [0, 0.4, 0], 0.45: [0, 0.6, 0], 0.7: [0, -1.2, 0], 0.9: [0, 0.4, 0], 1.15: [0, 0.6, 0], 1.4: [0, -1.2, 0]})},
     }}
-    # punch: the right arm drives straight out and back (played while the pilot swings)
-    A["animation.mech_titan.punch"] = {"loop": True, "animation_length": 0.5, "bones": {
-        "arm_r": {"rotation": kf({0.0: [-6, 0, 4], 0.1: [-30, 10, 4], 0.2: [-92, -12, 4], 0.3: [-85, -10, 4], 0.5: [-6, 0, 4]})},
-        "frame": {"rotation": kf({0.0: [0, 0, 0], 0.1: [0, 10, 0], 0.2: [0, -14, 0], 0.5: [0, 0, 0]})},
+    # punch: a wind-up (the arm drawn back, the hull turning away), a hard straight drive with the hull turning into
+    # it and a lean forward, a beat held out, then back to guard (played while the pilot swings)
+    A["animation.mech_titan.punch"] = {"loop": True, "animation_length": 0.6, "bones": {
+        "arm_r": {"rotation": kf({0.0: [-6, 0, 4], 0.1: [22, -8, 8], 0.2: [-88, 12, 2], 0.32: [-86, 10, 2], 0.6: [-6, 0, 4]})},
+        "forearm_r": {"rotation": kf({0.0: [-10, 0, 0], 0.1: [-85, 0, 0], 0.2: [-4, 0, 0], 0.32: [-4, 0, 0], 0.6: [-10, 0, 0]})},
+        "arm_l": {"rotation": kf({0.0: [-6, 0, -4], 0.1: [-30, 0, -6], 0.2: [10, 0, -6], 0.6: [-6, 0, -4]})},
+        "forearm_l": {"rotation": kf({0.0: [-10, 0, 0], 0.1: [-60, 0, 0], 0.2: [-30, 0, 0], 0.6: [-10, 0, 0]})},
+        "frame": {"rotation": kf({0.0: [0, 0, 0], 0.1: [2, 16, 0], 0.2: [-8, -18, 0], 0.32: [-6, -15, 0], 0.6: [0, 0, 0]})},
+        "root": {"position": kf({0.0: [0, 0, 0], 0.1: [0, -0.5, 0.6], 0.2: [0, -0.8, -1.5], 0.32: [0, -0.6, -1.2], 0.6: [0, 0, 0]})},
     }}
     return {"format_version": "1.8.0", "animations": A}
 

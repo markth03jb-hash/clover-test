@@ -373,6 +373,10 @@ public final class UiShots {
         steps.add(new Step("mec_rail_cannon", () -> { onServer(p -> UiShotsServer.element(p, "m:rail_cannon")); }, 12, true));
         steps.add(new Step("mec_pilot", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> { for (String part : new String[]{"m:thruster_dash", "m:bulwark_plating", "m:overclock"}) UiShotsServer.element(p, part); UiShotsServer.element(p, "m:pilot"); }); }, 30, true));   // every part built first
         steps.add(new Step("mec_pilot_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 6, true));
+        // the machine walking, frame by frame (put together into a clip afterwards): walk forward, watched from the front
+        steps.add(new Step("mec_walk_0", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); mc.options.keyUp.setDown(true); }, 8, true));
+        for (int i = 1; i < 8; i++) steps.add(new Step("mec_walk_" + i, () -> mc.options.keyUp.setDown(true), 2, true));
+        steps.add(new Step("mec_walk_stop", () -> { mc.options.keyUp.setDown(false); onServer(p -> p.teleportTo(p.serverLevel(), p.getX(), p.getY(), p.getZ() - 6, p.getYRot(), p.getXRot())); }, 6, true));
         steps.add(new Step("mec_pilot_punch", () -> mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND), 4, true));
         steps.add(new Step("mec_titan_buster", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "m:end"); p.setXRot(-15); UiShotsServer.element(p, "m:titan_buster"); }); }, 14, true));   // the fist coming down
         steps.add(new Step("mec_after", () -> { }, 10, true));
