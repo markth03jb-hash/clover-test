@@ -287,6 +287,131 @@ def knight():
     return geo("shadow_knight", B)
 
 
+def ravener():
+    """The Ravener (an original design): a tall, upright stalker about 2.8 blocks high. Broad, high, plated shoulders
+    over a narrow waist, on long backward-bending legs. Its upper arms carry great curved bone scythes, its lower arms
+    small grasping claws. A low-slung, eyeless, crested skull hangs forward with a split jaw that burns blue inside. A
+    ridge of long spines sweeps off its back and a slim tail ends in a crescent barb. Black, with blue light only in
+    the seams."""
+    def sym(cubes): return cubes + mirror_x(cubes)
+    def lift(cubes, dy, dz):   # move a group of cubes (and their pivots) up and back
+        for c in cubes:
+            c["origin"] = [c["origin"][0], round(c["origin"][1] + dy, 3), round(c["origin"][2] + dz, 3)]
+            if "pivot" in c: c["pivot"] = [c["pivot"][0], round(c["pivot"][1] + dy, 3), round(c["pivot"][2] + dz, 3)]
+        return cubes
+    HY, HZ = 4.0, 6.5   # the head sits up on the shoulders, not out in front
+    B = [bone("root", None, [0, 0, 0], [])]
+    body = [
+        cube([-3.2, 19.5, -1.5], [6.4, 4, 5], "plate2"),                       # pelvis
+        cube([-2.3, 22.8, -1.2], [4.6, 4.2, 3.9], "mail"),                     # a narrow waist
+        cube([-4.2, 26.5, -2.4], [8.4, 4.5, 5.4], "plate2"),                   # ribcage
+        cube([-5.8, 30.5, -3.0], [11.6, 5.0, 6.4], "plate"),                   # a broad upper chest
+        cube([-2.2, 31.2, -3.6], [4.4, 3.4, 0.7], "plate3"),                   # sternum plate
+    ]
+    body += sym([   # great pauldrons sloping off the shoulders, each with two swept-back horns
+        cube([5.2, 33.2, -3.8], [4.4, 3.2, 7.4], "plate", rot=[0, 0, -18], pivot=[5.2, 34.8, 0]),
+        cube([5.6, 32.2, -4.0], [3.6, 1.0, 7.8], "plate3", rot=[0, 0, -28], pivot=[5.6, 33.2, 0]),
+        cube([7.2, 35.5, -1.4], [1.2, 6.5, 1.3], "bone", rot=[-40, 0, -22], pivot=[7.8, 35.6, -0.8]),
+        cube([6.0, 35.8, 0.6], [1.0, 4.5, 1.1], "bone", rot=[-55, 0, -12], pivot=[6.5, 35.9, 1.1]),
+    ])
+    for n in range(9):   # shadow smoke boiling up off its shoulders and back, swept behind it
+        x = -5 + n * 1.25
+        h = 7 + 5 * abs(math.sin(n * 1.9)) + (3 if 2 < n < 6 else 0)
+        z = 1.5 + 1.2 * math.sin(n * 2.7)
+        for yaw in (25, -25):
+            body.append(cube([x - 1.1, 33.5 - abs(x) * 0.35, z], [2.2 + 0.6 * (n % 2), h, 0.12], "smoke",
+                             rot=[-28, yaw + 10 * math.sin(n), -x * 2.5], pivot=[x, 33.5 - abs(x) * 0.35, z]))
+    B.append(bone("body", "root", [0, 21, 0.5], body, rotation=[12, 0, 0]))
+    B.append(bone("neck", "body", [0, 33.5, -2.5], [
+        cube([-1.7, 32.5, -4.2], [3.4, 5.0, 3.4], "mail"),                       # a short, thick neck, straight up
+    ]))
+    head = [
+        cube([-2.4, 32.0, -12.0], [4.8, 3.8, 6.4], "skull"),                   # the skull, eyeless
+        cube([-2.0, 32.0, -15.0], [4.0, 2.3, 3.2], "skull"),                   # a short, wedge-like snout
+        cube([-2.7, 35.3, -12.4], [5.4, 1.0, 4.0], "plate3"),                  # a heavy brow ridge
+    ]
+    head += sym([   # two burning eyes under the brow
+        cube([0.6, 34.4, -12.3], [1.8, 0.85, 0.4], "eyes", rot=[0, 0, -14], pivot=[0.6, 34.8, -12]),
+    ])
+    head += sym([   # two long horns sweeping straight back off the brow, and two shorter below them
+        cube([1.6, 35.7, -9.0], [1.1, 1.1, 10.5], "bone", rot=[14, -14, 0], pivot=[2.1, 36.2, -8.5]),
+        cube([1.95, 35.9, 0.4], [0.5, 0.5, 2.5], "bone", rot=[30, -14, 0], pivot=[2.1, 36.2, -8.5]),
+        cube([2.4, 34.0, -8.0], [0.8, 0.8, 6.5], "bone", rot=[6, -26, 0], pivot=[2.8, 34.4, -7.5]),
+    ])
+    head += sym([cube([1.3, 31.0, -14.6], [0.4, 1.4, 0.4], "teeth"), cube([1.1, 31.2, -12.6], [0.35, 1.0, 0.35], "teeth")])   # two fangs a side
+    B.append(bone("head", "neck", [0, 33.5 + HY, -6.5 + HZ], lift(head, HY, HZ), rotation=[4, 0, 0]))
+    jaw = [cube([-2.3, 30.4, -14.4], [4.6, 1.4, 7.8], "skull")]   # a heavy, closed jaw
+    B.append(bone("jaw", "head", [0, 31.4 + HY, -7.0 + HZ], lift(jaw, HY, HZ), rotation=[2, 0, 0]))
+    upper = [   # long, powerful arms: a plated shoulder-arm, a spiked elbow, a heavy forearm and a big taloned hand
+        cube([5.3, 25.5, -2.0], [3.0, 7.5, 3.2], "plate2"),
+        cube([5.1, 24.2, -2.4], [3.4, 1.8, 3.9], "plate3"),                                               # elbow guard
+        cube([6.2, 24.6, 1.2], [1.0, 1.0, 3.2], "bone", rot=[30, 0, 0], pivot=[6.8, 25.1, 1.4]),          # a spike off the elbow
+        cube([5.4, 17.6, -2.0], [2.8, 7.4, 3.0], "plate2", rot=[-24, 0, 0], pivot=[6.8, 25, -0.5]),
+        cube([5.25, 19.0, -2.25], [3.1, 2.4, 3.5], "plate3", rot=[-24, 0, 0], pivot=[6.8, 25, -0.5]),      # bracer at the wrist
+        cube([5.6, 15.4, -4.6], [2.4, 2.8, 1.6], "plate2", rot=[-30, 0, 0], pivot=[6.8, 18.2, -3.6]),     # a narrow, bony hand
+    ]
+    def claw(x, y, z, segs, spread):   # a long skinny finger, bending at each knuckle so it curls into a hooked claw
+        out = []
+        for n, (L, ang, t) in enumerate(segs):
+            mat = "skull" if n < len(segs) - 1 else "bone"
+            out.append(cube([x - t / 2, y - L, z - t / 2], [t, L + 0.15, t], mat, rot=[ang, 0, spread], pivot=[x, y, z]))
+            a = math.radians(ang)
+            y, z = y - L * math.cos(a), z + L * math.sin(a)
+        return out
+    for f, (x, sp) in enumerate(((5.85, 10), (6.8, 0), (7.75, -10))):   # three long fingers
+        k = (1.0, 1.15, 1.0)[f]
+        upper += claw(x, 15.0, -4.4, [(2.8 * k, -18, 0.55), (2.6 * k, -40, 0.45), (2.4 * k, -72, 0.34), (1.4 * k, -105, 0.22)], sp)
+    upper += claw(5.3, 16.2, -4.2, [(2.0, -10, 0.5), (1.8, -40, 0.4), (1.3, -80, 0.26)], 30)   # and a hooked thumb
+    for q in range(3):
+        upper.append(cube([6.0 + q * 0.5, 19 + q * 2, 0.6], [1.6, 6 + q, 0.12], "smoke", rot=[-70 + q * 8, 20 * (q - 1), 0], pivot=[6.6 + q * 0.5, 19 + q * 2, 0.6]))
+    B.append(bone("arm_ul", "body", [6.8, 32.5, -0.3], upper, rotation=[-10, 0, 8]))
+    B.append(bone("arm_ur", "body", [-6.8, 32.5, -0.3], mirror_x(upper), rotation=[-10, 0, -8]))
+    lower = [   # the lower arms: thin, tucked in under the chest, with grasping claws
+        cube([3.6, 23.0, -2.0], [1.6, 4.6, 1.8], "plate2"),
+        cube([3.7, 18.8, -2.1], [1.4, 4.4, 1.6], "bone", rot=[-30, 0, 0], pivot=[4.4, 23, -1.2]),
+    ]
+    for f in range(3):
+        lower.append(cube([3.55 + f * 0.5, 16.8, -4.6], [0.4, 2.4, 0.4], "bone", rot=[-60, 0, (f - 1) * 12], pivot=[3.75 + f * 0.5, 18.6, -3.4]))
+    B.append(bone("arm_ll", "body", [4.0, 27, -0.8], lower, rotation=[-35, 0, -6]))
+    B.append(bone("arm_lr", "body", [-4.0, 27, -0.8], mirror_x(lower), rotation=[-35, 0, 6]))
+    leg = [   # long, lean, backward-bending legs
+        cube([1.7, 12.8, -1.7], [3.3, 8.6, 3.6], "plate2", rot=[-28, 0, 0], pivot=[3.3, 21, 0]),
+        cube([1.5, 14.2, -5.4], [3.7, 2.4, 2.0], "plate3"),                                       # knee guard
+        cube([2.1, 14.4, -6.0], [2.5, 1.0, 1.4], "bone", rot=[-30, 0, 0], pivot=[3.3, 14.9, -5.4]),  # knee spike
+        cube([2.2, 4.0, -5.0], [2.2, 10.5, 2.2], "plate2", rot=[34, 0, 0], pivot=[3.3, 14.4, -4.0]),
+        cube([2.4, 0.8, 0.4], [1.8, 5.2, 1.8], "bone", rot=[-8, 0, 0], pivot=[3.3, 5.6, 1.4]),
+        cube([1.9, 0, -3.6], [2.8, 1.2, 4.6], "plate2"),
+    ]
+    for x in (1.9, 2.95, 4.0):   # three long toe claws and a hooked dewclaw
+        leg.append(cube([x, 0, -5.8], [0.75, 0.9, 2.4], "bone"))
+        leg.append(cube([x + 0.15, 0, -6.8], [0.45, 0.6, 1.1], "teeth"))
+    leg.append(cube([3.0, 1.0, 1.8], [0.6, 0.6, 2.0], "bone", rot=[35, 0, 0], pivot=[3.3, 1.3, 1.9]))
+    B.append(bone("leg_l", "root", [3.3, 21, 0], leg))
+    B.append(bone("leg_r", "root", [-3.3, 21, 0], mirror_x(leg)))
+    prev, y0, z0 = "body", 21.5, 3.4
+    for i in range(6):   # a slim, rising tail
+        t = 2.4 - i * 0.28
+        L = 3.4
+        cubes = [cube([-t / 2, y0 - t / 2, z0], [t, t, L], "plate2"),
+]
+        if i >= 3: cubes.append(cube([-1.0, y0, z0 + 1.0], [2.0, 3 + i, 0.12], "smoke", rot=[-55, 0, 0], pivot=[0, y0, z0 + 1.0]))
+        B.append(bone(f"tail{i}", prev, [0, y0, z0], cubes, rotation=[(-6, -3, 0, 5, 7, 9)[i], 0, 0]))
+        prev, z0 = f"tail{i}", z0 + L
+    B.append(bone("barb", prev, [0, y0, z0], [   # a crescent barb
+        cube([-0.4, y0 - 0.5, z0], [0.8, 1.0, 2.0], "bone"),
+        cube([-0.3, y0 - 0.3, z0 + 1.2], [0.6, 4.2, 1.4], "bone", rot=[-35, 0, 0], pivot=[0, y0, z0 + 1.6]),
+        cube([-0.3, y0 - 3.4, z0 + 1.2], [0.6, 3.2, 1.2], "bone", rot=[35, 0, 0], pivot=[0, y0, z0 + 1.6]),
+    ]))
+    smoke = []
+    for k in range(10):   # low wisps of shadow round the feet
+        ang = k * 2 * math.pi / 10 + 0.3
+        r = 4.5 + 1.2 * math.sin(k * 2.3)
+        x, z = math.cos(ang) * r, math.sin(ang) * r
+        smoke.append(cube([x - 1.2, 0, z], [2.4, 3 + 4 * abs(math.sin(k * 1.7)), 0.12], "smoke", rot=[0, math.degrees(-ang), 0], pivot=[x, 0, z]))
+    B.append(bone("smoke", "root", [0, 0, 0], smoke))
+    return geo("shadow_ravener", B)
+
+
 # ---------------------------------------------------------------------------------------------------- animations
 def kf(d): return {f"{t:.4f}": v for t, v in sorted(d.items())}
 
@@ -317,6 +442,58 @@ def knight_anims():
     return {"format_version": "1.8.0", "animations": {f"animation.shadow_knight.{k}": v for k, v in A.items()}}
 
 
+def ravener_anims():
+    A = {}
+    tail = lambda amp, per: {f"tail{i}": {"rotation": kf({0: [0, amp * (i + 1) / 3, 0], per / 2: [0, -amp * (i + 1) / 3, 0], per: [0, amp * (i + 1) / 3, 0]})} for i in range(6)}
+    A["rise"] = {"animation_length": 1.8, "bones": {   # crouched low under its pool, then it uncoils, jaw wide in a shriek
+        "root": {"position": kf({0: [0, -30, 0], 1.0: [0, -3, 0], 1.25: [0, 0, 0]})},
+        "body": {"rotation": kf({0: [35, 0, 0], 1.0: [25, 0, 0], 1.35: [-12, 0, 0], 1.8: [0, 0, 0]})},
+        "neck": {"rotation": kf({0: [40, 0, 0], 1.2: [10, 0, 0], 1.4: [-30, 0, 0], 1.8: [0, 0, 0]})},
+        "jaw": {"rotation": kf({0: [0, 0, 0], 1.3: [0, 0, 0], 1.45: [35, 0, 0], 1.7: [0, 0, 0]})},
+        "arm_ul": {"rotation": kf({0: [40, 0, 0], 1.3: [0, 0, 0], 1.45: [-60, 0, -25], 1.8: [0, 0, 0]})},
+        "arm_ur": {"rotation": kf({0: [40, 0, 0], 1.3: [0, 0, 0], 1.45: [-60, 0, 25], 1.8: [0, 0, 0]})}}}
+    idle = {   # stands tall and still: back straight, shoulders high, long arms hanging loose at its sides, breathing slowly
+            "body": {"position": kf({0: [0, 0, 0], 1.5: [0, -0.3, 0], 3.0: [0, 0, 0]}),
+                     "rotation": kf({0: [-11, 0, 0], 1.5: [-9.5, 0, 0], 3.0: [-11, 0, 0]})},
+            "neck": {"rotation": kf({0: [0, 0, 0], 1.1: [0, 0, 0], 1.2: [2, 9, 0], 1.9: [2, 9, 0], 2.0: [0, 0, 0], 3.0: [0, 0, 0]})},   # a slow look aside
+            "head": {"rotation": kf({0: [-4, 0, 0], 1.5: [-3, 0, 0], 3.0: [-4, 0, 0]})},
+            "arm_ul": {"rotation": kf({0: [9, 0, 4], 1.5: [8, 0, 6], 3.0: [9, 0, 4]})},
+            "arm_ur": {"rotation": kf({0: [9, 0, -4], 1.5: [8, 0, -6], 3.0: [9, 0, -4]})},
+            "arm_ll": {"rotation": kf({0: [10, 0, 0], 3.0: [10, 0, 0]})},
+            "arm_lr": {"rotation": kf({0: [10, 0, 0], 3.0: [10, 0, 0]})},
+            "smoke": {"rotation": kf({0: [0, 0, 0], 3.0: [0, 60, 0]})}}
+    idle.update(tail(5, 3.0))
+    A["idle"] = {"loop": True, "animation_length": 3.0, "bones": idle}
+    walk = {"leg_l": {"rotation": kf({0: [28, 0, 0], 0.35: [-28, 0, 0], 0.7: [28, 0, 0]})},
+            "leg_r": {"rotation": kf({0: [-28, 0, 0], 0.35: [28, 0, 0], 0.7: [-28, 0, 0]})},
+            "body": {"position": kf({0: [0, 0, 0], 0.175: [0, 0.8, 0], 0.35: [0, 0, 0], 0.525: [0, 0.8, 0], 0.7: [0, 0, 0]}), "rotation": kf({0: [6, 0, 0], 0.7: [6, 0, 0]})},
+            "neck": {"rotation": kf({0: [8, 0, 0], 0.35: [4, 0, 0], 0.7: [8, 0, 0]})},
+            "arm_ul": {"rotation": kf({0: [10, 0, 0], 0.35: [-10, 0, 0], 0.7: [10, 0, 0]})},
+            "arm_ur": {"rotation": kf({0: [-10, 0, 0], 0.35: [10, 0, 0], 0.7: [-10, 0, 0]})}}
+    walk.update(tail(14, 0.7))
+    A["walk"] = {"loop": True, "animation_length": 0.7, "bones": walk}
+    A["attack"] = {"animation_length": 0.6, "bones": {   # a flurry: the blades scissor in, the jaw snaps
+        "arm_ul": {"rotation": kf({0: [0, 0, 0], 0.15: [-100, 0, -40], 0.28: [30, 0, 20], 0.6: [0, 0, 0]})},
+        "arm_ur": {"rotation": kf({0: [0, 0, 0], 0.22: [-100, 0, 40], 0.35: [30, 0, -20], 0.6: [0, 0, 0]})},
+        "arm_ll": {"rotation": kf({0: [0, 0, 0], 0.25: [-50, 0, 0], 0.4: [10, 0, 0], 0.6: [0, 0, 0]})},
+        "arm_lr": {"rotation": kf({0: [0, 0, 0], 0.3: [-50, 0, 0], 0.45: [10, 0, 0], 0.6: [0, 0, 0]})},
+        "neck": {"rotation": kf({0: [0, 0, 0], 0.3: [-20, 0, 0], 0.4: [20, 0, 0], 0.6: [0, 0, 0]})},
+        "jaw": {"rotation": kf({0: [0, 0, 0], 0.3: [40, 0, 0], 0.4: [0, 0, 0], 0.6: [0, 0, 0]})},
+        "body": {"rotation": kf({0: [0, 0, 0], 0.3: [12, 0, 0], 0.6: [0, 0, 0]})}}}
+    A["pounce"] = {"animation_length": 0.9, "bones": {   # a coiled crouch, then it springs, claws thrown forward, and lands low
+        "root": {"position": kf({0: [0, 0, 0], 0.25: [0, 1.5, 0], 0.6: [0, 0, 0]})},
+        "body": {"position": kf({0: [0, 0, 0], 0.12: [0, -2.5, 0], 0.3: [0, 0.5, 0], 0.65: [0, -2, 0], 0.9: [0, 0, 0]}),
+                 "rotation": kf({0: [0, 0, 0], 0.12: [25, 0, 0], 0.3: [15, 0, 0], 0.65: [22, 0, 0], 0.9: [0, 0, 0]})},
+        "neck": {"rotation": kf({0: [0, 0, 0], 0.12: [-15, 0, 0], 0.3: [-20, 0, 0], 0.9: [0, 0, 0]})},
+        "jaw": {"rotation": kf({0: [0, 0, 0], 0.25: [30, 0, 0], 0.6: [0, 0, 0]})},
+        "arm_ul": {"rotation": kf({0: [0, 0, 0], 0.12: [30, 0, 12], 0.3: [-85, 0, -15], 0.6: [-55, 0, -5], 0.9: [0, 0, 0]})},
+        "arm_ur": {"rotation": kf({0: [0, 0, 0], 0.12: [30, 0, -12], 0.3: [-85, 0, 15], 0.6: [-55, 0, 5], 0.9: [0, 0, 0]})},
+        "leg_l": {"rotation": kf({0: [0, 0, 0], 0.12: [-8, 0, 0], 0.3: [30, 0, 0], 0.6: [-12, 0, 0], 0.9: [0, 0, 0]})},
+        "leg_r": {"rotation": kf({0: [0, 0, 0], 0.12: [-8, 0, 0], 0.3: [24, 0, 0], 0.6: [-16, 0, 0], 0.9: [0, 0, 0]})},
+        "tail0": {"rotation": kf({0: [0, 0, 0], 0.3: [25, 0, 0], 0.9: [0, 0, 0]})}}}
+    return {"format_version": "1.8.0", "animations": {f"animation.shadow_ravener.{k}": v for k, v in A.items()}}
+
+
 PAINTERS = {
     "plate": gp.plate_painter((34, 35, 46), (26, 70, 160), (50, 120, 230), ornate=True),
     "plate2": gp.plate_painter((20, 20, 28), (30, 90, 200), (90, 170, 255), engrave=False, ridges=True),
@@ -328,6 +505,9 @@ PAINTERS = {
     "eyes": gp.eyes_painter((12, 12, 18), BLUE, (210, 240, 255)),
     "blade": gp.blade_painter((34, 36, 48), BLUE, BRIGHT),
     "glow": gp.glow_painter(BLUE, BRIGHT),
+    "bone": gp.bone_painter((40, 42, 56), (50, 120, 240), (110, 190, 255)),
+    "skull": gp.bone_painter((34, 36, 48), (50, 120, 240), (110, 190, 255)),
+    "teeth": gp.plate_painter((176, 196, 226), (120, 170, 240), (200, 230, 255), engrave=False, rivets=False),
     "rune": gp.rune_painter((16, 16, 24), (70, 160, 255), (150, 215, 255)),
     "smoke": gp.smoke_painter((6, 6, 10), (30, 70, 160), (60, 140, 255)),
     "flameblade": gp.flameblade_painter((70, 165, 255), (12, 14, 26), (110, 200, 255)),
@@ -356,6 +536,8 @@ def main():
     for d in (GEO, ANIM, TEX): os.makedirs(d, exist_ok=True)
     build("shadow_knight", knight())
     json.dump(knight_anims(), open(os.path.join(ANIM, "shadow_knight.animation.json"), "w"), indent=1)
+    build("shadow_ravener", ravener())
+    json.dump(ravener_anims(), open(os.path.join(ANIM, "shadow_ravener.animation.json"), "w"), indent=1)
     print("shadow models written")
 
 

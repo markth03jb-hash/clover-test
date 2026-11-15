@@ -457,6 +457,8 @@ public final class UiShots {
         steps.add(new Step("shd_army", () -> { }, 30, true));                                                              // following at your side
         steps.add(new Step("shd_knight", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:oathbound_knight")); }, 40, true));   // the Oathbound Knight rising
         steps.add(new Step("shd_knight_idle", () -> { }, 30, true));
+        steps.add(new Step("shd_ravener", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:ravener")); }, 40, true));   // the Ravener rising
+        steps.add(new Step("shd_ravener_idle", () -> { }, 30, true));
         steps.add(new Step("shd_umbral_step", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:umbral_step")); }, 6, true));
         steps.add(new Step("shd_unseen_hand", () -> { onServer(p -> UiShotsServer.element(p, "s:unseen_hand")); }, 8, true));
         steps.add(new Step("shd_command_hunt", () -> { onServer(p -> UiShotsServer.element(p, "s:command_hunt")); }, 10, true));
@@ -535,7 +537,8 @@ public final class UiShots {
 
     /** Textures and models a book's pictures show besides its code (a change to them must re-take the pictures). */
     private static final String[][] ASSETS = {
-            {"shd_", "geo/shadow_knight.geo.json", "textures/geo/shadow_knight.png", "animations/shadow_knight.animation.json"},
+            {"shd_", "geo/shadow_knight.geo.json", "textures/geo/shadow_knight.png", "animations/shadow_knight.animation.json",
+                    "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json"},
             {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"}};
 
     private static String assetsKey(String step) {

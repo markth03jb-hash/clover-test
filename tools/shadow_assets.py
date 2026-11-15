@@ -17,6 +17,7 @@ make('gate_of_shade', *SH, [('d', 'E', 1, 5, 14, 13), ('m', 'e', 1, 5, 14, 13), 
 make('command_hunt', *SH, [('m', 'e', 2, 2, 13, 13), ('a', 'l', 7, 0, 7, 4), ('a', 'l', 7, 11, 7, 15), ('a', 'l', 0, 7, 4, 7), ('a', 'l', 11, 7, 15, 7), ('w', 'p', 7, 7)])
 make('veil', *SH, [('d', 'E', 3, 2, 12, 14), ('a', 'a', 2, 1, 13, 15, 200, 340), ('m', 'p', 6, 6), ('m', 'p', 9, 6)])
 make('oathbound_knight', *SH, [('d', 'E', 4, 2, 11, 12), ('m', 'l', 4, 2, 2, 0), ('m', 'l', 11, 2, 13, 0), ('w', 'l', 5, 6, 7, 7), ('w', 'l', 10, 6, 8, 7), ('a', 'l', 7, 10, 7, 15)])
+make('ravener', *SH, [('d', 'E', 3, 3, 12, 13), ('a', 'l', 4, 2, 7, 13), ('a', 'l', 7, 1, 10, 13), ('a', 'l', 10, 2, 13, 12), ('w', 'p', 6, 5), ('w', 'p', 9, 5)])
 make('sovereigns_domain', *SH, [('m', 'e', 0, 9, 15, 15), ('a', 'l', 2, 11, 3, 6), ('a', 'l', 5, 11, 6, 4), ('a', 'l', 9, 11, 9, 3), ('a', 'l', 12, 11, 12, 6), ('w', 'p', 7, 12)])
 make('night_legion', *SH, [('d', 'E', 0, 10, 15, 15)] + [('m', 'E', x, 6 - (x % 3), x + 2, 10) for x in (1, 5, 9, 12)] + [('w', 'p', x + 1, 7 - (x % 3)) for x in (1, 5, 9, 12)])
 
@@ -74,12 +75,13 @@ lang = json.load(open(LP))
 lang['item.iron_spell_grimoire.shadow_grimoire'] = 'Shadow Grimoire'
 lang['entity.iron_spell_grimoire.shadow_soldier'] = 'Shadow Soldier'
 lang['entity.iron_spell_grimoire.oathbound_knight'] = 'Oathbound Knight'
+lang['entity.iron_spell_grimoire.ravener'] = 'Ravener'
 lang['key.iron_spell_grimoire.shadow_army'] = 'Shadow Army menu'
 lang['ui.iron_spell_grimoire.shadow_grimoire_only'] = 'Only the Shadow Grimoire can cast this.'
 lang['tooltip.iron_spell_grimoire.shadow_grimoire.passive'] = ('Passive - Remnants: what you slay while holding this grimoire leaves a remnant where it fell for 60 s - '
     'a black shadow of it in a dark pool, seen by you alone. Cast Rise on it to raise it as your shadow (3 tries; the stronger it was, the harder). '
     'Your shadows level up from their own kills and rank up: Soldier, Elite, Knight, Captain, General. Open your army with V to equip, rank up, rename or release them.')
-lang['tooltip.iron_spell_grimoire.shadow_grimoire.desc'] = 'Ten pages of black smoke and blue fire, and an army that never stays dead.'
+lang['tooltip.iron_spell_grimoire.shadow_grimoire.desc'] = 'Eleven pages of black smoke and blue fire, and an army that never stays dead.'
 lang['tooltip.iron_spell_grimoire.shadow_grimoire.lore'] = 'Whatever falls before you rises again - for you.'
 for k, (title, guide) in {
  'rise': ('Rise', 'Raise the remnant you look at as your shadow - it climbs up out of its pool, eyes burning blue. 3 tries each; weak foes rise easily, strong ones rarely.'),
@@ -89,7 +91,10 @@ for k, (title, guide) in {
  'gate_of_shade': ('Gate of Shade', 'Sink every shadow at your side into your own shadow - or call them all out again.'),
  'command_hunt': ('Command: Hunt', 'Mark the foe you aim at: every shadow at your side turns on it, and its armour is torn down for 8 s.'),
  'veil': ('Veil', 'For 5 s you melt into shadow: foes lose sight of you, and your next blow lands 50% harder.'),
- 'oathbound_knight': ('Oathbound Knight', 'Call your exclusive shadow, the Oathbound Knight - a towering knight of black plate with a blue greatsword. It joins your army at the Knight rank and can rise to Sovereign\'s Hand.'),
+ 'oathbound_knight': ('Oathbound Knight', 'Call your exclusive shadow, the Oathbound Knight - a towering knight of black plate with a blue greatsword. It joins your army at the Knight rank and can rise to Sovereign\'s Hand. '
+     'Its own instincts: Oath Cleave - every 8 s in a fight its greatsword sweeps a wide arc before it, throwing foes back. Sworn Guard - when you fall below 40% health it steps out of your shadow at your side, draws every foe near onto itself and stands like a wall for 6 s.'),
+ 'ravener': ('Ravener', 'Call your second exclusive shadow, the Ravener - a tall stalker of black shadow with burning eyes, swept horns, long taloned arms and a hooked tail. It joins your army at the Knight rank and can rise to Sovereign\'s Hand. '
+     'Its own instincts: Pounce - it leaps onto foes up to 14 blocks away, at once on anything that strikes you. Devour - whatever it kills heals it by a quarter. Frenzy - hurt below half, it shrieks and runs wild for 8 s, faster and harder-hitting.'),
  'sovereigns_domain': ('Sovereign\'s Domain', 'Mode, 60 s: your shadows hit 50% harder and move faster, and any that fall rise again after 3 s instead of 30.'),
  'night_legion': ('Night Legion', 'Your whole army - even the shadows not at your side - bursts out of the ground in ranks and charges ahead behind a tide of shadow. Surpassing Limits: a second wave.'),
 }.items():

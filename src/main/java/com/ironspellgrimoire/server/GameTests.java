@@ -812,6 +812,7 @@ public final class GameTests {
                 "command_hunt", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::commandHunt, "",
                 "veil", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::veil, "q",
                 "oathbound_knight", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::oathboundKnight, "q",
+                "ravener", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::ravener, "q",
                 "sovereigns_domain", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::sovereignsDomain, "q",
                 "night_legion", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::nightLegion, ""));
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));

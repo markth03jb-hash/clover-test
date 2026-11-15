@@ -87,4 +87,8 @@ public final class AddonEntities {
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.OathboundKnight>> OATHBOUND_KNIGHT = ENTITIES.register("oathbound_knight",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.OathboundKnight>of(com.ironspellgrimoire.entity.OathboundKnight::new, MobCategory.MISC).sized(0.9F, 2.9F)
                     .fireImmune().clientTrackingRange(10).build("oathbound_knight"));
+    /** The Shadow Grimoire's second exclusive shadow, the Ravener (an original design). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.ShadowRavener>> SHADOW_RAVENER = ENTITIES.register("ravener",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.ShadowRavener>of(com.ironspellgrimoire.entity.ShadowRavener::new, MobCategory.MISC).sized(0.9F, 2.8F)
+                    .fireImmune().clientTrackingRange(10).build("ravener"));
 }

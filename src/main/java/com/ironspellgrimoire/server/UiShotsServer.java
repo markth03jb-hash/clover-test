@@ -245,6 +245,7 @@ public final class UiShotsServer {
             case "command_hunt" -> { faceForward(p); ShadowFx.commandHunt(p, 10f); }
             case "veil" -> ShadowFx.veil(p, 10f);
             case "oathbound_knight" -> { faceForward(p); ShadowFx.oathboundKnight(p, 10f); }
+            case "ravener" -> { faceForward(p); ShadowArmy.recallAll(p); ShadowFx.ravener(p, 10f); }
             case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
             case "night_legion" -> { faceForward(p); ShadowFx.nightLegion(p, 10f); }
             case "gate_of_shade" -> ShadowFx.gateOfShade(p, 10f);

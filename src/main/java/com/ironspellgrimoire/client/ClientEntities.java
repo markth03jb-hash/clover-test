@@ -30,5 +30,6 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.CINDER_SOVEREIGN.get(), CinderSovereignRenderer::new);
         e.registerEntityRenderer(AddonEntities.SHADOW_SOLDIER.get(), ShadowSoldierRenderer::new);
         e.registerEntityRenderer(AddonEntities.OATHBOUND_KNIGHT.get(), OathboundKnightRenderer::new);
+        e.registerEntityRenderer(AddonEntities.SHADOW_RAVENER.get(), ShadowRavenerRenderer::new);
     }
 }

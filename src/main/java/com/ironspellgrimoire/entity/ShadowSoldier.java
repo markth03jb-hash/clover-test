@@ -104,6 +104,7 @@ public class ShadowSoldier extends PathfinderMob {
             if (sup.hasAttribute(Attributes.ATTACK_DAMAGE)) baseDmg = Math.max(3, sup.getBaseValue(Attributes.ATTACK_DAMAGE));
         }
         if (this instanceof OathboundKnight) { baseHp = 80; baseDmg = 9; }
+        if (this instanceof ShadowRavener) { baseHp = 60; baseDmg = 8; getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.38); }
         double hp = Math.min(600, baseHp * (1 + 0.08 * (level - 1)) * (1 + 0.25 * rank));
         double dmg = baseDmg * (1 + 0.06 * (level - 1)) * (1 + 0.2 * rank);
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(hp);
