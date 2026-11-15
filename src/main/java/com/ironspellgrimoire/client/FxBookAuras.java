@@ -38,6 +38,7 @@ import org.joml.Matrix4f;
  * 32 Mech        - a toothed gear turning behind it, targeting brackets at the corners and a scan line
  * 33 Weather     - a little cloud above it raining, now and then a flash
  * 34 Overdrive   - a heart-monitor trace running behind it, a pulse ring on every beat
+ * 35 Dream       - a sleepy crescent moon in the corner, sheep-shaped clouds drifting round it, stars twinkling
  */
 final class FxBookAuras extends FxBase {
    private FxBookAuras() {}
@@ -646,6 +647,25 @@ final class FxBookAuras extends FxBase {
             double beat = (t * 0.024) % 1.0;   // in time with the trace
             double r = 0.3 + 0.6 * beat;
             ring(m, r, r * 0.9, Z - 0.01, pal, al * (float)(1 - beat) * 0.6F, 0.014F, 40, 0);
+         }
+         case 35 -> {   // Dream: a sleepy moon, drifting sheep-clouds, twinkling stars
+            FxBooks.underglow(m, HW, HH, pal, 0.22F * al);
+            Vec3 mc = P(-0.66, 0.6, Z - 0.02);   // up in the corner, clear of the pages
+            glow(m, mc, 0.3, new float[]{1.0F, 0.95F, 0.78F}, al * 0.3F);
+            disc(vc, m, n, mc, 0.17, 0.17, new float[]{1.0F, 0.95F, 0.78F}, al * 0.9F, 24);
+            disc(vc, m, n, mc.add(0.07, 0.04, 0.003), 0.145, 0.145, new float[]{0.16F, 0.12F, 0.3F}, al * 0.9F, 24);
+            float[] fluff = {0.97F, 0.95F, 0.98F}, face = {0.3F, 0.24F, 0.42F};
+            for (int k = 0; k < 3; k++) {   // sheep-clouds drifting round the outside
+               double a = t * 0.012 + k * Math.PI * 2 / 3;
+               Vec3 c = polar(a, 0.82, 0.66, Z + 0.02).add(0, 0.03 * Math.sin(t * 0.08 + k), 0);
+               for (int b2 = 0; b2 < 4; b2++) disc(vc, m, n, c.add(Math.cos(b2 * 1.6) * 0.05, Math.sin(b2 * 2.3) * 0.03, 0.001 * b2), 0.055, 0.045, fluff, al * 0.9F, 10);
+               disc(vc, m, n, c.add(0.07, 0.01, 0.006), 0.03, 0.028, face, al * 0.9F, 8);
+            }
+            for (int k = 0; k < 7; k++) {   // twinkling stars
+               double tw = 0.5 + 0.5 * Math.sin(t * 0.12 + k * 2.3);
+               Vec3 c = polar(k * 0.9 + 0.3, 0.7 + 0.12 * h(k), 0.58 + 0.12 * h(k + 3), Z + 0.03);
+               FxBooks.lstar(m, c, (float) (0.025 + 0.02 * tw), k % 2 == 0 ? pal : 36, al * (float) tw);
+            }
          }
          default -> FxBooks.underglow(m, HW, HH, pal, 0.25F * al);
       }

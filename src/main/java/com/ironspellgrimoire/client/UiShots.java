@@ -430,6 +430,27 @@ public final class UiShots {
             b.showPart("spells:0");
         }, 15, false));
         steps.add(new Step("ovd_book_done", () -> mc.setScreen(null), 4, true));
+        steps.add(new Step("drm_target", () -> { mc.setScreen(null); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "d:target")); }, 10, true));
+        steps.add(new Step("drm_dream_mote", () -> { onServer(p -> UiShotsServer.element(p, "d:dream_mote")); }, 6, true));
+        steps.add(new Step("drm_counting_sheep", () -> { onServer(p -> UiShotsServer.element(p, "d:counting_sheep")); }, 12, true));
+        steps.add(new Step("drm_pillow_fortress", () -> { onServer(p -> UiShotsServer.element(p, "d:pillow_fortress")); }, 14, true));
+        steps.add(new Step("drm_dream_clock", () -> { onServer(p -> UiShotsServer.element(p, "d:dream_clock")); }, 14, true));
+        steps.add(new Step("drm_toy_parade", () -> { onServer(p -> UiShotsServer.element(p, "d:toy_parade")); }, 14, true));
+        steps.add(new Step("drm_nightmare_shard", () -> { onServer(p -> UiShotsServer.element(p, "d:nightmare_shard")); }, 8, true));
+        steps.add(new Step("drm_sleepwalk", () -> { onServer(p -> UiShotsServer.element(p, "d:sleepwalk")); }, 12, true));
+        steps.add(new Step("drm_rude_awakening", () -> { onServer(p -> UiShotsServer.element(p, "d:rude_awakening")); }, 8, true));
+        steps.add(new Step("drm_half_asleep", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "d:half_asleep")); }, 16, true));
+        steps.add(new Step("drm_dream_world", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "d:dream_world")); }, 26, true));   // the dream unfolding
+        steps.add(new Step("drm_moon", () -> { }, 30, true));   // the moon coming down
+        steps.add(new Step("drm_hud", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 50, true));   // standing still: dozing off
+        steps.add(new Step("drm_wheel", () -> { onServer(p -> UiShotsServer.element(p, "d:end")); GrimoireWheel.forceOpen = true; }, 14, true));
+        steps.add(new Step("drm_wheel_done", () -> { GrimoireWheel.forceOpen = false; try { io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); } catch (RuntimeException ignored) { } mc.options.hideGui = true; }, 4, true));
+        steps.add(new Step("drm_book", () -> {
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.DREAM_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("drm_book_done", () -> mc.setScreen(null), 4, true));
 
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)
@@ -470,7 +491,7 @@ public final class UiShots {
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
         Class<?>[] shared = {GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class, FxBase.class, GravityFxClient.class, FxBooks.class, FxBookAuras.class, GrimoireFloatRenderer.class};
         String[][] books = {{"grav_", "Gravity"}, {"snd_", "Sound"}, {"ink_", "Ink"}, {"err_", "Error"}, {"tre_", "Treasure"}, {"chn_", "Chain"}, {"hun_", "Hunter"},
-                {"voi_", "Void"}, {"gam_", "Gambler"}, {"tar_", "Tarot"}, {"aby_", "Abyss"}, {"mec_", "Mech"}, {"wea_", "Weather"}, {"ovd_", "Overdrive"}};
+                {"voi_", "Void"}, {"gam_", "Gambler"}, {"tar_", "Tarot"}, {"aby_", "Abyss"}, {"mec_", "Mech"}, {"wea_", "Weather"}, {"ovd_", "Overdrive"}, {"drm_", "Dream"}};
         for (String[] b : books) if (step.startsWith(b[0])) {   // each book's pictures depend on its own two classes and the shared drawing code
             try {
                 Class<?>[] r = java.util.Arrays.copyOf(shared, shared.length + 2);

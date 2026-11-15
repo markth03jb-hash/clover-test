@@ -1,6 +1,16 @@
-Iron Spell Grimoire v1.102.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.103.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.103.0
+- New: the Dream Grimoire (lavender leather, a sleeping crescent moon) - inspired by a sleepy captain's Dream Magic,
+  with its own original look: a soft pastel night of coral, peacock teal and gold stars. Passive - Drowsy: your spells
+  make foes drowsy and slower; fully drowsy they fall Asleep for 3 s, and the first blow wakes them 50% harder. Stand
+  still for 2 s and you doze off: mana comes back three times as fast (a little moon by your hotbar fills up).
+  Pages: Lullaby Mote, Counting Sheep, Pillow Fortress, Sleepwalk (leave a sleeping you behind), Dream Clock (its
+  hands run backwards and everything slows), Toy Parade (plush toys waddle out), Nightmare Shard, Rude Awakening
+  (wakes every sleeper with a crash), Half Asleep (20 s: dozing yet aware, motes fly at foes on their own) and the
+  ultimate Dream World (a pastel dream lulls everything to sleep in waves, then a sleepy moon comes down).
 
 NEW IN 1.102.0
 - Every grimoire now has its own aura round the open book while you cast - no more borrowed ones (the newer books all

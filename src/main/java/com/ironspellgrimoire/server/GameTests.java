@@ -382,7 +382,7 @@ public final class GameTests {
             if (!np.isEmpty() || !nd.isEmpty()) bad.add("gave status effects: " + np + " " + nd);
             if (bad.isEmpty()) pass(name, "damage dealt: " + String.join(", ", done));
             else fail(name, String.join("; ", bad));
-            Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, TreasureFx.AEGIS); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); Moves.ends(p, OverdriveFx.MODE);
+            Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, TreasureFx.AEGIS); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); Moves.ends(p, OverdriveFx.MODE); Moves.ends(p, DreamFx.MODE);
             return true;
         }
     }
@@ -792,6 +792,17 @@ public final class GameTests {
                 "ribbon_bind", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::ribbonBind, "",
                 "redline", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::lastMinute, "q",
                 "final_beat", (java.util.function.BiConsumer<ServerPlayer, Float>) OverdriveFx::finalBeat, ""));
+        queue.add(new BookMovesTest("dream", com.ironspellgrimoire.registry.AddonItemRegistry.DREAM_GRIMOIRE::get, DreamFx.class,
+                "dream_mote", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::lullabyMote, "",
+                "counting_sheep", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::countingSheep, "",
+                "pillow_fortress", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::pillowFortress, "q",
+                "sleepwalk", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::sleepwalk, "q",
+                "dream_clock", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::dreamClock, "",
+                "toy_parade", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::toyParade, "",
+                "nightmare_shard", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::nightmareShard, "",
+                "rude_awakening", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::rudeAwakening, "c",
+                "half_asleep", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::halfAsleep, "q",
+                "dream_world", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::dreamWorld, ""));
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));
