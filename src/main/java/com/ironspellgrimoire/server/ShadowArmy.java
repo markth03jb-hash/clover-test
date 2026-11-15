@@ -77,6 +77,29 @@ public final class ShadowArmy {
         return Math.min(10, 3 + (lv - 1) * 2 + (lv >= GrimoireMastery.MAX_LEVEL ? 1 : 0));
     }
 
+    public static Vec3 stationOf(CompoundTag e) {
+        net.minecraft.nbt.ListTag l = e.getList("st", Tag.TAG_DOUBLE);
+        return new Vec3(l.getDouble(0), l.getDouble(1), l.getDouble(2));
+    }
+
+    /** Station a shadow where it stands (or call it back to your side). */
+    static void toggleStation(ServerPlayer p, CompoundTag e) {
+        ShadowSoldier s = summoned(p, e.getInt("id"));
+        if (e.contains("st")) {
+            e.remove("st"); e.remove("stdim");
+            if (s != null) s.station = null;
+            p.displayClientMessage(Component.literal(e.getString("name") + " returns to your side").withStyle(ChatFormatting.AQUA), true);
+            return;
+        }
+        if (s == null) { p.displayClientMessage(Component.literal("It must be out at your side to be stationed").withStyle(ChatFormatting.GRAY), true); return; }
+        net.minecraft.nbt.ListTag l = new net.minecraft.nbt.ListTag();
+        for (double v : new double[]{s.getX(), s.getY(), s.getZ()}) l.add(net.minecraft.nbt.DoubleTag.valueOf(v));
+        e.put("st", l);
+        e.putString("stdim", p.serverLevel().dimension().location().toString());
+        s.station = s.position();
+        p.displayClientMessage(Component.literal(e.getString("name") + " keeps watch here - Shadow Step brings you back to it").withStyle(ChatFormatting.AQUA), true);
+    }
+
     public static int equippedCount(Player p) {
         int n = 0;
         for (Tag t : list(p)) if (((CompoundTag) t).getBoolean("eq") && !((CompoundTag) t).getBoolean("excl")) n++;
@@ -185,6 +208,7 @@ public final class ShadowArmy {
                 : AddonEntities.SHADOW_SOLDIER.get().create(sl);
         if (s == null) return null;
         s.setup(p.getUUID(), e.getString("type"), e.getInt("id"), e.getInt("lvl"), e.getInt("rank"), e.getString("name"), temporary);
+        if (temporary <= 0 && e.contains("st")) s.station = stationOf(e);
         s.moveTo(at.x, at.y, at.z, p.getYRot(), 0);
         sl.addFreshEntity(s);
         if (temporary <= 0) OUT.computeIfAbsent(p.getUUID(), k -> new HashMap<>()).put(e.getInt("id"), s);
@@ -219,15 +243,17 @@ public final class ShadowArmy {
             CompoundTag e = (CompoundTag) t;
             int id = e.getInt("id");
             ShadowSoldier s = m.get(id);
-            boolean want = e.getBoolean("eq") && !gate && sl.getGameTime() >= e.getLong("rec");
+            boolean stationed = e.contains("st");
+            boolean want = e.getBoolean("eq") && !gate && sl.getGameTime() >= e.getLong("rec")
+                    && (!stationed || (e.getString("stdim").equals(sl.dimension().location().toString()) && sl.isLoaded(net.minecraft.core.BlockPos.containing(stationOf(e)))));
             if (want && s == null) {
-                Vec3 at = p.position().add(new Vec3(Math.cos(id * 2.4) * 2.5, 0, Math.sin(id * 2.4) * 2.5));
+                Vec3 at = stationed ? stationOf(e) : p.position().add(new Vec3(Math.cos(id * 2.4) * 2.5, 0, Math.sin(id * 2.4) * 2.5));
                 raise(p, e, at, 0);
             } else if (!want && s != null) {
                 ShadowFx.sinkPool(sl, s.position(), s.getBbWidth());
                 s.discard();
                 m.remove(id);
-            } else if (s != null && s.distanceToSqr(p) > 40 * 40) {   // left far behind: it steps out of its master's shadow
+            } else if (s != null && !stationed && s.distanceToSqr(p) > 40 * 40) {   // left far behind: it steps out of its master's shadow
                 Vec3 at = p.position().add(Math.cos(id * 2.4) * 2, 0, Math.sin(id * 2.4) * 2);
                 s.teleportTo(at.x, at.y, at.z);
             }
@@ -311,7 +337,7 @@ public final class ShadowArmy {
             CompoundTag e = (CompoundTag) t;
             int rec = (int) Math.max(0, (e.getLong("rec") - now) / 20);
             l.add(new ShadowPackets.Entry(e.getInt("id"), e.getString("type"), e.getString("name"), e.getInt("lvl"), e.getInt("xp"), xpNext(e.getInt("lvl")),
-                    e.getInt("rank"), e.getBoolean("eq"), e.getBoolean("excl"), rec, canRankUp(e) && rankBlock(p, e) == 0, rankBlock(p, e)));
+                    e.getInt("rank"), e.getBoolean("eq"), e.getBoolean("excl"), rec, canRankUp(e) && rankBlock(p, e) == 0, rankBlock(p, e), e.contains("st")));
         }
         int[] ch = new int[EXCLUSIVES.length];
         for (int i = 0; i < ch.length; i++) ch[i] = challengeState(p, i);
@@ -323,6 +349,7 @@ public final class ShadowArmy {
         if (action == 0) { open(p); return; }
         if (action == 5) { challenge(p, id); return; }
         if (action == 6) { arise(p, id); keep(p); open(p); return; }
+        if (action >= 10) { HunterAscension.handle(p, action, id); return; }
         CompoundTag e = find(p, id);
         if (e == null) return;
         switch (action) {
@@ -343,6 +370,7 @@ public final class ShadowArmy {
                     ShadowFx.play(p.serverLevel(), p.position(), "shadow_rise", 1.0f, 1.4f);
                 }
             }
+            case 7 -> toggleStation(p, e);   // station here / call back
             case 3 -> {   // rename
                 String n = name.strip();
                 if (!n.isEmpty()) {

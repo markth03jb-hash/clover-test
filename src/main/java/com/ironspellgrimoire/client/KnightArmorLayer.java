@@ -53,6 +53,7 @@ public class KnightArmorLayer extends RenderLayer<AbstractClientPlayer, PlayerMo
                 PlayerRenderer r = e.getSkin(skin);
                 if (r != null) {
                     r.addLayer(new KnightArmorLayer(r));
+                    r.addLayer(new MantleLayer(r));
                     r.addLayer(new GeoFormLayer(r));
                     r.addLayer(new AuraOutlineLayer(r));
                     r.addLayer(new FistFlameLayer(r));

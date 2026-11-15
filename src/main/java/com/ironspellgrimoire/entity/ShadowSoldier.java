@@ -47,6 +47,8 @@ public class ShadowSoldier extends PathfinderMob {
     private int challengeTicks;
     private net.minecraft.server.level.ServerBossEvent bar;
     private int armyId, temporary, level = 1;
+    /** Stationed (army menu): it keeps watch here instead of following its master. */
+    public Vec3 station;
     public int hunting;   // Command: Hunt - ticks it hits harder
 
     public ShadowSoldier(EntityType<? extends ShadowSoldier> type, Level level) {
@@ -256,11 +258,15 @@ public class ShadowSoldier extends PathfinderMob {
     static class FollowMaster extends Goal {
         final ShadowSoldier s;
         FollowMaster(ShadowSoldier s) { this.s = s; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
-        @Override public boolean canUse() { Player o = s.owner(); return o != null && s.getTarget() == null && s.distanceToSqr(o) > 16; }
-        @Override public boolean canContinueToUse() { Player o = s.owner(); return o != null && s.getTarget() == null && s.distanceToSqr(o) > 6; }
+        @Override public boolean canUse() { Player o = s.owner(); return o != null && s.getTarget() == null && (s.station != null ? s.distanceToSqr(s.station) > 4 : s.distanceToSqr(o) > 16); }
+        @Override public boolean canContinueToUse() { Player o = s.owner(); return o != null && s.getTarget() == null && (s.station != null ? s.distanceToSqr(s.station) > 2 : s.distanceToSqr(o) > 6); }
         @Override public void tick() {
             Player o = s.owner();
             if (o == null) return;
+            if (s.station != null) {   // back to its post
+                if (s.tickCount % 10 == 0) s.getNavigation().moveTo(s.station.x, s.station.y, s.station.z, 1.0);
+                return;
+            }
             s.getLookControl().setLookAt(o, 10, s.getMaxHeadXRot());
             if (s.distanceToSqr(o) > 24 * 24) {
                 Vec3 at = o.position().add(o.getLookAngle().scale(-2));
@@ -280,6 +286,10 @@ public class ShadowSoldier extends PathfinderMob {
             LivingEntity a = o.getLastHurtByMob(), b = o.getLastHurtMob(), c = s.getLastHurtByMob();
             for (LivingEntity e : new LivingEntity[]{b, a, c})
                 if (e != null && e.isAlive() && !s.isFriend(e) && e.distanceToSqr(s) < 28 * 28 && !(e instanceof Player pl && pl.isCreative())) return e;
+            if (s.station != null && s.tickCount % 20 == 0) {   // on watch: it turns on anything hostile that comes near its post
+                for (net.minecraft.world.entity.monster.Enemy en : s.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, s.getBoundingBox().inflate(10), m -> m instanceof net.minecraft.world.entity.monster.Enemy && m.isAlive() && !s.isFriend(m)).stream().map(m -> (net.minecraft.world.entity.monster.Enemy) m).toList())
+                    return (LivingEntity) en;
+            }
             return null;
         }
         @Override public boolean canUse() { return s.getTarget() == null && s.tickCount % 5 == 0 && pick() != null; }

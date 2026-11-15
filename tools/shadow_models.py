@@ -412,6 +412,103 @@ def ravener():
     return geo("shadow_ravener", B)
 
 
+def mantle_pieces():
+    """Mantle of Shades (an original design): three shadows sink into their master and wrap them - a hood of black
+    shadow-cloth with a jagged cowl and a half-mask over the mouth (two blue eye-lights under the brim), cracked black
+    plates over the chest and back with blue light in the cracks, a tattered shroud hanging behind, plated shoulders
+    with smoke curling off them, bracers and greaves ringed with blue. Worn on the player's own model parts (GeoForms),
+    in each part's space: y is flipped (model +y = up for the head, the body/arms/legs hang into -y), front is -z."""
+    def sym(cubes): return cubes + mirror_x(cubes)
+    helm = [
+        cube([-4.7, 7.9, -4.7], [9.4, 1.1, 9.4], "shroud"),                       # the hood: crown, back, sides
+        cube([-4.7, -0.6, 3.7], [9.4, 8.6, 1.0], "shroud"),
+        cube([-1.6, 8.6, -3.0], [3.2, 1.0, 7.0], "shroud"),                       # a ridge down the crown
+        cube([-0.6, 8.9, 1.5], [1.2, 1.4, 4.4], "shroud", rot=[-25, 0, 0], pivot=[0, 9.4, 2]),   # its tip trailing back
+        cube([-3.0, 6.8, -5.5], [6.0, 1.3, 1.4], "shroud", rot=[18, 0, 0], pivot=[0, 7.5, -4.8]),   # the jagged brim over the eyes
+        cube([-4.3, -0.4, -4.85], [8.6, 3.5, 0.7], "plate2"),                   # the half-mask over the mouth
+        cube([-0.25, 0.0, -4.95], [0.5, 2.8, 0.15], "glow"),                    # a seam of light down it
+    ]
+    helm += sym([
+        cube([3.7, -0.6, -4.7], [1.0, 8.6, 9.4], "shroud"),
+        cube([3.8, 5.5, -5.6], [1.0, 2.6, 1.6], "shroud", rot=[0, 0, -12], pivot=[4.2, 8, -4.8]),   # the cowl's ragged front edges
+        cube([1.0, 4.05, -4.15], [2.2, 0.6, 0.2], "eyes", rot=[0, 0, -10], pivot=[1, 4.3, -4.1]),   # eye-lights under the brim
+        cube([3.6, -0.5, -4.6], [0.9, 2.5, 4.0], "plate2"),                     # the mask wraps the jaw
+    ])
+    smoke_h = []
+    for k in range(5):
+        ang = k * 1.26 + 0.5
+        x, z = math.cos(ang) * 3.6, 2.5 + math.sin(ang) * 1.2
+        smoke_h.append(cube([x - 1.0, 8.0, z], [2.0, 3.5 + 1.5 * (k % 2), 0.12], "smoke", rot=[-20, math.degrees(-ang), 0], pivot=[x, 8.0, z]))
+    chest = [
+        cube([-4.5, -7.4, -2.75], [9.0, 7.6, 0.7], "plate2"),                   # the breastplate, cracked with light
+        cube([-4.5, -7.4, 2.05], [9.0, 7.6, 0.7], "plate2"),                    # the backplate
+        cube([-3.8, -0.4, -3.0], [7.6, 2.2, 0.8], "plate3"),                    # a high collar
+        cube([-4.4, -8.8, -2.5], [8.8, 1.4, 5.0], "mail"),                      # the belt of wound shadow
+        cube([-0.25, -6.8, -2.82], [0.5, 6.2, 0.1], "glow"),
+        cube([-3.5, -4.2, -2.82], [3.0, 0.4, 0.1], "glow", rot=[0, 0, 22], pivot=[-2, -4, -2.8]),
+        cube([0.8, -2.6, -2.82], [2.6, 0.4, 0.1], "glow", rot=[0, 0, -28], pivot=[2, -2.4, -2.8]),
+        cube([-4.0, -12.4, -2.6], [8.0, 3.6, 0.5], "shroud"),                     # a short fall of cloth before the hips
+    ]
+    chest += sym([cube([3.8, -0.4, -2.8], [1.0, 2.2, 5.6], "plate3")])
+    shroud = []
+    for i, x in enumerate((-4.2, -2.4, -0.6, 1.2, 3.0)):   # the tattered shroud behind, in strips of uneven length
+        L = 14 + (3 if i % 2 else 0) + (2 if i == 2 else 0)
+        shroud.append(cube([x, -L, 2.8], [1.8, L, 0.3], "shroud"))
+    arm = [
+        cube([-2.9, -1.4, -2.9], [5.8, 3.6, 5.8], "plate2"),                    # the shoulder plate
+        cube([-3.1, -1.9, -3.1], [6.2, 0.7, 6.2], "plate3"),                    # its rim
+        cube([-2.6, -10.0, -2.6], [5.2, 4.6, 5.2], "plate2"),                   # the bracer
+        cube([-2.65, -7.6, -2.65], [5.3, 0.4, 5.3], "glow"),                    # ringed with blue
+        cube([-2.7, -10.2, -2.7], [5.4, 0.6, 5.4], "plate3"),
+    ]
+    smoke_a = []
+    for k in range(3):
+        ang = k * 2.1
+        smoke_a.append(cube([math.cos(ang) * 2.2 - 0.9, 2.0, math.sin(ang) * 2.2], [1.8, 3 + k, 0.12], "smoke", rot=[-15, math.degrees(-ang), 0], pivot=[math.cos(ang) * 2.2, 2.0, math.sin(ang) * 2.2]))
+    leg = [
+        cube([-2.5, -11.8, -2.7], [5.0, 5.8, 5.4], "plate2"),                   # the greave
+        cube([-2.1, -6.8, -2.95], [4.2, 2.2, 1.0], "plate3"),                   # the knee plate
+        cube([-2.55, -9.0, -2.75], [5.1, 0.4, 5.5], "glow"),
+        cube([-2.6, -3.8, -2.6], [5.2, 3.8, 5.2], "mail"),                      # wound shadow at the thigh
+    ]
+    return {
+        "mantle_helm": geo("mantle_helm", [bone("root", None, [0, 0, 0], helm), bone("smoke", "root", [0, 8, 2.5], smoke_h)]),
+        "mantle_chest": geo("mantle_chest", [bone("root", None, [0, 0, 0], chest), bone("shroud", "root", [0, 0, 2.8], shroud)]),
+        "mantle_arm": geo("mantle_arm", [bone("root", None, [0, 0, 0], arm), bone("smoke", "root", [0, 2, 0], smoke_a)]),
+        "mantle_leg": geo("mantle_leg", [bone("root", None, [0, 0, 0], leg)]),
+    }
+
+
+def mantle_anims(name):
+    """form: the shadow pours over you (each piece swells out of nothing); idle: it breathes, its smoke curls."""
+    form = {"root": {"scale": kf({0: [0.3, 0.3, 0.3], 0.3: [1.12, 1.12, 1.12], 0.55: [1, 1, 1]})}}
+    idle = {"root": {"scale": kf({0: [1, 1, 1], 1.5: [1.02, 1.02, 1.02], 3.0: [1, 1, 1]})}}
+    if name in ("mantle_helm", "mantle_arm"): idle["smoke"] = {"rotation": kf({0: [0, 0, 0], 3.0: [0, 90, 0]})}
+    if name == "mantle_chest": idle["shroud"] = {"rotation": kf({0: [4, 0, 0], 1.5: [9, 0, 0], 3.0: [4, 0, 0]})}
+    return {"format_version": "1.8.0", "animations": {f"animation.{name}.form": {"animation_length": 0.55, "bones": form},
+                                                      f"animation.{name}.idle": {"loop": True, "animation_length": 3.0, "bones": idle}}}
+
+
+def mantle_preview_geo():
+    """A plain mannequin wearing every Mantle piece, in world space (y up), for the preview only."""
+    mann = [cube([-4, 24, -4], [8, 8, 8], "skin"), cube([-4, 12, -2], [8, 12, 4], "skin"),
+            cube([-8, 12, -2], [4, 12, 4], "skin"), cube([4, 12, -2], [4, 12, 4], "skin"),
+            cube([-4, 0, -2], [4, 12, 4], "skin"), cube([0, 0, -2], [4, 12, 4], "skin")]
+    P = mantle_pieces()
+    def placed(name, dx, dy):
+        out = []
+        for b in P[name]["minecraft:geometry"][0]["bones"]:
+            for c in b["cubes"]:
+                c = json.loads(json.dumps(c))
+                c["origin"] = [c["origin"][0] + dx, c["origin"][1] + dy, c["origin"][2]]
+                if "pivot" in c: c["pivot"] = [c["pivot"][0] + dx, c["pivot"][1] + dy, c["pivot"][2]]
+                out.append(c)
+        return out
+    cubes = mann + placed("mantle_helm", 0, 24) + placed("mantle_chest", 0, 24) + placed("mantle_arm", -6, 22) + placed("mantle_arm", 6, 22) \
+        + placed("mantle_leg", -2, 12) + placed("mantle_leg", 2, 12)
+    return geo("mantle_preview", [bone("root", None, [0, 0, 0], cubes)])
+
+
 # ---------------------------------------------------------------------------------------------------- animations
 def kf(d): return {f"{t:.4f}": v for t, v in sorted(d.items())}
 
@@ -533,6 +630,8 @@ PAINTERS = {
     "smoke": gp.smoke_painter((6, 6, 10), (30, 70, 160), (60, 140, 255)),
     "flameblade": gp.flameblade_painter((70, 165, 255), (12, 14, 26), (110, 200, 255)),
     "grip": gp.grip_painter((12, 12, 16), (34, 58, 130)),
+    "shroud": gp.cloth_painter((16, 18, 30)),
+    "skin": gp.plate_painter((122, 104, 86), (100, 84, 70), (0, 0, 0), engrave=False, rivets=False),
 }
 
 
@@ -617,6 +716,9 @@ def main():
     build("shadow_knight", knight())
     json.dump(knight_anims(), open(os.path.join(ANIM, "shadow_knight.animation.json"), "w"), indent=1)
     build("shadow_ravener", ravener())
+    for name, model in mantle_pieces().items():
+        build(name, model)
+        json.dump(mantle_anims(name), open(os.path.join(ANIM, name + ".animation.json"), "w"), indent=1)
     build_living("shadow_knight", knight(), KNIGHT_LIVING)
     build_living("shadow_ravener", ravener(), RAVENER_LIVING)
     json.dump(ravener_anims(), open(os.path.join(ANIM, "shadow_ravener.animation.json"), "w"), indent=1)

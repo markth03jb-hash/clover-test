@@ -55,6 +55,7 @@ public final class ShadowClient {
     public static void spawn(FxPacket p) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
+        if (p.h == 15) { MantleLayer.set((int) p.v.x, p.life); return; }   // Mantle of Shades: worn, not drawn here
         if (LIVE.size() > 300) LIVE.remove(0);
         LIVE.add(new L(p, mc.level.getGameTime()));
     }

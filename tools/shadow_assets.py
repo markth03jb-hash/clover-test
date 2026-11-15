@@ -16,6 +16,12 @@ make('unseen_hand', *SH, [('a', 'l', 3, 14, 3, 6), ('a', 'l', 6, 14, 6, 4), ('a'
 make('gate_of_shade', *SH, [('d', 'E', 1, 5, 14, 13), ('m', 'e', 1, 5, 14, 13), ('a', 'e', 4, 7, 11, 11), ('w', 'p', 7, 9)])
 make('command_hunt', *SH, [('m', 'e', 2, 2, 13, 13), ('a', 'l', 7, 0, 7, 4), ('a', 'l', 7, 11, 7, 15), ('a', 'l', 0, 7, 4, 7), ('a', 'l', 11, 7, 15, 7), ('w', 'p', 7, 7)])
 make('veil', *SH, [('d', 'E', 3, 2, 12, 14), ('a', 'a', 2, 1, 13, 15, 200, 340), ('m', 'p', 6, 6), ('m', 'p', 9, 6)])
+make('status', *SH, [('d', 'E', 2, 1, 13, 14), ('m', 'l', 4, 4, 11, 4), ('a', 'l', 4, 7, 9, 7), ('a', 'l', 4, 10, 11, 10), ('w', 'p', 12, 3)])
+make('market', *SH, [('d', 'E', 3, 6, 12, 14), ('m', 'e', 5, 2, 10, 7), ('a', 'l', 6, 9, 9, 9), ('w', 'p', 7, 11)])
+make('sovereigns_grip', *SH, [('m', 'e', 4, 3, 11, 9), ('a', 'l', 5, 9, 5, 14), ('a', 'l', 7, 9, 7, 15), ('a', 'l', 9, 9, 9, 14), ('w', 'p', 7, 5)])
+make('shadow_step', *SH, [('d', 'E', 0, 12, 6, 15), ('d', 'E', 9, 12, 15, 15), ('a', 'l', 3, 11, 12, 4), ('m', 'l', 12, 4, 12, 11), ('w', 'p', 12, 3)])
+make('dread_roar', *SH, [('m', 'e', 1, 1, 14, 14), ('a', 'e', 4, 4, 11, 11), ('d', 'E', 6, 6, 9, 9), ('w', 'p', 7, 7)])
+make('mantle_of_shades', *SH, [('d', 'E', 3, 2, 12, 14), ('m', 'l', 3, 6, 12, 6), ('a', 'l', 7, 6, 7, 13), ('w', 'p', 5, 4), ('w', 'p', 10, 4)])
 make('ranks_of_shade', *SH, [('m', 'e', 1, 1, 14, 14)] + [('d', 'E', x - 1, y - 2, x + 1, y + 2) for x, y in ((7, 2), (12, 7), (7, 12), (2, 7))] + [('w', 'p', 7, 7)])
 make('rally_of_the_fallen', *SH, [('d', 'E', 0, 12, 15, 15), ('a', 'l', 3, 12, 3, 5), ('a', 'l', 7, 12, 7, 2), ('a', 'l', 11, 12, 11, 5), ('w', 'p', 3, 4), ('w', 'p', 7, 1), ('w', 'p', 11, 4)])
 make('sovereigns_domain', *SH, [('m', 'e', 0, 9, 15, 15), ('a', 'l', 2, 11, 3, 6), ('a', 'l', 5, 11, 6, 4), ('a', 'l', 9, 11, 9, 3), ('a', 'l', 12, 11, 12, 6), ('w', 'p', 7, 12)])
@@ -82,7 +88,7 @@ lang['tooltip.iron_spell_grimoire.shadow_grimoire.passive'] = ('Passive - Remnan
     'a black shadow of it in a dark pool, seen by you alone. Cast Rise on it to raise it as your shadow (3 tries; the stronger it was, the harder). '
     'Your shadows level up from their own kills and rank up: Soldier, Elite, Knight, Captain, General. Open your army with V to equip, rank up, rename or release them. '
     'Challenges (in the army menu): call out the living Oathbound Knight or Ravener, beat it, and raise it as an exclusive shadow - each with instincts of its own.')
-lang['tooltip.iron_spell_grimoire.shadow_grimoire.desc'] = 'Eleven pages of black smoke and blue fire, and an army that never stays dead.'
+lang['tooltip.iron_spell_grimoire.shadow_grimoire.desc'] = 'Seventeen pages of black smoke and blue fire, and an army that never stays dead.'
 lang['tooltip.iron_spell_grimoire.shadow_grimoire.lore'] = 'Whatever falls before you rises again - for you.'
 for k, (title, guide) in {
  'rise': ('Rise', 'Raise the remnant you look at as your shadow - it climbs up out of its pool, eyes burning blue. 3 tries each; weak foes rise easily, strong ones rarely.'),
@@ -92,6 +98,12 @@ for k, (title, guide) in {
  'gate_of_shade': ('Gate of Shade', 'Sink every shadow at your side into your own shadow - or call them all out again.'),
  'command_hunt': ('Command: Hunt', 'Mark the foe you aim at: every shadow at your side turns on it, and its armour is torn down for 8 s.'),
  'veil': ('Veil', 'For 5 s you melt into shadow: foes lose sight of you, and your next blow lands 50% harder.'),
+ 'status': ('Status', 'Open your Status: your hunter level and XP, your five stats (spend your points here), your Shade Marks and today\'s Daily Trial.'),
+ 'market': ('Market', 'Open the Market: spend Shade Marks on the Nightfang dagger, Mana Tonics, Shade Salves, Remnant Lures, a stat reset or a Reckoning Key.'),
+ 'sovereigns_grip': ('Sovereign\'s Grip', 'Lift the foe you aim at and hold it where you look for 2.5 s - crouch to throw it early - then fling it along your aim; it takes damage when it lands, more the farther it flew. With no foe in sight, every dropped item within 12 blocks flies to you.'),
+ 'shadow_step': ('Shadow Step', 'Step out of the shadow you look at, however far away. With none in sight, step to a shadow keeping watch at its post (Station it in the army menu).'),
+ 'dread_roar': ('Dread Roar', 'A wave of dread rolls out 10 blocks: foes freeze for 2 s, weak ones flee for 6 s, and bosses hit 25% softer for 10 s.'),
+ 'mantle_of_shades': ('Mantle of Shades', 'Your three highest-ranked shadows at your side sink into you as armour for 30 s - more armour, toughness and strength the higher their ranks - then step back out.'),
  'ranks_of_shade': ('Ranks of Shade', 'Every shadow at your side steps out of your shadow into a ring round you. For 8 s they take 70% of the harm meant for you, split between them.'),
  'rally_of_the_fallen': ('Rally of the Fallen', 'Every fallen shadow rises again at once, and the shadows at your side are made whole and fight a rank stronger for 20 s - harder blows, more health, quicker feet.'),
  'sovereigns_domain': ('Sovereign\'s Domain', 'Mode, 60 s: your shadows hit 50% harder and move faster, and any that fall rise again after 3 s instead of 30.'),
@@ -99,5 +111,12 @@ for k, (title, guide) in {
 }.items():
     lang[f'spell.iron_spell_grimoire.{k}'] = f'Shadow: {title}'
     lang[f'spell.iron_spell_grimoire.{k}.guide'] = guide
+lang['item.iron_spell_grimoire.nightfang'] = 'Nightfang'
+lang['item.iron_spell_grimoire.mana_tonic'] = 'Mana Tonic'
+lang['item.iron_spell_grimoire.shade_salve'] = 'Shade Salve'
+lang['tooltip.iron_spell_grimoire.nightfang.1'] = 'Right-click - Thousand Cuts: blink between up to five foes, cutting each, and land back where you started (15 s).'
+lang['tooltip.iron_spell_grimoire.nightfang.2'] = 'Bought in the Shadow Grimoire\'s Market.'
+lang['tooltip.iron_spell_grimoire.mana_tonic'] = 'Right-click: restores 150 mana at once.'
+lang['tooltip.iron_spell_grimoire.shade_salve'] = 'Right-click: heals 8 hearts over 4 seconds.'
 json.dump(lang, open(LP, 'w'), indent=2, ensure_ascii=False)
 print('shadow assets written')

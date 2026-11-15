@@ -463,6 +463,14 @@ public final class UiShots {
         steps.add(new Step("shd_ravener_arise", () -> { onServer(p -> UiShotsServer.element(p, "s:arise")); }, 40, true));
         steps.add(new Step("shd_ranks_of_shade", () -> { onServer(p -> UiShotsServer.element(p, "s:ranks_of_shade")); }, 44, true));   // the army closes round you
         steps.add(new Step("shd_rally_of_the_fallen", () -> { onServer(p -> UiShotsServer.element(p, "s:rally_of_the_fallen")); }, 14, true));
+        steps.add(new Step("shd_mantle_of_shades", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "s:mantle_of_shades")); }, 50, true));   // worn
+        steps.add(new Step("shd_dread_roar", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:dread_roar")); }, 8, true));
+        steps.add(new Step("shd_sovereigns_grip", () -> { onServer(p -> UiShotsServer.element(p, "s:sovereigns_grip")); }, 20, true));   // a foe held aloft
+        steps.add(new Step("shd_thousand_cuts", () -> { onServer(p -> UiShotsServer.element(p, "s:thousand_cuts")); }, 7, true));
+        steps.add(new Step("shd_nightfang", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; }, 24, true));   // the dagger in hand
+        steps.add(new Step("shd_status", () -> { onServer(p -> UiShotsServer.element(p, "s:status")); }, 14, false));   // the Status window
+        steps.add(new Step("shd_market", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "s:market")); }, 14, false));   // the Market
+        steps.add(new Step("shd_market_done", () -> { mc.setScreen(null); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); }, 4, true));
         steps.add(new Step("shd_umbral_step", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:umbral_step")); }, 6, true));
         steps.add(new Step("shd_unseen_hand", () -> { onServer(p -> UiShotsServer.element(p, "s:unseen_hand")); }, 8, true));
         steps.add(new Step("shd_command_hunt", () -> { onServer(p -> UiShotsServer.element(p, "s:command_hunt")); }, 10, true));
@@ -543,7 +551,8 @@ public final class UiShots {
     /** Textures and models a book's pictures show besides its code (a change to them must re-take the pictures). */
     private static final String[][] ASSETS = {
             {"shd_", "geo/shadow_knight.geo.json", "textures/geo/shadow_knight.png", "animations/shadow_knight.animation.json", "textures/geo/shadow_knight_living.png",
-                    "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json", "textures/geo/shadow_ravener_living.png"},
+                    "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json", "textures/geo/shadow_ravener_living.png",
+                    "geo/mantle_helm.geo.json", "geo/mantle_chest.geo.json", "geo/mantle_arm.geo.json", "geo/mantle_leg.geo.json", "textures/item/nightfang.png", "models/item/nightfang_3d.json"},
             {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"}};
 
     private static String assetsKey(String step) {

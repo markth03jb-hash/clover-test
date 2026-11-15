@@ -116,6 +116,10 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> DREAM_GRIMOIRE = ITEMS.register("dream_grimoire", com.ironspellgrimoire.item.DreamGrimoireItem::new);
     public static final RegistryObject<Item> SHADOW_GRIMOIRE = ITEMS.register("shadow_grimoire", com.ironspellgrimoire.item.ShadowGrimoireItem::new);
     public static final RegistryObject<Item> HEARTLINE = ITEMS.register("heartline", com.ironspellgrimoire.item.HeartlineItem::new);
+    /** The Shadow Grimoire's Market wares (server/HunterAscension). */
+    public static final RegistryObject<Item> NIGHTFANG = ITEMS.register("nightfang", com.ironspellgrimoire.item.NightfangItem::new);
+    public static final RegistryObject<Item> MANA_TONIC = ITEMS.register("mana_tonic", () -> new com.ironspellgrimoire.item.ShadowTonicItem(false));
+    public static final RegistryObject<Item> SHADE_SALVE = ITEMS.register("shade_salve", () -> new com.ironspellgrimoire.item.ShadowTonicItem(true));
 
     /** Zenon's drops. */
     public static final RegistryObject<Item> PHYLACTERY = ITEMS.register("zenon_phylactery", com.ironspellgrimoire.item.PhylacteryItem::new);

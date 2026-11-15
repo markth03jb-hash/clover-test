@@ -388,6 +388,62 @@ public final class GameTests {
     }
 
     /** The Blood Grimoire's paths: every spell cast both ways (a mastered book) - nothing may throw, change the world or give effects. */
+    /** Hunter's Ascension (the Shadow Grimoire): levels and points, stats as attribute bonuses, the Daily Trial, the
+     *  Market, and a Reckoning that spawns its waves, cleans them up and breaks nothing. */
+    private static final class HunterTest extends Test {
+        HunterTest() { super("shadow: hunter's ascension"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{HunterAscension.class, ShadowArmy.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        BlockState[] before;
+        double baseHp;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.SHADOW_GRIMOIRE.get());
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+            HunterAscension.testReset(p);
+            before = snapshot();
+        }
+        @Override boolean tick(int t) {
+            p.setHealth(p.getMaxHealth());
+            try {
+                if (t == 2) {
+                    HunterAscension.start(p);
+                    baseHp = p.getMaxHealth();
+                    HunterAscension.gainXp(p, HunterAscension.xpNext(1) + HunterAscension.xpNext(2));
+                    if (HunterAscension.level(p) != 3) bad.add("two levels of XP gave level " + HunterAscension.level(p));
+                    int pts = HunterAscension.d(p).getInt(HunterAscension.PTS);
+                    if (pts != 6) bad.add("expected 6 points, had " + pts);
+                    for (int i = 0; i < 4; i++) HunterAscension.handle(p, 11, 2);   // four into Vitality
+                    if (HunterAscension.stat(p, 2) != 4) bad.add("Vitality is " + HunterAscension.stat(p, 2) + " after spending 4");
+                }
+                if (t == 30 && p.getMaxHealth() < baseHp + 1.9) bad.add(String.format("Vitality didn't raise max health (%.1f -> %.1f)", baseHp, p.getMaxHealth()));
+                if (t == 32) {
+                    for (int k = 0; k < 4; k++) HunterAscension.progress(p, k, 100000);
+                    if (!HunterAscension.d(p).getBoolean(HunterAscension.DONE)) bad.add("the Daily Trial didn't complete");
+                    int m = HunterAscension.marks(p);
+                    HunterAscension.handle(p, 13, 1);   // a Mana Tonic
+                    if (HunterAscension.marks(p) != m - 40) bad.add("buying a tonic took " + (m - HunterAscension.marks(p)) + " marks");
+                    if (!p.getInventory().contains(new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_TONIC.get()))) bad.add("no Mana Tonic in the inventory");
+                    HunterAscension.startReckoning(p);
+                }
+                if (t == 140) {
+                    int n = HunterAscension.testEndReckoning(p, true);
+                    if (n <= 0) bad.add("the Reckoning raised no mobs (" + n + ")");
+                    else if (!sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(32), m -> m.getPersistentData().getBoolean("isg_reckoning")).isEmpty())
+                        bad.add("the Reckoning's mobs were left behind");
+                }
+            } catch (Throwable x) { bad.add("threw " + x); }
+            if (t < 150) return false;
+            String ch = changes(before);
+            if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+            if (bad.isEmpty()) pass(name, "level " + HunterAscension.level(p) + ", stats applied, trial done, market and Reckoning work");
+            else fail(name, String.join("; ", bad));
+            HunterAscension.testReset(p);
+            clearArea();
+            return true;
+        }
+    }
+
     private static final class PathTest extends Test {
         PathTest() { super("blood: evolution paths"); }
         @Override Class<?>[] roots() { return new Class<?>[]{BloodFx.class, BloodPaths.class}; }
@@ -812,9 +868,16 @@ public final class GameTests {
                 "command_hunt", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::commandHunt, "",
                 "veil", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::veil, "q",
                 "ranks_of_shade", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::ranksOfShade, "q",
+                "status", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterAscension::openStatus, "q",
+                "market", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterAscension::openMarket, "q",
+                "sovereigns_grip", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::sovereignsGrip, "",
+                "shadow_step", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::shadowStep, "q",
+                "dread_roar", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::dreadRoar, "q",
+                "mantle_of_shades", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::mantleOfShades, "q",
                 "rally_of_the_fallen", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::rallyOfTheFallen, "q",
                 "sovereigns_domain", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::sovereignsDomain, "q",
                 "night_legion", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::nightLegion, ""));
+        queue.add(new HunterTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

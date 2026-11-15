@@ -171,6 +171,7 @@ public class ShadowArmyScreen extends Screen {
             g.drawString(font, "Lv " + e.level() + "  " + RANKS[Math.min(4, e.rank())], x0 + 8, y + 15, rc, false);
             pips(g, x0 + LIST_W - 8, y + 6, e.rank(), rc);
             if (e.equipped()) eye(g, x0 + LIST_W - 12, y + 16, t);
+            if (e.stationed()) g.drawString(font, "post", x0 + LIST_W - 40, y + 4, 0xFF7FD8FF, false);
             if (e.recovering() > 0) g.drawString(font, e.recovering() + "s", x0 + LIST_W - 40, y + 15, 0xFF5A6A88, false);
             if (e.canRankUp()) g.fill(x0 + LIST_W - 4, y + 2, x0 + LIST_W - 2, y + CARD - 5, 0xFF9FE0FF);
             final int id = e.id();
@@ -218,15 +219,16 @@ public class ShadowArmyScreen extends Screen {
             int k = EXCL_TYPE[0].equals(e.type()) ? 0 : 1;
             for (int i = 1; i < EXCL_TEXT[k].length; i++) { g.drawString(font, font.plainSubstrByWidth(EXCL_TEXT[k][i], bw), ix, ty, 0xFFC8B890, false); ty += 10; }
         }
-        String status = e.recovering() > 0 ? "Reforming in its master's shadow - " + e.recovering() + "s"
+        String status = e.stationed() ? "Keeping watch at its post - Shadow Step to it" : e.recovering() > 0 ? "Reforming in its master's shadow - " + e.recovering() + "s"
                 : e.rank() >= 4 ? "Highest rank" : e.rankBlock() == 1 ? "Your army already has its General" : e.rankBlock() == 2 ? "All three Captain ranks are taken"
                 : e.canRankUp() ? "Ready to rank up!" : "Next rank at level " + nextLevel(e.rank());
         g.drawString(font, font.plainSubstrByWidth(status, bw), ix, dy + dh - 46, e.canRankUp() ? 0xFF9FE0FF : 0xFF6A7A98, false);
         // actions
-        int by = dy + dh - 30, gap = 4, bwid = (dx + dw - 8 - ix - gap * 3) / 4;
+        int by = dy + dh - 30, gap = 3, bwid = (dx + dw - 8 - ix - gap * 4) / 5;
         int bx = ix;
         button(g, bx, by, bwid, 18, e.equipped() ? "UNEQUIP" : "EQUIP", true, EDGE, mx, my, () -> act(1, e.id(), "")); bx += bwid + gap;
         button(g, bx, by, bwid, 18, "RANK UP", e.canRankUp(), 0xFF7FD8FF, mx, my, () -> act(2, e.id(), "")); bx += bwid + gap;
+        button(g, bx, by, bwid, 18, e.stationed() ? "RECALL" : "STATION", e.equipped(), 0xFF7FD8FF, mx, my, () -> act(7, e.id(), "")); bx += bwid + gap;
         button(g, bx, by, bwid, 18, renaming ? "KEEP" : "RENAME", true, EDGE, mx, my, () -> {
             if (renaming) commitName(); else { renaming = true; nameBuf = e.name(); }
         }); bx += bwid + gap;

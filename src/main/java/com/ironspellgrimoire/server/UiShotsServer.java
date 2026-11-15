@@ -277,6 +277,17 @@ public final class UiShotsServer {
             }
             case "ranks_of_shade" -> { for (var t : ShadowArmy.list(p)) ((net.minecraft.nbt.CompoundTag) t).putBoolean("eq", true); ShadowArmy.keep(p); AstaFx.later(30, () -> ShadowFx.ranksOfShade(p, 10f)); }
             case "rally_of_the_fallen" -> ShadowFx.rallyOfTheFallen(p, 10f);
+            case "status" -> { HunterAscension.testGrant(p, 6, 950); HunterAscension.openStatus(p, 0); }
+            case "market" -> HunterAscension.openMarket(p, 0);
+            case "sovereigns_grip" -> { faceForward(p); ShadowFx.sovereignsGrip(p, 10f); }
+            case "dread_roar" -> ShadowFx.dreadRoar(p, 10f);
+            case "mantle_of_shades" -> { for (var t : ShadowArmy.list(p)) ((net.minecraft.nbt.CompoundTag) t).putBoolean("eq", true); ShadowArmy.keep(p); AstaFx.later(30, () -> ShadowFx.mantleOfShades(p, 10f)); }
+            case "thousand_cuts" -> {
+                faceForward(p);
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.NIGHTFANG.get()));
+                ShadowFx.thousandCuts(p);
+            }
+            case "shadow_step" -> { faceForward(p); ShadowFx.shadowStep(p, 10f); }
             case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
             case "night_legion" -> { faceForward(p); ShadowFx.nightLegion(p, 10f); }
             case "gate_of_shade" -> ShadowFx.gateOfShade(p, 10f);

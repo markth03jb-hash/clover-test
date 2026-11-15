@@ -54,6 +54,11 @@ import java.util.UUID;
  *  5 Gate of Shade     - sink all your shadows into your own shadow, or call them all out again
  *  6 Command: Hunt     - every shadow turns on the foe you aim at, 40% harder for 8 s
  *  7 Veil              - 5 s: you melt into shadow - foes lose you, and your next blow lands 50% harder
+ *    Sovereign's Grip  - lift the foe you aim at, hold it where you look, then fling it (no foe: pull every item near)
+ *    Dread Roar        - foes near freeze 2 s, the weak flee, bosses hit softer for 10 s
+ *    Mantle of Shades  - your three best shadows at your side become armour for 30 s (client/MantleLayer)
+ *    Shadow Step       - step out of the shadow you look at, or one stationed far away (army menu: Station)
+ *    Status, Market    - Hunter's Ascension (server/Ascension)
  *  8 Ranks of Shade   - every shadow at your side snaps into a ring round you; for 8 s they take 70% of your harm
  *  9 Rally of the Fallen - every fallen shadow rises at once; those at your side are made whole and fight a rank
  *                       stronger for 20 s
@@ -262,10 +267,11 @@ public final class ShadowFx {
         play(sl, r.pos(), "shadow_whisper", 1.0f, 1.0f);
         boolean exclusive = r.hp() < 0;   // a beaten exclusive shadow (a Challenge) - it always answers
         if (exclusive && ShadowArmy.inArmy(p, r.type())) { dropRemnant(p, r); return; }
-        if (exclusive || p.getRandom().nextFloat() < chance(p, r.hp())) {
+        if (exclusive || HunterAscension.useLure(p) || p.getRandom().nextFloat() < chance(p, r.hp())) {
             CompoundTag entry = ShadowArmy.add(p, r.type(), exclusive);
             dropRemnant(p, r);
             if (entry == null) return;
+            HunterAscension.onRaise(p);
             if (entry.getBoolean("eq")) ShadowArmy.raise(p, entry, r.pos(), 0);
             else risePool(sl, r.pos(), 1);
             p.displayClientMessage(Component.literal(entry.getString("name") + " rises as your shadow" + (entry.getBoolean("eq") ? "" : " (stored - your slots are full)"))
@@ -433,6 +439,185 @@ public final class ShadowFx {
         sound(sl, p.position(), SoundEvents.WARDEN_EMERGE, 0.5f, 1.3f);
         if (ShadowArmy.count(p) == 0) p.displayClientMessage(Component.literal("Your army is empty - there is no one to rally").withStyle(ChatFormatting.GRAY), true);
         else if (risen > 0) p.displayClientMessage(Component.literal(risen + " fallen shadow" + (risen == 1 ? "" : "s") + " rise again").withStyle(ChatFormatting.AQUA), true);
+    }
+
+    // ================================================================== Sovereign's Grip
+    /** The foe you aim at is lifted and held where you look for 2.5 s (crouch to throw it early), then flung along your
+     *  aim - it takes damage when it lands. With no foe in sight: every dropped item within 12 blocks flies to you. */
+    public static void sovereignsGrip(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        LivingEntity t = aimed(p, 20, 12);
+        if (t == null || t instanceof ShadowSoldier s && s.ownerUUID() != null && s.ownerUUID().equals(p.getUUID())) {
+            int n = 0;
+            for (net.minecraft.world.entity.item.ItemEntity it : sl.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, p.getBoundingBox().inflate(12))) {
+                it.teleportTo(p.getX(), p.getY() + 0.5, p.getZ()); it.setNoPickUpDelay(); n++;
+            }
+            play(sl, p.position(), "shadow_whisper", 0.8f, 1.5f);
+            if (n == 0) p.displayClientMessage(Component.literal("Nothing in your grip").withStyle(ChatFormatting.GRAY), true);
+            return;
+        }
+        grip(sl, t, 60);
+        play(sl, t.position(), "shadow_whisper", 1.0f, 0.8f);
+        final int[] k = {0};
+        final Runnable[] hold = new Runnable[1];
+        hold[0] = () -> {
+            if (!alive(p) || !t.isAlive()) return;
+            k[0]++;
+            Vec3 at = p.getEyePosition().add(p.getLookAngle().scale(4.5)).subtract(0, t.getBbHeight() / 2, 0);
+            Vec3 v = at.subtract(t.position()).scale(0.45);
+            t.setDeltaMovement(v); t.hurtMarked = true; t.fallDistance = 0;
+            if (t instanceof Mob m) { m.getNavigation().stop(); m.setTarget(null); }
+            if (k[0] < 50 && !p.isShiftKeyDown()) { AstaFx.later(1, hold[0]); return; }
+            Vec3 d = p.getLookAngle();   // the throw
+            t.setDeltaMovement(d.scale(2.2).add(0, 0.25, 0)); t.hurtMarked = true;
+            play(sl, t.position(), "shadow_slash", 1.0f, 0.7f);
+            final Vec3 from = t.position();
+            AstaFx.later(8, () -> {
+                if (!alive(p) || !t.isAlive()) return;
+                t.invulnerableTime = 0;
+                AstaFx.damage(p, t, power * (1 + (float) Math.min(1.5, t.position().distanceTo(from) / 12)), "sovereigns_grip");
+                slam(sl, t.position(), 2.2f);
+                shadowHit(sl, t, 2);
+            });
+        };
+        AstaFx.later(1, hold[0]);
+    }
+
+    // ================================================================== Dread Roar
+    private static final UUID DREAD_FREEZE = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000041");
+    private static final UUID DREAD_WEAK = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000042");
+
+    /** A wave of dread: foes within 10 blocks freeze for 2 s, weak ones flee for 6 s, bosses hit 25% softer for 10 s. */
+    public static void dreadRoar(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        slam(sl, p.position(), 10f);
+        FxSend.shake(sl, p.position(), 0.5f, 12, 16);
+        sound(sl, p.position(), SoundEvents.WARDEN_ROAR, 0.9f, 0.6f);
+        play(sl, p.position(), "shadow_gate", 1.2f, 0.5f);
+        for (Mob m : sl.getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(10), m -> m.isAlive() && !(m instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID())))) {
+            if (m.distanceToSqr(p) > 100) continue;
+            TimedModifiers.apply(m, Attributes.MOVEMENT_SPEED, DREAD_FREEZE, "Dread Roar", -1.0, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
+            m.setTarget(null); m.getNavigation().stop();
+            shadowHit(sl, m, 0);
+            boolean boss = m.getMaxHealth() >= 150 || m.getType().is(net.minecraftforge.common.Tags.EntityTypes.BOSSES);
+            if (boss) TimedModifiers.apply(m, Attributes.ATTACK_DAMAGE, DREAD_WEAK, "Dread Roar", -0.25, AttributeModifier.Operation.MULTIPLY_TOTAL, 200);
+            else if (m.getMaxHealth() < 40) {   // the weak run
+                for (int k = 0; k < 6; k++) AstaFx.later(40 + k * 20, () -> {
+                    if (!m.isAlive() || !alive(p)) return;
+                    Vec3 away = m.position().subtract(p.position()).multiply(1, 0, 1);
+                    away = away.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : away.normalize();
+                    Vec3 to = m.position().add(away.scale(8));
+                    m.setTarget(null);
+                    m.getNavigation().moveTo(to.x, to.y, to.z, 1.4);
+                });
+            }
+        }
+    }
+
+    // ================================================================== Mantle of Shades
+    private static final UUID MANTLE_ARMOR = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000051");
+    private static final UUID MANTLE_TOUGH = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000052");
+    private static final UUID MANTLE_POWER = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000053");
+
+    /** Your three highest-ranked shadows at your side sink into you as armour for 30 s, stronger the higher their ranks. */
+    public static void mantleOfShades(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        List<ShadowSoldier> out = ShadowArmy.out(p);
+        out.removeIf(s -> s.station != null || s.distanceToSqr(p) > 20 * 20);
+        out.sort((a, b2) -> Integer.compare(b2.rank(), a.rank()));
+        if (out.isEmpty()) { p.displayClientMessage(Component.literal("No shadows at your side to wear").withStyle(ChatFormatting.GRAY), true); return; }
+        List<ShadowSoldier> worn = out.subList(0, Math.min(3, out.size()));
+        int sum = 0;
+        long back = sl.getGameTime() + 600;
+        for (ShadowSoldier s : worn) {
+            sum += s.rank() + 1;
+            dash(sl, s.position().add(0, 1, 0), p.position().add(0, 1, 0));
+            sinkPool(sl, s.position(), s.getBbWidth());
+            CompoundTag e = ShadowArmy.find(p, s.armyId());
+            if (e != null) e.putLong("rec", back);   // it steps back out of you when the mantle fades
+            s.discard();
+        }
+        TimedModifiers.apply(p, Attributes.ARMOR, MANTLE_ARMOR, "Mantle of Shades", 2.0 * sum, AttributeModifier.Operation.ADDITION, 600);
+        TimedModifiers.apply(p, Attributes.ARMOR_TOUGHNESS, MANTLE_TOUGH, "Mantle of Shades", 1.0 * sum, AttributeModifier.Operation.ADDITION, 600);
+        TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, MANTLE_POWER, "Mantle of Shades", 0.03 * sum, AttributeModifier.Operation.MULTIPLY_TOTAL, 600);
+        FxPacket f = pk(15, p.position(), 600); f.v = new Vec3(p.getId(), 1, 0); FxSend.sendNear(sl, p.position(), f);   // drawn on you (MantleLayer)
+        play(sl, p.position(), "shadow_rise", 1.2f, 0.7f);
+        sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 1.0f, 0.6f);
+    }
+
+    // ================================================================== Shadow Step
+    /** Step out of the shadow nearest where you look - any distance, same world; if none is in sight, to one keeping watch. */
+    public static void shadowStep(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 eye = p.getEyePosition(), lk = p.getLookAngle();
+        ShadowSoldier best = null;
+        double bestDot = 0.96;
+        for (ShadowSoldier s : ShadowArmy.out(p)) {
+            if (s.level() != sl) continue;
+            Vec3 to = s.position().add(0, 1, 0).subtract(eye);
+            if (to.lengthSqr() < 9) continue;
+            double dot = to.normalize().dot(lk);
+            if (dot > bestDot) { bestDot = dot; best = s; }
+        }
+        Vec3 to = null;
+        if (best != null) to = best.position().add(best.getLookAngle().multiply(1, 0, 1).scale(-1.2));
+        else for (var t : ShadowArmy.list(p)) {   // a shadow keeping watch, even where no one is
+            CompoundTag e = (CompoundTag) t;
+            if (e.contains("st") && e.getString("stdim").equals(sl.dimension().location().toString())) { to = ShadowArmy.stationOf(e); break; }
+        }
+        if (to == null) { p.displayClientMessage(Component.literal("No shadow in sight - station one in the army menu to step to it from anywhere").withStyle(ChatFormatting.GRAY), true); return; }
+        sinkPool(sl, p.position(), 0.8f);
+        exchange(sl, p.position(), to);
+        p.teleportTo(to.x, to.y, to.z);
+        p.fallDistance = 0;
+        risePool(sl, to, 0.8f);
+        play(sl, to, "shadow_whisper", 1.0f, 1.2f);
+    }
+
+    // ================================================================== Thousand Cuts (the Nightfang's own move)
+    /** Blink from foe to foe - up to five within 10 blocks, each cut a little deeper than the last - then land back
+     *  where you started. Returns false (no cooldown) if there's nothing to cut. */
+    public static boolean thousandCuts(ServerPlayer p) {
+        ServerLevel sl = p.serverLevel();
+        List<LivingEntity> foes = new ArrayList<>(Kit.near(sl, p, p.position(), 10));
+        foes.removeIf(t -> t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player);
+        foes.sort((a, b2) -> Double.compare(a.distanceToSqr(p), b2.distanceToSqr(p)));
+        if (foes.isEmpty()) { p.displayClientMessage(Component.literal("Nothing in reach to cut").withStyle(ChatFormatting.GRAY), true); return false; }
+        List<LivingEntity> cut = foes.subList(0, Math.min(5, foes.size()));
+        final Vec3 home = p.position();
+        final float yaw = p.getYRot(), pitch = p.getXRot();
+        float base = (float) p.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        Vec3 last = home;
+        for (int i = 0; i < cut.size(); i++) {
+            final LivingEntity t = cut.get(i);
+            final int k = i;
+            final Vec3 from = last;
+            AstaFx.later(1 + i * 3, () -> {
+                if (!alive(p) || !t.isAlive()) return;
+                Vec3 side = t.position().subtract(from).multiply(1, 0, 1);
+                side = side.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : side.normalize();
+                Vec3 at = t.position().add(side.scale(t.getBbWidth() * 0.5 + 0.9));   // out the far side of it
+                dash(sl, from.add(0, 1, 0), at.add(0, 1, 0));
+                p.teleportTo(at.x, t.getY(), at.z);
+                p.fallDistance = 0;
+                t.invulnerableTime = 0;
+                AstaFx.damage(p, t, base * (1 + 0.25f * k), "thousand_cuts");
+                shadowHit(sl, t, 2);
+                play(sl, t.position(), "shadow_slash", 0.8f, 1.5f + 0.1f * k);
+            });
+            last = cut.get(i).position();
+        }
+        final Vec3 end = last;
+        AstaFx.later(2 + cut.size() * 3, () -> {   // and back
+            if (!alive(p)) return;
+            dash(sl, end.add(0, 1, 0), home.add(0, 1, 0));
+            p.teleportTo(home.x, home.y, home.z);
+            p.setYRot(yaw); p.setXRot(pitch);
+            p.fallDistance = 0;
+            risePool(sl, home, 0.8f);
+        });
+        sinkPool(sl, home, 0.8f);
+        return true;
     }
 
     // ================================================================== Challenges (the Shadow Army menu)
