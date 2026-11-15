@@ -39,7 +39,7 @@ public class ShadowSoldierRenderer extends EntityRenderer<ShadowSoldier> {
         if (d != null && d.level() == level && kind.equals(String.valueOf(ForgeRegistries.ENTITY_TYPES.getKey(d.getType())))) return d;
         EntityType<?> t = ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.tryParse(kind));
         Entity e = t == null ? null : t.create(level);
-        if (!(e instanceof LivingEntity le)) { e = EntityType.ZOMBIE.create(level); le = (LivingEntity) e; }
+        LivingEntity le = e instanceof LivingEntity l ? l : EntityType.ZOMBIE.create(level);
         if (le instanceof net.minecraft.world.entity.Mob m) m.setNoAi(true);
         cache.put(key, le);
         return le;

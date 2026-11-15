@@ -182,7 +182,7 @@ public class ShadowSoldier extends PathfinderMob {
     @Override protected boolean shouldDropLoot() { return false; }
     @Override public boolean shouldBeSaved() { return false; }
     @Override public boolean removeWhenFarAway(double d) { return false; }
-    @Override protected void addAdditionalSaveData(CompoundTag t) { super.addAdditionalSaveData(t); }
+    @Override public void addAdditionalSaveData(CompoundTag t) { super.addAdditionalSaveData(t); }
     @Override public boolean canBeLeashed(Player p) { return false; }
 
     /** Follow its master, keeping close; if left far behind it steps out of its master's shadow beside them. */
