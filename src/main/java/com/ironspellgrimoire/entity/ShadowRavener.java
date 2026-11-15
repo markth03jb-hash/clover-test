@@ -33,7 +33,7 @@ import java.util.UUID;
  *  - Devour: whatever it kills, it feeds on - it heals a quarter of its health.
  *  - Frenzy: hurt below half, it shrieks and goes wild for 8 s - 35% faster and 30% harder blows (every 30 s).
  * Model: geo/shadow_ravener (tools/shadow_models.py), drawn by client/ShadowRavenerRenderer; animations rise, idle,
- * walk, attack, pounce.
+ * walk, attack, pounce, frenzy.
  */
 public class ShadowRavener extends ShadowSoldier implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -42,6 +42,7 @@ public class ShadowRavener extends ShadowSoldier implements GeoEntity {
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.shadow_ravener.walk");
     private static final RawAnimation ATTACK = RawAnimation.begin().thenPlay("animation.shadow_ravener.attack");
     private static final RawAnimation POUNCE = RawAnimation.begin().thenPlay("animation.shadow_ravener.pounce");
+    private static final RawAnimation FRENZY = RawAnimation.begin().thenPlay("animation.shadow_ravener.frenzy");
     private static final UUID FRENZY_SPEED = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000011");
     private static final UUID FRENZY_POWER = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000012");
 
@@ -71,6 +72,7 @@ public class ShadowRavener extends ShadowSoldier implements GeoEntity {
             TimedModifiers.apply(this, Attributes.MOVEMENT_SPEED, FRENZY_SPEED, "Frenzy", 0.35, AttributeModifier.Operation.MULTIPLY_BASE, 160);
             TimedModifiers.apply(this, Attributes.ATTACK_DAMAGE, FRENZY_POWER, "Frenzy", 0.3, AttributeModifier.Operation.MULTIPLY_BASE, 160);
             ShadowFx.ravenerFrenzy(sl, this, 160);
+            level().broadcastEntityEvent(this, (byte) 61);
         }
     }
 
@@ -138,11 +140,12 @@ public class ShadowRavener extends ShadowSoldier implements GeoEntity {
     @Override public boolean causeFallDamage(float dist, float mult, net.minecraft.world.damagesource.DamageSource src) { return false; }
 
     // ------------------------------------------------------------------ animation
-    private int leapAnimAt = -100;
+    private int leapAnimAt = -100, frenzyAnimAt = -100;
 
     @Override
     public void handleEntityEvent(byte id) {
         if (id == 60) leapAnimAt = tickCount;
+        else if (id == 61) frenzyAnimAt = tickCount;
         else super.handleEntityEvent(id);
     }
 
@@ -154,6 +157,7 @@ public class ShadowRavener extends ShadowSoldier implements GeoEntity {
     private PlayState attack(AnimationState<ShadowRavener> s) {
         var c = s.getController();
         if (tickCount - leapAnimAt < 2) { c.forceAnimationReset(); c.setAnimation(POUNCE); }
+        else if (tickCount - frenzyAnimAt < 2) { c.forceAnimationReset(); c.setAnimation(FRENZY); }
         else if (swinging && c.getAnimationState() == AnimationController.State.STOPPED) { c.forceAnimationReset(); c.setAnimation(ATTACK); }
         return PlayState.CONTINUE;
     }
