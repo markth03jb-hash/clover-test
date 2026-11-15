@@ -251,9 +251,12 @@ public final class UiShotsServer {
                 ShadowArmy.recallAll(p);
                 ShadowFx.ravener(p, 10f);
                 for (var s : ShadowArmy.out(p)) {
-                    var at = p.position().add(p.getLookAngle().multiply(1, 0, 1).normalize().scale(5));
-                    s.moveTo(at.x, p.getY(), at.z, p.getYRot() + 180, 0);
-                    s.setYHeadRot(p.getYRot() + 180); s.yBodyRot = p.getYRot() + 180;
+                    var f = p.getLookAngle().multiply(1, 0, 1).normalize();
+                    var at = p.position().add(f.scale(4.5)).add(new net.minecraft.world.phys.Vec3(-f.z, 0, f.x).scale(2.6));   // ahead and off to one side, clear of the player
+                    float yaw = (float) (Math.atan2(-(p.getX() - at.x), p.getZ() - at.z) * 180 / Math.PI);   // turned to face the player
+                    s.moveTo(at.x, p.getY(), at.z, yaw, 0);
+                    s.setYHeadRot(yaw); s.yBodyRot = yaw;
+                    s.getNavigation().stop();
                 }
             }
             case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
