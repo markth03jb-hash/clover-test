@@ -53,6 +53,12 @@ public final class UiShotsServer {
         BloodFx.scarletMoon(p, 10f);
     }
     /** The Gravity or Sound Grimoire equipped, and one of its spells cast where the player looks ("target" puts a still husk 6 ahead). */
+    /** The shadow shots face the player the way the camera looks (+Z), so what the spells raise lands in view. */
+    private static void faceForward(ServerPlayer p) {
+        p.setYRot(0); p.setYHeadRot(0); p.setYBodyRot(0); p.setXRot(0);
+        p.connection.teleport(p.getX(), p.getY(), p.getZ(), 0, 0);
+    }
+
     public static void element(ServerPlayer p, String which) {
         Moves.ends(p, BloodFx.MODE);
         String w = which.substring(2);
@@ -232,15 +238,15 @@ public final class UiShotsServer {
             case "rude_awakening" -> DreamFx.rudeAwakening(p, 10f);
             case "half_asleep" -> DreamFx.halfAsleep(p, 10f);
             case "dream_world" -> DreamFx.dreamWorld(p, 10f);
-            case "remnant" -> ShadowFx.testRemnant(p, p.position().add(p.getLookAngle().multiply(1, 0, 1).normalize().scale(4)));
-            case "rise" -> ShadowFx.rise(p, 10f);
-            case "umbral_step" -> ShadowFx.umbralStep(p, 10f);
-            case "unseen_hand" -> ShadowFx.unseenHand(p, 10f);
-            case "command_hunt" -> ShadowFx.commandHunt(p, 10f);
+            case "remnant" -> { faceForward(p); ShadowFx.testRemnant(p, p.position().add(0.6, 0, 4.5)); }   // in front of the camera
+            case "rise" -> { faceForward(p); ShadowFx.rise(p, 10f); }
+            case "umbral_step" -> { faceForward(p); ShadowFx.umbralStep(p, 10f); }
+            case "unseen_hand" -> { faceForward(p); ShadowFx.unseenHand(p, 10f); }
+            case "command_hunt" -> { faceForward(p); ShadowFx.commandHunt(p, 10f); }
             case "veil" -> ShadowFx.veil(p, 10f);
-            case "oathbound_knight" -> ShadowFx.oathboundKnight(p, 10f);
+            case "oathbound_knight" -> { faceForward(p); ShadowFx.oathboundKnight(p, 10f); }
             case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
-            case "night_legion" -> ShadowFx.nightLegion(p, 10f);
+            case "night_legion" -> { faceForward(p); ShadowFx.nightLegion(p, 10f); }
             case "gate_of_shade" -> ShadowFx.gateOfShade(p, 10f);
             case "end" -> { Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); Moves.ends(p, OverdriveFx.MODE); Moves.ends(p, DreamFx.MODE); Moves.ends(p, ShadowFx.MODE); ShadowArmy.recallAll(p); }
             default -> {}

@@ -455,7 +455,7 @@ public final class UiShots {
         steps.add(new Step("shd_remnant", () -> { onServer(p -> UiShotsServer.element(p, "s:remnant")); }, 14, true));   // a remnant only you can see
         steps.add(new Step("shd_rise", () -> { onServer(p -> UiShotsServer.element(p, "s:rise")); }, 24, true));         // it climbs out as your shadow
         steps.add(new Step("shd_army", () -> { }, 30, true));                                                              // following at your side
-        steps.add(new Step("shd_knight", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "s:oathbound_knight")); }, 40, true));   // the Oathbound Knight rising
+        steps.add(new Step("shd_knight", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:oathbound_knight")); }, 40, true));   // the Oathbound Knight rising
         steps.add(new Step("shd_knight_idle", () -> { }, 30, true));
         steps.add(new Step("shd_umbral_step", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:umbral_step")); }, 6, true));
         steps.add(new Step("shd_unseen_hand", () -> { onServer(p -> UiShotsServer.element(p, "s:unseen_hand")); }, 8, true));
