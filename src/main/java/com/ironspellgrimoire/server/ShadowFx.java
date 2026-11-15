@@ -54,12 +54,13 @@ import java.util.UUID;
  *  5 Gate of Shade     - sink all your shadows into your own shadow, or call them all out again
  *  6 Command: Hunt     - every shadow turns on the foe you aim at, 40% harder for 8 s
  *  7 Veil              - 5 s: you melt into shadow - foes lose you, and your next blow lands 50% harder
- *  8 Oathbound Knight  - call your exclusive shadow, the Oathbound Knight (it joins your army the first time). Its
- *                       own instincts: Oath Cleave (a wide sweep every 8 s) and Sworn Guard (shields you when you're low)
- *  8b The Ravener      - call your second exclusive shadow, the Ravener: Pounce (leaps onto distant foes), Devour
- *                       (heals on a kill) and Frenzy (faster and harder when hurt)
- *  9 Sovereign's Domain - 60 s mode: your shadows hit 50% harder and move faster, and a fallen one rises again in 3 s
- * 10 Night Legion      - your whole army (the ones not at your side too) bursts out of the ground and charges ahead,
+ *  8 Ranks of Shade   - every shadow at your side snaps into a ring round you; for 8 s they take 70% of your harm
+ *  9 Rally of the Fallen - every fallen shadow rises at once; those at your side are made whole and fight a rank
+ *                       stronger for 20 s
+ * Exclusive shadows aren't pages: the Oathbound Knight and the Ravener are won in a Challenge (the army menu) - fight
+ * the living form, then Rise on its remnant. Their own instincts (entity/OathboundKnight, entity/ShadowRavener).
+ * 10 Sovereign's Domain - 60 s mode: your shadows hit 50% harder and move faster, and a fallen one rises again in 3 s
+ * 11 Night Legion      - your whole army (the ones not at your side too) bursts out of the ground and charges ahead,
  *                         then sinks away. Surpassing Limits: a second wave.
  */
 @Mod.EventBusSubscriber(modid = "iron_spell_grimoire")
@@ -199,9 +200,18 @@ public final class ShadowFx {
         }
     }
 
-    /** Veil: the next blow lands 50% harder (and ends the veil). */
+    /** Veil: the next blow lands 50% harder (and ends the veil). Ranks of Shade: your shadows take 70% of your harm. */
     @SubscribeEvent
     public static void onHurt(LivingHurtEvent e) {
+        if (e.getEntity() instanceof ServerPlayer me && me.serverLevel().getGameTime() < me.getPersistentData().getLong(RANKS)) {
+            List<ShadowSoldier> out = ShadowArmy.out(me);
+            out.removeIf(s -> s.distanceToSqr(me) > 16 * 16);
+            if (!out.isEmpty()) {
+                float share = e.getAmount() * 0.7f / out.size();
+                for (ShadowSoldier s : out) { s.invulnerableTime = 0; s.hurt(me.damageSources().magic(), share); shadowHit(me.serverLevel(), s, 1); }
+                e.setAmount(e.getAmount() * 0.3f);
+            }
+        }
         if (e.getSource().getEntity() instanceof ServerPlayer p && p.serverLevel().getGameTime() < p.getPersistentData().getLong(VEIL)) {
             e.setAmount(e.getAmount() * 1.5f);
             p.getPersistentData().remove(VEIL);
@@ -250,8 +260,10 @@ public final class ShadowFx {
         }
         Remnant r = best;
         play(sl, r.pos(), "shadow_whisper", 1.0f, 1.0f);
-        if (p.getRandom().nextFloat() < chance(p, r.hp())) {
-            CompoundTag entry = ShadowArmy.add(p, r.type(), false);
+        boolean exclusive = r.hp() < 0;   // a beaten exclusive shadow (a Challenge) - it always answers
+        if (exclusive && ShadowArmy.inArmy(p, r.type())) { dropRemnant(p, r); return; }
+        if (exclusive || p.getRandom().nextFloat() < chance(p, r.hp())) {
+            CompoundTag entry = ShadowArmy.add(p, r.type(), exclusive);
             dropRemnant(p, r);
             if (entry == null) return;
             if (entry.getBoolean("eq")) ShadowArmy.raise(p, entry, r.pos(), 0);
@@ -369,29 +381,74 @@ public final class ShadowFx {
         for (Mob m : sl.getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(24), m -> m.getTarget() == p)) m.setTarget(null);
     }
 
-    // ================================================================== 8. Oathbound Knight / 9. The Ravener
-    public static void oathboundKnight(ServerPlayer p, float power) { callExclusive(p, ShadowArmy.KNIGHT, "The Oathbound Knight swears itself to you"); }
+    // ================================================================== 8. Ranks of Shade
+    static final String RANKS = "isg_sh_ranks";
 
-    public static void ravener(ServerPlayer p, float power) { callExclusive(p, ShadowArmy.RAVENER, "The Ravener binds itself to you"); }
-
-    /** Call an exclusive shadow to its master's side (it joins the army the first time). */
-    static void callExclusive(ServerPlayer p, String type, String joined) {
+    /** Every shadow at your side snaps to you in a guarding ring; for 8 s they take most of the harm meant for you. */
+    public static void ranksOfShade(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
-        CompoundTag e = null;
-        for (var t : ShadowArmy.list(p)) if (type.equals(((CompoundTag) t).getString("type"))) e = (CompoundTag) t;
-        if (e == null) {
-            e = ShadowArmy.add(p, type, true);
-            if (e == null) return;
-            p.displayClientMessage(Component.literal(joined).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), true);
+        List<ShadowSoldier> out = ShadowArmy.out(p);
+        if (out.isEmpty()) { p.displayClientMessage(Component.literal("No shadows at your side to close ranks").withStyle(ChatFormatting.GRAY), true); return; }
+        int n = out.size();
+        for (int i = 0; i < n; i++) {   // they step out of your shadow round you, facing out
+            ShadowSoldier s = out.get(i);
+            double a = TAU * i / n;
+            Vec3 at = p.position().add(Math.cos(a) * 2.2, 0, Math.sin(a) * 2.2);
+            sinkPool(sl, s.position(), s.getBbWidth());
+            s.teleportTo(at.x, p.getY(), at.z);
+            s.setYRot((float) Math.toDegrees(Math.atan2(-Math.cos(a), Math.sin(a))) + 180); s.yBodyRot = s.getYRot();
+            s.getNavigation().stop();
+            risePool(sl, at, s.getBbWidth());
         }
-        ShadowSoldier s = ShadowArmy.summoned(p, e.getInt("id"));
-        Vec3 at = p.position().add(look(p).scale(2.5));
-        e.putBoolean("eq", true);
-        e.putLong("rec", 0);
-        if (s == null) { ShadowArmy.root(p).putBoolean(ShadowArmy.GATE, false); ShadowArmy.raise(p, e, at, 0); }
-        else { sinkPool(sl, s.position(), s.getBbWidth()); s.teleportTo(at.x, at.y, at.z); risePool(sl, at, s.getBbWidth()); }
-        sound(sl, at, SoundEvents.WARDEN_EMERGE, 0.6f, 1.2f);
-        play(sl, at, "shadow_rise", 1.2f, ShadowArmy.RAVENER.equals(type) ? 1.1f : 0.7f);
+        p.getPersistentData().putLong(RANKS, sl.getGameTime() + 160);
+        FxPacket f = pk(7, p.position(), 160); f.v = new Vec3(p.getId(), 1, 0); send(sl, f);
+        play(sl, p.position(), "shadow_gate", 1.0f, 1.3f);
+        sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 1.0f, 0.7f);
+    }
+
+    // ================================================================== 9. Rally of the Fallen
+    private static final UUID RALLY_POWER = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000031");
+    private static final UUID RALLY_HEALTH = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000032");
+    private static final UUID RALLY_SPEED = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000033");
+
+    /** Every fallen shadow rises at once; those at your side are made whole and fight a rank stronger for 20 s. */
+    public static void rallyOfTheFallen(ServerPlayer p, float power) {
+        ServerLevel sl = p.serverLevel();
+        long now = sl.getGameTime();
+        int risen = 0;
+        for (var t : ShadowArmy.list(p)) { CompoundTag c = (CompoundTag) t; if (c.getLong("rec") > now) { c.putLong("rec", now); risen++; } }
+        ShadowArmy.root(p).putBoolean(ShadowArmy.GATE, false);
+        ShadowArmy.keep(p);
+        AstaFx.later(4, () -> {
+            if (!alive(p)) return;
+            for (ShadowSoldier s : ShadowArmy.out(p)) {
+                TimedModifiers.apply(s, Attributes.ATTACK_DAMAGE, RALLY_POWER, "Rally of the Fallen", 0.2, AttributeModifier.Operation.MULTIPLY_BASE, 400);
+                TimedModifiers.apply(s, Attributes.MAX_HEALTH, RALLY_HEALTH, "Rally of the Fallen", 0.25, AttributeModifier.Operation.MULTIPLY_BASE, 400);
+                TimedModifiers.apply(s, Attributes.MOVEMENT_SPEED, RALLY_SPEED, "Rally of the Fallen", 0.1, AttributeModifier.Operation.MULTIPLY_BASE, 400);
+                s.setHealth(s.getMaxHealth());
+                rankUpFx(sl, s);
+            }
+        });
+        play(sl, p.position(), "shadow_rise", 1.3f, 0.8f);
+        sound(sl, p.position(), SoundEvents.WARDEN_EMERGE, 0.5f, 1.3f);
+        if (ShadowArmy.count(p) == 0) p.displayClientMessage(Component.literal("Your army is empty - there is no one to rally").withStyle(ChatFormatting.GRAY), true);
+        else if (risen > 0) p.displayClientMessage(Component.literal(risen + " fallen shadow" + (risen == 1 ? "" : "s") + " rise again").withStyle(ChatFormatting.AQUA), true);
+    }
+
+    // ================================================================== Challenges (the Shadow Army menu)
+    /** Its living form steps out to answer the challenge. */
+    public static void challengeFx(ServerLevel sl, ShadowSoldier s) {
+        slam(sl, s.position(), 3.5f);
+        sound(sl, s.position(), SoundEvents.WARDEN_ROAR, 0.4f, s instanceof com.ironspellgrimoire.entity.OathboundKnight ? 0.9f : 1.5f);
+        sound(sl, s.position(), SoundEvents.ANVIL_LAND, 0.5f, 0.6f);
+    }
+
+    /** A beaten exclusive shadow's remnant: Rise always takes it. */
+    public static void exclusiveRemnant(ServerPlayer p, ShadowSoldier s) {
+        int id = nextRemnant++;
+        Remnant r = new Remnant(id, p.getUUID(), s.kind(), s.position(), -1f, p.serverLevel().getGameTime() + 1200, new int[]{3});
+        REMNANTS.put(id, r);
+        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Remnant(id, s.kind(), r.pos(), s.getYRot(), 1f, 1200, 3));
     }
 
     // ================================================================== 9. Sovereign's Domain (mode)

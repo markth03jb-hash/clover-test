@@ -455,10 +455,14 @@ public final class UiShots {
         steps.add(new Step("shd_remnant", () -> { onServer(p -> UiShotsServer.element(p, "s:remnant")); }, 14, true));   // a remnant only you can see
         steps.add(new Step("shd_rise", () -> { onServer(p -> UiShotsServer.element(p, "s:rise")); }, 24, true));         // it climbs out as your shadow
         steps.add(new Step("shd_army", () -> { }, 30, true));                                                              // following at your side
-        steps.add(new Step("shd_knight", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:oathbound_knight")); }, 40, true));   // the Oathbound Knight rising
-        steps.add(new Step("shd_knight_idle", () -> { }, 30, true));
-        steps.add(new Step("shd_ravener", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:ravener")); }, 40, true));   // the Ravener rising
-        steps.add(new Step("shd_ravener_idle", () -> { }, 30, true));
+        steps.add(new Step("shd_challenge_knight", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:challenge_knight")); }, 30, true));   // the knight's living form answers (boss bar)
+        steps.add(new Step("shd_knight_beaten", () -> { mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "s:beat")); }, 24, true));   // beaten: its remnant
+        steps.add(new Step("shd_knight_arise", () -> { onServer(p -> UiShotsServer.element(p, "s:arise")); }, 40, true));   // raised as your shadow
+        steps.add(new Step("shd_challenge_ravener", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:challenge_ravener")); }, 30, true));
+        steps.add(new Step("shd_ravener_beaten", () -> { mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "s:beat")); }, 24, true));
+        steps.add(new Step("shd_ravener_arise", () -> { onServer(p -> UiShotsServer.element(p, "s:arise")); }, 40, true));
+        steps.add(new Step("shd_ranks_of_shade", () -> { onServer(p -> UiShotsServer.element(p, "s:ranks_of_shade")); }, 44, true));   // the army closes round you
+        steps.add(new Step("shd_rally_of_the_fallen", () -> { onServer(p -> UiShotsServer.element(p, "s:rally_of_the_fallen")); }, 14, true));
         steps.add(new Step("shd_umbral_step", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:umbral_step")); }, 6, true));
         steps.add(new Step("shd_unseen_hand", () -> { onServer(p -> UiShotsServer.element(p, "s:unseen_hand")); }, 8, true));
         steps.add(new Step("shd_command_hunt", () -> { onServer(p -> UiShotsServer.element(p, "s:command_hunt")); }, 10, true));
@@ -537,8 +541,8 @@ public final class UiShots {
 
     /** Textures and models a book's pictures show besides its code (a change to them must re-take the pictures). */
     private static final String[][] ASSETS = {
-            {"shd_", "geo/shadow_knight.geo.json", "textures/geo/shadow_knight.png", "animations/shadow_knight.animation.json",
-                    "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json"},
+            {"shd_", "geo/shadow_knight.geo.json", "textures/geo/shadow_knight.png", "animations/shadow_knight.animation.json", "textures/geo/shadow_knight_living.png",
+                    "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json", "textures/geo/shadow_ravener_living.png"},
             {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"}};
 
     private static String assetsKey(String step) {

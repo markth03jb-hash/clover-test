@@ -23,6 +23,8 @@ import org.lwjgl.glfw.GLFW;
  * The Shadow Army menu (key V): every shadow you've raised - its name, what it was, its level and XP, its rank - and
  * what you can do with it: equip it (it rises and follows you while you hold the Shadow Grimoire, up to your slots),
  * rank it up once it's strong enough, rename it, or release it. Black and blue, like the army.
+ * Above them, the Challenges: the exclusive shadows (the Oathbound Knight, the Ravener) aren't spells - challenge one
+ * and its living form steps out to fight you; beat it and cast Rise on its remnant (or press Arise here) to win it.
  */
 public class ShadowArmyScreen extends Screen {
     public static final KeyMapping KEY = new KeyMapping("key.iron_spell_grimoire.shadow_army", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.iron_spell_grimoire");
@@ -32,6 +34,10 @@ public class ShadowArmyScreen extends Screen {
 
     private List<ShadowPackets.Entry> list = new ArrayList<>();
     private int slots, storage, scroll, renaming = -1;
+    private int[] challenges = new int[0];
+    static final String[] EXCL = {"Oathbound Knight", "Ravener"};
+    static final String[] EXCL_SUB = {"a towering swordmaster in steel - Oath Cleave, Sworn Guard", "a tall stalker with long talons - Pounce, Devour, Frenzy"};
+    private static final int CH_ROW = 26;
     private EditBox nameBox;
 
     ShadowArmyScreen() { super(Component.literal("Shadow Army")); }
@@ -40,7 +46,7 @@ public class ShadowArmyScreen extends Screen {
     public static void show(ShadowPackets.Open p) {
         Minecraft mc = Minecraft.getInstance();
         ShadowArmyScreen s = mc.screen instanceof ShadowArmyScreen open ? open : new ShadowArmyScreen();
-        s.list = p.list; s.slots = p.slots; s.storage = p.storage;
+        s.list = p.list; s.slots = p.slots; s.storage = p.storage; s.challenges = p.challenges;
         if (mc.screen != s) mc.setScreen(s);
         else s.rebuild();
     }
@@ -48,7 +54,8 @@ public class ShadowArmyScreen extends Screen {
     private static void act(int action, int id, String name) { AddonNetwork.CHANNEL.sendToServer(new ShadowPackets.Act(action, id, name)); }
 
     private int left() { return (width - W) / 2; }
-    private int top() { return 46; }
+    private int chTop() { return 46; }
+    private int top() { return chTop() + 14 + CH_ROW * challenges.length + 8; }
     private int visibleRows() { return Math.max(1, (height - top() - 40) / ROW); }
 
     @Override protected void init() { rebuild(); }
@@ -56,6 +63,15 @@ public class ShadowArmyScreen extends Screen {
     private void rebuild() {
         clearWidgets();
         int x0 = left(), y = top();
+        for (int i = 0; i < challenges.length; i++) {   // the Challenges
+            final int k = i;
+            int st = challenges[i], cy = chTop() + 14 + i * CH_ROW;
+            String label = st == 0 ? "Challenge" : st == 1 ? "Fighting..." : st == 2 ? "Arise" : "In your army";
+            Button b = Button.builder(Component.literal(label), bb -> { if (challenges[k] == 0) { act(5, k, ""); onClose(); } else act(6, k, ""); })
+                    .bounds(x0 + W - 82, cy + 4, 78, 18).build();
+            b.active = st == 0 || st == 2;
+            addRenderableWidget(b);
+        }
         scroll = Math.max(0, Math.min(scroll, Math.max(0, list.size() - visibleRows())));
         for (int i = scroll; i < Math.min(list.size(), scroll + visibleRows()); i++, y += ROW) {
             ShadowPackets.Entry e = list.get(i);
@@ -104,6 +120,15 @@ public class ShadowArmyScreen extends Screen {
         g.fill(x0 - 8, 8, x0 + W + 8, height - 8, 0xE00A0C14);   // a dark panel, a blue rim
         g.fill(x0 - 8, 8, x0 + W + 8, 9, 0xFF3C78E0);
         g.fill(x0 - 8, height - 9, x0 + W + 8, height - 8, 0xFF3C78E0);
+        g.drawString(font, "CHALLENGES", x0 + 2, chTop() + 2, 0xFFE8C070, false);
+        for (int i = 0; i < challenges.length; i++) {
+            int st = challenges[i], cy = chTop() + 14 + i * CH_ROW;
+            g.fill(x0, cy + 1, x0 + W, cy + CH_ROW - 1, st == 3 ? 0x4012306A : 0x40302010);
+            g.fill(x0, cy + 1, x0 + 2, cy + CH_ROW - 1, st == 3 ? 0xFF4FA0FF : 0xFFE8C070);
+            g.drawString(font, EXCL[Math.min(i, EXCL.length - 1)], x0 + 7, cy + 3, st == 3 ? 0xFFB8E8FF : 0xFFF0E0C0, false);
+            String sub = st == 2 ? "beaten - cast Rise on its remnant, or Arise" : st == 3 ? "sworn to you" : EXCL_SUB[Math.min(i, EXCL_SUB.length - 1)];
+            g.drawString(font, sub, x0 + 7, cy + 14, 0xFF9AA0B0, false);
+        }
         int eq = 0;
         for (ShadowPackets.Entry e : list) if (e.equipped() && !e.exclusive()) eq++;
         g.drawCenteredString(font, Component.literal("SHADOW ARMY"), width / 2, 16, 0xFF8CC8FF);

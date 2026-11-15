@@ -1240,7 +1240,7 @@
   "entity.iron_spell_grimoire.oathbound_knight": "Oathbound Knight",
   "key.iron_spell_grimoire.shadow_army": "Shadow Army menu",
   "ui.iron_spell_grimoire.shadow_grimoire_only": "Only the Shadow Grimoire can cast this.",
-  "tooltip.iron_spell_grimoire.shadow_grimoire.passive": "Passive - Remnants: what you slay while holding this grimoire leaves a remnant where it fell for 60 s - a black shadow of it in a dark pool, seen by you alone. Cast Rise on it to raise it as your shadow (3 tries; the stronger it was, the harder). Your shadows level up from their own kills and rank up: Soldier, Elite, Knight, Captain, General. Open your army with V to equip, rank up, rename or release them.",
+  "tooltip.iron_spell_grimoire.shadow_grimoire.passive": "Passive - Remnants: what you slay while holding this grimoire leaves a remnant where it fell for 60 s - a black shadow of it in a dark pool, seen by you alone. Cast Rise on it to raise it as your shadow (3 tries; the stronger it was, the harder). Your shadows level up from their own kills and rank up: Soldier, Elite, Knight, Captain, General. Open your army with V to equip, rank up, rename or release them. Challenges (in the army menu): call out the living Oathbound Knight or Ravener, beat it, and raise it as an exclusive shadow - each with instincts of its own.",
   "tooltip.iron_spell_grimoire.shadow_grimoire.desc": "Eleven pages of black smoke and blue fire, and an army that never stays dead.",
   "tooltip.iron_spell_grimoire.shadow_grimoire.lore": "Whatever falls before you rises again - for you.",
   "spell.iron_spell_grimoire.rise": "Shadow: Rise",
@@ -1257,13 +1257,13 @@
   "spell.iron_spell_grimoire.command_hunt.guide": "Mark the foe you aim at: every shadow at your side turns on it, and its armour is torn down for 8 s.",
   "spell.iron_spell_grimoire.veil": "Shadow: Veil",
   "spell.iron_spell_grimoire.veil.guide": "For 5 s you melt into shadow: foes lose sight of you, and your next blow lands 50% harder.",
-  "spell.iron_spell_grimoire.oathbound_knight": "Shadow: Oathbound Knight",
-  "spell.iron_spell_grimoire.oathbound_knight.guide": "Call your exclusive shadow, the Oathbound Knight - a towering knight of black plate with a blue greatsword. It joins your army at the Knight rank and can rise to Sovereign's Hand. Its own instincts: Oath Cleave - every 8 s in a fight its greatsword sweeps a wide arc before it, throwing foes back. Sworn Guard - when you fall below 40% health it steps out of your shadow at your side, draws every foe near onto itself and stands like a wall for 6 s.",
   "spell.iron_spell_grimoire.sovereigns_domain": "Shadow: Sovereign's Domain",
   "spell.iron_spell_grimoire.sovereigns_domain.guide": "Mode, 60 s: your shadows hit 50% harder and move faster, and any that fall rise again after 3 s instead of 30.",
   "spell.iron_spell_grimoire.night_legion": "Shadow: Night Legion",
   "spell.iron_spell_grimoire.night_legion.guide": "Your whole army - even the shadows not at your side - bursts out of the ground in ranks and charges ahead behind a tide of shadow. Surpassing Limits: a second wave.",
   "entity.iron_spell_grimoire.ravener": "Ravener",
-  "spell.iron_spell_grimoire.ravener": "Shadow: Ravener",
-  "spell.iron_spell_grimoire.ravener.guide": "Call your second exclusive shadow, the Ravener - a tall stalker of black shadow with burning eyes, swept horns, long taloned arms and a hooked tail. It joins your army at the Knight rank and can rise to Sovereign's Hand. Its own instincts: Pounce - it leaps onto foes up to 14 blocks away, at once on anything that strikes you. Devour - whatever it kills heals it by a quarter. Frenzy - hurt below half, it shrieks and runs wild for 8 s, faster and harder-hitting."
+  "spell.iron_spell_grimoire.ranks_of_shade": "Shadow: Ranks of Shade",
+  "spell.iron_spell_grimoire.ranks_of_shade.guide": "Every shadow at your side steps out of your shadow into a ring round you. For 8 s they take 70% of the harm meant for you, split between them.",
+  "spell.iron_spell_grimoire.rally_of_the_fallen": "Shadow: Rally of the Fallen",
+  "spell.iron_spell_grimoire.rally_of_the_fallen.guide": "Every fallen shadow rises again at once, and the shadows at your side are made whole and fight a rank stronger for 20 s - harder blows, more health, quicker feet."
 }

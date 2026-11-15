@@ -536,6 +536,65 @@ PAINTERS = {
 }
 
 
+class _NoGlow:
+    def __setitem__(self, k, v): pass
+
+
+def noglow(painter):
+    """The same painter, but nothing it paints glows (a living thing's plates and bone aren't lit from within)."""
+    return lambda px, gx, *a: painter(px, _NoGlow(), *a)
+
+
+def nothing(px, gx, *a):
+    """Paints nothing - the part is left clear (the living forms have no shadow smoke)."""
+
+
+# The living forms the shadows were before they were raised - their own colours, fought in a Challenge
+# (Shadow Army menu): the knight in steel and gold with a crimson cape and amber eyes behind the visor; the Ravener in
+# ash-grey hide and ivory bone with amber eyes. Same models; only the textures differ (<name>_living.png).
+KNIGHT_LIVING = {
+    "plate": noglow(gp.plate_painter((150, 156, 168), (96, 82, 52), (0, 0, 0), ornate=True)),
+    "plate2": noglow(gp.plate_painter((112, 116, 128), (150, 120, 60), (0, 0, 0), engrave=False, ridges=True)),
+    "helm": noglow(gp.plate_painter((160, 166, 178), (100, 104, 116), (0, 0, 0), engrave=False, rivets=False)),
+    "plate3": noglow(gp.plate_painter((62, 64, 72), (44, 46, 54), (0, 0, 0), engrave=False, rivets=False)),
+    "mail": gp.mail_painter((92, 94, 102)),
+    "cape": gp.cloth_painter((128, 26, 32)),
+    "visor": gp.visor_painter((36, 36, 42), (255, 180, 70), (255, 215, 140)),
+    "eyes": gp.eyes_painter((36, 36, 42), (255, 180, 70), (255, 215, 140)),
+    "blade": noglow(gp.blade_painter((176, 182, 196), (128, 134, 150), (0, 0, 0))),
+    "glow": noglow(gp.glow_painter((196, 156, 70), (226, 190, 100))),
+    "bone": noglow(gp.bone_painter((200, 190, 166), (150, 140, 120), (0, 0, 0))),
+    "skull": noglow(gp.bone_painter((190, 180, 156), (150, 140, 120), (0, 0, 0))),
+    "teeth": noglow(gp.plate_painter((232, 224, 204), (200, 190, 170), (0, 0, 0), engrave=False, rivets=False)),
+    "rune": noglow(gp.rune_painter((62, 64, 72), (206, 166, 84), (0, 0, 0))),
+    "smoke": nothing,
+    "flameblade": noglow(gp.flameblade_painter((200, 206, 220), (70, 74, 88), (0, 0, 0))),
+    "grip": gp.grip_painter((54, 32, 22), (160, 120, 56)),
+}
+RAVENER_LIVING = dict(KNIGHT_LIVING, **{
+    "plate": noglow(gp.plate_painter((88, 86, 82), (58, 56, 52), (0, 0, 0), engrave=False)),
+    "plate2": noglow(gp.plate_painter((66, 64, 62), (46, 44, 42), (0, 0, 0), engrave=False, ridges=True)),
+    "plate3": noglow(gp.plate_painter((42, 40, 38), (30, 28, 26), (0, 0, 0), engrave=False, rivets=False)),
+    "mail": gp.mail_painter((72, 68, 64)),
+    "eyes": gp.eyes_painter((40, 38, 36), (255, 160, 40), (255, 200, 90)),
+    "glow": gp.glow_painter((255, 160, 40), (255, 200, 90)),
+})
+
+
+def build_living(name, model, painters, density=8):
+    """Paint a second texture for the same model (identical layout), as <name>_living.png + its glowmask."""
+    bones = model["minecraft:geometry"][0]["bones"]
+    size, faces = gp.layout(bones, density, sheet=2048)
+    blade = [fc for fc in faces if fc["mat"] == "flameblade"]
+    if blade:
+        lo = min(fc["cube"]["origin"][1] for fc in blade); hi = max(fc["cube"]["origin"][1] + fc["cube"]["size"][1] for fc in blade)
+        for fc in blade:
+            o, sz = fc["cube"]["origin"][1], fc["cube"]["size"][1]
+            fc["t0"], fc["t1"] = (o - lo) / (hi - lo), (o + sz - lo) / (hi - lo)
+    img, glow = gp.paint(faces, size, painters)
+    img.save(os.path.join(TEX, name + "_living.png")); glow.save(os.path.join(TEX, name + "_living_glowmask.png"))
+
+
 def build(name, model, density=8):
     bones = model["minecraft:geometry"][0]["bones"]
     size, faces = gp.layout(bones, density, sheet=2048)
@@ -558,6 +617,8 @@ def main():
     build("shadow_knight", knight())
     json.dump(knight_anims(), open(os.path.join(ANIM, "shadow_knight.animation.json"), "w"), indent=1)
     build("shadow_ravener", ravener())
+    build_living("shadow_knight", knight(), KNIGHT_LIVING)
+    build_living("shadow_ravener", ravener(), RAVENER_LIVING)
     json.dump(ravener_anims(), open(os.path.join(ANIM, "shadow_ravener.animation.json"), "w"), indent=1)
     print("shadow models written")
 

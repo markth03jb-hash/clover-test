@@ -12,11 +12,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("model"); ap.add_argument("shots", nargs="+"); ap.add_argument("-o", "--out", required=True)
     ap.add_argument("--size", type=int, default=460); ap.add_argument("--gif", default="")
+    ap.add_argument("--tex", default="", help="texture variant suffix, e.g. _living")
     a = ap.parse_args()
     geo = json.load(open(os.path.join(ROOT, "geo", a.model + ".geo.json")))["minecraft:geometry"][0]
     anims = json.load(open(os.path.join(ROOT, "animations", a.model + ".animation.json")))["animations"]
-    sheet = Image.open(os.path.join(ROOT, "textures", "geo", a.model + ".png"))
-    glowp = os.path.join(ROOT, "textures", "geo", a.model + "_glowmask.png")
+    sheet = Image.open(os.path.join(ROOT, "textures", "geo", a.model + a.tex + ".png"))
+    glowp = os.path.join(ROOT, "textures", "geo", a.model + a.tex + "_glowmask.png")
     glow = Image.open(glowp) if os.path.exists(glowp) else Image.new("RGBA", sheet.size)
     frames = []
     for shot in a.shots:

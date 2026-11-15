@@ -40,6 +40,12 @@ public class ShadowSoldier extends PathfinderMob {
     private static final EntityDataAccessor<String> KIND = SynchedEntityData.defineId(ShadowSoldier.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Integer> RANK = SynchedEntityData.defineId(ShadowSoldier.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> RISING = SynchedEntityData.defineId(ShadowSoldier.class, EntityDataSerializers.INT);
+    /** A Challenge (Shadow Army menu): the exclusive shadow in its living form, before it was ever raised - its own
+     *  colours, no master, fighting the one who challenged it. */
+    private static final EntityDataAccessor<Boolean> LIVING = SynchedEntityData.defineId(ShadowSoldier.class, EntityDataSerializers.BOOLEAN);
+    private UUID challenger;
+    private int challengeTicks;
+    private net.minecraft.server.level.ServerBossEvent bar;
     private int armyId, temporary, level = 1;
     public int hunting;   // Command: Hunt - ticks it hits harder
 
@@ -60,6 +66,7 @@ public class ShadowSoldier extends PathfinderMob {
         this.entityData.define(KIND, "minecraft:zombie");
         this.entityData.define(RANK, 0);
         this.entityData.define(RISING, 0);
+        this.entityData.define(LIVING, false);
     }
 
     public UUID ownerUUID() { return this.entityData.get(OWNER).orElse(null); }
@@ -69,6 +76,55 @@ public class ShadowSoldier extends PathfinderMob {
     public int temporary() { return temporary; }
     /** The tick it began to rise (for the client's rise out of the pool). */
     public int risingAt() { return this.entityData.get(RISING); }
+
+    public boolean living() { return this.entityData.get(LIVING); }
+    public UUID challenger() { return challenger; }
+
+    /** Set it up as a Challenge: its living form, fighting {@code who}. */
+    public void setupLiving(ServerPlayer who, String kind, String title) {
+        this.entityData.set(LIVING, true);
+        this.entityData.set(KIND, kind);
+        this.challenger = who.getUUID();
+        this.entityData.set(RISING, this.tickCount);
+        setCustomName(Component.literal(title));
+        setCustomNameVisible(false);
+        double hp = this instanceof OathboundKnight ? 320 : 260, dmg = this instanceof OathboundKnight ? 13 : 11;
+        getAttribute(Attributes.MAX_HEALTH).setBaseValue(hp);
+        getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(dmg);
+        getAttribute(Attributes.ARMOR).setBaseValue(this instanceof OathboundKnight ? 14 : 8);
+        getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(0.7);
+        if (this instanceof ShadowRavener) getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.38);
+        setHealth((float) hp);
+        this.entityData.set(RANK, 2);
+        refreshDimensions();
+        bar = new net.minecraft.server.level.ServerBossEvent(Component.literal(title),
+                this instanceof OathboundKnight ? net.minecraft.world.BossEvent.BossBarColor.RED : net.minecraft.world.BossEvent.BossBarColor.YELLOW,
+                net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_10);
+        bar.addPlayer(who);
+        setTarget(who);
+    }
+
+    /** The challenge's own turn: hunt the challenger; if they fall, flee or wait too long, it withdraws. */
+    private void livingTick() {
+        challengeTicks++;
+        ServerPlayer c = challenger == null ? null : (ServerPlayer) level().getPlayerByUUID(challenger);
+        if (bar != null) bar.setProgress(Math.max(0, getHealth() / getMaxHealth()));
+        if (c == null || !c.isAlive() || c.distanceToSqr(this) > 48 * 48 || challengeTicks > 6000) {
+            if (c != null) c.displayClientMessage(Component.literal(getName().getString() + " withdraws - the challenge is lost").withStyle(net.minecraft.ChatFormatting.GRAY), true);
+            ShadowFx.sinkPool((ServerLevel) level(), position(), getBbWidth());
+            ShadowArmy.challengeOver(this);
+            discard();
+            return;
+        }
+        LivingEntity t = getTarget();
+        if (t == null || !t.isAlive() || (t != c && t.distanceToSqr(this) > 20 * 20)) setTarget(c);
+    }
+
+    @Override
+    public void remove(RemovalReason r) {
+        if (bar != null) bar.removeAllPlayers();
+        super.remove(r);
+    }
 
     public Player owner() {
         UUID u = ownerUUID();
@@ -130,6 +186,7 @@ public class ShadowSoldier extends PathfinderMob {
     public void tick() {
         super.tick();
         if (level().isClientSide) return;
+        if (living()) { livingTick(); return; }
         Player o = owner();
         if (o == null || !o.isAlive()) { if (tickCount > 40) discard(); return; }
         if (hunting > 0) hunting--;
@@ -176,7 +233,8 @@ public class ShadowSoldier extends PathfinderMob {
 
     @Override
     public void die(DamageSource src) {
-        if (!level().isClientSide) { ShadowFx.sinkPool((ServerLevel) level(), position(), getBbWidth()); ShadowArmy.fell(this); }
+        if (!level().isClientSide && living()) { if (bar != null) bar.removeAllPlayers(); ShadowArmy.challengeWon(this); }
+        else if (!level().isClientSide) { ShadowFx.sinkPool((ServerLevel) level(), position(), getBbWidth()); ShadowArmy.fell(this); }
         super.die(src);
     }
 

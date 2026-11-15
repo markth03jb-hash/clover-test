@@ -56,6 +56,12 @@ public class OathboundKnight extends ShadowSoldier implements GeoEntity {
         if (cleaveReady == 0 && t != null && t.isAlive() && distanceToSqr(t) < 3.6 * 3.6) cleave(sl);
         Player o = owner();
         if (guardReady == 0 && o != null && o.isAlive() && o.getHealth() < o.getMaxHealth() * 0.4f && tickCount % 5 == 0) guard(sl, o);
+        if (guardReady == 0 && living() && getHealth() < getMaxHealth() * 0.5f) {   // in a Challenge: it braces itself like a wall
+            guardReady = 600;
+            TimedModifiers.apply(this, Attributes.ARMOR, GUARD_ARMOR, "Sworn Guard", 12, AttributeModifier.Operation.ADDITION, 120);
+            TimedModifiers.apply(this, Attributes.KNOCKBACK_RESISTANCE, GUARD_FOOTING, "Sworn Guard", 1.0, AttributeModifier.Operation.ADDITION, 120);
+            ShadowFx.knightGuard(sl, this, 120);
+        }
     }
 
     /** Oath Cleave: a wide sweep of the greatsword. */

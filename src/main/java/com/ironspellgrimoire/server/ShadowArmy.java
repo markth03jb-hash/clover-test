@@ -44,6 +44,9 @@ public final class ShadowArmy {
     static final int[] RANK_LEVEL = {0, 8, 14, 20, 26, 30};
     public static final int MAX_LEVEL = 30, STORAGE = 50;
     public static final String KNIGHT = "iron_spell_grimoire:oathbound_knight", RAVENER = "iron_spell_grimoire:ravener";
+    /** The exclusive shadows, won in a Challenge (menu): beat its living form, then raise its remnant. */
+    public static final String[] EXCLUSIVES = {KNIGHT, RAVENER};
+    static final String DEFEATED = "isg_shadow_beaten_";
 
     /** The army's saved data lives in the part of the player's data that survives death. */
     static CompoundTag root(Player p) {
@@ -213,6 +216,75 @@ public final class ShadowArmy {
         }
     }
 
+    // ================================================================== Challenges
+    private static final Map<UUID, ShadowSoldier> CHALLENGE = new HashMap<>();
+
+    static boolean inArmy(Player p, String type) {
+        for (Tag t : list(p)) if (type.equals(((CompoundTag) t).getString("type"))) return true;
+        return false;
+    }
+
+    /** 0 can challenge, 1 fighting it now, 2 beaten - raise it, 3 in your army. */
+    static int challengeState(ServerPlayer p, int i) {
+        String type = EXCLUSIVES[i];
+        if (inArmy(p, type)) return 3;
+        ShadowSoldier c = CHALLENGE.get(p.getUUID());
+        if (c != null && c.isAlive() && type.equals(c.kind())) return 1;
+        return root(p).getBoolean(DEFEATED + i) ? 2 : 0;
+    }
+
+    /** Call out an exclusive shadow's living form to fight you. */
+    public static ShadowSoldier challenge(ServerPlayer p, int i) {
+        if (i < 0 || i >= EXCLUSIVES.length || challengeState(p, i) != 0) return null;
+        ShadowSoldier cur = CHALLENGE.get(p.getUUID());
+        if (cur != null && cur.isAlive()) {
+            p.displayClientMessage(Component.literal("Finish the challenge you're in first").withStyle(ChatFormatting.GRAY), true);
+            return null;
+        }
+        ServerLevel sl = p.serverLevel();
+        ShadowSoldier s = i == 0 ? AddonEntities.OATHBOUND_KNIGHT.get().create(sl) : AddonEntities.SHADOW_RAVENER.get().create(sl);
+        if (s == null) return null;
+        Vec3 f = p.getLookAngle().multiply(1, 0, 1);
+        f = f.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : f.normalize();
+        Vec3 at = p.position().add(f.scale(9));
+        float yaw = (float) (Math.atan2(-(p.getX() - at.x), p.getZ() - at.z) * 180 / Math.PI);
+        s.moveTo(at.x, p.getY(), at.z, yaw, 0);
+        s.setYHeadRot(yaw); s.yBodyRot = yaw;
+        s.setupLiving(p, EXCLUSIVES[i], typeName(EXCLUSIVES[i]));
+        sl.addFreshEntity(s);
+        CHALLENGE.put(p.getUUID(), s);
+        ShadowFx.challengeFx(sl, s);
+        p.displayClientMessage(Component.literal(typeName(EXCLUSIVES[i]) + " answers your challenge").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
+        return s;
+    }
+
+    /** The challenge ended without a win (the challenger fell, fled or ran out of time). */
+    public static void challengeOver(ShadowSoldier s) {
+        if (s.challenger() != null) CHALLENGE.remove(s.challenger(), s);
+    }
+
+    /** Its living form fell: it is beaten, and its remnant waits to be raised. */
+    public static void challengeWon(ShadowSoldier s) {
+        challengeOver(s);
+        if (!(s.level() instanceof ServerLevel sl) || s.challenger() == null) return;
+        ServerPlayer p = sl.getServer().getPlayerList().getPlayer(s.challenger());
+        if (p == null) return;
+        int i = KNIGHT.equals(s.kind()) ? 0 : 1;
+        root(p).putBoolean(DEFEATED + i, true);
+        ShadowFx.exclusiveRemnant(p, s);
+        p.displayClientMessage(Component.literal(typeName(s.kind()) + " is beaten - cast Rise on its remnant").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), true);
+    }
+
+    /** Raise a beaten exclusive shadow from the menu (if its remnant was missed). */
+    public static void arise(ServerPlayer p, int i) {
+        if (i < 0 || i >= EXCLUSIVES.length || challengeState(p, i) != 2 || !ShadowFx.equipped(p)) return;
+        CompoundTag e = add(p, EXCLUSIVES[i], true);
+        if (e == null) return;
+        root(p).putBoolean(GATE, false);
+        raise(p, e, p.position().add(p.getLookAngle().multiply(1, 0, 1).normalize().scale(2.5)), 0);
+        p.displayClientMessage(Component.literal(e.getString("name") + " rises as your shadow").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), true);
+    }
+
     // ================================================================== the menu
     public static void open(ServerPlayer p) {
         List<ShadowPackets.Entry> l = new ArrayList<>();
@@ -223,12 +295,16 @@ public final class ShadowArmy {
             l.add(new ShadowPackets.Entry(e.getInt("id"), e.getString("type"), e.getString("name"), e.getInt("lvl"), e.getInt("xp"), xpNext(e.getInt("lvl")),
                     e.getInt("rank"), e.getBoolean("eq"), e.getBoolean("excl"), rec, canRankUp(e)));
         }
-        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Open(l, slots(p), STORAGE));
+        int[] ch = new int[EXCLUSIVES.length];
+        for (int i = 0; i < ch.length; i++) ch[i] = challengeState(p, i);
+        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Open(l, slots(p), STORAGE, ch));
     }
 
     public static void handle(ServerPlayer p, int action, int id, String name) {
         if (!ShadowFx.equipped(p) && action != 0) return;
         if (action == 0) { open(p); return; }
+        if (action == 5) { challenge(p, id); return; }
+        if (action == 6) { arise(p, id); keep(p); open(p); return; }
         CompoundTag e = find(p, id);
         if (e == null) return;
         switch (action) {
@@ -270,5 +346,5 @@ public final class ShadowArmy {
         open(p);
     }
 
-    public static void clearAll() { OUT.clear(); }
+    public static void clearAll() { OUT.clear(); CHALLENGE.clear(); }
 }

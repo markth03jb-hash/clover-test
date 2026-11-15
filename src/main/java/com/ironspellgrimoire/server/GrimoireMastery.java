@@ -294,7 +294,7 @@ public final class GrimoireMastery {
         book(AddonItemRegistry.SHADOW_GRIMOIRE::get, Fx.YAMI,
                 "rise", 1, "shadow_exchange", 1, "umbral_step", 2,
                 "unseen_hand", 2, "gate_of_shade", 2, "command_hunt", 3,
-                "veil", 3, "oathbound_knight", 4, "ravener", 4, "sovereigns_domain", 4, "night_legion", 5);
+                "veil", 3, "ranks_of_shade", 3, "rally_of_the_fallen", 4, "sovereigns_domain", 4, "night_legion", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

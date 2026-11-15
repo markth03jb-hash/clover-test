@@ -26,6 +26,7 @@ import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
  */
 public class OathboundKnightRenderer extends GeoEntityRenderer<OathboundKnight> {
     private static final ResourceLocation GLOW = new ResourceLocation("iron_spell_grimoire", "textures/geo/shadow_knight_glowmask.png");
+    private static final ResourceLocation GLOW_LIVING = new ResourceLocation("iron_spell_grimoire", "textures/geo/shadow_knight_living_glowmask.png");
 
     public OathboundKnightRenderer(EntityRendererProvider.Context ctx) {
         super(ctx, new Model());
@@ -33,7 +34,7 @@ public class OathboundKnightRenderer extends GeoEntityRenderer<OathboundKnight> 
         addRenderLayer(new GeoRenderLayer<>(this) {
             @Override
             public void render(PoseStack ps, OathboundKnight a, BakedGeoModel model, RenderType rt, MultiBufferSource buf, VertexConsumer vc, float pt, int light, int overlay) {
-                RenderType g = RenderType.entityTranslucentEmissive(GLOW);
+                RenderType g = RenderType.entityTranslucentEmissive(a.living() ? GLOW_LIVING : GLOW);   // a Challenge: its living colours
                 getRenderer().reRender(model, ps, buf, a, g, buf.getBuffer(g), pt, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
             }
         });
@@ -61,10 +62,11 @@ public class OathboundKnightRenderer extends GeoEntityRenderer<OathboundKnight> 
     static class Model extends GeoModel<OathboundKnight> {
         private static final ResourceLocation GEO = new ResourceLocation("iron_spell_grimoire", "geo/shadow_knight.geo.json");
         private static final ResourceLocation TEX = new ResourceLocation("iron_spell_grimoire", "textures/geo/shadow_knight.png");
+        private static final ResourceLocation TEX_LIVING = new ResourceLocation("iron_spell_grimoire", "textures/geo/shadow_knight_living.png");
         private static final ResourceLocation ANIM = new ResourceLocation("iron_spell_grimoire", "animations/shadow_knight.animation.json");
 
         @Override public ResourceLocation getModelResource(OathboundKnight e) { return GEO; }
-        @Override public ResourceLocation getTextureResource(OathboundKnight e) { return TEX; }
+        @Override public ResourceLocation getTextureResource(OathboundKnight e) { return e.living() ? TEX_LIVING : TEX; }
         @Override public ResourceLocation getAnimationResource(OathboundKnight e) { return ANIM; }
 
         /** Its head turns toward what it watches, on top of its animations. */

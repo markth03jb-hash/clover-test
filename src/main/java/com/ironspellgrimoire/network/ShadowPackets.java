@@ -26,20 +26,24 @@ public final class ShadowPackets {
     public static class Open {
         public final List<Entry> list;
         public final int slots, storage;
-        public Open(List<Entry> list, int slots, int storage) { this.list = list; this.slots = slots; this.storage = storage; }
+        /** Each exclusive shadow's Challenge: 0 can challenge, 1 fighting it, 2 beaten - raise it, 3 in your army. */
+        public final int[] challenges;
+        public Open(List<Entry> list, int slots, int storage, int[] challenges) { this.list = list; this.slots = slots; this.storage = storage; this.challenges = challenges; }
         public static void encode(Open p, FriendlyByteBuf b) {
-            b.writeVarInt(p.slots); b.writeVarInt(p.storage); b.writeVarInt(p.list.size());
+            b.writeVarInt(p.slots); b.writeVarInt(p.storage); b.writeVarIntArray(p.challenges); b.writeVarInt(p.list.size());
             for (Entry e : p.list) {
                 b.writeVarInt(e.id()); b.writeUtf(e.type(), 100); b.writeUtf(e.name(), 32); b.writeVarInt(e.level()); b.writeVarInt(e.xp()); b.writeVarInt(e.xpNext());
                 b.writeVarInt(e.rank()); b.writeBoolean(e.equipped()); b.writeBoolean(e.exclusive()); b.writeVarInt(e.recovering()); b.writeBoolean(e.canRankUp());
             }
         }
         public static Open decode(FriendlyByteBuf b) {
-            int slots = b.readVarInt(), storage = b.readVarInt(), n = b.readVarInt();
+            int slots = b.readVarInt(), storage = b.readVarInt();
+            int[] ch = b.readVarIntArray();
+            int n = b.readVarInt();
             List<Entry> l = new ArrayList<>();
             for (int i = 0; i < n; i++) l.add(new Entry(b.readVarInt(), b.readUtf(100), b.readUtf(32), b.readVarInt(), b.readVarInt(), b.readVarInt(),
                     b.readVarInt(), b.readBoolean(), b.readBoolean(), b.readVarInt(), b.readBoolean()));
-            return new Open(l, slots, storage);
+            return new Open(l, slots, storage, ch);
         }
         public static void handle(Open p, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.ShadowArmyScreen.show(p)));
@@ -47,7 +51,8 @@ public final class ShadowPackets {
         }
     }
 
-    /** Client -> server: 0 = open the menu, 1 = equip / unequip id, 2 = rank up id, 3 = rename id (name), 4 = release id. */
+    /** Client -> server: 0 = open the menu, 1 = equip / unequip id, 2 = rank up id, 3 = rename id (name), 4 = release id,
+     *  5 = challenge exclusive shadow id (an index into ShadowArmy.EXCLUSIVES), 6 = raise beaten exclusive shadow id. */
     public static class Act {
         public final int action, id;
         public final String name;

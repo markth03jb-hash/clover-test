@@ -54,6 +54,13 @@ public final class UiShotsServer {
     }
     /** The Gravity or Sound Grimoire equipped, and one of its spells cast where the player looks ("target" puts a still husk 6 ahead). */
     /** The shadow shots face the player the way the camera looks (+Z), so what the spells raise lands in view. */
+    /** For the screenshots: the exclusive shadow is not yet won, so it can be challenged again. */
+    private static void freshChallenge(ServerPlayer p, int i) {
+        ShadowArmy.list(p).removeIf(t -> ShadowArmy.EXCLUSIVES[i].equals(((net.minecraft.nbt.CompoundTag) t).getString("type")));
+        ShadowArmy.root(p).remove("isg_shadow_beaten_" + i);
+        ShadowArmy.recallAll(p);
+    }
+
     private static void faceForward(ServerPlayer p) {
         p.setYRot(0); p.setYHeadRot(0); p.setYBodyRot(0); p.setXRot(0);
         p.connection.teleport(p.getX(), p.getY(), p.getZ(), 0, 0);
@@ -244,21 +251,19 @@ public final class UiShotsServer {
             case "unseen_hand" -> { faceForward(p); ShadowFx.unseenHand(p, 10f); }
             case "command_hunt" -> { faceForward(p); ShadowFx.commandHunt(p, 10f); }
             case "veil" -> ShadowFx.veil(p, 10f);
-            case "oathbound_knight" -> { faceForward(p); ShadowFx.oathboundKnight(p, 10f); }
-            case "ravener" -> {   // the knight steps aside (unequipped) so the Ravener rises alone, facing the camera
-                faceForward(p);
-                for (var t : ShadowArmy.list(p)) { var c = (net.minecraft.nbt.CompoundTag) t; if (!ShadowArmy.RAVENER.equals(c.getString("type"))) c.putBoolean("eq", false); }
+            case "challenge_knight" -> { faceForward(p); freshChallenge(p, 0); ShadowArmy.challenge(p, 0); }
+            case "challenge_ravener" -> {   // the knight (now in the army) steps aside so the Ravener stands alone
+                faceForward(p); freshChallenge(p, 1);
+                for (var t : ShadowArmy.list(p)) ((net.minecraft.nbt.CompoundTag) t).putBoolean("eq", false);
                 ShadowArmy.recallAll(p);
-                ShadowFx.ravener(p, 10f);
-                for (var s : ShadowArmy.out(p)) {
-                    var f = p.getLookAngle().multiply(1, 0, 1).normalize();
-                    var at = p.position().add(f.scale(4.5)).add(new net.minecraft.world.phys.Vec3(-f.z, 0, f.x).scale(2.6));   // ahead and off to one side, clear of the player
-                    float yaw = (float) (Math.atan2(-(p.getX() - at.x), p.getZ() - at.z) * 180 / Math.PI);   // turned to face the player
-                    s.moveTo(at.x, p.getY(), at.z, yaw, 0);
-                    s.setYHeadRot(yaw); s.yBodyRot = yaw;
-                    s.getNavigation().stop();
-                }
+                ShadowArmy.challenge(p, 1);
             }
+            case "beat" -> {   // the living form falls (as if beaten) - its remnant waits
+                for (var s : p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.ShadowSoldier.class, p.getBoundingBox().inflate(32), com.ironspellgrimoire.entity.ShadowSoldier::living)) s.kill();
+            }
+            case "arise" -> { faceForward(p); ShadowFx.rise(p, 10f); }
+            case "ranks_of_shade" -> { for (var t : ShadowArmy.list(p)) ((net.minecraft.nbt.CompoundTag) t).putBoolean("eq", true); ShadowArmy.keep(p); AstaFx.later(30, () -> ShadowFx.ranksOfShade(p, 10f)); }
+            case "rally_of_the_fallen" -> ShadowFx.rallyOfTheFallen(p, 10f);
             case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
             case "night_legion" -> { faceForward(p); ShadowFx.nightLegion(p, 10f); }
             case "gate_of_shade" -> ShadowFx.gateOfShade(p, 10f);
