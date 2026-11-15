@@ -1059,5 +1059,57 @@
         "name": "iron_spell_grimoire:sfx/dream_alarm_3"
       }
     ]
+  },
+  "sfx.shadow_rise": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_rise_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_rise_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_rise_3"
+      }
+    ]
+  },
+  "sfx.shadow_whisper": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_whisper_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_whisper_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_whisper_3"
+      }
+    ]
+  },
+  "sfx.shadow_slash": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_slash_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_slash_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_slash_3"
+      }
+    ]
+  },
+  "sfx.shadow_gate": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_gate_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_gate_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/shadow_gate_3"
+      }
+    ]
   }
 }

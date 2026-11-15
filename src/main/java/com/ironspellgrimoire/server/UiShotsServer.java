@@ -71,6 +71,7 @@ public final class UiShotsServer {
             case 'w' -> AddonItemRegistry.WEATHER_GRIMOIRE.get();
             case 'o' -> AddonItemRegistry.OVERDRIVE_GRIMOIRE.get();
             case 'd' -> AddonItemRegistry.DREAM_GRIMOIRE.get();
+            case 's' -> AddonItemRegistry.SHADOW_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -231,7 +232,17 @@ public final class UiShotsServer {
             case "rude_awakening" -> DreamFx.rudeAwakening(p, 10f);
             case "half_asleep" -> DreamFx.halfAsleep(p, 10f);
             case "dream_world" -> DreamFx.dreamWorld(p, 10f);
-            case "end" -> { Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); Moves.ends(p, OverdriveFx.MODE); Moves.ends(p, DreamFx.MODE); }
+            case "remnant" -> ShadowFx.testRemnant(p, p.position().add(p.getLookAngle().multiply(1, 0, 1).normalize().scale(4)));
+            case "rise" -> ShadowFx.rise(p, 10f);
+            case "umbral_step" -> ShadowFx.umbralStep(p, 10f);
+            case "unseen_hand" -> ShadowFx.unseenHand(p, 10f);
+            case "command_hunt" -> ShadowFx.commandHunt(p, 10f);
+            case "veil" -> ShadowFx.veil(p, 10f);
+            case "oathbound_knight" -> ShadowFx.oathboundKnight(p, 10f);
+            case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
+            case "night_legion" -> ShadowFx.nightLegion(p, 10f);
+            case "gate_of_shade" -> ShadowFx.gateOfShade(p, 10f);
+            case "end" -> { Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); Moves.ends(p, OverdriveFx.MODE); Moves.ends(p, DreamFx.MODE); Moves.ends(p, ShadowFx.MODE); ShadowArmy.recallAll(p); }
             default -> {}
         }
     }

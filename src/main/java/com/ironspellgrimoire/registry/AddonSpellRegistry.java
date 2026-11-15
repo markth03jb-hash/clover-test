@@ -775,6 +775,26 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> DREAM_SPELLS = List.of(
             DREAM_MOTE, DREAM_SHEEP, DREAM_PILLOW, DREAM_SLEEPWALK, DREAM_CLOCK, DREAM_PARADE, DREAM_NIGHTMARE, DREAM_AWAKENING, DREAM_HALF_ASLEEP, DREAM_WORLD);
 
+    // ------------------------------------------------------------------ Shadow Grimoire (raise the slain as your shadows: ShadowFx, ShadowArmy)
+    private static com.ironspellgrimoire.spells.BookSpell shadow(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,
+                com.ironspellgrimoire.item.ShadowGrimoireItem.class, "ui.iron_spell_grimoire.shadow_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> SHADOW_RISE = registerSpell(shadow("rise", 2, 20, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.ShadowFx::rise));
+    public static final RegistryObject<AbstractSpell> SHADOW_EXCHANGE = registerSpell(shadow("shadow_exchange", 6, 15, 0, "iron_spell_grimoire:light_step", com.ironspellgrimoire.server.ShadowFx::shadowExchange));
+    public static final RegistryObject<AbstractSpell> SHADOW_STEP = registerSpell(shadow("umbral_step", 5, 20, 9, "iron_spell_grimoire:light_step", com.ironspellgrimoire.server.ShadowFx::umbralStep));
+    public static final RegistryObject<AbstractSpell> SHADOW_HAND = registerSpell(shadow("unseen_hand", 10, 30, 10, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.ShadowFx::unseenHand));
+    public static final RegistryObject<AbstractSpell> SHADOW_GATE = registerSpell(shadow("gate_of_shade", 4, 10, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.ShadowFx::gateOfShade));
+    public static final RegistryObject<AbstractSpell> SHADOW_HUNT = registerSpell(shadow("command_hunt", 8, 25, 6, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.ShadowFx::commandHunt));
+    public static final RegistryObject<AbstractSpell> SHADOW_VEIL = registerSpell(shadow("veil", 14, 25, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.ShadowFx::veil));
+    public static final RegistryObject<AbstractSpell> SHADOW_KNIGHT = registerSpell(shadow("oathbound_knight", 30, 60, 0, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.ShadowFx::oathboundKnight));
+    public static final RegistryObject<AbstractSpell> SHADOW_DOMAIN = registerSpell(shadow("sovereigns_domain", 120, 90, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ShadowFx::sovereignsDomain));
+    public static final RegistryObject<AbstractSpell> SHADOW_LEGION = registerSpell(shadow("night_legion", 50, 120, 14, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.ShadowFx::nightLegion));
+    /** The ten Shadow Grimoire spells, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> SHADOW_SPELLS = List.of(
+            SHADOW_RISE, SHADOW_EXCHANGE, SHADOW_STEP, SHADOW_HAND, SHADOW_GATE, SHADOW_HUNT, SHADOW_VEIL, SHADOW_KNIGHT, SHADOW_DOMAIN, SHADOW_LEGION);
+
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,
                                                                    String only, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {

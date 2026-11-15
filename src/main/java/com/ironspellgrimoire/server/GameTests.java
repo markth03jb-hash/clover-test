@@ -382,7 +382,7 @@ public final class GameTests {
             if (!np.isEmpty() || !nd.isEmpty()) bad.add("gave status effects: " + np + " " + nd);
             if (bad.isEmpty()) pass(name, "damage dealt: " + String.join(", ", done));
             else fail(name, String.join("; ", bad));
-            Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, TreasureFx.AEGIS); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); Moves.ends(p, OverdriveFx.MODE); Moves.ends(p, DreamFx.MODE);
+            Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, TreasureFx.AEGIS); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); Moves.ends(p, OverdriveFx.MODE); Moves.ends(p, DreamFx.MODE); Moves.ends(p, ShadowFx.MODE); ShadowArmy.recallAll(p);
             return true;
         }
     }
@@ -803,6 +803,17 @@ public final class GameTests {
                 "rude_awakening", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::rudeAwakening, "c",
                 "half_asleep", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::halfAsleep, "q",
                 "dream_world", (java.util.function.BiConsumer<ServerPlayer, Float>) DreamFx::dreamWorld, ""));
+        queue.add(new BookMovesTest("shadow", com.ironspellgrimoire.registry.AddonItemRegistry.SHADOW_GRIMOIRE::get, ShadowFx.class,
+                "rise", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ShadowFx.testRemnant(pl, pl.position().add(0, 0, 3)); ShadowFx.rise(pl, pw); }, "q",
+                "umbral_step", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::umbralStep, "",
+                "unseen_hand", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::unseenHand, "",
+                "shadow_exchange", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::shadowExchange, "q",
+                "gate_of_shade", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::gateOfShade, "q",
+                "command_hunt", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::commandHunt, "",
+                "veil", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::veil, "q",
+                "oathbound_knight", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::oathboundKnight, "q",
+                "sovereigns_domain", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::sovereignsDomain, "q",
+                "night_legion", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::nightLegion, ""));
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

@@ -147,7 +147,7 @@ def knight():
     A horned helm crowned with jagged spikes, a fanged jaw-grille and two slanted eye slits whose blue fire trails back
     along the helm; a ribcage breastplate with a burning blue core in the chest; huge pauldrons with blades sweeping
     up off them; clawed gauntlets; spikes down the spine, chains at the hip, spiked knees and boots; a long ragged
-    cape; and a long glowing blue sword with dark smoky veins winding up the blade, a black horned guard and a black grip."""
+    cape; and a glowing blue greatsword - a wide blade with dark smoky veins winding up it, a heavy black guard and a long two-hand grip."""
     def sym(cubes): return cubes + mirror_x(cubes)
     B = [bone("root", None, [0, 0, 0], [])]
     body = [
@@ -176,32 +176,39 @@ def knight():
     for i in range(4):   # chains hanging off the right hip
         body.append(cube([-6.3, 19.2 - i * 1.3, -0.4 + (0.2 if i % 2 else 0)], [0.5 if i % 2 == 0 else 0.9, 1.3, 0.9 if i % 2 == 0 else 0.5], "mail"))
     B.append(bone("body", "root", [0, 20, 0], body))
-    head = [   # a sculpted helm: a stepped dome, a jutting brow, flared cheeks, a pointed jaw, a bladed crest
-        cube([-2.8, 41, -3.0], [5.6, 6, 6], "plate"),                # the skull of the helm
-        cube([-2.5, 47, -2.7], [5, 1.2, 5.4], "plate"),              # the dome, stepping in toward the top
+    head = [   # a sculpted, menacing helm: a stepped dome, a heavy brow over sunken burning eyes, a jutting fanged jaw
+        cube([-2.8, 41, -3.0], [5.6, 6, 6], "helm"),                 # the skull of the helm
+        cube([-2.5, 47, -2.7], [5, 1.2, 5.4], "helm"),               # the dome, stepping in toward the top
         cube([-1.9, 48.2, -2.1], [3.8, 0.8, 4.2], "plate2"),
-        cube([-3.2, 45.6, -3.9], [6.4, 1.0, 1.4], "plate2", rot=[8, 0, 0], pivot=[0, 46, -3.2]),   # the brow, jutting forward
-        cube([-0.5, 45.0, -4.2], [1.0, 1.6, 0.9], "plate", rot=[8, 0, 0], pivot=[0, 46, -3.2]),     # a point in the middle of it
-        cube([-2.9, 43.3, -3.85], [5.8, 2.2, 0.8], "eyes"),           # the eye slits, deep under the brow
+        cube([-3.3, 45.5, -4.0], [6.6, 1.2, 1.5], "plate2", rot=[10, 0, 0], pivot=[0, 46, -3.2]),     # the brow, heavy and jutting
+        cube([-0.5, 44.8, -4.35], [1.0, 1.9, 1.0], "plate", rot=[10, 0, 0], pivot=[0, 46, -3.2]),     # a point dropping between the eyes
+        cube([-3.0, 42.9, -3.5], [6.0, 2.9, 0.5], "plate3"),         # a dark socket plate, the eyes sunk into it
+        cube([-2.9, 43.3, -3.85], [5.8, 2.2, 0.8], "eyes"),          # the eye slits, burning
         cube([-3.6, 39.5, -2.6], [7.2, 1.5, 5.2], "plate2"),         # the gorget
         cube([-3.2, 39.9, 2.7], [6.4, 1.4, 1.2], "plate2"),          # a stepped neck guard at the back
         cube([-3.4, 38.6, 3.2], [6.8, 1.3, 1.0], "plate", rot=[22, 0, 0], pivot=[0, 39.3, 3.2]),
+        cube([-2.4, 38.1, -4.4], [4.8, 1.4, 1.6], "plate", rot=[-12, 0, 0], pivot=[0, 39.2, -3.6]),  # a heavy lower jaw, jutting out
     ]
     head += sym([
         cube([2.2, 40.4, -3.6], [1.0, 4.8, 4.6], "plate2", rot=[0, -12, -6], pivot=[2.7, 43, -1.3]),   # cheek plates, flaring out
         cube([0, 39.6, -4.0], [2.6, 1.8, 0.8], "plate", rot=[0, 0, -26], pivot=[0, 40.5, -3.6]),       # a pointed V jaw
+        cube([1.15, 40.2, -3.95], [0.25, 3.1, 0.2], "glow"),        # glowing streaks running down from the eyes
+        cube([2.85, 41.6, -2.2], [0.2, 0.25, 2.6], "glow", rot=[0, 0, 30], pivot=[2.95, 41.7, -0.9]),   # glowing cracks across the helm
+        cube([2.85, 42.6, -0.4], [0.2, 0.25, 2.0], "glow", rot=[0, 0, -25], pivot=[2.95, 42.7, 0.6]),
     ])
-    for i, x in enumerate((-1.6, -0.55, 0.5, 1.55)):   # fangs under the jaw
-        head.append(cube([x - 0.28, 38.6 - 0.35 * (i % 2 == 0), -4.0], [0.56, 1.3 + 0.35 * (i % 2 == 0), 0.5], "plate"))
+    for i, x in enumerate((-1.75, -1.05, -0.35, 0.35, 1.05, 1.75)):   # long fangs under the jaw
+        L = 1.7 + 0.6 * (i in (1, 4)) + 0.3 * (i in (0, 5))
+        head.append(cube([x - 0.24, 38.2 - L, -4.55 + 0.12 * abs(x)], [0.48, L, 0.45], "plate"))
     head += sym([cube([2.95, 44.2, -3.0], [0.3, 0.4, 5.0], "glow")])   # the eye-fire trailing back along the helm
-    for k in range(9):   # a bladed crest: a fin rising smoothly from the brow to a point at the back
-        z = -2.6 + k * 0.85
-        hgt = 0.6 + 2.8 * math.sin(min(1.0, (k + 1) / 8) * math.pi * 0.62)
-        head.append(cube([-0.32, 48.8, z], [0.64, hgt, 0.85], "plate2"))
-        head.append(cube([-0.12, 48.8 + hgt, z], [0.24, 0.25, 0.85], "glow"))
-    horn = []   # two great horns sweeping back and up from the temples: joined, stepped segments, each thinner
-    for k, (x, y, z, t, L) in enumerate(((2.9, 45.4, -1.4, 1.8, 3.4), (3.2, 46.5, 1.4, 1.5, 3.0), (3.5, 47.5, 3.8, 1.2, 2.6),
-                                         (3.8, 48.4, 5.8, 0.9, 2.2), (4.0, 49.1, 7.4, 0.6, 1.8))):
+    halo = []   # (only the smoke now)
+    for k in range(4):   # shadow smoke rising off the top of the helm
+        x = -1.8 + k * 1.2
+        halo.append(cube([x - 0.6, 48.9, -1.5 + 0.8 * k], [1.2, 3.5 + 1.5 * (k % 2), 0.15], "smoke", rot=[0, 35 * k, 0], pivot=[x, 49, -1.2 + 0.8 * k]))
+    head += halo
+    horn = []   # two great horns: back from the temples, rising, then hooking forward at the tips
+    for k, (x, y, z, t, L) in enumerate(((2.9, 45.0, -1.6, 2.2, 3.6), (3.3, 46.1, 1.3, 1.9, 3.0), (3.7, 47.6, 3.4, 1.6, 2.4),
+                                         (4.0, 49.4, 4.6, 1.35, 1.8), (4.2, 51.2, 4.9, 1.1, 1.4), (4.35, 52.8, 4.4, 0.85, 1.3),
+                                         (4.45, 54.0, 3.4, 0.6, 1.5), (4.5, 54.7, 2.2, 0.4, 1.4))):
         horn.append(cube([x, y, z], [t, t, L], "plate2"))
     head += sym(horn)
     B.append(bone("head", "body", [0, 40, 0], head))
@@ -232,21 +239,21 @@ def knight():
         arm.append(cube([6.4 + 0.95 * i, 13.0, -2.3], [0.6, 1.4, 0.6], "plate2", rot=[-25, 0, 0], pivot=[6.7 + 0.95 * i, 14.2, -1.6]))
     B.append(bone("arm_r", "body", [-7.6, 37, 0], mirror_x(arm + pauldron), rotation=[-30, 10, 0]))
     B.append(bone("arm_l", "body", [7.6, 37, 0], arm + pauldron, rotation=[-30, -40, 20]))
-    sword = [   # a long black grip and a round pommel
-        cube([-8.9, 8.8, -0.8], [1.6, 9, 1.6], "plate2"),
-        cube([-9.3, 7.4, -1.0], [2.4, 1.6, 2.0], "plate"),
-        cube([-11.0, 17.6, -1.2], [5.8, 1.6, 2.4], "plate"),          # a black guard...
-        cube([-10.4, 19.2, -1.0], [4.6, 0.8, 2.0], "plate2"),
+    sword = [   # a greatsword: a long two-hand grip, a heavy pommel, a broad guard, a wide long blade
+        cube([-9.0, 6.0, -0.9], [1.8, 11.5, 1.8], "plate2"),          # the grip, long enough for both hands
+        cube([-9.6, 4.2, -1.2], [3.0, 2.0, 2.4], "plate"),            # a heavy pommel
+        cube([-8.6, 3.0, -0.6], [1.0, 1.4, 1.2], "plate2"),
+        cube([-13.2, 17.3, -1.4], [10.2, 2.0, 2.8], "plate"),         # a broad, heavy guard...
+        cube([-11.4, 19.3, -1.15], [6.6, 1.0, 2.3], "plate2"),
     ]
-    for s_ in (-1, 1):   # ...with two horns curving up toward the blade
-        x = -8.1 + s_ * 2.6
-        sword.append(cube([x - 0.7, 18.0, -1.0], [1.4, 1.6, 2.0], "plate"))
-        sword.append(cube([x - 0.55 + s_ * 0.6, 19.4, -0.9], [1.1, 1.4, 1.8], "plate"))
-        sword.append(cube([x - 0.4 + s_ * 1.0, 20.6, -0.8], [0.8, 1.2, 1.6], "plate2"))
-        sword.append(cube([x - 0.25 + s_ * 1.2, 21.6, -0.7], [0.5, 1.0, 1.4], "plate2"))
-    y = 20.0
-    for wdt, L in ((3.4, 8), (3.1, 7), (2.7, 6), (2.2, 4), (1.6, 2.6), (1.0, 2), (0.5, 1.6)):   # the blue blade, tapering to a long point
-        sword.append(cube([-8.1 - wdt / 2, y, -0.45], [wdt, L, 0.9], "flameblade"))
+    for s_ in (-1, 1):   # ...its ends curving up toward the blade
+        x = -8.1 + s_ * 4.6
+        sword.append(cube([x - 0.8, 18.0, -1.2], [1.6, 2.0, 2.4], "plate"))
+        sword.append(cube([x - 0.6 + s_ * 0.5, 20.0, -1.0], [1.2, 1.6, 2.0], "plate"))
+        sword.append(cube([x - 0.4 + s_ * 0.8, 21.6, -0.9], [0.8, 1.3, 1.8], "plate2"))
+    y = 20.2
+    for wdt, L in ((5.6, 10), (5.3, 9), (4.9, 8), (4.3, 5), (3.4, 3), (2.4, 2.2), (1.4, 1.8), (0.6, 1.4)):   # a wide blade, tapering late to the point
+        sword.append(cube([-8.1 - wdt / 2, y, -0.55], [wdt, L, 1.1], "flameblade"))
         y += L
     B.append(bone("sword", "arm_r", [-8.2, 16.8, 0], sword, rotation=[90, 0, 30]))
     leg = [
@@ -313,6 +320,8 @@ def knight_anims():
 PAINTERS = {
     "plate": gp.plate_painter((34, 35, 46), (26, 70, 160), (50, 120, 230), ornate=True),
     "plate2": gp.plate_painter((20, 20, 28), (30, 90, 200), (90, 170, 255), engrave=False, ridges=True),
+    "helm": gp.plate_painter((30, 31, 42), (26, 70, 160), (50, 120, 230), engrave=False, rivets=False),
+    "plate3": gp.plate_painter((6, 6, 10), (20, 50, 120), (40, 90, 200), engrave=False, rivets=False),
     "mail": gp.mail_painter((40, 44, 58)),
     "cape": gp.cloth_painter((24, 58, 150)),
     "visor": gp.visor_painter((14, 14, 20), BLUE, (200, 235, 255)),

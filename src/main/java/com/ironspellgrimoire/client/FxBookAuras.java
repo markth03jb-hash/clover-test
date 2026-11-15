@@ -39,6 +39,7 @@ import org.joml.Matrix4f;
  * 33 Weather     - a little cloud above it raining, now and then a flash
  * 34 Overdrive   - a heart-monitor trace running behind it, a pulse ring on every beat
  * 35 Dream       - a sleepy crescent moon in the corner, sheep-shaped clouds drifting round it, stars twinkling
+ * 36 Shadow      - black smoke rising round its edges, blue fire licking its tips, two burning eyes in the dark beside it
  */
 final class FxBookAuras extends FxBase {
    private FxBookAuras() {}
@@ -666,6 +667,24 @@ final class FxBookAuras extends FxBase {
                Vec3 c = polar(k * 0.9 + 0.3, 0.7 + 0.12 * h(k), 0.58 + 0.12 * h(k + 3), Z + 0.03);
                FxBooks.lstar(m, c, (float) (0.025 + 0.02 * tw), k % 2 == 0 ? pal : 36, al * (float) tw);
             }
+         }
+         case 36 -> {   // Shadow: black smoke rising round the edges, blue fire at the tips, a pair of eyes watching
+            FxBooks.underglow(m, HW, HH, pal, 0.22F * al);
+            for (int k = 0; k < 10; k++) {
+               double a = Math.PI * 2 * k / 10 + 0.2;
+               Vec3 base = polar(a, 0.6, 0.52, Z);
+               double ph = (t * 0.02 + h(k)) % 1.0;
+               Vec3 prev = base;
+               for (int i = 1; i <= 5; i++) {   // a wisp curling up and out
+                  double u = i / 5.0;
+                  Vec3 q = base.add(polar(a, 0.05 + 0.18 * u, 0.05 + 0.18 * u, 0)).add(0.03 * Math.sin(t * 0.08 + k + u * 3), 0.22 * u * (0.6 + 0.4 * ph), 0);
+                  stroke(vc, m, n, prev, q, (float) (0.05 * (1 - u * 0.7)), (float) (0.05 * (1 - (u + 0.2) * 0.7)), INK, al * (float) (0.8 * (1 - u * 0.6)));
+                  if (u > 0.6) gl(m, prev, q, 0.008F, pal, al * (float) (1 - u) * 1.5F);
+                  prev = q;
+               }
+            }
+            double blink = (t % 120) < 6 ? 0.1 : 1.0;   // two burning eyes in the dark, blinking now and then
+            for (int s = -1; s <= 1; s += 2) FxBooks.lstar(m, P(0.72 + s * 0.05, 0.5, Z + 0.02), (float) (0.03 * blink), pal, al);
          }
          default -> FxBooks.underglow(m, HW, HH, pal, 0.25F * al);
       }
