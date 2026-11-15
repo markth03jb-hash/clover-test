@@ -75,14 +75,14 @@ public class ShadowArmyScreen extends Screen {
         scroll = Math.max(0, Math.min(scroll, Math.max(0, list.size() - visibleRows())));
         for (int i = scroll; i < Math.min(list.size(), scroll + visibleRows()); i++, y += ROW) {
             ShadowPackets.Entry e = list.get(i);
-            int bx = x0 + W - 150;
+            int bx = x0 + W - 164;
             addRenderableWidget(Button.builder(Component.literal(e.equipped() ? "Unequip" : "Equip"), b -> act(1, e.id(), ""))
                     .bounds(bx, y + 5, 48, 18).build());
             Button rank = Button.builder(Component.literal("Rank up"), b -> act(2, e.id(), "")).bounds(bx + 50, y + 5, 48, 18).build();
             rank.active = e.canRankUp();
             addRenderableWidget(rank);
-            addRenderableWidget(Button.builder(Component.literal("Name"), b -> { renaming = e.id(); rebuild(); }).bounds(bx + 100, y + 5, 22, 18).build());
-            Button rel = Button.builder(Component.literal("X"), b -> act(4, e.id(), "")).bounds(bx + 124, y + 5, 18, 18).build();
+            addRenderableWidget(Button.builder(Component.literal("Name"), b -> { renaming = e.id(); rebuild(); }).bounds(bx + 100, y + 5, 36, 18).build());
+            Button rel = Button.builder(Component.literal("X"), b -> act(4, e.id(), "")).bounds(bx + 138, y + 5, 18, 18).build();
             rel.active = !e.exclusive();
             addRenderableWidget(rel);
         }
@@ -147,7 +147,7 @@ public class ShadowArmyScreen extends Screen {
             g.drawString(font, nm, x0 + 7, y + 4, 0xFFE6F0FF, false);
             String sub = "Lv " + e.level() + "  " + RANKS[Math.min(5, e.rank())] + (e.recovering() > 0 ? "  - reforming " + e.recovering() + "s" : "");
             g.drawString(font, sub, x0 + 7, y + 15, rc, false);
-            int bw = 70, bx = x0 + W - 150 - bw - 8, by = y + 18;   // its XP toward the next level
+            int bw = 60, bx = x0 + W - 164 - bw - 8, by = y + 18;   // its XP toward the next level
             g.fill(bx, by, bx + bw, by + 4, 0xFF161C2A);
             float f = e.xpNext() <= 0 ? 1 : Math.min(1f, e.xp() / (float) e.xpNext());
             g.fill(bx, by, bx + (int) (bw * f), by + 4, 0xFF3C8CFF);

@@ -54,6 +54,8 @@ public final class UiShotsServer {
     }
     /** The Gravity or Sound Grimoire equipped, and one of its spells cast where the player looks ("target" puts a still husk 6 ahead). */
     /** The shadow shots face the player the way the camera looks (+Z), so what the spells raise lands in view. */
+    private static net.minecraft.world.phys.Vec3 beatenAt;
+
     /** For the screenshots: the exclusive shadow is not yet won, so it can be challenged again. */
     private static void freshChallenge(ServerPlayer p, int i) {
         ShadowArmy.list(p).removeIf(t -> ShadowArmy.EXCLUSIVES[i].equals(((net.minecraft.nbt.CompoundTag) t).getString("type")));
@@ -259,9 +261,20 @@ public final class UiShotsServer {
                 ShadowArmy.challenge(p, 1);
             }
             case "beat" -> {   // the living form falls (as if beaten) - its remnant waits
-                for (var s : p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.ShadowSoldier.class, p.getBoundingBox().inflate(32), com.ironspellgrimoire.entity.ShadowSoldier::living)) s.kill();
+                for (var s : p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.ShadowSoldier.class, p.getBoundingBox().inflate(32), com.ironspellgrimoire.entity.ShadowSoldier::living)) {
+                    beatenAt = s.position();
+                    s.kill();
+                }
             }
-            case "arise" -> { faceForward(p); ShadowFx.rise(p, 10f); }
+            case "arise" -> {   // look at its remnant, then Rise
+                if (beatenAt != null) {
+                    double dx = beatenAt.x - p.getX(), dz = beatenAt.z - p.getZ(), dy = beatenAt.y + 0.6 - p.getEyeY();
+                    float yaw = (float) (Math.atan2(-dx, dz) * 180 / Math.PI), pitch = (float) (-Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)) * 180 / Math.PI);
+                    p.setYRot(yaw); p.setYHeadRot(yaw); p.setXRot(pitch);
+                    p.connection.teleport(p.getX(), p.getY(), p.getZ(), yaw, pitch);
+                }
+                ShadowFx.rise(p, 10f);
+            }
             case "ranks_of_shade" -> { for (var t : ShadowArmy.list(p)) ((net.minecraft.nbt.CompoundTag) t).putBoolean("eq", true); ShadowArmy.keep(p); AstaFx.later(30, () -> ShadowFx.ranksOfShade(p, 10f)); }
             case "rally_of_the_fallen" -> ShadowFx.rallyOfTheFallen(p, 10f);
             case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
