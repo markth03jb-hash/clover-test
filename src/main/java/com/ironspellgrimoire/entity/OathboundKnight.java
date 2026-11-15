@@ -25,7 +25,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 /**
  * The Oathbound Knight (an original design): the Shadow Grimoire's exclusive shadow - a towering knight of black plate
  * traced with blue, horned and fanged, with a glowing blue greatsword. It joins its master's army at the Knight rank
- * and can rise all the way to Sovereign's Hand. Model: geo/shadow_knight (tools/shadow_models.py), drawn by
+ * and can rise to General (the army holds only one). Model: geo/shadow_knight (tools/shadow_models.py), drawn by
  * client/OathboundKnightRenderer; animations rise, idle, walk, slash.
  * Its own oath-bound instincts:
  *  - Oath Cleave: in a fight, every 8 s its greatsword sweeps a wide arc before it - 1.5x a blow to everything in

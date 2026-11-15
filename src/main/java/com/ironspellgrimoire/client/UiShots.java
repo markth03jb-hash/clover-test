@@ -471,6 +471,7 @@ public final class UiShots {
         steps.add(new Step("shd_night_legion", () -> { onServer(p -> UiShotsServer.element(p, "s:night_legion")); }, 24, true));
         steps.add(new Step("shd_gate_of_shade", () -> { onServer(p -> UiShotsServer.element(p, "s:gate_of_shade")); }, 16, true));
         steps.add(new Step("shd_menu", () -> { mc.options.hideGui = false; com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.ShadowPackets.Act(0, 0, "")); }, 16, false));   // the army menu
+        steps.add(new Step("shd_menu_challenges", () -> ShadowArmyScreen.showTab(1), 10, false));   // the Challenges tab
         steps.add(new Step("shd_menu_done", () -> mc.setScreen(null), 4, true));
         steps.add(new Step("shd_wheel", () -> { onServer(p -> UiShotsServer.element(p, "s:end")); GrimoireWheel.forceOpen = true; }, 14, true));
         steps.add(new Step("shd_wheel_done", () -> { GrimoireWheel.forceOpen = false; try { io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); } catch (RuntimeException ignored) { } mc.options.hideGui = true; }, 4, true));

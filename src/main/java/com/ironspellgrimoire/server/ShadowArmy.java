@@ -30,7 +30,9 @@ import java.util.UUID;
  * (the mob it was), a name, a level (1-30, from its own kills), a rank and whether it is equipped - equipped shadows
  * rise and follow their master whenever the grimoire is held, up to the slots its mastery allows (3, up to 10).
  *
- *  ranks: 0 Soldier, 1 Elite (lv 8), 2 Knight (lv 14), 3 Captain (lv 20), 4 General (lv 26), 5 Sovereign's Hand (exclusive only, lv 30)
+ *  ranks: 0 Soldier, 1 Elite (lv 8), 2 Knight (lv 14), 3 Captain (lv 20), 4 General (lv 26). The exclusive shadows
+ *  (Oathbound Knight, Ravener) join at Knight and rank up the same way to General. The army has room for only one
+ *  General and three Captains.
  *  each rank: +25% health, +20% damage, a little bigger, eyes brighter, and a perk - Elite armour, Knight cleave,
  *  Captain war cry (shadows round it hit harder), General lifesteal.
  *
@@ -40,7 +42,7 @@ public final class ShadowArmy {
     private ShadowArmy() {}
 
     static final String KEY = "isg_shadow_army", NEXT = "isg_shadow_next", GATE = "isg_shadow_gate";
-    public static final String[] RANKS = {"Soldier", "Elite", "Knight", "Captain", "General", "Sovereign's Hand"};
+    public static final String[] RANKS = {"Soldier", "Elite", "Knight", "Captain", "General"};
     static final int[] RANK_LEVEL = {0, 8, 14, 20, 26, 30};
     public static final int MAX_LEVEL = 30, STORAGE = 50;
     public static final String KNIGHT = "iron_spell_grimoire:oathbound_knight", RAVENER = "iron_spell_grimoire:ravener";
@@ -84,9 +86,25 @@ public final class ShadowArmy {
     /** XP a shadow needs for its next level. */
     public static int xpNext(int level) { return (int) Math.round(20 * Math.pow(level, 1.4)); }
 
+    public static final int MAX_RANK = 4, GENERALS = 1, CAPTAINS = 3;
+
     public static boolean canRankUp(CompoundTag e) {
-        int rank = e.getInt("rank"), max = e.getBoolean("excl") ? 5 : 4;
-        return rank < max && e.getInt("lvl") >= RANK_LEVEL[rank + 1];
+        int rank = e.getInt("rank");
+        return rank < MAX_RANK && e.getInt("lvl") >= RANK_LEVEL[rank + 1];
+    }
+
+    static int atRank(Player p, int rank) {
+        int n = 0;
+        for (Tag t : list(p)) if (((CompoundTag) t).getInt("rank") == rank) n++;
+        return n;
+    }
+
+    /** Why it can't take its next rank even when strong enough: 0 nothing, 1 the army already has its General, 2 all three Captains are taken. */
+    public static int rankBlock(Player p, CompoundTag e) {
+        int next = e.getInt("rank") + 1;
+        if (next == 4 && atRank(p, 4) >= GENERALS) return 1;
+        if (next == 3 && atRank(p, 3) >= CAPTAINS) return 2;
+        return 0;
     }
 
     public static String typeName(String type) {
@@ -138,8 +156,8 @@ public final class ShadowArmy {
     }
 
     private static boolean canRankUpAt(CompoundTag e, int lvl) {
-        int rank = e.getInt("rank"), max = e.getBoolean("excl") ? 5 : 4;
-        return rank < max && lvl >= RANK_LEVEL[rank + 1];
+        int rank = e.getInt("rank");
+        return rank < MAX_RANK && lvl >= RANK_LEVEL[rank + 1];
     }
 
     // ================================================================== the shadows at their master's side
@@ -293,7 +311,7 @@ public final class ShadowArmy {
             CompoundTag e = (CompoundTag) t;
             int rec = (int) Math.max(0, (e.getLong("rec") - now) / 20);
             l.add(new ShadowPackets.Entry(e.getInt("id"), e.getString("type"), e.getString("name"), e.getInt("lvl"), e.getInt("xp"), xpNext(e.getInt("lvl")),
-                    e.getInt("rank"), e.getBoolean("eq"), e.getBoolean("excl"), rec, canRankUp(e)));
+                    e.getInt("rank"), e.getBoolean("eq"), e.getBoolean("excl"), rec, canRankUp(e) && rankBlock(p, e) == 0, rankBlock(p, e)));
         }
         int[] ch = new int[EXCLUSIVES.length];
         for (int i = 0; i < ch.length; i++) ch[i] = challengeState(p, i);
@@ -314,7 +332,10 @@ public final class ShadowArmy {
                 } else e.putBoolean("eq", !e.getBoolean("eq"));
             }
             case 2 -> {   // rank up
-                if (canRankUp(e)) {
+                int block = rankBlock(p, e);
+                if (canRankUp(e) && block != 0) {
+                    p.displayClientMessage(Component.literal(block == 1 ? "Your army already has its General" : "All three Captain ranks are taken").withStyle(ChatFormatting.GRAY), true);
+                } else if (canRankUp(e)) {
                     e.putInt("rank", e.getInt("rank") + 1);
                     p.displayClientMessage(Component.literal(e.getString("name") + " ranks up: " + RANKS[e.getInt("rank")]).withStyle(ChatFormatting.AQUA), true);
                     ShadowSoldier s = summoned(p, id);

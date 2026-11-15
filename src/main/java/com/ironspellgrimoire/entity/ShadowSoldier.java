@@ -78,6 +78,14 @@ public class ShadowSoldier extends PathfinderMob {
     public int risingAt() { return this.entityData.get(RISING); }
 
     public boolean living() { return this.entityData.get(LIVING); }
+
+    /** The army menu's model of a shadow (client only, never added to the world). */
+    public void preview(String kind, int rank, boolean living) {
+        this.entityData.set(KIND, kind);
+        this.entityData.set(RANK, rank);
+        this.entityData.set(LIVING, living);
+        this.entityData.set(RISING, 0);
+    }
     public UUID challenger() { return challenger; }
 
     /** Set it up as a Challenge: its living form, fighting {@code who}. */

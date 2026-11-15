@@ -20,7 +20,7 @@ public final class ShadowPackets {
 
     /** One shadow in the army, as the menu shows it. */
     public record Entry(int id, String type, String name, int level, int xp, int xpNext, int rank, boolean equipped, boolean exclusive,
-                        int recovering, boolean canRankUp) {}
+                        int recovering, boolean canRankUp, int rankBlock) {}
 
     /** Server -> client: open (or refresh) the army menu. */
     public static class Open {
@@ -33,7 +33,7 @@ public final class ShadowPackets {
             b.writeVarInt(p.slots); b.writeVarInt(p.storage); b.writeVarIntArray(p.challenges); b.writeVarInt(p.list.size());
             for (Entry e : p.list) {
                 b.writeVarInt(e.id()); b.writeUtf(e.type(), 100); b.writeUtf(e.name(), 32); b.writeVarInt(e.level()); b.writeVarInt(e.xp()); b.writeVarInt(e.xpNext());
-                b.writeVarInt(e.rank()); b.writeBoolean(e.equipped()); b.writeBoolean(e.exclusive()); b.writeVarInt(e.recovering()); b.writeBoolean(e.canRankUp());
+                b.writeVarInt(e.rank()); b.writeBoolean(e.equipped()); b.writeBoolean(e.exclusive()); b.writeVarInt(e.recovering()); b.writeBoolean(e.canRankUp()); b.writeVarInt(e.rankBlock());
             }
         }
         public static Open decode(FriendlyByteBuf b) {
@@ -42,7 +42,7 @@ public final class ShadowPackets {
             int n = b.readVarInt();
             List<Entry> l = new ArrayList<>();
             for (int i = 0; i < n; i++) l.add(new Entry(b.readVarInt(), b.readUtf(100), b.readUtf(32), b.readVarInt(), b.readVarInt(), b.readVarInt(),
-                    b.readVarInt(), b.readBoolean(), b.readBoolean(), b.readVarInt(), b.readBoolean()));
+                    b.readVarInt(), b.readBoolean(), b.readBoolean(), b.readVarInt(), b.readBoolean(), b.readVarInt()));
             return new Open(l, slots, storage, ch);
         }
         public static void handle(Open p, Supplier<NetworkEvent.Context> ctx) {
