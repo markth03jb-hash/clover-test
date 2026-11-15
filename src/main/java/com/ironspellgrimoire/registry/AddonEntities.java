@@ -77,4 +77,14 @@ public final class AddonEntities {
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Reflection>> REFLECTION = ENTITIES.register("reflection",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Reflection>of(com.ironspellgrimoire.entity.Reflection::new, MobCategory.MONSTER).sized(0.6F, 1.8F)
                     .fireImmune().clientTrackingRange(10).build("reflection"));
+
+    /** A shadow soldier of the Shadow Grimoire: the shadow of a mob its master slew and raised (server/ShadowArmy). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.ShadowSoldier>> SHADOW_SOLDIER = ENTITIES.register("shadow_soldier",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.ShadowSoldier>of(com.ironspellgrimoire.entity.ShadowSoldier::new, MobCategory.MISC).sized(0.6F, 1.9F)
+                    .fireImmune().clientTrackingRange(10).build("shadow_soldier"));
+
+    /** The Shadow Grimoire's exclusive shadow, the Oathbound Knight (an original design). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.OathboundKnight>> OATHBOUND_KNIGHT = ENTITIES.register("oathbound_knight",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.OathboundKnight>of(com.ironspellgrimoire.entity.OathboundKnight::new, MobCategory.MISC).sized(0.9F, 2.9F)
+                    .fireImmune().clientTrackingRange(10).build("oathbound_knight"));
 }

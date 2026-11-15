@@ -451,6 +451,29 @@ public final class UiShots {
             b.showPart("spells:0");
         }, 15, false));
         steps.add(new Step("drm_book_done", () -> mc.setScreen(null), 4, true));
+        steps.add(new Step("shd_target", () -> { mc.setScreen(null); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:target")); }, 10, true));
+        steps.add(new Step("shd_remnant", () -> { onServer(p -> UiShotsServer.element(p, "s:remnant")); }, 14, true));   // a remnant only you can see
+        steps.add(new Step("shd_rise", () -> { onServer(p -> UiShotsServer.element(p, "s:rise")); }, 24, true));         // it climbs out as your shadow
+        steps.add(new Step("shd_army", () -> { }, 30, true));                                                              // following at your side
+        steps.add(new Step("shd_knight", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:oathbound_knight")); }, 40, true));   // the Oathbound Knight rising
+        steps.add(new Step("shd_knight_idle", () -> { }, 30, true));
+        steps.add(new Step("shd_umbral_step", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:umbral_step")); }, 6, true));
+        steps.add(new Step("shd_unseen_hand", () -> { onServer(p -> UiShotsServer.element(p, "s:unseen_hand")); }, 8, true));
+        steps.add(new Step("shd_command_hunt", () -> { onServer(p -> UiShotsServer.element(p, "s:command_hunt")); }, 10, true));
+        steps.add(new Step("shd_veil", () -> { onServer(p -> UiShotsServer.element(p, "s:veil")); }, 10, true));
+        steps.add(new Step("shd_sovereigns_domain", () -> { onServer(p -> UiShotsServer.element(p, "s:sovereigns_domain")); }, 16, true));
+        steps.add(new Step("shd_night_legion", () -> { onServer(p -> UiShotsServer.element(p, "s:night_legion")); }, 24, true));
+        steps.add(new Step("shd_gate_of_shade", () -> { onServer(p -> UiShotsServer.element(p, "s:gate_of_shade")); }, 16, true));
+        steps.add(new Step("shd_menu", () -> { mc.options.hideGui = false; com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.ShadowPackets.Act(0, 0, "")); }, 16, false));   // the army menu
+        steps.add(new Step("shd_menu_done", () -> mc.setScreen(null), 4, true));
+        steps.add(new Step("shd_wheel", () -> { onServer(p -> UiShotsServer.element(p, "s:end")); GrimoireWheel.forceOpen = true; }, 14, true));
+        steps.add(new Step("shd_wheel_done", () -> { GrimoireWheel.forceOpen = false; try { io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); } catch (RuntimeException ignored) { } mc.options.hideGui = true; }, 4, true));
+        steps.add(new Step("shd_book", () -> {
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.SHADOW_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("shd_book_done", () -> mc.setScreen(null), 4, true));
 
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)
@@ -491,7 +514,7 @@ public final class UiShots {
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
         Class<?>[] shared = {GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class, FxBase.class, GravityFxClient.class, FxBooks.class, FxBookAuras.class, GrimoireFloatRenderer.class};
         String[][] books = {{"grav_", "Gravity"}, {"snd_", "Sound"}, {"ink_", "Ink"}, {"err_", "Error"}, {"tre_", "Treasure"}, {"chn_", "Chain"}, {"hun_", "Hunter"},
-                {"voi_", "Void"}, {"gam_", "Gambler"}, {"tar_", "Tarot"}, {"aby_", "Abyss"}, {"mec_", "Mech"}, {"wea_", "Weather"}, {"ovd_", "Overdrive"}, {"drm_", "Dream"}};
+                {"voi_", "Void"}, {"gam_", "Gambler"}, {"tar_", "Tarot"}, {"aby_", "Abyss"}, {"mec_", "Mech"}, {"wea_", "Weather"}, {"ovd_", "Overdrive"}, {"drm_", "Dream"}, {"shd_", "Shadow"}};
         for (String[] b : books) if (step.startsWith(b[0])) {   // each book's pictures depend on its own two classes and the shared drawing code
             try {
                 Class<?>[] r = java.util.Arrays.copyOf(shared, shared.length + 2);
@@ -512,6 +535,7 @@ public final class UiShots {
 
     /** Textures and models a book's pictures show besides its code (a change to them must re-take the pictures). */
     private static final String[][] ASSETS = {
+            {"shd_", "geo/shadow_knight.geo.json", "textures/geo/shadow_knight.png", "animations/shadow_knight.animation.json"},
             {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"}};
 
     private static String assetsKey(String step) {

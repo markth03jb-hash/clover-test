@@ -160,6 +160,7 @@ public final class SkillEffects {
             case 31 -> { if (p.getY() < 63) add += (float) Math.min(0.4, (63 - p.getY()) * 0.01); }
             case 32 -> { if (hits % 10 == 0) { add += 1f; FxSend.ring(sl, Fx.FIRE | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.3f, 1.6f, 0.06f, 10); } }
             case 35 -> { if (DreamFx.asleep(t)) add += 0.4f; else add += 0.3f * DreamFx.drowsy(t) / 100f; }
+            case 36 -> add += Math.min(0.4f, 0.05f * ShadowArmy.out(p).size());
             case 34 -> { float b = OverdriveFx.bpm(p); if (b >= OverdriveFx.RED) add += 0.3f; else if (b >= OverdriveFx.HOT) add += 0.15f; }
             case 33 -> {
                 net.minecraft.core.BlockPos bp = p.blockPosition();

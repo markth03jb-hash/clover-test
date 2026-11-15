@@ -106,7 +106,7 @@ def cube_faces(c):
     return v, faces
 
 
-def render(geo, anim, t, tex, size, yaw_deg, hide, label):
+def render(geo, anim, t, tex, size, yaw_deg, hide, label, gy=-24):
     bones = geo["bones"]
     mats = bone_matrices(bones, anim, t)
     hidden = set()
@@ -144,7 +144,6 @@ def render(geo, anim, t, tex, size, yaw_deg, hide, label):
     d = ImageDraw.Draw(img)
     sc = size / 90.0
     cx, cy = size / 2, size * 0.78
-    gy = -24
     for gx in range(-40, 41, 8):   # the ground grid at the feet
         a = np.array([[gx, gy, -40], [gx, gy, 40]]) @ view.T
         b = np.array([[-40, gy, gx], [40, gy, gx]]) @ view.T
@@ -184,6 +183,7 @@ def main():
     ap.add_argument("--size", type=int, default=360)
     ap.add_argument("--hide", default="")
     ap.add_argument("--loops", type=int, default=2, help="times to play each looping animation")
+    ap.add_argument("--ground", type=float, default=-24, help="the y of the feet (-24 for player-space models, 0 for standalone mobs)")
     a = ap.parse_args()
     geo = json.load(open(os.path.join(ROOT, "geo", a.model + ".geo.json")))["minecraft:geometry"][0]
     anims = json.load(open(os.path.join(ROOT, "animations", a.model + ".animation.json")))["animations"]
@@ -197,8 +197,8 @@ def main():
         n = max(1, int(total * a.fps))
         for i in range(n):
             t = (i / a.fps) % length if an.get("loop") else min(length, i / a.fps)
-            front = render(geo, an, t, tex, a.size, 35, hide, "%s  %.2fs  (front 3/4)" % (name, t))
-            side = render(geo, an, t, tex, a.size, 90, hide, "%s  (side)" % name)
+            front = render(geo, an, t, tex, a.size, 35, hide, "%s  %.2fs  (front 3/4)" % (name, t), a.ground)
+            side = render(geo, an, t, tex, a.size, 90, hide, "%s  (side)" % name, a.ground)
             f = Image.new("RGB", (a.size * 2, a.size))
             f.paste(front, (0, 0)); f.paste(side, (a.size, 0))
             frames.append(f)

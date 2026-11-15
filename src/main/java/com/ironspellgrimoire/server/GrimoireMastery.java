@@ -291,6 +291,10 @@ public final class GrimoireMastery {
                 "dream_mote", 1, "counting_sheep", 1, "pillow_fortress", 2,
                 "sleepwalk", 2, "dream_clock", 2, "toy_parade", 3,
                 "nightmare_shard", 3, "rude_awakening", 4, "half_asleep", 4, "dream_world", 5);
+        book(AddonItemRegistry.SHADOW_GRIMOIRE::get, Fx.YAMI,
+                "rise", 1, "shadow_exchange", 1, "umbral_step", 2,
+                "unseen_hand", 2, "gate_of_shade", 2, "command_hunt", 3,
+                "veil", 3, "oathbound_knight", 4, "sovereigns_domain", 4, "night_legion", 5);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

@@ -61,6 +61,7 @@ public final class LimitClient {
             {0.5F, 0.8F, 1.0F},     // Weather: sky
             {1.0F, 0.15F, 0.25F},   // Overdrive: heart red
             {0.78F, 0.66F, 1.0F},   // Dream: lavender
+            {0.25F, 0.55F, 1.0F},   // Shadow: blue fire
     };
 
     public static void set(int id, int book, int life) {

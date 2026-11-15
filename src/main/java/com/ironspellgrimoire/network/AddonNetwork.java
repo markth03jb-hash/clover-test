@@ -49,5 +49,8 @@ public class AddonNetwork {
         CHANNEL.registerMessage(12, BoardPackets.Pick.class, BoardPackets.Pick::encode, BoardPackets.Pick::decode, BoardPackets.Pick::handle);
         CHANNEL.registerMessage(10, TreePackets.Act.class, TreePackets.Act::encode, TreePackets.Act::decode, TreePackets.Act::handle);
         CHANNEL.registerMessage(9, LibraryPackets.Open.class, LibraryPackets.Open::encode, LibraryPackets.Open::decode, LibraryPackets.Open::handle);
+        CHANNEL.registerMessage(13, ShadowPackets.Open.class, ShadowPackets.Open::encode, ShadowPackets.Open::decode, ShadowPackets.Open::handle);
+        CHANNEL.registerMessage(14, ShadowPackets.Act.class, ShadowPackets.Act::encode, ShadowPackets.Act::decode, ShadowPackets.Act::handle);
+        CHANNEL.registerMessage(15, ShadowPackets.Remnant.class, ShadowPackets.Remnant::encode, ShadowPackets.Remnant::decode, ShadowPackets.Remnant::handle);
     }
 }

@@ -1,0 +1,87 @@
+package com.ironspellgrimoire.network;
+
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.network.NetworkEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
+/**
+ * The Shadow Grimoire's packets: the army menu (server sends the list, the client answers with equip / rank up /
+ * rename / release), the remnants a kill leaves (sent only to the grimoire user who made the kill, so only they see
+ * them), and the client asking for the menu (its key).
+ */
+public final class ShadowPackets {
+    private ShadowPackets() {}
+
+    /** One shadow in the army, as the menu shows it. */
+    public record Entry(int id, String type, String name, int level, int xp, int xpNext, int rank, boolean equipped, boolean exclusive,
+                        int recovering, boolean canRankUp) {}
+
+    /** Server -> client: open (or refresh) the army menu. */
+    public static class Open {
+        public final List<Entry> list;
+        public final int slots, storage;
+        public Open(List<Entry> list, int slots, int storage) { this.list = list; this.slots = slots; this.storage = storage; }
+        public static void encode(Open p, FriendlyByteBuf b) {
+            b.writeVarInt(p.slots); b.writeVarInt(p.storage); b.writeVarInt(p.list.size());
+            for (Entry e : p.list) {
+                b.writeVarInt(e.id()); b.writeUtf(e.type(), 100); b.writeUtf(e.name(), 32); b.writeVarInt(e.level()); b.writeVarInt(e.xp()); b.writeVarInt(e.xpNext());
+                b.writeVarInt(e.rank()); b.writeBoolean(e.equipped()); b.writeBoolean(e.exclusive()); b.writeVarInt(e.recovering()); b.writeBoolean(e.canRankUp());
+            }
+        }
+        public static Open decode(FriendlyByteBuf b) {
+            int slots = b.readVarInt(), storage = b.readVarInt(), n = b.readVarInt();
+            List<Entry> l = new ArrayList<>();
+            for (int i = 0; i < n; i++) l.add(new Entry(b.readVarInt(), b.readUtf(100), b.readUtf(32), b.readVarInt(), b.readVarInt(), b.readVarInt(),
+                    b.readVarInt(), b.readBoolean(), b.readBoolean(), b.readVarInt(), b.readBoolean()));
+            return new Open(l, slots, storage);
+        }
+        public static void handle(Open p, Supplier<NetworkEvent.Context> ctx) {
+            ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.ShadowArmyScreen.show(p)));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** Client -> server: 0 = open the menu, 1 = equip / unequip id, 2 = rank up id, 3 = rename id (name), 4 = release id. */
+    public static class Act {
+        public final int action, id;
+        public final String name;
+        public Act(int action, int id, String name) { this.action = action; this.id = id; this.name = name; }
+        public static void encode(Act p, FriendlyByteBuf b) { b.writeVarInt(p.action); b.writeVarInt(p.id); b.writeUtf(p.name, 32); }
+        public static Act decode(FriendlyByteBuf b) { return new Act(b.readVarInt(), b.readVarInt(), b.readUtf(32)); }
+        public static void handle(Act p, Supplier<NetworkEvent.Context> ctx) {
+            ctx.get().enqueueWork(() -> {
+                var sp = ctx.get().getSender();
+                if (sp != null) com.ironspellgrimoire.server.ShadowArmy.handle(sp, p.action, p.id, p.name);
+            });
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** Server -> one client: a remnant appears (life > 0) or goes (life = 0). Only its maker is sent it. */
+    public static class Remnant {
+        public final int id, life, tries;
+        public final String type;
+        public final Vec3 pos;
+        public final float yaw, scale;
+        public Remnant(int id, String type, Vec3 pos, float yaw, float scale, int life, int tries) {
+            this.id = id; this.type = type; this.pos = pos; this.yaw = yaw; this.scale = scale; this.life = life; this.tries = tries;
+        }
+        public static void encode(Remnant p, FriendlyByteBuf b) {
+            b.writeVarInt(p.id); b.writeUtf(p.type, 100); b.writeDouble(p.pos.x); b.writeDouble(p.pos.y); b.writeDouble(p.pos.z);
+            b.writeFloat(p.yaw); b.writeFloat(p.scale); b.writeVarInt(p.life); b.writeVarInt(p.tries);
+        }
+        public static Remnant decode(FriendlyByteBuf b) {
+            return new Remnant(b.readVarInt(), b.readUtf(100), new Vec3(b.readDouble(), b.readDouble(), b.readDouble()), b.readFloat(), b.readFloat(), b.readVarInt(), b.readVarInt());
+        }
+        public static void handle(Remnant p, Supplier<NetworkEvent.Context> ctx) {
+            ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.ShadowClient.remnant(p)));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+}

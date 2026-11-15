@@ -1,6 +1,19 @@
-Iron Spell Grimoire v1.103.0 - all changed files since v1.0.0
+Iron Spell Grimoire v1.104.0 - all changed files since v1.0.0
 
 HOW TO USE: extract this zip into the top folder of your project (the one with build.gradle)
+
+NEW IN 1.104.0
+- New: the Shadow Grimoire (black leather, a burning blue eye under a crown of blue fire) - raise the slain as your
+  shadows. Everything it touches is black smoke and blue fire. Passive - Remnants: what you slay while holding it
+  leaves a remnant where it fell for 60 s (a black shadow of it in a dark pool, seen by you alone); cast Rise on it to
+  raise it as your shadow (3 tries - weak foes rise easily, strong ones rarely). Shadows follow you and fight for you
+  while you hold the grimoire, level up (1-30) from their own kills and rank up - Soldier, Elite, Knight, Captain,
+  General - growing bigger and stronger, with perks. The Shadow Army menu (V) equips (3 slots, up to 10 with
+  mastery), ranks up, renames and releases them; a fallen shadow reforms after 30 s.
+  Pages: Rise, Shadow Exchange, Umbral Step, Unseen Hand, Gate of Shade, Command: Hunt, Veil, Oathbound Knight
+  (your exclusive shadow: a towering, horned knight of black plate with a glowing blue greatsword, an original
+  design - it starts as a Knight and can rise to Sovereign's Hand), Sovereign's Domain (60 s: shadows hit 50% harder,
+  move faster and reform in 3 s) and the ultimate Night Legion (your whole army bursts out of the ground and charges).
 
 NEW IN 1.103.0
 - New: the Dream Grimoire (lavender leather, a sleeping crescent moon) - inspired by a sleepy captain's Dream Magic,
