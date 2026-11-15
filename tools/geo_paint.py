@@ -289,6 +289,23 @@ def rune_painter(base, line, glow_col):
     return p
 
 
+def bone_painter(base, crack, crack_glow):
+    """Dark bone: lit from above, fine grain running along its length, a few glowing cracks wandering through it."""
+    def p(px, gx, x0, y0, w, h, face, rnd):
+        for y in range(h):
+            for x in range(w):
+                k = (1.1 - 0.45 * y / max(1, h - 1)) * (0.92 + 0.12 * rnd.random())
+                if (x + y * 3) % 7 == 0: k *= 0.85
+                px[x0 + x, y0 + y] = lit(base, k) + (255,)
+        for _ in range(max(1, (w * h) // 400)):   # glowing cracks
+            x, y = rnd.randrange(w), rnd.randrange(h)
+            for _ in range(rnd.randint(4, 12)):
+                if 0 <= x < w and 0 <= y < h:
+                    px[x0 + x, y0 + y] = crack + (255,); gx[x0 + x, y0 + y] = crack_glow + (255,)
+                x += rnd.choice((-1, 0, 1)); y += rnd.choice((0, 1, 1))
+    return p
+
+
 def smoke_painter(dark, tint, glow_col):
     """Shadow smoke: black at the root, a blue tint toward the tip, breaking up into dithered wisps as it fades."""
     def p(px, gx, x0, y0, w, h, face, rnd):

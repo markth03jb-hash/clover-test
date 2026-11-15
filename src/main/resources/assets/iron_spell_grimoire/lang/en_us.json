@@ -1241,7 +1241,7 @@
   "key.iron_spell_grimoire.shadow_army": "Shadow Army menu",
   "ui.iron_spell_grimoire.shadow_grimoire_only": "Only the Shadow Grimoire can cast this.",
   "tooltip.iron_spell_grimoire.shadow_grimoire.passive": "Passive - Remnants: what you slay while holding this grimoire leaves a remnant where it fell for 60 s - a black shadow of it in a dark pool, seen by you alone. Cast Rise on it to raise it as your shadow (3 tries; the stronger it was, the harder). Your shadows level up from their own kills and rank up: Soldier, Elite, Knight, Captain, General. Open your army with V to equip, rank up, rename or release them.",
-  "tooltip.iron_spell_grimoire.shadow_grimoire.desc": "Ten pages of black smoke and blue fire, and an army that never stays dead.",
+  "tooltip.iron_spell_grimoire.shadow_grimoire.desc": "Eleven pages of black smoke and blue fire, and an army that never stays dead.",
   "tooltip.iron_spell_grimoire.shadow_grimoire.lore": "Whatever falls before you rises again - for you.",
   "spell.iron_spell_grimoire.rise": "Shadow: Rise",
   "spell.iron_spell_grimoire.rise.guide": "Raise the remnant you look at as your shadow - it climbs up out of its pool, eyes burning blue. 3 tries each; weak foes rise easily, strong ones rarely.",
@@ -1258,9 +1258,12 @@
   "spell.iron_spell_grimoire.veil": "Shadow: Veil",
   "spell.iron_spell_grimoire.veil.guide": "For 5 s you melt into shadow: foes lose sight of you, and your next blow lands 50% harder.",
   "spell.iron_spell_grimoire.oathbound_knight": "Shadow: Oathbound Knight",
-  "spell.iron_spell_grimoire.oathbound_knight.guide": "Call your exclusive shadow, the Oathbound Knight - a towering knight of black plate with a blue greatsword. It joins your army at the Knight rank and can rise to Sovereign's Hand.",
+  "spell.iron_spell_grimoire.oathbound_knight.guide": "Call your exclusive shadow, the Oathbound Knight - a towering knight of black plate with a blue greatsword. It joins your army at the Knight rank and can rise to Sovereign's Hand. Its own instincts: Oath Cleave - every 8 s in a fight its greatsword sweeps a wide arc before it, throwing foes back. Sworn Guard - when you fall below 40% health it steps out of your shadow at your side, draws every foe near onto itself and stands like a wall for 6 s.",
   "spell.iron_spell_grimoire.sovereigns_domain": "Shadow: Sovereign's Domain",
   "spell.iron_spell_grimoire.sovereigns_domain.guide": "Mode, 60 s: your shadows hit 50% harder and move faster, and any that fall rise again after 3 s instead of 30.",
   "spell.iron_spell_grimoire.night_legion": "Shadow: Night Legion",
-  "spell.iron_spell_grimoire.night_legion.guide": "Your whole army - even the shadows not at your side - bursts out of the ground in ranks and charges ahead behind a tide of shadow. Surpassing Limits: a second wave."
+  "spell.iron_spell_grimoire.night_legion.guide": "Your whole army - even the shadows not at your side - bursts out of the ground in ranks and charges ahead behind a tide of shadow. Surpassing Limits: a second wave.",
+  "entity.iron_spell_grimoire.ravener": "Ravener",
+  "spell.iron_spell_grimoire.ravener": "Shadow: Ravener",
+  "spell.iron_spell_grimoire.ravener.guide": "Call your second exclusive shadow, the Ravener - a tall stalker of black shadow with burning eyes, swept horns, long taloned arms and a hooked tail. It joins your army at the Knight rank and can rise to Sovereign's Hand. Its own instincts: Pounce - it leaps onto foes up to 14 blocks away, at once on anything that strikes you. Devour - whatever it kills heals it by a quarter. Frenzy - hurt below half, it shrieks and runs wild for 8 s, faster and harder-hitting."
 }

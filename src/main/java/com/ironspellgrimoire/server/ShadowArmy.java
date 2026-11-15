@@ -43,7 +43,7 @@ public final class ShadowArmy {
     public static final String[] RANKS = {"Soldier", "Elite", "Knight", "Captain", "General", "Sovereign's Hand"};
     static final int[] RANK_LEVEL = {0, 8, 14, 20, 26, 30};
     public static final int MAX_LEVEL = 30, STORAGE = 50;
-    public static final String KNIGHT = "iron_spell_grimoire:oathbound_knight";
+    public static final String KNIGHT = "iron_spell_grimoire:oathbound_knight", RAVENER = "iron_spell_grimoire:ravener";
 
     /** The army's saved data lives in the part of the player's data that survives death. */
     static CompoundTag root(Player p) {
@@ -88,6 +88,7 @@ public final class ShadowArmy {
 
     public static String typeName(String type) {
         if (KNIGHT.equals(type)) return "Oathbound Knight";
+        if (RAVENER.equals(type)) return "Ravener";
         EntityType<?> t = ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.tryParse(type));
         return t == null ? type : t.getDescription().getString();
     }
@@ -157,8 +158,10 @@ public final class ShadowArmy {
     /** Raise one of the army's shadows at a spot (it climbs up out of a pool of shadow). */
     public static ShadowSoldier raise(ServerPlayer p, CompoundTag e, Vec3 at, int temporary) {
         ServerLevel sl = p.serverLevel();
-        boolean knight = KNIGHT.equals(e.getString("type"));
-        ShadowSoldier s = knight ? AddonEntities.OATHBOUND_KNIGHT.get().create(sl) : AddonEntities.SHADOW_SOLDIER.get().create(sl);
+        String type = e.getString("type");
+        ShadowSoldier s = KNIGHT.equals(type) ? AddonEntities.OATHBOUND_KNIGHT.get().create(sl)
+                : RAVENER.equals(type) ? AddonEntities.SHADOW_RAVENER.get().create(sl)
+                : AddonEntities.SHADOW_SOLDIER.get().create(sl);
         if (s == null) return null;
         s.setup(p.getUUID(), e.getString("type"), e.getInt("id"), e.getInt("lvl"), e.getInt("rank"), e.getString("name"), temporary);
         s.moveTo(at.x, at.y, at.z, p.getYRot(), 0);
@@ -253,7 +256,7 @@ public final class ShadowArmy {
             }
             case 4 -> {   // release
                 if (e.getBoolean("excl")) {
-                    p.displayClientMessage(Component.literal("The Oathbound Knight is sworn to you - it can't be released").withStyle(ChatFormatting.GRAY), true);
+                    p.displayClientMessage(Component.literal(e.getString("name") + " is sworn to you - it can't be released").withStyle(ChatFormatting.GRAY), true);
                 } else {
                     ShadowSoldier s = summoned(p, id);
                     if (s != null) { ShadowFx.sinkPool(p.serverLevel(), s.position(), s.getBbWidth()); s.discard(); }

@@ -27,6 +27,7 @@ public final class MageSetup {
         e.put(AddonEntities.CINDER_SOVEREIGN.get(), com.ironspellgrimoire.entity.CinderSovereign.attributes().build());
         e.put(AddonEntities.SHADOW_SOLDIER.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());
         e.put(AddonEntities.OATHBOUND_KNIGHT.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());
+        e.put(AddonEntities.SHADOW_RAVENER.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());
     }
 
     @SubscribeEvent

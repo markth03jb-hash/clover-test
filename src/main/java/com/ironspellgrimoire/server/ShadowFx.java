@@ -54,7 +54,10 @@ import java.util.UUID;
  *  5 Gate of Shade     - sink all your shadows into your own shadow, or call them all out again
  *  6 Command: Hunt     - every shadow turns on the foe you aim at, 40% harder for 8 s
  *  7 Veil              - 5 s: you melt into shadow - foes lose you, and your next blow lands 50% harder
- *  8 Oathbound Knight  - call your exclusive shadow, the Oathbound Knight (it joins your army the first time)
+ *  8 Oathbound Knight  - call your exclusive shadow, the Oathbound Knight (it joins your army the first time). Its
+ *                       own instincts: Oath Cleave (a wide sweep every 8 s) and Sworn Guard (shields you when you're low)
+ *  8b The Ravener      - call your second exclusive shadow, the Ravener: Pounce (leaps onto distant foes), Devour
+ *                       (heals on a kill) and Frenzy (faster and harder when hurt)
  *  9 Sovereign's Domain - 60 s mode: your shadows hit 50% harder and move faster, and a fallen one rises again in 3 s
  * 10 Night Legion      - your whole army (the ones not at your side too) bursts out of the ground and charges ahead,
  *                         then sinks away. Surpassing Limits: a second wave.
@@ -100,6 +103,44 @@ public final class ShadowFx {
     public static void shadowHit(ServerLevel sl, LivingEntity t, int rank) { FxPacket p = pk(11, t.position().add(0, t.getBbHeight() * 0.6, 0), 8); p.r = rank; send(sl, p); }
     /** 12 a rank-up flare on a shadow. */
     public static void rankUpFx(ServerLevel sl, ShadowSoldier s) { FxPacket p = pk(12, s.position(), 30); p.r = s.getBbHeight(); send(sl, p); }
+
+    // ---- the exclusive shadows' own instincts (entity/OathboundKnight, entity/ShadowRavener), drawn with the kinds above
+    /** Oath Cleave: a ring of shadow thrown out before the knight. */
+    public static void knightCleave(ServerLevel sl, ShadowSoldier k, Vec3 f) {
+        slam(sl, k.position().add(f.scale(2.0)), 4.2f);
+        play(sl, k.position(), "shadow_slash", 1.1f, 0.7f);
+        sound(sl, k.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 0.6f);
+    }
+    /** Sworn Guard: the knight rises at its master's side wreathed in smoke, blue fire round its feet. */
+    public static void knightGuard(ServerLevel sl, ShadowSoldier k, int life) {
+        risePool(sl, k.position(), k.getBbWidth());
+        rankUpFx(sl, k);
+        FxPacket p = pk(6, k.position(), life); p.v = new Vec3(k.getId(), 1, 0); send(sl, p);
+        sound(sl, k.position(), SoundEvents.WARDEN_ROAR, 0.25f, 1.6f);
+    }
+    /** Pounce: a streak of shadow along the leap. */
+    public static void ravenerLeap(ServerLevel sl, ShadowSoldier r) {
+        Vec3 v = r.getDeltaMovement();
+        dash(sl, r.position(), r.position().add(v.x * 6, 0, v.z * 6));
+        play(sl, r.position(), "shadow_whisper", 1.0f, 1.6f);
+    }
+    /** Pounce: it lands - a burst of shadow on the ground. */
+    public static void ravenerLand(ServerLevel sl, Vec3 at, ShadowSoldier r) {
+        slam(sl, at, 2.4f);
+        play(sl, at, "shadow_slash", 0.9f, 1.4f);
+    }
+    /** Devour: its prey sinks into it, and it flares. */
+    public static void ravenerDevour(ServerLevel sl, Vec3 at, ShadowSoldier r) {
+        sinkPool(sl, at, 1.0f);
+        rankUpFx(sl, r);
+        play(sl, r.position(), "shadow_whisper", 1.0f, 0.6f);
+    }
+    /** Frenzy: a shriek, and smoke boiling off it while it lasts. */
+    public static void ravenerFrenzy(ServerLevel sl, ShadowSoldier r, int life) {
+        FxPacket p = pk(6, r.position(), life); p.v = new Vec3(r.getId(), 1, 0); send(sl, p);
+        play(sl, r.position(), "shadow_rise", 1.2f, 1.8f);
+        sound(sl, r.position(), SoundEvents.WARDEN_ROAR, 0.3f, 1.9f);
+    }
 
     public static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
         SoundEvent s = AddonSounds.get(kind);
@@ -328,15 +369,20 @@ public final class ShadowFx {
         for (Mob m : sl.getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(24), m -> m.getTarget() == p)) m.setTarget(null);
     }
 
-    // ================================================================== 8. Oathbound Knight
-    public static void oathboundKnight(ServerPlayer p, float power) {
+    // ================================================================== 8. Oathbound Knight / 9. The Ravener
+    public static void oathboundKnight(ServerPlayer p, float power) { callExclusive(p, ShadowArmy.KNIGHT, "The Oathbound Knight swears itself to you"); }
+
+    public static void ravener(ServerPlayer p, float power) { callExclusive(p, ShadowArmy.RAVENER, "The Ravener binds itself to you"); }
+
+    /** Call an exclusive shadow to its master's side (it joins the army the first time). */
+    static void callExclusive(ServerPlayer p, String type, String joined) {
         ServerLevel sl = p.serverLevel();
         CompoundTag e = null;
-        for (var t : ShadowArmy.list(p)) if (ShadowArmy.KNIGHT.equals(((CompoundTag) t).getString("type"))) e = (CompoundTag) t;
+        for (var t : ShadowArmy.list(p)) if (type.equals(((CompoundTag) t).getString("type"))) e = (CompoundTag) t;
         if (e == null) {
-            e = ShadowArmy.add(p, ShadowArmy.KNIGHT, true);
+            e = ShadowArmy.add(p, type, true);
             if (e == null) return;
-            p.displayClientMessage(Component.literal("The Oathbound Knight swears itself to you").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), true);
+            p.displayClientMessage(Component.literal(joined).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), true);
         }
         ShadowSoldier s = ShadowArmy.summoned(p, e.getInt("id"));
         Vec3 at = p.position().add(look(p).scale(2.5));
@@ -345,7 +391,7 @@ public final class ShadowFx {
         if (s == null) { ShadowArmy.root(p).putBoolean(ShadowArmy.GATE, false); ShadowArmy.raise(p, e, at, 0); }
         else { sinkPool(sl, s.position(), s.getBbWidth()); s.teleportTo(at.x, at.y, at.z); risePool(sl, at, s.getBbWidth()); }
         sound(sl, at, SoundEvents.WARDEN_EMERGE, 0.6f, 1.2f);
-        play(sl, at, "shadow_rise", 1.2f, 0.7f);
+        play(sl, at, "shadow_rise", 1.2f, ShadowArmy.RAVENER.equals(type) ? 1.1f : 0.7f);
     }
 
     // ================================================================== 9. Sovereign's Domain (mode)

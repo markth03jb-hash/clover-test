@@ -245,6 +245,20 @@ public final class UiShotsServer {
             case "command_hunt" -> { faceForward(p); ShadowFx.commandHunt(p, 10f); }
             case "veil" -> ShadowFx.veil(p, 10f);
             case "oathbound_knight" -> { faceForward(p); ShadowFx.oathboundKnight(p, 10f); }
+            case "ravener" -> {   // the knight steps aside (unequipped) so the Ravener rises alone, facing the camera
+                faceForward(p);
+                for (var t : ShadowArmy.list(p)) { var c = (net.minecraft.nbt.CompoundTag) t; if (!ShadowArmy.RAVENER.equals(c.getString("type"))) c.putBoolean("eq", false); }
+                ShadowArmy.recallAll(p);
+                ShadowFx.ravener(p, 10f);
+                for (var s : ShadowArmy.out(p)) {
+                    var f = p.getLookAngle().multiply(1, 0, 1).normalize();
+                    var at = p.position().add(f.scale(4.5)).add(new net.minecraft.world.phys.Vec3(-f.z, 0, f.x).scale(2.6));   // ahead and off to one side, clear of the player
+                    float yaw = (float) (Math.atan2(-(p.getX() - at.x), p.getZ() - at.z) * 180 / Math.PI);   // turned to face the player
+                    s.moveTo(at.x, p.getY(), at.z, yaw, 0);
+                    s.setYHeadRot(yaw); s.yBodyRot = yaw;
+                    s.getNavigation().stop();
+                }
+            }
             case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
             case "night_legion" -> { faceForward(p); ShadowFx.nightLegion(p, 10f); }
             case "gate_of_shade" -> ShadowFx.gateOfShade(p, 10f);
