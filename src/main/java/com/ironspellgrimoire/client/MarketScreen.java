@@ -9,13 +9,13 @@ import net.minecraft.client.gui.GuiGraphics;
  * Nightfang dagger, Mana Tonics, Shade Salves, Remnant Lures, a stat reset, or a Reckoning on purpose.
  */
 public class MarketScreen extends ShadowUiScreen {
-    static final String[] NAMES = {"Nightfang", "Gloamthorn", "Hollowtooth", "Duskglass Kris", "Mana Tonic", "Shade Salve", "Remnant Lure", "Stat Reset", "Reckoning Key"};
-    static final String[] DESC = {"Dagger - Thousand Cuts", "Stiletto - Shadow Mark", "Hooked blade - Rend", "Wavy blade - Phantom Edges",
+    static final String[] NAMES = {"Nightfang", "Dragon Fang", "Duskglass Kris", "Mana Tonic", "Shade Salve", "Remnant Lure", "Stat Reset", "Reckoning Key"};
+    static final String[] DESC = {"Dagger - Thousand Cuts", "Dragon's tooth - Wyrmfang Lunge", "Wavy blade - Phantom Edges",
             "Restores 150 mana", "Heals 8 hearts over 4 s", "Next remnant rises first try", "Refunds every stat point", "Starts a Reckoning now"};
     /** The ware each card buys (the server's numbering, HunterAscension.PRICES) - the knives first. */
-    static final int[] WARE = {0, 6, 7, 8, 1, 2, 3, 4, 5};
-    static final int[] PRICES = {500, 600, 700, 900, 40, 60, 120, 800, 300};
-    static final int[] ACCENT = {0xFF3C78E0, 0xFF7FD8FF, 0xFF5A9CFF, 0xFF9AB8FF, 0xFF70A8FF, 0xFF70E0A0, 0xFFE8C070, 0xFFC090FF, 0xFFE05050};
+    static final int[] WARE = {0, 6, 7, 1, 2, 3, 4, 5};
+    static final int[] PRICES = {500, 1000, 900, 40, 60, 120, 800, 300};
+    static final int[] ACCENT = {0xFF3C78E0, 0xFFE0503C, 0xFF9AB8FF, 0xFF70A8FF, 0xFF70E0A0, 0xFFE8C070, 0xFFC090FF, 0xFFE05050};
     private int marks;
 
     MarketScreen() { super("MARKET"); }
@@ -55,23 +55,29 @@ public class MarketScreen extends ShadowUiScreen {
     /** A small drawn mark for each ware. */
     private static void icon(GuiGraphics g, int x, int y, int i, float t) {
         switch (i) {
-            case 1, 2, 3 -> {   // the other knives: a blade on the diagonal, each its own shape
-                int len = i == 1 ? 16 : 13, wd = i == 2 ? 3 : i == 3 ? 2 : 1;
-                for (int k = 0; k < len; k++) {
-                    int off = i == 3 ? (int) Math.round(Math.sin(k * 0.9)) : 0;
-                    g.fill(x + 4 + k + off, y + 16 - k - off, x + 4 + k + wd + off, y + 16 - k + wd - off, k % 3 == 0 ? 0xFF3C8CFF : 0xFF14161E);
+            case 1 -> {   // the Dragon Fang: a curved tooth, ivory to crimson, over a gold guard
+                for (int k = 0; k < 14; k++) {
+                    int c = k < 4 ? 0xFFECE2C6 : k < 9 ? 0xFFBE1E22 : 0xFF600810, bend = k * k / 40;
+                    g.fill(x + 5 + k - bend, y + 15 - k, x + 8 + k - bend - k / 6, y + 17 - k, c);
+                }
+                g.fill(x + 2, y + 14, x + 9, y + 17, 0xFFA87A2E); g.fill(x, y + 17, x + 4, y + 20, 0xFFFF6E28);
+            }
+            case 2 -> {   // the Duskglass Kris: a wavy dark blade
+                for (int k = 0; k < 13; k++) {
+                    int off = (int) Math.round(Math.sin(k * 0.9));
+                    g.fill(x + 4 + k + off, y + 16 - k - off, x + 6 + k + off, y + 18 - k - off, k % 3 == 0 ? 0xFF6EBEFF : 0xFF141A30);
                 }
                 g.fill(x + 1, y + 16, x + 6, y + 19, 0xFF5A6080);
             }
             case 0 -> { for (int k = 0; k < 14; k++) g.fill(x + 4 + k, y + 16 - k, x + 6 + k, y + 18 - k, k > 11 ? 0xFFBEE6FF : 0xFF14161E); g.fill(x + 2, y + 14, x + 8, y + 16, 0xFF5A6080); g.fill(x, y + 18, x + 4, y + 20, 0xFF3C8CFF); }
-            case 4, 5 -> {
-                int c = i == 4 ? 0xFF3C8CFF : 0xFF40C080;
+            case 3, 4 -> {
+                int c = i == 3 ? 0xFF3C8CFF : 0xFF40C080;
                 g.fill(x + 6, y, x + 12, y + 3, 0xFF8A7050);
                 g.fill(x + 4, y + 3, x + 14, y + 18, 0x80A0C0E0);
                 g.fill(x + 5, y + 8, x + 13, y + 17, c);
             }
-            case 6 -> { g.fill(x + 2, y + 12, x + 16, y + 16, 0xFF10141E); g.fill(x + 7, y + 2, x + 11, y + 12, 0xFF1A2440); g.fill(x + 7, y + 5, x + 11, y + 7, 0xFFE8C070); }
-            case 7 -> { for (int k = 0; k < 4; k++) g.fill(x + 2 + k * 4, y + 16 - k * 4, x + 5 + k * 4, y + 18, 0xFFC090FF); }
+            case 5 -> { g.fill(x + 2, y + 12, x + 16, y + 16, 0xFF10141E); g.fill(x + 7, y + 2, x + 11, y + 12, 0xFF1A2440); g.fill(x + 7, y + 5, x + 11, y + 7, 0xFFE8C070); }
+            case 6 -> { for (int k = 0; k < 4; k++) g.fill(x + 2 + k * 4, y + 16 - k * 4, x + 5 + k * 4, y + 18, 0xFFC090FF); }
             default -> { g.fill(x + 3, y + 3, x + 15, y + 15, 0xFF2A0A0E); g.fill(x + 6, y + 6, x + 12, y + 12, (int) (160 + 90 * Math.sin(t * 0.2)) << 24 | 0xE05050); }
         }
     }

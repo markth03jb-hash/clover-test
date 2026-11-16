@@ -120,9 +120,8 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> NIGHTFANG = ITEMS.register("nightfang", com.ironspellgrimoire.item.NightfangItem::new);
     public static final RegistryObject<Item> MANA_TONIC = ITEMS.register("mana_tonic", () -> new com.ironspellgrimoire.item.ShadowTonicItem(false));
     public static final RegistryObject<Item> SHADE_SALVE = ITEMS.register("shade_salve", () -> new com.ironspellgrimoire.item.ShadowTonicItem(true));
-    public static final RegistryObject<Item> GLOAMTHORN = ITEMS.register("gloamthorn", () -> new com.ironspellgrimoire.item.ShadowKnifeItem(0));
-    public static final RegistryObject<Item> HOLLOWTOOTH = ITEMS.register("hollowtooth", () -> new com.ironspellgrimoire.item.ShadowKnifeItem(1));
-    public static final RegistryObject<Item> DUSKGLASS_KRIS = ITEMS.register("duskglass_kris", () -> new com.ironspellgrimoire.item.ShadowKnifeItem(2));
+    public static final RegistryObject<Item> DRAGON_FANG = ITEMS.register("dragon_fang", com.ironspellgrimoire.item.DragonFangItem::new);
+    public static final RegistryObject<Item> DUSKGLASS_KRIS = ITEMS.register("duskglass_kris", com.ironspellgrimoire.item.ShadowKnifeItem::new);
 
     /** Zenon's drops. */
     public static final RegistryObject<Item> PHYLACTERY = ITEMS.register("zenon_phylactery", com.ironspellgrimoire.item.PhylacteryItem::new);

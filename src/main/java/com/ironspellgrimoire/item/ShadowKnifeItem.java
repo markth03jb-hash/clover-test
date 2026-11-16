@@ -17,36 +17,23 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * The Market's other knives (original designs; models tools/shadow_items.py), each with its own right-click move
- * (server/ShadowFx):
- *  0 Gloamthorn     - a stiletto. Shadow Mark: thrown through up to three foes and back; your shadows hit them 25%
- *                     harder for 8 s. 12 s.
- *  1 Hollowtooth    - a broad hooked serrated blade. Rend: lunge 6 blocks and tear the first foe, three more cuts over
- *                     3 s; if it dies, your shadows heal 10%. 10 s.
- *  2 Duskglass Kris - a wavy blade of smoked glass. Phantom Edges: three ghost knives circle you for 10 s and strike
- *                     anything that comes within 3 blocks. 20 s.
+ * The Duskglass Kris (an original design; model tools/shadow_items.py): a wavy blade of smoked black glass, light
+ * running along its waves. Bought in the Shadow Grimoire's Market.
+ * Right-click - Phantom Edges (server/ShadowFx.phantomEdges): three ghost knives circle you for 10 s and strike anything
+ * that comes within 3 blocks. 20 s.
  */
 public class ShadowKnifeItem extends SwordItem {
-    public static final String[] NAMES = {"gloamthorn", "hollowtooth", "duskglass_kris"};
-    public static final int[] COOLDOWNS = {240, 200, 400};
-    private final int kind;
+    public static final int COOLDOWN = 400;
 
-    public ShadowKnifeItem(int kind) {
-        super(Tiers.DIAMOND, kind == 1 ? 3 : 2, kind == 0 ? -1.4F : kind == 1 ? -2.0F : -1.7F, new Properties().stacksTo(1).fireResistant().rarity(Rarity.EPIC));
-        this.kind = kind;
+    public ShadowKnifeItem() {
+        super(Tiers.DIAMOND, 2, -1.7F, new Properties().stacksTo(1).fireResistant().rarity(Rarity.EPIC));
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player p, InteractionHand hand) {
         ItemStack st = p.getItemInHand(hand);
-        if (!level.isClientSide && p instanceof ServerPlayer sp) {
-            boolean did = switch (kind) {
-                case 0 -> com.ironspellgrimoire.server.ShadowFx.shadowMark(sp);
-                case 1 -> com.ironspellgrimoire.server.ShadowFx.rend(sp);
-                default -> com.ironspellgrimoire.server.ShadowFx.phantomEdges(sp);
-            };
-            if (did) p.getCooldowns().addCooldown(this, COOLDOWNS[kind]);
-        }
+        if (!level.isClientSide && p instanceof ServerPlayer sp && com.ironspellgrimoire.server.ShadowFx.phantomEdges(sp))
+            p.getCooldowns().addCooldown(this, COOLDOWN);
         return InteractionResultHolder.sidedSuccess(st, level.isClientSide);
     }
 
@@ -55,7 +42,7 @@ public class ShadowKnifeItem extends SwordItem {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tip, flag);
-        tip.add(Component.translatable("tooltip.iron_spell_grimoire." + NAMES[kind] + ".1").withStyle(ChatFormatting.AQUA));
+        tip.add(Component.translatable("tooltip.iron_spell_grimoire.duskglass_kris.1").withStyle(ChatFormatting.AQUA));
         tip.add(Component.translatable("tooltip.iron_spell_grimoire.nightfang.2").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
     }
 }

@@ -1285,10 +1285,8 @@
   "tooltip.iron_spell_grimoire.nightfang.2": "Bought in the Shadow Grimoire's Market.",
   "tooltip.iron_spell_grimoire.mana_tonic": "Right-click: restores 150 mana at once.",
   "tooltip.iron_spell_grimoire.shade_salve": "Right-click: heals 8 hearts over 4 seconds.",
-  "item.iron_spell_grimoire.gloamthorn": "Gloamthorn",
-  "item.iron_spell_grimoire.hollowtooth": "Hollowtooth",
   "item.iron_spell_grimoire.duskglass_kris": "Duskglass Kris",
-  "tooltip.iron_spell_grimoire.gloamthorn.1": "Right-click - Shadow Mark: thrown through up to three foes and back; your shadows hit them 25% harder for 8 s (12 s).",
-  "tooltip.iron_spell_grimoire.hollowtooth.1": "Right-click - Rend: lunge 6 blocks and tear the first foe, three more cuts over 3 s; if it dies, your shadows mend (10 s).",
-  "tooltip.iron_spell_grimoire.duskglass_kris.1": "Right-click - Phantom Edges: three ghost knives circle you for 10 s, striking anything within 3 blocks (20 s)."
+  "tooltip.iron_spell_grimoire.duskglass_kris.1": "Right-click - Phantom Edges: three ghost knives circle you for 10 s, striking anything within 3 blocks (20 s).",
+  "item.iron_spell_grimoire.dragon_fang": "Dragon Fang",
+  "tooltip.iron_spell_grimoire.dragon_fang.1": "Right-click - Wyrmfang Lunge: dash up to 8 blocks through every foe in the way; each wound bursts a second later, and each foe cut heals you 5% (14 s)."
 }
