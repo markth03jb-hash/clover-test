@@ -288,6 +288,16 @@ public final class UiShotsServer {
                 ShadowFx.thousandCuts(p);
             }
             case "shadow_step" -> { faceForward(p); ShadowFx.shadowStep(p, 10f); }
+            case "knives" -> {   // the four knives laid out in the hotbar, the Duskglass Kris in hand with its ghost knives out
+                var inv = p.getInventory();
+                inv.setItem(1, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.NIGHTFANG.get()));
+                inv.setItem(2, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.GLOAMTHORN.get()));
+                inv.setItem(3, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.HOLLOWTOOTH.get()));
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.DUSKGLASS_KRIS.get()));
+                ShadowFx.phantomEdges(p);
+            }
+            case "shadow_mark" -> { faceForward(p); ShadowFx.shadowMark(p); }
+            case "rend" -> { faceForward(p); ShadowFx.rend(p); }
             case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
             case "night_legion" -> { faceForward(p); ShadowFx.nightLegion(p, 10f); }
             case "gate_of_shade" -> ShadowFx.gateOfShade(p, 10f);

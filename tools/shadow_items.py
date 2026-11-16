@@ -5,7 +5,11 @@
               the pommel. Bought in the Market; it carries Thousand Cuts.
 
 python3 tools/shadow_items.py            (writes the models and textures)
-python3 tools/shadow_items.py preview OUT.png   (also renders a preview of the 3D model from a few sides)
+python3 tools/shadow_items.py preview OUT.png [knife]   (also renders a preview of a knife's 3D model from a few sides)
+
+  gloamthorn     - a stiletto: a long, narrow black spike with a blue-lit fuller, a ring pommel (Shadow Mark)
+  hollowtooth    - a broad hooked blade, serrated, a hollow near the spine (Rend)
+  duskglass_kris - a wavy blade of smoked black glass, light along its waves (Phantom Edges)
 """
 import json
 import os
@@ -166,10 +170,118 @@ flask("shade_salve", (30, 150, 100), (150, 235, 190))
 print("shadow items written")
 
 
+# ------------------------------------------------------------------ three more knives for the Market (original designs)
+DISPLAY = model["display"]   # held and shown in the hotbar the same way as the Nightfang
+
+
+def sheet(flat, strip, grip, steel, gem):
+    """A 32x32 texture in the Nightfang's layout: blade flat (uv 0-4), edge strip (4-5), grip (6-10), steel (11-13, 0-4),
+    gem (11-13, 4-8); each part painted by a function (x, y) -> (r, g, b)."""
+    im = Image.new("RGBA", (32, 32), (0, 0, 0, 0)); q = im.load()
+    for y in range(32):
+        for x in range(0, 8): q[x, y] = flat(x, y) + (255,)
+        for x in range(8, 10): q[x, y] = strip(x, y) + (255,)
+        for x in range(12, 20): q[x, y] = grip(x, y) + (255,)
+    for y in range(8):
+        for x in range(22, 26): q[x, y] = steel(x, y) + (255,)
+    for y in range(8, 16):
+        for x in range(22, 26): q[x, y] = gem(x, y) + (255,)
+    return im
+
+
+def handle(y_top, grip_len, ring=False, gem=True):
+    """Grip, pommel (a gem, or an open ring) and the base of a guard, the grip ending at y_top."""
+    out = [el([7.5, y_top - grip_len, 7.5], [8.5, y_top, 8.5], GRIP(), name="grip")]
+    yb = y_top - grip_len
+    if ring:   # an open ring pommel
+        out += [el([7.55, yb - 1.6, 7.0], [8.45, yb - 1.3, 9.0], STEEL()), el([7.55, yb - 0.3, 7.0], [8.45, yb, 9.0], STEEL()),
+                el([7.55, yb - 1.6, 7.0], [8.45, yb, 7.3], STEEL()), el([7.55, yb - 1.6, 8.7], [8.45, yb, 9.0], STEEL())]
+    else:
+        out.append(el([7.6, yb - 0.4, 7.6], [8.4, yb, 8.4], STEEL()))
+        if gem: out.append(el([7.5, yb - 1.2, 7.5], [8.5, yb - 0.4, 8.5], GEMF()))
+    return out
+
+
+def blade_faces(y0, y1, b0, b1):
+    vv2 = lambda y: round(16 * (y - b0) / (b1 - b0), 3)
+    return {"east": face(0, vv2(y0), 4, vv2(y1)), "west": face(4, vv2(y0), 0, vv2(y1)), "north": face(4, vv2(y0), 5, vv2(y1)),
+            "south": face(4, vv2(y0), 5, vv2(y1)), "up": face(4, 0, 5, 1), "down": face(4, 0, 5, 1)}
+
+
+def write_knife(name, elements, tex):
+    tex.save(os.path.join(TEX, name + ".png"))
+    m = {"credit": "Iron Spell Grimoire - the " + name + " (tools/shadow_items.py)",
+         "textures": {"0": "iron_spell_grimoire:item/" + name, "particle": "iron_spell_grimoire:item/" + name},
+         "elements": elements, "display": DISPLAY}
+    json.dump(m, open(os.path.join(MD, name + ".json"), "w"), indent=1)
+
+
+KNIVES = {}
+
+# the Gloamthorn: a stiletto - a long, narrow, square-sectioned black spike with a blue-lit fuller down each face, a
+# small square guard, a short grip and an open ring for a pommel
+g_els = handle(8.6, 2.2, ring=True)
+g_els += [el([7.0, 8.6, 7.0], [9.0, 9.1, 9.0], STEEL(), name="guard"), el([7.3, 9.1, 7.3], [8.7, 9.5, 8.7], STEEL())]
+GB0, GB1, n = 9.5, 19.2, 18
+for i in range(n):
+    y0, y1 = GB0 + (GB1 - GB0) * i / n, GB0 + (GB1 - GB0) * (i + 1) / n
+    w = 0.95 * (1 - 0.9 * ((y0 + y1) / 2 - GB0) / (GB1 - GB0))
+    g_els.append(el([8 - w / 2, y0, 8 - w / 2], [8 + w / 2, y1, 8 + w / 2], blade_faces(y0, y1, GB0, GB1), name=f"spike{i}"))
+KNIVES["gloamthorn"] = (g_els, sheet(lambda x, y: (70, 160, 255) if x in (3, 4) and y % 7 else ((26, 28, 38) if x in (0, 7) else (14, 15, 22)),
+                                     lambda x, y: (40, 44, 58), lambda x, y: (48, 30, 22) if (x + y) % 4 < 2 else (34, 22, 16) if y not in (6, 7, 24, 25) else (150, 156, 170),
+                                     lambda x, y: (120, 126, 140) if (x + y) % 3 else (90, 96, 110), lambda x, y: (150, 210, 255)))
+
+# the Hollowtooth: a broad, hooked blade, serrated along its edge with blue light between the teeth, a hollow cut through
+# it near the spine, a heavy guard and a grip with blue bands
+h_els = handle(8.6, 2.4)
+h_els += [el([7.3, 8.6, 6.0], [8.7, 9.3, 10.0], STEEL(), name="guard"), el([7.4, 8.0, 5.8], [8.6, 8.8, 6.4], STEEL())]
+HB0, HB1, n = 9.3, 17.6, 16
+for i in range(n):
+    y0, y1 = HB0 + (HB1 - HB0) * i / n, HB0 + (HB1 - HB0) * (i + 1) / n
+    t = ((y0 + y1) / 2 - HB0) / (HB1 - HB0)
+    zf = 6.4 - 1.6 * max(0, t - 0.55) ** 1.4 * 4            # the edge, hooking forward near the tip
+    zb = 9.6 - 3.4 * max(0, t - 0.45) ** 1.2 * 1.8          # the spine sweeping down into the hook
+    if zb - zf < 0.15: continue
+    if 0.18 < t < 0.42:   # the hollow near the spine
+        h_els.append(el([7.82, y0, zf], [8.18, y1, zb - 1.3], blade_faces(y0, y1, HB0, HB1), name=f"blade{i}"))
+        h_els.append(el([7.82, y0, zb - 0.5], [8.18, y1, zb], blade_faces(y0, y1, HB0, HB1)))
+    else:
+        h_els.append(el([7.82, y0, zf], [8.18, y1, zb], blade_faces(y0, y1, HB0, HB1), name=f"blade{i}"))
+    if i % 2 == 0 and t < 0.8:   # a tooth
+        h_els.append(el([7.85, y0, zf - 0.45], [8.15, y0 + 0.35, zf], STEEL(), name=f"tooth{i}"))
+KNIVES["hollowtooth"] = (h_els, sheet(lambda x, y: (90, 180, 255) if x == 0 and y % 2 else ((24, 26, 36) if x > 5 else (14, 15, 22)),
+                                      lambda x, y: (90, 180, 255) if y % 3 == 0 else (20, 22, 30), lambda x, y: (50, 110, 220) if y in (5, 6, 25, 26) else ((30, 30, 40) if (x + y) % 4 < 2 else (18, 18, 24)),
+                                      lambda x, y: (24, 26, 36) if (x + y) % 3 else (40, 44, 58), lambda x, y: (60, 140, 255)))
+
+# the Duskglass Kris: a wavy blade like smoked black glass, light running along its waves, a wide asymmetric guard
+# sweeping forward at its base, and a carved black grip
+k_els = handle(8.6, 2.4)
+k_els += [el([7.45, 8.6, 5.6], [8.55, 9.4, 9.6], STEEL(), name="guard"), el([7.5, 9.4, 5.6], [8.5, 9.9, 6.6], STEEL()), el([7.5, 9.0, 5.1], [8.5, 9.6, 5.7], STEEL())]
+import math as _m
+KB0, KB1, n = 9.4, 18.4, 24
+for i in range(n):
+    y0, y1 = KB0 + (KB1 - KB0) * i / n, KB0 + (KB1 - KB0) * (i + 1) / n
+    t = ((y0 + y1) / 2 - KB0) / (KB1 - KB0)
+    zc = 8.0 + 0.55 * _m.sin(t * _m.pi * 5) * (1 - 0.6 * t)   # five waves, gentler toward the point
+    w = 1.9 * (1 - 0.92 * t)
+    k_els.append(el([7.83, y0, zc - w / 2], [8.17, y1, zc + w / 2], blade_faces(y0, y1, KB0, KB1), name=f"wave{i}"))
+KNIVES["duskglass_kris"] = (k_els, sheet(lambda x, y: (110, 190, 255) if (x + (y // 3)) % 6 == 0 else ((26, 36, 66) if x in (2, 3, 4, 5) else (16, 20, 38)),
+                                         lambda x, y: (90, 170, 255), lambda x, y: (14, 14, 18) if (x * 2 + y) % 5 else (40, 60, 110),
+                                         lambda x, y: (30, 34, 48) if (x + y) % 3 else (60, 90, 160), lambda x, y: (40, 90, 220) if (x + y) % 2 else (120, 190, 255)))
+
+for name, (els_k, tex_k) in KNIVES.items():
+    write_knife(name, els_k, tex_k)
+
+
 # ------------------------------------------------------------------ a preview of the 3D model (reuses the geo renderer)
-def preview(out):
+def preview(out, which="nightfang"):
     import geo_paint as gp
-    sheet = T.resize((32, 32))
+    global els, ic
+    if which != "nightfang":
+        els, sheet_img = KNIVES[which]
+    else:
+        sheet_img = T
+    sheet = sheet_img.resize((32, 32))
     cubes = []
     for e in els:
         fr, to = e["from"], e["to"]
@@ -183,10 +295,11 @@ def preview(out):
     row = Image.new("RGB", (1200, 400))
     for i, yaw in enumerate((90, 30, -60)):
         row.paste(gp.render(geo, None, 0, sheet, glow, 400, yaw, "", ground=2, scale_div=24), (i * 400, 0))
-    big = ic.resize((128, 128), Image.NEAREST)
-    row.paste(big, (1200 - 136, 8), big)
+    if which == "nightfang":
+        big = ic.resize((128, 128), Image.NEAREST)
+        row.paste(big, (1200 - 136, 8), big)
     row.save(out)
     print("wrote", out)
 
 
-if len(sys.argv) > 2 and sys.argv[1] == "preview": preview(sys.argv[2])
+if len(sys.argv) > 2 and sys.argv[1] == "preview": preview(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else "nightfang")

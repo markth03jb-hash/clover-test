@@ -396,8 +396,9 @@ public final class GameTests {
         final java.util.List<String> bad = new java.util.ArrayList<>();
         BlockState[] before;
         double baseHp;
+        final java.util.Map<String, Float> knifeHp = new java.util.HashMap<>();
         @Override void start() {
-            cancelCast(); clearArea(); resetPlayer(true);
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
             ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.SHADOW_GRIMOIRE.get());
             top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
             HunterAscension.testReset(p);
@@ -426,7 +427,23 @@ public final class GameTests {
                     if (!p.getInventory().contains(new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_TONIC.get()))) bad.add("no Mana Tonic in the inventory");
                     HunterAscension.startReckoning(p);
                 }
+                if (t == 100) {   // the knives' moves: each must hurt the dummy
+                    for (String k : new String[]{"thousand_cuts", "shadow_mark", "rend", "phantom_edges"}) {
+                        ensureDummy();
+                        p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                        float hp0 = dummy.getHealth();
+                        boolean did = switch (k) {
+                            case "thousand_cuts" -> ShadowFx.thousandCuts(p);
+                            case "shadow_mark" -> ShadowFx.shadowMark(p);
+                            case "rend" -> ShadowFx.rend(p);
+                            default -> ShadowFx.phantomEdges(p);
+                        };
+                        if (!did) bad.add(k + " did nothing");
+                        knifeHp.put(k, hp0);
+                    }
+                }
                 if (t == 140) {
+                    if (dummy != null && dummy.getHealth() >= 1000) bad.add("the knives' moves did no damage");
                     int n = HunterAscension.testEndReckoning(p, true);
                     if (n <= 0) bad.add("the Reckoning raised no mobs (" + n + ")");
                     else if (!sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(32), m -> m.getPersistentData().getBoolean("isg_reckoning")).isEmpty())

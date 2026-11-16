@@ -9,11 +9,13 @@ import net.minecraft.client.gui.GuiGraphics;
  * Nightfang dagger, Mana Tonics, Shade Salves, Remnant Lures, a stat reset, or a Reckoning on purpose.
  */
 public class MarketScreen extends ShadowUiScreen {
-    static final String[] NAMES = {"Nightfang", "Mana Tonic", "Shade Salve", "Remnant Lure", "Stat Reset", "Reckoning Key"};
-    static final String[] DESC = {"A black dagger - right-click: Thousand Cuts", "Restores 150 mana at once", "Heals 8 hearts over 4 seconds",
-            "Your next remnant rises on the first try", "Refunds every stat point to spend again", "Starts a Reckoning now, for its reward"};
-    static final int[] PRICES = {500, 40, 60, 120, 800, 300};
-    static final int[] ACCENT = {0xFF3C78E0, 0xFF70A8FF, 0xFF70E0A0, 0xFFE8C070, 0xFFC090FF, 0xFFE05050};
+    static final String[] NAMES = {"Nightfang", "Gloamthorn", "Hollowtooth", "Duskglass Kris", "Mana Tonic", "Shade Salve", "Remnant Lure", "Stat Reset", "Reckoning Key"};
+    static final String[] DESC = {"Dagger - Thousand Cuts", "Stiletto - Shadow Mark", "Hooked blade - Rend", "Wavy blade - Phantom Edges",
+            "Restores 150 mana", "Heals 8 hearts over 4 s", "Next remnant rises first try", "Refunds every stat point", "Starts a Reckoning now"};
+    /** The ware each card buys (the server's numbering, HunterAscension.PRICES) - the knives first. */
+    static final int[] WARE = {0, 6, 7, 8, 1, 2, 3, 4, 5};
+    static final int[] PRICES = {500, 600, 700, 900, 40, 60, 120, 800, 300};
+    static final int[] ACCENT = {0xFF3C78E0, 0xFF7FD8FF, 0xFF5A9CFF, 0xFF9AB8FF, 0xFF70A8FF, 0xFF70E0A0, 0xFFE8C070, 0xFFC090FF, 0xFFE05050};
     private int marks;
 
     MarketScreen() { super("MARKET"); }
@@ -35,34 +37,41 @@ public class MarketScreen extends ShadowUiScreen {
         String mk = marks + " Shade Marks";
         g.drawString(font, mk, x0 + w - font.width(mk), y0, GOLD, false);
         g.drawString(font, "Earned from kills, Daily Trials and the Reckoning", x0, y0, 0xFF5A6A88, false);
-        int cols = 2, gap = 8, cw = (w - gap) / cols, ch = 52;
+        int cols = 3, gap = 6, cw = (w - gap * (cols - 1)) / cols, ch = Math.min(64, (ph() - 42 - 16 - 14 - gap * 2) / 3);
         for (int i = 0; i < NAMES.length; i++) {
             int x = x0 + (i % cols) * (cw + gap), y = y0 + 16 + (i / cols) * (ch + gap);
             boolean afford = marks >= PRICES[i];
             g.fill(x, y, x + cw, y + ch, PANEL);
             frame(g, x, y, cw, ch, afford ? ACCENT[i] : 0x601C3460);
-            icon(g, x + 8, y + 10, i, t);
-            g.drawString(font, NAMES[i], x + 34, y + 6, TEXT, false);
-            g.drawString(font, font.plainSubstrByWidth(DESC[i], cw - 42), x + 34, y + 17, 0xFF7F8EA8, false);
-            final int k = i;
-            String price = PRICES[i] + " Marks";
-            g.drawString(font, price, x + 34, y + 36, afford ? GOLD : 0xFF6A5A40, false);
-            button(g, x + cw - 56, y + ch - 22, 48, 16, "BUY", afford, ACCENT[i], mx, my, () -> act(13, k));
+            icon(g, x + 6, y + 6, i, t);
+            g.drawString(font, font.plainSubstrByWidth(NAMES[i], cw - 32), x + 28, y + 6, TEXT, false);
+            g.drawString(font, font.plainSubstrByWidth(DESC[i], cw - 32), x + 28, y + 17, 0xFF7F8EA8, false);
+            final int k = WARE[i];
+            g.drawString(font, PRICES[i] + " Marks", x + 6, y + ch - 14, afford ? GOLD : 0xFF6A5A40, false);
+            button(g, x + cw - 42, y + ch - 20, 36, 15, "BUY", afford, ACCENT[i], mx, my, () -> act(13, k));
         }
     }
 
     /** A small drawn mark for each ware. */
     private static void icon(GuiGraphics g, int x, int y, int i, float t) {
         switch (i) {
+            case 1, 2, 3 -> {   // the other knives: a blade on the diagonal, each its own shape
+                int len = i == 1 ? 16 : 13, wd = i == 2 ? 3 : i == 3 ? 2 : 1;
+                for (int k = 0; k < len; k++) {
+                    int off = i == 3 ? (int) Math.round(Math.sin(k * 0.9)) : 0;
+                    g.fill(x + 4 + k + off, y + 16 - k - off, x + 4 + k + wd + off, y + 16 - k + wd - off, k % 3 == 0 ? 0xFF3C8CFF : 0xFF14161E);
+                }
+                g.fill(x + 1, y + 16, x + 6, y + 19, 0xFF5A6080);
+            }
             case 0 -> { for (int k = 0; k < 14; k++) g.fill(x + 4 + k, y + 16 - k, x + 6 + k, y + 18 - k, k > 11 ? 0xFFBEE6FF : 0xFF14161E); g.fill(x + 2, y + 14, x + 8, y + 16, 0xFF5A6080); g.fill(x, y + 18, x + 4, y + 20, 0xFF3C8CFF); }
-            case 1, 2 -> {
-                int c = i == 1 ? 0xFF3C8CFF : 0xFF40C080;
+            case 4, 5 -> {
+                int c = i == 4 ? 0xFF3C8CFF : 0xFF40C080;
                 g.fill(x + 6, y, x + 12, y + 3, 0xFF8A7050);
                 g.fill(x + 4, y + 3, x + 14, y + 18, 0x80A0C0E0);
                 g.fill(x + 5, y + 8, x + 13, y + 17, c);
             }
-            case 3 -> { g.fill(x + 2, y + 12, x + 16, y + 16, 0xFF10141E); g.fill(x + 7, y + 2, x + 11, y + 12, 0xFF1A2440); g.fill(x + 7, y + 5, x + 11, y + 7, 0xFFE8C070); }
-            case 4 -> { for (int k = 0; k < 4; k++) g.fill(x + 2 + k * 4, y + 16 - k * 4, x + 5 + k * 4, y + 18, 0xFFC090FF); }
+            case 6 -> { g.fill(x + 2, y + 12, x + 16, y + 16, 0xFF10141E); g.fill(x + 7, y + 2, x + 11, y + 12, 0xFF1A2440); g.fill(x + 7, y + 5, x + 11, y + 7, 0xFFE8C070); }
+            case 7 -> { for (int k = 0; k < 4; k++) g.fill(x + 2 + k * 4, y + 16 - k * 4, x + 5 + k * 4, y + 18, 0xFFC090FF); }
             default -> { g.fill(x + 3, y + 3, x + 15, y + 15, 0xFF2A0A0E); g.fill(x + 6, y + 6, x + 12, y + 12, (int) (160 + 90 * Math.sin(t * 0.2)) << 24 | 0xE05050); }
         }
     }

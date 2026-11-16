@@ -229,6 +229,8 @@ public final class ShadowFx {
     /** Veil: the next blow lands 50% harder (and ends the veil). Ranks of Shade: your shadows take 70% of your harm. */
     @SubscribeEvent
     public static void onHurt(LivingHurtEvent e) {
+        if (e.getSource().getEntity() instanceof ShadowSoldier sh && sh.ownerUUID() != null && !MARKED.isEmpty() && marked(e.getEntity(), sh.ownerUUID()))
+            e.setAmount(e.getAmount() * 1.25f);   // Shadow Mark
         if (e.getEntity() instanceof ServerPlayer me && me.serverLevel().getGameTime() < me.getPersistentData().getLong(RANKS)) {
             List<ShadowSoldier> out = ShadowArmy.out(me);
             out.removeIf(s -> s.distanceToSqr(me) > 16 * 16);
@@ -640,6 +642,109 @@ public final class ShadowFx {
             risePool(sl, home, 0.8f);
         });
         sinkPool(sl, home, 0.8f);
+        return true;
+    }
+
+    // ================================================================== the other knives' moves (item/ShadowKnifeItem)
+    /** Gloamthorn - Shadow Mark: the knife flies along your aim through up to three foes and back to your hand; those it
+     *  passes through are marked for 8 s - your shadows strike them 25% harder (onHurt). */
+    static final Map<UUID, Long> MARKED = new HashMap<>();
+    static final String MARK_BY = "isg_marked_by";
+
+    public static boolean shadowMark(ServerPlayer p) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 eye = p.getEyePosition(), end = eye.add(p.getLookAngle().scale(18));
+        List<LivingEntity> line = new ArrayList<>(Kit.along(sl, p, eye, end, 0.9));
+        line.removeIf(t -> t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player);
+        line.sort((a, b2) -> Double.compare(a.distanceToSqr(p), b2.distanceToSqr(p)));
+        dash(sl, eye.subtract(0, 0.6, 0), end.subtract(0, 0.6, 0));
+        AstaFx.later(6, () -> dash(sl, end.subtract(0, 0.6, 0), p.getEyePosition().subtract(0, 0.6, 0)));   // and back
+        play(sl, p.position(), "shadow_slash", 0.8f, 1.8f);
+        if (line.isEmpty()) return true;
+        float base = (float) p.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        long until = sl.getGameTime() + 160;
+        for (LivingEntity t : line.subList(0, Math.min(3, line.size()))) {
+            t.invulnerableTime = 0;
+            AstaFx.damage(p, t, base, "shadow_mark");
+            MARKED.put(t.getUUID(), until);
+            t.getPersistentData().putUUID(MARK_BY, p.getUUID());
+            FxPacket f = pk(5, t.position(), 160); f.r = t.getBbHeight(); f.v = new Vec3(t.getId(), 0, 0); send(sl, f);   // the mark burning over it
+            shadowHit(sl, t, 2);
+        }
+        return true;
+    }
+
+    static boolean marked(LivingEntity t, UUID by) {
+        Long until = MARKED.get(t.getUUID());
+        if (until == null) return false;
+        if (until < t.level().getGameTime()) { MARKED.remove(t.getUUID()); return false; }
+        return t.getPersistentData().hasUUID(MARK_BY) && by.equals(t.getPersistentData().getUUID(MARK_BY));
+    }
+
+    /** Hollowtooth - Rend: a lunge of up to 6 blocks; the first foe met is torn open, then cut three more times over
+     *  3 s. If it dies of it, every shadow at your side is mended by a tenth. */
+    public static boolean rend(ServerPlayer p) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 d = p.getLookAngle().multiply(1, 0, 1);
+        d = d.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : d.normalize();
+        Vec3 from = p.position();
+        List<LivingEntity> line = new ArrayList<>(Kit.along(sl, p, from.add(0, 1, 0), from.add(d.scale(6.5)).add(0, 1, 0), 1.0));
+        line.removeIf(t -> t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player);
+        line.sort((a, b2) -> Double.compare(a.distanceToSqr(p), b2.distanceToSqr(p)));
+        LivingEntity t = line.isEmpty() ? null : line.get(0);
+        Vec3 to = t == null ? from.add(d.scale(6)) : t.position().subtract(d.scale(t.getBbWidth() * 0.5 + 0.7));
+        dash(sl, from.add(0, 0.5, 0), to.add(0, 0.5, 0));
+        p.teleportTo(to.x, p.getY(), to.z);
+        p.fallDistance = 0;
+        play(sl, to, "shadow_slash", 1.0f, 0.9f);
+        if (t == null) return true;
+        float base = (float) p.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        t.invulnerableTime = 0;
+        AstaFx.damage(p, t, base * 1.2f, "rend");
+        shadowHit(sl, t, 2);
+        for (int k = 1; k <= 3; k++) AstaFx.later(k * 20, () -> {
+            if (!t.isAlive() || !alive(p)) return;
+            t.invulnerableTime = 0;
+            AstaFx.damage(p, t, base * 0.5f, "rend");
+            shadowHit(sl, t, 1);
+            play(sl, t.position(), "shadow_whisper", 0.6f, 1.7f);
+            if (!t.isAlive()) mendArmy(p);
+        });
+        AstaFx.later(1, () -> { if (!t.isAlive()) mendArmy(p); });
+        return true;
+    }
+
+    private static void mendArmy(ServerPlayer p) {
+        for (ShadowSoldier s : ShadowArmy.out(p)) { s.heal(s.getMaxHealth() * 0.1f); rankUpFx(p.serverLevel(), s); }
+    }
+
+    /** Duskglass Kris - Phantom Edges: three ghost knives circle you for 10 s; each strikes a foe that comes within
+     *  3 blocks (then needs a breath before it strikes again). Drawn on the client (ShadowClient kind 16). */
+    public static boolean phantomEdges(ServerPlayer p) {
+        ServerLevel sl = p.serverLevel();
+        FxPacket f = pk(16, p.position(), 200); f.v = new Vec3(p.getId(), 0, 0); FxSend.sendNear(sl, p.position(), f);
+        play(sl, p.position(), "shadow_rise", 0.8f, 1.8f);
+        float base = (float) p.getAttributeValue(Attributes.ATTACK_DAMAGE) * 0.6f;
+        final int[] ready = new int[3];
+        for (int tick = 5; tick <= 200; tick += 5) {
+            final int now = tick;
+            AstaFx.later(tick, () -> {
+                if (!alive(p)) return;
+                List<LivingEntity> near = new ArrayList<>(Kit.near(sl, p, p.position(), 3.0));
+                near.removeIf(t -> t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player);
+                for (int k = 0; k < 3 && !near.isEmpty(); k++) {
+                    if (ready[k] > now) continue;
+                    LivingEntity t = near.get(k % near.size());
+                    ready[k] = now + 15;
+                    double an = now * 0.25 + k * TAU / 3;
+                    Vec3 at = p.position().add(Math.cos(an) * 1.3, 1.1, Math.sin(an) * 1.3);
+                    dash(sl, at, t.position().add(0, t.getBbHeight() * 0.5, 0));
+                    t.invulnerableTime = 0;
+                    AstaFx.damage(p, t, base, "phantom_edges");
+                    shadowHit(sl, t, 1);
+                }
+            });
+        }
         return true;
     }
 

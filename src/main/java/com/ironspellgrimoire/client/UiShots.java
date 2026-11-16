@@ -468,7 +468,10 @@ public final class UiShots {
         steps.add(new Step("shd_sovereigns_grip", () -> { onServer(p -> UiShotsServer.element(p, "s:sovereigns_grip")); }, 20, true));   // a foe held aloft
         steps.add(new Step("shd_thousand_cuts", () -> { onServer(p -> UiShotsServer.element(p, "s:thousand_cuts")); }, 7, true));
         steps.add(new Step("shd_nightfang", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; }, 24, true));   // the dagger in hand
-        steps.add(new Step("shd_status", () -> { onServer(p -> UiShotsServer.element(p, "s:status")); }, 14, false));   // the Status window
+        steps.add(new Step("shd_knives", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "s:knives")); }, 20, true));   // the knives; ghost knives circling
+        steps.add(new Step("shd_shadow_mark", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:shadow_mark")); }, 8, true));
+        steps.add(new Step("shd_rend", () -> { onServer(p -> UiShotsServer.element(p, "s:rend")); }, 8, true));
+        steps.add(new Step("shd_status", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "s:status")); }, 14, false));   // the Status window
         steps.add(new Step("shd_market", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "s:market")); }, 14, false));   // the Market
         steps.add(new Step("shd_market_done", () -> { mc.setScreen(null); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); }, 4, true));
         steps.add(new Step("shd_umbral_step", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:umbral_step")); }, 6, true));
@@ -552,7 +555,8 @@ public final class UiShots {
     private static final String[][] ASSETS = {
             {"shd_", "geo/shadow_knight.geo.json", "textures/geo/shadow_knight.png", "animations/shadow_knight.animation.json", "textures/geo/shadow_knight_living.png",
                     "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json", "textures/geo/shadow_ravener_living.png",
-                    "geo/mantle_helm.geo.json", "geo/mantle_chest.geo.json", "geo/mantle_arm.geo.json", "geo/mantle_leg.geo.json", "textures/item/nightfang.png", "models/item/nightfang_3d.json"},
+                    "geo/mantle_helm.geo.json", "geo/mantle_chest.geo.json", "geo/mantle_arm.geo.json", "geo/mantle_leg.geo.json", "textures/item/nightfang.png", "models/item/nightfang_3d.json",
+                    "models/item/gloamthorn.json", "models/item/hollowtooth.json", "models/item/duskglass_kris.json"},
             {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"}};
 
     private static String assetsKey(String step) {

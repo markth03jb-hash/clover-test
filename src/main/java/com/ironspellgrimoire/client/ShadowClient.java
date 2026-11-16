@@ -155,6 +155,19 @@ public final class ShadowClient {
                         GravityFxClient.gseg(m, cam, c.add(Math.cos(an) * 0.45, 0, Math.sin(an) * 0.45), c.add(0, -0.4, 0), 0.05, a, a * 0.3F, PALE);
                     }
                 }
+                case 16 -> {   // Phantom Edges: three ghost knives circling their wielder, points out
+                    Vec3 c = posOf(mc, p, pt).add(0, 1.1, 0);
+                    float a = fade(p, age, 4, 10);
+                    for (int k = 0; k < 3; k++) {
+                        double an = (age + pt) * 0.25 + k * TAU / 3;
+                        Vec3 dir = new Vec3(Math.cos(an), 0, Math.sin(an));
+                        Vec3 tan = new Vec3(-Math.sin(an), 0.15 * Math.sin(age * 0.2 + k), Math.cos(an));
+                        Vec3 hilt = c.add(dir.scale(1.3)).subtract(tan.scale(0.25)), tip = c.add(dir.scale(1.3)).add(tan.scale(0.45));
+                        GravityFxClient.gseg(m, cam, hilt, tip, 0.12, a * 0.9F, a * 0.2F, DEEP);
+                        GravityFxClient.gseg(m, cam, hilt, tip, 0.05, a, a * 0.6F, PALE);
+                        GravityFxClient.gglow(m, cam, tip, 0.12, a * 0.8F, BLUE);
+                    }
+                }
                 case 6 -> {   // the veil: smoke clinging round its caster
                     Vec3 c = posOf(mc, p, pt);
                     float a = fade(p, age, 4, 10) * 0.6F;
