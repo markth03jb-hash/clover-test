@@ -38,6 +38,7 @@ public class OathboundKnight extends ShadowSoldier implements GeoEntity {
     private static final RawAnimation RISE = RawAnimation.begin().thenPlay("animation.shadow_knight.rise");
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.shadow_knight.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.shadow_knight.walk");
+    private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.shadow_knight.run");
     private static final RawAnimation SLASH = RawAnimation.begin().thenPlay("animation.shadow_knight.slash");
 
     private static final java.util.UUID GUARD_ARMOR = java.util.UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000021");
@@ -68,6 +69,7 @@ public class OathboundKnight extends ShadowSoldier implements GeoEntity {
     private void cleave(ServerLevel sl) {
         cleaveReady = 160;
         swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        triggerAnim("attack", "attack");
         Vec3 f = Vec3.directionFromRotation(0, getYRot());
         float dmg = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * 1.5f * ShadowFx.domainBoost(owner());
         var src = owner() instanceof net.minecraft.server.level.ServerPlayer sp ? damageSources().indirectMagic(this, sp) : damageSources().mobAttack(this);
@@ -104,21 +106,14 @@ public class OathboundKnight extends ShadowSoldier implements GeoEntity {
 
     private PlayState move(AnimationState<OathboundKnight> s) {
         if (tickCount - risingAt() < 36) return s.setAndContinue(RISE);
-        return s.setAndContinue(s.isMoving() ? WALK : IDLE);
+        return s.setAndContinue(s.isMoving() ? (getDeltaMovement().horizontalDistanceSqr() > 0.02 ? RUN : WALK) : IDLE);
     }
 
-    private PlayState attack(AnimationState<OathboundKnight> s) {
-        if (swinging && s.getController().getAnimationState() == AnimationController.State.STOPPED) {
-            s.getController().forceAnimationReset();
-            s.getController().setAnimation(SLASH);
-        }
-        return PlayState.CONTINUE;
-    }
-
+    /** The attack controller only plays what the server triggers (triggerAnim "attack"), once, then lets go. */
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar c) {
         c.add(new AnimationController<>(this, "move", 4, this::move));
-        c.add(new AnimationController<>(this, "attack", 0, this::attack));
+        c.add(new AnimationController<>(this, "attack", 0, s -> PlayState.STOP).triggerableAnim("attack", SLASH));
     }
 
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }

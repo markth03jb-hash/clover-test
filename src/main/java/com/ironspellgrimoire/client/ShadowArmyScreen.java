@@ -128,8 +128,7 @@ public class ShadowArmyScreen extends Screen {
         g.pose().pushPose();
         g.pose().translate(x0 + w / 2f - tw / 2f, y0 + 10, 0);
         g.pose().scale(2, 2, 1);
-        g.drawString(font, title, 1, 1, 0xFF1A3C90, false);
-        g.drawString(font, title, 0, 0, 0xFF9AD0FF, false);
+        g.drawString(font, title, 0, 0, 0xFF9AD0FF, true);
         g.pose().popPose();
         // tabs
         tab(g, x0 + 14, y0 + 34, "ARMY", 0, mx, my);

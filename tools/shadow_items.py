@@ -62,9 +62,9 @@ GRIP = lambda: {d: face(6, 0, 10, 16) for d in ("north", "south", "east", "west"
 STEEL = lambda: {d: face(11, 0, 13, 4) for d in ("north", "south", "east", "west", "up", "down")}
 GEMF = lambda: {d: face(11, 4, 13, 8) for d in ("north", "south", "east", "west", "up", "down")}
 els = [
-    el([7.45, 3.4, 7.45], [8.55, 4.4, 8.55], GEMF(), name="pommel_gem"),
-    el([7.6, 4.2, 7.6], [8.4, 4.6, 8.4], STEEL(), name="pommel"),
-    el([7.5, 4.6, 7.5], [8.5, 8.6, 8.5], GRIP(), name="grip"),                     # the grip's middle sits at the model's centre
+    el([7.5, 5.5, 7.5], [8.5, 6.3, 8.5], GEMF(), name="pommel_gem"),
+    el([7.6, 6.2, 7.6], [8.4, 6.6, 8.4], STEEL(), name="pommel"),
+    el([7.5, 6.6, 7.5], [8.5, 8.6, 8.5], GRIP(), name="grip"),                     # a short grip - a knife's, a hand's width
     el([7.4, 8.6, 6.6], [8.6, 9.1, 9.6], STEEL(), name="guard"),                   # a short guard...
     el([7.55, 7.7, 6.6], [8.45, 8.6, 7.1], STEEL(), name="guard_hook"),            # ...hooking down at the front
     el([7.55, 9.1, 9.1], [8.45, 9.6, 9.6], STEEL(), name="guard_back"),
@@ -91,19 +91,19 @@ model = {
     "credit": "Iron Spell Grimoire - the Nightfang (tools/shadow_items.py)",
     "textures": {"0": "iron_spell_grimoire:item/nightfang", "particle": "iron_spell_grimoire:item/nightfang"},
     "elements": els,
-    "display": {   # held low and forward, point up, edge out - a quick knife grip
-        "thirdperson_righthand": {"rotation": [25, 0, 0], "translation": [0, 1.5, 0.8], "scale": [0.85, 0.85, 0.85]},
-        "thirdperson_lefthand": {"rotation": [25, 0, 0], "translation": [0, 1.5, 0.8], "scale": [0.85, 0.85, 0.85]},
+    "display": {   # held low and forward, point up, edge out - a quick knife grip; in the hotbar, the model itself, on the diagonal
+        "gui": {"rotation": [90, 45, -90], "translation": [-2.4, -2.4, 0], "scale": [1.0, 1.0, 1.0]},
+        "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.6, 0.6, 0.6]},
+        "fixed": {"rotation": [90, 45, -90], "translation": [-2.4, -2.4, 0], "scale": [1.0, 1.0, 1.0]},
+        "thirdperson_righthand": {"rotation": [25, 0, 0], "translation": [0, 0.5, 0.8], "scale": [0.85, 0.85, 0.85]},
+        "thirdperson_lefthand": {"rotation": [25, 0, 0], "translation": [0, 0.5, 0.8], "scale": [0.85, 0.85, 0.85]},
         "firstperson_righthand": {"rotation": [0, -90, 20], "translation": [1.13, 2.4, 1.13], "scale": [0.68, 0.68, 0.68]},
         "firstperson_lefthand": {"rotation": [0, 90, -20], "translation": [1.13, 2.4, 1.13], "scale": [0.68, 0.68, 0.68]},
         "head": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
     },
 }
 json.dump(model, open(os.path.join(MD, "nightfang_3d.json"), "w"), indent=1)
-json.dump({"parent": "minecraft:item/handheld", "loader": "forge:separate_transforms",
-           "base": {"parent": "iron_spell_grimoire:item/nightfang_3d"},
-           "perspectives": {k: {"parent": "minecraft:item/generated", "textures": {"layer0": "iron_spell_grimoire:item/nightfang_icon"}} for k in ("gui", "fixed", "ground")}},
-          open(os.path.join(MD, "nightfang.json"), "w"), indent=1)
+json.dump({"parent": "iron_spell_grimoire:item/nightfang_3d"}, open(os.path.join(MD, "nightfang.json"), "w"), indent=1)   # the 3D model everywhere, the hotbar too
 
 ICON = [   # k black steel, e blue edge, s sheen, c cord, b blue band, g guard, j gem
     "..............ee",

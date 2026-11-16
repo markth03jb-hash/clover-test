@@ -238,6 +238,7 @@ public class ShadowSoldier extends PathfinderMob {
             ShadowFx.shadowHit((ServerLevel) level(), le, r);
         }
         swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        if (this instanceof software.bernie.geckolib.animatable.GeoEntity g) g.triggerAnim("attack", "attack");   // played once from the server - it can't stick
         return hit;
     }
 
@@ -255,11 +256,33 @@ public class ShadowSoldier extends PathfinderMob {
     @Override public boolean canBeLeashed(Player p) { return false; }
 
     /** Follow its master, keeping close; if left far behind it steps out of its master's shadow beside them. */
+    /** Keep its own place in a loose ring round its master - spread out round and behind them, a few blocks off,
+     *  each shadow on its own spot (by its army id) - and only look at its master once it has stopped there. */
     static class FollowMaster extends Goal {
         final ShadowSoldier s;
         FollowMaster(ShadowSoldier s) { this.s = s; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
-        @Override public boolean canUse() { Player o = s.owner(); return o != null && s.getTarget() == null && (s.station != null ? s.distanceToSqr(s.station) > 4 : s.distanceToSqr(o) > 16); }
-        @Override public boolean canContinueToUse() { Player o = s.owner(); return o != null && s.getTarget() == null && (s.station != null ? s.distanceToSqr(s.station) > 2 : s.distanceToSqr(o) > 6); }
+
+        /** Its spot: an arc behind and beside its master, three rings deep, turning with the way they face. */
+        Vec3 slot(Player o) {
+            int id = Math.max(0, s.armyId);
+            double ring = 3.5 + (id % 3) * 1.8;
+            double ang = Math.toRadians(o.getYRot()) + Math.PI * (0.5 + 1.0 * ((id * 0.618034) % 1.0));   // golden-ratio spread over the back half-circle and the flanks
+            return o.position().add(-Math.sin(ang) * ring, 0, Math.cos(ang) * ring);
+        }
+
+        @Override public boolean canUse() {
+            Player o = s.owner();
+            if (o == null || s.getTarget() != null) return false;
+            if (s.station != null) return s.distanceToSqr(s.station) > 4;
+            return s.distanceToSqr(slot(o)) > 9 || s.distanceToSqr(o) > 12 * 12;
+        }
+        @Override public boolean canContinueToUse() {
+            Player o = s.owner();
+            if (o == null || s.getTarget() != null) return false;
+            if (s.station != null) return s.distanceToSqr(s.station) > 2;
+            return s.distanceToSqr(slot(o)) > 1.5 * 1.5;
+        }
+        @Override public void stop() { s.getNavigation().stop(); }
         @Override public void tick() {
             Player o = s.owner();
             if (o == null) return;
@@ -267,14 +290,21 @@ public class ShadowSoldier extends PathfinderMob {
                 if (s.tickCount % 10 == 0) s.getNavigation().moveTo(s.station.x, s.station.y, s.station.z, 1.0);
                 return;
             }
-            s.getLookControl().setLookAt(o, 10, s.getMaxHeadXRot());
+            Vec3 at = slot(o);
             if (s.distanceToSqr(o) > 24 * 24) {
-                Vec3 at = o.position().add(o.getLookAngle().scale(-2));
                 s.teleportTo(at.x, o.getY(), at.z);
                 s.getNavigation().stop();
-            } else if (s.tickCount % 10 == 0) s.getNavigation().moveTo(o, 1.25);
+                return;
+            }
+            double far = s.distanceToSqr(o);
+            if (s.tickCount % 8 == 0 || s.getNavigation().isDone()) s.getNavigation().moveTo(at.x, at.y, at.z, far > 100 ? 1.35 : 1.1);
+            if (s.getNavigation().isDone()) s.getLookControl().setLookAt(o, 6, s.getMaxHeadXRot());   // only once it stands still
         }
     }
+
+    /** Idle at its spot: a slow glance round now and then, never a spin. */
+    @Override public int getMaxHeadYRot() { return 45; }
+    @Override public int getHeadRotSpeed() { return 6; }
 
     /** Fight whatever its master fights, or whatever attacks its master or it. */
     static class MasterFights extends Goal {
@@ -287,8 +317,8 @@ public class ShadowSoldier extends PathfinderMob {
             for (LivingEntity e : new LivingEntity[]{b, a, c})
                 if (e != null && e.isAlive() && !s.isFriend(e) && e.distanceToSqr(s) < 28 * 28 && !(e instanceof Player pl && pl.isCreative())) return e;
             if (s.station != null && s.tickCount % 20 == 0) {   // on watch: it turns on anything hostile that comes near its post
-                for (net.minecraft.world.entity.monster.Enemy en : s.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, s.getBoundingBox().inflate(10), m -> m instanceof net.minecraft.world.entity.monster.Enemy && m.isAlive() && !s.isFriend(m)).stream().map(m -> (net.minecraft.world.entity.monster.Enemy) m).toList())
-                    return (LivingEntity) en;
+                for (net.minecraft.world.entity.Mob m : s.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, s.getBoundingBox().inflate(10),
+                        m -> m instanceof net.minecraft.world.entity.monster.Enemy && m.isAlive() && !s.isFriend(m))) return m;
             }
             return null;
         }

@@ -40,6 +40,7 @@ public class ShadowRavener extends ShadowSoldier implements GeoEntity {
     private static final RawAnimation RISE = RawAnimation.begin().thenPlay("animation.shadow_ravener.rise");
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.shadow_ravener.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.shadow_ravener.walk");
+    private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.shadow_ravener.run");
     private static final RawAnimation ATTACK = RawAnimation.begin().thenPlay("animation.shadow_ravener.attack");
     private static final RawAnimation POUNCE = RawAnimation.begin().thenPlay("animation.shadow_ravener.pounce");
     private static final RawAnimation FRENZY = RawAnimation.begin().thenPlay("animation.shadow_ravener.frenzy");
@@ -72,7 +73,7 @@ public class ShadowRavener extends ShadowSoldier implements GeoEntity {
             TimedModifiers.apply(this, Attributes.MOVEMENT_SPEED, FRENZY_SPEED, "Frenzy", 0.35, AttributeModifier.Operation.MULTIPLY_BASE, 160);
             TimedModifiers.apply(this, Attributes.ATTACK_DAMAGE, FRENZY_POWER, "Frenzy", 0.3, AttributeModifier.Operation.MULTIPLY_BASE, 160);
             ShadowFx.ravenerFrenzy(sl, this, 160);
-            level().broadcastEntityEvent(this, (byte) 61);
+            triggerAnim("attack", "frenzy");
         }
     }
 
@@ -90,7 +91,7 @@ public class ShadowRavener extends ShadowSoldier implements GeoEntity {
         leapAt = t;
         pounceReady = 120;
         getNavigation().stop();
-        level().broadcastEntityEvent(this, (byte) 60);
+        triggerAnim("attack", "pounce");
         ShadowFx.ravenerLeap(sl, this);
     }
 
@@ -140,32 +141,17 @@ public class ShadowRavener extends ShadowSoldier implements GeoEntity {
     @Override public boolean causeFallDamage(float dist, float mult, net.minecraft.world.damagesource.DamageSource src) { return false; }
 
     // ------------------------------------------------------------------ animation
-    private int leapAnimAt = -100, frenzyAnimAt = -100;
-
-    @Override
-    public void handleEntityEvent(byte id) {
-        if (id == 60) leapAnimAt = tickCount;
-        else if (id == 61) frenzyAnimAt = tickCount;
-        else super.handleEntityEvent(id);
-    }
-
     private PlayState move(AnimationState<ShadowRavener> s) {
         if (tickCount - risingAt() < 36) return s.setAndContinue(RISE);
-        return s.setAndContinue(s.isMoving() ? WALK : IDLE);
+        return s.setAndContinue(s.isMoving() ? (getDeltaMovement().horizontalDistanceSqr() > 0.02 ? RUN : WALK) : IDLE);
     }
 
-    private PlayState attack(AnimationState<ShadowRavener> s) {
-        var c = s.getController();
-        if (tickCount - leapAnimAt < 2) { c.forceAnimationReset(); c.setAnimation(POUNCE); }
-        else if (tickCount - frenzyAnimAt < 2) { c.forceAnimationReset(); c.setAnimation(FRENZY); }
-        else if (swinging && c.getAnimationState() == AnimationController.State.STOPPED) { c.forceAnimationReset(); c.setAnimation(ATTACK); }
-        return PlayState.CONTINUE;
-    }
-
+    /** The attack controller only plays what the server triggers - a rake, a pounce, a frenzy - once each, then lets go. */
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar c) {
         c.add(new AnimationController<>(this, "move", 4, this::move));
-        c.add(new AnimationController<>(this, "attack", 0, this::attack));
+        c.add(new AnimationController<>(this, "attack", 0, s -> PlayState.STOP)
+                .triggerableAnim("attack", ATTACK).triggerableAnim("pounce", POUNCE).triggerableAnim("frenzy", FRENZY));
     }
 
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }

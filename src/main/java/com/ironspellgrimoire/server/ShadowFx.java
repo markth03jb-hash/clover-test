@@ -172,11 +172,32 @@ public final class ShadowFx {
     private static int nextRemnant = 1;
 
     /** Leave a remnant of something its maker slew (only they will see it). */
+    /** A kill may leave a remnant: half the time for ordinary things (the field doesn't fill with them); always for a
+     *  boss - and a boss's only once its corpse has gone (after its death throes), where it fell. */
     public static void leaveRemnant(ServerPlayer p, LivingEntity dead) {
         String type = String.valueOf(ForgeRegistries.ENTITY_TYPES.getKey(dead.getType()));
         if (dead instanceof Player || dead instanceof ShadowSoldier || type.equals("null")) return;
+        boolean boss = dead.getMaxHealth() >= 150 || dead.getType().is(net.minecraftforge.common.Tags.EntityTypes.BOSSES);
+        if (!boss) {
+            if (p.getRandom().nextFloat() >= 0.5f) return;
+            remnantAt(p, dead, dead.position());
+            return;
+        }
+        final int[] waited = {0};
+        final Runnable[] watch = new Runnable[1];
+        watch[0] = () -> {   // wait for the body to go (death animations can run for seconds), then the remnant
+            waited[0] += 5;
+            if (!dead.isRemoved() && waited[0] < 600) { AstaFx.later(5, watch[0]); return; }
+            if (p.isRemoved() || p.level() != dead.level()) return;
+            remnantAt(p, dead, dead.position());
+        };
+        AstaFx.later(5, watch[0]);
+    }
+
+    private static void remnantAt(ServerPlayer p, LivingEntity dead, Vec3 at) {
+        String type = String.valueOf(ForgeRegistries.ENTITY_TYPES.getKey(dead.getType()));
         int id = nextRemnant++;
-        Remnant r = new Remnant(id, p.getUUID(), type, dead.position(), dead.getMaxHealth(), p.serverLevel().getGameTime() + 1200, new int[]{3});
+        Remnant r = new Remnant(id, p.getUUID(), type, at, dead.getMaxHealth(), p.serverLevel().getGameTime() + 1200, new int[]{3});
         REMNANTS.put(id, r);
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Remnant(id, type, r.pos(), dead.getYRot(), 1f, 1200, 3));
     }
@@ -458,6 +479,8 @@ public final class ShadowFx {
         }
         grip(sl, t, 60);
         play(sl, t.position(), "shadow_whisper", 1.0f, 0.8f);
+        t.invulnerableTime = 0;
+        AstaFx.damage(p, t, power * 0.4f, "sovereigns_grip");   // the grip itself crushes
         final int[] k = {0};
         final Runnable[] hold = new Runnable[1];
         hold[0] = () -> {

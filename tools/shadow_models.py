@@ -413,68 +413,114 @@ def ravener():
 
 
 def mantle_pieces():
-    """Mantle of Shades (an original design): three shadows sink into their master and wrap them - a hood of black
-    shadow-cloth with a jagged cowl and a half-mask over the mouth (two blue eye-lights under the brim), cracked black
-    plates over the chest and back with blue light in the cracks, a tattered shroud hanging behind, plated shoulders
-    with smoke curling off them, bracers and greaves ringed with blue. Worn on the player's own model parts (GeoForms),
-    in each part's space: y is flipped (model +y = up for the head, the body/arms/legs hang into -y), front is -z."""
+    """Mantle of Shades (an original design): three shadows sink into their master and armour them. The helm: a deep
+    hood of shadow-cloth under a jagged crown of black bone shards, a skull-like faceplate with a fanged grille over the
+    mouth and two narrow burning slits; the chest: overlapping black plates shaped like a ribcage with a blue core
+    burning through the breastbone, a gorget, a waist of wound shadow with hanging tassets, and a long cape torn into
+    ragged strips; the arms: layered pauldrons that sweep up into blades, plated forearms with glowing seams and clawed
+    gauntlets; the legs: segmented greaves with spurs at the knee and a clawed sabaton. Smoke rises off the shoulders
+    and crown. Worn on the player's own model parts (GeoForms), in each part's space: y is flipped (model +y = up for
+    the head, the body/arms/legs hang into -y), front is -z."""
     def sym(cubes): return cubes + mirror_x(cubes)
-    helm = [
-        cube([-4.7, 7.9, -4.7], [9.4, 1.1, 9.4], "shroud"),                       # the hood: crown, back, sides
-        cube([-4.7, -0.6, 3.7], [9.4, 8.6, 1.0], "shroud"),
-        cube([-1.6, 8.6, -3.0], [3.2, 1.0, 7.0], "shroud"),                       # a ridge down the crown
-        cube([-0.6, 8.9, 1.5], [1.2, 1.4, 4.4], "shroud", rot=[-25, 0, 0], pivot=[0, 9.4, 2]),   # its tip trailing back
-        cube([-3.0, 6.8, -5.5], [6.0, 1.3, 1.4], "shroud", rot=[18, 0, 0], pivot=[0, 7.5, -4.8]),   # the jagged brim over the eyes
-        cube([-4.3, -0.4, -4.85], [8.6, 3.5, 0.7], "plate2"),                   # the half-mask over the mouth
-        cube([-0.25, 0.0, -4.95], [0.5, 2.8, 0.15], "glow"),                    # a seam of light down it
+    helm = [   # the hood
+        cube([-4.8, 7.8, -4.8], [9.6, 1.2, 9.6], "shroud"),
+        cube([-4.8, -0.8, 3.8], [9.6, 8.8, 1.0], "shroud"),
+        cube([-3.5, 0.2, 4.6], [7.0, 7.4, 0.9], "shroud", rot=[8, 0, 0], pivot=[0, 7.6, 4.8]),   # its weight falling behind
+        # the faceplate: brow, cheekbones, a fanged grille
+        cube([-4.4, 5.6, -5.0], [8.8, 1.6, 0.9], "plate2"),
+        cube([-4.4, 2.9, -5.0], [8.8, 0.9, 0.8], "plate"),
+        cube([-0.5, 3.8, -5.15], [1.0, 1.8, 0.4], "plate3"),            # a nose ridge between the slits
+        cube([-4.3, -0.5, -5.0], [8.6, 3.4, 0.8], "plate2"),            # the jaw guard
+        cube([-3.6, 0.6, -5.12], [7.2, 1.6, 0.2], "glow"),              # light burning through the grille
     ]
+    for k in range(7):   # fangs of the grille
+        x = -3.3 + k * 1.1
+        helm.append(cube([x, 0.2 + (0.6 if k in (1, 5) else 0), -5.25], [0.45, 2.4 - (0.6 if k in (1, 5) else 0), 0.35], "teeth"))
     helm += sym([
-        cube([3.7, -0.6, -4.7], [1.0, 8.6, 9.4], "shroud"),
-        cube([3.8, 5.5, -5.6], [1.0, 2.6, 1.6], "shroud", rot=[0, 0, -12], pivot=[4.2, 8, -4.8]),   # the cowl's ragged front edges
-        cube([1.0, 4.05, -4.15], [2.2, 0.6, 0.2], "eyes", rot=[0, 0, -10], pivot=[1, 4.3, -4.1]),   # eye-lights under the brim
-        cube([3.6, -0.5, -4.6], [0.9, 2.5, 4.0], "plate2"),                     # the mask wraps the jaw
+        cube([3.8, -0.8, -4.8], [1.0, 8.8, 9.6], "shroud"),
+        cube([0.9, 4.25, -5.08], [3.0, 0.65, 0.2], "eyes", rot=[0, 0, -12], pivot=[0.9, 4.6, -5]),   # two narrow burning slits
+        cube([4.1, 1.2, -5.0], [0.9, 4.6, 3.6], "plate3"),              # the faceplate's side guards
+        cube([3.9, 5.0, -5.6], [1.2, 3.0, 1.6], "shroud", rot=[0, 0, -10], pivot=[4.3, 8, -5]),   # the cowl's ragged front edge
     ])
+    for k, (x, h, lean) in enumerate(((-3.2, 2.6, 18), (-1.6, 3.8, 8), (0.0, 4.8, 0), (1.6, 3.8, -8), (3.2, 2.6, -18))):   # a jagged crown of bone shards
+        helm.append(cube([x - 0.4, 8.6, -3.8], [0.8, h, 0.9], "bone", rot=[-12, 0, lean], pivot=[x, 8.8, -3.4]))
+        helm.append(cube([x - 0.15, 8.8, -3.95], [0.3, h * 0.8, 0.15], "glow", rot=[-12, 0, lean], pivot=[x, 8.8, -3.4]))
     smoke_h = []
-    for k in range(5):
-        ang = k * 1.26 + 0.5
-        x, z = math.cos(ang) * 3.6, 2.5 + math.sin(ang) * 1.2
-        smoke_h.append(cube([x - 1.0, 8.0, z], [2.0, 3.5 + 1.5 * (k % 2), 0.12], "smoke", rot=[-20, math.degrees(-ang), 0], pivot=[x, 8.0, z]))
+    for k in range(6):
+        ang = k * 1.05 + 0.4
+        x, z = math.cos(ang) * 3.4, 1.5 + math.sin(ang) * 2.0
+        smoke_h.append(cube([x - 1.1, 8.6, z], [2.2, 4 + 2 * (k % 2), 0.12], "smoke", rot=[-18, math.degrees(-ang), 0], pivot=[x, 8.6, z]))
+
     chest = [
-        cube([-4.5, -7.4, -2.75], [9.0, 7.6, 0.7], "plate2"),                   # the breastplate, cracked with light
-        cube([-4.5, -7.4, 2.05], [9.0, 7.6, 0.7], "plate2"),                    # the backplate
-        cube([-3.8, -0.4, -3.0], [7.6, 2.2, 0.8], "plate3"),                    # a high collar
-        cube([-4.4, -8.8, -2.5], [8.8, 1.4, 5.0], "mail"),                      # the belt of wound shadow
-        cube([-0.25, -6.8, -2.82], [0.5, 6.2, 0.1], "glow"),
-        cube([-3.5, -4.2, -2.82], [3.0, 0.4, 0.1], "glow", rot=[0, 0, 22], pivot=[-2, -4, -2.8]),
-        cube([0.8, -2.6, -2.82], [2.6, 0.4, 0.1], "glow", rot=[0, 0, -28], pivot=[2, -2.4, -2.8]),
-        cube([-4.0, -12.4, -2.6], [8.0, 3.6, 0.5], "shroud"),                     # a short fall of cloth before the hips
+        cube([-4.6, -7.6, -2.8], [9.2, 7.8, 0.7], "plate2"),            # the breastplate
+        cube([-4.6, -7.6, 2.1], [9.2, 7.8, 0.7], "plate2"),             # the backplate
+        cube([-0.7, -7.0, -3.3], [1.4, 6.6, 0.6], "plate3"),            # the breastbone
+        cube([-0.45, -4.2, -3.45], [0.9, 2.2, 0.2], "glow"),            # its core, burning through
+        cube([-4.2, -0.6, -3.2], [8.4, 2.4, 0.9], "plate3"),            # the gorget
+        cube([-4.2, -0.6, 2.4], [8.4, 2.0, 0.9], "plate3"),
+        cube([-4.5, -9.2, -2.6], [9.0, 1.6, 5.2], "mail"),              # a waist of wound shadow
+        cube([-0.3, -9.0, -2.72], [0.6, 1.2, 0.1], "glow"),
     ]
-    chest += sym([cube([3.8, -0.4, -2.8], [1.0, 2.2, 5.6], "plate3")])
+    for r in range(4):   # ribs - black plates curving round from the breastbone
+        y = -1.8 - r * 1.45
+        chest += sym([cube([0.8, y, -3.2], [3.6 - r * 0.25, 0.8, 0.5], "plate", rot=[0, 0, -8 - r * 3], pivot=[0.8, y + 0.4, -3]),
+                       cube([4.0 - r * 0.25, y - 0.2, -3.0], [0.7, 0.9, 2.6], "plate3", rot=[0, 0, -8 - r * 3], pivot=[0.8, y + 0.4, -3])])
+    for k, x in enumerate((-4.4, -2.2, 0.0, 2.2)):   # a skirt of torn shadow-cloth all round, under the tassets
+        L = 4.2 + (0.8 if k % 2 else 0)
+        chest.append(cube([x, -9.0 - L, -2.75], [2.2, L, 0.2], "shroud"))
+        chest.append(cube([x, -9.0 - L + 0.6, 2.55], [2.2, L - 0.6, 0.2], "shroud"))
+    chest += sym([
+        cube([4.35, -13.4, -2.5], [0.2, 4.4, 5.0], "shroud"),           # its sides
+        cube([4.4, -12.2, -2.2], [0.5, 3.2, 4.4], "plate2", rot=[0, 0, -8], pivot=[4.4, -9.2, 0]),   # side tassets
+        cube([3.9, -0.6, -2.9], [1.0, 2.4, 5.8], "plate3"),
+        cube([0.6, -12.6, -2.9], [3.4, 3.6, 0.5], "plate2", rot=[-6, 0, 0], pivot=[2, -9.2, -2.7]),   # tassets
+        cube([0.8, -12.4, 2.6], [3.0, 3.4, 0.5], "plate2", rot=[6, 0, 0], pivot=[2, -9.2, 2.7]),
+        cube([1.0, -12.0, -3.0], [2.6, 0.3, 0.1], "glow", rot=[-6, 0, 0], pivot=[2, -9.2, -2.7]),
+    ])
     shroud = []
-    for i, x in enumerate((-4.2, -2.4, -0.6, 1.2, 3.0)):   # the tattered shroud behind, in strips of uneven length
-        L = 14 + (3 if i % 2 else 0) + (2 if i == 2 else 0)
-        shroud.append(cube([x, -L, 2.8], [1.8, L, 0.3], "shroud"))
+    for i, x in enumerate((-4.4, -2.7, -1.0, 0.7, 2.4)):   # the cape, torn into ragged strips of uneven length
+        L = 16 + (4 if i % 2 else 0) + (3 if i == 2 else 0)
+        shroud.append(cube([x, -L, 3.0], [1.9, L, 0.3], "shroud"))
+        shroud.append(cube([x + 0.4, -L - 2.4, 3.05], [1.0, 2.6, 0.25], "shroud", rot=[0, 0, 12 if i % 2 else -12], pivot=[x + 0.9, -L, 3.1]))   # a ragged tip
+    shroud.append(cube([-4.6, -1.4, 2.9], [9.2, 1.6, 0.6], "plate3"))   # its clasp bar
     arm = [
-        cube([-2.9, -1.4, -2.9], [5.8, 3.6, 5.8], "plate2"),                    # the shoulder plate
-        cube([-3.1, -1.9, -3.1], [6.2, 0.7, 6.2], "plate3"),                    # its rim
-        cube([-2.6, -10.0, -2.6], [5.2, 4.6, 5.2], "plate2"),                   # the bracer
-        cube([-2.65, -7.6, -2.65], [5.3, 0.4, 5.3], "glow"),                    # ringed with blue
-        cube([-2.7, -10.2, -2.7], [5.4, 0.6, 5.4], "plate3"),
+        cube([-3.0, -1.6, -3.0], [6.0, 3.8, 6.0], "plate2"),            # the pauldron, three plates deep
+        cube([-3.3, -2.4, -3.3], [6.6, 1.1, 6.6], "plate3"),
+        cube([-3.5, -3.3, -3.4], [7.0, 1.0, 6.8], "plate2"),
+        cube([-3.55, -2.95, -3.45], [7.1, 0.3, 6.9], "glow"),
+        cube([-0.6, 1.6, -2.0], [1.2, 4.5, 1.2], "bone", rot=[0, 0, 30], pivot=[0, 2, -1.4]),   # sweeping up into blades
+        cube([-0.5, 1.4, 0.5], [1.0, 3.6, 1.0], "bone", rot=[25, 0, 30], pivot=[0, 1.8, 1]),
+        cube([-2.6, -9.6, -2.6], [5.2, 4.4, 5.2], "plate2"),            # the plated forearm
+        cube([-2.7, -7.4, -2.7], [5.4, 0.35, 5.4], "glow"),
+        cube([-2.8, -10.4, -2.8], [5.6, 1.0, 5.6], "plate3"),
+        cube([-2.5, -6.0, 2.2], [5.0, 0.9, 1.4], "bone", rot=[30, 0, 0], pivot=[0, -5.6, 2.4]),   # a spur at the elbow
+        cube([-2.45, -5.4, -2.45], [4.9, 3.0, 4.9], "plate"),           # the upper arm, plated
+        cube([-2.55, -4.0, -2.55], [5.1, 0.3, 5.1], "plate3"),
     ]
+    for f in range(4):   # clawed gauntlet
+        x = -2.0 + f * 1.3
+        arm.append(cube([x, -12.6, -2.4], [0.7, 2.4, 0.8], "plate3"))
+        arm.append(cube([x + 0.1, -13.8, -2.7], [0.5, 1.4, 0.6], "bone", rot=[-25, 0, 0], pivot=[x + 0.35, -12.6, -2.2]))
     smoke_a = []
-    for k in range(3):
-        ang = k * 2.1
-        smoke_a.append(cube([math.cos(ang) * 2.2 - 0.9, 2.0, math.sin(ang) * 2.2], [1.8, 3 + k, 0.12], "smoke", rot=[-15, math.degrees(-ang), 0], pivot=[math.cos(ang) * 2.2, 2.0, math.sin(ang) * 2.2]))
+    for k in range(4):
+        ang = k * 1.6
+        smoke_a.append(cube([math.cos(ang) * 2.4 - 1.0, 1.5, math.sin(ang) * 2.4], [2.0, 3.5 + k, 0.12], "smoke", rot=[-15, math.degrees(-ang), 0], pivot=[math.cos(ang) * 2.4, 1.5, math.sin(ang) * 2.4]))
     leg = [
-        cube([-2.5, -11.8, -2.7], [5.0, 5.8, 5.4], "plate2"),                   # the greave
-        cube([-2.1, -6.8, -2.95], [4.2, 2.2, 1.0], "plate3"),                   # the knee plate
-        cube([-2.55, -9.0, -2.75], [5.1, 0.4, 5.5], "glow"),
-        cube([-2.6, -3.8, -2.6], [5.2, 3.8, 5.2], "mail"),                      # wound shadow at the thigh
+        cube([-2.6, -3.8, -2.6], [5.2, 3.8, 5.2], "mail"),              # wound shadow at the thigh
+        cube([-2.7, -6.2, -2.8], [5.4, 2.4, 5.6], "plate2"),            # the greave, in segments
+        cube([-2.6, -8.8, -2.75], [5.2, 2.4, 5.5], "plate2"),
+        cube([-2.5, -11.6, -2.7], [5.0, 2.6, 5.4], "plate2"),
+        cube([-2.75, -8.9, -2.85], [5.5, 0.35, 5.7], "glow"),
+        cube([-1.8, -6.6, -3.4], [3.6, 2.4, 1.0], "plate3"),            # the knee cop...
+        cube([-0.5, -5.6, -4.6], [1.0, 1.0, 2.0], "bone", rot=[-20, 0, 0], pivot=[0, -5.4, -3.6]),   # ...with a spur
+        cube([-2.6, -12.2, -3.4], [5.2, 1.0, 1.4], "plate3"),           # the sabaton's toe...
+        cube([-1.6, -12.3, -4.4], [0.8, 0.7, 1.4], "bone"),             # ...clawed
+        cube([0.8, -12.3, -4.4], [0.8, 0.7, 1.4], "bone"),
     ]
     return {
-        "mantle_helm": geo("mantle_helm", [bone("root", None, [0, 0, 0], helm), bone("smoke", "root", [0, 8, 2.5], smoke_h)]),
-        "mantle_chest": geo("mantle_chest", [bone("root", None, [0, 0, 0], chest), bone("shroud", "root", [0, 0, 2.8], shroud)]),
-        "mantle_arm": geo("mantle_arm", [bone("root", None, [0, 0, 0], arm), bone("smoke", "root", [0, 2, 0], smoke_a)]),
+        "mantle_helm": geo("mantle_helm", [bone("root", None, [0, 0, 0], helm), bone("smoke", "root", [0, 8.6, 1.5], smoke_h)]),
+        "mantle_chest": geo("mantle_chest", [bone("root", None, [0, 0, 0], chest), bone("shroud", "root", [0, -1, 3.0], shroud)]),
+        "mantle_arm": geo("mantle_arm", [bone("root", None, [0, 0, 0], arm), bone("smoke", "root", [0, 1.5, 0], smoke_a)]),
         "mantle_leg": geo("mantle_leg", [bone("root", None, [0, 0, 0], leg)]),
     }
 
@@ -491,9 +537,9 @@ def mantle_anims(name):
 
 def mantle_preview_geo():
     """A plain mannequin wearing every Mantle piece, in world space (y up), for the preview only."""
-    mann = [cube([-4, 24, -4], [8, 8, 8], "skin"), cube([-4, 12, -2], [8, 12, 4], "skin"),
-            cube([-8, 12, -2], [4, 12, 4], "skin"), cube([4, 12, -2], [4, 12, 4], "skin"),
-            cube([-4, 0, -2], [4, 12, 4], "skin"), cube([0, 0, -2], [4, 12, 4], "skin")]
+    mann = [cube([-3.8, 24.2, -3.8], [7.6, 7.6, 7.6], "skin"), cube([-3.8, 12.2, -1.8], [7.6, 11.6, 3.6], "skin"),
+            cube([-7.8, 12.2, -1.8], [3.6, 11.6, 3.6], "skin"), cube([4.2, 12.2, -1.8], [3.6, 11.6, 3.6], "skin"),
+            cube([-3.8, 0.2, -1.8], [3.6, 11.6, 3.6], "skin"), cube([0.2, 0.2, -1.8], [3.6, 11.6, 3.6], "skin")]
     P = mantle_pieces()
     def placed(name, dx, dy):
         out = []
@@ -526,11 +572,29 @@ def knight_anims():
         "head": {"rotation": kf({0: [0, 0, 0], 1.0: [0, 6, 0], 2.0: [0, -6, 0], 3.0: [0, 0, 0]})},
         "sword": {"rotation": kf({0: [0, 0, 0], 1.5: [-3, 0, 0], 3.0: [0, 0, 0]})},
         "smoke": {"rotation": kf({0: [0, 0, 0], 1.5: [0, 25, 0], 3.0: [0, 50, 0]}), "scale": kf({0: [1, 1, 1], 1.5: [1.05, 1.15, 1.05], 3.0: [1, 1, 1]})}}}
-    A["walk"] = {"loop": True, "animation_length": 1.0, "bones": {
-        "leg_l": {"rotation": kf({0: [25, 0, 0], 0.5: [-25, 0, 0], 1.0: [25, 0, 0]})},
-        "leg_r": {"rotation": kf({0: [-25, 0, 0], 0.5: [25, 0, 0], 1.0: [-25, 0, 0]})},
-        "cape": {"rotation": kf({0: [14, 0, 0], 0.5: [20, 0, 0], 1.0: [14, 0, 0]})},
-        "body": {"position": kf({0: [0, 0, 0], 0.25: [0, 0.6, 0], 0.5: [0, 0, 0], 0.75: [0, 0.6, 0], 1.0: [0, 0, 0]})}}}
+    A["walk"] = {"loop": True, "animation_length": 1.1, "bones": {   # a heavy armoured stride: weight rolls from foot to foot, the
+        # shoulders turn against the hips, the free arm swings, the greatsword rides steady, the cape lags behind
+        "leg_l": {"rotation": kf({0: [26, 0, 0], 0.275: [4, 0, 0], 0.55: [-24, 0, 0], 0.825: [-2, 0, 0], 1.1: [26, 0, 0]})},
+        "leg_r": {"rotation": kf({0: [-24, 0, 0], 0.275: [-2, 0, 0], 0.55: [26, 0, 0], 0.825: [4, 0, 0], 1.1: [-24, 0, 0]})},
+        "body": {"position": kf({0: [0, 0, 0], 0.275: [0, 0.7, 0], 0.55: [0, 0, 0], 0.825: [0, 0.7, 0], 1.1: [0, 0, 0]}),
+                 "rotation": kf({0: [3, 6, -1.5], 0.55: [3, -6, 1.5], 1.1: [3, 6, -1.5]})},
+        "head": {"rotation": kf({0: [-2, -5, 1.5], 0.55: [-2, 5, -1.5], 1.1: [-2, -5, 1.5]})},
+        "arm_l": {"rotation": kf({0: [-20, 0, -3], 0.55: [18, 0, -5], 1.1: [-20, 0, -3]})},
+        "arm_r": {"rotation": kf({0: [6, 0, 0], 0.275: [2, 0, 0], 0.55: [-4, 0, 0], 0.825: [2, 0, 0], 1.1: [6, 0, 0]})},
+        "sword": {"rotation": kf({0: [0, 0, 0], 0.275: [-3, 0, 0], 0.55: [0, 0, 0], 0.825: [-3, 0, 0], 1.1: [0, 0, 0]})},
+        "cape": {"rotation": kf({0: [16, 0, 2.5], 0.3: [22, 0, 0], 0.65: [16, 0, -2.5], 0.95: [22, 0, 0], 1.1: [16, 0, 2.5]})},
+        "smoke": {"rotation": kf({0: [0, 0, 0], 1.1: [0, 40, 0]}), "scale": kf({0: [1, 1, 1], 0.55: [1.1, 0.9, 1.1], 1.1: [1, 1, 1]})}}}
+    A["run"] = {"loop": True, "animation_length": 0.7, "bones": {   # a charge: leaning in, long strides, greatsword drawn back low, cape streaming
+        "root": {"position": kf({0: [0, 0, 0], 0.175: [0, 1.2, 0], 0.35: [0, 0, 0], 0.525: [0, 1.2, 0], 0.7: [0, 0, 0]})},
+        "body": {"rotation": kf({0: [14, 8, 0], 0.35: [14, -8, 0], 0.7: [14, 8, 0]})},
+        "head": {"rotation": kf({0: [-12, -6, 0], 0.35: [-12, 6, 0], 0.7: [-12, -6, 0]})},
+        "leg_l": {"rotation": kf({0: [42, 0, 0], 0.35: [-40, 0, 0], 0.7: [42, 0, 0]})},
+        "leg_r": {"rotation": kf({0: [-40, 0, 0], 0.35: [42, 0, 0], 0.7: [-40, 0, 0]})},
+        "arm_l": {"rotation": kf({0: [-40, 0, -5], 0.35: [35, 0, -8], 0.7: [-40, 0, -5]})},
+        "arm_r": {"rotation": kf({0: [28, 0, 8], 0.35: [22, 0, 10], 0.7: [28, 0, 8]})},
+        "sword": {"rotation": kf({0: [-25, 0, 0], 0.35: [-30, 0, 0], 0.7: [-25, 0, 0]})},
+        "cape": {"rotation": kf({0: [48, 0, 4], 0.35: [56, 0, -4], 0.7: [48, 0, 4]})},
+        "smoke": {"scale": kf({0: [1, 0.7, 1], 0.7: [1, 0.7, 1]})}}}
     A["slash"] = {"animation_length": 0.8, "bones": {   # from the low guard: up over the shoulder, then a great diagonal cut
         "arm_r": {"rotation": kf({0: [0, 0, 0], 0.3: [-110, 30, 0], 0.45: [40, -30, 0], 0.8: [0, 0, 0]})},
         "arm_l": {"rotation": kf({0: [0, 0, 0], 0.3: [-100, 50, 0], 0.45: [40, -10, 0], 0.8: [0, 0, 0]})},
@@ -561,19 +625,33 @@ def ravener_anims():
             "smoke": {"rotation": kf({0: [0, 0, 0], 3.0: [0, 60, 0]})}}
     idle.update(tail(5, 3.0))
     A["idle"] = {"loop": True, "animation_length": 3.0, "bones": idle}
-    walk = {   # a stalking gait: shoulders roll against the stride, long arms swing, the head stays level and locked on
-        "leg_l": {"rotation": kf({0: [26, 0, 0], 0.35: [-26, 0, 0], 0.7: [26, 0, 0]})},
-        "leg_r": {"rotation": kf({0: [-26, 0, 0], 0.35: [26, 0, 0], 0.7: [-26, 0, 0]})},
-        "body": {"position": kf({0: [0, 0, 0], 0.175: [0, 0.9, 0], 0.35: [0, 0, 0], 0.525: [0, 0.9, 0], 0.7: [0, 0, 0]}),
-                 "rotation": kf({0: [7, -7, 3], 0.35: [7, 7, -3], 0.7: [7, -7, 3]})},
-        "neck": {"rotation": kf({0: [-5, 7, -3], 0.35: [-5, -7, 3], 0.7: [-5, 7, -3]})},
-        "arm_ul": {"rotation": kf({0: [-22, 0, 2], 0.35: [18, 0, 5], 0.7: [-22, 0, 2]})},
-        "arm_ur": {"rotation": kf({0: [18, 0, -5], 0.35: [-22, 0, -2], 0.7: [18, 0, -5]})},
-        "arm_ll": {"rotation": kf({0: [-10, 0, 0], 0.35: [10, 0, 0], 0.7: [-10, 0, 0]})},
-        "arm_lr": {"rotation": kf({0: [10, 0, 0], 0.35: [-10, 0, 0], 0.7: [10, 0, 0]})},
-        "smoke": {"rotation": kf({0: [0, 0, 0], 0.7: [0, 30, 0]})}}
-    walk.update(tail(12, 0.7))
-    A["walk"] = {"loop": True, "animation_length": 0.7, "bones": walk}
+    walk = {   # a stalking gait: low and deliberate, weight rolling over each backward-bent leg, shoulders rolling against
+        # the stride, the long arms swinging loose with the claws trailing, the head held level and locked on, the tail
+        # counter-swinging for balance
+        "leg_l": {"rotation": kf({0: [24, 0, 0], 0.2: [6, 0, 0], 0.4: [-22, 0, 0], 0.6: [-4, 0, 0], 0.8: [24, 0, 0]})},
+        "leg_r": {"rotation": kf({0: [-22, 0, 0], 0.2: [-4, 0, 0], 0.4: [24, 0, 0], 0.6: [6, 0, 0], 0.8: [-22, 0, 0]})},
+        "body": {"position": kf({0: [0, 0, 0], 0.2: [0, 0.9, 0], 0.4: [0, 0, 0], 0.6: [0, 0.9, 0], 0.8: [0, 0, 0]}),
+                 "rotation": kf({0: [6, -8, 3], 0.4: [6, 8, -3], 0.8: [6, -8, 3]})},
+        "neck": {"rotation": kf({0: [-4, 8, -3], 0.4: [-4, -8, 3], 0.8: [-4, 8, -3]})},
+        "head": {"rotation": kf({0: [0, 0, 0], 0.2: [2, 0, 0], 0.4: [0, 0, 0], 0.6: [2, 0, 0], 0.8: [0, 0, 0]})},
+        "arm_ul": {"rotation": kf({0: [-24, 0, 2], 0.2: [-6, 0, 3], 0.4: [20, 0, 5], 0.6: [4, 0, 4], 0.8: [-24, 0, 2]})},
+        "arm_ur": {"rotation": kf({0: [20, 0, -5], 0.2: [4, 0, -4], 0.4: [-24, 0, -2], 0.6: [-6, 0, -3], 0.8: [20, 0, -5]})},
+        "arm_ll": {"rotation": kf({0: [-10, 0, 0], 0.4: [10, 0, 0], 0.8: [-10, 0, 0]})},
+        "arm_lr": {"rotation": kf({0: [10, 0, 0], 0.4: [-10, 0, 0], 0.8: [10, 0, 0]})},
+        "smoke": {"rotation": kf({0: [0, 0, 0], 0.8: [0, 30, 0]})}}
+    walk.update({f"tail{i}": {"rotation": kf({0: [0, 10 * (i + 1) / 3, 0], 0.4: [0, -10 * (i + 1) / 3, 0], 0.8: [0, 10 * (i + 1) / 3, 0]})} for i in range(6)})
+    A["run"] = {"loop": True, "animation_length": 0.5, "bones": {   # a loping sprint: low and long, arms swept back, tail out straight
+        "root": {"position": kf({0: [0, 0, 0], 0.125: [0, 1.6, 0], 0.25: [0, 0, 0], 0.375: [0, 1.6, 0], 0.5: [0, 0, 0]})},
+        "body": {"rotation": kf({0: [24, -6, 0], 0.25: [28, 6, 0], 0.5: [24, -6, 0]})},
+        "neck": {"rotation": kf({0: [-22, 5, 0], 0.25: [-24, -5, 0], 0.5: [-22, 5, 0]})},
+        "leg_l": {"rotation": kf({0: [46, 0, 0], 0.25: [-42, 0, 0], 0.5: [46, 0, 0]})},
+        "leg_r": {"rotation": kf({0: [-42, 0, 0], 0.25: [46, 0, 0], 0.5: [-42, 0, 0]})},
+        "arm_ul": {"rotation": kf({0: [40, 0, 14], 0.25: [55, 0, 18], 0.5: [40, 0, 14]})},
+        "arm_ur": {"rotation": kf({0: [55, 0, -18], 0.25: [40, 0, -14], 0.5: [55, 0, -18]})},
+        "arm_ll": {"rotation": kf({0: [30, 0, 0], 0.5: [30, 0, 0]})},
+        "arm_lr": {"rotation": kf({0: [30, 0, 0], 0.5: [30, 0, 0]})},
+        **{f"tail{i}": {"rotation": kf({0: [-6, 4, 0], 0.25: [-6, -4, 0], 0.5: [-6, 4, 0]})} for i in range(6)}}}
+    A["walk"] = {"loop": True, "animation_length": 0.8, "bones": walk}
     A["attack"] = {"animation_length": 0.75, "bones": {   # a lunge and two crossing rakes, twisting into each, jaws snapping
         "body": {"position": kf({0: [0, 0, 0], 0.12: [0, -0.6, 1.0], 0.28: [0, -1.2, -2.2], 0.45: [0, -1.0, -2.6], 0.75: [0, 0, 0]}),
                  "rotation": kf({0: [0, 0, 0], 0.12: [-6, -22, 0], 0.28: [16, 24, 0], 0.45: [16, -24, 0], 0.75: [0, 0, 0]})},
@@ -631,7 +709,7 @@ PAINTERS = {
     "flameblade": gp.flameblade_painter((70, 165, 255), (12, 14, 26), (110, 200, 255)),
     "grip": gp.grip_painter((12, 12, 16), (34, 58, 130)),
     "shroud": gp.cloth_painter((16, 18, 30)),
-    "skin": gp.plate_painter((122, 104, 86), (100, 84, 70), (0, 0, 0), engrave=False, rivets=False),
+    "skin": gp.plate_painter((52, 46, 44), (40, 36, 34), (0, 0, 0), engrave=False, rivets=False),
 }
 
 

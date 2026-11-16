@@ -55,8 +55,7 @@ abstract class ShadowUiScreen extends Screen {
         g.pose().pushPose();
         g.pose().translate(x0 + w / 2f - tw / 2f, y0 + 10, 0);
         g.pose().scale(2, 2, 1);
-        g.drawString(font, title, 1, 1, 0xFF1A3C90, false);
-        g.drawString(font, title, 0, 0, 0xFF9AD0FF, false);
+        g.drawString(font, title, 0, 0, 0xFF9AD0FF, true);
         g.pose().popPose();
         g.fill(x0 + 10, y0 + 32, x0 + w - 10, y0 + 33, 0x803C78E0);
     }
