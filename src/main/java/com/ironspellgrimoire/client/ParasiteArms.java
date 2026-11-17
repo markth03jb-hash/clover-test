@@ -78,7 +78,7 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
      *  the left arm. The model's origin is the hand end of the forearm's middle. */
     /** First person only: how the forms sit on the bare arm vanilla draws there (it is held close to the eye, so a
      *  form at full size fills the view): tilted about the wrist, and smaller. */
-    public static float fpTilt = -40F, fpScale = 0.75F, bwScale = 0.55F;
+    public static float fpTilt = -40F, fpScale = 0.75F, bwScale = 0.8F;
 
     /** In first person, turn and shrink round the hand (where the forearm ends) before drawing. */
     static void firstPerson(PoseStack ps, float tilt, float scale) {
@@ -150,6 +150,7 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
         firstPerson(ps, fpTilt, fpScale);
         drawForm(ps, e.getMultiBufferSource(), e.getPackedLight(), formModel(l[0]), false);
         ps.popPose();
+        e.setCanceled(true);   // only the form: the bare arm under it isn't drawn
     }
 
     /** The Bulwark in first person: vanilla never draws an empty off hand, so the left arm and its shield are drawn
@@ -173,8 +174,9 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
         ps.mulPose(Axis.XP.rotationDegrees(200.0F));
         ps.mulPose(Axis.YP.rotationDegrees(f * -135.0F));
         ps.translate(f * 5.6F, 0.0F, 0.0F);
-        r.renderLeftHand(ps, e.getMultiBufferSource(), e.getPackedLight(), p);
         PlayerModel<AbstractClientPlayer> m = r.getModel();
+        m.attackTime = 0F; m.crouching = false; m.swimAmount = 0F;   // posed the way vanilla poses a first-person arm
+        m.setupAnim(p, 0F, 0F, 0F, 0F, 0F);
         m.leftArm.xRot = 0F;
         m.leftArm.translateAndRotate(ps);
         firstPerson(ps, 0F, bwScale);
