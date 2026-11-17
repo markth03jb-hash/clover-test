@@ -582,6 +582,16 @@ public final class GameTests {
                     if (husks.isEmpty()) bad.add("Molting shed no husk");
                     for (var h : husks) h.discard();
                     p.setHealth(p.getMaxHealth());
+                    // Pack Call: three brutes in the Brute strain's shape, none of them after their master
+                    ParasiteFx.testReset(p); ParasiteFx.testStrain(p, ParasiteFx.BRUTE); ParasiteFx.testFill(p);
+                    ParasiteFx.packCall(p, 0f);
+                    var pack = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.InfectedBrute.class, p.getBoundingBox().inflate(8));
+                    if (pack.size() != 3) bad.add("Pack Call raised " + pack.size() + " brutes, not 3");
+                    for (var b : pack) {
+                        if (b.kind() != ParasiteFx.BRUTE) bad.add("a brute wasn't shaped by the Brute strain (" + b.kind() + ")");
+                        if (b.canAttack(p)) bad.add("a brute could attack its master");
+                        b.discard();
+                    }
                     // Hive Network: three nests at once
                     ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p);
                     for (int k = 0; k < 3; k++) { ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); }
@@ -1154,6 +1164,8 @@ public final class GameTests {
                 "grasping_field: vortex", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_FIELD, 2); ParasiteFx.testFill(pl); ParasiteFx.graspingField(pl, pw); }, "",
                 "marrow_barrage: seeker", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_BARRAGE, 1); ParasiteFx.testFill(pl); ParasiteFx.marrowBarrage(pl, pw); }, "",
                 "marrow_barrage: bomb", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_BARRAGE, 2); ParasiteFx.testFill(pl); ParasiteFx.marrowBarrage(pl, pw); }, "",
+                "collapse_core", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.collapseCore(pl, pw); }, "",
+                "pack_call", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.packCall(pl, pw); }, "q",
                 "final form consume", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> {
                     ParasiteFx.testUnlockAll(pl); ParasiteFx.testStrain(pl, ParasiteFx.BRUTE); ParasiteFx.testFill(pl); ParasiteFx.testCooldowns(pl);
                     ParasiteFx.finalFormStart(pl); ParasiteFx.consume(pl, pw); }, "c"));

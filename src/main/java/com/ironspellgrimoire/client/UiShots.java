@@ -563,6 +563,12 @@ public final class UiShots {
         steps.add(new Step("par_burrow", () -> onServer(p -> UiShotsServer.element(p, "p:burrow")), 30, true));
         steps.add(new Step("par_erupt", () -> onServer(p -> UiShotsServer.element(p, "p:burrow")), 8, true));
         steps.add(new Step("par_nest", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:nest")); }, 20, true));
+        steps.add(new Step("par_collapse_pull", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "p:collapse")); }, 30, true));
+        steps.add(new Step("par_collapse_burst", () -> {}, 36, true));
+        for (int k = 0; k <= 3; k++) {
+            final int kk = k;
+            steps.add(new Step("par_pack_" + k, () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "p:pack" + kk)); }, 24, true));
+        }
         steps.add(new Step("par_sight", () -> { mc.setScreen(null); mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:sight")); }, 16, true));
         steps.add(new Step("par_sight_done", () -> onServer(p -> UiShotsServer.element(p, "p:sight_off")), 4, true));
         steps.add(new Step("par_molt", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "p:molt")); }, 10, true));

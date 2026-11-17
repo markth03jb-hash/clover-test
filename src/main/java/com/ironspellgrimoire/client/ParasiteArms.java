@@ -265,6 +265,8 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
             e.register(CARAPACE);
             e.register(HiveNestRenderer.MODEL);
             for (int k = 1; k < LOOK_BODY.length; k++) { e.register(LOOK_BODY[k]); e.register(LOOK_ARM[k]); }
+            e.register(InfectedBruteRenderer.BASE);
+            for (int k = 1; k < InfectedBruteRenderer.BODY.length; k++) { e.register(InfectedBruteRenderer.BODY[k]); e.register(InfectedBruteRenderer.ARM[k]); }
         }
 
         @SubscribeEvent

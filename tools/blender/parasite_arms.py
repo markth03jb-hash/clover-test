@@ -634,10 +634,81 @@ def look_preview(body, arm):
     return run
 
 
-BODY = {"final_crest": head_crest, "final_carapace": carapace, "hide_spiked": spiked_body, "hide_smooth": smooth_body, "hide_plated": plated_body}
-LOOK_ARMS = {"hide_spiked_arm": spiked_arm, "hide_smooth_arm": smooth_arm, "hide_plated_arm": plated_arm}   # drawn on both arms
+# ------------------------------------------------------------------ Pack Call: the infected brutes (a flesh-skinned figure; these ride on it)
+def brute_base_body():
+    """Every brute: bone spurs up its back and a ragged red crest of flesh on its head."""
+    for k in range(4): gt.cone("bspur%d" % k, (BX, 2.3, -10.5 + k * 2.6), (0, 1.0, -0.5), 0.6, 2.6 - k * 0.3, region="greyblade", segs=6)
+    for k in range(3): gt.cone("bcrest%d" % k, (BX, -1.0 + k * 1.6, -20.2), (0, 0.4, -1.0), 0.6, 1.8 + 0.4 * k, region="redplate", segs=6)
+    return 24.0
+
+
+def brute_hunter_body():
+    """The Hunter's stalker: lean, a crest of hooked spines over its head and down its spine."""
+    for k in range(5): gt.cone("hcrest%d" % k, (BX, -2.8 + k * 1.6, -20.2 + k * 0.2), (0, 0.8, -0.9), 0.55, 2.4 + 0.5 * k, region="greyblade", segs=6)
+    for k in range(5): gt.cone("hspine%d" % k, (BX, 2.3, -11.0 + k * 2.2), (0, 1.0, -0.6), 0.5, 2.8 - k * 0.3, region="greyblade", segs=6)
+    return 24.0
+
+
+def brute_hunter_arm():
+    """The Hunter's stalker: three long hooked claws out of each hand."""
+    for k, x in enumerate((-1.2, 0.0, 1.2)):
+        tube("hclaw%d" % k, [(x, -0.4, 0.0, 0.5), (x * 1.2, -1.2, 3.0, 0.42), (x * 1.3, -2.8, 5.6, 0.25), (x * 1.3, -4.6, 6.8, 0.03)], "greyblade", res=4, bev=2)
+    return 12.0
+
+
+def brute_brute_body():
+    """The Brute's brawler: a hunched hump of thick red plates over its shoulders and back, a bone jaw."""
+    for k, (z, w) in enumerate(((-12.6, 11.0), (-10.4, 10.0), (-8.2, 9.0))):
+        gt.box("hump%d" % k, (BX, 2.6 + 0.3 * k, z), (w, 3.0, 2.6), "redplate", bevel=0.6, segs=1)
+    for sd in (1, -1): gt.box("pad%d" % sd, (BX + sd * 5.6, 0, -12.0), (4.6, 5.6, 2.4), "redplate", bevel=0.6, segs=1)
+    for sd in (1, -1): gt.cone("tusk%d" % sd, (BX + sd * 2.6, -4.4, -12.6), (sd * 0.3, -0.5, 1.0), 0.6, 2.4, region="greyblade", segs=6)
+    return 24.0
+
+
+def brute_brute_arm():
+    """The Brute's brawler: a massive bone gauntlet over the forearm and a knuckle of bone spikes."""
+    gt.box("gaunt", (0, 0, -3.0), (6.2, 6.2, 6.6), "redplate", bevel=0.7, segs=1)
+    for k, x in enumerate((-1.6, 0.0, 1.6)):
+        gt.cone("knk%d" % k, (x, -1.2, 0.3), (0, -0.2, 1.0), 0.7, 2.0, region="greyblade", segs=6)
+    return 12.0
+
+
+def brute_hive_body():
+    """The Hive's spitter: swollen, glowing sacs on its back and a ring of spine tubes round its shoulders."""
+    for k, (x, z, r) in enumerate(((BX - 2.0, -9.5, 2.0), (BX + 2.2, -8.6, 1.8), (BX, -5.6, 2.2), (BX - 2.6, -4.0, 1.4))):
+        bm = bmesh.new()
+        bmesh.ops.create_uvsphere(bm, u_segments=10, v_segments=7, radius=r)
+        bmesh.ops.translate(bm, vec=(x, 2.6 + r * 0.5, z), verts=bm.verts)
+        GLOW.append(gt.new_obj("sac%d" % k, bm, REG["eye"]))
+    for sd in (1, -1):
+        for k in range(3):
+            bm = bmesh.new()
+            bmesh.ops.create_cone(bm, cap_ends=True, segments=8, radius1=0.7, radius2=0.5, depth=2.6)
+            bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Matrix.Rotation(-0.5, 3, "X"), verts=bm.verts)
+            bmesh.ops.translate(bm, vec=(BX + sd * (2.4 + k * 1.1), 1.0, -12.8), verts=bm.verts)
+            gt.new_obj("tube%d%d" % (k, sd), bm, REG["greyblade"])
+    return 24.0
+
+
+def brute_hive_arm():
+    """The Hive's spitter: a fat spine tube along each forearm."""
+    bm = bmesh.new()
+    bmesh.ops.create_cone(bm, cap_ends=True, segments=10, radius1=1.6, radius2=1.1, depth=6.0)
+    bmesh.ops.translate(bm, vec=(0, -2.6, -3.0), verts=bm.verts)
+    gt.new_obj("atube", bm, REG["greyblade"])
+    for k in range(3): gt.cone("aspine%d" % k, (0, -2.6, -1.0 + k * 0.05), (0.2 * (k - 1), -0.3, 1.0), 0.35, 2.0, region="greyblade", segs=5)
+    return 12.0
+
+
+BODY = {"final_crest": head_crest, "final_carapace": carapace, "hide_spiked": spiked_body, "hide_smooth": smooth_body, "hide_plated": plated_body,
+        "brute_base": brute_base_body, "brute_hunter": brute_hunter_body, "brute_brute": brute_brute_body, "brute_hive": brute_hive_body}
+LOOK_ARMS = {"hide_spiked_arm": spiked_arm, "hide_smooth_arm": smooth_arm, "hide_plated_arm": plated_arm,
+             "brute_hunter_arm": brute_hunter_arm, "brute_brute_arm": brute_brute_arm, "brute_hive_arm": brute_hive_arm}   # drawn on both arms
 PREVIEWS = {"look_spiked": look_preview(spiked_body, spiked_arm), "look_smooth": look_preview(smooth_body, smooth_arm),
-            "look_plated": look_preview(plated_body, plated_arm)}
+            "look_plated": look_preview(plated_body, plated_arm),
+            "pack_base": look_preview(brute_base_body, lambda: 0), "pack_hunter": look_preview(lambda: (brute_base_body(), brute_hunter_body()), brute_hunter_arm),
+            "pack_brute": look_preview(lambda: (brute_base_body(), brute_brute_body()), brute_brute_arm),
+            "pack_hive": look_preview(lambda: (brute_base_body(), brute_hive_body()), brute_hive_arm)}
 STANDING = {"hive_nest": hive_nest}   # drawn standing in the world (an entity): Z up, foot at the origin   # drawn on the head / body in game, not an arm
 TARGETS = {"final_form": 16000, "final_crest": 3000, "final_carapace": 4500, "hive_nest": 4500}
 
@@ -685,7 +756,7 @@ def build(form, out_dir, with_dummy=False, game=False):
         dummy()
         if form in PREVIEWS:   # the hide's looks: the figure in the hide's red, with its near forearm
             gt.box("d_lower", (0, 0, -4.0), (ARM, ARM, 8.0), "dummy")
-            for ob in gt.PARTS[mark:]: gt.fit_uv(ob, REG["redplate"])
+            for ob in gt.PARTS[mark:]: gt.fit_uv(ob, REG["flesh" if form.startswith("pack") else "redplate"])
         if form in STANDING:   # the figure standing beside it (it's built hanging from its arm, so turned over)
             for ob in gt.PARTS[mark:]: ob.data.transform(Matrix.Translation((14, 0, 12)) @ Matrix.Scale(-1, 4, (0, 0, 1)))
     image = bpy.data.images.load(tex)

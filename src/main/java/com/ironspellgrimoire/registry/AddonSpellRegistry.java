@@ -818,9 +818,13 @@ public class AddonSpellRegistry {
             .gate(com.ironspellgrimoire.server.ParasiteFx::canField, "Needs more biomass"));
     public static final RegistryObject<AbstractSpell> PARASITE_STORM = registerSpell(parasite("spine_storm", 30, 60, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ParasiteFx::spineStorm)
             .gate(com.ironspellgrimoire.server.ParasiteFx::canStorm, "Needs more biomass"));
-    /** The five Parasite Grimoire pages, in the order they fill the book. */
+    public static final RegistryObject<AbstractSpell> PARASITE_COLLAPSE = registerSpell(parasite("collapse_core", 30, 55, 9, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ParasiteFx::collapseCore)
+            .gate(com.ironspellgrimoire.server.ParasiteFx::canCollapse, "Needs more biomass"));
+    public static final RegistryObject<AbstractSpell> PARASITE_PACK = registerSpell(parasite("pack_call", 60, 40, 0, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.ParasiteFx::packCall)
+            .gate(com.ironspellgrimoire.server.ParasiteFx::canPack, "Needs more biomass"));
+    /** The seven Parasite Grimoire pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> PARASITE_SPELLS = List.of(
-            PARASITE_CONSUME, PARASITE_EVOLUTION, PARASITE_BARRAGE, PARASITE_FIELD, PARASITE_STORM);
+            PARASITE_CONSUME, PARASITE_EVOLUTION, PARASITE_BARRAGE, PARASITE_FIELD, PARASITE_PACK, PARASITE_STORM, PARASITE_COLLAPSE);
 
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,

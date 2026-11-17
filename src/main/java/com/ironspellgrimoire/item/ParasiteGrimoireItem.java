@@ -8,6 +8,6 @@ import net.minecraft.ChatFormatting;
  *  Evolution and three ultimates - and the arm forms on the G wheel ({@code server/ParasiteFx}). */
 public class ParasiteGrimoireItem extends ThemedGrimoireItem {
     public ParasiteGrimoireItem() {
-        super(5, "parasite_grimoire", ChatFormatting.DARK_RED, () -> AddonSpellRegistry.PARASITE_SPELLS, AttributeRegistry.BLOOD_SPELL_POWER::get, 1100, 0.5, 0.2, 3);
+        super(7, "parasite_grimoire", ChatFormatting.DARK_RED, () -> AddonSpellRegistry.PARASITE_SPELLS, AttributeRegistry.BLOOD_SPELL_POWER::get, 1100, 0.5, 0.2, 3);
     }
 }

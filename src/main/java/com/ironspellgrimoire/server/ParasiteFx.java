@@ -170,7 +170,7 @@ public final class ParasiteFx {
     // ------------------------------------------------------------------ the strain's signature moves and the Final Form
     public static final String[] ARTS = {"", "Apex Chain", "Colossus", "Swarm"};
     static final int ART_CD = 1200, FINAL_CD = 6000, FINAL_LEN = 600;
-    static final int[] ULT_COST = {25, 30, 40};   // Marrow Barrage, Grasping Field, Spine Storm
+    static final int[] ULT_COST = {25, 30, 40, 35, 40};   // Marrow Barrage, Grasping Field, Spine Storm, Collapse Core, Pack Call
 
     private static final UUID M_DMG = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a900001");
     private static final UUID M_SPD = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a900002");
@@ -324,6 +324,8 @@ public final class ParasiteFx {
     public static boolean canBarrage(Player p) { return canUlt(p, 0); }
     public static boolean canField(Player p) { return canUlt(p, 1); }
     public static boolean canStorm(Player p) { return canUlt(p, 2); }
+    public static boolean canCollapse(Player p) { return canUlt(p, 3); }
+    public static boolean canPack(Player p) { return !(p instanceof ServerPlayer sp) || biomass(sp) >= ULT_COST[4] - 0.01f; }
 
     static boolean isBoss(LivingEntity t) { return t instanceof AddonBoss || t.getType().is(Tags.EntityTypes.BOSSES); }
 
@@ -858,6 +860,7 @@ public final class ParasiteFx {
             case 19 -> growNest(p);
             case 27 -> toggleSight(p);
             case 28 -> nestTravel(p, arg);
+            case 30 -> airDash(p);
             case 29 -> { if (arg >= 0 && arg < LOOKS.length) { root(p).putInt("look", arg); applyStats(p); sound(p.serverLevel(), p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 0.8f, 0.7f); sync(p, false); } }
             case 20, 21, 22, 23, 24, 25, 26 -> shadowCommand(p, action - 20);
             default -> { }
@@ -1203,6 +1206,133 @@ public final class ParasiteFx {
         sound(p.serverLevel(), p.position(), SoundEvents.WARDEN_HEARTBEAT, 1.0f, 1.0f);
         applyStats(p);
         sync(p, false);
+    }
+
+    // ------------------------------------------------------------------ Collapse Core
+    /** A dense sphere of biomass where you aim (20 blocks): for 3 s it drags every foe within 9 blocks into its middle,
+     *  tearing at them; then it bursts in tendrils. Bosses are slowed, not pulled. */
+    public static void collapseCore(ServerPlayer p, float power) {
+        if (!spend(p, ultCost(p, 3))) { noBiomass(p, 3); return; }
+        ServerLevel sl = p.serverLevel();
+        LivingEntity aimedAt = aimed(p, 20, 10);
+        Vec3 c = (aimedAt != null && foe(p, aimedAt) ? mid(aimedAt) : Kit.aim(p, 20)).add(0, 0.6, 0);
+        float dmg = power * ultBoost(p);
+        sound(sl, c, SoundEvents.WARDEN_SONIC_CHARGE, 1.0f, 0.5f);
+        for (int k = 0; k < 12; k++) {
+            final int tick = k;
+            AstaFx.later(k * 5, () -> {
+                if (!alive(p)) return;
+                Kit.orb(sl, RED, c, Vec3.ZERO, 0.9f + 0.05f * tick, 6);   // the core, swelling
+                FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, c, 9f - tick * 0.7f, 9.2f - tick * 0.7f, 0.06f, 6);   // the pull, closing in
+                if (tick % 2 == 0) sound(sl, c, SoundEvents.SLIME_SQUISH, 0.7f, 0.4f + tick * 0.05f);
+                for (LivingEntity t : Kit.near(sl, p, c, 9)) {
+                    if (!foe(p, t)) continue;
+                    Vec3 to = c.subtract(mid(t));
+                    if (isBoss(t)) TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, ROOTED, "Pulled", -0.5, AttributeModifier.Operation.MULTIPLY_TOTAL, 8);
+                    else if (to.length() > 0.8) { t.setDeltaMovement(to.normalize().scale(Math.min(0.9, 0.25 + to.length() * 0.08))); t.hurtMarked = true; }
+                    if (tick % 3 == 0) { t.invulnerableTime = 0; AstaFx.damage(p, t, dmg * 0.25f, "collapse_core"); tendril(sl, c, mid(t), 4); }
+                }
+            });
+        }
+        AstaFx.later(62, () -> {   // the burst
+            if (!alive(p)) return;
+            FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, c, 0.5f, 7f, 0.2f, 12);
+            FxSend.shake(sl, c, 0.8f, 10, 20);
+            FxSend.impactFrame(sl, c, 3, false, 24);
+            sound(sl, c, SoundEvents.GENERIC_EXPLODE, 1.0f, 0.6f);
+            ThreadLocalRandom rnd = ThreadLocalRandom.current();
+            for (int i = 0; i < 18; i++) {
+                Vec3 d = new Vec3(rnd.nextDouble(-1, 1), rnd.nextDouble(-0.3, 0.8), rnd.nextDouble(-1, 1)).normalize();
+                tendril(sl, c, c.add(d.scale(rnd.nextDouble(3, 6.5))), 10);
+            }
+            for (LivingEntity t : Kit.near(sl, p, c, 6.5)) {
+                if (!foe(p, t)) continue;
+                t.invulnerableTime = 0;
+                AstaFx.damage(p, t, dmg * 2.2f, "collapse_core");
+                if (!isBoss(t)) Kit.push(t, mid(t).subtract(c), 1.2, 0.5);
+            }
+        });
+    }
+
+    // ------------------------------------------------------------------ Pack Call
+    /** Three infected brutes burst up beside you, shaped by your Strain, to fight for 30 s. */
+    public static void packCall(ServerPlayer p, float power) {
+        if (!spend(p, ULT_COST[4])) { p.displayClientMessage(Component.literal("Needs " + ULT_COST[4] + " biomass").withStyle(ChatFormatting.RED), true); return; }
+        ServerLevel sl = p.serverLevel();
+        for (com.ironspellgrimoire.entity.InfectedBrute old : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.InfectedBrute.class, p.getBoundingBox().inflate(64), b -> p.getUUID().equals(b.owner()))) old.life = 1;
+        for (int k = 0; k < 3; k++) {
+            double a = Math.toRadians(p.getYRot() + 90) + (k - 1) * 0.9;
+            Vec3 at = p.position().add(-Math.sin(a + Math.PI / 2) * 2.2, 0, Math.cos(a + Math.PI / 2) * 2.2);
+            at = ground(sl, p, at.add(0, 1.5, 0));
+            com.ironspellgrimoire.entity.InfectedBrute b = com.ironspellgrimoire.registry.AddonEntities.INFECTED_BRUTE.get().create(sl);
+            if (b == null) continue;
+            b.moveTo(at.x, at.y, at.z, p.getYRot(), 0);
+            b.setOwner(p.getUUID());
+            b.setKind(strain(p));
+            sl.addFreshEntity(b);
+            groundSpines(sl, at, 1.2f, 6, 10);
+        }
+        sound(sl, p.position(), SoundEvents.RAVAGER_ROAR, 0.8f, 1.2f);
+        sound(sl, p.position(), SoundEvents.ROOTED_DIRT_BREAK, 1.0f, 0.5f);
+    }
+
+    /** Every tick, for each brute: wither when its time's up or its master is gone; follow its master; go for what
+     *  its master fights; the Hive's spitters shoot spines from range. */
+    public static void bruteTick(com.ironspellgrimoire.entity.InfectedBrute b) {
+        if (!(b.level() instanceof ServerLevel sl)) return;
+        ServerPlayer o = b.getOwnerEntity();
+        if (o == null || --b.life <= 0 || o.level() != b.level()) {
+            groundSpines(sl, b.position(), 0.8f, 4, 8);
+            sound(sl, b.position(), SoundEvents.SLIME_SQUISH, 0.8f, 0.5f);
+            b.discard();
+            return;
+        }
+        LivingEntity t = b.getTarget();
+        if (t != null && (!t.isAlive() || !b.canAttack(t))) { b.setTarget(null); t = null; }
+        if (b.tickCount % 10 == 0) {   // what its master fights, or what fights its master
+            LivingEntity want = o.getLastHurtMob() != null && o.getLastHurtMob().isAlive() && o.tickCount - o.getLastHurtMobTimestamp() < 200 ? o.getLastHurtMob() : o.getLastHurtByMob();
+            if (want != null && want.isAlive() && b.canAttack(want) && want.distanceTo(b) < 24) b.setTarget(want);
+            else if (t == null) {
+                List<net.minecraft.world.entity.Mob> near = sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, b.getBoundingBox().inflate(12),
+                        m -> m instanceof net.minecraft.world.entity.monster.Enemy && m.isAlive() && b.canAttack(m));
+                near.sort(Comparator.comparingDouble(m -> m.distanceToSqr(b)));
+                if (!near.isEmpty()) b.setTarget(near.get(0));
+            }
+        }
+        t = b.getTarget();
+        if (t == null) {   // follow its master
+            double d = b.distanceTo(o);
+            if (d > 24) b.teleportTo(o.getX(), o.getY(), o.getZ());
+            else if (d > 5) b.getNavigation().moveTo(o, 1.2);
+        } else if (b.kind() == 3) {   // the spitter keeps its distance and shoots
+            double d = b.distanceTo(t);
+            if (d > 12) b.getNavigation().moveTo(t, 1.0); else b.getNavigation().stop();
+            b.getLookControl().setLookAt(t);
+            if (--b.spitCd <= 0 && d < 14 && b.hasLineOfSight(t)) {
+                b.spitCd = 25;
+                Vec3 from = b.getEyePosition(), to = mid(t);
+                spineFly(sl, from, to.subtract(from), from.distanceTo(to), 1.6f, 0.6f);
+                sound(sl, from, SoundEvents.LLAMA_SPIT, 0.8f, 0.6f);
+                final LivingEntity tt = t;
+                AstaFx.later(Math.max(1, (int) (from.distanceTo(to) / 1.6)), () -> {
+                    if (!tt.isAlive() || !b.isAlive()) return;
+                    tt.invulnerableTime = 0;
+                    tt.hurt(b.damageSources().mobAttack(b), 4f);
+                });
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ Air Dash
+    /** A dash in mid-air (the client moved; this charges it and keeps the fall harmless). */
+    static void airDash(ServerPlayer p) {
+        if (p.onGround()) return;
+        CompoundTag r = root(p);
+        r.putFloat("bio", Math.max(0, r.getFloat("bio") - 2f));
+        r.putLong("glide", p.serverLevel().getGameTime() + 40);
+        FxSend.ring(p.serverLevel(), RED | FxPacket.KEEP_SHAPE, p.position().add(0, 1, 0), 0.2f, 1.2f, 0.06f, 6);
+        sound(p.serverLevel(), p.position(), SoundEvents.PHANTOM_FLAP, 0.7f, 1.3f);
+        dirty(p);
     }
 
     // ------------------------------------------------------------------ Predator Sight and Molting

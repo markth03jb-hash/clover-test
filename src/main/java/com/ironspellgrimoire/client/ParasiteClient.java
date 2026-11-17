@@ -88,7 +88,9 @@ public final class ParasiteClient {
     }
 
     // ------------------------------------------------------------------ movement
-    private static int wallTicks, spineTicks;
+    private static int wallTicks, spineTicks, dashes, clientTicks;
+    private static final boolean[] dirWas = new boolean[4];
+    private static final int[] lastTap = {-100, -100, -100, -100};
     private static boolean wallUsed, gliding, shiftWas, clinging, jumpWas;
 
     /** A wall right beside the player (for Wall Cling). */
@@ -123,7 +125,28 @@ public final class ParasiteClient {
         if (!on) { stopGlide(); clinging = false; return; }
         boolean ground = pl.onGround() || pl.isInWater() || pl.onClimbable();
         Vec3 v = pl.getDeltaMovement();
-        if (ground) { wallTicks = 0; wallUsed = false; stopGlide(); }
+        if (ground) { wallTicks = 0; wallUsed = false; stopGlide(); dashes = 0; }
+        // Air Dash: double-tap a direction in mid-air (two before landing)
+        net.minecraft.client.KeyMapping[] dirs = {mc.options.keyUp, mc.options.keyDown, mc.options.keyLeft, mc.options.keyRight};
+        clientTicks++;
+        for (int i = 0; i < 4; i++) {
+            boolean down = dirs[i].isDown();
+            if (down && !dirWas[i]) {
+                if (!ground && clientTicks - lastTap[i] <= 7 && dashes < 2 && biomass >= 2 && mc.screen == null) {
+                    Vec3 f = pl.getLookAngle().multiply(1, 0, 1);
+                    f = f.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : f.normalize();
+                    Vec3 side = new Vec3(-f.z, 0, f.x);
+                    Vec3 d = i == 0 ? f : i == 1 ? f.reverse() : i == 2 ? side.reverse() : side;
+                    pl.setDeltaMovement(d.x * 1.25, Math.max(pl.getDeltaMovement().y, 0.12), d.z * 1.25);
+                    pl.fallDistance = 0;
+                    dashes++;
+                    send(30, 0);
+                    lastTap[i] = -100;
+                } else lastTap[i] = clientTicks;
+            }
+            dirWas[i] = down;
+        }
+        v = pl.getDeltaMovement();
         // Wall Runner: forward into a wall in mid-air runs up it
         int wr = rank(1);
         boolean walling = false;

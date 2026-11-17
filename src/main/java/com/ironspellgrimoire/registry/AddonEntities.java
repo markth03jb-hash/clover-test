@@ -68,6 +68,11 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.FamiliarEntity>of(com.ironspellgrimoire.entity.FamiliarEntity::new, MobCategory.MISC).sized(0.5F, 0.5F)
                     .fireImmune().clientTrackingRange(8).updateInterval(2).build("familiar"));
 
+    /** Pack Call's infected brutes (entity/InfectedBrute). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.InfectedBrute>> INFECTED_BRUTE = ENTITIES.register("infected_brute",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.InfectedBrute>of(com.ironspellgrimoire.entity.InfectedBrute::new, MobCategory.MISC).sized(0.6F, 1.95F)
+                    .clientTrackingRange(10).build("infected_brute"));
+
     /** The Parasite Grimoire's molted husk (entity/MoltHusk). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MoltHusk>> MOLT_HUSK = ENTITIES.register("molt_husk",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.MoltHusk>of(com.ironspellgrimoire.entity.MoltHusk::new, MobCategory.MISC).sized(0.6F, 1.8F)

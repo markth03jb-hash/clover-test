@@ -1301,7 +1301,7 @@
   "ui.iron_spell_grimoire.parasite_grimoire_only": "Only the Parasite Grimoire can cast this.",
   "key.iron_spell_grimoire.parasite_wheel": "Parasite forms / Shadow commands wheel",
   "tooltip.iron_spell_grimoire.parasite_grimoire.passive": "Passive - Strain: press G for the wheel of arm forms (Reaper Edge, Rending Talons, Spine Launcher, Titan Fist, Bone Lance, the Whip-Spear and Battering Ram hybrids, the Bulwark and the Chitin Hide). Sprint-jumps leap high; evolve to run up walls, glide and slam down. Devour foes for biomass, evolution and rare mutations; keep the strain fed or it starves - and feed it past full and it goes into a Frenzy. Evolve everything and your strain awakens, with its own signature move and the Final Form.",
-  "tooltip.iron_spell_grimoire.parasite_grimoire.desc": "Five pages of a strain that rewrites whoever carries it.",
+  "tooltip.iron_spell_grimoire.parasite_grimoire.desc": "Seven pages of a strain that rewrites whoever carries it.",
   "tooltip.iron_spell_grimoire.parasite_grimoire.lore": "Its cover is warm. Sometimes it blinks.",
   "spell.iron_spell_grimoire.consume": "Parasite: Consume",
   "spell.iron_spell_grimoire.consume.guide": "Lash a tendril into the foe you aim at. Weak enough and not a boss, it is dragged in and devoured whole: biomass, health back and an evolution point. Otherwise the tendril rips a chunk out of it.",
@@ -1316,5 +1316,10 @@
   "key.iron_spell_grimoire.parasite_tendril": "Parasite tendril (sneak: burrow)",
   "entity.iron_spell_grimoire.hive_nest": "Hive Nest",
   "entity.iron_spell_grimoire.molt_husk": "Molted Husk",
-  "key.iron_spell_grimoire.parasite_sight": "Parasite: Predator Sight"
+  "key.iron_spell_grimoire.parasite_sight": "Parasite: Predator Sight",
+  "entity.iron_spell_grimoire.infected_brute": "Infected Brute",
+  "spell.iron_spell_grimoire.collapse_core": "Parasite: Collapse Core",
+  "spell.iron_spell_grimoire.collapse_core.guide": "Costs 35 biomass. A dense sphere of biomass forms where you aim and drags every foe within 9 blocks into it for 3 s, then bursts in a storm of tendrils.",
+  "spell.iron_spell_grimoire.pack_call": "Parasite: Pack Call",
+  "spell.iron_spell_grimoire.pack_call.guide": "Costs 40 biomass. Three infected brutes burst out of the ground to fight for you for 30 s - shaped by your Strain: stalkers, brawlers or spine-spitters."
 }

@@ -20,6 +20,10 @@ make('marrow_barrage', *BN, [('m', 'l', 1, 13, 13, 1), ('m', 'l', 1, 9, 9, 1), (
                              ('w', 'p', 12, 2), ('w', 'p', 8, 2), ('w', 'p', 13, 6)])
 make('grasping_field', *FL, [('d', 'E', 1, 10, 14, 15), ('m', 'a', 2, 2, 8, 14, 270, 360), ('m', 'a', 7, 1, 13, 15, 180, 270), ('a', 'l', 4, 13, 4, 6),
                              ('a', 'l', 8, 13, 8, 3), ('a', 'l', 11, 13, 11, 6), ('w', 'p', 8, 3)])
+make('collapse_core', *FL, [('d', 'E', 1, 1, 14, 14), ('m', 'E', 4, 4, 11, 11), ('a', 'E', 6, 6, 9, 9), ('m', 'l', 0, 7, 3, 7), ('m', 'l', 12, 7, 15, 7),
+                            ('m', 'l', 7, 0, 7, 3), ('m', 'l', 7, 12, 7, 15), ('w', 'p', 7, 7)])
+make('pack_call', *FL, [('m', 'E', 1, 4, 5, 8), ('m', 'r', 2, 8, 4, 14), ('m', 'E', 10, 4, 14, 8), ('m', 'r', 11, 8, 13, 14), ('a', 'E', 5, 1, 10, 6),
+                        ('a', 'r', 6, 6, 9, 14), ('w', 'p', 6, 3), ('w', 'p', 9, 3)])
 make('spine_storm', *BN, [('m', 'l', 7, 7, 7, 0), ('m', 'l', 7, 7, 14, 7), ('m', 'l', 7, 7, 7, 14), ('m', 'l', 7, 7, 0, 7), ('m', 'l', 7, 7, 12, 2),
                           ('m', 'l', 7, 7, 2, 12), ('m', 'l', 7, 7, 2, 2), ('m', 'l', 7, 7, 12, 12), ('a', 'E', 5, 5, 9, 9), ('w', 'p', 7, 7)])
 
@@ -112,6 +116,25 @@ for y in range(32):
         hp[x, y] = col
 hide.save(os.path.join(AD, 'chitin_hide.png'))
 
+# ------------------------------------------------------------------ Pack Call's infected brutes: a 64x64 humanoid skin of raw flesh
+ED = os.path.join(A_, 'textures/entity'); os.makedirs(ED, exist_ok=True)
+skin = Image.new('RGBA', (64, 64), (0, 0, 0, 0)); sp = skin.load()
+rnd = random.Random(11)
+for y in range(64):
+    for x in range(64):
+        n = 0.55 + 0.25 * math.sin(x * 0.9 + y * 0.35) * math.sin(y * 0.7 - x * 0.2) + rnd.uniform(-0.08, 0.08)
+        sp[x, y] = (int(150 * n + 40), int(22 * n + 6), int(30 * n + 8), 255)
+for k in range(26):   # veins
+    x, y = rnd.uniform(0, 64), rnd.uniform(0, 64)
+    for i in range(10):
+        x += rnd.uniform(-1.5, 1.5); y += 1.0
+        xi, yi = int(x) % 64, int(y) % 64
+        sp[xi, yi] = (235, 70, 70, 255)
+for (x, y) in ((9, 12), (10, 12), (13, 12), (14, 12)):   # glowing eyes on the face (the head's front: 8-15, 8-15)
+    sp[x, y] = (255, 230, 120, 255)
+for x in range(10, 14): sp[x, 14] = (20, 4, 6, 255)       # the maw
+skin.save(os.path.join(ED, 'infected_brute.png'))
+
 # ------------------------------------------------------------------ text
 LP = os.path.join(A_, 'lang/en_us.json')
 lang = json.load(open(LP))
@@ -121,18 +144,21 @@ lang['key.iron_spell_grimoire.parasite_wheel'] = 'Parasite forms / Shadow comman
 lang['key.iron_spell_grimoire.parasite_tendril'] = 'Parasite tendril (sneak: burrow)'
 lang['entity.iron_spell_grimoire.hive_nest'] = 'Hive Nest'
 lang['entity.iron_spell_grimoire.molt_husk'] = 'Molted Husk'
+lang['entity.iron_spell_grimoire.infected_brute'] = 'Infected Brute'
 lang['key.iron_spell_grimoire.parasite_sight'] = 'Parasite: Predator Sight'
 lang['tooltip.iron_spell_grimoire.parasite_grimoire.passive'] = ('Passive - Strain: press G for the wheel of arm forms (Reaper Edge, Rending Talons, Spine Launcher, Titan Fist, '
     'Bone Lance, the Whip-Spear and Battering Ram hybrids, the Bulwark and the Chitin Hide). Sprint-jumps leap high; evolve to run up walls, glide and slam down. '
     'Devour foes for biomass, evolution and rare mutations; keep the strain fed or it starves - and feed it past full and it goes into a Frenzy. '
     'Evolve everything and your strain awakens, with its own signature move and the Final Form.')
-lang['tooltip.iron_spell_grimoire.parasite_grimoire.desc'] = 'Five pages of a strain that rewrites whoever carries it.'
+lang['tooltip.iron_spell_grimoire.parasite_grimoire.desc'] = 'Seven pages of a strain that rewrites whoever carries it.'
 lang['tooltip.iron_spell_grimoire.parasite_grimoire.lore'] = 'Its cover is warm. Sometimes it blinks.'
 for k, (title, guide) in {
  'consume': ('Consume', 'Lash a tendril into the foe you aim at. Weak enough and not a boss, it is dragged in and devoured whole: biomass, health back and an evolution point. Otherwise the tendril rips a chunk out of it.'),
  'evolution': ('Evolution', 'Open the Evolution page: spend evolution points on movement, arm forms and hunger, and settle your Strain.'),
  'marrow_barrage': ('Marrow Barrage', 'Costs 25 biomass. Ten bone lances fire from your arm in a fan, each running through everything for 20 blocks.'),
  'grasping_field': ('Grasping Field', 'Costs 30 biomass. Tendrils and spines burst up over a field where you aim: everything in it is held, dragged inward and torn at for 4 s.'),
+ 'collapse_core': ('Collapse Core', 'Costs 35 biomass. A dense sphere of biomass forms where you aim and drags every foe within 9 blocks into it for 3 s, then bursts in a storm of tendrils.'),
+ 'pack_call': ('Pack Call', 'Costs 40 biomass. Three infected brutes burst out of the ground to fight for you for 30 s - shaped by your Strain: stalkers, brawlers or spine-spitters.'),
  'spine_storm': ('Spine Storm', 'Costs 40 biomass. Your body splits into a storm of bone - three waves of spines shred everything within 8 blocks.'),
 }.items():
     lang[f'spell.iron_spell_grimoire.{k}'] = f'Parasite: {title}'
