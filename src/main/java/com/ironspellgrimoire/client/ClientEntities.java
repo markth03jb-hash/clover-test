@@ -28,6 +28,7 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.HIVE_NEST.get(), HiveNestRenderer::new);
         e.registerEntityRenderer(AddonEntities.MOLT_HUSK.get(), MoltHuskRenderer::new);
         e.registerEntityRenderer(AddonEntities.THROWN_HUNGER_BLADE.get(), ThrownBladeRenderer::new);
+        e.registerEntityRenderer(AddonEntities.BLADE_SPIRIT.get(), SpiritRenderer::new);
         e.registerEntityRenderer(AddonEntities.INFECTED_BRUTE.get(), InfectedBruteRenderer::new);
         e.registerEntityRenderer(AddonEntities.FAMILIAR.get(), FamiliarRenderer::new);
         e.registerEntityRenderer(AddonEntities.MEMORY_GUARDIAN.get(), MemoryGuardianRenderer::new);

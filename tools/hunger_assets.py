@@ -20,6 +20,9 @@ make('feast', *BL, [('m', 'a', 1, 1, 14, 14, 200, 520), ('a', 'a', 3, 3, 12, 12,
                     ('m', 'l', 13, 2, 11, 4)])
 make('unleash', *JW, [('a', 'E', 4, 4, 11, 11), ('w', 'E', 6, 6, 9, 9), ('m', 'l', 7, 0, 7, 3), ('m', 'l', 7, 12, 7, 15), ('m', 'l', 0, 7, 3, 7),
                       ('m', 'l', 12, 7, 15, 7), ('m', 'l', 2, 2, 4, 4), ('m', 'l', 13, 13, 11, 11), ('m', 'l', 2, 13, 4, 11), ('m', 'l', 13, 2, 11, 4)])
+make('hunger_domain', *JW, [('m', 'e', 0, 3, 15, 12), ('a', 'E', 3, 6, 12, 9), ('w', 'p', 7, 7), ('w', 'p', 8, 7),
+                            ('m', 'l', 2, 4, 3, 2), ('m', 'l', 5, 3, 5, 1), ('m', 'l', 9, 3, 9, 1), ('m', 'l', 13, 4, 12, 2),
+                            ('m', 'l', 2, 11, 3, 13), ('m', 'l', 5, 12, 5, 14), ('m', 'l', 9, 12, 9, 14), ('m', 'l', 13, 11, 12, 13)])
 make('the_blade', *BL, [('m', 'l', 7, 1, 7, 10), ('m', 'l', 8, 1, 8, 10), ('w', 'p', 7, 0), ('a', 'l', 3, 11, 12, 11), ('a', 'E', 6, 10, 9, 13),
                         ('d', 'p', 7, 11), ('m', 'l', 7, 13, 7, 15), ('a', 'p', 3, 10), ('a', 'p', 12, 10)])
 
@@ -88,18 +91,21 @@ lang = json.load(open(LP))
 lang['item.iron_spell_grimoire.hunger_grimoire'] = 'Hunger Blade Grimoire'
 lang['item.iron_spell_grimoire.hunger_blade'] = 'Hunger Blade'
 lang['entity.iron_spell_grimoire.thrown_hunger_blade'] = 'Thrown Hunger Blade'
+lang['entity.iron_spell_grimoire.blade_spirit'] = 'Blade Spirit'
 lang['ui.iron_spell_grimoire.hunger_grimoire_only'] = 'Only the Hunger Blade Grimoire can cast this.'
 lang['tooltip.iron_spell_grimoire.hunger_grimoire.passive'] = ('Passive - the Hunger Blade: Draw it into your empty hand. Kills made with it feed it Growth, '
-    'and Growth grows new swords - three base stages, then four paths (Bone, Crystal, Shadow, Flame), each splitting two ways: 23 in all. '
-    'Carry four and switch between them on the G wheel. Keep it fed: well fed it steadies you, hungry it hits harder and pulls you to prey, '
-    'starved it bites you. Fight together to deepen your Bond - at Bond 3 you can throw it, at Bond 5 Unleash wakes the Awakened Pact.')
-lang['tooltip.iron_spell_grimoire.hunger_grimoire.desc'] = 'Five pages, and a sword that is always hungry.'
+    'and Growth grows new swords - three base stages, then four paths (Bone, Crystal, Shadow, Flame), each splitting two ways, and six hybrids of two paths: 29 in all. '
+    'Carry four and switch between them on the G wheel. Right-click to parry, hold it to charge your path\'s strike; sneak-strike a foe near death to devour it whole. '
+    'Keep it fed: well fed it steadies you and guards your back, hungry it hits harder and pulls you to prey, starved it bites you - and left starved, it sulks. '
+    'Fight together to deepen your Bond - at Bond 3 you can throw it, at Bond 4 a twin grows into your off hand, at Bond 5 Unleash wakes the Awakened Pact and the blade\'s spirit.')
+lang['tooltip.iron_spell_grimoire.hunger_grimoire.desc'] = 'Six pages, and a sword that is always hungry.'
 lang['tooltip.iron_spell_grimoire.hunger_grimoire.lore'] = 'Something inside it is chewing.'
 for k, (title, guide) in {
  'draw_blade': ('Draw', 'Draw the Hunger Blade from the book into your empty main hand - the sword in your selected slot - or put it back.'),
  'gnash': ('Gnash', 'Lunge forward and bite the first foe in your way: heavy damage, a little health back. At Bond 3, sneak to throw the blade instead - it cuts all it passes and flies back to you.'),
  'feast': ('Feast', 'A cleave all the way round you, wider with every stage. Each foe it hits heals you (twice as much when the blade is hungry) and feeds it.'),
- 'unleash': ('Unleash', 'The blade\'s ultimate, its own for each path: Devouring Bite (base), Ossuary Eruption (bone), Shard Nova (crystal), Umbral Rend (shadow) or Pyre Sweep (flame) - stronger with every stage. At Bond 5 it also wakes the Awakened Pact: 10 s of harder, faster hits that heal you.'),
+ 'unleash': ('Unleash', 'The blade\'s ultimate, its own for each path: Devouring Bite (base), Ossuary Eruption (bone), Shard Nova (crystal), Umbral Rend (shadow) or Pyre Sweep (flame) - a hybrid unleashes both of its paths\' - stronger with every stage. At Bond 5 it also wakes the Awakened Pact (10 s of harder, faster hits that heal you) and the blade\'s spirit, which fights beside you for 15 s.'),
+ 'hunger_domain': ('Hunger Domain', 'Needs a stage 6 sword grown. For 20 s the ground round you becomes a great mouth of teeth: every foe inside is slowed, and every kill inside fills the blade\'s hunger at once.'),
  'the_blade': ('The Blade', 'Open The Blade: grow new swords with Growth, and choose the four you carry.'),
 }.items():
     lang[f'spell.iron_spell_grimoire.{k}'] = f'Hunger: {title}'

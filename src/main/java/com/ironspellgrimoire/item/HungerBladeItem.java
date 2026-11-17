@@ -60,6 +60,24 @@ public class HungerBladeItem extends Item {
         tip.add(Component.literal(HungerFx.PASSIVE[f]).withStyle(ChatFormatting.GRAY));
     }
 
+    // ---- right-click: a tap parries (the jaw guard catches the next blow), holding it charges the path's own strike
+    @Override
+    public net.minecraft.world.InteractionResultHolder<ItemStack> use(Level level, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand) {
+        ItemStack s = player.getItemInHand(hand);
+        if (hand != net.minecraft.world.InteractionHand.MAIN_HAND) return net.minecraft.world.InteractionResultHolder.pass(s);
+        if (player instanceof net.minecraft.server.level.ServerPlayer sp) HungerFx.startUse(sp);
+        player.startUsingItem(hand);
+        return net.minecraft.world.InteractionResultHolder.consume(s);
+    }
+
+    @Override public int getUseDuration(ItemStack stack) { return 72000; }
+    @Override public net.minecraft.world.item.UseAnim getUseAnimation(ItemStack stack) { return net.minecraft.world.item.UseAnim.NONE; }
+
+    @Override
+    public void releaseUsing(ItemStack stack, Level level, net.minecraft.world.entity.LivingEntity e, int left) {
+        if (e instanceof net.minecraft.server.level.ServerPlayer sp) HungerFx.release(sp, getUseDuration(stack) - left);
+    }
+
     /** Dropped or tossed copies vanish: the blade lives in its book. */
     @Override
     public boolean onEntityItemUpdate(ItemStack stack, ItemEntity entity) {

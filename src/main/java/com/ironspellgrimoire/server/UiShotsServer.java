@@ -366,7 +366,7 @@ public final class UiShotsServer {
                 HungerFx.testReset(p);
                 HungerFx.testUnlockAll(p);
                 HungerFx.testGrowth(p, 260);
-                HungerFx.testLoad(p, 7, 10, 15, 22);
+                HungerFx.testLoad(p, 7, 10, 25, 28);
                 HungerFx.testHunger(p, 82);
                 HungerFx.testBond(p, 140);
                 HungerFx.testCalm(p);
@@ -393,6 +393,30 @@ public final class UiShotsServer {
             case "starved" -> { HungerFx.testHunger(p, 4); HungerFx.sync(p, false); }
             case "fed" -> { HungerFx.testHunger(p, 82); HungerFx.sync(p, false); }
             case "page" -> { HungerFx.testHunger(p, 55); HungerFx.theBlade(p, 10f); }
+            case "devour" -> {   // a husk near death in front, sneak-struck
+                faceForward(p);
+                var hs = p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(8));
+                if (!hs.isEmpty()) {
+                    var z = hs.stream().min(java.util.Comparator.comparingDouble(x -> x.distanceToSqr(p))).get();
+                    z.setHealth(z.getMaxHealth() * 0.1f);
+                    p.setShiftKeyDown(true);
+                    z.hurt(p.damageSources().playerAttack(p), 2f);
+                    p.setShiftKeyDown(false);
+                }
+            }
+            case "parry" -> {   // a husk strikes as the jaw guard catches it
+                faceForward(p);
+                HungerFx.testParry(p);
+                var hs = p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(8));
+                if (!hs.isEmpty()) p.hurt(p.damageSources().mobAttack(hs.get(0)), 4f);
+            }
+            case "charge" -> { faceForward(p); HungerFx.testCharge(p); }
+            case "twin" -> { HungerFx.testBond(p, 140); }
+            case "sulk" -> { p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHunger(p, 3); HungerFx.testStarvedFor(p, 70); HungerFx.draw(p, 10f); HungerFx.sync(p, false); }
+            case "spirit" -> { faceForward(p); HungerFx.testBond(p, 230); HungerFx.unleash(p, 10f); }
+            case "sheath" -> { p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); p.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY); }
+            case "domain" -> { faceForward(p); HungerFx.hungerDomain(p, 10f); }
+            case "ready" -> { HungerFx.testReset(p); root3(p); HungerFx.testGrowth(p, 50); HungerFx.sync(p, false); }
             case "page_new" -> { HungerFx.testReset(p); HungerFx.testGrowth(p, 45); root3(p); HungerFx.theBlade(p, 10f); }
             case "end" -> { p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testReset(p); }
             default -> {}

@@ -35,6 +35,18 @@ public final class HungerPackets {
         }
     }
 
+    /** Server -> everyone who sees a player: the sword sheathed at their hip (-1 none; client/HungerClient draws it). */
+    public static class Look {
+        public final int id, form;
+        public Look(int id, int form) { this.id = id; this.form = form; }
+        public static void encode(Look p, FriendlyByteBuf b) { b.writeVarInt(p.id); b.writeVarInt(p.form + 1); }
+        public static Look decode(FriendlyByteBuf b) { return new Look(b.readVarInt(), b.readVarInt() - 1); }
+        public static void handle(Look p, Supplier<NetworkEvent.Context> ctx) {
+            ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.HungerClient.look(p.id, p.form)));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
     /** Client -> server: 1 grow a sword (arg form), 2 switch to a slot, 3 put a sword in a slot (slot * 100 + form, 99 = empty). */
     public static class Act {
         public final int action, arg;

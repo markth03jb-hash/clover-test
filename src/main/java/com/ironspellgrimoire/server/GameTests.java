@@ -433,6 +433,11 @@ public final class GameTests {
                     if (spent != want) bad.add("growing four swords cost " + spent + ", not " + want);
                     HungerFx.handle(p, 1, 9);
                     if (HungerFx.unlocked(p, 9)) bad.add("the Prism Rapier grew without the Shard Blade");
+                    // a hybrid: only with an ascended sword of both its paths
+                    HungerFx.handle(p, 1, 23);
+                    if (HungerFx.unlocked(p, 23)) bad.add("the Fossil Prism grew without an ascended Crystal sword");
+                    if (HungerFx.canGrow(1 | (1 << 5), 23)) bad.add("canGrow lets a hybrid grow from one path");
+                    if (!HungerFx.canGrow((1 << 5) | (1 << 12), 23)) bad.add("canGrow refuses the Fossil Prism with both ascended swords");
                 }
                 if (t == 6) {   // four carried; a fifth replaces; switching changes the held sword
                     HungerFx.testCalm(p);
@@ -479,6 +484,28 @@ public final class GameTests {
                     if (HungerFx.growth(p) <= 0) bad.add("a kill gave no Growth");
                     if (HungerFx.hunger(p) <= 20f) bad.add("a kill didn't feed the blade");
                     if (HungerFx.bondXp(p) <= 0) bad.add("a kill built no Bond");
+                    // devour: a sneak-strike on a foe near death eats it whole, for double Growth
+                    int g0 = HungerFx.growth(p);
+                    prey = net.minecraft.world.entity.EntityType.ZOMBIE.create(sl());
+                    if (prey != null) {
+                        prey.moveTo(home.x, home.y, home.z + 1.5, 180, 0); prey.setNoAi(true);
+                        sl().addFreshEntity(prey);
+                        prey.setHealth(2.5f);
+                        p.setShiftKeyDown(true);
+                        prey.hurt(p.damageSources().playerAttack(p), 1f);
+                        p.setShiftKeyDown(false);
+                        if (prey.isAlive()) { bad.add("devour didn't eat a zombie at 2.5 health"); prey.discard(); }
+                        else if (HungerFx.growth(p) - g0 < 2 * Math.max(1, Math.round(prey.getMaxHealth() / 8f))) bad.add("devour gave " + (HungerFx.growth(p) - g0) + " Growth, not double");
+                    }
+                    // a parry in time takes most of a blow
+                    p.setHealth(p.getMaxHealth());
+                    HungerFx.testParry(p);
+                    float before = p.getHealth();
+                    p.invulnerableTime = 0;
+                    p.hurt(p.damageSources().mobAttack(dummy), 10f);
+                    float took = before - p.getHealth();
+                    if (took > 3f) bad.add(String.format("a parry let %.1f of 10 through", took));
+                    p.setHealth(p.getMaxHealth());
                     // moods: well fed - faster swings; starved - harder hits and a bite that never takes the last of you
                     HungerFx.testHunger(p, 90f);
                 }
@@ -488,7 +515,35 @@ public final class GameTests {
                     HungerFx.testHunger(p, 2f);
                     p.setHealth(3.5f);
                 }
-                if (t == 122) {
+                if (t == 24) {
+                    HungerFx.testBond(p, 140);
+                    p.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY);
+                }
+                if (t == 50) {
+                    if (!HungerFx.isBlade(p.getOffhandItem())) bad.add("no twin in the off hand at Bond 4");
+                    HungerFx.testBond(p, 0);
+                }
+                if (t == 74) {
+                    if (HungerFx.isBlade(p.getOffhandItem())) bad.add("the twin stayed below Bond 4");
+                    // sheathed: put away, it hangs at the hip
+                    p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                }
+                if (t == 78) {
+                    if (HungerFx.testLook(p) < 0) bad.add("nothing sheathed at the hip with the blade put away");
+                    HungerFx.testHold(p, 2);
+                    // sulking: left starved a minute, it won't come at once
+                    p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    HungerFx.testStarvedFor(p, 70);
+                    HungerFx.draw(p, 10f);
+                    if (HungerFx.drawn(p)) bad.add("a sulking blade came at once");
+                }
+                if (t == 144) {
+                    if (!HungerFx.drawn(p)) bad.add("the sulking blade never came");
+                    HungerFx.testStarvedFor(p, 0);
+                    p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    HungerFx.testHold(p, 2);
+                }
+                if (t == 162) {
                     var dm = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
                     if (dm == null || dm.getModifier(HungerFx.HUNGRY_DMG) == null) bad.add("starved gave no harder hits");
                     if (p.getHealth() < 3.4f) bad.add("the starved bite took the player below 4 health");
@@ -502,13 +557,13 @@ public final class GameTests {
                     p.setShiftKeyDown(false);
                     if (HungerFx.drawn(p)) bad.add("the throw left the blade in the hand");
                 }
-                if (t == 170) {
+                if (t == 210) {
                     if (!HungerFx.drawn(p)) bad.add("the thrown blade didn't come back to the hand");
                     if (!sl().getEntitiesOfClass(com.ironspellgrimoire.entity.ThrownHungerBlade.class, p.getBoundingBox().inflate(40)).isEmpty()) bad.add("a thrown blade is still out");
                     // the book taken off: the blade goes with it
                     top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, ItemStack.EMPTY));
                 }
-                if (t == 172) {
+                if (t == 212) {
                     if (HungerFx.drawn(p)) bad.add("the blade stayed after the book was taken off");
                     String ch = changes(before);
                     if (!ch.isEmpty()) bad.add("changed the world: " + ch);
@@ -1313,6 +1368,14 @@ public final class GameTests {
                 "unleash: pyre sweep", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 22); HungerFx.unleash(pl, pw); }, "c",
                 "gnash: thrown", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 17); HungerFx.testBond(pl, 140); pl.setShiftKeyDown(true); HungerFx.gnash(pl, pw); pl.setShiftKeyDown(false); }, "c",
                 "unleash: awakened pact", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 7); HungerFx.testBond(pl, 230); HungerFx.unleash(pl, pw); }, "c",
+                "charge: bite", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 2); HungerFx.testCharge(pl); }, "c",
+                "charge: bone walls", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 7); HungerFx.testCharge(pl); }, "c",
+                "charge: crystal lunge", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 9); HungerFx.testCharge(pl); }, "c",
+                "charge: shadow blink", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 16); HungerFx.testCharge(pl); }, "c",
+                "charge: fire wheel", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 21); HungerFx.testCharge(pl); }, "c",
+                "unleash: fossil prism (two paths)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 23); HungerFx.unleash(pl, pw); }, "c",
+                "unleash: ashen eclipse (two paths)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 28); HungerFx.unleash(pl, pw); }, "c",
+                "hunger_domain", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 5); HungerFx.hungerDomain(pl, pw); HungerFx.feast(pl, pw); }, "c",
                 "the_blade", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> HungerFx.theBlade(pl, pw), "q"));
         queue.add(new HungerTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));

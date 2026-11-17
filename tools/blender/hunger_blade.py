@@ -453,7 +453,7 @@ def sweep_edge(name, P, w, th, region, side=-1, r=0.15, t0=0.04, t1=0.94):
 
 def hilt(stage, path, eye_pommel=True, guard_w=1.0):
     """The living hilt every sword keeps: the sinew grip and the eyed jaw. Returns (z0 where the blade starts, size, eye, body)."""
-    g, s = {5: (8.0, 1.35), 6: (9.0, 1.6)}[stage]
+    g, s = {5: (8.0, 1.35), 6: (9.0, 1.6), 7: (9.5, 1.75)}[stage]
     eye = {"bone": "eye_r", "crystal": "eye_p", "shadow": "eye_b", "flame": "eye_o"}[path]
     body = {"bone": "flesh", "crystal": "flesh", "shadow": "black", "flame": "char"}[path]
     z0 = g / 2 + 1.5 * s
@@ -758,6 +758,121 @@ def flame_magma():
     return done(z0, top + 25, g, s)
 
 
+
+# ------------------------------------------------------------------ the hybrids (stage 7: two paths' ascended forms grown, fused)
+def hybrid_fossil():
+    """Fossil Prism (bone + crystal): two rails of old bone holding a blade of crimson crystal between them, the crystal
+    running on past the bone into a long point."""
+    z0, s, eye, body, g = hilt(7, "crystal", guard_w=1.2); L = 32.0
+    th = lambda t: 0.7 * (1 - t) ** 0.4 + 0.08
+    blade("blade", z0, L + 4, lambda t: -2.6 * (1 - t) ** 0.9 - 0.05, lambda t: 2.6 * (1 - t) ** 0.9 + 0.05, th, "b_crys", glow=True, n=10, tip=(0, 2.5))
+    for side in (1, -1):
+        P = lambda t, sd=side: (sd * (2.6 * (1 - 0.85 * L * t / (L + 4)) ** 0.9 + 0.45), z0 - 0.5 + L * 0.85 * t)   # hugging the crystal's edge
+        sweep("blade_rail%d" % side, P, lambda t: 0.8 * (1 - 0.6 * t), lambda t: 0.8 * (1 - 0.6 * t), lambda t: 1.0 * (1 - 0.5 * t), "b_bone", n=20, tiplen=1.4)
+        for k in range(4):   # bone clasps gripping the crystal
+            t = 0.15 + 0.2 * k
+            x, z = P(t)
+            gt.box("clasp%d%d" % (side, k), (x * 0.7, 0, z), (abs(x) * 0.7, 1.9, 0.7), "bone", bevel=0.2, segs=1)
+    ridge(z0, L + 4, lambda t: 0.0, th, "pale", r=0.15)
+    return done(z0, z0 + L + 7, g, s)
+
+
+def hybrid_grave():
+    """Grave Fang (bone + shadow): one great curved fang of bone, its cutting edge blackened and honed blue, blue wisps
+    curling off the guard."""
+    z0, s, eye, body, g = hilt(7, "shadow", guard_w=1.2); L = 30.0
+    bend = lambda t: 4.2 * t ** 2
+    xl = lambda t: bend(t) - 3.6 * (1 - t) ** 0.8 - 0.05
+    xr = lambda t: bend(t) + 2.4 * (1 - t) ** 0.7 + 0.05
+    th = lambda t: 1.0 * (1 - t) ** 0.5 + 0.08
+    blade("blade", z0, L, xl, xr, th, "b_bone", n=40, tip=(bend(1) + 0.4, 1.8))
+    P = lambda t: (xr(t) - 0.35, z0 + L * t)
+    sweep("blade_black", P, lambda t: 0.5, lambda t: 0.25, lambda t: th(t) * 0.5 + 0.05, "b_shadow", glow=True, n=30, tiplen=0.5)   # the blackened edge
+    edge_line(z0, L, xr, lambda t: (xl(t) + xr(t)) / 2, th, "blue", r=0.2)
+    for side in (1, -1):
+        W = 3.0 * s
+        tube("gw%d" % side, [(side * W, 0, z0 + 0.4 * s, 0.32 * s), (side * W * 1.45, 0, z0 - 1.0 * s, 0.24 * s), (side * W * 1.35, 0, z0 - 3.2 * s, 0.05)], "blue", flat=0.35, glow=True)
+    blade_eye(((xl(0.14) + xr(0.14)) / 2, z0 + L * 0.14), s * 0.8, eye, body, th(0.14))
+    return done(z0, z0 + L + 2, g, s)
+
+
+def hybrid_cinder():
+    """Cinder Ossuary (bone + flame): a column of charred vertebrae, each winged with a bone blade, held apart by
+    glowing embers - fire burning in every gap."""
+    z0, s, eye, body, g = hilt(7, "flame", guard_w=1.2); L = 32.0
+    n = 7; seg = L / n
+    for i in range(n):
+        za = z0 + i * seg; w = 4.8 * (1 - 0.45 * i / n)
+        last = i == n - 1
+        if last: blade("blade%d" % i, za, seg * 0.9, lambda t: -2.4 * (1 - t), lambda t: 2.4 * (1 - t), lambda t: 0.8, "b_bone", n=6, tip=(0, 2.8))
+        else:   # a bone wing either side, swept up like a barb
+            for sd in (1, -1):
+                Pw = lambda t, sd=sd, za=za, w=w: (sd * (0.6 + w * t), za + seg * (0.15 + 0.55 * t ** 1.4))
+                sweep("blade%d_%d" % (i, sd), Pw, lambda t: 0.9 * (1 - t) + 0.08, lambda t: 0.9 * (1 - t) + 0.08, lambda t: 0.5 * (1 - t) + 0.06, "b_bone", n=10, tiplen=1.0)
+        gt.box("body%d" % i, (0, 0, za + seg * 0.35), (1.7, 2.2, seg * 0.8), "char", bevel=0.25, segs=1)
+        if i < n - 1:   # the ember in the gap, and a lick of flame off it
+            o = gt.box("ember%d" % i, (0, 0, za + seg * 0.85), (1.2, 1.6, seg * 0.3), "ember"); GLOW.append(o)
+            tube("lick%d" % i, [(0.5, 0, za + seg * 0.85, 0.4), (1.6, 0, za + seg * 1.05, 0.3), (2.0, 0, za + seg * 1.35, 0.15), (1.6, 0, za + seg * 1.6, 0.03)], "ember", flat=0.5, glow=True)   # growing from the ember
+    for side in (1, -1):
+        W = 3.0 * s
+        tube("gf%d" % side, [(side * W * 0.9, 0, z0 + 0.6 * s, 0.42 * s), (side * W * 1.3, 0, z0 + 2.0 * s, 0.27 * s), (side * W * 1.05, 0, z0 + 3.6 * s, 0.05)], "ember", flat=0.45, glow=True)
+    return done(z0, z0 + L + 3, g, s)
+
+
+def hybrid_obsidian():
+    """Obsidian Prism (crystal + shadow): stacked shards of black glass, each rimmed in blue light, with a crown of blue
+    crystal at the guard."""
+    z0, s, eye, body, g = hilt(7, "shadow", guard_w=1.2); L = 32.0
+    shard = lambda t: 1 - 0.32 * frac(t * 5)
+    xl = lambda t: -3.0 * shard(t) * sharp(t, 0.8)
+    xr = lambda t: 3.0 * shard(t) * sharp(t, 0.8)
+    th = lambda t: 0.9 * (1 - t) ** 0.5 + 0.08
+    blade("blade", z0, L, xl, xr, th, "b_shadow", glow=True, n=50, tip=(0, 3.0))
+    edge_line(z0, L, xr, lambda t: 0.0, th, "blue", r=0.18)
+    ridge(z0, L, lambda t: 0.0, th, "blue", r=0.14)
+    for side in (1, -1):
+        for k in range(4):
+            o = gt.cone("gc%d%d" % (side, k), (side * (1.9 + 0.55 * k) * s, 0, z0 - 0.3 * s), (side * (0.15 + 0.32 * k), 0, 1), (0.5 - 0.06 * k) * s, (3.0 - 0.55 * k) * s, "blue", segs=4)
+            GLOW.append(o)
+    return done(z0, z0 + L + 3, g, s)
+
+
+def hybrid_sunshard():
+    """Sunshard (crystal + flame): a long blade of burning crystal, faceted and glowing from within, the guard a sunburst
+    of ember spikes all round."""
+    z0, s, eye, body, g = hilt(7, "flame", guard_w=1.1); L = 33.0
+    w = lambda t: 2.6 * (1 - t) ** 1.05 + 0.08
+    th = lambda t: 0.6 * (1 - t) + 0.07
+    blade("blade", z0 + 0.6, L, lambda t: -w(t), w, th, "b_flame", glow=True, n=12, tip=(0, 2.4))
+    o = blade("blade_x", z0 + 0.6, L * 0.8, lambda t: -w(t) * 0.6, lambda t: w(t) * 0.6, th, "b_flame", glow=True, n=10, tip=(0, 1.8))
+    o.data.transform(Matrix.Rotation(math.pi / 2, 4, "Z"))
+    for k in range(12):   # the sunburst: ember spikes fanning out round the guard, in the blade's plane and through it
+        a = math.pi * 2 * k / 12
+        d = Vector((math.cos(a), 0.6 * math.sin(a * 2), math.sin(a) * 0.6 + 0.25)).normalized()
+        o = gt.cone("ray%d" % k, (0, 0, z0 - 0.2), d, 0.7, 7.0 + 2.2 * (k % 2), "ember", segs=4); GLOW.append(o)
+    return done(z0, z0 + L + 3, g, s)
+
+
+def hybrid_ashen():
+    """Ashen Eclipse (shadow + flame): a black blade whose edge burns orange, set in a broad crescent of black flame that
+    curls up round its root like an eclipsed sun."""
+    z0, s, eye, body, g = hilt(7, "shadow", guard_w=1.2); L = 30.0
+    xl = lambda t: -2.6 * sharp(t, 0.72)
+    xr = lambda t: 2.6 * sharp(t, 0.6)
+    th = lambda t: 0.75 * (1 - t) ** 0.4 + 0.08
+    blade("blade", z0, L, xl, xr, th, "b_shadow", glow=True, n=30, tip=(0, 2.2))
+    edge_line(z0, L, xr, lambda t: 0.0, th, "ember", r=0.2)
+    vein(z0, L, lambda t: 0.0, th, t1=0.85, r=0.18)
+    R = 6.6   # its two ends rest on the jaw's upturned tips
+    P = lambda t: (R * math.cos(math.pi * (1.06 - 1.12 * t)), z0 + 0.9 + R * math.sin(math.pi * (1.06 - 1.12 * t)) * 0.8)
+    sweep("blade_crescent", P, lambda t: 1.6 * math.sin(math.pi * t) ** 0.7 + 0.1, lambda t: 0.5 * math.sin(math.pi * t) ** 0.5 + 0.1,
+          lambda t: 0.5 * math.sin(math.pi * t) ** 0.5 + 0.06, "b_flame", glow=True, n=40, tiplen=1.2)
+    return done(z0, z0 + L + 2.5, g, s)
+
+
+HYBRIDS = {"hybrid_fossil": hybrid_fossil, "hybrid_grave": hybrid_grave, "hybrid_cinder": hybrid_cinder,
+           "hybrid_obsidian": hybrid_obsidian, "hybrid_sunshard": hybrid_sunshard, "hybrid_ashen": hybrid_ashen}
+
 BRANCHES = {   # path: ((stage 5 A, its ascended), (stage 5 B, its ascended))
     "bone": (("ribcage", bone_ribcage, "ossuary", bone_ossuary), ("spine", bone_spine, "reaper", bone_reaper)),
     "crystal": (("rapier", crystal_rapier, "lance", crystal_lance), ("geode", crystal_geode, "cluster", crystal_cluster)),
@@ -768,6 +883,8 @@ NAMES = {"fang": "Fang", "gnaw": "Gnaw", "maw": "Maw Blade", "bone_evo": "Marrow
          "bone_ribcage": "Ribcage Greatsword", "bone_ossuary": "Ossuary Colossus", "bone_spine": "Spine Saw", "bone_reaper": "Tailbone Reaper",
          "crystal_rapier": "Prism Rapier", "crystal_lance": "Refraction Lance", "crystal_geode": "Geode Breaker", "crystal_cluster": "Cluster Colossus",
          "shadow_sickle": "Eclipse Sickle", "shadow_nightfall": "Nightfall Crescent", "shadow_twin": "Twin Fang", "shadow_hydra": "Hydra Edge",
+         "hybrid_fossil": "Fossil Prism", "hybrid_grave": "Grave Fang", "hybrid_cinder": "Cinder Ossuary", "hybrid_obsidian": "Obsidian Prism",
+         "hybrid_sunshard": "Sunshard", "hybrid_ashen": "Ashen Eclipse",
          "flame_flamberge": "Flamberge", "flame_pyre": "Pyre Wing", "flame_furnace": "Furnace Cleaver", "flame_magma": "Magma Maw"}
 
 
@@ -776,6 +893,7 @@ for _p in ("bone", "crystal", "shadow", "flame"):
     FORMS[_p + "_evo"] = (lambda p: lambda: path_blade(p, "evo"))(_p)
     for a5, f5, a6, f6 in BRANCHES[_p]:
         FORMS["%s_%s" % (_p, a5)] = f5; FORMS["%s_%s" % (_p, a6)] = f6
+FORMS.update(HYBRIDS)
 TARGETS = {"fang": 1600, "gnaw": 2200, "maw": 3000}
 
 
@@ -839,6 +957,7 @@ def build(form, out_dir):
 
 SHEET = [["fang", "gnaw", "maw"]] + [[p + "_evo"] + ["%s_%s" % (p, n) for a5, _, a6, _ in BRANCHES[p] for n in (a5, a6)]
                                    for p in ("bone", "crystal", "shadow", "flame")]
+SHEET.append(list(HYBRIDS))
 STAGE = {0: "4", 1: "5", 2: "6", 3: "5", 4: "6"}
 
 
@@ -873,13 +992,13 @@ def render_sheet(out_dir, only=None):
     for i, col in enumerate(cols):
         for j, form in enumerate(col):
             sheet.paste(Image.open(os.path.join(out_dir, "blade_%s.png" % form)).convert("RGB"), (i * CW, j * CH))
-            stage = str(j + 1) if i == 0 and not only else STAGE.get(j, "")
+            stage = "7" if form.startswith("hybrid") else str(j + 1) if i == 0 and not only else STAGE.get(j, "")
             d.text((i * CW + 10, j * CH + 8), "%s  %s" % (stage, NAMES[form]), fill=(230, 220, 220))
     sheet.save(os.path.join(out_dir, "hunger_blade_sheet.png"))
 
 
 ORDER = ["fang", "gnaw", "maw"] + [n for p in ("bone", "crystal", "shadow", "flame")
-                                   for n in [p + "_evo"] + ["%s_%s" % (p, x) for a5, _, a6, _ in BRANCHES[p] for x in (a5, a6)]]   # the form numbers the game uses (server/HungerFx)
+                                   for n in [p + "_evo"] + ["%s_%s" % (p, x) for a5, _, a6, _ in BRANCHES[p] for x in (a5, a6)]] + list(HYBRIDS)   # the form numbers the game uses (server/HungerFx)
 
 
 def to_game(out_dir, only=None):
@@ -895,8 +1014,8 @@ def to_game(out_dir, only=None):
         txt = open(objp).read().replace("mtllib %s.mtl" % form, "mtllib %s.mtl" % name, 1)
         open(objp, "w").write(txt)
         i = ORDER.index(form)
-        held = [15, 19, 23][i] if i < 3 else (25 if form.endswith("_evo") else (31 if (i - 3) % 5 in (2, 4) else 28))
-        gt.export_to_game(name, out_dir, gt.display(length, held=held), glowing={form + "_glow"},
+        held = [15, 19, 23][i] if i < 3 else 32 if form.startswith("hybrid") else (25 if form.endswith("_evo") else (31 if (i - 3) % 5 in (2, 4) else 28))
+        gt.export_to_game(name, out_dir, gt.display(length, held=held, fp_held=held * 0.72), glowing={form + "_glow"},   # smaller in first person, so it doesn't fill the screen
                           textures={form: TEX, form + "_glow": TEX}, render_type="minecraft:cutout")
     md = os.path.join(gt.ASSETS, "models", "item")
     base = json.load(open(os.path.join(md, "hunger_blade_fang.json")))

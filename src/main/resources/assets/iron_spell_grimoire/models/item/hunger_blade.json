@@ -52,9 +52,9 @@
     -0.35
    ],
    "scale": [
-    0.701,
-    0.701,
-    0.701
+    0.505,
+    0.505,
+    0.505
    ]
   },
   "firstperson_lefthand": {
@@ -69,9 +69,9 @@
     -0.35
    ],
    "scale": [
-    0.701,
-    0.701,
-    0.701
+    0.505,
+    0.505,
+    0.505
    ]
   },
   "gui": {
@@ -259,6 +259,42 @@
     "iron_spell_grimoire:form": 0.6875
    },
    "model": "iron_spell_grimoire:item/hunger_blade_flame_magma"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.71875
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_hybrid_fossil"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.75
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_hybrid_grave"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.78125
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_hybrid_cinder"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.8125
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_hybrid_obsidian"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.84375
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_hybrid_sunshard"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.875
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_hybrid_ashen"
   }
  ]
 }
