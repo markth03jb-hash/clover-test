@@ -59,6 +59,8 @@ public class EvolutionScreen extends Screen {
         g.fill(x0 + 8, y0 + 32, x0 + W - 8, y0 + 33, EDGE_DIM);
         // the three branches
         int colW = (W - 24) / 3, top = y0 + 40;
+        int room = H - 52 - (strainPick() ? 100 : 16);   // the Arsenal branch's five nodes must fit above the strains
+        int h = Math.max(13, Math.min(34, room / 5 - 3));
         for (int b = 0; b < 3; b++) {
             int cx = x0 + 8 + b * (colW + 4);
             g.drawCenteredString(font, BRANCH[b], cx + colW / 2, top, BONE);
@@ -67,7 +69,6 @@ public class EvolutionScreen extends Screen {
                 if (ParasiteFx.NODES[i][0] != b) continue;
                 int rk = ParasiteClient.rank(i), max = ParasiteFx.NODES[i][1], cost = ParasiteFx.NODES[i][2];
                 boolean full = rk >= max, afford = ParasiteClient.ep >= cost;
-                int h = 34;
                 boolean over = mx >= cx && mx < cx + colW && my >= y && my < y + h;
                 g.fill(cx, y, cx + colW, y + h, full ? 0xC0301018 : over && afford ? 0xC0501820 : 0xC0200C10);
                 g.renderOutline(cx, y, colW, h, full ? 0xFFB03040 : afford ? EDGE : EDGE_DIM);
@@ -77,10 +78,10 @@ public class EvolutionScreen extends Screen {
                     g.fill(px, y + 5, px + 5, y + 10, k < rk ? 0xFFFF4050 : 0xFF40262A);
                 }
                 List<net.minecraft.util.FormattedCharSequence> lines = font.split(Component.literal(ParasiteFx.NODE_DESC[i]), colW - 34);
-                for (int k = 0; k < Math.min(2, lines.size()); k++) g.drawString(font, lines.get(k), cx + 5, y + 14 + k * 9, MUTED, false);
+                for (int k = 0; k < Math.min(h >= 34 ? 2 : h >= 24 ? 1 : 0, lines.size()); k++) g.drawString(font, lines.get(k), cx + 5, y + 14 + k * 9, MUTED, false);
                 if (!full) {
                     String c = cost + " EP";
-                    g.drawString(font, c, cx + colW - 5 - font.width(c), y + h - 10 + 0, afford ? GOLD : 0xFF7A5A40, false);
+                    if (h >= 24) g.drawString(font, c, cx + colW - 5 - font.width(c), y + h - 10, afford ? GOLD : 0xFF7A5A40, false);
                     final int node = i;
                     hits.add(new Hit(cx, y, colW, h, () -> ParasiteClient.send(7, node)));
                 }
@@ -89,7 +90,7 @@ public class EvolutionScreen extends Screen {
         }
         // the strains
         if (strainPick()) {
-            int sy = y0 + H - 92;
+            int sy = y0 + H - 90;
             g.fill(x0 + 8, sy - 6, x0 + W - 8, sy - 5, EDGE_DIM);
             g.drawCenteredString(font, "The strain is ready to settle - choose for good", x0 + W / 2, sy - 2, 0xFFFF8090);
             int cw = (W - 24) / 3;

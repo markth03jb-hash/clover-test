@@ -523,6 +523,11 @@ public final class UiShots {
             steps.add(new Step("par_" + forms[f] + "_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 8, true));
             steps.add(new Step("par_" + forms[f] + "_3p_side", () -> { onServer(p -> { p.setYRot(-90); p.setYHeadRot(-90); p.setYBodyRot(-90); p.connection.teleport(p.getX(), p.getY(), p.getZ(), -90, 0); }); }, 8, true));
         }
+        for (int k : new int[]{-40, 40}) {   // tuning: which way the first-person tilt carries the forms forward
+            steps.add(new Step("par_tilt" + k + "_talons", () -> { ParasiteArms.fpTilt = k; mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:form2")); }, 10, true));
+            steps.add(new Step("par_tilt" + k + "_reaper", () -> onServer(p -> UiShotsServer.element(p, "p:form1")), 10, true));
+        }
+        steps.add(new Step("par_tilt_reset", () -> ParasiteArms.fpTilt = 0F, 2, true));
         steps.add(new Step("par_bulwark", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { UiShotsServer.element(p, "p:form1"); UiShotsServer.element(p, "p:bulwark"); }); }, 14, true));
         steps.add(new Step("par_bulwark_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 8, true));
         steps.add(new Step("par_hide_3p", () -> onServer(p -> UiShotsServer.element(p, "p:hide")), 12, true));
