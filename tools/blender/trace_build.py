@@ -7,7 +7,7 @@ Forge's OBJ loader. Run with Blender's Python (bpy).
 The surface is the picture on both faces; a second, glowing layer (lit by its own material: Ka 1) lies just over the
 triangles that carry red, its texture transparent everywhere but the red - so the red parts glow.
 """
-import json, math, os, shutil, sys
+import json, math, os, sys
 import bpy, bmesh
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -81,26 +81,8 @@ def build(data_dir):
 
 
 def to_game(data_dir, name):
-    mdir, tdir = os.path.join(gt.ASSETS, "models", "item"), os.path.join(gt.ASSETS, "textures", "item")
-    obj = open(os.path.join(data_dir, name + ".obj")).read()
-    open(os.path.join(mdir, name + ".obj"), "w").write("\n".join(l for l in obj.splitlines() if not l.startswith("#")) + "\n")
-    mtl, cur = [], None
-    for l in open(os.path.join(data_dir, name + ".mtl")).read().splitlines():
-        if l.startswith(("#", "Kd ", "Ka ", "map_Ke", "map_d")): continue
-        if l.startswith("newmtl"):
-            cur = l.split()[1]
-            glow = cur.endswith("_glow")
-            mtl += [l, "Kd 1.000000 1.000000 1.000000", "Ka 1.000000 1.000000 1.000000" if glow else "Ka 0.000000 0.000000 0.000000"]
-            continue
-        if l.startswith("map_Kd"): l = "map_Kd iron_spell_grimoire:item/" + cur
-        mtl.append(l)
-    open(os.path.join(mdir, name + ".mtl"), "w").write("\n".join(mtl) + "\n")
-    for f in (name + ".png", name + "_glow.png"): shutil.copy(os.path.join(data_dir, f), os.path.join(tdir, f))
-    json.dump({"loader": "forge:obj", "model": "iron_spell_grimoire:models/item/%s.obj" % name, "flip_v": True,
-               "render_type": "minecraft:cutout",
-               "textures": {"particle": "iron_spell_grimoire:item/" + name}, "display": gt.DISPLAY},
-              open(os.path.join(mdir, name + ".json"), "w"), indent=1)
-    print("written into the mod's assets")
+    gt.export_to_game(name, data_dir, gt.DISPLAY, glowing={name + "_glow"}, textures={name + "_glow": name + "_glow"},
+                      render_type="minecraft:cutout")   # cutout: the glowing layer is see-through everywhere but its red
 
 
 if __name__ == "__main__":

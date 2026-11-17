@@ -479,6 +479,10 @@ public final class UiShots {
         steps.add(new Step("shd_rosewrath", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:rosewrath")); }, 20, true));
         steps.add(new Step("shd_rosewrath_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 10, true));
         steps.add(new Step("shd_crimson_fracture", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:crimson_fracture")); }, 7, true));
+        steps.add(new Step("shd_frostwing", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:frostwing")); }, 20, true));
+        steps.add(new Step("shd_frostwing_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 10, true));
+        steps.add(new Step("shd_verdict_charge", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:sovereigns_verdict")); }, 12, true));
+        steps.add(new Step("shd_verdict_sweep", () -> {}, 12, true));   // the sweep, a few ticks after the charge
         steps.add(new Step("shd_wyrmfang_lunge", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:wyrmfang_lunge")); }, 8, true));
         steps.add(new Step("shd_status", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "s:status")); }, 14, false));   // the Status window
         steps.add(new Step("shd_market", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "s:market")); }, 14, false));   // the Market
@@ -565,7 +569,7 @@ public final class UiShots {
             {"shd_", "geo/shadow_knight.geo.json", "textures/geo/shadow_knight.png", "animations/shadow_knight.animation.json", "textures/geo/shadow_knight_living.png",
                     "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json", "textures/geo/shadow_ravener_living.png",
                     "geo/mantle_helm.geo.json", "geo/mantle_chest.geo.json", "geo/mantle_arm.geo.json", "geo/mantle_leg.geo.json", "textures/item/nightfang.png", "models/item/nightfang_3d.json",
-                    "models/item/duskglass_kris.json", "geo/item/dragon_fang.geo.json", "textures/item/dragon_fang.png", "models/item/gilded_thorn.obj", "textures/item/gilded_thorn.png", "models/item/bloodrend.obj", "textures/item/bloodrend.png", "models/item/rosewrath.obj", "textures/item/rosewrath.png"},
+                    "models/item/duskglass_kris.json", "geo/item/dragon_fang.geo.json", "textures/item/dragon_fang.png", "models/item/gilded_thorn.obj", "textures/item/gilded_thorn.png", "models/item/bloodrend.obj", "textures/item/bloodrend.png", "models/item/rosewrath.obj", "textures/item/rosewrath.png", "models/item/frostwing.obj", "textures/item/frostwing.png"},
             {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"}};
 
     private static String assetsKey(String step) {

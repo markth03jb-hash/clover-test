@@ -428,7 +428,7 @@ public final class GameTests {
                     HunterAscension.startReckoning(p);
                 }
                 if (t == 100) {   // the knives' moves: each must hurt the dummy
-                    for (String k : new String[]{"thousand_cuts", "wyrmfang_lunge", "phantom_edges", "thornbite", "crimson_rend", "crimson_fracture"}) {
+                    for (String k : new String[]{"thousand_cuts", "wyrmfang_lunge", "phantom_edges", "thornbite", "crimson_rend", "crimson_fracture", "sovereigns_verdict"}) {
                         ensureDummy();
                         p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
                         float hp0 = dummy.getHealth();
@@ -438,6 +438,7 @@ public final class GameTests {
                             case "thornbite" -> ShadowFx.thornbite(p);
                             case "crimson_rend" -> ShadowFx.crimsonRend(p);
                             case "crimson_fracture" -> ShadowFx.crimsonFracture(p);
+                            case "sovereigns_verdict" -> ShadowFx.sovereignsVerdict(p);
                             default -> ShadowFx.phantomEdges(p);
                         };
                         if (!did) bad.add(k + " did nothing");

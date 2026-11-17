@@ -603,7 +603,7 @@ public final class ShadowFx {
     public static boolean thousandCuts(ServerPlayer p) {
         ServerLevel sl = p.serverLevel();
         List<LivingEntity> foes = new ArrayList<>(Kit.near(sl, p, p.position(), 10));
-        foes.removeIf(t -> t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player);
+        foes.removeIf(t -> !foe(p, t));
         foes.sort((a, b2) -> Double.compare(a.distanceToSqr(p), b2.distanceToSqr(p)));
         if (foes.isEmpty()) { p.displayClientMessage(Component.literal("Nothing in reach to cut").withStyle(ChatFormatting.GRAY), true); return false; }
         List<LivingEntity> cut = foes.subList(0, Math.min(5, foes.size()));
@@ -655,7 +655,7 @@ public final class ShadowFx {
                 net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, p));
         Vec3 to = hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK ? hit.getLocation().subtract(d.scale(0.6)).subtract(0, 0.6, 0) : want;
         List<LivingEntity> cut = new ArrayList<>(Kit.along(sl, p, from.add(0, 1, 0), to.add(0, 1, 0), 1.1));
-        cut.removeIf(t -> t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player);
+        cut.removeIf(t -> !foe(p, t));
         dash(sl, from.add(0, 0.5, 0), to.add(0, 0.5, 0));
         p.teleportTo(to.x, to.y, to.z);
         p.fallDistance = 0;
@@ -678,6 +678,11 @@ public final class ShadowFx {
         return true;
     }
 
+    /** Whether t is something p's moves should hit: not a player, and not one of p's own shadows. */
+    static boolean foe(ServerPlayer p, LivingEntity t) {
+        return !(t instanceof Player) && !(t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()));
+    }
+
     /** Gilded Thorn - Thornbite: a wide slash cutting everything within 4 blocks in front of you (full damage), and the
      *  thorns stay in the wound - each foe cut bleeds for a quarter of that again every second for 4 s. 12 s. */
     public static boolean thornbite(ServerPlayer p) {
@@ -687,7 +692,7 @@ public final class ShadowFx {
         final Vec3 dir = d;
         Vec3 eye = p.position().add(0, 1.1, 0);
         List<LivingEntity> cut = new ArrayList<>(Kit.near(sl, p, p.position().add(dir.scale(2.0)), 3.2));
-        cut.removeIf(t -> t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player
+        cut.removeIf(t -> !foe(p, t)
                 || t.position().subtract(p.position()).multiply(1, 0, 1).normalize().dot(dir) < 0.25);
         Vec3 side = new Vec3(-dir.z, 0, dir.x);
         dash(sl, eye.add(dir.scale(1.6)).add(side.scale(1.8)), eye.add(dir.scale(1.6)).subtract(side.scale(1.8)));   // the arc of the cut
@@ -737,7 +742,7 @@ public final class ShadowFx {
                 dash(sl, hornA, c); dash(sl, c, hornB);
                 FxSend.ring(sl, Fx.CRIMSON | FxPacket.KEEP_SHAPE, c, 0.3f, 1.2f, 0.04f, 6);
                 for (LivingEntity t : Kit.along(sl, p, hornA, hornB, 0.9)) {
-                    if (t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player || !struck.add(t.getUUID())) continue;
+                    if (!foe(p, t) || !struck.add(t.getUUID())) continue;
                     t.invulnerableTime = 0;
                     AstaFx.damage(p, t, dmg, "crimson_rend");
                     shadowHit(sl, t, 2);
@@ -777,7 +782,7 @@ public final class ShadowFx {
                 if (step % 3 == 0) sound(sl, at, SoundEvents.STONE_BREAK, 0.5f, 0.6f);
                 last[0] = at;
                 for (LivingEntity t : Kit.near(sl, p, at.add(0, 0.6, 0), 1.4)) {
-                    if (t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player || !struck.add(t.getUUID())) continue;
+                    if (!foe(p, t) || !struck.add(t.getUUID())) continue;
                     t.invulnerableTime = 0;
                     AstaFx.damage(p, t, dmg, "crimson_fracture");
                     t.push(0, 0.42, 0); t.hurtMarked = true;
@@ -806,6 +811,59 @@ public final class ShadowFx {
         return null;
     }
 
+    /** Frostwing - Sovereign's Verdict: you raise the greatsword and gather its light for a second - cyan rings draw in
+     *  round you, a pillar of light climbs off the blade - then swing it in one full circle: a giant glowing blade
+     *  sweeps round you 7 blocks out, rings of light rolling out behind it, and everything within 7 blocks takes 3x a
+     *  blow and is thrown outward. 20 s. */
+    public static boolean sovereignsVerdict(ServerPlayer p) {
+        ServerLevel sl = p.serverLevel();
+        final double R = 7.0;
+        final int CHARGE = 20;
+        sound(sl, p.position(), SoundEvents.BEACON_ACTIVATE, 1.0f, 1.6f);
+        for (int k = 0; k < CHARGE; k += 4) {   // the gathering: rings drawing in, a pillar climbing off the blade
+            final int at = k;
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                Vec3 c = p.position().add(0, 0.05, 0);
+                float f = 1f - at / (float) CHARGE;
+                FxSend.ring(sl, Fx.ICE | FxPacket.KEEP_SHAPE, c, (float) R * f + 0.6f, (float) R * f + 0.2f, 0.12f, 6);
+                FxSend.beam(sl, Fx.ICE | FxPacket.KEEP_SHAPE, p.position().add(0, 1.2, 0), p.position().add(0, 1.2 + 2.5 + at * 0.15, 0), 0.25f + at * 0.01f, 6);
+                if (at % 8 == 0) sound(sl, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1.0f, 0.8f + at * 0.04f);
+            });
+        }
+        AstaFx.later(CHARGE, () -> {   // the verdict
+            if (!alive(p)) return;
+            Vec3 c = p.position();
+            float yaw = p.getYRot();
+            Vec3 mid = c.add(0, 1.1, 0);
+            // the blade itself: glowing walls sweeping a full circle in 5 ticks, from close in out to the edge
+            for (double r : new double[]{2.2, 3.8, 5.4, R})
+                FxSend.wall(sl, Fx.ICE | FxPacket.KEEP_SHAPE, mid, new Vec3(1, 0, 0), new Vec3(0, 0, 1), (float) r, (float) r, yaw, yaw + 360, r == R ? 0.55f : 0.3f, 14, 5, 0);
+            FxSend.wall(sl, Fx.LIGHTNING | FxPacket.KEEP_SHAPE, mid, new Vec3(1, 0, 0), new Vec3(0, 0, 1), (float) R + 0.3f, (float) R + 0.3f, yaw, yaw + 360, 0.15f, 12, 5, 0);
+            AstaFx.later(5, () -> {   // the circle closes: rings roll out across the ground, a flash, the ground shakes
+                FxSend.ring(sl, Fx.ICE | FxPacket.KEEP_SHAPE, c.add(0, 0.05, 0), 0.5f, (float) R + 1.5f, 0.35f, 16);
+                FxSend.ring(sl, Fx.LIGHTNING | FxPacket.KEEP_SHAPE, c.add(0, 0.1, 0), 0.3f, (float) R + 0.5f, 0.15f, 12);
+                FxSend.beam(sl, Fx.ICE | FxPacket.KEEP_SHAPE, c, c.add(0, 9, 0), 1.0f, 12);
+                FxSend.impactFrame(sl, mid, 4, FxSend.FRAME_LIGHT, 24);
+                FxSend.shake(sl, c, 0.6f, 10, 20);
+                slam(sl, c, (float) R * 0.5f);
+            });
+            sound(sl, c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.4f, 0.5f);
+            sound(sl, c, SoundEvents.TRIDENT_THUNDER, 0.7f, 1.4f);
+            float dmg = (float) p.getAttributeValue(Attributes.ATTACK_DAMAGE) * 3f;
+            for (LivingEntity t : Kit.near(sl, p, c.add(0, 1, 0), R)) {
+                if (!foe(p, t)) continue;
+                t.invulnerableTime = 0;
+                AstaFx.damage(p, t, dmg, "sovereigns_verdict");
+                Vec3 out = t.position().subtract(c).multiply(1, 0, 1);
+                out = out.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : out.normalize();
+                t.push(out.x * 0.9, 0.35, out.z * 0.9); t.hurtMarked = true;
+                shadowHit(sl, t, 3);
+            }
+        });
+        return true;
+    }
+
     /** Duskglass Kris - Phantom Edges: three ghost knives circle you for 10 s; each strikes a foe that comes within
      *  3 blocks (then needs a breath before it strikes again). Drawn on the client (ShadowClient kind 16). */
     public static boolean phantomEdges(ServerPlayer p) {
@@ -819,7 +877,7 @@ public final class ShadowFx {
             AstaFx.later(tick, () -> {
                 if (!alive(p)) return;
                 List<LivingEntity> near = new ArrayList<>(Kit.near(sl, p, p.position(), 3.0));
-                near.removeIf(t -> t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player);
+                near.removeIf(t -> !foe(p, t));
                 for (int k = 0; k < 3 && !near.isEmpty(); k++) {
                     if (ready[k] > now) continue;
                     LivingEntity t = near.get(k % near.size());

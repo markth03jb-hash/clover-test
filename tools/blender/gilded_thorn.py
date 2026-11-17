@@ -304,12 +304,14 @@ def build(out_dir):
 
 
 VIEW = [37, 10.0]   # the full views' ortho scale and centre height
+CLOSE = [13, 6.5]   # the close-up's
 
 
 def render(dag, out_dir):
     dag.location = (0, 0, 0)   # back to the middle of the frame (the export moved it to the block's middle)
     sc = bpy.context.scene
     sc.render.engine = "CYCLES"; sc.cycles.samples = 40; sc.cycles.device = "CPU"
+    sc.view_settings.view_transform = "Standard"   # plain colours, as the game shows them (the default view washes them out)
     sc.render.resolution_x, sc.render.resolution_y = 420, 900
     sc.render.film_transparent = False
     world = bpy.data.worlds.new("w"); sc.world = world; world.use_nodes = True
@@ -323,7 +325,7 @@ def render(dag, out_dir):
     co = bpy.data.objects.new("cam", cam); sc.collection.objects.link(co); sc.camera = co
     shots = []
     for label, yaw, scale, zc in (("front", 0, VIEW[0], VIEW[1]), ("angled", 35, VIEW[0], VIEW[1]), ("back", 180, VIEW[0], VIEW[1]),
-                                  ("edge", 90, VIEW[0], VIEW[1]), ("guard", 20, 13, 6.5)):
+                                  ("edge", 90, VIEW[0], VIEW[1]), ("guard", 20, CLOSE[0], CLOSE[1])):
         dag.rotation_euler = (0, 0, math.radians(yaw))
         cam.ortho_scale = scale
         co.location = (0, -60, zc); co.rotation_euler = (math.radians(90), 0, 0)
@@ -336,39 +338,95 @@ def render(dag, out_dir):
 
 ASSETS = os.path.join(HERE, "..", "..", "src", "main", "resources", "assets", "iron_spell_grimoire")
 
-DISPLAY = {
-    "thirdperson_righthand": {"rotation": [0, -90, 10], "translation": [0, 1.5, 0.5], "scale": [0.55, 0.55, 0.55]},
-    "thirdperson_lefthand": {"rotation": [0, 90, -10], "translation": [0, 1.5, 0.5], "scale": [0.55, 0.55, 0.55]},
-    "firstperson_righthand": {"rotation": [0, -90, -10], "translation": [1.13, 0.5, 1.13], "scale": [0.45, 0.45, 0.45]},
-    "firstperson_lefthand": {"rotation": [0, 90, 10], "translation": [1.13, 0.5, 1.13], "scale": [0.45, 0.45, 0.45]},
-    "gui": {"rotation": [0, 0, -45], "translation": [-3.9, -3.9, 0], "scale": [0.55, 0.55, 0.55]},
-    "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.4, 0.4, 0.4]},
-    "fixed": {"rotation": [0, 0, -45], "translation": [-3.9, -3.9, 0], "scale": [0.6, 0.6, 0.6]},
-}
+def display(length):
+    """Hand and slot transforms for a weapon modelled upright (blade +Y) with its grip's middle at the model's middle,
+    `length` model pixels long. Worked out from vanilla's handheld sword, so it sits in the hand where a sword does:
+    vanilla's sprite runs corner to corner (45 degrees) with its grip ~5 px down-left of the middle; ours stands upright
+    with its grip at the middle - so 45 degrees less roll, the grip moved to where vanilla's lands, and scaled so its
+    length matches a sword's (a 16 px sprite's diagonal ~ 22 px at vanilla's scale). In a slot it lies corner to corner,
+    nudged down-left: its middle sits ~30% of the way up from the grip."""
+    k = 22.0 / length
+    def r(v): return [round(x, 2) for x in v]
+    return {
+        "thirdperson_righthand": {"rotation": [0, -90, 10], "translation": r([0, -1.9, 1.5]), "scale": r([0.85 * k * 1.15] * 3)},
+        "thirdperson_lefthand": {"rotation": [0, 90, -10], "translation": r([0, -1.9, 1.5]), "scale": r([0.85 * k * 1.15] * 3)},
+        "firstperson_righthand": {"rotation": [0, -90, -20], "translation": r([1.13, -1.3, -0.5]), "scale": r([0.68 * k] * 3)},
+        "firstperson_lefthand": {"rotation": [0, 90, 20], "translation": r([1.13, -1.3, -0.5]), "scale": r([0.68 * k] * 3)},
+        "gui": {"rotation": [0, 0, -45], "translation": [-4.2, -4.2, 0], "scale": r([k * 0.9] * 3)},
+        "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": r([k * 0.7] * 3)},
+        "fixed": {"rotation": [0, 0, -45], "translation": [-4.2, -4.2, 0], "scale": r([k * 1.0] * 3)},
+    }
+
+
+DISPLAY = display(36)
+
+
+
+def slim_obj(text):
+    """The OBJ with its comments gone, its numbers cut to the precision the game can use (4 places for positions and
+    texture coordinates - a 16th of a pixel is 0.004 here - 3 for normals), and the values that come out the same
+    merged into one (flat-shaded faces repeat their normals over and over): well under half the file."""
+    def num(n, places):
+        v = round(float(n), places)
+        t = ("%.*f" % (places, v)).rstrip("0").rstrip(".")
+        return "0" if t in ("-0", "") else t
+    tables = {"v": {}, "vt": {}, "vn": {}}
+    remap = {"v": [], "vt": [], "vn": []}
+    order = {"v": [], "vt": [], "vn": []}
+    body = []
+    for l in text.splitlines():
+        if l.startswith("#") or not l.strip(): continue
+        tag = l.split(" ", 1)[0]
+        if tag in tables:
+            key = " ".join(num(n, 3 if tag == "vn" else 4) for n in l.split()[1:])
+            if key not in tables[tag]:
+                tables[tag][key] = len(order[tag]) + 1; order[tag].append(key)
+            remap[tag].append(tables[tag][key])
+        elif tag == "f":
+            parts = []
+            for c in l.split()[1:]:
+                ids = c.split("/")
+                out = [str(remap["v"][int(ids[0]) - 1])]
+                if len(ids) > 1: out.append(str(remap["vt"][int(ids[1]) - 1]) if ids[1] else "")
+                if len(ids) > 2: out.append(str(remap["vn"][int(ids[2]) - 1]))
+                parts.append("/".join(out))
+            body.append("f " + " ".join(parts))
+        elif tag in ("mtllib", "usemtl", "o", "g"):
+            body.append(l)
+    head = [l for l in body if l.startswith("mtllib")]
+    rest = [l for l in body if not l.startswith("mtllib")]
+    verts = ["%s %s" % (tag, k) for tag in ("v", "vt", "vn") for k in order[tag]]
+    return "\n".join(head + verts + rest) + "\n"
+
+
+def export_to_game(name, out, display, glowing=(), textures=None, render_type=None):
+    """Move a Blender export into the mod: the OBJ (slimmed) and MTL into models/item, its texture(s) into textures/item,
+    and the item model JSON that has Forge's OBJ loader draw it.
+    glowing: the material names lit by their own colour (Ka 1 - Forge's OBJ loader turns Ka into a light level);
+    textures: material name -> texture name (default: every material uses NAME)."""
+    import json, shutil
+    textures = textures or {}
+    mdir, tdir = os.path.join(ASSETS, "models", "item"), os.path.join(ASSETS, "textures", "item")
+    open(os.path.join(mdir, name + ".obj"), "w").write(slim_obj(open(os.path.join(out, name + ".obj")).read()))
+    mtl, used = [], set()
+    for l in open(os.path.join(out, name + ".mtl")).read().splitlines():
+        if not l.startswith("newmtl"): continue        # everything else Blender writes is rebuilt below
+        m = l.split()[1]
+        tex = textures.get(m, name); used.add(tex)
+        mtl += [l, "Kd 1 1 1",                          # Forge tints by Kd: keep it white
+                "Ka 1 1 1" if m in glowing else "Ka 0 0 0",
+                "map_Kd iron_spell_grimoire:item/" + tex, ""]
+    open(os.path.join(mdir, name + ".mtl"), "w").write("\n".join(mtl))
+    for tex in used: shutil.copy(os.path.join(out, tex + ".png"), os.path.join(tdir, tex + ".png"))
+    model = {"loader": "forge:obj", "model": "iron_spell_grimoire:models/item/%s.obj" % name, "flip_v": True,
+             "textures": {"particle": "iron_spell_grimoire:item/" + name}, "display": display}
+    if render_type: model["render_type"] = render_type
+    json.dump(model, open(os.path.join(mdir, name + ".json"), "w"), indent=1)
+    print("written into the mod's assets")
 
 
 def to_game(out):
-    """Move the export into the mod: the OBJ + MTL into models/item, the texture into textures/item, and the item
-    model JSON that has Forge's OBJ loader draw it."""
-    import json, shutil
-    mdir, tdir = os.path.join(ASSETS, "models", "item"), os.path.join(ASSETS, "textures", "item")
-    obj = open(os.path.join(out, "gilded_thorn.obj")).read()
-    obj = "\n".join(l for l in obj.splitlines() if not l.startswith("#")) + "\n"
-    open(os.path.join(mdir, "gilded_thorn.obj"), "w").write(obj)
-    mtl = []
-    for l in open(os.path.join(out, "gilded_thorn.mtl")).read().splitlines():
-        if l.startswith("#"): continue
-        if l.startswith("Ka "): l = "Ka 0.000000 0.000000 0.000000"            # Forge lights it by Ka (0 = normal light, 1 = glows)
-        if l.startswith("map_Kd"): l = "map_Kd iron_spell_grimoire:item/gilded_thorn"
-        if l.startswith("Kd "): continue
-        mtl.append(l)
-        if l.startswith("newmtl"): mtl.append("Kd 1.000000 1.000000 1.000000")   # Forge tints by Kd: keep it white
-    open(os.path.join(mdir, "gilded_thorn.mtl"), "w").write("\n".join(mtl) + "\n")
-    shutil.copy(os.path.join(out, "gilded_thorn.png"), os.path.join(tdir, "gilded_thorn.png"))
-    json.dump({"loader": "forge:obj", "model": "iron_spell_grimoire:models/item/gilded_thorn.obj", "flip_v": True,
-               "textures": {"particle": "iron_spell_grimoire:item/gilded_thorn"}, "display": DISPLAY},
-              open(os.path.join(mdir, "gilded_thorn.json"), "w"), indent=1)
-    print("written into the mod's assets")
+    export_to_game("gilded_thorn", out, DISPLAY)
 
 
 if __name__ == "__main__":

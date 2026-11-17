@@ -122,9 +122,15 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> SHADE_SALVE = ITEMS.register("shade_salve", () -> new com.ironspellgrimoire.item.ShadowTonicItem(true));
     public static final RegistryObject<Item> DRAGON_FANG = ITEMS.register("dragon_fang", com.ironspellgrimoire.item.DragonFangItem::new);
     public static final RegistryObject<Item> DUSKGLASS_KRIS = ITEMS.register("duskglass_kris", com.ironspellgrimoire.item.ShadowKnifeItem::new);
-    public static final RegistryObject<Item> GILDED_THORN = ITEMS.register("gilded_thorn", com.ironspellgrimoire.item.GildedThornItem::new);
-    public static final RegistryObject<Item> BLOODREND = ITEMS.register("bloodrend", com.ironspellgrimoire.item.BloodrendItem::new);
-    public static final RegistryObject<Item> ROSEWRATH = ITEMS.register("rosewrath", com.ironspellgrimoire.item.RosewrathItem::new);
+    // the Market's Blender-built blades (item/MarketBladeItem): name, damage over diamond, speed, cooldown, tooltip colour, move
+    public static final RegistryObject<Item> GILDED_THORN = ITEMS.register("gilded_thorn", () -> new com.ironspellgrimoire.item.MarketBladeItem(
+            "gilded_thorn", 3, -2.3F, 240, net.minecraft.ChatFormatting.GOLD, com.ironspellgrimoire.server.ShadowFx::thornbite));
+    public static final RegistryObject<Item> BLOODREND = ITEMS.register("bloodrend", () -> new com.ironspellgrimoire.item.MarketBladeItem(
+            "bloodrend", 4, -2.4F, 240, net.minecraft.ChatFormatting.DARK_RED, com.ironspellgrimoire.server.ShadowFx::crimsonRend));
+    public static final RegistryObject<Item> ROSEWRATH = ITEMS.register("rosewrath", () -> new com.ironspellgrimoire.item.MarketBladeItem(
+            "rosewrath", 4, -2.3F, 240, net.minecraft.ChatFormatting.RED, com.ironspellgrimoire.server.ShadowFx::crimsonFracture));
+    public static final RegistryObject<Item> FROSTWING = ITEMS.register("frostwing", () -> new com.ironspellgrimoire.item.MarketBladeItem(
+            "frostwing", 6, -3.0F, 400, net.minecraft.ChatFormatting.AQUA, com.ironspellgrimoire.server.ShadowFx::sovereignsVerdict));
 
     /** Zenon's drops. */
     public static final RegistryObject<Item> PHYLACTERY = ITEMS.register("zenon_phylactery", com.ironspellgrimoire.item.PhylacteryItem::new);

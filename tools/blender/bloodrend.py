@@ -239,25 +239,7 @@ def build(out_dir):
 
 
 def to_game(out):
-    mdir, tdir = os.path.join(gt.ASSETS, "models", "item"), os.path.join(gt.ASSETS, "textures", "item")
-    obj = open(os.path.join(out, NAME + ".obj")).read()
-    open(os.path.join(mdir, NAME + ".obj"), "w").write("\n".join(l for l in obj.splitlines() if not l.startswith("#")) + "\n")
-    mtl, cur = [], None
-    for l in open(os.path.join(out, NAME + ".mtl")).read().splitlines():
-        if l.startswith(("#", "Kd ", "Ka ", "map_Ke")): continue
-        if l.startswith("newmtl"):
-            cur = l.split()[1]
-            mtl += [l, "Kd 1.000000 1.000000 1.000000",                     # Forge tints by Kd: keep it white
-                    "Ka 1.000000 1.000000 1.000000" if cur.endswith("_glow") else "Ka 0.000000 0.000000 0.000000"]   # Ka 1: it glows
-            continue
-        if l.startswith("map_Kd"): l = "map_Kd iron_spell_grimoire:item/" + NAME
-        mtl.append(l)
-    open(os.path.join(mdir, NAME + ".mtl"), "w").write("\n".join(mtl) + "\n")
-    shutil.copy(os.path.join(out, NAME + ".png"), os.path.join(tdir, NAME + ".png"))
-    json.dump({"loader": "forge:obj", "model": "iron_spell_grimoire:models/item/%s.obj" % NAME, "flip_v": True,
-               "textures": {"particle": "iron_spell_grimoire:item/" + NAME}, "display": gt.DISPLAY},
-              open(os.path.join(mdir, NAME + ".json"), "w"), indent=1)
-    print("written into the mod's assets")
+    gt.export_to_game(NAME, out, gt.display(40), glowing={NAME + "_glow"})
 
 
 if __name__ == "__main__":

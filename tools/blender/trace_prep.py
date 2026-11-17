@@ -153,6 +153,7 @@ def main(spec_path, out):
     glow_s = cv2.resize(glow, (TW, TH), interpolation=cv2.INTER_AREA)
     a = cv2.resize(redd * 255, (TW, TH), interpolation=cv2.INTER_AREA)
     glow_s[:, :, 3] = np.where(a > 110, 255, 0)
+    glow_s[:, :, :3][glow_s[:, :, 3] == 0] = 0             # nothing under the see-through parts: a far smaller file
     cv2.imwrite(os.path.join(out, spec["name"] + "_glow.png"), glow_s)
     json.dump({"verts": verts, "uvs": uvs, "tris": keep, "boundary": nb, "red_tris": red_tris,
                "length": spec["length"], "name": spec["name"]}, open(os.path.join(out, "mesh.json"), "w"))
