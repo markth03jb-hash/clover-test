@@ -338,23 +338,22 @@ def render(dag, out_dir):
 
 ASSETS = os.path.join(HERE, "..", "..", "src", "main", "resources", "assets", "iron_spell_grimoire")
 
-def display(length):
-    """Hand and slot transforms for a weapon modelled upright (blade +Y) with its grip's middle at the model's middle,
-    `length` model pixels long. Worked out from vanilla's handheld sword, so it sits in the hand where a sword does:
-    vanilla's sprite runs corner to corner (45 degrees) with its grip ~5 px down-left of the middle; ours stands upright
-    with its grip at the middle - so 45 degrees less roll, the grip moved to where vanilla's lands, and scaled so its
-    length matches a sword's (a 16 px sprite's diagonal ~ 22 px at vanilla's scale). In a slot it lies corner to corner,
-    nudged down-left: its middle sits ~30% of the way up from the grip."""
-    k = 22.0 / length
-    def r(v): return [round(x, 2) for x in v]
+def display(length, held=20.0):
+    """Hand and slot transforms for a weapon modelled upright (blade +Y, faces +-Z) with its grip's middle at the model's
+    middle, `length` model pixels long. Taken from the Nightfang's (models/item/nightfang_3d.json), which is held well -
+    upright, leaning in a little, low and forward - turned a quarter round (the Nightfang's faces point sideways, ours
+    front and back: the right hand turns one way, the left the other) and scaled so the weapon looks `held` pixels long
+    in the hand (a dagger ~20; a greatsword more)."""
+    k = held / length
+    def r(v): return [round(x, 3) for x in v]
     return {
-        "thirdperson_righthand": {"rotation": [0, -90, 10], "translation": r([0, -1.9, 1.5]), "scale": r([0.85 * k * 1.15] * 3)},
-        "thirdperson_lefthand": {"rotation": [0, 90, -10], "translation": r([0, -1.9, 1.5]), "scale": r([0.85 * k * 1.15] * 3)},
-        "firstperson_righthand": {"rotation": [0, -90, -20], "translation": r([1.13, -1.3, -0.5]), "scale": r([0.68 * k] * 3)},
-        "firstperson_lefthand": {"rotation": [0, 90, 20], "translation": r([1.13, -1.3, -0.5]), "scale": r([0.68 * k] * 3)},
-        "gui": {"rotation": [0, 0, -45], "translation": [-4.2, -4.2, 0], "scale": r([k * 0.9] * 3)},
-        "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": r([k * 0.7] * 3)},
-        "fixed": {"rotation": [0, 0, -45], "translation": [-4.2, -4.2, 0], "scale": r([k * 1.0] * 3)},
+        "thirdperson_righthand": {"rotation": [25, 90, 0], "translation": [0, 0.5, 0.8], "scale": r([0.85 * k * 1.6] * 3)},
+        "thirdperson_lefthand": {"rotation": [25, -90, 0], "translation": [0, 0.5, 0.8], "scale": r([0.85 * k * 1.6] * 3)},
+        "firstperson_righthand": {"rotation": [-20, 0, 0], "translation": [1.13, 2.4, 1.13], "scale": r([0.68 * k] * 3)},
+        "firstperson_lefthand": {"rotation": [-20, 0, 0], "translation": [1.13, 2.4, 1.13], "scale": r([0.68 * k] * 3)},
+        "gui": {"rotation": [0, 0, -45], "translation": [-3.0, -3.0, 0], "scale": r([22.0 / length * 0.9] * 3)},
+        "ground": {"rotation": [0, 90, 0], "translation": [0, 2, 0], "scale": r([22.0 / length * 0.6] * 3)},
+        "fixed": {"rotation": [0, 0, -45], "translation": [-3.0, -3.0, 0], "scale": r([22.0 / length] * 3)},
     }
 
 

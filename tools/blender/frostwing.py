@@ -215,7 +215,7 @@ def grip():
 
 
 # ------------------------------------------------------------------ build, export, render
-DISPLAY = gt.display(64)   # a greatsword: pommel to point
+DISPLAY = gt.display(64, held=34)   # a greatsword: pommel to point, held big
 
 
 
