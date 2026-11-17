@@ -78,7 +78,7 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
      *  the left arm. The model's origin is the hand end of the forearm's middle. */
     /** First person only: how the forms sit on the bare arm vanilla draws there (it is held close to the eye, so a
      *  form at full size fills the view): tilted about the wrist, and smaller. */
-    public static float fpTilt = -40F, fpScale = 0.75F, bwScale = 0.8F;
+    public static float fpTilt = -40F, fpScale = 0.75F, bwScale = 0.8F, bwTurn = 180F;
 
     /** In first person, turn and shrink round the hand (where the forearm ends) before drawing. */
     static void firstPerson(PoseStack ps, float tilt, float scale) {
@@ -180,6 +180,9 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
         m.leftArm.xRot = 0F;
         m.leftArm.translateAndRotate(ps);
         firstPerson(ps, 0F, bwScale);
+        ps.translate(1F / 16F, 0F, 0F);                    // turned round the forearm: its face out ahead, its back to you,
+        ps.mulPose(Axis.YP.rotationDegrees(bwTurn));       // the way a shield is really held
+        ps.translate(-1F / 16F, 0F, 0F);
         drawForm(ps, e.getMultiBufferSource(), e.getPackedLight(), BULWARK, true);
         ps.popPose();
     }
