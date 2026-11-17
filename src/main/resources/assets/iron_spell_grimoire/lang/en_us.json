@@ -1314,5 +1314,7 @@
   "spell.iron_spell_grimoire.spine_storm": "Parasite: Spine Storm",
   "spell.iron_spell_grimoire.spine_storm.guide": "Costs 40 biomass. Your body splits into a storm of bone - three waves of spines shred everything within 8 blocks.",
   "key.iron_spell_grimoire.parasite_tendril": "Parasite tendril (sneak: burrow)",
-  "entity.iron_spell_grimoire.hive_nest": "Hive Nest"
+  "entity.iron_spell_grimoire.hive_nest": "Hive Nest",
+  "entity.iron_spell_grimoire.molt_husk": "Molted Husk",
+  "key.iron_spell_grimoire.parasite_sight": "Parasite: Predator Sight"
 }

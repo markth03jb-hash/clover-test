@@ -564,6 +564,29 @@ public final class GameTests {
                         if (ParasiteFx.frenzy(p) > 0) bad.add("the spill went into Frenzy with a nest out");
                         nest.discard();
                     }
+                    // Predator Sight toggles (with the node); the looks change the hide's armour
+                    ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p);
+                    ParasiteFx.handle(p, 27, 0);
+                    if (!ParasiteFx.sight(p)) bad.add("Predator Sight didn't switch on");
+                    ParasiteFx.handle(p, 27, 0);
+                    ParasiteFx.toggleHide(p);
+                    var armor = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+                    double a0 = armor == null ? 0 : armor.getValue();
+                    ParasiteFx.handle(p, 29, 3);   // Plated
+                    if (armor != null && armor.getValue() < a0 + 3.9) bad.add(String.format("the Plated hide didn't add armour (%.1f -> %.1f)", a0, armor.getValue()));
+                    // Molting: a blow to under 30% sheds a husk
+                    ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p);
+                    p.setHealth(p.getMaxHealth() * 0.2f);
+                    ParasiteFx.molt(p);
+                    var husks = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.MoltHusk.class, p.getBoundingBox().inflate(4));
+                    if (husks.isEmpty()) bad.add("Molting shed no husk");
+                    for (var h : husks) h.discard();
+                    p.setHealth(p.getMaxHealth());
+                    // Hive Network: three nests at once
+                    ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p);
+                    for (int k = 0; k < 3; k++) { ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); }
+                    if (ParasiteFx.nests(p).size() != 3) bad.add("Hive Network holds " + ParasiteFx.nests(p).size() + " nests, not 3");
+                    for (var n : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.HiveNest.class, p.getBoundingBox().inflate(8))) n.discard();
                     ParasiteFx.testReset(p);
                     ParasiteFx.testFrenzy(p);   // back into the frenzy the next checks wait out
                 }

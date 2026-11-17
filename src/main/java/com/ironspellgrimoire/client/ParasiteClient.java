@@ -32,6 +32,8 @@ public final class ParasiteClient {
 
     public static final KeyMapping KEY = new KeyMapping("key.iron_spell_grimoire.parasite_wheel", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories.iron_spell_grimoire");
     /** Z: the Tendril Grapple (sneaking on the ground: Burrow). */
+    /** B: Predator Sight. */
+    public static final KeyMapping SIGHT = new KeyMapping("key.iron_spell_grimoire.parasite_sight", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.iron_spell_grimoire");
     public static final KeyMapping TENDRIL = new KeyMapping("key.iron_spell_grimoire.parasite_tendril", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Z, "key.categories.iron_spell_grimoire");
 
     // ------------------------------------------------------------------ the strain, as the server last sent it
@@ -43,7 +45,8 @@ public final class ParasiteClient {
     public static int[] slots = {-1, -1, -1};
     public static boolean awakened, starving;
     public static int strain2, burrowLeft, evoRank, eaten, limb, nestStored = -1;
-    public static boolean limbGone;
+    public static boolean limbGone, sight;
+    public static int look, nestCount, nestMax = 1;
     public static int[] organs = new int[3], adapt = new int[5];
 
     static boolean wears(int m) { for (int s : slots) if (s == m) return true; return false; }
@@ -58,6 +61,7 @@ public final class ParasiteClient {
             strain2 = x[12]; organs = new int[]{x[13], x[14], x[15]}; adapt = new int[]{x[16], x[17], x[18], x[19], x[20]}; burrowLeft = x[21] ;
         }
         if (x.length >= 27) { evoRank = x[22]; eaten = x[23]; limb = x[24]; limbGone = x[25] == 1; nestStored = x[26]; }
+        if (x.length >= 31) { sight = x[27] == 1; look = x[28]; nestCount = x[29]; nestMax = x[30]; }
         Minecraft mc = Minecraft.getInstance();
         if (p.open) EvolutionScreen.open();
         else if (mc.screen instanceof EvolutionScreen s) s.refresh();
@@ -80,7 +84,7 @@ public final class ParasiteClient {
     // ------------------------------------------------------------------ the key
     @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static final class Keys {
-        @SubscribeEvent public static void register(RegisterKeyMappingsEvent e) { e.register(KEY); e.register(TENDRIL); }
+        @SubscribeEvent public static void register(RegisterKeyMappingsEvent e) { e.register(KEY); e.register(TENDRIL); e.register(SIGHT); }
     }
 
     // ------------------------------------------------------------------ movement
@@ -109,6 +113,7 @@ public final class ParasiteClient {
             else mc.setScreen(new ParasiteWheel(kind));
         }
         boolean on = equipped && wheelKind(mc) == 1 && !pl.isSpectator() && !pl.getAbilities().flying && !pl.isPassenger();
+        while (SIGHT.consumeClick()) if (on && mc.screen == null) send(27, 0);
         while (TENDRIL.consumeClick()) {
             if (!on || mc.screen != null) continue;
             if (pl.isShiftKeyDown() && pl.onGround()) { if (rank(19) > 0) send(14, 0); }

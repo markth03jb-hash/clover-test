@@ -15,6 +15,7 @@ public final class MageSetup {
     @SubscribeEvent
     public static void attributes(EntityAttributeCreationEvent e) {
         e.put(AddonEntities.MAGE.get(), com.ironspellgrimoire.entity.MageEnemy.attributes().build());
+        e.put(AddonEntities.MOLT_HUSK.get(), com.ironspellgrimoire.entity.MoltHusk.attributes().build());
         e.put(AddonEntities.ZENON.get(), com.ironspellgrimoire.entity.Zenon.attributes().build());
         e.put(AddonEntities.BEAST_OF_DESPAIR.get(), com.ironspellgrimoire.entity.BeastOfDespair.attributes().build());
         e.put(AddonEntities.RHYA.get(), com.ironspellgrimoire.entity.Rhya.attributes().build());

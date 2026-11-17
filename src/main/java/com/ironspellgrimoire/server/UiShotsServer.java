@@ -395,6 +395,16 @@ public final class UiShotsServer {
             case "starve" -> ParasiteFx.testStarve(p);
             case "grapple" -> { faceForward(p); ParasiteFx.grapple(p); }
             case "burrow" -> ParasiteFx.burrow(p);
+            case "sight" -> { ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p); if (!ParasiteFx.sight(p)) ParasiteFx.handle(p, 27, 0); }
+            case "sight_off" -> { if (ParasiteFx.sight(p)) ParasiteFx.handle(p, 27, 0); }
+            case "molt" -> { faceForward(p); ParasiteFx.testUnlockAll(p); p.setHealth(p.getMaxHealth()); p.invulnerableTime = 0; p.hurt(p.damageSources().magic(), p.getMaxHealth() * 0.8f); }
+            case "network" -> {   // two nests: one a little way off, one here - then the travel menu
+                ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p);
+                p.connection.teleport(p.getX() + 6, p.getY(), p.getZ(), p.getYRot(), p.getXRot());
+                AstaFx.later(4, () -> { ParasiteFx.handle(p, 19, 0); p.connection.teleport(p.getX() - 6, p.getY(), p.getZ(), p.getYRot(), p.getXRot());
+                    AstaFx.later(4, () -> { ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); AstaFx.later(4, () -> ParasiteFx.sendNests(p)); }); });
+            }
+            case "look1", "look2", "look3" -> { ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p); if (!ParasiteFx.hide(p)) ParasiteFx.toggleHide(p); ParasiteFx.handle(p, 29, w.charAt(4) - '0'); }
             case "nest" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); p.connection.teleport(p.getX() - 3, p.getY(), p.getZ() - 3, -45, 20); }
             case "worn" -> { ParasiteFx.testUnlockAll(p); if (!ParasiteFx.bulwark(p)) ParasiteFx.toggleBulwark(p); ParasiteFx.root(p).putFloat("limb", 18f); ParasiteFx.testEaten(p, 1600); }
             case "end" -> { ParasiteFx.testReset(p); }

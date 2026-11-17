@@ -563,6 +563,12 @@ public final class UiShots {
         steps.add(new Step("par_burrow", () -> onServer(p -> UiShotsServer.element(p, "p:burrow")), 30, true));
         steps.add(new Step("par_erupt", () -> onServer(p -> UiShotsServer.element(p, "p:burrow")), 8, true));
         steps.add(new Step("par_nest", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:nest")); }, 20, true));
+        steps.add(new Step("par_sight", () -> { mc.setScreen(null); mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:sight")); }, 16, true));
+        steps.add(new Step("par_sight_done", () -> onServer(p -> UiShotsServer.element(p, "p:sight_off")), 4, true));
+        steps.add(new Step("par_molt", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "p:molt")); }, 10, true));
+        for (int k = 1; k <= 3; k++) { final int kk = k; steps.add(new Step("par_hide_look" + k, () -> onServer(p -> UiShotsServer.element(p, "p:look" + kk)), 10, true)); }
+        steps.add(new Step("par_network", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { UiShotsServer.element(p, "p:end"); UiShotsServer.element(p, "p:network"); }); }, 30, false));
+        steps.add(new Step("par_network_done", () -> mc.setScreen(null), 4, true));
         steps.add(new Step("par_worn_hud", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "p:worn")); }, 14, true));
         steps.add(new Step("par_book", () -> {
             GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get()));

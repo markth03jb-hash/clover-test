@@ -47,6 +47,8 @@ import java.util.Map;
 public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
     static final String[] MODELS = {"", "reaper_edge", "rending_talons", "spine_launcher", "titan_fist", "bone_lance", "whip_spear", "battering_ram"};
     static final ResourceLocation CREST = rl("item/parasite_final_crest"), CARAPACE = rl("item/parasite_final_carapace");
+    static final ResourceLocation[] LOOK_BODY = {null, rl("item/parasite_hide_spiked"), rl("item/parasite_hide_smooth"), rl("item/parasite_hide_plated")};
+    static final ResourceLocation[] LOOK_ARM = {null, rl("item/parasite_hide_spiked_arm"), rl("item/parasite_hide_smooth_arm"), rl("item/parasite_hide_plated_arm")};
     static final ResourceLocation BULWARK = rl("item/parasite_bulwark");
     static final ResourceLocation HIDE_TEX = ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/models/armor/chitin_hide.png");
     static ResourceLocation rl(String p) { return ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", p); }
@@ -131,6 +133,12 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
             hideModel.head.visible = false; hideModel.hat.visible = false;
             float fr = l[3] == 1 ? 0.75F + 0.25F * Mth.sin((p.tickCount + pt) * 0.6F) : 1F;
             hideModel.renderToBuffer(ps, buf.getBuffer(RenderType.armorCutoutNoCull(HIDE_TEX)), light, OverlayTexture.NO_OVERLAY, 1F, fr, fr, 1F);
+            int look = l.length > 4 ? (l[4] >> 3) & 3 : 0;   // the hide's look: its plating over the body and both arms
+            if (look > 0) {
+                ps.pushPose(); pm.body.translateAndRotate(ps); drawPiece(ps, buf, light, LOOK_BODY[look]); ps.popPose();
+                ps.pushPose(); pm.rightArm.translateAndRotate(ps); drawForm(ps, buf, light, LOOK_ARM[look], false); ps.popPose();
+                ps.pushPose(); pm.leftArm.translateAndRotate(ps); drawForm(ps, buf, light, LOOK_ARM[look], true); ps.popPose();
+            }
         }
         if (l[0] > 0 && l[0] < MODELS.length) {
             ps.pushPose();
@@ -256,6 +264,7 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
             e.register(CREST);
             e.register(CARAPACE);
             e.register(HiveNestRenderer.MODEL);
+            for (int k = 1; k < LOOK_BODY.length; k++) { e.register(LOOK_BODY[k]); e.register(LOOK_ARM[k]); }
         }
 
         @SubscribeEvent

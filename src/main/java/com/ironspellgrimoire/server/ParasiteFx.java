@@ -86,7 +86,7 @@ public final class ParasiteFx {
     // ------------------------------------------------------------------ the evolution tree
     public static final int LEAP = 0, WALL = 1, GLIDE = 2, METEOR = 3, F_SPINE = 4, F_LANCE = 5, F_BULWARK = 6, F_HIDE = 7,
             HONED = 8, GULLET = 9, DIGEST = 10, RAVENOUS = 11, CATACLYSM = 12, F_WHIP = 13, F_RAM = 14, U_STORM = 15, U_FIELD = 16, U_BARRAGE = 17,
-            TENDRIL = 18, BURROW = 19, CLING = 20, ADAPT = 21;
+            TENDRIL = 18, BURROW = 19, CLING = 20, ADAPT = 21, SIGHT = 22, MOLT = 23, NETWORK = 24;
     /** {branch (0 Predator, 1 Arsenal, 2 Hunger, 3 Ultimates), max rank, cost per rank}. The Ultimates' nodes are a
      *  choice of path, not ranks: their "rank" is the path taken (1 or 2). */
     public static final int[][] NODES = {
@@ -95,13 +95,13 @@ public final class ParasiteFx {
             {2, 3, 1}, {2, 3, 1}, {2, 3, 2}, {2, 3, 3},
             {1, 1, 3}, {1, 1, 3},
             {3, 1, 3}, {3, 1, 3}, {3, 1, 3},
-            {0, 1, 2}, {0, 1, 3}, {0, 1, 2}, {2, 1, 3}};
+            {0, 1, 2}, {0, 1, 3}, {0, 1, 2}, {2, 1, 3}, {2, 1, 2}, {2, 1, 3}, {3, 1, 3}};
     /** The nodes the awakening asks for (the later ones - Tendril, Burrow, Wall Cling, Adaptation - came after it). */
     static final int AWAKEN_NODES = 18;
     public static final String[] NODE_NAMES = {"Leap", "Wall Runner", "Glider", "Meteor Fall",
             "Spine Launcher", "Bone Lance", "Bulwark", "Chitin Hide", "Honed Edges",
             "Deep Gullet", "Rapid Digestion", "Ravenous", "Cataclysm", "Whip-Spear", "Battering Ram",
-            "Spine Storm", "Grasping Field", "Marrow Barrage", "Tendril Grapple", "Burrow", "Wall Cling", "Adaptation"};
+            "Spine Storm", "Grasping Field", "Marrow Barrage", "Tendril Grapple", "Burrow", "Wall Cling", "Adaptation", "Predator Sight", "Molting", "Hive Network"};
     /** The two paths of each Ultimates node. */
     public static final String[][] PATHS = {{"Tempest", "Impaler"}, {"Maw", "Vortex"}, {"Seeker", "Bomb"}};
     public static final String[][] PATH_DESC = {
@@ -131,7 +131,14 @@ public final class ParasiteFx {
             "Z: pull yourself to what you aim at, or yank light foes to you.",
             "Sneak + Z: sink out of sight for 4 s, then burst up in spines.",
             "Hold sneak against a wall mid-air to cling; jump to pounce.",
-            "What hurts you, you grow to resist (up to 40% of each kind)."};
+            "What hurts you, you grow to resist (up to 40% of each kind).",
+            "B: see every creature through walls; the weak marked (drains biomass).",
+            "At the brink, shed a husk that draws foes off; +40% speed 3 s.",
+            "Grow up to 3 nests and travel between them."};
+
+    // ------------------------------------------------------------------ the Chitin Hide's looks
+    public static final String[] LOOKS = {"Bare", "Spiked", "Smooth", "Plated"};
+    public static final String[] LOOK_DESC = {"Just the plated skin.", "Spines: melee attackers take 2.", "Sleek: +15% speed instead of slower.", "Heavy plates: +4 armour."};
 
     // ------------------------------------------------------------------ mutations (rare, from devouring; up to three worn)
     public static final int ACID = 0, TWIN = 1, ECHO = 2, HOLLOW = 3, BARBED = 4, THICK = 5, REGROW = 6, KEEN = 7, MUTATIONS = 8, SLOTS = 3;
@@ -239,6 +246,8 @@ public final class ParasiteFx {
     public static float adapted(Player p, int harm) { return root(p).getCompound("adapt").getFloat("r" + harm); }
     public static boolean burrowed(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("burrow"); }
     public static boolean pounced(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("pounce"); }
+    public static boolean sight(Player p) { return root(p).getBoolean("sight"); }
+    public static int look(Player p) { return root(p).getInt("look"); }
     public static boolean parrying(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("parry"); }
     /** The arm torn off and regrowing (Regenerating Limbs): nothing can change on it till then. */
     public static boolean limbGone(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("limbCd"); }
@@ -807,10 +816,11 @@ public final class ParasiteFx {
         setMod(p, ForgeMod.ENTITY_REACH.get(), M_REACH, "Parasite arm", s[2], AttributeModifier.Operation.ADDITION);
         boolean hd = on && hide(p), bw = on && bulwark(p);
         boolean colA = on && colossus(p), finA = on && finalForm(p);
-        setMod(p, Attributes.ARMOR, M_ARMOR, "Parasite armour", (hd ? 6 : 0) + (bw ? 2 : 0) + (colA ? 10 : 0) + (finA ? 8 : 0), AttributeModifier.Operation.ADDITION);
+        int lk = hd ? look(p) : 0;
+        setMod(p, Attributes.ARMOR, M_ARMOR, "Parasite armour", (hd ? 6 : 0) + (lk == 3 ? 4 : 0) + (bw ? 2 : 0) + (colA ? 10 : 0) + (finA ? 8 : 0), AttributeModifier.Operation.ADDITION);
         setMod(p, Attributes.ARMOR_TOUGHNESS, M_TOUGH, "Parasite armour", hd ? 3 : 0, AttributeModifier.Operation.ADDITION);
         setMod(p, Attributes.KNOCKBACK_RESISTANCE, M_KB, "Parasite armour", colA || finA ? 1.0 : (hd ? 0.3 : 0) + 0.2 * br, AttributeModifier.Operation.ADDITION);
-        setMod(p, Attributes.MOVEMENT_SPEED, M_MOVE, "Parasite stride", (hd ? -0.08 : 0) + 0.2 * hu + (heart == 2 ? 0.1 : 0) + (on && burrowed(p) ? 0.4 : 0) + (fr ? 0.25 : 0) + (colA ? -0.1 : 0) + (finA ? 0.3 : 0), AttributeModifier.Operation.MULTIPLY_BASE);
+        setMod(p, Attributes.MOVEMENT_SPEED, M_MOVE, "Parasite stride", (hd ? (lk == 2 ? 0.15 : -0.08) : 0) + 0.2 * hu + (heart == 2 ? 0.1 : 0) + (on && burrowed(p) ? 0.4 : 0) + (fr ? 0.25 : 0) + (colA ? -0.1 : 0) + (finA ? 0.3 : 0), AttributeModifier.Operation.MULTIPLY_BASE);
         setMod(p, Attributes.ATTACK_DAMAGE, M_FRENZY, "Frenzy", fr ? 0.4 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
         setMod(p, Attributes.MAX_HEALTH, M_HEALTH, "Brute strain", 6 * br + (heart == 1 ? 4 : 0), AttributeModifier.Operation.ADDITION);
         int ek = on ? evoRank(p) : 0;
@@ -824,7 +834,7 @@ public final class ParasiteFx {
 
     // ================================================================== the client's requests
     public static void handle(ServerPlayer p, int action, int arg) {
-        boolean shadow = action >= 20;
+        boolean shadow = action >= 20 && action <= 26;
         if (!shadow && !equipped(p)) return;
         switch (action) {
             case 1 -> setForm(p, arg, false);
@@ -846,6 +856,9 @@ public final class ParasiteFx {
             case 17 -> growOrgan(p, arg / 10, arg % 10);
             case 18 -> parry(p);
             case 19 -> growNest(p);
+            case 27 -> toggleSight(p);
+            case 28 -> nestTravel(p, arg);
+            case 29 -> { if (arg >= 0 && arg < LOOKS.length) { root(p).putInt("look", arg); applyStats(p); sound(p.serverLevel(), p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 0.8f, 0.7f); sync(p, false); } }
             case 20, 21, 22, 23, 24, 25, 26 -> shadowCommand(p, action - 20);
             default -> { }
         }
@@ -1192,39 +1205,147 @@ public final class ParasiteFx {
         sync(p, false);
     }
 
+    // ------------------------------------------------------------------ Predator Sight and Molting
+    static void toggleSight(ServerPlayer p) {
+        if (rank(p, SIGHT) <= 0) { p.displayClientMessage(Component.literal("Evolve Predator Sight first").withStyle(ChatFormatting.GRAY), true); return; }
+        CompoundTag r = root(p);
+        boolean on = !r.getBoolean("sight");
+        if (on && r.getFloat("bio") < 1) { p.displayClientMessage(Component.literal("No biomass to see with").withStyle(ChatFormatting.GRAY), true); return; }
+        r.putBoolean("sight", on);
+        sound(p.serverLevel(), p.position(), on ? SoundEvents.WARDEN_HEARTBEAT : SoundEvents.SLIME_SQUISH_SMALL, 0.6f, on ? 1.4f : 0.8f);
+        dirty(p);
+    }
+
+    private static final UUID MOLT_SPEED = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a900012");
+
+    /** After a blow lands: under 30% health, shed a husk - mobs turn on it while you get away. 2 min. */
+    static void molt(ServerPlayer p) {
+        if (!p.isAlive() || p.getHealth() >= p.getMaxHealth() * 0.3f) return;
+        CompoundTag r = root(p);
+        long now = p.serverLevel().getGameTime();
+        if (now < r.getLong("moltCd")) return;
+        r.putLong("moltCd", now + 2400);
+        ServerLevel sl = p.serverLevel();
+        com.ironspellgrimoire.entity.MoltHusk h = com.ironspellgrimoire.registry.AddonEntities.MOLT_HUSK.get().create(sl);
+        if (h != null) {
+            h.moveTo(p.getX(), p.getY(), p.getZ(), p.getYRot(), 0);
+            h.yBodyRot = p.yBodyRot; h.yHeadRot = p.yHeadRot;
+            h.setOwner(p.getUUID());
+            sl.addFreshEntity(h);
+            for (net.minecraft.world.entity.Mob m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(24), m -> m.getTarget() == p)) m.setTarget(h);
+        }
+        TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, MOLT_SPEED, "Molted", 0.4, AttributeModifier.Operation.MULTIPLY_BASE, 60);
+        FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, p.position().add(0, 1, 0), 0.3f, 2.0f, 0.1f, 10);
+        sound(sl, p.position(), SoundEvents.SLIME_SQUISH, 1.2f, 0.4f);
+        sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_LEATHER, 1.0f, 0.5f);
+        p.displayClientMessage(Component.literal("You molt - the husk draws them off").withStyle(ChatFormatting.DARK_RED), true);
+    }
+
+    /** The husk falls apart in a burst of spines. */
+    public static void huskCrumbles(com.ironspellgrimoire.entity.MoltHusk h) {
+        if (!(h.level() instanceof ServerLevel sl) || h.isRemoved()) return;
+        Vec3 c = h.position().add(0, 1, 0);
+        ServerPlayer owner = h.owner() == null ? null : (ServerPlayer) sl.getPlayerByUUID(h.owner());
+        for (int i = 0; i < 10; i++) {
+            double a = i * Math.PI / 5;
+            spineFly(sl, c, new Vec3(Math.cos(a), 0.2, Math.sin(a)), 4, 1.4f, 0.6f);
+        }
+        sound(sl, c, SoundEvents.SKELETON_HURT, 1.0f, 0.5f);
+        if (owner != null) for (LivingEntity t : Kit.near(sl, owner, c, 3.5)) {
+            if (!foe(owner, t) || t == h) continue;
+            t.invulnerableTime = 0;
+            t.hurt(owner.damageSources().playerAttack(owner), 5f);
+        }
+        h.discard();
+    }
+
     // ------------------------------------------------------------------ the Hive Nest
     static final int NEST_COST = 50;
 
-    /** Your nest, if it's in the world and loaded where you are. */
-    static HiveNest nestOf(ServerPlayer p) {
+    /** Your nests: {id, dim, x, y, z, cd} each (an older save's single nest moved into the list). */
+    static net.minecraft.nbt.ListTag nests(Player p) {
         CompoundTag r = root(p);
-        if (!r.hasUUID("nest")) return null;
-        Entity e = p.serverLevel().getEntity(r.getUUID("nest"));
-        return e instanceof HiveNest n && n.isAlive() ? n : null;
+        if (r.hasUUID("nest") && !r.contains("nests")) {
+            CompoundTag e = new CompoundTag();
+            e.putUUID("id", r.getUUID("nest")); e.putString("dim", r.getString("nestDim"));
+            e.putDouble("x", r.getDouble("nestX")); e.putDouble("y", r.getDouble("nestY")); e.putDouble("z", r.getDouble("nestZ"));
+            net.minecraft.nbt.ListTag l = new net.minecraft.nbt.ListTag(); l.add(e); r.put("nests", l);
+        }
+        r.remove("nest");
+        if (!r.contains("nests")) r.put("nests", new net.minecraft.nbt.ListTag());
+        return r.getList("nests", 10);
     }
 
-    /** Grow a nest where you stand (50 biomass): one each - a new one takes the old one's place. */
+    static boolean ownsNest(Player p, java.util.UUID id) {
+        for (net.minecraft.nbt.Tag t : nests(p)) if (((CompoundTag) t).getUUID("id").equals(id)) return true;
+        return false;
+    }
+
+    /** The nearest of your nests that's loaded where you are. */
+    static HiveNest nestOf(ServerPlayer p) {
+        HiveNest best = null;
+        for (net.minecraft.nbt.Tag t : nests(p)) {
+            Entity e = p.serverLevel().getEntity(((CompoundTag) t).getUUID("id"));
+            if (e instanceof HiveNest n && n.isAlive() && (best == null || n.distanceToSqr(p) < best.distanceToSqr(p))) best = n;
+        }
+        return best;
+    }
+
+    static int maxNests(Player p) { return rank(p, NETWORK) > 0 ? 3 : 1; }
+
+    /** Grow a nest where you stand (50 biomass): one, or three with Hive Network - past that the oldest withers. */
     public static void growNest(ServerPlayer p) {
         if (!p.onGround()) { p.displayClientMessage(Component.literal("Stand on the ground to grow a nest").withStyle(ChatFormatting.GRAY), true); return; }
         if (!spend(p, NEST_COST)) { p.displayClientMessage(Component.literal("Growing a nest takes " + NEST_COST + " biomass").withStyle(ChatFormatting.RED), true); return; }
         ServerLevel sl = p.serverLevel();
-        HiveNest old = nestOf(p);
+        net.minecraft.nbt.ListTag list = nests(p);
         float kept = 0;
-        if (old != null) { kept = old.stored(); old.discard(); }
+        while (list.size() >= maxNests(p)) {   // the oldest withers (its biomass carried over)
+            CompoundTag old = list.getCompound(0);
+            list.remove(0);
+            Entity e = sl.getEntity(old.getUUID("id"));
+            if (e instanceof HiveNest n) { kept += n.stored(); n.discard(); }
+        }
         HiveNest n = com.ironspellgrimoire.registry.AddonEntities.HIVE_NEST.get().create(sl);
         if (n == null) return;
         n.moveTo(p.getX(), p.getY(), p.getZ(), p.getYRot(), 0);
         n.setOwner(p.getUUID());
         n.setStored(kept);
         sl.addFreshEntity(n);
-        CompoundTag r = root(p);
-        r.putUUID("nest", n.getUUID());
-        r.putString("nestDim", sl.dimension().location().toString());
-        r.putDouble("nestX", n.getX()); r.putDouble("nestY", n.getY()); r.putDouble("nestZ", n.getZ());
+        CompoundTag e = new CompoundTag();
+        e.putUUID("id", n.getUUID()); e.putString("dim", sl.dimension().location().toString());
+        e.putDouble("x", n.getX()); e.putDouble("y", n.getY()); e.putDouble("z", n.getZ());
+        list.add(e);
+        root(p).put("nests", list);
         groundSpines(sl, n.position(), 2.0f, 12, 12);
         sound(sl, n.position(), SoundEvents.SLIME_SQUISH, 1.2f, 0.4f);
         sound(sl, n.position(), SoundEvents.WARDEN_HEARTBEAT, 1.0f, 0.8f);
-        p.displayClientMessage(Component.literal("Your Hive Nest takes root").withStyle(ChatFormatting.RED), true);
+        p.displayClientMessage(Component.literal("A Hive Nest takes root (" + list.size() + "/" + maxNests(p) + ")").withStyle(ChatFormatting.RED), true);
+        dirty(p);
+    }
+
+    /** Hive Network: from beside one of your nests, sink and burst out at another (5 min a destination). */
+    static void nestTravel(ServerPlayer p, int index) {
+        net.minecraft.nbt.ListTag list = nests(p);
+        if (rank(p, NETWORK) <= 0 || index < 0 || index >= list.size()) return;
+        HiveNest here = nestOf(p);
+        if (here == null || here.distanceTo(p) > 4) { p.displayClientMessage(Component.literal("Stand by one of your nests").withStyle(ChatFormatting.GRAY), true); return; }
+        CompoundTag to = list.getCompound(index);
+        if (to.getUUID("id").equals(here.getUUID())) return;
+        long now = p.serverLevel().getGameTime();
+        if (now < to.getLong("cd")) { p.displayClientMessage(Component.literal("That nest is still knitting: " + (to.getLong("cd") - now) / 20 + " s").withStyle(ChatFormatting.GRAY), true); return; }
+        var key = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, new net.minecraft.resources.ResourceLocation(to.getString("dim")));
+        ServerLevel there = p.server.getLevel(key);
+        if (there == null) return;
+        to.putLong("cd", now + 6000);
+        root(p).put("nests", list);
+        ServerLevel sl = p.serverLevel();
+        groundSpines(sl, p.position(), 1.5f, 10, 10);
+        sound(sl, p.position(), SoundEvents.ROOTED_DIRT_BREAK, 1.0f, 0.5f);
+        p.teleportTo(there, to.getDouble("x"), to.getDouble("y") + 0.3, to.getDouble("z"), p.getYRot(), p.getXRot());
+        groundSpines(there, p.position(), 2.0f, 14, 12);
+        sound(there, p.position(), SoundEvents.EVOKER_FANGS_ATTACK, 1.0f, 0.6f);
+        root(p).putLong("glide", there.getGameTime() + 40);
         dirty(p);
     }
 
@@ -1234,7 +1355,7 @@ public final class ParasiteFx {
         if (n.owner() == null) { n.discard(); return; }
         if (!(sl.getPlayerByUUID(n.owner()) instanceof ServerPlayer p)) return;
         CompoundTag r = root(p);
-        if (!r.hasUUID("nest") || !r.getUUID("nest").equals(n.getUUID())) { n.discard(); return; }
+        if (!ownsNest(p, n.getUUID())) { n.discard(); return; }
         if (p.distanceTo(n) < 6 && p.getHealth() < p.getMaxHealth()) {
             p.heal(1f);
             tendril(sl, n.position().add(0, 0.6, 0), mid(p), 6);
@@ -1246,7 +1367,8 @@ public final class ParasiteFx {
         if (!p.getUUID().equals(n.owner())) { p.displayClientMessage(Component.literal("Someone else's nest").withStyle(ChatFormatting.GRAY), true); return; }
         CompoundTag r = root(p);
         float room = cap(p) - r.getFloat("bio"), take = Math.min(room, n.stored());
-        if (take <= 0) { p.displayClientMessage(Component.literal("Nest: " + Math.round(n.stored()) + " biomass stored").withStyle(ChatFormatting.RED), true); return; }
+        if (rank(p, NETWORK) > 0 && nests(p).size() > 1 && p.isShiftKeyDown()) { sendNests(p); return; }   // sneak + right-click: travel
+        if (take <= 0) { p.displayClientMessage(Component.literal("Nest: " + Math.round(n.stored()) + " biomass stored" + (rank(p, NETWORK) > 0 && nests(p).size() > 1 ? "  (sneak + right-click to travel)" : "")).withStyle(ChatFormatting.RED), true); return; }
         n.setStored(n.stored() - take);
         r.putFloat("bio", r.getFloat("bio") + take);
         tendril(p.serverLevel(), n.position().add(0, 0.6, 0), mid(p), 8);
@@ -1255,20 +1377,55 @@ public final class ParasiteFx {
         dirty(p);
     }
 
+    /** The travel menu: every nest (where, its biomass if loaded, how long till it can be reached). */
+    static void sendNests(ServerPlayer p) {
+        net.minecraft.nbt.ListTag list = nests(p);
+        long now = p.serverLevel().getGameTime();
+        HiveNest here = nestOf(p);
+        List<String> rows = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag e = list.getCompound(i);
+            String dim = e.getString("dim"); dim = dim.substring(dim.indexOf(':') + 1).replace('_', ' ');
+            boolean isHere = here != null && e.getUUID("id").equals(here.getUUID());
+            long cd = Math.max(0, (e.getLong("cd") - now) / 20);
+            rows.add(dim + "|" + (int) e.getDouble("x") + "|" + (int) e.getDouble("y") + "|" + (int) e.getDouble("z") + "|" + cd + "|" + (isHere ? 1 : 0));
+        }
+        AddonNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new ParasitePackets.Nests(rows));
+    }
+
     /** Once a day, death brings you back at your nest. */
     @SubscribeEvent
     public static void onRespawn(net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent e) {
         if (e.isEndConquered() || !(e.getEntity() instanceof ServerPlayer p)) return;
         CompoundTag r = root(p);
-        if (!r.hasUUID("nest") || !r.contains("nestDim")) return;
+        net.minecraft.nbt.ListTag list = nests(p);
+        if (list.isEmpty()) return;
         long now = p.serverLevel().getGameTime();
         if (now < r.getLong("nestRespawn")) return;
-        var key = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, new net.minecraft.resources.ResourceLocation(r.getString("nestDim")));
+        String died = r.getString("diedDim");
+        CompoundTag pick = list.getCompound(0);
+        double best = Double.MAX_VALUE;
+        for (net.minecraft.nbt.Tag t : list) {
+            CompoundTag c = (CompoundTag) t;
+            if (!c.getString("dim").equals(died)) continue;
+            double d = Math.pow(c.getDouble("x") - r.getDouble("diedX"), 2) + Math.pow(c.getDouble("z") - r.getDouble("diedZ"), 2);
+            if (d < best) { best = d; pick = c; }
+        }
+        var key = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, new net.minecraft.resources.ResourceLocation(pick.getString("dim")));
         ServerLevel there = p.server.getLevel(key);
         if (there == null) return;
         r.putLong("nestRespawn", now + 24000);
-        p.teleportTo(there, r.getDouble("nestX"), r.getDouble("nestY") + 0.2, r.getDouble("nestZ"), p.getYRot(), p.getXRot());
+        p.teleportTo(there, pick.getDouble("x"), pick.getDouble("y") + 0.2, pick.getDouble("z"), p.getYRot(), p.getXRot());
         p.displayClientMessage(Component.literal("You re-form at your Hive Nest").withStyle(ChatFormatting.RED), true);
+    }
+
+    /** Where you died (for the nearest nest). */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onDiedWhere(LivingDeathEvent e) {
+        if (e.isCanceled() || !(e.getEntity() instanceof ServerPlayer p)) return;
+        CompoundTag r = root(p);
+        r.putString("diedDim", p.serverLevel().dimension().location().toString());
+        r.putDouble("diedX", p.getX()); r.putDouble("diedZ", p.getZ());
     }
 
     // ------------------------------------------------------------------ the shadow wheel (System Grimoire)
@@ -1389,6 +1546,12 @@ public final class ParasiteFx {
                     if (now - a.getLong("t" + h) > 600 && a.getFloat("r" + h) > 0) a.putFloat("r" + h, Math.max(0, a.getFloat("r" + h) - 2f));
                 r.put("adapt", a);
             }
+            if (r.getBoolean("sight")) {   // Predator Sight eats biomass
+                float b = r.getFloat("bio") - 0.5f;
+                if (b <= 0) { r.putFloat("bio", 0); r.putBoolean("sight", false); p.displayClientMessage(Component.literal("Your sight dims - no biomass left").withStyle(ChatFormatting.GRAY), true); }
+                else r.putFloat("bio", b);
+                dirty(p);
+            }
             if (r.getBoolean("hide")) {   // the hide eats biomass
                 float b = r.getFloat("bio") - 0.25f;
                 if (b <= 0) { r.putFloat("bio", 0); r.putBoolean("hide", false); applyStats(p); p.displayClientMessage(Component.literal("Your hide sloughs off - no biomass left").withStyle(ChatFormatting.GRAY), true); }
@@ -1420,6 +1583,10 @@ public final class ParasiteFx {
         if (t instanceof ServerPlayer pa && equipped(pa) && wears(pa, ACID) && src.getDirectEntity() instanceof LivingEntity a && a != pa && a.distanceTo(pa) < 4) {   // Acid Blood
             AstaFx.later(1, () -> { if (a.isAlive()) { a.invulnerableTime = 0; a.hurt(pa.damageSources().magic(), 3f); FxSend.ring(pa.serverLevel(), Fx.LIGHTNING | FxPacket.KEEP_SHAPE, a.position().add(0, a.getBbHeight() * 0.5, 0), 0.1f, 0.7f, 0.04f, 6); } });
         }
+        if (t instanceof ServerPlayer ps && equipped(ps) && hide(ps) && look(ps) == 1 && src.getDirectEntity() instanceof LivingEntity a && a != ps && a.distanceTo(ps) < 4) {   // Spiked
+            AstaFx.later(1, () -> { if (a.isAlive()) { a.invulnerableTime = 0; a.hurt(ps.damageSources().thorns(ps), 2f); } });
+        }
+        if (t instanceof ServerPlayer pm && equipped(pm) && rank(pm, MOLT) > 0) AstaFx.later(0, () -> molt(pm));
         if (t instanceof ServerPlayer p && equipped(p) && (bulwark(p) || form(p) == RAM) && !src.is(DamageTypeTags.BYPASSES_ARMOR) && src.getEntity() != null) {
             Vec3 from = src.getSourcePosition() != null ? src.getSourcePosition() : src.getEntity().position();
             boolean front = fromFront(p, from);
@@ -1685,7 +1852,7 @@ public final class ParasiteFx {
                 r.getInt("strain"), ranks(p), open, extra(p)));
         // everyone round sees the forms on your arms (and how big you've grown)
         boolean on = equipped(p);
-        int flags = (on && colossus(p) ? 1 : 0) | (on && finalForm(p) ? 2 : 0) | (on && burrowed(p) ? 4 : 0);
+        int flags = (on && colossus(p) ? 1 : 0) | (on && finalForm(p) ? 2 : 0) | (on && burrowed(p) ? 4 : 0) | ((on ? look(p) : 0) << 3);
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p),
                 new ParasitePackets.Look(p.getId(), on ? r.getInt("form") : 0, on && r.getBoolean("bulwark"), on && (r.getBoolean("hide") || finalForm(p)), frenzied(p), flags));
     }
@@ -1699,7 +1866,8 @@ public final class ParasiteFx {
                 Math.round(satedBonus(p) * 100), starving(p) ? 1 : 0, (int) cap(p), art,
                 strain2(p), organ(p, HEART), organ(p, GUT), organ(p, GLAND),
                 Math.round(adapted(p, 0)), Math.round(adapted(p, 1)), Math.round(adapted(p, 2)), Math.round(adapted(p, 3)), Math.round(adapted(p, 4)),
-                left(p, "burrow"), evoRank(p), Math.round(eaten(p)), Math.round(limbWear(p)), limbGone(p) ? 1 : 0, nestOf(p) != null ? Math.round(nestOf(p).stored()) : -1};
+                left(p, "burrow"), evoRank(p), Math.round(eaten(p)), Math.round(limbWear(p)), limbGone(p) ? 1 : 0, nestOf(p) != null ? Math.round(nestOf(p).stored()) : -1,
+                sight(p) ? 1 : 0, look(p), nests(p).size(), maxNests(p)};
     }
 
     // ================================================================== tests and screenshots
