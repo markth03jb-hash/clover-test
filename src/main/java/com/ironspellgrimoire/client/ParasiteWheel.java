@@ -161,9 +161,9 @@ public class ParasiteWheel extends Screen {
         }
         // the middle and the line under the wheel
         if (kind == 3) {   // the blade's mood in the middle; the pointed-at sword under the wheel
-            int m = com.ironspellgrimoire.server.HungerFx.mood(HungerClient.hunger);
+            int md = com.ironspellgrimoire.server.HungerFx.mood(HungerClient.hunger);
             g.drawCenteredString(font, Math.round(HungerClient.hunger) + "", cx, cy - 8, 0xFFFF7080);
-            g.drawCenteredString(font, HungerClient.MOODS[m], cx, cy + 2, HungerClient.MOOD_COL[m]);
+            g.drawCenteredString(font, HungerClient.MOODS[md], cx, cy + 2, HungerClient.MOOD_COL[md]);
             if (hover >= 0) {
                 int f = HungerClient.load[hover], y = cy + (int) (r1 + 14);
                 g.drawCenteredString(font, HungerClient.has(f) ? com.ironspellgrimoire.server.HungerFx.NAMES[f] : "Empty slot", cx, y, 0xFFFFFFFF);
