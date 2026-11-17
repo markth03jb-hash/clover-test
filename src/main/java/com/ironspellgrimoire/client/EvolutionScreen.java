@@ -23,7 +23,7 @@ public class EvolutionScreen extends Screen {
     static final int INK = 0xF00A0507, PANEL = 0xE0180A0E, EDGE = 0xFF8C1C28, EDGE_DIM = 0xFF3A1218, TEXT = 0xFFF2E4E4, MUTED = 0xFF9A8088,
             GOLD = 0xFFFFC060, BONE = 0xFFC8C8CC;
     static final String[] BRANCH = {"PREDATOR", "ARSENAL", "HUNGER", "ULTIMATES"};
-    static final String[] TABS = {"Tree", "Mutations", "Strain"};
+    static final String[] TABS = {"Tree", "Mutations", "Organs", "Strain"};
     static final String[][] STRAIN_TEXT = {
             {"Hunter", "+20% speed. Talons and blade hit harder and faster. Consume reaches further and lunges."},
             {"Brute", "+6 health. Fist and lance hit harder; the Bulwark blocks more; wider slams."},
@@ -87,7 +87,8 @@ public class EvolutionScreen extends Screen {
         int top = y0 + 26, bottom = y0 + H - 16;
         switch (tab) {
             case 1 -> mutations(g, mx, my, x0, top, W, bottom);
-            case 2 -> strain(g, mx, my, x0, top, W, bottom);
+            case 2 -> organs(g, mx, my, x0, top, W, bottom);
+            case 3 -> strain(g, mx, my, x0, top, W, bottom);
             default -> tree(g, mx, my, x0, top, W, bottom);
         }
         // the foot: what's pointed at
@@ -174,6 +175,30 @@ public class EvolutionScreen extends Screen {
         }
     }
 
+    // ------------------------------------------------------------------ organs
+    private void organs(GuiGraphics g, int mx, int my, int x0, int top, int W, int bottom) {
+        g.drawCenteredString(font, "Grow one organ in each slot (" + ParasiteFx.ORGAN_COST + " EP the first time) - swap freely after", x0 + W / 2, top, BONE);
+        int rowH = Math.min(58, (bottom - top - 12) / 3 - 3), labelW = 44, cw = (W - 12 - labelW - 6) / 3;
+        for (int slot = 0; slot < 3; slot++) {
+            int y = top + 12 + slot * (rowH + 3);
+            int cur = ParasiteClient.organs[slot];
+            g.drawString(font, ParasiteFx.ORGAN_SLOTS[slot], x0 + 8, y + rowH / 2 - 4, cur > 0 ? 0xFFFF7080 : MUTED, false);
+            for (int c = 1; c <= 3; c++) {
+                int cx = x0 + 6 + labelW + (c - 1) * (cw + 3);
+                boolean on = cur == c, hv = over(mx, my, cx, y, cw, rowH);
+                g.fill(cx, y, cx + cw, y + rowH, on ? 0xD0501820 : hv ? 0xC0301018 : 0xC0200C10);
+                g.renderOutline(cx, y, cw, rowH, on ? 0xFFFF6070 : EDGE);
+                g.drawString(font, ParasiteFx.ORGANS[slot][c - 1], cx + 4, cy(y), on ? 0xFFFFE070 : TEXT, false);
+                List<FormattedCharSequence> ls = font.split(Component.literal(ParasiteFx.ORGAN_DESC[slot][c - 1]), cw - 8);
+                for (int k = 0; k < Math.min(Math.max(0, (rowH - 16) / 9), ls.size()); k++) g.drawString(font, ls.get(k), cx + 4, y + 15 + k * 9, MUTED, false);
+                if (hv) foot = ParasiteFx.ORGANS[slot][c - 1] + ": " + ParasiteFx.ORGAN_DESC[slot][c - 1] + (on ? "" : cur == 0 ? "  (grow it: " + ParasiteFx.ORGAN_COST + " EP)" : "  (swap to it)");
+                if (!on) { final int arg = slot * 10 + c; hits.add(new Hit(cx, y, cw, rowH, () -> ParasiteClient.send(17, arg))); }
+            }
+        }
+    }
+
+    private static int cy(int y) { return y + 4; }
+
     // ------------------------------------------------------------------ the strain, its awakening and the Final Form
     private void strain(GuiGraphics g, int mx, int my, int x0, int top, int W, int bottom) {
         int st = ParasiteClient.strain;
@@ -214,6 +239,40 @@ public class EvolutionScreen extends Screen {
                 + "devouring everything weak round you. Costs 100 biomass; 5 min to regrow."
                 + (ParasiteClient.awakened ? (ParasiteClient.finalCd > 0 ? "  (ready in " + ParasiteClient.finalCd + " s)" : "  (ready - on your wheel)") : "  Needs the awakening.");
         for (FormattedCharSequence l : font.split(Component.literal(fin), W - 20)) { if (y > bottom - 10) break; g.drawString(font, l, x0 + 10, y, ParasiteClient.awakened ? TEXT : MUTED, false); y += 10; }
+        y += 4;
+        // the second strain: grafted once awakened, at half strength
+        if (ParasiteClient.awakened && ParasiteClient.strain2 == 0 && y + 32 < bottom) {
+            g.drawString(font, "Graft a second strain (half strength, for good):", x0 + 10, y, 0xFFFF8090, false);
+            y += 11;
+            int bx = x0 + 10;
+            for (int s2 = 1; s2 <= 3; s2++) {
+                if (s2 == st) continue;
+                String nm = ParasiteFx.STRAINS[s2];
+                int bw2 = font.width(nm) + 12;
+                boolean hv = over(mx, my, bx, y, bw2, 14);
+                g.fill(bx, y, bx + bw2, y + 14, hv ? 0xD0501820 : 0xC0200C10);
+                g.renderOutline(bx, y, bw2, 14, hv ? 0xFFFF5060 : EDGE);
+                g.drawString(font, nm, bx + 6, y + 3, TEXT, false);
+                if (hv) foot = "Graft " + nm + ": " + STRAIN_TEXT[s2 - 1][1] + " (all at half)";
+                final int pick = s2;
+                hits.add(new Hit(bx, y, bw2, 14, () -> ParasiteClient.send(16, pick)));
+                bx += bw2 + 4;
+            }
+            y += 18;
+        } else if (ParasiteClient.strain2 > 0 && y + 10 < bottom) {
+            g.drawString(font, "Grafted: " + ParasiteFx.STRAINS[ParasiteClient.strain2] + " (half strength)", x0 + 10, y, 0xFFFF9090, false);
+            y += 12;
+        }
+        // adaptation: what the strain has learned to shrug off
+        if (ParasiteClient.rank(ParasiteFx.ADAPT) > 0 && y + 12 < bottom) {
+            g.drawString(font, "Adapted:", x0 + 10, y, BONE, false);
+            int ax = x0 + 10 + font.width("Adapted:") + 6;
+            for (int h = 0; h < ParasiteFx.HARMS.length; h++) {
+                String a = ParasiteFx.HARMS[h] + " " + ParasiteClient.adapt[h] + "%";
+                g.drawString(font, a, ax, y, ParasiteClient.adapt[h] > 0 ? 0xFF9AE08A : MUTED, false);
+                ax += font.width(a) + 8;
+            }
+        }
     }
 
     @Override

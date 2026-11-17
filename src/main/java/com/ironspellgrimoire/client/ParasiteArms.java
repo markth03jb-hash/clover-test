@@ -157,6 +157,20 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
         }
     }
 
+    // ------------------------------------------------------------------ burrowed: not drawn at all (only the mound the server shows)
+    static boolean burrowed(int id) { int[] l = LOOKS.get(id); return l != null && l.length > 4 && (l[4] & 4) != 0; }
+
+    @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.HIGH)
+    public static void hideBurrowed(net.minecraftforge.client.event.RenderPlayerEvent.Pre e) {
+        if (burrowed(e.getEntity().getId())) e.setCanceled(true);
+    }
+
+    @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.HIGH)
+    public static void hideBurrowedHands(RenderHandEvent e) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && burrowed(mc.player.getId())) e.setCanceled(true);
+    }
+
     // ------------------------------------------------------------------ bigger: Colossus and the Final Form
     @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.LOWEST)   // last: nothing can cancel it after the push
     public static void growPre(net.minecraftforge.client.event.RenderPlayerEvent.Pre e) {

@@ -504,6 +504,42 @@ public final class GameTests {
                     ParasiteFx.testStarve(p);
                     var dmg = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
                     if (dmg == null || dmg.getModifiers().stream().noneMatch(m -> m.getName().equals("Hunger") && m.getAmount() < 0)) bad.add("starving didn't weaken");
+                    // organs and the second strain: an Iron Heart and a grafted Brute add health; a Double Stomach feeds more
+                    ParasiteFx.testReset(p);
+                    double hp0 = p.getMaxHealth();
+                    ParasiteFx.testFill(p); ParasiteFx.handle(p, 17, 0 * 10 + 1);   // Iron Heart (4 EP)
+                    if (ParasiteFx.organ(p, ParasiteFx.HEART) != 1) bad.add("the Iron Heart didn't grow");
+                    if (p.getMaxHealth() < hp0 + 3.9) bad.add(String.format("the Iron Heart didn't add health (%.1f -> %.1f)", hp0, p.getMaxHealth()));
+                    ParasiteFx.testUnlockAll(p); ParasiteFx.testStrain(p, ParasiteFx.HUNTER);
+                    ParasiteFx.handle(p, 16, ParasiteFx.BRUTE);
+                    if (ParasiteFx.strain2(p) != ParasiteFx.BRUTE) bad.add("the Brute strain didn't graft");
+                    if (p.getMaxHealth() < hp0 + 6.9) bad.add(String.format("a grafted Brute didn't add half its health (%.1f -> %.1f)", hp0, p.getMaxHealth()));
+                    ParasiteFx.root(p).putFloat("bio", 0);
+                    ParasiteFx.handle(p, 17, 1 * 10 + 1);   // Double Stomach
+                    ParasiteFx.feed(p, 10);
+                    if (ParasiteFx.biomass(p) < 13.9f) bad.add("the Double Stomach didn't feed more (10 -> " + ParasiteFx.biomass(p) + ")");
+                    // adaptation: fire hurts less the more of it you've taken
+                    ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p);
+                    p.setHealth(p.getMaxHealth());
+                    float h0 = p.getHealth(); p.invulnerableTime = 0; p.hurt(p.damageSources().onFire(), 10f); float first = h0 - p.getHealth();
+                    for (int k = 0; k < 4; k++) { p.setHealth(p.getMaxHealth()); p.invulnerableTime = 0; p.hurt(p.damageSources().onFire(), 10f); }
+                    p.setHealth(p.getMaxHealth()); h0 = p.getHealth(); p.invulnerableTime = 0; p.hurt(p.damageSources().onFire(), 10f); float later = h0 - p.getHealth();
+                    if (ParasiteFx.adapted(p, 0) < 30) bad.add("adaptation to fire is only " + ParasiteFx.adapted(p, 0) + "%");
+                    else if (first > 0 && later >= first * 0.8f) bad.add(String.format("fire didn't hurt less after adapting (%.1f -> %.1f)", first, later));
+                    p.clearFire();
+                    // the tendril yanks a light foe in; burrowing hides and then erupts
+                    var light = net.minecraft.world.entity.EntityType.ZOMBIE.create(sl());
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    if (light != null) {
+                        light.moveTo(home.x, home.y, home.z + 8, 180, 0); light.setNoAi(true); sl().addFreshEntity(light);
+                        ParasiteFx.grapple(p);
+                        if (light.getDeltaMovement().z > -0.3) bad.add(String.format("the tendril didn't yank the zombie in (dz %.2f)", light.getDeltaMovement().z));
+                        light.discard();
+                    }
+                    ParasiteFx.burrow(p);
+                    if (!ParasiteFx.burrowed(p)) bad.add("Burrow didn't start (on the ground: " + p.onGround() + ")");
+                    ParasiteFx.burrow(p);
+                    if (ParasiteFx.burrowed(p)) bad.add("Burrow didn't end when pressed again");
                     ParasiteFx.testReset(p);
                     ParasiteFx.testFrenzy(p);   // back into the frenzy the next checks wait out
                 }

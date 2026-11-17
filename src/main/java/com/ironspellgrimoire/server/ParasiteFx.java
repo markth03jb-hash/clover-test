@@ -84,7 +84,8 @@ public final class ParasiteFx {
 
     // ------------------------------------------------------------------ the evolution tree
     public static final int LEAP = 0, WALL = 1, GLIDE = 2, METEOR = 3, F_SPINE = 4, F_LANCE = 5, F_BULWARK = 6, F_HIDE = 7,
-            HONED = 8, GULLET = 9, DIGEST = 10, RAVENOUS = 11, CATACLYSM = 12, F_WHIP = 13, F_RAM = 14, U_STORM = 15, U_FIELD = 16, U_BARRAGE = 17;
+            HONED = 8, GULLET = 9, DIGEST = 10, RAVENOUS = 11, CATACLYSM = 12, F_WHIP = 13, F_RAM = 14, U_STORM = 15, U_FIELD = 16, U_BARRAGE = 17,
+            TENDRIL = 18, BURROW = 19, CLING = 20, ADAPT = 21;
     /** {branch (0 Predator, 1 Arsenal, 2 Hunger, 3 Ultimates), max rank, cost per rank}. The Ultimates' nodes are a
      *  choice of path, not ranks: their "rank" is the path taken (1 or 2). */
     public static final int[][] NODES = {
@@ -92,11 +93,14 @@ public final class ParasiteFx {
             {1, 1, 1}, {1, 1, 1}, {1, 1, 2}, {1, 1, 2}, {1, 3, 2},
             {2, 3, 1}, {2, 3, 1}, {2, 3, 2}, {2, 3, 3},
             {1, 1, 3}, {1, 1, 3},
-            {3, 1, 3}, {3, 1, 3}, {3, 1, 3}};
+            {3, 1, 3}, {3, 1, 3}, {3, 1, 3},
+            {0, 1, 2}, {0, 1, 3}, {0, 1, 2}, {2, 1, 3}};
+    /** The nodes the awakening asks for (the later ones - Tendril, Burrow, Wall Cling, Adaptation - came after it). */
+    static final int AWAKEN_NODES = 18;
     public static final String[] NODE_NAMES = {"Leap", "Wall Runner", "Glider", "Meteor Fall",
             "Spine Launcher", "Bone Lance", "Bulwark", "Chitin Hide", "Honed Edges",
             "Deep Gullet", "Rapid Digestion", "Ravenous", "Cataclysm", "Whip-Spear", "Battering Ram",
-            "Spine Storm", "Grasping Field", "Marrow Barrage"};
+            "Spine Storm", "Grasping Field", "Marrow Barrage", "Tendril Grapple", "Burrow", "Wall Cling", "Adaptation"};
     /** The two paths of each Ultimates node. */
     public static final String[][] PATHS = {{"Tempest", "Impaler"}, {"Maw", "Vortex"}, {"Seeker", "Bomb"}};
     public static final String[][] PATH_DESC = {
@@ -105,7 +109,7 @@ public final class ParasiteFx {
             {"Every lance homes on a foe.", "Four lances that burst where they land."}};
     /** Which node must be evolved first. */
     static int needs(int node) { return node == F_WHIP ? F_LANCE : node == F_RAM ? F_BULWARK : -1; }
-    static boolean isPath(int node) { return node >= U_STORM; }
+    static boolean isPath(int node) { return node >= U_STORM && node <= U_BARRAGE; }
     public static final String[] NODE_DESC = {
             "Sprint-jumps leap higher; falls hurt less.",
             "Run up walls (longer at rank 2).",
@@ -122,7 +126,11 @@ public final class ParasiteFx {
             "Ultimates +20% damage, -10% biomass.",
             "Talons + Lance: a long hooking spine (needs the Bone Lance).",
             "Fist + Bulwark: a guarding ram (needs the Bulwark).",
-            "", "", ""};
+            "", "", "",
+            "Z: pull yourself to what you aim at, or yank light foes to you.",
+            "Sneak + Z: sink out of sight for 4 s, then burst up in spines.",
+            "Hold sneak against a wall mid-air to cling; jump to pounce.",
+            "What hurts you, you grow to resist (up to 40% of each kind)."};
 
     // ------------------------------------------------------------------ mutations (rare, from devouring; up to three worn)
     public static final int ACID = 0, TWIN = 1, ECHO = 2, HOLLOW = 3, BARBED = 4, THICK = 5, REGROW = 6, KEEN = 7, MUTATIONS = 8, SLOTS = 3;
@@ -136,6 +144,20 @@ public final class ParasiteFx {
             "Hold up to 150 biomass.",
             "Heal while fed (costs a little biomass).",
             "Consume reaches 3 further, devours at +10%."};
+
+    // ------------------------------------------------------------------ organs (three slots, three choices each)
+    public static final int HEART = 0, GUT = 1, GLAND = 2, ORGAN_COST = 4;
+    public static final String[] ORGAN_SLOTS = {"Heart", "Gut", "Gland"};
+    public static final String[][] ORGANS = {{"Iron Heart", "Racing Heart", "Leech Heart"}, {"Double Stomach", "Slow Gut", "Ripping Gut"},
+            {"Acid Gland", "Marrow Forge", "Spore Gland"}};
+    public static final String[][] ORGAN_DESC = {
+            {"+4 max health.", "+10% attack and move speed.", "Arm-form hits heal 1."},
+            {"+40% biomass; Hunger drains twice as fast.", "Hunger drains at half speed; -10% biomass.", "Consume's rip hits 50% harder."},
+            {"Spines strip 3 armour for 5 s.", "The Bone Lance also throws a bone spear.", "Grasping Field is 2 blocks wider."}};
+
+    // ------------------------------------------------------------------ adaptation: the kinds of harm the strain learns
+    public static final String[] HARMS = {"fire", "fall", "arrows", "blasts", "magic"};
+    static final float ADAPT_MAX = 40f;
 
     // ------------------------------------------------------------------ the strain's signature moves and the Final Form
     public static final String[] ARTS = {"", "Apex Chain", "Colossus", "Swarm"};
@@ -204,13 +226,21 @@ public final class ParasiteFx {
     public static boolean colossus(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("colossus"); }
     public static boolean swarm(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("swarm"); }
     public static boolean starving(Player p) { return root(p).getInt("empty") >= 30; }
+    public static int strain2(Player p) { return root(p).getInt("strain2"); }
+    /** How much of a strain you carry: 1 your strain, 1/2 the grafted second one. */
+    public static float sw(Player p, int s) { return strain(p) == s ? 1f : strain2(p) == s ? 0.5f : 0f; }
+    /** The organ grown in a slot (1-3), 0 none. */
+    public static int organ(Player p, int slot) { int[] o = root(p).getIntArray("organs"); return slot < o.length ? o[slot] : 0; }
+    public static float adapted(Player p, int harm) { return root(p).getCompound("adapt").getFloat("r" + harm); }
+    public static boolean burrowed(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("burrow"); }
+    public static boolean pounced(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("pounce"); }
     /** Well fed: +5% damage a minute, up to +25%. */
     public static float satedBonus(Player p) { return Math.min(0.25f, root(p).getInt("sated") / 60 * 0.05f); }
 
     /** Every node at its top rank and every ultimate's path taken. */
     public static boolean maxed(Player p) {
         int[] rk = ranks(p);
-        for (int i = 0; i < NODES.length; i++) if (rk[i] < NODES[i][1]) return false;
+        for (int i = 0; i < AWAKEN_NODES; i++) if (rk[i] < NODES[i][1]) return false;
         return true;
     }
     /** The strain awakens once it has settled and every node is evolved. */
@@ -222,7 +252,9 @@ public final class ParasiteFx {
     /** Add biomass (Ravenous and Hive add more); past full, it spills into Frenzy. */
     static void feed(ServerPlayer p, float amount) {
         if (amount <= 0) return;
-        amount *= 1f + 0.25f * rank(p, RAVENOUS) + (strain(p) == HIVE ? 0.2f : 0f);
+        amount *= 1f + 0.25f * rank(p, RAVENOUS) + 0.2f * sw(p, HIVE);
+        int gut = organ(p, GUT);
+        if (gut == 1) amount *= 1.4f; else if (gut == 2) amount *= 0.9f;
         CompoundTag r = root(p);
         float b = r.getFloat("bio") + amount, cap = cap(p);
         if (b > cap) {
@@ -256,8 +288,13 @@ public final class ParasiteFx {
         return t != p && t.isAlive() && !(t instanceof Player) && !(t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()));
     }
 
-    static float ultBoost(ServerPlayer p) { return (1f + 0.2f * rank(p, CATACLYSM)) * (strain(p) == HIVE ? 1.25f : 1f) * (frenzied(p) ? 1.2f : 1f) * (finalForm(p) ? 1.3f : 1f); }
+    static float ultBoost(ServerPlayer p) { return (1f + 0.2f * rank(p, CATACLYSM)) * (1f + 0.25f * sw(p, HIVE)) * (frenzied(p) ? 1.2f : 1f) * (finalForm(p) ? 1.3f : 1f); }
     static float spineBoost(ServerPlayer p) { return wears(p, BARBED) ? 1.25f : 1f; }
+    private static final UUID ACID_STRIP = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a90000d");
+    /** A spine landed: the Acid Gland eats at its armour. */
+    static void spineLanded(ServerPlayer p, LivingEntity t) {
+        if (organ(p, GLAND) == 1 && t.isAlive()) TimedModifiers.apply(t, Attributes.ARMOR, ACID_STRIP, "Acid", -3, AttributeModifier.Operation.ADDITION, 100);
+    }
 
     // ================================================================== the looks (only the addon's own shapes)
     static final int RED = Fx.CRIMSON, BONE = Fx.SILVER;
@@ -297,7 +334,7 @@ public final class ParasiteFx {
     public static void consume(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         boolean keen = wears(p, KEEN);
-        double range = (strain(p) == HUNTER ? 8 : 5) + (keen ? 3 : 0);
+        double range = 5 + 3 * sw(p, HUNTER) + (keen ? 3 : 0);
         if (finalForm(p)) { devourAll(p, power, range + 3); return; }
         LivingEntity t = aimed(p, range, 25);
         if (t == null || !foe(p, t)) {
@@ -308,14 +345,14 @@ public final class ParasiteFx {
         Vec3 at = mid(t);
         tendril(sl, handPos(p), at, 8);
         sound(sl, p.position(), SoundEvents.SLIME_ATTACK, 1.0f, 0.6f);
-        if (strain(p) == HUNTER && p.distanceTo(t) > 2.5) {   // the Hunter strain throws itself at its prey
+        if (sw(p, HUNTER) > 0 && p.distanceTo(t) > 2.5) {   // the Hunter strain throws itself at its prey
             Vec3 d = t.position().subtract(p.position());
             p.setDeltaMovement(d.normalize().scale(Math.min(1.6, d.length() * 0.28)).add(0, 0.25, 0));
             p.hurtMarked = true;
         }
         if (!devourable(p, t, 0f)) {
             t.invulnerableTime = 0;
-            AstaFx.damage(p, t, power * 1.2f, "consume");
+            AstaFx.damage(p, t, power * 1.2f * (organ(p, GUT) == 3 ? 1.5f : 1f), "consume");   // Ripping Gut: harder
             Fx.impact(sl, RED, at, 0.9f);
             feed(p, 5);
             p.heal(1);
@@ -403,7 +440,7 @@ public final class ParasiteFx {
         root(p).putIntArray("mslots", sl);
         if (!wears(p, THICK) && biomass(p) > 100) root(p).putFloat("bio", 100);
         sound(p.serverLevel(), p.position(), SoundEvents.SLIME_SQUISH, 0.8f, was ? 1.2f : 0.7f);
-        sync(p, true);
+        sync(p, false);
     }
 
     // ================================================================== 2. Evolution (the page)
@@ -443,6 +480,7 @@ public final class ParasiteFx {
                         if (!t.isAlive() || !alive(p)) return;
                         t.invulnerableTime = 0;
                         AstaFx.damage(p, t, dmg, "marrow_barrage");
+                        spineLanded(p, t);
                         Fx.spark(sl, BONE, mid(t), 0.7f);
                     });
                 }
@@ -474,7 +512,7 @@ public final class ParasiteFx {
         Vec3 aim = aimed != null && foe(p, aimed) ? aimed.position().add(0, 0.5, 0) : Kit.aim(p, 16);
         Vec3 c = ground(sl, p, aim);
         int path = path(p, U_FIELD);
-        float r = 5f, dmg = power * 0.35f * ultBoost(p);
+        float r = organ(p, GLAND) == 3 ? 7f : 5f, dmg = power * 0.35f * ultBoost(p);   // Spore Gland: wider
         FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, c.add(0, 0.05, 0), r * 0.9f, r, 0.08f, 80);
         sound(sl, c, SoundEvents.EVOKER_FANGS_ATTACK, 1.2f, 0.6f);
         for (int w = 0; w < 8; w++) {
@@ -515,7 +553,7 @@ public final class ParasiteFx {
         float dmg = power * ultBoost(p) * spineBoost(p);
         int path = path(p, U_STORM);
         if (path == 2) { impaler(p, dmg); return; }
-        int waves = (path == 1 ? 6 : 3) + (strain(p) == HIVE ? 1 : 0);
+        int waves = (path == 1 ? 6 : 3) + (sw(p, HIVE) >= 1 ? 1 : 0);
         float each = path == 1 ? dmg * 0.7f : dmg;
         sound(sl, p.position(), SoundEvents.WARDEN_SONIC_CHARGE, 0.8f, 1.4f);
         FxSend.shake(sl, p.position(), 0.5f, 10, 16);
@@ -537,6 +575,7 @@ public final class ParasiteFx {
                     if (!foe(p, t)) continue;
                     t.invulnerableTime = 0;
                     AstaFx.damage(p, t, each, "spine_storm");
+                    spineLanded(p, t);
                     Fx.spark(sl, BONE, mid(t), 0.6f);
                 }
             });
@@ -721,19 +760,20 @@ public final class ParasiteFx {
         boolean on = equipped(p);
         int f = on ? form(p) : NONE;
         double[] s = FORM_STATS[f];
-        int st = on ? strain(p) : 0;
+        float hu = on ? sw(p, HUNTER) : 0, br = on ? sw(p, BRUTE) : 0;
+        int heart = on ? organ(p, HEART) : 0;
         boolean fr = on && frenzied(p);
         setMod(p, Attributes.ATTACK_DAMAGE, M_DMG, "Parasite arm", s[0], AttributeModifier.Operation.ADDITION);
-        setMod(p, Attributes.ATTACK_SPEED, M_SPD, "Parasite arm", s[1] + (fr ? 0.6 : 0) + (st == HUNTER && (f == TALONS || f == REAPER) ? 0.3 : 0), AttributeModifier.Operation.ADDITION);
+        setMod(p, Attributes.ATTACK_SPEED, M_SPD, "Parasite arm", s[1] + (fr ? 0.6 : 0) + ((f == TALONS || f == REAPER) ? 0.3 * hu : 0) + (heart == 2 ? 0.4 : 0), AttributeModifier.Operation.ADDITION);
         setMod(p, ForgeMod.ENTITY_REACH.get(), M_REACH, "Parasite arm", s[2], AttributeModifier.Operation.ADDITION);
         boolean hd = on && hide(p), bw = on && bulwark(p);
         boolean colA = on && colossus(p), finA = on && finalForm(p);
         setMod(p, Attributes.ARMOR, M_ARMOR, "Parasite armour", (hd ? 6 : 0) + (bw ? 2 : 0) + (colA ? 10 : 0) + (finA ? 8 : 0), AttributeModifier.Operation.ADDITION);
         setMod(p, Attributes.ARMOR_TOUGHNESS, M_TOUGH, "Parasite armour", hd ? 3 : 0, AttributeModifier.Operation.ADDITION);
-        setMod(p, Attributes.KNOCKBACK_RESISTANCE, M_KB, "Parasite armour", colA || finA ? 1.0 : (hd ? 0.3 : 0) + (st == BRUTE ? 0.2 : 0), AttributeModifier.Operation.ADDITION);
-        setMod(p, Attributes.MOVEMENT_SPEED, M_MOVE, "Parasite stride", (hd ? -0.08 : 0) + (st == HUNTER ? 0.2 : 0) + (fr ? 0.25 : 0) + (colA ? -0.1 : 0) + (finA ? 0.3 : 0), AttributeModifier.Operation.MULTIPLY_BASE);
+        setMod(p, Attributes.KNOCKBACK_RESISTANCE, M_KB, "Parasite armour", colA || finA ? 1.0 : (hd ? 0.3 : 0) + 0.2 * br, AttributeModifier.Operation.ADDITION);
+        setMod(p, Attributes.MOVEMENT_SPEED, M_MOVE, "Parasite stride", (hd ? -0.08 : 0) + 0.2 * hu + (heart == 2 ? 0.1 : 0) + (on && burrowed(p) ? 0.4 : 0) + (fr ? 0.25 : 0) + (colA ? -0.1 : 0) + (finA ? 0.3 : 0), AttributeModifier.Operation.MULTIPLY_BASE);
         setMod(p, Attributes.ATTACK_DAMAGE, M_FRENZY, "Frenzy", fr ? 0.4 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
-        setMod(p, Attributes.MAX_HEALTH, M_HEALTH, "Brute strain", st == BRUTE ? 6 : 0, AttributeModifier.Operation.ADDITION);
+        setMod(p, Attributes.MAX_HEALTH, M_HEALTH, "Brute strain", 6 * br + (heart == 1 ? 4 : 0), AttributeModifier.Operation.ADDITION);
         setMod(p, Attributes.ATTACK_DAMAGE, M_HUNGER, "Hunger", on ? (starving(p) ? -0.15 : satedBonus(p)) : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
         boolean col = on && colossus(p), fin = on && finalForm(p);
         setMod(p, Attributes.ATTACK_DAMAGE, M_POWER, "Awakened", col || fin ? 0.5 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
@@ -757,6 +797,11 @@ public final class ParasiteFx {
             case 10 -> toggleMutation(p, arg);
             case 11 -> strainArt(p);
             case 12 -> finalFormStart(p);
+            case 13 -> grapple(p);
+            case 14 -> burrow(p);
+            case 15 -> { if (rank(p, CLING) > 0) { root(p).putLong("pounce", p.serverLevel().getGameTime() + 40); root(p).putLong("glide", p.serverLevel().getGameTime() + 60); } }
+            case 16 -> secondStrain(p, arg);
+            case 17 -> growOrgan(p, arg / 10, arg % 10);
             case 20, 21, 22, 23, 24 -> shadowCommand(p, action - 20);
             default -> { }
         }
@@ -766,14 +811,15 @@ public final class ParasiteFx {
     private static final Map<UUID, Long> SPINE_CD = new HashMap<>();
 
     static void fireSpine(ServerPlayer p) {
-        if (form(p) != SPINE) return;
+        boolean spear = form(p) == LANCE && organ(p, GLAND) == 2;   // the Marrow Forge: the lance throws a bone spear
+        if (form(p) != SPINE && !spear) return;
         long now = p.serverLevel().getGameTime();
         Long next = SPINE_CD.get(p.getUUID());
         if (next != null && now < next) return;
-        SPINE_CD.put(p.getUUID(), now + (frenzied(p) ? 5 : 8));
+        SPINE_CD.put(p.getUUID(), now + (spear ? 20 : frenzied(p) ? 5 : 8));
         ServerLevel sl = p.serverLevel();
-        float dmg = 6f * (1f + 0.15f * rank(p, HONED)) * (frenzied(p) ? 1.4f : 1f) * spineBoost(p);
-        int n = strain(p) == HIVE ? 3 : 1;
+        float dmg = (spear ? 9f : 6f) * (1f + 0.15f * rank(p, HONED)) * (frenzied(p) ? 1.4f : 1f) * spineBoost(p);
+        int n = spear ? 1 : 1 + Math.round(2 * sw(p, HIVE));
         sound(sl, p.position(), SoundEvents.ARROW_SHOOT, 0.9f, 0.6f);
         for (int k = 0; k < n; k++) {
             Vec3 dir = rotY(p.getLookAngle(), Math.toRadians((k - (n - 1) / 2.0) * 6)).normalize();
@@ -791,6 +837,7 @@ public final class ParasiteFx {
                 if (!t.isAlive() || !alive(p)) return;
                 t.invulnerableTime = 0;
                 t.hurt(p.damageSources().playerAttack(p), dmg);
+                spineLanded(p, t);
                 Fx.spark(sl, BONE, mid(t), 0.5f);
                 feed(p, 1);
             });
@@ -812,7 +859,7 @@ public final class ParasiteFx {
         double fell = Math.max(0, r.getDouble("slamY") - p.getY());
         r.remove("slam"); r.remove("slamY");
         ServerLevel sl = p.serverLevel();
-        float radius = (3.5f + (float) Math.min(3, fell * 0.15)) * (strain(p) == BRUTE ? 1.5f : 1f);
+        float radius = (3.5f + (float) Math.min(3, fell * 0.15)) * (1f + 0.5f * sw(p, BRUTE));
         float dmg = (4f + (float) Math.min(20, fell * 0.6)) * (1f + 0.4f * rank(p, METEOR)) * (form(p) == TITAN ? 1.5f : 1f) * (frenzied(p) ? 1.4f : 1f);
         Vec3 c = p.position();
         FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, c.add(0, 0.05, 0), 0.3f, radius, 0.15f, 10);
@@ -853,7 +900,7 @@ public final class ParasiteFx {
         FxSend.ring(p.serverLevel(), RED | FxPacket.KEEP_SHAPE, p.position().add(0, 1, 0), 0.3f, 1.6f, 0.06f, 8);
         if (!wasAwake && awakened(p)) awaken(p);
         applyStats(p);
-        sync(p, true);
+        sync(p, false);
     }
 
     static void awaken(ServerPlayer p) {
@@ -874,7 +921,7 @@ public final class ParasiteFx {
         FxSend.ring(p.serverLevel(), RED | FxPacket.KEEP_SHAPE, p.position().add(0, 1, 0), 0.4f, 3.0f, 0.1f, 12);
         p.displayClientMessage(Component.literal("The strain settles: " + STRAINS[s]).withStyle(ChatFormatting.RED, ChatFormatting.BOLD), false);
         applyStats(p);
-        sync(p, true);
+        sync(p, false);
     }
 
     // ------------------------------------------------------------------ the awakened strain's signature move
@@ -998,6 +1045,109 @@ public final class ParasiteFx {
         }
     }
 
+    // ------------------------------------------------------------------ Tendril Grapple and Burrow
+    /** Z: a tendril to what you aim at - light foes are yanked to you, anything else pulls you to it. */
+    public static void grapple(ServerPlayer p) {
+        if (rank(p, TENDRIL) <= 0) return;
+        CompoundTag r = root(p);
+        long now = p.serverLevel().getGameTime();
+        if (now < r.getLong("grappleCd") || burrowed(p)) return;
+        ServerLevel sl = p.serverLevel();
+        LivingEntity t = aimed(p, 24, 6);
+        Vec3 eye = p.getEyePosition(), hand = handPos(p);
+        if (t != null && foe(p, t) && !isBoss(t) && t.getMaxHealth() < 40) {   // a light foe: yanked in
+            Vec3 d = p.position().subtract(t.position());
+            Kit.push(t, d, Math.min(2.0, d.length() * 0.25), 0.3);
+            tendril(sl, hand, mid(t), 8);
+            sound(sl, t.position(), SoundEvents.FISHING_BOBBER_RETRIEVE, 1.0f, 0.6f);
+        } else {   // anything else: you're pulled to it
+            Vec3 to = t != null ? mid(t) : Kit.aim(p, 24);
+            if (to.distanceTo(eye) > 23.5 && t == null) { p.displayClientMessage(Component.literal("Nothing in reach").withStyle(ChatFormatting.GRAY), true); return; }
+            Vec3 d = to.subtract(p.position());
+            p.setDeltaMovement(d.normalize().scale(Math.min(2.2, d.length() * 0.22)).add(0, 0.35, 0));
+            p.hurtMarked = true;
+            r.putLong("glide", now + 60);   // no fall damage from the swing
+            tendril(sl, hand, to, 8);
+            sound(sl, p.position(), SoundEvents.FISHING_BOBBER_THROW, 1.0f, 0.5f);
+        }
+        r.putLong("grappleCd", now + 30);
+    }
+
+    /** Sneak + Z: sink out of sight for 4 s (hidden, faster, foes lose you), then burst up in spines. */
+    public static void burrow(ServerPlayer p) {
+        if (rank(p, BURROW) <= 0) return;
+        CompoundTag r = root(p);
+        long now = p.serverLevel().getGameTime();
+        if (burrowed(p)) { erupt(p); return; }   // pressed again: up now
+        if (now < r.getLong("burrowCd") || !p.onGround()) return;
+        r.putLong("burrow", now + 80);
+        r.putLong("burrowCd", now + 200);
+        ServerLevel sl = p.serverLevel();
+        groundSpines(sl, p.position(), 1.2f, 6, 8);
+        sound(sl, p.position(), SoundEvents.ROOTED_DIRT_BREAK, 1.0f, 0.6f);
+        sound(sl, p.position(), SoundEvents.SLIME_SQUISH, 0.8f, 0.5f);
+        for (net.minecraft.world.entity.Mob m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(32), m -> m.getTarget() == p)) m.setTarget(null);
+        applyStats(p);
+        dirty(p);
+    }
+
+    static void erupt(ServerPlayer p) {
+        CompoundTag r = root(p);
+        r.putLong("burrow", 0);
+        ServerLevel sl = p.serverLevel();
+        Vec3 c = p.position();
+        groundSpines(sl, c, 3.0f, 16, 12);
+        FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, c.add(0, 0.1, 0), 0.3f, 3.5f, 0.15f, 10);
+        FxSend.shake(sl, c, 0.5f, 6, 12);
+        sound(sl, c, SoundEvents.EVOKER_FANGS_ATTACK, 1.2f, 0.6f);
+        for (LivingEntity t : Kit.near(sl, p, c.add(0, 0.5, 0), 3.5)) {
+            if (!foe(p, t)) continue;
+            t.invulnerableTime = 0;
+            t.hurt(p.damageSources().playerAttack(p), 8f * spineBoost(p));
+            spineLanded(p, t);
+            if (!isBoss(t)) { t.setDeltaMovement(t.getDeltaMovement().add(0, 0.7, 0)); t.hurtMarked = true; }
+        }
+        applyStats(p);
+        dirty(p);
+    }
+
+    /** Foes can't take aim at someone burrowed. */
+    @SubscribeEvent
+    public static void onTarget(net.minecraftforge.event.entity.living.LivingChangeTargetEvent e) {
+        if (e.getNewTarget() instanceof ServerPlayer p && burrowed(p)) e.setCanceled(true);
+    }
+
+    // ------------------------------------------------------------------ the second strain and organs
+    static void secondStrain(ServerPlayer p, int s) {
+        CompoundTag r = root(p);
+        if (!awakened(p) || r.getInt("strain2") != 0 || s < HUNTER || s > HIVE || s == strain(p)) return;
+        r.putInt("strain2", s);
+        FxSend.ring(p.serverLevel(), RED | FxPacket.KEEP_SHAPE, p.position().add(0, 1, 0), 0.4f, 3.0f, 0.1f, 12);
+        sound(p.serverLevel(), p.position(), SoundEvents.RAVAGER_ROAR, 0.7f, 1.0f);
+        p.displayClientMessage(Component.literal("Grafted: the " + STRAINS[s] + " strain, at half strength").withStyle(ChatFormatting.RED), false);
+        applyStats(p);
+        sync(p, false);
+    }
+
+    /** Grow an organ in a slot (4 EP the first time a slot is grown; swapping after that is free). */
+    static void growOrgan(ServerPlayer p, int slot, int choice) {
+        if (slot < 0 || slot > 2 || choice < 1 || choice > 3) return;
+        CompoundTag r = root(p);
+        int[] o = r.getIntArray("organs");
+        if (o.length < 3) o = new int[3];
+        if (o[slot] == choice) return;
+        if (o[slot] == 0) {
+            if (r.getInt("ep") < ORGAN_COST) { p.displayClientMessage(Component.literal("Growing an organ takes " + ORGAN_COST + " evolution points").withStyle(ChatFormatting.RED), true); return; }
+            r.putInt("ep", r.getInt("ep") - ORGAN_COST);
+        }
+        o[slot] = choice;
+        r.putIntArray("organs", o);
+        sound(p.serverLevel(), p.position(), SoundEvents.SLIME_SQUISH, 1.0f, 0.6f);
+        sound(p.serverLevel(), p.position(), SoundEvents.WARDEN_HEARTBEAT, 1.0f, 1.0f);
+        applyStats(p);
+        sync(p, false);
+    }
+
     // ------------------------------------------------------------------ the shadow wheel (System Grimoire)
     static void shadowCommand(ServerPlayer p, int which) {
         var b = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
@@ -1066,6 +1216,13 @@ public final class ParasiteFx {
             applyStats(p); dirty(p);
         }
         if (swarm(p) && now % 10 == 0) swarmPulse(p);
+        if (r.getLong("burrow") != 0) {
+            if (!burrowed(p)) erupt(p);
+            else if (now % 3 == 0) {   // the mound of flesh moving under the ground
+                FxSend.ring(p.serverLevel(), RED | FxPacket.KEEP_SHAPE, p.position().add(0, 0.05, 0), 0.1f, 0.9f, 0.25f, 4);
+                if (now % 9 == 0) groundSpines(p.serverLevel(), p.position(), 0.6f, 2, 6);
+            }
+        }
         if (r.getInt("form") == RAM && p.isSprinting() && now >= r.getLong("ramCd")) {   // the Battering Ram: run into them
             Vec3 ahead = p.position().add(p.getLookAngle().multiply(1, 0, 1).normalize().scale(1.2)).add(0, 1, 0);
             boolean hit = false;
@@ -1090,7 +1247,8 @@ public final class ParasiteFx {
         }
         if (now % 20 == 0) {
             // Hunger: the strain burns biomass. Well fed it grows stronger by the minute; empty for 30 s, it starves.
-            float bio = Math.max(0, r.getFloat("bio") - 0.2f);
+            int gut = organ(p, GUT);
+            float bio = Math.max(0, r.getFloat("bio") - 0.2f * (gut == 1 ? 2f : gut == 2 ? 0.5f : 1f));
             r.putFloat("bio", bio);
             if (bio >= 60) r.putInt("sated", Math.min(300, r.getInt("sated") + 1));
             else r.putInt("sated", Math.max(0, r.getInt("sated") - 3));
@@ -1098,6 +1256,12 @@ public final class ParasiteFx {
             if (starving(p) && now % 100 == 0 && p.getHealth() > 2) p.hurt(p.damageSources().starve(), 1f);
             if (r.getInt("empty") == 30) p.displayClientMessage(Component.literal("The strain is STARVING - feed it").withStyle(ChatFormatting.DARK_RED), true);
             dirty(p);
+            if (now % 600 == 0 && r.contains("adapt")) {   // what the strain hasn't met in a while, it slowly forgets
+                CompoundTag a = r.getCompound("adapt");
+                for (int h = 0; h < HARMS.length; h++)
+                    if (now - a.getLong("t" + h) > 600 && a.getFloat("r" + h) > 0) a.putFloat("r" + h, Math.max(0, a.getFloat("r" + h) - 2f));
+                r.put("adapt", a);
+            }
             if (r.getBoolean("hide")) {   // the hide eats biomass
                 float b = r.getFloat("bio") - 0.25f;
                 if (b <= 0) { r.putFloat("bio", 0); r.putBoolean("hide", false); applyStats(p); p.displayClientMessage(Component.literal("Your hide sloughs off - no biomass left").withStyle(ChatFormatting.GRAY), true); }
@@ -1124,6 +1288,7 @@ public final class ParasiteFx {
     public static void onHurt(LivingHurtEvent e) {
         DamageSource src = e.getSource();
         LivingEntity t = e.getEntity();
+        if (t instanceof ServerPlayer ad && equipped(ad) && rank(ad, ADAPT) > 0) adapt(ad, e);
         // the Bulwark (and the frenzy's own bite is not blocked)
         if (t instanceof ServerPlayer pa && equipped(pa) && wears(pa, ACID) && src.getDirectEntity() instanceof LivingEntity a && a != pa && a.distanceTo(pa) < 4) {   // Acid Blood
             AstaFx.later(1, () -> { if (a.isAlive()) { a.invulnerableTime = 0; a.hurt(pa.damageSources().magic(), 3f); FxSend.ring(pa.serverLevel(), Fx.LIGHTNING | FxPacket.KEEP_SHAPE, a.position().add(0, a.getBbHeight() * 0.5, 0), 0.1f, 0.7f, 0.04f, 6); } });
@@ -1145,9 +1310,10 @@ public final class ParasiteFx {
         int f = form(p);
         if (f == NONE) return;
         float mult = 1f + 0.15f * rank(p, HONED);
-        int st = strain(p);
-        if (st == HUNTER && (f == TALONS || f == REAPER)) mult *= 1.25f;
-        if (st == BRUTE && (f == TITAN || f == LANCE)) mult *= 1.25f;
+        if (f == TALONS || f == REAPER) mult *= 1f + 0.25f * sw(p, HUNTER);
+        if (f == TITAN || f == LANCE) mult *= 1f + 0.25f * sw(p, BRUTE);
+        if (pounced(p)) { mult *= 1.6f; root(p).putLong("pounce", 0); Fx.impact(p.serverLevel(), RED, mid(t), 1.2f); }   // Wall Cling's pounce
+        if (organ(p, HEART) == 3) p.heal(1f);   // Leech Heart
         e.setAmount(e.getAmount() * mult);
         float dmg = e.getAmount();
         ServerLevel sl = p.serverLevel();
@@ -1220,7 +1386,7 @@ public final class ParasiteFx {
     public static float bulwarkFactor(ServerPlayer p, Vec3 from) {
         if (!equipped(p)) return 1f;
         boolean front = fromFront(p, from);
-        float f = !bulwark(p) ? 1f : front ? (strain(p) == BRUTE ? 0.45f : 0.55f) : 0.85f;
+        float f = !bulwark(p) ? 1f : front ? 0.55f - 0.1f * sw(p, BRUTE) : 0.85f;
         if (form(p) == RAM && front) f *= 0.7f;   // the Battering Ram guards too
         return f;
     }
@@ -1232,7 +1398,7 @@ public final class ParasiteFx {
         LivingEntity t = e.getEntity();
         feed(p, Math.min(10f, 1f + t.getMaxHealth() * 0.2f) + (wears(p, ECHO) ? 5f : 0f));
         if (isBoss(t)) rollMutation(p, 1f);   // a boss always leaves a mutation
-        if (strain(p) == HIVE && !(t instanceof Player)) {
+        if (sw(p, HIVE) > 0 && ThreadLocalRandom.current().nextFloat() < sw(p, HIVE) && !(t instanceof Player)) {
             ServerLevel sl = p.serverLevel();
             Vec3 c = mid(t);
             for (int i = 0; i < 6; i++) {
@@ -1244,6 +1410,30 @@ public final class ParasiteFx {
                 AstaFx.later(2, () -> { if (o.isAlive()) { o.invulnerableTime = 0; o.hurt(p.damageSources().playerAttack(p), 4f * spineBoost(p)); } });
             }
         }
+    }
+
+    /** Which kind of harm a blow is (HARMS), -1 none the strain learns from. */
+    static int harmOf(DamageSource s) {
+        if (s.is(DamageTypeTags.IS_FIRE)) return 0;
+        if (s.is(DamageTypeTags.IS_FALL)) return 1;
+        if (s.is(DamageTypeTags.IS_PROJECTILE)) return 2;
+        if (s.is(DamageTypeTags.IS_EXPLOSION)) return 3;
+        if (s.is(DamageTypeTags.WITCH_RESISTANT_TO)) return 4;
+        return -1;
+    }
+
+    /** Adaptation: the blow is softened by what's been learned of its kind, and teaches a little more. */
+    static void adapt(ServerPlayer p, LivingHurtEvent e) {
+        int h = harmOf(e.getSource());
+        if (h < 0 || e.getAmount() <= 0) return;
+        CompoundTag a = root(p).getCompound("adapt");
+        float res = a.getFloat("r" + h);
+        float amount = e.getAmount();
+        e.setAmount(amount * (1f - res / 100f));
+        a.putFloat("r" + h, Math.min(ADAPT_MAX, res + amount));   // a point of resistance for each point of harm
+        a.putLong("t" + h, p.serverLevel().getGameTime());
+        root(p).put("adapt", a);
+        dirty(p);
     }
 
     /** Twin Hearts: the strain refuses to die - once every 5 minutes. */
@@ -1280,7 +1470,7 @@ public final class ParasiteFx {
                 r.getInt("strain"), ranks(p), open, extra(p)));
         // everyone round sees the forms on your arms (and how big you've grown)
         boolean on = equipped(p);
-        int flags = (on && colossus(p) ? 1 : 0) | (on && finalForm(p) ? 2 : 0);
+        int flags = (on && colossus(p) ? 1 : 0) | (on && finalForm(p) ? 2 : 0) | (on && burrowed(p) ? 4 : 0);
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p),
                 new ParasitePackets.Look(p.getId(), on ? r.getInt("form") : 0, on && r.getBoolean("bulwark"), on && (r.getBoolean("hide") || finalForm(p)), frenzied(p), flags));
     }
@@ -1291,7 +1481,10 @@ public final class ParasiteFx {
         int[] sl = slots(p);
         int art = Math.max(left(p, "colossus"), left(p, "swarm"));
         return new int[]{owned(p), sl[0], sl[1], sl[2], awakened(p) ? 1 : 0, left(p, "artCd"), left(p, "ffCd"), left(p, "ffEnd"),
-                Math.round(satedBonus(p) * 100), starving(p) ? 1 : 0, (int) cap(p), art};
+                Math.round(satedBonus(p) * 100), starving(p) ? 1 : 0, (int) cap(p), art,
+                strain2(p), organ(p, HEART), organ(p, GUT), organ(p, GLAND),
+                Math.round(adapted(p, 0)), Math.round(adapted(p, 1)), Math.round(adapted(p, 2)), Math.round(adapted(p, 3)), Math.round(adapted(p, 4)),
+                left(p, "burrow")};
     }
 
     // ================================================================== tests and screenshots
@@ -1320,5 +1513,7 @@ public final class ParasiteFx {
     public static void testMutations(ServerPlayer p) { root(p).putInt("muts", (1 << MUTATIONS) - 1); dirty(p); }
     public static void testPath(ServerPlayer p, int node, int way) { int[] rk = ranks(p); rk[node] = way; root(p).putIntArray("ranks", rk); }
     public static void testCooldowns(ServerPlayer p) { root(p).putLong("artCd", 0); root(p).putLong("ffCd", 0); }
+    public static void testSecond(ServerPlayer p, int s) { root(p).putInt("strain2", s); applyStats(p); dirty(p); }
+    public static void testOrgans(ServerPlayer p, int heart, int gut, int gland) { root(p).putIntArray("organs", new int[]{heart, gut, gland}); applyStats(p); dirty(p); }
     public static void testStarve(ServerPlayer p) { root(p).putFloat("bio", 0); root(p).putInt("empty", 30); applyStats(p); dirty(p); }
 }

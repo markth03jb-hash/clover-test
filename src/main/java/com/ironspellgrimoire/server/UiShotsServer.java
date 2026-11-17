@@ -393,6 +393,8 @@ public final class UiShotsServer {
             case "maw", "vortex" -> { faceForward(p); ParasiteFx.testPath(p, ParasiteFx.U_FIELD, w.equals("maw") ? 1 : 2); ParasiteFx.testFill(p); ParasiteFx.graspingField(p, 10f); }
             case "seeker", "bomb" -> { faceForward(p); ParasiteFx.testPath(p, ParasiteFx.U_BARRAGE, w.equals("seeker") ? 1 : 2); ParasiteFx.testFill(p); ParasiteFx.marrowBarrage(p, 10f); }
             case "starve" -> ParasiteFx.testStarve(p);
+            case "grapple" -> { faceForward(p); ParasiteFx.grapple(p); }
+            case "burrow" -> ParasiteFx.burrow(p);
             case "end" -> { ParasiteFx.testReset(p); }
             default -> {}
         }

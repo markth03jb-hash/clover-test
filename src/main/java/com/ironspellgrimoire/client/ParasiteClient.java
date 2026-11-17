@@ -31,6 +31,8 @@ public final class ParasiteClient {
     private ParasiteClient() {}
 
     public static final KeyMapping KEY = new KeyMapping("key.iron_spell_grimoire.parasite_wheel", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories.iron_spell_grimoire");
+    /** Z: the Tendril Grapple (sneaking on the ground: Burrow). */
+    public static final KeyMapping TENDRIL = new KeyMapping("key.iron_spell_grimoire.parasite_tendril", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Z, "key.categories.iron_spell_grimoire");
 
     // ------------------------------------------------------------------ the strain, as the server last sent it
     public static boolean equipped, frenzied, bulwark, hide;
@@ -40,6 +42,8 @@ public final class ParasiteClient {
     public static int muts, artCd, finalCd, finalLeft, sated, cap = 100, artLeft;
     public static int[] slots = {-1, -1, -1};
     public static boolean awakened, starving;
+    public static int strain2, burrowLeft;
+    public static int[] organs = new int[3], adapt = new int[5];
 
     static boolean wears(int m) { for (int s : slots) if (s == m) return true; return false; }
 
@@ -49,6 +53,9 @@ public final class ParasiteClient {
         int[] x = p.extra.length >= 12 ? p.extra : new int[]{0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 100, 0};
         muts = x[0]; slots = new int[]{x[1], x[2], x[3]}; awakened = x[4] == 1; artCd = x[5]; finalCd = x[6]; finalLeft = x[7];
         sated = x[8]; starving = x[9] == 1; cap = Math.max(1, x[10]); artLeft = x[11];
+        if (x.length >= 22) {
+            strain2 = x[12]; organs = new int[]{x[13], x[14], x[15]}; adapt = new int[]{x[16], x[17], x[18], x[19], x[20]}; burrowLeft = x[21] ;
+        }
         Minecraft mc = Minecraft.getInstance();
         if (p.open) EvolutionScreen.open();
         else if (mc.screen instanceof EvolutionScreen s) s.refresh();
@@ -71,12 +78,20 @@ public final class ParasiteClient {
     // ------------------------------------------------------------------ the key
     @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static final class Keys {
-        @SubscribeEvent public static void register(RegisterKeyMappingsEvent e) { e.register(KEY); }
+        @SubscribeEvent public static void register(RegisterKeyMappingsEvent e) { e.register(KEY); e.register(TENDRIL); }
     }
 
     // ------------------------------------------------------------------ movement
     private static int wallTicks, spineTicks;
-    private static boolean wallUsed, gliding, shiftWas;
+    private static boolean wallUsed, gliding, shiftWas, clinging, jumpWas;
+
+    /** A wall right beside the player (for Wall Cling). */
+    private static boolean wallBeside(LocalPlayer pl) {
+        var box = pl.getBoundingBox();
+        for (var d : new double[][]{{0.2, 0}, {-0.2, 0}, {0, 0.2}, {0, -0.2}})
+            if (!pl.level().noCollision(pl, box.move(d[0], 0, d[1]).deflate(0, 0.1, 0))) return true;
+        return false;
+    }
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent e) {
@@ -92,7 +107,13 @@ public final class ParasiteClient {
             else mc.setScreen(new ParasiteWheel(kind));
         }
         boolean on = equipped && wheelKind(mc) == 1 && !pl.isSpectator() && !pl.getAbilities().flying && !pl.isPassenger();
-        if (!on) { stopGlide(); return; }
+        while (TENDRIL.consumeClick()) {
+            if (!on || mc.screen != null) continue;
+            if (pl.isShiftKeyDown() && pl.onGround()) { if (rank(19) > 0) send(14, 0); }
+            else if (rank(18) > 0) send(13, 0);
+            else if (burrowLeft > 0) send(14, 0);
+        }
+        if (!on) { stopGlide(); clinging = false; return; }
         boolean ground = pl.onGround() || pl.isInWater() || pl.onClimbable();
         Vec3 v = pl.getDeltaMovement();
         if (ground) { wallTicks = 0; wallUsed = false; stopGlide(); }
@@ -117,8 +138,25 @@ public final class ParasiteClient {
             pl.fallDistance = 0;
             if (!gliding) { gliding = true; send(6, 1); }
         } else if (gliding && (ground || !mc.options.keyJump.isDown())) stopGlide();
+        // Wall Cling: sneak in mid-air against a wall to stick; jump to pounce where you look
+        boolean shift = mc.options.keyShift.isDown(), jump = mc.options.keyJump.isDown();
+        if (rank(20) > 0 && !ground && shift && (clinging || wallBeside(pl))) {
+            if (!clinging) { clinging = true; jumpWas = jump; }
+            pl.setDeltaMovement(0, 0, 0);
+            pl.fallDistance = 0;
+            if (jump && !jumpWas) {   // pounce
+                Vec3 look = pl.getLookAngle();
+                pl.setDeltaMovement(look.x * 1.4, look.y * 1.0 + 0.35, look.z * 1.4);
+                clinging = false;
+                send(15, 0);
+            }
+            jumpWas = jump;
+            shiftWas = shift;
+            return;
+        }
+        clinging = false;
+        jumpWas = jump;
         // Meteor Fall: sneak in mid-air, high enough
-        boolean shift = mc.options.keyShift.isDown();
         if (shift && !shiftWas && !ground && mc.screen == null) {
             double h = heightAboveGround(pl);
             if (h >= 3) {
@@ -128,8 +166,8 @@ public final class ParasiteClient {
             }
         }
         shiftWas = shift;
-        // the Spine Launcher keeps firing while the attack button is held
-        if (form == 3 && pl.getMainHandItem().isEmpty() && mc.screen == null && mc.options.keyAttack.isDown()) {
+        // the Spine Launcher keeps firing while the attack button is held (and the Marrow Forge's lance throws)
+        if ((form == 3 || (form == 5 && organs[2] == 2)) && pl.getMainHandItem().isEmpty() && mc.screen == null && mc.options.keyAttack.isDown()) {
             if (spineTicks-- <= 0) { send(4, 0); spineTicks = frenzied ? 5 : 8; }
         } else spineTicks = 0;
     }
@@ -162,7 +200,7 @@ public final class ParasiteClient {
     @SubscribeEvent
     public static void click(InputEvent.InteractionKeyMappingTriggered e) {
         Minecraft mc = Minecraft.getInstance();
-        if (!e.isAttack() || mc.player == null || !equipped || form != 3 || !mc.player.getMainHandItem().isEmpty()) return;
+        if (!e.isAttack() || mc.player == null || !equipped || !(form == 3 || (form == 5 && organs[2] == 2)) || !mc.player.getMainHandItem().isEmpty()) return;
         if (spineTicks <= 0) { send(4, 0); spineTicks = frenzied ? 5 : 8; }
     }
 

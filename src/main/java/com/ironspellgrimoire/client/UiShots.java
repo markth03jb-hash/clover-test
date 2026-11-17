@@ -553,8 +553,15 @@ public final class UiShots {
         steps.add(new Step("par_starving", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:starve")); }, 30, true));
         steps.add(new Step("par_evo_tree", () -> { EvolutionScreen.startTab = 0; onServer(p -> { UiShotsServer.element(p, "p:awaken"); UiShotsServer.element(p, "p:evolution_strain"); }); }, 14, false));
         steps.add(new Step("par_evo_mutations", () -> EvolutionScreen.showTab(1), 6, false));
-        steps.add(new Step("par_evo_strain", () -> EvolutionScreen.showTab(2), 6, false));
+        steps.add(new Step("par_evo_organs", () -> EvolutionScreen.showTab(2), 6, false));
+        steps.add(new Step("par_evo_strain", () -> EvolutionScreen.showTab(3), 6, false));
+        steps.add(new Step("par_evo_strain_grafted", () -> onServer(p -> { com.ironspellgrimoire.server.ParasiteFx.testSecond(p, com.ironspellgrimoire.server.ParasiteFx.HUNTER); com.ironspellgrimoire.server.ParasiteFx.testOrgans(p, 1, 2, 2); com.ironspellgrimoire.server.ParasiteFx.evolution(p, 0); }), 8, false));
+        steps.add(new Step("par_evo_organs_grown", () -> EvolutionScreen.showTab(2), 6, false));
         steps.add(new Step("par_evo_done", () -> { mc.setScreen(null); EvolutionScreen.startTab = 0; }, 4, true));
+        // the movement: the tendril, the burrow and its eruption
+        steps.add(new Step("par_grapple", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "p:end"); UiShotsServer.element(p, "p:setup"); UiShotsServer.element(p, "p:grapple"); }); }, 6, true));
+        steps.add(new Step("par_burrow", () -> onServer(p -> UiShotsServer.element(p, "p:burrow")), 30, true));
+        steps.add(new Step("par_erupt", () -> onServer(p -> UiShotsServer.element(p, "p:burrow")), 8, true));
         steps.add(new Step("par_book", () -> {
             GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get()));
             mc.setScreen(b);
