@@ -16,6 +16,14 @@ jobs:
       - run: gradle build
       - uses: actions/upload-artifact@v4
         with: { name: iron_spell_grimoire-jar, path: build/libs/*.jar }
+      # Test builds (the smoketest branch): keep the jar on its own branch too, so it can be fetched with plain git
+      - name: Keep the test jar on the jar-build branch
+        if: github.ref == 'refs/heads/smoketest'
+        run: |
+          mkdir -p /tmp/jar && cp build/libs/*.jar /tmp/jar/ && cd /tmp/jar
+          git init -q && git checkout -q -b jar-build && git add -A
+          git -c user.name=ci -c user.email=ci@localhost commit -qm "jar for ${GITHUB_SHA}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" jar-build
       # Also publish the jar as the "latest" release, so there is always one stable download link
       - name: Publish latest release
         if: github.ref == 'refs/heads/main'

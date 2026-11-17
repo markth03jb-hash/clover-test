@@ -540,6 +540,30 @@ public final class GameTests {
                     if (!ParasiteFx.burrowed(p)) bad.add("Burrow didn't start (on the ground: " + p.onGround() + ")");
                     ParasiteFx.burrow(p);
                     if (ParasiteFx.burrowed(p)) bad.add("Burrow didn't end when pressed again");
+                    // ranks: by everything eaten - a rank adds health
+                    ParasiteFx.testReset(p);
+                    double hpR = p.getMaxHealth();
+                    ParasiteFx.testEaten(p, 1600);
+                    if (ParasiteFx.evoRank(p) != 2) bad.add("1600 eaten should be Predator, is rank " + ParasiteFx.evoRank(p));
+                    if (p.getMaxHealth() < hpR + 1.9) bad.add(String.format("ranks didn't add health (%.1f -> %.1f)", hpR, p.getMaxHealth()));
+                    // regenerating limbs: the Bulwark worn through tears off, then regrows
+                    ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p);
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    ParasiteFx.toggleBulwark(p);
+                    ParasiteFx.wear(p, 31f);
+                    if (ParasiteFx.bulwark(p) || !ParasiteFx.limbGone(p)) bad.add("a worn-through Bulwark didn't tear off");
+                    // the nest: grows where you stand, takes the spill past a full gut
+                    ParasiteFx.testReset(p); ParasiteFx.testFill(p);
+                    ParasiteFx.handle(p, 19, 0);
+                    var nest = ParasiteFx.nestOf(p);
+                    if (nest == null) bad.add("no Hive Nest grew (on the ground: " + p.onGround() + ")");
+                    else {
+                        ParasiteFx.root(p).putFloat("bio", 100);
+                        ParasiteFx.feed(p, 20);
+                        if (nest.stored() <= 0) bad.add("the nest didn't keep the spill past a full gut");
+                        if (ParasiteFx.frenzy(p) > 0) bad.add("the spill went into Frenzy with a nest out");
+                        nest.discard();
+                    }
                     ParasiteFx.testReset(p);
                     ParasiteFx.testFrenzy(p);   // back into the frenzy the next checks wait out
                 }

@@ -206,6 +206,7 @@ public class EvolutionScreen extends Screen {
             boolean ready = ParasiteClient.spent >= ParasiteFx.STRAIN_AT;
             g.drawCenteredString(font, ready ? "The strain is ready to settle - choose for good"
                     : "Spend " + (ParasiteFx.STRAIN_AT - ParasiteClient.spent) + " more evolution points to settle a Strain", x0 + W / 2, top, ready ? 0xFFFF8090 : MUTED);
+            rankAndNest(g, mx, my, x0, top + 96, W);
             int cw = (W - 12 - 6) / 3, chh = Math.min(80, bottom - top - 16);
             for (int s = 0; s < 3; s++) {
                 int cx = x0 + 6 + s * (cw + 3), cy = top + 12;
@@ -223,7 +224,8 @@ public class EvolutionScreen extends Screen {
         for (int i = 0; i < ParasiteFx.NODES.length; i++) { total += ParasiteFx.NODES[i][1]; have += Math.min(ParasiteFx.NODES[i][1], ParasiteClient.rank(i)); }
         int y = top;
         g.drawString(font, "Strain: " + ParasiteFx.STRAINS[st], x0 + 10, y, 0xFFFF7080, true);
-        y += 13;
+        rankAndNest(g, mx, my, x0, top, W);
+        y += 28;   // clear of the nest button
         for (FormattedCharSequence l : font.split(Component.literal(STRAIN_TEXT[st - 1][1]), W - 20)) { g.drawString(font, l, x0 + 10, y, MUTED, false); y += 10; }
         y += 6;
         g.drawString(font, ParasiteClient.awakened ? "AWAKENED" : "Awakening: " + have + " / " + total + " evolved", x0 + 10, y, ParasiteClient.awakened ? 0xFFFF5040 : TEXT, true);
@@ -273,6 +275,21 @@ public class EvolutionScreen extends Screen {
                 ax += font.width(a) + 8;
             }
         }
+    }
+
+    /** The strain's rank (by everything it has eaten) on the right of the head line, and the nest button under it. */
+    private void rankAndNest(GuiGraphics g, int mx, int my, int x0, int y, int W) {
+        int k = ParasiteClient.evoRank;
+        String rk = ParasiteFx.RANKS[Math.min(k, 4)] + (k < 4 ? "  " + ParasiteClient.eaten + " / " + ParasiteFx.RANK_AT[k + 1] : "");
+        g.drawString(font, rk, x0 + W - 10 - font.width(rk), y, 0xFFFFB070, true);
+        String nb = ParasiteClient.nestStored >= 0 ? "Regrow Nest (" + ParasiteClient.nestStored + " stored)" : "Grow a Hive Nest (" + 50 + ")";
+        int bw = font.width(nb) + 10, bx = x0 + W - 10 - bw, by = y + 12;
+        boolean hv = over(mx, my, bx, by, bw, 13);
+        g.fill(bx, by, bx + bw, by + 13, hv ? 0xD0501820 : 0xC0200C10);
+        g.renderOutline(bx, by, bw, 13, hv ? 0xFFFF5060 : EDGE);
+        g.drawString(font, nb, bx + 5, by + 3, TEXT, false);
+        if (hv) foot = "Hive Nest: grows where you stand for 50 biomass. Keeps what spills past a full gut, heals you near it, brings you back once a day when you die. Right-click it for its biomass.";
+        hits.add(new Hit(bx, by, bw, 13, () -> ParasiteClient.send(19, 0)));
     }
 
     @Override

@@ -255,6 +255,7 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
             e.register(BULWARK);
             e.register(CREST);
             e.register(CARAPACE);
+            e.register(HiveNestRenderer.MODEL);
         }
 
         @SubscribeEvent

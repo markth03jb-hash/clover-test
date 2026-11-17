@@ -43,13 +43,15 @@ public class ParasiteWheel extends Screen {
             "Your awakened strain's signature move.",
             "30 s as the strain itself (100 biomass).",
             "Your arms go back to normal."};
-    private static final String[] S_NAMES = {"Hunt", "Rally", "Stand Down", "Sink / Rise", "Army"};
+    private static final String[] S_NAMES = {"Hunt", "Rally", "Stand Down", "Sink / Rise", "Army", "Status", "Market"};
     private static final String[] S_DESC = {
             "Every shadow at your side goes for what you look at.",
             "Your shadows come back to your side at once.",
             "Your shadows forget what they were fighting.",
             "Your shadows sink into your shadow, or rise again.",
-            "Open the Shadow Army."};
+            "Open the Shadow Army.",
+            "Open your Status: level, stats, the Daily Trial, Job Change.",
+            "Open the Market."};
 
     public ParasiteWheel(int kind) { super(Component.literal(kind == 1 ? "Parasite" : "Shadows")); this.kind = kind; }
 

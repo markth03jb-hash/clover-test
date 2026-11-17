@@ -798,9 +798,10 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> SHADOW_RALLY = registerSpell(shadow("rally_of_the_fallen", 60, 70, 0, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.ShadowFx::rallyOfTheFallen));
     public static final RegistryObject<AbstractSpell> SHADOW_DOMAIN = registerSpell(shadow("sovereigns_domain", 120, 90, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ShadowFx::sovereignsDomain));
     public static final RegistryObject<AbstractSpell> SHADOW_LEGION = registerSpell(shadow("night_legion", 50, 120, 14, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.ShadowFx::nightLegion));
-    /** The seventeen Shadow Grimoire spells, in the order they fill the book. */
+    /** The fifteen Shadow Grimoire spells, in the order they fill the book (Status and Market are on the G wheel now; the
+     *  two spells stay registered so books that already hold those pages keep working). */
     public static final List<RegistryObject<AbstractSpell>> SHADOW_SPELLS = List.of(
-            SHADOW_RISE, SHADOW_STATUS, SHADOW_MARKET, SHADOW_EXCHANGE, SHADOW_STEP, SHADOW_GRIP, SHADOW_HAND, SHADOW_GATE, SHADOW_STEP_TO,
+            SHADOW_RISE, SHADOW_EXCHANGE, SHADOW_STEP, SHADOW_GRIP, SHADOW_HAND, SHADOW_GATE, SHADOW_STEP_TO,
             SHADOW_HUNT, SHADOW_VEIL, SHADOW_ROAR, SHADOW_RANKS, SHADOW_RALLY, SHADOW_MANTLE, SHADOW_DOMAIN, SHADOW_LEGION);
 
     // ------------------------------------------------------------------ Parasite Grimoire (a living strain: ParasiteFx)

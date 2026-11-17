@@ -292,7 +292,7 @@ public final class GrimoireMastery {
                 "sleepwalk", 2, "dream_clock", 2, "toy_parade", 3,
                 "nightmare_shard", 3, "rude_awakening", 4, "half_asleep", 4, "dream_world", 5);
         book(AddonItemRegistry.SHADOW_GRIMOIRE::get, Fx.YAMI,
-                "rise", 1, "status", 1, "market", 1, "shadow_exchange", 1, "umbral_step", 2, "sovereigns_grip", 2,
+                "rise", 1, "shadow_exchange", 1, "umbral_step", 2, "sovereigns_grip", 2,
                 "unseen_hand", 2, "gate_of_shade", 2, "shadow_step", 3, "command_hunt", 3,
                 "veil", 3, "dread_roar", 3, "ranks_of_shade", 3, "rally_of_the_fallen", 4, "mantle_of_shades", 4, "sovereigns_domain", 4, "night_legion", 5);
         book(AddonItemRegistry.PARASITE_GRIMOIRE::get, Fx.CRIMSON,
