@@ -768,9 +768,8 @@ public final class ParasiteFx {
         // the Bulwark (and the frenzy's own bite is not blocked)
         if (t instanceof ServerPlayer p && equipped(p) && bulwark(p) && !src.is(DamageTypeTags.BYPASSES_ARMOR) && src.getEntity() != null) {
             Vec3 from = src.getSourcePosition() != null ? src.getSourcePosition() : src.getEntity().position();
-            Vec3 to = from.subtract(p.position()).multiply(1, 0, 1);
-            boolean front = to.lengthSqr() > 1e-4 && to.normalize().dot(p.getLookAngle().multiply(1, 0, 1).normalize()) > 0.2;
-            e.setAmount(e.getAmount() * (front ? (strain(p) == BRUTE ? 0.45f : 0.55f) : 0.85f));
+            boolean front = fromFront(p, from);
+            e.setAmount(e.getAmount() * bulwarkFactor(p, from));
             if (front) {
                 FxSend.ring(p.serverLevel(), RED | FxPacket.KEEP_SHAPE, p.getEyePosition().add(p.getLookAngle().scale(0.6)).add(0, -0.4, 0), 0.1f, 0.8f, 0.05f, 6);
                 if (src.getDirectEntity() instanceof LivingEntity a && a != p && a.distanceTo(p) < 4) {   // the spines cut whoever struck it
@@ -833,6 +832,18 @@ public final class ParasiteFx {
             }
             default -> { }
         }
+    }
+
+    static boolean fromFront(ServerPlayer p, Vec3 from) {
+        Vec3 to = from.subtract(p.position()).multiply(1, 0, 1);
+        Vec3 look = p.getLookAngle().multiply(1, 0, 1);
+        return to.lengthSqr() > 1e-4 && look.lengthSqr() > 1e-4 && to.normalize().dot(look.normalize()) > 0.2;
+    }
+
+    /** What share of a blow from {@code from} gets past the Bulwark (1 when it isn't out). */
+    public static float bulwarkFactor(ServerPlayer p, Vec3 from) {
+        if (!equipped(p) || !bulwark(p)) return 1f;
+        return fromFront(p, from) ? (strain(p) == BRUTE ? 0.45f : 0.55f) : 0.85f;
     }
 
     /** Kills feed the strain; the Hive's kills burst into spines. */

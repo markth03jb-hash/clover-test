@@ -78,7 +78,7 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
      *  the left arm. The model's origin is the hand end of the forearm's middle. */
     /** First person only: how the forms sit on the bare arm vanilla draws there (it is held close to the eye, so a
      *  form at full size fills the view): tilted about the wrist, and smaller. */
-    public static float fpTilt = 0F, fpScale = 0.75F, bwScale = 0.6F;
+    public static float fpTilt = -40F, fpScale = 0.75F, bwScale = 0.55F;
 
     /** In first person, turn and shrink round the hand (where the forearm ends) before drawing. */
     static void firstPerson(PoseStack ps, float tilt, float scale) {

@@ -458,18 +458,11 @@ public final class GameTests {
                     ParasiteFx.handle(p, 7, ParasiteFx.F_BULWARK);
                     ParasiteFx.toggleBulwark(p);
                     if (!ParasiteFx.bulwark(p)) bad.add("the Bulwark didn't come out");
-                    ensureDummy();
-                    dummy.teleportTo(home.x, home.y, home.z + 2);
                     p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
-                    p.setHealth(p.getMaxHealth());
-                    float h0 = p.getHealth();
-                    p.invulnerableTime = 0;
-                    var diff = sl().getDifficulty();   // the test world is peaceful, where mobs' blows on players do nothing
-                    sl().getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
-                    p.hurt(p.damageSources().mobAttack(dummy), 10f);
-                    sl().getServer().setDifficulty(diff, true);
-                    float took = h0 - p.getHealth();
-                    if (took <= 0 || took > 6.5f) bad.add(String.format("a 10 blow on the Bulwark took %.1f", took));
+                    var front = new net.minecraft.world.phys.Vec3(home.x, home.y, home.z + 2), back = new net.minecraft.world.phys.Vec3(home.x, home.y, home.z - 2);
+                    float ff = ParasiteFx.bulwarkFactor(p, front), fb = ParasiteFx.bulwarkFactor(p, back);
+                    if (ff > 0.5f) bad.add("the Bulwark lets " + ff + " of a blow from the front through (Brute)");
+                    if (fb < 0.8f || fb >= 1f) bad.add("the Bulwark lets " + fb + " of a blow from behind through");
                     ParasiteFx.toggleBulwark(p);
                     p.setHealth(p.getMaxHealth());
                     ParasiteFx.testFrenzy(p);
