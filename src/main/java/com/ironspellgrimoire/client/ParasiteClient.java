@@ -36,13 +36,20 @@ public final class ParasiteClient {
     public static boolean equipped, frenzied, bulwark, hide;
     public static float biomass, frenzy;
     public static int ep, spent, devoured, form, strain;
-    public static int[] ranks = new int[13];
+    public static int[] ranks = new int[18];
+    public static int muts, artCd, finalCd, finalLeft, sated, cap = 100, artLeft;
+    public static int[] slots = {-1, -1, -1};
+    public static boolean awakened, starving;
+
+    static boolean wears(int m) { for (int s : slots) if (s == m) return true; return false; }
 
     public static void sync(ParasitePackets.Sync p) {
         equipped = p.equipped; biomass = p.biomass; frenzy = p.frenzy; frenzied = p.frenzied; ep = p.ep; spent = p.spent; devoured = p.devoured;
-        form = p.form; bulwark = p.bulwark; hide = p.hide; strain = p.strain; ranks = p.ranks.length >= 13 ? p.ranks : java.util.Arrays.copyOf(p.ranks, 13);
+        form = p.form; bulwark = p.bulwark; hide = p.hide; strain = p.strain; ranks = p.ranks.length >= 18 ? p.ranks : java.util.Arrays.copyOf(p.ranks, 18);
+        int[] x = p.extra.length >= 12 ? p.extra : new int[]{0, -1, -1, -1, 0, 0, 0, 0, 0, 0, 100, 0};
+        muts = x[0]; slots = new int[]{x[1], x[2], x[3]}; awakened = x[4] == 1; artCd = x[5]; finalCd = x[6]; finalLeft = x[7];
+        sated = x[8]; starving = x[9] == 1; cap = Math.max(1, x[10]); artLeft = x[11];
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null) ParasiteArms.look(new ParasitePackets.Look(mc.player.getId(), equipped ? form : 0, equipped && bulwark, equipped && hide, frenzied));
         if (p.open) EvolutionScreen.open();
         else if (mc.screen instanceof EvolutionScreen s) s.refresh();
     }
@@ -147,7 +154,7 @@ public final class ParasiteClient {
         Vec3 v = pl.getDeltaMovement();
         Vec3 look = pl.getLookAngle().multiply(1, 0, 1);
         look = look.lengthSqr() < 1e-4 ? Vec3.ZERO : look.normalize();
-        double up = 0.2 + 0.07 * rank(0);
+        double up = (0.2 + 0.07 * rank(0)) * (wears(3) ? 1.5 : 1.0);   // Hollow Bones: higher still
         pl.setDeltaMovement(v.x + look.x * 0.15, v.y + up, v.z + look.z * 0.15);
     }
 
@@ -173,21 +180,25 @@ public final class ParasiteClient {
         double t = mc.level.getGameTime() + e.getPartialTick();
         // biomass: a fleshy red bar with a pulse running through it
         g.fill(x - 1, y - 1, x + w + 1, y + 7, 0xE0100306);
-        int fw = Math.round(w * Mth.clamp(shownBio / 100F, 0, 1));
+        int fw = Math.round(w * Mth.clamp(shownBio / cap, 0, 1));
         g.fill(x, y, x + fw, y + 6, 0xFFB01828);
         g.fill(x, y, x + fw, y + 2, 0xFFE04050);
         int pulse = (int) ((t * 1.5) % (w + 20)) - 10;
         if (pulse > 0 && pulse < fw) g.fill(x + pulse, y, Math.min(x + fw, x + pulse + 6), y + 6, 0x60FFD0D0);
         for (int k = 1; k < 4; k++) g.fill(x + w * k / 4, y, x + w * k / 4 + 1, y + 6, 0x80100306);   // quarters
-        g.drawString(mc.font, "Biomass " + Math.round(biomass), x, y - 10, 0xFFE8A0A8, true);
+        g.drawString(mc.font, "Biomass " + Math.round(biomass) + (cap != 100 ? "/" + cap : ""), x, y - 10, 0xFFE8A0A8, true);
+        String hunger = starving ? "STARVING" : sated > 0 ? "Sated +" + sated + "%" : "";
+        if (!hunger.isEmpty()) g.drawString(mc.font, hunger, x, y - 20, starving ? 0xFFFF5040 : 0xFF9AE08A, true);
         // frenzy: a thin bar under it, flashing when frenzied
         int fy = y + 9;
         g.fill(x - 1, fy - 1, x + w + 1, fy + 3, 0xE0100306);
         int frw = Math.round(w * Mth.clamp(shownFrenzy / 100F, 0, 1));
         boolean flash = frenzied && ((int) (t / 4)) % 2 == 0;
         g.fill(x, fy, x + frw, fy + 2, flash ? 0xFFFFFFFF : 0xFFFF6A00);
-        String tag = frenzied ? "FRENZIED" : form > 0 ? com.ironspellgrimoire.server.ParasiteFx.FORMS[Math.min(form, 5)] : "";
+        String tag = finalLeft > 0 ? "FINAL FORM " + finalLeft + "s" : frenzied ? "FRENZIED"
+                : form > 0 ? com.ironspellgrimoire.server.ParasiteFx.FORMS[Math.min(form, com.ironspellgrimoire.server.ParasiteFx.LAST_FORM)] : "";
         if (!tag.isEmpty()) g.drawString(mc.font, tag, x + w + 6, y - 1, frenzied ? 0xFFFF5040 : 0xFFD8C8C8, true);
         if (ep > 0) g.drawString(mc.font, ep + " EP", x + w + 6, fy - 2, 0xFFFFC060, true);
+        if (artLeft > 0) g.drawString(mc.font, com.ironspellgrimoire.server.ParasiteFx.ARTS[Math.min(3, strain)] + " " + artLeft + "s", x, y - 30, 0xFFFFA060, true);
     }
 }

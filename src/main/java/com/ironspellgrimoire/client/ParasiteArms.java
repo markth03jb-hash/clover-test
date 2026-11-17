@@ -45,7 +45,8 @@ import java.util.Map;
  */
 @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = Dist.CLIENT)
 public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-    static final String[] MODELS = {"", "reaper_edge", "rending_talons", "spine_launcher", "titan_fist", "bone_lance"};
+    static final String[] MODELS = {"", "reaper_edge", "rending_talons", "spine_launcher", "titan_fist", "bone_lance", "whip_spear", "battering_ram"};
+    static final ResourceLocation CREST = rl("item/parasite_final_crest"), CARAPACE = rl("item/parasite_final_carapace");
     static final ResourceLocation BULWARK = rl("item/parasite_bulwark");
     static final ResourceLocation HIDE_TEX = ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/models/armor/chitin_hide.png");
     static ResourceLocation rl(String p) { return ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", p); }
@@ -55,14 +56,14 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
     private static final Map<Integer, int[]> LOOKS = new HashMap<>();
 
     public static void look(ParasitePackets.Look p) {
-        if (p.form == 0 && !p.bulwark && !p.hide) LOOKS.remove(p.id);
-        else LOOKS.put(p.id, new int[]{p.form, p.bulwark ? 1 : 0, p.hide ? 1 : 0, p.frenzied ? 1 : 0});
+        if (p.form == 0 && !p.bulwark && !p.hide && p.flags == 0) LOOKS.remove(p.id);
+        else LOOKS.put(p.id, new int[]{p.form, p.bulwark ? 1 : 0, p.hide ? 1 : 0, p.frenzied ? 1 : 0, p.flags});
     }
 
     static int[] lookOf(int id) { return LOOKS.get(id); }
 
     /** For the screenshots: show a look on a player without the server. */
-    public static void testLook(int id, int form, boolean bulwark, boolean hide) { look(new ParasitePackets.Look(id, form, bulwark, hide, false)); }
+    public static void testLook(int id, int form, boolean bulwark, boolean hide) { look(new ParasitePackets.Look(id, form, bulwark, hide, false, 0)); }
 
     private final HumanoidModel<AbstractClientPlayer> hideModel;
 
@@ -86,6 +87,19 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
         ps.mulPose(Axis.XP.rotationDegrees(tilt));
         ps.scale(scale, scale, scale);
         ps.translate(0F, -10F / 16F, 0F);
+    }
+
+    /** Draw one of the Final Form's pieces in its part's own space (the head's or the body's: the model is built there). */
+    static void drawPiece(PoseStack ps, MultiBufferSource buf, int light, ResourceLocation model) {
+        Minecraft mc = Minecraft.getInstance();
+        BakedModel m = mc.getModelManager().getModel(model);
+        if (m == null) return;
+        RAND.setSeed(42L);
+        List<BakedQuad> qs = m.getQuads(null, null, RAND, ModelData.EMPTY, null);
+        if (qs.size() < 24) return;   // not loaded
+        VertexConsumer vc = buf.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
+        PoseStack.Pose pose = ps.last();
+        for (BakedQuad q : qs) vc.putBulkData(pose, q, 1F, 1F, 1F, 1F, light, OverlayTexture.NO_OVERLAY, true);
     }
 
     static void drawForm(PoseStack ps, MultiBufferSource buf, int light, ResourceLocation model, boolean left) {
@@ -124,12 +138,43 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
             drawForm(ps, buf, light, formModel(l[0]), false);
             ps.popPose();
         }
-        if (l[1] == 1) {
+        boolean fin = l.length > 4 && (l[4] & 2) != 0;
+        if (l[1] == 1 || fin) {   // the off hand: the Bulwark, or in the Final Form the talons
             ps.pushPose();
             pm.leftArm.translateAndRotate(ps);
-            drawForm(ps, buf, light, BULWARK, true);
+            drawForm(ps, buf, light, l[1] == 1 ? BULWARK : formModel(2), true);
             ps.popPose();
         }
+        if (fin) {   // the whole body taken over: the crest on the head, the carapace on the body
+            ps.pushPose();
+            pm.head.translateAndRotate(ps);
+            drawPiece(ps, buf, light, CREST);
+            ps.popPose();
+            ps.pushPose();
+            pm.body.translateAndRotate(ps);
+            drawPiece(ps, buf, light, CARAPACE);
+            ps.popPose();
+        }
+    }
+
+    // ------------------------------------------------------------------ bigger: Colossus and the Final Form
+    @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.LOWEST)   // last: nothing can cancel it after the push
+    public static void growPre(net.minecraftforge.client.event.RenderPlayerEvent.Pre e) {
+        float k = growth(e.getEntity().getId());
+        if (k == 1F) return;
+        e.getPoseStack().pushPose();
+        e.getPoseStack().scale(k, k, k);
+    }
+
+    @SubscribeEvent
+    public static void growPost(net.minecraftforge.client.event.RenderPlayerEvent.Post e) {
+        if (growth(e.getEntity().getId()) != 1F) e.getPoseStack().popPose();
+    }
+
+    static float growth(int id) {
+        int[] l = LOOKS.get(id);
+        if (l == null || l.length < 5) return 1F;
+        return (l[4] & 2) != 0 ? 1.3F : (l[4] & 1) != 0 ? 1.4F : 1F;
     }
 
     // ------------------------------------------------------------------ first person: on the bare arm vanilla draws
@@ -194,6 +239,8 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
         public static void models(ModelEvent.RegisterAdditional e) {
             for (int f = 1; f < MODELS.length; f++) e.register(formModel(f));
             e.register(BULWARK);
+            e.register(CREST);
+            e.register(CARAPACE);
         }
 
         @SubscribeEvent

@@ -365,8 +365,144 @@ def bulwark():
     return 22.0
 
 
+def whip_spear():
+    """Talons and lance grown together: a long, jointed spine of bone vertebrae swaying out of the wrist on a living
+    cord, ending in a barbed spear head with hooks raked back along it; the forearm a braid of tendrils."""
+    sleeve()
+    braid()
+    path = []
+    for i in range(10):   # the spine's line: out of the wrist, a slow S-sway
+        t = i / 9
+        path.append((1.6 * math.sin(t * math.pi * 1.5), -1.1 * math.sin(t * math.pi), 1.5 + 27.0 * t))
+    tube("cord", [(x, y, z, 1.1 - 0.35 * (z / 30)) for x, y, z in path], "flesh2", res=4, bev=2)
+    tube("cordvein", [(x + 0.55, y - 0.3, z, 0.12) for x, y, z in path], "vein", res=2, bev=1, glow=True)
+    for k, (x, y, z) in enumerate(path[1:], 1):   # a vertebra on each joint, smaller toward the tip
+        r = 2.4 - 0.12 * k
+        bm = bmesh.new()
+        bmesh.ops.create_uvsphere(bm, u_segments=10, v_segments=6, radius=r)
+        bmesh.ops.scale(bm, vec=(1.0, 1.0, 0.85), verts=bm.verts)
+        bmesh.ops.translate(bm, vec=(x, y, z), verts=bm.verts)
+        gt.new_obj("vert%d" % k, bm, REG["chitin"])
+        gt.torus("vring%d" % k, (x, y, z - r * 0.8), (0, 0, 1), r * 0.85, 0.22, region="redplate")
+        gt.cone("vspur%d" % k, (x, y + r * 0.7, z), (0, 1, -0.5), 0.45, 1.8 + 0.1 * k, region="greyblade")
+        gt.cone("vspurs%d" % k, (x + r * 0.7, y, z), (1, 0, -0.5), 0.35, 1.3, region="greyblade")
+    x, y, z = path[-1]   # the spear head
+    head = tube("head", [(x, y, z - 0.5, 2.2), (x, y, z + 4.5, 3.0), (x, y, z + 9.0, 1.8), (x, y, z + 13.0, 0.04)], "greyblade", res=5, bev=3)
+    head.data.transform(Matrix.Translation((x, 0, 0)) @ Matrix.Scale(0.35, 4, (1, 0, 0)) @ Matrix.Translation((-x, 0, 0)))
+    for sd in (1, -1):   # hooks raked back along it
+        gt.cone("hook%d" % sd, (x, y + sd * 2.4, z + 4.0), (0, sd * 0.8, -1.0), 0.7, 4.2, region="greyblade")
+        gt.cone("hook2%d" % sd, (x, y + sd * 1.6, z + 8.0), (0, sd * 0.7, -1.0), 0.5, 3.0, region="greyblade")
+    return 45.0
+
+
+def battering_ram():
+    """Fist and shield fused into one: the fist swollen into a blunt, armoured ram head - a slab of red plate framed in
+    bone, its face studded with bone knobs and a red eye at its heart, horns curling forward off its sides."""
+    sleeve()
+    armour()
+    bm = bmesh.new()   # the swollen fist under it
+    bmesh.ops.create_uvsphere(bm, u_segments=12, v_segments=8, radius=4.6)
+    bmesh.ops.translate(bm, vec=(0, 0, 4.0), verts=bm.verts)
+    gt.new_obj("fist", bm, REG["flesh"])
+    gt.box("ram", (0, 0, 8.6), (11.0, 9.0, 5.0), "redplate", bevel=0.9, segs=2)          # the ram head
+    for k, (cx, cy, sx, sy) in enumerate(((0, 4.6, 11.6, 0.9), (0, -4.6, 11.6, 0.9), (5.6, 0, 0.9, 9.8), (-5.6, 0, 0.9, 9.8))):   # a bone rim round its face
+        gt.box("frame%d" % k, (cx, cy, 11.0), (sx, sy, 1.2), "greyblade", bevel=0.3, segs=1)
+    for k, (sx, sy) in enumerate(((-3.2, -2.6), (0, -2.9), (3.2, -2.6), (-3.2, 2.6), (0, 2.9), (3.2, 2.6))):   # bone knobs on its face
+        bm = bmesh.new()
+        bmesh.ops.create_uvsphere(bm, u_segments=8, v_segments=5, radius=1.1)
+        bmesh.ops.translate(bm, vec=(sx, sy, 11.3), verts=bm.verts)
+        gt.new_obj("knob%d" % k, bm, REG["greyblade"])
+        gt.cone("kn%d" % k, (sx, sy, 12.0), (0, 0, 1), 0.55, 1.4, region="greyblade")
+    bm = bmesh.new()   # the red eye at its heart
+    bmesh.ops.create_uvsphere(bm, u_segments=10, v_segments=6, radius=1.5)
+    bmesh.ops.scale(bm, vec=(1, 1, 0.5), verts=bm.verts)
+    bmesh.ops.translate(bm, vec=(0, 0, 11.2), verts=bm.verts)
+    GLOW.append(gt.new_obj("eye", bm, REG["eye"]))
+    for sd in (1, -1):   # horns curling forward off its sides
+        tube("horn%d" % sd, [(sd * 6.2, 0, 7.0, 1.3), (sd * 8.4, 0.6, 9.0, 1.0), (sd * 8.6, 1.2, 12.5, 0.6), (sd * 7.2, 1.4, 15.0, 0.04)], "greyblade", res=5, bev=3)
+    for k, a in enumerate((0.4, 1.9, 3.5, 5.0)):   # veins over the fist
+        tube("rvein%d" % k, [(4.4 * math.cos(a), 4.4 * math.sin(a), 1.5, 0.15), (4.7 * math.cos(a + 0.3), 4.7 * math.sin(a + 0.3), 4.0, 0.15),
+                             (4.3 * math.cos(a + 0.5), 4.3 * math.sin(a + 0.5), 6.0, 0.1)], "vein", res=2, bev=1, glow=True)
+    return 28.0
+
+
+# ------------------------------------------------------------------ the Final Form: the whole body (built on the preview figure)
+BX = 6.0   # the figure's middle (its body and head are centred on x = 6; the body runs z -12 (neck) to 0, the head -20 to -12; front is -Y)
+
+
+def head_crest():
+    """The head sealed in a red carapace: a faceplate with a glowing slit for eyes, bone mandibles hooking in under the
+    jaw, a crest of bone spikes sweeping back over the crown, and two horns raking back from the temples."""
+    gt.box("helm", (BX, 0, -16.2), (9.2, 9.2, 8.9), "redplate", bevel=0.9, segs=2)
+    gt.box("face", (BX, -4.55, -15.6), (7.6, 0.6, 5.6), "chitin", bevel=0.3, segs=1)
+    for sd in (1, -1):   # the slit eyes, slanting
+        bm = bmesh.new()
+        bmesh.ops.create_cube(bm, size=1.0)
+        bmesh.ops.scale(bm, vec=(2.6, 0.4, 0.55), verts=bm.verts)
+        bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Matrix.Rotation(sd * 0.25, 3, "Y"), verts=bm.verts)
+        bmesh.ops.translate(bm, vec=(BX + sd * 1.8, -4.95, -16.6), verts=bm.verts)
+        GLOW.append(gt.new_obj("slit%d" % sd, bm, REG["eye"]))
+        tube("mand%d" % sd, [(BX + sd * 3.6, -4.2, -12.6, 0.7), (BX + sd * 3.4, -5.4, -11.0, 0.55), (BX + sd * 2.0, -5.6, -9.8, 0.35), (BX + sd * 0.8, -4.8, -9.6, 0.03)],
+             "greyblade", res=4, bev=2)
+        tube("horn%d" % sd, [(BX + sd * 4.4, -1.0, -18.4, 0.9), (BX + sd * 5.8, 1.6, -20.6, 0.7), (BX + sd * 6.0, 4.4, -22.0, 0.4), (BX + sd * 5.4, 7.0, -22.4, 0.03)],
+             "greyblade", res=4, bev=2)
+    for k in range(5):   # the crest over the crown, longer toward the back
+        y = -3.2 + k * 1.7
+        gt.cone("crest%d" % k, (BX, y, -20.4), (0, 0.6 + 0.15 * k, -1.0), 0.75 - 0.05 * k, 2.4 + 0.7 * k, region="greyblade")
+    for k, (a, z) in enumerate(((0.3, -17.5), (2.9, -14.5), (1.6, -19.0))):   # veins across the helm
+        tube("hvein%d" % k, [(BX + 4.65 * math.cos(a), 4.65 * math.sin(a) * 0.3, z, 0.14), (BX + 4.4 * math.cos(a + 0.6), 4.65, z + 1.5, 0.14),
+                             (BX + 3.0 * math.cos(a + 1.0), 4.65, z + 3.0, 0.1)], "vein", res=2, bev=1, glow=True)
+    return 24.0
+
+
+def carapace():
+    """The body plated over: a ribbed red breastplate, plated belly, a back of fused armour with a ridge of vertebrae
+    and long bone spines raking up and back, hooked spikes off the shoulders, tendrils hanging from its hem."""
+    gt.box("chest", (BX, -2.5, -8.6), (9.2, 1.4, 7.0), "redplate", bevel=0.6, segs=2)
+    for k in range(3):   # ribs over the chest
+        z = -10.6 + k * 1.9
+        tube("rib%d" % k, [(BX - 4.6, -2.9, z + 0.6, 0.35), (BX - 2.0, -3.6, z, 0.4), (BX + 2.0, -3.6, z, 0.4), (BX + 4.6, -2.9, z + 0.6, 0.35)], "greyblade", res=3, bev=2)
+    for k in range(3):   # the belly plates
+        gt.box("belly%d" % k, (BX, -2.4, -4.2 + k * 1.6), (7.4 - k * 0.6, 1.2, 1.4), "chitin", bevel=0.3, segs=1)
+    gt.box("back", (BX, 2.5, -6.2), (9.2, 1.4, 11.6), "redplate", bevel=0.6, segs=2)
+    for k in range(6):   # the ridge down the back, each vertebra with a long spine raking up and back
+        z = -11.0 + k * 1.9
+        bm = bmesh.new()
+        bmesh.ops.create_uvsphere(bm, u_segments=8, v_segments=6, radius=1.05)
+        bmesh.ops.translate(bm, vec=(BX, 3.5, z), verts=bm.verts)
+        gt.new_obj("vert%d" % k, bm, REG["chitin"])
+        L = 6.5 - k * 0.8
+        gt.cone("bspine%d" % k, (BX, 3.8, z), (0, 1.0, -0.75), 0.6, L, region="greyblade")
+        if k < 4:
+            for sd in (1, -1): gt.cone("sspine%d%d" % (k, sd), (BX + sd * 2.6, 3.4, z), (sd * 0.5, 1.0, -0.6), 0.4, L * 0.6, region="greyblade")
+    for sd in (1, -1):   # hooked spikes off the shoulders
+        tube("shoulder%d" % sd, [(BX + sd * 4.2, 0, -11.6, 1.2), (BX + sd * 6.0, 0.6, -13.6, 0.9), (BX + sd * 6.6, 1.6, -15.6, 0.5), (BX + sd * 6.0, 2.4, -16.8, 0.03)],
+             "greyblade", res=4, bev=2)
+    for k, (x, ph) in enumerate(((BX - 3, 0.0), (BX - 1, 1.2), (BX + 1, 2.4), (BX + 3, 3.6))):   # tendrils from the hem, at the back
+        pts = [(x + 0.6 * math.sin(ph + t * 4), 2.6 + 0.8 * t, -0.2 + 4.5 * t, 0.45 - 0.35 * t) for t in (0, 0.25, 0.5, 0.75, 1.0)]
+        tube("hem%d" % k, pts, "flesh2", res=3, bev=2)
+    for k, x in enumerate((BX - 2.4, BX + 2.4)):   # glowing veins up the chest
+        tube("cvein%d" % k, [(x, -3.3, -1.0, 0.16), (x + 0.8, -3.3, -4.5, 0.16), (x - 0.4, -3.3, -7.5, 0.14), (x + 0.3, -3.3, -11.2, 0.1)], "vein", res=2, bev=1, glow=True)
+    return 24.0
+
+
+def final_form():
+    """The preview of the Final Form: everything at once - the crest and carapace, the talons on this arm and the
+    Reaper Edge mirrored onto the other (x = 12), over the figure (the chitin hide itself is drawn in the game)."""
+    head_crest(); carapace()
+    rending_talons()
+    mark = len(gt.PARTS)
+    reaper_edge()
+    for ob in gt.PARTS[mark:]: ob.data.transform(Matrix.Translation((12, 0, 0)) @ Matrix.Scale(-1, 4, (1, 0, 0)))
+    return 30.0
+
+
+BODY = {"final_crest": head_crest, "final_carapace": carapace}   # drawn on the head / body in game, not an arm
+TARGETS = {"final_form": 16000, "final_crest": 3000, "final_carapace": 4500}
+
 FORMS = {"reaper_edge": reaper_edge, "rending_talons": rending_talons, "spine_launcher": spine_launcher,
-         "titan_fist": titan_fist, "bone_lance": bone_lance, "bulwark": bulwark}
+         "titan_fist": titan_fist, "bone_lance": bone_lance, "bulwark": bulwark, "whip_spear": whip_spear, "battering_ram": battering_ram,
+         "final_form": final_form, **BODY}
 
 
 TARGET = 3500   # triangles a form may have in game
@@ -402,7 +538,7 @@ def build(form, out_dir, with_dummy=False, game=False):
     gt.PARTS.clear(); GLOW.clear()
     tex = os.path.join(out_dir, TEX + ".png")
     length = FORMS[form]()
-    slim(TARGET)
+    slim(TARGETS.get(form, TARGET))
     if with_dummy: dummy()
     image = bpy.data.images.load(tex)
     def material(name, glow):
@@ -422,7 +558,9 @@ def build(form, out_dir, with_dummy=False, game=False):
     bpy.context.view_layer.objects.active = gt.PARTS[0]
     bpy.ops.object.join()
     ob = bpy.context.view_layer.objects.active; ob.name = form
-    if game:   # the game draws it on the right arm: these are built on a left one, so mirrored (toward the body stays toward the body)
+    if game and form in BODY:   # drawn in the head's / body's own space: centred, the neck at 0, +y down, front -z
+        for v in ob.data.vertices: v.co = Vector((-(v.co.x - BX), -v.co.y, v.co.z + 12.0))
+    elif game:   # the game draws it on the right arm: these are built on a left one, so mirrored (toward the body stays toward the body)
         ob.scale = (-1, 1, 1)
         bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
         bm = bmesh.new(); bm.from_mesh(ob.data)
@@ -435,35 +573,39 @@ def build(form, out_dir, with_dummy=False, game=False):
     return ob, length
 
 
-def render_sheet(out_dir):
-    """Every form, front and side, on one sheet."""
+def render_sheet(out_dir, only=None):
+    """Every form (or just `only`), front and side, on one sheet."""
     shots = []
-    for form in FORMS:
+    forms = only or list(FORMS)
+    for form in forms:
         ob, length = build(form, out_dir, with_dummy=True)
         ob.location = (0, 0, 0)
         sc = bpy.context.scene
         sc.render.engine = "CYCLES"; sc.cycles.samples = 24; sc.cycles.device = "CPU"
         sc.view_settings.view_transform = "Standard"
-        sc.render.resolution_x, sc.render.resolution_y = 420, 700
+        wide = form == "final_form"   # the whole figure, not just an arm
+        sc.render.resolution_x, sc.render.resolution_y = (760 if wide else 420), 700
         world = bpy.data.worlds.new("w"); sc.world = world; world.use_nodes = True
         world.node_tree.nodes["Background"].inputs[0].default_value = (0.03, 0.035, 0.06, 1)
         for name, rot, energy in (("key", (math.radians(50), 0, math.radians(-35)), 4.0), ("fill", (math.radians(70), 0, math.radians(150)), 1.6)):
             L = bpy.data.lights.new(name, "SUN"); L.energy = energy
             o = bpy.data.objects.new(name, L); o.rotation_euler = rot; sc.collection.objects.link(o)
-        cam = bpy.data.cameras.new("cam"); cam.type = "ORTHO"; cam.ortho_scale = 62
+        cam = bpy.data.cameras.new("cam"); cam.type = "ORTHO"; cam.ortho_scale = 66 if wide else 62
         co = bpy.data.objects.new("cam", cam); sc.collection.objects.link(co); sc.camera = co
         zc = 4.0
         for label, yaw in (("front", 25), ("side", 100)):
             ob.rotation_euler = (0, 0, math.radians(yaw))
-            co.location = (0, -60, zc); co.rotation_euler = (math.radians(90), 0, 0)
+            co.location = (4 if wide else 0, -60, zc - (2 if wide else 0)); co.rotation_euler = (math.radians(90), 0, 0)
             sc.render.filepath = os.path.join(out_dir, "form_%s_%s.png" % (form, label))
             bpy.ops.render.render(write_still=True)
             shots.append(sc.render.filepath)
-    sheet = Image.new("RGB", (420 * 6, 700 * 2), (8, 9, 15))
-    for i, form in enumerate(FORMS):
-        for j, label in enumerate(("front", "side")):   # turned over: the figure stands, the form hanging from its arm
-            im = Image.open(os.path.join(out_dir, "form_%s_%s.png" % (form, label))).convert("RGB").transpose(Image.ROTATE_180)
-            sheet.paste(im, (i * 420, j * 700))
+    ims = [[Image.open(os.path.join(out_dir, "form_%s_%s.png" % (form, label))).convert("RGB").transpose(Image.ROTATE_180)   # turned over: the figure stands
+            for label in ("front", "side")] for form in forms]
+    sheet = Image.new("RGB", (sum(c[0].width for c in ims), 700 * 2), (8, 9, 15))
+    x = 0
+    for col in ims:
+        for j, im in enumerate(col): sheet.paste(im, (x, j * 700))
+        x += col[0].width
     sheet.save(os.path.join(out_dir, "parasite_forms.png"))
 
 
@@ -471,6 +613,7 @@ def to_game(out_dir):
     """Every form into the mod as a bare OBJ model (no item: ParasiteArms draws it in the arm's own space - the OBJ's
     origin is the hand end of the forearm's centre, +Y on past the hand (the shoulder is at -12 px), -X toward the body, -Z the back of the arm)."""
     for form in FORMS:
+        if form == "final_form": continue   # a preview only
         build(form, out_dir, game=True)
         for ext in (".obj", ".mtl"): os.replace(os.path.join(out_dir, form + ext), os.path.join(out_dir, "parasite_" + form + ext))
         objp = os.path.join(out_dir, "parasite_" + form + ".obj")   # and the OBJ's pointer to its materials
@@ -484,5 +627,5 @@ if __name__ == "__main__":
     mode, out = sys.argv[1], sys.argv[2]
     os.makedirs(out, exist_ok=True)
     paint(os.path.join(out, TEX + ".png"))
-    if mode == "render": render_sheet(out)
+    if mode == "render": render_sheet(out, sys.argv[3].split(",") if len(sys.argv) > 3 else None)
     if mode == "game": to_game(out)

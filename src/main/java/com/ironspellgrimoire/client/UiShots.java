@@ -515,8 +515,8 @@ public final class UiShots {
         steps.add(new Step("par_shadow_wheel", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:end")); ParasiteWheel.forceHover = 0; mc.setScreen(new ParasiteWheel(2)); }, 10, false));
         steps.add(new Step("par_setup", () -> { mc.setScreen(null); ParasiteWheel.forceHover = -1; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:setup")); }, 30, true));
         steps.add(new Step("par_wheel", () -> { ParasiteWheel.forceHover = 1; mc.setScreen(new ParasiteWheel(1)); }, 10, false));
-        String[] forms = {"", "reaper_edge", "rending_talons", "spine_launcher", "titan_fist", "bone_lance"};
-        for (int f = 1; f <= 5; f++) {
+        String[] forms = {"", "reaper_edge", "rending_talons", "spine_launcher", "titan_fist", "bone_lance", "whip_spear", "battering_ram"};
+        for (int f = 1; f <= 7; f++) {
             final int ff = f;
             steps.add(new Step("par_" + forms[f], () -> { mc.setScreen(null); ParasiteWheel.forceHover = -1; mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:form" + ff)); }, 14, true));
             steps.add(new Step("par_" + forms[f] + "_swing", () -> { if (mc.player != null) mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND); }, 3, true));
@@ -537,6 +537,24 @@ public final class UiShots {
         steps.add(new Step("par_frenzy", () -> onServer(p -> UiShotsServer.element(p, "p:frenzy")), 16, true));
         steps.add(new Step("par_evolution", () -> onServer(p -> UiShotsServer.element(p, "p:evolution")), 14, false));
         steps.add(new Step("par_evolution_strain", () -> onServer(p -> UiShotsServer.element(p, "p:evolution_strain")), 10, false));
+        // the upgrades: mutations, the awakened strain, the Final Form, the ultimates' paths, hunger
+        steps.add(new Step("par_awaken", () -> { mc.setScreen(null); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> { UiShotsServer.element(p, "p:awaken"); UiShotsServer.element(p, "p:form1"); }); }, 20, true));
+        steps.add(new Step("par_final_form", () -> onServer(p -> UiShotsServer.element(p, "p:final")), 24, true));
+        steps.add(new Step("par_final_form_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 10, true));
+        steps.add(new Step("par_final_form_hud", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 10, true));
+        steps.add(new Step("par_final_consume", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "p:consume")); }, 8, true));
+        steps.add(new Step("par_colossus", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> { UiShotsServer.element(p, "p:end"); UiShotsServer.element(p, "p:awaken"); UiShotsServer.element(p, "p:form4"); UiShotsServer.element(p, "p:colossus"); }); }, 24, true));
+        steps.add(new Step("par_swarm", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "p:swarm")); }, 30, true));
+        steps.add(new Step("par_apex", () -> onServer(p -> UiShotsServer.element(p, "p:apex")), 10, true));
+        steps.add(new Step("par_whip_ram_wheel", () -> { mc.options.hideGui = false; ParasiteWheel.forceHover = 10; mc.setScreen(new ParasiteWheel(1)); }, 10, false));
+        for (String u : new String[]{"tempest", "impaler", "maw", "vortex", "seeker", "bomb"}) {
+            steps.add(new Step("par_" + u, () -> { mc.setScreen(null); ParasiteWheel.forceHover = -1; mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "p:end"); UiShotsServer.element(p, "p:setup"); UiShotsServer.element(p, "p:" + u); }); }, 16, true));
+        }
+        steps.add(new Step("par_starving", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:starve")); }, 30, true));
+        steps.add(new Step("par_evo_tree", () -> { EvolutionScreen.startTab = 0; onServer(p -> { UiShotsServer.element(p, "p:awaken"); UiShotsServer.element(p, "p:evolution_strain"); }); }, 14, false));
+        steps.add(new Step("par_evo_mutations", () -> EvolutionScreen.showTab(1), 6, false));
+        steps.add(new Step("par_evo_strain", () -> EvolutionScreen.showTab(2), 6, false));
+        steps.add(new Step("par_evo_done", () -> { mc.setScreen(null); EvolutionScreen.startTab = 0; }, 4, true));
         steps.add(new Step("par_book", () -> {
             GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get()));
             mc.setScreen(b);
