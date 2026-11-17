@@ -1,0 +1,9 @@
+newmtl titan_fist
+Kd 1 1 1
+Ka 0 0 0
+map_Kd iron_spell_grimoire:item/parasite_arms
+
+newmtl titan_fist_glow
+Kd 1 1 1
+Ka 1 1 1
+map_Kd iron_spell_grimoire:item/parasite_arms

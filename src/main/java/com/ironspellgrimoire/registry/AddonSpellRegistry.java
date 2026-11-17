@@ -803,6 +803,24 @@ public class AddonSpellRegistry {
             SHADOW_RISE, SHADOW_STATUS, SHADOW_MARKET, SHADOW_EXCHANGE, SHADOW_STEP, SHADOW_GRIP, SHADOW_HAND, SHADOW_GATE, SHADOW_STEP_TO,
             SHADOW_HUNT, SHADOW_VEIL, SHADOW_ROAR, SHADOW_RANKS, SHADOW_RALLY, SHADOW_MANTLE, SHADOW_DOMAIN, SHADOW_LEGION);
 
+    // ------------------------------------------------------------------ Parasite Grimoire (a living strain: ParasiteFx)
+    private static com.ironspellgrimoire.spells.BookSpell parasite(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.BLOOD_RESOURCE,
+                com.ironspellgrimoire.item.ParasiteGrimoireItem.class, "ui.iron_spell_grimoire.parasite_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> PARASITE_CONSUME = registerSpell(parasite("consume", 3, 15, 8, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.ParasiteFx::consume));
+    public static final RegistryObject<AbstractSpell> PARASITE_EVOLUTION = registerSpell(parasite("evolution", 1, 0, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.ParasiteFx::evolution));
+    public static final RegistryObject<AbstractSpell> PARASITE_BARRAGE = registerSpell(parasite("marrow_barrage", 18, 45, 7, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.ParasiteFx::marrowBarrage)
+            .gate(com.ironspellgrimoire.server.ParasiteFx::canBarrage, "Needs more biomass"));
+    public static final RegistryObject<AbstractSpell> PARASITE_FIELD = registerSpell(parasite("grasping_field", 25, 50, 6, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.ParasiteFx::graspingField)
+            .gate(com.ironspellgrimoire.server.ParasiteFx::canField, "Needs more biomass"));
+    public static final RegistryObject<AbstractSpell> PARASITE_STORM = registerSpell(parasite("spine_storm", 30, 60, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ParasiteFx::spineStorm)
+            .gate(com.ironspellgrimoire.server.ParasiteFx::canStorm, "Needs more biomass"));
+    /** The five Parasite Grimoire pages, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> PARASITE_SPELLS = List.of(
+            PARASITE_CONSUME, PARASITE_EVOLUTION, PARASITE_BARRAGE, PARASITE_FIELD, PARASITE_STORM);
+
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,
                                                                    String only, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {

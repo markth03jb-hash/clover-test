@@ -182,7 +182,7 @@ def braid():
             a = ph + t * math.pi * (1.6 if k % 2 else -1.6)
             r = W * 0.6 + 0.45 * (1 + math.sin(t * math.pi * 3 + k))
             pts.append((r * math.cos(a), r * math.sin(a), -9.0 + 10.5 * t, 0.42))
-        tube("braid%d" % k, pts, "redplate" if k % 2 == 0 else "flesh2", res=3, bev=2)
+        tube("braid%d" % k, pts, "redplate" if k % 2 == 0 else "flesh2", res=2, bev=1)
     for k, (z, L) in enumerate(((-7.0, 2.4), (-4.6, 3.0), (-2.2, 2.6), (0.0, 2.0))):   # grey spikes up its top
         gt.cone("tspike%d" % k, (0, W / 2 + 0.3, z), (0, 1, -0.55), 0.6, L, region="greyblade")
 
@@ -216,6 +216,7 @@ def rending_talons():
     a hooked thumb blade curving down below the hand; the forearm a braid of red and black tendrils."""
     sleeve()
     braid()
+    mark = len(gt.PARTS)
     bm = bmesh.new()   # the hand
     bmesh.ops.create_uvsphere(bm, u_segments=12, v_segments=8, radius=3.1)
     bmesh.ops.scale(bm, vec=(1.05, 0.85, 0.85), verts=bm.verts)
@@ -225,26 +226,34 @@ def rending_talons():
     for k, (x, L) in enumerate(((-2.4, 15.5), (-0.8, 18.5), (0.8, 19.0), (2.4, 16.5))):
         spread = x * 0.09   # the fingers fan out a little toward their tips
         # armoured finger segments: two chitin plates, then the blade
-        for j, (z, sz) in enumerate(((5.6, 2.2), (7.8, 1.9))):
-            gt.box("phal%d_%d" % (k, j), (x + spread * (z - 5) * 0.6, -0.2 * j, z), (1.5, 1.6 - 0.2 * j, sz), "chitin", bevel=0.25, segs=1)
+        for j, (z, sz) in enumerate(((5.6, 2.2), (7.8, 1.9))):   # on the same line the blade follows, so they all join up
+            gt.box("phal%d_%d" % (k, j), (x + spread * (z - 5), -0.2 * j, z), (1.5, 1.6 - 0.2 * j, sz), "chitin", bevel=0.25, segs=1)
         bm = bmesh.new()   # a knuckle joint
         bmesh.ops.create_uvsphere(bm, u_segments=8, v_segments=6, radius=0.95)
         bmesh.ops.translate(bm, vec=(x, 0, 4.8), verts=bm.verts)
         gt.new_obj("joint%d" % k, bm, REG["redplate"])
-        z0 = 8.8
+        z0 = 7.6   # the blade starts inside the last finger segment, so it grows out of it
         def X(z): return x + spread * (z - 5)
-        # the blade: swelling in its middle, curving forward (-Y) into a hooked point, flattened across X, edge forward
-        pts = [(X(z0), -0.4, z0, 0.9), (X(z0 + L * 0.3), -0.9, z0 + L * 0.3, 1.55), (X(z0 + L * 0.6), -2.2, z0 + L * 0.6, 1.5),
+        # the blade: swelling in its middle, curving into a hooked point (toward -Y here; the hand is turned below so
+        # the hooks curve in toward the body), flattened across X
+        pts = [(X(z0), -0.2, z0, 1.2), (X(z0 + L * 0.3), -0.9, z0 + L * 0.3, 1.55), (X(z0 + L * 0.6), -2.2, z0 + L * 0.6, 1.5),
                (X(z0 + L * 0.82), -4.2, z0 + L * 0.82, 0.95), (X(z0 + L * 0.95), -6.0, z0 + L * 0.93, 0.4), (X(z0 + L), -7.2, z0 + L * 0.96, 0.03)]
-        c = tube("fblade%d" % k, pts, "greyblade", res=6, bev=3)
-        cx = X(z0 + L * 0.5)
+        c = tube("fblade%d" % k, pts, "greyblade", res=5, bev=2)
+        cx = X(z0)   # flattened about its root, so the root stays in the socket
         c.data.transform(Matrix.Translation((cx, 0, 0)) @ Matrix.Scale(0.28, 4, (1, 0, 0)) @ Matrix.Translation((-cx, 0, 0)))
+        sz = 8.9   # a chitin socket round the blade's root, joining it to the finger
+        bm = bmesh.new()
+        bmesh.ops.create_cone(bm, cap_ends=True, segments=8, radius1=1.0, radius2=0.75, depth=1.6)
+        bmesh.ops.scale(bm, vec=(1.0, 1.3, 1.0), verts=bm.verts)
+        bmesh.ops.translate(bm, vec=(X(z0), -0.3, sz), verts=bm.verts)
+        gt.new_obj("socket%d" % k, bm, REG["chitin"])
         bz = z0 + L * 0.45   # a barb on its back
         gt.cone("fbarb%d" % k, (X(bz), 0.2, bz), (0, 0.9, -0.6), 0.35, 1.5, region="greyblade")
     # the hooked thumb blade, curving down and back below the hand
     t = tube("thook", [(2.6, -2.0, 1.0, 1.1), (3.0, -4.2, 3.0, 0.95), (3.0, -6.0, 6.5, 0.6), (2.6, -6.2, 9.6, 0.25), (1.8, -5.2, 11.0, 0.03)],
              "greyblade", res=5, bev=3)
     t.data.transform(Matrix.Translation((2.8, 0, 0)) @ Matrix.Scale(0.32, 4, (1, 0, 0)) @ Matrix.Translation((-2.8, 0, 0)))
+    turn_since(mark, math.pi / 2)   # the whole hand turned: the hooks curve in toward the body (+X)
     return 28.0
 
 
@@ -252,23 +261,24 @@ def spine_launcher():
     """The arm grown into a bone cannon: a ringed barrel out of the wrist, a glowing red core at its muzzle, fins along
     its sides, and a bundle of spines loaded along its top, ready to fire."""
     sleeve()
+    armour()
     bm = bmesh.new()   # the barrel
     bmesh.ops.create_cone(bm, cap_ends=True, segments=12, radius1=2.9, radius2=2.3, depth=11.0)
     bmesh.ops.translate(bm, vec=(0, 0, 6.2), verts=bm.verts)
-    gt.new_obj("barrel", bm, REG["bone"])
+    gt.new_obj("barrel", bm, REG["greyblade"])
     for k in range(4):   # chitin rings round it
-        gt.torus("bring%d" % k, (0, 0, 2.2 + k * 2.8), (0, 0, 1), 2.85 - k * 0.15, 0.45, region="chitin")
-    gt.torus("muzzle", (0, 0, 11.7), (0, 0, 1), 2.25, 0.55, region="bone")
+        gt.torus("bring%d" % k, (0, 0, 2.2 + k * 2.8), (0, 0, 1), 2.85 - k * 0.15, 0.45, region="redplate")
+    gt.torus("muzzle", (0, 0, 11.7), (0, 0, 1), 2.25, 0.6, region="redplate")
     bm = bmesh.new()   # the glowing core, deep in the muzzle
     bmesh.ops.create_uvsphere(bm, u_segments=12, v_segments=8, radius=1.7)
     bmesh.ops.scale(bm, vec=(1, 1, 0.5), verts=bm.verts)
     bmesh.ops.translate(bm, vec=(0, 0, 11.4), verts=bm.verts)
     GLOW.append(gt.new_obj("core", bm, REG["eye"]))
     for sd in (1, -1):   # fins along its sides
-        f = tube("fin%d" % sd, [(sd * 2.6, 0, 1.6, 1.0), (sd * 4.0, 0, 4.5, 0.8), (sd * 3.6, 0, 8.0, 0.45), (sd * 2.8, 0, 10.4, 0.04)], "chitin", res=4, bev=2)
+        f = tube("fin%d" % sd, [(sd * 2.6, 0, 1.6, 1.0), (sd * 4.0, 0, 4.5, 0.8), (sd * 3.6, 0, 8.0, 0.45), (sd * 2.8, 0, 10.4, 0.04)], "redplate", res=4, bev=2)
         f.data.transform(Matrix.Scale(0.35, 4, (0, 1, 0)))
     for k, (x, y) in enumerate(((-0.9, 2.9), (0.0, 3.2), (0.9, 2.9), (-0.45, 3.6), (0.45, 3.6))):   # spines loaded along its top
-        gt.cone("load%d" % k, (x, y, 2.0 + 0.3 * k), (0, 0.05, 1), 0.42, 9.0 - k * 0.5, region="bone")
+        gt.cone("load%d" % k, (x, y, 2.0 + 0.3 * k), (0, 0.05, 1), 0.42, 9.0 - k * 0.5, region="greyblade")
     for k, a in enumerate((0.5, 2.1, 3.7, 5.2)):   # veins running up the barrel
         pts = [(2.9 * math.cos(a + 0.2 * i), 2.9 * math.sin(a + 0.2 * i), 1.2 + i * 2.4, 0.15) for i in range(5)]
         tube("bvein%d" % k, pts, "vein", res=2, bev=1, glow=True)
@@ -277,6 +287,7 @@ def spine_launcher():
 
 def titan_fist():
     sleeve()
+    armour()
     bm = bmesh.new()   # the swollen fist
     bmesh.ops.create_uvsphere(bm, u_segments=14, v_segments=10, radius=4.8)
     bmesh.ops.scale(bm, vec=(1.05, 0.95, 1.05), verts=bm.verts)
@@ -291,10 +302,19 @@ def titan_fist():
         bm = bmesh.new()
         bmesh.ops.create_uvsphere(bm, u_segments=8, v_segments=6, radius=1.45)
         bmesh.ops.translate(bm, vec=(x, -0.4, 8.6), verts=bm.verts)
-        gt.new_obj("knuckle%d" % k, bm, REG["bone"])
-        gt.cone("kspike%d" % k, (x, -0.4, 9.6), (0, -0.1, 1), 0.6, 2.0, region="bone")
-    for k, z in enumerate((1.8, 4.4, 6.8)):   # chitin plates curving over its back
-        gt.box("plate%d" % k, (0, -3.9, z), (7.0 - k * 0.8, 0.9, 2.2), "chitin", bevel=0.35, segs=2)
+        gt.new_obj("knuckle%d" % k, bm, REG["greyblade"])
+        gt.cone("kspike%d" % k, (x, -0.4, 9.6), (0, -0.1, 1), 0.6, 2.2, region="greyblade")
+    for k, z in enumerate((1.8, 4.2, 6.6)):   # red armour plates wrapping round its back and sides
+        for j_, a in enumerate((-0.75, 0.0, 0.75)):
+            bm = bmesh.new()
+            bmesh.ops.create_cube(bm, size=1.0)
+            bmesh.ops.scale(bm, vec=(3.0 - abs(a) * 0.8, 1.0, 2.2), verts=bm.verts)
+            bmesh.ops.bevel(bm, geom=bm.verts[:] + bm.edges[:], offset=0.3, segments=1, affect="EDGES", profile=0.5)
+            r = 4.7 - k * 0.2
+            bmesh.ops.translate(bm, vec=(0, -r, 0), verts=bm.verts)
+            bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Matrix.Rotation(a, 3, "Z"), verts=bm.verts)
+            bmesh.ops.translate(bm, vec=(0, 0, z), verts=bm.verts)
+            gt.new_obj("plate%d_%d" % (k, j_), bm, REG["redplate"])
     for k, x in enumerate((-2.6, 2.6)):   # veins bulging up its sides
         tube("fvein%d" % k, [(x * 1.2, 1.0, 1.0, 0.18), (x * 1.75, 1.4, 4.0, 0.2), (x * 1.6, 1.1, 7.0, 0.14)], "vein", res=2, bev=1, glow=True)
     return 28.0
@@ -302,11 +322,12 @@ def titan_fist():
 
 def bone_lance():
     sleeve()
-    tube("lance", [(0, 0, 1.0, 2.1), (0, 0, 9, 1.8), (0, 0, 21, 1.25), (0, 0, 30, 0.55), (0, 0, 34, 0.04)], "bone", res=6, bev=4)
-    for k in range(6):   # rings of bone up its length
+    armour()
+    tube("lance", [(0, 0, 1.0, 2.1), (0, 0, 9, 1.8), (0, 0, 21, 1.25), (0, 0, 30, 0.55), (0, 0, 34, 0.04)], "greyblade", res=6, bev=4)
+    for k in range(6):   # rings of red armour up its length
         z = 4 + k * 4.6
         r = 2.05 - k * 0.24
-        gt.torus("ring%d" % k, (0, 0, z), (0, 0, 1), r, 0.22, region="chitin")
+        gt.torus("ring%d" % k, (0, 0, z), (0, 0, 1), r, 0.3, region="redplate")
     pts = []
     for i in range(40):   # a glowing groove spiralling up it
         t = i / 39
@@ -320,17 +341,18 @@ def bone_lance():
 
 def bulwark():
     sleeve()
-    bm = bmesh.new()   # a broad, domed chitin shield over the forearm
+    braid()
+    bm = bmesh.new()   # a broad, domed shield of armour over the forearm
     bmesh.ops.create_uvsphere(bm, u_segments=20, v_segments=12, radius=1.0)
     bmesh.ops.scale(bm, vec=(8.0, 1.7, 11.0), verts=bm.verts)
     for v in bm.verts:
         if v.co.y > 0: v.co.y *= 0.35   # flatter at the back, against the arm
     bmesh.ops.translate(bm, vec=(0, -3.4, -2.0), verts=bm.verts)
-    gt.new_obj("shield", bm, REG["chitin"])
+    gt.new_obj("shield", bm, REG["redplate"])
     for k in range(10):   # spines round its rim
         a = k / 10 * math.pi * 2
         x, z = 8.0 * math.cos(a), 11.0 * math.sin(a) - 2.0
-        gt.cone("rim%d" % k, (x * 0.95, -3.4, z * 0.95 + (-2.0) * 0.05), (math.cos(a), -0.3, math.sin(a)), 0.55, 2.0, region="bone")
+        gt.cone("rim%d" % k, (x * 0.95, -3.4, z * 0.95 + (-2.0) * 0.05), (math.cos(a), -0.3, math.sin(a)), 0.6, 2.4, region="greyblade")
     bm = bmesh.new()   # a red eye at its heart
     bmesh.ops.create_uvsphere(bm, u_segments=10, v_segments=6, radius=1.6)
     bmesh.ops.scale(bm, vec=(1, 0.5, 1), verts=bm.verts)
@@ -347,11 +369,40 @@ FORMS = {"reaper_edge": reaper_edge, "rending_talons": rending_talons, "spine_la
          "titan_fist": titan_fist, "bone_lance": bone_lance, "bulwark": bulwark}
 
 
-def build(form, out_dir, with_dummy=False):
+TARGET = 3500   # triangles a form may have in game
+
+
+def tris(ob): return sum(len(p.vertices) - 2 for p in ob.data.polygons)
+
+
+def slim(target):
+    """Bring the form down to about `target` triangles: curves made into meshes, doubled points merged, then the
+    heavy parts (never the small ones - a spike or a ring stays whole) collapsed by the same share until it fits."""
+    for ob in list(gt.PARTS):
+        if ob.type != "MESH":
+            bpy.ops.object.select_all(action="DESELECT"); ob.select_set(True); bpy.context.view_layer.objects.active = ob
+            bpy.ops.object.convert(target="MESH")
+    for ob in gt.PARTS:
+        bm = bmesh.new(); bm.from_mesh(ob.data)
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.01)
+        bm.to_mesh(ob.data); bm.free()
+    total = sum(tris(o) for o in gt.PARTS)
+    small = sum(tris(o) for o in gt.PARTS if tris(o) <= 80)
+    if total <= target: return
+    ratio = max(0.2, (target - small) / max(1, total - small))
+    for ob in gt.PARTS:
+        if tris(ob) <= 80: continue
+        m = ob.modifiers.new("slim", "DECIMATE"); m.decimate_type = "COLLAPSE"; m.ratio = ratio
+        bpy.ops.object.select_all(action="DESELECT"); ob.select_set(True); bpy.context.view_layer.objects.active = ob
+        bpy.ops.object.modifier_apply(modifier="slim")
+
+
+def build(form, out_dir, with_dummy=False, game=False):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     gt.PARTS.clear(); GLOW.clear()
     tex = os.path.join(out_dir, TEX + ".png")
     length = FORMS[form]()
+    slim(TARGET)
     if with_dummy: dummy()
     image = bpy.data.images.load(tex)
     def material(name, glow):
@@ -371,10 +422,16 @@ def build(form, out_dir, with_dummy=False):
     bpy.context.view_layer.objects.active = gt.PARTS[0]
     bpy.ops.object.join()
     ob = bpy.context.view_layer.objects.active; ob.name = form
-    ob.location = (8, -8, 8)
+    if game:   # the game draws it on the right arm: these are built on a left one, so mirrored (toward the body stays toward the body)
+        ob.scale = (-1, 1, 1)
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        bm = bmesh.new(); bm.from_mesh(ob.data)
+        bmesh.ops.reverse_faces(bm, faces=bm.faces)
+        bm.to_mesh(ob.data); bm.free()
+    else: ob.location = (8, -8, 8)
     bpy.ops.wm.obj_export(filepath=os.path.join(out_dir, form + ".obj"), export_selected_objects=True, export_uv=True, export_normals=True,
                           export_materials=True, export_triangulated_mesh=True, forward_axis="NEGATIVE_Z", up_axis="Y", global_scale=1 / 16, path_mode="STRIP")
-    print(form, "tris", sum(len(p.vertices) - 2 for p in ob.data.polygons), "length", length)
+    print(form, "tris", tris(ob), "length", length)
     return ob, length
 
 
@@ -410,8 +467,19 @@ def render_sheet(out_dir):
     sheet.save(os.path.join(out_dir, "parasite_forms.png"))
 
 
+def to_game(out_dir):
+    """Every form into the mod as a bare OBJ model (no item: ParasiteArms draws it in the arm's own space - the OBJ's
+    origin is the hand end of the forearm's centre, +Y on past the hand (the shoulder is at -12 px), -X toward the body, -Z the back of the arm)."""
+    for form in FORMS:
+        build(form, out_dir, game=True)
+        for ext in (".obj", ".mtl"): os.replace(os.path.join(out_dir, form + ext), os.path.join(out_dir, "parasite_" + form + ext))
+        gt.export_to_game("parasite_" + form, out_dir, {}, glowing={form + "_glow"},
+                          textures={form: TEX, form + "_glow": TEX}, render_type="minecraft:cutout")
+
+
 if __name__ == "__main__":
     mode, out = sys.argv[1], sys.argv[2]
     os.makedirs(out, exist_ok=True)
     paint(os.path.join(out, TEX + ".png"))
     if mode == "render": render_sheet(out)
+    if mode == "game": to_game(out)

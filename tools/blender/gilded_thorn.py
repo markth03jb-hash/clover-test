@@ -424,7 +424,7 @@ def export_to_game(name, out, display, glowing=(), textures=None, render_type=No
     open(os.path.join(mdir, name + ".mtl"), "w").write("\n".join(mtl))
     for tex in used: shutil.copy(os.path.join(out, tex + ".png"), os.path.join(tdir, tex + ".png"))
     model = {"loader": "forge:obj", "model": "iron_spell_grimoire:models/item/%s.obj" % name, "flip_v": True,
-             "textures": {"particle": "iron_spell_grimoire:item/" + name}, "display": display}
+             "textures": {"particle": "iron_spell_grimoire:item/" + (next(iter(textures.values())) if textures else name)}, "display": display}
     if render_type: model["render_type"] = render_type
     json.dump(model, open(os.path.join(mdir, name + ".json"), "w"), indent=1)
     print("written into the mod's assets")

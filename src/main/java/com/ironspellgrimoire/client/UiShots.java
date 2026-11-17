@@ -510,6 +510,39 @@ public final class UiShots {
             b.showPart("spells:0");
         }, 15, false));
         steps.add(new Step("shd_book_done", () -> mc.setScreen(null), 4, true));
+        // the Parasite Grimoire: the G wheel (and the System Grimoire's shadow wheel), every arm form in first and
+        // third person, the Bulwark, the Chitin Hide, the moves, the Evolution page, the frenzy
+        steps.add(new Step("par_shadow_wheel", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:end")); ParasiteWheel.forceHover = 0; mc.setScreen(new ParasiteWheel(2)); }, 10, false));
+        steps.add(new Step("par_setup", () -> { mc.setScreen(null); ParasiteWheel.forceHover = -1; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:setup")); }, 30, true));
+        steps.add(new Step("par_wheel", () -> { ParasiteWheel.forceHover = 1; mc.setScreen(new ParasiteWheel(1)); }, 10, false));
+        String[] forms = {"", "reaper_edge", "rending_talons", "spine_launcher", "titan_fist", "bone_lance"};
+        for (int f = 1; f <= 5; f++) {
+            final int ff = f;
+            steps.add(new Step("par_" + forms[f], () -> { mc.setScreen(null); ParasiteWheel.forceHover = -1; mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:form" + ff)); }, 14, true));
+            steps.add(new Step("par_" + forms[f] + "_swing", () -> { if (mc.player != null) mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND); }, 3, true));
+            steps.add(new Step("par_" + forms[f] + "_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 8, true));
+            steps.add(new Step("par_" + forms[f] + "_3p_side", () -> { onServer(p -> { p.setYRot(-90); p.setYHeadRot(-90); p.setYBodyRot(-90); p.connection.teleport(p.getX(), p.getY(), p.getZ(), -90, 0); }); }, 8, true));
+        }
+        steps.add(new Step("par_bulwark", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { UiShotsServer.element(p, "p:form1"); UiShotsServer.element(p, "p:bulwark"); }); }, 14, true));
+        steps.add(new Step("par_bulwark_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 8, true));
+        steps.add(new Step("par_hide_3p", () -> onServer(p -> UiShotsServer.element(p, "p:hide")), 12, true));
+        steps.add(new Step("par_hide_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 8, true));
+        steps.add(new Step("par_consume", () -> onServer(p -> UiShotsServer.element(p, "p:consume")), 6, true));
+        steps.add(new Step("par_spine_fire", () -> onServer(p -> UiShotsServer.element(p, "p:spine_fire")), 3, true));
+        steps.add(new Step("par_marrow_barrage", () -> onServer(p -> UiShotsServer.element(p, "p:marrow_barrage")), 10, true));
+        steps.add(new Step("par_grasping_field", () -> onServer(p -> UiShotsServer.element(p, "p:grasping_field")), 14, true));
+        steps.add(new Step("par_spine_storm", () -> onServer(p -> UiShotsServer.element(p, "p:spine_storm")), 14, true));
+        steps.add(new Step("par_slam", () -> onServer(p -> UiShotsServer.element(p, "p:slam")), 12, true));
+        steps.add(new Step("par_hud", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 30, true));
+        steps.add(new Step("par_frenzy", () -> onServer(p -> UiShotsServer.element(p, "p:frenzy")), 16, true));
+        steps.add(new Step("par_evolution", () -> onServer(p -> UiShotsServer.element(p, "p:evolution")), 14, false));
+        steps.add(new Step("par_evolution_strain", () -> onServer(p -> UiShotsServer.element(p, "p:evolution_strain")), 10, false));
+        steps.add(new Step("par_book", () -> {
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("par_done", () -> { mc.setScreen(null); mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "p:end")); }, 4, true));
 
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)

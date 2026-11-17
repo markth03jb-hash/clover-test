@@ -87,6 +87,7 @@ public final class UiShotsServer {
             case 'o' -> AddonItemRegistry.OVERDRIVE_GRIMOIRE.get();
             case 'd' -> AddonItemRegistry.DREAM_GRIMOIRE.get();
             case 's' -> AddonItemRegistry.SHADOW_GRIMOIRE.get();
+            case 'p' -> AddonItemRegistry.PARASITE_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -94,6 +95,7 @@ public final class UiShotsServer {
         ItemStack cur = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
         if (cur == null || !cur.is(book.getItem())) CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
         io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).setMana(2000);
+        if (which.charAt(0) == 'p') { parasite(p, w); return; }
         switch (w) {
             case "target" -> {
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
@@ -343,6 +345,43 @@ public final class UiShotsServer {
             case "night_legion" -> { faceForward(p); ShadowFx.nightLegion(p, 10f); }
             case "gate_of_shade" -> ShadowFx.gateOfShade(p, 10f);
             case "end" -> { Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); Moves.ends(p, OverdriveFx.MODE); Moves.ends(p, DreamFx.MODE); Moves.ends(p, ShadowFx.MODE); ShadowArmy.recallAll(p); }
+            default -> {}
+        }
+    }
+
+    /** The Parasite Grimoire's shots: its arm forms (first and third person), its moves and its pages. */
+    private static void parasite(ServerPlayer p, String w) {
+        switch (w) {
+            case "setup" -> {   // everything evolved, a full gut, empty hands, and a target ahead
+                faceForward(p);
+                ParasiteFx.testReset(p);
+                ParasiteFx.testFill(p);
+                ParasiteFx.testUnlockAll(p);
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                p.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY);
+                for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
+                var z = net.minecraft.world.entity.EntityType.HUSK.create(p.serverLevel());
+                if (z != null) {
+                    var at = p.position().add(0, 0, 6);
+                    z.moveTo(at.x, p.getY(), at.z, 180, 0); z.setNoAi(true);
+                    z.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000); z.setHealth(1000);
+                    p.serverLevel().addFreshEntity(z);
+                }
+            }
+            case "form1", "form2", "form3", "form4", "form5" -> { faceForward(p); if (ParasiteFx.bulwark(p)) ParasiteFx.toggleBulwark(p); ParasiteFx.setForm(p, w.charAt(4) - '0', true); }
+            case "bulwark" -> { if (ParasiteFx.form(p) != 0) ParasiteFx.setForm(p, 0, true); if (!ParasiteFx.bulwark(p)) ParasiteFx.toggleBulwark(p); }
+            case "hide" -> { if (!ParasiteFx.hide(p)) ParasiteFx.toggleHide(p); ParasiteFx.setForm(p, ParasiteFx.TITAN, true); }
+            case "swing" -> p.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
+            case "consume" -> { faceForward(p); ParasiteFx.consume(p, 10f); }
+            case "marrow_barrage" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.marrowBarrage(p, 10f); }
+            case "grasping_field" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.graspingField(p, 10f); }
+            case "spine_storm" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.spineStorm(p, 10f); }
+            case "spine_fire" -> { faceForward(p); ParasiteFx.setForm(p, ParasiteFx.SPINE, true); if (ParasiteFx.form(p) != ParasiteFx.SPINE) ParasiteFx.setForm(p, ParasiteFx.SPINE, true); ParasiteFx.handle(p, 4, 0); }
+            case "slam" -> { faceForward(p); p.connection.teleport(p.getX(), p.getY() + 6, p.getZ(), 0, 0); AstaFx.later(2, () -> { ParasiteFx.handle(p, 5, 60); p.setDeltaMovement(0, -2, 0); p.hurtMarked = true; }); }
+            case "evolution" -> { ParasiteFx.testSpent(p, 6); ParasiteFx.testStrain(p, 0); ParasiteFx.evolution(p, 0); }
+            case "evolution_strain" -> { ParasiteFx.testStrain(p, ParasiteFx.HIVE); ParasiteFx.evolution(p, 0); }
+            case "frenzy" -> ParasiteFx.testFrenzy(p);
+            case "end" -> { ParasiteFx.testReset(p); }
             default -> {}
         }
     }
