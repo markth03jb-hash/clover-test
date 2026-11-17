@@ -237,7 +237,7 @@ public final class ParasiteFx {
     public static void consume(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         double range = strain(p) == HUNTER ? 8 : 5;
-        LivingEntity t = Kit.aimed(p, range, 25);
+        LivingEntity t = aimed(p, range, 25);
         if (t == null || !foe(p, t)) {
             tendril(sl, handPos(p), Kit.aim(p, range), 6);
             p.displayClientMessage(Component.literal("Nothing in reach to consume").withStyle(ChatFormatting.GRAY), true);
@@ -331,7 +331,7 @@ public final class ParasiteFx {
     public static void graspingField(ServerPlayer p, float power) {
         if (!spend(p, ultCost(p, 1))) { noBiomass(p, 1); return; }
         ServerLevel sl = p.serverLevel();
-        LivingEntity aimed = Kit.aimed(p, 16, 10);
+        LivingEntity aimed = aimed(p, 16, 10);
         Vec3 aim = aimed != null && foe(p, aimed) ? aimed.position().add(0, 0.5, 0) : Kit.aim(p, 16);
         Vec3 c = ground(sl, p, aim);
         float r = 5f, dmg = power * 0.35f * ultBoost(p);
@@ -687,7 +687,7 @@ public final class ParasiteFx {
         List<ShadowSoldier> out = ShadowArmy.out(p);
         switch (which) {
             case 0 -> {   // Hunt: every shadow at your side goes for what you look at
-                LivingEntity t = Kit.aimed(p, 28, 12);
+                LivingEntity t = aimed(p, 28, 12);
                 if (t == null || !foe(p, t)) { p.displayClientMessage(Component.literal("Look at what they should hunt").withStyle(ChatFormatting.GRAY), true); return; }
                 for (ShadowSoldier s : out) { s.setTarget(t); s.hunting = 160; }
                 FxSend.ring(sl, Fx.YAMI | FxPacket.KEEP_SHAPE, mid(t), 0.2f, 1.2f, 0.06f, 10);
