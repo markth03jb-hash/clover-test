@@ -338,19 +338,21 @@ def render(dag, out_dir):
 
 ASSETS = os.path.join(HERE, "..", "..", "src", "main", "resources", "assets", "iron_spell_grimoire")
 
-def display(length, held=20.0):
+def display(length, held=20.0, fp_held=None):
     """Hand and slot transforms for a weapon modelled upright (blade +Y, faces +-Z) with its grip's middle at the model's
     middle, `length` model pixels long. Taken from the Nightfang's (models/item/nightfang_3d.json), which is held well -
     upright, leaning in a little, low and forward - turned a quarter round (the Nightfang's faces point sideways, ours
     front and back: the right hand turns one way, the left the other) and scaled so the weapon looks `held` pixels long
     in the hand (a dagger ~20; a greatsword more)."""
     k = held / length
+    kf = (fp_held or held * 1.15) / length          # first person: its own size
     def r(v): return [round(x, 3) for x in v]
     return {
         "thirdperson_righthand": {"rotation": [25, 90, 0], "translation": [0, 0.5, 0.8], "scale": r([0.85 * k * 1.6] * 3)},
         "thirdperson_lefthand": {"rotation": [25, -90, 0], "translation": [0, 0.5, 0.8], "scale": r([0.85 * k * 1.6] * 3)},
-        "firstperson_righthand": {"rotation": [-20, 0, 0], "translation": [1.13, 2.4, 1.13], "scale": r([0.68 * k] * 3)},
-        "firstperson_lefthand": {"rotation": [-20, 0, 0], "translation": [1.13, 2.4, 1.13], "scale": r([0.68 * k] * 3)},
+        # first person: angled in toward the middle of the screen (the roll), tipped forward, held low in the corner
+        "firstperson_righthand": {"rotation": [-28, 0, 28], "translation": [1.6, 0.4, 0.6], "scale": r([0.68 * kf] * 3)},
+        "firstperson_lefthand": {"rotation": [-28, 0, -28], "translation": [1.6, 0.4, 0.6], "scale": r([0.68 * kf] * 3)},
         "gui": {"rotation": [0, 0, -45], "translation": [-3.0, -3.0, 0], "scale": r([22.0 / length * 0.9] * 3)},
         "ground": {"rotation": [0, 90, 0], "translation": [0, 2, 0], "scale": r([22.0 / length * 0.6] * 3)},
         "fixed": {"rotation": [0, 0, -45], "translation": [-3.0, -3.0, 0], "scale": r([22.0 / length] * 3)},

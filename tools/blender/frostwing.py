@@ -215,7 +215,7 @@ def grip():
 
 
 # ------------------------------------------------------------------ build, export, render
-DISPLAY = gt.display(64, held=34)   # a greatsword: pommel to point, held big
+DISPLAY = gt.display(64, held=34, fp_held=60)   # a greatsword: pommel to point, held big - far bigger in first person
 
 
 
