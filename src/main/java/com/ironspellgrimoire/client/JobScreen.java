@@ -33,10 +33,13 @@ public class JobScreen extends ShadowUiScreen {
             frame(g, x, y, cw, ch, ACCENT[i]);
             g.fill(x, y, x + cw, y + 3, ACCENT[i]);
             g.drawString(font, NAMES[i], x + (cw - font.width(NAMES[i])) / 2, y + 12, TEXT, false);
-            for (int k = 0; k < LINES[i].length; k++) {
+            int ly = y + 30;
+            for (int k = 0; k < LINES[i].length; k++) {   // each line wrapped to the card, the next starting below it
                 for (var line : font.split(net.minecraft.network.chat.Component.literal(LINES[i][k]), cw - 12)) {
-                    g.drawString(font, line, x + 6, y + 30 + k * 22, k == 0 ? 0xFF9AB4D8 : 0xFF7F8EA8, false);
+                    g.drawString(font, line, x + 6, ly, k == 0 ? 0xFF9AB4D8 : 0xFF7F8EA8, false);
+                    ly += 10;
                 }
+                ly += 6;
             }
             final int id = i + 1;
             button(g, x + (cw - 60) / 2, y + ch - 22, 60, 15, "CHOOSE", true, ACCENT[i], mx, my, () -> act(15, id));

@@ -198,18 +198,23 @@ public final class HunterAscension {
             int army = held ? Math.min(50, ShadowArmy.count(p)) : 0;
             setMod(p, AttributeRegistry.MAX_MANA.get(), ARMY_MANA_ID, "Strength in Numbers", 2.0 * army, AttributeModifier.Operation.ADDITION);
             setMod(p, AttributeRegistry.SPELL_POWER.get(), ARMY_POWER_ID, "Strength in Numbers", 0.003 * army, AttributeModifier.Operation.MULTIPLY_BASE);
-            int job = job(p);   // the job's perks (Job Change)
-            setMod(p, AttributeRegistry.MAX_MANA.get(), JOB_A, "Necromancer", job == 1 ? 0.2 : 0, AttributeModifier.Operation.MULTIPLY_BASE);
-            setMod(p, Attributes.MOVEMENT_SPEED, JOB_B, "Assassin", job == 2 ? 0.1 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
-            setMod(p, Attributes.ATTACK_SPEED, JOB_C, "Assassin", job == 2 ? 0.15 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
-            setMod(p, Attributes.MAX_HEALTH, JOB_A, "Warlord", job == 3 ? 8 : 0, AttributeModifier.Operation.ADDITION);
-            setMod(p, Attributes.ARMOR, JOB_B, "Warlord", job == 3 ? 4 : 0, AttributeModifier.Operation.ADDITION);
-            setMod(p, Attributes.KNOCKBACK_RESISTANCE, JOB_D, "Warlord", job == 3 ? 0.25 : 0, AttributeModifier.Operation.ADDITION);
+            jobPerks(p);
             if (held) start(p);
             if (d(p).getBoolean(STARTED)) { dayTick(p); travelTick(p); }
         }
         Reckoning r = RECKONING.get(p.getUUID());
         if (r != null) r.tick(p);
+    }
+
+    /** The job's perks (Job Change), as attribute bonuses - every second, and the moment a job is chosen. */
+    static void jobPerks(Player p) {
+        int job = job(p);
+        setMod(p, AttributeRegistry.MAX_MANA.get(), JOB_A, "Necromancer", job == 1 ? 0.2 : 0, AttributeModifier.Operation.MULTIPLY_BASE);
+        setMod(p, Attributes.MOVEMENT_SPEED, JOB_B, "Assassin", job == 2 ? 0.1 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
+        setMod(p, Attributes.ATTACK_SPEED, JOB_C, "Assassin", job == 2 ? 0.15 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
+        setMod(p, Attributes.MAX_HEALTH, JOB_A, "Warlord", job == 3 ? 8 : 0, AttributeModifier.Operation.ADDITION);
+        setMod(p, Attributes.ARMOR, JOB_B, "Warlord", job == 3 ? 4 : 0, AttributeModifier.Operation.ADDITION);
+        setMod(p, Attributes.KNOCKBACK_RESISTANCE, JOB_D, "Warlord", job == 3 ? 0.25 : 0, AttributeModifier.Operation.ADDITION);
     }
 
     private static void setMod(Player p, Attribute a, UUID id, String name, double amount, AttributeModifier.Operation op) {
@@ -514,6 +519,7 @@ public final class HunterAscension {
                 CompoundTag t = d(p);
                 if (!t.getBoolean(JOB_READY) || job(p) != 0 || id < 1 || id >= JOBS.length) return;
                 t.putInt(JOB, id); t.putBoolean(JOB_READY, false);
+                jobPerks(p);
                 p.closeContainer();
                 p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.literal(JOBS[id].toUpperCase()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD)));
                 p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(Component.literal("Your job has changed").withStyle(ChatFormatting.GRAY)));

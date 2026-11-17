@@ -66,19 +66,7 @@ public class StatusScreen extends ShadowUiScreen {
         g.drawString(font, "Strength in Numbers: " + s.army + " shadows", x0, ay, 0xFF9AB4D8, false);
         g.drawString(font, String.format("+%d mana, +%.1f%% spell power", army * 2, army * 0.3), x0, ay + 10, 0xFF5A6A88, false);
         if (s.lures > 0) g.drawString(font, s.lures + " Remnant Lure" + (s.lures == 1 ? "" : "s") + " ready", x0, ay + 22, GOLD, false);
-        // the job (Job Change: a trial at hunter level 40, then a choice for good)
-        int jy = ay + 36;
-        if (s.job > 0) {
-            g.drawString(font, "Job: " + JobScreen.NAMES[s.job - 1], x0, jy + 4, 0xFFD8A8FF, false);
-        } else if (s.jobReady) {
-            g.drawString(font, "Trial passed", x0, jy + 4, 0xFFD8A8FF, false);
-            button(g, x0 + 80, jy, 84, 15, "CHOOSE JOB", true, 0xFFB070FF, mx, my, () -> JobScreen.open(s));
-        } else if (s.level >= 40) {
-            g.drawString(font, "Job Change", x0, jy + 4, 0xFFD8A8FF, false);
-            button(g, x0 + 80, jy, 84, 15, "BEGIN TRIAL", !s.reckoning, 0xFFB070FF, mx, my, () -> act(14, 0));
-        } else {
-            g.drawString(font, "Job Change at hunter level 40", x0, jy + 4, 0xFF55678A, false);
-        }
+
         // the Daily Trial
         int dx = x0 + colW + 12, dw = w - colW - 12;
         g.fill(dx, sy, dx + dw, sy + NAMES.length * 22 - 3, PANEL);
@@ -96,5 +84,18 @@ public class StatusScreen extends ShadowUiScreen {
         String rw = s.trialDone ? "Complete - come back tomorrow" : "All three: +5 points, XP, 200 Marks";
         g.drawString(font, font.plainSubstrByWidth(rw, dw - 16), dx + 8, sy + NAMES.length * 22 - 16, s.trialDone ? 0xFF9FE0FF : 0xFF7F8EA8, false);
         g.drawString(font, "Left undone when the day turns: the Reckoning", px() + 14, py() + ph() - 16, 0xFF55678A, false);
+        // the job (Job Change: a trial at hunter level 40, then a choice for good) - under the Daily Trial
+        int jx = dx, jy = sy + NAMES.length * 22 + 2;
+        if (s.job > 0) {
+            g.drawString(font, "Job: " + JobScreen.NAMES[s.job - 1], jx, jy + 4, 0xFFD8A8FF, false);
+        } else if (s.jobReady) {
+            g.drawString(font, "Trial passed", jx, jy + 4, 0xFFD8A8FF, false);
+            button(g, jx + dw - 84, jy, 84, 15, "CHOOSE JOB", true, 0xFFB070FF, mx, my, () -> JobScreen.open(s));
+        } else if (s.level >= 40) {
+            g.drawString(font, "Job Change", jx, jy + 4, 0xFFD8A8FF, false);
+            button(g, jx + dw - 84, jy, 84, 15, "BEGIN TRIAL", !s.reckoning, 0xFFB070FF, mx, my, () -> act(14, 0));
+        } else {
+            g.drawString(font, font.plainSubstrByWidth("Job Change at hunter level 40", dw), jx, jy + 4, 0xFF55678A, false);
+        }
     }
 }
