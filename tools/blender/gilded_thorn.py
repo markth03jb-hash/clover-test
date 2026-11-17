@@ -353,8 +353,10 @@ def display(length, held=22.0, fp_held=None):
     return {
         "thirdperson_righthand": {"rotation": [0, -90, 10], "translation": [0, -1.33, 1.44], "scale": r([0.85 * k] * 3)},
         "thirdperson_lefthand": {"rotation": [0, 90, -10], "translation": [0, -1.33, 1.44], "scale": r([0.85 * k] * 3)},
-        "firstperson_righthand": {"rotation": [0, -90, -20], "translation": [1.13, -0.87, -0.35], "scale": r([0.68 * kf] * 3)},
-        "firstperson_lefthand": {"rotation": [0, 90, 20], "translation": [1.13, -0.87, -0.35], "scale": r([0.68 * kf] * 3)},
+        # first person: 20 degrees further over than the arithmetic says - side by side with a vanilla sword in game,
+        # ours stood that much steeper - and a fifth bigger, to match its size on screen
+        "firstperson_righthand": {"rotation": [0, -90, -40], "translation": [1.13, -0.87, -0.35], "scale": r([0.68 * kf * 1.2] * 3)},
+        "firstperson_lefthand": {"rotation": [0, 90, 40], "translation": [1.13, -0.87, -0.35], "scale": r([0.68 * kf * 1.2] * 3)},
         "gui": {"rotation": [0, 0, -45], "translation": [-3.0, -3.0, 0], "scale": r([22.0 / length * 0.9] * 3)},
         "ground": {"rotation": [0, 90, 0], "translation": [0, 2, 0], "scale": r([22.0 / length * 0.6] * 3)},
         "fixed": {"rotation": [0, 0, -45], "translation": [-3.0, -3.0, 0], "scale": r([22.0 / length] * 3)},
