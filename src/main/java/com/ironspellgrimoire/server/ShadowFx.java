@@ -678,6 +678,38 @@ public final class ShadowFx {
         return true;
     }
 
+    /** Gilded Thorn - Thornbite: a wide slash cutting everything within 4 blocks in front of you (full damage), and the
+     *  thorns stay in the wound - each foe cut bleeds for a quarter of that again every second for 4 s. 12 s. */
+    public static boolean thornbite(ServerPlayer p) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 d = p.getLookAngle().multiply(1, 0, 1);
+        d = d.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : d.normalize();
+        final Vec3 dir = d;
+        Vec3 eye = p.position().add(0, 1.1, 0);
+        List<LivingEntity> cut = new ArrayList<>(Kit.near(sl, p, p.position().add(dir.scale(2.0)), 3.2));
+        cut.removeIf(t -> t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player
+                || t.position().subtract(p.position()).multiply(1, 0, 1).normalize().dot(dir) < 0.25);
+        Vec3 side = new Vec3(-dir.z, 0, dir.x);
+        dash(sl, eye.add(dir.scale(1.6)).add(side.scale(1.8)), eye.add(dir.scale(1.6)).subtract(side.scale(1.8)));   // the arc of the cut
+        play(sl, p.position(), "shadow_slash", 1.0f, 0.9f);
+        sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 0.9f, 0.8f);
+        float base = (float) p.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        for (LivingEntity t : cut) {
+            t.invulnerableTime = 0;
+            AstaFx.damage(p, t, base, "thornbite");
+            shadowHit(sl, t, 2);
+            for (int k = 1; k <= 4; k++) {   // the thorns bleed it
+                AstaFx.later(k * 20, () -> {
+                    if (!t.isAlive() || !alive(p)) return;
+                    t.invulnerableTime = 0;
+                    AstaFx.damage(p, t, base * 0.25f, "thornbite");
+                    FxSend.ring(sl, Fx.CRIMSON | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.2f, 0.7f, 0.03f, 6);
+                });
+            }
+        }
+        return true;
+    }
+
     /** Duskglass Kris - Phantom Edges: three ghost knives circle you for 10 s; each strikes a foe that comes within
      *  3 blocks (then needs a breath before it strikes again). Drawn on the client (ShadowClient kind 16). */
     public static boolean phantomEdges(ServerPlayer p) {

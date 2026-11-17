@@ -300,6 +300,15 @@ public final class UiShotsServer {
                 p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.DRAGON_FANG.get()));
             }
             case "wyrmfang_lunge" -> { faceForward(p); ShadowFx.wyrmfangLunge(p); }
+            case "gilded_thorn" -> {   // the Gilded Thorn in hand (first person), in the hotbar beside the others
+                faceForward(p);
+                var inv = p.getInventory();
+                inv.setItem(1, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.NIGHTFANG.get()));
+                inv.setItem(2, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.DRAGON_FANG.get()));
+                inv.setItem(3, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.GILDED_THORN.get()));
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.GILDED_THORN.get()));
+            }
+            case "thornbite" -> { faceForward(p); ShadowFx.thornbite(p); }
             case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
             case "night_legion" -> { faceForward(p); ShadowFx.nightLegion(p, 10f); }
             case "gate_of_shade" -> ShadowFx.gateOfShade(p, 10f);

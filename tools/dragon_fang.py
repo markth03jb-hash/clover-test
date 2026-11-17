@@ -1,12 +1,12 @@
 """The Dragon Fang (an original design) - a GeckoLib item model, painted in the shadow models' style.
 
-A single curved fang, as if pulled from a dragon's jaw: ivory at the root, deepening to crimson toward the point, with
-ember veins glowing through it. Its root is clamped in the jaws of a small dark-gold dragon's head (the guard) - a snout,
-two jaws with teeth, ember eyes, horns swept back along the grip. The grip is wound in dark red scaled hide; the pommel is
-a dragon's claw clutching a glowing ember orb.
+A long, slender dragon-tooth blade of dark crimson, its edge rising in flame-like waves, a hooked spike swept back off
+its spine near the hilt, its point lifting slightly. Down the whole blade runs a dark channel with two glowing ember
+strands braiding through it. The guard is a small swept crescent of dark gold set with an ember gem; the grip is wound
+in crimson cord; the pommel ends in a little claw.
 
-Model space: pixels, the blade pointing up (+y), the edge (the inside of the curve) facing -z. Origin at the middle of
-the grip, where the hand holds it.
+Model space: pixels, the blade pointing up (+y), the cutting edge facing -z, the spine +z. Origin at the middle of the
+grip, where the hand holds it.
 
 python3 tools/dragon_fang.py                 writes geo/item/dragon_fang.geo.json, its texture + glowmask, animation
 python3 tools/dragon_fang.py preview OUT.png  also renders it from a few sides (and close up)
@@ -25,42 +25,81 @@ ROOT = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources",
 
 
 # ------------------------------------------------------------------ painters
-def fang_painter(seed=7):
-    """Ivory at the root, through blood red to a deep crimson point; ember veins wind up through it and glow; the broad
-    faces are lit down their middle (a rounded tooth), the edges catch a pale highlight."""
-    IVORY, RED, DEEP = (236, 226, 198), (190, 30, 34), (96, 8, 16)
-    VEIN, VEIN_GLOW = (255, 96, 40), (255, 140, 70)
+def blade_painter():
+    """The blade's core: dark crimson, a brighter red bevel along both edges, and down its middle a near-black channel
+    with two ember strands braiding through it the whole way to the point (fading out near the tip)."""
+    BODY, BODY2, BEVEL, EDGE = (128, 14, 24), (70, 6, 14), (214, 44, 44), (255, 130, 110)
+    CH, LINE, GLOW = (34, 2, 8), (255, 96, 40), (255, 140, 70)
 
     def p(px, gx, x0, y0, w, h, face, rnd, fc=None):
         broad = face in ("east", "west")
-        along_x = False if broad else w > h   # on the broad faces the fang always runs up the texture
-        L, Wd = (w, h) if along_x else (h, w)
         g0, g1 = (fc.get("t0", 0.0), fc.get("t1", 1.0)) if fc else (0.0, 1.0)
-        r2 = random.Random(seed + (1 if face == "west" else 0))
-        ph = [r2.uniform(0, 6.28) for _ in range(4)]
-        for j in range(Wd):
-            for i in range(L):
-                u, a = i / max(1, L - 1), j / max(1, Wd - 1)
-                t = g0 + (g1 - g0) * (1 - u if not along_x else u)   # 0 root, 1 point
-                c = gp.mix(IVORY, RED, min(1, t / 0.55)) if t < 0.55 else gp.mix(RED, DEEP, (t - 0.55) / 0.45)
-                k = 0.78 + 0.32 * (1 - abs(a - 0.5) * 2) if broad else 0.62   # rounded: lit down the middle; the edges darker
-                c = gp.lit(c, k * (0.97 + 0.05 * rnd.random()))
+        for y in range(h):
+            for x in range(w):
+                if not broad:   # the narrow faces: the bright honed edge
+                    c = gp.lit(BEVEL, 0.85 + 0.1 * rnd.random()) if face not in ("up", "down") else BODY
+                    px[x0 + x, y0 + y] = c + (255,)
+                    continue
+                t = g0 + (g1 - g0) * (1 - y / max(1, h - 1))   # 0 root, 1 point
+                a = x / max(1, w - 1)
+                d = a - 0.5
+                c = gp.mix(BODY, BODY2, t * 0.8)
+                c = gp.lit(c, 0.88 + 0.22 * (1 - abs(d) * 2) + 0.04 * rnd.random())
+                if abs(d) > 0.36: c = gp.mix(c, BEVEL, min(1, (abs(d) - 0.36) / 0.1))   # the bevel
+                if abs(d) > 0.47: c = EDGE
                 gl = None
-                if broad and t > 0.08:
-                    centre = 0.5 + 0.18 * math.sin(t * 9 + ph[0]) + 0.06 * math.sin(t * 23 + ph[1])
-                    width = 0.07 * (1 - t) + 0.03
-                    if abs(a - centre) < width: c, gl = VEIN, VEIN_GLOW
-                    for n in (2, 3):   # branches
-                        t0 = 0.2 + 0.22 * (n - 2)
-                        if t0 < t < t0 + 0.25:
-                            k2 = (t - t0) / 0.25
-                            bc = centre + (1 if n == 2 else -1) * 0.32 * k2
-                            if abs(a - bc) < 0.05 * (1 - k2) + 0.02: c, gl = VEIN, VEIN_GLOW
-                if broad and (a < 0.06 or a > 0.94): c = gp.mix(c, (255, 236, 220), 0.4)   # a pale highlight along the edges
-                xx, yy = (i, j) if along_x else (j, i)
-                px[x0 + xx, y0 + yy] = c + (255,)
-                if gl: gx[x0 + xx, y0 + yy] = gl + (255,)
+                hw = 0.2 * (1 - 0.5 * t)                          # the channel
+                if t < 0.93 and abs(d) < hw:
+                    c = gp.mix(CH, BODY2, 0.3 + 0.2 * math.sin(t * 60))
+                    s1 = hw * 0.75 * math.sin(t * 46)
+                    if abs(d - s1) < 0.045 or abs(d + s1) < 0.045:   # two strands, crossing and parting
+                        c, gl = LINE, GLOW
+                    if abs(abs(d) - hw) < 0.03: c = gp.mix(BEVEL, CH, 0.4)   # the channel's rim
+                px[x0 + x, y0 + y] = c + (255,)
+                if gl: gx[x0 + x, y0 + y] = gl + (255,)
     p.wants_face = True
+    return p
+
+
+def lobe_painter():
+    """A flame-wave of the edge: crimson at its root brightening to a hot red rim, an ember streak down its middle."""
+    ROOT_C, TIP, RIM, STREAK = (120, 12, 22), (226, 50, 44), (255, 140, 110), (255, 110, 50)
+    def p(px, gx, x0, y0, w, h, face, rnd):
+        for y in range(h):
+            for x in range(w):
+                a = x / max(1, w - 1)
+                v = 1 - y / max(1, h - 1)
+                c = gp.mix(ROOT_C, TIP, v)
+                c = gp.lit(c, 0.9 + 0.15 * (1 - abs(a - 0.5) * 2))
+                if a < 0.1 or a > 0.9: c = RIM
+                if abs(a - 0.5) < 0.08 and 0.15 < v < 0.8:
+                    c = STREAK; gx[x0 + x, y0 + y] = (255, 140, 70, 255)
+                px[x0 + x, y0 + y] = c + (255,)
+    return p
+
+
+def wave_painter():
+    """The wavy cutting edge: honed red, darkening to its middle, bright along its rims; a thin glow at its crest."""
+    MID, HI, RIM = (130, 14, 22), (205, 36, 38), (250, 110, 90)
+    def p(px, gx, x0, y0, w, h, face, rnd):
+        for y in range(h):
+            for x in range(w):
+                a = x / max(1, w - 1)
+                c = gp.lit(gp.mix(HI, MID, 1 - abs(a - 0.5) * 2), 0.92 + 0.08 * rnd.random())
+                if a < 0.12 or a > 0.88: c = RIM
+                px[x0 + x, y0 + y] = c + (255,)
+                if face in ("north", "south"): gx[x0 + x, y0 + y] = (255, 120, 80, 255)
+    return p
+
+
+def wrap_painter(base, cord, S=6):
+    """Cord wound diagonally round the grip: raised bands, lit along their crests, dark in the gaps."""
+    def p(px, gx, x0, y0, w, h, face, rnd):
+        for y in range(h):
+            for x in range(w):
+                k = ((x + y) % S) / S
+                c = gp.lit(cord, 0.7 + 0.5 * math.sin(k * math.pi)) if k < 0.8 else base
+                px[x0 + x, y0 + y] = c + (255,)
     return p
 
 
@@ -94,11 +133,13 @@ def orb_painter(core, mid, rim):
 
 
 P = {
-    "fang": fang_painter(),
+    "blade": blade_painter(),
+    "lobe": lobe_painter(),
+    "wave": wave_painter(),
+    "wrap": wrap_painter((30, 4, 8), (150, 26, 30)),
     "gold": gp.plate_painter((168, 122, 46), (110, 74, 24), (0, 0, 0), engrave=False, rivets=False),
     "gold2": gp.plate_painter((120, 84, 30), (84, 56, 18), (0, 0, 0), engrave=False, rivets=False),
     "tooth": gp.plate_painter((236, 228, 206), (200, 190, 168), (0, 0, 0), engrave=False, rivets=False),
-    "hide": scale_painter((96, 20, 24), (170, 52, 46), (40, 6, 10), S=5),
     "goldscale": scale_painter((156, 112, 42), (232, 196, 110), (80, 52, 16), S=7),
     "ember": orb_painter((255, 230, 170), (255, 110, 30), (150, 20, 10)),
     "eye": gp.glow_painter((255, 150, 40), (255, 220, 140)),
@@ -117,74 +158,87 @@ for k in ("gold", "gold2", "tooth"):
 
 
 # ------------------------------------------------------------------ the model
+def seg(p0, p1, w, d, mat):
+    """A cube running from p0 to p1 (each (y, z), at x = 0): w wide (x), d deep, turned to follow the line."""
+    dy, dz = p1[0] - p0[0], p1[1] - p0[1]
+    L = math.hypot(dy, dz) + 0.15
+    ang = math.degrees(math.atan2(-dz, dy))              # +x rotation tips the top toward -z
+    return cube([-w / 2, p0[0], p0[1] - d / 2], [w, L, d], mat, rot=[ang, 0, 0], pivot=[0, p0[0], p0[1]])
+
+
+def chain(pts, w0, w1, d0, d1, mats):
+    out, n = [], len(pts) - 1
+    for k in range(n):
+        f = k / max(1, n - 1)
+        out.append(seg(pts[k], pts[k + 1], w0 + (w1 - w0) * f, d0 + (d1 - d0) * f, mats[k % len(mats)]))
+    return out
+
+
+def arc(y, z, length, a0, a1, n):
+    """Points along a curve starting at (y, z) heading a0 degrees from +y toward -z, turning to a1."""
+    pts = [(y, z)]
+    for k in range(n):
+        a = math.radians(a0 + (a1 - a0) * (k + 0.5) / n)
+        y, z = y + length / n * math.cos(a), z - length / n * math.sin(a)
+        pts.append((y, z))
+    return pts
+
+
 def dragon_fang():
     B = [bone("root", None, [0, 0, 0], [])]
     def sym(cs): return cs + mirror_x(cs)
-    # the grip: wound in scaled hide, slightly waisted, with gold collars at each end
-    grip = [cube([-0.85, -3.4, -0.85], [1.7, 6.6, 1.7], "hide"),
-            cube([-1.0, 2.6, -1.0], [2.0, 0.7, 2.0], "gold2"), cube([-1.0, -3.9, -1.0], [2.0, 0.7, 2.0], "gold2")]
+    # the grip: wound in crimson cord, with gold collars at each end
+    grip = [cube([-0.8, -3.4, -0.9], [1.6, 6.6, 1.8], "wrap"),
+            cube([-0.95, 2.6, -1.05], [1.9, 0.6, 2.1], "gold2"), cube([-0.95, -3.9, -1.05], [1.9, 0.6, 2.1], "gold2")]
     B.append(bone("grip", "root", [0, 0, 0], grip))
-    # the pommel: a claw of four talons clutching an ember orb
-    pom = [cube([-1.1, -6.6, -1.1], [2.2, 2.2, 2.2], "ember"), cube([-0.75, -4.4, -0.75], [1.5, 0.6, 1.5], "gold")]
-    for sx, sz in ((1, 0), (-1, 0), (0, 1), (0, -1)):   # out and down, then curling in under the orb
-        x, z = sx * 1.0, sz * 1.0
-        out_r = [sz * 22, 0, sx * 22]                    # tilts its foot outward (see the renderer's axes)
-        in_r = [-sz * 55, 0, -sx * 55]
-        pom.append(cube([x - 0.28, -5.8, z - 0.28], [0.56, 1.5, 0.56], "gold", rot=out_r, pivot=[x, -4.3, z]))
-        fx, fz = x + sx * 0.55, z + sz * 0.55
-        pom.append(cube([fx - 0.22, -7.0, fz - 0.22], [0.44, 1.3, 0.44], "gold2", rot=in_r, pivot=[fx, -5.75, fz]))
+    # the pommel: a gold cap set with an ember gem, tapering into a claw that hooks toward the spine
+    pom = [cube([-0.9, -4.8, -1.05], [1.8, 0.9, 2.1], "gold"), cube([-0.6, -4.7, -1.3], [1.2, 0.7, 0.3], "ember"),
+           cube([-0.6, -4.7, 1.0], [1.2, 0.7, 0.3], "ember")]
+    pom += chain(arc(-4.6, 0.0, 3.0, 180, 235, 4), 1.1, 0.35, 1.1, 0.35, ["gold", "gold2"])
     B.append(bone("pommel", "root", [0, -4, 0], pom))
-    # the guard: a dragon's head, its snout forward (-z), its jaws clamped round the fang's root
-    head = [
-        cube([-1.5, 3.2, -1.7], [3.0, 2.1, 3.2], "goldscale"),               # the skull
-        cube([-1.15, 3.45, -3.8], [2.3, 1.55, 2.3], "goldscale"),            # the snout, in two steps,
-        cube([-0.85, 3.5, -5.1], [1.7, 1.3, 1.5], "goldscale"),              # tapering to the nose
-        cube([-0.9, 3.25, -5.3], [1.8, 0.4, 3.8], "gold2"),                  # the upper jaw's lip
-        cube([-0.95, 2.55, -4.7], [1.9, 0.7, 3.2], "goldscale", rot=[14, 0, 0], pivot=[0, 3.1, -1.5]),   # the lower jaw, open a little
-        cube([-0.55, 4.75, -5.15], [1.1, 0.35, 0.6], "gold2"),               # the nostrils' ridge
-        cube([-0.3, 5.25, -2.4], [0.6, 0.6, 3.8], "gold2"),                  # a spined ridge down the skull...
-        cube([-0.2, 5.8, -0.6], [0.4, 0.6, 0.5], "gold2"), cube([-0.2, 5.8, 0.6], [0.4, 0.5, 0.5], "gold2"),   # ...with little spines
-    ]
-    head += sym([
-        cube([0.75, 4.25, -2.35], [0.6, 0.45, 0.6], "eye"),                  # ember eyes...
-        cube([0.6, 4.75, -2.6], [0.95, 0.4, 1.1], "gold2", rot=[0, 0, -12], pivot=[0.6, 4.9, -2]),   # ...under heavy brows
-        cube([0.85, 4.6, 0.2], [0.75, 0.75, 2.4], "gold", rot=[18, -16, 0], pivot=[1.2, 5.0, 0.4]),   # horns: thick at the root...
-        cube([0.95, 5.3, 2.3], [0.5, 0.5, 2.0], "gold", rot=[42, -20, 0], pivot=[1.2, 5.5, 2.4]),     # ...sweeping back...
-        cube([1.02, 6.4, 3.7], [0.32, 0.32, 1.3], "gold2", rot=[70, -24, 0], pivot=[1.2, 6.5, 3.8]),  # ...curling up at the tips
-        cube([1.3, 3.2, -1.4], [0.5, 1.7, 2.4], "goldscale"),                # the cheeks, gripping the fang's root
-        cube([1.4, 3.5, 0.5], [0.4, 0.4, 1.4], "gold2", rot=[20, -30, 0], pivot=[1.5, 3.7, 0.6]),   # a frill spine at the jaw
-    ])
-    for k in range(3):   # teeth, upper and lower, biting on the fang
-        head += sym([cube([0.55 + k * 0.28, 3.05, -3.8 + k * 0.7], [0.22, 0.45, 0.22], "tooth"),
-                     cube([0.55 + k * 0.28, 2.95, -3.5 + k * 0.7], [0.22, 0.4, 0.22], "tooth", rot=[14, 0, 0], pivot=[0, 3.1, -1.4])])
-    B.append(bone("guard", "root", [0, 3.2, 0], head))
-    # the fang: a long curved tooth rising out of the jaws, curving toward its edge (-z), round at the root and tapering
-    # to a hooked point. Built from sections along an arc; each is a broad core plus a narrower ridge so it reads round.
-    fang, N = [], 9
-    R, sweep = 26.0, math.radians(34)
-    z0, y0 = 0.4, 4.6
+    # the guard: a crescent of dark gold - curling down toward the grip at the edge side, sweeping up at the spine -
+    # with an ember gem on each face
+    guard = [cube([-1.0, 3.2, -1.7], [2.0, 1.3, 3.4], "gold"), cube([-0.75, 4.4, -1.4], [1.5, 0.4, 2.8], "gold2")]
+    guard += chain(arc(3.85, -1.5, 3.2, 95, 185, 4), 1.2, 0.4, 0.9, 0.35, ["gold", "gold2"])    # out and curling down
+    guard += chain(arc(3.85, 1.5, 3.6, -80, -10, 4), 1.2, 0.4, 0.9, 0.35, ["gold", "gold2"])    # out and sweeping up
+    guard += sym([cube([0.95, 3.45, -0.55], [0.25, 0.85, 1.1], "ember")])
+    B.append(bone("guard", "root", [0, 3.2, 0], guard))
+    # the blade, in slices up its length: a core centred on a line that lifts toward the spine near the point, and on
+    # each side of it a wavy edge - flames rising slowly and breaking sharply, leaning toward the point
+    blade, N, LEN, Y0 = [], 48, 22.0, 4.5
+    def cz(t): return 2.4 * t ** 3                       # its centre line
+    def hw(t): return 1.25 * (1 - t) ** 0.6 + 0.1         # half the core's depth, tapering
+    def th(t): return 0.85 * (1 - t) ** 0.5 + 0.18       # its thickness
+    def flame(t, k, amp):
+        w = (t * k) % 1.0
+        sh = (w / 0.8) ** 1.6 if w < 0.8 else (1 - w) / 0.2
+        return amp * sh
     for i in range(N):
-        a0, a1 = sweep * i / N, sweep * (i + 1) / N
-        pa = (z0 - R * (1 - math.cos(a0)), y0 + R * math.sin(a0))
-        pb = (z0 - R * (1 - math.cos(a1)), y0 + R * math.sin(a1))
-        L = math.hypot(pb[0] - pa[0], pb[1] - pa[1]) + 0.35   # a little overlap: no gaps at the joins
-        t = (i + 0.5) / N
-        wd = 3.0 * (1 - t) ** 0.8 + 0.3        # its depth (edge to spine), tapering
-        th = 1.4 * (1 - t) ** 0.7 + 0.2        # its thickness
-        ang = math.degrees((a0 + a1) / 2)      # leaning forward (-z) along the curve (+x rotation tips the top toward -z)
-        piv = [0, pa[1], pa[0]]
-        c1 = cube([-th / 2, pa[1] - 0.15, pa[0] - wd * 0.62], [th, L, wd], "fang", rot=[ang, 0, 0], pivot=piv)
-        c1["t"] = (i / N, (i + 1) / N)
-        fang.append(c1)
-    # the hooked point
-    end = (z0 - R * (1 - math.cos(sweep)), y0 + R * math.sin(sweep))
-    tip = cube([-0.12, end[1] - 0.1, end[0] - 0.5], [0.24, 1.4, 0.5], "fang", rot=[math.degrees(sweep) + 25, 0, 0], pivot=[0, end[1], end[0]])
-    tip["t"] = (0.97, 1.0)
-    fang.append(tip)
-    B.append(bone("fang", "root", [0, 4.6, 0.4], fang))
+        t0, t1 = i / N, (i + 1) / N
+        t = (t0 + t1) / 2
+        y = Y0 + LEN * t0
+        L = LEN / N + 0.12
+        ang = -math.degrees(math.atan((cz(t1) - cz(t0)) / (LEN / N)))
+        piv = [0, y, cz(t)]
+        c = cube([-th(t) / 2, y, cz(t) - hw(t)], [th(t), L, 2 * hw(t)], "blade", rot=[ang, 0, 0], pivot=piv)
+        c["t"] = (t0, t1)
+        blade.append(c)
+        taper = min(1.0, t / 0.08) * (1 - t) ** 0.55
+        fe = 0.35 + flame(t, 6.5, 1.25) * taper          # the edge (-z)
+        fs = 0.2 + flame(t + 0.07, 4.0, 1.1) * taper * (1 if t > 0.2 else 0)   # the spine (+z)
+        tw = th(t) * 0.55
+        blade.append(cube([-tw / 2, y, cz(t) - hw(t) - fe], [tw, L, fe + 0.05], "wave", rot=[ang, 0, 0], pivot=piv))
+        blade.append(cube([-tw / 2, y, cz(t) + hw(t) - 0.05], [tw, L, fs + 0.05], "wave", rot=[ang, 0, 0], pivot=piv))
+    tp = cube([-0.1, Y0 + LEN - 0.2, cz(1) - 0.15], [0.2, 1.4, 0.3], "wave", rot=[-12, 0, 0], pivot=[0, Y0 + LEN, cz(1)])
+    blade.append(tp)
+    # the spike off the spine by the hilt, swept back and down toward the grip
+    sp = arc(Y0 + 2.2, cz(0.1) + hw(0.1) + 0.1, 4.2, -100, -160, 4)
+    blade += chain(sp, 0.5, 0.25, 1.3, 0.35, ["wave"])
+    B.append(bone("blade", "root", [0, Y0, 0], blade))
+    end_y, end_z = Y0 + LEN + 1.2, cz(1)
     # embers drifting off the point (they slowly turn - animation "idle")
-    sparks = [cube([0.6 * math.cos(k * 2.1), end[1] - 2 - k * 1.6, end[0] + 0.6 * math.sin(k * 2.1)], [0.25, 0.25, 0.25], "ember") for k in range(3)]
-    B.append(bone("sparks", "fang", [0, end[1] - 3, end[0]], sparks))
+    sparks = [cube([0.6 * math.cos(k * 2.1), end_y - 3 - k * 1.6, end_z + 0.6 * math.sin(k * 2.1)], [0.25, 0.25, 0.25], "ember") for k in range(3)]
+    B.append(bone("sparks", "blade", [0, end_y - 4, end_z], sparks))
     return geo("dragon_fang", B)
 
 
@@ -233,9 +287,9 @@ def preview(out):
     an = anims()["animations"]["animation.dragon_fang.idle"]
     row = Image.new("RGB", (1600, 900))
     for i, (yaw, label) in enumerate(((90, "side"), (40, "three-quarter"), (-90, "other side"), (180, "edge on"))):
-        row.paste(gp.render(g, an, 0, img, glow, 450, yaw, label, ground=-7, scale_div=34), (i * 400 - 25, 0))
+        row.paste(gp.render(g, an, 0, img, glow, 450, yaw, label, ground=-8, scale_div=44), (i * 400 - 25, 0))
     row.paste(gp.render(g, an, 0, img, glow, 450, 60, "close: the guard", ground=-2, scale_div=16), (0, 450))
-    row.paste(gp.render(g, an, 0, img, glow, 450, 110, "close: the fang", ground=6, scale_div=20), (450, 450))
+    row.paste(gp.render(g, an, 0, img, glow, 450, 110, "close: the blade", ground=6, scale_div=20), (450, 450))
     row.paste(gp.render(g, an, 0, img, glow, 450, -60, "close: the pommel", ground=-7.5, scale_div=14), (900, 450))
     row.save(out)
     print("wrote", out)

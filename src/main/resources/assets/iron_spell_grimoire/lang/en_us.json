@@ -1288,5 +1288,7 @@
   "item.iron_spell_grimoire.duskglass_kris": "Duskglass Kris",
   "tooltip.iron_spell_grimoire.duskglass_kris.1": "Right-click - Phantom Edges: three ghost knives circle you for 10 s, striking anything within 3 blocks (20 s).",
   "item.iron_spell_grimoire.dragon_fang": "Dragon Fang",
-  "tooltip.iron_spell_grimoire.dragon_fang.1": "Right-click - Wyrmfang Lunge: dash up to 8 blocks through every foe in the way; each wound bursts a second later, and each foe cut heals you 5% (14 s)."
+  "tooltip.iron_spell_grimoire.dragon_fang.1": "Right-click - Wyrmfang Lunge: dash up to 8 blocks through every foe in the way; each wound bursts a second later, and each foe cut heals you 5% (14 s).",
+  "item.iron_spell_grimoire.gilded_thorn": "Gilded Thorn",
+  "tooltip.iron_spell_grimoire.gilded_thorn.1": "Right-click - Thornbite: a wide slash in front of you; every foe cut bleeds for 4 s (12 s)."
 }

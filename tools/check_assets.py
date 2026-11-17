@@ -172,12 +172,16 @@ for d, _, fs in os.walk(os.path.join(RES, 'sounds')):
 
 # ------------------------------------------------------------------ GeckoLib: animations, bones
 geo_bones, anim_names, anim_bones = {}, {}, {}
-for f in os.listdir(os.path.join(RES, 'geo')) if os.path.isdir(os.path.join(RES, 'geo')) else []:
-    g = json.load(open(os.path.join(RES, 'geo', f)))
+def _walk(sub, ext):   # every file under assets/<sub> (sub-folders too, e.g. geo/item/), as (name, path)
+    root = os.path.join(RES, sub)
+    for d, _, fs in os.walk(root) if os.path.isdir(root) else []:
+        for f in sorted(fs):
+            if f.endswith(ext): yield f, os.path.join(d, f)
+for f, fp in _walk('geo', '.geo.json'):
+    g = json.load(open(fp))
     geo_bones[f.split('.')[0]] = {b['name'] for b in g['minecraft:geometry'][0]['bones']}
-for f in os.listdir(os.path.join(RES, 'animations')) if os.path.isdir(os.path.join(RES, 'animations')) else []:
-    if not f.endswith('.animation.json'): continue
-    a = json.load(open(os.path.join(RES, 'animations', f)))
+for f, fp in _walk('animations', '.animation.json'):
+    a = json.load(open(fp))
     name = f.split('.')[0]
     anim_names[name] = set(a['animations'])
     for an, body in a['animations'].items():
