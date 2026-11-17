@@ -700,6 +700,79 @@ def brute_hive_arm():
     return 12.0
 
 
+# ------------------------------------------------------------------ the Seer's Eye Grimoire: the Divine Eye's spectral armour
+# Standing (Z up, the wearer's feet at the origin, facing -Y), about four blocks tall; drawn in violet light in the game.
+def divine_ribs():
+    """Stage one: a spine of light rising behind the wearer and great ribs closing round them."""
+    tube("spine", [(0, 9.0, 4.0, 1.6), (0, 10.0, 18.0, 1.5), (0, 9.5, 32.0, 1.4), (0, 8.0, 42.0, 1.2)], "bone", res=5, bev=3)
+    for k in range(6):
+        z = 16.0 + k * 4.4
+        w = 15.0 - abs(k - 2.5) * 1.6
+        for sd in (1, -1):
+            tube("rib%d%d" % (k, sd), [(0, 9.5, z, 0.9), (sd * w * 0.7, 6.0, z - 1.0, 0.85), (sd * w, -2.0, z - 2.5, 0.75), (sd * w * 0.75, -9.0, z - 3.5, 0.5),
+                                       (sd * w * 0.3, -11.5, z - 4.0, 0.2)], "bone", res=5, bev=2)
+    for sd in (1, -1):   # collarbones
+        tube("clav%d" % sd, [(0, 8.0, 42.0, 1.0), (sd * 9.0, 4.0, 44.0, 0.9), (sd * 16.0, 2.0, 43.0, 0.7)], "bone", res=4, bev=2)
+    return 48.0
+
+
+def divine_upper():
+    """Stage two: a horned helm with a slit eye of light, broad pauldrons, plated chest, and two great arms."""
+    bm = bmesh.new()   # the helm
+    bmesh.ops.create_uvsphere(bm, u_segments=14, v_segments=10, radius=1.0)
+    bmesh.ops.scale(bm, vec=(7.0, 7.5, 8.5), verts=bm.verts)
+    bmesh.ops.translate(bm, vec=(0, 2.0, 52.0), verts=bm.verts)
+    gt.new_obj("helm", bm, REG["chitin"])
+    bm = bmesh.new()   # the slit eye
+    bmesh.ops.create_cube(bm, size=1.0)
+    bmesh.ops.scale(bm, vec=(9.0, 1.0, 1.4), verts=bm.verts)
+    bmesh.ops.translate(bm, vec=(0, -5.4, 53.0), verts=bm.verts)
+    GLOW.append(gt.new_obj("slit", bm, REG["eye"]))
+    for sd in (1, -1):
+        tube("horn%d" % sd, [(sd * 5.0, 2.0, 58.0, 1.6), (sd * 9.0, 4.0, 63.0, 1.2), (sd * 11.0, 8.0, 66.0, 0.6), (sd * 10.0, 12.0, 66.5, 0.05)], "bone", res=5, bev=2)
+        bm = bmesh.new()   # pauldrons
+        bmesh.ops.create_uvsphere(bm, u_segments=12, v_segments=8, radius=1.0)
+        bmesh.ops.scale(bm, vec=(7.0, 7.5, 4.5), verts=bm.verts)
+        bmesh.ops.translate(bm, vec=(sd * 17.0, 1.5, 44.0), verts=bm.verts)
+        gt.new_obj("paul%d" % sd, bm, REG["chitin"])
+        # the arm: upper arm out from the shoulder, forearm forward, a great hand
+        tube("uarm%d" % sd, [(sd * 18.0, 1.5, 42.0, 3.4), (sd * 21.0, 0.0, 32.0, 3.0), (sd * 21.5, -3.0, 24.0, 2.6)], "chitin", res=5, bev=3)
+        tube("farm%d" % sd, [(sd * 21.5, -3.0, 24.0, 2.6), (sd * 18.0, -12.0, 22.0, 2.6), (sd * 13.0, -20.0, 22.0, 2.2)], "chitin", res=5, bev=3)
+        bm = bmesh.new()
+        bmesh.ops.create_uvsphere(bm, u_segments=10, v_segments=7, radius=3.2)
+        bmesh.ops.translate(bm, vec=(sd * 12.0, -22.0, 22.0), verts=bm.verts)
+        gt.new_obj("hand%d" % sd, bm, REG["chitin"])
+    gt.box("chest", (0, -6.0, 36.0), (22.0, 3.0, 14.0), "chitin", bevel=1.2, segs=2)
+    return 66.0
+
+
+def divine_full():
+    """Stage three: the warrior complete - armoured waist and a skirt of plates trailing into mist, and a great blade
+    of light held in the right hand."""
+    gt.box("waist", (0, 1.0, 16.0), (20.0, 15.0, 5.0), "chitin", bevel=1.2, segs=2)
+    for k in range(7):   # the skirt of plates, trailing down
+        a = -1.2 + k * 0.4
+        bm = bmesh.new()
+        bmesh.ops.create_cube(bm, size=1.0)
+        bmesh.ops.scale(bm, vec=(5.0, 1.2, 12.0), verts=bm.verts)
+        bmesh.ops.translate(bm, vec=(0, -10.5, 8.0), verts=bm.verts)
+        bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Matrix.Rotation(a, 3, "Z"), verts=bm.verts)
+        bmesh.ops.translate(bm, vec=(0, 2.0, 0), verts=bm.verts)
+        gt.new_obj("skirt%d" % k, bm, REG["chitin"])
+    # the blade: held point-forward in the right hand (-X is the wearer's right here)
+    bl = tube("blade", [(-12.0, -22.0, 22.0, 3.0), (-12.0, -32.0, 24.0, 4.2), (-12.0, -50.0, 27.0, 3.8), (-12.0, -66.0, 30.0, 2.2), (-12.0, -76.0, 31.0, 0.05)],
+              "bone", res=6, bev=3)
+    bl.data.transform(Matrix.Translation((-12.0, 0, 0)) @ Matrix.Scale(0.3, 4, (1, 0, 0)) @ Matrix.Translation((12.0, 0, 0)))   # flat, edge up
+    gt.box("guard", (-12.0, -25.0, 22.5), (12.0, 2.0, 3.0), "chitin", bevel=0.5, segs=1)
+    return 74.0
+
+
+def divine_preview():
+    """All three stages at once, beside the figure (the game grows them in turn)."""
+    divine_ribs(); divine_upper(); divine_full()
+    return 74.0
+
+
 BODY = {"final_crest": head_crest, "final_carapace": carapace, "hide_spiked": spiked_body, "hide_smooth": smooth_body, "hide_plated": plated_body,
         "brute_base": brute_base_body, "brute_hunter": brute_hunter_body, "brute_brute": brute_brute_body, "brute_hive": brute_hive_body}
 LOOK_ARMS = {"hide_spiked_arm": spiked_arm, "hide_smooth_arm": smooth_arm, "hide_plated_arm": plated_arm,
@@ -709,8 +782,8 @@ PREVIEWS = {"look_spiked": look_preview(spiked_body, spiked_arm), "look_smooth":
             "pack_base": look_preview(brute_base_body, lambda: 0), "pack_hunter": look_preview(lambda: (brute_base_body(), brute_hunter_body()), brute_hunter_arm),
             "pack_brute": look_preview(lambda: (brute_base_body(), brute_brute_body()), brute_brute_arm),
             "pack_hive": look_preview(lambda: (brute_base_body(), brute_hive_body()), brute_hive_arm)}
-STANDING = {"hive_nest": hive_nest}   # drawn standing in the world (an entity): Z up, foot at the origin   # drawn on the head / body in game, not an arm
-TARGETS = {"final_form": 16000, "final_crest": 3000, "final_carapace": 4500, "hive_nest": 4500}
+STANDING = {"hive_nest": hive_nest, "divine_ribs": divine_ribs, "divine_upper": divine_upper, "divine_full": divine_full, "divine_preview": divine_preview}   # drawn standing in the world (an entity): Z up, foot at the origin   # drawn on the head / body in game, not an arm
+TARGETS = {"divine_ribs": 3000, "divine_upper": 4000, "divine_full": 2500, "divine_preview": 12000, "final_form": 16000, "final_crest": 3000, "final_carapace": 4500, "hive_nest": 4500}
 
 FORMS = {"reaper_edge": reaper_edge, "rending_talons": rending_talons, "spine_launcher": spine_launcher,
          "titan_fist": titan_fist, "bone_lance": bone_lance, "bulwark": bulwark, "whip_spear": whip_spear, "battering_ram": battering_ram,
@@ -757,8 +830,9 @@ def build(form, out_dir, with_dummy=False, game=False):
         if form in PREVIEWS:   # the hide's looks: the figure in the hide's red, with its near forearm
             gt.box("d_lower", (0, 0, -4.0), (ARM, ARM, 8.0), "dummy")
             for ob in gt.PARTS[mark:]: gt.fit_uv(ob, REG["flesh" if form.startswith("pack") else "redplate"])
-        if form in STANDING:   # the figure standing beside it (it's built hanging from its arm, so turned over)
-            for ob in gt.PARTS[mark:]: ob.data.transform(Matrix.Translation((14, 0, 12)) @ Matrix.Scale(-1, 4, (0, 0, 1)))
+        if form in STANDING or form == "divine_preview":   # the figure standing beside it (it's built hanging from its arm, so turned over)
+            off = (-6, 0, 12) if form.startswith("divine") else (14, 0, 12)   # inside the armour, where its wearer stands
+            for ob in gt.PARTS[mark:]: ob.data.transform(Matrix.Translation(off) @ Matrix.Scale(-1, 4, (0, 0, 1)))
     image = bpy.data.images.load(tex)
     def material(name, glow):
         m = bpy.data.materials.new(name); m.use_nodes = True
@@ -771,7 +845,11 @@ def build(form, out_dir, with_dummy=False, game=False):
         else: nt.links.new(img.outputs["Color"], bsdf.inputs["Base Color"])
         return m
     glow_m, plain_m = material(form + "_glow", True), material(form, False)
-    for ob in gt.PARTS: ob.data.materials.append(glow_m if ob in GLOW else plain_m)
+    grey = None
+    if form.startswith("divine"):   # keep the figure plain grey (the armour is turned to light below)
+        grey = bpy.data.materials.new("dummy_grey"); grey.use_nodes = True
+        grey.node_tree.nodes.get("Principled BSDF").inputs["Base Color"].default_value = (0.35, 0.36, 0.4, 1)
+    for ob in gt.PARTS: ob.data.materials.append(grey if grey and ob.name.startswith("d_") else glow_m if ob in GLOW else plain_m)
     bpy.ops.object.select_all(action="DESELECT")
     for ob in gt.PARTS: ob.select_set(True)
     bpy.context.view_layer.objects.active = gt.PARTS[0]
@@ -803,17 +881,25 @@ def render_sheet(out_dir, only=None):
         sc = bpy.context.scene
         sc.render.engine = "CYCLES"; sc.cycles.samples = 24; sc.cycles.device = "CPU"
         sc.view_settings.view_transform = "Standard"
-        wide = form == "final_form" or form in STANDING or form in PREVIEWS   # the whole figure, not just an arm
+        wide = form == "final_form" or form in STANDING or form in PREVIEWS or form == "divine_preview"   # the whole figure, not just an arm
         sc.render.resolution_x, sc.render.resolution_y = (760 if wide else 420), 700
         world = bpy.data.worlds.new("w"); sc.world = world; world.use_nodes = True
         world.node_tree.nodes["Background"].inputs[0].default_value = (0.03, 0.035, 0.06, 1)
         for name, rot, energy in (("key", (math.radians(50), 0, math.radians(-35)), 4.0), ("fill", (math.radians(70), 0, math.radians(150)), 1.6)):
             L = bpy.data.lights.new(name, "SUN"); L.energy = energy
             o = bpy.data.objects.new(name, L); o.rotation_euler = rot; sc.collection.objects.link(o)
-        cam = bpy.data.cameras.new("cam"); cam.type = "ORTHO"; cam.ortho_scale = 66 if wide else 62
+        cam = bpy.data.cameras.new("cam"); cam.type = "ORTHO"; cam.ortho_scale = 175 if form.startswith("divine") else 66 if wide else 62
         co = bpy.data.objects.new("cam", cam); sc.collection.objects.link(co); sc.camera = co
         zc = 4.0
-        standing = form in STANDING
+        standing = form in STANDING or form == "divine_preview"
+        if form.startswith("divine"):   # spectral: violet light, see-through
+            vm = bpy.data.materials.new("spectral"); vm.use_nodes = True
+            nt = vm.node_tree; bsdf = nt.nodes.get("Principled BSDF")
+            bsdf.inputs["Base Color"].default_value = (0.35, 0.15, 0.8, 1)
+            bsdf.inputs["Emission Color"].default_value = (0.55, 0.3, 1.0, 1); bsdf.inputs["Emission Strength"].default_value = 1.5
+            bsdf.inputs["Alpha"].default_value = 0.55
+            for mslot in ob.material_slots:
+                if mslot.material and not mslot.material.name.startswith("dummy"): mslot.material = vm
         if standing: ob.location = (0, 0, -6)
         for label, yaw in (("front", 25), ("side", 100)):
             ob.rotation_euler = (math.radians(-35) if standing else 0, 0, math.radians(yaw)) if not standing else (0, 0, math.radians(yaw))
@@ -821,6 +907,9 @@ def render_sheet(out_dir, only=None):
             co.location = (4 if wide else 0, -60, zc - (2 if wide else 0))
             if not standing: co.rotation_euler = (math.radians(90), 0, 0)
             else: co.location = (8, -60, 26 if label == "front" else 12)
+            if form.startswith("divine"):   # big: straight on, the whole of it
+                co.location = (-10, -160, 34); co.rotation_euler = (math.radians(90), 0, 0)
+                ob.rotation_euler = (0, 0, math.radians(30 if label == "front" else 70))
             sc.render.filepath = os.path.join(out_dir, "form_%s_%s.png" % (form, label))
             bpy.ops.render.render(write_still=True)
             shots.append(sc.render.filepath)
@@ -838,7 +927,7 @@ def to_game(out_dir):
     """Every form into the mod as a bare OBJ model (no item: ParasiteArms draws it in the arm's own space - the OBJ's
     origin is the hand end of the forearm's centre, +Y on past the hand (the shoulder is at -12 px), -X toward the body, -Z the back of the arm)."""
     for form in FORMS:
-        if form == "final_form" or form in PREVIEWS: continue   # previews only
+        if form in ("final_form", "divine_preview") or form in PREVIEWS: continue   # previews only
         build(form, out_dir, game=True)
         for ext in (".obj", ".mtl"): os.replace(os.path.join(out_dir, form + ext), os.path.join(out_dir, "parasite_" + form + ext))
         objp = os.path.join(out_dir, "parasite_" + form + ".obj")   # and the OBJ's pointer to its materials

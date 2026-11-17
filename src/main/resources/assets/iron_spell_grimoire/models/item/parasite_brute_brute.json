@@ -1,0 +1,10 @@
+{
+ "loader": "forge:obj",
+ "model": "iron_spell_grimoire:models/item/parasite_brute_brute.obj",
+ "flip_v": true,
+ "textures": {
+  "particle": "iron_spell_grimoire:item/parasite_arms"
+ },
+ "display": {},
+ "render_type": "minecraft:cutout"
+}
