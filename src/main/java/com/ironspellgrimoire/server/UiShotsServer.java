@@ -395,6 +395,8 @@ public final class UiShotsServer {
             case "starve" -> ParasiteFx.testStarve(p);
             case "grapple" -> { faceForward(p); ParasiteFx.grapple(p); }
             case "burrow" -> ParasiteFx.burrow(p);
+            case "nest" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); p.connection.teleport(p.getX() - 3, p.getY(), p.getZ() - 3, -45, 20); }
+            case "worn" -> { ParasiteFx.testUnlockAll(p); if (!ParasiteFx.bulwark(p)) ParasiteFx.toggleBulwark(p); ParasiteFx.root(p).putFloat("limb", 18f); ParasiteFx.testEaten(p, 1600); }
             case "end" -> { ParasiteFx.testReset(p); }
             default -> {}
         }

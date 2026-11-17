@@ -300,7 +300,7 @@ public final class HunterAscension {
             t.putBoolean(DUE, true);
             p.displayClientMessage(Component.literal("Yesterday's trial was left undone - the Reckoning comes").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), true);
             AstaFx.later(200, () -> { if (p.isAlive() && !p.isRemoved()) startReckoning(p); });
-        } else p.displayClientMessage(Component.literal("A new Daily Trial - cast Status").withStyle(ChatFormatting.AQUA), true);
+        } else p.displayClientMessage(Component.literal("A new Daily Trial - open Status (G wheel)").withStyle(ChatFormatting.AQUA), true);
     }
 
     // ================================================================== the Reckoning

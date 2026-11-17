@@ -42,7 +42,8 @@ public final class ParasiteClient {
     public static int muts, artCd, finalCd, finalLeft, sated, cap = 100, artLeft;
     public static int[] slots = {-1, -1, -1};
     public static boolean awakened, starving;
-    public static int strain2, burrowLeft;
+    public static int strain2, burrowLeft, evoRank, eaten, limb, nestStored = -1;
+    public static boolean limbGone;
     public static int[] organs = new int[3], adapt = new int[5];
 
     static boolean wears(int m) { for (int s : slots) if (s == m) return true; return false; }
@@ -56,6 +57,7 @@ public final class ParasiteClient {
         if (x.length >= 22) {
             strain2 = x[12]; organs = new int[]{x[13], x[14], x[15]}; adapt = new int[]{x[16], x[17], x[18], x[19], x[20]}; burrowLeft = x[21] ;
         }
+        if (x.length >= 27) { evoRank = x[22]; eaten = x[23]; limb = x[24]; limbGone = x[25] == 1; nestStored = x[26]; }
         Minecraft mc = Minecraft.getInstance();
         if (p.open) EvolutionScreen.open();
         else if (mc.screen instanceof EvolutionScreen s) s.refresh();
@@ -196,10 +198,16 @@ public final class ParasiteClient {
         pl.setDeltaMovement(v.x + look.x * 0.15, v.y + up, v.z + look.z * 0.15);
     }
 
-    /** A click with the Spine Launcher fires at once. */
+    /** A click with the Spine Launcher fires at once; use, with the Bulwark or the Battering Ram out, parries. */
     @SubscribeEvent
     public static void click(InputEvent.InteractionKeyMappingTriggered e) {
         Minecraft mc = Minecraft.getInstance();
+        if (e.isUseItem() && mc.player != null && equipped && (bulwark || form == 7) && mc.player.getMainHandItem().isEmpty()
+                && (mc.hitResult == null || mc.hitResult.getType() != net.minecraft.world.phys.HitResult.Type.ENTITY)) {
+            send(18, 0);
+            mc.player.swing(net.minecraft.world.InteractionHand.OFF_HAND);
+            return;
+        }
         if (!e.isAttack() || mc.player == null || !equipped || !(form == 3 || (form == 5 && organs[2] == 2)) || !mc.player.getMainHandItem().isEmpty()) return;
         if (spineTicks <= 0) { send(4, 0); spineTicks = frenzied ? 5 : 8; }
     }
@@ -237,6 +245,12 @@ public final class ParasiteClient {
                 : form > 0 ? com.ironspellgrimoire.server.ParasiteFx.FORMS[Math.min(form, com.ironspellgrimoire.server.ParasiteFx.LAST_FORM)] : "";
         if (!tag.isEmpty()) g.drawString(mc.font, tag, x + w + 6, y - 1, frenzied ? 0xFFFF5040 : 0xFFD8C8C8, true);
         if (ep > 0) g.drawString(mc.font, ep + " EP", x + w + 6, fy - 2, 0xFFFFC060, true);
+        if (limb > 0 || limbGone) {   // the guarding arm's wear (Regenerating Limbs)
+            int lx = x + w + 6, ly = fy + 8;
+            g.fill(lx - 1, ly - 1, lx + 41, ly + 3, 0xE0100306);
+            g.fill(lx, ly, lx + (limbGone ? 0 : Math.round(40 * Math.min(1f, limb / 30f))), ly + 2, 0xFFD8D8DC);
+            if (limbGone) g.drawString(mc.font, "regrowing", lx + 44, ly - 3, 0xFFB0A0A0, true);
+        }
         if (artLeft > 0) g.drawString(mc.font, com.ironspellgrimoire.server.ParasiteFx.ARTS[Math.min(3, strain)] + " " + artLeft + "s", x, y - 30, 0xFFFFA060, true);
     }
 }

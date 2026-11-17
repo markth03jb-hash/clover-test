@@ -497,12 +497,65 @@ def final_form():
     return 30.0
 
 
-BODY = {"final_crest": head_crest, "final_carapace": carapace}   # drawn on the head / body in game, not an arm
-TARGETS = {"final_form": 16000, "final_crest": 3000, "final_carapace": 4500}
+def hive_nest():
+    """The Hive Nest (an entity, standing on the ground: built Z-up, its foot at the origin): a swollen mound of flesh
+    under arching bone ribs, red armour plates round its base, tendrils spreading out over the ground, glowing veins,
+    and a red eye pulsing at its crown."""
+    bm = bmesh.new()   # the mound
+    bmesh.ops.create_uvsphere(bm, u_segments=18, v_segments=10, radius=1.0)
+    bmesh.ops.scale(bm, vec=(11.0, 11.0, 9.0), verts=bm.verts)
+    for v in bm.verts:
+        if v.co.z < 0: v.co.z *= 0.12   # flat on the ground
+        v.co.x *= 1 + 0.06 * math.sin(v.co.z * 0.9 + v.co.y * 0.4); v.co.y *= 1 + 0.06 * math.cos(v.co.z * 0.8 + v.co.x * 0.5)   # lumpy
+    gt.new_obj("mound", bm, REG["flesh"])
+    for k in range(6):   # bone ribs arching over it
+        a = k * math.pi / 3 + 0.3
+        pts = [(math.cos(a) * 11.5, math.sin(a) * 11.5, 0.0, 1.0), (math.cos(a) * 10.5, math.sin(a) * 10.5, 6.0, 0.9),
+               (math.cos(a) * 6.5, math.sin(a) * 6.5, 10.5, 0.7), (math.cos(a) * 1.5, math.sin(a) * 1.5, 12.5, 0.35)]
+        tube("rib%d" % k, pts, "greyblade", res=4, bev=2)
+        gt.cone("ribspike%d" % k, (math.cos(a) * 9.6, math.sin(a) * 9.6, 7.5), (math.cos(a), math.sin(a), 0.6), 0.5, 2.6, region="greyblade")
+    for k in range(10):   # red plates round its base
+        a = k * math.pi / 5
+        bm = bmesh.new()
+        bmesh.ops.create_cube(bm, size=1.0)
+        bmesh.ops.scale(bm, vec=(1.4, 6.0, 3.6), verts=bm.verts)
+        bmesh.ops.bevel(bm, geom=bm.verts[:] + bm.edges[:], offset=0.4, segments=1, affect="EDGES", profile=0.5)
+        bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Matrix.Rotation(0.35, 3, "Y"), verts=bm.verts)
+        bmesh.ops.translate(bm, vec=(11.2, 0, 1.6), verts=bm.verts)
+        bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Matrix.Rotation(a, 3, "Z"), verts=bm.verts)
+        gt.new_obj("plate%d" % k, bm, REG["redplate"])
+    for k in range(8):   # tendrils spreading over the ground
+        a = k * math.pi / 4 + 0.2
+        pts = []
+        for i in range(6):
+            t = i / 5
+            r = 10.5 + 9.0 * t
+            pts.append((math.cos(a + 0.35 * math.sin(t * 3)) * r, math.sin(a + 0.35 * math.sin(t * 3)) * r, 0.6 - 0.3 * t, 1.1 - 0.95 * t))
+        tube("root%d" % k, pts, "flesh2", res=3, bev=2)
+    bm = bmesh.new()   # the eye at its crown, in a socket of chitin
+    bmesh.ops.create_uvsphere(bm, u_segments=12, v_segments=8, radius=2.6)
+    bmesh.ops.translate(bm, vec=(0, 0, 9.4), verts=bm.verts)
+    gt.new_obj("socket", bm, REG["chitin"])
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=12, v_segments=8, radius=2.0)
+    bmesh.ops.scale(bm, vec=(1, 1, 0.8), verts=bm.verts)
+    bmesh.ops.translate(bm, vec=(0, 0, 10.6), verts=bm.verts)
+    GLOW.append(gt.new_obj("eye", bm, REG["eye"]))
+    for k in range(7):   # glowing veins up its sides
+        a = k * math.pi * 2 / 7
+        pts = [(math.cos(a) * 10.8, math.sin(a) * 10.8, 1.0, 0.25), (math.cos(a + 0.25) * 9.4, math.sin(a + 0.25) * 9.4, 5.0, 0.22),
+               (math.cos(a + 0.4) * 6.0, math.sin(a + 0.4) * 6.0, 8.2, 0.18), (math.cos(a + 0.5) * 2.4, math.sin(a + 0.5) * 2.4, 9.6, 0.12)]
+        tube("nvein%d" % k, pts, "vein", res=2, bev=1, glow=True)
+    return 40.0
+
+
+BODY = {"final_crest": head_crest, "final_carapace": carapace}
+STANDING = {"hive_nest": hive_nest}   # drawn standing in the world (an entity): Z up, foot at the origin   # drawn on the head / body in game, not an arm
+TARGETS = {"final_form": 16000, "final_crest": 3000, "final_carapace": 4500, "hive_nest": 4500}
 
 FORMS = {"reaper_edge": reaper_edge, "rending_talons": rending_talons, "spine_launcher": spine_launcher,
          "titan_fist": titan_fist, "bone_lance": bone_lance, "bulwark": bulwark, "whip_spear": whip_spear, "battering_ram": battering_ram,
-         "final_form": final_form, **BODY}
+         "final_form": final_form, **BODY, **STANDING}
 
 
 TARGET = 3500   # triangles a form may have in game
@@ -539,7 +592,11 @@ def build(form, out_dir, with_dummy=False, game=False):
     tex = os.path.join(out_dir, TEX + ".png")
     length = FORMS[form]()
     slim(TARGETS.get(form, TARGET))
-    if with_dummy: dummy()
+    if with_dummy:
+        mark = len(gt.PARTS)
+        dummy()
+        if form in STANDING:   # the figure standing beside it (it's built hanging from its arm, so turned over)
+            for ob in gt.PARTS[mark:]: ob.data.transform(Matrix.Translation((14, 0, 12)) @ Matrix.Scale(-1, 4, (0, 0, 1)))
     image = bpy.data.images.load(tex)
     def material(name, glow):
         m = bpy.data.materials.new(name); m.use_nodes = True
@@ -558,7 +615,8 @@ def build(form, out_dir, with_dummy=False, game=False):
     bpy.context.view_layer.objects.active = gt.PARTS[0]
     bpy.ops.object.join()
     ob = bpy.context.view_layer.objects.active; ob.name = form
-    if game and form in BODY:   # drawn in the head's / body's own space: centred, the neck at 0, +y down, front -z
+    if game and form in STANDING: pass   # already in its own space
+    elif game and form in BODY:   # drawn in the head's / body's own space: centred, the neck at 0, +y down, front -z
         for v in ob.data.vertices: v.co = Vector((-(v.co.x - BX), -v.co.y, v.co.z + 12.0))
     elif game:   # the game draws it on the right arm: these are built on a left one, so mirrored (toward the body stays toward the body)
         ob.scale = (-1, 1, 1)
@@ -583,7 +641,7 @@ def render_sheet(out_dir, only=None):
         sc = bpy.context.scene
         sc.render.engine = "CYCLES"; sc.cycles.samples = 24; sc.cycles.device = "CPU"
         sc.view_settings.view_transform = "Standard"
-        wide = form == "final_form"   # the whole figure, not just an arm
+        wide = form == "final_form" or form in STANDING   # the whole figure, not just an arm
         sc.render.resolution_x, sc.render.resolution_y = (760 if wide else 420), 700
         world = bpy.data.worlds.new("w"); sc.world = world; world.use_nodes = True
         world.node_tree.nodes["Background"].inputs[0].default_value = (0.03, 0.035, 0.06, 1)
@@ -593,13 +651,18 @@ def render_sheet(out_dir, only=None):
         cam = bpy.data.cameras.new("cam"); cam.type = "ORTHO"; cam.ortho_scale = 66 if wide else 62
         co = bpy.data.objects.new("cam", cam); sc.collection.objects.link(co); sc.camera = co
         zc = 4.0
+        standing = form in STANDING
+        if standing: ob.location = (0, 0, -6)
         for label, yaw in (("front", 25), ("side", 100)):
-            ob.rotation_euler = (0, 0, math.radians(yaw))
-            co.location = (4 if wide else 0, -60, zc - (2 if wide else 0)); co.rotation_euler = (math.radians(90), 0, 0)
+            ob.rotation_euler = (math.radians(-35) if standing else 0, 0, math.radians(yaw)) if not standing else (0, 0, math.radians(yaw))
+            if standing: co.rotation_euler = (math.radians(65 if label == "front" else 80), 0, 0)
+            co.location = (4 if wide else 0, -60, zc - (2 if wide else 0))
+            if not standing: co.rotation_euler = (math.radians(90), 0, 0)
+            else: co.location = (8, -60, 26 if label == "front" else 12)
             sc.render.filepath = os.path.join(out_dir, "form_%s_%s.png" % (form, label))
             bpy.ops.render.render(write_still=True)
             shots.append(sc.render.filepath)
-    ims = [[Image.open(os.path.join(out_dir, "form_%s_%s.png" % (form, label))).convert("RGB").transpose(Image.ROTATE_180)   # turned over: the figure stands
+    ims = [[(lambda im: im if form in STANDING else im.transpose(Image.ROTATE_180))(Image.open(os.path.join(out_dir, "form_%s_%s.png" % (form, label))).convert("RGB"))   # turned over: the figure stands
             for label in ("front", "side")] for form in forms]
     sheet = Image.new("RGB", (sum(c[0].width for c in ims), 700 * 2), (8, 9, 15))
     x = 0

@@ -3,6 +3,7 @@ package com.ironspellgrimoire.server;
 import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.entity.AddonBoss;
+import com.ironspellgrimoire.entity.HiveNest;
 import com.ironspellgrimoire.entity.ShadowSoldier;
 import com.ironspellgrimoire.network.AddonNetwork;
 import com.ironspellgrimoire.network.FxPacket;
@@ -176,6 +177,10 @@ public final class ParasiteFx {
     private static final UUID ROOTED = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a90000a");
     private static final UUID M_HUNGER = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a90000b");
     private static final UUID M_POWER = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a90000c");
+    private static final UUID M_RANK_HP = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a90000e");
+    private static final UUID M_RANK_DMG = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a90000f");
+    private static final UUID STUN_MOVE = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a900010");
+    private static final UUID STUN_HIT = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a900011");
 
     /** Per arm form: {added attack damage, added attack speed (vanilla fist: 1 / 4), added reach}. */
     private static final double[][] FORM_STATS = {{0, 0, 0}, {8, -2.4, 1.0}, {4, -1.0, 0}, {2, -1.5, 0}, {11, -3.2, 0}, {6, -2.8, 2.5}, {6, -2.4, 3.5}, {10, -3.0, 0}};
@@ -234,6 +239,17 @@ public final class ParasiteFx {
     public static float adapted(Player p, int harm) { return root(p).getCompound("adapt").getFloat("r" + harm); }
     public static boolean burrowed(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("burrow"); }
     public static boolean pounced(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("pounce"); }
+    public static boolean parrying(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("parry"); }
+    /** The arm torn off and regrowing (Regenerating Limbs): nothing can change on it till then. */
+    public static boolean limbGone(ServerPlayer p) { return p.serverLevel().getGameTime() < root(p).getLong("limbCd"); }
+    public static float limbWear(Player p) { return root(p).getFloat("limb"); }
+    static final float LIMB_MAX = 30f;
+
+    // ------------------------------------------------------------------ Evolution Ranks: by everything ever eaten
+    public static final String[] RANKS = {"Larva", "Stalker", "Predator", "Apex", "Sovereign"};
+    public static final int[] RANK_AT = {0, 500, 1500, 4000, 10000};
+    public static float eaten(Player p) { return root(p).getFloat("eaten"); }
+    public static int evoRank(Player p) { int r = 0; for (int i = 0; i < RANK_AT.length; i++) if (eaten(p) >= RANK_AT[i]) r = i; return r; }
     /** Well fed: +5% damage a minute, up to +25%. */
     public static float satedBonus(Player p) { return Math.min(0.25f, root(p).getInt("sated") / 60 * 0.05f); }
 
@@ -256,14 +272,32 @@ public final class ParasiteFx {
         int gut = organ(p, GUT);
         if (gut == 1) amount *= 1.4f; else if (gut == 2) amount *= 0.9f;
         CompoundTag r = root(p);
+        int rank0 = evoRank(p);
+        r.putFloat("eaten", r.getFloat("eaten") + amount);
+        if (evoRank(p) > rank0) rankUp(p);
         float b = r.getFloat("bio") + amount, cap = cap(p);
         if (b > cap) {
-            if (!frenzied(p) && !finalForm(p)) r.putFloat("frenzy", Math.min(100, r.getFloat("frenzy") + (b - cap) * 1.5f));
+            HiveNest nest = nestOf(p);
+            if (nest != null && nest.stored() < HiveNest.MAX) nest.setStored(nest.stored() + (b - cap));   // the nest keeps the spill
+            else if (!frenzied(p) && !finalForm(p)) r.putFloat("frenzy", Math.min(100, r.getFloat("frenzy") + (b - cap) * 1.5f));
             b = cap;
         }
         r.putFloat("bio", b);
         if (r.getFloat("frenzy") >= 100 && !frenzied(p)) frenzyStart(p);
         dirty(p);
+    }
+
+    static void rankUp(ServerPlayer p) {
+        int k = evoRank(p);
+        ServerLevel sl = p.serverLevel();
+        FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, p.position().add(0, 1, 0), 0.4f, 4.0f, 0.12f, 14);
+        for (int i = 0; i < 16; i++) {
+            double a = i * Math.PI / 8;
+            spineFly(sl, p.position().add(0, 1.2, 0), new Vec3(Math.cos(a), 0.4, Math.sin(a)), 4, 1.2f, 0.8f);
+        }
+        sound(sl, p.position(), SoundEvents.PLAYER_LEVELUP, 1.0f, 0.6f);
+        p.displayClientMessage(Component.literal("Your strain grows: " + RANKS[k]).withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
+        applyStats(p);
     }
 
     static boolean spend(ServerPlayer p, float amount) {
@@ -686,6 +720,10 @@ public final class ParasiteFx {
         if (f < NONE || f > LAST_FORM) return;
         CompoundTag r = root(p);
         int cur = r.getInt("form");
+        if (!forced && limbGone(p)) {
+            p.displayClientMessage(Component.literal("Your arm is still regrowing").withStyle(ChatFormatting.GRAY), true);
+            return;
+        }
         if (!forced && frenzied(p) && f != cur) {
             p.displayClientMessage(Component.literal("The frenzy won't let go of your arm").withStyle(ChatFormatting.DARK_RED), true);
             return;
@@ -714,6 +752,7 @@ public final class ParasiteFx {
     public static void toggleBulwark(ServerPlayer p) {
         CompoundTag r = root(p);
         boolean on = !r.getBoolean("bulwark");
+        if (limbGone(p)) { p.displayClientMessage(Component.literal("Your arm is still regrowing").withStyle(ChatFormatting.GRAY), true); return; }
         if (on && rank(p, F_BULWARK) <= 0) { p.displayClientMessage(Component.literal("Evolve the Bulwark first").withStyle(ChatFormatting.GRAY), true); return; }
         if (on && !freeHand(p, false, "stashOff")) return;
         r.putBoolean("bulwark", on);
@@ -774,6 +813,9 @@ public final class ParasiteFx {
         setMod(p, Attributes.MOVEMENT_SPEED, M_MOVE, "Parasite stride", (hd ? -0.08 : 0) + 0.2 * hu + (heart == 2 ? 0.1 : 0) + (on && burrowed(p) ? 0.4 : 0) + (fr ? 0.25 : 0) + (colA ? -0.1 : 0) + (finA ? 0.3 : 0), AttributeModifier.Operation.MULTIPLY_BASE);
         setMod(p, Attributes.ATTACK_DAMAGE, M_FRENZY, "Frenzy", fr ? 0.4 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
         setMod(p, Attributes.MAX_HEALTH, M_HEALTH, "Brute strain", 6 * br + (heart == 1 ? 4 : 0), AttributeModifier.Operation.ADDITION);
+        int ek = on ? evoRank(p) : 0;
+        setMod(p, Attributes.MAX_HEALTH, M_RANK_HP, "Evolution rank", ek, AttributeModifier.Operation.ADDITION);
+        setMod(p, Attributes.ATTACK_DAMAGE, M_RANK_DMG, "Evolution rank", 0.03 * ek, AttributeModifier.Operation.MULTIPLY_TOTAL);
         setMod(p, Attributes.ATTACK_DAMAGE, M_HUNGER, "Hunger", on ? (starving(p) ? -0.15 : satedBonus(p)) : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
         boolean col = on && colossus(p), fin = on && finalForm(p);
         setMod(p, Attributes.ATTACK_DAMAGE, M_POWER, "Awakened", col || fin ? 0.5 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
@@ -802,7 +844,9 @@ public final class ParasiteFx {
             case 15 -> { if (rank(p, CLING) > 0) { root(p).putLong("pounce", p.serverLevel().getGameTime() + 40); root(p).putLong("glide", p.serverLevel().getGameTime() + 60); } }
             case 16 -> secondStrain(p, arg);
             case 17 -> growOrgan(p, arg / 10, arg % 10);
-            case 20, 21, 22, 23, 24 -> shadowCommand(p, action - 20);
+            case 18 -> parry(p);
+            case 19 -> growNest(p);
+            case 20, 21, 22, 23, 24, 25, 26 -> shadowCommand(p, action - 20);
             default -> { }
         }
     }
@@ -1148,6 +1192,85 @@ public final class ParasiteFx {
         sync(p, false);
     }
 
+    // ------------------------------------------------------------------ the Hive Nest
+    static final int NEST_COST = 50;
+
+    /** Your nest, if it's in the world and loaded where you are. */
+    static HiveNest nestOf(ServerPlayer p) {
+        CompoundTag r = root(p);
+        if (!r.hasUUID("nest")) return null;
+        Entity e = p.serverLevel().getEntity(r.getUUID("nest"));
+        return e instanceof HiveNest n && n.isAlive() ? n : null;
+    }
+
+    /** Grow a nest where you stand (50 biomass): one each - a new one takes the old one's place. */
+    public static void growNest(ServerPlayer p) {
+        if (!p.onGround()) { p.displayClientMessage(Component.literal("Stand on the ground to grow a nest").withStyle(ChatFormatting.GRAY), true); return; }
+        if (!spend(p, NEST_COST)) { p.displayClientMessage(Component.literal("Growing a nest takes " + NEST_COST + " biomass").withStyle(ChatFormatting.RED), true); return; }
+        ServerLevel sl = p.serverLevel();
+        HiveNest old = nestOf(p);
+        float kept = 0;
+        if (old != null) { kept = old.stored(); old.discard(); }
+        HiveNest n = com.ironspellgrimoire.registry.AddonEntities.HIVE_NEST.get().create(sl);
+        if (n == null) return;
+        n.moveTo(p.getX(), p.getY(), p.getZ(), p.getYRot(), 0);
+        n.setOwner(p.getUUID());
+        n.setStored(kept);
+        sl.addFreshEntity(n);
+        CompoundTag r = root(p);
+        r.putUUID("nest", n.getUUID());
+        r.putString("nestDim", sl.dimension().location().toString());
+        r.putDouble("nestX", n.getX()); r.putDouble("nestY", n.getY()); r.putDouble("nestZ", n.getZ());
+        groundSpines(sl, n.position(), 2.0f, 12, 12);
+        sound(sl, n.position(), SoundEvents.SLIME_SQUISH, 1.2f, 0.4f);
+        sound(sl, n.position(), SoundEvents.WARDEN_HEARTBEAT, 1.0f, 0.8f);
+        p.displayClientMessage(Component.literal("Your Hive Nest takes root").withStyle(ChatFormatting.RED), true);
+        dirty(p);
+    }
+
+    /** Every 2 s: a nest that's no longer its owner's withers; its owner, near it, is healed. */
+    public static void nestTick(HiveNest n) {
+        if (!(n.level() instanceof ServerLevel sl)) return;
+        if (n.owner() == null) { n.discard(); return; }
+        if (!(sl.getPlayerByUUID(n.owner()) instanceof ServerPlayer p)) return;
+        CompoundTag r = root(p);
+        if (!r.hasUUID("nest") || !r.getUUID("nest").equals(n.getUUID())) { n.discard(); return; }
+        if (p.distanceTo(n) < 6 && p.getHealth() < p.getMaxHealth()) {
+            p.heal(1f);
+            tendril(sl, n.position().add(0, 0.6, 0), mid(p), 6);
+        }
+    }
+
+    /** Its owner takes the stored biomass back (up to a full gut). */
+    public static void nestUsed(ServerPlayer p, HiveNest n) {
+        if (!p.getUUID().equals(n.owner())) { p.displayClientMessage(Component.literal("Someone else's nest").withStyle(ChatFormatting.GRAY), true); return; }
+        CompoundTag r = root(p);
+        float room = cap(p) - r.getFloat("bio"), take = Math.min(room, n.stored());
+        if (take <= 0) { p.displayClientMessage(Component.literal("Nest: " + Math.round(n.stored()) + " biomass stored").withStyle(ChatFormatting.RED), true); return; }
+        n.setStored(n.stored() - take);
+        r.putFloat("bio", r.getFloat("bio") + take);
+        tendril(p.serverLevel(), n.position().add(0, 0.6, 0), mid(p), 8);
+        sound(p.serverLevel(), n.position(), SoundEvents.GENERIC_DRINK, 1.0f, 0.6f);
+        p.displayClientMessage(Component.literal("+" + Math.round(take) + " biomass from your nest (" + Math.round(n.stored()) + " left)").withStyle(ChatFormatting.RED), true);
+        dirty(p);
+    }
+
+    /** Once a day, death brings you back at your nest. */
+    @SubscribeEvent
+    public static void onRespawn(net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent e) {
+        if (e.isEndConquered() || !(e.getEntity() instanceof ServerPlayer p)) return;
+        CompoundTag r = root(p);
+        if (!r.hasUUID("nest") || !r.contains("nestDim")) return;
+        long now = p.serverLevel().getGameTime();
+        if (now < r.getLong("nestRespawn")) return;
+        var key = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, new net.minecraft.resources.ResourceLocation(r.getString("nestDim")));
+        ServerLevel there = p.server.getLevel(key);
+        if (there == null) return;
+        r.putLong("nestRespawn", now + 24000);
+        p.teleportTo(there, r.getDouble("nestX"), r.getDouble("nestY") + 0.2, r.getDouble("nestZ"), p.getYRot(), p.getXRot());
+        p.displayClientMessage(Component.literal("You re-form at your Hive Nest").withStyle(ChatFormatting.RED), true);
+    }
+
     // ------------------------------------------------------------------ the shadow wheel (System Grimoire)
     static void shadowCommand(ServerPlayer p, int which) {
         var b = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
@@ -1179,6 +1302,8 @@ public final class ParasiteFx {
             }
             case 3 -> ShadowFx.gateOfShade(p, 0);   // sink into your shadow / rise again
             case 4 -> ShadowArmy.open(p);
+            case 5 -> HunterAscension.openStatus(p, 0);
+            case 6 -> HunterAscension.openMarket(p, 0);
             default -> { }
         }
     }
@@ -1216,6 +1341,8 @@ public final class ParasiteFx {
             applyStats(p); dirty(p);
         }
         if (swarm(p) && now % 10 == 0) swarmPulse(p);
+        if (r.contains("regrow") && !limbGone(p)) regrow(p);
+        if (now % 100 == 0 && r.getFloat("limb") > 0) { r.putFloat("limb", Math.max(0, r.getFloat("limb") - 2f)); dirty(p); }   // wear mends slowly
         if (r.getLong("burrow") != 0) {
             if (!burrowed(p)) erupt(p);
             else if (now % 3 == 0) {   // the mound of flesh moving under the ground
@@ -1296,7 +1423,9 @@ public final class ParasiteFx {
         if (t instanceof ServerPlayer p && equipped(p) && (bulwark(p) || form(p) == RAM) && !src.is(DamageTypeTags.BYPASSES_ARMOR) && src.getEntity() != null) {
             Vec3 from = src.getSourcePosition() != null ? src.getSourcePosition() : src.getEntity().position();
             boolean front = fromFront(p, from);
-            e.setAmount(e.getAmount() * bulwarkFactor(p, from));
+            float before = e.getAmount();
+            e.setAmount(before * bulwarkFactor(p, from));
+            wear(p, before - e.getAmount());
             if (front) {
                 FxSend.ring(p.serverLevel(), RED | FxPacket.KEEP_SHAPE, p.getEyePosition().add(p.getLookAngle().scale(0.6)).add(0, -0.4, 0), 0.1f, 0.8f, 0.05f, 6);
                 if (src.getDirectEntity() instanceof LivingEntity a && a != p && a.distanceTo(p) < 4) {   // the spines cut whoever struck it
@@ -1380,6 +1509,92 @@ public final class ParasiteFx {
         Vec3 to = from.subtract(p.position()).multiply(1, 0, 1);
         Vec3 look = p.getLookAngle().multiply(1, 0, 1);
         return to.lengthSqr() > 1e-4 && look.lengthSqr() > 1e-4 && to.normalize().dot(look.normalize()) > 0.2;
+    }
+
+    /** Regenerating Limbs: what the guarding arm soaked up wears it down; worn through, it tears off in shrapnel. */
+    static void wear(ServerPlayer p, float soaked) {
+        if (soaked <= 0) return;
+        CompoundTag r = root(p);
+        float w = r.getFloat("limb") + soaked;
+        if (w < LIMB_MAX) { r.putFloat("limb", w); dirty(p); return; }
+        r.putFloat("limb", 0);
+        ServerLevel sl = p.serverLevel();
+        Vec3 c = p.position().add(0, 1.2, 0);
+        boolean shield = r.getBoolean("bulwark");
+        int lost = shield ? -1 : form(p);
+        if (shield) r.putBoolean("bulwark", false); else r.putInt("form", NONE);
+        r.putInt("regrow", lost);
+        r.putLong("limbCd", sl.getGameTime() + 100);
+        for (int i = 0; i < 14; i++) {   // bone shrapnel
+            double a = i * Math.PI * 2 / 14;
+            spineFly(sl, c, new Vec3(Math.cos(a), 0.2 + 0.3 * Math.sin(a * 3), Math.sin(a)), 5, 1.6f, 0.6f);
+        }
+        FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, c, 0.2f, 2.5f, 0.1f, 10);
+        sound(sl, c, SoundEvents.SKELETON_HURT, 1.2f, 0.5f);
+        sound(sl, c, SoundEvents.SLIME_SQUISH, 1.0f, 0.4f);
+        for (LivingEntity t : Kit.near(sl, p, c, 4)) {
+            if (!foe(p, t)) continue;
+            t.invulnerableTime = 0;
+            t.hurt(p.damageSources().playerAttack(p), 6f * spineBoost(p));
+        }
+        p.displayClientMessage(Component.literal("Your arm tears off - it's regrowing").withStyle(ChatFormatting.DARK_RED), true);
+        applyStats(p);
+        dirty(p);
+    }
+
+    /** The torn arm grows back as it was (if that hand is still free). */
+    static void regrow(ServerPlayer p) {
+        CompoundTag r = root(p);
+        int f = r.getInt("regrow");
+        r.remove("regrow");
+        if (f == -1) { if (p.getOffhandItem().isEmpty()) r.putBoolean("bulwark", true); }
+        else if (f > NONE && p.getMainHandItem().isEmpty()) r.putInt("form", f);
+        sound(p.serverLevel(), p.position(), SoundEvents.SLIME_SQUISH, 0.9f, 0.6f);
+        FxSend.ring(p.serverLevel(), RED | FxPacket.KEEP_SHAPE, handPos(p), 0.1f, 0.8f, 0.06f, 8);
+        applyStats(p);
+        dirty(p);
+    }
+
+    /** Parry Shell: with the Bulwark or the Battering Ram out, use raises a parry for a moment. */
+    static void parry(ServerPlayer p) {
+        if (!(bulwark(p) || form(p) == RAM) || limbGone(p)) return;
+        CompoundTag r = root(p);
+        long now = p.serverLevel().getGameTime();
+        if (now < r.getLong("parryCd")) return;
+        r.putLong("parry", now + 7);
+        r.putLong("parryCd", now + 30);
+        sound(p.serverLevel(), p.position(), SoundEvents.SHIELD_BLOCK, 0.6f, 1.4f);
+    }
+
+    /** A blow (or a shot) into a raised parry: none of it lands, the striker is stunned, the shot flies back. */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onParry(net.minecraftforge.event.entity.living.LivingAttackEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || !equipped(p) || !parrying(p)) return;
+        DamageSource src = e.getSource();
+        if (src.getEntity() == null) return;
+        Vec3 from = src.getSourcePosition() != null ? src.getSourcePosition() : src.getEntity().position();
+        if (!fromFront(p, from)) return;
+        e.setCanceled(true);
+        ServerLevel sl = p.serverLevel();
+        Vec3 at = p.getEyePosition().add(p.getLookAngle().scale(0.8)).add(0, -0.3, 0);
+        FxSend.ring(sl, Fx.SILVER | FxPacket.KEEP_SHAPE, at, 0.2f, 1.4f, 0.08f, 8);
+        Fx.flash(sl, at, 1.2f);
+        sound(sl, at, SoundEvents.ANVIL_PLACE, 0.6f, 1.6f);
+        if (src.getDirectEntity() instanceof net.minecraft.world.entity.projectile.Projectile shot) {   // back the way it came
+            AstaFx.later(1, () -> {
+                if (!shot.isAlive()) return;
+                Vec3 back = src.getEntity().getEyePosition().subtract(shot.position());
+                shot.setOwner(p);
+                shot.setDeltaMovement(back.normalize().scale(1.8));
+                shot.hurtMarked = true;
+            });
+        }
+        if (src.getEntity() instanceof LivingEntity a && a != p && !(a instanceof Player)) {   // stunned: it can't move or hit for 2 s
+            TimedModifiers.apply(a, Attributes.MOVEMENT_SPEED, STUN_MOVE, "Stunned", -1.0, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
+            TimedModifiers.apply(a, Attributes.ATTACK_DAMAGE, STUN_HIT, "Stunned", -1.0, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
+            FxSend.ring(sl, Fx.SILVER | FxPacket.KEEP_SHAPE, a.position().add(0, a.getBbHeight() + 0.3, 0), 0.2f, 0.6f, 0.04f, 40);
+        }
+        root(p).putLong("parry", 0);
     }
 
     /** What share of a blow from {@code from} gets past the Bulwark (1 when it isn't out). */
@@ -1484,7 +1699,7 @@ public final class ParasiteFx {
                 Math.round(satedBonus(p) * 100), starving(p) ? 1 : 0, (int) cap(p), art,
                 strain2(p), organ(p, HEART), organ(p, GUT), organ(p, GLAND),
                 Math.round(adapted(p, 0)), Math.round(adapted(p, 1)), Math.round(adapted(p, 2)), Math.round(adapted(p, 3)), Math.round(adapted(p, 4)),
-                left(p, "burrow")};
+                left(p, "burrow"), evoRank(p), Math.round(eaten(p)), Math.round(limbWear(p)), limbGone(p) ? 1 : 0, nestOf(p) != null ? Math.round(nestOf(p).stored()) : -1};
     }
 
     // ================================================================== tests and screenshots
@@ -1515,5 +1730,6 @@ public final class ParasiteFx {
     public static void testCooldowns(ServerPlayer p) { root(p).putLong("artCd", 0); root(p).putLong("ffCd", 0); }
     public static void testSecond(ServerPlayer p, int s) { root(p).putInt("strain2", s); applyStats(p); dirty(p); }
     public static void testOrgans(ServerPlayer p, int heart, int gut, int gland) { root(p).putIntArray("organs", new int[]{heart, gut, gland}); applyStats(p); dirty(p); }
+    public static void testEaten(ServerPlayer p, float f) { root(p).putFloat("eaten", f); applyStats(p); dirty(p); }
     public static void testStarve(ServerPlayer p) { root(p).putFloat("bio", 0); root(p).putInt("empty", 30); applyStats(p); dirty(p); }
 }
