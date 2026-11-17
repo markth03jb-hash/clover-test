@@ -1300,7 +1300,7 @@
   "item.iron_spell_grimoire.parasite_grimoire": "Parasite Grimoire",
   "ui.iron_spell_grimoire.parasite_grimoire_only": "Only the Parasite Grimoire can cast this.",
   "key.iron_spell_grimoire.parasite_wheel": "Parasite forms / Shadow commands wheel",
-  "tooltip.iron_spell_grimoire.parasite_grimoire.passive": "Passive - Strain: press G for the wheel of arm forms (Reaper Edge, Rending Talons, Spine Launcher, Titan Fist, Bone Lance, the Bulwark and the Chitin Hide). Sprint-jumps leap high; evolve to run up walls, glide and slam down. Devour foes for biomass and evolution - but feed past a full gut and the strain goes into a Frenzy that eats you.",
+  "tooltip.iron_spell_grimoire.parasite_grimoire.passive": "Passive - Strain: press G for the wheel of arm forms (Reaper Edge, Rending Talons, Spine Launcher, Titan Fist, Bone Lance, the Whip-Spear and Battering Ram hybrids, the Bulwark and the Chitin Hide). Sprint-jumps leap high; evolve to run up walls, glide and slam down. Devour foes for biomass, evolution and rare mutations; keep the strain fed or it starves - and feed it past full and it goes into a Frenzy. Evolve everything and your strain awakens, with its own signature move and the Final Form.",
   "tooltip.iron_spell_grimoire.parasite_grimoire.desc": "Five pages of a strain that rewrites whoever carries it.",
   "tooltip.iron_spell_grimoire.parasite_grimoire.lore": "Its cover is warm. Sometimes it blinks.",
   "spell.iron_spell_grimoire.consume": "Parasite: Consume",
@@ -1312,5 +1312,6 @@
   "spell.iron_spell_grimoire.grasping_field": "Parasite: Grasping Field",
   "spell.iron_spell_grimoire.grasping_field.guide": "Costs 30 biomass. Tendrils and spines burst up over a field where you aim: everything in it is held, dragged inward and torn at for 4 s.",
   "spell.iron_spell_grimoire.spine_storm": "Parasite: Spine Storm",
-  "spell.iron_spell_grimoire.spine_storm.guide": "Costs 40 biomass. Your body splits into a storm of bone - three waves of spines shred everything within 8 blocks."
+  "spell.iron_spell_grimoire.spine_storm.guide": "Costs 40 biomass. Your body splits into a storm of bone - three waves of spines shred everything within 8 blocks.",
+  "key.iron_spell_grimoire.parasite_tendril": "Parasite tendril (sneak: burrow)"
 }

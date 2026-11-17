@@ -368,7 +368,7 @@ public final class UiShotsServer {
                     p.serverLevel().addFreshEntity(z);
                 }
             }
-            case "form1", "form2", "form3", "form4", "form5" -> { faceForward(p); if (ParasiteFx.bulwark(p)) ParasiteFx.toggleBulwark(p); ParasiteFx.setForm(p, w.charAt(4) - '0', true); }
+            case "form1", "form2", "form3", "form4", "form5", "form6", "form7" -> { faceForward(p); if (ParasiteFx.bulwark(p)) ParasiteFx.toggleBulwark(p); ParasiteFx.setForm(p, w.charAt(4) - '0', true); }
             case "bulwark" -> { if (ParasiteFx.form(p) != 0) ParasiteFx.setForm(p, 0, true); if (!ParasiteFx.bulwark(p)) ParasiteFx.toggleBulwark(p); }
             case "hide" -> { if (!ParasiteFx.hide(p)) ParasiteFx.toggleHide(p); ParasiteFx.setForm(p, ParasiteFx.TITAN, true); }
             case "swing" -> p.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
@@ -381,6 +381,20 @@ public final class UiShotsServer {
             case "evolution" -> { ParasiteFx.testSpent(p, 6); ParasiteFx.testStrain(p, 0); ParasiteFx.evolution(p, 0); }
             case "evolution_strain" -> { ParasiteFx.testStrain(p, ParasiteFx.HIVE); ParasiteFx.evolution(p, 0); }
             case "frenzy" -> ParasiteFx.testFrenzy(p);
+            case "awaken" -> {   // everything evolved, every mutation found (three worn), the Brute strain awakened
+                ParasiteFx.testUnlockAll(p); ParasiteFx.testMutations(p); ParasiteFx.testStrain(p, ParasiteFx.BRUTE); ParasiteFx.testFill(p); ParasiteFx.testCooldowns(p);
+                for (int m : new int[]{ParasiteFx.TWIN, ParasiteFx.BARBED, ParasiteFx.KEEN}) if (!ParasiteFx.wears(p, m)) ParasiteFx.handle(p, 10, m);
+            }
+                        case "colossus" -> { ParasiteFx.testStrain(p, ParasiteFx.BRUTE); ParasiteFx.testCooldowns(p); ParasiteFx.strainArt(p); }
+            case "swarm" -> { ParasiteFx.testStrain(p, ParasiteFx.HIVE); ParasiteFx.testCooldowns(p); ParasiteFx.strainArt(p); }
+            case "apex" -> { faceForward(p); ParasiteFx.testStrain(p, ParasiteFx.HUNTER); ParasiteFx.testCooldowns(p); ParasiteFx.strainArt(p); }
+            case "final" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.testCooldowns(p); ParasiteFx.finalFormStart(p); }
+            case "tempest", "impaler" -> { faceForward(p); ParasiteFx.testPath(p, ParasiteFx.U_STORM, w.equals("tempest") ? 1 : 2); ParasiteFx.testFill(p); ParasiteFx.spineStorm(p, 10f); }
+            case "maw", "vortex" -> { faceForward(p); ParasiteFx.testPath(p, ParasiteFx.U_FIELD, w.equals("maw") ? 1 : 2); ParasiteFx.testFill(p); ParasiteFx.graspingField(p, 10f); }
+            case "seeker", "bomb" -> { faceForward(p); ParasiteFx.testPath(p, ParasiteFx.U_BARRAGE, w.equals("seeker") ? 1 : 2); ParasiteFx.testFill(p); ParasiteFx.marrowBarrage(p, 10f); }
+            case "starve" -> ParasiteFx.testStarve(p);
+            case "grapple" -> { faceForward(p); ParasiteFx.grapple(p); }
+            case "burrow" -> ParasiteFx.burrow(p);
             case "end" -> { ParasiteFx.testReset(p); }
             default -> {}
         }

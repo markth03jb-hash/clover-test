@@ -16,22 +16,25 @@ public final class ParasitePackets {
         public final boolean equipped, frenzied, bulwark, hide, open;
         public final float biomass, frenzy;
         public final int ep, spent, devoured, form, strain;
-        public final int[] ranks;
+        public final int[] ranks, extra;
         public Sync(boolean equipped, float biomass, float frenzy, boolean frenzied, int ep, int spent, int devoured, int form, boolean bulwark,
-                    boolean hide, int strain, int[] ranks, boolean open) {
+                    boolean hide, int strain, int[] ranks, boolean open, int[] extra) {
             this.equipped = equipped; this.biomass = biomass; this.frenzy = frenzy; this.frenzied = frenzied; this.ep = ep; this.spent = spent;
             this.devoured = devoured; this.form = form; this.bulwark = bulwark; this.hide = hide; this.strain = strain; this.ranks = ranks; this.open = open;
+            this.extra = extra;
         }
         public static void encode(Sync p, FriendlyByteBuf b) {
             b.writeBoolean(p.equipped); b.writeFloat(p.biomass); b.writeFloat(p.frenzy); b.writeBoolean(p.frenzied);
             b.writeVarInt(p.ep); b.writeVarInt(p.spent); b.writeVarInt(p.devoured); b.writeVarInt(p.form);
             b.writeBoolean(p.bulwark); b.writeBoolean(p.hide); b.writeVarInt(p.strain); b.writeVarIntArray(p.ranks); b.writeBoolean(p.open);
+            b.writeVarInt(p.extra.length); for (int v : p.extra) b.writeInt(v);
         }
         public static Sync decode(FriendlyByteBuf b) {
             boolean eq = b.readBoolean(); float bio = b.readFloat(), fr = b.readFloat(); boolean frd = b.readBoolean();
             int ep = b.readVarInt(), spent = b.readVarInt(), dev = b.readVarInt(), form = b.readVarInt();
             boolean bw = b.readBoolean(), hd = b.readBoolean(); int st = b.readVarInt(); int[] rk = b.readVarIntArray(); boolean open = b.readBoolean();
-            return new Sync(eq, bio, fr, frd, ep, spent, dev, form, bw, hd, st, rk, open);
+            int[] ex = new int[b.readVarInt()]; for (int i = 0; i < ex.length; i++) ex[i] = b.readInt();
+            return new Sync(eq, bio, fr, frd, ep, spent, dev, form, bw, hd, st, rk, open, ex);
         }
         public static void handle(Sync p, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.ParasiteClient.sync(p)));
@@ -41,11 +44,13 @@ public final class ParasitePackets {
 
     /** Server -> everyone watching: what a player's arms and body have become (drawn by client/ParasiteArms). */
     public static class Look {
-        public final int id, form;
+        public final int id, form, flags;   // flags: 1 Colossus, 2 the Final Form
         public final boolean bulwark, hide, frenzied;
-        public Look(int id, int form, boolean bulwark, boolean hide, boolean frenzied) { this.id = id; this.form = form; this.bulwark = bulwark; this.hide = hide; this.frenzied = frenzied; }
-        public static void encode(Look p, FriendlyByteBuf b) { b.writeVarInt(p.id); b.writeVarInt(p.form); b.writeBoolean(p.bulwark); b.writeBoolean(p.hide); b.writeBoolean(p.frenzied); }
-        public static Look decode(FriendlyByteBuf b) { return new Look(b.readVarInt(), b.readVarInt(), b.readBoolean(), b.readBoolean(), b.readBoolean()); }
+        public Look(int id, int form, boolean bulwark, boolean hide, boolean frenzied, int flags) {
+            this.id = id; this.form = form; this.bulwark = bulwark; this.hide = hide; this.frenzied = frenzied; this.flags = flags;
+        }
+        public static void encode(Look p, FriendlyByteBuf b) { b.writeVarInt(p.id); b.writeVarInt(p.form); b.writeBoolean(p.bulwark); b.writeBoolean(p.hide); b.writeBoolean(p.frenzied); b.writeVarInt(p.flags); }
+        public static Look decode(FriendlyByteBuf b) { return new Look(b.readVarInt(), b.readVarInt(), b.readBoolean(), b.readBoolean(), b.readBoolean(), b.readVarInt()); }
         public static void handle(Look p, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.ParasiteArms.look(p)));
             ctx.get().setPacketHandled(true);

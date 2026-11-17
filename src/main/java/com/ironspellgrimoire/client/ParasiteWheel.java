@@ -25,15 +25,23 @@ public class ParasiteWheel extends Screen {
     private float open;
     private long lastNs;
 
-    private static final String[] P_NAMES = {"Reaper Edge", "Rending Talons", "Spine Launcher", "Titan Fist", "Bone Lance", "Bulwark", "Chitin Hide", "Retract"};
+    /** The parasite's slices: 0-6 the arm forms (form = slice + 1), then the Bulwark, the Hide, the strain's art, the
+     *  Final Form and Retract. Short labels on the wheel; the full name under it. */
+    private static final String[] P_NAMES = {"Reaper", "Talons", "Spines", "Titan", "Lance", "Whip", "Ram", "Shield", "Hide", "Art", "Final", "Retract"};
+    private static final String[] P_FULL = {"Reaper Edge", "Rending Talons", "Spine Launcher", "Titan Fist", "Bone Lance", "Whip-Spear", "Battering Ram",
+            "Bulwark", "Chitin Hide", "Strain Art", "Final Form", "Retract"};
     private static final String[] P_DESC = {
             "A great hooked blade: heavy cuts that sweep all in front.",
             "Fast hooked claws: every cut bleeds.",
             "A bone barrel: attack to fire spines.",
             "A huge armoured fist: slow, crushing, a shockwave.",
             "A long bone spike: long reach, it runs through.",
+            "A long hooking spine: drags foes in.",
+            "A blunt ram: guards you, and sprinting rams them.",
             "Your other arm: a spined shield.",
             "Armour plates over your body (eats biomass).",
+            "Your awakened strain's signature move.",
+            "30 s as the strain itself (100 biomass).",
             "Your arms go back to normal."};
     private static final String[] S_NAMES = {"Hunt", "Rally", "Stand Down", "Sink / Rise", "Army"};
     private static final String[] S_DESC = {
@@ -53,17 +61,23 @@ public class ParasiteWheel extends Screen {
         return switch (i) {
             case 2 -> ParasiteClient.rank(4) > 0;
             case 4 -> ParasiteClient.rank(5) > 0;
-            case 5 -> ParasiteClient.rank(6) > 0;
-            case 6 -> ParasiteClient.rank(7) > 0;
+            case 5 -> ParasiteClient.rank(13) > 0;
+            case 6 -> ParasiteClient.rank(14) > 0;
+            case 7 -> ParasiteClient.rank(6) > 0;
+            case 8 -> ParasiteClient.rank(7) > 0;
+            case 9 -> ParasiteClient.awakened && ParasiteClient.artCd == 0;
+            case 10 -> ParasiteClient.awakened && ParasiteClient.finalCd == 0 && ParasiteClient.biomass >= 100;
             default -> true;
         };
     }
 
     private boolean active(int i) {
         if (kind != 1) return false;
-        if (i < 5) return ParasiteClient.form == i + 1;
-        if (i == 5) return ParasiteClient.bulwark;
-        if (i == 6) return ParasiteClient.hide;
+        if (i < 7) return ParasiteClient.form == i + 1;
+        if (i == 7) return ParasiteClient.bulwark;
+        if (i == 8) return ParasiteClient.hide;
+        if (i == 9) return ParasiteClient.artLeft > 0;
+        if (i == 10) return ParasiteClient.finalLeft > 0;
         return false;
     }
 
@@ -78,13 +92,14 @@ public class ParasiteWheel extends Screen {
         float e = 1 - (1 - open) * (1 - open);
         String[] nm = names();
         int n = nm.length, cx = width / 2, cy = height / 2;
-        double r0 = 34 * e, r1 = 96 * e;
+        double R = Math.min(kind == 1 ? 112 : 96, height / 2.0 - 34);
+        double r0 = 34 * e, r1 = R * e;
         double dx = mx - cx, dy = my - cy;
         double ang = Math.atan2(dx, -dy);
         if (ang < 0) ang += Math.PI * 2;
         double dist = Math.sqrt(dx * dx + dy * dy);
         hover = dist > 20 ? (int) Math.floor((ang + Math.PI / n) / (Math.PI * 2 / n)) % n : -1;
-        if (forceHover >= 0) { hover = forceHover % n; open = 1F; e = 1F; r0 = 34; r1 = 96; }
+        if (forceHover >= 0) { hover = forceHover % n; open = 1F; e = 1F; r0 = 34; r1 = R; }
 
         boolean shadow = kind == 2;
         float[] base = shadow ? new float[]{0.03F, 0.04F, 0.09F} : new float[]{0.16F, 0.03F, 0.05F};
@@ -120,11 +135,11 @@ public class ParasiteWheel extends Screen {
 
         for (int i = 0; i < n; i++) {
             double a = i * step;
-            double rr = (r0 + r1) / 2 + (i == hover ? 4 : 0);
+            double rr = r0 + (r1 - r0) * 0.6 + (i == hover ? 4 : 0);
             int tx = (int) (cx + Math.sin(a) * rr), ty = (int) (cy - Math.cos(a) * rr);
             String s = nm[i];
             int col = !usable(i) ? 0xFF7A6A6A : active(i) ? 0xFFFFE070 : 0xFFF2E6E6;
-            if (font.width(s) > 54 && s.contains(" ")) {
+            if (font.width(s) > 50 && s.contains(" ")) {
                 String[] w = s.split(" ", 2);
                 g.drawCenteredString(font, w[0], tx, ty - 9, col);
                 g.drawCenteredString(font, w[1], tx, ty + 1, col);
@@ -136,9 +151,11 @@ public class ParasiteWheel extends Screen {
         if (kind == 1) g.drawCenteredString(font, "biomass", cx, cy + 2, 0xFFB08890);
         if (hover >= 0) {
             String d = (kind == 1 ? P_DESC : S_DESC)[hover];
-            if (!usable(hover)) d = "Locked - evolve it on the Evolution page.";
-            int y = cy + (int) (r1 + 18);
-            g.drawCenteredString(font, nm[hover], cx, y, 0xFFFFFFFF);
+            if (!usable(hover)) d = kind == 1 && hover == 9 ? (ParasiteClient.awakened ? "Ready in " + ParasiteClient.artCd + " s." : "Evolve every node to awaken your strain.")
+                    : kind == 1 && hover == 10 ? (!ParasiteClient.awakened ? "Needs an awakened strain." : ParasiteClient.finalCd > 0 ? "Ready in " + ParasiteClient.finalCd + " s." : "Needs 100 biomass.")
+                    : "Locked - evolve it on the Evolution page.";
+            int y = cy + (int) (r1 + 14);
+            g.drawCenteredString(font, (kind == 1 ? P_FULL : nm)[hover], cx, y, 0xFFFFFFFF);
             g.drawCenteredString(font, d, cx, y + 11, 0xFFC8B8B8);
         }
     }
@@ -148,9 +165,11 @@ public class ParasiteWheel extends Screen {
         onClose();
         if (h < 0) return;
         if (kind == 1) {
-            if (h < 5) ParasiteClient.send(1, h + 1);
-            else if (h == 5) ParasiteClient.send(2, 0);
-            else if (h == 6) ParasiteClient.send(3, 0);
+            if (h < 7) ParasiteClient.send(1, h + 1);
+            else if (h == 7) ParasiteClient.send(2, 0);
+            else if (h == 8) ParasiteClient.send(3, 0);
+            else if (h == 9) ParasiteClient.send(11, 0);
+            else if (h == 10) ParasiteClient.send(12, 0);
             else ParasiteClient.send(1, 0);
         } else ParasiteClient.send(20 + h, 0);
     }

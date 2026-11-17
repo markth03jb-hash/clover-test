@@ -118,9 +118,11 @@ lang = json.load(open(LP))
 lang['item.iron_spell_grimoire.parasite_grimoire'] = 'Parasite Grimoire'
 lang['ui.iron_spell_grimoire.parasite_grimoire_only'] = 'Only the Parasite Grimoire can cast this.'
 lang['key.iron_spell_grimoire.parasite_wheel'] = 'Parasite forms / Shadow commands wheel'
+lang['key.iron_spell_grimoire.parasite_tendril'] = 'Parasite tendril (sneak: burrow)'
 lang['tooltip.iron_spell_grimoire.parasite_grimoire.passive'] = ('Passive - Strain: press G for the wheel of arm forms (Reaper Edge, Rending Talons, Spine Launcher, Titan Fist, '
-    'Bone Lance, the Bulwark and the Chitin Hide). Sprint-jumps leap high; evolve to run up walls, glide and slam down. Devour foes for biomass and evolution - '
-    'but feed past a full gut and the strain goes into a Frenzy that eats you.')
+    'Bone Lance, the Whip-Spear and Battering Ram hybrids, the Bulwark and the Chitin Hide). Sprint-jumps leap high; evolve to run up walls, glide and slam down. '
+    'Devour foes for biomass, evolution and rare mutations; keep the strain fed or it starves - and feed it past full and it goes into a Frenzy. '
+    'Evolve everything and your strain awakens, with its own signature move and the Final Form.')
 lang['tooltip.iron_spell_grimoire.parasite_grimoire.desc'] = 'Five pages of a strain that rewrites whoever carries it.'
 lang['tooltip.iron_spell_grimoire.parasite_grimoire.lore'] = 'Its cover is warm. Sometimes it blinks.'
 for k, (title, guide) in {

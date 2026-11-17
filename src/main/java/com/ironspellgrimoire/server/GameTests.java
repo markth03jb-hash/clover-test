@@ -468,6 +468,81 @@ public final class GameTests {
                     ParasiteFx.testFrenzy(p);
                     if (!ParasiteFx.frenzied(p)) bad.add("a full Frenzy didn't start");
                 }
+                if (t == 22) {   // the hybrids need their parents; the Whip-Spear comes out once evolved
+                    ParasiteFx.testReset(p); ParasiteFx.testFill(p);
+                    ParasiteFx.handle(p, 7, ParasiteFx.F_WHIP);
+                    if (ParasiteFx.rank(p, ParasiteFx.F_WHIP) != 0) bad.add("the Whip-Spear evolved without the Bone Lance");
+                    ParasiteFx.handle(p, 7, ParasiteFx.F_LANCE);
+                    ParasiteFx.handle(p, 7, ParasiteFx.F_WHIP);
+                    if (ParasiteFx.rank(p, ParasiteFx.F_WHIP) != 1) bad.add("the Whip-Spear didn't evolve after the Bone Lance");
+                    ParasiteFx.setForm(p, ParasiteFx.WHIP, false);
+                    if (ParasiteFx.form(p) != ParasiteFx.WHIP) bad.add("the Whip-Spear didn't come out");
+                    ParasiteFx.setForm(p, ParasiteFx.NONE, false);
+                    // an ultimate's path, for good
+                    ParasiteFx.handle(p, 7, ParasiteFx.U_STORM + 200);
+                    ParasiteFx.handle(p, 7, ParasiteFx.U_STORM + 100);
+                    if (ParasiteFx.path(p, ParasiteFx.U_STORM) != 2) bad.add("Spine Storm's path is " + ParasiteFx.path(p, ParasiteFx.U_STORM) + ", not Impaler");
+                    // mutations: wearing Thick Gut lets biomass past 100; a fourth won't fit
+                    ParasiteFx.testMutations(p);
+                    for (int m : new int[]{ParasiteFx.THICK, ParasiteFx.ACID, ParasiteFx.ECHO, ParasiteFx.KEEN}) ParasiteFx.handle(p, 10, m);
+                    if (!ParasiteFx.wears(p, ParasiteFx.THICK) || ParasiteFx.wears(p, ParasiteFx.KEEN)) bad.add("mutation slots wrong: " + java.util.Arrays.toString(ParasiteFx.slots(p)));
+                    ParasiteFx.feed(p, 40);
+                    if (ParasiteFx.biomass(p) <= 100.5f) bad.add("Thick Gut didn't hold more than 100 (" + ParasiteFx.biomass(p) + ")");
+                    // the awakening: everything evolved and a strain settled
+                    ParasiteFx.testUnlockAll(p); ParasiteFx.testStrain(p, ParasiteFx.BRUTE); ParasiteFx.testCooldowns(p);
+                    if (!ParasiteFx.awakened(p)) bad.add("not awakened with every node evolved");
+                    ParasiteFx.strainArt(p);
+                    if (!ParasiteFx.colossus(p)) bad.add("Colossus didn't start");
+                    ParasiteFx.testFill(p);
+                    ParasiteFx.finalFormStart(p);
+                    if (!ParasiteFx.finalForm(p)) bad.add("the Final Form didn't start");
+                    if (ParasiteFx.biomass(p) > 50.5f) bad.add("the Final Form cost only " + (150 - ParasiteFx.biomass(p)) + " biomass");
+                    ParasiteFx.feed(p, 500);
+                    if (ParasiteFx.frenzied(p)) bad.add("the Final Form let a Frenzy start");
+                    ParasiteFx.testReset(p);
+                    // starving weakens
+                    ParasiteFx.testStarve(p);
+                    var dmg = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+                    if (dmg == null || dmg.getModifiers().stream().noneMatch(m -> m.getName().equals("Hunger") && m.getAmount() < 0)) bad.add("starving didn't weaken");
+                    // organs and the second strain: an Iron Heart and a grafted Brute add health; a Double Stomach feeds more
+                    ParasiteFx.testReset(p);
+                    double hp0 = p.getMaxHealth();
+                    ParasiteFx.testFill(p); ParasiteFx.handle(p, 17, 0 * 10 + 1);   // Iron Heart (4 EP)
+                    if (ParasiteFx.organ(p, ParasiteFx.HEART) != 1) bad.add("the Iron Heart didn't grow");
+                    if (p.getMaxHealth() < hp0 + 3.9) bad.add(String.format("the Iron Heart didn't add health (%.1f -> %.1f)", hp0, p.getMaxHealth()));
+                    ParasiteFx.testUnlockAll(p); ParasiteFx.testStrain(p, ParasiteFx.HUNTER);
+                    ParasiteFx.handle(p, 16, ParasiteFx.BRUTE);
+                    if (ParasiteFx.strain2(p) != ParasiteFx.BRUTE) bad.add("the Brute strain didn't graft");
+                    if (p.getMaxHealth() < hp0 + 6.9) bad.add(String.format("a grafted Brute didn't add half its health (%.1f -> %.1f)", hp0, p.getMaxHealth()));
+                    ParasiteFx.root(p).putFloat("bio", 0);
+                    ParasiteFx.handle(p, 17, 1 * 10 + 1);   // Double Stomach
+                    ParasiteFx.feed(p, 10);
+                    if (ParasiteFx.biomass(p) < 13.9f) bad.add("the Double Stomach didn't feed more (10 -> " + ParasiteFx.biomass(p) + ")");
+                    // adaptation: fire hurts less the more of it you've taken
+                    ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p);
+                    p.setHealth(p.getMaxHealth());
+                    float h0 = p.getHealth(); p.invulnerableTime = 0; p.hurt(p.damageSources().onFire(), 10f); float first = h0 - p.getHealth();
+                    for (int k = 0; k < 4; k++) { p.setHealth(p.getMaxHealth()); p.invulnerableTime = 0; p.hurt(p.damageSources().onFire(), 10f); }
+                    p.setHealth(p.getMaxHealth()); h0 = p.getHealth(); p.invulnerableTime = 0; p.hurt(p.damageSources().onFire(), 10f); float later = h0 - p.getHealth();
+                    if (ParasiteFx.adapted(p, 0) < 30) bad.add("adaptation to fire is only " + ParasiteFx.adapted(p, 0) + "%");
+                    else if (first > 0 && later >= first * 0.8f) bad.add(String.format("fire didn't hurt less after adapting (%.1f -> %.1f)", first, later));
+                    p.clearFire();
+                    // the tendril yanks a light foe in; burrowing hides and then erupts
+                    var light = net.minecraft.world.entity.EntityType.ZOMBIE.create(sl());
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    if (light != null) {
+                        light.moveTo(home.x, home.y, home.z + 8, 180, 0); light.setNoAi(true); sl().addFreshEntity(light);
+                        ParasiteFx.grapple(p);
+                        if (light.getDeltaMovement().z > -0.3) bad.add(String.format("the tendril didn't yank the zombie in (dz %.2f)", light.getDeltaMovement().z));
+                        light.discard();
+                    }
+                    ParasiteFx.burrow(p);
+                    if (!ParasiteFx.burrowed(p)) bad.add("Burrow didn't start (on the ground: " + p.onGround() + ")");
+                    ParasiteFx.burrow(p);
+                    if (ParasiteFx.burrowed(p)) bad.add("Burrow didn't end when pressed again");
+                    ParasiteFx.testReset(p);
+                    ParasiteFx.testFrenzy(p);   // back into the frenzy the next checks wait out
+                }
                 if (t > 20 && t < 290) p.setHealth(p.getMaxHealth());
                 if (t == 290) {
                     if (ParasiteFx.frenzied(p)) bad.add("the frenzy never ended");
@@ -1025,7 +1100,16 @@ public final class GameTests {
                 "evolution", (java.util.function.BiConsumer<ServerPlayer, Float>) ParasiteFx::evolution, "q",
                 "marrow_barrage", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.marrowBarrage(pl, pw); }, "",
                 "grasping_field", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.graspingField(pl, pw); }, "",
-                "spine_storm", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.spineStorm(pl, pw); }, "c"));
+                "spine_storm", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.spineStorm(pl, pw); }, "c",
+                "spine_storm: tempest", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_STORM, 1); ParasiteFx.testFill(pl); ParasiteFx.spineStorm(pl, pw); }, "c",
+                "spine_storm: impaler", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_STORM, 2); ParasiteFx.testFill(pl); ParasiteFx.spineStorm(pl, pw); }, "",
+                "grasping_field: maw", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_FIELD, 1); ParasiteFx.testFill(pl); ParasiteFx.graspingField(pl, pw); }, "",
+                "grasping_field: vortex", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_FIELD, 2); ParasiteFx.testFill(pl); ParasiteFx.graspingField(pl, pw); }, "",
+                "marrow_barrage: seeker", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_BARRAGE, 1); ParasiteFx.testFill(pl); ParasiteFx.marrowBarrage(pl, pw); }, "",
+                "marrow_barrage: bomb", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_BARRAGE, 2); ParasiteFx.testFill(pl); ParasiteFx.marrowBarrage(pl, pw); }, "",
+                "final form consume", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> {
+                    ParasiteFx.testUnlockAll(pl); ParasiteFx.testStrain(pl, ParasiteFx.BRUTE); ParasiteFx.testFill(pl); ParasiteFx.testCooldowns(pl);
+                    ParasiteFx.finalFormStart(pl); ParasiteFx.consume(pl, pw); }, "c"));
         queue.add(new ParasiteTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
