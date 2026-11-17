@@ -1,0 +1,42 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.dragon_fang.idle": {
+   "loop": true,
+   "animation_length": 4.0,
+   "bones": {
+    "sparks": {
+     "rotation": {
+      "0.0000": [
+       0,
+       0,
+       0
+      ],
+      "4.0000": [
+       0,
+       360,
+       0
+      ]
+     },
+     "position": {
+      "0.0000": [
+       0,
+       0,
+       0
+      ],
+      "2.0000": [
+       0,
+       0.6,
+       0
+      ],
+      "4.0000": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  }
+ }
+}

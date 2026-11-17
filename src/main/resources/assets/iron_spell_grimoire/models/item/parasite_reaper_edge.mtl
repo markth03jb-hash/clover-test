@@ -1,0 +1,9 @@
+newmtl reaper_edge
+Kd 1 1 1
+Ka 0 0 0
+map_Kd iron_spell_grimoire:item/parasite_arms
+
+newmtl reaper_edge_glow
+Kd 1 1 1
+Ka 1 1 1
+map_Kd iron_spell_grimoire:item/parasite_arms

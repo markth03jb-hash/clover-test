@@ -115,7 +115,23 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> OVERDRIVE_GRIMOIRE = ITEMS.register("overdrive_grimoire", com.ironspellgrimoire.item.OverdriveGrimoireItem::new);
     public static final RegistryObject<Item> DREAM_GRIMOIRE = ITEMS.register("dream_grimoire", com.ironspellgrimoire.item.DreamGrimoireItem::new);
     public static final RegistryObject<Item> SHADOW_GRIMOIRE = ITEMS.register("shadow_grimoire", com.ironspellgrimoire.item.ShadowGrimoireItem::new);
+    public static final RegistryObject<Item> PARASITE_GRIMOIRE = ITEMS.register("parasite_grimoire", com.ironspellgrimoire.item.ParasiteGrimoireItem::new);
     public static final RegistryObject<Item> HEARTLINE = ITEMS.register("heartline", com.ironspellgrimoire.item.HeartlineItem::new);
+    /** The Shadow Grimoire's Market wares (server/HunterAscension). */
+    public static final RegistryObject<Item> NIGHTFANG = ITEMS.register("nightfang", com.ironspellgrimoire.item.NightfangItem::new);
+    public static final RegistryObject<Item> MANA_TONIC = ITEMS.register("mana_tonic", () -> new com.ironspellgrimoire.item.ShadowTonicItem(false));
+    public static final RegistryObject<Item> SHADE_SALVE = ITEMS.register("shade_salve", () -> new com.ironspellgrimoire.item.ShadowTonicItem(true));
+    public static final RegistryObject<Item> DRAGON_FANG = ITEMS.register("dragon_fang", com.ironspellgrimoire.item.DragonFangItem::new);
+    public static final RegistryObject<Item> DUSKGLASS_KRIS = ITEMS.register("duskglass_kris", com.ironspellgrimoire.item.ShadowKnifeItem::new);
+    // the Market's Blender-built blades (item/MarketBladeItem): name, damage over diamond, speed, cooldown, tooltip colour, move
+    public static final RegistryObject<Item> GILDED_THORN = ITEMS.register("gilded_thorn", () -> new com.ironspellgrimoire.item.MarketBladeItem(
+            "gilded_thorn", 3, -2.3F, 240, net.minecraft.ChatFormatting.GOLD, com.ironspellgrimoire.server.ShadowFx::thornbite));
+    public static final RegistryObject<Item> BLOODREND = ITEMS.register("bloodrend", () -> new com.ironspellgrimoire.item.MarketBladeItem(
+            "bloodrend", 4, -2.4F, 240, net.minecraft.ChatFormatting.DARK_RED, com.ironspellgrimoire.server.ShadowFx::crimsonRend));
+    public static final RegistryObject<Item> ROSEWRATH = ITEMS.register("rosewrath", () -> new com.ironspellgrimoire.item.MarketBladeItem(
+            "rosewrath", 4, -2.3F, 240, net.minecraft.ChatFormatting.RED, com.ironspellgrimoire.server.ShadowFx::crimsonFracture));
+    public static final RegistryObject<Item> FROSTWING = ITEMS.register("frostwing", () -> new com.ironspellgrimoire.item.MarketBladeItem(
+            "frostwing", 6, -3.0F, 400, net.minecraft.ChatFormatting.AQUA, com.ironspellgrimoire.server.ShadowFx::sovereignsVerdict));
 
     /** Zenon's drops. */
     public static final RegistryObject<Item> PHYLACTERY = ITEMS.register("zenon_phylactery", com.ironspellgrimoire.item.PhylacteryItem::new);
@@ -229,7 +245,7 @@ public class AddonItemRegistry {
                 ItemStack space = new ItemStack(SPACE_GRIMOIRE.get());
                 ((IPresetSpellContainer) SPACE_GRIMOIRE.get()).initializeSpellContainer(space);
                 out.accept(space);
-                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, TIME_GRIMOIRE, LIGHT_GRIMOIRE, BLOOD_GRIMOIRE, GRAVITY_GRIMOIRE, SOUND_GRIMOIRE, INK_GRIMOIRE, ERROR_GRIMOIRE, TREASURE_GRIMOIRE, CHAIN_GRIMOIRE, HUNTER_GRIMOIRE, VOID_GRIMOIRE, GAMBLER_GRIMOIRE, TAROT_GRIMOIRE, ABYSS_GRIMOIRE, MECH_GRIMOIRE, WEATHER_GRIMOIRE, OVERDRIVE_GRIMOIRE, DREAM_GRIMOIRE, SHADOW_GRIMOIRE)) {
+                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, TIME_GRIMOIRE, LIGHT_GRIMOIRE, BLOOD_GRIMOIRE, GRAVITY_GRIMOIRE, SOUND_GRIMOIRE, INK_GRIMOIRE, ERROR_GRIMOIRE, TREASURE_GRIMOIRE, CHAIN_GRIMOIRE, HUNTER_GRIMOIRE, VOID_GRIMOIRE, GAMBLER_GRIMOIRE, TAROT_GRIMOIRE, ABYSS_GRIMOIRE, MECH_GRIMOIRE, WEATHER_GRIMOIRE, OVERDRIVE_GRIMOIRE, DREAM_GRIMOIRE, SHADOW_GRIMOIRE, PARASITE_GRIMOIRE)) {
                     ItemStack st = new ItemStack(g.get());
                     ((IPresetSpellContainer) g.get()).initializeSpellContainer(st);
                     out.accept(st);

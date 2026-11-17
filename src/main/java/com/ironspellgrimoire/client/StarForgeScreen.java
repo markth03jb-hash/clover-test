@@ -40,7 +40,17 @@ public class StarForgeScreen extends Screen {
     private int lx() { return x0(width) + 16; }
     private int rx() { return x0(width) + BW / 2 + 14; }
     private int top() { return y0(height) + 14; }
-    private int rowY(int i) { return top() + 16 + i * ROW; }
+    private int rowY(int i) { return top() + 16 + (i - scroll) * ROW; }
+    /** Rows that fit on the left page; a longer book (the Shadow Grimoire's 17) scrolls. */
+    private static final int VIS = 11;
+    private int scroll;
+
+    @Override
+    public boolean mouseScrolled(double mx, double my, double d) {
+        int max = Math.max(0, data.spells.size() - VIS);
+        scroll = Math.max(0, Math.min(max, scroll - (int) Math.signum(d)));
+        return true;
+    }
     private static final int SROW = 13, MROW = 17;
     private java.util.List<Component> tip;
     private int sigilY(int i) { return top() + 57 + i * SROW; }
@@ -53,7 +63,7 @@ public class StarForgeScreen extends Screen {
     public boolean mouseClicked(double mx, double my, int btn) {
         if (btn != 0) return super.mouseClicked(mx, my, btn);
         int lx = lx(), rx = rx(), t = top();
-        for (int i = 0; i < data.spells.size(); i++) {
+        for (int i = scroll; i < Math.min(data.spells.size(), scroll + VIS); i++) {
             StarForgePackets.Spell s = data.spells.get(i);
             if (!in(mx, my, lx + PW - 26, rowY(i) - 1, 26, 11)) continue;
             if (s.level() < StarForge.MAX_BOOST) { send(0, s.id()); return true; }
@@ -121,7 +131,12 @@ public class StarForgeScreen extends Screen {
         // left page: empower a spell
         tip = null;
         heading(g, font, "Empower (+10% each)", lx, PW, t);
-        for (int i = 0; i < data.spells.size(); i++) {
+        scroll = Math.max(0, Math.min(Math.max(0, data.spells.size() - VIS), scroll));
+        if (data.spells.size() > VIS) {   // more below / above: scroll
+            String more = (scroll > 0 ? "\u25B2 " : "") + (scroll + VIS < data.spells.size() ? "\u25BC " : "") + "scroll";
+            g.drawString(font, more, lx, rowY(scroll + VIS) + 2, INK_FAINT, false);
+        }
+        for (int i = scroll; i < Math.min(data.spells.size(), scroll + VIS); i++) {
             StarForgePackets.Spell s = data.spells.get(i);
             int y = rowY(i);
             String name = Component.translatable("spell.iron_spell_grimoire." + s.id()).getString();

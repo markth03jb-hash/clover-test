@@ -52,5 +52,10 @@ public class AddonNetwork {
         CHANNEL.registerMessage(13, ShadowPackets.Open.class, ShadowPackets.Open::encode, ShadowPackets.Open::decode, ShadowPackets.Open::handle);
         CHANNEL.registerMessage(14, ShadowPackets.Act.class, ShadowPackets.Act::encode, ShadowPackets.Act::decode, ShadowPackets.Act::handle);
         CHANNEL.registerMessage(15, ShadowPackets.Remnant.class, ShadowPackets.Remnant::encode, ShadowPackets.Remnant::decode, ShadowPackets.Remnant::handle);
+        CHANNEL.registerMessage(16, ShadowPackets.Status.class, ShadowPackets.Status::encode, ShadowPackets.Status::decode, ShadowPackets.Status::handle);
+        CHANNEL.registerMessage(17, ShadowPackets.Market.class, ShadowPackets.Market::encode, ShadowPackets.Market::decode, ShadowPackets.Market::handle);
+        CHANNEL.registerMessage(18, ParasitePackets.Sync.class, ParasitePackets.Sync::encode, ParasitePackets.Sync::decode, ParasitePackets.Sync::handle);
+        CHANNEL.registerMessage(19, ParasitePackets.Look.class, ParasitePackets.Look::encode, ParasitePackets.Look::decode, ParasitePackets.Look::handle);
+        CHANNEL.registerMessage(20, ParasitePackets.Act.class, ParasitePackets.Act::encode, ParasitePackets.Act::decode, ParasitePackets.Act::handle);
     }
 }

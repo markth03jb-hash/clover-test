@@ -1,0 +1,129 @@
+{
+ "loader": "forge:obj",
+ "model": "iron_spell_grimoire:models/item/frostwing.obj",
+ "flip_v": true,
+ "textures": {
+  "particle": "iron_spell_grimoire:item/frostwing"
+ },
+ "display": {
+  "thirdperson_righthand": {
+   "rotation": [
+    0,
+    -90,
+    10
+   ],
+   "translation": [
+    0,
+    -1.33,
+    1.44
+   ],
+   "scale": [
+    0.637,
+    0.637,
+    0.637
+   ]
+  },
+  "thirdperson_lefthand": {
+   "rotation": [
+    0,
+    90,
+    -10
+   ],
+   "translation": [
+    0,
+    -1.33,
+    1.44
+   ],
+   "scale": [
+    0.637,
+    0.637,
+    0.637
+   ]
+  },
+  "firstperson_righthand": {
+   "rotation": [
+    0,
+    -90,
+    -28
+   ],
+   "translation": [
+    0.5,
+    -0.87,
+    -0.35
+   ],
+   "scale": [
+    0.397,
+    0.397,
+    0.397
+   ]
+  },
+  "firstperson_lefthand": {
+   "rotation": [
+    0,
+    90,
+    28
+   ],
+   "translation": [
+    0.5,
+    -0.87,
+    -0.35
+   ],
+   "scale": [
+    0.397,
+    0.397,
+    0.397
+   ]
+  },
+  "gui": {
+   "rotation": [
+    0,
+    0,
+    -45
+   ],
+   "translation": [
+    -3.0,
+    -3.0,
+    0
+   ],
+   "scale": [
+    0.309,
+    0.309,
+    0.309
+   ]
+  },
+  "ground": {
+   "rotation": [
+    0,
+    90,
+    0
+   ],
+   "translation": [
+    0,
+    2,
+    0
+   ],
+   "scale": [
+    0.206,
+    0.206,
+    0.206
+   ]
+  },
+  "fixed": {
+   "rotation": [
+    0,
+    0,
+    -45
+   ],
+   "translation": [
+    -3.0,
+    -3.0,
+    0
+   ],
+   "scale": [
+    0.344,
+    0.344,
+    0.344
+   ]
+  }
+ }
+}

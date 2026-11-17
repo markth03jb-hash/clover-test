@@ -40,7 +40,15 @@ public class ShadowSoldier extends PathfinderMob {
     private static final EntityDataAccessor<String> KIND = SynchedEntityData.defineId(ShadowSoldier.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Integer> RANK = SynchedEntityData.defineId(ShadowSoldier.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> RISING = SynchedEntityData.defineId(ShadowSoldier.class, EntityDataSerializers.INT);
+    /** A Challenge (Shadow Army menu): the exclusive shadow in its living form, before it was ever raised - its own
+     *  colours, no master, fighting the one who challenged it. */
+    private static final EntityDataAccessor<Boolean> LIVING = SynchedEntityData.defineId(ShadowSoldier.class, EntityDataSerializers.BOOLEAN);
+    private UUID challenger;
+    private int challengeTicks;
+    private net.minecraft.server.level.ServerBossEvent bar;
     private int armyId, temporary, level = 1;
+    /** Stationed (army menu): it keeps watch here instead of following its master. */
+    public Vec3 station;
     public int hunting;   // Command: Hunt - ticks it hits harder
 
     public ShadowSoldier(EntityType<? extends ShadowSoldier> type, Level level) {
@@ -60,6 +68,7 @@ public class ShadowSoldier extends PathfinderMob {
         this.entityData.define(KIND, "minecraft:zombie");
         this.entityData.define(RANK, 0);
         this.entityData.define(RISING, 0);
+        this.entityData.define(LIVING, false);
     }
 
     public UUID ownerUUID() { return this.entityData.get(OWNER).orElse(null); }
@@ -69,6 +78,63 @@ public class ShadowSoldier extends PathfinderMob {
     public int temporary() { return temporary; }
     /** The tick it began to rise (for the client's rise out of the pool). */
     public int risingAt() { return this.entityData.get(RISING); }
+
+    public boolean living() { return this.entityData.get(LIVING); }
+
+    /** The army menu's model of a shadow (client only, never added to the world). */
+    public void preview(String kind, int rank, boolean living) {
+        this.entityData.set(KIND, kind);
+        this.entityData.set(RANK, rank);
+        this.entityData.set(LIVING, living);
+        this.entityData.set(RISING, 0);
+    }
+    public UUID challenger() { return challenger; }
+
+    /** Set it up as a Challenge: its living form, fighting {@code who}. */
+    public void setupLiving(ServerPlayer who, String kind, String title) {
+        this.entityData.set(LIVING, true);
+        this.entityData.set(KIND, kind);
+        this.challenger = who.getUUID();
+        this.entityData.set(RISING, this.tickCount);
+        setCustomName(Component.literal(title));
+        setCustomNameVisible(false);
+        double hp = this instanceof OathboundKnight ? 320 : 260, dmg = this instanceof OathboundKnight ? 13 : 11;
+        getAttribute(Attributes.MAX_HEALTH).setBaseValue(hp);
+        getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(dmg);
+        getAttribute(Attributes.ARMOR).setBaseValue(this instanceof OathboundKnight ? 14 : 8);
+        getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(0.7);
+        if (this instanceof ShadowRavener) getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.38);
+        setHealth((float) hp);
+        this.entityData.set(RANK, 2);
+        refreshDimensions();
+        bar = new net.minecraft.server.level.ServerBossEvent(Component.literal(title),
+                this instanceof OathboundKnight ? net.minecraft.world.BossEvent.BossBarColor.RED : net.minecraft.world.BossEvent.BossBarColor.YELLOW,
+                net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_10);
+        bar.addPlayer(who);
+        setTarget(who);
+    }
+
+    /** The challenge's own turn: hunt the challenger; if they fall, flee or wait too long, it withdraws. */
+    private void livingTick() {
+        challengeTicks++;
+        ServerPlayer c = challenger == null ? null : (ServerPlayer) level().getPlayerByUUID(challenger);
+        if (bar != null) bar.setProgress(Math.max(0, getHealth() / getMaxHealth()));
+        if (c == null || !c.isAlive() || c.distanceToSqr(this) > 48 * 48 || challengeTicks > 6000) {
+            if (c != null) c.displayClientMessage(Component.literal(getName().getString() + " withdraws - the challenge is lost").withStyle(net.minecraft.ChatFormatting.GRAY), true);
+            ShadowFx.sinkPool((ServerLevel) level(), position(), getBbWidth());
+            ShadowArmy.challengeOver(this);
+            discard();
+            return;
+        }
+        LivingEntity t = getTarget();
+        if (t == null || !t.isAlive() || (t != c && t.distanceToSqr(this) > 20 * 20)) setTarget(c);
+    }
+
+    @Override
+    public void remove(RemovalReason r) {
+        if (bar != null) bar.removeAllPlayers();
+        super.remove(r);
+    }
 
     public Player owner() {
         UUID u = ownerUUID();
@@ -130,6 +196,7 @@ public class ShadowSoldier extends PathfinderMob {
     public void tick() {
         super.tick();
         if (level().isClientSide) return;
+        if (living()) { livingTick(); return; }
         Player o = owner();
         if (o == null || !o.isAlive()) { if (tickCount > 40) discard(); return; }
         if (hunting > 0) hunting--;
@@ -171,12 +238,14 @@ public class ShadowSoldier extends PathfinderMob {
             ShadowFx.shadowHit((ServerLevel) level(), le, r);
         }
         swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        if (this instanceof software.bernie.geckolib.animatable.GeoEntity g) g.triggerAnim("attack", "attack");   // played once from the server - it can't stick
         return hit;
     }
 
     @Override
     public void die(DamageSource src) {
-        if (!level().isClientSide) { ShadowFx.sinkPool((ServerLevel) level(), position(), getBbWidth()); ShadowArmy.fell(this); }
+        if (!level().isClientSide && living()) { if (bar != null) bar.removeAllPlayers(); ShadowArmy.challengeWon(this); }
+        else if (!level().isClientSide) { ShadowFx.sinkPool((ServerLevel) level(), position(), getBbWidth()); ShadowArmy.fell(this); }
         super.die(src);
     }
 
@@ -187,22 +256,55 @@ public class ShadowSoldier extends PathfinderMob {
     @Override public boolean canBeLeashed(Player p) { return false; }
 
     /** Follow its master, keeping close; if left far behind it steps out of its master's shadow beside them. */
+    /** Keep its own place in a loose ring round its master - spread out round and behind them, a few blocks off,
+     *  each shadow on its own spot (by its army id) - and only look at its master once it has stopped there. */
     static class FollowMaster extends Goal {
         final ShadowSoldier s;
         FollowMaster(ShadowSoldier s) { this.s = s; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
-        @Override public boolean canUse() { Player o = s.owner(); return o != null && s.getTarget() == null && s.distanceToSqr(o) > 16; }
-        @Override public boolean canContinueToUse() { Player o = s.owner(); return o != null && s.getTarget() == null && s.distanceToSqr(o) > 6; }
+
+        /** Its spot: an arc behind and beside its master, three rings deep, turning with the way they face. */
+        Vec3 slot(Player o) {
+            int id = Math.max(0, s.armyId);
+            double ring = 3.5 + (id % 3) * 1.8;
+            double ang = Math.toRadians(o.getYRot()) + Math.PI * (0.5 + 1.0 * ((id * 0.618034) % 1.0));   // golden-ratio spread over the back half-circle and the flanks
+            return o.position().add(-Math.sin(ang) * ring, 0, Math.cos(ang) * ring);
+        }
+
+        @Override public boolean canUse() {
+            Player o = s.owner();
+            if (o == null || s.getTarget() != null) return false;
+            if (s.station != null) return s.distanceToSqr(s.station) > 4;
+            return s.distanceToSqr(slot(o)) > 9 || s.distanceToSqr(o) > 12 * 12;
+        }
+        @Override public boolean canContinueToUse() {
+            Player o = s.owner();
+            if (o == null || s.getTarget() != null) return false;
+            if (s.station != null) return s.distanceToSqr(s.station) > 2;
+            return s.distanceToSqr(slot(o)) > 1.5 * 1.5;
+        }
+        @Override public void stop() { s.getNavigation().stop(); }
         @Override public void tick() {
             Player o = s.owner();
             if (o == null) return;
-            s.getLookControl().setLookAt(o, 10, s.getMaxHeadXRot());
+            if (s.station != null) {   // back to its post
+                if (s.tickCount % 10 == 0) s.getNavigation().moveTo(s.station.x, s.station.y, s.station.z, 1.0);
+                return;
+            }
+            Vec3 at = slot(o);
             if (s.distanceToSqr(o) > 24 * 24) {
-                Vec3 at = o.position().add(o.getLookAngle().scale(-2));
                 s.teleportTo(at.x, o.getY(), at.z);
                 s.getNavigation().stop();
-            } else if (s.tickCount % 10 == 0) s.getNavigation().moveTo(o, 1.25);
+                return;
+            }
+            double far = s.distanceToSqr(o);
+            if (s.tickCount % 8 == 0 || s.getNavigation().isDone()) s.getNavigation().moveTo(at.x, at.y, at.z, far > 100 ? 1.35 : 1.1);
+            if (s.getNavigation().isDone()) s.getLookControl().setLookAt(o, 6, s.getMaxHeadXRot());   // only once it stands still
         }
     }
+
+    /** Idle at its spot: a slow glance round now and then, never a spin. */
+    @Override public int getMaxHeadYRot() { return 45; }
+    @Override public int getHeadRotSpeed() { return 6; }
 
     /** Fight whatever its master fights, or whatever attacks its master or it. */
     static class MasterFights extends Goal {
@@ -214,6 +316,10 @@ public class ShadowSoldier extends PathfinderMob {
             LivingEntity a = o.getLastHurtByMob(), b = o.getLastHurtMob(), c = s.getLastHurtByMob();
             for (LivingEntity e : new LivingEntity[]{b, a, c})
                 if (e != null && e.isAlive() && !s.isFriend(e) && e.distanceToSqr(s) < 28 * 28 && !(e instanceof Player pl && pl.isCreative())) return e;
+            if (s.station != null && s.tickCount % 20 == 0) {   // on watch: it turns on anything hostile that comes near its post
+                for (net.minecraft.world.entity.Mob m : s.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, s.getBoundingBox().inflate(10),
+                        m -> m instanceof net.minecraft.world.entity.monster.Enemy && m.isAlive() && !s.isFriend(m))) return m;
+            }
             return null;
         }
         @Override public boolean canUse() { return s.getTarget() == null && s.tickCount % 5 == 0 && pick() != null; }

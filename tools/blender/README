@@ -1,0 +1,5 @@
+Models built in Blender (run headless with Blender as a Python module), exported as OBJ for Forge's OBJ loader.
+
+  python3 -m venv bvenv && bvenv/bin/pip install bpy pillow
+  bvenv/bin/python tools/blender/gilded_thorn.py render /tmp/gt   # preview renders
+  bvenv/bin/python tools/blender/gilded_thorn.py game /tmp/gt     # write it into the mod's assets

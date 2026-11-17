@@ -16,8 +16,14 @@ make('unseen_hand', *SH, [('a', 'l', 3, 14, 3, 6), ('a', 'l', 6, 14, 6, 4), ('a'
 make('gate_of_shade', *SH, [('d', 'E', 1, 5, 14, 13), ('m', 'e', 1, 5, 14, 13), ('a', 'e', 4, 7, 11, 11), ('w', 'p', 7, 9)])
 make('command_hunt', *SH, [('m', 'e', 2, 2, 13, 13), ('a', 'l', 7, 0, 7, 4), ('a', 'l', 7, 11, 7, 15), ('a', 'l', 0, 7, 4, 7), ('a', 'l', 11, 7, 15, 7), ('w', 'p', 7, 7)])
 make('veil', *SH, [('d', 'E', 3, 2, 12, 14), ('a', 'a', 2, 1, 13, 15, 200, 340), ('m', 'p', 6, 6), ('m', 'p', 9, 6)])
-make('oathbound_knight', *SH, [('d', 'E', 4, 2, 11, 12), ('m', 'l', 4, 2, 2, 0), ('m', 'l', 11, 2, 13, 0), ('w', 'l', 5, 6, 7, 7), ('w', 'l', 10, 6, 8, 7), ('a', 'l', 7, 10, 7, 15)])
-make('ravener', *SH, [('d', 'E', 3, 3, 12, 13), ('a', 'l', 4, 2, 7, 13), ('a', 'l', 7, 1, 10, 13), ('a', 'l', 10, 2, 13, 12), ('w', 'p', 6, 5), ('w', 'p', 9, 5)])
+make('status', *SH, [('d', 'E', 2, 1, 13, 14), ('m', 'l', 4, 4, 11, 4), ('a', 'l', 4, 7, 9, 7), ('a', 'l', 4, 10, 11, 10), ('w', 'p', 12, 3)])
+make('market', *SH, [('d', 'E', 3, 6, 12, 14), ('m', 'e', 5, 2, 10, 7), ('a', 'l', 6, 9, 9, 9), ('w', 'p', 7, 11)])
+make('sovereigns_grip', *SH, [('m', 'e', 4, 3, 11, 9), ('a', 'l', 5, 9, 5, 14), ('a', 'l', 7, 9, 7, 15), ('a', 'l', 9, 9, 9, 14), ('w', 'p', 7, 5)])
+make('shadow_step', *SH, [('d', 'E', 0, 12, 6, 15), ('d', 'E', 9, 12, 15, 15), ('a', 'l', 3, 11, 12, 4), ('m', 'l', 12, 4, 12, 11), ('w', 'p', 12, 3)])
+make('dread_roar', *SH, [('m', 'e', 1, 1, 14, 14), ('a', 'e', 4, 4, 11, 11), ('d', 'E', 6, 6, 9, 9), ('w', 'p', 7, 7)])
+make('mantle_of_shades', *SH, [('d', 'E', 3, 2, 12, 14), ('m', 'l', 3, 6, 12, 6), ('a', 'l', 7, 6, 7, 13), ('w', 'p', 5, 4), ('w', 'p', 10, 4)])
+make('ranks_of_shade', *SH, [('m', 'e', 1, 1, 14, 14)] + [('d', 'E', x - 1, y - 2, x + 1, y + 2) for x, y in ((7, 2), (12, 7), (7, 12), (2, 7))] + [('w', 'p', 7, 7)])
+make('rally_of_the_fallen', *SH, [('d', 'E', 0, 12, 15, 15), ('a', 'l', 3, 12, 3, 5), ('a', 'l', 7, 12, 7, 2), ('a', 'l', 11, 12, 11, 5), ('w', 'p', 3, 4), ('w', 'p', 7, 1), ('w', 'p', 11, 4)])
 make('sovereigns_domain', *SH, [('m', 'e', 0, 9, 15, 15), ('a', 'l', 2, 11, 3, 6), ('a', 'l', 5, 11, 6, 4), ('a', 'l', 9, 11, 9, 3), ('a', 'l', 12, 11, 12, 6), ('w', 'p', 7, 12)])
 make('night_legion', *SH, [('d', 'E', 0, 10, 15, 15)] + [('m', 'E', x, 6 - (x % 3), x + 2, 10) for x in (1, 5, 9, 12)] + [('w', 'p', x + 1, 7 - (x % 3)) for x in (1, 5, 9, 12)])
 
@@ -72,16 +78,17 @@ json.dump(c, open(CT, 'w'), indent=2)
 
 LP = os.path.join(A_, 'lang/en_us.json')
 lang = json.load(open(LP))
-lang['item.iron_spell_grimoire.shadow_grimoire'] = 'Shadow Grimoire'
+lang['item.iron_spell_grimoire.shadow_grimoire'] = 'System Grimoire'
 lang['entity.iron_spell_grimoire.shadow_soldier'] = 'Shadow Soldier'
 lang['entity.iron_spell_grimoire.oathbound_knight'] = 'Oathbound Knight'
 lang['entity.iron_spell_grimoire.ravener'] = 'Ravener'
 lang['key.iron_spell_grimoire.shadow_army'] = 'Shadow Army menu'
-lang['ui.iron_spell_grimoire.shadow_grimoire_only'] = 'Only the Shadow Grimoire can cast this.'
+lang['ui.iron_spell_grimoire.shadow_grimoire_only'] = 'Only the System Grimoire can cast this.'
 lang['tooltip.iron_spell_grimoire.shadow_grimoire.passive'] = ('Passive - Remnants: what you slay while holding this grimoire leaves a remnant where it fell for 60 s - '
     'a black shadow of it in a dark pool, seen by you alone. Cast Rise on it to raise it as your shadow (3 tries; the stronger it was, the harder). '
-    'Your shadows level up from their own kills and rank up: Soldier, Elite, Knight, Captain, General. Open your army with V to equip, rank up, rename or release them.')
-lang['tooltip.iron_spell_grimoire.shadow_grimoire.desc'] = 'Eleven pages of black smoke and blue fire, and an army that never stays dead.'
+    'Your shadows level up from their own kills and rank up: Soldier, Elite, Knight, Captain, General. Open your army with V to equip, rank up, rename or release them. '
+    'Challenges (in the army menu): call out the living Oathbound Knight or Ravener, beat it, and raise it as an exclusive shadow - each with instincts of its own.')
+lang['tooltip.iron_spell_grimoire.shadow_grimoire.desc'] = 'Seventeen pages of black smoke and blue fire, and an army that never stays dead.'
 lang['tooltip.iron_spell_grimoire.shadow_grimoire.lore'] = 'Whatever falls before you rises again - for you.'
 for k, (title, guide) in {
  'rise': ('Rise', 'Raise the remnant you look at as your shadow - it climbs up out of its pool, eyes burning blue. 3 tries each; weak foes rise easily, strong ones rarely.'),
@@ -91,14 +98,37 @@ for k, (title, guide) in {
  'gate_of_shade': ('Gate of Shade', 'Sink every shadow at your side into your own shadow - or call them all out again.'),
  'command_hunt': ('Command: Hunt', 'Mark the foe you aim at: every shadow at your side turns on it, and its armour is torn down for 8 s.'),
  'veil': ('Veil', 'For 5 s you melt into shadow: foes lose sight of you, and your next blow lands 50% harder.'),
- 'oathbound_knight': ('Oathbound Knight', 'Call your exclusive shadow, the Oathbound Knight - a towering knight of black plate with a blue greatsword. It joins your army at the Knight rank and can rise to Sovereign\'s Hand. '
-     'Its own instincts: Oath Cleave - every 8 s in a fight its greatsword sweeps a wide arc before it, throwing foes back. Sworn Guard - when you fall below 40% health it steps out of your shadow at your side, draws every foe near onto itself and stands like a wall for 6 s.'),
- 'ravener': ('Ravener', 'Call your second exclusive shadow, the Ravener - a tall stalker of black shadow with burning eyes, swept horns, long taloned arms and a hooked tail. It joins your army at the Knight rank and can rise to Sovereign\'s Hand. '
-     'Its own instincts: Pounce - it leaps onto foes up to 14 blocks away, at once on anything that strikes you. Devour - whatever it kills heals it by a quarter. Frenzy - hurt below half, it shrieks and runs wild for 8 s, faster and harder-hitting.'),
+ 'status': ('Status', 'Open your Status: your hunter level and XP, your five stats (spend your points here), your Shade Marks and today\'s Daily Trial.'),
+ 'market': ('Market', 'Open the Market: spend Shade Marks on its blades (Nightfang, Dragon Fang, Duskglass Kris, Gilded Thorn, Bloodrend, Rosewrath and the Frostwing greatsword), Mana Tonics, Shade Salves, Remnant Lures, a stat reset or a Reckoning Key.'),
+ 'sovereigns_grip': ('Sovereign\'s Grip', 'Lift the foe you aim at and hold it where you look for 2.5 s - crouch to throw it early - then fling it along your aim; it takes damage when it lands, more the farther it flew. With no foe in sight, every dropped item within 12 blocks flies to you.'),
+ 'shadow_step': ('Shadow Step', 'Step out of the shadow you look at, however far away. With none in sight, step to a shadow keeping watch at its post (Station it in the army menu).'),
+ 'dread_roar': ('Dread Roar', 'A wave of dread rolls out 10 blocks: foes freeze for 2 s, weak ones flee for 6 s, and bosses hit 25% softer for 10 s.'),
+ 'mantle_of_shades': ('Mantle of Shades', 'Your three highest-ranked shadows at your side sink into you as armour for 30 s - more armour, toughness and strength the higher their ranks - then step back out.'),
+ 'ranks_of_shade': ('Ranks of Shade', 'Every shadow at your side steps out of your shadow into a ring round you. For 8 s they take 70% of the harm meant for you, split between them.'),
+ 'rally_of_the_fallen': ('Rally of the Fallen', 'Every fallen shadow rises again at once, and the shadows at your side are made whole and fight a rank stronger for 20 s - harder blows, more health, quicker feet.'),
  'sovereigns_domain': ('Sovereign\'s Domain', 'Mode, 60 s: your shadows hit 50% harder and move faster, and any that fall rise again after 3 s instead of 30.'),
  'night_legion': ('Night Legion', 'Your whole army - even the shadows not at your side - bursts out of the ground in ranks and charges ahead behind a tide of shadow. Surpassing Limits: a second wave.'),
 }.items():
     lang[f'spell.iron_spell_grimoire.{k}'] = f'Shadow: {title}'
     lang[f'spell.iron_spell_grimoire.{k}.guide'] = guide
+lang['item.iron_spell_grimoire.nightfang'] = 'Nightfang'
+lang['item.iron_spell_grimoire.mana_tonic'] = 'Mana Tonic'
+lang['item.iron_spell_grimoire.shade_salve'] = 'Shade Salve'
+lang['tooltip.iron_spell_grimoire.nightfang.1'] = 'Right-click - Thousand Cuts: blink between up to five foes, cutting each, and land back where you started (15 s).'
+lang['tooltip.iron_spell_grimoire.nightfang.2'] = 'Bought in the System Grimoire\'s Market.'
+lang['item.iron_spell_grimoire.duskglass_kris'] = 'Duskglass Kris'
+lang['item.iron_spell_grimoire.dragon_fang'] = 'Dragon Fang'
+lang['tooltip.iron_spell_grimoire.dragon_fang.1'] = 'Right-click - Wyrmfang Lunge: dash up to 8 blocks through every foe in the way; each wound bursts a second later, and each foe cut heals you 5% (14 s).'
+lang['item.iron_spell_grimoire.gilded_thorn'] = 'Gilded Thorn'
+lang['tooltip.iron_spell_grimoire.gilded_thorn.1'] = 'Right-click - Thornbite: a wide slash in front of you; every foe cut bleeds for 4 s (12 s).'
+lang['item.iron_spell_grimoire.bloodrend'] = 'Bloodrend'
+lang['tooltip.iron_spell_grimoire.bloodrend.1'] = 'Right-click - Crimson Rend: a crescent of blood flies 8 blocks forward through every foe; it cuts harder the more hurt you are, up to +60% (12 s).'
+lang['item.iron_spell_grimoire.rosewrath'] = 'Rosewrath'
+lang['tooltip.iron_spell_grimoire.rosewrath.1'] = 'Right-click - Crimson Fracture: glowing cracks race 10 blocks along the ground and split open under every foe they reach (12 s).'
+lang['item.iron_spell_grimoire.frostwing'] = 'Frostwing'
+lang['tooltip.iron_spell_grimoire.frostwing.1'] = "Right-click - Sovereign's Verdict: gather the blade's light for a second, then sweep it in a full circle - everything within 7 blocks takes triple damage and is thrown back (20 s)."
+lang['tooltip.iron_spell_grimoire.duskglass_kris.1'] = 'Right-click - Phantom Edges: three ghost knives circle you for 10 s, striking anything within 3 blocks (20 s).'
+lang['tooltip.iron_spell_grimoire.mana_tonic'] = 'Right-click: restores 150 mana at once.'
+lang['tooltip.iron_spell_grimoire.shade_salve'] = 'Right-click: heals 8 hearts over 4 seconds.'
 json.dump(lang, open(LP, 'w'), indent=2, ensure_ascii=False)
 print('shadow assets written')

@@ -388,6 +388,204 @@ public final class GameTests {
     }
 
     /** The Blood Grimoire's paths: every spell cast both ways (a mastered book) - nothing may throw, change the world or give effects. */
+    /** Hunter's Ascension (the Shadow Grimoire): levels and points, stats as attribute bonuses, the Daily Trial, the
+     *  Market, and a Reckoning that spawns its waves, cleans them up and breaks nothing. */
+    /** The Parasite Grimoire's strain: devouring, the arm forms (and the item they put away and give back), locked
+     *  forms, evolving, a Strain, the Bulwark, the frenzy and its end, and everything dropped when the book is. */
+    private static final class ParasiteTest extends Test {
+        ParasiteTest() { super("parasite: the strain"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{ParasiteFx.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        BlockState[] before;
+        net.minecraft.world.entity.monster.Zombie prey;
+        double baseHp;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get());
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+            ParasiteFx.testReset(p);
+            before = snapshot();
+        }
+        @Override boolean tick(int t) {
+            try {
+                if (t == 2) {   // a weakened zombie in front: devoured whole
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    prey = net.minecraft.world.entity.EntityType.ZOMBIE.create(sl());
+                    if (prey != null) {
+                        prey.moveTo(home.x, home.y, home.z + 2.5, 180, 0); prey.setNoAi(true);
+                        sl().addFreshEntity(prey);
+                        prey.setHealth(3);
+                    }
+                    ParasiteFx.consume(p, 8f);
+                }
+                if (t == 14) {
+                    if (prey != null && prey.isAlive()) { bad.add("Consume didn't devour a zombie at 3 health"); prey.discard(); }
+                    if (ParasiteFx.devoured(p) != 1) bad.add("devoured count is " + ParasiteFx.devoured(p));
+                    if (ParasiteFx.points(p) < 1) bad.add("no evolution point for devouring");
+                    if (ParasiteFx.biomass(p) <= 0) bad.add("no biomass for devouring");
+                }
+                if (t == 16) {   // an arm form puts the held item away, and gives it back
+                    p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.world.item.Items.STICK));
+                    ParasiteFx.setForm(p, ParasiteFx.REAPER, false);
+                    if (ParasiteFx.form(p) != ParasiteFx.REAPER) bad.add("Reaper Edge didn't take");
+                    if (!p.getMainHandItem().isEmpty()) bad.add("the hand still holds " + p.getMainHandItem());
+                    if (!p.getInventory().contains(new ItemStack(net.minecraft.world.item.Items.STICK))) bad.add("the held stick went missing");
+                    var dmg = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+                    if (dmg == null || dmg.getModifiers().stream().noneMatch(m -> m.getName().equals("Parasite arm"))) bad.add("no arm damage while a form is out");
+                    ParasiteFx.setForm(p, ParasiteFx.NONE, false);
+                    if (!p.getMainHandItem().is(net.minecraft.world.item.Items.STICK)) bad.add("the stick didn't come back to the hand (" + p.getMainHandItem() + ")");
+                    p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    ParasiteFx.setForm(p, ParasiteFx.SPINE, false);
+                    if (ParasiteFx.form(p) == ParasiteFx.SPINE) bad.add("the Spine Launcher came out before it was evolved");
+                }
+                if (t == 18) {   // evolving it
+                    ParasiteFx.testFill(p);
+                    ParasiteFx.handle(p, 7, ParasiteFx.F_SPINE);
+                    if (ParasiteFx.rank(p, ParasiteFx.F_SPINE) != 1) bad.add("buying the Spine Launcher didn't take");
+                    ParasiteFx.setForm(p, ParasiteFx.SPINE, false);
+                    if (ParasiteFx.form(p) != ParasiteFx.SPINE) bad.add("the evolved Spine Launcher didn't come out");
+                    ParasiteFx.setForm(p, ParasiteFx.NONE, false);
+                    for (int k = 0; k < 6; k++) ParasiteFx.handle(p, 7, ParasiteFx.LEAP + (k % 3));
+                    baseHp = p.getMaxHealth();
+                    ParasiteFx.handle(p, 8, ParasiteFx.BRUTE);
+                    if (ParasiteFx.strain(p) != ParasiteFx.BRUTE) bad.add("the Brute strain didn't settle (spent " + ParasiteFx.spent(p) + ")");
+                }
+                if (t == 20) {
+                    if (p.getMaxHealth() < baseHp + 5.9) bad.add(String.format("Brute didn't raise max health (%.1f -> %.1f)", baseHp, p.getMaxHealth()));
+                    ParasiteFx.handle(p, 8, ParasiteFx.HIVE);
+                    if (ParasiteFx.strain(p) != ParasiteFx.BRUTE) bad.add("a second Strain replaced the first");
+                    // the Bulwark: a blow from in front loses most of its weight
+                    ParasiteFx.handle(p, 7, ParasiteFx.F_BULWARK);
+                    ParasiteFx.toggleBulwark(p);
+                    if (!ParasiteFx.bulwark(p)) bad.add("the Bulwark didn't come out");
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    net.minecraft.world.phys.Vec3 front = new net.minecraft.world.phys.Vec3(home.x, home.y, home.z + 2), back = new net.minecraft.world.phys.Vec3(home.x, home.y, home.z - 2);
+                    float ff = ParasiteFx.bulwarkFactor(p, front), fb = ParasiteFx.bulwarkFactor(p, back);
+                    if (ff > 0.5f) bad.add("the Bulwark lets " + ff + " of a blow from the front through (Brute)");
+                    if (fb < 0.8f || fb >= 1f) bad.add("the Bulwark lets " + fb + " of a blow from behind through");
+                    ParasiteFx.toggleBulwark(p);
+                    p.setHealth(p.getMaxHealth());
+                    ParasiteFx.testFrenzy(p);
+                    if (!ParasiteFx.frenzied(p)) bad.add("a full Frenzy didn't start");
+                }
+                if (t > 20 && t < 290) p.setHealth(p.getMaxHealth());
+                if (t == 290) {
+                    if (ParasiteFx.frenzied(p)) bad.add("the frenzy never ended");
+                    if (ParasiteFx.biomass(p) > 50.5f) bad.add("biomass after the frenzy is " + ParasiteFx.biomass(p));
+                    ParasiteFx.setForm(p, ParasiteFx.TITAN, false);
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, ItemStack.EMPTY));
+                }
+                if (t == 294) {
+                    if (ParasiteFx.form(p) != ParasiteFx.NONE) bad.add("the arm form stayed out after the book was put away");
+                    var dmg = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+                    if (dmg != null && dmg.getModifiers().stream().anyMatch(m -> m.getName().equals("Parasite arm"))) bad.add("the arm's damage stayed after the book was put away");
+                    if (p.getMaxHealth() > baseHp + 0.1) bad.add("Brute's health stayed after the book was put away");
+                }
+            } catch (Throwable x) { bad.add("threw " + x); }
+            if (t < 296) return false;
+            String ch = changes(before);
+            if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+            ParasiteFx.testReset(p);
+            if (bad.isEmpty()) pass(name, "devour, forms, evolution, strain, bulwark, frenzy");
+            else fail(name, String.join("; ", bad));
+            return true;
+        }
+    }
+
+    private static final class HunterTest extends Test {
+        HunterTest() { super("shadow: hunter's ascension"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{HunterAscension.class, ShadowArmy.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        BlockState[] before;
+        double baseHp;
+        final java.util.Map<String, Float> knifeHp = new java.util.HashMap<>();
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.SHADOW_GRIMOIRE.get());
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+            HunterAscension.testReset(p);
+            before = snapshot();
+        }
+        @Override boolean tick(int t) {
+            p.setHealth(p.getMaxHealth());
+            try {
+                if (t == 2) {
+                    HunterAscension.start(p);
+                    baseHp = p.getMaxHealth();
+                    io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).setMana(0);
+                    HunterAscension.gainXp(p, HunterAscension.xpNext(1) + HunterAscension.xpNext(2));
+                    if (HunterAscension.level(p) != 3) bad.add("two levels of XP gave level " + HunterAscension.level(p));
+                    if (io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).getMana() < 50) bad.add("the Level-Up Surge didn't fill mana");
+                    var surge = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+                    if (surge == null || surge.getModifiers().stream().noneMatch(m -> m.getName().equals("Level-Up Surge"))) bad.add("no Level-Up Surge damage boost");
+                    int pts = HunterAscension.d(p).getInt(HunterAscension.PTS);
+                    if (pts != 6) bad.add("expected 6 points, had " + pts);
+                    for (int i = 0; i < 4; i++) HunterAscension.handle(p, 11, 2);   // four into Vitality
+                    if (HunterAscension.stat(p, 2) != 4) bad.add("Vitality is " + HunterAscension.stat(p, 2) + " after spending 4");
+                }
+                if (t == 30 && p.getMaxHealth() < baseHp + 1.9) bad.add(String.format("Vitality didn't raise max health (%.1f -> %.1f)", baseHp, p.getMaxHealth()));
+                if (t == 32) {
+                    for (int k = 0; k < 4; k++) HunterAscension.progress(p, k, 100000);
+                    if (!HunterAscension.d(p).getBoolean(HunterAscension.DONE)) bad.add("the Daily Trial didn't complete");
+                    int m = HunterAscension.marks(p);
+                    HunterAscension.handle(p, 13, 1);   // a Mana Tonic
+                    if (HunterAscension.marks(p) != m - 40) bad.add("buying a tonic took " + (m - HunterAscension.marks(p)) + " marks");
+                    if (!p.getInventory().contains(new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_TONIC.get()))) bad.add("no Mana Tonic in the inventory");
+                    HunterAscension.startReckoning(p);
+                }
+                if (t == 100) {   // the knives' moves: each must hurt the dummy
+                    for (String k : new String[]{"thousand_cuts", "wyrmfang_lunge", "phantom_edges", "thornbite", "crimson_rend", "crimson_fracture", "sovereigns_verdict"}) {
+                        ensureDummy();
+                        p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                        float hp0 = dummy.getHealth();
+                        boolean did = switch (k) {
+                            case "thousand_cuts" -> ShadowFx.thousandCuts(p);
+                            case "wyrmfang_lunge" -> ShadowFx.wyrmfangLunge(p);
+                            case "thornbite" -> ShadowFx.thornbite(p);
+                            case "crimson_rend" -> ShadowFx.crimsonRend(p);
+                            case "crimson_fracture" -> ShadowFx.crimsonFracture(p);
+                            case "sovereigns_verdict" -> ShadowFx.sovereignsVerdict(p);
+                            default -> ShadowFx.phantomEdges(p);
+                        };
+                        if (!did) bad.add(k + " did nothing");
+                        knifeHp.put(k, hp0);
+                    }
+                }
+                if (t == 140) {
+                    if (dummy != null && dummy.getHealth() >= 1000) bad.add("the knives' moves did no damage");
+                    int n = HunterAscension.testEndReckoning(p, true);
+                    if (n <= 0) bad.add("the Reckoning raised no mobs (" + n + ")");
+                    else if (!sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(32), m -> m.getPersistentData().getBoolean("isg_reckoning")).isEmpty())
+                        bad.add("the Reckoning's mobs were left behind");
+                }
+                if (t == 142) {   // Job Change: to level 40, the trial, passing it, choosing the Warlord
+                    baseHp = p.getMaxHealth();
+                    HunterAscension.testGrant(p, Math.max(0, HunterAscension.JOB_LEVEL - HunterAscension.level(p)), 0);
+                    if (HunterAscension.level(p) < HunterAscension.JOB_LEVEL) bad.add("couldn't reach level " + HunterAscension.JOB_LEVEL);
+                    HunterAscension.handle(p, 15, 3);
+                    if (HunterAscension.job(p) != 0) bad.add("chose a job without passing the trial");
+                    HunterAscension.handle(p, 14, 0);
+                    if (!HunterAscension.testInTrial(p)) bad.add("the Job Change Trial didn't start");
+                    HunterAscension.testEndReckoning(p, true);
+                    if (!HunterAscension.d(p).getBoolean(HunterAscension.JOB_READY)) bad.add("passing the trial didn't let you choose");
+                    HunterAscension.handle(p, 15, 3);
+                    if (HunterAscension.job(p) != 3) bad.add("choosing the Warlord gave job " + HunterAscension.job(p));
+                    HunterAscension.handle(p, 15, 1);
+                    if (HunterAscension.job(p) != 3) bad.add("the job could be changed again");
+                }
+                if (t == 146 && p.getMaxHealth() < baseHp + 7.9) bad.add(String.format("the Warlord's +4 hearts weren't applied (%.1f -> %.1f)", baseHp, p.getMaxHealth()));
+            } catch (Throwable x) { bad.add("threw " + x); }
+            if (t < 150) return false;
+            String ch = changes(before);
+            if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+            if (bad.isEmpty()) pass(name, "level " + HunterAscension.level(p) + ", stats applied, trial done, market and Reckoning work, level-up surge, job change");
+            else fail(name, String.join("; ", bad));
+            HunterAscension.testReset(p);
+            clearArea();
+            return true;
+        }
+    }
+
     private static final class PathTest extends Test {
         PathTest() { super("blood: evolution paths"); }
         @Override Class<?>[] roots() { return new Class<?>[]{BloodFx.class, BloodPaths.class}; }
@@ -811,10 +1009,24 @@ public final class GameTests {
                 "gate_of_shade", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::gateOfShade, "q",
                 "command_hunt", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::commandHunt, "",
                 "veil", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::veil, "q",
-                "oathbound_knight", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::oathboundKnight, "q",
-                "ravener", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::ravener, "q",
+                "ranks_of_shade", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::ranksOfShade, "q",
+                "status", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterAscension::openStatus, "q",
+                "market", (java.util.function.BiConsumer<ServerPlayer, Float>) HunterAscension::openMarket, "q",
+                "sovereigns_grip", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::sovereignsGrip, "",
+                "shadow_step", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::shadowStep, "q",
+                "dread_roar", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::dreadRoar, "q",
+                "mantle_of_shades", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::mantleOfShades, "q",
+                "rally_of_the_fallen", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::rallyOfTheFallen, "q",
                 "sovereigns_domain", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::sovereignsDomain, "q",
                 "night_legion", (java.util.function.BiConsumer<ServerPlayer, Float>) ShadowFx::nightLegion, ""));
+        queue.add(new HunterTest());
+        queue.add(new BookMovesTest("parasite", com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE::get, ParasiteFx.class,
+                "consume", (java.util.function.BiConsumer<ServerPlayer, Float>) ParasiteFx::consume, "c",
+                "evolution", (java.util.function.BiConsumer<ServerPlayer, Float>) ParasiteFx::evolution, "q",
+                "marrow_barrage", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.marrowBarrage(pl, pw); }, "",
+                "grasping_field", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.graspingField(pl, pw); }, "",
+                "spine_storm", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.spineStorm(pl, pw); }, "c"));
+        queue.add(new ParasiteTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

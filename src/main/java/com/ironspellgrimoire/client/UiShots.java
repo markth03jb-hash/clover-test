@@ -455,10 +455,43 @@ public final class UiShots {
         steps.add(new Step("shd_remnant", () -> { onServer(p -> UiShotsServer.element(p, "s:remnant")); }, 14, true));   // a remnant only you can see
         steps.add(new Step("shd_rise", () -> { onServer(p -> UiShotsServer.element(p, "s:rise")); }, 24, true));         // it climbs out as your shadow
         steps.add(new Step("shd_army", () -> { }, 30, true));                                                              // following at your side
-        steps.add(new Step("shd_knight", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:oathbound_knight")); }, 40, true));   // the Oathbound Knight rising
-        steps.add(new Step("shd_knight_idle", () -> { }, 30, true));
-        steps.add(new Step("shd_ravener", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:ravener")); }, 40, true));   // the Ravener rising
-        steps.add(new Step("shd_ravener_idle", () -> { }, 30, true));
+        steps.add(new Step("shd_challenge_knight", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:challenge_knight")); }, 30, true));   // the knight's living form answers (boss bar)
+        steps.add(new Step("shd_knight_beaten", () -> { mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "s:beat")); }, 24, true));   // beaten: its remnant
+        steps.add(new Step("shd_knight_arise", () -> { onServer(p -> UiShotsServer.element(p, "s:arise")); }, 40, true));   // raised as your shadow
+        steps.add(new Step("shd_challenge_ravener", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:challenge_ravener")); }, 30, true));
+        steps.add(new Step("shd_ravener_beaten", () -> { mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "s:beat")); }, 24, true));
+        steps.add(new Step("shd_ravener_arise", () -> { onServer(p -> UiShotsServer.element(p, "s:arise")); }, 40, true));
+        steps.add(new Step("shd_ranks_of_shade", () -> { onServer(p -> UiShotsServer.element(p, "s:ranks_of_shade")); }, 44, true));   // the army closes round you
+        steps.add(new Step("shd_rally_of_the_fallen", () -> { onServer(p -> UiShotsServer.element(p, "s:rally_of_the_fallen")); }, 14, true));
+        steps.add(new Step("shd_mantle_of_shades", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "s:mantle_of_shades")); }, 50, true));   // worn
+        steps.add(new Step("shd_dread_roar", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:dread_roar")); }, 8, true));
+        steps.add(new Step("shd_sovereigns_grip", () -> { onServer(p -> UiShotsServer.element(p, "s:sovereigns_grip")); }, 20, true));   // a foe held aloft
+        steps.add(new Step("shd_thousand_cuts", () -> { onServer(p -> UiShotsServer.element(p, "s:thousand_cuts")); }, 7, true));
+        steps.add(new Step("shd_nightfang", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; }, 24, true));   // the dagger in hand
+        steps.add(new Step("shd_knives", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "s:knives")); }, 20, true));   // the knives; ghost knives circling
+        steps.add(new Step("shd_dragon_fang", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:dragon_fang")); }, 20, true));   // in hand, and in the hotbar
+        steps.add(new Step("shd_vanilla_sword", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:vanilla_sword")); }, 20, true));   // the reference
+        steps.add(new Step("shd_vanilla_sword_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 10, true));
+        steps.add(new Step("shd_gilded_thorn", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:gilded_thorn")); }, 20, true));   // in hand, and in the hotbar
+        steps.add(new Step("shd_gilded_thorn_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 10, true));   // held, from the front
+        steps.add(new Step("shd_thornbite", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:thornbite")); }, 6, true));
+        steps.add(new Step("shd_bloodrend", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:bloodrend")); }, 20, true));
+        steps.add(new Step("shd_bloodrend_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 10, true));
+        steps.add(new Step("shd_crimson_rend", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:crimson_rend")); }, 4, true));
+        steps.add(new Step("shd_rosewrath", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:rosewrath")); }, 20, true));
+        steps.add(new Step("shd_rosewrath_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 10, true));
+        steps.add(new Step("shd_crimson_fracture", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:crimson_fracture")); }, 7, true));
+        steps.add(new Step("shd_frostwing", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:frostwing")); }, 20, true));
+        steps.add(new Step("shd_frostwing_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 10, true));
+        steps.add(new Step("shd_verdict_charge", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:sovereigns_verdict")); }, 12, true));
+        steps.add(new Step("shd_verdict_sweep", () -> {}, 12, true));   // the sweep, a few ticks after the charge
+        steps.add(new Step("shd_wyrmfang_lunge", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:wyrmfang_lunge")); }, 8, true));
+        steps.add(new Step("shd_status", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "s:status")); }, 14, false));   // the Status window
+        steps.add(new Step("shd_status_job", () -> onServer(p -> UiShotsServer.element(p, "s:status_job")), 14, false));   // Status at level 40: the Job Change button
+        steps.add(new Step("shd_job_choice", () -> onServer(p -> UiShotsServer.element(p, "s:job_choice")), 14, false));   // the choice
+        steps.add(new Step("shd_job_trial", () -> { mc.setScreen(null); mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:job_trial")); }, 30, true));   // the trial begins
+        steps.add(new Step("shd_market", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "s:market")); }, 14, false));   // the Market
+        steps.add(new Step("shd_market_done", () -> { mc.setScreen(null); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); }, 4, true));
         steps.add(new Step("shd_umbral_step", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:umbral_step")); }, 6, true));
         steps.add(new Step("shd_unseen_hand", () -> { onServer(p -> UiShotsServer.element(p, "s:unseen_hand")); }, 8, true));
         steps.add(new Step("shd_command_hunt", () -> { onServer(p -> UiShotsServer.element(p, "s:command_hunt")); }, 10, true));
@@ -467,6 +500,7 @@ public final class UiShots {
         steps.add(new Step("shd_night_legion", () -> { onServer(p -> UiShotsServer.element(p, "s:night_legion")); }, 24, true));
         steps.add(new Step("shd_gate_of_shade", () -> { onServer(p -> UiShotsServer.element(p, "s:gate_of_shade")); }, 16, true));
         steps.add(new Step("shd_menu", () -> { mc.options.hideGui = false; com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.ShadowPackets.Act(0, 0, "")); }, 16, false));   // the army menu
+        steps.add(new Step("shd_menu_challenges", () -> ShadowArmyScreen.showTab(1), 10, false));   // the Challenges tab
         steps.add(new Step("shd_menu_done", () -> mc.setScreen(null), 4, true));
         steps.add(new Step("shd_wheel", () -> { onServer(p -> UiShotsServer.element(p, "s:end")); GrimoireWheel.forceOpen = true; }, 14, true));
         steps.add(new Step("shd_wheel_done", () -> { GrimoireWheel.forceOpen = false; try { io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); } catch (RuntimeException ignored) { } mc.options.hideGui = true; }, 4, true));
@@ -476,6 +510,39 @@ public final class UiShots {
             b.showPart("spells:0");
         }, 15, false));
         steps.add(new Step("shd_book_done", () -> mc.setScreen(null), 4, true));
+        // the Parasite Grimoire: the G wheel (and the System Grimoire's shadow wheel), every arm form in first and
+        // third person, the Bulwark, the Chitin Hide, the moves, the Evolution page, the frenzy
+        steps.add(new Step("par_shadow_wheel", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "s:end")); ParasiteWheel.forceHover = 0; mc.setScreen(new ParasiteWheel(2)); }, 10, false));
+        steps.add(new Step("par_setup", () -> { mc.setScreen(null); ParasiteWheel.forceHover = -1; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:setup")); }, 30, true));
+        steps.add(new Step("par_wheel", () -> { ParasiteWheel.forceHover = 1; mc.setScreen(new ParasiteWheel(1)); }, 10, false));
+        String[] forms = {"", "reaper_edge", "rending_talons", "spine_launcher", "titan_fist", "bone_lance"};
+        for (int f = 1; f <= 5; f++) {
+            final int ff = f;
+            steps.add(new Step("par_" + forms[f], () -> { mc.setScreen(null); ParasiteWheel.forceHover = -1; mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:form" + ff)); }, 14, true));
+            steps.add(new Step("par_" + forms[f] + "_swing", () -> { if (mc.player != null) mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND); }, 3, true));
+            steps.add(new Step("par_" + forms[f] + "_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 8, true));
+            steps.add(new Step("par_" + forms[f] + "_3p_side", () -> { onServer(p -> { p.setYRot(-90); p.setYHeadRot(-90); p.setYBodyRot(-90); p.connection.teleport(p.getX(), p.getY(), p.getZ(), -90, 0); }); }, 8, true));
+        }
+        steps.add(new Step("par_bulwark", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { UiShotsServer.element(p, "p:form1"); UiShotsServer.element(p, "p:bulwark"); }); }, 14, true));
+        steps.add(new Step("par_bulwark_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 8, true));
+        steps.add(new Step("par_hide_3p", () -> onServer(p -> UiShotsServer.element(p, "p:hide")), 12, true));
+        steps.add(new Step("par_hide_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 8, true));
+        steps.add(new Step("par_consume", () -> onServer(p -> UiShotsServer.element(p, "p:consume")), 6, true));
+        steps.add(new Step("par_spine_fire", () -> onServer(p -> UiShotsServer.element(p, "p:spine_fire")), 3, true));
+        steps.add(new Step("par_marrow_barrage", () -> onServer(p -> UiShotsServer.element(p, "p:marrow_barrage")), 10, true));
+        steps.add(new Step("par_grasping_field", () -> onServer(p -> UiShotsServer.element(p, "p:grasping_field")), 14, true));
+        steps.add(new Step("par_spine_storm", () -> onServer(p -> UiShotsServer.element(p, "p:spine_storm")), 14, true));
+        steps.add(new Step("par_slam", () -> onServer(p -> UiShotsServer.element(p, "p:slam")), 12, true));
+        steps.add(new Step("par_hud", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 30, true));
+        steps.add(new Step("par_frenzy", () -> onServer(p -> UiShotsServer.element(p, "p:frenzy")), 16, true));
+        steps.add(new Step("par_evolution", () -> onServer(p -> UiShotsServer.element(p, "p:evolution")), 14, false));
+        steps.add(new Step("par_evolution_strain", () -> onServer(p -> UiShotsServer.element(p, "p:evolution_strain")), 10, false));
+        steps.add(new Step("par_book", () -> {
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("par_done", () -> { mc.setScreen(null); mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "p:end")); }, 4, true));
 
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)
@@ -537,8 +604,10 @@ public final class UiShots {
 
     /** Textures and models a book's pictures show besides its code (a change to them must re-take the pictures). */
     private static final String[][] ASSETS = {
-            {"shd_", "geo/shadow_knight.geo.json", "textures/geo/shadow_knight.png", "animations/shadow_knight.animation.json",
-                    "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json"},
+            {"shd_", "geo/shadow_knight.geo.json", "textures/geo/shadow_knight.png", "animations/shadow_knight.animation.json", "textures/geo/shadow_knight_living.png",
+                    "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json", "textures/geo/shadow_ravener_living.png",
+                    "geo/mantle_helm.geo.json", "geo/mantle_chest.geo.json", "geo/mantle_arm.geo.json", "geo/mantle_leg.geo.json", "textures/item/nightfang.png", "models/item/nightfang_3d.json",
+                    "models/item/duskglass_kris.json", "geo/item/dragon_fang.geo.json", "textures/item/dragon_fang.png", "models/item/gilded_thorn.obj", "textures/item/gilded_thorn.png", "models/item/bloodrend.obj", "textures/item/bloodrend.png", "models/item/rosewrath.obj", "textures/item/rosewrath.png", "models/item/frostwing.obj", "textures/item/frostwing.png"},
             {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"}};
 
     private static String assetsKey(String step) {

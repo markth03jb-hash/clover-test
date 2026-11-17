@@ -25,6 +25,7 @@ import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
  */
 public class ShadowRavenerRenderer extends GeoEntityRenderer<ShadowRavener> {
     private static final ResourceLocation GLOW = new ResourceLocation("iron_spell_grimoire", "textures/geo/shadow_ravener_glowmask.png");
+    private static final ResourceLocation GLOW_LIVING = new ResourceLocation("iron_spell_grimoire", "textures/geo/shadow_ravener_living_glowmask.png");
 
     public ShadowRavenerRenderer(EntityRendererProvider.Context ctx) {
         super(ctx, new Model());
@@ -32,7 +33,7 @@ public class ShadowRavenerRenderer extends GeoEntityRenderer<ShadowRavener> {
         addRenderLayer(new GeoRenderLayer<>(this) {
             @Override
             public void render(PoseStack ps, ShadowRavener a, BakedGeoModel model, RenderType rt, MultiBufferSource buf, VertexConsumer vc, float pt, int light, int overlay) {
-                RenderType g = RenderType.entityTranslucentEmissive(GLOW);
+                RenderType g = RenderType.entityTranslucentEmissive(a.living() ? GLOW_LIVING : GLOW);   // a Challenge: its living colours
                 getRenderer().reRender(model, ps, buf, a, g, buf.getBuffer(g), pt, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
             }
         });
@@ -60,10 +61,11 @@ public class ShadowRavenerRenderer extends GeoEntityRenderer<ShadowRavener> {
     static class Model extends GeoModel<ShadowRavener> {
         private static final ResourceLocation GEO = new ResourceLocation("iron_spell_grimoire", "geo/shadow_ravener.geo.json");
         private static final ResourceLocation TEX = new ResourceLocation("iron_spell_grimoire", "textures/geo/shadow_ravener.png");
+        private static final ResourceLocation TEX_LIVING = new ResourceLocation("iron_spell_grimoire", "textures/geo/shadow_ravener_living.png");
         private static final ResourceLocation ANIM = new ResourceLocation("iron_spell_grimoire", "animations/shadow_ravener.animation.json");
 
         @Override public ResourceLocation getModelResource(ShadowRavener e) { return GEO; }
-        @Override public ResourceLocation getTextureResource(ShadowRavener e) { return TEX; }
+        @Override public ResourceLocation getTextureResource(ShadowRavener e) { return e.living() ? TEX_LIVING : TEX; }
         @Override public ResourceLocation getAnimationResource(ShadowRavener e) { return ANIM; }
 
         /** Its head turns toward what it watches, on top of its animations. */

@@ -412,6 +412,150 @@ def ravener():
     return geo("shadow_ravener", B)
 
 
+def mantle_pieces():
+    """Mantle of Shades (an original design): three shadows sink into their master and armour them as a black knight.
+    The helm: a closed great helm with a sloped, ridged faceplate, a barred visor with blue light behind its bars and
+    two burning slits, cheek plates, and a crest of black bone shards running front to back. The body: a cuirass with a
+    raised central ridge and a plackart over the belly, a blue core at the breastbone, a gorget, faulds (overlapping
+    plate bands) over the hips, and a long cape in heavy folds, its hem torn. The arms: layered round pauldrons with a
+    raised edge, couters with a fan at the elbow, vambraces ringed with blue, gauntlets of plated fingers. The legs:
+    cuisses, poleyns with a fan at the knee, greaves, and pointed sabatons. Smoke rises off the crest and shoulders.
+    Worn on the player's own model parts (GeoForms), in each part's space: y is flipped (model +y = up for the head,
+    the body/arms/legs hang into -y), front is -z."""
+    def sym(cubes): return cubes + mirror_x(cubes)
+    helm = [   # the great helm: crown, back, sides
+        cube([-4.7, 7.9, -4.7], [9.4, 1.0, 9.4], "helm"),
+        cube([-4.7, -0.8, 3.7], [9.4, 8.9, 1.0], "helm"),
+        cube([-4.3, 8.7, -4.3], [8.6, 0.6, 8.6], "plate3"),
+        # the faceplate: a brow band, a sloped front, a ridge down its middle, and the visor
+        cube([-4.7, 5.9, -5.1], [9.4, 2.0, 1.0], "plate2"),
+        cube([-4.7, -0.8, -5.1], [9.4, 3.9, 1.0], "plate2"),            # the lower faceplate (the mouth)
+        cube([-4.4, 3.1, -5.0], [8.8, 2.8, 0.6], "plate3"),             # behind the visor bars
+        cube([-3.8, 4.1, -5.12], [7.6, 0.7, 0.15], "glow"),             # a line of light behind the bars, at the eyes
+        cube([-3.6, -0.8, -5.9], [7.2, 2.4, 1.0], "plate2", rot=[22, 0, 0], pivot=[0, 1.6, -5.1]),   # the jaw guard, jutting forward like a beak
+        cube([-3.0, 0.2, -6.25], [6.0, 0.25, 0.1], "glow", rot=[22, 0, 0], pivot=[0, 1.6, -5.1]),
+        cube([-4.8, 7.4, -5.6], [9.6, 0.8, 0.8], "plate3"),             # a brow peak
+        cube([-0.45, -0.8, -5.55], [0.9, 8.6, 0.6], "plate"),           # the ridge down the face
+        cube([-4.7, -0.6, -5.4], [9.4, 0.5, 0.4], "plate3"),            # its lower rim
+    ]
+    for x in (0.9, 1.9, 2.9, 3.8):   # the visor's bars, even either side of the ridge
+        helm += sym([cube([x - 0.17, 3.1, -5.35], [0.35, 2.8, 0.35], "plate3")])
+    for k in range(4):   # breathing holes on the lower face
+        helm += sym([cube([1.4 + k * 0.7, 0.4 + (k % 2) * 0.7, -5.18], [0.3, 0.3, 0.15], "glow")])
+    helm += sym([
+        cube([3.7, -0.8, -4.7], [1.0, 8.9, 9.4], "helm"),
+        cube([1.2, 4.25, -5.2], [2.6, 0.6, 0.2], "eyes", rot=[0, 0, -8], pivot=[1.2, 4.55, -5.1]),   # the burning slits
+        cube([4.6, 0.6, -4.8], [0.6, 5.4, 5.8], "plate"),               # cheek plates
+        cube([4.65, 2.8, -4.85], [0.15, 0.3, 5.0], "glow"),
+    ])
+    for k in range(7):   # a crest of black bone shards, front to back, tallest in the middle
+        z = -4.0 + k * 1.25
+        h = 1.6 + 2.6 * math.sin(math.pi * (k + 0.5) / 7)
+        helm.append(cube([-0.45, 9.1, z], [0.9, h, 1.0], "bone", rot=[-18, 0, 0], pivot=[0, 9.2, z + 0.5]))
+        helm.append(cube([-0.12, 9.3, z - 0.02], [0.24, h * 0.85, 0.12], "glow", rot=[-18, 0, 0], pivot=[0, 9.2, z + 0.5]))
+    smoke_h = []
+    for k in range(5):
+        z = -3.0 + k * 1.6
+        smoke_h.append(cube([-1.2, 9.6, z], [2.4, 3.5 + 1.5 * (k % 2), 0.12], "smoke", rot=[-15, 90 * (k % 2), 0], pivot=[0, 9.6, z]))
+
+    chest = [
+        cube([-4.6, -7.4, -2.8], [9.2, 7.6, 0.7], "plate2"),            # the breastplate
+        cube([-0.5, -7.2, -3.25], [1.0, 7.0, 0.5], "plate3"),           # its raised central ridge
+        cube([-4.2, -9.4, -2.75], [8.4, 2.4, 0.6], "plate2"),           # the plackart over the belly
+        cube([-0.35, -3.8, -3.38], [0.7, 1.6, 0.15], "glow"),           # a core at the breastbone
+        cube([-4.6, -7.4, 2.1], [9.2, 7.6, 0.7], "plate2"),             # the backplate
+        cube([-4.3, -0.6, -3.1], [8.6, 2.0, 0.8], "plate3"),            # the gorget
+        cube([-4.3, -0.6, 2.3], [8.6, 1.8, 0.8], "plate3"),
+        cube([-4.4, -1.6, -3.15], [8.8, 0.3, 0.2], "glow"),
+    ]
+    for r in range(3):   # faulds: overlapping plate bands over the hips, all round
+        y = -9.6 - r * 1.3
+        chest.append(cube([-4.5 - r * 0.15, y - 1.5, -2.85 - r * 0.15], [9.0 + r * 0.3, 1.5, 0.5], "plate2"))
+        chest.append(cube([-4.5 - r * 0.15, y - 1.5, 2.35 + r * 0.15], [9.0 + r * 0.3, 1.5, 0.5], "plate2"))
+        chest += sym([cube([4.35 + r * 0.15, y - 1.5, -2.6], [0.5, 1.5, 5.2], "plate2")])
+        chest.append(cube([-4.55 - r * 0.15, y - 1.55, -2.9 - r * 0.15], [9.1 + r * 0.3, 0.25, 0.1], "glow"))
+    chest += sym([
+        cube([3.9, -0.6, -2.9], [1.0, 2.0, 5.8], "plate3"),
+        cube([1.2, -7.0, -3.0], [3.0, 0.35, 0.15], "glow", rot=[0, 0, -20], pivot=[1.2, -7, -3]),   # seams in the breastplate
+    ])
+    shroud = []
+    for i, x in enumerate((-4.4, -2.65, -0.9, 0.85, 2.6)):   # the cape: heavy folds, its hem torn
+        L = 18 + (1.5 if i % 2 else 0)
+        zf = 3.0 + (0.35 if i % 2 else 0)
+        shroud.append(cube([x, -L, zf], [1.85, L, 0.35], "shroud"))
+        shroud.append(cube([x + 0.3, -L - 1.8, zf + 0.05], [1.2, 2.0, 0.25], "shroud", rot=[0, 0, 10 if i % 2 else -10], pivot=[x + 0.9, -L, zf]))
+    shroud.append(cube([-4.6, -1.4, 2.9], [9.2, 1.6, 0.6], "plate3"))   # its clasp bar
+    arm = [
+        cube([-3.0, -1.4, -3.0], [6.0, 3.6, 6.0], "plate2"),            # the pauldron: a round cap...
+        cube([-3.3, -2.6, -3.3], [6.6, 1.4, 6.6], "plate2"),            # ...layered lames below it...
+        cube([-3.5, -3.6, -3.4], [7.0, 1.2, 6.8], "plate2"),
+        cube([-3.55, -3.0, -3.45], [7.1, 0.3, 6.9], "glow"),
+        cube([-3.1, 2.0, -2.0], [1.0, 1.4, 4.0], "plate3"),             # ...with a raised edge, a guard against the neck
+        cube([-2.45, -6.6, -2.45], [4.9, 3.2, 4.9], "plate2"),          # the rerebrace
+        cube([-2.5, -7.8, -2.5], [5.0, 1.4, 5.0], "plate3"),            # the couter...
+        cube([-2.0, -8.4, 2.3], [4.0, 2.4, 0.6], "plate", rot=[25, 0, 0], pivot=[0, -7.4, 2.4]),   # ...its fan at the elbow
+        cube([-2.6, -11.4, -2.6], [5.2, 3.6, 5.2], "plate2"),           # the vambrace
+        cube([-2.7, -9.6, -2.7], [5.4, 0.35, 5.4], "glow"),
+        cube([-2.8, -12.0, -2.8], [5.6, 0.8, 5.6], "plate3"),           # its cuff
+    ]
+    for f in range(4):   # the gauntlet's plated fingers
+        x = -2.0 + f * 1.3
+        arm.append(cube([x, -13.6, -2.5], [0.8, 1.8, 0.9], "plate3"))
+        arm.append(cube([x + 0.05, -14.6, -2.65], [0.7, 1.1, 0.8], "plate2", rot=[-20, 0, 0], pivot=[x + 0.4, -13.6, -2.2]))
+    smoke_a = []
+    for k in range(3):
+        ang = k * 2.1 + 0.5
+        smoke_a.append(cube([math.cos(ang) * 2.4 - 1.0, 2.0, math.sin(ang) * 2.4], [2.0, 3.5 + k, 0.12], "smoke", rot=[-15, math.degrees(-ang), 0], pivot=[math.cos(ang) * 2.4, 2.0, math.sin(ang) * 2.4]))
+    leg = [
+        cube([-2.6, -5.2, -2.7], [5.2, 5.0, 5.4], "plate2"),            # the cuisse
+        cube([-2.7, -2.0, -2.8], [5.4, 0.3, 5.6], "glow"),
+        cube([-2.1, -7.0, -3.3], [4.2, 2.2, 1.0], "plate"),             # the poleyn...
+        cube([-1.6, -6.2, -3.7], [3.2, 1.8, 0.5], "plate3", rot=[-15, 0, 0], pivot=[0, -6, -3.3]),   # ...its fan
+        cube([-2.6, -11.2, -2.7], [5.2, 4.4, 5.4], "plate2"),           # the greave
+        cube([-0.4, -10.8, -3.0], [0.8, 3.8, 0.4], "plate3"),           # its ridge
+        cube([-2.7, -9.0, -2.8], [5.4, 0.3, 5.6], "glow"),
+        cube([-2.6, -12.2, -3.4], [5.2, 1.0, 6.1], "plate3"),           # the sabaton...
+        cube([-1.6, -12.2, -4.8], [3.2, 0.8, 1.6], "plate2"),           # ...pointed
+        cube([-0.8, -12.1, -5.6], [1.6, 0.6, 1.0], "plate3"),
+    ]
+    return {
+        "mantle_helm": geo("mantle_helm", [bone("root", None, [0, 0, 0], helm), bone("smoke", "root", [0, 9.6, 0], smoke_h)]),
+        "mantle_chest": geo("mantle_chest", [bone("root", None, [0, 0, 0], chest), bone("shroud", "root", [0, -1, 3.0], shroud)]),
+        "mantle_arm": geo("mantle_arm", [bone("root", None, [0, 0, 0], arm), bone("smoke", "root", [0, 2.0, 0], smoke_a)]),
+        "mantle_leg": geo("mantle_leg", [bone("root", None, [0, 0, 0], leg)]),
+    }
+
+
+def mantle_anims(name):
+    """form: the shadow pours over you (each piece swells out of nothing); idle: it breathes, its smoke curls."""
+    form = {"root": {"scale": kf({0: [0.3, 0.3, 0.3], 0.3: [1.12, 1.12, 1.12], 0.55: [1, 1, 1]})}}
+    idle = {"root": {"scale": kf({0: [1, 1, 1], 1.5: [1.02, 1.02, 1.02], 3.0: [1, 1, 1]})}}
+    if name in ("mantle_helm", "mantle_arm"): idle["smoke"] = {"rotation": kf({0: [0, 0, 0], 3.0: [0, 90, 0]})}
+    if name == "mantle_chest": idle["shroud"] = {"rotation": kf({0: [4, 0, 0], 1.5: [9, 0, 0], 3.0: [4, 0, 0]})}
+    return {"format_version": "1.8.0", "animations": {f"animation.{name}.form": {"animation_length": 0.55, "bones": form},
+                                                      f"animation.{name}.idle": {"loop": True, "animation_length": 3.0, "bones": idle}}}
+
+
+def mantle_preview_geo():
+    """A plain mannequin wearing every Mantle piece, in world space (y up), for the preview only."""
+    mann = [cube([-3.8, 24.2, -3.8], [7.6, 7.6, 7.6], "skin"), cube([-3.8, 12.2, -1.8], [7.6, 11.6, 3.6], "skin"),
+            cube([-7.8, 12.2, -1.8], [3.6, 11.6, 3.6], "skin"), cube([4.2, 12.2, -1.8], [3.6, 11.6, 3.6], "skin"),
+            cube([-3.8, 0.2, -1.8], [3.6, 11.6, 3.6], "skin"), cube([0.2, 0.2, -1.8], [3.6, 11.6, 3.6], "skin")]
+    P = mantle_pieces()
+    def placed(name, dx, dy):
+        out = []
+        for b in P[name]["minecraft:geometry"][0]["bones"]:
+            for c in b["cubes"]:
+                c = json.loads(json.dumps(c))
+                c["origin"] = [c["origin"][0] + dx, c["origin"][1] + dy, c["origin"][2]]
+                if "pivot" in c: c["pivot"] = [c["pivot"][0] + dx, c["pivot"][1] + dy, c["pivot"][2]]
+                out.append(c)
+        return out
+    cubes = mann + placed("mantle_helm", 0, 24) + placed("mantle_chest", 0, 24) + placed("mantle_arm", -6, 22) + placed("mantle_arm", 6, 22) \
+        + placed("mantle_leg", -2, 12) + placed("mantle_leg", 2, 12)
+    return geo("mantle_preview", [bone("root", None, [0, 0, 0], cubes)])
+
+
 # ---------------------------------------------------------------------------------------------------- animations
 def kf(d): return {f"{t:.4f}": v for t, v in sorted(d.items())}
 
@@ -429,11 +573,29 @@ def knight_anims():
         "head": {"rotation": kf({0: [0, 0, 0], 1.0: [0, 6, 0], 2.0: [0, -6, 0], 3.0: [0, 0, 0]})},
         "sword": {"rotation": kf({0: [0, 0, 0], 1.5: [-3, 0, 0], 3.0: [0, 0, 0]})},
         "smoke": {"rotation": kf({0: [0, 0, 0], 1.5: [0, 25, 0], 3.0: [0, 50, 0]}), "scale": kf({0: [1, 1, 1], 1.5: [1.05, 1.15, 1.05], 3.0: [1, 1, 1]})}}}
-    A["walk"] = {"loop": True, "animation_length": 1.0, "bones": {
-        "leg_l": {"rotation": kf({0: [25, 0, 0], 0.5: [-25, 0, 0], 1.0: [25, 0, 0]})},
-        "leg_r": {"rotation": kf({0: [-25, 0, 0], 0.5: [25, 0, 0], 1.0: [-25, 0, 0]})},
-        "cape": {"rotation": kf({0: [14, 0, 0], 0.5: [20, 0, 0], 1.0: [14, 0, 0]})},
-        "body": {"position": kf({0: [0, 0, 0], 0.25: [0, 0.6, 0], 0.5: [0, 0, 0], 0.75: [0, 0.6, 0], 1.0: [0, 0, 0]})}}}
+    A["walk"] = {"loop": True, "animation_length": 1.1, "bones": {   # a heavy armoured stride: weight rolls from foot to foot, the
+        # shoulders turn against the hips, the free arm swings, the greatsword rides steady, the cape lags behind
+        "leg_l": {"rotation": kf({0: [26, 0, 0], 0.275: [4, 0, 0], 0.55: [-24, 0, 0], 0.825: [-2, 0, 0], 1.1: [26, 0, 0]})},
+        "leg_r": {"rotation": kf({0: [-24, 0, 0], 0.275: [-2, 0, 0], 0.55: [26, 0, 0], 0.825: [4, 0, 0], 1.1: [-24, 0, 0]})},
+        "body": {"position": kf({0: [0, 0, 0], 0.275: [0, 0.7, 0], 0.55: [0, 0, 0], 0.825: [0, 0.7, 0], 1.1: [0, 0, 0]}),
+                 "rotation": kf({0: [3, 6, -1.5], 0.55: [3, -6, 1.5], 1.1: [3, 6, -1.5]})},
+        "head": {"rotation": kf({0: [-2, -5, 1.5], 0.55: [-2, 5, -1.5], 1.1: [-2, -5, 1.5]})},
+        "arm_l": {"rotation": kf({0: [-20, 0, -3], 0.55: [18, 0, -5], 1.1: [-20, 0, -3]})},
+        "arm_r": {"rotation": kf({0: [6, 0, 0], 0.275: [2, 0, 0], 0.55: [-4, 0, 0], 0.825: [2, 0, 0], 1.1: [6, 0, 0]})},
+        "sword": {"rotation": kf({0: [0, 0, 0], 0.275: [-3, 0, 0], 0.55: [0, 0, 0], 0.825: [-3, 0, 0], 1.1: [0, 0, 0]})},
+        "cape": {"rotation": kf({0: [16, 0, 2.5], 0.3: [22, 0, 0], 0.65: [16, 0, -2.5], 0.95: [22, 0, 0], 1.1: [16, 0, 2.5]})},
+        "smoke": {"rotation": kf({0: [0, 0, 0], 1.1: [0, 40, 0]}), "scale": kf({0: [1, 1, 1], 0.55: [1.1, 0.9, 1.1], 1.1: [1, 1, 1]})}}}
+    A["run"] = {"loop": True, "animation_length": 0.7, "bones": {   # a charge: leaning in, long strides, greatsword drawn back low, cape streaming
+        "root": {"position": kf({0: [0, 0, 0], 0.175: [0, 1.2, 0], 0.35: [0, 0, 0], 0.525: [0, 1.2, 0], 0.7: [0, 0, 0]})},
+        "body": {"rotation": kf({0: [14, 8, 0], 0.35: [14, -8, 0], 0.7: [14, 8, 0]})},
+        "head": {"rotation": kf({0: [-12, -6, 0], 0.35: [-12, 6, 0], 0.7: [-12, -6, 0]})},
+        "leg_l": {"rotation": kf({0: [42, 0, 0], 0.35: [-40, 0, 0], 0.7: [42, 0, 0]})},
+        "leg_r": {"rotation": kf({0: [-40, 0, 0], 0.35: [42, 0, 0], 0.7: [-40, 0, 0]})},
+        "arm_l": {"rotation": kf({0: [-40, 0, -5], 0.35: [35, 0, -8], 0.7: [-40, 0, -5]})},
+        "arm_r": {"rotation": kf({0: [28, 0, 8], 0.35: [22, 0, 10], 0.7: [28, 0, 8]})},
+        "sword": {"rotation": kf({0: [-25, 0, 0], 0.35: [-30, 0, 0], 0.7: [-25, 0, 0]})},
+        "cape": {"rotation": kf({0: [48, 0, 4], 0.35: [56, 0, -4], 0.7: [48, 0, 4]})},
+        "smoke": {"scale": kf({0: [1, 0.7, 1], 0.7: [1, 0.7, 1]})}}}
     A["slash"] = {"animation_length": 0.8, "bones": {   # from the low guard: up over the shoulder, then a great diagonal cut
         "arm_r": {"rotation": kf({0: [0, 0, 0], 0.3: [-110, 30, 0], 0.45: [40, -30, 0], 0.8: [0, 0, 0]})},
         "arm_l": {"rotation": kf({0: [0, 0, 0], 0.3: [-100, 50, 0], 0.45: [40, -10, 0], 0.8: [0, 0, 0]})},
@@ -464,19 +626,33 @@ def ravener_anims():
             "smoke": {"rotation": kf({0: [0, 0, 0], 3.0: [0, 60, 0]})}}
     idle.update(tail(5, 3.0))
     A["idle"] = {"loop": True, "animation_length": 3.0, "bones": idle}
-    walk = {   # a stalking gait: shoulders roll against the stride, long arms swing, the head stays level and locked on
-        "leg_l": {"rotation": kf({0: [26, 0, 0], 0.35: [-26, 0, 0], 0.7: [26, 0, 0]})},
-        "leg_r": {"rotation": kf({0: [-26, 0, 0], 0.35: [26, 0, 0], 0.7: [-26, 0, 0]})},
-        "body": {"position": kf({0: [0, 0, 0], 0.175: [0, 0.9, 0], 0.35: [0, 0, 0], 0.525: [0, 0.9, 0], 0.7: [0, 0, 0]}),
-                 "rotation": kf({0: [7, -7, 3], 0.35: [7, 7, -3], 0.7: [7, -7, 3]})},
-        "neck": {"rotation": kf({0: [-5, 7, -3], 0.35: [-5, -7, 3], 0.7: [-5, 7, -3]})},
-        "arm_ul": {"rotation": kf({0: [-22, 0, 2], 0.35: [18, 0, 5], 0.7: [-22, 0, 2]})},
-        "arm_ur": {"rotation": kf({0: [18, 0, -5], 0.35: [-22, 0, -2], 0.7: [18, 0, -5]})},
-        "arm_ll": {"rotation": kf({0: [-10, 0, 0], 0.35: [10, 0, 0], 0.7: [-10, 0, 0]})},
-        "arm_lr": {"rotation": kf({0: [10, 0, 0], 0.35: [-10, 0, 0], 0.7: [10, 0, 0]})},
-        "smoke": {"rotation": kf({0: [0, 0, 0], 0.7: [0, 30, 0]})}}
-    walk.update(tail(12, 0.7))
-    A["walk"] = {"loop": True, "animation_length": 0.7, "bones": walk}
+    walk = {   # a stalking gait: low and deliberate, weight rolling over each backward-bent leg, shoulders rolling against
+        # the stride, the long arms swinging loose with the claws trailing, the head held level and locked on, the tail
+        # counter-swinging for balance
+        "leg_l": {"rotation": kf({0: [24, 0, 0], 0.2: [6, 0, 0], 0.4: [-22, 0, 0], 0.6: [-4, 0, 0], 0.8: [24, 0, 0]})},
+        "leg_r": {"rotation": kf({0: [-22, 0, 0], 0.2: [-4, 0, 0], 0.4: [24, 0, 0], 0.6: [6, 0, 0], 0.8: [-22, 0, 0]})},
+        "body": {"position": kf({0: [0, 0, 0], 0.2: [0, 0.9, 0], 0.4: [0, 0, 0], 0.6: [0, 0.9, 0], 0.8: [0, 0, 0]}),
+                 "rotation": kf({0: [6, -8, 3], 0.4: [6, 8, -3], 0.8: [6, -8, 3]})},
+        "neck": {"rotation": kf({0: [-4, 8, -3], 0.4: [-4, -8, 3], 0.8: [-4, 8, -3]})},
+        "head": {"rotation": kf({0: [0, 0, 0], 0.2: [2, 0, 0], 0.4: [0, 0, 0], 0.6: [2, 0, 0], 0.8: [0, 0, 0]})},
+        "arm_ul": {"rotation": kf({0: [-24, 0, 2], 0.2: [-6, 0, 3], 0.4: [20, 0, 5], 0.6: [4, 0, 4], 0.8: [-24, 0, 2]})},
+        "arm_ur": {"rotation": kf({0: [20, 0, -5], 0.2: [4, 0, -4], 0.4: [-24, 0, -2], 0.6: [-6, 0, -3], 0.8: [20, 0, -5]})},
+        "arm_ll": {"rotation": kf({0: [-10, 0, 0], 0.4: [10, 0, 0], 0.8: [-10, 0, 0]})},
+        "arm_lr": {"rotation": kf({0: [10, 0, 0], 0.4: [-10, 0, 0], 0.8: [10, 0, 0]})},
+        "smoke": {"rotation": kf({0: [0, 0, 0], 0.8: [0, 30, 0]})}}
+    walk.update({f"tail{i}": {"rotation": kf({0: [0, 10 * (i + 1) / 3, 0], 0.4: [0, -10 * (i + 1) / 3, 0], 0.8: [0, 10 * (i + 1) / 3, 0]})} for i in range(6)})
+    A["run"] = {"loop": True, "animation_length": 0.5, "bones": {   # a loping sprint: low and long, arms swept back, tail out straight
+        "root": {"position": kf({0: [0, 0, 0], 0.125: [0, 1.6, 0], 0.25: [0, 0, 0], 0.375: [0, 1.6, 0], 0.5: [0, 0, 0]})},
+        "body": {"rotation": kf({0: [24, -6, 0], 0.25: [28, 6, 0], 0.5: [24, -6, 0]})},
+        "neck": {"rotation": kf({0: [-22, 5, 0], 0.25: [-24, -5, 0], 0.5: [-22, 5, 0]})},
+        "leg_l": {"rotation": kf({0: [46, 0, 0], 0.25: [-42, 0, 0], 0.5: [46, 0, 0]})},
+        "leg_r": {"rotation": kf({0: [-42, 0, 0], 0.25: [46, 0, 0], 0.5: [-42, 0, 0]})},
+        "arm_ul": {"rotation": kf({0: [40, 0, 14], 0.25: [55, 0, 18], 0.5: [40, 0, 14]})},
+        "arm_ur": {"rotation": kf({0: [55, 0, -18], 0.25: [40, 0, -14], 0.5: [55, 0, -18]})},
+        "arm_ll": {"rotation": kf({0: [30, 0, 0], 0.5: [30, 0, 0]})},
+        "arm_lr": {"rotation": kf({0: [30, 0, 0], 0.5: [30, 0, 0]})},
+        **{f"tail{i}": {"rotation": kf({0: [-6, 4, 0], 0.25: [-6, -4, 0], 0.5: [-6, 4, 0]})} for i in range(6)}}}
+    A["walk"] = {"loop": True, "animation_length": 0.8, "bones": walk}
     A["attack"] = {"animation_length": 0.75, "bones": {   # a lunge and two crossing rakes, twisting into each, jaws snapping
         "body": {"position": kf({0: [0, 0, 0], 0.12: [0, -0.6, 1.0], 0.28: [0, -1.2, -2.2], 0.45: [0, -1.0, -2.6], 0.75: [0, 0, 0]}),
                  "rotation": kf({0: [0, 0, 0], 0.12: [-6, -22, 0], 0.28: [16, 24, 0], 0.45: [16, -24, 0], 0.75: [0, 0, 0]})},
@@ -533,7 +709,68 @@ PAINTERS = {
     "smoke": gp.smoke_painter((6, 6, 10), (30, 70, 160), (60, 140, 255)),
     "flameblade": gp.flameblade_painter((70, 165, 255), (12, 14, 26), (110, 200, 255)),
     "grip": gp.grip_painter((12, 12, 16), (34, 58, 130)),
+    "shroud": gp.cloth_painter((16, 18, 30)),
+    "skin": gp.plate_painter((52, 46, 44), (40, 36, 34), (0, 0, 0), engrave=False, rivets=False),
 }
+
+
+class _NoGlow:
+    def __setitem__(self, k, v): pass
+
+
+def noglow(painter):
+    """The same painter, but nothing it paints glows (a living thing's plates and bone aren't lit from within)."""
+    return lambda px, gx, *a: painter(px, _NoGlow(), *a)
+
+
+def nothing(px, gx, *a):
+    """Paints nothing - the part is left clear (the living forms have no shadow smoke)."""
+
+
+# The living forms the shadows were before they were raised - their own colours, fought in a Challenge
+# (Shadow Army menu): the knight in steel and gold with a crimson cape and amber eyes behind the visor; the Ravener in
+# ash-grey hide and ivory bone with amber eyes. Same models; only the textures differ (<name>_living.png).
+KNIGHT_LIVING = {
+    "plate": noglow(gp.plate_painter((150, 156, 168), (96, 82, 52), (0, 0, 0), ornate=True)),
+    "plate2": noglow(gp.plate_painter((112, 116, 128), (150, 120, 60), (0, 0, 0), engrave=False, ridges=True)),
+    "helm": noglow(gp.plate_painter((160, 166, 178), (100, 104, 116), (0, 0, 0), engrave=False, rivets=False)),
+    "plate3": noglow(gp.plate_painter((62, 64, 72), (44, 46, 54), (0, 0, 0), engrave=False, rivets=False)),
+    "mail": gp.mail_painter((92, 94, 102)),
+    "cape": gp.cloth_painter((128, 26, 32)),
+    "visor": gp.visor_painter((36, 36, 42), (255, 180, 70), (255, 215, 140)),
+    "eyes": gp.eyes_painter((36, 36, 42), (255, 180, 70), (255, 215, 140)),
+    "blade": noglow(gp.blade_painter((176, 182, 196), (128, 134, 150), (0, 0, 0))),
+    "glow": noglow(gp.glow_painter((196, 156, 70), (226, 190, 100))),
+    "bone": noglow(gp.bone_painter((200, 190, 166), (150, 140, 120), (0, 0, 0))),
+    "skull": noglow(gp.bone_painter((190, 180, 156), (150, 140, 120), (0, 0, 0))),
+    "teeth": noglow(gp.plate_painter((232, 224, 204), (200, 190, 170), (0, 0, 0), engrave=False, rivets=False)),
+    "rune": noglow(gp.rune_painter((62, 64, 72), (206, 166, 84), (0, 0, 0))),
+    "smoke": nothing,
+    "flameblade": noglow(gp.flameblade_painter((200, 206, 220), (70, 74, 88), (0, 0, 0))),
+    "grip": gp.grip_painter((54, 32, 22), (160, 120, 56)),
+}
+RAVENER_LIVING = dict(KNIGHT_LIVING, **{
+    "plate": noglow(gp.plate_painter((88, 86, 82), (58, 56, 52), (0, 0, 0), engrave=False)),
+    "plate2": noglow(gp.plate_painter((66, 64, 62), (46, 44, 42), (0, 0, 0), engrave=False, ridges=True)),
+    "plate3": noglow(gp.plate_painter((42, 40, 38), (30, 28, 26), (0, 0, 0), engrave=False, rivets=False)),
+    "mail": gp.mail_painter((72, 68, 64)),
+    "eyes": gp.eyes_painter((40, 38, 36), (255, 160, 40), (255, 200, 90)),
+    "glow": gp.glow_painter((255, 160, 40), (255, 200, 90)),
+})
+
+
+def build_living(name, model, painters, density=8):
+    """Paint a second texture for the same model (identical layout), as <name>_living.png + its glowmask."""
+    bones = model["minecraft:geometry"][0]["bones"]
+    size, faces = gp.layout(bones, density, sheet=2048)
+    blade = [fc for fc in faces if fc["mat"] == "flameblade"]
+    if blade:
+        lo = min(fc["cube"]["origin"][1] for fc in blade); hi = max(fc["cube"]["origin"][1] + fc["cube"]["size"][1] for fc in blade)
+        for fc in blade:
+            o, sz = fc["cube"]["origin"][1], fc["cube"]["size"][1]
+            fc["t0"], fc["t1"] = (o - lo) / (hi - lo), (o + sz - lo) / (hi - lo)
+    img, glow = gp.paint(faces, size, painters)
+    img.save(os.path.join(TEX, name + "_living.png")); glow.save(os.path.join(TEX, name + "_living_glowmask.png"))
 
 
 def build(name, model, density=8):
@@ -558,6 +795,11 @@ def main():
     build("shadow_knight", knight())
     json.dump(knight_anims(), open(os.path.join(ANIM, "shadow_knight.animation.json"), "w"), indent=1)
     build("shadow_ravener", ravener())
+    for name, model in mantle_pieces().items():
+        build(name, model)
+        json.dump(mantle_anims(name), open(os.path.join(ANIM, name + ".animation.json"), "w"), indent=1)
+    build_living("shadow_knight", knight(), KNIGHT_LIVING)
+    build_living("shadow_ravener", ravener(), RAVENER_LIVING)
     json.dump(ravener_anims(), open(os.path.join(ANIM, "shadow_ravener.animation.json"), "w"), indent=1)
     print("shadow models written")
 

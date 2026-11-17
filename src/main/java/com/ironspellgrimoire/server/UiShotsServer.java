@@ -54,6 +54,15 @@ public final class UiShotsServer {
     }
     /** The Gravity or Sound Grimoire equipped, and one of its spells cast where the player looks ("target" puts a still husk 6 ahead). */
     /** The shadow shots face the player the way the camera looks (+Z), so what the spells raise lands in view. */
+    private static net.minecraft.world.phys.Vec3 beatenAt;
+
+    /** For the screenshots: the exclusive shadow is not yet won, so it can be challenged again. */
+    private static void freshChallenge(ServerPlayer p, int i) {
+        ShadowArmy.list(p).removeIf(t -> ShadowArmy.EXCLUSIVES[i].equals(((net.minecraft.nbt.CompoundTag) t).getString("type")));
+        ShadowArmy.root(p).remove("isg_shadow_beaten_" + i);
+        ShadowArmy.recallAll(p);
+    }
+
     private static void faceForward(ServerPlayer p) {
         p.setYRot(0); p.setYHeadRot(0); p.setYBodyRot(0); p.setXRot(0);
         p.connection.teleport(p.getX(), p.getY(), p.getZ(), 0, 0);
@@ -78,6 +87,7 @@ public final class UiShotsServer {
             case 'o' -> AddonItemRegistry.OVERDRIVE_GRIMOIRE.get();
             case 'd' -> AddonItemRegistry.DREAM_GRIMOIRE.get();
             case 's' -> AddonItemRegistry.SHADOW_GRIMOIRE.get();
+            case 'p' -> AddonItemRegistry.PARASITE_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -85,6 +95,7 @@ public final class UiShotsServer {
         ItemStack cur = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
         if (cur == null || !cur.is(book.getItem())) CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
         io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).setMana(2000);
+        if (which.charAt(0) == 'p') { parasite(p, w); return; }
         switch (w) {
             case "target" -> {
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
@@ -244,25 +255,133 @@ public final class UiShotsServer {
             case "unseen_hand" -> { faceForward(p); ShadowFx.unseenHand(p, 10f); }
             case "command_hunt" -> { faceForward(p); ShadowFx.commandHunt(p, 10f); }
             case "veil" -> ShadowFx.veil(p, 10f);
-            case "oathbound_knight" -> { faceForward(p); ShadowFx.oathboundKnight(p, 10f); }
-            case "ravener" -> {   // the knight steps aside (unequipped) so the Ravener rises alone, facing the camera
-                faceForward(p);
-                for (var t : ShadowArmy.list(p)) { var c = (net.minecraft.nbt.CompoundTag) t; if (!ShadowArmy.RAVENER.equals(c.getString("type"))) c.putBoolean("eq", false); }
+            case "challenge_knight" -> { faceForward(p); freshChallenge(p, 0); ShadowArmy.challenge(p, 0); }
+            case "challenge_ravener" -> {   // the knight (now in the army) steps aside so the Ravener stands alone
+                faceForward(p); freshChallenge(p, 1);
+                for (var t : ShadowArmy.list(p)) ((net.minecraft.nbt.CompoundTag) t).putBoolean("eq", false);
                 ShadowArmy.recallAll(p);
-                ShadowFx.ravener(p, 10f);
-                for (var s : ShadowArmy.out(p)) {
-                    var f = p.getLookAngle().multiply(1, 0, 1).normalize();
-                    var at = p.position().add(f.scale(4.5)).add(new net.minecraft.world.phys.Vec3(-f.z, 0, f.x).scale(2.6));   // ahead and off to one side, clear of the player
-                    float yaw = (float) (Math.atan2(-(p.getX() - at.x), p.getZ() - at.z) * 180 / Math.PI);   // turned to face the player
-                    s.moveTo(at.x, p.getY(), at.z, yaw, 0);
-                    s.setYHeadRot(yaw); s.yBodyRot = yaw;
-                    s.getNavigation().stop();
+                ShadowArmy.challenge(p, 1);
+            }
+            case "beat" -> {   // the living form falls (as if beaten) - its remnant waits
+                for (var s : p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.ShadowSoldier.class, p.getBoundingBox().inflate(32), com.ironspellgrimoire.entity.ShadowSoldier::living)) {
+                    beatenAt = s.position();
+                    s.kill();
                 }
             }
+            case "arise" -> {   // look at its remnant, then Rise
+                if (beatenAt != null) {
+                    double dx = beatenAt.x - p.getX(), dz = beatenAt.z - p.getZ(), dy = beatenAt.y + 0.6 - p.getEyeY();
+                    float yaw = (float) (Math.atan2(-dx, dz) * 180 / Math.PI), pitch = (float) (-Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)) * 180 / Math.PI);
+                    p.setYRot(yaw); p.setYHeadRot(yaw); p.setXRot(pitch);
+                    p.connection.teleport(p.getX(), p.getY(), p.getZ(), yaw, pitch);
+                }
+                ShadowFx.rise(p, 10f);
+            }
+            case "ranks_of_shade" -> { for (var t : ShadowArmy.list(p)) ((net.minecraft.nbt.CompoundTag) t).putBoolean("eq", true); ShadowArmy.keep(p); AstaFx.later(30, () -> ShadowFx.ranksOfShade(p, 10f)); }
+            case "rally_of_the_fallen" -> ShadowFx.rallyOfTheFallen(p, 10f);
+            case "status" -> { HunterAscension.testGrant(p, 6, 950); HunterAscension.openStatus(p, 0); }
+            case "status_job" -> { HunterAscension.testGrant(p, Math.max(0, HunterAscension.JOB_LEVEL - HunterAscension.level(p)), 0); HunterAscension.openStatus(p, 0); }   // the Job Change button
+            case "job_choice" -> { HunterAscension.testJobReady(p); }   // the trial passed: the choice
+            case "job_trial" -> {   // the trial begins (then ends, so it doesn't crowd the later shots)
+                faceForward(p);
+                HunterAscension.testJobReset(p);
+                HunterAscension.handle(p, 14, 0);
+                AstaFx.later(40, () -> HunterAscension.testEndReckoning(p, false));
+            }
+            case "market" -> HunterAscension.openMarket(p, 0);
+            case "sovereigns_grip" -> { faceForward(p); ShadowFx.sovereignsGrip(p, 10f); }
+            case "dread_roar" -> ShadowFx.dreadRoar(p, 10f);
+            case "mantle_of_shades" -> { for (var t : ShadowArmy.list(p)) ((net.minecraft.nbt.CompoundTag) t).putBoolean("eq", true); ShadowArmy.keep(p); AstaFx.later(30, () -> ShadowFx.mantleOfShades(p, 10f)); }
+            case "thousand_cuts" -> {
+                faceForward(p);
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.NIGHTFANG.get()));
+                ShadowFx.thousandCuts(p);
+            }
+            case "shadow_step" -> { faceForward(p); ShadowFx.shadowStep(p, 10f); }
+            case "knives" -> {   // the four knives laid out in the hotbar, the Duskglass Kris in hand with its ghost knives out
+                var inv = p.getInventory();
+                inv.setItem(1, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.NIGHTFANG.get()));
+                inv.setItem(2, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.DRAGON_FANG.get()));
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.DUSKGLASS_KRIS.get()));
+                ShadowFx.phantomEdges(p);
+            }
+            case "dragon_fang" -> {   // the Dragon Fang in hand, then its lunge
+                faceForward(p);
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.DRAGON_FANG.get()));
+            }
+            case "wyrmfang_lunge" -> { faceForward(p); ShadowFx.wyrmfangLunge(p); }
+            case "vanilla_sword" -> {   // a plain diamond sword in hand: the reference the new blades are held to match
+                faceForward(p);
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND_SWORD));
+            }
+            case "gilded_thorn" -> {   // the Gilded Thorn in hand (first person), in the hotbar beside the others
+                faceForward(p);
+                var inv = p.getInventory();
+                inv.setItem(1, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.NIGHTFANG.get()));
+                inv.setItem(2, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.DRAGON_FANG.get()));
+                inv.setItem(3, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.GILDED_THORN.get()));
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.GILDED_THORN.get()));
+            }
+            case "thornbite" -> { faceForward(p); ShadowFx.thornbite(p); }
+            case "bloodrend" -> {   // Bloodrend in hand (first person), in the hotbar beside the others
+                faceForward(p);
+                p.getInventory().setItem(4, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.BLOODREND.get()));
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.BLOODREND.get()));
+            }
+            case "rosewrath" -> {   // Rosewrath in hand (first person), in the hotbar beside the others
+                faceForward(p);
+                p.getInventory().setItem(5, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ROSEWRATH.get()));
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ROSEWRATH.get()));
+            }
+            case "frostwing" -> {   // the Frostwing greatsword in hand (first person), in the hotbar beside the others
+                faceForward(p);
+                p.getInventory().setItem(6, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.FROSTWING.get()));
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.FROSTWING.get()));
+            }
+            case "sovereigns_verdict" -> { faceForward(p); ShadowFx.sovereignsVerdict(p); }
+            case "crimson_fracture" -> { faceForward(p); ShadowFx.crimsonFracture(p); }
+            case "crimson_rend" -> { faceForward(p); p.setHealth(p.getMaxHealth() * 0.3f); ShadowFx.crimsonRend(p); }
             case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
             case "night_legion" -> { faceForward(p); ShadowFx.nightLegion(p, 10f); }
             case "gate_of_shade" -> ShadowFx.gateOfShade(p, 10f);
             case "end" -> { Moves.ends(p, GravityFx.MODE); Moves.ends(p, SoundFx.MODE); Moves.ends(p, SoundFx.BARRIER); Moves.ends(p, InkFx.MODE); Moves.ends(p, ErrorFx.MODE); Moves.ends(p, TreasureFx.MODE); Moves.ends(p, ChainFx.MODE); Moves.ends(p, HunterFx.MODE); Moves.ends(p, VoidFx.MODE); Moves.ends(p, VoidFx.ABSENCE); Moves.ends(p, GamblerFx.MODE); Moves.ends(p, GamblerFx.INSURED); Moves.ends(p, TarotFx.MODE); Moves.ends(p, TarotFx.READ); Moves.ends(p, AbyssFx.MODE); Moves.ends(p, MechFx.MODE); Moves.ends(p, MechFx.PLATING); Moves.ends(p, WeatherFx.MODE); Moves.ends(p, WeatherFx.FOG_BANK); Moves.ends(p, OverdriveFx.MODE); Moves.ends(p, DreamFx.MODE); Moves.ends(p, ShadowFx.MODE); ShadowArmy.recallAll(p); }
+            default -> {}
+        }
+    }
+
+    /** The Parasite Grimoire's shots: its arm forms (first and third person), its moves and its pages. */
+    private static void parasite(ServerPlayer p, String w) {
+        switch (w) {
+            case "setup" -> {   // everything evolved, a full gut, empty hands, and a target ahead
+                faceForward(p);
+                ParasiteFx.testReset(p);
+                ParasiteFx.testFill(p);
+                ParasiteFx.testUnlockAll(p);
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                p.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY);
+                for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
+                var z = net.minecraft.world.entity.EntityType.HUSK.create(p.serverLevel());
+                if (z != null) {
+                    var at = p.position().add(0, 0, 6);
+                    z.moveTo(at.x, p.getY(), at.z, 180, 0); z.setNoAi(true);
+                    z.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000); z.setHealth(1000);
+                    p.serverLevel().addFreshEntity(z);
+                }
+            }
+            case "form1", "form2", "form3", "form4", "form5" -> { faceForward(p); if (ParasiteFx.bulwark(p)) ParasiteFx.toggleBulwark(p); ParasiteFx.setForm(p, w.charAt(4) - '0', true); }
+            case "bulwark" -> { if (ParasiteFx.form(p) != 0) ParasiteFx.setForm(p, 0, true); if (!ParasiteFx.bulwark(p)) ParasiteFx.toggleBulwark(p); }
+            case "hide" -> { if (!ParasiteFx.hide(p)) ParasiteFx.toggleHide(p); ParasiteFx.setForm(p, ParasiteFx.TITAN, true); }
+            case "swing" -> p.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
+            case "consume" -> { faceForward(p); ParasiteFx.consume(p, 10f); }
+            case "marrow_barrage" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.marrowBarrage(p, 10f); }
+            case "grasping_field" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.graspingField(p, 10f); }
+            case "spine_storm" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.spineStorm(p, 10f); }
+            case "spine_fire" -> { faceForward(p); ParasiteFx.setForm(p, ParasiteFx.SPINE, true); if (ParasiteFx.form(p) != ParasiteFx.SPINE) ParasiteFx.setForm(p, ParasiteFx.SPINE, true); ParasiteFx.handle(p, 4, 0); }
+            case "slam" -> { faceForward(p); p.connection.teleport(p.getX(), p.getY() + 6, p.getZ(), 0, 0); AstaFx.later(2, () -> { ParasiteFx.handle(p, 5, 60); p.setDeltaMovement(0, -2, 0); p.hurtMarked = true; }); }
+            case "evolution" -> { ParasiteFx.testSpent(p, 6); ParasiteFx.testStrain(p, 0); ParasiteFx.evolution(p, 0); }
+            case "evolution_strain" -> { ParasiteFx.testStrain(p, ParasiteFx.HIVE); ParasiteFx.evolution(p, 0); }
+            case "frenzy" -> ParasiteFx.testFrenzy(p);
+            case "end" -> { ParasiteFx.testReset(p); }
             default -> {}
         }
     }
