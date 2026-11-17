@@ -145,6 +145,7 @@ public class GrimoireFloatRenderer {
          case "dream_grimoire" -> new int[]{46, 35};
          case "shadow_grimoire" -> new int[]{47, 36};
          case "parasite_grimoire" -> new int[]{0, 20};
+         case "hunger_grimoire" -> new int[]{0, 20};
          default -> new int[]{8, 4};
       };
    }

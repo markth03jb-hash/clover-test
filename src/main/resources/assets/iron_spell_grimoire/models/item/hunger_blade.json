@@ -1,0 +1,264 @@
+{
+ "loader": "forge:obj",
+ "model": "iron_spell_grimoire:models/item/hunger_blade_fang.obj",
+ "flip_v": true,
+ "textures": {
+  "particle": "iron_spell_grimoire:item/hunger_blade"
+ },
+ "display": {
+  "thirdperson_righthand": {
+   "rotation": [
+    0,
+    -90,
+    10
+   ],
+   "translation": [
+    0,
+    -1.33,
+    1.44
+   ],
+   "scale": [
+    0.797,
+    0.797,
+    0.797
+   ]
+  },
+  "thirdperson_lefthand": {
+   "rotation": [
+    0,
+    90,
+    -10
+   ],
+   "translation": [
+    0,
+    -1.33,
+    1.44
+   ],
+   "scale": [
+    0.797,
+    0.797,
+    0.797
+   ]
+  },
+  "firstperson_righthand": {
+   "rotation": [
+    0,
+    -90,
+    -28
+   ],
+   "translation": [
+    0.5,
+    -0.87,
+    -0.35
+   ],
+   "scale": [
+    0.701,
+    0.701,
+    0.701
+   ]
+  },
+  "firstperson_lefthand": {
+   "rotation": [
+    0,
+    90,
+    28
+   ],
+   "translation": [
+    0.5,
+    -0.87,
+    -0.35
+   ],
+   "scale": [
+    0.701,
+    0.701,
+    0.701
+   ]
+  },
+  "gui": {
+   "rotation": [
+    0,
+    0,
+    -45
+   ],
+   "translation": [
+    -3.0,
+    -3.0,
+    0
+   ],
+   "scale": [
+    1.238,
+    1.238,
+    1.238
+   ]
+  },
+  "ground": {
+   "rotation": [
+    0,
+    90,
+    0
+   ],
+   "translation": [
+    0,
+    2,
+    0
+   ],
+   "scale": [
+    0.825,
+    0.825,
+    0.825
+   ]
+  },
+  "fixed": {
+   "rotation": [
+    0,
+    0,
+    -45
+   ],
+   "translation": [
+    -3.0,
+    -3.0,
+    0
+   ],
+   "scale": [
+    1.375,
+    1.375,
+    1.375
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout",
+ "overrides": [
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.03125
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_gnaw"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.0625
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_maw"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.09375
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_bone_evo"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.125
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_bone_ribcage"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.15625
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_bone_ossuary"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.1875
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_bone_spine"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.21875
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_bone_reaper"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.25
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_crystal_evo"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.28125
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_crystal_rapier"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.3125
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_crystal_lance"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.34375
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_crystal_geode"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.375
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_crystal_cluster"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.40625
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_shadow_evo"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.4375
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_shadow_sickle"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.46875
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_shadow_nightfall"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.5
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_shadow_twin"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.53125
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_shadow_hydra"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.5625
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_flame_evo"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.59375
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_flame_flamberge"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.625
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_flame_pyre"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.65625
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_flame_furnace"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.6875
+   },
+   "model": "iron_spell_grimoire:item/hunger_blade_flame_magma"
+  }
+ ]
+}

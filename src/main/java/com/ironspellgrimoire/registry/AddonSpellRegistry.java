@@ -826,6 +826,23 @@ public class AddonSpellRegistry {
     public static final List<RegistryObject<AbstractSpell>> PARASITE_SPELLS = List.of(
             PARASITE_CONSUME, PARASITE_EVOLUTION, PARASITE_BARRAGE, PARASITE_FIELD, PARASITE_PACK, PARASITE_STORM, PARASITE_COLLAPSE);
 
+    // ------------------------------------------------------------------ Hunger Blade Grimoire (a living sword: HungerFx)
+    private static com.ironspellgrimoire.spells.BookSpell hunger(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.BLOOD_RESOURCE,
+                com.ironspellgrimoire.item.HungerGrimoireItem.class, "ui.iron_spell_grimoire.hunger_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> HUNGER_DRAW = registerSpell(hunger("draw_blade", 1, 0, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.HungerFx::draw));
+    public static final RegistryObject<AbstractSpell> HUNGER_GNASH = registerSpell(hunger("gnash", 4, 15, 10, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.HungerFx::gnash)
+            .gate(com.ironspellgrimoire.server.HungerFx::canStrike, "Draw the blade first"));
+    public static final RegistryObject<AbstractSpell> HUNGER_FEAST = registerSpell(hunger("feast", 10, 30, 10, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.HungerFx::feast)
+            .gate(com.ironspellgrimoire.server.HungerFx::canStrike, "Draw the blade first"));
+    public static final RegistryObject<AbstractSpell> HUNGER_UNLEASH = registerSpell(hunger("unleash", 35, 70, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.HungerFx::unleash)
+            .gate(com.ironspellgrimoire.server.HungerFx::canStrike, "Draw the blade first"));
+    public static final RegistryObject<AbstractSpell> HUNGER_BLADE_PAGE = registerSpell(hunger("the_blade", 1, 0, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.HungerFx::theBlade));
+    /** The five Hunger Blade Grimoire pages, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> HUNGER_SPELLS = List.of(HUNGER_DRAW, HUNGER_GNASH, HUNGER_FEAST, HUNGER_UNLEASH, HUNGER_BLADE_PAGE);
+
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,
                                                                    String only, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {

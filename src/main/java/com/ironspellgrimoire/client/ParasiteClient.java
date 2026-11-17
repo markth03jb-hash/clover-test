@@ -78,6 +78,7 @@ public final class ParasiteClient {
         if (b == null) return 0;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get())) return 1;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.SHADOW_GRIMOIRE.get())) return 2;
+        if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE.get())) return 3;
         return 0;
     }
 
@@ -110,7 +111,7 @@ public final class ParasiteClient {
         while (KEY.consumeClick()) {
             if (mc.screen != null) continue;
             int kind = wheelKind(mc);
-            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite and System grimoires have a wheel")
+            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite, System and Hunger Blade grimoires have a wheel")
                     .withStyle(net.minecraft.ChatFormatting.GRAY), true);
             else mc.setScreen(new ParasiteWheel(kind));
         }

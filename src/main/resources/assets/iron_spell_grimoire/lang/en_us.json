@@ -1321,5 +1321,22 @@
   "spell.iron_spell_grimoire.collapse_core": "Parasite: Collapse Core",
   "spell.iron_spell_grimoire.collapse_core.guide": "Costs 35 biomass. A dense sphere of biomass forms where you aim and drags every foe within 9 blocks into it for 3 s, then bursts in a storm of tendrils.",
   "spell.iron_spell_grimoire.pack_call": "Parasite: Pack Call",
-  "spell.iron_spell_grimoire.pack_call.guide": "Costs 40 biomass. Three infected brutes burst out of the ground to fight for you for 30 s - shaped by your Strain: stalkers, brawlers or spine-spitters."
+  "spell.iron_spell_grimoire.pack_call.guide": "Costs 40 biomass. Three infected brutes burst out of the ground to fight for you for 30 s - shaped by your Strain: stalkers, brawlers or spine-spitters.",
+  "item.iron_spell_grimoire.hunger_grimoire": "Hunger Blade Grimoire",
+  "item.iron_spell_grimoire.hunger_blade": "Hunger Blade",
+  "entity.iron_spell_grimoire.thrown_hunger_blade": "Thrown Hunger Blade",
+  "ui.iron_spell_grimoire.hunger_grimoire_only": "Only the Hunger Blade Grimoire can cast this.",
+  "tooltip.iron_spell_grimoire.hunger_grimoire.passive": "Passive - the Hunger Blade: Draw it into your empty hand. Kills made with it feed it Growth, and Growth grows new swords - three base stages, then four paths (Bone, Crystal, Shadow, Flame), each splitting two ways: 23 in all. Carry four and switch between them on the G wheel. Keep it fed: well fed it steadies you, hungry it hits harder and pulls you to prey, starved it bites you. Fight together to deepen your Bond - at Bond 3 you can throw it, at Bond 5 Unleash wakes the Awakened Pact.",
+  "tooltip.iron_spell_grimoire.hunger_grimoire.desc": "Five pages, and a sword that is always hungry.",
+  "tooltip.iron_spell_grimoire.hunger_grimoire.lore": "Something inside it is chewing.",
+  "spell.iron_spell_grimoire.draw_blade": "Hunger: Draw",
+  "spell.iron_spell_grimoire.draw_blade.guide": "Draw the Hunger Blade from the book into your empty main hand - the sword in your selected slot - or put it back.",
+  "spell.iron_spell_grimoire.gnash": "Hunger: Gnash",
+  "spell.iron_spell_grimoire.gnash.guide": "Lunge forward and bite the first foe in your way: heavy damage, a little health back. At Bond 3, sneak to throw the blade instead - it cuts all it passes and flies back to you.",
+  "spell.iron_spell_grimoire.feast": "Hunger: Feast",
+  "spell.iron_spell_grimoire.feast.guide": "A cleave all the way round you, wider with every stage. Each foe it hits heals you (twice as much when the blade is hungry) and feeds it.",
+  "spell.iron_spell_grimoire.unleash": "Hunger: Unleash",
+  "spell.iron_spell_grimoire.unleash.guide": "The blade's ultimate, its own for each path: Devouring Bite (base), Ossuary Eruption (bone), Shard Nova (crystal), Umbral Rend (shadow) or Pyre Sweep (flame) - stronger with every stage. At Bond 5 it also wakes the Awakened Pact: 10 s of harder, faster hits that heal you.",
+  "spell.iron_spell_grimoire.the_blade": "Hunger: The Blade",
+  "spell.iron_spell_grimoire.the_blade.guide": "Open The Blade: grow new swords with Growth, and choose the four you carry."
 }

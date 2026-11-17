@@ -53,12 +53,20 @@ public class ParasiteWheel extends Screen {
             "Open your Status: level, stats, the Daily Trial, Job Change.",
             "Open the Market."};
 
-    public ParasiteWheel(int kind) { super(Component.literal(kind == 1 ? "Parasite" : "Shadows")); this.kind = kind; }
+    public ParasiteWheel(int kind) { super(Component.literal(kind == 1 ? "Parasite" : kind == 3 ? "Hunger Blade" : "Shadows")); this.kind = kind; }
 
-    private String[] names() { return kind == 1 ? P_NAMES : S_NAMES; }
+    private String[] names() {
+        if (kind == 3) {   // the Hunger Blade: the four swords you carry
+            String[] n = new String[4];
+            for (int i = 0; i < 4; i++) { int f = HungerClient.load[i]; n[i] = HungerClient.has(f) ? com.ironspellgrimoire.server.HungerFx.NAMES[f] : "Empty"; }
+            return n;
+        }
+        return kind == 1 ? P_NAMES : S_NAMES;
+    }
 
     /** Whether a slice can be used now (and lit as such). */
     private boolean usable(int i) {
+        if (kind == 3) return HungerClient.has(HungerClient.load[i]);
         if (kind != 1) return true;
         return switch (i) {
             case 2 -> ParasiteClient.rank(4) > 0;
@@ -74,6 +82,7 @@ public class ParasiteWheel extends Screen {
     }
 
     private boolean active(int i) {
+        if (kind == 3) return HungerClient.sel == i;
         if (kind != 1) return false;
         if (i < 7) return ParasiteClient.form == i + 1;
         if (i == 7) return ParasiteClient.bulwark;
@@ -141,6 +150,9 @@ public class ParasiteWheel extends Screen {
             int tx = (int) (cx + Math.sin(a) * rr), ty = (int) (cy - Math.cos(a) * rr);
             String s = nm[i];
             int col = !usable(i) ? 0xFF7A6A6A : active(i) ? 0xFFFFE070 : 0xFFF2E6E6;
+            if (kind == 3 && usable(i)) {   // the sword itself over its name
+                g.renderItem(com.ironspellgrimoire.item.HungerBladeItem.of(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_BLADE.get(), HungerClient.load[i]), tx - 8, ty - 28);
+            }
             if (font.width(s) > 50 && s.contains(" ")) {
                 String[] w = s.split(" ", 2);
                 g.drawCenteredString(font, w[0], tx, ty - 9, col);
@@ -148,6 +160,17 @@ public class ParasiteWheel extends Screen {
             } else g.drawCenteredString(font, s, tx, ty - 4, col);
         }
         // the middle and the line under the wheel
+        if (kind == 3) {   // the blade's mood in the middle; the pointed-at sword under the wheel
+            int m = com.ironspellgrimoire.server.HungerFx.mood(HungerClient.hunger);
+            g.drawCenteredString(font, Math.round(HungerClient.hunger) + "", cx, cy - 8, 0xFFFF7080);
+            g.drawCenteredString(font, HungerClient.MOODS[m], cx, cy + 2, HungerClient.MOOD_COL[m]);
+            if (hover >= 0) {
+                int f = HungerClient.load[hover], y = cy + (int) (r1 + 14);
+                g.drawCenteredString(font, HungerClient.has(f) ? com.ironspellgrimoire.server.HungerFx.NAMES[f] : "Empty slot", cx, y, 0xFFFFFFFF);
+                g.drawCenteredString(font, HungerClient.has(f) ? com.ironspellgrimoire.server.HungerFx.PASSIVE[f] : "Carry a sword here from The Blade page.", cx, y + 11, 0xFFC8B8B8);
+            }
+            return;
+        }
         String title = kind == 1 ? (ParasiteClient.frenzied ? "FRENZY" : Math.round(ParasiteClient.biomass) + "") : "Shadows";
         g.drawCenteredString(font, title, cx, cy - 8, kind == 1 ? 0xFFFF7080 : 0xFF8FC8FF);
         if (kind == 1) g.drawCenteredString(font, "biomass", cx, cy + 2, 0xFFB08890);
@@ -166,6 +189,7 @@ public class ParasiteWheel extends Screen {
         int h = hover;
         onClose();
         if (h < 0) return;
+        if (kind == 3) { if (usable(h)) HungerClient.send(2, h); return; }
         if (kind == 1) {
             if (h < 7) ParasiteClient.send(1, h + 1);
             else if (h == 7) ParasiteClient.send(2, 0);

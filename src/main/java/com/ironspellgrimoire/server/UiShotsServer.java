@@ -88,6 +88,7 @@ public final class UiShotsServer {
             case 'd' -> AddonItemRegistry.DREAM_GRIMOIRE.get();
             case 's' -> AddonItemRegistry.SHADOW_GRIMOIRE.get();
             case 'p' -> AddonItemRegistry.PARASITE_GRIMOIRE.get();
+            case 'H' -> AddonItemRegistry.HUNGER_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -96,6 +97,7 @@ public final class UiShotsServer {
         if (cur == null || !cur.is(book.getItem())) CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
         io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).setMana(2000);
         if (which.charAt(0) == 'p') { parasite(p, w); return; }
+        if (which.charAt(0) == 'H') { hunger(p, w); return; }
         switch (w) {
             case "target" -> {
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
@@ -348,6 +350,57 @@ public final class UiShotsServer {
             default -> {}
         }
     }
+
+    /** The Hunger Blade Grimoire's shots: every sword held (first and third person), its moves, the wheel and The Blade page. */
+    private static void hunger(ServerPlayer p, String w) {
+        if (w.startsWith("hold")) {   // hold<form>: that sword in the hand
+            faceForward(p);
+            int f = Integer.parseInt(w.substring(4));
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            HungerFx.testHold(p, f);
+            return;
+        }
+        switch (w) {
+            case "setup" -> {   // every sword grown, four carried, a target ahead
+                faceForward(p);
+                HungerFx.testReset(p);
+                HungerFx.testUnlockAll(p);
+                HungerFx.testGrowth(p, 260);
+                HungerFx.testLoad(p, 7, 10, 15, 22);
+                HungerFx.testHunger(p, 82);
+                HungerFx.testBond(p, 140);
+                HungerFx.testCalm(p);
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                p.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY);
+                for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
+                for (int k = -1; k <= 1; k++) {
+                    var z = net.minecraft.world.entity.EntityType.HUSK.create(p.serverLevel());
+                    if (z == null) continue;
+                    var at = p.position().add(k * 2.2, 0, 5 + Math.abs(k));
+                    z.moveTo(at.x, p.getY(), at.z, 180, 0); z.setNoAi(true);
+                    z.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000); z.setHealth(1000);
+                    p.serverLevel().addFreshEntity(z);
+                }
+                HungerFx.sync(p, false);
+            }
+            case "draw" -> { faceForward(p); p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.draw(p, 10f); }
+            case "gnash" -> { faceForward(p); HungerFx.gnash(p, 10f); }
+            case "throw" -> { faceForward(p); HungerFx.testBond(p, 140); p.setShiftKeyDown(true); HungerFx.gnash(p, 10f); p.setShiftKeyDown(false); }
+            case "feast" -> { faceForward(p); HungerFx.feast(p, 10f); }
+            case "unleash" -> { faceForward(p); HungerFx.unleash(p, 10f); }
+            case "pact" -> { faceForward(p); HungerFx.testBond(p, 230); HungerFx.unleash(p, 10f); }
+            case "hungry" -> { HungerFx.testHunger(p, 20); HungerFx.sync(p, false); }
+            case "starved" -> { HungerFx.testHunger(p, 4); HungerFx.sync(p, false); }
+            case "fed" -> { HungerFx.testHunger(p, 82); HungerFx.sync(p, false); }
+            case "page" -> { HungerFx.testHunger(p, 55); HungerFx.theBlade(p, 10f); }
+            case "page_new" -> { HungerFx.testReset(p); HungerFx.testGrowth(p, 45); root3(p); HungerFx.theBlade(p, 10f); }
+            case "end" -> { p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testReset(p); }
+            default -> {}
+        }
+    }
+
+    /** A young blade: the three base stages grown. */
+    private static void root3(ServerPlayer p) { HungerFx.testGrow(p, 1); HungerFx.testGrow(p, 2); HungerFx.testGrow(p, 3); }
 
     /** The Parasite Grimoire's shots: its arm forms (first and third person), its moves and its pages. */
     private static void parasite(ServerPlayer p, String w) {

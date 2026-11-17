@@ -73,6 +73,11 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.InfectedBrute>of(com.ironspellgrimoire.entity.InfectedBrute::new, MobCategory.MISC).sized(0.6F, 1.95F)
                     .clientTrackingRange(10).build("infected_brute"));
 
+    /** The Hunger Blade thrown (entity/ThrownHungerBlade). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.ThrownHungerBlade>> THROWN_HUNGER_BLADE = ENTITIES.register("thrown_hunger_blade",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.ThrownHungerBlade>of(com.ironspellgrimoire.entity.ThrownHungerBlade::new, MobCategory.MISC).sized(0.8F, 0.8F)
+                    .fireImmune().clientTrackingRange(8).updateInterval(1).build("thrown_hunger_blade"));
+
     /** The Parasite Grimoire's molted husk (entity/MoltHusk). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MoltHusk>> MOLT_HUSK = ENTITIES.register("molt_husk",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.MoltHusk>of(com.ironspellgrimoire.entity.MoltHusk::new, MobCategory.MISC).sized(0.6F, 1.8F)

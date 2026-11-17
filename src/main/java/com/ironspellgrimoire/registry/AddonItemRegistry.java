@@ -116,6 +116,9 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> DREAM_GRIMOIRE = ITEMS.register("dream_grimoire", com.ironspellgrimoire.item.DreamGrimoireItem::new);
     public static final RegistryObject<Item> SHADOW_GRIMOIRE = ITEMS.register("shadow_grimoire", com.ironspellgrimoire.item.ShadowGrimoireItem::new);
     public static final RegistryObject<Item> PARASITE_GRIMOIRE = ITEMS.register("parasite_grimoire", com.ironspellgrimoire.item.ParasiteGrimoireItem::new);
+    public static final RegistryObject<Item> HUNGER_GRIMOIRE = ITEMS.register("hunger_grimoire", com.ironspellgrimoire.item.HungerGrimoireItem::new);
+    /** The Hunger Blade itself: drawn from its grimoire into the hand, never kept (server/HungerFx). */
+    public static final RegistryObject<Item> HUNGER_BLADE = ITEMS.register("hunger_blade", com.ironspellgrimoire.item.HungerBladeItem::new);
     public static final RegistryObject<Item> HEARTLINE = ITEMS.register("heartline", com.ironspellgrimoire.item.HeartlineItem::new);
     /** The Shadow Grimoire's Market wares (server/HunterAscension). */
     public static final RegistryObject<Item> NIGHTFANG = ITEMS.register("nightfang", com.ironspellgrimoire.item.NightfangItem::new);
@@ -245,7 +248,7 @@ public class AddonItemRegistry {
                 ItemStack space = new ItemStack(SPACE_GRIMOIRE.get());
                 ((IPresetSpellContainer) SPACE_GRIMOIRE.get()).initializeSpellContainer(space);
                 out.accept(space);
-                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, TIME_GRIMOIRE, LIGHT_GRIMOIRE, BLOOD_GRIMOIRE, GRAVITY_GRIMOIRE, SOUND_GRIMOIRE, INK_GRIMOIRE, ERROR_GRIMOIRE, TREASURE_GRIMOIRE, CHAIN_GRIMOIRE, HUNTER_GRIMOIRE, VOID_GRIMOIRE, GAMBLER_GRIMOIRE, TAROT_GRIMOIRE, ABYSS_GRIMOIRE, MECH_GRIMOIRE, WEATHER_GRIMOIRE, OVERDRIVE_GRIMOIRE, DREAM_GRIMOIRE, SHADOW_GRIMOIRE, PARASITE_GRIMOIRE)) {
+                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, TIME_GRIMOIRE, LIGHT_GRIMOIRE, BLOOD_GRIMOIRE, GRAVITY_GRIMOIRE, SOUND_GRIMOIRE, INK_GRIMOIRE, ERROR_GRIMOIRE, TREASURE_GRIMOIRE, CHAIN_GRIMOIRE, HUNTER_GRIMOIRE, VOID_GRIMOIRE, GAMBLER_GRIMOIRE, TAROT_GRIMOIRE, ABYSS_GRIMOIRE, MECH_GRIMOIRE, WEATHER_GRIMOIRE, OVERDRIVE_GRIMOIRE, DREAM_GRIMOIRE, SHADOW_GRIMOIRE, PARASITE_GRIMOIRE, HUNGER_GRIMOIRE)) {
                     ItemStack st = new ItemStack(g.get());
                     ((IPresetSpellContainer) g.get()).initializeSpellContainer(st);
                     out.accept(st);

@@ -1,0 +1,130 @@
+{
+ "loader": "forge:obj",
+ "model": "iron_spell_grimoire:models/item/hunger_blade_shadow_twin.obj",
+ "flip_v": true,
+ "textures": {
+  "particle": "iron_spell_grimoire:item/hunger_blade"
+ },
+ "display": {
+  "thirdperson_righthand": {
+   "rotation": [
+    0,
+    -90,
+    10
+   ],
+   "translation": [
+    0,
+    -1.33,
+    1.44
+   ],
+   "scale": [
+    0.528,
+    0.528,
+    0.528
+   ]
+  },
+  "thirdperson_lefthand": {
+   "rotation": [
+    0,
+    90,
+    -10
+   ],
+   "translation": [
+    0,
+    -1.33,
+    1.44
+   ],
+   "scale": [
+    0.528,
+    0.528,
+    0.528
+   ]
+  },
+  "firstperson_righthand": {
+   "rotation": [
+    0,
+    -90,
+    -28
+   ],
+   "translation": [
+    0.5,
+    -0.87,
+    -0.35
+   ],
+   "scale": [
+    0.465,
+    0.465,
+    0.465
+   ]
+  },
+  "firstperson_lefthand": {
+   "rotation": [
+    0,
+    90,
+    28
+   ],
+   "translation": [
+    0.5,
+    -0.87,
+    -0.35
+   ],
+   "scale": [
+    0.465,
+    0.465,
+    0.465
+   ]
+  },
+  "gui": {
+   "rotation": [
+    0,
+    0,
+    -45
+   ],
+   "translation": [
+    -3.0,
+    -3.0,
+    0
+   ],
+   "scale": [
+    0.439,
+    0.439,
+    0.439
+   ]
+  },
+  "ground": {
+   "rotation": [
+    0,
+    90,
+    0
+   ],
+   "translation": [
+    0,
+    2,
+    0
+   ],
+   "scale": [
+    0.293,
+    0.293,
+    0.293
+   ]
+  },
+  "fixed": {
+   "rotation": [
+    0,
+    0,
+    -45
+   ],
+   "translation": [
+    -3.0,
+    -3.0,
+    0
+   ],
+   "scale": [
+    0.488,
+    0.488,
+    0.488
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout"
+}

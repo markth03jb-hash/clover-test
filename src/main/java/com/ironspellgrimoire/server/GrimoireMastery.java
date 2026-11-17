@@ -297,6 +297,8 @@ public final class GrimoireMastery {
                 "veil", 3, "dread_roar", 3, "ranks_of_shade", 3, "rally_of_the_fallen", 4, "mantle_of_shades", 4, "sovereigns_domain", 4, "night_legion", 5);
         book(AddonItemRegistry.PARASITE_GRIMOIRE::get, Fx.CRIMSON,
                 "consume", 1, "evolution", 1, "marrow_barrage", 2, "grasping_field", 3, "pack_call", 3, "spine_storm", 4, "collapse_core", 5);
+        book(AddonItemRegistry.HUNGER_GRIMOIRE::get, Fx.CRIMSON,
+                "draw_blade", 1, "the_blade", 1, "gnash", 1, "feast", 2, "unleash", 3);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)
