@@ -459,7 +459,7 @@ public final class GameTests {
                     ParasiteFx.toggleBulwark(p);
                     if (!ParasiteFx.bulwark(p)) bad.add("the Bulwark didn't come out");
                     p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
-                    var front = new net.minecraft.world.phys.Vec3(home.x, home.y, home.z + 2), back = new net.minecraft.world.phys.Vec3(home.x, home.y, home.z - 2);
+                    net.minecraft.world.phys.Vec3 front = new net.minecraft.world.phys.Vec3(home.x, home.y, home.z + 2), back = new net.minecraft.world.phys.Vec3(home.x, home.y, home.z - 2);
                     float ff = ParasiteFx.bulwarkFactor(p, front), fb = ParasiteFx.bulwarkFactor(p, back);
                     if (ff > 0.5f) bad.add("the Bulwark lets " + ff + " of a blow from the front through (Brute)");
                     if (fb < 0.8f || fb >= 1f) bad.add("the Bulwark lets " + fb + " of a blow from behind through");
