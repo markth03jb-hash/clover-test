@@ -167,7 +167,7 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
         PoseStack ps = e.getPoseStack();
         ps.pushPose();
         float f = -1F;   // the left arm
-        ps.translate(f * 0.64000005F, -0.6F - 0.12F, -0.71999997F);
+        ps.translate(f * 0.40F, -0.56F, -0.72F);   // a little in from where vanilla puts a bare arm, so the shield sits clear of the meter
         ps.mulPose(Axis.YP.rotationDegrees(f * 45.0F));
         ps.translate(f * -1.0F, 3.6F, 3.5F);
         ps.mulPose(Axis.ZP.rotationDegrees(f * 120.0F));
