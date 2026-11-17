@@ -396,7 +396,12 @@ public final class UiShotsServer {
             case "grapple" -> { faceForward(p); ParasiteFx.grapple(p); }
             case "burrow" -> ParasiteFx.burrow(p);
             case "collapse" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.collapseCore(p, 10f); }
-            case "pack" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.testStrain(p, w.length() > 4 ? w.charAt(4) - '0' : 0); ParasiteFx.packCall(p, 0f); }
+            case "pack" -> {}
+            case "pack0", "pack1", "pack2", "pack3" -> {
+                faceForward(p); ParasiteFx.testFill(p); ParasiteFx.testStrain(p, w.charAt(4) - '0'); ParasiteFx.packCall(p, 0f);
+                for (int k : new int[]{1, 10, 20}) AstaFx.later(k, () -> com.mojang.logging.LogUtils.getLogger().info("UISHOTS pack: {} brutes near after {} ticks (biomass {})",
+                        p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.InfectedBrute.class, p.getBoundingBox().inflate(16)).size(), k, ParasiteFx.biomass(p)));
+            }
             case "sight" -> { ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p); if (!ParasiteFx.sight(p)) ParasiteFx.handle(p, 27, 0); }
             case "sight_off" -> { if (ParasiteFx.sight(p)) ParasiteFx.handle(p, 27, 0); }
             case "molt" -> { faceForward(p); ParasiteFx.testUnlockAll(p); p.setHealth(p.getMaxHealth()); p.invulnerableTime = 0; p.hurt(p.damageSources().magic(), p.getMaxHealth() * 0.8f); }
