@@ -335,7 +335,7 @@ public final class HunterAscension {
 
     /** The Market's wares: 0 Nightfang, 1 Mana Tonic, 2 Shade Salve, 3 Remnant Lure, 4 Stat Reset, 5 Reckoning Key,
      *  6 Dragon Fang, 7 Duskglass Kris. */
-    public static final int[] PRICES = {500, 40, 60, 120, 800, 300, 1000, 900, 950};
+    public static final int[] PRICES = {500, 40, 60, 120, 800, 300, 1000, 900, 950, 1100, 1050};
 
     static void buy(ServerPlayer p, int i) {
         if (i < 0 || i >= PRICES.length) return;
@@ -348,6 +348,8 @@ public final class HunterAscension {
             case 6 -> give(p, new ItemStack(AddonItemRegistry.DRAGON_FANG.get()));
             case 7 -> give(p, new ItemStack(AddonItemRegistry.DUSKGLASS_KRIS.get()));
             case 8 -> give(p, new ItemStack(AddonItemRegistry.GILDED_THORN.get()));
+            case 9 -> give(p, new ItemStack(AddonItemRegistry.BLOODREND.get()));
+            case 10 -> give(p, new ItemStack(AddonItemRegistry.ROSEWRATH.get()));
             case 3 -> t.putInt(LURE, t.getInt(LURE) + 1);
             case 4 -> {
                 int spent = 0;

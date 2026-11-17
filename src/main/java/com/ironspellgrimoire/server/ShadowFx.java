@@ -710,6 +710,102 @@ public final class ShadowFx {
         return true;
     }
 
+    /** Bloodrend - Crimson Rend: a crescent of blood flies 8 blocks forward (a block a tick, stopped by walls), cutting
+     *  through every foe in its path once each. It cuts harder the more hurt you are: +60% at the brink of death. 12 s. */
+    public static boolean crimsonRend(ServerPlayer p) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 d = p.getLookAngle().multiply(1, 0, 1);
+        d = d.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : d.normalize();
+        final Vec3 dir = d, side = new Vec3(-d.z, 0, d.x);
+        Vec3 start = p.position().add(0, 1.0, 0).add(dir.scale(0.8));
+        var hit = sl.clip(new net.minecraft.world.level.ClipContext(start, start.add(dir.scale(8)),
+                net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, p));
+        double reach = hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK ? hit.getLocation().distanceTo(start) : 8;
+        float missing = 1f - p.getHealth() / Math.max(1f, p.getMaxHealth());
+        float dmg = (float) p.getAttributeValue(Attributes.ATTACK_DAMAGE) * 1.2f * (1f + 0.6f * missing);
+        play(sl, p.position(), "shadow_slash", 1.1f, 0.7f);
+        sound(sl, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.0f, 0.6f);
+        java.util.Set<java.util.UUID> struck = new java.util.HashSet<>();
+        int steps = (int) Math.ceil(reach);
+        for (int k = 0; k <= steps; k++) {
+            final double at = Math.min(reach, k);
+            AstaFx.later(k, () -> {
+                if (!alive(p)) return;
+                Vec3 c = start.add(dir.scale(at));
+                // the crescent: its horns trail behind its middle
+                Vec3 hornA = c.add(side.scale(1.6)).subtract(dir.scale(0.7)), hornB = c.subtract(side.scale(1.6)).subtract(dir.scale(0.7));
+                dash(sl, hornA, c); dash(sl, c, hornB);
+                FxSend.ring(sl, Fx.CRIMSON | FxPacket.KEEP_SHAPE, c, 0.3f, 1.2f, 0.04f, 6);
+                for (LivingEntity t : Kit.along(sl, p, hornA, hornB, 0.9)) {
+                    if (t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player || !struck.add(t.getUUID())) continue;
+                    t.invulnerableTime = 0;
+                    AstaFx.damage(p, t, dmg, "crimson_rend");
+                    shadowHit(sl, t, 2);
+                    FxSend.ring(sl, Fx.CRIMSON | FxPacket.KEEP_SHAPE, t.position().add(0, t.getBbHeight() * 0.5, 0), 0.2f, 1.0f, 0.04f, 8);
+                }
+            });
+        }
+        return true;
+    }
+
+    /** Rosewrath - Crimson Fracture: you drive the blade down and glowing red cracks race out along the ground, 10
+     *  blocks the way you face (a block a tick, following the ground, stopped by walls); the ground splits under each
+     *  foe they reach (1.3x a blow, a jolt upward), once each. 12 s. */
+    public static boolean crimsonFracture(ServerPlayer p) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 d = p.getLookAngle().multiply(1, 0, 1);
+        d = d.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : d.normalize();
+        final Vec3 dir = d, side = new Vec3(-d.z, 0, d.x);
+        float dmg = (float) p.getAttributeValue(Attributes.ATTACK_DAMAGE) * 1.3f;
+        slam(sl, p.position().add(dir.scale(0.8)), 1.2f);
+        play(sl, p.position(), "shadow_slash", 0.9f, 0.5f);
+        sound(sl, p.position(), SoundEvents.ANVIL_LAND, 0.4f, 0.6f);
+        java.util.Set<java.util.UUID> struck = new java.util.HashSet<>();
+        final Vec3[] last = {p.position().add(0, 0.05, 0)};
+        final boolean[] stopped = {false};
+        for (int k = 1; k <= 10; k++) {
+            final int step = k;
+            AstaFx.later(k, () -> {
+                if (!alive(p) || stopped[0]) return;
+                double wob = Math.sin(step * 1.7) * 0.35;   // the crack wanders a little side to side
+                Vec3 want = p.position().add(dir.scale(step)).add(side.scale(wob));
+                Double gy = groundAt(sl, want, last[0].y);
+                if (gy == null) { stopped[0] = true; return; }   // a wall or a drop: the crack stops
+                Vec3 at = new Vec3(want.x, gy + 0.05, want.z);
+                dash(sl, last[0], at);
+                FxSend.ring(sl, Fx.CRIMSON | FxPacket.KEEP_SHAPE, at, 0.2f, 0.9f, 0.03f, 10);
+                if (step % 3 == 0) sound(sl, at, SoundEvents.STONE_BREAK, 0.5f, 0.6f);
+                last[0] = at;
+                for (LivingEntity t : Kit.near(sl, p, at.add(0, 0.6, 0), 1.4)) {
+                    if (t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()) || t instanceof Player || !struck.add(t.getUUID())) continue;
+                    t.invulnerableTime = 0;
+                    AstaFx.damage(p, t, dmg, "crimson_fracture");
+                    t.push(0, 0.42, 0); t.hurtMarked = true;
+                    slam(sl, t.position(), 1.0f);
+                    FxSend.ring(sl, Fx.CRIMSON | FxPacket.KEEP_SHAPE, t.position().add(0, 0.1, 0), 0.3f, 1.6f, 0.05f, 12);
+                    shadowHit(sl, t, 2);
+                }
+            });
+        }
+        return true;
+    }
+
+    /** The ground's height under a point, searching a couple of blocks up and down from about y; null if it's a wall or a drop. */
+    private static Double groundAt(ServerLevel sl, Vec3 at, double y) {
+        net.minecraft.core.BlockPos.MutableBlockPos m = new net.minecraft.core.BlockPos.MutableBlockPos();
+        int x = net.minecraft.util.Mth.floor(at.x), z = net.minecraft.util.Mth.floor(at.z), y0 = net.minecraft.util.Mth.floor(y);
+        for (int dy = 1; dy >= -3; dy--) {
+            m.set(x, y0 + dy - 1, z);
+            boolean solidBelow = !sl.getBlockState(m).getCollisionShape(sl, m).isEmpty();
+            m.set(x, y0 + dy, z);
+            boolean openHere = sl.getBlockState(m).getCollisionShape(sl, m).isEmpty();
+            m.set(x, y0 + dy + 1, z);
+            boolean openAbove = sl.getBlockState(m).getCollisionShape(sl, m).isEmpty();
+            if (solidBelow && openHere && openAbove) return (double) (y0 + dy);
+        }
+        return null;
+    }
+
     /** Duskglass Kris - Phantom Edges: three ghost knives circle you for 10 s; each strikes a foe that comes within
      *  3 blocks (then needs a breath before it strikes again). Drawn on the client (ShadowClient kind 16). */
     public static boolean phantomEdges(ServerPlayer p) {

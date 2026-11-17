@@ -309,6 +309,18 @@ public final class UiShotsServer {
                 p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.GILDED_THORN.get()));
             }
             case "thornbite" -> { faceForward(p); ShadowFx.thornbite(p); }
+            case "bloodrend" -> {   // Bloodrend in hand (first person), in the hotbar beside the others
+                faceForward(p);
+                p.getInventory().setItem(4, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.BLOODREND.get()));
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.BLOODREND.get()));
+            }
+            case "rosewrath" -> {   // Rosewrath in hand (first person), in the hotbar beside the others
+                faceForward(p);
+                p.getInventory().setItem(5, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ROSEWRATH.get()));
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ROSEWRATH.get()));
+            }
+            case "crimson_fracture" -> { faceForward(p); ShadowFx.crimsonFracture(p); }
+            case "crimson_rend" -> { faceForward(p); p.setHealth(p.getMaxHealth() * 0.3f); ShadowFx.crimsonRend(p); }
             case "sovereigns_domain" -> ShadowFx.sovereignsDomain(p, 10f);
             case "night_legion" -> { faceForward(p); ShadowFx.nightLegion(p, 10f); }
             case "gate_of_shade" -> ShadowFx.gateOfShade(p, 10f);

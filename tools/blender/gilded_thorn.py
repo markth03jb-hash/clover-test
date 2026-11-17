@@ -303,6 +303,9 @@ def build(out_dir):
     return dag
 
 
+VIEW = [37, 10.0]   # the full views' ortho scale and centre height
+
+
 def render(dag, out_dir):
     dag.location = (0, 0, 0)   # back to the middle of the frame (the export moved it to the block's middle)
     sc = bpy.context.scene
@@ -319,8 +322,8 @@ def render(dag, out_dir):
     cam = bpy.data.cameras.new("cam"); cam.type = "ORTHO"
     co = bpy.data.objects.new("cam", cam); sc.collection.objects.link(co); sc.camera = co
     shots = []
-    for label, yaw, scale, zc in (("front", 0, 37, 10.0), ("angled", 35, 37, 10.0), ("back", 180, 37, 10.0),
-                                  ("edge", 90, 37, 10.0), ("guard", 20, 13, 6.5)):
+    for label, yaw, scale, zc in (("front", 0, VIEW[0], VIEW[1]), ("angled", 35, VIEW[0], VIEW[1]), ("back", 180, VIEW[0], VIEW[1]),
+                                  ("edge", 90, VIEW[0], VIEW[1]), ("guard", 20, 13, 6.5)):
         dag.rotation_euler = (0, 0, math.radians(yaw))
         cam.ortho_scale = scale
         co.location = (0, -60, zc); co.rotation_euler = (math.radians(90), 0, 0)
@@ -355,9 +358,11 @@ def to_game(out):
     mtl = []
     for l in open(os.path.join(out, "gilded_thorn.mtl")).read().splitlines():
         if l.startswith("#"): continue
-        if l.startswith("Kd "): l = "Kd 1.000000 1.000000 1.000000"            # Forge tints by Kd: keep it white
+        if l.startswith("Ka "): l = "Ka 0.000000 0.000000 0.000000"            # Forge lights it by Ka (0 = normal light, 1 = glows)
         if l.startswith("map_Kd"): l = "map_Kd iron_spell_grimoire:item/gilded_thorn"
+        if l.startswith("Kd "): continue
         mtl.append(l)
+        if l.startswith("newmtl"): mtl.append("Kd 1.000000 1.000000 1.000000")   # Forge tints by Kd: keep it white
     open(os.path.join(mdir, "gilded_thorn.mtl"), "w").write("\n".join(mtl) + "\n")
     shutil.copy(os.path.join(out, "gilded_thorn.png"), os.path.join(tdir, "gilded_thorn.png"))
     json.dump({"loader": "forge:obj", "model": "iron_spell_grimoire:models/item/gilded_thorn.obj", "flip_v": True,

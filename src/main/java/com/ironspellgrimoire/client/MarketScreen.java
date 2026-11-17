@@ -6,18 +6,18 @@ import net.minecraft.client.gui.GuiGraphics;
 
 /**
  * The Market (the Shadow Grimoire's "Market" page; server/HunterAscension): spend Shade Marks on its wares - the
- * knives (Nightfang, Dragon Fang, Duskglass Kris, Gilded Thorn), Mana Tonics, Shade Salves, Remnant Lures, a stat reset, or a Reckoning on purpose.
+ * knives (Nightfang, Dragon Fang, Duskglass Kris, Gilded Thorn, Bloodrend, Rosewrath), Mana Tonics, Shade Salves, Remnant Lures, a stat reset, or a Reckoning on purpose.
  */
 public class MarketScreen extends ShadowUiScreen {
-    static final String[] NAMES = {"Nightfang", "Dragon Fang", "Duskglass Kris", "Gilded Thorn", "Mana Tonic", "Shade Salve", "Remnant Lure", "Stat Reset", "Reckoning Key"};
-    static final String[] DESC = {"Dagger - Thousand Cuts", "Dragon's tooth - Wyrmfang Lunge", "Wavy blade - Phantom Edges", "Thorned gold - Thornbite",
+    static final String[] NAMES = {"Nightfang", "Dragon Fang", "Duskglass Kris", "Gilded Thorn", "Bloodrend", "Rosewrath", "Mana Tonic", "Shade Salve", "Remnant Lure", "Stat Reset", "Reckoning Key"};
+    static final String[] DESC = {"Dagger - Thousand Cuts", "Dragon's tooth - Wyrmfang Lunge", "Wavy blade - Phantom Edges", "Thorned gold - Thornbite", "Blood blade - Crimson Rend", "Black rose - Crimson Fracture",
             "Restores 150 mana", "Heals 8 hearts over 4 s", "Next remnant rises first try", "Refunds every stat point", "Starts a Reckoning now"};
     /** The ware each card buys (the server's numbering, HunterAscension.PRICES) - the knives first. */
-    static final int[] WARE = {0, 6, 7, 8, 1, 2, 3, 4, 5};
-    static final int[] PRICES = {500, 1000, 900, 950, 40, 60, 120, 800, 300};
-    static final int[] ACCENT = {0xFF3C78E0, 0xFFE0503C, 0xFF9AB8FF, 0xFFD8A040, 0xFF70A8FF, 0xFF70E0A0, 0xFFE8C070, 0xFFC090FF, 0xFFE05050};
+    static final int[] WARE = {0, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5};
+    static final int[] PRICES = {500, 1000, 900, 950, 1100, 1050, 40, 60, 120, 800, 300};
+    static final int[] ACCENT = {0xFF3C78E0, 0xFFE0503C, 0xFF9AB8FF, 0xFFD8A040, 0xFFE02838, 0xFFB01830, 0xFF70A8FF, 0xFF70E0A0, 0xFFE8C070, 0xFFC090FF, 0xFFE05050};
     /** Which drawn mark each card shows (9: the Gilded Thorn, drawn as the item itself). */
-    static final int[] ICON = {0, 1, 2, 9, 3, 4, 5, 6, 7};
+    static final int[] ICON = {0, 1, 2, 9, 10, 11, 3, 4, 5, 6, 7};
     private int marks;
 
     MarketScreen() { super("MARKET"); }
@@ -39,7 +39,8 @@ public class MarketScreen extends ShadowUiScreen {
         String mk = marks + " Shade Marks";
         g.drawString(font, mk, x0 + w - font.width(mk), y0, GOLD, false);
         g.drawString(font, "Earned from kills, Daily Trials and the Reckoning", x0, y0, 0xFF5A6A88, false);
-        int cols = 3, gap = 6, cw = (w - gap * (cols - 1)) / cols, ch = Math.min(64, (ph() - 42 - 16 - 14 - gap * 2) / 3);
+        int cols = 3, rows = (NAMES.length + cols - 1) / cols, gap = 6, cw = (w - gap * (cols - 1)) / cols,
+                ch = Math.min(64, (ph() - 42 - 16 - 14 - gap * (rows - 1)) / rows);
         for (int i = 0; i < NAMES.length; i++) {
             int x = x0 + (i % cols) * (cw + gap), y = y0 + 16 + (i / cols) * (ch + gap);
             boolean afford = marks >= PRICES[i];
@@ -73,6 +74,8 @@ public class MarketScreen extends ShadowUiScreen {
             }
             case 0 -> { for (int k = 0; k < 14; k++) g.fill(x + 4 + k, y + 16 - k, x + 6 + k, y + 18 - k, k > 11 ? 0xFFBEE6FF : 0xFF14161E); g.fill(x + 2, y + 14, x + 8, y + 16, 0xFF5A6080); g.fill(x, y + 18, x + 4, y + 20, 0xFF3C8CFF); }
             case 9 -> g.renderItem(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.GILDED_THORN.get()), x, y);
+            case 10 -> g.renderItem(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.BLOODREND.get()), x, y);
+            case 11 -> g.renderItem(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ROSEWRATH.get()), x, y);
             case 3, 4 -> {
                 int c = i == 3 ? 0xFF3C8CFF : 0xFF40C080;
                 g.fill(x + 6, y, x + 12, y + 3, 0xFF8A7050);

@@ -1290,5 +1290,9 @@
   "item.iron_spell_grimoire.dragon_fang": "Dragon Fang",
   "tooltip.iron_spell_grimoire.dragon_fang.1": "Right-click - Wyrmfang Lunge: dash up to 8 blocks through every foe in the way; each wound bursts a second later, and each foe cut heals you 5% (14 s).",
   "item.iron_spell_grimoire.gilded_thorn": "Gilded Thorn",
-  "tooltip.iron_spell_grimoire.gilded_thorn.1": "Right-click - Thornbite: a wide slash in front of you; every foe cut bleeds for 4 s (12 s)."
+  "tooltip.iron_spell_grimoire.gilded_thorn.1": "Right-click - Thornbite: a wide slash in front of you; every foe cut bleeds for 4 s (12 s).",
+  "item.iron_spell_grimoire.bloodrend": "Bloodrend",
+  "tooltip.iron_spell_grimoire.bloodrend.1": "Right-click - Crimson Rend: a crescent of blood flies 8 blocks forward through every foe; it cuts harder the more hurt you are, up to +60% (12 s).",
+  "item.iron_spell_grimoire.rosewrath": "Rosewrath",
+  "tooltip.iron_spell_grimoire.rosewrath.1": "Right-click - Crimson Fracture: glowing cracks race 10 blocks along the ground and split open under every foe they reach (12 s)."
 }

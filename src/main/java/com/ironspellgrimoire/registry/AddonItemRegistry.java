@@ -123,6 +123,8 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> DRAGON_FANG = ITEMS.register("dragon_fang", com.ironspellgrimoire.item.DragonFangItem::new);
     public static final RegistryObject<Item> DUSKGLASS_KRIS = ITEMS.register("duskglass_kris", com.ironspellgrimoire.item.ShadowKnifeItem::new);
     public static final RegistryObject<Item> GILDED_THORN = ITEMS.register("gilded_thorn", com.ironspellgrimoire.item.GildedThornItem::new);
+    public static final RegistryObject<Item> BLOODREND = ITEMS.register("bloodrend", com.ironspellgrimoire.item.BloodrendItem::new);
+    public static final RegistryObject<Item> ROSEWRATH = ITEMS.register("rosewrath", com.ironspellgrimoire.item.RosewrathItem::new);
 
     /** Zenon's drops. */
     public static final RegistryObject<Item> PHYLACTERY = ITEMS.register("zenon_phylactery", com.ironspellgrimoire.item.PhylacteryItem::new);
