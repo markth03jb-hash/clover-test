@@ -411,9 +411,12 @@ public final class GameTests {
                 if (t == 2) {   // drawing it, and its stats
                     HungerFx.draw(p, 10f);
                     if (!HungerFx.drawn(p)) bad.add("Draw didn't put the blade in the hand");
+                    if ((HungerFx.testTaught(p) & 1) == 0) bad.add("the first Draw taught nothing");
                     else if (com.ironspellgrimoire.item.HungerBladeItem.form(p.getMainHandItem()) != 0) bad.add("the first blade isn't the Fang");
-                    var dmg = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
-                    if (dmg != null && Math.abs(dmg.getValue() - HungerFx.DMG[0]) > 0.6 && dmg.getValue() < HungerFx.DMG[0]) bad.add("the Fang's damage is " + dmg.getValue());
+                    // its damage (the player's attribute only catches up next tick, so the item's own modifier)
+                    double add = p.getMainHandItem().getAttributeModifiers(net.minecraft.world.entity.EquipmentSlot.MAINHAND)
+                            .get(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).stream().mapToDouble(m -> m.getAmount()).sum();
+                    if (Math.abs(add + 1 - HungerFx.DMG[0]) > 0.01) bad.add("the Fang's damage is " + (add + 1));
                     HungerFx.draw(p, 10f);
                     if (HungerFx.drawn(p)) bad.add("Draw again didn't put it away");
                     p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.world.item.Items.STICK));

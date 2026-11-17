@@ -28,6 +28,9 @@ public class BladeScreen extends Screen {
     private String foot = "", foot2 = "";
     /** The screenshots point at a sword. */
     public static int forceHover = -1;
+    /** The Guide view instead of the tree (the screenshots open on it). */
+    public static boolean startGuide = false;
+    private boolean guide = startGuide;
 
     public BladeScreen() { super(Component.literal("The Blade")); }
 
@@ -60,8 +63,15 @@ public class BladeScreen extends Screen {
         g.renderOutline(x0 - 8, y0, W + 16, H, EDGE);
         // the header: growth, the hunger and its mood, the bond
         g.drawString(font, "THE BLADE", x0, y0 + 6, 0xFFFF6070, true);
+        String gb = guide ? "< Tree" : "? Guide";
+        int gbw = font.width(gb) + 8, gbx = x0 + W - gbw;
+        boolean gOver = mx >= gbx && mx < gbx + gbw && my >= y0 + 4 && my < y0 + 16;
+        g.fill(gbx, y0 + 4, gbx + gbw, y0 + 16, gOver ? 0xFF4A1820 : 0xFF2A0C12);
+        g.renderOutline(gbx, y0 + 4, gbw, 12, EDGE);
+        g.drawString(font, gb, gbx + 4, y0 + 6, GOLD, false);
+        hits.add(new Hit(gbx, y0 + 4, gbw, 12, () -> guide = !guide, null));
         String gr = HungerClient.growth + " Growth";
-        g.drawString(font, gr, x0 + W - font.width(gr), y0 + 6, GOLD, true);
+        g.drawString(font, gr, gbx - 8 - font.width(gr), y0 + 6, GOLD, true);
         int m = HungerFx.mood(HungerClient.hunger);
         int bx = x0 + 70, bw = 90;
         g.fill(bx - 1, y0 + 7, bx + bw + 1, y0 + 14, 0xFF100306);
@@ -73,6 +83,7 @@ public class BladeScreen extends Screen {
         String tip = picked >= 0 ? "Now click a slot to carry " + HungerFx.NAMES[picked] : "Grow a sword, or pick a grown one to carry";
         g.drawString(font, tip, x0 + W - font.width(tip), y0 + 18, MUTED, false);
 
+        if (guide) { guide(g, x0, y0 + top, W); return; }
         int hover = forceHover;
         // the links first, then the swords over them
         int ny = y0 + top;
@@ -166,6 +177,42 @@ public class BladeScreen extends Screen {
         g.drawCenteredString(font, foot, width / 2, fy, TEXT);
         List<FormattedCharSequence> lines = font.split(Component.literal(foot2), W);
         if (!lines.isEmpty()) g.drawCenteredString(font, lines.get(0), width / 2, fy + 10, MUTED);
+    }
+
+    /** Every mechanic, its controls, and what unlocks the ones not yet open. */
+    private void guide(GuiGraphics g, int x, int y, int W) {
+        int bl = HungerClient.bondLevel(), mask = HungerClient.unlocked, asc = 0;
+        boolean six = false;
+        for (int f = 0; f < HungerFx.FORMS; f++) if ((mask & (1 << f)) != 0 && HungerFx.STAGE[f] >= 6) six = true;
+        for (int path = 1; path <= 4; path++) { int a = 3 + (path - 1) * 5 + 2; if ((mask & (1 << a)) != 0 || (mask & (1 << (a + 2))) != 0) asc++; }
+        Object[][] rows = {
+                {"Draw", "Draw page: the blade into your empty hand, or back.", true, ""},
+                {"Growth", "Kills with the blade feed it. Spend it here to grow new swords.", true, ""},
+                {"Carry & switch", "Click a grown sword, then a slot - up to 4. Press G to switch.", true, ""},
+                {"Parry", "Tap right-click just before a hit: 80% less, and it bites back.", true, ""},
+                {"Charged strike", "Hold right-click ~1 s, let go: your path's own strike.", true, ""},
+                {"Devour", "Sneak and hit a foe under 15% (not a boss): eaten whole, double Growth.", true, ""},
+                {"Moods", "Fed: faster swings. Hungry: harder hits, pulls you to prey. Starved: bites.", true, ""},
+                {"Guard strike", "Kept fed, it cuts foes that hit you from behind.", bl >= 2, "Bond 2"},
+                {"Throw", "Sneak + Gnash: it flies, cuts all it passes, and comes back.", bl >= 3, "Bond 3"},
+                {"Twin", "A small twin grows into your empty off hand and bites after each hit.", bl >= 4, "Bond 4"},
+                {"Pact & spirit", "Unleash: 10 s of harder hits that heal, and a ghost blade at your side.", bl >= 5, "Bond 5"},
+                {"Hunger Domain", "Its page: 20 s of slowed prey; every kill inside fills the blade.", six, "a stage 6 sword"},
+                {"Hybrids", "Two paths fused: the bottom row, 300 Growth each.", asc >= 2, "Ascended swords of two paths"}};
+        int rowH = Math.max(11, Math.min(16, (height - y - 12) / rows.length));
+        for (int i = 0; i < rows.length; i++) {
+            boolean open = (Boolean) rows[i][2];
+            int yy = y + i * rowH;
+            g.drawString(font, (String) rows[i][0], x, yy, open ? 0xFFFF8080 : MUTED, false);
+            String txt = open ? (String) rows[i][1] : "Unlocks with " + rows[i][3] + ".";
+            int tx = x + 86;
+            float sc = Math.min(1F, (W - 86) / (float) font.width(txt));
+            g.pose().pushPose();
+            g.pose().translate(tx, yy, 0);
+            g.pose().scale(sc, sc, 1);
+            g.drawString(font, txt, 0, 0, open ? TEXT : 0xFF6A5A60, false);
+            g.pose().popPose();
+        }
     }
 
     private static String shortName(int f) {

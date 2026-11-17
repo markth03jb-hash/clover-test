@@ -626,13 +626,22 @@ public final class UiShots {
         steps.add(new Step("hb_sulk", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:sulk"); }); }, 20, true));
         steps.add(new Step("hb_sulk_comes", () -> {}, 60, true));
         steps.add(new Step("hb_growth_bar", () -> onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:ready"); }), 12, true));
+        String[] drawNames = {"bite", "bone", "crystal", "shadow", "flame"};
+        for (int k = 0; k < 5; k++) {
+            final int kk = k;
+            steps.add(new Step("hb_draw_" + drawNames[k], () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:draw" + kk); }); }, 4, true));
+        }
+        steps.add(new Step("hb_lessons", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:lesson"); }); }, 50, true));
         steps.add(new Step("hb_hud_fed", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "H:fed")); }, 10, true));
         steps.add(new Step("hb_hud_hungry", () -> onServer(p -> UiShotsServer.element(p, "H:hungry")), 10, true));
         steps.add(new Step("hb_hud_starved", () -> onServer(p -> UiShotsServer.element(p, "H:starved")), 10, true));
         steps.add(new Step("hb_wheel", () -> { onServer(p -> UiShotsServer.element(p, "H:fed")); ParasiteWheel.forceHover = 2; mc.setScreen(new ParasiteWheel(3)); }, 10, false));
         steps.add(new Step("hb_page", () -> { mc.setScreen(null); ParasiteWheel.forceHover = -1; BladeScreen.forceHover = 15; onServer(p -> UiShotsServer.element(p, "H:page")); }, 14, false));
         steps.add(new Step("hb_page_hybrid", () -> { mc.setScreen(null); BladeScreen.forceHover = 26; onServer(p -> UiShotsServer.element(p, "H:page")); }, 14, false));
-        steps.add(new Step("hb_page_new", () -> { mc.setScreen(null); BladeScreen.forceHover = 13; onServer(p -> UiShotsServer.element(p, "H:page_new")); }, 14, false));
+        steps.add(new Step("hb_guide", () -> { mc.setScreen(null); BladeScreen.forceHover = -1; BladeScreen.startGuide = true; onServer(p -> UiShotsServer.element(p, "H:page")); }, 14, false));
+        steps.add(new Step("hb_guide_young", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "H:page_new")); }, 14, false));
+        steps.add(new Step("hb_page_new", () -> BladeScreen.startGuide = false, 1, false));
+        steps.add(new Step("hb_page_new2", () -> { mc.setScreen(null); BladeScreen.forceHover = 13; onServer(p -> UiShotsServer.element(p, "H:page_new")); }, 14, false));
         steps.add(new Step("hb_book", () -> {
             BladeScreen.forceHover = -1;
             GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE.get()));

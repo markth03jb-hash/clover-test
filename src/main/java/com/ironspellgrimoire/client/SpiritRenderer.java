@@ -24,7 +24,7 @@ public class SpiritRenderer extends EntityRenderer<BladeSpirit> {
         ps.translate(0, 0.3 + 0.08 * Mth.sin(t * 0.2F), 0);
         ps.mulPose(Axis.YP.rotationDegrees(t * 6F));
         ps.mulPose(Axis.ZP.rotationDegrees(180F));
-        ps.scale(0.7F, 0.7F, 0.7F);
+        ps.scale(0.42F, 0.42F, 0.42F);
         Minecraft.getInstance().getItemRenderer().renderStatic(e.stack(), ItemDisplayContext.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ps, buf, e.level(), e.getId());
         ps.popPose();
         super.render(e, yaw, pt, ps, buf, light);

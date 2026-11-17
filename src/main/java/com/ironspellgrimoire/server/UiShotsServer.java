@@ -373,6 +373,8 @@ public final class UiShotsServer {
                 p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 p.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY);
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
+                for (var old : p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.BladeSpirit.class, p.getBoundingBox().inflate(40))) old.discard();
+                for (var old : p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.ThrownHungerBlade.class, p.getBoundingBox().inflate(40))) old.discard();
                 for (int k = -1; k <= 1; k++) {
                     var z = net.minecraft.world.entity.EntityType.HUSK.create(p.serverLevel());
                     if (z == null) continue;
@@ -383,6 +385,14 @@ public final class UiShotsServer {
                 }
                 HungerFx.sync(p, false);
             }
+            case "draw0", "draw1", "draw2", "draw3", "draw4" -> {   // each path's way of coming out
+                faceForward(p);
+                int f = new int[]{2, 5, 10, 15, 20}[w.charAt(4) - '0'];
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                HungerFx.testLoad(p, f, 7, 10, 25); HungerFx.testSelect(p, 0);
+                HungerFx.draw(p, 10f);
+            }
+            case "lesson" -> { HungerFx.testReset(p); HungerFx.testUnlockAll(p); p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.draw(p, 10f); HungerFx.testHunger(p, 20); }
             case "draw" -> { faceForward(p); p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.draw(p, 10f); }
             case "gnash" -> { faceForward(p); HungerFx.gnash(p, 10f); }
             case "throw" -> { faceForward(p); HungerFx.testBond(p, 140); p.setShiftKeyDown(true); HungerFx.gnash(p, 10f); p.setShiftKeyDown(false); }

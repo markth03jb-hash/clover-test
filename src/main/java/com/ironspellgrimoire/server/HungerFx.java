@@ -166,6 +166,28 @@ public final class HungerFx {
         p.sendSystemMessage(Component.literal("The blade: ").withStyle(ChatFormatting.DARK_RED).append(Component.literal(s).withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)));
     }
 
+    /** Once per player: the blade explains a mechanic the first time it matters, in its own voice, the controls after it. */
+    static void teach(ServerPlayer p, int bit, String line, String how) {
+        CompoundTag r = root(p);
+        if ((r.getInt("taught") & (1 << bit)) != 0) return;
+        r.putInt("taught", r.getInt("taught") | (1 << bit));
+        p.sendSystemMessage(Component.literal("The blade: ").withStyle(ChatFormatting.DARK_RED)
+                .append(Component.literal(line).withStyle(ChatFormatting.RED, ChatFormatting.ITALIC))
+                .append(Component.literal("  [" + how + "]").withStyle(ChatFormatting.GRAY)));
+    }
+
+    /** Whatever's newly possible, taught once (called when things change). */
+    static void lessons(ServerPlayer p) {
+        CompoundTag r = root(p);
+        int mask = r.getInt("unlocked"), n = Integer.bitCount(mask), g = r.getInt("growth");
+        for (int f = 0; f < FORMS; f++) if (canGrow(mask, f) && g >= COST[STAGE[f]]) { teach(p, 2, "I can grow now. Let me.", "open The Blade page and click a lit sword"); break; }
+        if (n >= 2) teach(p, 3, "Carry more of me.", "The Blade page: carry up to 4 swords - press G to switch between them");
+        if (grownStage(p, 6)) teach(p, 7, "I'm big enough to open my mouth wide now.", "the Hunger Domain page: 20 s of slowed prey, every kill fills me");
+        int asc = 0;
+        for (int path = 1; path <= 4; path++) { int a = 3 + (path - 1) * 5 + 2; if ((mask & (1 << a)) != 0 || (mask & (1 << (a + 2))) != 0) asc++; }
+        if (asc >= 2) teach(p, 8, "Two of my hungers have peaked. They could become one.", "hybrids: the bottom row of The Blade page, 300 Growth");
+    }
+
     static void tell(ServerPlayer p, String s) { p.displayClientMessage(Component.literal(s).withStyle(ChatFormatting.GRAY), true); }
 
     // ------------------------------------------------------------------ voice
@@ -193,9 +215,9 @@ public final class HungerFx {
     }
     static final String[] BOND_LINES = {"",
             "You swing me well enough. Keep doing it.",
-            "I know your grip now. I think I like it.",
+            "I know your grip now. I'll watch your back. (Bond 2: kept fed, it strikes foes that hit you from behind)",
             "Throw me, if you must. I always come back to you. (Bond 3: sneak and Gnash to throw the blade)",
-            "We hunt the same way now, you and I.",
+            "We hunt the same way now, you and I. (Bond 4: a twin grows into your empty off hand)",
             "We are one hunger. Call on me and I will answer with all of it. (Bond 5: Unleash wakes the Awakened Pact)"};
 
     // ------------------------------------------------------------------ the pages
@@ -203,8 +225,8 @@ public final class HungerFx {
     public static void draw(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         if (drawn(p)) {
+            drawFx(p, HungerBladeItem.form(p.getMainHandItem()), false);
             p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-            sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_LEATHER, 0.8f, 0.7f);
             tell(p, "The blade sinks back into the book");
             return;
         }
@@ -218,11 +240,52 @@ public final class HungerFx {
             return;
         }
         give(p, current(p));
-        Vec3 hand = p.getEyePosition().add(p.getLookAngle().scale(0.8)).add(0, -0.4, 0);
-        Fx.spark(sl, PAL[line(current(p))], hand, 1.2f);
-        FxSend.ring(sl, PAL[line(current(p))], p.position().add(0, 0.1, 0), 0.4f, 1.6f, 0.08f, 8);
-        OverdriveFx.play(sl, p.position(), "blade_draw", 1f, 0.8f);
-        OverdriveFx.play(sl, p.position(), "jaws", 0.5f, 1.3f);
+        drawFx(p, current(p), true);
+        teach(p, 0, "Use me well.", "right-click: parry - hold right-click: a charged strike - sneak and hit a foe near death: devour it whole");
+    }
+
+    /** Each path comes out (and goes back) its own way: the jaw snaps out of the book, bone cracks up round you,
+     *  shards close into your hand, it rises from your shadow, or it ignites in your grip. */
+    static void drawFx(ServerPlayer p, int f, boolean out) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 hand = p.getEyePosition().add(p.getLookAngle().scale(0.8)).add(0, -0.4, 0), feet = p.position(), d = flat(p.getLookAngle());
+        float k = out ? 1f : 0.55f;
+        switch (line(f)) {
+            case 1 -> {   // bone: a ring of cracks and short bone spurs
+                for (int i = 0; i < (out ? 8 : 4); i++) {
+                    double a = Math.PI * 2 * i / (out ? 8 : 4);
+                    Fx.pillar(sl, Fx.SILVER, feet.add(Math.cos(a) * 1.3, 0, Math.sin(a) * 1.3), 0.9f * k, 0.12f, 8);
+                }
+                FxSend.cracks(sl, Fx.SILVER, feet.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 1.8f * k, 12, false, p.tickCount);
+                OverdriveFx.play(sl, feet, "impact", 0.7f * k, 1.3f);
+            }
+            case 2 -> {   // crystal: shards converging into the hand
+                for (int i = 0; i < (out ? 7 : 4); i++) {
+                    Vec3 from = hand.add(rotY(d, Math.PI * 2 * i / 7).scale(1.6).add(0, 0.5 * Math.sin(i * 1.7), 0));
+                    FxSend.beam(sl, Fx.CRIMSON, from, hand, 0.08f, 6);
+                }
+                Fx.flash(sl, hand, 0.8f * k);
+                OverdriveFx.play(sl, hand, "ice_crack", 0.8f * k, 1.6f);
+            }
+            case 3 -> {   // shadow: rising out of your shadow
+                FxSend.ring(sl, Fx.YAMI, feet.add(0, 0.05, 0), 0.2f, 1.6f, 0.05f, 10);
+                FxSend.trail(sl, Fx.YAMI, feet.add(0, 0.1, 0), hand, 0.25f * k, 8);
+                OverdriveFx.play(sl, feet, "shadow_rise", 0.8f * k, 1.2f);
+            }
+            case 4 -> {   // flame: igniting in the grip
+                FxSend.wall(sl, Fx.FIRE, hand, d, new Vec3(0, 1, 0), 0.1f, 0.9f * k, -180, 180, 0.5f, 6, 0, 0);
+                Fx.impact(sl, Fx.FIRE, hand, 1.0f * k);
+                OverdriveFx.play(sl, hand, "fire", 0.9f * k, 1.3f);
+            }
+            default -> {   // the jaw snapping out of the book
+                Vec3 side = rightOf(d);
+                FxSend.crescent(sl, Fx.CRIMSON, hand.add(0, 0.3, 0), d, side, 0.5f, 0.75f * k, 5, 0.6f);
+                FxSend.crescent(sl, Fx.CRIMSON, hand.add(0, -0.3, 0), d, side.scale(-1), 0.5f, 0.75f * k, 5, 0.6f);
+                Fx.flash(sl, hand, 0.7f * k);
+            }
+        }
+        OverdriveFx.play(sl, feet, "blade_draw", out ? 1f : 0.6f, out ? 0.8f : 1.2f);
+        if (out) OverdriveFx.play(sl, feet, "jaws", 0.5f, 1.3f);
     }
 
     static void give(ServerPlayer p, int f) {
@@ -497,6 +560,7 @@ public final class HungerFx {
         String[] g = VOICE[line(f)][3];
         say(p, STAGE[f] == 7 ? "Two hungers, one blade. " + NAMES[f] + "." : STAGE[f] == 4 ? "I am becoming something. " + LINE_NAMES[line(f)] + "... yes."
                 : g[ThreadLocalRandom.current().nextInt(g.length)]);
+        lessons(p);
         sync(p, false);
     }
 
@@ -573,6 +637,7 @@ public final class HungerFx {
             devourFx(p, victim, f);
             return;
         }
+        swingMark(p, victim, f);
         // the path's own touch (a hybrid has both of its paths')
         if (line(f) == 0) p.heal(amt * 0.05f);
         if (has(f, 1)) TimedModifiers.apply(victim, Attributes.ARMOR, CRACK, "Cracked", -4, AttributeModifier.Operation.ADDITION, 80);
@@ -651,6 +716,19 @@ public final class HungerFx {
     }
 
     static int devouring = -1;
+
+    /** Every blade hit leaves its path's mark: a bone crack, a crystal glint, a shadow cut or a flame arc. */
+    static void swingMark(ServerPlayer p, LivingEntity t, int f) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 c = mid(t), d = flat(c.subtract(p.position()));
+        switch (line(f)) {
+            case 1 -> FxSend.cracks(sl, Fx.SILVER, c, d, new Vec3(0, 1, 0), 0.7f, 6, false, t.getId() + t.tickCount);
+            case 2 -> { Fx.flash(sl, c, 0.5f); FxSend.beam(sl, Fx.CRIMSON, c.add(rightOf(d).scale(-0.5)).add(0, 0.4, 0), c.add(rightOf(d).scale(0.5)).add(0, -0.4, 0), 0.06f, 4); }
+            case 3 -> FxSend.slash(sl, Fx.YAMI, c, d, new Vec3(0, 1, 0), 0.8f, 1.0f, 4, 0.7f);
+            case 4 -> FxSend.crescent(sl, Fx.FIRE, c, d, new Vec3(0, 1, 0), 0.7f, 1.0f, 4, 0.7f);
+            default -> FxSend.crescent(sl, Fx.CRIMSON, c, d, rightOf(d), 0.6f, 0.85f, 4, 0.7f);
+        }
+    }
 
     /** Eaten whole: the jaws close round it, and a burst in the sword's own colour. */
     static void devourFx(ServerPlayer p, LivingEntity t, int f) {
@@ -862,6 +940,8 @@ public final class HungerFx {
         ServerLevel sl = p.serverLevel();
         Fx.spark(sl, PAL[line(heldForm(p))], mid(t), 1.4f);
         p.displayClientMessage(Component.literal("+" + g + " Growth").withStyle(ChatFormatting.RED), true);
+        teach(p, 1, "That's how I grow.", "kills made with the blade feed it Growth - open The Blade page to grow new swords");
+        lessons(p);
         if (bond(p) > lv) {
             say(p, BOND_LINES[bond(p)]);
             OverdriveFx.play(sl, p.position(), "heartbeat", 1f, 1.1f);
@@ -891,6 +971,7 @@ public final class HungerFx {
         else if (m <= 1) TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, HUNGRY_DMG, "Hungry", m == 0 ? 0.3 : 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         if (m == 1 && rnd.nextInt(40) == 0) voice(p, 1);
+        if (m <= 1) teach(p, 4, "I'm getting hungry...", "hungry: it hits harder and pulls you to prey - starved: it bites you, and left starved it sulks - well fed: faster swings");
         if (r.getInt("starvedFor") == 60) voice(p, 4);
         // the twin (Bond 4): grows into the empty off hand while the blade is out
         if (drawn && bond(p) >= 4 && p.getOffhandItem().isEmpty()) {
@@ -979,6 +1060,7 @@ public final class HungerFx {
     public static void testParry(ServerPlayer p) { startUse(p); }
     public static void testCharge(ServerPlayer p) { charge(p); }
     public static int testLook(ServerPlayer p) { return root(p).getInt("look") - 2; }
+    public static int testTaught(ServerPlayer p) { return root(p).getInt("taught"); }
     /** Draw a given sword straight into the hand. */
     public static void testHold(ServerPlayer p, int f) { give(p, f); }
 }
