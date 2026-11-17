@@ -300,6 +300,10 @@ public final class UiShotsServer {
                 p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.DRAGON_FANG.get()));
             }
             case "wyrmfang_lunge" -> { faceForward(p); ShadowFx.wyrmfangLunge(p); }
+            case "vanilla_sword" -> {   // a plain diamond sword in hand: the reference the new blades are held to match
+                faceForward(p);
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND_SWORD));
+            }
             case "gilded_thorn" -> {   // the Gilded Thorn in hand (first person), in the hotbar beside the others
                 faceForward(p);
                 var inv = p.getInventory();
