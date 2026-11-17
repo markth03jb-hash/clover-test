@@ -18,9 +18,9 @@ public class EvolutionScreen extends Screen {
     static final int INK = 0xF00A0507, PANEL = 0xE0180A0E, EDGE = 0xFF8C1C28, EDGE_DIM = 0xFF3A1218, TEXT = 0xFFF2E4E4, MUTED = 0xFF9A8088, GOLD = 0xFFFFC060, BONE = 0xFFC8C8CC;
     static final String[] BRANCH = {"PREDATOR", "ARSENAL", "HUNGER"};
     static final String[][] STRAIN_TEXT = {
-            {"Hunter", "+20% speed. Talons and blade", "cut 25% harder and faster.", "Consume reaches 8 blocks", "and throws you at the prey."},
-            {"Brute", "+6 max health, steadier footing.", "Fist and lance hit 25% harder.", "The Bulwark blocks more,", "the slam lands wider."},
-            {"Hive", "+20% biomass. Kills burst", "into spines. The launcher", "fires three at once.", "Ultimates +25%, a 4th wave."}};
+            {"Hunter", "+20% speed. Talons and blade hit harder and faster. Consume reaches further and lunges."},
+            {"Brute", "+6 health. Fist and lance hit harder; the Bulwark blocks more; wider slams."},
+            {"Hive", "+20% biomass. Kills burst into spines; three spines a shot; stronger ultimates."}};
 
     private record Hit(int x, int y, int w, int h, Runnable run) { boolean in(double mx, double my) { return mx >= x && mx < x + w && my >= y && my < y + h; } }
     private final List<Hit> hits = new ArrayList<>();
@@ -99,7 +99,8 @@ public class EvolutionScreen extends Screen {
                 g.fill(cx, cy, cx + cw, cy + 70, over ? 0xD0501820 : 0xD0200C10);
                 g.renderOutline(cx, cy, cw, 70, over ? 0xFFFF5060 : EDGE);
                 g.drawCenteredString(font, STRAIN_TEXT[s][0], cx + cw / 2, cy + 4, 0xFFFF7080);
-                for (int k = 1; k < STRAIN_TEXT[s].length; k++) g.drawString(font, STRAIN_TEXT[s][k], cx + 4, cy + 6 + k * 11, MUTED, false);
+                List<net.minecraft.util.FormattedCharSequence> ls = font.split(Component.literal(STRAIN_TEXT[s][1]), cw - 8);
+                for (int k = 0; k < Math.min(5, ls.size()); k++) g.drawString(font, ls.get(k), cx + 4, cy + 16 + k * 10, MUTED, false);
                 final int pick = s + 1;
                 hits.add(new Hit(cx, cy, cw, 70, () -> ParasiteClient.send(8, pick)));
             }

@@ -464,7 +464,10 @@ public final class GameTests {
                     p.setHealth(p.getMaxHealth());
                     float h0 = p.getHealth();
                     p.invulnerableTime = 0;
+                    var diff = sl().getDifficulty();   // the test world is peaceful, where mobs' blows on players do nothing
+                    sl().getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
                     p.hurt(p.damageSources().mobAttack(dummy), 10f);
+                    sl().getServer().setDifficulty(diff, true);
                     float took = h0 - p.getHealth();
                     if (took <= 0 || took > 6.5f) bad.add(String.format("a 10 blow on the Bulwark took %.1f", took));
                     ParasiteFx.toggleBulwark(p);

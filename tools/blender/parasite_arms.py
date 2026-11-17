@@ -473,6 +473,9 @@ def to_game(out_dir):
     for form in FORMS:
         build(form, out_dir, game=True)
         for ext in (".obj", ".mtl"): os.replace(os.path.join(out_dir, form + ext), os.path.join(out_dir, "parasite_" + form + ext))
+        objp = os.path.join(out_dir, "parasite_" + form + ".obj")   # and the OBJ's pointer to its materials
+        txt = open(objp).read().replace("mtllib %s.mtl" % form, "mtllib parasite_%s.mtl" % form, 1)
+        open(objp, "w").write(txt)
         gt.export_to_game("parasite_" + form, out_dir, {}, glowing={form + "_glow"},
                           textures={form: TEX, form + "_glow": TEX}, render_type="minecraft:cutout")
 

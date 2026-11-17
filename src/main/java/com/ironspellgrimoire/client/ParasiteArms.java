@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -88,12 +87,9 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
         if (left) ps.scale(-1F, 1F, 1F);
         PoseStack.Pose pose = ps.last();
         RAND.setSeed(42L);
-        for (BakedQuad q : m.getQuads(null, null, RAND, ModelData.EMPTY, null)) vc.putBulkData(pose, q, 1F, 1F, 1F, 1F, light, OverlayTexture.NO_OVERLAY, true);
-        for (Direction d : Direction.values()) {
-            RAND.setSeed(42L);
-            List<BakedQuad> qs = m.getQuads(null, d, RAND, ModelData.EMPTY, null);
-            for (BakedQuad q : qs) vc.putBulkData(pose, q, 1F, 1F, 1F, 1F, light, OverlayTexture.NO_OVERLAY, true);
-        }
+        List<BakedQuad> loose = m.getQuads(null, null, RAND, ModelData.EMPTY, null);
+        if (loose.size() < 24) { ps.popPose(); return; }   // not loaded (the missing-model cube): draw nothing rather than a huge box
+        for (BakedQuad q : loose) vc.putBulkData(pose, q, 1F, 1F, 1F, 1F, light, OverlayTexture.NO_OVERLAY, true);
         ps.popPose();
     }
 
