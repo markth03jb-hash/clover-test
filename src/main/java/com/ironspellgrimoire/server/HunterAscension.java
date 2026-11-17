@@ -55,6 +55,12 @@ import java.util.UUID;
  *    mobs closing in (no block is ever broken); survive it for a reward.
  *  Strength in Numbers: while you hold the grimoire, every shadow in your army adds 2 max mana and 0.3% spell power
  *    (up to 50 shadows).
+ *  Job Change (hunter level 40; from the Status window - no spell slot): the Job Change Trial - three waves and a
+ *    trial champion, all of them to be slain within 3 minutes. Pass it and choose a job, for good:
+ *      Necromancer - your shadows hit 25% harder, +20% max mana;
+ *      Assassin - knives hit 25% harder, +10% speed, +15% attack speed;
+ *      Warlord - greatswords hit 30% harder, +4 hearts, +4 armour, steadier footing (knockback resistance).
+ *  Level-Up Surge (automatic): every level-up heals you fully, fills your mana and, for 10 s, +20% damage and +15% speed.
  * All saved in the part of the player's data that survives death (ShadowArmy.root).
  */
 @Mod.EventBusSubscriber(modid = "iron_spell_grimoire")
@@ -65,6 +71,10 @@ public final class HunterAscension {
     public static final String[] STATS = {"str", "agi", "vit", "foc", "per"};
     static final String LVL = "isg_asc_lvl", XP = "isg_asc_xp", PTS = "isg_asc_pts", MARKS = "isg_marks", LURE = "isg_lure",
             DAY = "isg_day", DAILY = "isg_daily", DONE = "isg_daily_done", DUE = "isg_reckon_due", STARTED = "isg_asc_on";
+    static final String JOB = "isg_job", JOB_READY = "isg_job_ready";
+    public static final int JOB_LEVEL = 40;
+    /** The jobs (1-3; 0 none yet). */
+    public static final String[] JOBS = {"", "Necromancer", "Assassin", "Warlord"};
     /** Daily Trial kinds: 0 kills, 1 damage dealt, 2 blocks travelled, 3 shadows raised. */
     public static final String[] TASKS = {"Slay %d foes", "Deal %d damage", "Travel %d blocks", "Raise %d shadows"};
 
@@ -77,11 +87,18 @@ public final class HunterAscension {
     private static final UUID PER_ID = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000067");
     private static final UUID ARMY_MANA_ID = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000068");
     private static final UUID ARMY_POWER_ID = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000069");
+    private static final UUID JOB_A = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d5000006a");
+    private static final UUID JOB_B = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d5000006b");
+    private static final UUID JOB_C = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d5000006c");
+    private static final UUID JOB_D = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d5000006d");
+    private static final UUID SURGE_DMG = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d5000006e");
+    private static final UUID SURGE_SPD = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d5000006f");
 
     static CompoundTag d(Player p) { return ShadowArmy.root(p); }
     public static int level(Player p) { return Math.max(1, d(p).getInt(LVL)); }
     public static int stat(Player p, int i) { return d(p).getInt("isg_asc_" + STATS[i]); }
     public static int marks(Player p) { return d(p).getInt(MARKS); }
+    public static int job(Player p) { return d(p).getInt(JOB); }
     public static int xpNext(int lvl) { return (int) Math.round(40 + 10 * Math.pow(lvl, 1.45)); }
 
     // ================================================================== XP, marks
@@ -94,10 +111,27 @@ public final class HunterAscension {
         t.putInt(LVL, lvl); t.putInt(XP, lvl >= MAX_LEVEL ? 0 : cur);
         if (ups > 0) {
             t.putInt(PTS, t.getInt(PTS) + ups * POINTS_PER_LEVEL);
-            p.displayClientMessage(Component.literal("Hunter level " + lvl + "  -  +" + ups * POINTS_PER_LEVEL + " stat points (cast Status)").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD), true);
+            p.displayClientMessage(Component.literal("+" + ups * POINTS_PER_LEVEL + " stat points  -  open Status to spend them").withStyle(ChatFormatting.AQUA), true);
             p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6f, 0.7f);
             ShadowFx.play(p.serverLevel(), p.position(), "shadow_rise", 0.7f, 1.5f);
+            surge(p, lvl);
         }
+    }
+
+    /** Level-Up Surge: whole again - health and mana - and for 10 s, +20% damage and +15% speed; the System says so. */
+    static void surge(ServerPlayer p, int lvl) {
+        if (!p.isAlive()) return;
+        p.setHealth(p.getMaxHealth());
+        io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).setMana((float) p.getAttributeValue(AttributeRegistry.MAX_MANA.get()));
+        TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, SURGE_DMG, "Level-Up Surge", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 200);
+        TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, SURGE_SPD, "Level-Up Surge", 0.15, AttributeModifier.Operation.MULTIPLY_TOTAL, 200);
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(5, 40, 15));
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.literal("LEVEL UP").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD)));
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(Component.literal("Hunter level " + lvl + "  -  Surge: +20% damage, +15% speed for 10 s").withStyle(ChatFormatting.GRAY)));
+        ServerLevel sl = p.serverLevel();
+        Vec3 c = p.position().add(0, 0.05, 0);
+        FxSend.ring(sl, Fx.ICE | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, c, 0.4f, 4.5f, 0.2f, 14);
+        FxSend.beam(sl, Fx.ICE | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, c, c.add(0, 6, 0), 0.6f, 14);
     }
 
     public static void addMarks(ServerPlayer p, int n) { d(p).putInt(MARKS, Math.max(0, marks(p) + n)); }
@@ -120,6 +154,20 @@ public final class HunterAscension {
     @SubscribeEvent
     public static void onHurt(LivingHurtEvent e) {
         if (e.getSource().getEntity() instanceof ServerPlayer p && e.getEntity() != p && ShadowFx.equipped(p)) progress(p, 1, Math.round(e.getAmount()));
+    }
+
+    /** The jobs' weapon edge: an Assassin's knives hit 25% harder, a Warlord's greatswords 30%. */
+    @SubscribeEvent
+    public static void onJobHurt(LivingHurtEvent e) {
+        if (!(e.getSource().getEntity() instanceof ServerPlayer p) || e.getEntity() == p) return;
+        int job = job(p);
+        if (job != 2 && job != 3) return;
+        net.minecraft.world.item.Item it = p.getMainHandItem().getItem();
+        boolean greatsword = it == AddonItemRegistry.FROSTWING.get();
+        boolean knife = !greatsword && (it == AddonItemRegistry.NIGHTFANG.get() || it == AddonItemRegistry.DRAGON_FANG.get() || it == AddonItemRegistry.DUSKGLASS_KRIS.get()
+                || it == AddonItemRegistry.GILDED_THORN.get() || it == AddonItemRegistry.BLOODREND.get() || it == AddonItemRegistry.ROSEWRATH.get());
+        if (job == 2 && knife) e.setAmount(e.getAmount() * 1.25f);
+        if (job == 3 && greatsword) e.setAmount(e.getAmount() * 1.3f);
     }
 
     /** A shadow rose (ShadowFx.rise). */
@@ -150,6 +198,13 @@ public final class HunterAscension {
             int army = held ? Math.min(50, ShadowArmy.count(p)) : 0;
             setMod(p, AttributeRegistry.MAX_MANA.get(), ARMY_MANA_ID, "Strength in Numbers", 2.0 * army, AttributeModifier.Operation.ADDITION);
             setMod(p, AttributeRegistry.SPELL_POWER.get(), ARMY_POWER_ID, "Strength in Numbers", 0.003 * army, AttributeModifier.Operation.MULTIPLY_BASE);
+            int job = job(p);   // the job's perks (Job Change)
+            setMod(p, AttributeRegistry.MAX_MANA.get(), JOB_A, "Necromancer", job == 1 ? 0.2 : 0, AttributeModifier.Operation.MULTIPLY_BASE);
+            setMod(p, Attributes.MOVEMENT_SPEED, JOB_B, "Assassin", job == 2 ? 0.1 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
+            setMod(p, Attributes.ATTACK_SPEED, JOB_C, "Assassin", job == 2 ? 0.15 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
+            setMod(p, Attributes.MAX_HEALTH, JOB_A, "Warlord", job == 3 ? 8 : 0, AttributeModifier.Operation.ADDITION);
+            setMod(p, Attributes.ARMOR, JOB_B, "Warlord", job == 3 ? 4 : 0, AttributeModifier.Operation.ADDITION);
+            setMod(p, Attributes.KNOCKBACK_RESISTANCE, JOB_D, "Warlord", job == 3 ? 0.25 : 0, AttributeModifier.Operation.ADDITION);
             if (held) start(p);
             if (d(p).getBoolean(STARTED)) { dayTick(p); travelTick(p); }
         }
@@ -250,26 +305,52 @@ public final class HunterAscension {
     public static void startReckoning(ServerPlayer p) {
         if (RECKONING.containsKey(p.getUUID())) return;
         d(p).putBoolean(DUE, false);
-        Reckoning r = new Reckoning(p);
+        Reckoning r = new Reckoning(p, false);
         RECKONING.put(p.getUUID(), r);
         p.displayClientMessage(Component.literal("THE RECKONING  -  survive two minutes").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), true);
         p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.4f, 1.4f);
     }
 
+    /** Job Change: the trial (hunter level 40, no job yet, not already in a hunt). */
+    public static void startJobTrial(ServerPlayer p) {
+        if (RECKONING.containsKey(p.getUUID()) || level(p) < JOB_LEVEL || job(p) != 0 || d(p).getBoolean(JOB_READY)) return;
+        RECKONING.put(p.getUUID(), new Reckoning(p, true));
+        p.closeContainer();
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(5, 50, 15));
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.literal("JOB CHANGE TRIAL").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD)));
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(Component.literal("Slay every foe - and the champion - within 3 minutes").withStyle(ChatFormatting.GRAY)));
+        p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.4f, 1.8f);
+    }
+
     static final class Reckoning {
-        static final int LENGTH = 2400, WAVE = 400;
+        static final int LENGTH = 2400, WAVE = 400, TRIAL_LENGTH = 3600, TRIAL_WAVE = 300, TRIAL_WAVES = 4;
         final long start;
+        final boolean trial;   // the Job Change Trial: three waves and a champion, all to be slain in time
         final List<Mob> mobs = new ArrayList<>();
-        final ServerBossEvent bar = new ServerBossEvent(Component.literal("The Reckoning"), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_6);
+        final ServerBossEvent bar;
         int wave;
 
-        Reckoning(ServerPlayer p) { start = p.serverLevel().getGameTime(); bar.addPlayer(p); }
+        Reckoning(ServerPlayer p, boolean trial) {
+            this.trial = trial;
+            start = p.serverLevel().getGameTime();
+            bar = trial ? new ServerBossEvent(Component.literal("Job Change Trial"), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.NOTCHED_10)
+                        : new ServerBossEvent(Component.literal("The Reckoning"), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_6);
+            bar.addPlayer(p);
+        }
 
         void tick(ServerPlayer p) {
             long age = p.serverLevel().getGameTime() - start;
-            bar.setProgress(Math.max(0, 1 - age / (float) LENGTH));
+            int length = trial ? TRIAL_LENGTH : LENGTH;
+            bar.setProgress(Math.max(0, 1 - age / (float) length));
             if (!p.isAlive()) { end(p, false); return; }
-            if (age >= LENGTH) { end(p, true); return; }
+            if (trial) {
+                if (wave >= TRIAL_WAVES && mobs.stream().noneMatch(Mob::isAlive)) { end(p, true); return; }
+                if (age >= length) { end(p, false); return; }
+                if (age >= (long) wave * TRIAL_WAVE && wave < TRIAL_WAVES) { if (wave == TRIAL_WAVES - 1) champion(p); else spawnWave(p, wave + 2); wave++; }
+                if (age % 40 == 0) for (Mob m : mobs) if (m.isAlive() && m.getTarget() != p) m.setTarget(p);
+                return;
+            }
+            if (age >= length) { end(p, true); return; }
             if (age >= (long) wave * WAVE && wave < LENGTH / WAVE) spawnWave(p, wave++);
             if (age % 40 == 0) for (Mob m : mobs) if (m.isAlive() && m.getTarget() != p) m.setTarget(p);
         }
@@ -291,6 +372,7 @@ public final class HunterAscension {
                 m.moveTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, p.getRandom().nextFloat() * 360, 0);
                 m.finalizeSpawn(sl, sl.getCurrentDifficultyAt(at), MobSpawnType.EVENT, null, null);
                 m.getPersistentData().putBoolean("isg_reckoning", true);
+                if (trial) m.getPersistentData().putBoolean("isg_no_reward", true);
                 AttributeInstance hp = m.getAttribute(Attributes.MAX_HEALTH);
                 if (hp != null) { hp.addPermanentModifier(new AttributeModifier("Reckoning", hpMul, AttributeModifier.Operation.MULTIPLY_BASE)); m.setHealth(m.getMaxHealth()); }
                 AttributeInstance dmg = m.getAttribute(Attributes.ATTACK_DAMAGE);
@@ -304,10 +386,46 @@ public final class HunterAscension {
             sl.playSound(null, p.blockPosition(), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 0.5f, 1.6f);
         }
 
+        /** The trial's champion: a wither skeleton, six times its health, harder blows, on its own bar. */
+        void champion(ServerPlayer p) {
+            ServerLevel sl = p.serverLevel();
+            Vec3 at = p.position().add(p.getLookAngle().multiply(1, 0, 1).normalize().scale(9));
+            BlockPos bp = sl.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(at));
+            if (Math.abs(bp.getY() - p.getY()) > 8) bp = BlockPos.containing(at.x, p.getY(), at.z);
+            Mob m = EntityType.WITHER_SKELETON.create(sl);
+            if (m == null) return;
+            m.moveTo(bp.getX() + 0.5, bp.getY(), bp.getZ() + 0.5, 0, 0);
+            m.finalizeSpawn(sl, sl.getCurrentDifficultyAt(bp), MobSpawnType.EVENT, null, null);
+            m.setCustomName(Component.literal("Trial Champion").withStyle(ChatFormatting.LIGHT_PURPLE));
+            m.getPersistentData().putBoolean("isg_reckoning", true);
+            m.getPersistentData().putBoolean("isg_no_reward", true);
+            AttributeInstance hp = m.getAttribute(Attributes.MAX_HEALTH);
+            if (hp != null) { hp.addPermanentModifier(new AttributeModifier("Trial", 5.0 + level(p) * 0.03, AttributeModifier.Operation.MULTIPLY_BASE)); m.setHealth(m.getMaxHealth()); }
+            AttributeInstance dmg = m.getAttribute(Attributes.ATTACK_DAMAGE);
+            if (dmg != null) dmg.addPermanentModifier(new AttributeModifier("Trial", 0.6, AttributeModifier.Operation.MULTIPLY_BASE));
+            m.setPersistenceRequired();
+            m.setTarget(p);
+            sl.addFreshEntity(m);
+            mobs.add(m);
+            ShadowFx.risePool(sl, m.position(), 1.4f);
+            sl.playSound(null, m.blockPosition(), SoundEvents.WITHER_SKELETON_AMBIENT, SoundSource.HOSTILE, 1.2f, 0.6f);
+            p.displayClientMessage(Component.literal("The Trial Champion has risen").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), true);
+        }
+
         void end(ServerPlayer p, boolean survived) {
             RECKONING.remove(p.getUUID());
             bar.removeAllPlayers();
             for (Mob m : mobs) if (m.isAlive()) { ShadowFx.sinkPool(p.serverLevel(), m.position(), 0.9f); m.discard(); }
+            if (trial) {
+                if (survived) {
+                    d(p).putBoolean(JOB_READY, true);
+                    p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.8f, 1.0f);
+                    p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.literal("TRIAL PASSED").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD)));
+                    p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(Component.literal("Choose your job").withStyle(ChatFormatting.GRAY)));
+                    sendStatus(p, true, true);   // straight to the choice
+                } else p.displayClientMessage(Component.literal("Job Change Trial failed  -  try again from Status").withStyle(ChatFormatting.DARK_GRAY), true);
+                return;
+            }
             if (survived) {
                 addMarks(p, 150);
                 gainXp(p, xpNext(level(p)) / 3);
@@ -321,7 +439,10 @@ public final class HunterAscension {
     public static void openStatus(ServerPlayer p, float power) { start(p); sendStatus(p, true); }
     public static void openMarket(ServerPlayer p, float power) { start(p); AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Market(marks(p), true)); }
 
-    static void sendStatus(ServerPlayer p, boolean open) {
+    static void sendStatus(ServerPlayer p, boolean open) { sendStatus(p, open, false); }
+
+    /** openJob: open the job choice instead (the trial was just passed). */
+    static void sendStatus(ServerPlayer p, boolean open, boolean openJob) {
         CompoundTag t = d(p);
         int[] st = new int[STATS.length];
         for (int i = 0; i < st.length; i++) st[i] = stat(p, i);
@@ -330,7 +451,8 @@ public final class HunterAscension {
         for (int i = 0; i < l.size(); i++) { CompoundTag c = l.getCompound(i); k[i] = c.getInt("k"); prog[i] = c.getInt("prog"); goal[i] = c.getInt("goal"); }
         long dayTime = p.server.overworld().getDayTime() % 24000L;
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Status(open, level(p), t.getInt(XP), xpNext(level(p)), t.getInt(PTS), st,
-                marks(p), ShadowArmy.count(p), t.getInt(LURE), k, prog, goal, t.getBoolean(DONE), (int) ((24000L - dayTime) / 20L), inReckoning(p)));
+                marks(p), ShadowArmy.count(p), t.getInt(LURE), k, prog, goal, t.getBoolean(DONE), (int) ((24000L - dayTime) / 20L), inReckoning(p),
+                job(p), t.getBoolean(JOB_READY), openJob));
     }
 
     /** The Market's wares: 0 Nightfang, 1 Mana Tonic, 2 Shade Salve, 3 Remnant Lure, 4 Stat Reset, 5 Reckoning Key,
@@ -371,7 +493,8 @@ public final class HunterAscension {
 
     static void give(ServerPlayer p, ItemStack st) { if (!p.getInventory().add(st)) p.drop(st, false); }
 
-    /** The windows' buttons (ShadowPackets.Act 10+): 10 status, 11 spend a point on stat id, 12 market, 13 buy ware id. */
+    /** The windows' buttons (ShadowPackets.Act 10+): 10 status, 11 spend a point on stat id, 12 market, 13 buy ware id,
+     *  14 start the Job Change Trial, 15 choose job id (1-3) once the trial is passed. */
     static void handle(ServerPlayer p, int action, int id) {
         if (!ShadowFx.equipped(p)) return;
         switch (action) {
@@ -386,6 +509,17 @@ public final class HunterAscension {
             }
             case 12 -> AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Market(marks(p), false));
             case 13 -> { buy(p, id); AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Market(marks(p), false)); }
+            case 14 -> startJobTrial(p);
+            case 15 -> {
+                CompoundTag t = d(p);
+                if (!t.getBoolean(JOB_READY) || job(p) != 0 || id < 1 || id >= JOBS.length) return;
+                t.putInt(JOB, id); t.putBoolean(JOB_READY, false);
+                p.closeContainer();
+                p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.literal(JOBS[id].toUpperCase()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD)));
+                p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(Component.literal("Your job has changed").withStyle(ChatFormatting.GRAY)));
+                p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 0.7f, 1.2f);
+                FxSend.ring(p.serverLevel(), Fx.VOID | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, p.position().add(0, 0.05, 0), 0.4f, 5f, 0.25f, 16);
+            }
             default -> { }
         }
     }
@@ -398,7 +532,7 @@ public final class HunterAscension {
     }
 
     /** For the tests: end a running Reckoning now (as survived or not); returns how many mobs it had raised. */
-    static int testEndReckoning(ServerPlayer p, boolean survived) {
+    public static int testEndReckoning(ServerPlayer p, boolean survived) {
         Reckoning r = RECKONING.get(p.getUUID());
         if (r == null) return -1;
         int n = r.mobs.size();
@@ -406,10 +540,19 @@ public final class HunterAscension {
         return n;
     }
 
+    /** For the tests: whether p is in the Job Change Trial now. */
+    static boolean testInTrial(ServerPlayer p) { Reckoning r = RECKONING.get(p.getUUID()); return r != null && r.trial; }
+
+    /** For the screenshots: no job, the trial not yet passed. */
+    public static void testJobReset(ServerPlayer p) { d(p).putInt(JOB, 0); d(p).putBoolean(JOB_READY, false); }
+
+    /** For the screenshots: the trial passed, the choice open. */
+    public static void testJobReady(ServerPlayer p) { d(p).putInt(JOB, 0); d(p).putBoolean(JOB_READY, true); sendStatus(p, true, true); }
+
     /** For the tests: forget a player's hunter data. */
     static void testReset(ServerPlayer p) {
         CompoundTag t = d(p);
-        for (String k : new String[]{LVL, XP, PTS, MARKS, LURE, DAY, DAILY, DONE, DUE, STARTED}) t.remove(k);
+        for (String k : new String[]{LVL, XP, PTS, MARKS, LURE, DAY, DAILY, DONE, DUE, STARTED, JOB, JOB_READY}) t.remove(k);
         for (String st : STATS) t.remove("isg_asc_" + st);
     }
 

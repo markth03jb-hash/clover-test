@@ -410,8 +410,12 @@ public final class GameTests {
                 if (t == 2) {
                     HunterAscension.start(p);
                     baseHp = p.getMaxHealth();
+                    io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).setMana(0);
                     HunterAscension.gainXp(p, HunterAscension.xpNext(1) + HunterAscension.xpNext(2));
                     if (HunterAscension.level(p) != 3) bad.add("two levels of XP gave level " + HunterAscension.level(p));
+                    if (io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).getMana() < 50) bad.add("the Level-Up Surge didn't fill mana");
+                    var surge = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+                    if (surge == null || surge.getModifiers().stream().noneMatch(m -> m.getName().equals("Level-Up Surge"))) bad.add("no Level-Up Surge damage boost");
                     int pts = HunterAscension.d(p).getInt(HunterAscension.PTS);
                     if (pts != 6) bad.add("expected 6 points, had " + pts);
                     for (int i = 0; i < 4; i++) HunterAscension.handle(p, 11, 2);   // four into Vitality
@@ -452,11 +456,27 @@ public final class GameTests {
                     else if (!sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(32), m -> m.getPersistentData().getBoolean("isg_reckoning")).isEmpty())
                         bad.add("the Reckoning's mobs were left behind");
                 }
+                if (t == 142) {   // Job Change: to level 40, the trial, passing it, choosing the Warlord
+                    baseHp = p.getMaxHealth();
+                    HunterAscension.testGrant(p, Math.max(0, HunterAscension.JOB_LEVEL - HunterAscension.level(p)), 0);
+                    if (HunterAscension.level(p) < HunterAscension.JOB_LEVEL) bad.add("couldn't reach level " + HunterAscension.JOB_LEVEL);
+                    HunterAscension.handle(p, 15, 3);
+                    if (HunterAscension.job(p) != 0) bad.add("chose a job without passing the trial");
+                    HunterAscension.handle(p, 14, 0);
+                    if (!HunterAscension.testInTrial(p)) bad.add("the Job Change Trial didn't start");
+                    HunterAscension.testEndReckoning(p, true);
+                    if (!HunterAscension.d(p).getBoolean(HunterAscension.JOB_READY)) bad.add("passing the trial didn't let you choose");
+                    HunterAscension.handle(p, 15, 3);
+                    if (HunterAscension.job(p) != 3) bad.add("choosing the Warlord gave job " + HunterAscension.job(p));
+                    HunterAscension.handle(p, 15, 1);
+                    if (HunterAscension.job(p) != 3) bad.add("the job could be changed again");
+                }
+                if (t == 146 && p.getMaxHealth() < baseHp + 7.9) bad.add(String.format("the Warlord's +4 hearts weren't applied (%.1f -> %.1f)", baseHp, p.getMaxHealth()));
             } catch (Throwable x) { bad.add("threw " + x); }
             if (t < 150) return false;
             String ch = changes(before);
             if (!ch.isEmpty()) bad.add("changed the world: " + ch);
-            if (bad.isEmpty()) pass(name, "level " + HunterAscension.level(p) + ", stats applied, trial done, market and Reckoning work");
+            if (bad.isEmpty()) pass(name, "level " + HunterAscension.level(p) + ", stats applied, trial done, market and Reckoning work, level-up surge, job change");
             else fail(name, String.join("; ", bad));
             HunterAscension.testReset(p);
             clearArea();

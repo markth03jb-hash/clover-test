@@ -71,20 +71,21 @@ public final class ShadowPackets {
 
     /** Server -> client: the hunter's Status (HunterAscension) - open it (open) or refresh it if it's showing. */
     public static class Status {
-        public final boolean open, trialDone, reckoning;
-        public final int level, xp, xpNext, points, marks, army, lures, dayLeft;
+        public final boolean open, trialDone, reckoning, jobReady, openJob;
+        public final int level, xp, xpNext, points, marks, army, lures, dayLeft, job;
         public final int[] stats, kinds, prog, goal;
         public Status(boolean open, int level, int xp, int xpNext, int points, int[] stats, int marks, int army, int lures,
-                      int[] kinds, int[] prog, int[] goal, boolean trialDone, int dayLeft, boolean reckoning) {
+                      int[] kinds, int[] prog, int[] goal, boolean trialDone, int dayLeft, boolean reckoning, int job, boolean jobReady, boolean openJob) {
             this.open = open; this.level = level; this.xp = xp; this.xpNext = xpNext; this.points = points; this.stats = stats; this.marks = marks;
             this.army = army; this.lures = lures; this.kinds = kinds; this.prog = prog; this.goal = goal; this.trialDone = trialDone;
-            this.dayLeft = dayLeft; this.reckoning = reckoning;
+            this.dayLeft = dayLeft; this.reckoning = reckoning; this.job = job; this.jobReady = jobReady; this.openJob = openJob;
         }
         public static void encode(Status p, FriendlyByteBuf b) {
             b.writeBoolean(p.open); b.writeVarInt(p.level); b.writeVarInt(p.xp); b.writeVarInt(p.xpNext); b.writeVarInt(p.points);
             b.writeVarIntArray(p.stats); b.writeVarInt(p.marks); b.writeVarInt(p.army); b.writeVarInt(p.lures);
             b.writeVarIntArray(p.kinds); b.writeVarIntArray(p.prog); b.writeVarIntArray(p.goal);
             b.writeBoolean(p.trialDone); b.writeVarInt(p.dayLeft); b.writeBoolean(p.reckoning);
+            b.writeVarInt(p.job); b.writeBoolean(p.jobReady); b.writeBoolean(p.openJob);
         }
         public static Status decode(FriendlyByteBuf b) {
             boolean open = b.readBoolean();
@@ -92,10 +93,14 @@ public final class ShadowPackets {
             int[] stats = b.readVarIntArray();
             int marks = b.readVarInt(), army = b.readVarInt(), lures = b.readVarInt();
             int[] kinds = b.readVarIntArray(), prog = b.readVarIntArray(), goal = b.readVarIntArray();
-            return new Status(open, level, xp, xpNext, points, stats, marks, army, lures, kinds, prog, goal, b.readBoolean(), b.readVarInt(), b.readBoolean());
+            boolean trialDone = b.readBoolean(); int dayLeft = b.readVarInt(); boolean reckoning = b.readBoolean();
+            return new Status(open, level, xp, xpNext, points, stats, marks, army, lures, kinds, prog, goal, trialDone, dayLeft, reckoning,
+                    b.readVarInt(), b.readBoolean(), b.readBoolean());
         }
         public static void handle(Status p, Supplier<NetworkEvent.Context> ctx) {
-            ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.StatusScreen.show(p)));
+            ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                if (p.openJob) com.ironspellgrimoire.client.JobScreen.show(p); else com.ironspellgrimoire.client.StatusScreen.show(p);
+            }));
             ctx.get().setPacketHandled(true);
         }
     }

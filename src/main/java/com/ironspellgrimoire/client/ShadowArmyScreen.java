@@ -152,7 +152,7 @@ public class ShadowArmyScreen extends Screen {
         scroll = Math.max(0, Math.min(scroll, Math.max(0, list.size() - n)));
         if (list.isEmpty()) {
             g.drawCenteredString(font, "No shadows yet.", px() + pw() / 2, y0 + 40, TEXT);
-            g.drawCenteredString(font, "Slay something while holding the Shadow Grimoire,", px() + pw() / 2, y0 + 56, MUTED);
+            g.drawCenteredString(font, "Slay something while holding the System Grimoire,", px() + pw() / 2, y0 + 56, MUTED);
             g.drawCenteredString(font, "then cast Rise on its remnant before it fades.", px() + pw() / 2, y0 + 68, MUTED);
             return;
         }

@@ -159,7 +159,11 @@ public final class ShadowFx {
     }
 
     /** How much harder the shadows hit in their master's Sovereign's Domain. */
-    public static float domainBoost(Player o) { return o instanceof ServerPlayer sp && Moves.inMode(sp, MODE) ? 1.5f : 1f; }
+    /** How much harder a player's shadows hit: Sovereign's Domain (x1.5) and the Necromancer's job (x1.25). */
+    public static float domainBoost(Player o) {
+        if (!(o instanceof ServerPlayer sp)) return 1f;
+        return (Moves.inMode(sp, MODE) ? 1.5f : 1f) * (HunterAscension.job(sp) == 1 ? 1.25f : 1f);
+    }
 
     private static Vec3 look(ServerPlayer p) {
         Vec3 l = flat(p.getLookAngle());

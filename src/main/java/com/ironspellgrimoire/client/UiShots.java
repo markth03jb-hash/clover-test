@@ -487,6 +487,9 @@ public final class UiShots {
         steps.add(new Step("shd_verdict_sweep", () -> {}, 12, true));   // the sweep, a few ticks after the charge
         steps.add(new Step("shd_wyrmfang_lunge", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:wyrmfang_lunge")); }, 8, true));
         steps.add(new Step("shd_status", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "s:status")); }, 14, false));   // the Status window
+        steps.add(new Step("shd_status_job", () -> onServer(p -> UiShotsServer.element(p, "s:status_job")), 14, false));   // Status at level 40: the Job Change button
+        steps.add(new Step("shd_job_choice", () -> onServer(p -> UiShotsServer.element(p, "s:job_choice")), 14, false));   // the choice
+        steps.add(new Step("shd_job_trial", () -> { mc.setScreen(null); mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:job_trial")); }, 30, true));   // the trial begins
         steps.add(new Step("shd_market", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "s:market")); }, 14, false));   // the Market
         steps.add(new Step("shd_market_done", () -> { mc.setScreen(null); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); }, 4, true));
         steps.add(new Step("shd_umbral_step", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:umbral_step")); }, 6, true));

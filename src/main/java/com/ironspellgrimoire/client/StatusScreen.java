@@ -7,7 +7,8 @@ import net.minecraft.client.gui.GuiGraphics;
 /**
  * The hunter's Status window (the Shadow Grimoire's "Status" page; server/HunterAscension): your level and XP, your
  * five stats with a + to spend each point, your Shade Marks, what your army gives you (Strength in Numbers), and today's
- * Daily Trial - its three tasks and how long the day has left.
+ * Daily Trial - its three tasks and how long the day has left - and the job (Job Change: begin the trial at hunter
+ * level 40, then choose).
  */
 public class StatusScreen extends ShadowUiScreen {
     static final String[] NAMES = {"Strength", "Agility", "Vitality", "Focus", "Perception"};
@@ -65,6 +66,19 @@ public class StatusScreen extends ShadowUiScreen {
         g.drawString(font, "Strength in Numbers: " + s.army + " shadows", x0, ay, 0xFF9AB4D8, false);
         g.drawString(font, String.format("+%d mana, +%.1f%% spell power", army * 2, army * 0.3), x0, ay + 10, 0xFF5A6A88, false);
         if (s.lures > 0) g.drawString(font, s.lures + " Remnant Lure" + (s.lures == 1 ? "" : "s") + " ready", x0, ay + 22, GOLD, false);
+        // the job (Job Change: a trial at hunter level 40, then a choice for good)
+        int jy = ay + 36;
+        if (s.job > 0) {
+            g.drawString(font, "Job: " + JobScreen.NAMES[s.job - 1], x0, jy + 4, 0xFFD8A8FF, false);
+        } else if (s.jobReady) {
+            g.drawString(font, "Trial passed", x0, jy + 4, 0xFFD8A8FF, false);
+            button(g, x0 + 80, jy, 84, 15, "CHOOSE JOB", true, 0xFFB070FF, mx, my, () -> JobScreen.open(s));
+        } else if (s.level >= 40) {
+            g.drawString(font, "Job Change", x0, jy + 4, 0xFFD8A8FF, false);
+            button(g, x0 + 80, jy, 84, 15, "BEGIN TRIAL", !s.reckoning, 0xFFB070FF, mx, my, () -> act(14, 0));
+        } else {
+            g.drawString(font, "Job Change at hunter level 40", x0, jy + 4, 0xFF55678A, false);
+        }
         // the Daily Trial
         int dx = x0 + colW + 12, dw = w - colW - 12;
         g.fill(dx, sy, dx + dw, sy + NAMES.length * 22 - 3, PANEL);

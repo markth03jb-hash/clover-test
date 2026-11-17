@@ -78,12 +78,12 @@ json.dump(c, open(CT, 'w'), indent=2)
 
 LP = os.path.join(A_, 'lang/en_us.json')
 lang = json.load(open(LP))
-lang['item.iron_spell_grimoire.shadow_grimoire'] = 'Shadow Grimoire'
+lang['item.iron_spell_grimoire.shadow_grimoire'] = 'System Grimoire'
 lang['entity.iron_spell_grimoire.shadow_soldier'] = 'Shadow Soldier'
 lang['entity.iron_spell_grimoire.oathbound_knight'] = 'Oathbound Knight'
 lang['entity.iron_spell_grimoire.ravener'] = 'Ravener'
 lang['key.iron_spell_grimoire.shadow_army'] = 'Shadow Army menu'
-lang['ui.iron_spell_grimoire.shadow_grimoire_only'] = 'Only the Shadow Grimoire can cast this.'
+lang['ui.iron_spell_grimoire.shadow_grimoire_only'] = 'Only the System Grimoire can cast this.'
 lang['tooltip.iron_spell_grimoire.shadow_grimoire.passive'] = ('Passive - Remnants: what you slay while holding this grimoire leaves a remnant where it fell for 60 s - '
     'a black shadow of it in a dark pool, seen by you alone. Cast Rise on it to raise it as your shadow (3 tries; the stronger it was, the harder). '
     'Your shadows level up from their own kills and rank up: Soldier, Elite, Knight, Captain, General. Open your army with V to equip, rank up, rename or release them. '
@@ -99,7 +99,7 @@ for k, (title, guide) in {
  'command_hunt': ('Command: Hunt', 'Mark the foe you aim at: every shadow at your side turns on it, and its armour is torn down for 8 s.'),
  'veil': ('Veil', 'For 5 s you melt into shadow: foes lose sight of you, and your next blow lands 50% harder.'),
  'status': ('Status', 'Open your Status: your hunter level and XP, your five stats (spend your points here), your Shade Marks and today\'s Daily Trial.'),
- 'market': ('Market', 'Open the Market: spend Shade Marks on the Nightfang dagger, Mana Tonics, Shade Salves, Remnant Lures, a stat reset or a Reckoning Key.'),
+ 'market': ('Market', 'Open the Market: spend Shade Marks on its blades (Nightfang, Dragon Fang, Duskglass Kris, Gilded Thorn, Bloodrend, Rosewrath and the Frostwing greatsword), Mana Tonics, Shade Salves, Remnant Lures, a stat reset or a Reckoning Key.'),
  'sovereigns_grip': ('Sovereign\'s Grip', 'Lift the foe you aim at and hold it where you look for 2.5 s - crouch to throw it early - then fling it along your aim; it takes damage when it lands, more the farther it flew. With no foe in sight, every dropped item within 12 blocks flies to you.'),
  'shadow_step': ('Shadow Step', 'Step out of the shadow you look at, however far away. With none in sight, step to a shadow keeping watch at its post (Station it in the army menu).'),
  'dread_roar': ('Dread Roar', 'A wave of dread rolls out 10 blocks: foes freeze for 2 s, weak ones flee for 6 s, and bosses hit 25% softer for 10 s.'),
@@ -115,7 +115,7 @@ lang['item.iron_spell_grimoire.nightfang'] = 'Nightfang'
 lang['item.iron_spell_grimoire.mana_tonic'] = 'Mana Tonic'
 lang['item.iron_spell_grimoire.shade_salve'] = 'Shade Salve'
 lang['tooltip.iron_spell_grimoire.nightfang.1'] = 'Right-click - Thousand Cuts: blink between up to five foes, cutting each, and land back where you started (15 s).'
-lang['tooltip.iron_spell_grimoire.nightfang.2'] = 'Bought in the Shadow Grimoire\'s Market.'
+lang['tooltip.iron_spell_grimoire.nightfang.2'] = 'Bought in the System Grimoire\'s Market.'
 lang['item.iron_spell_grimoire.duskglass_kris'] = 'Duskglass Kris'
 lang['item.iron_spell_grimoire.dragon_fang'] = 'Dragon Fang'
 lang['tooltip.iron_spell_grimoire.dragon_fang.1'] = 'Right-click - Wyrmfang Lunge: dash up to 8 blocks through every foe in the way; each wound bursts a second later, and each foe cut heals you 5% (14 s).'
