@@ -103,6 +103,9 @@ public class AstaFx {
         TASKS.computeIfAbsent(serverTicks + Math.max(1, ticks), k -> new ArrayList<>()).add(r);
     }
 
+    /** Game tests only: drop every staged effect still waiting (the last spell's lingering field), so it can't hit the next one's dummy. */
+    static void testDropScheduled() { TASKS.clear(); }
+
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END) return;

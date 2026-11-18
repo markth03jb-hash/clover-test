@@ -210,7 +210,11 @@ public final class GameTests {
         @Override Class<?>[] roots() { return new Class<?>[]{spell.getClass()}; }
         boolean skip;
         @Override void start() {
-            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            // a clean slate: the last spell's staged effects dropped and a fresh dummy (nothing still bound to the old
+            // one - a chain, a burn, a mark), so only this spell's damage is counted
+            cancelCast(); AstaFx.testDropScheduled(); clearArea(); resetPlayer(true);
+            if (dummy != null) { dummy.discard(); dummy = null; }
+            ensureDummy();
             // equip the grimoire this spell belongs to, fully mastered (else its lock or another grimoire stops it)
             String path = spell.getSpellResource().getPath();
             GrimoireMastery.Book owner = null;
