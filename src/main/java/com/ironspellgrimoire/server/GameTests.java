@@ -512,7 +512,7 @@ public final class GameTests {
                     // moods: well fed - faster swings; starved - harder hits and a bite that never takes the last of you
                     HungerFx.testHunger(p, 90f);
                 }
-                if (t == 22) {
+                if (t == 36) {   // (over a full second after: the mood is applied once a second)
                     var sp = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_SPEED);
                     if (sp == null || sp.getModifier(HungerFx.FED_SPD) == null) bad.add("well fed gave no faster swings");
                     HungerFx.testHunger(p, 2f);
