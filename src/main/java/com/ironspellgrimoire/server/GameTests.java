@@ -570,6 +570,10 @@ public final class GameTests {
                     p.setShiftKeyDown(false);
                     if (HungerFx.drawn(p)) bad.add("the throw left the blade in the hand");
                 }
+                if (t == 204) {   // 42 ticks after the throw: it's long back
+                    if (!HungerFx.drawn(p)) bad.add("the thrown blade didn't come back to the hand (main hand: " + p.getMainHandItem() + ")");
+                    if (!sl().getEntitiesOfClass(com.ironspellgrimoire.entity.ThrownHungerBlade.class, p.getBoundingBox().inflate(40)).isEmpty()) bad.add("a thrown blade is still out");
+                }
                 if (t == 206) {   // Bond 10 and the titles
                     HungerFx.testBond(p, 1000);
                     if (HungerFx.bond(p) != 10) bad.add("1000 bond XP gave Bond " + HungerFx.bond(p));
@@ -583,8 +587,7 @@ public final class GameTests {
                     if (HungerFx.testTitle(p) != -1) bad.add("couldn't take a title off");
                 }
                 if (t == 210) {
-                    if (!HungerFx.drawn(p)) bad.add("the thrown blade didn't come back to the hand");
-                    if (!sl().getEntitiesOfClass(com.ironspellgrimoire.entity.ThrownHungerBlade.class, p.getBoundingBox().inflate(40)).isEmpty()) bad.add("a thrown blade is still out");
+                    if (!HungerFx.drawn(p)) bad.add("Bond 10 or the titles took the blade out of the hand (main hand: " + p.getMainHandItem() + ")");
                     // the book taken off: the blade goes with it
                     top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, ItemStack.EMPTY));
                 }
