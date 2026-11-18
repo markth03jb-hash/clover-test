@@ -162,7 +162,7 @@ public final class ShadowFx {
     /** How much harder a player's shadows hit: Sovereign's Domain (x1.5) and the Necromancer's job (x1.25). */
     public static float domainBoost(Player o) {
         if (!(o instanceof ServerPlayer sp)) return 1f;
-        return (Moves.inMode(sp, MODE) ? 1.5f : 1f) * (HunterAscension.job(sp) == 1 ? 1.25f : 1f);
+        return (Moves.inMode(sp, MODE) ? 1.5f : 1f) * (HunterAscension.job(sp) == 1 ? (HunterAscension.advanced(sp) ? 1.25f * 1.15f : 1.25f) : 1f);
     }
 
     private static Vec3 look(ServerPlayer p) {
@@ -298,6 +298,14 @@ public final class ShadowFx {
             if (entry == null) return;
             HunterAscension.onRaise(p);
             if (entry.getBoolean("eq")) ShadowArmy.raise(p, entry, r.pos(), 0);
+            if (!exclusive && HunterAscension.job(p) == 1 && HunterAscension.advanced(p) && p.getRandom().nextFloat() < 0.35f) {   // the Lich Lord: a second shadow from the same remnant
+                CompoundTag twin = ShadowArmy.add(p, r.type(), false);
+                if (twin != null) {
+                    HunterAscension.onRaise(p);
+                    if (twin.getBoolean("eq")) ShadowArmy.raise(p, twin, r.pos().add(1.2, 0, 0), 0); else risePool(sl, r.pos().add(1.2, 0, 0), 1);
+                    p.displayClientMessage(Component.literal("Two shadows rise from one remnant").withStyle(ChatFormatting.LIGHT_PURPLE), true);
+                }
+            }
             else risePool(sl, r.pos(), 1);
             p.displayClientMessage(Component.literal(entry.getString("name") + " rises as your shadow" + (entry.getBoolean("eq") ? "" : " (stored - your slots are full)"))
                     .withStyle(ChatFormatting.AQUA), true);

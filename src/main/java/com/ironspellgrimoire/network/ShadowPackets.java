@@ -20,7 +20,7 @@ public final class ShadowPackets {
 
     /** One shadow in the army, as the menu shows it. */
     public record Entry(int id, String type, String name, int level, int xp, int xpNext, int rank, boolean equipped, boolean exclusive,
-                        int recovering, boolean canRankUp, int rankBlock, boolean stationed) {}
+                        int recovering, boolean canRankUp, int rankBlock, boolean stationed, int trait, int bond) {}
 
     /** Server -> client: open (or refresh) the army menu. */
     public static class Open {
@@ -28,13 +28,21 @@ public final class ShadowPackets {
         public final int slots, storage;
         /** Each exclusive shadow's Challenge: 0 can challenge, 1 fighting it, 2 beaten - raise it, 3 in your army. */
         public final int[] challenges;
+        /** The saved loadouts (ShadowArmy): their names and the shadows in each; which was last applied (-1 none). */
+        public String[] loNames = new String[0];
+        public int[][] loIds = new int[0][];
+        public int loActive = -1;
         public Open(List<Entry> list, int slots, int storage, int[] challenges) { this.list = list; this.slots = slots; this.storage = storage; this.challenges = challenges; }
         public static void encode(Open p, FriendlyByteBuf b) {
             b.writeVarInt(p.slots); b.writeVarInt(p.storage); b.writeVarIntArray(p.challenges); b.writeVarInt(p.list.size());
             for (Entry e : p.list) {
                 b.writeVarInt(e.id()); b.writeUtf(e.type(), 100); b.writeUtf(e.name(), 32); b.writeVarInt(e.level()); b.writeVarInt(e.xp()); b.writeVarInt(e.xpNext());
                 b.writeVarInt(e.rank()); b.writeBoolean(e.equipped()); b.writeBoolean(e.exclusive()); b.writeVarInt(e.recovering()); b.writeBoolean(e.canRankUp()); b.writeVarInt(e.rankBlock()); b.writeBoolean(e.stationed());
+                b.writeVarInt(e.trait()); b.writeVarInt(e.bond());
             }
+            b.writeVarInt(p.loNames.length);
+            for (int i = 0; i < p.loNames.length; i++) { b.writeUtf(p.loNames[i], 32); b.writeVarIntArray(p.loIds[i]); }
+            b.writeVarInt(p.loActive);
         }
         public static Open decode(FriendlyByteBuf b) {
             int slots = b.readVarInt(), storage = b.readVarInt();
@@ -42,8 +50,13 @@ public final class ShadowPackets {
             int n = b.readVarInt();
             List<Entry> l = new ArrayList<>();
             for (int i = 0; i < n; i++) l.add(new Entry(b.readVarInt(), b.readUtf(100), b.readUtf(32), b.readVarInt(), b.readVarInt(), b.readVarInt(),
-                    b.readVarInt(), b.readBoolean(), b.readBoolean(), b.readVarInt(), b.readBoolean(), b.readVarInt(), b.readBoolean()));
-            return new Open(l, slots, storage, ch);
+                    b.readVarInt(), b.readBoolean(), b.readBoolean(), b.readVarInt(), b.readBoolean(), b.readVarInt(), b.readBoolean(), b.readVarInt(), b.readVarInt()));
+            int lo = b.readVarInt();
+            String[] names = new String[lo]; int[][] ids = new int[lo][];
+            for (int i = 0; i < lo; i++) { names[i] = b.readUtf(32); ids[i] = b.readVarIntArray(); }
+            Open o = new Open(l, slots, storage, ch);
+            o.loNames = names; o.loIds = ids; o.loActive = b.readVarInt();
+            return o;
         }
         public static void handle(Open p, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.ShadowArmyScreen.show(p)));
@@ -73,9 +86,13 @@ public final class ShadowPackets {
     public static class Status {
         public final boolean open, trialDone, reckoning, jobReady, openJob;
         public final int level, xp, xpNext, points, marks, army, lures, dayLeft, job;
+        public final boolean advanced;
+        public final int titles, title;
         public final int[] stats, kinds, prog, goal;
         public Status(boolean open, int level, int xp, int xpNext, int points, int[] stats, int marks, int army, int lures,
-                      int[] kinds, int[] prog, int[] goal, boolean trialDone, int dayLeft, boolean reckoning, int job, boolean jobReady, boolean openJob) {
+                      int[] kinds, int[] prog, int[] goal, boolean trialDone, int dayLeft, boolean reckoning, int job, boolean jobReady, boolean openJob,
+                      boolean advanced, int titles, int title) {
+            this.advanced = advanced; this.titles = titles; this.title = title;
             this.open = open; this.level = level; this.xp = xp; this.xpNext = xpNext; this.points = points; this.stats = stats; this.marks = marks;
             this.army = army; this.lures = lures; this.kinds = kinds; this.prog = prog; this.goal = goal; this.trialDone = trialDone;
             this.dayLeft = dayLeft; this.reckoning = reckoning; this.job = job; this.jobReady = jobReady; this.openJob = openJob;
@@ -86,6 +103,7 @@ public final class ShadowPackets {
             b.writeVarIntArray(p.kinds); b.writeVarIntArray(p.prog); b.writeVarIntArray(p.goal);
             b.writeBoolean(p.trialDone); b.writeVarInt(p.dayLeft); b.writeBoolean(p.reckoning);
             b.writeVarInt(p.job); b.writeBoolean(p.jobReady); b.writeBoolean(p.openJob);
+            b.writeBoolean(p.advanced); b.writeVarInt(p.titles); b.writeVarInt(p.title + 1);
         }
         public static Status decode(FriendlyByteBuf b) {
             boolean open = b.readBoolean();
@@ -95,7 +113,7 @@ public final class ShadowPackets {
             int[] kinds = b.readVarIntArray(), prog = b.readVarIntArray(), goal = b.readVarIntArray();
             boolean trialDone = b.readBoolean(); int dayLeft = b.readVarInt(); boolean reckoning = b.readBoolean();
             return new Status(open, level, xp, xpNext, points, stats, marks, army, lures, kinds, prog, goal, trialDone, dayLeft, reckoning,
-                    b.readVarInt(), b.readBoolean(), b.readBoolean());
+                    b.readVarInt(), b.readBoolean(), b.readBoolean(), b.readBoolean(), b.readVarInt(), b.readVarInt() - 1);
         }
         public static void handle(Status p, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {

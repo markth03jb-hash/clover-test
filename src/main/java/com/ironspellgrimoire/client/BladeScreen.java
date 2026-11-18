@@ -37,6 +37,8 @@ public class BladeScreen extends Screen {
     void refresh() { }
 
     @Override public boolean isPauseScreen() { return false; }
+    private int ticks;
+    @Override public void tick() { ticks++; }
 
     /** Where each sword sits: column (0-7, the two branches of each path side by side) and row (0 base, 1 stage 4, 2 stage 5, 3 stage 6). */
     static int[] cell(int f) {
@@ -59,8 +61,10 @@ public class BladeScreen extends Screen {
         int slotH = 24, W = colW * 8, x0 = (width - W) / 2, top = 30;
         int H = top + rowH * 5 + 12 + slotH + 4 + 22;
         int y0 = Math.max(4, (height - H) / 2);
-        g.fill(x0 - 8, y0, x0 + W + 8, y0 + H, PANEL);
-        g.renderOutline(x0 - 8, y0, W + 16, H, EDGE);
+        float tk = ticks + Minecraft.getInstance().getFrameTime();
+        FleshSkin.panel(g, x0 - 8, y0, W + 16, H, tk, mx, my, false);   // an open jaw: teeth top and bottom
+        int md = HungerFx.mood(HungerClient.hunger);   // the blade's eye: wide fed, narrowed hungry, bloodshot starved
+        FleshSkin.eye(g, x0 + W / 2, y0 - 1, tk, mx, my, md == 3 ? 3 : md == 1 ? 1 : md == 0 ? 2 : 0);
         // the header: growth, the hunger and its mood, the bond
         g.drawString(font, "THE BLADE", x0, y0 + 6, 0xFFFF6070, true);
         String gb = guide ? "< Tree" : "? Guide";

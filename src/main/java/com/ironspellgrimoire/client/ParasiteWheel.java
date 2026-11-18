@@ -43,7 +43,7 @@ public class ParasiteWheel extends Screen {
             "Your awakened strain's signature move.",
             "30 s as the strain itself (100 biomass).",
             "Your arms go back to normal."};
-    private static final String[] S_NAMES = {"Hunt", "Rally", "Stand Down", "Sink / Rise", "Army", "Status", "Market"};
+    private static final String[] S_NAMES = {"Hunt", "Rally", "Stand Down", "Sink / Rise", "Army", "Status", "Market", "Loadout"};
     private static final String[] S_DESC = {
             "Every shadow at your side goes for what you look at.",
             "Your shadows come back to your side at once.",
@@ -51,11 +51,17 @@ public class ParasiteWheel extends Screen {
             "Your shadows sink into your shadow, or rise again.",
             "Open the Shadow Army.",
             "Open your Status: level, stats, the Daily Trial, Job Change.",
-            "Open the Market."};
+            "Open the Market.",
+            "Swap to your next saved army loadout (save them in the Army menu)."};
 
-    public ParasiteWheel(int kind) { super(Component.literal(kind == 1 ? "Parasite" : kind == 3 ? "Hunger Blade" : "Shadows")); this.kind = kind; }
+    public ParasiteWheel(int kind) { super(Component.literal(kind == 1 || kind == 4 ? "Parasite" : kind == 3 ? "Hunger Blade" : "Shadows")); this.kind = kind; }
 
     private String[] names() {
+        if (kind == 4) {   // the quick ring: the four pinned forms
+            String[] n = new String[4];
+            for (int i = 0; i < 4; i++) { int f = ParasiteClient.pins[i]; n[i] = f > 0 ? com.ironspellgrimoire.server.ParasiteFx.FORMS[f] : "Empty"; }
+            return n;
+        }
         if (kind == 3) {   // the Hunger Blade: the four swords you carry
             String[] n = new String[4];
             for (int i = 0; i < 4; i++) { int f = HungerClient.load[i]; n[i] = HungerClient.has(f) ? com.ironspellgrimoire.server.HungerFx.NAMES[f] : "Empty"; }
@@ -65,7 +71,19 @@ public class ParasiteWheel extends Screen {
     }
 
     /** Whether a slice can be used now (and lit as such). */
+    /** Whether a form (1-7) is evolved, as far as this side knows (the server decides). */
+    static boolean formReady(int f) {
+        return switch (f) {
+            case 3 -> ParasiteClient.rank(4) > 0;
+            case 5 -> ParasiteClient.rank(5) > 0;
+            case 6 -> ParasiteClient.rank(13) > 0;
+            case 7 -> ParasiteClient.rank(14) > 0;
+            default -> f > 0;
+        };
+    }
+
     private boolean usable(int i) {
+        if (kind == 4) return formReady(ParasiteClient.pins[i]);
         if (kind == 3) return HungerClient.has(HungerClient.load[i]);
         if (kind != 1) return true;
         return switch (i) {
@@ -82,6 +100,7 @@ public class ParasiteWheel extends Screen {
     }
 
     private boolean active(int i) {
+        if (kind == 4) return ParasiteClient.form == ParasiteClient.pins[i] && ParasiteClient.pins[i] > 0;
         if (kind == 3) return HungerClient.sel == i;
         if (kind != 1) return false;
         if (i < 7) return ParasiteClient.form == i + 1;
@@ -93,6 +112,9 @@ public class ParasiteWheel extends Screen {
     }
 
     @Override public boolean isPauseScreen() { return false; }
+
+    private int ticks;
+    @Override public void tick() { ticks++; }
 
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
@@ -143,6 +165,21 @@ public class ParasiteWheel extends Screen {
         ring(bb, m, cx, cy, 0, r0 - 3, 0, Math.PI * 2, base[0] * 0.4F, base[1] * 0.4F, base[2] * 0.4F, 0.95F, base[0], base[1], base[2], 0.95F, 32);
         BufferUploader.drawWithShader(bb.end());
         RenderSystem.disableBlend();
+        if (kind == 1 || kind == 4) {   // veins through each slice of the parasite's wheel, brightening on the heartbeat
+            float hb = FleshSkin.beat(ticks + pt);
+            int vc = 0xFF000000 | (int) (120 + 120 * hb) << 16 | 0x1820;
+            for (int i = 0; i < n; i++) {
+                double mid = i * step, a0 = mid - step / 2 + gap, a1 = mid + step / 2 - gap;
+                for (int v = 0; v < 3; v++) {
+                    double base0 = a0 + (a1 - a0) * (v + 0.5) / 3.0;
+                    for (double rr = r0 + 3; rr < r1 - 4; rr += 1.5) {
+                        double aa = base0 + 0.06 * Math.sin(rr * 0.21 + v * 2 + i);
+                        int px = (int) (cx + Math.sin(aa) * rr), py = (int) (cy - Math.cos(aa) * rr);
+                        g.fill(px, py, px + (rr < r0 + 20 ? 2 : 1), py + (rr < r0 + 20 ? 2 : 1), vc);
+                    }
+                }
+            }
+        }
 
         for (int i = 0; i < n; i++) {
             double a = i * step;
@@ -171,11 +208,13 @@ public class ParasiteWheel extends Screen {
             }
             return;
         }
-        String title = kind == 1 ? (ParasiteClient.frenzied ? "FRENZY" : Math.round(ParasiteClient.biomass) + "") : "Shadows";
-        g.drawCenteredString(font, title, cx, cy - 8, kind == 1 ? 0xFFFF7080 : 0xFF8FC8FF);
+        boolean par = kind == 1 || kind == 4;
+        String title = par ? (ParasiteClient.frenzied ? "FRENZY" : Math.round(ParasiteClient.biomass) + "") : "Shadows";
+        g.drawCenteredString(font, title, cx, cy - 8, par ? 0xFFFF7080 : 0xFF8FC8FF);
         if (kind == 1) g.drawCenteredString(font, "biomass", cx, cy + 2, 0xFFB08890);
         if (hover >= 0) {
-            String d = (kind == 1 ? P_DESC : S_DESC)[hover];
+            String d = kind == 4 ? (ParasiteClient.pins[hover] > 0 ? P_DESC[ParasiteClient.pins[hover] - 1] + "  (sneak + G: the full wheel)" : "Pin a form here in Evolution (Guide tab).")
+                    : (kind == 1 ? P_DESC : S_DESC)[hover];
             if (!usable(hover)) d = kind == 1 && hover == 9 ? (ParasiteClient.awakened ? "Ready in " + ParasiteClient.artCd + " s." : "Evolve every node to awaken your strain.")
                     : kind == 1 && hover == 10 ? (!ParasiteClient.awakened ? "Needs an awakened strain." : ParasiteClient.finalCd > 0 ? "Ready in " + ParasiteClient.finalCd + " s." : "Needs 100 biomass.")
                     : "Locked - evolve it on the Evolution page.";
@@ -190,6 +229,7 @@ public class ParasiteWheel extends Screen {
         onClose();
         if (h < 0) return;
         if (kind == 3) { if (usable(h)) HungerClient.send(2, h); return; }
+        if (kind == 4) { if (usable(h)) ParasiteClient.send(1, ParasiteClient.pins[h]); return; }
         if (kind == 1) {
             if (h < 7) ParasiteClient.send(1, h + 1);
             else if (h == 7) ParasiteClient.send(2, 0);
@@ -197,7 +237,7 @@ public class ParasiteWheel extends Screen {
             else if (h == 9) ParasiteClient.send(11, 0);
             else if (h == 10) ParasiteClient.send(12, 0);
             else ParasiteClient.send(1, 0);
-        } else ParasiteClient.send(20 + h, 0);
+        } else ParasiteClient.send(h == 7 ? 40 : 20 + h, 0);
     }
 
     @Override

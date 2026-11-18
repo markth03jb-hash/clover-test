@@ -60,6 +60,11 @@ public class ShadowArmyScreen extends Screen {
     private List<ShadowPackets.Entry> list = new ArrayList<>();
     private int slots, storage, scroll, tab = startTab, selected = -1, releaseArmed = -1;
     private int[] challenges = new int[0];
+    private String[] loNames = new String[0];
+    private int[][] loIds = new int[0][];
+    private int loActive = -1, loRenaming = -1;
+    static final String[] TRAITS = {"", "Loyal", "Ferocious", "Cautious"};
+    static final String[] TRAIT_GIVES = {"", "+20% health", "+20% damage", "reforms in 15 s instead of 30"};
     private boolean renaming;
     private String nameBuf = "";
     private int ticks;
@@ -77,6 +82,7 @@ public class ShadowArmyScreen extends Screen {
         Minecraft mc = Minecraft.getInstance();
         ShadowArmyScreen s = mc.screen instanceof ShadowArmyScreen open ? open : new ShadowArmyScreen();
         s.list = p.list; s.slots = p.slots; s.storage = p.storage; s.challenges = p.challenges;
+        s.loNames = p.loNames; s.loIds = p.loIds; s.loActive = p.loActive;
         boolean found = false;
         for (ShadowPackets.Entry e : s.list) if (e.id() == s.selected) found = true;
         if (!found) s.selected = s.list.isEmpty() ? -1 : s.list.get(0).id();
@@ -106,33 +112,12 @@ public class ShadowArmyScreen extends Screen {
     public void render(GuiGraphics g, int mx, int my, float pt) {
         hits.clear();
         float t = ticks + pt;
-        // the dark: a deep vignette over the world, smoke drifting up behind the panel
-        g.fillGradient(0, 0, width, height, 0xC0020308, 0xE0050A18);
-        for (int k = 0; k < 14; k++) {
-            float ph = k * 1.7f;
-            int sx = (int) (width * ((k * 0.137f + 0.05f) % 1f) + Mth.sin(t * 0.02f + ph) * 18);
-            int sy = (int) (height - ((t * (0.25f + k % 3 * 0.1f) + k * 47) % (height + 80)));
-            int a = (int) (40 + 30 * Mth.sin(t * 0.05f + ph));
-            g.fillGradient(sx - 10, sy - 60, sx + 10, sy + 20, 0x002050C0, (a << 24) | 0x1A3C90);
-        }
         int x0 = px(), y0 = py(), w = pw(), h = ph();
-        // the panel: ink, a blue rim that breathes, corner marks
-        g.fill(x0, y0, x0 + w, y0 + h, INK);
-        int rim = lerpCol(EDGE_DIM, EDGE, 0.5f + 0.5f * Mth.sin(t * 0.08f));
-        frame(g, x0, y0, w, h, rim);
-        frame(g, x0 + 3, y0 + 3, w - 6, h - 6, 0x402A50A0);
-        for (int[] c : new int[][]{{x0, y0}, {x0 + w - 10, y0}, {x0, y0 + h - 10}, {x0 + w - 10, y0 + h - 10}}) g.fill(c[0] + 3, c[1] + 3, c[0] + 7, c[1] + 7, 0xFF8CC8FF);
-        // the title, lit from behind
-        String title = "SHADOW ARMY";
-        int tw = font.width(title) * 2;
-        g.pose().pushPose();
-        g.pose().translate(x0 + w / 2f - tw / 2f, y0 + 10, 0);
-        g.pose().scale(2, 2, 1);
-        g.drawString(font, title, 0, 0, 0xFF9AD0FF, true);
-        g.pose().popPose();
+        SystemSkin.window(g, font, x0, y0, w, h, t, "SHADOW ARMY");
         // tabs
         tab(g, x0 + 14, y0 + 34, "ARMY", 0, mx, my);
         tab(g, x0 + 84, y0 + 34, "CHALLENGES", 1, mx, my);
+        tab(g, x0 + 176, y0 + 34, "LOADOUTS", 2, mx, my);
         int gens = 0, caps = 0, eq = 0;
         for (ShadowPackets.Entry e : list) { if (e.rank() == 4) gens++; if (e.rank() == 3) caps++; if (e.equipped() && !e.exclusive()) eq++; }
         String counts = list.size() + "/" + storage + " raised   " + eq + "/" + slots + " at your side";
@@ -140,10 +125,12 @@ public class ShadowArmyScreen extends Screen {
         g.fill(x0 + 10, y0 + 50, x0 + w - 10, y0 + 51, 0x803C78E0);
 
         if (tab == 0) army(g, mx, my, t);
-        else challengesTab(g, mx, my, t);
+        else if (tab == 1) challengesTab(g, mx, my, t);
+        else loadoutsTab(g, mx, my);
 
         // footer
-        String foot = tab == 0 ? "Generals " + gens + "/1    Captains " + caps + "/3    scroll the list    V to close" : "Beat its living form, then raise it    V to close";
+        String foot = tab == 0 ? "Generals " + gens + "/1    Captains " + caps + "/3    scroll the list    V to close"
+                : tab == 1 ? "Beat its living form, then raise it    V to close" : "Save who's at your side now; swap with the Loadout slice of the G wheel    V to close";
         g.drawString(font, foot, x0 + 14, y0 + h - 16, 0xFF55678A, false);
     }
 
@@ -218,6 +205,8 @@ public class ShadowArmyScreen extends Screen {
             int k = EXCL_TYPE[0].equals(e.type()) ? 0 : 1;
             for (int i = 1; i < EXCL_TEXT[k].length; i++) { g.drawString(font, font.plainSubstrByWidth(EXCL_TEXT[k][i], bw), ix, ty, 0xFFC8B890, false); ty += 10; }
         }
+        String bondTxt = e.trait() > 0 ? "Bond: " + TRAITS[e.trait()] + " - " + TRAIT_GIVES[e.trait()] : "Bond " + Math.min(50, e.bond()) + "/50 kills at your side";
+        g.drawString(font, font.plainSubstrByWidth(bondTxt, bw), ix, dy + dh - 58, e.trait() > 0 ? GOLD : 0xFF6A7A98, false);
         String status = e.stationed() ? "Keeping watch at its post - Shadow Step to it" : e.recovering() > 0 ? "Reforming in its master's shadow - " + e.recovering() + "s"
                 : e.rank() >= 4 ? "Highest rank" : e.rankBlock() == 1 ? "Your army already has its General" : e.rankBlock() == 2 ? "All three Captain ranks are taken"
                 : e.canRankUp() ? "Ready to rank up!" : "Next rank at level " + nextLevel(e.rank());
@@ -235,6 +224,39 @@ public class ShadowArmyScreen extends Screen {
         button(g, bx, by, bwid, 18, e.exclusive() ? "SWORN" : armed ? "SURE?" : "RELEASE", !e.exclusive(), armed ? 0xFFE05050 : 0xFF8A5060, mx, my, () -> {
             if (releaseArmed == e.id()) { act(4, e.id(), ""); releaseArmed = -1; } else releaseArmed = e.id();
         });
+    }
+
+    /** The three saved loadouts: who's in each, save the current setup into one, apply one, rename one. */
+    private void loadoutsTab(GuiGraphics g, int mx, int my) {
+        int x0 = px() + 14, y0 = listTop() + 4, w = pw() - 28, rh = 62;
+        for (int i = 0; i < loNames.length; i++) {
+            int y = y0 + i * (rh + 6);
+            boolean active = loActive == i;
+            g.fill(x0, y, x0 + w, y + rh, PANEL);
+            frame(g, x0, y, w, rh, active ? 0xFF9AD0FF : 0x603C78E0);
+            if (loRenaming == i) {
+                g.fill(x0 + 6, y + 4, x0 + 180, y + 16, 0xFF0A1830);
+                g.drawString(font, nameBuf + ((ticks / 8) % 2 == 0 ? "_" : ""), x0 + 9, y + 6, TEXT, false);
+            } else g.drawString(font, loNames[i] + (active ? "  (current)" : ""), x0 + 8, y + 6, active ? GOLD : TEXT, false);
+            StringBuilder who = new StringBuilder();
+            int n = 0;
+            for (int id : loIds[i]) for (ShadowPackets.Entry e : list) if (e.id() == id) { if (n > 0) who.append(", "); who.append(e.name()); n++; }
+            String line = n == 0 ? "Empty - equip shadows in the Army tab, then Save" : n + " shadows: " + who;
+            for (int k = 0; k < 2; k++) {
+                String part = font.plainSubstrByWidth(line, w - 16);
+                g.drawString(font, part, x0 + 8, y + 20 + k * 10, n == 0 ? MUTED : 0xFF9AB4D8, false);
+                line = line.substring(part.length());
+                if (line.isEmpty()) break;
+            }
+            final int k = i;
+            int bx = x0 + w - 3 * 70 - 6;
+            button(g, bx, y + rh - 20, 64, 15, "SAVE", true, EDGE, mx, my, () -> act(16, k, "")); bx += 70;
+            button(g, bx, y + rh - 20, 64, 15, "APPLY", loIds[i].length > 0, 0xFF7FD8FF, mx, my, () -> act(17, k, "")); bx += 70;
+            button(g, bx, y + rh - 20, 64, 15, loRenaming == i ? "KEEP" : "RENAME", true, EDGE, mx, my, () -> {
+                if (loRenaming == k) { if (!nameBuf.isBlank()) act(18, k, nameBuf.strip()); loRenaming = -1; renaming = false; }
+                else { loRenaming = k; renaming = true; nameBuf = loNames[k]; }
+            });
+        }
     }
 
     private void challengesTab(GuiGraphics g, int mx, int my, float t) {
@@ -276,13 +298,12 @@ public class ShadowArmyScreen extends Screen {
 
     private void button(GuiGraphics g, int x, int y, int w, int h, String label, boolean enabled, int accent, int mx, int my, Runnable run) {
         boolean hov = enabled && in(mx, my, x, y, w, h);
-        g.fill(x, y, x + w, y + h, !enabled ? 0x60101622 : hov ? 0xE0183060 : 0xC00E1830);
-        frame(g, x, y, w, h, !enabled ? 0x401C3460 : hov ? lighten(accent) : accent);
-        if (hov) g.fill(x + 1, y + 1, x + w - 1, y + 2, 0x60FFFFFF);
-        String l = font.plainSubstrByWidth(label, w - 4);
-        g.drawString(font, l, x + (w - font.width(l)) / 2, y + (h - 8) / 2, !enabled ? 0xFF3A4660 : hov ? 0xFFFFFFFF : 0xFFCDE6FF, false);
+        SystemSkin.button(g, font, x, y, w, h, label, enabled, accent, hov);
         if (enabled) hits.add(new Hit(x, y, w, h, run));
     }
+
+    /** The window unfolds from a line as it opens (drawn over its contents: SystemSkin.Boot). */
+    void boot(GuiGraphics g, float pt) { SystemSkin.boot(g, px(), py(), pw(), ph(), ticks + pt); }
 
     private static void frame(GuiGraphics g, int x, int y, int w, int h, int c) {
         g.fill(x, y, x + w, y + 1, c); g.fill(x, y + h - 1, x + w, y + h, c);
@@ -348,6 +369,7 @@ public class ShadowArmyScreen extends Screen {
     private static int lighten(int c) { return lerpCol(c, 0xFFFFFFFF, 0.35f); }
 
     private void commitName() {
+        if (loRenaming >= 0) { if (!nameBuf.isBlank()) act(18, loRenaming, nameBuf.strip()); loRenaming = -1; renaming = false; return; }
         ShadowPackets.Entry e = sel();
         if (e != null && !nameBuf.isBlank()) act(3, e.id(), nameBuf.strip());
         renaming = false;
@@ -384,11 +406,11 @@ public class ShadowArmyScreen extends Screen {
         if (renaming) {
             if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) { commitName(); return true; }
             if (key == GLFW.GLFW_KEY_BACKSPACE) { if (!nameBuf.isEmpty()) nameBuf = nameBuf.substring(0, nameBuf.length() - 1); return true; }
-            if (key == GLFW.GLFW_KEY_ESCAPE) { renaming = false; return true; }
+            if (key == GLFW.GLFW_KEY_ESCAPE) { renaming = false; loRenaming = -1; return true; }
             return true;   // typing: no other keys
         }
         if (KEY.matches(key, scan)) { onClose(); return true; }
-        if (key == GLFW.GLFW_KEY_TAB) { tab = 1 - tab; return true; }
+        if (key == GLFW.GLFW_KEY_TAB) { tab = (tab + 1) % 3; return true; }
         if (tab == 0 && (key == GLFW.GLFW_KEY_DOWN || key == GLFW.GLFW_KEY_UP) && !list.isEmpty()) {   // walk the list
             int i = 0;
             for (int k = 0; k < list.size(); k++) if (list.get(k).id() == selected) i = k;

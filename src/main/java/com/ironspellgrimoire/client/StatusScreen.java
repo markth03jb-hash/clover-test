@@ -17,6 +17,15 @@ public class StatusScreen extends ShadowUiScreen {
     static final int[] COL = {0xFFE07060, 0xFF70E0A0, 0xFFE0B060, 0xFF70A8FF, 0xFFC090FF};
     static final String[] TASKS = {"Slay %d foes", "Deal %d damage", "Travel %d blocks", "Raise %d shadows"};
     private ShadowPackets.Status s;
+    /** 0 Status, 1 Titles, 2 Guide (the screenshots open on a tab). */
+    public static int startTab = 0;
+    private int tab = startTab;
+    static final String[] TITLE_NAMES = {"Shadow Monarch", "Unbroken", "Peak", "Trialbreaker", "Ascendant", "Diligent", "Hoarder", "Lord of Generals"};
+    static final String[] TITLE_HOW = {"Raise 100 shadows", "Survive a Reckoning", "Reach hunter level 100", "Pass the Job Change Trial",
+            "Advance your job", "Complete 10 Daily Trials", "Earn 10000 Shade Marks", "Rank a shadow up to General"};
+    static final String[] TITLE_GIVES = {"+20 max mana", "+2 armour", "+3% damage", "+5% attack speed", "+3% spell power", "+3% speed",
+            "+5% mana regeneration", "+2 max health"};
+    static final String[] JOBS2 = {"Lich Lord", "Phantom", "Conqueror"};
 
     StatusScreen() { super("STATUS"); }
 
@@ -34,7 +43,17 @@ public class StatusScreen extends ShadowUiScreen {
         float t = ticks + pt;
         backdrop(g, t, "STATUS");
         if (s == null) return;
-        int x0 = px() + 14, y0 = py() + 42, w = pw() - 28;
+        int tx = px() + 14;
+        for (int i = 0; i < 3; i++) {
+            String[] names = {"STATUS", "TITLES", "GUIDE"};
+            final int k = i;
+            button(g, tx, py() + 37, 64, 13, names[i], true, tab == i ? 0xFF9AD0FF : EDGE_DIM, mx, my, () -> tab = k);
+            tx += 68;
+        }
+        if (s.title >= 0) { String tt = "\"" + TITLE_NAMES[s.title] + "\""; g.drawString(font, tt, px() + pw() - 14 - font.width(tt), py() + 40, GOLD, false); }
+        if (tab == 1) { titles(g, mx, my); return; }
+        if (tab == 2) { guide(g); return; }
+        int x0 = px() + 14, y0 = py() + 56, w = pw() - 28;
         // level
         String lv = "Hunter level " + s.level;
         g.pose().pushPose();
@@ -83,11 +102,17 @@ public class StatusScreen extends ShadowUiScreen {
         }
         String rw = s.trialDone ? "Complete - come back tomorrow" : "All three: +5 points, XP, 200 Marks";
         g.drawString(font, font.plainSubstrByWidth(rw, dw - 16), dx + 8, sy + NAMES.length * 22 - 16, s.trialDone ? 0xFF9FE0FF : 0xFF7F8EA8, false);
-        g.drawString(font, "Left undone when the day turns: the Reckoning", px() + 14, py() + ph() - 16, 0xFF55678A, false);
+        g.drawString(font, "Left undone when the day turns: the Reckoning", px() + 14, py() + ph() - 14, 0xFF55678A, false);
         // the job (Job Change: a trial at hunter level 40, then a choice for good) - under the Daily Trial
         int jx = dx, jy = sy + NAMES.length * 22 + 2;
-        if (s.job > 0) {
+        if (s.job > 0 && s.advanced) {
+            g.drawString(font, "Job: " + JOBS2[s.job - 1] + " (advanced)", jx, jy + 4, 0xFFD8A8FF, false);
+        } else if (s.job > 0 && s.level >= 80) {
             g.drawString(font, "Job: " + JobScreen.NAMES[s.job - 1], jx, jy + 4, 0xFFD8A8FF, false);
+            button(g, jx + dw - 84, jy, 84, 15, "ADVANCE", !s.reckoning, 0xFFB070FF, mx, my, () -> act(20, 0));
+        } else if (s.job > 0) {
+            g.drawString(font, "Job: " + JobScreen.NAMES[s.job - 1], jx, jy + 4, 0xFFD8A8FF, false);
+            g.drawString(font, font.plainSubstrByWidth("Advancement at hunter level 80", dw), jx, jy + 15, 0xFF55678A, false);
         } else if (s.jobReady) {
             g.drawString(font, "Trial passed", jx, jy + 4, 0xFFD8A8FF, false);
             button(g, jx + dw - 84, jy, 84, 15, "CHOOSE JOB", true, 0xFFB070FF, mx, my, () -> JobScreen.open(s));
@@ -96,6 +121,53 @@ public class StatusScreen extends ShadowUiScreen {
             button(g, jx + dw - 84, jy, 84, 15, "BEGIN TRIAL", !s.reckoning, 0xFFB070FF, mx, my, () -> act(14, 0));
         } else {
             g.drawString(font, font.plainSubstrByWidth("Job Change at hunter level 40", dw), jx, jy + 4, 0xFF55678A, false);
+        }
+    }
+
+    /** Titles: earned at milestones, one worn at a time. */
+    private void titles(GuiGraphics g, int mx, int my) {
+        int x0 = px() + 14, y0 = py() + 58, w = pw() - 28, rh = Math.min(26, (ph() - 80) / TITLE_NAMES.length);
+        for (int i = 0; i < TITLE_NAMES.length; i++) {
+            boolean have = (s.titles & (1 << i)) != 0, worn = s.title == i;
+            int y = y0 + i * rh;
+            g.fill(x0, y, x0 + w, y + rh - 3, PANEL);
+            g.fill(x0, y, x0 + 2, y + rh - 3, have ? GOLD : EDGE_DIM);
+            g.drawString(font, TITLE_NAMES[i], x0 + 8, y + 2, have ? (worn ? GOLD : TEXT) : 0xFF55678A, false);
+            g.drawString(font, have ? TITLE_GIVES[i] : TITLE_HOW[i], x0 + 8, y + 12, have ? 0xFF9AB4D8 : 0xFF4A5A78, false);
+            final int k = i;
+            if (have) button(g, x0 + w - 70, y + 3, 64, 14, worn ? "TAKE OFF" : "WEAR", true, worn ? GOLD : EDGE, mx, my, () -> act(19, k));
+            else g.drawString(font, "locked", x0 + w - 44, y + 7, 0xFF3A4660, false);
+        }
+    }
+
+    /** The Guide: every System feature, how to use it, and what opens the ones not yet open. */
+    private void guide(GuiGraphics g) {
+        int x0 = px() + 14, y0 = py() + 58, w = pw() - 28;
+        boolean job = s.level >= 40, adv = s.job > 0 && s.level >= 80;
+        Object[][] rows = {
+                {"Level & stats", "Kills with the grimoire (or your shadows) give XP; each level, 3 points to spend here.", true, ""},
+                {"Daily Trial", "Three tasks a day for points, XP and Marks. Left undone: the Reckoning.", true, ""},
+                {"Rise", "Cast Rise on a fallen foe's remnant to raise it as your shadow.", true, ""},
+                {"Army (V)", "Equip, rank up, station and rename shadows; Challenges for exclusives.", true, ""},
+                {"G wheel", "Hunt, Rally, Stand Down, Sink/Rise, Army, Status, Market, Loadout.", true, ""},
+                {"Market", "Spend Shade Marks on weapons, tonics, lures and Reckoning keys.", true, ""},
+                {"Bonds", "A shadow at your side for 50 kills gains a trait: Loyal, Ferocious or Cautious.", true, ""},
+                {"Loadouts", "Save who stands at your side (Army, Loadouts tab); swap with the wheel.", s.army >= 1, "a shadow in your army"},
+                {"Titles", "Earned at milestones; wear one here for its passive.", true, ""},
+                {"Job Change", "Pass the trial, choose Necromancer, Assassin or Warlord - for good.", job, "hunter level 40"},
+                {"Advancement", "A harder trial; your job takes its second form.", adv, "a job and hunter level 80"}};
+        int rh = Math.min(18, (ph() - 76) / rows.length);
+        for (int i = 0; i < rows.length; i++) {
+            boolean open = (Boolean) rows[i][2];
+            int y = y0 + i * rh;
+            g.drawString(font, (String) rows[i][0], x0, y, open ? 0xFF9AD0FF : 0xFF55678A, false);
+            String txt = open ? (String) rows[i][1] : "Opens with " + rows[i][3] + ".";
+            float sc = Math.min(1f, (w - 92) / (float) font.width(txt));
+            g.pose().pushPose();
+            g.pose().translate(x0 + 92, y, 0);
+            g.pose().scale(sc, sc, 1);
+            g.drawString(font, txt, 0, 0, open ? TEXT : 0xFF4A5A78, false);
+            g.pose().popPose();
         }
     }
 }

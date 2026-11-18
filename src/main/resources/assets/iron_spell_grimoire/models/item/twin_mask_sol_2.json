@@ -1,0 +1,62 @@
+{
+ "loader": "forge:obj",
+ "model": "iron_spell_grimoire:models/item/twin_mask_sol_2.obj",
+ "flip_v": true,
+ "textures": {
+  "particle": "iron_spell_grimoire:item/masked_twins"
+ },
+ "display": {
+  "gui": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1.2,
+    1.2,
+    1.2
+   ]
+  },
+  "ground": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    2,
+    0
+   ],
+   "scale": [
+    0.5,
+    0.5,
+    0.5
+   ]
+  },
+  "fixed": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1.2,
+    1.2,
+    1.2
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout"
+}

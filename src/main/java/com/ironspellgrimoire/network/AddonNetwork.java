@@ -61,5 +61,8 @@ public class AddonNetwork {
         CHANNEL.registerMessage(22, HungerPackets.Sync.class, HungerPackets.Sync::encode, HungerPackets.Sync::decode, HungerPackets.Sync::handle);
         CHANNEL.registerMessage(23, HungerPackets.Act.class, HungerPackets.Act::encode, HungerPackets.Act::decode, HungerPackets.Act::handle);
         CHANNEL.registerMessage(24, HungerPackets.Look.class, HungerPackets.Look::encode, HungerPackets.Look::decode, HungerPackets.Look::handle);
+        CHANNEL.registerMessage(25, TwinsPackets.Sync.class, TwinsPackets.Sync::encode, TwinsPackets.Sync::decode, TwinsPackets.Sync::handle);
+        CHANNEL.registerMessage(26, TwinsPackets.Act.class, TwinsPackets.Act::encode, TwinsPackets.Act::decode, TwinsPackets.Act::handle);
+        CHANNEL.registerMessage(27, TwinsPackets.Look.class, TwinsPackets.Look::encode, TwinsPackets.Look::decode, TwinsPackets.Look::handle);
     }
 }

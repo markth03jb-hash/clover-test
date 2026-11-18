@@ -433,6 +433,22 @@ public class GrimoireBookScreen extends Screen {
         for (FormattedCharSequence l : f.split(Component.literal(body), w)) { g.drawString(f, l, rx, ry, INK, false); ry += 10; }
         ry += 8;
         for (FormattedCharSequence l : f.split(Component.literal("Mastery " + lv + " of " + cap + (awake ? " (awakened)" : exam ? " (Magic Knight)" : "") + "."), w)) { g.drawString(f, l, rx, ry, INK_SOFT, false); ry += 10; }
+        // how far to the next level, and what it opens
+        int[] th = com.ironspellgrimoire.server.GrimoireMastery.THRESHOLDS;
+        if (lv < cap && lv + 1 < th.length) {
+            int xp = com.ironspellgrimoire.server.GrimoireMastery.xp(bk), from = th[lv], to = th[lv + 1];
+            float pr = Mth.clamp((xp - from) / (float) Math.max(1, to - from), 0, 1);
+            ry += 4;
+            g.fill(rx, ry, rx + w, ry + 4, 0x40301A08);
+            g.fill(rx, ry, rx + Math.round(w * pr), ry + 4, RED_INK);
+            ry += 7;
+            g.drawString(f, (xp - from) + " / " + (to - from) + " xp to mastery " + (lv + 1), rx, ry, INK_SOFT, false);
+            ry += 12;
+            List<String> opens = new ArrayList<>();
+            for (int i = 0; i < ids.size(); i++) if (unlockAt.get(i) == lv + 1) { AbstractSpell sp2 = spell(i); if (sp2 != null) opens.add(sp2.getDisplayName(Minecraft.getInstance().player).getString()); }
+            String nx = opens.isEmpty() ? "Mastery " + (lv + 1) + ": stronger spells (+4% power, +50 mana)." : "Mastery " + (lv + 1) + " opens: " + String.join(", ", opens) + ".";
+            for (FormattedCharSequence l : f.split(Component.literal(nx), w)) { g.drawString(f, l, rx, ry, INK, false); ry += 10; }
+        }
     }
 
     // ------------------------------------------------------------------ the Upgrades: everything bound into the grimoire, and what it adds up to

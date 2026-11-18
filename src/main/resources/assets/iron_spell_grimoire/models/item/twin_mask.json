@@ -1,0 +1,112 @@
+{
+ "loader": "forge:obj",
+ "model": "iron_spell_grimoire:models/item/twin_mask_sol_1.obj",
+ "flip_v": true,
+ "textures": {
+  "particle": "iron_spell_grimoire:item/masked_twins"
+ },
+ "display": {
+  "gui": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1.2,
+    1.2,
+    1.2
+   ]
+  },
+  "ground": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    2,
+    0
+   ],
+   "scale": [
+    0.5,
+    0.5,
+    0.5
+   ]
+  },
+  "fixed": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1.2,
+    1.2,
+    1.2
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout",
+ "overrides": [
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.0625
+   },
+   "model": "iron_spell_grimoire:item/twin_mask_sol_2"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.125
+   },
+   "model": "iron_spell_grimoire:item/twin_mask_sol_3"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.1875
+   },
+   "model": "iron_spell_grimoire:item/twin_mask_nyx_1"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.25
+   },
+   "model": "iron_spell_grimoire:item/twin_mask_nyx_2"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.3125
+   },
+   "model": "iron_spell_grimoire:item/twin_mask_nyx_3"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.375
+   },
+   "model": "iron_spell_grimoire:item/twin_mask_eclipse"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.4375
+   },
+   "model": "iron_spell_grimoire:item/twin_mask_dawn_warden"
+  },
+  {
+   "predicate": {
+    "iron_spell_grimoire:form": 0.5
+   },
+   "model": "iron_spell_grimoire:item/twin_mask_dusk_warden"
+  }
+ ]
+}

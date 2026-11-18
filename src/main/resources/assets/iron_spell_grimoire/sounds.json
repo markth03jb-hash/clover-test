@@ -1111,5 +1111,70 @@
         "name": "iron_spell_grimoire:sfx/shadow_gate_3"
       }
     ]
+  },
+  "sfx.twin_rise": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/twin_rise_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/twin_rise_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/twin_rise_3"
+      }
+    ]
+  },
+  "sfx.twin_fall": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/twin_fall_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/twin_fall_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/twin_fall_3"
+      }
+    ]
+  },
+  "sfx.sun_flare": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/sun_flare_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/sun_flare_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/sun_flare_3"
+      }
+    ]
+  },
+  "sfx.moon_shimmer": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/moon_shimmer_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/moon_shimmer_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/moon_shimmer_3"
+      }
+    ]
+  },
+  "sfx.eclipse_toll": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/eclipse_toll_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/eclipse_toll_2"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/eclipse_toll_3"
+      }
+    ]
   }
 }

@@ -47,6 +47,9 @@ public final class ParasiteClient {
     public static int strain2, burrowLeft, evoRank, eaten, limb, nestStored = -1;
     public static boolean limbGone, sight;
     public static int look, nestCount, nestMax = 1;
+    /** The Apex Mutation (0 none), the quick ring's four pinned forms, the form on the other arm (Living Armory). */
+    public static int apex, form2;
+    public static int[] pins = {1, 2, 3, 4};
     public static int[] organs = new int[3], adapt = new int[5];
 
     static boolean wears(int m) { for (int s : slots) if (s == m) return true; return false; }
@@ -62,6 +65,7 @@ public final class ParasiteClient {
         }
         if (x.length >= 27) { evoRank = x[22]; eaten = x[23]; limb = x[24]; limbGone = x[25] == 1; nestStored = x[26]; }
         if (x.length >= 31) { sight = x[27] == 1; look = x[28]; nestCount = x[29]; nestMax = x[30]; }
+        if (x.length >= 37) { apex = x[31]; pins = new int[]{x[32], x[33], x[34], x[35]}; form2 = x[36]; }
         Minecraft mc = Minecraft.getInstance();
         if (p.open) EvolutionScreen.open();
         else if (mc.screen instanceof EvolutionScreen s) s.refresh();
@@ -79,6 +83,7 @@ public final class ParasiteClient {
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get())) return 1;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.SHADOW_GRIMOIRE.get())) return 2;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE.get())) return 3;
+        if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.TWINS_GRIMOIRE.get())) return 5;
         return 0;
     }
 
@@ -111,8 +116,10 @@ public final class ParasiteClient {
         while (KEY.consumeClick()) {
             if (mc.screen != null) continue;
             int kind = wheelKind(mc);
-            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite, System and Hunger Blade grimoires have a wheel")
+            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite, System, Hunger Blade and Masked Twins grimoires have a wheel")
                     .withStyle(net.minecraft.ChatFormatting.GRAY), true);
+            else if (kind == 5) mc.setScreen(new TwinsWheel());
+            else if (kind == 1 && !pl.isShiftKeyDown() && java.util.Arrays.stream(pins).anyMatch(f -> f > 0)) mc.setScreen(new ParasiteWheel(4));   // tap: the quick ring
             else mc.setScreen(new ParasiteWheel(kind));
         }
         boolean on = equipped && wheelKind(mc) == 1 && !pl.isSpectator() && !pl.getAbilities().flying && !pl.isPassenger();

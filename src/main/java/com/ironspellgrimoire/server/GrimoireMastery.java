@@ -299,6 +299,8 @@ public final class GrimoireMastery {
                 "consume", 1, "evolution", 1, "marrow_barrage", 2, "grasping_field", 3, "pack_call", 3, "spine_storm", 4, "collapse_core", 5);
         book(AddonItemRegistry.HUNGER_GRIMOIRE::get, Fx.CRIMSON,
                 "draw_blade", 1, "the_blade", 1, "gnash", 1, "feast", 2, "unleash", 3, "hunger_domain", 4);
+        book(AddonItemRegistry.TWINS_GRIMOIRE::get, Fx.GOLD,
+                "twin_swap", 1, "the_masks", 1, "twin_arts", 1, "twin_strike", 2, "eclipse_union", 4);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)

@@ -175,7 +175,102 @@ public final class ShadowArmy {
         e.putInt("lvl", lvl);
         e.putInt("xp", xp);
         ShadowSoldier s = summoned(owner, id);
-        if (s != null) s.applyStats(lvl, e.getInt("rank"));
+        if (s != null) { s.applyStats(lvl, e.getInt("rank")); applyTrait(s, e); }
+    }
+
+    // ================================================================== bonds: a trait, after 50 kills fought side by side
+    public static final String[] TRAITS = {"", "Loyal", "Ferocious", "Cautious"};
+    public static final String[] TRAIT_GIVES = {"", "+20% health", "+20% damage", "reforms in 15 s instead of 30"};
+    public static final int BOND_KILLS = 50;
+    private static final UUID TRAIT_HP = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000072"), TRAIT_DMG = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000073");
+
+    /** A kill by the player or one of their shadows: every shadow at their side grows closer to them. */
+    static void bondKill(ServerPlayer p) {
+        for (ShadowSoldier s : out(p)) {
+            CompoundTag e = find(p, s.armyId());
+            if (e == null || e.getInt("trait") != 0) continue;
+            e.putInt("bk", e.getInt("bk") + 1);
+            if (e.getInt("bk") >= BOND_KILLS) {
+                int tr = 1 + p.getRandom().nextInt(3);
+                e.putInt("trait", tr);
+                applyTrait(s, e);
+                p.sendSystemMessage(Component.literal("[ SYSTEM ] ").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD)
+                        .append(Component.literal(e.getString("name") + " has bonded with you: " + TRAITS[tr] + " (" + TRAIT_GIVES[tr] + ")").withStyle(ChatFormatting.AQUA)));
+                HunterAscension.teach(p, 8, "Bonds: a shadow that fights at your side for " + BOND_KILLS + " kills gains a trait - Loyal, Ferocious or Cautious. See it in the Army menu.");
+                FxSend.ring(p.serverLevel(), Fx.YAMI | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, s.position().add(0, 0.05, 0), 0.2f, 1.5f, 0.1f, 12);
+                ShadowFx.play(p.serverLevel(), s.position(), "shadow_rise", 0.8f, 1.5f);
+            }
+        }
+    }
+
+    /** A bonded shadow's trait on its body. */
+    static void applyTrait(ShadowSoldier s, CompoundTag e) {
+        int tr = e.getInt("trait");
+        var hp = s.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
+        var dm = s.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+        if (hp != null) { hp.removeModifier(TRAIT_HP); if (tr == 1) hp.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(TRAIT_HP, "Loyal", 0.2, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL)); }
+        if (dm != null) { dm.removeModifier(TRAIT_DMG); if (tr == 2) dm.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(TRAIT_DMG, "Ferocious", 0.2, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL)); }
+        if (tr == 1) s.setHealth(s.getMaxHealth());
+    }
+
+    // ================================================================== loadouts: up to 3 saved sets of who stands at your side
+    static final String LOADOUTS = "isg_loadouts", LO_ACTIVE = "isg_lo_active";
+
+    static ListTag loadouts(Player p) {
+        CompoundTag r = root(p);
+        if (!r.contains(LOADOUTS, Tag.TAG_LIST)) r.put(LOADOUTS, new ListTag());
+        ListTag l = r.getList(LOADOUTS, Tag.TAG_COMPOUND);
+        while (l.size() < 3) { CompoundTag c = new CompoundTag(); c.putString("name", "Loadout " + (l.size() + 1)); c.putIntArray("ids", new int[0]); l.add(c); }
+        return l;
+    }
+
+    /** Save who's equipped now into a loadout slot. */
+    static void saveLoadout(ServerPlayer p, int slot) {
+        if (slot < 0 || slot > 2) return;
+        List<Integer> ids = new ArrayList<>();
+        for (Tag t : list(p)) if (((CompoundTag) t).getBoolean("eq")) ids.add(((CompoundTag) t).getInt("id"));
+        loadouts(p).getCompound(slot).putIntArray("ids", ids.stream().mapToInt(Integer::intValue).toArray());
+        root(p).putInt(LO_ACTIVE, slot + 1);
+        p.displayClientMessage(Component.literal("Saved " + ids.size() + " shadows to " + loadouts(p).getCompound(slot).getString("name")).withStyle(ChatFormatting.AQUA), true);
+    }
+
+    /** Re-form the army from a loadout: those in it stand at your side (up to your slots), the rest sink. */
+    public static boolean applyLoadout(ServerPlayer p, int slot) {
+        if (slot < 0 || slot > 2) return false;
+        int[] ids = loadouts(p).getCompound(slot).getIntArray("ids");
+        if (ids.length == 0) { p.displayClientMessage(Component.literal(loadouts(p).getCompound(slot).getString("name") + " is empty - save one in the Army menu").withStyle(ChatFormatting.GRAY), true); return false; }
+        java.util.Set<Integer> want = new java.util.HashSet<>();
+        for (int i : ids) want.add(i);
+        int n = 0, cap = slots(p);
+        for (Tag t : list(p)) {
+            CompoundTag e = (CompoundTag) t;
+            boolean on = want.contains(e.getInt("id")) && (e.getBoolean("excl") || n < cap);
+            if (on && !e.getBoolean("excl")) n++;
+            e.putBoolean("eq", on);
+        }
+        root(p).putInt(LO_ACTIVE, slot + 1);
+        recallAll(p);
+        if (ShadowFx.equipped(p)) keep(p);
+        FxSend.ring(p.serverLevel(), Fx.YAMI | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, p.position().add(0, 0.05, 0), 0.3f, 5f, 0.25f, 14);
+        ShadowFx.play(p.serverLevel(), p.position(), "shadow_rise", 1f, 1.1f);
+        p.displayClientMessage(Component.literal(loadouts(p).getCompound(slot).getString("name")).withStyle(ChatFormatting.AQUA), true);
+        return true;
+    }
+
+    /** The wheel's Loadout slice: the next saved loadout that has anyone in it. */
+    public static void cycleLoadout(ServerPlayer p) {
+        int cur = root(p).getInt(LO_ACTIVE) - 1;
+        for (int k = 1; k <= 3; k++) {
+            int s = Math.floorMod(cur + k, 3);
+            if (loadouts(p).getCompound(s).getIntArray("ids").length > 0) { applyLoadout(p, s); return; }
+        }
+        p.displayClientMessage(Component.literal("No loadouts saved - save one in the Army menu (Loadouts tab)").withStyle(ChatFormatting.GRAY), true);
+    }
+
+    static void renameLoadout(ServerPlayer p, int slot, String name) {
+        if (slot < 0 || slot > 2 || name == null || name.isBlank()) return;
+        String n = name.strip();
+        loadouts(p).getCompound(slot).putString("name", n.length() > 20 ? n.substring(0, 20) : n);
     }
 
     private static boolean canRankUpAt(CompoundTag e, int lvl) {
@@ -208,6 +303,7 @@ public final class ShadowArmy {
                 : AddonEntities.SHADOW_SOLDIER.get().create(sl);
         if (s == null) return null;
         s.setup(p.getUUID(), e.getString("type"), e.getInt("id"), e.getInt("lvl"), e.getInt("rank"), e.getString("name"), temporary);
+        applyTrait(s, e);
         if (temporary <= 0 && e.contains("st")) s.station = stationOf(e);
         s.moveTo(at.x, at.y, at.z, p.getYRot(), 0);
         sl.addFreshEntity(s);
@@ -228,7 +324,7 @@ public final class ShadowArmy {
         ServerPlayer p = sl.getServer().getPlayerList().getPlayer(s.ownerUUID());
         if (p == null) return;
         CompoundTag e = find(p, s.armyId());
-        if (e != null) e.putLong("rec", sl.getGameTime() + (Moves.inMode(p, ShadowFx.MODE) ? 60 : 600));
+        if (e != null) e.putLong("rec", sl.getGameTime() + (Moves.inMode(p, ShadowFx.MODE) ? 60 : e.getInt("trait") == 3 ? 300 : 600));
         Map<Integer, ShadowSoldier> m = OUT.get(p.getUUID());
         if (m != null) m.remove(s.armyId());
     }
@@ -337,11 +433,17 @@ public final class ShadowArmy {
             CompoundTag e = (CompoundTag) t;
             int rec = (int) Math.max(0, (e.getLong("rec") - now) / 20);
             l.add(new ShadowPackets.Entry(e.getInt("id"), e.getString("type"), e.getString("name"), e.getInt("lvl"), e.getInt("xp"), xpNext(e.getInt("lvl")),
-                    e.getInt("rank"), e.getBoolean("eq"), e.getBoolean("excl"), rec, canRankUp(e) && rankBlock(p, e) == 0, rankBlock(p, e), e.contains("st")));
+                    e.getInt("rank"), e.getBoolean("eq"), e.getBoolean("excl"), rec, canRankUp(e) && rankBlock(p, e) == 0, rankBlock(p, e), e.contains("st"),
+                    e.getInt("trait"), e.getInt("bk")));
         }
         int[] ch = new int[EXCLUSIVES.length];
         for (int i = 0; i < ch.length; i++) ch[i] = challengeState(p, i);
-        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Open(l, slots(p), STORAGE, ch));
+        ShadowPackets.Open o = new ShadowPackets.Open(l, slots(p), STORAGE, ch);
+        ListTag lo = loadouts(p);
+        o.loNames = new String[lo.size()]; o.loIds = new int[lo.size()][];
+        for (int i = 0; i < lo.size(); i++) { o.loNames[i] = lo.getCompound(i).getString("name"); o.loIds[i] = lo.getCompound(i).getIntArray("ids"); }
+        o.loActive = root(p).getInt(LO_ACTIVE) - 1;
+        AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), o);
     }
 
     public static void handle(ServerPlayer p, int action, int id, String name) {
@@ -349,6 +451,9 @@ public final class ShadowArmy {
         if (action == 0) { open(p); return; }
         if (action == 5) { challenge(p, id); return; }
         if (action == 6) { arise(p, id); keep(p); open(p); return; }
+        if (action == 16) { saveLoadout(p, id); open(p); return; }
+        if (action == 17) { applyLoadout(p, id); open(p); return; }
+        if (action == 18) { renameLoadout(p, id, name); open(p); return; }
         if (action >= 10) { HunterAscension.handle(p, action, id); return; }
         CompoundTag e = find(p, id);
         if (e == null) return;
@@ -364,9 +469,10 @@ public final class ShadowArmy {
                     p.displayClientMessage(Component.literal(block == 1 ? "Your army already has its General" : "All three Captain ranks are taken").withStyle(ChatFormatting.GRAY), true);
                 } else if (canRankUp(e)) {
                     e.putInt("rank", e.getInt("rank") + 1);
+                    if (e.getInt("rank") == 4) HunterAscension.award(p, 7);
                     p.displayClientMessage(Component.literal(e.getString("name") + " ranks up: " + RANKS[e.getInt("rank")]).withStyle(ChatFormatting.AQUA), true);
                     ShadowSoldier s = summoned(p, id);
-                    if (s != null) { s.applyStats(e.getInt("lvl"), e.getInt("rank")); ShadowFx.rankUpFx(p.serverLevel(), s); }
+                    if (s != null) { s.applyStats(e.getInt("lvl"), e.getInt("rank")); applyTrait(s, e); ShadowFx.rankUpFx(p.serverLevel(), s); }
                     ShadowFx.play(p.serverLevel(), p.position(), "shadow_rise", 1.0f, 1.4f);
                 }
             }

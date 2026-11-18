@@ -27,9 +27,7 @@ public class NestScreen extends Screen {
         hits.clear();
         int W = Math.min(260, width - 16), rowH = 26, H = 30 + rows.size() * (rowH + 4) + 6;
         int x0 = (width - W) / 2, y0 = (height - H) / 2;
-        g.fill(x0, y0, x0 + W, y0 + H, EvolutionScreen.INK);
-        g.fill(x0 + 2, y0 + 2, x0 + W - 2, y0 + H - 2, EvolutionScreen.PANEL);
-        g.renderOutline(x0, y0, W, H, EvolutionScreen.EDGE);
+        FleshSkin.panel(g, x0, y0, W, H, (Minecraft.getInstance().level == null ? 0 : Minecraft.getInstance().level.getGameTime()) + pt, mx, my, true);
         g.drawString(font, "HIVE NETWORK", x0 + 8, y0 + 8, 0xFFFF6070, true);
         int y = y0 + 26;
         for (int i = 0; i < rows.size(); i++) {

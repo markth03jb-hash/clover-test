@@ -172,7 +172,7 @@ public final class ParasiteFx {
     static final int ART_CD = 1200, FINAL_CD = 6000, FINAL_LEN = 600;
     static final int[] ULT_COST = {25, 30, 40, 35, 40};   // Marrow Barrage, Grasping Field, Spine Storm, Collapse Core, Pack Call
 
-    private static final UUID M_DMG = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a900001");
+    private static final UUID M_DMG = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a900001"), M_DMG2 = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000081");
     private static final UUID M_SPD = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a900002");
     private static final UUID M_REACH = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a900003");
     private static final UUID M_ARMOR = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a900004");
@@ -433,6 +433,7 @@ public final class ParasiteFx {
         t.hurt(p.damageSources().playerAttack(p), t.getHealth() + t.getAbsorptionAmount() + 1000f);
         CompoundTag r = root(p);
         r.putInt("devoured", r.getInt("devoured") + 1);
+        ParasiteExtras.onDevour(p, t);
         int ep = maxHp >= 40 ? 2 : 1;
         r.putInt("ep", r.getInt("ep") + ep);
         float heal = (3 + maxHp * 0.15f) * (1f + 0.3f * rank(p, DIGEST)) + (frenzied(p) ? 4 : 0);
@@ -740,6 +741,7 @@ public final class ParasiteFx {
             return;
         }
         if (f == cur) f = NONE;   // picking the form you have retracts it
+        if (ParasiteExtras.apex(p) == 2) r.putInt("form2", f == NONE ? NONE : cur != NONE && cur != f ? cur : r.getInt("form2") == f ? NONE : r.getInt("form2"));   // Living Armory: the last form to the other arm
         if (f != NONE && !formUnlocked(p, f)) {
             p.displayClientMessage(Component.literal("Evolve " + FORMS[f] + " first").withStyle(ChatFormatting.GRAY), true);
             return;
@@ -751,8 +753,7 @@ public final class ParasiteFx {
             restoreHand(p, true, "stash");
             sound(sl, p.position(), SoundEvents.SLIME_SQUISH_SMALL, 0.8f, 0.7f);
         } else {
-            Vec3 h = handPos(p);
-            FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, h, 0.1f, 0.7f, 0.06f, 6);
+            ParasiteExtras.transformFx(p, f);
             sound(sl, p.position(), SoundEvents.SLIME_SQUISH, 0.9f, 0.6f);
             sound(sl, p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 0.6f, 0.6f);
         }
@@ -789,6 +790,7 @@ public final class ParasiteFx {
         CompoundTag r = root(p);
         boolean any = r.getInt("form") != NONE || r.getBoolean("bulwark") || r.getBoolean("hide");
         if (r.getInt("form") != NONE) { r.putInt("form", NONE); restoreHand(p, true, "stash"); }
+        r.putInt("form2", NONE);
         if (r.getBoolean("bulwark")) { r.putBoolean("bulwark", false); restoreHand(p, false, "stashOff"); }
         r.putBoolean("hide", false);
         if (any) dirty(p);
@@ -816,6 +818,8 @@ public final class ParasiteFx {
         setMod(p, Attributes.ATTACK_DAMAGE, M_DMG, "Parasite arm", s[0], AttributeModifier.Operation.ADDITION);
         setMod(p, Attributes.ATTACK_SPEED, M_SPD, "Parasite arm", s[1] + (fr ? 0.6 : 0) + ((f == TALONS || f == REAPER) ? 0.3 * hu : 0) + (heart == 2 ? 0.4 : 0), AttributeModifier.Operation.ADDITION);
         setMod(p, ForgeMod.ENTITY_REACH.get(), M_REACH, "Parasite arm", s[2], AttributeModifier.Operation.ADDITION);
+        int f2 = on ? ParasiteExtras.form2(p) : NONE;   // Living Armory: half the other arm's strength
+        setMod(p, Attributes.ATTACK_DAMAGE, M_DMG2, "Parasite off arm", f2 > NONE ? 0.5 * FORM_STATS[f2][0] : 0, AttributeModifier.Operation.ADDITION);
         boolean hd = on && hide(p), bw = on && bulwark(p);
         boolean colA = on && colossus(p), finA = on && finalForm(p);
         int lk = hd ? look(p) : 0;
@@ -836,7 +840,7 @@ public final class ParasiteFx {
 
     // ================================================================== the client's requests
     public static void handle(ServerPlayer p, int action, int arg) {
-        boolean shadow = action >= 20 && action <= 26;
+        boolean shadow = action >= 20 && action <= 26 || action == 40;
         if (!shadow && !equipped(p)) return;
         switch (action) {
             case 1 -> setForm(p, arg, false);
@@ -861,8 +865,11 @@ public final class ParasiteFx {
             case 27 -> toggleSight(p);
             case 28 -> nestTravel(p, arg);
             case 30 -> airDash(p);
+            case 31 -> { ParasiteExtras.chooseApex(p, arg); sync(p, false); }
+            case 32 -> { ParasiteExtras.pin(p, arg / 10, arg % 10); sync(p, false); }
             case 29 -> { if (arg >= 0 && arg < LOOKS.length) { root(p).putInt("look", arg); applyStats(p); sound(p.serverLevel(), p.position(), SoundEvents.ARMOR_EQUIP_NETHERITE, 0.8f, 0.7f); sync(p, false); } }
             case 20, 21, 22, 23, 24, 25, 26 -> shadowCommand(p, action - 20);
+            case 40 -> { var b = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p); if (b != null && b.is(AddonItemRegistry.SHADOW_GRIMOIRE.get())) ShadowArmy.cycleLoadout(p); }
             default -> { }
         }
     }
@@ -1982,7 +1989,8 @@ public final class ParasiteFx {
                 r.getInt("strain"), ranks(p), open, extra(p)));
         // everyone round sees the forms on your arms (and how big you've grown)
         boolean on = equipped(p);
-        int flags = (on && colossus(p) ? 1 : 0) | (on && finalForm(p) ? 2 : 0) | (on && burrowed(p) ? 4 : 0) | ((on ? look(p) : 0) << 3);
+        int flags = (on && colossus(p) ? 1 : 0) | (on && finalForm(p) ? 2 : 0) | (on && burrowed(p) ? 4 : 0) | ((on ? look(p) : 0) << 3)
+                | ((on && r.getInt("form") != NONE ? ParasiteExtras.form2(p) : 0) << 6);
         AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p),
                 new ParasitePackets.Look(p.getId(), on ? r.getInt("form") : 0, on && r.getBoolean("bulwark"), on && (r.getBoolean("hide") || finalForm(p)), frenzied(p), flags));
     }
@@ -1997,7 +2005,8 @@ public final class ParasiteFx {
                 strain2(p), organ(p, HEART), organ(p, GUT), organ(p, GLAND),
                 Math.round(adapted(p, 0)), Math.round(adapted(p, 1)), Math.round(adapted(p, 2)), Math.round(adapted(p, 3)), Math.round(adapted(p, 4)),
                 left(p, "burrow"), evoRank(p), Math.round(eaten(p)), Math.round(limbWear(p)), limbGone(p) ? 1 : 0, nestOf(p) != null ? Math.round(nestOf(p).stored()) : -1,
-                sight(p) ? 1 : 0, look(p), nests(p).size(), maxNests(p)};
+                sight(p) ? 1 : 0, look(p), nests(p).size(), maxNests(p),
+                ParasiteExtras.apex(p), ParasiteExtras.pins(p)[0], ParasiteExtras.pins(p)[1], ParasiteExtras.pins(p)[2], ParasiteExtras.pins(p)[3], ParasiteExtras.form2(p)};
     }
 
     // ================================================================== tests and screenshots
