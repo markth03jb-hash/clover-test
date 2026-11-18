@@ -41,12 +41,8 @@ abstract class ShadowUiScreen extends Screen {
         SystemSkin.window(g, font, px(), py(), pw(), ph(), t, title);
     }
 
-    /** The window unfolds from a line as it opens (over what's drawn in it). */
-    @Override
-    public void renderWithTooltip(GuiGraphics g, int mx, int my, float pt) {
-        super.renderWithTooltip(g, mx, my, pt);
-        SystemSkin.boot(g, px(), py(), pw(), ph(), ticks + pt);
-    }
+    /** The window unfolds from a line as it opens (drawn over its contents: SystemSkin.Boot). */
+    void boot(GuiGraphics g, float pt) { SystemSkin.boot(g, px(), py(), pw(), ph(), ticks + pt); }
 
     protected void button(GuiGraphics g, int x, int y, int w, int h, String label, boolean enabled, int accent, int mx, int my, Runnable run) {
         boolean hov = enabled && in(mx, my, x, y, w, h);

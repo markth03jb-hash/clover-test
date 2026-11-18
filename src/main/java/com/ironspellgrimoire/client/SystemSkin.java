@@ -10,8 +10,18 @@ import net.minecraft.util.Mth;
  * "[ SYSTEM ]" chip by a title that flickers as the window boots - which unfolds from a line when it opens.
  * Everything is drawn here; no textures.
  */
-final class SystemSkin {
+public final class SystemSkin {
     private SystemSkin() {}
+
+    /** After a System window draws its contents: the part not yet unfolded is covered. */
+    @net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = net.minecraftforge.api.distmarker.Dist.CLIENT)
+    public static final class Boot {
+        @net.minecraftforge.eventbus.api.SubscribeEvent
+        public static void after(net.minecraftforge.client.event.ScreenEvent.Render.Post e) {
+            if (e.getScreen() instanceof ShadowUiScreen s) s.boot(e.getGuiGraphics(), e.getPartialTick());
+            else if (e.getScreen() instanceof ShadowArmyScreen s) s.boot(e.getGuiGraphics(), e.getPartialTick());
+        }
+    }
 
     static final int RIM = 0xFF3C8CFF, RIM_HI = 0xFF9AD8FF, CYAN = 0xFF7FE8FF;
 

@@ -302,12 +302,8 @@ public class ShadowArmyScreen extends Screen {
         if (enabled) hits.add(new Hit(x, y, w, h, run));
     }
 
-    /** The window unfolds from a line as it opens. */
-    @Override
-    public void renderWithTooltip(GuiGraphics g, int mx, int my, float pt) {
-        super.renderWithTooltip(g, mx, my, pt);
-        SystemSkin.boot(g, px(), py(), pw(), ph(), ticks + pt);
-    }
+    /** The window unfolds from a line as it opens (drawn over its contents: SystemSkin.Boot). */
+    void boot(GuiGraphics g, float pt) { SystemSkin.boot(g, px(), py(), pw(), ph(), ticks + pt); }
 
     private static void frame(GuiGraphics g, int x, int y, int w, int h, int c) {
         g.fill(x, y, x + w, y + 1, c); g.fill(x, y + h - 1, x + w, y + h, c);
