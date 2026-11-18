@@ -1362,5 +1362,6 @@
   "spell.iron_spell_grimoire.high_noon": "Twins: High Noon",
   "spell.iron_spell_grimoire.high_noon.guide": "Sol's ultimate (Sol worn, level 40): for 10 s a blazing aura scorches every foe near you each second, Sol's art cooldowns are cleared and halved while it lasts, and every hit of Sol's sets foes burning.",
   "spell.iron_spell_grimoire.eventide": "Twins: Eventide",
-  "spell.iron_spell_grimoire.eventide.guide": "Nyx's ultimate (Nyx worn, level 40): for 8 s every foe near you crawls at half speed, you run 40% faster, and the next three blows aimed at you miss."
+  "spell.iron_spell_grimoire.eventide.guide": "Nyx's ultimate (Nyx worn, level 40): for 8 s every foe near you crawls at half speed, you run 40% faster, and the next three blows aimed at you miss.",
+  "entity.iron_spell_grimoire.twin_echo": "Twin Echo"
 }

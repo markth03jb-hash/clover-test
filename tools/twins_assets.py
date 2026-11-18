@@ -122,6 +122,7 @@ lang = json.load(open(LP))
 lang['item.iron_spell_grimoire.twins_grimoire'] = 'Masked Twins Grimoire'
 lang['item.iron_spell_grimoire.twin_mask'] = 'Twin Mask'
 lang['entity.iron_spell_grimoire.twin_warden'] = 'Twin Warden'
+lang['entity.iron_spell_grimoire.twin_echo'] = 'Twin Echo'
 lang['ui.iron_spell_grimoire.twins_grimoire_only'] = 'Only the Masked Twins Grimoire can cast this.'
 lang['tooltip.iron_spell_grimoire.twins_grimoire.passive'] = ('Passive - two masks, one soul: Sol, the sun twin (fire, fierce up close), and Nyx, the moon twin (frost and void, '
     'quick and slippery). Wear one at a time on your face - tap G to swap, hold G for the wheel of your four chosen arts. Each twin levels on its own (to 50) and learns '
