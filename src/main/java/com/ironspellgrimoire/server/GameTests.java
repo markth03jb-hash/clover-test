@@ -981,8 +981,8 @@ public final class GameTests {
             if (t < 160) return false;
             String ch = changes(before);
             if (!ch.isEmpty()) bad.add("changed the world: " + ch);
-            if (bad.isEmpty()) pass(name, "level " + HunterAscension.level(p) + ", stats applied, trial done, market and Reckoning work, level-up surge, job change, advancement, titles, lessons, loadouts, bonds");
             ShadowArmy.recallAll(p); ShadowArmy.list(p).clear();
+            if (bad.isEmpty()) pass(name, "level " + HunterAscension.level(p) + ", stats applied, trial done, market and Reckoning work, level-up surge, job change, advancement, titles, lessons, loadouts, bonds");
             else fail(name, String.join("; ", bad));
             HunterAscension.testReset(p);
             clearArea();
