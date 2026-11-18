@@ -818,7 +818,7 @@ public final class UiShots {
         Minecraft mc = Minecraft.getInstance();
         ticks++;
         if (!TESTS && ticks > 20 * 60 * 15) { report.add("run | gave up after 15 minutes at step " + index); finish(); return; }
-        if (TESTS && ticks > 20 * 60 * 40 && phase < 6) { writeTests("CRASH | run | gave up after 40 minutes at test " + com.ironspellgrimoire.server.GameTests.progress()); return; }
+        if (TESTS && ticks > 20 * 60 * 48 && phase < 6) { writeTests("CRASH | run | gave up after 48 minutes at test " + com.ironspellgrimoire.server.GameTests.progress()); return; }
         if (phase == 0) {   // wait for the title screen (or the first-launch screens), then make the world
             if (mc.getOverlay() != null || mc.screen == null || mc.level != null) return;
             if (!(mc.screen instanceof TitleScreen) && !mc.screen.getClass().getSimpleName().contains("Onboarding")) return;

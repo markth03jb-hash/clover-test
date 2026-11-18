@@ -208,7 +208,7 @@ public final class ChainFx {
                 Vec3 to = flat(mid(e).subtract(eye));
                 if (to.lengthSqr() > 1.0E-4 && to.normalize().dot(lk) < 0.35) continue;
                 if (Math.abs(mid(e).y - eye.y) > 3) continue;
-                hit(p, e, pow * 0.75f, "chain_lash");
+                hit(p, e, pow * 0.3f, "chain_lash");   // balance: was 0.75 - 4x any other grimoire's first spell
                 Kit.push(e, rightOf(lk).scale(-1), 0.4, 0.15);
             }
             play(sl, eye, "chain_rattle", 0.9f, 1.3f);

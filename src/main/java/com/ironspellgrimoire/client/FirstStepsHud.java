@@ -63,7 +63,7 @@ public final class FirstStepsHud {
         g.drawString(f, "FIRST STEPS", x + 8, y + 4, HEAD, false);
         row(g, f, x, y + 15, codex, "Read your Grimoire Codex");
         row(g, f, x, y + 26, tower, towerLine);
-        row(g, f, x, y + 37, false, "Be chosen at the altar on top");
+        row(g, f, x, y + 37, false, "Be chosen at its altar");
         if (arrow) {
             float rel = Mth.wrapDegrees((float) Math.toDegrees(Math.atan2(-dx, dz)) - yaw);
             float pulse = 0.75F + 0.25F * (float) Math.sin(now * 0.3);

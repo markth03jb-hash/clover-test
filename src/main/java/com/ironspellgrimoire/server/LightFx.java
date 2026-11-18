@@ -169,7 +169,7 @@ public final class LightFx {
             AstaFx.later(hang + fly, () -> {
                 if (!alive(p)) return;
                 FxSend.kill(sl, id, to);
-                for (LivingEntity e : Kit.along(sl, p, at, to, 0.8)) hit(p, e, pow * 0.5f, "light_sword");
+                for (LivingEntity e : Kit.along(sl, p, at, to, 0.8)) hit(p, e, pow * 0.19f, "light_sword");   // balance: was 0.5 - 5x any other grimoire's first spell
                 glint(sl, pal, to, 0.9f, 6);
                 if (k == 2) sound(sl, to, SoundEvents.AMETHYST_BLOCK_BREAK, 1.0f, 1.5f);
             });
