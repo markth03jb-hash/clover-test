@@ -59,7 +59,7 @@ public class ParasiteWheel extends Screen {
     private String[] names() {
         if (kind == 4) {   // the quick ring: the four pinned forms
             String[] n = new String[4];
-            for (int i = 0; i < 4; i++) { int f = ParasiteClient.pins[i]; n[i] = f > 0 ? ParasiteFx.FORMS[f] : "Empty"; }
+            for (int i = 0; i < 4; i++) { int f = ParasiteClient.pins[i]; n[i] = f > 0 ? com.ironspellgrimoire.server.ParasiteFx.FORMS[f] : "Empty"; }
             return n;
         }
         if (kind == 3) {   // the Hunger Blade: the four swords you carry
