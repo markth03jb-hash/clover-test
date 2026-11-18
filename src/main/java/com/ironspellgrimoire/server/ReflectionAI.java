@@ -6,6 +6,7 @@ import static com.ironspellgrimoire.server.FxUtil.*;
 import com.ironspellgrimoire.entity.Reflection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerLevel;
@@ -47,6 +48,13 @@ public final class ReflectionAI {
         pool.add(ReflectionAI::starfall);
         if (b.distanceTo(t) > 10 || r.nextInt(4) == 0) pool.add(ReflectionAI::step);
         if (b.phase() >= 2) { pool.add(ReflectionAI::nova); if (r.nextInt(3) == 0) pool.add(ReflectionAI::page); }
+        if (b.phase() >= 2 && !b.mirrored) { pool.clear(); pool.add(ReflectionAI::mirror); }   // once, the moment it's below half
+        else switch (b.family) {   // its grimoire's own trick
+            case 1 -> { if (b.shades.stream().filter(u -> sl.getEntity(u) instanceof net.minecraft.world.entity.LivingEntity le && le.isAlive()).count() < 3 && r.nextInt(3) == 0) pool.add(ReflectionAI::shades); }
+            case 2 -> { if (b.mutations < 3 && r.nextInt(3) == 0) pool.add(ReflectionAI::mutate); pool.add(ReflectionAI::tendril); }
+            case 3 -> pool.add(ReflectionAI::throwBlade);
+            default -> { }
+        }
         int took = pool.get(r.nextInt(pool.size())).applyAsInt(b, t);
         b.busy = took + (b.phase() == 1 ? 24 : 16);
     }
@@ -197,6 +205,125 @@ public final class ReflectionAI {
         return T + 12;
     }
 
+    // ------------------------------------------------------------------ each family's trick, and everyone's mirrored ultimate
+    /** Below half, once: your ultimate, reflected - a great line of your magic down where you stand. */
+    static int mirror(Reflection b, Player t) {
+        ServerLevel sl = (ServerLevel) b.level();
+        b.mirrored = true;
+        b.setPose(P_RAISE);
+        b.getNavigation().stop();
+        int T = 30;
+        charge(b, b.pal, T);
+        say(b, WHO, COL, "Your ultimate. Watch it from the other side.");
+        Vec3 d = dirTo(b, t), a = b.position().add(0, 1, 0), c = a.add(d.scale(26));
+        face(b, d);
+        warnLine(sl, a.add(0, -0.9, 0), c.add(0, -0.9, 0), 3.2f, T);
+        AstaFx.later(T, () -> {
+            if (!ok(b)) return;
+            BossFx.beam(sl, b.pal, a, c, 1.6f, 14);
+            BossFx.trail(sl, Fx.SILVER, a, c, 0.6f, 12);
+            for (Player p : along(b, a, c, 2.6)) hurt(b, p, 20f);
+            FxSend.impactFrame(sl, a.add(d.scale(6)), 4, FxSend.FRAME_GOLD, 30);
+            FxSend.shake(sl, a, 0.9f, 12, 30);
+            sl.playSound(null, b.blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.HOSTILE, 1.5f, 0.6f);
+            sl.playSound(null, b.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 1.2f, 0.7f);
+        });
+        return T + 14;
+    }
+
+    /** The Shadow's: it raises shades of its own out of pools of shadow (they sink when it falls). */
+    static int shades(Reflection b, Player t) {
+        ServerLevel sl = (ServerLevel) b.level();
+        b.setPose(P_RAISE);
+        b.getNavigation().stop();
+        int T = 16;
+        charge(b, Fx.YAMI, T);
+        say(b, WHO, COL, "Arise.");
+        for (int i = 0; i < 2; i++) {
+            Vec3 at = ground(sl, b.position().add(rotY(dirTo(b, t), (i == 0 ? 1 : -1) * 1.2).scale(3)));
+            warnCircle(sl, at, 1.2f, T);
+            AstaFx.later(T, () -> {
+                if (!ok(b)) return;
+                var m = net.minecraft.world.entity.EntityType.WITHER_SKELETON.create(sl);
+                if (m == null) return;
+                m.moveTo(at.x, at.y, at.z, b.getYRot(), 0);
+                m.setCustomName(net.minecraft.network.chat.Component.literal("Reflected Shade").withStyle(ChatFormatting.DARK_AQUA));
+                m.getPersistentData().putBoolean("isg_no_reward", true);
+                m.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, net.minecraft.world.item.ItemStack.EMPTY);
+                m.setTarget(t);
+                m.setPersistenceRequired();
+                sl.addFreshEntity(m);
+                b.shades.add(m.getUUID());
+                ShadowFx.risePool(sl, at, 1f);
+            });
+        }
+        return T + 10;
+    }
+
+    /** The Parasite's: it mutates - bigger, harder - up to three times. */
+    static int mutate(Reflection b, Player t) {
+        ServerLevel sl = (ServerLevel) b.level();
+        b.setPose(P_ROAR);
+        b.getNavigation().stop();
+        int T = 18;
+        charge(b, Fx.CRIMSON, T);
+        AstaFx.later(T, () -> {
+            if (!ok(b)) return;
+            b.mutations++;
+            var dmg = b.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+            var arm = b.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+            if (dmg != null) dmg.setBaseValue(dmg.getBaseValue() + 2);
+            if (arm != null) arm.setBaseValue(arm.getBaseValue() + 3);
+            BossFx.ring(sl, Fx.CRIMSON, b.position().add(0, 0.1, 0), 0.4f, 4f, 0.25f, 12);
+            for (int k = 0; k < 6; k++) BossFx.beam(sl, Fx.CRIMSON, b.position().add(0, 1, 0), b.position().add(rotY(new Vec3(1, 0, 0), k * Math.PI / 3).scale(2.2)).add(0, 2.2, 0), 0.15f, 10);
+            say(b, WHO, COL, b.mutations == 3 ? "Fully evolved. Like you wanted to be." : "Evolving...");
+            sl.playSound(null, b.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 1.0f, 1.2f);
+        });
+        return T + 8;
+    }
+
+    /** The Parasite's: a tendril lashes out and drags you in. */
+    static int tendril(Reflection b, Player t) {
+        ServerLevel sl = (ServerLevel) b.level();
+        b.setPose(P_CAST);
+        b.getNavigation().stop();
+        int T = 12;
+        Vec3 a = b.position().add(0, 1.2, 0);
+        warnLine(sl, a.add(0, -1.1, 0), t.position().add(0, 0.1, 0), 1.0f, T);
+        AstaFx.later(T, () -> {
+            if (!ok(b) || !t.isAlive() || t.distanceTo(b) > 16) return;
+            BossFx.trail(sl, Fx.CRIMSON, a, t.position().add(0, 1, 0), 0.2f, 8);
+            Vec3 pull = flat(b.position().subtract(t.position()));
+            if (pull.lengthSqr() > 1e-4) { t.setDeltaMovement(pull.normalize().scale(1.4).add(0, 0.3, 0)); t.hurtMarked = true; }
+            hurt(b, t, 5f);
+        });
+        return T + 6;
+    }
+
+    /** The Hunger Blade's: it throws its blade down a line - and it comes back the same way. */
+    static int throwBlade(Reflection b, Player t) {
+        ServerLevel sl = (ServerLevel) b.level();
+        b.setPose(P_SLASH);
+        b.getNavigation().stop();
+        int T = 14;
+        charge(b, Fx.CRIMSON, T);
+        Vec3 d = dirTo(b, t), a = b.position().add(0, 1.1, 0), c = a.add(d.scale(16));
+        face(b, d);
+        warnLine(sl, a.add(0, -1, 0), c.add(0, -1, 0), 1.6f, T + 12);
+        for (int leg = 0; leg < 2; leg++) {
+            final boolean back = leg == 1;
+            AstaFx.later(T + leg * 12, () -> {
+                if (!ok(b)) return;
+                Vec3 from = back ? c : a, to = back ? a : c;
+                for (int k = 0; k < 4; k++) BossFx.slash(sl, Fx.CRIMSON, from.add(to.subtract(from).scale((k + 0.5) / 4)), d, new Vec3(0, 1, 0), 1.4f, 0.6f, 6, 1.2f, 1.0f);
+                BossFx.trail(sl, Fx.CRIMSON, from, to, 0.3f, 8);
+                for (Player p : along(b, from, to, 1.4)) hurt(b, p, 9f);
+                sl.playSound(null, b.blockPosition(), SoundEvents.TRIDENT_THROW, SoundSource.HOSTILE, 1.2f, back ? 1.3f : 0.8f);
+            });
+        }
+        return T + 26;
+    }
+
     public static void onHurt(Reflection b, DamageSource src, float amount) {
         if (src.getEntity() instanceof Player p && valid(b, p)) b.focus = p.getUUID();
     }
@@ -217,7 +344,11 @@ public final class ReflectionAI {
 
     public static void dying(Reflection b, int t) {
         ServerLevel sl = (ServerLevel) b.level();
-        if (t == 1) say(b, WHO, COL, "...Then go further than I ever could.");
+        if (t == 1) {
+            say(b, WHO, COL, "...Then go further than I ever could.");
+            for (UUID u : b.shades) if (sl.getEntity(u) instanceof net.minecraft.world.entity.LivingEntity le && le.isAlive()) { ShadowFx.sinkPool(sl, le.position(), 1f); le.discard(); }
+            b.shades.clear();
+        }
         if (t < 60 && t % 4 == 0) BossFx.orb(sl, b.pal, b.position().add(0, 0.4 + t / 30.0, 0), new Vec3(0, 0.06, 0), 0.3f, 12);
     }
 }

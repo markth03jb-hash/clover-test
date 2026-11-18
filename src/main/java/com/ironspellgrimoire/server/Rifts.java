@@ -976,6 +976,10 @@ public final class Rifts {
             if (owner != null) {
                 GrimoireMastery.Book b = GrimoireMastery.bookOf(io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(owner));
                 if (b != null) m.pal = b.palette();
+                var bk = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(owner);   // its family fights its own way
+                if (bk != null) m.family = bk.is(com.ironspellgrimoire.registry.AddonItemRegistry.SHADOW_GRIMOIRE.get()) ? 1
+                        : bk.is(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get()) ? 2
+                        : bk.is(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE.get()) ? 3 : 0;
                 m.setBarName(Component.literal(owner.getGameProfile().getName() + "'s Reflection"));
             }
         } catch (IllegalArgumentException ignored) {}

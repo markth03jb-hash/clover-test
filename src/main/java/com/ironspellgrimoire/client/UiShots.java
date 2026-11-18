@@ -488,6 +488,11 @@ public final class UiShots {
         steps.add(new Step("shd_wyrmfang_lunge", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:wyrmfang_lunge")); }, 8, true));
         steps.add(new Step("shd_status", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "s:status")); }, 14, false));   // the Status window
         steps.add(new Step("shd_status_job", () -> onServer(p -> UiShotsServer.element(p, "s:status_job")), 14, false));   // Status at level 40: the Job Change button
+        steps.add(new Step("shd_status_adv", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "s:status_adv")); }, 14, false));   // level 80 with a job: the Advance button
+        steps.add(new Step("shd_status_advanced", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "s:status_advanced")); }, 14, false));
+        steps.add(new Step("shd_status_titles", () -> { mc.setScreen(null); StatusScreen.startTab = 1; onServer(p -> UiShotsServer.element(p, "s:status_advanced")); }, 14, false));
+        steps.add(new Step("shd_status_guide", () -> { mc.setScreen(null); StatusScreen.startTab = 2; onServer(p -> UiShotsServer.element(p, "s:status_advanced")); }, 14, false));
+        steps.add(new Step("shd_status_back", () -> { mc.setScreen(null); StatusScreen.startTab = 0; onServer(p -> UiShotsServer.element(p, "s:status_reset_job")); }, 4, true));
         steps.add(new Step("shd_job_choice", () -> onServer(p -> UiShotsServer.element(p, "s:job_choice")), 14, false));   // the choice
         steps.add(new Step("shd_job_trial", () -> { mc.setScreen(null); mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "s:job_trial")); }, 30, true));   // the trial begins
         steps.add(new Step("shd_market", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "s:market")); }, 14, false));   // the Market
@@ -501,6 +506,7 @@ public final class UiShots {
         steps.add(new Step("shd_gate_of_shade", () -> { onServer(p -> UiShotsServer.element(p, "s:gate_of_shade")); }, 16, true));
         steps.add(new Step("shd_menu", () -> { mc.options.hideGui = false; com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.ShadowPackets.Act(0, 0, "")); }, 16, false));   // the army menu
         steps.add(new Step("shd_menu_challenges", () -> ShadowArmyScreen.showTab(1), 10, false));   // the Challenges tab
+        steps.add(new Step("shd_menu_loadouts", () -> { ShadowArmyScreen.showTab(2); com.ironspellgrimoire.network.AddonNetwork.CHANNEL.sendToServer(new com.ironspellgrimoire.network.ShadowPackets.Act(16, 0, "")); }, 12, false));   // the Loadouts tab, one saved
         steps.add(new Step("shd_menu_done", () -> mc.setScreen(null), 4, true));
         steps.add(new Step("shd_wheel", () -> { onServer(p -> UiShotsServer.element(p, "s:end")); GrimoireWheel.forceOpen = true; }, 14, true));
         steps.add(new Step("shd_wheel_done", () -> { GrimoireWheel.forceOpen = false; try { io.redspace.ironsspellbooks.gui.overlays.SpellWheelOverlay.instance.close(); } catch (RuntimeException ignored) { } mc.options.hideGui = true; }, 4, true));
@@ -557,7 +563,14 @@ public final class UiShots {
         steps.add(new Step("par_evo_strain", () -> EvolutionScreen.showTab(3), 6, false));
         steps.add(new Step("par_evo_strain_grafted", () -> onServer(p -> { com.ironspellgrimoire.server.ParasiteFx.testSecond(p, com.ironspellgrimoire.server.ParasiteFx.HUNTER); com.ironspellgrimoire.server.ParasiteFx.testOrgans(p, 1, 2, 2); com.ironspellgrimoire.server.ParasiteFx.evolution(p, 0); }), 8, false));
         steps.add(new Step("par_evo_organs_grown", () -> EvolutionScreen.showTab(2), 6, false));
+        steps.add(new Step("par_evo_guide", () -> EvolutionScreen.showTab(4), 6, false));
+        steps.add(new Step("par_evo_apex", () -> { onServer(p -> { com.ironspellgrimoire.server.ParasiteFx.testEaten(p, 20000); com.ironspellgrimoire.server.ParasiteFx.evolution(p, 0); }); EvolutionScreen.startTab = 5; EvolutionScreen.showTab(5); }, 10, false));
+        steps.add(new Step("par_evo_apex_chosen", () -> onServer(p -> { com.ironspellgrimoire.server.ParasiteExtras.testApex(p, 2); com.ironspellgrimoire.server.ParasiteFx.evolution(p, 0); }), 10, false));
         steps.add(new Step("par_evo_done", () -> { mc.setScreen(null); EvolutionScreen.startTab = 0; }, 4, true));
+        steps.add(new Step("par_quick_ring", () -> { mc.options.hideGui = false; ParasiteWheel.forceHover = 1; mc.setScreen(new ParasiteWheel(4)); }, 10, false));
+        steps.add(new Step("par_armory", () -> { mc.setScreen(null); ParasiteWheel.forceHover = -1; mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+            onServer(p -> { com.ironspellgrimoire.server.ParasiteExtras.testApex(p, 2); com.ironspellgrimoire.server.ParasiteFx.setForm(p, 1, true); com.ironspellgrimoire.server.ParasiteFx.setForm(p, 4, true); }); }, 12, true));
+        steps.add(new Step("par_armory_done", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { com.ironspellgrimoire.server.ParasiteFx.setForm(p, 0, true); com.ironspellgrimoire.server.ParasiteExtras.testApex(p, 0); }); }, 4, true));
         // the movement: the tendril, the burrow and its eruption
         steps.add(new Step("par_grapple", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "p:end"); UiShotsServer.element(p, "p:setup"); UiShotsServer.element(p, "p:grapple"); }); }, 6, true));
         steps.add(new Step("par_burrow", () -> onServer(p -> UiShotsServer.element(p, "p:burrow")), 30, true));

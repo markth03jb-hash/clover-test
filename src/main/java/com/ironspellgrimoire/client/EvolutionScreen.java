@@ -23,7 +23,7 @@ public class EvolutionScreen extends Screen {
     static final int INK = 0xF00A0507, PANEL = 0xE0180A0E, EDGE = 0xFF8C1C28, EDGE_DIM = 0xFF3A1218, TEXT = 0xFFF2E4E4, MUTED = 0xFF9A8088,
             GOLD = 0xFFFFC060, BONE = 0xFFC8C8CC;
     static final String[] BRANCH = {"PREDATOR", "ARSENAL", "HUNGER", "ULTIMATES"};
-    static final String[] TABS = {"Tree", "Mutations", "Body", "Strain"};
+    static final String[] TABS = {"Tree", "Mutations", "Body", "Strain", "Guide", "Apex"};
     static final String[][] STRAIN_TEXT = {
             {"Hunter", "+20% speed. Talons and blade hit harder and faster. Consume reaches further and lunges."},
             {"Brute", "+6 health. Fist and lance hit harder; the Bulwark blocks more; wider slams."},
@@ -89,6 +89,8 @@ public class EvolutionScreen extends Screen {
             case 1 -> mutations(g, mx, my, x0, top, W, bottom);
             case 2 -> organs(g, mx, my, x0, top, W, bottom);
             case 3 -> strain(g, mx, my, x0, top, W, bottom);
+            case 4 -> guide(g, mx, my, x0, top, W, bottom);
+            case 5 -> apex(g, mx, my, x0, top, W, bottom);
             default -> tree(g, mx, my, x0, top, W, bottom);
         }
         // the foot: what's pointed at
@@ -98,6 +100,68 @@ public class EvolutionScreen extends Screen {
         if (font.width(f) > W - 16) f = font.plainSubstrByWidth(f, W - 22) + "...";
         g.drawString(font, f, x0 + 8, y0 + H - 11, foot.isEmpty() ? MUTED : TEXT, false);
         super.render(g, mx, my, pt);
+    }
+
+    // ------------------------------------------------------------------ the guide: the quick ring's pins, every control
+    private void guide(GuiGraphics g, int mx, int my, int x0, int top, int W, int bottom) {
+        g.drawString(font, "QUICK RING (tap G)", x0 + 10, top, 0xFFFF7080, false);
+        int pw = 82;
+        for (int i = 0; i < 4; i++) {
+            int bx = x0 + 120 + i * (pw + 4), f = ParasiteClient.pins[i];
+            boolean hv = over(mx, my, bx, top - 2, pw, 12);
+            g.fill(bx, top - 2, bx + pw, top + 10, hv ? 0xD0501820 : 0xD0200C10);
+            g.renderOutline(bx, top - 2, pw, 12, f > 0 ? EDGE : EDGE_DIM);
+            String nm = f > 0 ? ParasiteFx.FORMS[f] : "empty";
+            g.drawString(font, font.plainSubstrByWidth(nm, pw - 6), bx + 3, top, f > 0 ? TEXT : MUTED, false);
+            final int slot = i;
+            hits.add(new Hit(bx, top - 2, pw, 12, () -> {   // click: the next evolved form here (empty after the last)
+                int next = ParasiteClient.pins[slot];
+                for (int k = 0; k < 8; k++) { next = (next + 1) % 8; if (next == 0 || ParasiteWheel.formReady(next)) break; }
+                ParasiteClient.send(32, slot * 10 + next);
+            }));
+            if (hv) foot = "Click to change what's pinned here. Tap G for these four; sneak + G for the full wheel.";
+        }
+        String[][] rows = {
+                {"G", "Tap: your four pinned forms. Sneak + G: the full wheel (forms, Bulwark, Hide, Strain Art, Final Form, Retract).", "y"},
+                {"Consume", "Devours a weakened foe whole for EP and biomass; kills feed biomass too.", "y"},
+                {"Movement", "Wall Runner, Glider, Air Dash (double-tap mid-air), Meteor Fall (sneak high up).", ParasiteClient.rank(0) + ParasiteClient.rank(1) + ParasiteClient.rank(2) > 0 ? "y" : "the Mobility branch"},
+                {"Parry", "Bulwark or Battering Ram out: right-click just before a blow lands.", ParasiteClient.rank(6) + ParasiteClient.rank(14) > 0 ? "y" : "the Bulwark or Battering Ram"},
+                {"Z", "Tendril Grapple. Sneak + Z on the ground: Burrow (Z again to erupt).", ParasiteClient.rank(18) > 0 ? "y" : "Tendril Grapple"},
+                {"Wall Cling", "Sneak against a wall mid-air to stick; jump to pounce.", ParasiteClient.rank(20) > 0 ? "y" : "Wall Cling"},
+                {"B", "Predator Sight: every creature outlined through walls.", ParasiteClient.rank(22) > 0 ? "y" : "Predator Sight"},
+                {"Molting", "Below 30% health you shed a husk that draws foes off you.", ParasiteClient.rank(23) > 0 ? "y" : "Molting"},
+                {"Strain", "Settle a Strain; grow organs, a nest, a second strain (Strain and Body tabs).", "y"},
+                {"Awakening", "Every node evolved: the Strain Art and Final Form slices.", ParasiteClient.awakened ? "y" : "evolving every node"},
+                {"Apex", "After the Sovereign rank: one Apex Mutation, for good (Apex tab).", ParasiteClient.evoRank >= ParasiteFx.RANKS.length - 1 ? "y" : "the Sovereign rank"}};
+        int y = top + 16, rh = Math.max(11, Math.min(15, (bottom - y) / rows.length));
+        for (String[] r : rows) {
+            boolean open = "y".equals(r[2]);
+            g.drawString(font, r[0], x0 + 10, y, open ? 0xFFFF8090 : 0xFF6A5A5A, false);
+            String txt = open ? r[1] : "Opens with " + r[2] + ".";
+            float sc = Math.min(1F, (W - 96) / (float) font.width(txt));
+            g.pose().pushPose(); g.pose().translate(x0 + 86, y, 0); g.pose().scale(sc, sc, 1);
+            g.drawString(font, txt, 0, 0, open ? TEXT : 0xFF6A5A5A, false);
+            g.pose().popPose();
+            y += rh;
+        }
+    }
+
+    // ------------------------------------------------------------------ the Apex Mutation: one, for good, after the Sovereign rank
+    private void apex(GuiGraphics g, int mx, int my, int x0, int top, int W, int bottom) {
+        boolean ready = ParasiteClient.evoRank >= ParasiteFx.RANKS.length - 1, chosen = ParasiteClient.apex > 0;
+        g.drawCenteredString(font, chosen ? "Apex Mutation: " + com.ironspellgrimoire.server.ParasiteExtras.APEX[ParasiteClient.apex]
+                : ready ? "The strain has peaked - choose one Apex Mutation, for good" : "Reach the Sovereign rank (" + ParasiteFx.RANK_AT[ParasiteFx.RANK_AT.length - 1] + " biomass eaten) to choose", x0 + W / 2, top, chosen || ready ? 0xFFFF7080 : MUTED);
+        int cw = (W - 12 - 6) / 3, chh = Math.min(110, bottom - top - 18);
+        for (int k = 1; k <= 3; k++) {
+            int cx = x0 + 6 + (k - 1) * (cw + 3), cy = top + 14;
+            boolean mine = ParasiteClient.apex == k, can = ready && !chosen, hv = can && over(mx, my, cx, cy, cw, chh);
+            g.fill(cx, cy, cx + cw, cy + chh, mine ? 0xE0602028 : hv ? 0xD0501820 : 0xD0200C10);
+            g.renderOutline(cx, cy, cw, chh, mine ? 0xFFFF5060 : can ? EDGE : EDGE_DIM);
+            g.drawCenteredString(font, com.ironspellgrimoire.server.ParasiteExtras.APEX[k], cx + cw / 2, cy + 5, mine || can ? 0xFFFF8090 : MUTED);
+            List<FormattedCharSequence> ls = font.split(Component.literal(com.ironspellgrimoire.server.ParasiteExtras.APEX_DESC[k]), cw - 10);
+            for (int i = 0; i < Math.min((chh - 20) / 10, ls.size()); i++) g.drawString(font, ls.get(i), cx + 5, cy + 18 + i * 10, mine ? TEXT : MUTED, false);
+            if (can) { final int pick = k; hits.add(new Hit(cx, cy, cw, chh, () -> ParasiteClient.send(31, pick))); }
+        }
     }
 
     // ------------------------------------------------------------------ the tree

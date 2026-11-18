@@ -147,10 +147,11 @@ public class ParasiteArms extends RenderLayer<AbstractClientPlayer, PlayerModel<
             ps.popPose();
         }
         boolean fin = l.length > 4 && (l[4] & 2) != 0;
-        if (l[1] == 1 || fin) {   // the off hand: the Bulwark, or in the Final Form the talons
+        int f2 = l.length > 4 ? (l[4] >> 6) & 7 : 0;   // Living Armory: a second form on the other arm
+        if (l[1] == 1 || fin || f2 > 0) {   // the off hand: the Bulwark, in the Final Form the talons, or the second form
             ps.pushPose();
             pm.leftArm.translateAndRotate(ps);
-            drawForm(ps, buf, light, l[1] == 1 ? BULWARK : formModel(2), true);
+            drawForm(ps, buf, light, l[1] == 1 ? BULWARK : fin ? formModel(2) : formModel(f2), true);
             ps.popPose();
         }
         if (fin) {   // the whole body taken over: the crest on the head, the carapace on the body

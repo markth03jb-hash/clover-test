@@ -791,6 +791,39 @@ public final class GameTests {
                     ParasiteFx.testFrenzy(p);   // back into the frenzy the next checks wait out
                 }
                 if (t > 20 && t < 290) p.setHealth(p.getMaxHealth());
+                if (t == 286) {   // the quick ring's pins; the Apex Mutation; the lessons
+                    ParasiteFx.handle(p, 32, 2 * 10 + ParasiteFx.LANCE);
+                    if (ParasiteExtras.pins(p)[2] != ParasiteFx.LANCE) bad.add("pinning the Bone Lance didn't take");
+                    ParasiteFx.handle(p, 32, 0 * 10 + ParasiteFx.LANCE);
+                    int lances = 0;
+                    for (int f : ParasiteExtras.pins(p)) if (f == ParasiteFx.LANCE) lances++;
+                    if (lances != 1) bad.add("one form pinned " + lances + " times");
+                    ParasiteExtras.testApex(p, 0);
+                    ParasiteFx.testEaten(p, 0);
+                    ParasiteFx.handle(p, 31, 1);
+                    if (ParasiteExtras.apex(p) != 0) bad.add("an Apex Mutation was chosen below the Sovereign rank");
+                    ParasiteFx.testEaten(p, ParasiteFx.RANK_AT[ParasiteFx.RANK_AT.length - 1]);
+                    ParasiteFx.handle(p, 31, 1);
+                    if (ParasiteExtras.apex(p) != 1) bad.add("couldn't choose Hydra Heart at Sovereign");
+                    ParasiteFx.handle(p, 31, 2);
+                    if (ParasiteExtras.apex(p) != 1) bad.add("the Apex Mutation could be changed");
+                    // Hydra Heart: a killing blow leaves you standing
+                    p.setHealth(p.getMaxHealth());
+                    p.invulnerableTime = 0;
+                    p.hurt(p.damageSources().genericKill(), 1000f);
+                    if (!p.isAlive() || p.getHealth() < p.getMaxHealth() * 0.3f) bad.add("Hydra Heart didn't cheat death (health " + p.getHealth() + ")");
+                    p.setHealth(p.getMaxHealth());
+                    // Living Armory: the last form moves to the other arm
+                    ParasiteExtras.testApex(p, 2);
+                    ParasiteFx.setForm(p, ParasiteFx.REAPER, true);
+                    ParasiteFx.setForm(p, ParasiteFx.TITAN, true);
+                    if (ParasiteExtras.form2(p) != ParasiteFx.REAPER) bad.add("Living Armory put form " + ParasiteExtras.form2(p) + " on the other arm, not the Reaper Edge");
+                    ParasiteFx.setForm(p, ParasiteFx.NONE, true);
+                    if (ParasiteExtras.form2(p) != ParasiteFx.NONE) bad.add("retracting left a form on the other arm");
+                    ParasiteExtras.testApex(p, 0);
+                    int taught = ParasiteExtras.testTaught(p);
+                    if ((taught & 1) == 0) bad.add("the parasite taught nothing");
+                }
                 if (t == 290) {
                     if (ParasiteFx.frenzied(p)) bad.add("the frenzy never ended");
                     if (ParasiteFx.biomass(p) > 50.5f) bad.add("biomass after the frenzy is " + ParasiteFx.biomass(p));
@@ -896,11 +929,60 @@ public final class GameTests {
                     if (HunterAscension.job(p) != 3) bad.add("the job could be changed again");
                 }
                 if (t == 146 && p.getMaxHealth() < baseHp + 7.9) bad.add(String.format("the Warlord's +4 hearts weren't applied (%.1f -> %.1f)", baseHp, p.getMaxHealth()));
+                if (t == 148) {   // Job Advancement: to level 80, the trial, the Conqueror
+                    baseHp = p.getMaxHealth();
+                    HunterAscension.handle(p, 20, 0);
+                    if (HunterAscension.testInTrial(p)) bad.add("the Advancement Trial started below level 80");
+                    HunterAscension.testGrant(p, Math.max(0, HunterAscension.ADV_LEVEL - HunterAscension.level(p)), 0);
+                    HunterAscension.handle(p, 20, 0);
+                    if (!HunterAscension.testInTrial(p)) bad.add("the Advancement Trial didn't start at level 80");
+                    HunterAscension.testEndAdv(p, true);
+                    if (!HunterAscension.advanced(p)) bad.add("passing the Advancement Trial didn't advance the job");
+                    if ((HunterAscension.titles(p) & (1 << 4)) == 0) bad.add("advancing didn't earn the Ascendant title");
+                    if ((HunterAscension.titles(p) & (1 << 3)) == 0) bad.add("passing the Job Change Trial didn't earn Trialbreaker");
+                }
+                if (t == 152) {
+                    if (p.getMaxHealth() < baseHp + 3.9) bad.add(String.format("the Conqueror's +2 hearts weren't applied (%.1f -> %.1f)", baseHp, p.getMaxHealth()));
+                    // a title worn: its passive on, and off again
+                    var arm = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+                    double a0 = arm.getValue();
+                    HunterAscension.testTitles(p, 1 << 1, -1);
+                    HunterAscension.handle(p, 19, 1);
+                    if (arm.getValue() < a0 + 1.9) bad.add(String.format("wearing Unbroken gave %.1f armour, not +2", arm.getValue() - a0));
+                    HunterAscension.handle(p, 19, 1);
+                    if (arm.getValue() > a0 + 0.1) bad.add("taking Unbroken off left its armour");
+                    HunterAscension.handle(p, 19, 2);
+                    if (HunterAscension.title(p) == 2) bad.add("wore a title not earned");
+                    // the System's lessons
+                    int taught = HunterAscension.testTaught(p);
+                    for (int bit : new int[]{0, 1, 2}) if ((taught & (1 << bit)) == 0) bad.add("the System never taught lesson " + bit);
+                    // loadouts: save one, change who's equipped, apply it back
+                    ShadowArmy.list(p).clear();
+                    for (int k = 0; k < 3; k++) ShadowArmy.add(p, "minecraft:zombie", false);
+                    ShadowArmy.handle(p, 16, 0, "");
+                    for (net.minecraft.nbt.Tag tg : ShadowArmy.list(p)) ((net.minecraft.nbt.CompoundTag) tg).putBoolean("eq", false);
+                    ShadowArmy.handle(p, 17, 0, "");
+                    int eq = 0;
+                    for (net.minecraft.nbt.Tag tg : ShadowArmy.list(p)) if (((net.minecraft.nbt.CompoundTag) tg).getBoolean("eq")) eq++;
+                    if (eq != 3) bad.add("applying a saved loadout equipped " + eq + " of 3");
+                    ShadowArmy.handle(p, 18, 0, "Vanguard");
+                    if (!"Vanguard".equals(ShadowArmy.loadouts(p).getCompound(0).getString("name"))) bad.add("renaming a loadout didn't take");
+                }
+                if (t == 156) {   // a bond: 50 kills with a shadow at your side
+                    var out = ShadowArmy.out(p);
+                    if (out.isEmpty()) bad.add("no shadow out to bond");
+                    else {
+                        var e0 = ShadowArmy.find(p, out.get(0).armyId());
+                        for (int k = 0; k < ShadowArmy.BOND_KILLS; k++) ShadowArmy.bondKill(p);
+                        if (e0 == null || e0.getInt("trait") < 1) bad.add("50 kills side by side gave no trait");
+                    }
+                }
             } catch (Throwable x) { bad.add("threw " + x); }
-            if (t < 150) return false;
+            if (t < 160) return false;
             String ch = changes(before);
             if (!ch.isEmpty()) bad.add("changed the world: " + ch);
-            if (bad.isEmpty()) pass(name, "level " + HunterAscension.level(p) + ", stats applied, trial done, market and Reckoning work, level-up surge, job change");
+            if (bad.isEmpty()) pass(name, "level " + HunterAscension.level(p) + ", stats applied, trial done, market and Reckoning work, level-up surge, job change, advancement, titles, lessons, loadouts, bonds");
+            ShadowArmy.recallAll(p); ShadowArmy.list(p).clear();
             else fail(name, String.join("; ", bad));
             HunterAscension.testReset(p);
             clearArea();

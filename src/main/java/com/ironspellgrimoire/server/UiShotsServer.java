@@ -282,6 +282,9 @@ public final class UiShotsServer {
             case "ranks_of_shade" -> { for (var t : ShadowArmy.list(p)) ((net.minecraft.nbt.CompoundTag) t).putBoolean("eq", true); ShadowArmy.keep(p); AstaFx.later(30, () -> ShadowFx.ranksOfShade(p, 10f)); }
             case "rally_of_the_fallen" -> ShadowFx.rallyOfTheFallen(p, 10f);
             case "status" -> { HunterAscension.testGrant(p, 6, 950); HunterAscension.openStatus(p, 0); }
+            case "status_adv" -> { HunterAscension.testGrant(p, Math.max(0, HunterAscension.ADV_LEVEL - HunterAscension.level(p)), 0); HunterAscension.testJob(p, 1, false); HunterAscension.openStatus(p, 0); }
+            case "status_advanced" -> { HunterAscension.testJob(p, 1, true); HunterAscension.testTitles(p, 0b10111011, 4); HunterAscension.openStatus(p, 0); }
+            case "status_reset_job" -> { HunterAscension.testJob(p, 0, false); HunterAscension.testTitles(p, 0, -1); }
             case "status_job" -> { HunterAscension.testGrant(p, Math.max(0, HunterAscension.JOB_LEVEL - HunterAscension.level(p)), 0); HunterAscension.openStatus(p, 0); }   // the Job Change button
             case "job_choice" -> { HunterAscension.testJobReady(p); }   // the trial passed: the choice
             case "job_trial" -> {   // the trial begins (then ends, so it doesn't crowd the later shots)

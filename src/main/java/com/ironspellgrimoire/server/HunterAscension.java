@@ -71,10 +71,67 @@ public final class HunterAscension {
     public static final String[] STATS = {"str", "agi", "vit", "foc", "per"};
     static final String LVL = "isg_asc_lvl", XP = "isg_asc_xp", PTS = "isg_asc_pts", MARKS = "isg_marks", LURE = "isg_lure",
             DAY = "isg_day", DAILY = "isg_daily", DONE = "isg_daily_done", DUE = "isg_reckon_due", STARTED = "isg_asc_on";
-    static final String JOB = "isg_job", JOB_READY = "isg_job_ready";
-    public static final int JOB_LEVEL = 40;
+    static final String JOB = "isg_job", JOB_READY = "isg_job_ready", JOB2 = "isg_job2", TITLES = "isg_titles", TITLE = "isg_title",
+            TAUGHT = "isg_sys_taught", RAISED = "isg_raised_total", DAILIES = "isg_daily_count", EARNED = "isg_marks_total", PHANTOM = "isg_phantom_until";
+    public static final int JOB_LEVEL = 40, ADV_LEVEL = 80;
     /** The jobs (1-3; 0 none yet). */
     public static final String[] JOBS = {"", "Necromancer", "Assassin", "Warlord"};
+    /** Each job's second tier (Job Advancement: hunter level 80, the Advancement Trial). */
+    public static final String[] JOBS2 = {"", "Lich Lord", "Phantom", "Conqueror"};
+    /** Titles: earned at milestones, one worn at a time for its small passive (Status, the Titles tab). */
+    public static final String[] TITLE_NAMES = {"Shadow Monarch", "Unbroken", "Peak", "Trialbreaker", "Ascendant", "Diligent", "Hoarder", "Lord of Generals"};
+    public static final String[] TITLE_HOW = {"Raise 100 shadows", "Survive a Reckoning", "Reach hunter level 100", "Pass the Job Change Trial",
+            "Advance your job", "Complete 10 Daily Trials", "Earn 10000 Shade Marks", "Rank a shadow up to General"};
+    public static final String[] TITLE_GIVES = {"+20 max mana", "+2 armour", "+3% damage", "+5% attack speed", "+3% spell power", "+3% speed",
+            "+5% mana regeneration", "+2 max health"};
+    private static final UUID TITLE_ID = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000070"), STAGGER_ID = UUID.fromString("e5f3b2c1-7d40-4a3b-8e62-8f1d50000071");
+    public static boolean advanced(Player p) { return d(p).getBoolean(JOB2); }
+
+    // ================================================================== the System's lessons and titles
+    /** Once per player: the System explains a feature the first time it opens to them. */
+    static void teach(ServerPlayer p, int bit, String text) {
+        CompoundTag t = d(p);
+        if ((t.getInt(TAUGHT) & (1 << bit)) != 0) return;
+        t.putInt(TAUGHT, t.getInt(TAUGHT) | (1 << bit));
+        p.sendSystemMessage(Component.literal("[ SYSTEM ] ").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD).append(Component.literal(text).withStyle(ChatFormatting.AQUA)));
+        ShadowFx.play(p.serverLevel(), p.position(), "shadow_whisper", 0.4f, 1.6f);
+    }
+
+    /** What the System teaches as the hunter grows (checked every second). */
+    static void lessons(ServerPlayer p) {
+        if (marks(p) >= 40) teach(p, 3, "You have Shade Marks. Spend them in the Market (the G wheel).");
+        if (level(p) >= JOB_LEVEL && job(p) == 0) teach(p, 5, "Job Change is open. Begin the trial from Status - pass it and choose a job for good.");
+        if (level(p) >= ADV_LEVEL && job(p) > 0 && !advanced(p)) teach(p, 6, "Job Advancement is open. Begin the Advancement Trial from Status.");
+        if (ShadowArmy.count(p) >= 4) teach(p, 7, "Loadouts: save who stands at your side in the Army menu (Loadouts tab), then swap with the Loadout slice of the G wheel.");
+    }
+
+    public static int titles(Player p) { return d(p).getInt(TITLES); }
+    public static int title(Player p) { return d(p).getInt(TITLE) - 1; }
+
+    /** A title is earned (once); the System says so. */
+    public static void award(ServerPlayer p, int i) {
+        CompoundTag t = d(p);
+        if ((t.getInt(TITLES) & (1 << i)) != 0) return;
+        t.putInt(TITLES, t.getInt(TITLES) | (1 << i));
+        p.sendSystemMessage(Component.literal("[ SYSTEM ] Title earned: ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
+                .append(Component.literal(TITLE_NAMES[i] + "  (" + TITLE_GIVES[i] + ")").withStyle(ChatFormatting.GOLD)));
+        p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.5f, 1.3f);
+        teach(p, 9, "Titles: wear one from the Titles tab in Status for its passive.");
+    }
+
+    /** The worn title's passive, as an attribute bonus. */
+    static void titlePerk(Player p) {
+        int i = title(p);
+        if (i >= 0 && (titles(p) & (1 << i)) == 0) i = -1;
+        Attribute[] a = {AttributeRegistry.MAX_MANA.get(), Attributes.ARMOR, Attributes.ATTACK_DAMAGE, Attributes.ATTACK_SPEED, AttributeRegistry.SPELL_POWER.get(),
+                Attributes.MOVEMENT_SPEED, AttributeRegistry.MANA_REGEN.get(), Attributes.MAX_HEALTH};
+        double[] v = {20, 2, 0.03, 0.05, 0.03, 0.03, 0.05, 2};
+        AttributeModifier.Operation[] op = {AttributeModifier.Operation.ADDITION, AttributeModifier.Operation.ADDITION, AttributeModifier.Operation.MULTIPLY_TOTAL,
+                AttributeModifier.Operation.MULTIPLY_TOTAL, AttributeModifier.Operation.MULTIPLY_BASE, AttributeModifier.Operation.MULTIPLY_TOTAL,
+                AttributeModifier.Operation.MULTIPLY_BASE, AttributeModifier.Operation.ADDITION};
+        for (int k = 0; k < a.length; k++) if (k != i) { AttributeInstance in = p.getAttribute(a[k]); if (in != null && in.getModifier(TITLE_ID) != null && in.getModifier(TITLE_ID).getAmount() == v[k]) in.removeModifier(TITLE_ID); }
+        if (i >= 0) setMod(p, a[i], TITLE_ID, "Title: " + TITLE_NAMES[i], v[i], op[i]);
+    }
     /** Daily Trial kinds: 0 kills, 1 damage dealt, 2 blocks travelled, 3 shadows raised. */
     public static final String[] TASKS = {"Slay %d foes", "Deal %d damage", "Travel %d blocks", "Raise %d shadows"};
 
@@ -112,6 +169,8 @@ public final class HunterAscension {
         if (ups > 0) {
             t.putInt(PTS, t.getInt(PTS) + ups * POINTS_PER_LEVEL);
             p.displayClientMessage(Component.literal("+" + ups * POINTS_PER_LEVEL + " stat points  -  open Status to spend them").withStyle(ChatFormatting.AQUA), true);
+            teach(p, 1, "Stat points earned. Spend them in Status: Strength (melee), Agility (speed), Vitality (health), Focus (mana), Perception (spell power).");
+            if (lvl >= MAX_LEVEL) award(p, 2);
             p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6f, 0.7f);
             ShadowFx.play(p.serverLevel(), p.position(), "shadow_rise", 0.7f, 1.5f);
             surge(p, lvl);
@@ -134,7 +193,10 @@ public final class HunterAscension {
         FxSend.beam(sl, Fx.ICE | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, c, c.add(0, 6, 0), 0.6f, 14);
     }
 
-    public static void addMarks(ServerPlayer p, int n) { d(p).putInt(MARKS, Math.max(0, marks(p) + n)); }
+    public static void addMarks(ServerPlayer p, int n) {
+        d(p).putInt(MARKS, Math.max(0, marks(p) + n));
+        if (n > 0) { d(p).putInt(EARNED, d(p).getInt(EARNED) + n); if (d(p).getInt(EARNED) >= 10000) award(p, 6); }
+    }
 
     @SubscribeEvent
     public static void onDeath(LivingDeathEvent e) {
@@ -149,6 +211,20 @@ public final class HunterAscension {
         gainXp(p, Math.max(1, Math.round(hp / 2f * (boss ? 3 : 1))));
         addMarks(p, Math.max(1, Math.round(hp / 8f * (boss ? 3 : 1))));
         progress(p, 0, 1);
+        ShadowArmy.bondKill(p);
+        if (job(p) == 2 && advanced(p) && e.getSource().getEntity() == p) phantom(p);
+    }
+
+    /** The Phantom: a kill and, for 3 s, nothing hunting you can find you. */
+    static void phantom(ServerPlayer p) {
+        d(p).putLong(PHANTOM, p.serverLevel().getGameTime() + 60);
+        for (Mob m : p.serverLevel().getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(16), m -> m.getTarget() == p)) m.setTarget(null);
+        FxSend.ring(p.serverLevel(), Fx.YAMI | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, p.position().add(0, 0.05, 0), 0.2f, 1.6f, 0.05f, 10);
+    }
+
+    @SubscribeEvent
+    public static void onTarget(net.minecraftforge.event.entity.living.LivingChangeTargetEvent e) {
+        if (e.getNewTarget() instanceof ServerPlayer p && d(p).getLong(PHANTOM) > p.serverLevel().getGameTime()) e.setCanceled(true);
     }
 
     @SubscribeEvent
@@ -166,12 +242,20 @@ public final class HunterAscension {
         boolean greatsword = it == AddonItemRegistry.FROSTWING.get();
         boolean knife = !greatsword && (it == AddonItemRegistry.NIGHTFANG.get() || it == AddonItemRegistry.DRAGON_FANG.get() || it == AddonItemRegistry.DUSKGLASS_KRIS.get()
                 || it == AddonItemRegistry.GILDED_THORN.get() || it == AddonItemRegistry.BLOODREND.get() || it == AddonItemRegistry.ROSEWRATH.get());
-        if (job == 2 && knife) e.setAmount(e.getAmount() * 1.25f);
-        if (job == 3 && greatsword) e.setAmount(e.getAmount() * 1.3f);
+        if (job == 2 && knife) e.setAmount(e.getAmount() * (advanced(p) ? 1.4f : 1.25f));
+        if (job == 3 && greatsword) {
+            e.setAmount(e.getAmount() * 1.3f);
+            if (advanced(p)) TimedModifiers.apply(e.getEntity(), Attributes.MOVEMENT_SPEED, STAGGER_ID, "Conqueror's stagger", -0.45, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
+        }
     }
 
     /** A shadow rose (ShadowFx.rise). */
-    public static void onRaise(ServerPlayer p) { progress(p, 3, 1); }
+    public static void onRaise(ServerPlayer p) {
+        progress(p, 3, 1);
+        d(p).putInt(RAISED, d(p).getInt(RAISED) + 1);
+        if (d(p).getInt(RAISED) >= 100) award(p, 0);
+        teach(p, 4, "A shadow has joined your army. Manage it in the Army menu (G wheel or V): it levels and ranks up from its own kills. Challenges there pit you against exclusive shadows.");
+    }
 
     /** A Remnant Lure bought in the Market: the next remnant rises on the first try. */
     public static boolean useLure(ServerPlayer p) {
@@ -199,7 +283,8 @@ public final class HunterAscension {
             setMod(p, AttributeRegistry.MAX_MANA.get(), ARMY_MANA_ID, "Strength in Numbers", 2.0 * army, AttributeModifier.Operation.ADDITION);
             setMod(p, AttributeRegistry.SPELL_POWER.get(), ARMY_POWER_ID, "Strength in Numbers", 0.003 * army, AttributeModifier.Operation.MULTIPLY_BASE);
             jobPerks(p);
-            if (held) start(p);
+            titlePerk(p);
+            if (held) { start(p); lessons(p); }
             if (d(p).getBoolean(STARTED)) { dayTick(p); travelTick(p); }
         }
         Reckoning r = RECKONING.get(p.getUUID());
@@ -209,11 +294,12 @@ public final class HunterAscension {
     /** The job's perks (Job Change), as attribute bonuses - every second, and the moment a job is chosen. */
     static void jobPerks(Player p) {
         int job = job(p);
-        setMod(p, AttributeRegistry.MAX_MANA.get(), JOB_A, "Necromancer", job == 1 ? 0.2 : 0, AttributeModifier.Operation.MULTIPLY_BASE);
+        boolean adv = advanced(p);
+        setMod(p, AttributeRegistry.MAX_MANA.get(), JOB_A, "Necromancer", job == 1 ? (adv ? 0.4 : 0.2) : 0, AttributeModifier.Operation.MULTIPLY_BASE);
         setMod(p, Attributes.MOVEMENT_SPEED, JOB_B, "Assassin", job == 2 ? 0.1 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
         setMod(p, Attributes.ATTACK_SPEED, JOB_C, "Assassin", job == 2 ? 0.15 : 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
-        setMod(p, Attributes.MAX_HEALTH, JOB_A, "Warlord", job == 3 ? 8 : 0, AttributeModifier.Operation.ADDITION);
-        setMod(p, Attributes.ARMOR, JOB_B, "Warlord", job == 3 ? 4 : 0, AttributeModifier.Operation.ADDITION);
+        setMod(p, Attributes.MAX_HEALTH, JOB_A, "Warlord", job == 3 ? (adv ? 12 : 8) : 0, AttributeModifier.Operation.ADDITION);
+        setMod(p, Attributes.ARMOR, JOB_B, "Warlord", job == 3 ? (adv ? 6 : 4) : 0, AttributeModifier.Operation.ADDITION);
         setMod(p, Attributes.KNOCKBACK_RESISTANCE, JOB_D, "Warlord", job == 3 ? 0.25 : 0, AttributeModifier.Operation.ADDITION);
     }
 
@@ -236,6 +322,8 @@ public final class HunterAscension {
         if (!t.contains(LVL)) t.putInt(LVL, 1);
         t.putLong(DAY, day(p));
         newTrial(p);
+        teach(p, 0, "You have been chosen as a Player. Kills made with this grimoire - or by your shadows - raise your Hunter level. Open Status from the G wheel.");
+        teach(p, 2, "A Daily Trial has been issued: three tasks each day. Leave it undone when the day turns and the Reckoning comes.");
     }
 
     // ================================================================== the Daily Trial (one in-game day each)
@@ -270,6 +358,8 @@ public final class HunterAscension {
         }
         if (all) {   // the trial is complete
             t.putBoolean(DONE, true);
+            t.putInt(DAILIES, t.getInt(DAILIES) + 1);
+            if (t.getInt(DAILIES) >= 10) award(p, 5);
             t.putInt(PTS, t.getInt(PTS) + 5);
             gainXp(p, xpNext(level(p)) / 2);
             addMarks(p, 200);
@@ -316,6 +406,33 @@ public final class HunterAscension {
         p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.4f, 1.4f);
     }
 
+    /** Job Advancement: the Advancement Trial (hunter level 80, a job, not yet advanced). */
+    public static void startAdvTrial(ServerPlayer p) {
+        if (RECKONING.containsKey(p.getUUID()) || level(p) < ADV_LEVEL || job(p) == 0 || advanced(p)) return;
+        Reckoning r = new Reckoning(p, true);
+        r.adv = true;
+        r.bar.setName(Component.literal("Advancement Trial"));
+        RECKONING.put(p.getUUID(), r);
+        p.closeContainer();
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(5, 50, 15));
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.literal("ADVANCEMENT TRIAL").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD)));
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(Component.literal("Five waves and a champion - slay them all within 4 minutes").withStyle(ChatFormatting.GRAY)));
+        p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.5f, 1.4f);
+    }
+
+    /** The trial passed: the job takes its second form, for good. */
+    static void advance(ServerPlayer p) {
+        d(p).putBoolean(JOB2, true);
+        jobPerks(p);
+        award(p, 4);
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(5, 50, 15));
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.literal(JOBS2[job(p)].toUpperCase()).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD)));
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(Component.literal("Your job has advanced").withStyle(ChatFormatting.GRAY)));
+        p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 0.8f, 0.9f);
+        FxSend.ring(p.serverLevel(), Fx.VOID | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, p.position().add(0, 0.05, 0), 0.4f, 7f, 0.3f, 18);
+        FxSend.beam(p.serverLevel(), Fx.VOID | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, p.position(), p.position().add(0, 8, 0), 0.8f, 18);
+    }
+
     /** Job Change: the trial (hunter level 40, no job yet, not already in a hunt). */
     public static void startJobTrial(ServerPlayer p) {
         if (RECKONING.containsKey(p.getUUID()) || level(p) < JOB_LEVEL || job(p) != 0 || d(p).getBoolean(JOB_READY)) return;
@@ -331,6 +448,7 @@ public final class HunterAscension {
         static final int LENGTH = 2400, WAVE = 400, TRIAL_LENGTH = 3600, TRIAL_WAVE = 300, TRIAL_WAVES = 4;
         final long start;
         final boolean trial;   // the Job Change Trial: three waves and a champion, all to be slain in time
+        boolean adv;           // the Advancement Trial: five waves and a stronger champion, 4 minutes
         final List<Mob> mobs = new ArrayList<>();
         final ServerBossEvent bar;
         int wave;
@@ -345,13 +463,14 @@ public final class HunterAscension {
 
         void tick(ServerPlayer p) {
             long age = p.serverLevel().getGameTime() - start;
-            int length = trial ? TRIAL_LENGTH : LENGTH;
+            int length = adv ? 4800 : trial ? TRIAL_LENGTH : LENGTH;
+            int waves = adv ? 6 : TRIAL_WAVES;
             bar.setProgress(Math.max(0, 1 - age / (float) length));
             if (!p.isAlive()) { end(p, false); return; }
             if (trial) {
-                if (wave >= TRIAL_WAVES && mobs.stream().noneMatch(Mob::isAlive)) { end(p, true); return; }
+                if (wave >= waves && mobs.stream().noneMatch(Mob::isAlive)) { end(p, true); return; }
                 if (age >= length) { end(p, false); return; }
-                if (age >= (long) wave * TRIAL_WAVE && wave < TRIAL_WAVES) { if (wave == TRIAL_WAVES - 1) champion(p); else spawnWave(p, wave + 2); wave++; }
+                if (age >= (long) wave * TRIAL_WAVE && wave < waves) { if (wave == waves - 1) champion(p); else spawnWave(p, wave + (adv ? 3 : 2)); wave++; }
                 if (age % 40 == 0) for (Mob m : mobs) if (m.isAlive() && m.getTarget() != p) m.setTarget(p);
                 return;
             }
@@ -405,9 +524,10 @@ public final class HunterAscension {
             m.getPersistentData().putBoolean("isg_reckoning", true);
             m.getPersistentData().putBoolean("isg_no_reward", true);
             AttributeInstance hp = m.getAttribute(Attributes.MAX_HEALTH);
-            if (hp != null) { hp.addPermanentModifier(new AttributeModifier("Trial", 5.0 + level(p) * 0.03, AttributeModifier.Operation.MULTIPLY_BASE)); m.setHealth(m.getMaxHealth()); }
+            if (hp != null) { hp.addPermanentModifier(new AttributeModifier("Trial", (adv ? 9.0 : 5.0) + level(p) * 0.03, AttributeModifier.Operation.MULTIPLY_BASE)); m.setHealth(m.getMaxHealth()); }
             AttributeInstance dmg = m.getAttribute(Attributes.ATTACK_DAMAGE);
-            if (dmg != null) dmg.addPermanentModifier(new AttributeModifier("Trial", 0.6, AttributeModifier.Operation.MULTIPLY_BASE));
+            if (dmg != null) dmg.addPermanentModifier(new AttributeModifier("Trial", adv ? 1.0 : 0.6, AttributeModifier.Operation.MULTIPLY_BASE));
+            if (adv) m.setCustomName(Component.literal("Advancement Champion").withStyle(ChatFormatting.LIGHT_PURPLE));
             m.setPersistenceRequired();
             m.setTarget(p);
             sl.addFreshEntity(m);
@@ -421,8 +541,14 @@ public final class HunterAscension {
             RECKONING.remove(p.getUUID());
             bar.removeAllPlayers();
             for (Mob m : mobs) if (m.isAlive()) { ShadowFx.sinkPool(p.serverLevel(), m.position(), 0.9f); m.discard(); }
+            if (adv) {
+                if (survived) advance(p);
+                else p.displayClientMessage(Component.literal("Advancement Trial failed  -  try again from Status").withStyle(ChatFormatting.DARK_GRAY), true);
+                return;
+            }
             if (trial) {
                 if (survived) {
+                    award(p, 3);
                     d(p).putBoolean(JOB_READY, true);
                     p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.8f, 1.0f);
                     p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.literal("TRIAL PASSED").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD)));
@@ -432,6 +558,7 @@ public final class HunterAscension {
                 return;
             }
             if (survived) {
+                award(p, 1);
                 addMarks(p, 150);
                 gainXp(p, xpNext(level(p)) / 3);
                 p.displayClientMessage(Component.literal("You survived the Reckoning  -  +150 Shade Marks").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
@@ -457,7 +584,7 @@ public final class HunterAscension {
         long dayTime = p.server.overworld().getDayTime() % 24000L;
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Status(open, level(p), t.getInt(XP), xpNext(level(p)), t.getInt(PTS), st,
                 marks(p), ShadowArmy.count(p), t.getInt(LURE), k, prog, goal, t.getBoolean(DONE), (int) ((24000L - dayTime) / 20L), inReckoning(p),
-                job(p), t.getBoolean(JOB_READY), openJob));
+                job(p), t.getBoolean(JOB_READY), openJob, advanced(p), titles(p), title(p)));
     }
 
     /** The Market's wares: 0 Nightfang, 1 Mana Tonic, 2 Shade Salve, 3 Remnant Lure, 4 Stat Reset, 5 Reckoning Key,
@@ -515,6 +642,13 @@ public final class HunterAscension {
             case 12 -> AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Market(marks(p), false));
             case 13 -> { buy(p, id); AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), new ShadowPackets.Market(marks(p), false)); }
             case 14 -> startJobTrial(p);
+            case 19 -> {   // wear (or take off) an earned title
+                CompoundTag t = d(p);
+                if (id >= 0 && id < TITLE_NAMES.length && (titles(p) & (1 << id)) != 0) t.putInt(TITLE, title(p) == id ? 0 : id + 1);
+                titlePerk(p);
+                sendStatus(p, false);
+            }
+            case 20 -> startAdvTrial(p);
             case 15 -> {
                 CompoundTag t = d(p);
                 if (!t.getBoolean(JOB_READY) || job(p) != 0 || id < 1 || id >= JOBS.length) return;
@@ -555,10 +689,16 @@ public final class HunterAscension {
     /** For the screenshots: the trial passed, the choice open. */
     public static void testJobReady(ServerPlayer p) { d(p).putInt(JOB, 0); d(p).putBoolean(JOB_READY, true); sendStatus(p, true, true); }
 
+    /** For the tests and screenshots: a job, advanced or not; titles earned. */
+    public static void testJob(ServerPlayer p, int job, boolean adv) { d(p).putInt(JOB, job); d(p).putBoolean(JOB2, adv); jobPerks(p); }
+    public static void testTitles(ServerPlayer p, int mask, int worn) { d(p).putInt(TITLES, mask); d(p).putInt(TITLE, worn + 1); titlePerk(p); }
+    public static void testEndAdv(ServerPlayer p, boolean won) { Reckoning r = RECKONING.get(p.getUUID()); if (r != null) r.end(p, won); }
+    public static int testTaught(ServerPlayer p) { return d(p).getInt(TAUGHT); }
+
     /** For the tests: forget a player's hunter data. */
     static void testReset(ServerPlayer p) {
         CompoundTag t = d(p);
-        for (String k : new String[]{LVL, XP, PTS, MARKS, LURE, DAY, DAILY, DONE, DUE, STARTED, JOB, JOB_READY}) t.remove(k);
+        for (String k : new String[]{LVL, XP, PTS, MARKS, LURE, DAY, DAILY, DONE, DUE, STARTED, JOB, JOB_READY, JOB2, TITLES, TITLE, TAUGHT, RAISED, DAILIES, EARNED, PHANTOM}) t.remove(k);
         for (String st : STATS) t.remove("isg_asc_" + st);
     }
 

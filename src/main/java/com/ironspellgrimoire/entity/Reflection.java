@@ -26,6 +26,12 @@ public class Reflection extends AddonBoss {
     private static final EntityDataAccessor<Optional<UUID>> OWNER = SynchedEntityData.defineId(Reflection.class, EntityDataSerializers.OPTIONAL_UUID);
     /** The challenger's grimoire palette (server side; the client shows the skin). */
     public int pal = 8;
+    /** Its grimoire's family: 0 any, 1 the Shadow (it raises shades), 2 the Parasite (it mutates), 3 the Hunger Blade (it throws its blade). */
+    public int family = 0;
+    /** How many times it has mutated (the Parasite's), whether its mirrored ultimate is spent, the shades it raised. */
+    public int mutations = 0;
+    public boolean mirrored = false;
+    public final java.util.List<UUID> shades = new java.util.ArrayList<>();
 
     public Reflection(EntityType<? extends Reflection> type, Level level) { super(type, level, "Reflection", BossEvent.BossBarColor.WHITE); }
 
@@ -47,6 +53,6 @@ public class Reflection extends AddonBoss {
     @Override protected void onDying(int t) { ReflectionAI.dying(this, t); }
     @Override protected void onHurt(DamageSource src, float amount) { ReflectionAI.onHurt(this, src, amount); }
 
-    @Override public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag t) { super.addAdditionalSaveData(t); if (owner() != null) t.putUUID("Owner", owner()); t.putInt("Pal", pal); }
-    @Override public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag t) { super.readAdditionalSaveData(t); if (t.hasUUID("Owner")) setOwner(t.getUUID("Owner")); pal = t.getInt("Pal"); }
+    @Override public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag t) { super.addAdditionalSaveData(t); if (owner() != null) t.putUUID("Owner", owner()); t.putInt("Pal", pal); t.putInt("Family", family); }
+    @Override public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag t) { super.readAdditionalSaveData(t); if (t.hasUUID("Owner")) setOwner(t.getUUID("Owner")); pal = t.getInt("Pal"); family = t.getInt("Family"); }
 }
