@@ -68,7 +68,7 @@ public final class GameTests {
     private static Vec3 home;
     private static final List<Test> queue = new ArrayList<>();
     private static int index, t;
-    private static Husk dummy;
+    private static net.minecraft.world.entity.monster.Vindicator dummy;
     private static int playerHits;
     private static final UUID HP = UUID.fromString("a1f70000-0000-4000-8000-00000000e57a");
 
@@ -144,7 +144,7 @@ public final class GameTests {
     private static void ensureDummy() {
         if (dummy != null && dummy.isAlive()) { dummy.setHealth(dummy.getMaxHealth()); dummy.teleportTo(home.x, home.y, home.z + 6); dummy.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); dummy.hurtMarked = true; return; }   // still, too: a knock-back from the last move mustn't carry it out of the next one
         ServerLevel sl = sl();
-        dummy = EntityType.HUSK.create(sl);
+        dummy = EntityType.VINDICATOR.create(sl);   // not undead: holy magic hits undead harder, which would skew the damage numbers
         if (dummy == null) return;
         dummy.moveTo(home.x, home.y, home.z + 6, 180f, 0f);
         dummy.setNoAi(true);
