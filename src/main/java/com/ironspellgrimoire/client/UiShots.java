@@ -671,7 +671,7 @@ public final class UiShots {
         steps.add(new Step("tw_swap", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "T:swap")); }, 4, true));
         steps.add(new Step("tw_swapped", () -> {}, 16, true));
         steps.add(new Step("tw_grown", () -> onServer(p -> UiShotsServer.element(p, "T:full")), 10, true));
-        steps.add(new Step("tw_grown_nyx", () -> onServer(p -> UiShotsServer.element(p, "T:nyxworn")), 10, true));
+        steps.add(new Step("tw_grown_nyx", () -> onServer(p -> UiShotsServer.element(p, "T:wearnyx")), 10, true));
         steps.add(new Step("tw_eclipse", () -> onServer(p -> UiShotsServer.element(p, "T:eclipse")), 16, true));
         steps.add(new Step("tw_eclipse_fp", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 6, true));
         steps.add(new Step("tw_wheel_eclipse", () -> { TwinsWheel.forceHover = 10; mc.setScreen(new TwinsWheel()); }, 8, false));
@@ -679,7 +679,7 @@ public final class UiShots {
         steps.add(new Step("tw_hud", () -> {}, 4, true));
         steps.add(new Step("tw_wheel", () -> { TwinsWheel.forceHover = 1; mc.setScreen(new TwinsWheel()); }, 8, false));
         steps.add(new Step("tw_wheel_centre", () -> { mc.setScreen(null); TwinsWheel.forceHover = -2; mc.setScreen(new TwinsWheel()); }, 8, false));
-        steps.add(new Step("tw_wheel_nyx", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "T:nyxworn")); TwinsWheel.forceHover = 3; mc.setScreen(new TwinsWheel()); }, 10, false));
+        steps.add(new Step("tw_wheel_nyx", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "T:wearnyx")); TwinsWheel.forceHover = 3; mc.setScreen(new TwinsWheel()); }, 10, false));
         String[] tabs = {"sol", "nyx", "bond", "masks", "guide"};
         for (int k = 0; k < 5; k++) {
             final int kk = k;

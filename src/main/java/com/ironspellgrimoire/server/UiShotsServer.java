@@ -440,7 +440,7 @@ public final class UiShotsServer {
 
     /** The Masked Twins Grimoire's shots: the masks worn (third person), the swap, the arts, the wheel, the menu, the trial. */
     private static void twins(ServerPlayer p, String w) {
-        if (w.startsWith("sol") || w.startsWith("nyx")) {   // sol<n> / nyx<n>: that twin worn, its art n cast at the husks ahead
+        if ((w.startsWith("sol") || w.startsWith("nyx")) && w.length() == 4 && Character.isDigit(w.charAt(3))) {   // sol<n> / nyx<n>: that twin worn, its art n cast at the husks ahead
             faceForward(p);
             int twin = w.startsWith("sol") ? TwinsFx.SOL : TwinsFx.NYX, art = w.charAt(3) - '0';
             TwinsFx.testCooldowns(p); TwinsFx.testActive(p, twin); TwinsFx.testLoad(p, twin, art, -1, -1, -1);
@@ -470,7 +470,7 @@ public final class UiShotsServer {
             }
             case "swap" -> { faceForward(p); TwinsFx.testCooldowns(p); TwinsFx.testRes(p, 100); TwinsFx.swap(p); }
             case "full" -> { TwinsFx.testSockets(p, 7, 7); TwinsFx.testLevels(p, 50, 50); TwinsFx.testActive(p, TwinsFx.SOL); TwinsFx.sync(p, false); }
-            case "nyxworn" -> { TwinsFx.testActive(p, TwinsFx.NYX); TwinsFx.testCooldowns(p); TwinsFx.sync(p, false); }
+            case "wearnyx" -> { TwinsFx.testActive(p, TwinsFx.NYX); TwinsFx.testCooldowns(p); TwinsFx.sync(p, false); }
             case "strike" -> { faceForward(p); TwinsFx.twinStrike(p, 10f); }
             case "eclipse" -> { faceForward(p); TwinsFx.testLevels(p, 50, 50); TwinsFx.testTrialWon(p); TwinsFx.testSockets(p, 7, 7); TwinsFx.eclipseUnion(p, 10f); }
             case "noeclipse" -> { TwinsFx.testEndEclipse(p); TwinsFx.sync(p, false); }

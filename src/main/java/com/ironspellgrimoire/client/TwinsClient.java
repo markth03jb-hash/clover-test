@@ -35,7 +35,8 @@ public final class TwinsClient {
     static boolean equipped() { return v[V_EQ] == 1; }
     static int active() { return v[V_ACTIVE] == NYX ? NYX : SOL; }
     static int lv(int twin) { return Math.max(1, v[V_LV + twin]); }
-    static int load(int twin, int s) { return v[V_LOAD + twin * 4 + s]; }
+    /** The art in a wheel slot (-1 empty; anything out of range counts as empty). */
+    static int load(int twin, int s) { int a = v[V_LOAD + twin * 4 + s]; return a >= 0 && a < 8 ? a : -1; }
     static int cd(int twin, int art) { return v[V_CD + twin * 8 + art]; }
     static boolean knows(int twin, int art) { return art >= 0 && art < 8 && lv(twin) >= ART_LV[art]; }
     static boolean eclipse() { return v[V_ECLIPSE] > 0; }

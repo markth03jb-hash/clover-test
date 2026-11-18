@@ -143,7 +143,9 @@ public final class TwinsFx {
     public static int maskForm(Player p, int twin) { return (twin == SOL ? 0 : 3) + stage(root(p).getInt("sock" + twin)) - 1; }
     static int[] load(Player p, int twin) {
         int[] l = root(p).getIntArray("eq" + twin);
-        return l.length == 4 ? l : new int[]{0, -1, -1, -1};
+        if (l.length != 4) return new int[]{0, -1, -1, -1};
+        for (int s = 0; s < 4; s++) if (l[s] < -1 || l[s] > 7) l[s] = -1;   // never an art that doesn't exist
+        return l;
     }
     static long[] cds(Player p) {
         long[] c = root(p).getLongArray("cds");
@@ -286,8 +288,8 @@ public final class TwinsFx {
         r.putLong("rush", t + rush);
         if (in == SOL) TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, RUSH_DMG, "Sol's Rush", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, rush);
         else TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, RUSH_SPD, "Nyx's Rush", 0.25, AttributeModifier.Operation.MULTIPLY_TOTAL, rush);
-        // the burst
-        if (k > 0.05f) burst(p, in, k);
+        // the burst (its own hits don't charge the twin that just went to rest)
+        if (k > 0.05f) { bursting = true; try { burst(p, in, k); } finally { bursting = false; } r.putFloat("res", 0); }
         // the swap itself: the masks turn over
         Vec3 face = p.getEyePosition().add(p.getLookAngle().scale(0.4));
         Fx.spark(sl, in == SOL ? PAL_SOL : PAL_NYX, face, 0.8f);
@@ -862,7 +864,7 @@ public final class TwinsFx {
     }
 
     // ------------------------------------------------------------------ hits, kills, misses and falls
-    static boolean extra;
+    static boolean extra, bursting;
 
     @SubscribeEvent
     public static void onHurt(LivingHurtEvent e) {
@@ -872,7 +874,8 @@ public final class TwinsFx {
         CompoundTag r = root(p);
         r.putLong("combat", now(p));
         float amt = e.getAmount();
-        // the resting twin stores Resonance from every blow
+        // the resting twin stores Resonance from every blow (not from a burst's)
+        if (bursting) return;
         float gain = amt * 0.5f * (active(p) == SOL && socket(p, NYX, 2) ? 1.3f : 1f);
         r.putFloat("res", Math.min(100f, r.getFloat("res") + gain));
         // Mirror Double: a melee blow strikes again
