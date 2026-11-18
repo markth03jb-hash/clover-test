@@ -83,6 +83,7 @@ public final class ParasiteClient {
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get())) return 1;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.SHADOW_GRIMOIRE.get())) return 2;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE.get())) return 3;
+        if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.TWINS_GRIMOIRE.get())) return 5;
         return 0;
     }
 
@@ -115,8 +116,9 @@ public final class ParasiteClient {
         while (KEY.consumeClick()) {
             if (mc.screen != null) continue;
             int kind = wheelKind(mc);
-            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite, System and Hunger Blade grimoires have a wheel")
+            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite, System, Hunger Blade and Masked Twins grimoires have a wheel")
                     .withStyle(net.minecraft.ChatFormatting.GRAY), true);
+            else if (kind == 5) mc.setScreen(new TwinsWheel());
             else if (kind == 1 && !pl.isShiftKeyDown() && java.util.Arrays.stream(pins).anyMatch(f -> f > 0)) mc.setScreen(new ParasiteWheel(4));   // tap: the quick ring
             else mc.setScreen(new ParasiteWheel(kind));
         }

@@ -1341,5 +1341,22 @@
   "spell.iron_spell_grimoire.the_blade.guide": "Open The Blade: grow new swords with Growth, and choose the four you carry.",
   "entity.iron_spell_grimoire.blade_spirit": "Blade Spirit",
   "spell.iron_spell_grimoire.hunger_domain": "Hunger: Hunger Domain",
-  "spell.iron_spell_grimoire.hunger_domain.guide": "Needs a stage 6 sword grown. For 20 s the ground round you becomes a great mouth of teeth: every foe inside is slowed, and every kill inside fills the blade's hunger at once."
+  "spell.iron_spell_grimoire.hunger_domain.guide": "Needs a stage 6 sword grown. For 20 s the ground round you becomes a great mouth of teeth: every foe inside is slowed, and every kill inside fills the blade's hunger at once.",
+  "item.iron_spell_grimoire.twins_grimoire": "Masked Twins Grimoire",
+  "item.iron_spell_grimoire.twin_mask": "Twin Mask",
+  "entity.iron_spell_grimoire.twin_warden": "Twin Warden",
+  "ui.iron_spell_grimoire.twins_grimoire_only": "Only the Masked Twins Grimoire can cast this.",
+  "tooltip.iron_spell_grimoire.twins_grimoire.passive": "Passive - two masks, one soul: Sol, the sun twin (fire, fierce up close), and Nyx, the moon twin (frost and void, quick and slippery). Wear one at a time on your face - tap G to swap, hold G for the wheel of your four chosen arts. Each twin levels on its own (to 50) and learns eight arts; choose four of each for the wheel. The twin you are not wearing rests at your hip and charges Resonance as you fight - swap and it bursts out. Sol learns faster by day, Nyx by night, and a twin far ahead of the other learns slowly. Set Sunstones and Moonstones in the masks; raise both and they learn to fight together: Twin Strike, Mirror Swap, and - after the Twin Wardens' trial - Eclipse Union.",
+  "tooltip.iron_spell_grimoire.twins_grimoire.desc": "Five pages, two faces, one soul.",
+  "tooltip.iron_spell_grimoire.twins_grimoire.lore": "One of them is always watching.",
+  "spell.iron_spell_grimoire.twin_swap": "Twins: Swap",
+  "spell.iron_spell_grimoire.twin_swap.guide": "Trade masks: the resting twin takes your face and bursts out with all the Resonance it stored (Sol: a sun flare round you; Nyx: a crescent wave ahead), and you get a short Rush (Sol: harder hits; Nyx: faster feet). Sneak while you swap, once the twins have bonded deep enough, to step back to where you last swapped. Tapping G does the same.",
+  "spell.iron_spell_grimoire.twin_arts": "Twins: Twin Arts",
+  "spell.iron_spell_grimoire.twin_arts.guide": "Cast the art last chosen on the G wheel - hold G and point at one of the four arts of the twin you wear.",
+  "spell.iron_spell_grimoire.twin_strike": "Twins: Twin Strike",
+  "spell.iron_spell_grimoire.twin_strike.guide": "Both twins at level 10: the gold mask and the silver mask strike at once - two cuts on everything in front of you, and the resting twin's Resonance jumps.",
+  "spell.iron_spell_grimoire.eclipse_union": "Twins: Eclipse Union",
+  "spell.iron_spell_grimoire.eclipse_union.guide": "Both twins at level 40 and the Twin Wardens beaten: the masks fuse for 20 s - every art of both twins on the wheel, no art cooldowns, swaps twice as fast, and you hit harder and move faster.",
+  "spell.iron_spell_grimoire.the_masks": "Twins: The Masks",
+  "spell.iron_spell_grimoire.the_masks.guide": "Open the Masks: each twin's level and arts (choose four for the wheel), the bond between them, the stones set in each mask, your titles and a guide."
 }

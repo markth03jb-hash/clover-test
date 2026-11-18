@@ -663,6 +663,48 @@ public final class UiShots {
         }, 15, false));
         steps.add(new Step("hb_done", () -> { mc.setScreen(null); mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "H:end")); }, 4, true));
 
+        // the Masked Twins Grimoire: the masks worn (front, side, swapped, grown, fused), the arts, the wheel, every tab, the trial
+        steps.add(new Step("tw_setup", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "T:setup")); }, 30, true));
+        steps.add(new Step("tw_worn", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 12, true));
+        steps.add(new Step("tw_worn_side", () -> onServer(p -> { p.setYRot(-90); p.setYHeadRot(-90); p.setYBodyRot(-90); p.connection.teleport(p.getX(), p.getY(), p.getZ(), -90, 0); }), 8, true));
+        steps.add(new Step("tw_worn_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 6, true));
+        steps.add(new Step("tw_swap", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "T:swap")); }, 4, true));
+        steps.add(new Step("tw_swapped", () -> {}, 16, true));
+        steps.add(new Step("tw_grown", () -> onServer(p -> UiShotsServer.element(p, "T:full")), 10, true));
+        steps.add(new Step("tw_grown_nyx", () -> onServer(p -> UiShotsServer.element(p, "T:nyxworn")), 10, true));
+        steps.add(new Step("tw_eclipse", () -> onServer(p -> UiShotsServer.element(p, "T:eclipse")), 16, true));
+        steps.add(new Step("tw_eclipse_fp", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 6, true));
+        steps.add(new Step("tw_wheel_eclipse", () -> { TwinsWheel.forceHover = 10; mc.setScreen(new TwinsWheel()); }, 8, false));
+        steps.add(new Step("tw_noeclipse", () -> { mc.setScreen(null); TwinsWheel.forceHover = -1; onServer(p -> { UiShotsServer.element(p, "T:noeclipse"); UiShotsServer.element(p, "T:setup"); }); }, 12, true));
+        steps.add(new Step("tw_hud", () -> {}, 4, true));
+        steps.add(new Step("tw_wheel", () -> { TwinsWheel.forceHover = 1; mc.setScreen(new TwinsWheel()); }, 8, false));
+        steps.add(new Step("tw_wheel_centre", () -> { mc.setScreen(null); TwinsWheel.forceHover = -2; mc.setScreen(new TwinsWheel()); }, 8, false));
+        steps.add(new Step("tw_wheel_nyx", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "T:nyxworn")); TwinsWheel.forceHover = 3; mc.setScreen(new TwinsWheel()); }, 10, false));
+        String[] tabs = {"sol", "nyx", "bond", "masks", "guide"};
+        for (int k = 0; k < 5; k++) {
+            final int kk = k;
+            steps.add(new Step("tw_menu_" + tabs[k], () -> { mc.setScreen(null); TwinsWheel.forceHover = -1; TwinsScreen.startTab = kk; TwinsScreen.forceHover = kk < 2 ? 3 : -1; onServer(p -> UiShotsServer.element(p, "T:page")); }, 14, false));
+        }
+        steps.add(new Step("tw_menu_done", () -> { mc.setScreen(null); TwinsScreen.startTab = -1; TwinsScreen.forceHover = -1; }, 2, true));
+        String[] sol = {"sunstrike", "flare", "lance", "helios", "corona", "leap", "dawnbreaker", "spears"}, nyx = {"moonstep", "needle", "fan", "double", "veil", "starfall", "tidelock", "rift"};
+        for (int k = 0; k < 8; k++) {
+            final int kk = k;
+            steps.add(new Step("tw_sol_" + sol[k], () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:full"); UiShotsServer.element(p, "T:sol" + kk); }); }, kk == 5 ? 20 : 8, true));
+        }
+        for (int k = 0; k < 8; k++) {
+            final int kk = k;
+            steps.add(new Step("tw_nyx_" + nyx[k], () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:full"); UiShotsServer.element(p, "T:nyx" + kk); }); }, kk == 5 || kk == 6 || kk == 7 ? 16 : 8, true));
+        }
+        steps.add(new Step("tw_strike", () -> onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:full"); UiShotsServer.element(p, "T:strike"); }), 5, true));
+        steps.add(new Step("tw_trial", () -> onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:trial"); }), 40, true));
+        steps.add(new Step("tw_trial_front", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 10, true));
+        steps.add(new Step("tw_book", () -> {
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.TWINS_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("tw_done", () -> { mc.setScreen(null); mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "T:end")); }, 4, true));
+
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)
         steps.add(new Step("dante_front", () -> { TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.dante(p, false, false); }); }, 30, true));

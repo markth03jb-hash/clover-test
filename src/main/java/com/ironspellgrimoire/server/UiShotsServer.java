@@ -89,6 +89,7 @@ public final class UiShotsServer {
             case 's' -> AddonItemRegistry.SHADOW_GRIMOIRE.get();
             case 'p' -> AddonItemRegistry.PARASITE_GRIMOIRE.get();
             case 'H' -> AddonItemRegistry.HUNGER_GRIMOIRE.get();
+            case 'T' -> AddonItemRegistry.TWINS_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -98,6 +99,7 @@ public final class UiShotsServer {
         io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).setMana(2000);
         if (which.charAt(0) == 'p') { parasite(p, w); return; }
         if (which.charAt(0) == 'H') { hunger(p, w); return; }
+        if (which.charAt(0) == 'T') { twins(p, w); return; }
         switch (w) {
             case "target" -> {
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
@@ -432,6 +434,49 @@ public final class UiShotsServer {
             case "ready" -> { HungerFx.testReset(p); root3(p); HungerFx.testGrowth(p, 50); HungerFx.sync(p, false); }
             case "page_new" -> { HungerFx.testReset(p); HungerFx.testGrowth(p, 45); root3(p); HungerFx.theBlade(p, 10f); }
             case "end" -> { p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testReset(p); }
+            default -> {}
+        }
+    }
+
+    /** The Masked Twins Grimoire's shots: the masks worn (third person), the swap, the arts, the wheel, the menu, the trial. */
+    private static void twins(ServerPlayer p, String w) {
+        if (w.startsWith("sol") || w.startsWith("nyx")) {   // sol<n> / nyx<n>: that twin worn, its art n cast at the husks ahead
+            faceForward(p);
+            int twin = w.startsWith("sol") ? TwinsFx.SOL : TwinsFx.NYX, art = w.charAt(3) - '0';
+            TwinsFx.testCooldowns(p); TwinsFx.testActive(p, twin); TwinsFx.testLoad(p, twin, art, -1, -1, -1);
+            TwinsFx.cast(p, twin, art);
+            return;
+        }
+        switch (w) {
+            case "setup" -> {   // a pair well on its way: Sol 32 (two stones), Nyx 27 (one), a target ahead
+                faceForward(p);
+                TwinsFx.testReset(p);
+                TwinsFx.testLevels(p, 32, 27);
+                TwinsFx.testLoad(p, TwinsFx.SOL, 0, 2, 3, 5); TwinsFx.testLoad(p, TwinsFx.NYX, 0, 1, 2, 5);
+                TwinsFx.testStones(p, 2, 1); TwinsFx.testSockets(p, 3, 1); TwinsFx.testTitles(p, 1 | 2); TwinsFx.testRes(p, 64);
+                TwinsFx.testXp(p, TwinsFx.SOL, 60);
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
+                for (int k = -1; k <= 1; k++) {
+                    var z = net.minecraft.world.entity.EntityType.HUSK.create(p.serverLevel());
+                    if (z == null) continue;
+                    var at = p.position().add(k * 2.2, 0, 6 + Math.abs(k));
+                    z.moveTo(at.x, p.getY(), at.z, 180, 0); z.setNoAi(true);
+                    z.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000); z.setHealth(1000);
+                    p.serverLevel().addFreshEntity(z);
+                }
+                TwinsFx.root(p).putLong("combat", p.serverLevel().getGameTime());
+                TwinsFx.sync(p, false);
+            }
+            case "swap" -> { faceForward(p); TwinsFx.testCooldowns(p); TwinsFx.testRes(p, 100); TwinsFx.swap(p); }
+            case "full" -> { TwinsFx.testSockets(p, 7, 7); TwinsFx.testLevels(p, 50, 50); TwinsFx.testActive(p, TwinsFx.SOL); TwinsFx.sync(p, false); }
+            case "nyxworn" -> { TwinsFx.testActive(p, TwinsFx.NYX); TwinsFx.testCooldowns(p); TwinsFx.sync(p, false); }
+            case "strike" -> { faceForward(p); TwinsFx.twinStrike(p, 10f); }
+            case "eclipse" -> { faceForward(p); TwinsFx.testLevels(p, 50, 50); TwinsFx.testTrialWon(p); TwinsFx.testSockets(p, 7, 7); TwinsFx.eclipseUnion(p, 10f); }
+            case "noeclipse" -> { TwinsFx.testEndEclipse(p); TwinsFx.sync(p, false); }
+            case "trial" -> { faceForward(p); TwinsFx.testLevels(p, 40, 40); TwinsFx.handle(p, 6, 0); }
+            case "page" -> TwinsFx.theMasks(p, 10f);
+            case "end" -> TwinsFx.testReset(p);
             default -> {}
         }
     }

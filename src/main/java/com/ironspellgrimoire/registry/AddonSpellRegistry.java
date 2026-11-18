@@ -845,6 +845,22 @@ public class AddonSpellRegistry {
     /** The six Hunger Blade Grimoire pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> HUNGER_SPELLS = List.of(HUNGER_DRAW, HUNGER_GNASH, HUNGER_FEAST, HUNGER_UNLEASH, HUNGER_BLADE_PAGE, HUNGER_DOMAIN);
 
+    // ------------------------------------------------------------------ Masked Twins Grimoire (two masks, one soul: TwinsFx)
+    private static com.ironspellgrimoire.spells.BookSpell twins(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.HOLY_RESOURCE,
+                com.ironspellgrimoire.item.TwinsGrimoireItem.class, "ui.iron_spell_grimoire.twins_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> TWINS_SWAP = registerSpell(twins("twin_swap", 1, 0, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.TwinsFx::swapPage));
+    public static final RegistryObject<AbstractSpell> TWINS_ARTS = registerSpell(twins("twin_arts", 1, 0, 10, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.TwinsFx::artsPage));
+    public static final RegistryObject<AbstractSpell> TWINS_STRIKE = registerSpell(twins("twin_strike", 12, 40, 10, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.TwinsFx::twinStrike)
+            .gate(com.ironspellgrimoire.server.TwinsFx::canStrike, "Both twins must reach level 10"));
+    public static final RegistryObject<AbstractSpell> TWINS_ECLIPSE = registerSpell(twins("eclipse_union", 300, 150, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.TwinsFx::eclipseUnion)
+            .gate(com.ironspellgrimoire.server.TwinsFx::canEclipse, "Both twins at level 40, and the Twin Wardens beaten"));
+    public static final RegistryObject<AbstractSpell> TWINS_MASKS = registerSpell(twins("the_masks", 1, 0, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.TwinsFx::theMasks));
+    /** The five Masked Twins Grimoire pages, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> TWINS_SPELLS = List.of(TWINS_SWAP, TWINS_ARTS, TWINS_STRIKE, TWINS_ECLIPSE, TWINS_MASKS);
+
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,
                                                                    String only, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {

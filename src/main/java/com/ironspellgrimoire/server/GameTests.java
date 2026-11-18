@@ -582,6 +582,138 @@ public final class GameTests {
 
     /** The Parasite Grimoire's strain: devouring, the arm forms (and the item they put away and give back), locked
      *  forms, evolving, a Strain, the Bulwark, the frenzy and its end, and everything dropped when the book is. */
+    /** The Masked Twins: levels and the balance rule, choosing arts for the wheel, swapping (Resonance spent, the
+     *  cooldown), what may be cast, stones and sockets growing the mask, titles, Mirror Double, Lunar Veil, the trial
+     *  won by beating both wardens - and nothing changed in the world, no status effects. */
+    private static final class TwinsTest extends Test {
+        TwinsTest() { super("twins: the masks"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{TwinsFx.class, com.ironspellgrimoire.entity.TwinWarden.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        BlockState[] before; Set<MobEffect> pe, de;
+        float hp;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.TWINS_GRIMOIRE.get());
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+            TwinsFx.testReset(p);
+            before = snapshot(); pe = effects(p); de = effects(dummy);
+        }
+        @Override boolean tick(int t) {
+            try {
+                MagicData.getPlayerMagicData(p).setMana(1000);
+                if (t == 2) {   // fresh: Sol worn, both at level 1; levelling; the balance rule
+                    if (TwinsFx.active(p) != TwinsFx.SOL) bad.add("a fresh pair doesn't start with Sol worn");
+                    if (TwinsFx.level(p, 0) != 1 || TwinsFx.level(p, 1) != 1) bad.add("a fresh pair isn't level 1/1");
+                    TwinsFx.testXp(p, 0, TwinsFx.need(1) + TwinsFx.need(2) + 1);
+                    if (TwinsFx.level(p, 0) != 3) bad.add("XP for two levels gave level " + TwinsFx.level(p, 0));
+                    if (TwinsFx.level(p, 1) != 1) bad.add("Sol's XP raised Nyx");
+                    TwinsFx.testLevels(p, 30, 10);
+                    if (TwinsFx.weigh(p, 0) > TwinsFx.weigh(p, 1) * 0.65f) bad.add("a twin 20 levels ahead isn't slowed (" + TwinsFx.weigh(p, 0) + " vs " + TwinsFx.weigh(p, 1) + ")");
+                }
+                if (t == 4) {   // choosing arts: only known ones; one art in one slot
+                    TwinsFx.testLevels(p, 1, 1);
+                    TwinsFx.handle(p, 3, 0 * 100 + 1 * 10 + 5);
+                    if (TwinsFx.testSlot(p, 0, 1) == 5) bad.add("Zenith Leap went on the wheel at level 1");
+                    TwinsFx.testLevels(p, 50, 50);
+                    TwinsFx.handle(p, 3, 0 * 100 + 1 * 10 + 5);
+                    if (TwinsFx.testSlot(p, 0, 1) != 5) bad.add("Zenith Leap didn't go into slot 2");
+                    TwinsFx.handle(p, 3, 0 * 100 + 2 * 10 + 5);
+                    int n = 0;
+                    for (int s = 0; s < 4; s++) if (TwinsFx.testSlot(p, 0, s) == 5) n++;
+                    if (n != 1) bad.add("one art sits in " + n + " slots");
+                    TwinsFx.handle(p, 3, 0 * 100 + 2 * 10 + 9);
+                    if (TwinsFx.testSlot(p, 0, 2) != -1) bad.add("a slot didn't empty");
+                }
+                if (t == 6) {   // swapping: Resonance spent, then a cooldown
+                    TwinsFx.testCooldowns(p); TwinsFx.testRes(p, 80);
+                    TwinsFx.swap(p);
+                    if (TwinsFx.active(p) != TwinsFx.NYX) bad.add("swapping didn't put Nyx on");
+                    if (TwinsFx.resonance(p) != 0) bad.add("the burst didn't spend the Resonance");
+                    if (TwinsFx.testSwapCd(p) <= 0) bad.add("no cooldown after a swap");
+                    TwinsFx.swap(p);
+                    if (TwinsFx.active(p) != TwinsFx.NYX) bad.add("swapped again during the cooldown");
+                    int code = TwinsFx.testLookCode(p);
+                    if (code / 16 - 2 != TwinsFx.maskForm(p, TwinsFx.NYX) || code % 16 - 2 != TwinsFx.maskForm(p, TwinsFx.SOL)) bad.add("the masks others see are wrong (" + code + ")");
+                }
+                if (t == 8) {   // what may be cast: the worn twin's chosen arts, off cooldown
+                    TwinsFx.testCooldowns(p);
+                    if (TwinsFx.cast(p, TwinsFx.SOL, 0)) bad.add("cast Sol's art while wearing Nyx");
+                    TwinsFx.testLoad(p, 1, 0, 1, 2, 3);
+                    if (TwinsFx.cast(p, TwinsFx.NYX, 7)) bad.add("cast an art that isn't on the wheel");
+                    TwinsFx.testLoad(p, 1, 7, 1, 2, 3);
+                    if (!TwinsFx.cast(p, TwinsFx.NYX, 7)) bad.add("couldn't cast Void Rift from the wheel");
+                    if (TwinsFx.cast(p, TwinsFx.NYX, 7)) bad.add("cast Void Rift again during its cooldown");
+                }
+                if (t == 10) {   // stones and sockets; the mask grows
+                    TwinsFx.testStones(p, 1, 0);
+                    TwinsFx.handle(p, 4, 0);
+                    if ((TwinsFx.testSocketMask(p, 0) & 1) == 0) bad.add("a Sunstone didn't set");
+                    if (TwinsFx.testStone(p, 0) != 0) bad.add("setting a stone didn't use it");
+                    TwinsFx.handle(p, 4, 1);
+                    if ((TwinsFx.testSocketMask(p, 0) & 2) != 0) bad.add("a socket filled with no stone");
+                    if (TwinsFx.maskForm(p, TwinsFx.SOL) != 1) bad.add("Sol's mask didn't grow to stage 2");
+                    TwinsFx.testSockets(p, 7, 7);
+                    if (TwinsFx.maskForm(p, TwinsFx.NYX) != 5) bad.add("Nyx's mask with three stones isn't stage 3");
+                }
+                if (t == 12) {   // titles: earned on the level, worn one at a time
+                    TwinsFx.testLevels(p, 24, 1);
+                    TwinsFx.testXp(p, 0, TwinsFx.need(24));
+                    TwinsFx.handle(p, 5, 0);
+                    TwinsFx.handle(p, 5, 2);
+                    if (TwinsFx.root(p).getInt("title") != 0) bad.add("wore a title not earned, or couldn't wear Dawnchild");
+                    if (TwinsFx.canEclipse(p)) bad.add("Eclipse Union open with no trial");
+                }
+                if (t == 14) {   // Mirror Double: a blow strikes twice
+                    ensureDummy();
+                    TwinsFx.testLevels(p, 50, 50); TwinsFx.testCooldowns(p); TwinsFx.testActive(p, TwinsFx.NYX); TwinsFx.testLoad(p, 1, 3, 4, 1, 2);
+                    TwinsFx.cast(p, TwinsFx.NYX, 3);
+                    if (!TwinsFx.testDoubleUp(p)) bad.add("Mirror Double didn't start");
+                    hp = dummy.getHealth();
+                    dummy.invulnerableTime = 0;
+                    dummy.hurt(p.damageSources().playerAttack(p), 4f);
+                }
+                if (t == 26) {
+                    float lost = hp - dummy.getHealth();
+                    if (lost < 5f) bad.add("Mirror Double's echo didn't land (lost " + lost + ")");
+                    TwinsFx.cast(p, TwinsFx.NYX, 4);
+                    if (!TwinsFx.testVeilUp(p)) bad.add("Lunar Veil didn't start");
+                    p.hurt(p.damageSources().mobAttack(dummy), 5f);
+                    if (TwinsFx.testVeilUp(p)) bad.add("Lunar Veil didn't take the blow");
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                }
+                if (t == 28) {   // the trial: both wardens beaten
+                    TwinsFx.testLevels(p, 40, 40);
+                    TwinsFx.handle(p, 6, 0);
+                    if (!TwinsFx.testTrialRunning(p)) bad.add("the trial didn't begin");
+                    var ws = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.TwinWarden.class, p.getBoundingBox().inflate(20));
+                    if (ws.size() != 2) bad.add(ws.size() + " wardens came, not 2");
+                    for (var w : ws) w.hurt(p.damageSources().playerAttack(p), 100000f);
+                }
+                if (t == 32) {
+                    if (!TwinsFx.trialWon(p)) bad.add("beating both wardens didn't win the trial");
+                    if (!TwinsFx.canEclipse(p)) bad.add("Eclipse Union not open after the trial");
+                    if ((TwinsFx.root(p).getInt("titles") & 8) == 0) bad.add("no Eclipse-Touched title");
+                    TwinsFx.eclipseUnion(p, 10f);
+                    if (!TwinsFx.eclipse(p)) bad.add("Eclipse Union didn't start");
+                    if (!TwinsFx.cast(p, TwinsFx.SOL, 1) || !TwinsFx.cast(p, TwinsFx.SOL, 1)) bad.add("in the eclipse, an art had a cooldown");
+                    TwinsFx.testEndEclipse(p);
+                }
+                if (t == 120) {
+                    String ch = changes(before);
+                    if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+                    Set<MobEffect> np = effects(p), nd = effects(dummy);
+                    np.removeAll(pe); nd.removeAll(de);
+                    if (!np.isEmpty() || !nd.isEmpty()) bad.add("gave status effects: " + np + " " + nd);
+                    TwinsFx.testReset(p);
+                    if (bad.isEmpty()) pass(name, "levels, the wheel, swaps, casting rules, stones, titles, Mirror Double, Lunar Veil and the trial");
+                    else fail(name, String.join("; ", bad));
+                    return true;
+                }
+            } catch (Throwable x) { fail(name, "threw " + x); TwinsFx.testReset(p); return true; }
+            return false;
+        }
+    }
+
     private static final class ParasiteTest extends Test {
         ParasiteTest() { super("parasite: the strain"); }
         @Override Class<?>[] roots() { return new Class<?>[]{ParasiteFx.class}; }
@@ -1463,6 +1595,29 @@ public final class GameTests {
                 "hunger_domain", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 5); HungerFx.hungerDomain(pl, pw); HungerFx.feast(pl, pw); }, "c",
                 "the_blade", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> HungerFx.theBlade(pl, pw), "q"));
         queue.add(new HungerTest());
+        queue.add(new BookMovesTest("twins", com.ironspellgrimoire.registry.AddonItemRegistry.TWINS_GRIMOIRE::get, TwinsFx.class,
+                "sol: sunstrike", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 0, -1, -1, -1); TwinsFx.cast(pl, 0, 0); }, "c",
+                "sol: flare shot", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 1, -1, -1, -1); TwinsFx.cast(pl, 0, 1); }, "",
+                "sol: solar lance", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 2, -1, -1, -1); TwinsFx.cast(pl, 0, 2); }, "",
+                "sol: helios wheel", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 3, -1, -1, -1); TwinsFx.cast(pl, 0, 3); }, "",
+                "sol: corona", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 4, -1, -1, -1); TwinsFx.cast(pl, 0, 4); }, "c",
+                "sol: zenith leap", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 5, -1, -1, -1); TwinsFx.cast(pl, 0, 5); }, "c",
+                "sol: dawnbreaker", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 6, -1, -1, -1); TwinsFx.cast(pl, 0, 6); }, "c",
+                "sol: sunspear barrage", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 7, -1, -1, -1); TwinsFx.cast(pl, 0, 7); }, "",
+                "nyx: moonstep", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 0, -1, -1, -1); TwinsFx.cast(pl, 1, 0); }, "q",
+                "nyx: frost needle", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 1, -1, -1, -1); TwinsFx.cast(pl, 1, 1); }, "",
+                "nyx: crescent fan", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 2, -1, -1, -1); TwinsFx.cast(pl, 1, 2); }, "",
+                "nyx: mirror double", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 3, -1, -1, -1); TwinsFx.cast(pl, 1, 3); }, "q",
+                "nyx: lunar veil", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 4, -1, -1, -1); TwinsFx.cast(pl, 1, 4); }, "q",
+                "nyx: starfall rain", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 5, -1, -1, -1); TwinsFx.cast(pl, 1, 5); }, "",
+                "nyx: tidelock", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 6, -1, -1, -1); TwinsFx.cast(pl, 1, 6); }, "",
+                "nyx: void rift", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 7, -1, -1, -1); TwinsFx.cast(pl, 1, 7); }, "",
+                "swap: sun flare", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testRes(pl, 100); TwinsFx.swap(pl); }, "c",
+                "swap: crescent wave", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testRes(pl, 100); TwinsFx.swap(pl); }, "",
+                "twin_strike", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.twinStrike(pl, pw); }, "c",
+                "eclipse_union", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testTrialWon(pl); TwinsFx.eclipseUnion(pl, pw); TwinsFx.cast(pl, 0, 6); TwinsFx.cast(pl, 1, 1); TwinsFx.testEndEclipse(pl); }, "c",
+                "the_masks", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.theMasks(pl, pw); }, "q"));
+        queue.add(new TwinsTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));
