@@ -654,6 +654,9 @@ public final class UiShots {
         steps.add(new Step("hb_guide", () -> { mc.setScreen(null); BladeScreen.forceHover = -1; BladeScreen.startGuide = true; onServer(p -> UiShotsServer.element(p, "H:page")); }, 14, false));
         steps.add(new Step("hb_guide_young", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "H:page_new")); }, 14, false));
         steps.add(new Step("hb_page_new", () -> BladeScreen.startGuide = false, 1, false));
+        steps.add(new Step("hb_titles", () -> { mc.setScreen(null); BladeScreen.startTitles = true; onServer(p -> UiShotsServer.element(p, "H:titles")); }, 14, false));
+        steps.add(new Step("hb_guide_deep", () -> { mc.setScreen(null); BladeScreen.startTitles = false; BladeScreen.startGuide = true; onServer(p -> UiShotsServer.element(p, "H:page")); }, 14, false));
+        steps.add(new Step("hb_titles_done", () -> BladeScreen.startGuide = false, 1, false));
         steps.add(new Step("hb_page_new2", () -> { mc.setScreen(null); BladeScreen.forceHover = 13; onServer(p -> UiShotsServer.element(p, "H:page_new")); }, 14, false));
         steps.add(new Step("hb_book", () -> {
             BladeScreen.forceHover = -1;
@@ -696,6 +699,11 @@ public final class UiShots {
             steps.add(new Step("tw_nyx_" + nyx[k], () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:full"); UiShotsServer.element(p, "T:nyx" + kk); }); }, kk == 5 || kk == 6 || kk == 7 ? 16 : 8, true));
         }
         steps.add(new Step("tw_strike", () -> onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:full"); UiShotsServer.element(p, "T:strike"); }), 5, true));
+        steps.add(new Step("tw_echo", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:full"); UiShotsServer.element(p, "T:echo"); }); }, 30, true));
+        steps.add(new Step("tw_echo_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 12, true));
+        steps.add(new Step("tw_noon", () -> onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:noon"); }), 25, true));
+        steps.add(new Step("tw_noon_hud", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 4, true));
+        steps.add(new Step("tw_eventide", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:eventide"); }); }, 20, true));
         steps.add(new Step("tw_trial", () -> onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:trial"); }), 40, true));
         steps.add(new Step("tw_trial_front", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 10, true));
         steps.add(new Step("tw_book", () -> {

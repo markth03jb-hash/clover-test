@@ -560,6 +560,18 @@ public final class GameTests {
                     p.setShiftKeyDown(false);
                     if (HungerFx.drawn(p)) bad.add("the throw left the blade in the hand");
                 }
+                if (t == 206) {   // Bond 10 and the titles
+                    HungerFx.testBond(p, 1000);
+                    if (HungerFx.bond(p) != 10) bad.add("1000 bond XP gave Bond " + HungerFx.bond(p));
+                    HungerFx.testDevours(p, 50);
+                    int tt = HungerFx.testTitles(p);
+                    if ((tt & 1) == 0) bad.add("50 devours didn't earn Glutton");
+                    if ((tt & 8) == 0) bad.add("Bond 10 didn't earn Bloodbound");
+                    HungerFx.handle(p, 4, 0);
+                    if (HungerFx.testTitle(p) != 0) bad.add("couldn't wear Glutton");
+                    HungerFx.handle(p, 4, 99);
+                    if (HungerFx.testTitle(p) != -1) bad.add("couldn't take a title off");
+                }
                 if (t == 210) {
                     if (!HungerFx.drawn(p)) bad.add("the thrown blade didn't come back to the hand");
                     if (!sl().getEntitiesOfClass(com.ironspellgrimoire.entity.ThrownHungerBlade.class, p.getBoundingBox().inflate(40)).isEmpty()) bad.add("a thrown blade is still out");
@@ -697,6 +709,38 @@ public final class GameTests {
                     if (!TwinsFx.eclipse(p)) bad.add("Eclipse Union didn't start");
                     if (!TwinsFx.cast(p, TwinsFx.SOL, 1) || !TwinsFx.cast(p, TwinsFx.SOL, 1)) bad.add("in the eclipse, an art had a cooldown");
                     TwinsFx.testEndEclipse(p);
+                }
+                if (t == 40) {   // a socket re-cut for a stone; mastery counts up
+                    TwinsFx.testLevels(p, 50, 50); TwinsFx.testSockets(p, 0, 0); TwinsFx.testStones(p, 2, 0);
+                    TwinsFx.handle(p, 4, 0 * 100 + 1 * 10 + 2);
+                    if (!TwinsFx.testPerk(p, 0, 1, 2)) bad.add("Pyre Heart didn't set");
+                    TwinsFx.handle(p, 4, 0 * 100 + 1 * 10 + 1);
+                    if (!TwinsFx.testPerk(p, 0, 1, 1) || TwinsFx.testStone(p, 0) != 0) bad.add("re-cutting to Blazing Rush didn't take a stone and change the cut");
+                    TwinsFx.handle(p, 4, 0 * 100 + 1 * 10 + 0);
+                    if (TwinsFx.testCut(p, 0, 1) != 1) bad.add("re-cut with no stone left");
+                    TwinsFx.testCooldowns(p); TwinsFx.testActive(p, 0); TwinsFx.testLoad(p, 0, 1, -1, -1, -1); TwinsFx.testUses(p, 0, 1, 29);
+                    TwinsFx.cast(p, 0, 1);
+                    if (TwinsFx.testUsesOf(p, 0, 1) != 30 || TwinsFx.mastery(30) != 1) bad.add("casting didn't count toward mastery");
+                }
+                if (t == 44) {   // the Echo comes out in a fight, and the hip empties
+                    TwinsFx.testActive(p, 0); TwinsFx.testCombat(p);
+                    TwinsFx.testEcho(p);
+                    if (!TwinsFx.testEchoOut(p)) bad.add("the Echo didn't come out in a fight");
+                    if (sl().getEntitiesOfClass(com.ironspellgrimoire.entity.TwinEcho.class, p.getBoundingBox().inflate(10)).size() != 1) bad.add("no Echo beside the player");
+                    if (TwinsFx.testLookCode(p) % 16 - 2 != -1) bad.add("the resting mask still shows at the hip while its Echo fights");
+                }
+                if (t == 48) {   // the ultimates
+                    TwinsFx.testCooldowns(p); TwinsFx.testActive(p, 0);
+                    TwinsFx.cast(p, 0, 1);
+                    TwinsFx.highNoon(p, 10f);
+                    if (!TwinsFx.testNoon(p)) bad.add("High Noon didn't start");
+                    if (!TwinsFx.cast(p, 0, 1)) bad.add("High Noon didn't clear Sol's cooldowns");
+                    TwinsFx.testActive(p, 1);
+                    TwinsFx.eventide(p, 10f);
+                    if (!TwinsFx.testEventide(p)) bad.add("Eventide didn't start");
+                    for (int k = 0; k < 3; k++) p.hurt(p.damageSources().mobAttack(dummy), 4f);
+                    if (TwinsFx.testVeilUp(p)) bad.add("Eventide's three misses weren't used up by three blows");
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
                 }
                 if (t == 120) {
                     String ch = changes(before);
@@ -1616,7 +1660,12 @@ public final class GameTests {
                 "swap: crescent wave", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testRes(pl, 100); TwinsFx.swap(pl); }, "",
                 "twin_strike", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.twinStrike(pl, pw); }, "c",
                 "eclipse_union", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testTrialWon(pl); TwinsFx.eclipseUnion(pl, pw); TwinsFx.cast(pl, 0, 6); TwinsFx.cast(pl, 1, 1); TwinsFx.testEndEclipse(pl); }, "c",
-                "the_masks", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.theMasks(pl, pw); }, "q"));
+                "the_masks", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.theMasks(pl, pw); }, "q",
+                "high_noon", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 0); TwinsFx.highNoon(pl, pw); }, "c",
+                "eventide", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 1); TwinsFx.eventide(pl, pw); }, "q",
+                "sol: helios wheel (perfected)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 3, -1, -1, -1); TwinsFx.testUses(pl, 0, 3, 250); TwinsFx.cast(pl, 0, 3); }, "",
+                "nyx: void rift (perfected)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 7, -1, -1, -1); TwinsFx.testUses(pl, 1, 7, 250); TwinsFx.cast(pl, 1, 7); }, "",
+                "echo shot", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 0); TwinsFx.testCombat(pl); TwinsFx.testEcho(pl); }, "c"));
         queue.add(new TwinsTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));

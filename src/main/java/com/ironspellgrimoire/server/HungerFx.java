@@ -109,7 +109,8 @@ public final class HungerFx {
         return (line(f) - 1) * 2 + (k <= 2 ? 1 : 2);
     }
     static final int[] PAL = {Fx.CRIMSON, Fx.SILVER, Fx.CRIMSON, Fx.YAMI, Fx.FIRE};
-    public static final int[] BOND_AT = {0, 10, 30, 70, 130, 220};
+    public static final int[] BOND_AT = {0, 10, 30, 70, 130, 220, 330, 460, 620, 800, 1000};
+    public static final int MAX_BOND = 10;
 
     // ------------------------------------------------------------------ state
     static CompoundTag root(Player p) {
@@ -135,7 +136,7 @@ public final class HungerFx {
     public static int growth(Player p) { return root(p).getInt("growth"); }
     public static float hunger(Player p) { return root(p).getFloat("hunger"); }
     public static int bondXp(Player p) { return root(p).getInt("bond"); }
-    public static int bond(Player p) { int x = bondXp(p), l = 0; while (l < 5 && x >= BOND_AT[l + 1]) l++; return l; }
+    public static int bond(Player p) { int x = bondXp(p), l = 0; while (l < MAX_BOND && x >= BOND_AT[l + 1]) l++; return l; }
     static int[] load(Player p) {
         int[] l = root(p).getIntArray("load");
         return l.length == 4 ? l : new int[]{0, -1, -1, -1};
@@ -186,6 +187,24 @@ public final class HungerFx {
         int asc = 0;
         for (int path = 1; path <= 4; path++) { int a = 3 + (path - 1) * 5 + 2; if ((mask & (1 << a)) != 0 || (mask & (1 << (a + 2))) != 0) asc++; }
         if (asc >= 2) teach(p, 8, "Two of my hungers have peaked. They could become one.", "hybrids: the bottom row of The Blade page, 300 Growth");
+        titles(p);
+    }
+
+    static int title(Player p) { CompoundTag r = root(p); int t = r.contains("title") ? r.getInt("title") : -1; return t >= 0 && (r.getInt("titles") & (1 << t)) != 0 ? t : -1; }
+
+    /** Whatever titles are newly earned. */
+    static void titles(ServerPlayer p) {
+        CompoundTag r = root(p);
+        int mask = r.getInt("unlocked"), have = r.getInt("titles"), got = have;
+        if (r.getInt("devours") >= 50) got |= 1;
+        if (grownStage(p, 6)) got |= 2;
+        if ((mask >>> 23) != 0) got |= 4;
+        if (bond(p) >= MAX_BOND) got |= 8;
+        if (r.getInt("fed") >= 2000) got |= 16;
+        if (got == have) return;
+        r.putInt("titles", got);
+        for (int i = 0; i < TITLES.length; i++) if ((got & ~have & (1 << i)) != 0)
+            p.sendSystemMessage(Component.literal("Title earned: " + TITLES[i] + " (" + TITLE_GIVES[i] + ") - wear it on The Blade page").withStyle(ChatFormatting.RED));
     }
 
     static void tell(ServerPlayer p, String s) { p.displayClientMessage(Component.literal(s).withStyle(ChatFormatting.GRAY), true); }
@@ -218,7 +237,17 @@ public final class HungerFx {
             "I know your grip now. I'll watch your back. (Bond 2: kept fed, it strikes foes that hit you from behind)",
             "Throw me, if you must. I always come back to you. (Bond 3: sneak and Gnash to throw the blade)",
             "We hunt the same way now, you and I. (Bond 4: a twin grows into your empty off hand)",
-            "We are one hunger. Call on me and I will answer with all of it. (Bond 5: Unleash wakes the Awakened Pact)"};
+            "We are one hunger. Call on me and I will answer with all of it. (Bond 5: Unleash wakes the Awakened Pact)",
+            "I can wait longer between meals now. For you. (Bond 6: hunger drains 25% slower)",
+            "When you throw me, I bite deeper. (Bond 7: the thrown blade hits 50% harder)",
+            "My ghost lingers longer at your side. (Bond 8: the blade's spirit stays 25 s)",
+            "Your other hand holds me too - all of me. (Bond 9: the twin is the sword you carry)",
+            "Nothing escapes us now. (Bond 10: devour below 25% health; each devour mends 4 hearts)"};
+    /** The blade's titles: one worn at a time, each a small gift. */
+    public static final String[] TITLES = {"Glutton", "Pathwalker", "Fused", "Bloodbound", "Gourmand"};
+    public static final String[] TITLE_HOW = {"Devour 50 foes", "Grow a stage 6 sword", "Grow a hybrid sword", "Reach Bond 10", "Feed the blade 2000 Growth"};
+    public static final String[] TITLE_GIVES = {"Each devour mends 2 more hearts", "+5% damage with the blade out", "+5% attack speed with it out",
+            "+2 armour with the blade out", "Kills fill its hunger 25% more"};
 
     // ------------------------------------------------------------------ the pages
     /** Draw: the blade into your empty main hand - or back into the book. */
@@ -459,7 +488,9 @@ public final class HungerFx {
     static void spirit(ServerPlayer p) {
         ServerLevel sl = p.serverLevel();
         for (var old : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.BladeSpirit.class, p.getBoundingBox().inflate(40), x -> p.getUUID().equals(x.owner()))) old.discard();
-        sl.addFreshEntity(new com.ironspellgrimoire.entity.BladeSpirit(sl, p, HungerBladeItem.of(AddonItemRegistry.HUNGER_BLADE.get(), heldForm(p)), bladeDmg(p) * 0.6f));
+        var sp = new com.ironspellgrimoire.entity.BladeSpirit(sl, p, HungerBladeItem.of(AddonItemRegistry.HUNGER_BLADE.get(), heldForm(p)), bladeDmg(p) * 0.6f);
+        if (bond(p) >= 8) sp.life = 500;   // Bond 8: 25 s
+        sl.addFreshEntity(sp);
         Fx.pillar(sl, PAL[line(heldForm(p))], p.position(), 3f, 0.4f, 10);
     }
 
@@ -522,7 +553,7 @@ public final class HungerFx {
     /** A thrown blade struck something (ThrownHungerBlade). */
     public static void thrownHit(ServerPlayer p, LivingEntity t, float dmg, int pal) {
         if (!foe(p, t)) return;
-        AstaFx.damage(p, t, dmg, "gnash");
+        AstaFx.damage(p, t, dmg * (bond(p) >= 7 ? 1.5f : 1f), "gnash");
         Fx.spark(p.serverLevel(), pal, mid(t), 1.2f);
         feed(p, 2f);
     }
@@ -536,6 +567,7 @@ public final class HungerFx {
             case 1 -> grow(p, arg);
             case 2 -> select(p, arg);
             case 3 -> assign(p, arg / 100, arg % 100 == 99 ? -1 : arg % 100);
+            case 4 -> { if (arg == 99 || (arg >= 0 && arg < TITLES.length && (root(p).getInt("titles") & (1 << arg)) != 0)) { root(p).putInt("title", arg == 99 ? -1 : arg); sync(p, false); } }
             default -> {}
         }
     }
@@ -604,7 +636,7 @@ public final class HungerFx {
         CompoundTag r = root(p);
         long pl = Math.max(0, r.getLong("pact") - now(p));
         AddonNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new HungerPackets.Sync(equipped(p), r.getInt("growth"), r.getInt("unlocked"), load(p), sel(p),
-                r.getFloat("hunger"), r.getInt("bond"), drawn(p), r.getInt("fed"), (int) (pl / 20), open));
+                r.getFloat("hunger"), r.getInt("bond"), drawn(p), r.getInt("fed"), (int) (pl / 20), open, r.getInt("titles"), title(p), r.getInt("devours")));
     }
 
     // ------------------------------------------------------------------ the blade's hits and kills
@@ -613,7 +645,7 @@ public final class HungerFx {
             PACT_DMG = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a9000b3"), PACT_SPD = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a9000b4"),
             PACT_MOVE = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a9000b5"), CRACK = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a9000b6"),
             STAGGER = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a9000b7"), SULK = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a9000b8"),
-            DOMAIN_SLOW = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a9000b9");
+            DOMAIN_SLOW = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a9000b9"), TITLE_ID = UUID.fromString("5e1f0c3a-7d21-4b8e-9a64-0b2c7a9000ba");
 
     @SubscribeEvent
     public static void onHurt(LivingHurtEvent e) {
@@ -630,11 +662,13 @@ public final class HungerFx {
         if (pact(p)) p.heal(amt * 0.2f);
         // Devour: sneak and strike a foe near death (not a boss) - it's eaten whole
         boolean boss = victim instanceof AddonBoss || victim.getType().is(Tags.EntityTypes.BOSSES);
-        if (p.isShiftKeyDown() && !boss && foe(p, victim) && victim.getHealth() - amt <= victim.getMaxHealth() * 0.15f && now(p) >= root(p).getLong("devourCd")) {
+        if (p.isShiftKeyDown() && !boss && foe(p, victim) && victim.getHealth() - amt <= victim.getMaxHealth() * (bond(p) >= 10 ? 0.25f : 0.15f) && now(p) >= root(p).getLong("devourCd")) {
             root(p).putLong("devourCd", now(p) + 60);
             devouring = victim.getId();
             e.setAmount(victim.getHealth() + victim.getAbsorptionAmount() + 50f);
             devourFx(p, victim, f);
+            float mend = (bond(p) >= 10 ? 8f : 0f) + (title(p) == 0 ? 4f : 0f);   // Bond 10, and the Glutton title
+            if (mend > 0) p.heal(mend);
             return;
         }
         swingMark(p, victim, f);
@@ -927,8 +961,9 @@ public final class HungerFx {
         boolean blade = drawn(p) || root(p).getBoolean("thrown");
         if (!blade) return;
         boolean boss = t instanceof AddonBoss || t.getType().is(Tags.EntityTypes.BOSSES);
-        int g = Math.max(1, Math.round(t.getMaxHealth() / 8f)) * (boss ? 3 : 1) * (devouring == t.getId() ? 2 : 1);
-        devouring = -1;
+        boolean ate = devouring == t.getId();
+        int g = Math.max(1, Math.round(t.getMaxHealth() / 8f)) * (boss ? 3 : 1) * (ate ? 2 : 1);
+        devouring = ate ? -2 : -1;
         if (domain(p) && t.position().distanceTo(domCenter(p)) < 9) { root(p).putFloat("hunger", 100f); Fx.spark(p.serverLevel(), Fx.CRIMSON, p.getEyePosition(), 1f); }
         if (ThreadLocalRandom.current().nextInt(8) == 0) voice(p, 0);
         CompoundTag r = root(p);
@@ -936,7 +971,10 @@ public final class HungerFx {
         r.putInt("growth", r.getInt("growth") + g);
         r.putInt("fed", r.getInt("fed") + g);
         r.putInt("bond", r.getInt("bond") + (boss ? 3 : 1));
-        feed(p, Math.min(25f, g * 3f));
+        feed(p, Math.min(25f, g * 3f) * (title(p) == 4 ? 1.25f : 1f));
+        if (devouring == -2) r.putInt("devours", r.getInt("devours") + 1);
+        devouring = -1;
+        titles(p);
         ServerLevel sl = p.serverLevel();
         Fx.spark(sl, PAL[line(heldForm(p))], mid(t), 1.4f);
         p.displayClientMessage(Component.literal("+" + g + " Growth").withStyle(ChatFormatting.RED), true);
@@ -959,7 +997,7 @@ public final class HungerFx {
         CompoundTag r = root(p);
         boolean drawn = drawn(p);
         float h = r.getFloat("hunger");
-        if (!p.isCreative()) h = Math.max(0f, h - (drawn ? 0.35f : 0.15f));
+        if (!p.isCreative()) h = Math.max(0f, h - (drawn ? 0.35f : 0.15f) * (bond(p) >= 6 ? 0.75f : 1f));
         r.putFloat("hunger", h);
         int m = mood(h);
         ServerLevel sl = p.serverLevel();
@@ -967,6 +1005,13 @@ public final class HungerFx {
         else if (h >= 30) r.putInt("starvedFor", 0);
         boolean sulk = sulking(p);
         if (m == 3) TimedModifiers.apply(p, Attributes.ATTACK_SPEED, FED_SPD, "Well fed", 0.15, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
+        if (drawn) switch (title(p)) {   // the worn title's gift
+            case 1 -> TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, TITLE_ID, "Pathwalker", 0.05, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
+            case 2 -> TimedModifiers.apply(p, Attributes.ATTACK_SPEED, TITLE_ID, "Fused", 0.05, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
+            case 3 -> TimedModifiers.apply(p, Attributes.ARMOR, TITLE_ID, "Bloodbound", 2, AttributeModifier.Operation.ADDITION, 30);
+            default -> {}
+        }
+        if (p.tickCount % 200 == 0) titles(p);
         if (sulk) TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, SULK, "Sulking", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
         else if (m <= 1) TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, HUNGRY_DMG, "Hungry", m == 0 ? 0.3 : 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
@@ -975,7 +1020,7 @@ public final class HungerFx {
         if (r.getInt("starvedFor") == 60) voice(p, 4);
         // the twin (Bond 4): grows into the empty off hand while the blade is out
         if (drawn && bond(p) >= 4 && p.getOffhandItem().isEmpty()) {
-            ItemStack tw = HungerBladeItem.of(AddonItemRegistry.HUNGER_BLADE.get(), 0);
+            ItemStack tw = HungerBladeItem.of(AddonItemRegistry.HUNGER_BLADE.get(), bond(p) >= 9 ? heldForm(p) : 0);   // Bond 9: the twin is the sword you carry
             tw.getOrCreateTag().putBoolean("twin", true);
             p.setItemInHand(InteractionHand.OFF_HAND, tw);
             Fx.spark(sl, PAL[line(heldForm(p))], p.getEyePosition().add(p.getLookAngle().scale(0.6)).add(0, -0.5, 0), 0.7f);
@@ -1061,6 +1106,9 @@ public final class HungerFx {
     public static void testCharge(ServerPlayer p) { charge(p); }
     public static int testLook(ServerPlayer p) { return root(p).getInt("look") - 2; }
     public static int testTaught(ServerPlayer p) { return root(p).getInt("taught"); }
+    public static int testTitles(ServerPlayer p) { titles(p); return root(p).getInt("titles"); }
+    public static void testDevours(ServerPlayer p, int n) { root(p).putInt("devours", n); }
+    public static int testTitle(ServerPlayer p) { return title(p); }
     /** Draw a given sword straight into the hand. */
     public static void testHold(ServerPlayer p, int f) { give(p, f); }
 }

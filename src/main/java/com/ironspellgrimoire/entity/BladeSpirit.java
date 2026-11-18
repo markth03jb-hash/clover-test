@@ -29,6 +29,8 @@ public class BladeSpirit extends Entity {
     private UUID owner;
     private float damage;
     private int cd = 10, strike;
+    /** How long it stays (ticks): 15 s, or 25 s at Bond 8. */
+    public int life = 300;
     private Vec3 dest;
 
     public BladeSpirit(EntityType<? extends BladeSpirit> t, Level l) { super(t, l); noPhysics = true; }
@@ -58,7 +60,7 @@ public class BladeSpirit extends Entity {
         super.tick();
         if (level().isClientSide) return;
         ServerPlayer p = owner == null ? null : (ServerPlayer) ((ServerLevel) level()).getPlayerByUUID(owner);
-        if (p == null || !p.isAlive() || tickCount > 300 || p.level() != level()) { discard(); return; }
+        if (p == null || !p.isAlive() || tickCount > life || p.level() != level()) { discard(); return; }
         if (--cd <= 0) {
             LivingEntity t = HungerFx.spiritTarget(p);
             if (t != null) {

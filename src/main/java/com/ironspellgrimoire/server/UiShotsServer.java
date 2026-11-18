@@ -408,6 +408,7 @@ public final class UiShotsServer {
             case "starved" -> { HungerFx.testHunger(p, 4); HungerFx.sync(p, false); }
             case "fed" -> { HungerFx.testHunger(p, 82); HungerFx.sync(p, false); }
             case "page" -> { HungerFx.testHunger(p, 55); HungerFx.theBlade(p, 10f); }
+            case "titles" -> { HungerFx.testBond(p, 1000); HungerFx.testDevours(p, 50); HungerFx.testTitles(p); HungerFx.handle(p, 4, 0); HungerFx.theBlade(p, 10f); }
             case "devour" -> {   // a husk near death in front, sneak-struck
                 faceForward(p);
                 var hs = p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(8));
@@ -455,6 +456,9 @@ public final class UiShotsServer {
                 TwinsFx.testLoad(p, TwinsFx.SOL, 0, 2, 3, 5); TwinsFx.testLoad(p, TwinsFx.NYX, 0, 1, 2, 5);
                 TwinsFx.testStones(p, 2, 1); TwinsFx.testSockets(p, 3, 1); TwinsFx.testTitles(p, 1 | 2); TwinsFx.testRes(p, 64);
                 TwinsFx.testXp(p, TwinsFx.SOL, 60);
+                TwinsFx.testUses(p, TwinsFx.SOL, 0, 120); TwinsFx.testUses(p, TwinsFx.SOL, 2, 260); TwinsFx.testUses(p, TwinsFx.SOL, 3, 45);
+                TwinsFx.testUses(p, TwinsFx.NYX, 1, 260); TwinsFx.testUses(p, TwinsFx.NYX, 2, 70);
+                TwinsFx.root(p).putIntArray("cut0", new int[]{0, 2, 0}); TwinsFx.root(p).putIntArray("cut1", new int[]{1, 0, 0});
                 p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
                 for (int k = -1; k <= 1; k++) {
@@ -476,6 +480,9 @@ public final class UiShotsServer {
             case "noeclipse" -> { TwinsFx.testEndEclipse(p); TwinsFx.sync(p, false); }
             case "trial" -> { faceForward(p); TwinsFx.testLevels(p, 40, 40); TwinsFx.handle(p, 6, 0); }
             case "page" -> TwinsFx.theMasks(p, 10f);
+            case "echo" -> { faceForward(p); TwinsFx.testCombat(p); TwinsFx.testEcho(p); }
+            case "noon" -> { faceForward(p); TwinsFx.testLevels(p, 50, 50); TwinsFx.testActive(p, TwinsFx.SOL); TwinsFx.highNoon(p, 10f); }
+            case "eventide" -> { faceForward(p); TwinsFx.testLevels(p, 50, 50); TwinsFx.testActive(p, TwinsFx.NYX); TwinsFx.eventide(p, 10f); }
             case "end" -> TwinsFx.testReset(p);
             default -> {}
         }

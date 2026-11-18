@@ -96,6 +96,26 @@ public final class TwinsMasks {
         }
     }
 
+    /** The Echo: the resting twin's mask floating free, turning to its prey, lit by its own light, a faint glow ring behind. */
+    public static class EchoRenderer extends EntityRenderer<com.ironspellgrimoire.entity.TwinEcho> {
+        public EchoRenderer(EntityRendererProvider.Context c) { super(c); }
+
+        @Override
+        public void render(com.ironspellgrimoire.entity.TwinEcho e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
+            ps.pushPose();
+            float t = e.tickCount + pt;
+            ps.translate(0, 0.3 + 0.05 * Mth.sin(t * 0.2F), 0);
+            ps.mulPose(Axis.YP.rotationDegrees(-Mth.rotLerp(pt, e.yRotO, e.getYRot())));
+            ps.mulPose(Axis.ZP.rotationDegrees(6 * Mth.sin(t * 0.1F)));
+            ps.scale(0.62F, 0.62F, 0.62F);
+            draw(e.form(), ps, buf, 0xF000F0, e.getId());
+            ps.popPose();
+            super.render(e, yaw, pt, ps, buf, light);
+        }
+
+        @Override public ResourceLocation getTextureLocation(com.ironspellgrimoire.entity.TwinEcho e) { return TextureAtlas.LOCATION_BLOCKS; }
+    }
+
     /** A Twin Warden: its model (a mask on a floating robe, a halo behind), turned to face its foe, bobbing, lit by its own light. */
     public static class WardenRenderer extends EntityRenderer<TwinWarden> {
         public WardenRenderer(EntityRendererProvider.Context c) { super(c); shadowRadius = 0.6F; }

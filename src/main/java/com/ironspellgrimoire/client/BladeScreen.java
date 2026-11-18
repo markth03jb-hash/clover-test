@@ -31,6 +31,9 @@ public class BladeScreen extends Screen {
     /** The Guide view instead of the tree (the screenshots open on it). */
     public static boolean startGuide = false;
     private boolean guide = startGuide;
+    /** The Titles view (the screenshots open on it). */
+    public static boolean startTitles = false;
+    private boolean titles = startTitles;
 
     public BladeScreen() { super(Component.literal("The Blade")); }
 
@@ -73,21 +76,29 @@ public class BladeScreen extends Screen {
         g.fill(gbx, y0 + 4, gbx + gbw, y0 + 16, gOver ? 0xFF4A1820 : 0xFF2A0C12);
         g.renderOutline(gbx, y0 + 4, gbw, 12, EDGE);
         g.drawString(font, gb, gbx + 4, y0 + 6, GOLD, false);
-        hits.add(new Hit(gbx, y0 + 4, gbw, 12, () -> guide = !guide, null));
+        hits.add(new Hit(gbx, y0 + 4, gbw, 12, () -> { guide = !guide; titles = false; }, null));
+        String tb = titles ? "< Tree" : "Titles";
+        int tbw = font.width(tb) + 8, tbx = gbx - 6 - tbw;
+        boolean tOver = mx >= tbx && mx < tbx + tbw && my >= y0 + 4 && my < y0 + 16;
+        g.fill(tbx, y0 + 4, tbx + tbw, y0 + 16, tOver ? 0xFF4A1820 : 0xFF2A0C12);
+        g.renderOutline(tbx, y0 + 4, tbw, 12, EDGE);
+        g.drawString(font, tb, tbx + 4, y0 + 6, GOLD, false);
+        hits.add(new Hit(tbx, y0 + 4, tbw, 12, () -> { titles = !titles; guide = false; }, null));
         String gr = HungerClient.growth + " Growth";
-        g.drawString(font, gr, gbx - 8 - font.width(gr), y0 + 6, GOLD, true);
+        g.drawString(font, gr, tbx - 8 - font.width(gr), y0 + 6, GOLD, true);
         int m = HungerFx.mood(HungerClient.hunger);
         int bx = x0 + 70, bw = 90;
         g.fill(bx - 1, y0 + 7, bx + bw + 1, y0 + 14, 0xFF100306);
         g.fill(bx, y0 + 8, bx + Math.round(bw * HungerClient.hunger / 100F), y0 + 13, 0xFFB01828);
         g.drawString(font, HungerClient.MOODS[m], bx + bw + 6, y0 + 6, HungerClient.MOOD_COL[m], true);
         int bl = HungerClient.bondLevel();
-        String bs = "Bond " + bl + (bl < 5 ? " (" + HungerClient.bond + "/" + HungerFx.BOND_AT[bl + 1] + ")" : " MAX");
+        String bs = "Bond " + bl + (bl < HungerFx.MAX_BOND ? " (" + HungerClient.bond + "/" + HungerFx.BOND_AT[bl + 1] + ")" : " MAX");
         g.drawString(font, bs, x0, y0 + 18, 0xFFE0A0B0, true);
         String tip = picked >= 0 ? "Now click a slot to carry " + HungerFx.NAMES[picked] : "Grow a sword, or pick a grown one to carry";
         g.drawString(font, tip, x0 + W - font.width(tip), y0 + 18, MUTED, false);
 
         if (guide) { guide(g, x0, y0 + top, W); return; }
+        if (titles) { titles(g, x0, y0 + top, W, mx, my); return; }
         int hover = forceHover;
         // the links first, then the swords over them
         int ny = y0 + top;
@@ -201,6 +212,8 @@ public class BladeScreen extends Screen {
                 {"Throw", "Sneak + Gnash: it flies, cuts all it passes, and comes back.", bl >= 3, "Bond 3"},
                 {"Twin", "A small twin grows into your empty off hand and bites after each hit.", bl >= 4, "Bond 4"},
                 {"Pact & spirit", "Unleash: 10 s of harder hits that heal, and a ghost blade at your side.", bl >= 5, "Bond 5"},
+                {"Deep bond", "Bond 6: slower hunger. 7: throws hit 50% harder. 8: the spirit stays 25 s.", bl >= 6, "Bond 6"},
+                {"Deepest bond", "Bond 9: the twin is your sword. 10: devour below 25%, each mends 4 hearts.", bl >= 9, "Bond 9"},
                 {"Hunger Domain", "Its page: 20 s of slowed prey; every kill inside fills the blade.", six, "a stage 6 sword"},
                 {"Hybrids", "Two paths fused: the bottom row, 300 Growth each.", asc >= 2, "Ascended swords of two paths"}};
         int rowH = Math.max(11, Math.min(16, (height - y - 12) / rows.length));
@@ -216,6 +229,31 @@ public class BladeScreen extends Screen {
             g.pose().scale(sc, sc, 1);
             g.drawString(font, txt, 0, 0, open ? TEXT : 0xFF6A5A60, false);
             g.pose().popPose();
+        }
+    }
+
+    /** The blade's titles: how each is earned, what it gives, and the one worn. */
+    private void titles(GuiGraphics g, int x, int y, int W, int mx, int my) {
+        g.drawString(font, "TITLES - wear one; its gift works with the blade out", x, y, 0xFFFF8080, false);
+        int rowH = Math.max(24, Math.min(34, (height - y - 30) / HungerFx.TITLES.length));
+        for (int i = 0; i < HungerFx.TITLES.length; i++) {
+            int yy = y + 14 + i * rowH;
+            boolean has = (HungerClient.titles & (1 << i)) != 0, on = HungerClient.title == i;
+            g.fill(x, yy - 2, x + W, yy + rowH - 6, on ? 0x80501820 : 0x50000000);
+            g.drawString(font, HungerFx.TITLES[i], x + 4, yy, has ? (on ? GOLD : 0xFFFFE0E0) : MUTED, false);
+            String how = HungerFx.TITLE_HOW[i] + (i == 0 && !has ? "  (" + HungerClient.devours + "/50)" : i == 4 && !has ? "  (" + HungerClient.fed + "/2000)" : "");
+            g.drawString(font, how, x + 100, yy, has ? MUTED : 0xFF6A5A60, false);
+            g.drawString(font, HungerFx.TITLE_GIVES[i], x + 100, yy + 10, has ? TEXT : 0xFF6A5A60, false);
+            if (has) {
+                String b = on ? "Take off" : "Wear";
+                int bw = font.width(b) + 10, bx = x + W - bw - 4;
+                boolean over = mx >= bx && mx < bx + bw && my >= yy - 1 && my < yy + 11;
+                g.fill(bx, yy - 1, bx + bw, yy + 11, over ? 0xFF4A1820 : 0xFF2A0C12);
+                g.renderOutline(bx, yy - 1, bw, 12, on ? GOLD : EDGE);
+                g.drawString(font, b, bx + 5, yy + 1, on ? GOLD : TEXT, false);
+                final int ii = i;
+                hits.add(new Hit(bx, yy - 1, bw, 12, () -> HungerClient.send(4, on ? 99 : ii), null));
+            } else g.drawString(font, "locked", x + W - 4 - font.width("locked"), yy, 0xFF6A5A60, false);
         }
     }
 

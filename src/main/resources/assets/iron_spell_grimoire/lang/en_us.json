@@ -1346,8 +1346,8 @@
   "item.iron_spell_grimoire.twin_mask": "Twin Mask",
   "entity.iron_spell_grimoire.twin_warden": "Twin Warden",
   "ui.iron_spell_grimoire.twins_grimoire_only": "Only the Masked Twins Grimoire can cast this.",
-  "tooltip.iron_spell_grimoire.twins_grimoire.passive": "Passive - two masks, one soul: Sol, the sun twin (fire, fierce up close), and Nyx, the moon twin (frost and void, quick and slippery). Wear one at a time on your face - tap G to swap, hold G for the wheel of your four chosen arts. Each twin levels on its own (to 50) and learns eight arts; choose four of each for the wheel. The twin you are not wearing rests at your hip and charges Resonance as you fight - swap and it bursts out. Sol learns faster by day, Nyx by night, and a twin far ahead of the other learns slowly. Set Sunstones and Moonstones in the masks; raise both and they learn to fight together: Twin Strike, Mirror Swap, and - after the Twin Wardens' trial - Eclipse Union.",
-  "tooltip.iron_spell_grimoire.twins_grimoire.desc": "Five pages, two faces, one soul.",
+  "tooltip.iron_spell_grimoire.twins_grimoire.passive": "Passive - two masks, one soul: Sol, the sun twin (fire, fierce up close), and Nyx, the moon twin (frost and void, quick and slippery). Wear one at a time on your face - tap G to swap, hold G for the wheel of your four chosen arts. Each twin levels on its own (to 50) and learns eight arts; choose four of each for the wheel. The twin you are not wearing rests at your hip and charges Resonance as you fight - swap and it bursts out. Sol learns faster by day, Nyx by night, and a twin far ahead of the other learns slowly. Set Sunstones and Moonstones in the masks; raise both and they learn to fight together: Twin Strike, Mirror Swap, and - after the Twin Wardens' trial - Eclipse Union. Every art masters with use (Perfected at 250 casts), each socket takes one of three cuts, from level 15 the resting twin's Echo fights beside you, and at 40 each twin has its own ultimate: High Noon and Eventide.",
+  "tooltip.iron_spell_grimoire.twins_grimoire.desc": "Seven pages, two faces, one soul.",
   "tooltip.iron_spell_grimoire.twins_grimoire.lore": "One of them is always watching.",
   "spell.iron_spell_grimoire.twin_swap": "Twins: Swap",
   "spell.iron_spell_grimoire.twin_swap.guide": "Trade masks: the resting twin takes your face and bursts out with all the Resonance it stored (Sol: a sun flare round you; Nyx: a crescent wave ahead), and you get a short Rush (Sol: harder hits; Nyx: faster feet). Sneak while you swap, once the twins have bonded deep enough, to step back to where you last swapped. Tapping G does the same.",
@@ -1358,5 +1358,9 @@
   "spell.iron_spell_grimoire.eclipse_union": "Twins: Eclipse Union",
   "spell.iron_spell_grimoire.eclipse_union.guide": "Both twins at level 40 and the Twin Wardens beaten: the masks fuse for 20 s - every art of both twins on the wheel, no art cooldowns, swaps twice as fast, and you hit harder and move faster.",
   "spell.iron_spell_grimoire.the_masks": "Twins: The Masks",
-  "spell.iron_spell_grimoire.the_masks.guide": "Open the Masks: each twin's level and arts (choose four for the wheel), the bond between them, the stones set in each mask, your titles and a guide."
+  "spell.iron_spell_grimoire.the_masks.guide": "Open the Masks: each twin's level and arts (choose four for the wheel), the bond between them, the stones set in each mask, your titles and a guide.",
+  "spell.iron_spell_grimoire.high_noon": "Twins: High Noon",
+  "spell.iron_spell_grimoire.high_noon.guide": "Sol's ultimate (Sol worn, level 40): for 10 s a blazing aura scorches every foe near you each second, Sol's art cooldowns are cleared and halved while it lasts, and every hit of Sol's sets foes burning.",
+  "spell.iron_spell_grimoire.eventide": "Twins: Eventide",
+  "spell.iron_spell_grimoire.eventide.guide": "Nyx's ultimate (Nyx worn, level 40): for 8 s every foe near you crawls at half speed, you run 40% faster, and the next three blows aimed at you miss."
 }
