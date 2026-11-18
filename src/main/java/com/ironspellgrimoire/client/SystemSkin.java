@@ -66,8 +66,7 @@ public final class SystemSkin {
         g.pose().pushPose();
         g.pose().translate(x0 + w / 2f - tw / 2f + (flick ? 2 : 0), y0 + 10, 0);
         g.pose().scale(2, 2, 1);
-        if (flick) g.drawString(font, title, 1, 0, 0x80FF4080, false);   // a chromatic split as it settles
-        g.drawString(font, title, 0, 0, flick ? 0xFFFFFFFF : 0xFFB8E4FF, true);
+        g.drawString(font, title, 0, 0, flick ? 0xFFFFC0E0 : 0xFFB8E4FF, true);   // a pink glitch as it settles
         g.pose().popPose();
         g.fillGradient(x0 + 10, y0 + 32, x0 + w / 2, y0 + 33, 0x003C8CFF, 0xC07FD0FF);
         g.fillGradient(x0 + w / 2, y0 + 32, x0 + w - 10, y0 + 33, 0xC07FD0FF, 0x003C8CFF);

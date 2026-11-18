@@ -62,15 +62,15 @@ final class FleshSkin {
             g.fill(x0, yy, x0 + th, yy + 3, 0xFF3A0810);
             g.fill(x0 + w - th, yy, x0 + w, yy + 3, 0xFF3A0810);
         }
-        // small teeth along the top and bottom, pointing in
-        teeth(g, x0 + 6, y0 + 2, w - 12, 9, 4, true);
-        teeth(g, x0 + 10, y0 + h - 2, w - 20, 11, 3, false);
-        // drips from the bottom edge
+        // small teeth along the top and bottom, outside the panel like a jaw round it (never over the text)
+        teeth(g, x0 + 6, y0 - 1, w - 12, 9, 4, false);
+        teeth(g, x0 + 10, y0 + h + 1, w - 20, 11, 3, true);
+        // drips from below the bottom teeth
         for (int d = 0; d < 5; d++) {
             int dx = x0 + 20 + (int) ((w - 40) * ((d * 0.37f + 0.11f) % 1f));
             int dl = 3 + (int) (4 * (0.5f + 0.5f * Mth.sin(t * 0.05f + d * 1.7f)));
-            g.fill(dx, y0 + h, dx + 2, y0 + h + dl, 0xE0701018);
-            g.fill(dx, y0 + h + dl, dx + 2, y0 + h + dl + 2, 0xF0A01828);
+            g.fill(dx, y0 + h + 4, dx + 2, y0 + h + 4 + dl, 0xE0701018);
+            g.fill(dx, y0 + h + 4 + dl, dx + 2, y0 + h + 6 + dl, 0xF0A01828);
         }
         if (eye) eye(g, x0 + w - 18, y0 - 2, t, mx, my, 0);
     }
