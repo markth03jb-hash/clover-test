@@ -55,6 +55,8 @@ public class EvolutionScreen extends Screen {
     public static void showTab(int t) { if (Minecraft.getInstance().screen instanceof EvolutionScreen s) s.tab = t; }
 
     @Override public boolean isPauseScreen() { return false; }
+    private int ticks;
+    @Override public void tick() { ticks++; }
 
     private static boolean over(int mx, int my, int x, int y, int w, int h) { return mx >= x && mx < x + w && my >= y && my < y + h; }
 
@@ -65,24 +67,22 @@ public class EvolutionScreen extends Screen {
         foot = "";
         int W = Math.min(480, width - 16), H = Math.min(262, height - 12);
         int x0 = (width - W) / 2, y0 = (height - H) / 2;
-        g.fill(x0, y0, x0 + W, y0 + H, INK);
-        g.fill(x0 + 2, y0 + 2, x0 + W - 2, y0 + H - 2, PANEL);
-        g.renderOutline(x0, y0, W, H, EDGE);
+        float tk = ticks + pt;
+        FleshSkin.panel(g, x0, y0, W, H, tk, mx, my, true);
         // the head: title, tabs, points
         g.drawString(font, "EVOLUTION", x0 + 8, y0 + 7, 0xFFFF6070, true);
         int tx = x0 + 8 + font.width("EVOLUTION") + 12;
         for (int t = 0; t < TABS.length; t++) {
             int tw = font.width(TABS[t]) + 10;
             boolean on = t == tab, hv = over(mx, my, tx, y0 + 4, tw, 14);
-            g.fill(tx, y0 + 4, tx + tw, y0 + 18, on ? 0xFF501820 : hv ? 0xC0301018 : 0xC0200C10);
-            g.renderOutline(tx, y0 + 4, tw, 14, on ? EDGE : EDGE_DIM);
+            FleshSkin.nodule(g, tx, y0 + 4, tw, 14, on, hv, tk);
             g.drawString(font, TABS[t], tx + 5, y0 + 7, on ? TEXT : MUTED, false);
             final int which = t;
             hits.add(new Hit(tx, y0 + 4, tw, 14, () -> tab = which));
             tx += tw + 3;
         }
         String pts = ParasiteClient.ep + " EP";
-        g.drawString(font, pts, x0 + W - 8 - font.width(pts), y0 + 7, GOLD, true);
+        g.drawString(font, pts, x0 + W - 34 - font.width(pts), y0 + 7, GOLD, true);   // (clear of the eye in the corner)
         g.fill(x0 + 6, y0 + 21, x0 + W - 6, y0 + 22, EDGE_DIM);
         int top = y0 + 26, bottom = y0 + H - 16;
         switch (tab) {

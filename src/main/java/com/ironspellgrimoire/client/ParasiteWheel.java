@@ -113,6 +113,9 @@ public class ParasiteWheel extends Screen {
 
     @Override public boolean isPauseScreen() { return false; }
 
+    private int ticks;
+    @Override public void tick() { ticks++; }
+
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
         long ns = System.nanoTime();
@@ -162,6 +165,21 @@ public class ParasiteWheel extends Screen {
         ring(bb, m, cx, cy, 0, r0 - 3, 0, Math.PI * 2, base[0] * 0.4F, base[1] * 0.4F, base[2] * 0.4F, 0.95F, base[0], base[1], base[2], 0.95F, 32);
         BufferUploader.drawWithShader(bb.end());
         RenderSystem.disableBlend();
+        if (kind == 1 || kind == 4) {   // veins through each slice of the parasite's wheel, brightening on the heartbeat
+            float hb = FleshSkin.beat(ticks + pt);
+            int vc = 0xFF000000 | (int) (120 + 120 * hb) << 16 | 0x1820;
+            for (int i = 0; i < n; i++) {
+                double mid = i * step, a0 = mid - step / 2 + gap, a1 = mid + step / 2 - gap;
+                for (int v = 0; v < 3; v++) {
+                    double base0 = a0 + (a1 - a0) * (v + 0.5) / 3.0;
+                    for (double rr = r0 + 3; rr < r1 - 4; rr += 1.5) {
+                        double aa = base0 + 0.06 * Math.sin(rr * 0.21 + v * 2 + i);
+                        int px = (int) (cx + Math.sin(aa) * rr), py = (int) (cy - Math.cos(aa) * rr);
+                        g.fill(px, py, px + (rr < r0 + 20 ? 2 : 1), py + (rr < r0 + 20 ? 2 : 1), vc);
+                    }
+                }
+            }
+        }
 
         for (int i = 0; i < n; i++) {
             double a = i * step;
