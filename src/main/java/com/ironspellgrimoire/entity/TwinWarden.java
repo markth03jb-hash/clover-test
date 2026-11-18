@@ -2,6 +2,7 @@ package com.ironspellgrimoire.entity;
 
 import com.ironspellgrimoire.registry.AddonEntities;
 import com.ironspellgrimoire.server.TwinsFx;
+import com.ironspellgrimoire.server.TwinsTrial;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
