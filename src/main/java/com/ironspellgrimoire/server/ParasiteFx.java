@@ -77,6 +77,14 @@ public final class ParasiteFx {
     private ParasiteFx() {}
 
     static final String ROOT = "isg_parasite";
+    /** True while an arm form's own follow-up cut lands (a bleed, a sweep), so it can't trigger the forms again. */
+    static boolean armFollow;
+    /** An arm form's follow-up cut: a player blow, but one that sets off nothing more. */
+    static void armHit(ServerPlayer p, LivingEntity t, float dmg) {
+        armFollow = true;
+        try { t.hurt(p.damageSources().playerAttack(p), dmg); } finally { armFollow = false; }
+    }
+
     public static final int NONE = 0, REAPER = 1, TALONS = 2, SPINE = 3, TITAN = 4, LANCE = 5, WHIP = 6, RAM = 7, LAST_FORM = 7;
     public static final String[] FORMS = {"", "Reaper Edge", "Rending Talons", "Spine Launcher", "Titan Fist", "Bone Lance", "Whip-Spear", "Battering Ram"};
     public static final int HUNTER = 1, BRUTE = 2, HIVE = 3;
@@ -903,7 +911,7 @@ public final class ParasiteFx {
             AstaFx.later(Math.max(1, delay), () -> {
                 if (!t.isAlive() || !alive(p)) return;
                 t.invulnerableTime = 0;
-                t.hurt(p.damageSources().playerAttack(p), dmg);
+                armHit(p, t, dmg);
                 spineLanded(p, t);
                 Fx.spark(sl, BONE, mid(t), 0.5f);
                 feed(p, 1);
@@ -937,7 +945,7 @@ public final class ParasiteFx {
         for (LivingEntity t : Kit.near(sl, p, c.add(0, 0.5, 0), radius)) {
             if (!foe(p, t)) continue;
             t.invulnerableTime = 0;
-            t.hurt(p.damageSources().playerAttack(p), dmg);
+            armHit(p, t, dmg);
             Kit.push(t, t.position().subtract(c), 0.9, 0.45);
         }
     }
@@ -1041,7 +1049,7 @@ public final class ParasiteFx {
                 p.teleportTo(to.x, t.getY(), to.z);
                 p.fallDistance = 0;
                 t.invulnerableTime = 0;
-                t.hurt(p.damageSources().playerAttack(p), dmg);
+                armHit(p, t, dmg);
                 Fx.impact(sl, RED, mid(t), 1.0f);
                 sound(sl, to, SoundEvents.PLAYER_ATTACK_SWEEP, 1.0f, 0.8f);
             });
@@ -1084,7 +1092,7 @@ public final class ParasiteFx {
         for (LivingEntity t : Kit.near(sl, p, c, 5)) {
             if (!foe(p, t)) continue;
             t.invulnerableTime = 0;
-            t.hurt(p.damageSources().playerAttack(p), 4f * spineBoost(p));
+            armHit(p, t, 4f * spineBoost(p));
         }
     }
 
@@ -1107,7 +1115,7 @@ public final class ParasiteFx {
             AstaFx.later(Math.max(1, (int) (d.length() / 1.6)), () -> {
                 if (!t.isAlive() || !alive(p)) return;
                 t.invulnerableTime = 0;
-                t.hurt(p.damageSources().playerAttack(p), 2f);
+                armHit(p, t, 2f);
             });
         }
     }
@@ -1170,7 +1178,7 @@ public final class ParasiteFx {
         for (LivingEntity t : Kit.near(sl, p, c.add(0, 0.5, 0), 3.5)) {
             if (!foe(p, t)) continue;
             t.invulnerableTime = 0;
-            t.hurt(p.damageSources().playerAttack(p), 8f * spineBoost(p));
+            armHit(p, t, 8f * spineBoost(p));
             spineLanded(p, t);
             if (!isBoss(t)) { t.setDeltaMovement(t.getDeltaMovement().add(0, 0.7, 0)); t.hurtMarked = true; }
         }
@@ -1650,7 +1658,7 @@ public final class ParasiteFx {
             for (LivingEntity t : Kit.near(p.serverLevel(), p, ahead, 1.4)) {
                 if (!foe(p, t)) continue;
                 t.invulnerableTime = 0;
-                t.hurt(p.damageSources().playerAttack(p), 8f * (1f + 0.15f * rank(p, HONED)));
+                armHit(p, t, 8f * (1f + 0.15f * rank(p, HONED)));
                 Kit.push(t, p.getLookAngle(), 1.4, 0.4);
                 hit = true;
             }
@@ -1737,8 +1745,8 @@ public final class ParasiteFx {
                 }
             }
         }
-        // the arm forms
-        if (!(src.getEntity() instanceof ServerPlayer p) || src.getDirectEntity() != p || !src.is(DamageTypes.PLAYER_ATTACK)) return;
+        // the arm forms (not for their own follow-up cuts - a bleed or a sweep must never set off another)
+        if (armFollow || !(src.getEntity() instanceof ServerPlayer p) || src.getDirectEntity() != p || !src.is(DamageTypes.PLAYER_ATTACK)) return;
         if (!equipped(p)) return;
         int f = form(p);
         if (f == NONE) return;
@@ -1758,7 +1766,7 @@ public final class ParasiteFx {
             case REAPER -> {   // the sweep takes everything in front
                 for (LivingEntity o : Kit.near(sl, p, p.position().add(dir.scale(2)).add(0, 1, 0), 3.0)) {
                     if (o == t || !foe(p, o) || o.position().subtract(p.position()).multiply(1, 0, 1).normalize().dot(dir) < 0.2) continue;
-                    AstaFx.later(1, () -> { if (o.isAlive()) { o.invulnerableTime = 0; o.hurt(p.damageSources().playerAttack(p), dmg * 0.6f); } });
+                    AstaFx.later(1, () -> { if (o.isAlive()) { o.invulnerableTime = 0; armHit(p, o, dmg * 0.6f); } });
                 }
                 FxSend.slash(sl, Fx.STEEL, p.getEyePosition().add(dir.scale(1.5)).add(0, -0.4, 0), dir, new Vec3(0, 1, 0), 1.2f, 2.6f, 6, 0);
             }
@@ -1767,7 +1775,7 @@ public final class ParasiteFx {
                     AstaFx.later(k * 20, () -> {
                         if (!t.isAlive() || !alive(p)) return;
                         t.invulnerableTime = 0;
-                        t.hurt(p.damageSources().playerAttack(p), Math.max(1f, dmg * 0.15f));
+                        armHit(p, t, Math.max(1f, dmg * 0.15f));
                         FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, mid(t), 0.15f, 0.6f, 0.03f, 6);
                     });
                 }
@@ -1780,7 +1788,7 @@ public final class ParasiteFx {
                 Kit.push(t, dir, 1.1, 0.35);
                 for (LivingEntity o : Kit.near(sl, p, c.add(0, 0.5, 0), 2.5)) {
                     if (o == t || !foe(p, o)) continue;
-                    AstaFx.later(1, () -> { if (o.isAlive()) { o.invulnerableTime = 0; o.hurt(p.damageSources().playerAttack(p), dmg * 0.4f); Kit.push(o, o.position().subtract(c), 0.6, 0.3); } });
+                    AstaFx.later(1, () -> { if (o.isAlive()) { o.invulnerableTime = 0; armHit(p, o, dmg * 0.4f); Kit.push(o, o.position().subtract(c), 0.6, 0.3); } });
                 }
             }
             case WHIP -> {   // the hooks drag it in, and the spine lashes through what's beside it
@@ -1789,7 +1797,7 @@ public final class ParasiteFx {
                 FxSend.spike(sl, BONE, a.add(0, -0.4, 0), b.subtract(a), (float) a.distanceTo(b), 0.1f, 5, 1, FxPacket.EXTEND);
                 for (LivingEntity o : Kit.along(sl, p, a, b.add(b.subtract(a).normalize().scale(2)), 1.0)) {
                     if (o == t || !foe(p, o)) continue;
-                    AstaFx.later(1, () -> { if (o.isAlive()) { o.invulnerableTime = 0; o.hurt(p.damageSources().playerAttack(p), dmg * 0.5f); } });
+                    AstaFx.later(1, () -> { if (o.isAlive()) { o.invulnerableTime = 0; armHit(p, o, dmg * 0.5f); } });
                 }
             }
             case RAM -> {   // it caves in what it hits and hurls it back
@@ -1802,7 +1810,7 @@ public final class ParasiteFx {
                 FxSend.spike(sl, BONE, a, dir, 3.0f, 0.12f, 5, 1, FxPacket.EXTEND);
                 for (LivingEntity o : Kit.along(sl, p, a, b, 0.8)) {
                     if (o == t || !foe(p, o)) continue;
-                    AstaFx.later(1, () -> { if (o.isAlive()) { o.invulnerableTime = 0; o.hurt(p.damageSources().playerAttack(p), dmg * 0.5f); } });
+                    AstaFx.later(1, () -> { if (o.isAlive()) { o.invulnerableTime = 0; armHit(p, o, dmg * 0.5f); } });
                 }
             }
             default -> { }
@@ -1839,7 +1847,7 @@ public final class ParasiteFx {
         for (LivingEntity t : Kit.near(sl, p, c, 4)) {
             if (!foe(p, t)) continue;
             t.invulnerableTime = 0;
-            t.hurt(p.damageSources().playerAttack(p), 6f * spineBoost(p));
+            armHit(p, t, 6f * spineBoost(p));
         }
         p.displayClientMessage(Component.literal("Your arm tears off - it's regrowing").withStyle(ChatFormatting.DARK_RED), true);
         applyStats(p);
@@ -1926,7 +1934,7 @@ public final class ParasiteFx {
             }
             for (LivingEntity o : Kit.near(sl, p, c, 4)) {
                 if (!foe(p, o) || o == t) continue;
-                AstaFx.later(2, () -> { if (o.isAlive()) { o.invulnerableTime = 0; o.hurt(p.damageSources().playerAttack(p), 4f * spineBoost(p)); } });
+                AstaFx.later(2, () -> { if (o.isAlive()) { o.invulnerableTime = 0; armHit(p, o, 4f * spineBoost(p)); } });
             }
         }
     }

@@ -115,9 +115,10 @@ public class ShadowArmyScreen extends Screen {
         int x0 = px(), y0 = py(), w = pw(), h = ph();
         SystemSkin.window(g, font, x0, y0, w, h, t, "SHADOW ARMY");
         // tabs
-        tab(g, x0 + 14, y0 + 34, "ARMY", 0, mx, my);
-        tab(g, x0 + 84, y0 + 34, "CHALLENGES", 1, mx, my);
-        tab(g, x0 + 176, y0 + 34, "LOADOUTS", 2, mx, my);
+        int tx = x0 + 14;   // evenly spaced, each as wide as its name
+        tx = tab(g, tx, y0 + 34, "ARMY", 0, mx, my) + 12;
+        tx = tab(g, tx, y0 + 34, "CHALLENGES", 1, mx, my) + 12;
+        tab(g, tx, y0 + 34, "LOADOUTS", 2, mx, my);
         int gens = 0, caps = 0, eq = 0;
         for (ShadowPackets.Entry e : list) { if (e.rank() == 4) gens++; if (e.rank() == 3) caps++; if (e.equipped() && !e.exclusive()) eq++; }
         String counts = list.size() + "/" + storage + " raised   " + eq + "/" + slots + " at your side";
@@ -212,16 +213,19 @@ public class ShadowArmyScreen extends Screen {
                 : e.canRankUp() ? "Ready to rank up!" : "Next rank at level " + nextLevel(e.rank());
         g.drawString(font, font.plainSubstrByWidth(status, bw), ix, dy + dh - 46, e.canRankUp() ? 0xFF9FE0FF : 0xFF6A7A98, false);
         // actions
-        int by = dy + dh - 30, gap = 3, bwid = (dx + dw - 8 - ix - gap * 4) / 5;
+        // two rows of wide buttons, so every name fits whole: three above, two below
+        int gap = 3, bwid = (dx + dw - 8 - ix - gap * 2) / 3, by = dy + dh - 35, by2 = by + 17;
         int bx = ix;
-        button(g, bx, by, bwid, 18, e.equipped() ? "UNEQUIP" : "EQUIP", true, EDGE, mx, my, () -> act(1, e.id(), "")); bx += bwid + gap;
-        button(g, bx, by, bwid, 18, "RANK UP", e.canRankUp(), 0xFF7FD8FF, mx, my, () -> act(2, e.id(), "")); bx += bwid + gap;
-        button(g, bx, by, bwid, 18, e.stationed() ? "RECALL" : "STATION", e.equipped(), 0xFF7FD8FF, mx, my, () -> act(7, e.id(), "")); bx += bwid + gap;
-        button(g, bx, by, bwid, 18, renaming ? "KEEP" : "RENAME", true, EDGE, mx, my, () -> {
+        button(g, bx, by, bwid, 15, e.equipped() ? "UNEQUIP" : "EQUIP", true, EDGE, mx, my, () -> act(1, e.id(), "")); bx += bwid + gap;
+        button(g, bx, by, bwid, 15, "RANK UP", e.canRankUp(), 0xFF7FD8FF, mx, my, () -> act(2, e.id(), "")); bx += bwid + gap;
+        button(g, bx, by, bwid, 15, e.stationed() ? "RECALL" : "STATION", e.equipped(), 0xFF7FD8FF, mx, my, () -> act(7, e.id(), ""));
+        int bw2 = (dx + dw - 8 - ix - gap) / 2;
+        bx = ix;
+        button(g, bx, by2, bw2, 15, renaming ? "KEEP NAME" : "RENAME", true, EDGE, mx, my, () -> {
             if (renaming) commitName(); else { renaming = true; nameBuf = e.name(); }
-        }); bx += bwid + gap;
+        }); bx += bw2 + gap;
         boolean armed = releaseArmed == e.id();
-        button(g, bx, by, bwid, 18, e.exclusive() ? "SWORN" : armed ? "SURE?" : "RELEASE", !e.exclusive(), armed ? 0xFFE05050 : 0xFF8A5060, mx, my, () -> {
+        button(g, bx, by2, bw2, 15, e.exclusive() ? "SWORN" : armed ? "SURE? CLICK AGAIN" : "RELEASE", !e.exclusive(), armed ? 0xFFE05050 : 0xFF8A5060, mx, my, () -> {
             if (releaseArmed == e.id()) { act(4, e.id(), ""); releaseArmed = -1; } else releaseArmed = e.id();
         });
     }
@@ -288,12 +292,14 @@ public class ShadowArmyScreen extends Screen {
     }
 
     // ---------------------------------------------------------------------------------------------------- pieces
-    private void tab(GuiGraphics g, int x, int y, String label, int which, int mx, int my) {
+    /** A tab; returns where it ends. */
+    private int tab(GuiGraphics g, int x, int y, String label, int which, int mx, int my) {
         int w = font.width(label) + 14;
         boolean on = tab == which, hov = in(mx, my, x, y - 3, w, 14);
         if (on) g.fill(x, y + 10, x + w, y + 12, EDGE);
         g.drawString(font, label, x + 7, y, on ? 0xFFCDE6FF : hov ? 0xFF9AB4D8 : 0xFF5A6A88, false);
         hits.add(new Hit(x, y - 3, w, 14, () -> { tab = which; renaming = false; releaseArmed = -1; }));
+        return x + w;
     }
 
     private void button(GuiGraphics g, int x, int y, int w, int h, String label, boolean enabled, int accent, int mx, int my, Runnable run) {
@@ -436,7 +442,15 @@ public class ShadowArmyScreen extends Screen {
         public static void tick(TickEvent.ClientTickEvent e) {
             if (e.phase != TickEvent.Phase.END) return;
             Minecraft mc = Minecraft.getInstance();
-            while (KEY.consumeClick()) if (mc.player != null && mc.screen == null) act(0, 0, "");
+            while (KEY.consumeClick()) {
+                if (mc.player == null || mc.screen != null) continue;
+                if (ParasiteClient.wheelKind(mc) != 2) {   // only with the System Grimoire worn
+                    mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal("Equip the System Grimoire to command your shadows")
+                            .withStyle(net.minecraft.ChatFormatting.GRAY), true);
+                    continue;
+                }
+                act(0, 0, "");
+            }
         }
     }
 }

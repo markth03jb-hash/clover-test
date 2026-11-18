@@ -72,12 +72,27 @@ public final class TrackerMode {
         @SubscribeEvent public static void register(RegisterKeyMappingsEvent e) { e.register(KEY); e.register(BOSS_KEY); }
     }
 
+    /** Each key once in Controls: if the key list ever holds the same binding more than once (it has shown the mod's
+     *  keys four times over), the copies go, keeping the first - and its key. */
+    static void dedupeKeys(Minecraft mc) {
+        KeyMapping[] all = mc.options.keyMappings;
+        java.util.LinkedHashMap<String, KeyMapping> seen = new java.util.LinkedHashMap<>();
+        for (KeyMapping k : all) seen.putIfAbsent(k.getName(), k);
+        if (seen.size() == all.length) return;
+        mc.options.keyMappings = seen.values().toArray(new KeyMapping[0]);
+        KeyMapping.resetMapping();
+        org.slf4j.LoggerFactory.getLogger("iron_spell_grimoire").info("Removed {} duplicate key bindings from Controls", all.length - seen.size());
+    }
+
     @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = Dist.CLIENT)
     public static final class Ticks {
+        private static boolean deduped;
+
         @SubscribeEvent
         public static void onTick(TickEvent.ClientTickEvent e) {
             if (e.phase != TickEvent.Phase.END) return;
             Minecraft mc = Minecraft.getInstance();
+            if (!deduped && mc.options != null) { deduped = true; dedupeKeys(mc); }
             while (KEY.consumeClick()) {
                 mode = (mode + 1) % 3;
                 if (mc.player != null) mc.player.displayClientMessage(Component.literal("Trackers: " + (mode == 0 ? "full" : mode == 1 ? "compact" : "hidden")).withStyle(ChatFormatting.GRAY), true);

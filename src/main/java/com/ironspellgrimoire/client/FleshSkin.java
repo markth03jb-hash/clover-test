@@ -24,6 +24,10 @@ final class FleshSkin {
 
     /** The membrane, its veins, the ragged toothed rim, the drips and the eye. */
     static void panel(GuiGraphics g, int x0, int y0, int w, int h, float t, int mx, int my, boolean eye) {
+        g.drawManaged(() -> panelBody(g, x0, y0, w, h, t, mx, my, eye));   // thousands of small fills: one draw, not one each
+    }
+
+    private static void panelBody(GuiGraphics g, int x0, int y0, int w, int h, float t, int mx, int my, boolean eye) {
         float b = beat(t);
         // the membrane: cells of flesh, each its own shade, all swelling with the beat
         int cell = 8;

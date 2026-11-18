@@ -361,7 +361,7 @@ public final class HungerFx {
         int f = heldForm(p), pal = PAL[line(f)];
         float r = 3f + 0.4f * STAGE[f];
         Vec3 c = p.position().add(0, 1, 0);
-        FxSend.wall(sl, pal, c, new Vec3(1, 0, 0), new Vec3(0, 0, 1), r * 0.5f, r, -180, 180, 0.6f, 8, 1, 1.5f);
+        FxSend.wall(sl, pal, c, new Vec3(1, 0, 0), new Vec3(0, 0, 1), r * 0.5f, r, -180, 180, 0.6f, 8, 1, 0);   // a ring of blades round you (no travel: it used to slide off east)
         FxSend.ring(sl, pal, p.position().add(0, 0.1, 0), 0.5f, r, 0.1f, 9);
         OverdriveFx.play(sl, c, "slash", 1.2f, 0.8f);
         float dmg = bladeDmg(p) * (power / 10f);
@@ -775,7 +775,7 @@ public final class HungerFx {
             case 1 -> { for (int k = 0; k < 8; k++) Fx.pillar(sl, Fx.SILVER, t.position().add(Math.cos(k * 0.785) * 1.2, 0, Math.sin(k * 0.785) * 1.2), 1.4f, 0.15f, 8); }
             case 2 -> { for (int k = 0; k < 8; k++) FxSend.beam(sl, Fx.CRIMSON, c, c.add(rotY(d, k * 0.785).scale(2).add(0, 0.4 * ((k % 3) - 1), 0)), 0.12f, 7); }
             case 3 -> FxSend.ring(sl, Fx.YAMI, t.position().add(0, 0.1, 0), 0.2f, 2.2f, 0.4f, 10);
-            case 4 -> FxSend.wall(sl, Fx.FIRE, t.position().add(0, 0.4, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.3f, 1.8f, -180, 180, 1.2f, 8, 1, 1.2f);
+            case 4 -> FxSend.wall(sl, Fx.FIRE, t.position().add(0, 0.4, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.3f, 1.8f, -180, 180, 1.2f, 8, 1, 0);
             default -> Fx.impact(sl, Fx.CRIMSON, c, 1.8f);
         }
         OverdriveFx.play(sl, c, "jaws", 1.3f, 0.6f);
@@ -862,7 +862,7 @@ public final class HungerFx {
             }
             case 4 -> {   // a spinning wheel of fire
                 for (int k = 0; k < 3; k++)
-                    AstaFx.later(k * 3, () -> FxSend.wall(sl, Fx.FIRE, p.position().add(0, 1, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 2f, 3.4f, -180, 180, 1.2f, 6, 1, 2f));
+                    AstaFx.later(k * 3, () -> FxSend.wall(sl, Fx.FIRE, p.position().add(0, 1, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 2f, 3.4f, -180, 180, 1.2f, 6, 1, 0));   // spins in place round you
                 for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(3.6, 1.5, 3.6))) {
                     if (t.distanceTo(p) > 3.8) continue;
                     AstaFx.damage(p, t, dmg * 0.9f, "gnash");

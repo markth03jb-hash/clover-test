@@ -45,18 +45,9 @@ public class TwinsScreen extends Screen {
         g.fill(x0, y0, x0 + W, y0 + H, 0xF00C0A12);
         g.fillGradient(x0 + 2, y0 + 2, mid, y0 + H - 2, 0xA0583A14, 0xA0281A08);
         g.fillGradient(mid, y0 + 2, x0 + W - 2, y0 + H - 2, 0xA0182454, 0xA0080C20);
-        for (int k = 0; k < 9; k++) {   // faint sun rays fanning from the top left
-            double a = 0.15 + k * 0.16;
-            for (int s = 10; s < Math.min(W / 2 - 6, 200); s += 3) {
-                int px = x0 + 4 + (int) (Math.cos(a) * s), py = y0 + 4 + (int) (Math.sin(a) * s * 0.9);
-                if (px < mid - 2 && py < y0 + H - 3) g.fill(px, py, px + 1, py + 1, 0x18FFD36E);
-            }
-        }
-        for (int k = 0; k < 46; k++) {   // stars on the night half, twinkling
-            int sx = mid + 4 + (k * 73 + 17) % (W / 2 - 8), sy = y0 + 4 + (k * 131 + 29) % (H - 8);
-            int al = (int) (40 + 60 * (0.5 + 0.5 * Mth.sin(t * 0.07F + k)));
-            g.fill(sx, sy, sx + 1, sy + 1, al << 24 | 0xE6EEFF);
-        }
+        final int fx0 = x0, fy0 = y0, fW = W, fH = H, fmid = mid;
+        final float ft = t;
+        g.drawManaged(() -> skyAndSun(g, fx0, fy0, fW, fH, fmid, ft));   // the rays and the stars: one batched draw
         int act = TwinsClient.active();
         for (int k = 1; k <= 6; k++) {   // the seam's glow, toward the worn twin
             int al = (int) ((0x50 - k * 7) * (0.8 + 0.2 * Mth.sin(t * 0.12F)));
@@ -84,6 +75,21 @@ public class TwinsScreen extends Screen {
             case 2 -> bond(g, x0, top, W, mid, mx, my);
             case 3 -> masks(g, x0, top, W, mid, mx, my);
             default -> guide(g, x0, top, W);
+        }
+    }
+
+    private static void skyAndSun(GuiGraphics g, int x0, int y0, int W, int H, int mid, float t) {
+        for (int k = 0; k < 9; k++) {   // faint sun rays fanning from the top left
+            double a = 0.15 + k * 0.16;
+            for (int s = 10; s < Math.min(W / 2 - 6, 200); s += 3) {
+                int px = x0 + 4 + (int) (Math.cos(a) * s), py = y0 + 4 + (int) (Math.sin(a) * s * 0.9);
+                if (px < mid - 2 && py < y0 + H - 3) g.fill(px, py, px + 1, py + 1, 0x18FFD36E);
+            }
+        }
+        for (int k = 0; k < 46; k++) {   // stars on the night half, twinkling
+            int sx = mid + 4 + (k * 73 + 17) % (W / 2 - 8), sy = y0 + 4 + (k * 131 + 29) % (H - 8);
+            int al = (int) (40 + 60 * (0.5 + 0.5 * Mth.sin(t * 0.07F + k)));
+            g.fill(sx, sy, sx + 1, sy + 1, al << 24 | 0xE6EEFF);
         }
     }
 
