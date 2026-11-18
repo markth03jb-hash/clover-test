@@ -96,7 +96,7 @@ public final class SpaceFx {
         p.shape = 46; p.id = IDS.getAndIncrement(); p.c = c; p.d = facing.normalize(); p.u = new Vec3(0, 1, 0);
         if (Math.abs(p.d.y) > 0.9) p.u = new Vec3(0, 0, 1);
         p.r = rw; p.r2 = rh; p.life = life; p.h = style;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
+        FxBatch.near(sl, c, 128, p);
         return p.id;
     }
 

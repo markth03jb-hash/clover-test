@@ -80,7 +80,7 @@ public final class GrimoireCeremony {
         Vec3 top = Vec3.atCenterOf(altar).add(0, 0.5, 0);
         FxPacket pk = new FxPacket();
         pk.shape = 45; pk.id = p.getId(); pk.c = top; pk.palette = (byte) pick; pk.life = TICKS;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(top.x, top.y, top.z, 64, sl.dimension())), pk);
+        FxBatch.near(sl, top, 64, pk);
         sl.playSound(null, altar, SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1f, 0.7f);
         sl.playSound(null, altar, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1f, 0.6f);
         for (int t = 10; t < 66; t += 8) {

@@ -62,7 +62,7 @@ public final class MeteorFx {
     private static void shake(ServerLevel sl, Vec3 at, float strength, int ticks) {
         FxPacket pkt = new FxPacket();
         pkt.shape = 10; pkt.c = at; pkt.r = strength; pkt.life = ticks;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 48, sl.dimension())), pkt);
+        FxBatch.near(sl, at, 48, pkt);
     }
 
     /** Anime impact frames on the screens of everyone close to {@code at}. */
@@ -72,7 +72,7 @@ public final class MeteorFx {
     private static void impactFrame(ServerLevel sl, Vec3 at, int ticks, boolean slash) {
         FxPacket pkt = new FxPacket();
         pkt.shape = 12; pkt.life = ticks; pkt.c = at; pkt.palette = (byte) (slash ? 1 : 0);
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 24, sl.dimension())), pkt);
+        FxBatch.near(sl, at, 24, pkt);
     }
 
     /** Put the caster at {@code pos}, facing {@code look}, motionless. */

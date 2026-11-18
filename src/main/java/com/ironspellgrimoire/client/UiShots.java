@@ -75,7 +75,11 @@ public final class UiShots {
     private static void plan() {
         Minecraft mc = Minecraft.getInstance();
         steps.add(new Step("setup", () -> onServer(UiShotsServer::prepare), 40, false));
-        steps.add(new Step("hud_empty", () -> mc.setScreen(null), 20, true));
+        steps.add(new Step("hud_empty", () -> { mc.setScreen(null); FirstStepsHud.set(0, 0, 0); }, 20, true));
+        steps.add(new Step("first_steps", () -> FirstStepsHud.force(1 | 8, 300, -120), 10, true));
+        steps.add(new Step("first_steps_codex", () -> FirstStepsHud.force(1 | 2 | 8, -40, 500), 10, true));
+        steps.add(new Step("first_steps_done", () -> { FirstStepsHud.force(1 | 2 | 4 | 8, 0, 0); }, 10, true));
+        steps.add(new Step("first_steps_off", () -> FirstStepsHud.set(0, 0, 0), 4, true));
         for (String part : new String[]{"spells:0", "spells:1", "spells:3", "combos", "path", "upgrades", "tree", "memories:0", "memories:1"})
             steps.add(new Step("book_" + part.replace(':', '_'), () -> book(part), 15, false));
         steps.add(new Step("board_bounty", () -> onServer(p -> UiShotsServer.board(p, Boards.BOUNTY)), 20, false));
@@ -103,11 +107,12 @@ public final class UiShots {
             m.c = new Vec3(v[0], v[1], v[2]); m.d = new Vec3(v[3], v[4], v[5]); m.u = new Vec3(v[6], 0, 0);
             RiftMap.set(m);
             FxPacket rb = fx(76); rb.sweep = 2; rb.h = 2; rb.life = 400; RaidBanner.start(rb);
+            FirstStepsHud.force(1 | 2 | 8, 300, -120);
         }, 20, true));
         steps.add(new Step("hud_compact", () -> TrackerMode.set(1), 10, true));
         // the Blood Grimoire: Scarlet Moon seen from the front and behind (third person), then two spells
         steps.add(new Step("blood_gauge", () -> {
-            TrackerMode.set(2); mc.options.hideGui = false; mc.setScreen(null);
+            TrackerMode.set(2); mc.options.hideGui = false; mc.setScreen(null); FirstStepsHud.set(0, 0, 0);
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             onServer(p -> UiShotsServer.bloodSpell(p, "gauge"));
         }, 30, true));

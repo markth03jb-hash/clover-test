@@ -598,20 +598,21 @@ public class DarkFx {
      * An eclipse of darkness: a sphere of slowly turning black-flame rings, a pale corona around it and a bright
      * crescent rim along one side, with motes of darkness orbiting it.
      */
-    private static void drawMoon(ServerLevel sl, Vec3 c, float r) {
+    private static void drawMoon(ServerLevel sl, Vec3 c, float r) { drawMoon(sl, c, r, 6); }
+    private static void drawMoon(ServerLevel sl, Vec3 c, float r, int life) {
         double t = sl.getGameTime() * 0.08;
         for (int k = 0; k < 3; k++) {
             double a = t + Math.PI * k / 3;
-            FxSend.wall(sl, D, c, new Vec3(Math.cos(a), 0, Math.sin(a)), new Vec3(0, 1, 0), r * 0.92f, r, -180, 180, r * 0.45f, 6, 0, 0);
+            FxSend.wall(sl, D, c, new Vec3(Math.cos(a), 0, Math.sin(a)), new Vec3(0, 1, 0), r * 0.92f, r, -180, 180, r * 0.45f, life, 0, 0);
         }
-        FxSend.ring(sl, D, c, r * 0.92f, r, r * 0.45f, 6);
-        FxSend.ring(sl, S, c, r * 1.25f, r * 1.3f, 0.03f, 6);   // corona
-        FxSend.wall(sl, S, c, new Vec3(Math.cos(t * 0.5), 0, Math.sin(t * 0.5)), new Vec3(0, 1, 0), r * 1.05f, r * 1.08f, -70, 70, 0.06f, 6, 0, 0);   // crescent rim
+        FxSend.ring(sl, D, c, r * 0.92f, r, r * 0.45f, life);
+        FxSend.ring(sl, S, c, r * 1.25f, r * 1.3f, 0.03f, life);   // corona
+        FxSend.wall(sl, S, c, new Vec3(Math.cos(t * 0.5), 0, Math.sin(t * 0.5)), new Vec3(0, 1, 0), r * 1.05f, r * 1.08f, -70, 70, 0.06f, life, 0, 0);   // crescent rim
         for (int k = 0; k < 3; k++) {   // orbiting motes
             double a = t * 2.2 + k * 2.1;
             Vec3 q = c.add(Math.cos(a) * r * 1.7, Math.sin(a * 1.3) * r * 0.6, Math.sin(a) * r * 1.7);
             Vec3 q2 = c.add(Math.cos(a - 0.35) * r * 1.7, Math.sin((a - 0.35) * 1.3) * r * 0.6, Math.sin(a - 0.35) * r * 1.7);
-            FxSend.beam(sl, D, q2, q, 0.14f, 5);
+            FxSend.beam(sl, D, q2, q, 0.14f, life - 1);
         }
     }
 
@@ -730,20 +731,20 @@ public class DarkFx {
             t.hurtMarked = true;
             if (age % 10 == 0) AstaFx.damage(p, t, dmg * 0.25f, "black_hole");
         }
-        if (age % 3 == 0) {   // four spiral arms winding inward, turning
+        if (age % 4 == 0) {   // four spiral arms winding inward, turning (three long pieces an arm, held a little longer)
             for (int arm = 0; arm < 4; arm++) {
                 Vec3 prev = null;
-                for (int s = 0; s <= 6; s++) {
+                for (int s = 0; s <= 6; s += 2) {
                     double rr = R * 0.75 * (1.0 - s / 6.0) + 0.4;
                     double a = arm * Math.PI / 2 + age * 0.22 + s * 0.45;
                     Vec3 q = c.add(Math.cos(a) * rr, -0.1 * (6 - s), Math.sin(a) * rr);
-                    if (prev != null) FxSend.beam(sl, s % 2 == 0 ? D : S, prev, q, s % 2 == 0 ? 0.22f : 0.05f, 4);
+                    if (prev != null) FxSend.beam(sl, arm % 2 == 0 ? D : S, prev, q, arm % 2 == 0 ? 0.22f : 0.08f, 5);
                     prev = q;
                 }
             }
         }
         if (age % 6 == 0) FxSend.ring(sl, D, c.subtract(0, 0.5, 0), (float) R, 0.4f, 0.12f, 8);
-        if (age % 5 == 0) drawMoon(sl, c, 0.7f);
+        if (age % 7 == 0) drawMoon(sl, c, 0.7f, 8);
         if (age % 20 == 0) sound(sl, c, net.minecraft.sounds.SoundEvents.BEACON_AMBIENT, 0.8f, 0.5f);
         if (age >= LIFE) {
             for (LivingEntity t : enemies(sl, p, new AABB(c, c).inflate(4.5))) {

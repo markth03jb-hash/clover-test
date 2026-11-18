@@ -109,7 +109,7 @@ public class FireFx {
         FxPacket p = new FxPacket();
         if (life <= 3 && life > 0) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
         p.shape = 20; p.palette = (byte) F; p.life = life; p.c = c; p.v = vel; p.r = r; p.r2 = r2; p.h = explode ? 1 : 0;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
+        FxBatch.near(sl, c, 128, p);
     }
 
     /** An explosion of fire: a swelling fireball, a shock ring on the ground, a hit on everything in range. */
@@ -135,7 +135,7 @@ public class FireFx {
         static void send(ServerLevel sl, Vec3 at, float strength, int life) {
             FxPacket p = new FxPacket();
             p.shape = 10; p.c = at; p.r = strength; p.life = life;
-            AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 24, sl.dimension())), p);
+            FxBatch.near(sl, at, 24, p);
         }
     }
 
@@ -491,15 +491,19 @@ public class FireFx {
             t.setDeltaMovement(t.getDeltaMovement().add(pull));
             t.hurtMarked = true;
         }
-        // the chain: links of fire, alternating orientation, slowly sagging
-        Vec3 ab = b.subtract(a);
-        int links = (int) Math.max(3, Math.min(16, d / 0.55));
-        Vec3 side = rightOf(ab.normalize());
-        for (int k = 0; k <= links; k++) {
-            double f = (double) k / links;
-            Vec3 q = a.add(ab.scale(f)).add(0, -Math.sin(Math.PI * f) * Math.min(1.2, d * 0.08), 0);
-            Vec3 up = k % 2 == 0 ? new Vec3(0, 1, 0) : side;
-            FxSend.box(sl, F, q, ab.normalize(), up, 0.2f, 0.03f, 0.1f, 2, 0, FxPacket.HOLD);
+        // the chain: links of fire, alternating orientation, slowly sagging. Redrawn every other tick; fewer, longer
+        // links on a long chain, so a chain held for its whole time stays light on the network
+        if (now % 2 == 0) {
+            Vec3 ab = b.subtract(a);
+            int links = (int) Math.max(3, Math.min(10, d / 0.7));
+            float half = (float) Math.min(0.32, Math.max(0.2, d / links * 0.42));
+            Vec3 side = rightOf(ab.normalize());
+            for (int k = 0; k <= links; k++) {
+                double f = (double) k / links;
+                Vec3 q = a.add(ab.scale(f)).add(0, -Math.sin(Math.PI * f) * Math.min(1.2, d * 0.08), 0);
+                Vec3 up = k % 2 == 0 ? new Vec3(0, 1, 0) : side;
+                FxSend.box(sl, F, q, ab.normalize(), up, half, 0.03f, 0.1f, 3, 0, FxPacket.HOLD);
+            }
         }
         if (now % 20 == 0) sound(sl, b, net.minecraft.sounds.SoundEvents.CHAIN_STEP, 0.6f, 0.8f);
     }

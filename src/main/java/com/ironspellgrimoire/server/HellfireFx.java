@@ -123,13 +123,13 @@ public class HellfireFx {
         FxPacket p = new FxPacket();
         if (life <= 3 && life > 0) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
         p.shape = 20; p.palette = (byte) pal; p.life = life; p.c = c; p.v = vel; p.r = r; p.r2 = r2; p.h = explode ? 1 : 0;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
+        FxBatch.near(sl, c, 128, p);
     }
 
     private static void shake(ServerLevel sl, Vec3 at, float s, int life) {
         FxPacket p = new FxPacket();
         p.shape = 10; p.c = at; p.r = s; p.life = life;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, 24, sl.dimension())), p);
+        FxBatch.near(sl, at, 24, p);
     }
 
     /** A fist of fire: a burning ball with four knuckle bumps, facing {@code dir}. */

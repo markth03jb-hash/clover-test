@@ -95,7 +95,10 @@ public class CodexScreen extends Screen {
 
     private record Line(FormattedCharSequence text, int color, boolean shadow) {}
 
-    public CodexScreen() { this(0); }
+    /** The page you had open last (this session): the Codex opens there again. The first time, Getting Started. */
+    private static int lastSel = 0;
+
+    public CodexScreen() { this(lastSel); }
 
     /** Open at an index row (0 = the first chapter; CHAPTERS.length + 1 = the first grimoire). */
     public CodexScreen(int at) {
@@ -129,6 +132,7 @@ public class CodexScreen extends Screen {
     }
 
     private void build() {
+        lastSel = sel;
         int w = pageW() - 12;
         List<Line> out = new ArrayList<>();
         int e = index.get(sel);

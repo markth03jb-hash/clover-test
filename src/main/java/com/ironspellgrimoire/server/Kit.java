@@ -68,6 +68,6 @@ final class Kit {
         boolean fat = pal >= 22 && pal <= 28;
         if (fat) r *= 1.25f;
         p.shape = 20; p.palette = (byte) pal; p.life = Math.max(1, life <= 3 ? 1 : (fat ? (int) Math.ceil(life * 1.6) : life)); p.c = c; p.v = vel; p.r = r; p.r2 = r; p.h = 0;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
+        FxBatch.near(sl, c, 128, p);
     }
 }

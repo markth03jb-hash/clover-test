@@ -35,11 +35,13 @@ public final class TrackerMode {
     /** Where each tracker starts: the bounty at the top, the quest under it, the world boss under both. */
     public static int questY() { return 4 + (BountyHud.shown() ? (compact() ? 16 : 66) : 0); }
     public static int worldY() { return questY() + (QuestHud.shown() ? (compact() ? 16 : QuestHud.height() + 4) : 0); }
+    /** The First Steps box goes under all the others. */
+    public static int stepsY() { return Math.max(4, riftY() + RiftMap.drawnH); }
     public static int riftY() { return worldY() + (WorldBossHud.shown() ? (compact() ? 16 : 44) : 0); }
     /** Where the trackers end (0 when none is on screen): the mode timers start under this, so they never overlap. */
     public static int bottom() {
         if (hidden()) return 0;
-        int y = riftY() + RiftMap.drawnH;
+        int y = stepsY() + (FirstStepsHud.shown() ? (compact() ? 16 : FirstStepsHud.H + 4) : 0);
         return y > 4 ? y : 0;
     }
 

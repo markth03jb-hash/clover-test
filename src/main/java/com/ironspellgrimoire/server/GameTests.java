@@ -205,7 +205,7 @@ public final class GameTests {
     // ------------------------------------------------------------------ the tests
     private static final class SpellTest extends Test {
         final AbstractSpell spell;
-        BlockState[] before; Set<MobEffect> pe, de; int fx0; float mana0, hp0; String castErr;
+        BlockState[] before; Set<MobEffect> pe, de; int fx0, msg0; float mana0, hp0; String castErr, bookId = "?";
         SpellTest(AbstractSpell s) { super("spell " + s.getSpellId()); spell = s; }
         @Override Class<?>[] roots() { return new Class<?>[]{spell.getClass()}; }
         boolean skip;
@@ -217,6 +217,7 @@ public final class GameTests {
             for (GrimoireMastery.Book b : GrimoireMastery.BOOKS) if (b.unlocks().containsKey(path)) { owner = b; break; }
             if (owner == null) { skip = true; info(name, "not in any grimoire (a form's or a union's version) - cast through its form, not tested alone"); return; }
             ItemStack book = new ItemStack(owner.item().get());
+            bookId = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(book.getItem()).getPath();
             CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
             book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
             book.getOrCreateTag().putBoolean("Ascended", true);
@@ -226,7 +227,7 @@ public final class GameTests {
             testBook = bk;
             before = snapshot(); pe = effects(p); de = effects(dummy);
             mana0 = MagicData.getPlayerMagicData(p).getMana(); hp0 = dummy == null ? 0 : dummy.getHealth();
-            fx0 = AddonNetwork.fxSent;
+            fx0 = AddonNetwork.fxSent; msg0 = FxBatch.messages;
             try { cast(spell); } catch (Throwable x) { castErr = (x.getCause() != null ? x.getCause() : x).toString(); }
             MagicData d = MagicData.getPlayerMagicData(p);
             castState = "cast returned " + lastCastResult + ", casting=" + d.isCasting() + " " + d.getCastingSpellId();
@@ -238,12 +239,17 @@ public final class GameTests {
             }
         }
         String castState = "";
+        int lastAct, lastFx; float lastHp;
         @Override boolean tick(int t) {
             if (skip) return true;
             p.setHealth(p.getMaxHealth());
-            if (t < 60) return false;
+            // run at least 3 s, and longer (up to 7 s) while the spell is still drawing or hurting, so a long spell's
+            // finisher counts in its damage; the effect count is judged per 3 s either way
+            int fxNow = AddonNetwork.fxSent; float hpNow = dummy == null ? 0 : dummy.getHealth();
+            if (fxNow != lastFx || hpNow != lastHp) { lastAct = t; lastFx = fxNow; lastHp = hpNow; }
+            if (t < 60 || (t < 140 && t - lastAct < 15)) return false;
             cancelCast();
-            int fx = AddonNetwork.fxSent - fx0;
+            int fx = (AddonNetwork.fxSent - fx0) * 60 / t;
             float spent = mana0 - MagicData.getPlayerMagicData(p).getMana(), dealt = dummy == null ? 0 : hp0 - dummy.getHealth();
             boolean ok = true;
             if (castErr != null) { fail(name, "threw while casting: " + castErr); ok = false; }
@@ -254,7 +260,7 @@ public final class GameTests {
             if (!np.isEmpty() || !nd.isEmpty()) { fail(name, "gave status effects: " + np + " " + nd); ok = false; }
             if (fx > 360) warn(name, "heavy: " + fx + " effect packets in 3 s (" + fx / 3 + "/s)");
             if (fx <= 1 && spent <= 0 && dealt <= 0) warn(name, "did nothing visible (no effects, no mana, no damage; " + castState + ") - it may need a target, a form or a condition");
-            if (ok) pass(name, String.format("%d fx packets, %.0f mana, %.1f damage", fx, spent, dealt));
+            if (ok) pass(name, String.format("%d fx packets, %.0f mana, %.1f damage, %d messages, cd %d, book %s", fx, spent, dealt, FxBatch.messages - msg0, spell.getSpellCooldown(), bookId) + ", " + t + " ticks");
             return true;
         }
     }
@@ -649,12 +655,12 @@ public final class GameTests {
                 }
                 if (t == 8) {   // what may be cast: the worn twin's chosen arts, off cooldown
                     TwinsFx.testCooldowns(p);
-                    if (TwinsFx.cast(p, TwinsFx.SOL, 0)) bad.add("cast Sol's art while wearing Nyx");
+                    if (TwinsArts.cast(p, TwinsFx.SOL, 0)) bad.add("cast Sol's art while wearing Nyx");
                     TwinsFx.testLoad(p, 1, 0, 1, 2, 3);
-                    if (TwinsFx.cast(p, TwinsFx.NYX, 7)) bad.add("cast an art that isn't on the wheel");
+                    if (TwinsArts.cast(p, TwinsFx.NYX, 7)) bad.add("cast an art that isn't on the wheel");
                     TwinsFx.testLoad(p, 1, 7, 1, 2, 3);
-                    if (!TwinsFx.cast(p, TwinsFx.NYX, 7)) bad.add("couldn't cast Void Rift from the wheel");
-                    if (TwinsFx.cast(p, TwinsFx.NYX, 7)) bad.add("cast Void Rift again during its cooldown");
+                    if (!TwinsArts.cast(p, TwinsFx.NYX, 7)) bad.add("couldn't cast Void Rift from the wheel");
+                    if (TwinsArts.cast(p, TwinsFx.NYX, 7)) bad.add("cast Void Rift again during its cooldown");
                 }
                 if (t == 10) {   // stones and sockets; the mask grows
                     TwinsFx.testStones(p, 1, 0);
@@ -678,7 +684,7 @@ public final class GameTests {
                 if (t == 14) {   // Mirror Double: a blow strikes twice
                     ensureDummy();
                     TwinsFx.testLevels(p, 50, 50); TwinsFx.testCooldowns(p); TwinsFx.testActive(p, TwinsFx.NYX); TwinsFx.testLoad(p, 1, 3, 4, 1, 2);
-                    TwinsFx.cast(p, TwinsFx.NYX, 3);
+                    TwinsArts.cast(p, TwinsFx.NYX, 3);
                     if (!TwinsFx.testDoubleUp(p)) bad.add("Mirror Double didn't start");
                     hp = dummy.getHealth();
                     dummy.invulnerableTime = 0;
@@ -687,7 +693,7 @@ public final class GameTests {
                 if (t == 26) {
                     float lost = hp - dummy.getHealth();
                     if (lost < 5f) bad.add("Mirror Double's echo didn't land (lost " + lost + ")");
-                    TwinsFx.cast(p, TwinsFx.NYX, 4);
+                    TwinsArts.cast(p, TwinsFx.NYX, 4);
                     if (!TwinsFx.testVeilUp(p)) bad.add("Lunar Veil didn't start");
                     p.hurt(p.damageSources().mobAttack(dummy), 5f);
                     if (TwinsFx.testVeilUp(p)) bad.add("Lunar Veil didn't take the blow");
@@ -705,9 +711,9 @@ public final class GameTests {
                     if (!TwinsFx.trialWon(p)) bad.add("beating both wardens didn't win the trial");
                     if (!TwinsFx.canEclipse(p)) bad.add("Eclipse Union not open after the trial");
                     if ((TwinsFx.root(p).getInt("titles") & 8) == 0) bad.add("no Eclipse-Touched title");
-                    TwinsFx.eclipseUnion(p, 10f);
+                    TwinsArts.eclipseUnion(p, 10f);
                     if (!TwinsFx.eclipse(p)) bad.add("Eclipse Union didn't start");
-                    if (!TwinsFx.cast(p, TwinsFx.SOL, 1) || !TwinsFx.cast(p, TwinsFx.SOL, 1)) bad.add("in the eclipse, an art had a cooldown");
+                    if (!TwinsArts.cast(p, TwinsFx.SOL, 1) || !TwinsArts.cast(p, TwinsFx.SOL, 1)) bad.add("in the eclipse, an art had a cooldown");
                     TwinsFx.testEndEclipse(p);
                 }
                 if (t == 40) {   // a socket re-cut for a stone; mastery counts up
@@ -719,7 +725,7 @@ public final class GameTests {
                     TwinsFx.handle(p, 4, 0 * 100 + 1 * 10 + 0);
                     if (TwinsFx.testCut(p, 0, 1) != 1) bad.add("re-cut with no stone left");
                     TwinsFx.testCooldowns(p); TwinsFx.testActive(p, 0); TwinsFx.testLoad(p, 0, 1, -1, -1, -1); TwinsFx.testUses(p, 0, 1, 29);
-                    TwinsFx.cast(p, 0, 1);
+                    TwinsArts.cast(p, 0, 1);
                     if (TwinsFx.testUsesOf(p, 0, 1) != 30 || TwinsFx.mastery(30) != 1) bad.add("casting didn't count toward mastery");
                 }
                 if (t == 44) {   // the Echo comes out in a fight, and the hip empties
@@ -731,10 +737,10 @@ public final class GameTests {
                 }
                 if (t == 48) {   // the ultimates
                     TwinsFx.testCooldowns(p); TwinsFx.testActive(p, 0);
-                    TwinsFx.cast(p, 0, 1);
+                    TwinsArts.cast(p, 0, 1);
                     TwinsFx.highNoon(p, 10f);
                     if (!TwinsFx.testNoon(p)) bad.add("High Noon didn't start");
-                    if (!TwinsFx.cast(p, 0, 1)) bad.add("High Noon didn't clear Sol's cooldowns");
+                    if (!TwinsArts.cast(p, 0, 1)) bad.add("High Noon didn't clear Sol's cooldowns");
                     TwinsFx.testActive(p, 1);
                     TwinsFx.eventide(p, 10f);
                     if (!TwinsFx.testEventide(p)) bad.add("Eventide didn't start");
@@ -857,10 +863,10 @@ public final class GameTests {
                     // the awakening: everything evolved and a strain settled
                     ParasiteFx.testUnlockAll(p); ParasiteFx.testStrain(p, ParasiteFx.BRUTE); ParasiteFx.testCooldowns(p);
                     if (!ParasiteFx.awakened(p)) bad.add("not awakened with every node evolved");
-                    ParasiteFx.strainArt(p);
+                    ParasiteMoves.strainArt(p);
                     if (!ParasiteFx.colossus(p)) bad.add("Colossus didn't start");
                     ParasiteFx.testFill(p);
-                    ParasiteFx.finalFormStart(p);
+                    ParasiteMoves.finalFormStart(p);
                     if (!ParasiteFx.finalForm(p)) bad.add("the Final Form didn't start");
                     if (ParasiteFx.biomass(p) > 50.5f) bad.add("the Final Form cost only " + (150 - ParasiteFx.biomass(p)) + " biomass");
                     ParasiteFx.feed(p, 500);
@@ -898,13 +904,13 @@ public final class GameTests {
                     p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
                     if (light != null) {
                         light.moveTo(home.x, home.y, home.z + 8, 180, 0); light.setNoAi(true); sl().addFreshEntity(light);
-                        ParasiteFx.grapple(p);
+                        ParasiteMoves.grapple(p);
                         if (light.getDeltaMovement().z > -0.3) bad.add(String.format("the tendril didn't yank the zombie in (dz %.2f)", light.getDeltaMovement().z));
                         light.discard();
                     }
-                    ParasiteFx.burrow(p);
+                    ParasiteMoves.burrow(p);
                     if (!ParasiteFx.burrowed(p)) bad.add("Burrow didn't start (on the ground: " + p.onGround() + ")");
-                    ParasiteFx.burrow(p);
+                    ParasiteMoves.burrow(p);
                     if (ParasiteFx.burrowed(p)) bad.add("Burrow didn't end when pressed again");
                     // ranks: by everything eaten - a rank adds health
                     ParasiteFx.testReset(p);
@@ -921,7 +927,7 @@ public final class GameTests {
                     // the nest: grows where you stand, takes the spill past a full gut
                     ParasiteFx.testReset(p); ParasiteFx.testFill(p);
                     ParasiteFx.handle(p, 19, 0);
-                    var nest = ParasiteFx.nestOf(p);
+                    var nest = ParasiteNest.nestOf(p);
                     if (nest == null) bad.add("no Hive Nest grew (on the ground: " + p.onGround() + ")");
                     else {
                         ParasiteFx.root(p).putFloat("bio", 100);
@@ -943,14 +949,14 @@ public final class GameTests {
                     // Molting: a blow to under 30% sheds a husk
                     ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p);
                     p.setHealth(p.getMaxHealth() * 0.2f);
-                    ParasiteFx.molt(p);
+                    ParasiteMoves.molt(p);
                     var husks = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.MoltHusk.class, p.getBoundingBox().inflate(4));
                     if (husks.isEmpty()) bad.add("Molting shed no husk");
                     for (var h : husks) h.discard();
                     p.setHealth(p.getMaxHealth());
                     // Pack Call: three brutes in the Brute strain's shape, none of them after their master
                     ParasiteFx.testReset(p); ParasiteFx.testStrain(p, ParasiteFx.BRUTE); ParasiteFx.testFill(p);
-                    ParasiteFx.packCall(p, 0f);
+                    ParasiteMoves.packCall(p, 0f);
                     var pack = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.InfectedBrute.class, p.getBoundingBox().inflate(8));
                     if (pack.size() != 3) bad.add("Pack Call raised " + pack.size() + " brutes, not 3");
                     for (var b : pack) {
@@ -961,7 +967,7 @@ public final class GameTests {
                     // Hive Network: three nests at once
                     ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p);
                     for (int k = 0; k < 3; k++) { ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); }
-                    if (ParasiteFx.nests(p).size() != 3) bad.add("Hive Network holds " + ParasiteFx.nests(p).size() + " nests, not 3");
+                    if (ParasiteNest.nests(p).size() != 3) bad.add("Hive Network holds " + ParasiteNest.nests(p).size() + " nests, not 3");
                     for (var n : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.HiveNest.class, p.getBoundingBox().inflate(8))) n.discard();
                     ParasiteFx.testReset(p);
                     ParasiteFx.testFrenzy(p);   // back into the frenzy the next checks wait out
@@ -1612,11 +1618,11 @@ public final class GameTests {
                 "grasping_field: vortex", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_FIELD, 2); ParasiteFx.testFill(pl); ParasiteFx.graspingField(pl, pw); }, "",
                 "marrow_barrage: seeker", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_BARRAGE, 1); ParasiteFx.testFill(pl); ParasiteFx.marrowBarrage(pl, pw); }, "",
                 "marrow_barrage: bomb", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_BARRAGE, 2); ParasiteFx.testFill(pl); ParasiteFx.marrowBarrage(pl, pw); }, "",
-                "collapse_core", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.collapseCore(pl, pw); }, "",
-                "pack_call", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.packCall(pl, pw); }, "q",
+                "collapse_core", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteMoves.collapseCore(pl, pw); }, "",
+                "pack_call", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteMoves.packCall(pl, pw); }, "q",
                 "final form consume", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> {
                     ParasiteFx.testUnlockAll(pl); ParasiteFx.testStrain(pl, ParasiteFx.BRUTE); ParasiteFx.testFill(pl); ParasiteFx.testCooldowns(pl);
-                    ParasiteFx.finalFormStart(pl); ParasiteFx.consume(pl, pw); }, "c"));
+                    ParasiteMoves.finalFormStart(pl); ParasiteFx.consume(pl, pw); }, "c"));
         queue.add(new ParasiteTest());
         queue.add(new BookMovesTest("hunger", com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE::get, HungerFx.class,
                 "draw_blade", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.draw(pl, pw); }, "q",
@@ -1640,31 +1646,31 @@ public final class GameTests {
                 "the_blade", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> HungerFx.theBlade(pl, pw), "q"));
         queue.add(new HungerTest());
         queue.add(new BookMovesTest("twins", com.ironspellgrimoire.registry.AddonItemRegistry.TWINS_GRIMOIRE::get, TwinsFx.class,
-                "sol: sunstrike", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 0, -1, -1, -1); TwinsFx.cast(pl, 0, 0); }, "c",
-                "sol: flare shot", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 1, -1, -1, -1); TwinsFx.cast(pl, 0, 1); }, "",
-                "sol: solar lance", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 2, -1, -1, -1); TwinsFx.cast(pl, 0, 2); }, "",
-                "sol: helios wheel", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 3, -1, -1, -1); TwinsFx.cast(pl, 0, 3); }, "",
-                "sol: corona", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 4, -1, -1, -1); TwinsFx.cast(pl, 0, 4); }, "c",
-                "sol: zenith leap", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 5, -1, -1, -1); TwinsFx.cast(pl, 0, 5); }, "c",
-                "sol: dawnbreaker", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 6, -1, -1, -1); TwinsFx.cast(pl, 0, 6); }, "c",
-                "sol: sunspear barrage", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 7, -1, -1, -1); TwinsFx.cast(pl, 0, 7); }, "",
-                "nyx: moonstep", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 0, -1, -1, -1); TwinsFx.cast(pl, 1, 0); }, "q",
-                "nyx: frost needle", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 1, -1, -1, -1); TwinsFx.cast(pl, 1, 1); }, "",
-                "nyx: crescent fan", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 2, -1, -1, -1); TwinsFx.cast(pl, 1, 2); }, "",
-                "nyx: mirror double", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 3, -1, -1, -1); TwinsFx.cast(pl, 1, 3); }, "q",
-                "nyx: lunar veil", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 4, -1, -1, -1); TwinsFx.cast(pl, 1, 4); }, "q",
-                "nyx: starfall rain", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 5, -1, -1, -1); TwinsFx.cast(pl, 1, 5); }, "",
-                "nyx: tidelock", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 6, -1, -1, -1); TwinsFx.cast(pl, 1, 6); }, "",
-                "nyx: void rift", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 7, -1, -1, -1); TwinsFx.cast(pl, 1, 7); }, "",
+                "sol: sunstrike", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 0, -1, -1, -1); TwinsArts.cast(pl, 0, 0); }, "c",
+                "sol: flare shot", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 1, -1, -1, -1); TwinsArts.cast(pl, 0, 1); }, "",
+                "sol: solar lance", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 2, -1, -1, -1); TwinsArts.cast(pl, 0, 2); }, "",
+                "sol: helios wheel", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 3, -1, -1, -1); TwinsArts.cast(pl, 0, 3); }, "",
+                "sol: corona", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 4, -1, -1, -1); TwinsArts.cast(pl, 0, 4); }, "c",
+                "sol: zenith leap", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 5, -1, -1, -1); TwinsArts.cast(pl, 0, 5); }, "c",
+                "sol: dawnbreaker", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 6, -1, -1, -1); TwinsArts.cast(pl, 0, 6); }, "c",
+                "sol: sunspear barrage", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 7, -1, -1, -1); TwinsArts.cast(pl, 0, 7); }, "",
+                "nyx: moonstep", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 0, -1, -1, -1); TwinsArts.cast(pl, 1, 0); }, "q",
+                "nyx: frost needle", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 1, -1, -1, -1); TwinsArts.cast(pl, 1, 1); }, "",
+                "nyx: crescent fan", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 2, -1, -1, -1); TwinsArts.cast(pl, 1, 2); }, "",
+                "nyx: mirror double", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 3, -1, -1, -1); TwinsArts.cast(pl, 1, 3); }, "q",
+                "nyx: lunar veil", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 4, -1, -1, -1); TwinsArts.cast(pl, 1, 4); }, "q",
+                "nyx: starfall rain", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 5, -1, -1, -1); TwinsArts.cast(pl, 1, 5); }, "",
+                "nyx: tidelock", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 6, -1, -1, -1); TwinsArts.cast(pl, 1, 6); }, "",
+                "nyx: void rift", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 7, -1, -1, -1); TwinsArts.cast(pl, 1, 7); }, "",
                 "swap: sun flare", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 1); TwinsFx.testRes(pl, 100); TwinsFx.swap(pl); }, "c",
                 "swap: crescent wave", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testActive(pl, 0); TwinsFx.testRes(pl, 100); TwinsFx.swap(pl); }, "",
-                "twin_strike", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.twinStrike(pl, pw); }, "c",
-                "eclipse_union", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testTrialWon(pl); TwinsFx.eclipseUnion(pl, pw); TwinsFx.cast(pl, 0, 6); TwinsFx.cast(pl, 1, 1); TwinsFx.testEndEclipse(pl); }, "c",
+                "twin_strike", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsArts.twinStrike(pl, pw); }, "c",
+                "eclipse_union", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testCooldowns(pl); TwinsFx.testTrialWon(pl); TwinsArts.eclipseUnion(pl, pw); TwinsArts.cast(pl, 0, 6); TwinsArts.cast(pl, 1, 1); TwinsFx.testEndEclipse(pl); }, "c",
                 "the_masks", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.theMasks(pl, pw); }, "q",
                 "high_noon", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 0); TwinsFx.highNoon(pl, pw); }, "c",
                 "eventide", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 1); TwinsFx.eventide(pl, pw); }, "q",
-                "sol: helios wheel (perfected)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 3, -1, -1, -1); TwinsFx.testUses(pl, 0, 3, 250); TwinsFx.cast(pl, 0, 3); }, "",
-                "nyx: void rift (perfected)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 7, -1, -1, -1); TwinsFx.testUses(pl, 1, 7, 250); TwinsFx.cast(pl, 1, 7); }, "",
+                "sol: helios wheel (perfected)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 0); TwinsFx.testLoad(pl, 0, 3, -1, -1, -1); TwinsFx.testUses(pl, 0, 3, 250); TwinsArts.cast(pl, 0, 3); }, "",
+                "nyx: void rift (perfected)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 7, -1, -1, -1); TwinsFx.testUses(pl, 1, 7, 250); TwinsArts.cast(pl, 1, 7); }, "",
                 "echo shot", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 0); TwinsFx.testCombat(pl); TwinsFx.testEcho(pl); }, "c"));
         queue.add(new TwinsTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));

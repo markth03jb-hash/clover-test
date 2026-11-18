@@ -1,5 +1,6 @@
 package com.ironspellgrimoire.server;
 
+import static com.ironspellgrimoire.server.RiftBuilder.*;
 import com.ironspellgrimoire.IronSpellGrimoire;
 import com.ironspellgrimoire.network.AddonNetwork;
 import com.ironspellgrimoire.network.FxPacket;
@@ -90,12 +91,12 @@ public final class Rifts {
     static final int START = 0, COMBAT = 1, TRAP = 2, REST = 3, ELITE = 4, RELIC = 5, EXAM = 6, MIRROR = 7;
     static final String[] ROOM_NAMES = {"Entrance", "Combat", "Traps", "Rest", "Elite", "Relic Chamber", "Exam Hall", "Hall of Mirrors"};
     /** The exam's rooms in order and the law each floor is under. */
-    private static final int[] EXAM_ROOMS = {START, COMBAT, COMBAT, TRAP, COMBAT, ELITE, EXAM};
-    private static final int[] FLOOR_LAWS = {0, MANA_BURN, LOW_GRAVITY, ECHO, HUNTED, MANA_BURN | ECHO, 0};
-    private static final int CELL = 24, HALF = 8, H = 11, Y = 80, SPACING = 1024;
-    private static final UUID GRAV = UUID.fromString("a1f70000-0000-4000-8000-0000000000d1");
-    private static final String RETURN = "isg_rift_return";
-    private static final int VOIDP = Fx.VOID;
+    static final int[] EXAM_ROOMS = {START, COMBAT, COMBAT, TRAP, COMBAT, ELITE, EXAM};
+    static final int[] FLOOR_LAWS = {0, MANA_BURN, LOW_GRAVITY, ECHO, HUNTED, MANA_BURN | ECHO, 0};
+    static final int CELL = 24, HALF = 8, H = 11, Y = 80, SPACING = 1024;
+    static final UUID GRAV = UUID.fromString("a1f70000-0000-4000-8000-0000000000d1");
+    static final String RETURN = "isg_rift_return";
+    static final int VOIDP = Fx.VOID;
 
     // ================================================================== saved state
     static final class Room {
@@ -182,7 +183,7 @@ public final class Rifts {
     static Data loadForTest(CompoundTag t) { return Data.load(t); }
     static CompoundTag saveForTest(Data d) { return d.save(new CompoundTag()); }
 
-    private static Data data(MinecraftServer s) {
+    static Data data(MinecraftServer s) {
         return s.overworld().getDataStorage().computeIfAbsent(Data::load, Data::new, "isg_rifts");
     }
 
@@ -279,7 +280,7 @@ public final class Rifts {
     }
 
     /** Each floor of the exam puts its own law in force as you reach it. */
-    private static void examFloor(Rift r, List<ServerPlayer> inside) {
+    static void examFloor(Rift r, List<ServerPlayer> inside) {
         int furthest = 0;
         for (ServerPlayer p : inside) { Room room = roomOf(r, p.position()); if (room != null) furthest = Math.max(furthest, r.rooms.indexOf(room)); }
         if (furthest == r.floor) return;
@@ -301,14 +302,14 @@ public final class Rifts {
         }
     }
 
-    private static String lawText(int law) {
+    static String lawText(int law) {
         StringBuilder s = new StringBuilder();
         for (int i = 0; i < 4; i++) if ((law & (1 << i)) != 0) s.append(s.length() > 0 ? "  " : "").append(RULE_NAMES[i]).append(": ").append(RULE_TEXT[i]);
         return s.toString();
     }
 
     /** The exam is passed: its mastery goes on to 7 (the book is tagged "Ascended" - not the same as Grimoire Ascension). */
-    private static void passExam(ServerLevel sl, Rift r, Room room) {
+    static void passExam(ServerLevel sl, Rift r, Room room) {
         Vec3 c = r.centre(room);
         FxSend.impactFrame(sl, c.add(0, 1.5, 0), 5, FxSend.FRAME_GOLD, 24);
         FxSend.ring(sl, Fx.GOLD, c.add(0, 0.1, 0), 0.5f, 8f, 0.18f, 20);
@@ -333,7 +334,7 @@ public final class Rifts {
     }
 
     /** The rooms: a random walk on a grid, an elite room hung off the side. */
-    private static void layout(Rift r, ThreadLocalRandom rnd) {
+    static void layout(Rift r, ThreadLocalRandom rnd) {
         int n = 5 + Math.min(3, r.rank / 2 + rnd.nextInt(2));
         int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         for (int attempt = 0; attempt < 50; attempt++) {
@@ -383,324 +384,17 @@ public final class Rifts {
         }
     }
 
-    private static long key(int x, int z) { return ((long) x << 32) ^ (z & 0xffffffffL); }
+    static long key(int x, int z) { return ((long) x << 32) ^ (z & 0xffffffffL); }
 
-    private static void link(Room a, Room b) {
+    static void link(Room a, Room b) {
         int dx = b.gx - a.gx, dz = b.gz - a.gz;
         int da = dx == 1 ? 0 : dx == -1 ? 1 : dz == 1 ? 2 : 3;
         a.doors.add(da);
         b.doors.add(da ^ 1);
     }
 
-    // ================================================================== building it (in the Rift dimension only)
-    private static void set(ServerLevel sl, int x, int y, int z, BlockState s) { sl.setBlock(new BlockPos(x, y, z), s, 2); }
-
-    private static void build(ServerLevel sl, Rift r) {
-        BlockState wall = Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState(), crack = Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
-        BlockState floor = Blocks.DEEPSLATE_TILES.defaultBlockState(), light = Blocks.SHROOMLIGHT.defaultBlockState();
-        BlockState amethyst = Blocks.AMETHYST_BLOCK.defaultBlockState(), air = Blocks.AIR.defaultBlockState();
-        ThreadLocalRandom rnd = ThreadLocalRandom.current();
-        for (Room room : r.rooms) {
-            Vec3 c = r.centre(room);
-            int cx = (int) Math.floor(c.x), cz = (int) Math.floor(c.z);
-            int keep = r.rules;
-            if (r.exam) r.rules = FLOOR_LAWS[Math.min(r.rooms.indexOf(room), FLOOR_LAWS.length - 1)];   // each exam floor shows its own law
-            shell(sl, room, cx, cz, rnd);
-            features(sl, r, room, cx, cz, rnd);
-            decorate(sl, r, room, cx, cz, rnd);
-            r.rules = keep;
-            // doorways and the corridors to the next rooms
-            for (int dd : room.doors) {
-                int ax = dd == 0 ? 1 : dd == 1 ? -1 : 0, az = dd == 2 ? 1 : dd == 3 ? -1 : 0;
-                int sx = az != 0 ? 1 : 0, sz = ax != 0 ? 1 : 0;   // sideways
-                for (int k = HALF; k <= CELL - HALF; k++) for (int w = -2; w <= 2; w++) for (int dy = -2; dy <= 5; dy++) {
-                    int x = cx + ax * k + sx * w, z = cz + az * k + sz * w;
-                    boolean inner = Math.abs(w) <= 1 && dy >= 0 && dy <= 3;
-                    if (k == HALF || k == CELL - HALF) { if (inner) set(sl, x, Y + dy, z, air); continue; }
-                    boolean rib = k % 4 == 0, window = k % 4 == 2 && Math.abs(w) == 2 && (dy == 1 || dy == 2);
-                    BlockState s;
-                    if (inner) s = air;
-                    else if (window) s = air;   // slits onto the rift's sky
-                    else if (dy == -2 || dy == 5) s = Math.abs(w) == 2 ? air : Blocks.POLISHED_BLACKSTONE.defaultBlockState();   // a rounded tube, not a box
-                    else if (dy == -1) s = Math.abs(w) <= 1 ? (w == 0 ? Blocks.POLISHED_DEEPSLATE.defaultBlockState() : floor) : Blocks.POLISHED_BLACKSTONE.defaultBlockState();
-                    else if (dy == 4) s = w == 0 && k % 4 == 2 ? light : rib ? Blocks.POLISHED_BASALT.defaultBlockState() : wall;
-                    else s = rib ? Blocks.POLISHED_BASALT.defaultBlockState() : rnd.nextInt(6) == 0 ? crack : wall;
-                    set(sl, x, Y + dy, z, s);
-                }
-                for (int k = HALF + 2; k <= CELL - HALF - 2; k += 4) {   // soul lanterns hung in the corridor
-                    int x = cx + ax * k, z = cz + az * k;
-                    set(sl, x, Y + 3, z, Blocks.SOUL_LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
-                }
-            }
-        }
-        islands(sl, r, rnd);
-        r.built = true;
-    }
-
-    // ------------------------------------------------------------------ the shape of a room
-    private static BlockState st(net.minecraft.world.level.block.Block b) { return b.defaultBlockState(); }
-
-    /**
-     * A room is an octagon, not a box: its corners are walled off on the diagonal, the ceiling steps up into a vault
-     * (low at the walls, high in the middle), ribs of basalt run up the walls, and the floor is laid in rings and
-     * spokes. Under it hangs a jagged spur of rock, so each room is a broken island floating in the rift.
-     */
-    private static void shell(ServerLevel sl, Room room, int cx, int cz, ThreadLocalRandom rnd) {
-        BlockState wall = st(Blocks.POLISHED_BLACKSTONE_BRICKS), crack = st(Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS), air = st(Blocks.AIR);
-        BlockState light = st(Blocks.SHROOMLIGHT), basalt = st(Blocks.POLISHED_BASALT);
-        for (int dx = -HALF; dx <= HALF; dx++) for (int dz = -HALF; dz <= HALF; dz++) {
-            int ax = Math.abs(dx), az = Math.abs(dz);
-            double rr = Math.sqrt(dx * dx + dz * dz);
-            boolean outer = ax == HALF || az == HALF, corner = ax + az >= 13;
-            int ceil = rr > 7 ? H - 4 : rr > 5.5 ? H - 2 : rr > 3.5 ? H - 1 : H;   // the stepped vault
-            int along = ax == HALF ? dz : dx;   // position along an outer wall
-            for (int dy = -1; dy <= H; dy++) {
-                BlockState s;
-                if (dy == -1) {   // the floor: a centre stone, rings and spokes
-                    if (corner) s = wall;
-                    else if (rr <= 1.5) s = st(Blocks.CHISELED_DEEPSLATE);
-                    else if (rr > 6.2 && rr <= 7.2) s = st(Blocks.POLISHED_BLACKSTONE);
-                    else if (rr > 2.5 && rr <= 3.3) s = st(Blocks.DEEPSLATE_BRICKS);
-                    else if (dx == 0 || dz == 0 || ax == az) s = st(Blocks.POLISHED_DEEPSLATE);
-                    else s = (ax + az) % 5 == 0 ? st(Blocks.CRACKED_DEEPSLATE_TILES) : st(Blocks.DEEPSLATE_TILES);
-                } else if (outer || corner) {
-                    s = outer && Math.abs(along) % 4 == 0 && Math.abs(along) != HALF ? basalt : rnd.nextInt(6) == 0 ? crack : wall;
-                } else if (dy > ceil) s = wall;
-                else if (dy == ceil) s = (dx % 4 == 0 && dz % 4 == 0) ? light : rr <= 1.5 ? st(Blocks.CHISELED_POLISHED_BLACKSTONE) : wall;
-                else if ((ax == HALF - 1 || az == HALF - 1) && !corner && Math.abs(ax == HALF - 1 ? dz : dx) == 4) s = basalt;   // ribs standing off the walls
-                else s = air;
-                set(sl, cx + dx, Y + dy, cz + dz, s);
-            }
-            // the rock spur hanging under the room
-            double spur = (HALF + 0.5) - rr * 0.9;
-            int depth = (int) Math.max(0, spur + rnd.nextInt(3));
-            if (!corner || rnd.nextBoolean()) for (int d = 2; d <= 1 + depth; d++)
-                set(sl, cx + dx, Y - d, cz + dz, d > depth - 1 && rnd.nextInt(3) == 0 ? st(Blocks.AMETHYST_BLOCK)
-                        : rnd.nextInt(4) == 0 ? st(Blocks.BASALT) : d % 3 == 0 ? st(Blocks.DEEPSLATE) : st(Blocks.BLACKSTONE));
-        }
-        for (int[] p : new int[][]{{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) {   // corner pillars up into the vault
-            for (int dy = 0; dy < 3; dy++) set(sl, cx + p[0], Y + dy, cz + p[1], st(Blocks.AMETHYST_BLOCK));
-            set(sl, cx + p[0], Y + 3, cz + p[1], light);
-            for (int dy = 4; dy < H - 4; dy++) set(sl, cx + p[0], Y + dy, cz + p[1], st(Blocks.POLISHED_BLACKSTONE));
-        }
-        for (int[] p : new int[][]{{-3, -3}, {3, -3}, {-3, 3}, {3, 3}}) {   // soul lanterns on chains from the vault
-            for (int dy = H - 2; dy >= H - 4; dy--) set(sl, cx + p[0], Y + dy, cz + p[1], st(Blocks.CHAIN));
-            set(sl, cx + p[0], Y + H - 5, cz + p[1], st(Blocks.SOUL_LANTERN).setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
-        }
-    }
-
-    /** The side of the room with no door (for a throne, an arch, a pool), or -1. */
-    private static int freeSide(Room room) {
-        for (int side : new int[]{2, 0, 3, 1}) if (!room.doors.contains(side)) return side;
-        return -1;
-    }
-
-    /**
-     * What each kind of room has in it - kept to the edges, so the middle stays clear to fight in: broken columns in
-     * combat rooms, a striped warning ring and floor vents in trap rooms, a pool, moss and benches in the rest room, a
-     * stepped throne at the back of elite rooms and relic chambers (gold for relics), and an arch of crying obsidian in
-     * the entrance.
-     */
-    private static void features(ServerLevel sl, Rift r, Room room, int cx, int cz, ThreadLocalRandom rnd) {
-        int side = freeSide(room);
-        int ax = side == 0 ? 1 : side == 1 ? -1 : 0, az = side == 2 ? 1 : side == 3 ? -1 : 0, sx = az != 0 ? 1 : 0, sz = ax != 0 ? 1 : 0;
-        switch (room.type) {
-            case COMBAT -> {
-                for (int i = 0; i < 6; i++) {   // broken columns round the edge
-                    double a = rnd.nextDouble(Math.PI * 2);
-                    int x = (int) Math.round(Math.cos(a) * 6.6), z = (int) Math.round(Math.sin(a) * 6.6);
-                    if (Math.abs(x) <= 2 || Math.abs(z) <= 2 || Math.abs(x) + Math.abs(z) >= 12 || x * x + z * z < 6.5 * 6.5) continue;   // clear of where foes appear
-                    int hgt = 1 + rnd.nextInt(3);
-                    for (int dy = 0; dy < hgt; dy++) set(sl, cx + x, Y + dy, cz + z, dy == hgt - 1 ? st(Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS) : st(Blocks.POLISHED_BLACKSTONE));
-                    if (rnd.nextBoolean()) set(sl, cx + x, Y + hgt, cz + z, st(Blocks.POLISHED_BLACKSTONE_SLAB));
-                }
-            }
-            case TRAP -> {
-                for (int dx = -7; dx <= 7; dx++) for (int dz = -7; dz <= 7; dz++) {   // a black and yellow warning ring, vents in the floor
-                    double rr = Math.sqrt(dx * dx + dz * dz);
-                    if (Math.abs(dx) + Math.abs(dz) >= 13) continue;
-                    if (rr > 6.2 && rr <= 7.2) set(sl, cx + dx, Y - 1, cz + dz, ((dx + dz) & 2) == 0 ? st(Blocks.YELLOW_TERRACOTTA) : st(Blocks.BLACK_TERRACOTTA));
-                    else if (rr > 1.5 && rr < 6 && rnd.nextInt(14) == 0) set(sl, cx + dx, Y - 1, cz + dz, st(Blocks.CRYING_OBSIDIAN));
-                }
-                for (int i = 0; i < 8; i++) {   // chains hanging all over the vault
-                    int x = rnd.nextInt(-5, 6), z = rnd.nextInt(-5, 6);
-                    for (int dy = H - 2; dy >= H - 3 - rnd.nextInt(3); dy--) set(sl, cx + x, Y + dy, cz + z, st(Blocks.CHAIN));
-                }
-            }
-            case REST -> {
-                for (int dx = -6; dx <= 6; dx++) for (int dz = -6; dz <= 6; dz++) {   // moss creeping in from the walls
-                    double rr = Math.sqrt(dx * dx + dz * dz);
-                    if (rr > 4.5 && Math.abs(dx) + Math.abs(dz) < 13 && rnd.nextInt(3) > 0) {
-                        set(sl, cx + dx, Y - 1, cz + dz, st(Blocks.MOSS_BLOCK));
-                        if (rnd.nextInt(5) == 0) set(sl, cx + dx, Y, cz + dz, rnd.nextBoolean() ? st(Blocks.MOSS_CARPET) : st(Blocks.AZALEA));
-                    }
-                }
-                for (int[] p : new int[][]{{-4, -4}, {4, -4}, {-4, 4}, {4, 4}}) set(sl, cx + p[0], Y + H - 3, cz + p[1], st(Blocks.SPORE_BLOSSOM));
-                if (side >= 0) {   // a little pool against the free wall, and benches beside it
-                    for (int w = -2; w <= 2; w++) for (int k = 5; k <= 6; k++) {
-                        int x = cx + ax * k + sx * w, z = cz + az * k + sz * w;
-                        set(sl, x, Y - 2, z, st(Blocks.POLISHED_BLACKSTONE));
-                        set(sl, x, Y - 1, z, st(Blocks.WATER));
-                        set(sl, x, Y, z, st(Blocks.AIR));
-                    }
-                    for (int w = -2; w <= 2; w++) set(sl, cx + ax * 7 + sx * w, Y - 1, cz + az * 7 + sz * w, st(Blocks.SEA_LANTERN));
-                }
-            }
-            case ELITE, RELIC -> {
-                boolean relic = room.type == RELIC;
-                for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++)   // a dais in the middle
-                    set(sl, cx + dx, Y - 1, cz + dz, Math.abs(dx) == 2 || Math.abs(dz) == 2 ? st(relic ? Blocks.GILDED_BLACKSTONE : Blocks.POLISHED_BLACKSTONE) : st(Blocks.CRYING_OBSIDIAN));
-                if (side >= 0) {   // a stepped throne against the back wall
-                    for (int w = -3; w <= 3; w++) {
-                        set(sl, cx + ax * 6 + sx * w, Y, cz + az * 6 + sz * w, st(Blocks.POLISHED_BLACKSTONE_SLAB));
-                        for (int dy = 0; dy <= 1; dy++) set(sl, cx + ax * 7 + sx * w, Y + dy, cz + az * 7 + sz * w, Math.abs(w) == 3 ? st(relic ? Blocks.GOLD_BLOCK : Blocks.CRYING_OBSIDIAN) : st(Blocks.POLISHED_BLACKSTONE_BRICKS));
-                    }
-                    for (int dy = 2; dy <= 4; dy++) set(sl, cx + ax * 7, Y + dy, cz + az * 7, st(dy == 4 ? (relic ? Blocks.GOLD_BLOCK : Blocks.AMETHYST_BLOCK) : Blocks.POLISHED_BLACKSTONE));   // its tall back
-                    for (int w : new int[]{-2, 2}) set(sl, cx + ax * 7 + sx * w, Y + 2, cz + az * 7 + sz * w, st(Blocks.SOUL_LANTERN));
-                }
-            }
-            case EXAM -> {   // the Exam Hall: a gilded dais, gold on the pillars, and a gold-trimmed throne for the examiners
-                for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++)
-                    set(sl, cx + dx, Y - 1, cz + dz, Math.abs(dx) == 3 || Math.abs(dz) == 3 ? st(Blocks.GILDED_BLACKSTONE) : (dx + dz) % 2 == 0 ? st(Blocks.POLISHED_BLACKSTONE) : st(Blocks.CHISELED_POLISHED_BLACKSTONE));
-                for (int[] p : new int[][]{{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) { set(sl, cx + p[0], Y + 3, cz + p[1], st(Blocks.GOLD_BLOCK)); set(sl, cx + p[0], Y + 4, cz + p[1], st(Blocks.SHROOMLIGHT)); }
-                if (side >= 0) for (int w = -3; w <= 3; w++) for (int dy = 0; dy <= 2; dy++)
-                    set(sl, cx + ax * 7 + sx * w, Y + dy, cz + az * 7 + sz * w, dy == 2 || Math.abs(w) == 3 ? st(Blocks.GOLD_BLOCK) : st(Blocks.POLISHED_BLACKSTONE_BRICKS));
-            }
-            case MIRROR -> {   // the Hall of Mirrors: a pale floor, mirror panes standing round the edge, white light
-                for (int dx = -6; dx <= 6; dx++) for (int dz = -6; dz <= 6; dz++) {
-                    if (Math.abs(dx) + Math.abs(dz) >= 12) continue;
-                    set(sl, cx + dx, Y - 1, cz + dz, (dx + dz) % 2 == 0 ? st(Blocks.CALCITE) : st(Blocks.POLISHED_DIORITE));
-                }
-                for (int i = 0; i < 8; i++) {
-                    double a = i * Math.PI / 4 + Math.PI / 8;
-                    int x = (int) Math.round(Math.cos(a) * 6.7), z = (int) Math.round(Math.sin(a) * 6.7);
-                    for (int dy = 0; dy < 4; dy++) set(sl, cx + x, Y + dy, cz + z, dy == 3 ? st(Blocks.SEA_LANTERN) : st(Blocks.WHITE_STAINED_GLASS));
-                }
-                for (int[] p : new int[][]{{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) set(sl, cx + p[0], Y + 3, cz + p[1], st(Blocks.SEA_LANTERN));
-            }
-            case START -> {
-                if (side >= 0) for (int w = -3; w <= 3; w++) for (int dy = 0; dy <= 5; dy++) {   // the arch you came in by
-                    boolean frame = Math.abs(w) == 3 || dy == 5 || (dy == 4 && Math.abs(w) == 2);
-                    int x = cx + ax * 7 + sx * w, z = cz + az * 7 + sz * w;
-                    set(sl, x, Y + dy, z, frame ? st(Blocks.CRYING_OBSIDIAN) : st(Blocks.PURPLE_STAINED_GLASS));
-                }
-            }
-            default -> {}
-        }
-    }
-
-    /** Broken islands and crystal spires drifting in the rift's sky around the rooms, seen through the windows. */
-    private static void islands(ServerLevel sl, Rift r, ThreadLocalRandom rnd) {
-        int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
-        for (Room room : r.rooms) {
-            Vec3 c = r.centre(room);
-            minX = Math.min(minX, (int) c.x); maxX = Math.max(maxX, (int) c.x); minZ = Math.min(minZ, (int) c.z); maxZ = Math.max(maxZ, (int) c.z);
-        }
-        int n = 10 + r.rooms.size();
-        for (int i = 0, tries = 0; i < n && tries < 80; tries++) {
-            int x = rnd.nextInt(minX - 34, maxX + 35), z = rnd.nextInt(minZ - 34, maxZ + 35), y = Y + rnd.nextInt(-22, 20);
-            boolean clear = true;
-            for (Room room : r.rooms) {
-                Vec3 c = r.centre(room);
-                if (Math.abs(c.x - x) < 17 && Math.abs(c.z - z) < 17) { clear = false; break; }
-            }
-            if (!clear) continue;
-            i++;
-            if (rnd.nextInt(3) == 0) {   // a crystal spire
-                int len = 5 + rnd.nextInt(7);
-                for (int k = 0; k < len; k++) {
-                    set(sl, x, y + k, z, k < len - 2 ? st(Blocks.AMETHYST_BLOCK) : st(Blocks.BUDDING_AMETHYST));
-                    if (k < len / 2) for (int[] o : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) if (rnd.nextInt(3) == 0) set(sl, x + o[0], y + k, z + o[1], st(Blocks.TINTED_GLASS));
-                }
-                set(sl, x, y + len, z, st(Blocks.AMETHYST_CLUSTER));
-                continue;
-            }
-            int rad = 2 + rnd.nextInt(3);   // an island: a flat top and a tapering underside
-            for (int dx = -rad; dx <= rad; dx++) for (int dz = -rad; dz <= rad; dz++) {
-                double rr = Math.sqrt(dx * dx + dz * dz);
-                if (rr > rad + 0.3) continue;
-                int depth = (int) ((rad + 1 - rr) * 1.6) + rnd.nextInt(2);
-                for (int d = 0; d <= depth; d++)
-                    set(sl, x + dx, y - d, z + dz, d == 0 ? (rnd.nextInt(4) == 0 ? st(Blocks.CRYING_OBSIDIAN) : st(Blocks.POLISHED_BLACKSTONE)) : rnd.nextInt(5) == 0 ? st(Blocks.BASALT) : st(Blocks.BLACKSTONE));
-                if (rr < rad - 0.5 && rnd.nextInt(6) == 0) set(sl, x + dx, y + 1, z + dz, st(Blocks.AMETHYST_CLUSTER));
-            }
-            if (rnd.nextBoolean()) for (int k = 1; k <= 3; k++) set(sl, x, y + k, z, k == 3 ? st(Blocks.SHROOMLIGHT) : st(Blocks.POLISHED_BLACKSTONE_WALL));   // a ruined lamp post
-        }
-    }
-
-    /**
-     * What makes each room of a rift its own: a ring of glowing runes in the floor, amethyst growing on the pillars,
-     * windows broken through the outer walls onto the rift's sky, and the rift's law written into the room -
-     * Mana Burn: veins of crimson in the walls; Low Gravity: slabs of stone hanging in the air; Echo: pillars of mirror
-     * glass; Hunted: patches of sculk and soul lanterns in the dark.
-     */
-    private static void decorate(ServerLevel sl, Rift r, Room room, int cx, int cz, ThreadLocalRandom rnd) {
-        for (int i = 0; i < 16; i++) {   // the rune ring
-            double a = i * Math.PI / 8;
-            int x = cx + (int) Math.round(Math.cos(a) * 4.5), z = cz + (int) Math.round(Math.sin(a) * 4.5);
-            set(sl, x, Y - 1, z, i % 2 == 0 ? Blocks.CRYING_OBSIDIAN.defaultBlockState() : Blocks.CHISELED_POLISHED_BLACKSTONE.defaultBlockState());
-        }
-        for (int[] p : new int[][]{{-6, -6}, {6, -6}, {-6, 6}, {6, 6}}) {
-            set(sl, cx + p[0] + 1, Y, cz + p[1], Blocks.AMETHYST_CLUSTER.defaultBlockState().setValue(net.minecraft.world.level.block.AmethystClusterBlock.FACING, net.minecraft.core.Direction.EAST));
-            set(sl, cx + p[0], Y + 4, cz + p[1], Blocks.AMETHYST_CLUSTER.defaultBlockState());
-        }
-        // windows onto the rift's sky, in walls with no door
-        for (int side = 0; side < 4; side++) {
-            if (room.doors.contains(side)) continue;
-            int ax = side == 0 ? 1 : side == 1 ? -1 : 0, az = side == 2 ? 1 : side == 3 ? -1 : 0;
-            int sx = az != 0 ? 1 : 0, sz = ax != 0 ? 1 : 0;
-            for (int w = -2; w <= 2; w++) for (int dy = 2; dy <= 5; dy++) {
-                if (Math.abs(w) == 2 && (dy == 2 || dy == 5)) continue;   // rounded corners
-                set(sl, cx + ax * HALF + sx * w, Y + dy, cz + az * HALF + sz * w, rnd.nextInt(5) == 0 ? Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState() : Blocks.AIR.defaultBlockState());
-            }
-            for (int w = -3; w <= 3; w++) set(sl, cx + ax * (HALF - 1) + sx * w, Y - 1, cz + az * (HALF - 1) + sz * w, Blocks.POLISHED_BLACKSTONE.defaultBlockState());   // a sill
-        }
-        // the law
-        if ((r.rules & MANA_BURN) != 0) for (int i = 0; i < 18; i++) {
-            int side = rnd.nextInt(4), w = rnd.nextInt(-6, 7), dy = rnd.nextInt(0, H);
-            int ax = side == 0 ? 1 : side == 1 ? -1 : 0, az = side == 2 ? 1 : side == 3 ? -1 : 0, sx = az != 0 ? 1 : 0, sz = ax != 0 ? 1 : 0;
-            BlockPos bp = new BlockPos(cx + ax * HALF + sx * w, Y + dy, cz + az * HALF + sz * w);
-            if (!sl.getBlockState(bp).isAir()) set(sl, bp.getX(), bp.getY(), bp.getZ(), (i % 3 == 0 ? Blocks.SHROOMLIGHT : Blocks.CRIMSON_HYPHAE).defaultBlockState());
-        }
-        if ((r.rules & LOW_GRAVITY) != 0) for (int i = 0; i < 6; i++) {
-            int x = cx + rnd.nextInt(-5, 6), z = cz + rnd.nextInt(-5, 6), y = Y + rnd.nextInt(2, 6);
-            if (Math.abs(x - cx) < 2 && Math.abs(z - cz) < 2) continue;
-            set(sl, x, y, z, Blocks.SMOOTH_STONE_SLAB.defaultBlockState());
-            if (rnd.nextBoolean()) set(sl, x + 1, y, z, Blocks.SMOOTH_STONE_SLAB.defaultBlockState());
-        }
-        if ((r.rules & ECHO) != 0) for (int[] p : new int[][]{{-3, 0}, {3, 0}, {0, -3}, {0, 3}}) {
-            if (room.type == RELIC || room.type == ELITE || room.type == REST) break;
-            for (int dy = 0; dy < 3; dy++) set(sl, cx + p[0], Y + dy, cz + p[1], Blocks.TINTED_GLASS.defaultBlockState());
-            set(sl, cx + p[0], Y + 3, cz + p[1], Blocks.AMETHYST_CLUSTER.defaultBlockState());
-        }
-        if ((r.rules & HUNTED) != 0) {
-            for (int i = 0; i < 10; i++) set(sl, cx + rnd.nextInt(-6, 7), Y - 1, cz + rnd.nextInt(-6, 7), Blocks.SCULK.defaultBlockState());
-            for (int[] p : new int[][]{{-6, 0}, {6, 0}}) set(sl, cx + p[0], Y, cz + p[1], Blocks.SOUL_LANTERN.defaultBlockState());
-        }
-    }
-
-    /** Seals (or opens) a room's doorways with walls of violet glass. */
-    private static void seal(ServerLevel sl, Rift r, Room room, boolean shut) {
-        Vec3 c = r.centre(room);
-        int cx = (int) Math.floor(c.x), cz = (int) Math.floor(c.z);
-        for (int dd : room.doors) {
-            int ax = dd == 0 ? 1 : dd == 1 ? -1 : 0, az = dd == 2 ? 1 : dd == 3 ? -1 : 0;
-            int sx = az != 0 ? 1 : 0, sz = ax != 0 ? 1 : 0;
-            BlockState s = shut ? com.ironspellgrimoire.registry.AddonBlocks.RIFT_SEAL.get().defaultBlockState()
-                    .setValue(com.ironspellgrimoire.block.RiftSealBlock.AXIS, ax != 0 ? net.minecraft.core.Direction.Axis.X : net.minecraft.core.Direction.Axis.Z) : Blocks.AIR.defaultBlockState();
-            for (int w = -1; w <= 1; w++) for (int dy = 0; dy <= 3; dy++) set(sl, cx + ax * HALF + sx * w, Y + dy, cz + az * HALF + sz * w, s);
-            Vec3 door = new Vec3(cx + ax * HALF + 0.5, Y + 2, cz + az * HALF + 0.5);
-            if (shut) FxSend.ring(sl, VOIDP, door, 0.2f, 2.2f, 0.08f, 10);
-            else {   // the seal shatters
-                FxSend.ring(sl, VOIDP, door, 0.3f, 3f, 0.1f, 12);
-                for (int k = 0; k < 4; k++) Kit.orb(sl, VOIDP, door.add(sx * (k - 1.5) * 0.7, (k % 2) - 0.5, sz * (k - 1.5) * 0.7), new Vec3(ax * 0.06, 0.04, az * 0.06), 0.18f, 10);
-            }
-        }
-        sl.playSound(null, BlockPos.containing(c), shut ? SoundEvents.AMETHYST_BLOCK_RESONATE : SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.BLOCKS, 1.6f, shut ? 0.6f : 0.8f);
-    }
-
     // ================================================================== going in and out
-    private static void enter(ServerPlayer p, Rift r) {
+    static void enter(ServerPlayer p, Rift r) {
         ServerLevel rift = p.server.getLevel(RIFT);
         if (rift == null) { p.displayClientMessage(Component.literal("The rift won't open (the Rift dimension is missing).").withStyle(ChatFormatting.RED), true); return; }
         if (!r.built) build(rift, r);
@@ -748,7 +442,7 @@ public final class Rifts {
         to.playSound(null, p.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1f, 1.2f);
     }
 
-    private static void close(MinecraftServer s, Rift r) {
+    static void close(MinecraftServer s, Rift r) {
         if (r.closed) return;
         r.closed = true;
         ServerLevel rift = s.getLevel(RIFT);
@@ -786,7 +480,7 @@ public final class Rifts {
     }
 
     /** The crack in the world: drawn while anyone is near, entered by walking into it. */
-    private static void entrance(ServerLevel world, Rift r, long tick) {
+    static void entrance(ServerLevel world, Rift r, long tick) {
         Vec3 at = new Vec3(r.x, r.y, r.z);
         List<ServerPlayer> near = new ArrayList<>();
         for (ServerPlayer p : world.players()) if (p.position().distanceToSqr(at) < 96 * 96) near.add(p);
@@ -811,9 +505,9 @@ public final class Rifts {
         }
     }
 
-    private static String stars(int n) { return "★".repeat(n) + "☆".repeat(5 - n); }
+    static String stars(int n) { return "★".repeat(n) + "☆".repeat(5 - n); }
 
-    private static Room roomOf(Rift r, Vec3 pos) {
+    static Room roomOf(Rift r, Vec3 pos) {
         for (Room room : r.rooms) {
             Vec3 c = r.centre(room);
             if (Math.abs(pos.x - c.x) <= HALF - 0.5 && Math.abs(pos.z - c.z) <= HALF - 0.5) return room;
@@ -821,7 +515,7 @@ public final class Rifts {
         return null;
     }
 
-    private static void run(ServerLevel sl, Rift r, List<ServerPlayer> inside, long tick) {
+    static void run(ServerLevel sl, Rift r, List<ServerPlayer> inside, long tick) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         if (r.exam && !r.ascension) examFloor(r, inside);
         // laws that act on everyone inside
@@ -844,14 +538,14 @@ public final class Rifts {
     }
 
     /** Motes of the rift's light drifting up through an occupied room, coloured by its law. */
-    private static void ambience(ServerLevel sl, Rift r, Room room, ThreadLocalRandom rnd) {
+    static void ambience(ServerLevel sl, Rift r, Room room, ThreadLocalRandom rnd) {
         int pal = (r.rules & MANA_BURN) != 0 ? 18 : (r.rules & HUNTED) != 0 ? Fx.DARK : (r.rules & ECHO) != 0 ? Fx.MIRROR : VOIDP;
         Vec3 c = r.centre(room);
         for (int i = 0; i < 3; i++)
             Kit.orb(sl, i == 0 ? VOIDP : pal, c.add(rnd.nextDouble(-6.5, 6.5), rnd.nextDouble(0, 2), rnd.nextDouble(-6.5, 6.5)), new Vec3(rnd.nextDouble(-0.01, 0.01), 0.03, rnd.nextDouble(-0.01, 0.01)), 0.1f, 40);
     }
 
-    private static void activate(ServerLevel sl, Rift r, int idx, Room room, int players) {
+    static void activate(ServerLevel sl, Rift r, int idx, Room room, int players) {
         switch (room.type) {
             case COMBAT -> { room.active = true; room.wave = 0; seal(sl, r, room, true); wave(sl, r, idx, room, players); }
             case TRAP -> { room.active = true; room.timer = 20 * (18 + r.rank * 2); seal(sl, r, room, true); }
@@ -862,7 +556,7 @@ public final class Rifts {
         }
     }
 
-    private static void clear(ServerLevel sl, Rift r, int idx, Room room) {
+    static void clear(ServerLevel sl, Rift r, int idx, Room room) {
         room.active = false;
         room.cleared = true;
         seal(sl, r, room, false);
@@ -872,7 +566,7 @@ public final class Rifts {
         data(sl.getServer()).setDirty();
     }
 
-    private static void tickRoom(ServerLevel sl, Rift r, int idx, Room room, List<ServerPlayer> here, int players, long tick, ThreadLocalRandom rnd) {
+    static void tickRoom(ServerLevel sl, Rift r, int idx, Room room, List<ServerPlayer> here, int players, long tick, ThreadLocalRandom rnd) {
         Vec3 c = r.centre(room);
         switch (room.type) {
             case COMBAT -> {
@@ -930,14 +624,14 @@ public final class Rifts {
         }
     }
 
-    private static int alive(ServerLevel sl, Rift r, int idx) {
+    static int alive(ServerLevel sl, Rift r, int idx) {
         List<UUID> l = r.mobs.get(idx);
         if (l == null) return 0;
         l.removeIf(u -> { Entity e = sl.getEntity(u); return e == null || !e.isAlive(); });
         return l.size();
     }
 
-    private static void wave(ServerLevel sl, Rift r, int idx, Room room, int players) {
+    static void wave(ServerLevel sl, Rift r, int idx, Room room, int players) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         Vec3 c = r.centre(room);
         int n = 2 + r.rank + (players - 1) * 2;
@@ -965,7 +659,7 @@ public final class Rifts {
     }
 
     /** The Reflection: the challenger's own skin and their grimoire's colours. */
-    private static void reflection(ServerLevel sl, Rift r, int idx, Room room) {
+    static void reflection(ServerLevel sl, Rift r, int idx, Room room) {
         Vec3 c = r.centre(room);
         var m = AddonEntities.REFLECTION.get().create(sl);
         if (m == null) return;
@@ -993,7 +687,7 @@ public final class Rifts {
     }
 
     /** The Exam Hall's shades: a lesser boss, then a greater, then one of the strongest. */
-    private static void examShade(ServerLevel sl, Rift r, int idx, Room room, int n) {
+    static void examShade(ServerLevel sl, Rift r, int idx, Room room, int n) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         EntityType<? extends Mob> t = switch (n) {
             case 0 -> rnd.nextBoolean() ? AddonEntities.REVENANT.get() : AddonEntities.CURSE_WITCH.get();
@@ -1004,7 +698,7 @@ public final class Rifts {
     }
 
     /** A shade of one of the bosses, at a fraction of its strength. */
-    private static void guardian(ServerLevel sl, Rift r, int idx, Room room) {
+    static void guardian(ServerLevel sl, Rift r, int idx, Room room) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         Vec3 c = r.centre(room);
         EntityType<? extends Mob> t = room.type == RELIC ? switch (rnd.nextInt(4)) {   // the big ones guard relics; the lesser ones, the elite rooms
@@ -1036,7 +730,7 @@ public final class Rifts {
         if (isShade(e.getEntity())) e.setDroppedExperience(Math.min(e.getDroppedExperience(), 20));
     }
 
-    private static void shade(ServerLevel sl, Rift r, int idx, Room room, EntityType<? extends Mob> t, float frac, String title) {
+    static void shade(ServerLevel sl, Rift r, int idx, Room room, EntityType<? extends Mob> t, float frac, String title) {
         Vec3 c = r.centre(room);
         Mob m = t.create(sl);
         if (m == null) return;
@@ -1051,7 +745,7 @@ public final class Rifts {
         FxSend.impactFrame(sl, m.position().add(0, 1.5, 0), 3, FxSend.FRAME_FINRAL, 24);
     }
 
-    private static void reward(ServerLevel sl, Rift r, Room room, ServerPlayer finder, boolean relic) {
+    static void reward(ServerLevel sl, Rift r, Room room, ServerPlayer finder, boolean relic) {
         Vec3 c = r.centre(room).add(0, 0.5, 0);
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         List<ItemStack> loot = new ArrayList<>();
@@ -1090,7 +784,7 @@ public final class Rifts {
     }
 
     /** The way out: a circle in the rest room (and in the relic chamber once it's won). Stand on it for three seconds. */
-    private static void pad(ServerLevel sl, Rift r, Room room, List<ServerPlayer> here, long tick) {
+    static void pad(ServerLevel sl, Rift r, Room room, List<ServerPlayer> here, long tick) {
         Vec3 c = r.centre(room);
         if (tick % 20 == 0 && !here.isEmpty()) FxSend.ring(sl, VOIDP, c.add(0, 0.05, 0), 1.3f, 1.4f, 0.06f, 22);
         for (ServerPlayer p : here) {
@@ -1108,7 +802,7 @@ public final class Rifts {
      * The rift's map for the HUD (client/RiftMap, shape 79): every room packed into one int - grid x and z, its kind,
      * cleared, and its doors - carried in the packet's 18 number slots. id = how many rooms, sweep = the one you're in + 1.
      */
-    private static void map(ServerPlayer p, Rift r, Room at) {
+    static void map(ServerPlayer p, Rift r, Room at) {
         FxPacket k = new FxPacket();
         k.shape = 79; k.life = 40;
         int n = Math.min(18, r.rooms.size());
@@ -1125,7 +819,7 @@ public final class Rifts {
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), k);
     }
 
-    private static void objective(ServerPlayer p, Rift r, Room room) {
+    static void objective(ServerPlayer p, Rift r, Room room) {
         if (room == null) return;
         String s = switch (room.type) {
             case COMBAT -> room.cleared ? "Combat - cleared" : room.active ? "Combat - wave " + (room.wave + 1) + "/" + (2 + r.rank / 2) + ", " + r.mobs.getOrDefault(r.rooms.indexOf(room), List.of()).size() + " left" : "Combat";
@@ -1142,7 +836,7 @@ public final class Rifts {
     }
 
     /** Hunted: a shade that drifts through the walls after the nearest of you. It can't be hurt; it can hurt you. */
-    private static void hunt(ServerLevel sl, Rift r, List<ServerPlayer> inside, long tick) {
+    static void hunt(ServerLevel sl, Rift r, List<ServerPlayer> inside, long tick) {
         if (r.shade == null) {
             r.shade = r.centre(r.rooms.get(0)).add(0, 1.2, 0);
             for (ServerPlayer p : inside) p.sendSystemMessage(Component.literal("Something in the rift has your scent...").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
@@ -1180,7 +874,7 @@ public final class Rifts {
         if (at != null) open(p, at, Math.min(cap, 1 + Bounties.stars(p) / 15 + ThreadLocalRandom.current().nextInt(3)));
     }
 
-    private static Vec3 spot(ServerLevel sl, Vec3 from, double min, double max) {
+    static Vec3 spot(ServerLevel sl, Vec3 from, double min, double max) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         for (int i = 0; i < 10; i++) {
             double a = rnd.nextDouble(Math.PI * 2), d = rnd.nextDouble(min, max);
@@ -1193,7 +887,7 @@ public final class Rifts {
         return null;
     }
 
-    private static void compass(ServerPlayer p) {
+    static void compass(ServerPlayer p) {
         Rift best = null;
         double bd = Double.MAX_VALUE;
         String dim = p.level().dimension().location().toString();

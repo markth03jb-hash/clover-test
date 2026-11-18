@@ -51,6 +51,7 @@ public final class TowerCompass {
         c.getOrCreateTag().putInt("TowerX", tower.getX());
         c.getOrCreateTag().putInt("TowerZ", tower.getZ());
         if (!p.getInventory().add(c)) p.drop(c, false);
+        FirstSteps.towerAt(p, tower.getX(), tower.getZ());
         double dx = tower.getX() - p.getX(), dz = tower.getZ() - p.getZ();
         p.sendSystemMessage(Component.literal("A compass for a new mage. ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
                 .append(Component.literal("It points to the Grimoire Tower - about " + (int) Math.hypot(dx, dz) + " blocks " + Bounties.direction(dx, dz)

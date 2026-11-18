@@ -20,6 +20,7 @@ public class CodexItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player p, InteractionHand hand) {
+        if (p instanceof net.minecraft.server.level.ServerPlayer sp) com.ironspellgrimoire.server.FirstSteps.codexRead(sp);
         if (level.isClientSide) DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> com.ironspellgrimoire.client.CodexScreen::open);
         return InteractionResultHolder.sidedSuccess(p.getItemInHand(hand), level.isClientSide);
     }

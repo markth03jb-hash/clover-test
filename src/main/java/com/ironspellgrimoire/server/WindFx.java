@@ -314,7 +314,7 @@ public class WindFx {
     static void tornadoPacket(ServerLevel sl, Vec3 base, float r, float h, int age, Vec3 vel) {
         FxPacket p = new FxPacket();
         p.shape = 28; p.palette = (byte) W; p.life = 1; p.c = base; p.v = vel; p.r = r; p.h = h; p.a0 = age;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(base.x, base.y, base.z, 128, sl.dimension())), p);
+        FxBatch.near(sl, base, 128, p);
     }
 
     // ================================================================== 3. Sylph's Breath
@@ -353,7 +353,7 @@ public class WindFx {
             Vec3 o = eye.add(look.scale(0.8)).add(0, -0.2, 0);
             FxPacket gp = new FxPacket();
             gp.shape = 29; gp.palette = (byte) W; gp.life = 14; gp.c = o; gp.d = look; gp.r = (float) range; gp.h = (float) half;
-            AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(o.x, o.y, o.z, 96, sl.dimension())), gp);
+            FxBatch.near(sl, o, 96, gp);
             sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.3f);
             sound(sl, p.position(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, 0.8f, 1.4f);
         });
@@ -753,10 +753,12 @@ public class WindFx {
                 double a = r.nextDouble(Math.PI * 2), el = r.nextDouble(-0.3, 0.9);
                 Vec3 from = h.add(Math.cos(a) * Math.cos(el) * 7, Math.sin(el) * 5, Math.sin(a) * Math.cos(el) * 7);
                 Vec3 bend = h.add(from.subtract(h).scale(0.45)).add(Math.cos(a + 1.5) * 1.2, 0.3, Math.sin(a + 1.5) * 1.2);
-                FxSend.trail(sl, W, from, bend, 0.06f, 6);
-                FxSend.trail(sl, W, bend, h, 0.05f, 5);
+                if (kk % 2 == 0) {   // wind streaks pulled into your hands (every other tick, held a little longer)
+                    FxSend.trail(sl, W, from, bend, 0.07f, 8);
+                    FxSend.trail(sl, W, bend, h, 0.06f, 7);
+                }
                 if (kk % 4 == 0) FxSend.ring(sl, W, h, 1.6f - kk * 0.05f, 0.15f, 0.04f, 5);
-                if (kk % 2 == 0) {   // stars twinkling in as the storm gathers
+                if (kk % 3 == 0) {   // stars twinkling in as the storm gathers
                     double sa = r.nextDouble(Math.PI * 2);
                     star(sl, h.add(Math.cos(sa) * r.nextDouble(0.8, 2.6), r.nextDouble(-0.6, 1.4), Math.sin(sa) * r.nextDouble(0.8, 2.6)), p.getLookAngle(), 0.25f + r.nextFloat() * 0.3f, 6);
                 }
@@ -800,15 +802,15 @@ public class WindFx {
                         posRef[c] = nxt;
                         float grow = Math.min(1f, tt / 8f) * (tt > LIFE - 8 ? (LIFE - tt) / 8f : 1f);
                         tornadoPacket(sl, nxt, (float) R * Math.max(0.4f, grow), height * Math.max(0.4f, grow), tt, dir.scale(speed));
-                        if (tt % 3 == 0) {   // blades of wind orbiting the column, one ring high and one low
+                        if (tt % 4 == 0) {   // blades of wind orbiting the column, one ring high and one low
                             for (int q = 0; q < 2; q++) {
                                 double ang = tt * 0.55 + q * Math.PI;
                                 Vec3 o = nxt.add(Math.cos(ang) * R * 1.15, height * (q == 0 ? 0.28 : 0.6), Math.sin(ang) * R * 1.15);
                                 Vec3 tan = new Vec3(-Math.sin(ang), 0.12, Math.cos(ang));
-                                FxSend.crescent(sl, W, o, tan, new Vec3(0, 1, 0), 0.9f, 0.55f, 4, 0.0f);
+                                FxSend.crescent(sl, W, o, tan, new Vec3(0, 1, 0), 0.9f, 0.55f, 5, 0.0f);
                             }
                         }
-                        if (tt % 2 == 0) {   // a river of stars through the column
+                        if (tt % 3 == 0) {   // a river of stars through the column
                             double sa = rr.nextDouble(Math.PI * 2), sd = rr.nextDouble() * R;
                             star(sl, nxt.add(Math.cos(sa) * sd, rr.nextDouble() * height * 0.8, Math.sin(sa) * sd), dir, rr.nextInt(5) == 0 ? 0.9f : 0.35f, 8 + rr.nextInt(6));
                         }

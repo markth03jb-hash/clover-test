@@ -54,7 +54,7 @@ public class HiveNest extends Entity {
 
     @Override
     public InteractionResult interact(Player p, InteractionHand hand) {
-        if (!level().isClientSide && p instanceof ServerPlayer sp) com.ironspellgrimoire.server.ParasiteFx.nestUsed(sp, this);
+        if (!level().isClientSide && p instanceof ServerPlayer sp) com.ironspellgrimoire.server.ParasiteNest.nestUsed(sp, this);
         return InteractionResult.sidedSuccess(level().isClientSide);
     }
 
@@ -64,6 +64,6 @@ public class HiveNest extends Entity {
         if (!onGround()) setDeltaMovement(getDeltaMovement().add(0, -0.04, 0));   // it settles on the ground
         else setDeltaMovement(getDeltaMovement().multiply(0.5, 0, 0.5));
         move(MoverType.SELF, getDeltaMovement());
-        if (!level().isClientSide && tickCount % 40 == 0) com.ironspellgrimoire.server.ParasiteFx.nestTick(this);
+        if (!level().isClientSide && tickCount % 40 == 0) com.ironspellgrimoire.server.ParasiteNest.nestTick(this);
     }
 }

@@ -95,7 +95,7 @@ public class LightningFx {
         FxPacket p = new FxPacket();
         p.shape = 23; p.palette = (byte) L; p.id = ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE); p.life = life;
         p.c = a; p.d = b.subtract(a); p.r = width; p.sweep = width >= 0.1f ? Math.max(branches, 2) + 1 : branches;   // more forks: real lightning
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(a.x, a.y, a.z, 128, sl.dimension())), p);
+        FxBatch.near(sl, a, 128, p);
     }
 
     /** A strike: a flash of light, sparks and a short crackle where lightning lands. */
