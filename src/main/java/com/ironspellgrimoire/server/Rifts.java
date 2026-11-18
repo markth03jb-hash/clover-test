@@ -321,6 +321,7 @@ public final class Rifts {
             ItemStack book = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
             if (owner && book != null && GrimoireMastery.bookOf(book) != null && !GrimoireMastery.ascended(book)) {
                 book.getOrCreateTag().putBoolean("Ascended", true);
+                Adv.grant(p, "magic_knight");
                 p.sendSystemMessage(Component.literal("MAGIC KNIGHT EXAM PASSED  ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
                         .append(Component.literal(book.getHoverName().getString() + " has passed - its mastery can now reach 7.").withStyle(ChatFormatting.YELLOW)));
                 GrimoireMastery.bountyXp(p, 1);   // nudges the level along if it already had the XP for more
@@ -1172,7 +1173,7 @@ public final class Rifts {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p)) return;
         if (p.tickCount % 10 == 0 && (p.getMainHandItem().is(AddonItemRegistry.RIFT_COMPASS.get()) || p.getOffhandItem().is(AddonItemRegistry.RIFT_COMPASS.get()))) compass(p);
         if (p.tickCount % 6000 != 3000 || !p.level().dimension().equals(Level.OVERWORLD) || p.isSpectator()) return;
-        if (ThreadLocalRandom.current().nextInt(4) != 0) return;
+        if (!com.ironspellgrimoire.AddonConfig.rifts() || ThreadLocalRandom.current().nextDouble() >= com.ironspellgrimoire.AddonConfig.riftChance()) return;
         for (Rift r : data(p.server).rifts) if (!r.closed && !r.exam && r.dim.equals(p.level().dimension().location().toString()) && new Vec3(r.x, r.y, r.z).distanceToSqr(p.position()) < 400 * 400) return;
         Vec3 at = spot(p.serverLevel(), p.position(), 25, 50);
         int cap = Bounties.stars(p) >= 60 ? 5 : Bounties.stars(p) >= 30 ? 4 : 3;   // rank 4 rifts from 30 merit stars, rank 5 from 60

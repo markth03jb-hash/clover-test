@@ -338,7 +338,7 @@ public final class ParasiteFx {
     static boolean isBoss(LivingEntity t) { return t instanceof AddonBoss || t.getType().is(Tags.EntityTypes.BOSSES); }
 
     static boolean foe(ServerPlayer p, LivingEntity t) {
-        return t != p && t.isAlive() && !(t instanceof Player) && !(t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()));
+        return t != p && t.isAlive() && !(t instanceof Player op && !com.ironspellgrimoire.AddonConfig.mayHurt(p, op)) && !(t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()));
     }
 
     static float ultBoost(ServerPlayer p) { return (1f + 0.2f * rank(p, CATACLYSM)) * (1f + 0.25f * sw(p, HIVE)) * (frenzied(p) ? 1.2f : 1f) * (finalForm(p) ? 1.3f : 1f); }

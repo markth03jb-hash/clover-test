@@ -422,6 +422,7 @@ public final class Quests {
     }
 
     private static void complete(ServerPlayer p, CompoundTag q) {
+        Adv.grant(p, "village_hero");
         int type = q.getInt("Type");
         ThreadLocalRandom r = ThreadLocalRandom.current();
         boolean big = type == RIFT || type == BOSS || type == BEAST || type == PAGE;

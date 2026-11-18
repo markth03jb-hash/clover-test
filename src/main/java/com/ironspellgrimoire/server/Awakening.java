@@ -183,6 +183,7 @@ public final class Awakening {
             fresh.save(book);
         } catch (Throwable t) { return false; }
         book.getOrCreateTag().putBoolean("Awakened", true);
+        Adv.grant(p, "awakened");
         p.setHealth(Math.max(p.getHealth(), p.getMaxHealth() * 0.5f));
         Component name = Component.translatable("spell.iron_spell_grimoire." + id);
         p.sendSystemMessage(Component.literal("GRIMOIRE AWAKENING  ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)

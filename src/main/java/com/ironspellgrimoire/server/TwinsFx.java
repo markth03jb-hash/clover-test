@@ -269,7 +269,7 @@ public final class TwinsFx {
     }
     static boolean burning;
 
-    static boolean foe(ServerPlayer p, LivingEntity t) { return t != p && t.isAlive() && !(t instanceof Player) && !t.isAlliedTo(p); }
+    static boolean foe(ServerPlayer p, LivingEntity t) { return t != p && t.isAlive() && !(t instanceof Player op && !com.ironspellgrimoire.AddonConfig.mayHurt(p, op)) && !t.isAlliedTo(p); }
 
     /** Day and night, and the balance between the two. */
     static float weigh(ServerPlayer p, int twin) {
@@ -752,6 +752,7 @@ public final class TwinsFx {
         if (!canEclipse(p)) { tell(p, "Both twins at level " + BOND_ECLIPSE + ", and the Twin Wardens beaten"); return; }
         ServerLevel sl = p.serverLevel();
         root(p).putLong("eclipse", now(p) + ECLIPSE);
+        Adv.grant(p, "eclipse");
         Vec3 at = p.position();
         FxSend.ring(sl, Fx.VOID, at.add(0, 0.1, 0), 0.4f, 6f, 0.8f, 20);
         FxSend.ring(sl, PAL_SOL, at.add(0, 0.2, 0), 0.3f, 5f, 0.3f, 16);
@@ -828,7 +829,7 @@ public final class TwinsFx {
     static void echo(ServerPlayer p) {
         CompoundTag r = root(p);
         int rest = 1 - active(p);
-        boolean want = equipped(p) && !eclipse(p) && level(p, rest) >= ECHO_LV && now(p) - r.getLong("combat") < 100 && p.isAlive();
+        boolean want = com.ironspellgrimoire.AddonConfig.twinEcho() && equipped(p) && !eclipse(p) && level(p, rest) >= ECHO_LV && now(p) - r.getLong("combat") < 100 && p.isAlive();
         ServerLevel sl = p.serverLevel();
         Integer id = ECHOES.get(p.getUUID());
         var e = id == null ? null : sl.getEntity(id);
@@ -1000,6 +1001,7 @@ public final class TwinsFx {
         if (r.getInt("downs") < 2) { say(p, w.dusk() ? NYX : SOL, "One more."); return; }
         r.putLong("trialEnd", 0);
         r.putBoolean("trial", true);
+        Adv.grant(p, "two_wardens");
         award(p, 3);
         say(p, SOL, "The eclipse is ours.");
         p.sendSystemMessage(Component.literal("Eclipse Union is open: the Eclipse Union page.").withStyle(ChatFormatting.GOLD));

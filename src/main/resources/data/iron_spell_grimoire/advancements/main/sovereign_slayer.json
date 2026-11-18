@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:blaze_powder"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.sovereign_slayer.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.sovereign_slayer.description"
+  },
+  "frame": "challenge",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": false
+ },
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ },
+ "parent": "iron_spell_grimoire:main/subjugated"
+}

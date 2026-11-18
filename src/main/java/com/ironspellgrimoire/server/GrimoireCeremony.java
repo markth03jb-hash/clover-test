@@ -116,6 +116,7 @@ public final class GrimoireCeremony {
     }
 
     private static void give(ServerPlayer p, int book) {
+        Adv.grant(p, "chosen");
         Item item = GrimoireMastery.BOOKS.get(book).item().get();
         ItemStack s = new ItemStack(item);
         if (item instanceof IPresetSpellContainer c) c.initializeSpellContainer(s);
@@ -131,8 +132,12 @@ public final class GrimoireCeremony {
     }
 
     // ------------------------------------------------------------------ the choice: every grimoire has the same chance
+    /** Any grimoire the config hasn't excluded, each with the same chance. */
     private static int pick(ServerPlayer p) {
-        return p.getRandom().nextInt(Math.max(1, GrimoireMastery.BOOKS.size()));
+        java.util.List<Integer> pool = new java.util.ArrayList<>();
+        for (int i = 0; i < GrimoireMastery.BOOKS.size(); i++) if (com.ironspellgrimoire.AddonConfig.ceremonyAllows(GrimoireMastery.BOOKS.get(i).item().get())) pool.add(i);
+        if (pool.isEmpty()) return p.getRandom().nextInt(Math.max(1, GrimoireMastery.BOOKS.size()));
+        return pool.get(p.getRandom().nextInt(pool.size()));
     }
 
     /** Keep the record on respawn (Forge copies the persisted tag, but be sure). */

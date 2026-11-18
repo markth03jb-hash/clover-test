@@ -558,7 +558,7 @@ public final class HungerFx {
         feed(p, 2f);
     }
 
-    static boolean foe(ServerPlayer p, LivingEntity t) { return t != p && t.isAlive() && !(t instanceof Player) && !t.isAlliedTo(p); }
+    static boolean foe(ServerPlayer p, LivingEntity t) { return t != p && t.isAlive() && !(t instanceof Player op && !com.ironspellgrimoire.AddonConfig.mayHurt(p, op)) && !t.isAlliedTo(p); }
 
     // ------------------------------------------------------------------ the G wheel and The Blade page
     public static void handle(ServerPlayer p, int action, int arg) {
@@ -982,6 +982,7 @@ public final class HungerFx {
         lessons(p);
         if (bond(p) > lv) {
             say(p, BOND_LINES[bond(p)]);
+            if (bond(p) >= MAX_BOND) Adv.grant(p, "one_appetite");
             OverdriveFx.play(sl, p.position(), "heartbeat", 1f, 1.1f);
         }
         sync(p, false);

@@ -62,7 +62,8 @@ final class FxUtil {
 
     static List<LivingEntity> enemies(ServerLevel sl, ServerPlayer p, AABB box) {
         return sl.getEntitiesOfClass(LivingEntity.class, box, x -> x != p && x.isAlive() && !x.isAlliedTo(p)
-                && !(x instanceof net.minecraft.world.entity.decoration.ArmorStand));
+                && !(x instanceof net.minecraft.world.entity.decoration.ArmorStand)
+                && !(x instanceof net.minecraft.world.entity.player.Player op && !com.ironspellgrimoire.AddonConfig.mayHurt(p, op)));   // the one PvP rule
     }
 
     static Vec3 closestOnSegment(Vec3 a, Vec3 b, Vec3 q) {

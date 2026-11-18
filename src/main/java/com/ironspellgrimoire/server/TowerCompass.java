@@ -33,7 +33,13 @@ public final class TowerCompass {
 
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || p.getPersistentData().getBoolean("isg_tower_compass")) return;
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        if (!p.getPersistentData().getBoolean("isg_codex") && com.ironspellgrimoire.AddonConfig.starterCodex()) {   // every new mage gets the guide
+            p.getPersistentData().putBoolean("isg_codex", true);
+            ItemStack codex = new ItemStack(AddonItemRegistry.GRIMOIRE_CODEX.get());
+            if (!p.getInventory().add(codex)) p.drop(codex, false);
+        }
+        if (p.getPersistentData().getBoolean("isg_tower_compass")) return;
         p.getPersistentData().putBoolean("isg_tower_compass", true);
         if (GrimoireCeremony.chosen(p) >= 0) return;   // already chosen: no need
         ServerLevel ow = p.server.getLevel(Level.OVERWORLD);

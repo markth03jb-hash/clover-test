@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "iron_spell_grimoire:parasite_grimoire"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.apex.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.apex.description"
+  },
+  "frame": "challenge",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": true
+ },
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ },
+ "parent": "iron_spell_grimoire:main/chosen"
+}

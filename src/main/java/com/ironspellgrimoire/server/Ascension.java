@@ -90,6 +90,7 @@ public final class Ascension {
         ItemStack book = Utils.getPlayerSpellbookStack(p);
         if (!canAscend(book)) return;
         book.getOrCreateTag().putBoolean("Ascension", true);
+        Adv.grant(p, "ascended");
         ServerLevel sl = p.serverLevel();
         Vec3 c = p.position();
         FxPacket k = new FxPacket();

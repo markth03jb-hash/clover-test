@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:paper"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.subjugated.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.subjugated.description"
+  },
+  "frame": "goal",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": false
+ },
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ },
+ "parent": "iron_spell_grimoire:main/village_hero"
+}

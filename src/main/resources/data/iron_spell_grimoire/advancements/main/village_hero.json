@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:bell"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.village_hero.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.village_hero.description"
+  },
+  "frame": "task",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": false
+ },
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ },
+ "parent": "iron_spell_grimoire:main/chosen"
+}

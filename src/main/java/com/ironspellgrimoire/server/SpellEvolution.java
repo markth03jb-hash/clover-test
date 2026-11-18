@@ -91,6 +91,7 @@ public final class SpellEvolution {
         if (ev.getBoolean(id)) return;
         ev.putBoolean(id, true);
         tag.put("Evolved", ev);
+        Adv.grant(p, "evolved");
         ServerLevel sl = p.serverLevel();
         int pal = palette(book);
         Vec3 c = p.position();

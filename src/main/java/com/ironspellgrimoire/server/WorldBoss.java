@@ -82,6 +82,7 @@ public final class WorldBoss {
         ServerLevel ow = s.overworld();
         if (d.nextAt == 0) { d.nextAt = now + 2 * HOUR; d.setDirty(); }
         if (!d.active) {
+            if (!com.ironspellgrimoire.AddonConfig.worldBosses()) return;   // switched off in the config
             if (now < d.nextAt || ow.players().isEmpty()) return;
             List<ServerPlayer> mages = new ArrayList<>();
             for (ServerPlayer p : ow.players()) if (GrimoireCeremony.chosen(p) >= 0 && !p.isSpectator()) mages.add(p);
@@ -223,6 +224,7 @@ public final class WorldBoss {
             float share = e.getValue() / total;
             if (share < 0.02f && e.getValue() < 60) continue;
             names.add(p.getGameProfile().getName());
+            Adv.grant(p, "sovereign_slayer");
             int stars = Math.min(60, 20 + Math.round(share * 80));
             Bounties.addStars(p, stars);
             p.giveExperiencePoints(800 + Math.round(share * 1600));

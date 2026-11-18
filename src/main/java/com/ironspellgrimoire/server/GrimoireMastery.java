@@ -562,6 +562,8 @@ public final class GrimoireMastery {
 
     // ------------------------------------------------------------------ level-up flourish
     private static void levelUp(ServerPlayer p, Book b, int level) {
+        if (level >= 3) Adv.grant(p, "mastery_3");
+        if (level >= MAX_LEVEL) Adv.grant(p, "mastery_max");
         ServerLevel sl = p.serverLevel();
         Vec3 at = p.position();
         int pal = b.palette();
