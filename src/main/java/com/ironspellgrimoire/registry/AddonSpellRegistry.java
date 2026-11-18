@@ -818,9 +818,32 @@ public class AddonSpellRegistry {
             .gate(com.ironspellgrimoire.server.ParasiteFx::canField, "Needs more biomass"));
     public static final RegistryObject<AbstractSpell> PARASITE_STORM = registerSpell(parasite("spine_storm", 30, 60, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ParasiteFx::spineStorm)
             .gate(com.ironspellgrimoire.server.ParasiteFx::canStorm, "Needs more biomass"));
-    /** The five Parasite Grimoire pages, in the order they fill the book. */
+    public static final RegistryObject<AbstractSpell> PARASITE_COLLAPSE = registerSpell(parasite("collapse_core", 30, 55, 9, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ParasiteFx::collapseCore)
+            .gate(com.ironspellgrimoire.server.ParasiteFx::canCollapse, "Needs more biomass"));
+    public static final RegistryObject<AbstractSpell> PARASITE_PACK = registerSpell(parasite("pack_call", 60, 40, 0, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.ParasiteFx::packCall)
+            .gate(com.ironspellgrimoire.server.ParasiteFx::canPack, "Needs more biomass"));
+    /** The seven Parasite Grimoire pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> PARASITE_SPELLS = List.of(
-            PARASITE_CONSUME, PARASITE_EVOLUTION, PARASITE_BARRAGE, PARASITE_FIELD, PARASITE_STORM);
+            PARASITE_CONSUME, PARASITE_EVOLUTION, PARASITE_BARRAGE, PARASITE_FIELD, PARASITE_PACK, PARASITE_STORM, PARASITE_COLLAPSE);
+
+    // ------------------------------------------------------------------ Hunger Blade Grimoire (a living sword: HungerFx)
+    private static com.ironspellgrimoire.spells.BookSpell hunger(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.BLOOD_RESOURCE,
+                com.ironspellgrimoire.item.HungerGrimoireItem.class, "ui.iron_spell_grimoire.hunger_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> HUNGER_DRAW = registerSpell(hunger("draw_blade", 1, 0, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.HungerFx::draw));
+    public static final RegistryObject<AbstractSpell> HUNGER_GNASH = registerSpell(hunger("gnash", 4, 15, 10, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.HungerFx::gnash)
+            .gate(com.ironspellgrimoire.server.HungerFx::canStrike, "Draw the blade first"));
+    public static final RegistryObject<AbstractSpell> HUNGER_FEAST = registerSpell(hunger("feast", 10, 30, 10, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.HungerFx::feast)
+            .gate(com.ironspellgrimoire.server.HungerFx::canStrike, "Draw the blade first"));
+    public static final RegistryObject<AbstractSpell> HUNGER_UNLEASH = registerSpell(hunger("unleash", 35, 70, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.HungerFx::unleash)
+            .gate(com.ironspellgrimoire.server.HungerFx::canStrike, "Draw the blade first"));
+    public static final RegistryObject<AbstractSpell> HUNGER_BLADE_PAGE = registerSpell(hunger("the_blade", 1, 0, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.HungerFx::theBlade));
+    public static final RegistryObject<AbstractSpell> HUNGER_DOMAIN = registerSpell(hunger("hunger_domain", 90, 120, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.HungerFx::hungerDomain)
+            .gate(com.ironspellgrimoire.server.HungerFx::canDomain, "Needs the blade drawn and a stage 6 sword grown"));
+    /** The six Hunger Blade Grimoire pages, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> HUNGER_SPELLS = List.of(HUNGER_DRAW, HUNGER_GNASH, HUNGER_FEAST, HUNGER_UNLEASH, HUNGER_BLADE_PAGE, HUNGER_DOMAIN);
 
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,

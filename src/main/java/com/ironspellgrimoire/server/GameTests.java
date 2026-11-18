@@ -390,6 +390,196 @@ public final class GameTests {
     /** The Blood Grimoire's paths: every spell cast both ways (a mastered book) - nothing may throw, change the world or give effects. */
     /** Hunter's Ascension (the Shadow Grimoire): levels and points, stats as attribute bonuses, the Daily Trial, the
      *  Market, and a Reckoning that spawns its waves, cleans them up and breaks nothing. */
+    /** The Hunger Blade: growing swords (in order, for Growth), the four carried and switching, no changing them in a
+     *  fight, the blade kept to the main hand, kills feeding it, the moods' modifiers, the starved bite, the throw coming back. */
+    private static final class HungerTest extends Test {
+        HungerTest() { super("hunger: the blade"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{HungerFx.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        BlockState[] before;
+        net.minecraft.world.entity.monster.Zombie prey;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE.get());
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+            HungerFx.testReset(p);
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            before = snapshot();
+        }
+        @Override boolean tick(int t) {
+            try {
+                if (t == 2) {   // drawing it, and its stats
+                    HungerFx.draw(p, 10f);
+                    if (!HungerFx.drawn(p)) bad.add("Draw didn't put the blade in the hand");
+                    if ((HungerFx.testTaught(p) & 1) == 0) bad.add("the first Draw taught nothing");
+                    else if (com.ironspellgrimoire.item.HungerBladeItem.form(p.getMainHandItem()) != 0) bad.add("the first blade isn't the Fang");
+                    // its damage (the player's attribute only catches up next tick, so the item's own modifier)
+                    double add = p.getMainHandItem().getAttributeModifiers(net.minecraft.world.entity.EquipmentSlot.MAINHAND)
+                            .get(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).stream().mapToDouble(m -> m.getAmount()).sum();
+                    if (Math.abs(add + 1 - HungerFx.DMG[0]) > 0.01) bad.add("the Fang's damage is " + (add + 1));
+                    HungerFx.draw(p, 10f);
+                    if (HungerFx.drawn(p)) bad.add("Draw again didn't put it away");
+                    p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.world.item.Items.STICK));
+                    HungerFx.draw(p, 10f);
+                    if (!p.getMainHandItem().is(net.minecraft.world.item.Items.STICK)) bad.add("Draw replaced what the hand held");
+                    p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                }
+                if (t == 4) {   // growing: in order, and for Growth
+                    HungerFx.handle(p, 1, 1);
+                    if (HungerFx.unlocked(p, 1)) bad.add("Gnaw grew with no Growth");
+                    HungerFx.testGrowth(p, 1000);
+                    HungerFx.handle(p, 1, 3);
+                    if (HungerFx.unlocked(p, 3)) bad.add("the Marrow Cleaver grew before the Maw Blade");
+                    HungerFx.handle(p, 1, 1); HungerFx.handle(p, 1, 2); HungerFx.handle(p, 1, 3); HungerFx.handle(p, 1, 4);
+                    for (int f : new int[]{1, 2, 3, 4}) if (!HungerFx.unlocked(p, f)) bad.add(HungerFx.NAMES[f] + " didn't grow");
+                    int spent = 1000 - HungerFx.growth(p), want = HungerFx.COST[2] + HungerFx.COST[3] + HungerFx.COST[4] + HungerFx.COST[5];
+                    if (spent != want) bad.add("growing four swords cost " + spent + ", not " + want);
+                    HungerFx.handle(p, 1, 9);
+                    if (HungerFx.unlocked(p, 9)) bad.add("the Prism Rapier grew without the Shard Blade");
+                    // a hybrid: only with an ascended sword of both its paths
+                    HungerFx.handle(p, 1, 23);
+                    if (HungerFx.unlocked(p, 23)) bad.add("the Fossil Prism grew without an ascended Crystal sword");
+                    if (HungerFx.canGrow(1 | (1 << 5), 23)) bad.add("canGrow lets a hybrid grow from one path");
+                    if (!HungerFx.canGrow((1 << 5) | (1 << 12), 23)) bad.add("canGrow refuses the Fossil Prism with both ascended swords");
+                }
+                if (t == 6) {   // four carried; a fifth replaces; switching changes the held sword
+                    HungerFx.testCalm(p);
+                    HungerFx.handle(p, 1, 5);   // the Ossuary Colossus: the slots are full, it isn't carried yet
+                    HungerFx.handle(p, 3, 1 * 100 + 5);
+                    HungerFx.testHold(p, 0);
+                    HungerFx.handle(p, 2, 1);
+                    if (com.ironspellgrimoire.item.HungerBladeItem.form(p.getMainHandItem()) != 5) bad.add("switching to slot 2 didn't give the Ossuary Colossus (got " + com.ironspellgrimoire.item.HungerBladeItem.form(p.getMainHandItem()) + ")");
+                    if (HungerFx.current(p) != 5) bad.add("the current sword isn't the Colossus");
+                    HungerFx.handle(p, 3, 2 * 100 + 5);   // already carried: swaps
+                    int carried = 0;
+                    for (int s = 0; s < 4; s++) if (HungerFx.testLoadAt(p, s) == 5) carried++;
+                    if (carried != 1) bad.add("one sword carried in " + carried + " slots");
+                    HungerFx.handle(p, 3, 0 * 100 + 22);
+                    if (HungerFx.testLoadAt(p, 0) == 22) bad.add("a sword not grown went into a slot");
+                    // never in a fight
+                    p.hurt(p.damageSources().generic(), 1f);
+                    int was = HungerFx.testLoadAt(p, 3);
+                    HungerFx.handle(p, 3, 3 * 100 + 1);
+                    if (HungerFx.testLoadAt(p, 3) != was) bad.add("the swords changed in a fight");
+                    p.setHealth(p.getMaxHealth());
+                }
+                if (t == 8) {   // the blade lives only in the main hand
+                    var inv = p.getInventory();
+                    inv.setItem(5, com.ironspellgrimoire.item.HungerBladeItem.of(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_BLADE.get(), 3));
+                }
+                if (t == 10) {
+                    if (HungerFx.isBlade(p.getInventory().getItem(5)) && p.getInventory().selected != 5) bad.add("a blade stayed in another slot");
+                    // a kill with the blade feeds it
+                    HungerFx.testGrowth(p, 0); HungerFx.testHunger(p, 20f);
+                    p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    HungerFx.testHold(p, 2);
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    prey = net.minecraft.world.entity.EntityType.ZOMBIE.create(sl());
+                    if (prey != null) {
+                        prey.moveTo(home.x, home.y, home.z + 1.5, 180, 0); prey.setNoAi(true);
+                        sl().addFreshEntity(prey);
+                        prey.setHealth(1);
+                        prey.hurt(p.damageSources().playerAttack(p), 50f);
+                    }
+                }
+                if (t == 12) {
+                    if (prey != null && prey.isAlive()) { bad.add("the zombie survived"); prey.discard(); }
+                    if (HungerFx.growth(p) <= 0) bad.add("a kill gave no Growth");
+                    if (HungerFx.hunger(p) <= 20f) bad.add("a kill didn't feed the blade");
+                    if (HungerFx.bondXp(p) <= 0) bad.add("a kill built no Bond");
+                    // devour: a sneak-strike on a foe near death eats it whole, for double Growth
+                    int g0 = HungerFx.growth(p);
+                    prey = net.minecraft.world.entity.EntityType.ZOMBIE.create(sl());
+                    if (prey != null) {
+                        prey.moveTo(home.x, home.y, home.z + 1.5, 180, 0); prey.setNoAi(true);
+                        sl().addFreshEntity(prey);
+                        prey.setHealth(2.5f);
+                        p.setShiftKeyDown(true);
+                        prey.hurt(p.damageSources().playerAttack(p), 1f);
+                        p.setShiftKeyDown(false);
+                        if (prey.isAlive()) { bad.add("devour didn't eat a zombie at 2.5 health"); prey.discard(); }
+                        else if (HungerFx.growth(p) - g0 < 2 * Math.max(1, Math.round(prey.getMaxHealth() / 8f))) bad.add("devour gave " + (HungerFx.growth(p) - g0) + " Growth, not double");
+                    }
+                    // a parry in time takes most of a blow
+                    p.setHealth(p.getMaxHealth());
+                    HungerFx.testParry(p);
+                    float before = p.getHealth();
+                    p.invulnerableTime = 0;
+                    p.hurt(p.damageSources().mobAttack(dummy), 10f);
+                    float took = before - p.getHealth();
+                    if (took > 3f) bad.add(String.format("a parry let %.1f of 10 through", took));
+                    p.setHealth(p.getMaxHealth());
+                    // moods: well fed - faster swings; starved - harder hits and a bite that never takes the last of you
+                    HungerFx.testHunger(p, 90f);
+                }
+                if (t == 22) {
+                    var sp = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_SPEED);
+                    if (sp == null || sp.getModifier(HungerFx.FED_SPD) == null) bad.add("well fed gave no faster swings");
+                    HungerFx.testHunger(p, 2f);
+                    p.setHealth(3.5f);
+                }
+                if (t == 24) {
+                    HungerFx.testBond(p, 140);
+                    p.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY);
+                }
+                if (t == 50) {
+                    if (!HungerFx.isBlade(p.getOffhandItem())) bad.add("no twin in the off hand at Bond 4");
+                    HungerFx.testBond(p, 0);
+                }
+                if (t == 74) {
+                    if (HungerFx.isBlade(p.getOffhandItem())) bad.add("the twin stayed below Bond 4");
+                    // sheathed: put away, it hangs at the hip
+                    p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                }
+                if (t == 78) {
+                    if (HungerFx.testLook(p) < 0) bad.add("nothing sheathed at the hip with the blade put away");
+                    HungerFx.testHold(p, 2);
+                    // sulking: left starved a minute, it won't come at once
+                    p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    HungerFx.testStarvedFor(p, 70);
+                    HungerFx.draw(p, 10f);
+                    if (HungerFx.drawn(p)) bad.add("a sulking blade came at once");
+                }
+                if (t == 144) {
+                    if (!HungerFx.drawn(p)) bad.add("the sulking blade never came");
+                    HungerFx.testStarvedFor(p, 0);
+                    p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    HungerFx.testHold(p, 2);
+                }
+                if (t == 162) {
+                    var dm = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+                    if (dm == null || dm.getModifier(HungerFx.HUNGRY_DMG) == null) bad.add("starved gave no harder hits");
+                    if (p.getHealth() < 3.4f) bad.add("the starved bite took the player below 4 health");
+                    p.setHealth(p.getMaxHealth());
+                    HungerFx.testHunger(p, 60f);
+                    // the throw: away and back into the hand
+                    HungerFx.testBond(p, 140);
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    p.setShiftKeyDown(true);
+                    HungerFx.gnash(p, 10f);
+                    p.setShiftKeyDown(false);
+                    if (HungerFx.drawn(p)) bad.add("the throw left the blade in the hand");
+                }
+                if (t == 210) {
+                    if (!HungerFx.drawn(p)) bad.add("the thrown blade didn't come back to the hand");
+                    if (!sl().getEntitiesOfClass(com.ironspellgrimoire.entity.ThrownHungerBlade.class, p.getBoundingBox().inflate(40)).isEmpty()) bad.add("a thrown blade is still out");
+                    // the book taken off: the blade goes with it
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, ItemStack.EMPTY));
+                }
+                if (t == 212) {
+                    if (HungerFx.drawn(p)) bad.add("the blade stayed after the book was taken off");
+                    String ch = changes(before);
+                    if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+                    if (bad.isEmpty()) pass(name, "drew, grew, carried, switched, fed, moods, threw and caught");
+                    else fail(name, String.join("; ", bad));
+                    HungerFx.testReset(p);
+                    return true;
+                }
+            } catch (Throwable x) { fail(name, "threw " + x); return true; }
+            return false;
+        }
+    }
+
     /** The Parasite Grimoire's strain: devouring, the arm forms (and the item they put away and give back), locked
      *  forms, evolving, a Strain, the Bulwark, the frenzy and its end, and everything dropped when the book is. */
     private static final class ParasiteTest extends Test {
@@ -564,6 +754,39 @@ public final class GameTests {
                         if (ParasiteFx.frenzy(p) > 0) bad.add("the spill went into Frenzy with a nest out");
                         nest.discard();
                     }
+                    // Predator Sight toggles (with the node); the looks change the hide's armour
+                    ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p);
+                    ParasiteFx.handle(p, 27, 0);
+                    if (!ParasiteFx.sight(p)) bad.add("Predator Sight didn't switch on");
+                    ParasiteFx.handle(p, 27, 0);
+                    ParasiteFx.toggleHide(p);
+                    var armor = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+                    double a0 = armor == null ? 0 : armor.getValue();
+                    ParasiteFx.handle(p, 29, 3);   // Plated
+                    if (armor != null && armor.getValue() < a0 + 3.9) bad.add(String.format("the Plated hide didn't add armour (%.1f -> %.1f)", a0, armor.getValue()));
+                    // Molting: a blow to under 30% sheds a husk
+                    ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p);
+                    p.setHealth(p.getMaxHealth() * 0.2f);
+                    ParasiteFx.molt(p);
+                    var husks = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.MoltHusk.class, p.getBoundingBox().inflate(4));
+                    if (husks.isEmpty()) bad.add("Molting shed no husk");
+                    for (var h : husks) h.discard();
+                    p.setHealth(p.getMaxHealth());
+                    // Pack Call: three brutes in the Brute strain's shape, none of them after their master
+                    ParasiteFx.testReset(p); ParasiteFx.testStrain(p, ParasiteFx.BRUTE); ParasiteFx.testFill(p);
+                    ParasiteFx.packCall(p, 0f);
+                    var pack = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.InfectedBrute.class, p.getBoundingBox().inflate(8));
+                    if (pack.size() != 3) bad.add("Pack Call raised " + pack.size() + " brutes, not 3");
+                    for (var b : pack) {
+                        if (b.kind() != ParasiteFx.BRUTE) bad.add("a brute wasn't shaped by the Brute strain (" + b.kind() + ")");
+                        if (b.canAttack(p)) bad.add("a brute could attack its master");
+                        b.discard();
+                    }
+                    // Hive Network: three nests at once
+                    ParasiteFx.testReset(p); ParasiteFx.testUnlockAll(p);
+                    for (int k = 0; k < 3; k++) { ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); }
+                    if (ParasiteFx.nests(p).size() != 3) bad.add("Hive Network holds " + ParasiteFx.nests(p).size() + " nests, not 3");
+                    for (var n : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.HiveNest.class, p.getBoundingBox().inflate(8))) n.discard();
                     ParasiteFx.testReset(p);
                     ParasiteFx.testFrenzy(p);   // back into the frenzy the next checks wait out
                 }
@@ -1131,10 +1354,33 @@ public final class GameTests {
                 "grasping_field: vortex", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_FIELD, 2); ParasiteFx.testFill(pl); ParasiteFx.graspingField(pl, pw); }, "",
                 "marrow_barrage: seeker", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_BARRAGE, 1); ParasiteFx.testFill(pl); ParasiteFx.marrowBarrage(pl, pw); }, "",
                 "marrow_barrage: bomb", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testPath(pl, ParasiteFx.U_BARRAGE, 2); ParasiteFx.testFill(pl); ParasiteFx.marrowBarrage(pl, pw); }, "",
+                "collapse_core", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.collapseCore(pl, pw); }, "",
+                "pack_call", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { ParasiteFx.testFill(pl); ParasiteFx.packCall(pl, pw); }, "q",
                 "final form consume", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> {
                     ParasiteFx.testUnlockAll(pl); ParasiteFx.testStrain(pl, ParasiteFx.BRUTE); ParasiteFx.testFill(pl); ParasiteFx.testCooldowns(pl);
                     ParasiteFx.finalFormStart(pl); ParasiteFx.consume(pl, pw); }, "c"));
         queue.add(new ParasiteTest());
+        queue.add(new BookMovesTest("hunger", com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE::get, HungerFx.class,
+                "draw_blade", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.draw(pl, pw); }, "q",
+                "gnash", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 2); HungerFx.gnash(pl, pw); }, "c",
+                "feast", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 4); HungerFx.feast(pl, pw); }, "c",
+                "unleash: devouring bite", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 2); HungerFx.unleash(pl, pw); }, "c",
+                "unleash: ossuary eruption", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 5); HungerFx.unleash(pl, pw); }, "c",
+                "unleash: shard nova", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 10); HungerFx.unleash(pl, pw); }, "c",
+                "unleash: umbral rend", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 15); HungerFx.unleash(pl, pw); }, "c",
+                "unleash: pyre sweep", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 22); HungerFx.unleash(pl, pw); }, "c",
+                "gnash: thrown", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 17); HungerFx.testBond(pl, 140); pl.setShiftKeyDown(true); HungerFx.gnash(pl, pw); pl.setShiftKeyDown(false); }, "c",
+                "unleash: awakened pact", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 7); HungerFx.testBond(pl, 230); HungerFx.unleash(pl, pw); }, "c",
+                "charge: bite", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 2); HungerFx.testCharge(pl); }, "c",
+                "charge: bone walls", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 7); HungerFx.testCharge(pl); }, "c",
+                "charge: crystal lunge", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 9); HungerFx.testCharge(pl); }, "c",
+                "charge: shadow blink", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 16); HungerFx.testCharge(pl); }, "c",
+                "charge: fire wheel", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 21); HungerFx.testCharge(pl); }, "c",
+                "unleash: fossil prism (two paths)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 23); HungerFx.unleash(pl, pw); }, "c",
+                "unleash: ashen eclipse (two paths)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 28); HungerFx.unleash(pl, pw); }, "c",
+                "hunger_domain", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { HungerFx.testReset(pl); HungerFx.testUnlockAll(pl); pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHold(pl, 5); HungerFx.hungerDomain(pl, pw); HungerFx.feast(pl, pw); }, "c",
+                "the_blade", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> HungerFx.theBlade(pl, pw), "q"));
+        queue.add(new HungerTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

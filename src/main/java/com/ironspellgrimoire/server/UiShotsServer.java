@@ -88,6 +88,7 @@ public final class UiShotsServer {
             case 'd' -> AddonItemRegistry.DREAM_GRIMOIRE.get();
             case 's' -> AddonItemRegistry.SHADOW_GRIMOIRE.get();
             case 'p' -> AddonItemRegistry.PARASITE_GRIMOIRE.get();
+            case 'H' -> AddonItemRegistry.HUNGER_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -96,6 +97,7 @@ public final class UiShotsServer {
         if (cur == null || !cur.is(book.getItem())) CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
         io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).setMana(2000);
         if (which.charAt(0) == 'p') { parasite(p, w); return; }
+        if (which.charAt(0) == 'H') { hunger(p, w); return; }
         switch (w) {
             case "target" -> {
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
@@ -349,6 +351,91 @@ public final class UiShotsServer {
         }
     }
 
+    /** The Hunger Blade Grimoire's shots: every sword held (first and third person), its moves, the wheel and The Blade page. */
+    private static void hunger(ServerPlayer p, String w) {
+        if (w.startsWith("hold")) {   // hold<form>: that sword in the hand
+            faceForward(p);
+            int f = Integer.parseInt(w.substring(4));
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            HungerFx.testHold(p, f);
+            return;
+        }
+        switch (w) {
+            case "setup" -> {   // every sword grown, four carried, a target ahead
+                faceForward(p);
+                HungerFx.testReset(p);
+                HungerFx.testUnlockAll(p);
+                HungerFx.testGrowth(p, 260);
+                HungerFx.testLoad(p, 7, 10, 25, 28);
+                HungerFx.testHunger(p, 82);
+                HungerFx.testBond(p, 140);
+                HungerFx.testCalm(p);
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                p.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY);
+                for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
+                for (var old : p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.BladeSpirit.class, p.getBoundingBox().inflate(40))) old.discard();
+                for (var old : p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.ThrownHungerBlade.class, p.getBoundingBox().inflate(40))) old.discard();
+                for (int k = -1; k <= 1; k++) {
+                    var z = net.minecraft.world.entity.EntityType.HUSK.create(p.serverLevel());
+                    if (z == null) continue;
+                    var at = p.position().add(k * 2.2, 0, 5 + Math.abs(k));
+                    z.moveTo(at.x, p.getY(), at.z, 180, 0); z.setNoAi(true);
+                    z.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000); z.setHealth(1000);
+                    p.serverLevel().addFreshEntity(z);
+                }
+                HungerFx.sync(p, false);
+            }
+            case "draw0", "draw1", "draw2", "draw3", "draw4" -> {   // each path's way of coming out
+                faceForward(p);
+                int f = new int[]{2, 5, 10, 15, 20}[w.charAt(4) - '0'];
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                HungerFx.testLoad(p, f, 7, 10, 25); HungerFx.testSelect(p, 0);
+                HungerFx.draw(p, 10f);
+            }
+            case "lesson" -> { HungerFx.testReset(p); HungerFx.testUnlockAll(p); p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.draw(p, 10f); HungerFx.testHunger(p, 20); }
+            case "draw" -> { faceForward(p); p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.draw(p, 10f); }
+            case "gnash" -> { faceForward(p); HungerFx.gnash(p, 10f); }
+            case "throw" -> { faceForward(p); HungerFx.testBond(p, 140); p.setShiftKeyDown(true); HungerFx.gnash(p, 10f); p.setShiftKeyDown(false); }
+            case "feast" -> { faceForward(p); HungerFx.feast(p, 10f); }
+            case "unleash" -> { faceForward(p); HungerFx.unleash(p, 10f); }
+            case "pact" -> { faceForward(p); HungerFx.testBond(p, 230); HungerFx.unleash(p, 10f); }
+            case "hungry" -> { HungerFx.testHunger(p, 20); HungerFx.sync(p, false); }
+            case "starved" -> { HungerFx.testHunger(p, 4); HungerFx.sync(p, false); }
+            case "fed" -> { HungerFx.testHunger(p, 82); HungerFx.sync(p, false); }
+            case "page" -> { HungerFx.testHunger(p, 55); HungerFx.theBlade(p, 10f); }
+            case "devour" -> {   // a husk near death in front, sneak-struck
+                faceForward(p);
+                var hs = p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(8));
+                if (!hs.isEmpty()) {
+                    var z = hs.stream().min(java.util.Comparator.comparingDouble(x -> x.distanceToSqr(p))).get();
+                    z.setHealth(z.getMaxHealth() * 0.1f);
+                    p.setShiftKeyDown(true);
+                    z.hurt(p.damageSources().playerAttack(p), 2f);
+                    p.setShiftKeyDown(false);
+                }
+            }
+            case "parry" -> {   // a husk strikes as the jaw guard catches it
+                faceForward(p);
+                HungerFx.testParry(p);
+                var hs = p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(8));
+                if (!hs.isEmpty()) p.hurt(p.damageSources().mobAttack(hs.get(0)), 4f);
+            }
+            case "charge" -> { faceForward(p); HungerFx.testCharge(p); }
+            case "twin" -> { HungerFx.testBond(p, 140); }
+            case "sulk" -> { p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testHunger(p, 3); HungerFx.testStarvedFor(p, 70); HungerFx.draw(p, 10f); HungerFx.sync(p, false); }
+            case "spirit" -> { faceForward(p); HungerFx.testBond(p, 230); HungerFx.unleash(p, 10f); }
+            case "sheath" -> { p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); p.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY); }
+            case "domain" -> { faceForward(p); HungerFx.hungerDomain(p, 10f); }
+            case "ready" -> { HungerFx.testReset(p); root3(p); HungerFx.testGrowth(p, 50); HungerFx.sync(p, false); }
+            case "page_new" -> { HungerFx.testReset(p); HungerFx.testGrowth(p, 45); root3(p); HungerFx.theBlade(p, 10f); }
+            case "end" -> { p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); HungerFx.testReset(p); }
+            default -> {}
+        }
+    }
+
+    /** A young blade: the three base stages grown. */
+    private static void root3(ServerPlayer p) { HungerFx.testGrow(p, 1); HungerFx.testGrow(p, 2); HungerFx.testGrow(p, 3); }
+
     /** The Parasite Grimoire's shots: its arm forms (first and third person), its moves and its pages. */
     private static void parasite(ServerPlayer p, String w) {
         switch (w) {
@@ -395,6 +482,23 @@ public final class UiShotsServer {
             case "starve" -> ParasiteFx.testStarve(p);
             case "grapple" -> { faceForward(p); ParasiteFx.grapple(p); }
             case "burrow" -> ParasiteFx.burrow(p);
+            case "collapse" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.collapseCore(p, 10f); }
+            case "pack" -> {}
+            case "pack0", "pack1", "pack2", "pack3" -> {
+                faceForward(p); ParasiteFx.testFill(p); ParasiteFx.testStrain(p, w.charAt(4) - '0'); ParasiteFx.packCall(p, 0f);
+                for (int k : new int[]{1, 10, 20}) AstaFx.later(k, () -> com.mojang.logging.LogUtils.getLogger().info("UISHOTS pack: {} brutes near after {} ticks (biomass {})",
+                        p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.InfectedBrute.class, p.getBoundingBox().inflate(16)).size(), k, ParasiteFx.biomass(p)));
+            }
+            case "sight" -> { ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p); if (!ParasiteFx.sight(p)) ParasiteFx.handle(p, 27, 0); }
+            case "sight_off" -> { if (ParasiteFx.sight(p)) ParasiteFx.handle(p, 27, 0); }
+            case "molt" -> { faceForward(p); ParasiteFx.testUnlockAll(p); p.setHealth(p.getMaxHealth()); p.invulnerableTime = 0; p.hurt(p.damageSources().magic(), p.getMaxHealth() * 0.8f); }
+            case "network" -> {   // two nests: one a little way off, one here - then the travel menu
+                ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p);
+                p.connection.teleport(p.getX() + 6, p.getY(), p.getZ(), p.getYRot(), p.getXRot());
+                AstaFx.later(4, () -> { ParasiteFx.handle(p, 19, 0); p.connection.teleport(p.getX() - 6, p.getY(), p.getZ(), p.getYRot(), p.getXRot());
+                    AstaFx.later(4, () -> { ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); AstaFx.later(4, () -> ParasiteFx.sendNests(p)); }); });
+            }
+            case "look1", "look2", "look3" -> { ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p); if (!ParasiteFx.hide(p)) ParasiteFx.toggleHide(p); ParasiteFx.handle(p, 29, w.charAt(4) - '0'); }
             case "nest" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); p.connection.teleport(p.getX() - 3, p.getY(), p.getZ() - 3, -45, 20); }
             case "worn" -> { ParasiteFx.testUnlockAll(p); if (!ParasiteFx.bulwark(p)) ParasiteFx.toggleBulwark(p); ParasiteFx.root(p).putFloat("limb", 18f); ParasiteFx.testEaten(p, 1600); }
             case "end" -> { ParasiteFx.testReset(p); }

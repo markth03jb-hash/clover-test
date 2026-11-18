@@ -68,6 +68,26 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.FamiliarEntity>of(com.ironspellgrimoire.entity.FamiliarEntity::new, MobCategory.MISC).sized(0.5F, 0.5F)
                     .fireImmune().clientTrackingRange(8).updateInterval(2).build("familiar"));
 
+    /** Pack Call's infected brutes (entity/InfectedBrute). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.InfectedBrute>> INFECTED_BRUTE = ENTITIES.register("infected_brute",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.InfectedBrute>of(com.ironspellgrimoire.entity.InfectedBrute::new, MobCategory.MISC).sized(0.6F, 1.95F)
+                    .clientTrackingRange(10).build("infected_brute"));
+
+    /** The Hunger Blade thrown (entity/ThrownHungerBlade). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.ThrownHungerBlade>> THROWN_HUNGER_BLADE = ENTITIES.register("thrown_hunger_blade",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.ThrownHungerBlade>of(com.ironspellgrimoire.entity.ThrownHungerBlade::new, MobCategory.MISC).sized(0.8F, 0.8F)
+                    .fireImmune().clientTrackingRange(8).updateInterval(1).build("thrown_hunger_blade"));
+
+    /** The Hunger Blade's spirit (entity/BladeSpirit). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.BladeSpirit>> BLADE_SPIRIT = ENTITIES.register("blade_spirit",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.BladeSpirit>of(com.ironspellgrimoire.entity.BladeSpirit::new, MobCategory.MISC).sized(0.8F, 0.8F)
+                    .fireImmune().clientTrackingRange(8).updateInterval(1).build("blade_spirit"));
+
+    /** The Parasite Grimoire's molted husk (entity/MoltHusk). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MoltHusk>> MOLT_HUSK = ENTITIES.register("molt_husk",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.MoltHusk>of(com.ironspellgrimoire.entity.MoltHusk::new, MobCategory.MISC).sized(0.6F, 1.8F)
+                    .clientTrackingRange(10).build("molt_husk"));
+
     /** The Parasite Grimoire's Hive Nest (entity/HiveNest). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.HiveNest>> HIVE_NEST = ENTITIES.register("hive_nest",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.HiveNest>of(com.ironspellgrimoire.entity.HiveNest::new, MobCategory.MISC).sized(1.6F, 0.8F)

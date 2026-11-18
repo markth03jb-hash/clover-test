@@ -57,6 +57,22 @@ public final class ParasitePackets {
         }
     }
 
+    /** Server -> its player: the Hive Network's travel menu (one "dim|x|y|z|cooldown s|here" row a nest). */
+    public static class Nests {
+        public final java.util.List<String> rows;
+        public Nests(java.util.List<String> rows) { this.rows = rows; }
+        public static void encode(Nests p, FriendlyByteBuf b) { b.writeVarInt(p.rows.size()); for (String r : p.rows) b.writeUtf(r, 200); }
+        public static Nests decode(FriendlyByteBuf b) {
+            int n = b.readVarInt(); java.util.List<String> l = new java.util.ArrayList<>();
+            for (int i = 0; i < n; i++) l.add(b.readUtf(200));
+            return new Nests(l);
+        }
+        public static void handle(Nests p, Supplier<NetworkEvent.Context> ctx) {
+            ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.NestScreen.show(p.rows)));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
     /** Client -> server: the wheel, the movement, the Evolution page (server/ParasiteFx.handle). */
     public static class Act {
         public final int action, arg;

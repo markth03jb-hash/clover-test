@@ -32,6 +32,8 @@ public final class ParasiteClient {
 
     public static final KeyMapping KEY = new KeyMapping("key.iron_spell_grimoire.parasite_wheel", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories.iron_spell_grimoire");
     /** Z: the Tendril Grapple (sneaking on the ground: Burrow). */
+    /** B: Predator Sight. */
+    public static final KeyMapping SIGHT = new KeyMapping("key.iron_spell_grimoire.parasite_sight", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.iron_spell_grimoire");
     public static final KeyMapping TENDRIL = new KeyMapping("key.iron_spell_grimoire.parasite_tendril", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Z, "key.categories.iron_spell_grimoire");
 
     // ------------------------------------------------------------------ the strain, as the server last sent it
@@ -43,7 +45,8 @@ public final class ParasiteClient {
     public static int[] slots = {-1, -1, -1};
     public static boolean awakened, starving;
     public static int strain2, burrowLeft, evoRank, eaten, limb, nestStored = -1;
-    public static boolean limbGone;
+    public static boolean limbGone, sight;
+    public static int look, nestCount, nestMax = 1;
     public static int[] organs = new int[3], adapt = new int[5];
 
     static boolean wears(int m) { for (int s : slots) if (s == m) return true; return false; }
@@ -58,6 +61,7 @@ public final class ParasiteClient {
             strain2 = x[12]; organs = new int[]{x[13], x[14], x[15]}; adapt = new int[]{x[16], x[17], x[18], x[19], x[20]}; burrowLeft = x[21] ;
         }
         if (x.length >= 27) { evoRank = x[22]; eaten = x[23]; limb = x[24]; limbGone = x[25] == 1; nestStored = x[26]; }
+        if (x.length >= 31) { sight = x[27] == 1; look = x[28]; nestCount = x[29]; nestMax = x[30]; }
         Minecraft mc = Minecraft.getInstance();
         if (p.open) EvolutionScreen.open();
         else if (mc.screen instanceof EvolutionScreen s) s.refresh();
@@ -74,17 +78,20 @@ public final class ParasiteClient {
         if (b == null) return 0;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get())) return 1;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.SHADOW_GRIMOIRE.get())) return 2;
+        if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE.get())) return 3;
         return 0;
     }
 
     // ------------------------------------------------------------------ the key
     @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static final class Keys {
-        @SubscribeEvent public static void register(RegisterKeyMappingsEvent e) { e.register(KEY); e.register(TENDRIL); }
+        @SubscribeEvent public static void register(RegisterKeyMappingsEvent e) { e.register(KEY); e.register(TENDRIL); e.register(SIGHT); }
     }
 
     // ------------------------------------------------------------------ movement
-    private static int wallTicks, spineTicks;
+    private static int wallTicks, spineTicks, dashes, clientTicks;
+    private static final boolean[] dirWas = new boolean[4];
+    private static final int[] lastTap = {-100, -100, -100, -100};
     private static boolean wallUsed, gliding, shiftWas, clinging, jumpWas;
 
     /** A wall right beside the player (for Wall Cling). */
@@ -104,11 +111,12 @@ public final class ParasiteClient {
         while (KEY.consumeClick()) {
             if (mc.screen != null) continue;
             int kind = wheelKind(mc);
-            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite and System grimoires have a wheel")
+            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite, System and Hunger Blade grimoires have a wheel")
                     .withStyle(net.minecraft.ChatFormatting.GRAY), true);
             else mc.setScreen(new ParasiteWheel(kind));
         }
         boolean on = equipped && wheelKind(mc) == 1 && !pl.isSpectator() && !pl.getAbilities().flying && !pl.isPassenger();
+        while (SIGHT.consumeClick()) if (on && mc.screen == null) send(27, 0);
         while (TENDRIL.consumeClick()) {
             if (!on || mc.screen != null) continue;
             if (pl.isShiftKeyDown() && pl.onGround()) { if (rank(19) > 0) send(14, 0); }
@@ -118,7 +126,28 @@ public final class ParasiteClient {
         if (!on) { stopGlide(); clinging = false; return; }
         boolean ground = pl.onGround() || pl.isInWater() || pl.onClimbable();
         Vec3 v = pl.getDeltaMovement();
-        if (ground) { wallTicks = 0; wallUsed = false; stopGlide(); }
+        if (ground) { wallTicks = 0; wallUsed = false; stopGlide(); dashes = 0; }
+        // Air Dash: double-tap a direction in mid-air (two before landing)
+        net.minecraft.client.KeyMapping[] dirs = {mc.options.keyUp, mc.options.keyDown, mc.options.keyLeft, mc.options.keyRight};
+        clientTicks++;
+        for (int i = 0; i < 4; i++) {
+            boolean down = dirs[i].isDown();
+            if (down && !dirWas[i]) {
+                if (!ground && clientTicks - lastTap[i] <= 7 && dashes < 2 && biomass >= 2 && mc.screen == null) {
+                    Vec3 f = pl.getLookAngle().multiply(1, 0, 1);
+                    f = f.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : f.normalize();
+                    Vec3 side = new Vec3(-f.z, 0, f.x);
+                    Vec3 d = i == 0 ? f : i == 1 ? f.reverse() : i == 2 ? side.reverse() : side;
+                    pl.setDeltaMovement(d.x * 1.25, Math.max(pl.getDeltaMovement().y, 0.12), d.z * 1.25);
+                    pl.fallDistance = 0;
+                    dashes++;
+                    send(30, 0);
+                    lastTap[i] = -100;
+                } else lastTap[i] = clientTicks;
+            }
+            dirWas[i] = down;
+        }
+        v = pl.getDeltaMovement();
         // Wall Runner: forward into a wall in mid-air runs up it
         int wr = rank(1);
         boolean walling = false;

@@ -563,6 +563,18 @@ public final class UiShots {
         steps.add(new Step("par_burrow", () -> onServer(p -> UiShotsServer.element(p, "p:burrow")), 30, true));
         steps.add(new Step("par_erupt", () -> onServer(p -> UiShotsServer.element(p, "p:burrow")), 8, true));
         steps.add(new Step("par_nest", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:nest")); }, 20, true));
+        steps.add(new Step("par_collapse_pull", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "p:collapse")); }, 30, true));
+        steps.add(new Step("par_collapse_burst", () -> {}, 36, true));
+        for (int k = 0; k <= 3; k++) {
+            final int kk = k;
+            steps.add(new Step("par_pack_" + k, () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "p:pack" + kk)); }, 24, true));
+        }
+        steps.add(new Step("par_sight", () -> { mc.setScreen(null); mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "p:sight")); }, 16, true));
+        steps.add(new Step("par_sight_done", () -> onServer(p -> UiShotsServer.element(p, "p:sight_off")), 4, true));
+        steps.add(new Step("par_molt", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "p:molt")); }, 10, true));
+        for (int k = 1; k <= 3; k++) { final int kk = k; steps.add(new Step("par_hide_look" + k, () -> onServer(p -> UiShotsServer.element(p, "p:look" + kk)), 10, true)); }
+        steps.add(new Step("par_network", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { UiShotsServer.element(p, "p:end"); UiShotsServer.element(p, "p:network"); }); }, 30, false));
+        steps.add(new Step("par_network_done", () -> mc.setScreen(null), 4, true));
         steps.add(new Step("par_worn_hud", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.element(p, "p:worn")); }, 14, true));
         steps.add(new Step("par_book", () -> {
             GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PARASITE_GRIMOIRE.get()));
@@ -570,6 +582,73 @@ public final class UiShots {
             b.showPart("spells:0");
         }, 15, false));
         steps.add(new Step("par_done", () -> { mc.setScreen(null); mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "p:end")); }, 4, true));
+        // the Hunger Blade Grimoire: every sword held, first and third person; the moves; the wheel and The Blade page
+        steps.add(new Step("hb_setup", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "H:setup")); }, 30, true));
+        steps.add(new Step("hb_draw", () -> onServer(p -> UiShotsServer.element(p, "H:draw")), 10, true));
+        String[] blades = {"fang", "gnaw", "maw", "bone_evo", "bone_ribcage", "bone_ossuary", "bone_spine", "bone_reaper", "crystal_evo", "crystal_rapier", "crystal_lance", "crystal_geode", "crystal_cluster", "shadow_evo", "shadow_sickle", "shadow_nightfall", "shadow_twin", "shadow_hydra", "flame_evo", "flame_flamberge", "flame_pyre", "flame_furnace", "flame_magma"};
+        for (int f = 0; f < blades.length; f++) {
+            final int ff = f;
+            steps.add(new Step("hb_" + blades[f], () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "H:hold" + ff)); }, 10, true));
+            steps.add(new Step("hb_" + blades[f] + "_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 6, true));
+        }
+        String[] hybrids = {"fossil", "grave", "cinder", "obsidian", "sunshard", "ashen"};
+        for (int k = 0; k < 6; k++) {
+            final int ff = 23 + k;
+            steps.add(new Step("hb_hybrid_" + hybrids[k], () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "H:hold" + ff)); }, 10, true));
+            steps.add(new Step("hb_hybrid_" + hybrids[k] + "_3p", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 6, true));
+        }
+        steps.add(new Step("hb_hold_reaper", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "H:hold7")); }, 8, true));
+        steps.add(new Step("hb_gnash", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:hold2"); UiShotsServer.element(p, "H:gnash"); }); }, 5, true));
+        steps.add(new Step("hb_feast", () -> onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:hold4"); UiShotsServer.element(p, "H:feast"); }), 5, true));
+        String[] lines = {"2", "5", "10", "15", "22"};
+        String[] un = {"bite", "bone", "crystal", "shadow", "flame"};
+        for (int k = 0; k < 5; k++) {
+            final String hold = lines[k];
+            steps.add(new Step("hb_unleash_" + un[k], () -> onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:hold" + hold); UiShotsServer.element(p, "H:unleash"); }), 12, true));
+        }
+        steps.add(new Step("hb_throw", () -> onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:hold17"); UiShotsServer.element(p, "H:throw"); }), 6, true));
+        steps.add(new Step("hb_throw_back", () -> {}, 12, true));
+        steps.add(new Step("hb_pact", () -> onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:hold15"); UiShotsServer.element(p, "H:pact"); }), 14, true));
+        steps.add(new Step("hb_devour", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:hold13"); UiShotsServer.element(p, "H:devour"); }); }, 5, true));
+        steps.add(new Step("hb_parry", () -> onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:hold4"); UiShotsServer.element(p, "H:parry"); }), 3, true));
+        String[] chargeHold = {"2", "7", "9", "16", "21"};
+        for (int k = 0; k < 5; k++) {
+            final String hold = chargeHold[k];
+            steps.add(new Step("hb_charge_" + un[k], () -> onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:hold" + hold); UiShotsServer.element(p, "H:charge"); }), 8, true));
+        }
+        steps.add(new Step("hb_twin", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:twin"); UiShotsServer.element(p, "H:hold19"); }); }, 30, true));
+        steps.add(new Step("hb_twin_fp", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 6, true));
+        steps.add(new Step("hb_spirit", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:hold24"); UiShotsServer.element(p, "H:spirit"); }); }, 30, true));
+        steps.add(new Step("hb_spirit_front", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 10, true));
+        steps.add(new Step("hb_domain", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:hold15"); UiShotsServer.element(p, "H:domain"); }); }, 30, true));
+        steps.add(new Step("hb_sheath", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:sheath"); }); }, 14, true));
+        steps.add(new Step("hb_sheath_side", () -> onServer(p -> { p.setYRot(-90); p.setYHeadRot(-90); p.setYBodyRot(-90); p.connection.teleport(p.getX(), p.getY(), p.getZ(), -90, 0); }), 8, true));
+        steps.add(new Step("hb_sulk", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:sulk"); }); }, 20, true));
+        steps.add(new Step("hb_sulk_comes", () -> {}, 60, true));
+        steps.add(new Step("hb_growth_bar", () -> onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:ready"); }), 12, true));
+        String[] drawNames = {"bite", "bone", "crystal", "shadow", "flame"};
+        for (int k = 0; k < 5; k++) {
+            final int kk = k;
+            steps.add(new Step("hb_draw_" + drawNames[k], () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:draw" + kk); }); }, 4, true));
+        }
+        steps.add(new Step("hb_lessons", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { UiShotsServer.element(p, "H:setup"); UiShotsServer.element(p, "H:lesson"); }); }, 50, true));
+        steps.add(new Step("hb_hud_fed", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "H:fed")); }, 10, true));
+        steps.add(new Step("hb_hud_hungry", () -> onServer(p -> UiShotsServer.element(p, "H:hungry")), 10, true));
+        steps.add(new Step("hb_hud_starved", () -> onServer(p -> UiShotsServer.element(p, "H:starved")), 10, true));
+        steps.add(new Step("hb_wheel", () -> { onServer(p -> UiShotsServer.element(p, "H:fed")); ParasiteWheel.forceHover = 2; mc.setScreen(new ParasiteWheel(3)); }, 10, false));
+        steps.add(new Step("hb_page", () -> { mc.setScreen(null); ParasiteWheel.forceHover = -1; BladeScreen.forceHover = 15; onServer(p -> UiShotsServer.element(p, "H:page")); }, 14, false));
+        steps.add(new Step("hb_page_hybrid", () -> { mc.setScreen(null); BladeScreen.forceHover = 26; onServer(p -> UiShotsServer.element(p, "H:page")); }, 14, false));
+        steps.add(new Step("hb_guide", () -> { mc.setScreen(null); BladeScreen.forceHover = -1; BladeScreen.startGuide = true; onServer(p -> UiShotsServer.element(p, "H:page")); }, 14, false));
+        steps.add(new Step("hb_guide_young", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "H:page_new")); }, 14, false));
+        steps.add(new Step("hb_page_new", () -> BladeScreen.startGuide = false, 1, false));
+        steps.add(new Step("hb_page_new2", () -> { mc.setScreen(null); BladeScreen.forceHover = 13; onServer(p -> UiShotsServer.element(p, "H:page_new")); }, 14, false));
+        steps.add(new Step("hb_book", () -> {
+            BladeScreen.forceHover = -1;
+            GrimoireBookScreen b = new GrimoireBookScreen(new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE.get()));
+            mc.setScreen(b);
+            b.showPart("spells:0");
+        }, 15, false));
+        steps.add(new Step("hb_done", () -> { mc.setScreen(null); mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "H:end")); }, 4, true));
 
         steps.add(new Step("camera_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON), 4, true));
         // Dante's cloak: front, back, and flared (no HUD in these pictures)

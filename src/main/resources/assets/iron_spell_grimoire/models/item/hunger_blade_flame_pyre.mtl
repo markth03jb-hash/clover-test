@@ -1,0 +1,9 @@
+newmtl flame_pyre
+Kd 1 1 1
+Ka 0 0 0
+map_Kd iron_spell_grimoire:item/hunger_blade
+
+newmtl flame_pyre_glow
+Kd 1 1 1
+Ka 1 1 1
+map_Kd iron_spell_grimoire:item/hunger_blade

@@ -23,7 +23,7 @@ public class EvolutionScreen extends Screen {
     static final int INK = 0xF00A0507, PANEL = 0xE0180A0E, EDGE = 0xFF8C1C28, EDGE_DIM = 0xFF3A1218, TEXT = 0xFFF2E4E4, MUTED = 0xFF9A8088,
             GOLD = 0xFFFFC060, BONE = 0xFFC8C8CC;
     static final String[] BRANCH = {"PREDATOR", "ARSENAL", "HUNGER", "ULTIMATES"};
-    static final String[] TABS = {"Tree", "Mutations", "Organs", "Strain"};
+    static final String[] TABS = {"Tree", "Mutations", "Body", "Strain"};
     static final String[][] STRAIN_TEXT = {
             {"Hunter", "+20% speed. Talons and blade hit harder and faster. Consume reaches further and lunges."},
             {"Brute", "+6 health. Fist and lance hit harder; the Bulwark blocks more; wider slams."},
@@ -112,7 +112,7 @@ public class EvolutionScreen extends Screen {
             for (int i = 0; i < ParasiteFx.NODES.length; i++) {
                 if (ParasiteFx.NODES[i][0] != b) continue;
                 int rk = ParasiteClient.rank(i), max = ParasiteFx.NODES[i][1], cost = ParasiteFx.NODES[i][2];
-                boolean path = b == 3;
+                boolean path = i >= ParasiteFx.U_STORM && i <= ParasiteFx.U_BARRAGE;
                 boolean full = rk >= max, afford = ParasiteClient.ep >= cost;
                 int need = i == ParasiteFx.F_WHIP ? ParasiteFx.F_LANCE : i == ParasiteFx.F_RAM ? ParasiteFx.F_BULWARK : -1;
                 boolean locked = need >= 0 && ParasiteClient.rank(need) <= 0;
@@ -178,21 +178,30 @@ public class EvolutionScreen extends Screen {
     // ------------------------------------------------------------------ organs
     private void organs(GuiGraphics g, int mx, int my, int x0, int top, int W, int bottom) {
         g.drawCenteredString(font, "Grow one organ in each slot (" + ParasiteFx.ORGAN_COST + " EP the first time) - swap freely after", x0 + W / 2, top, BONE);
-        int rowH = Math.min(58, (bottom - top - 12) / 3 - 3), labelW = 44, cw = (W - 12 - labelW - 6) / 3;
-        for (int slot = 0; slot < 3; slot++) {
+        int rowH = Math.min(52, (bottom - top - 14) / 4 - 3), labelW = 44;
+        for (int slot = 0; slot < 4; slot++) {   // the three organs, then the hide's look
+            boolean hideRow = slot == 3;
             int y = top + 12 + slot * (rowH + 3);
-            int cur = ParasiteClient.organs[slot];
-            g.drawString(font, ParasiteFx.ORGAN_SLOTS[slot], x0 + 8, y + rowH / 2 - 4, cur > 0 ? 0xFFFF7080 : MUTED, false);
-            for (int c = 1; c <= 3; c++) {
-                int cx = x0 + 6 + labelW + (c - 1) * (cw + 3);
+            int n = hideRow ? 4 : 3, cur = hideRow ? ParasiteClient.look : ParasiteClient.organs[slot];
+            int cw = (W - 12 - labelW - 3 * (n - 1)) / n;
+            g.drawString(font, hideRow ? "Hide" : ParasiteFx.ORGAN_SLOTS[slot], x0 + 8, y + rowH / 2 - 4, hideRow || cur > 0 ? 0xFFFF7080 : MUTED, false);
+            for (int c = hideRow ? 0 : 1; c <= (hideRow ? 3 : 3); c++) {
+                int col = hideRow ? c : c - 1;
+                int cx = x0 + 6 + labelW + col * (cw + 3);
+                String name = hideRow ? ParasiteFx.LOOKS[c] : ParasiteFx.ORGANS[slot][c - 1];
+                String desc = hideRow ? ParasiteFx.LOOK_DESC[c] : ParasiteFx.ORGAN_DESC[slot][c - 1];
                 boolean on = cur == c, hv = over(mx, my, cx, y, cw, rowH);
                 g.fill(cx, y, cx + cw, y + rowH, on ? 0xD0501820 : hv ? 0xC0301018 : 0xC0200C10);
                 g.renderOutline(cx, y, cw, rowH, on ? 0xFFFF6070 : EDGE);
-                g.drawString(font, ParasiteFx.ORGANS[slot][c - 1], cx + 4, cy(y), on ? 0xFFFFE070 : TEXT, false);
-                List<FormattedCharSequence> ls = font.split(Component.literal(ParasiteFx.ORGAN_DESC[slot][c - 1]), cw - 8);
+                String nm = font.width(name) > cw - 8 ? font.plainSubstrByWidth(name, cw - 10) : name;
+                g.drawString(font, nm, cx + 4, cy(y), on ? 0xFFFFE070 : TEXT, false);
+                List<FormattedCharSequence> ls = font.split(Component.literal(desc), cw - 8);
                 for (int k = 0; k < Math.min(Math.max(0, (rowH - 16) / 9), ls.size()); k++) g.drawString(font, ls.get(k), cx + 4, y + 15 + k * 9, MUTED, false);
-                if (hv) foot = ParasiteFx.ORGANS[slot][c - 1] + ": " + ParasiteFx.ORGAN_DESC[slot][c - 1] + (on ? "" : cur == 0 ? "  (grow it: " + ParasiteFx.ORGAN_COST + " EP)" : "  (swap to it)");
-                if (!on) { final int arg = slot * 10 + c; hits.add(new Hit(cx, y, cw, rowH, () -> ParasiteClient.send(17, arg))); }
+                if (hv) foot = name + ": " + desc + (on ? "" : hideRow ? "  (the Chitin Hide's look)" : cur == 0 ? "  (grow it: " + ParasiteFx.ORGAN_COST + " EP)" : "  (swap to it)");
+                if (!on) {
+                    final int arg = hideRow ? c : slot * 10 + c;
+                    hits.add(new Hit(cx, y, cw, rowH, () -> ParasiteClient.send(hideRow ? 29 : 17, arg)));
+                }
             }
         }
     }
