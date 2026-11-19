@@ -1,0 +1,400 @@
+[14:29:14] [Render thread/DEBUG] [io.ne.ch.MultithreadEventLoopGroup/]: -Dio.netty.eventLoopThreads: 8
+[14:29:14] [Render thread/DEBUG] [io.ne.ch.ni.NioEventLoop/]: -Dio.netty.noKeySetOptimization: false
+[14:29:14] [Render thread/DEBUG] [io.ne.ch.ni.NioEventLoop/]: -Dio.netty.selectorAutoRebuildThreshold: 512
+[14:29:14] [Render thread/DEBUG] [io.ne.ut.in.PlatformDependent/]: org.jctools-core.MpscChunkedArrayQueue: available
+[14:29:14] [Render thread/DEBUG] [io.ne.ch.DefaultChannelId/]: -Dio.netty.processId: 2898 (auto-detected)
+[14:29:14] [Render thread/WARN] [io.ne.ut.in.SystemPropertyUtil/]: Unable to parse the boolean system property 'java.net.preferIPv6Addresses':system - using the default value: false
+[14:29:14] [Render thread/DEBUG] [io.ne.ut.NetUtil/]: -Djava.net.preferIPv4Stack: false
+[14:29:14] [Render thread/DEBUG] [io.ne.ut.NetUtil/]: -Djava.net.preferIPv6Addresses: false
+[14:29:14] [Render thread/DEBUG] [io.ne.ut.NetUtilInitializations/]: Loopback interface: lo (lo, 0:0:0:0:0:0:0:1%lo)
+[14:29:14] [Render thread/DEBUG] [io.ne.ut.NetUtil/]: /proc/sys/net/core/somaxconn: 4096
+[14:29:14] [Render thread/DEBUG] [io.ne.ch.DefaultChannelId/]: -Dio.netty.machineId: 7c:ed:8d:ff:fe:c7:56:7d (auto-detected)
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numHeapArenas: 8
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numDirectArenas: 8
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.pageSize: 8192
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxOrder: 9
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.chunkSize: 4194304
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.smallCacheSize: 256
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.normalCacheSize: 64
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedBufferCapacity: 32768
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimInterval: 8192
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimIntervalMillis: 0
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.useCacheForAllThreads: false
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedByteBuffersPerChunk: 1023
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.allocator.type: pooled
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.threadLocalDirectBufferSize: 0
+[14:29:14] [Render thread/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.maxThreadLocalCharBufferSize: 16384
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Starting local connection.
+[14:29:14] [Netty Server IO #1/DEBUG] [mixin/]: Mixing MapItemDataPacketMixin from moonlight-common.mixins.json into net.minecraft.network.protocol.game.ClientboundMapItemDataPacket
+[14:29:14] [Netty Server IO #1/DEBUG] [mixin/]: Renaming synthetic method lambda$moonlight$sendCustomDecorations$1(I)[Lnet/mehvahdjukaar/moonlight/api/map/CustomMapDecoration; to md4914ec$lambda$moonlight$sendCustomDecorations$1$0 in moonlight-common.mixins.json:MapItemDataPacketMixin
+[14:29:14] [Netty Server IO #1/DEBUG] [mixin/]: Renaming synthetic method lambda$moonlight$sendCustomDecorations$0(Lnet/minecraft/network/FriendlyByteBuf;Lnet/mehvahdjukaar/moonlight/api/map/CustomMapDecoration;)Lnet/mehvahdjukaar/moonlight/api/map/CustomMapDecoration; to md4914ec$lambda$moonlight$sendCustomDecorations$0$1 in moonlight-common.mixins.json:MapItemDataPacketMixin
+[14:29:14] [ForkJoinPool.commonPool-worker-1/INFO] [io.re.ir.IronsLib/]: Loaded 278
+[14:29:14] [Server thread/DEBUG] [mixin/]: Mixing PacketDistributorHackMixin from moonlight.mixins.json into net.minecraftforge.network.PacketDistributor
+[14:29:14] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.maxCapacityPerThread: 4096
+[14:29:14] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.ratio: 8
+[14:29:14] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.chunkSize: 32
+[14:29:14] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.blocking: false
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Starting local connection.
+[14:29:14] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'net.minecraftforge.network.HandshakeMessages$S2CModData' to 'fml:handshake' sequence 0
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 0
+[14:29:14] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'net.minecraftforge.network.HandshakeMessages$S2CModList' to 'fml:handshake' sequence 1
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 1
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Logging into server with mod list [minecraft, moonlight, mixinsquared, geckolib, playeranimator, irons_spellbooks, iron_spell_grimoire, irons_lib, forge, curios]
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_spellbooks:messages' : Version test of '1.0' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:loginwrapper' : Version test of 'FML3' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:tier_sorting' : Version test of '1.0' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:unregister' : Version test of 'FML3' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:play' : Version test of 'FML3' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_lib:messages' : Version test of '1.0' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:handshake' : Version test of 'FML3' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'curios:main' : Version test of '1' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'iron_spell_grimoire:main' : Version test of '8' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:register' : Version test of 'FML3' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:split' : Version test of '1.1' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'geckolib:main' : Version test of '1' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'moonlight:channel' : Version test of '0' from server : ACCEPTED
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Accepting channel list from server
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Dispatching wrapped packet reply for channel fml:handshake with index 1
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Accepted server connection
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 1
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client indexed reply 1 of type net.minecraftforge.network.HandshakeMessages$C2SModListReply
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client connection with modlist [minecraft, moonlight, mixinsquared, geckolib, playeranimator, irons_spellbooks, iron_spell_grimoire, irons_lib, forge, curios]
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_spellbooks:messages' : Version test of '1.0' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:loginwrapper' : Version test of 'FML3' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:tier_sorting' : Version test of '1.0' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:unregister' : Version test of 'FML3' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:play' : Version test of 'FML3' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_lib:messages' : Version test of '1.0' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:handshake' : Version test of 'FML3' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'curios:main' : Version test of '1' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'iron_spell_grimoire:main' : Version test of '8' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:register' : Version test of 'FML3' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:split' : Version test of '1.1' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'geckolib:main' : Version test of '1' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'moonlight:channel' : Version test of '0' from client : ACCEPTED
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Accepting channel list from client
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Accepted client connection mod list
+[14:29:14] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'Config curios-server.toml' to 'fml:handshake' sequence 2
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 2
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received config sync from server
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Dispatching wrapped packet reply for channel fml:handshake with index 2
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 2
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client indexed reply 2 of type net.minecraftforge.network.HandshakeMessages$C2SAcknowledge
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received acknowledgement from client
+[14:29:14] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'Config irons_spellbooks-server.toml' to 'fml:handshake' sequence 3
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 3
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received config sync from server
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Dispatching wrapped packet reply for channel fml:handshake with index 3
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 3
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client indexed reply 3 of type net.minecraftforge.network.HandshakeMessages$C2SAcknowledge
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received acknowledgement from client
+[14:29:14] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'Config forge-server.toml' to 'fml:handshake' sequence 4
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 4
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received config sync from server
+[14:29:14] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Dispatching wrapped packet reply for channel fml:handshake with index 4
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 4
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client indexed reply 4 of type net.minecraftforge.network.HandshakeMessages$C2SAcknowledge
+[14:29:14] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received acknowledgement from client
+[14:29:14] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Handshake complete!
+[14:29:14] [Netty Local Client IO #0/INFO] [ne.mi.ne.NetworkHooks/]: Connected to a modded server.
+[14:29:14] [Netty Local Client IO #0/DEBUG] [mixin/]: Mixing ClientPacketListenerMixin from moonlight-common.mixins.json into net.minecraft.client.multiplayer.ClientPacketListener
+[14:29:14] [Server thread/DEBUG] [mixin/]: Mixing CurioHooksMixin from mixins.irons_spellbooks.json into top.theillusivec4.curios.mixin.CuriosImplMixinHooks
+[14:29:14] [Server thread/INFO] [minecraft/PlayerList]: UiTester[local:E:9a9bbbd3] logged in with entity id 1 at (1.5, -60.0, 9.5)
+[14:29:14] [Server thread/INFO] [minecraft/MinecraftServer]: UiTester joined the game
+[14:29:15] [Render thread/INFO] [io.re.ir.IronsSpellbooks/]: Handling spell config sync 0 files
+[14:29:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Welcome, mage! Your first steps are in the top right. Right-click the Grimoire Codex to read how it all works.
+[14:29:15] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 5 advancements
+[14:29:16] [Render thread/DEBUG] [mixin/]: Mixing ScreenEffectRendererMixin from irons_lib.mixins.json into net.minecraft.client.renderer.ScreenEffectRenderer
+[14:29:21] [Server thread/INFO] [minecraft/MinecraftServer]: UiTester has made the advancement [Magery]
+[14:29:21] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] UiTester has made the advancement [Magery]
+[14:29:21] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 9 advancements
+[14:29:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] A Magic Broom for a new mage. Use it to fly - it runs on your mana. You only get one, so keep it safe.
+[14:29:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ SYSTEM ] You have been chosen as a Player. Kills made with this grimoire - or by your shadows - raise your Hunter level. Open Status from the G wheel.
+[14:29:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ SYSTEM ] A Daily Trial has been issued: three tasks each day. Leave it undone when the day turns and the Reckoning comes.
+[14:29:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 2 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:29:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] WANTED: Rhya the Disloyal  (Enraged)
+[14:29:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Last sighted about 532 blocks west. Three days to bring them down - the tracker at the top right shows the way.
+[14:29:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] DAILY SPECIAL: Lost Grimoire Page  A page torn from a grimoire glows out there, and mages guard it. Take it, and hold the ground.
+[14:29:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT]   Twists: Armoured, No healing. Double reward, and a Mana Core and a Rift Ink for sure.
+[14:29:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] About 273 blocks north. Two days - the quest tracker and the blue pillar show the way.
+[14:30:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 2 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:30:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:30:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 2 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:30:17] [Server thread/INFO] [minecraft/MinecraftServer]: UiTester has made the advancement [Monster Hunter]
+[14:30:18] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] UiTester has made the advancement [Monster Hunter]
+[14:30:18] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 40 advancements
+[14:30:19] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 40 advancements
+[14:30:25] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 40 advancements
+[14:30:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:30:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:31:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:31:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:31:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:31:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:31:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:32:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:32:10] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:32:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:32:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:32:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:32:43] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 43 advancements
+[14:32:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:33:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:33:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:33:39] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ SYSTEM ] A shadow has joined your army. Manage it in the Army menu (G wheel or V): it levels and ranks up from its own kills. Challenges there pit you against exclusive shadows.
+[14:33:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:33:43] [Server thread/INFO] [minecraft/LivingEntity]: Named entity OathboundKnight['Oathbound Knight'/768, l='ServerLevel[isg_uishots_1795098548966]', x=-37.98, y=-60.00, z=39.68] died: Oathbound Knight was killed
+[14:33:49] [Server thread/INFO] [minecraft/LivingEntity]: Named entity ShadowRavener['Ravener'/794, l='ServerLevel[isg_uishots_1795098548966]', x=-38.06, y=-60.00, z=32.05] died: Ravener was killed
+[14:34:15] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795098548966
+[14:34:15] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795098548966
+[14:34:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ SYSTEM ] Stat points earned. Spend them in Status: Strength (melee), Agility (speed), Vitality (health), Focus (mana), Perception (spell power).
+[14:34:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ SYSTEM ] You have Shade Marks. Spend them in the Market (the G wheel).
+[14:34:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ SYSTEM ] Job Change is open. Begin the trial from Status - pass it and choose a job for good.
+[14:34:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ SYSTEM ] Job Advancement is open. Begin the Advancement Trial from Status.
+[14:34:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We are one body now.  [G: the form wheel (sneak + G: all slices; tap G: your 4 pinned forms) - Evolution page: spend EP]
+[14:34:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Eat. Grow.  [kills feed biomass; Consume devours a weakened foe whole for EP]
+[14:34:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Move like we hunt.  [Wall Runner: forward into a wall mid-air - Glider: hold jump falling - double-tap a direction mid-air: Air Dash - sneak high up: Meteor Fall]
+[14:34:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: A shield of bone.  [with the Bulwark or Battering Ram out, right-click just before a blow lands to parry it]
+[14:34:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Reach out.  [Z: Tendril Grapple]
+[14:34:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Under the ground.  [sneak + Z on the ground: Burrow; Z again to erupt]
+[14:34:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Hold on.  [sneak against a wall mid-air: cling; jump: pounce where you look]
+[14:34:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: I can smell them through the walls.  [B: Predator Sight]
+[14:34:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Old skin.  [Molting: below 30% health you shed a husk that draws foes off you]
+[14:34:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:35:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We have a nature now.  [Strain tab: organs, a nest, a second strain]
+[14:35:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Awake.  [the wheel's Strain Art and Final Form slices]
+[14:35:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We are one body now.  [G: the form wheel (sneak + G: all slices; tap G: your 4 pinned forms) - Evolution page: spend EP]
+[14:35:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Eat. Grow.  [kills feed biomass; Consume devours a weakened foe whole for EP]
+[14:35:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Move like we hunt.  [Wall Runner: forward into a wall mid-air - Glider: hold jump falling - double-tap a direction mid-air: Air Dash - sneak high up: Meteor Fall]
+[14:35:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: A shield of bone.  [with the Bulwark or Battering Ram out, right-click just before a blow lands to parry it]
+[14:35:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Reach out.  [Z: Tendril Grapple]
+[14:35:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Under the ground.  [sneak + Z on the ground: Burrow; Z again to erupt]
+[14:35:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Hold on.  [sneak against a wall mid-air: cling; jump: pounce where you look]
+[14:35:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: I can smell them through the walls.  [B: Predator Sight]
+[14:35:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Old skin.  [Molting: below 30% health you shed a husk that draws foes off you]
+[14:35:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We have a nature now.  [Strain tab: organs, a nest, a second strain]
+[14:35:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Awake.  [the wheel's Strain Art and Final Form slices]
+[14:35:32] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We are one body now.  [G: the form wheel (sneak + G: all slices; tap G: your 4 pinned forms) - Evolution page: spend EP]
+[14:35:32] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Eat. Grow.  [kills feed biomass; Consume devours a weakened foe whole for EP]
+[14:35:32] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Move like we hunt.  [Wall Runner: forward into a wall mid-air - Glider: hold jump falling - double-tap a direction mid-air: Air Dash - sneak high up: Meteor Fall]
+[14:35:32] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: A shield of bone.  [with the Bulwark or Battering Ram out, right-click just before a blow lands to parry it]
+[14:35:32] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Reach out.  [Z: Tendril Grapple]
+[14:35:32] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Under the ground.  [sneak + Z on the ground: Burrow; Z again to erupt]
+[14:35:32] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Hold on.  [sneak against a wall mid-air: cling; jump: pounce where you look]
+[14:35:32] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: I can smell them through the walls.  [B: Predator Sight]
+[14:35:32] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Old skin.  [Molting: below 30% health you shed a husk that draws foes off you]
+[14:35:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We are one body now.  [G: the form wheel (sneak + G: all slices; tap G: your 4 pinned forms) - Evolution page: spend EP]
+[14:35:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Eat. Grow.  [kills feed biomass; Consume devours a weakened foe whole for EP]
+[14:35:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Move like we hunt.  [Wall Runner: forward into a wall mid-air - Glider: hold jump falling - double-tap a direction mid-air: Air Dash - sneak high up: Meteor Fall]
+[14:35:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: A shield of bone.  [with the Bulwark or Battering Ram out, right-click just before a blow lands to parry it]
+[14:35:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Reach out.  [Z: Tendril Grapple]
+[14:35:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Under the ground.  [sneak + Z on the ground: Burrow; Z again to erupt]
+[14:35:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Hold on.  [sneak against a wall mid-air: cling; jump: pounce where you look]
+[14:35:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: I can smell them through the walls.  [B: Predator Sight]
+[14:35:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Old skin.  [Molting: below 30% health you shed a husk that draws foes off you]
+[14:35:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We are one body now.  [G: the form wheel (sneak + G: all slices; tap G: your 4 pinned forms) - Evolution page: spend EP]
+[14:35:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Eat. Grow.  [kills feed biomass; Consume devours a weakened foe whole for EP]
+[14:35:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Move like we hunt.  [Wall Runner: forward into a wall mid-air - Glider: hold jump falling - double-tap a direction mid-air: Air Dash - sneak high up: Meteor Fall]
+[14:35:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: A shield of bone.  [with the Bulwark or Battering Ram out, right-click just before a blow lands to parry it]
+[14:35:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Reach out.  [Z: Tendril Grapple]
+[14:35:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Under the ground.  [sneak + Z on the ground: Burrow; Z again to erupt]
+[14:35:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Hold on.  [sneak against a wall mid-air: cling; jump: pounce where you look]
+[14:35:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: I can smell them through the walls.  [B: Predator Sight]
+[14:35:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Old skin.  [Molting: below 30% health you shed a husk that draws foes off you]
+[14:35:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We are one body now.  [G: the form wheel (sneak + G: all slices; tap G: your 4 pinned forms) - Evolution page: spend EP]
+[14:35:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Eat. Grow.  [kills feed biomass; Consume devours a weakened foe whole for EP]
+[14:35:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Move like we hunt.  [Wall Runner: forward into a wall mid-air - Glider: hold jump falling - double-tap a direction mid-air: Air Dash - sneak high up: Meteor Fall]
+[14:35:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: A shield of bone.  [with the Bulwark or Battering Ram out, right-click just before a blow lands to parry it]
+[14:35:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Reach out.  [Z: Tendril Grapple]
+[14:35:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Under the ground.  [sneak + Z on the ground: Burrow; Z again to erupt]
+[14:35:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Hold on.  [sneak against a wall mid-air: cling; jump: pounce where you look]
+[14:35:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: I can smell them through the walls.  [B: Predator Sight]
+[14:35:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Old skin.  [Molting: below 30% health you shed a husk that draws foes off you]
+[14:35:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We have a nature now.  [Strain tab: organs, a nest, a second strain]
+[14:35:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Awake.  [the wheel's Strain Art and Final Form slices]
+[14:35:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Nothing left to become... but one thing.  [Strain tab: choose your Apex Mutation, for good]
+[14:35:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We are one body now.  [G: the form wheel (sneak + G: all slices; tap G: your 4 pinned forms) - Evolution page: spend EP]
+[14:35:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Eat. Grow.  [kills feed biomass; Consume devours a weakened foe whole for EP]
+[14:35:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Move like we hunt.  [Wall Runner: forward into a wall mid-air - Glider: hold jump falling - double-tap a direction mid-air: Air Dash - sneak high up: Meteor Fall]
+[14:35:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: A shield of bone.  [with the Bulwark or Battering Ram out, right-click just before a blow lands to parry it]
+[14:35:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Reach out.  [Z: Tendril Grapple]
+[14:35:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Under the ground.  [sneak + Z on the ground: Burrow; Z again to erupt]
+[14:35:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Hold on.  [sneak against a wall mid-air: cling; jump: pounce where you look]
+[14:35:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: I can smell them through the walls.  [B: Predator Sight]
+[14:35:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Old skin.  [Molting: below 30% health you shed a husk that draws foes off you]
+[14:35:57] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 1 ticks (biomass 60.0)
+[14:35:58] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 10 ticks (biomass 60.0)
+[14:35:58] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 20 ticks (biomass 59.8)
+[14:35:59] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 1 ticks (biomass 60.0)
+[14:35:59] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 10 ticks (biomass 59.8)
+[14:36:00] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 20 ticks (biomass 59.8)
+[14:36:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We have a nature now.  [Strain tab: organs, a nest, a second strain]
+[14:36:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Awake.  [the wheel's Strain Art and Final Form slices]
+[14:36:00] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 1 ticks (biomass 59.8)
+[14:36:01] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 10 ticks (biomass 59.8)
+[14:36:01] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 20 ticks (biomass 59.8)
+[14:36:01] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 1 ticks (biomass 60.0)
+[14:36:02] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 10 ticks (biomass 60.0)
+[14:36:02] [Server thread/INFO] [co.ir.se.UiShotsServer/]: UISHOTS pack: 3 brutes near after 20 ticks (biomass 59.8)
+[14:36:08] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We are one body now.  [G: the form wheel (sneak + G: all slices; tap G: your 4 pinned forms) - Evolution page: spend EP]
+[14:36:08] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Eat. Grow.  [kills feed biomass; Consume devours a weakened foe whole for EP]
+[14:36:08] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Move like we hunt.  [Wall Runner: forward into a wall mid-air - Glider: hold jump falling - double-tap a direction mid-air: Air Dash - sneak high up: Meteor Fall]
+[14:36:08] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: A shield of bone.  [with the Bulwark or Battering Ram out, right-click just before a blow lands to parry it]
+[14:36:08] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Reach out.  [Z: Tendril Grapple]
+[14:36:08] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Under the ground.  [sneak + Z on the ground: Burrow; Z again to erupt]
+[14:36:08] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Hold on.  [sneak against a wall mid-air: cling; jump: pounce where you look]
+[14:36:08] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: I can smell them through the walls.  [B: Predator Sight]
+[14:36:08] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Old skin.  [Molting: below 30% health you shed a husk that draws foes off you]
+[14:36:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Use me well.  [right-click: parry - hold right-click: a charged strike - sneak and hit a foe near death: devour it whole]
+[14:36:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:36:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Pathwalker (+5% damage with the blade out) - wear it on The Blade page
+[14:36:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Fused (+5% attack speed with it out) - wear it on The Blade page
+[14:37:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Now. Together.
+[14:37:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Pathwalker (+5% damage with the blade out) - wear it on The Blade page
+[14:37:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Fused (+5% attack speed with it out) - wear it on The Blade page
+[14:37:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: That's how I grow.  [kills made with the blade feed it Growth - open The Blade page to grow new swords]
+[14:37:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Carry more of me.  [The Blade page: carry up to 4 swords - press G to switch between them]
+[14:37:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: I'm big enough to open my mouth wide now.  [the Hunger Domain page: 20 s of slowed prey, every kill fills me]
+[14:37:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Two of my hungers have peaked. They could become one.  [hybrids: the bottom row of The Blade page, 300 Growth]
+[14:37:06] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Pathwalker (+5% damage with the blade out) - wear it on The Blade page
+[14:37:06] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Fused (+5% attack speed with it out) - wear it on The Blade page
+[14:37:12] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Now. Together.
+[14:37:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Quiet now.
+[14:37:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Pathwalker (+5% damage with the blade out) - wear it on The Blade page
+[14:37:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Fused (+5% attack speed with it out) - wear it on The Blade page
+[14:37:17] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Carry yourself, then.
+[14:37:18] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: I'm getting hungry...  [hungry: it hits harder and pulls you to prey - starved: it bites you, and left starved it sulks - well fed: faster swings]
+[14:37:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Use me well.  [right-click: parry - hold right-click: a charged strike - sneak and hit a foe near death: devour it whole]
+[14:37:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Use me well.  [right-click: parry - hold right-click: a charged strike - sneak and hit a foe near death: devour it whole]
+[14:37:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Use me well.  [right-click: parry - hold right-click: a charged strike - sneak and hit a foe near death: devour it whole]
+[14:37:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Use me well.  [right-click: parry - hold right-click: a charged strike - sneak and hit a foe near death: devour it whole]
+[14:37:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Use me well.  [right-click: parry - hold right-click: a charged strike - sneak and hit a foe near death: devour it whole]
+[14:37:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: Use me well.  [right-click: parry - hold right-click: a charged strike - sneak and hit a foe near death: devour it whole]
+[14:37:26] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Pathwalker (+5% damage with the blade out) - wear it on The Blade page
+[14:37:26] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Fused (+5% attack speed with it out) - wear it on The Blade page
+[14:37:26] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The blade: I'm getting hungry...  [hungry: it hits harder and pulls you to prey - starved: it bites you, and left starved it sulks - well fed: faster swings]
+[14:37:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Glutton (Each devour mends 2 more hearts) - wear it on The Blade page
+[14:37:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Bloodbound (+2 armour with the blade out) - wear it on The Blade page
+[14:37:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Neighbours: the Barracks and the Chapel - Defenders slowly heal.
+[14:37:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Neighbours: the Watchtower and the Observatory - Towers never miss a revealed or marked foe.
+[14:37:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Neighbours: the Forge and the Armoury - Blade Rack's weapons burn.
+[14:37:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[14:37:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Skeleton joins your garrison as a Archer.
+[14:37:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Witch joins your garrison as a Mystic.
+[14:37:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Ravager joins your garrison as a Brute.
+[14:37:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:38:10] [Server thread/INFO] [minecraft/MinecraftServer]: UiTester has completed the challenge [Citadel]
+[14:38:10] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] UiTester has completed the challenge [Citadel]
+[14:38:10] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 48 advancements
+[14:38:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[14:38:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[14:38:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[14:38:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[14:38:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[14:38:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[14:38:20] [Server thread/INFO] [minecraft/MinecraftServer]: UiTester has completed the challenge [Eclipse]
+[14:38:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] UiTester has completed the challenge [Eclipse]
+[14:38:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Together, then.
+[14:38:20] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 50 advancements
+[14:38:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[14:38:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[14:38:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[14:38:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[14:38:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[14:38:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[14:38:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[14:38:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[14:38:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[14:38:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[14:38:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[14:38:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[14:38:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[14:38:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[14:38:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[14:38:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[14:38:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[14:38:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:39] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[14:38:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[14:38:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[14:38:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[14:38:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[14:38:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[14:38:41] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:42] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[14:38:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[14:38:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[14:38:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[14:38:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[14:38:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[14:38:44] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[14:38:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[14:38:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[14:38:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[14:38:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[14:38:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[14:38:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I'm full. Let me out.  [swap now: the resting twin bursts out with what it stored]
+[14:38:48] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Look at me.
+[14:38:48] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[14:38:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[14:38:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[14:38:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[14:38:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[14:38:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[14:38:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Hush now. Everything is slow.
+[14:38:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:51] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: They are what we were before we were us. Beat them both.
+[14:38:52] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[14:38:52] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[14:38:52] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[14:38:52] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[14:38:52] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[14:38:52] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[14:38:52] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[14:38:58] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[14:39:01] [Render thread/INFO] [minecraft/Minecraft]: Stopping!
+[14:39:01] [Render thread/DEBUG] [io.re.ir.IronsSpellbooks/]: ClientPlayerNetworkEvent onPlayerLogOut
+[14:39:02] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: UiTester lost connection: Disconnected
+[14:39:02] [Server thread/INFO] [minecraft/MinecraftServer]: UiTester left the game
+[14:39:02] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: Stopping singleplayer server as player logged out
+[14:39:02] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[14:39:02] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[14:39:02] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[14:39:02] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098548966]'/minecraft:overworld
+[14:39:03] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098548966]'/minecraft:the_end
+[14:39:03] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098548966]'/iron_spell_grimoire:rift
+[14:39:03] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098548966]'/irons_spellbooks:pocket_dimension
+[14:39:03] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098548966]'/minecraft:the_nether
+[14:39:03] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795098548966
+[14:39:03] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795098548966
+[14:39:03] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (isg_uishots_1795098548966): All chunks are saved
+[14:39:03] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[14:39:03] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (rift): All chunks are saved
+[14:39:03] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (pocket_dimension): All chunks are saved
+[14:39:03] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[14:39:03] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[14:39:04] [Server thread/DEBUG] [ne.mi.fm.co.ConfigTracker/CONFIG]: Unloading configs type SERVER
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1795098492206.json
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+See https://docs.gradle.org/8.1.1/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 10m 58s
+10 actionable tasks: 10 executed
