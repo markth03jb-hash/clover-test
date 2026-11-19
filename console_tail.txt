@@ -1,0 +1,400 @@
+[15:07:12] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:12] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[isg game tests] 431 / 448
+[15:07:18] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:18] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:18] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:18] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:18] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:18] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:18] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:21] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:21] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:21] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:21] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:21] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:21] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:24] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:27] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:27] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:27] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:27] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:27] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:27] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:28] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:33] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:33] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:33] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:33] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:33] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:33] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:33] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[isg game tests] 431 / 448
+[15:07:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:39] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:39] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:39] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:39] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:39] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:39] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:42] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:42] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:42] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:42] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:42] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:42] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:48] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:48] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:48] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:48] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:48] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:48] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:48] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:51] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:51] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:51] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:51] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:51] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:51] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:53] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:07:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:07:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:07:55] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has completed the challenge [Eclipse]
+[15:07:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has completed the challenge [Eclipse]
+[15:07:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Together, then.
+[15:07:55] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 43 advancements
+[15:07:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[isg game tests] 431 / 448
+[15:07:57] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:07:57] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:07:57] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:07:57] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:07:57] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:08:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Look at me.
+[15:08:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:08:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:08:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:08:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:08:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:08:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:08:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:08:02] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Hush now. Everything is slow.
+[15:08:03] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:08:03] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:08:03] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:08:03] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:08:03] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:08:03] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:08:03] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:08:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:08:06] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:08:06] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:08:06] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:08:06] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:08:06] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:08:06] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:08:08] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:08:09] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:08:09] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:08:09] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:08:09] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:08:09] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:08:09] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:08:10] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:08:12] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:08:12] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:08:12] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:08:12] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:08:12] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:08:12] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two wardens guard the way to the eclipse.  [the Bond tab: begin the trial - beat both wardens in 4 minutes]
+[15:08:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Sol reached level 3.
+[15:08:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[15:08:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 2 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:08:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Heartfire is set. +10% damage from Sol's arts.
+[15:08:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Sol reached level 25.
+[15:08:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Dawnchild (+3% attack damage) - wear it on the Bond tab
+[15:08:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I've learned something new.  [The Masks page: choose four arts of each twin for the G wheel]
+[15:08:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: There's room in the mask for a stone now.  [Sunstones drop by day, Moonstones by night - set them on the Masks tab]
+[15:08:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Let me out - I'll fight too.  [the resting twin's Echo fights beside you in a fight (level 15+), then goes back to your hip]
+[15:08:14] [Server thread/INFO] [minecraft/LivingEntity]: Named entity TwinWarden['The Dusk Warden'/1140, l='ServerLevel[isg_uishots_1795098512781]', x=-3.50, y=-58.50, z=-1.50] died: The Dusk Warden was slain by Tester
+[15:08:14] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has reached the goal [Two Wardens Down]
+[15:08:14] [Server thread/INFO] [minecraft/LivingEntity]: Named entity TwinWarden['The Dawn Warden'/1139, l='ServerLevel[isg_uishots_1795098512781]', x=2.50, y=-58.50, z=-1.50] died: The Dawn Warden was slain by Tester
+[15:08:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: They are what we were before we were us. Beat them both.
+[15:08:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: One more.
+[15:08:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has reached the goal [Two Wardens Down]
+[15:08:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Title earned: Eclipse-Touched (+2 armour) - wear it on the Bond tab
+[15:08:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: The eclipse is ours.
+[15:08:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Eclipse Union is open: the Eclipse Union page.
+[15:08:14] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 43 advancements
+[15:08:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Together, then.
+[15:08:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Pyre Heart is set. Kills with Sol worn heal 2 hearts.
+[15:08:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Blazing Rush is set. Sol's Rush: +35% damage.
+[15:08:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Flare Shot reached Mastery I. +15% damage.
+[15:08:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: We can strike together now.  [the Twin Strike page]
+[15:08:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I remember where we last changed faces.  [Mirror Swap: sneak as you swap to step back there]
+[15:08:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: I'm full. Let me out.  [swap now: the resting twin bursts out with what it stored]
+[15:08:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Look at me.
+[15:08:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Nyx: Hush now. Everything is slow.
+[isg game tests] 432 / 448
+[15:08:19] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has made the advancement [Foundations]
+[15:08:19] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has made the advancement [Foundations]
+[15:08:19] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 44 advancements
+[15:08:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 433 / 448
+[15:08:38] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795098512781
+[15:08:38] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795098512781
+[isg game tests] 433 / 448
+[isg game tests] 433 / 448
+[15:09:31] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has completed the challenge [The Whole Fortress]
+[15:09:31] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has completed the challenge [Citadel]
+[15:09:31] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Neighbours: the Library and the Arcanum - Every third Ley Lance costs no mana.
+[15:09:31] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Neighbours: the Rune Vault and the Chapel - The Ward Sigil also heals.
+[15:09:31] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Neighbours: the Crypt and the Reliquary - When the Keepsake saves you, bone sentries rise round you.
+[15:09:31] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Neighbours: the Workshop and the Siege Yard - The Ballista lobs trebuchet shots too.
+[15:09:31] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has completed the challenge [The Whole Fortress]
+[15:09:31] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has completed the challenge [Citadel]
+[15:09:31] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 48 advancements
+[isg game tests] 433 / 448
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Neighbours: the Forge and the Armoury - Blade Rack's weapons burn.
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Neighbours: Blade Rack's weapons burn.
+[15:09:37] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has made the advancement [Raising the Walls]
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The fortress grows: book level 2.
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A blueprint from a level up: the Workshop (Ballista).
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has made the advancement [Raising the Walls]
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The fortress grows: book level 3.
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A blueprint from a level up: the Treasury (Tribute).
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The fortress grows: book level 4.
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A blueprint from a level up: the Chapel (Sanctuary Bell).
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Your floor plan grows to 4x4.
+[15:09:37] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 48 advancements
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Skeleton joins your garrison as a Archer.
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[15:09:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Skeleton joins your garrison as a Archer.
+[15:09:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[15:09:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[15:09:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[15:09:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[15:09:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[15:09:43] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has completed the challenge [Rebuilt Stronger]
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The fortress falls and rises again - star 1 of 5. Towers, walls and defenders are 5% stronger.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A new room opens: the Herald's Gate (Lure Horn).
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has completed the challenge [Rebuilt Stronger]
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A banner from the Iron Golem - claim it in the Garrison tab.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A banner from the Iron Golem - claim it in the Garrison tab.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A banner from the Iron Golem - claim it in the Garrison tab.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A banner from the Iron Golem - claim it in the Garrison tab.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A banner from the Iron Golem - claim it in the Garrison tab.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A banner from the Iron Golem - claim it in the Garrison tab.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A banner from the Iron Golem - claim it in the Garrison tab.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A banner from the Iron Golem - claim it in the Garrison tab.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A banner from the Iron Golem - claim it in the Garrison tab.
+[15:09:43] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A banner from the Iron Golem - claim it in the Garrison tab.
+[15:09:43] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 49 advancements
+[15:09:44] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[15:09:44] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 49 advancements
+[15:09:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Ossuarch: Another one wanders into my ossuary. Stay - you'll fit right in.
+[isg game tests] 437 / 448
+[15:10:06] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Ossuarch: You can scratch bone. Fine - let's see you cut through space.
+[isg game tests] 437 / 448
+[15:10:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Ossuarch: Enough. I'll show you what was waiting under the bone.
+[15:10:32] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Ossuarch: ...Then we end this together.
+[15:10:33] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] A TORN MEMORY PAGE  drifts down from The Ossuarch - Chapter I, page 1. Use it to read it into your grimoire.
+[15:10:34] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Ossuarch: ...So the bone remembers you. Hm.
+[15:10:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Beast of Despair: Hope? I'll tear it out of you. Despair is the only thing that's real.
+[isg game tests] 438 / 448
+[15:10:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Beast of Despair: You made me open it... Now see what a real beast looks like.
+[isg game tests] 438 / 448
+[15:11:07] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Beast of Despair: Struggle all you want. Everything gets swallowed by despair in the end.
+[15:11:12] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Beast of Despair: If I'm going down, I'm taking every one of you with me!
+[15:11:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] A TORN MEMORY PAGE  drifts down from The Beast of Despair - Chapter I, page 2. Use it to read it into your grimoire.
+[15:11:14] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Beast of Despair: Hope... is only... a longer road to despair...
+[15:11:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Rhya: Ugh, more work... Fine. Let me see that grimoire of yours - I'll be borrowing it.
+[isg game tests] 439 / 448
+[15:11:26] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Rhya: Alright, alright... you know I've touched a lot of grimoires, right? Captains' ones, even.
+[isg game tests] 439 / 448
+[15:11:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Rhya: Fine. Then I'll copy the one magic that isn't supposed to be copied.
+[15:11:42] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Rhya: Total Copy. Everything I've touched today - all of it, at once.
+[15:11:42] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Rhya: Heh... I'm so tired... Wake me when it's over...
+[15:11:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Licht: You carry a grimoire... Then show me what you would protect with it.
+[isg game tests] 440 / 448
+[15:12:07] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Licht: Not bad. This one is heavier.
+[isg game tests] 440 / 448
+[15:12:21] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Licht: Two blades now. Keep up.
+[15:12:33] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Licht: ...Forgive me. What comes next is not light.
+[15:12:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Revenant: Welcome, welcome. My friends here have been dying to meet you.
+[isg game tests] 441 / 448
+[15:12:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Revenant: You think you can close them all? I'll just open more!
+[isg game tests] 441 / 448
+[15:13:02] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] A TORN MEMORY PAGE  drifts down from The Revenant - Chapter I, page 3. Use it to read it into your grimoire.
+[15:13:02] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Revenant: No... not like this... not before I get my revenge...
+[15:13:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Curse Witch: Heehoehoehoe! A visitor in the forest? Stay, stay - let me curse you properly!
+[isg game tests] 442 / 448
+[15:13:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Curse Witch: Oh-ho! You're a tough one! Then my little ones will help - heehoehoe!
+[isg game tests] 442 / 448
+[15:13:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Curse Witch: Heehoe... hoe... my curses... they're lifting...
+[15:13:38] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795098512781
+[15:13:38] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795098512781
+[isg game tests] 443 / 448
+[15:14:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Cinder Sovereign: You think fire fears the rain? Burn.
+[isg game tests] 443 / 448
+[15:14:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Cinder Sovereign: ENOUGH. The world beneath you is mine.
+[isg game tests] 444 / 448
+[15:14:36] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Copyist's Echo: She wrote me to keep the books. You want her pages? Read them off me.
+[15:14:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Copyist's Echo: You're tearing me. That's how she made me - from torn pages.
+[15:14:52] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MemoryGuardian['The Copyist's Echo'/2401, l='ServerLevel[isg_uishots_1795098512781]', x=-0.22, y=-60.00, z=-7.77] died: The Copyist's Echo was slain by Tester
+[15:14:52] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] MEMORY RECOVERED  The Copyist's Echo fades into a last page. +15 merit stars.
+[15:14:52] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT]   Chapter II begins: its pages are with the great foes again.
+[15:14:52] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 50 advancements
+[15:14:52] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Copyist's Echo: ...Keep the books. Better than I did.
+[isg game tests] 444 / 448
+[15:15:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Dante: Cut me, burn me, break me. I'll simply put myself back together.
+[isg game tests] 445 / 448
+[15:15:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Dante: Hold still. This only takes a moment.
+[15:15:33] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Dante: ...My mana. Gone? No - not yet!
+[isg game tests] 445 / 448
+[15:15:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Dante: You've seen what my body can do. Now feel how heavy the world can be.
+[15:15:44] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Dante: There. Whole again.
+[15:15:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Dante: ...My mana. Gone? No - not yet!
+[isg game tests] 446 / 448
+[15:15:56] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has made the advancement [Through the Crack]
+[15:15:56] [Server thread/INFO] [minecraft/IntegratedServer]: Saving and pausing game...
+[15:15:56] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/minecraft:overworld
+[15:15:56] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/minecraft:the_nether
+[15:15:56] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/irons_spellbooks:pocket_dimension
+[15:15:56] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/iron_spell_grimoire:rift
+[15:15:56] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/minecraft:the_end
+[15:15:56] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795098512781
+[15:15:56] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795098512781
+[15:15:56] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has made the advancement [Through the Crack]
+[15:15:56] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] THE MAGIC KNIGHT EXAM
+[15:15:56] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT]   Five floors, each under its own law, then three shades in the Exam Hall.
+[15:15:56] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT]   Fall and you are sent back to the altar. Pass and your grimoire's mastery goes on to 7.
+[15:15:56] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 51 advancements
+[15:15:59] [Server thread/INFO] [minecraft/IntegratedServer]: Saving and pausing game...
+[15:15:59] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/minecraft:overworld
+[15:15:59] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/minecraft:the_nether
+[15:15:59] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/irons_spellbooks:pocket_dimension
+[15:15:59] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/iron_spell_grimoire:rift
+[15:15:59] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/minecraft:the_end
+[15:15:59] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795098512781
+[15:15:59] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795098512781
+[15:16:01] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ELF RAID  The sky tears open over the village - the elves have come for its mages. Defend it till the last wave falls.
+[15:16:05] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2413, l='ServerLevel[isg_uishots_1795098512781]', x=-19.50, y=-60.00, z=0.50] died: Possessed Elf was killed
+[15:16:05] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2416, l='ServerLevel[isg_uishots_1795098512781]', x=-7.50, y=-60.00, z=14.50] died: Possessed Elf was killed
+[15:16:05] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2412, l='ServerLevel[isg_uishots_1795098512781]', x=7.50, y=-60.00, z=19.50] died: Possessed Elf was killed
+[15:16:05] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2414, l='ServerLevel[isg_uishots_1795098512781]', x=5.50, y=-60.00, z=-29.50] died: Possessed Elf was killed
+[15:16:05] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2415, l='ServerLevel[isg_uishots_1795098512781]', x=24.50, y=-60.00, z=-17.50] died: Possessed Elf was killed
+[15:16:05] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2411, l='ServerLevel[isg_uishots_1795098512781]', x=20.50, y=-60.00, z=-12.50] died: Possessed Elf was killed
+[15:16:11] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2425, l='ServerLevel[isg_uishots_1795098512781]', x=-21.50, y=-60.00, z=-16.50] died: Possessed Elf was killed
+[15:16:11] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2429, l='ServerLevel[isg_uishots_1795098512781]', x=-18.30, y=-60.00, z=-2.50] died: Possessed Elf was killed
+[15:16:11] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2424, l='ServerLevel[isg_uishots_1795098512781]', x=-6.50, y=-60.00, z=12.50] died: Possessed Elf was killed
+[15:16:11] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2428, l='ServerLevel[isg_uishots_1795098512781]', x=-6.50, y=-60.00, z=14.50] died: Possessed Elf was killed
+[15:16:11] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2426, l='ServerLevel[isg_uishots_1795098512781]', x=-9.99, y=-60.00, z=-33.98] died: Possessed Elf was killed
+[15:16:11] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2430, l='ServerLevel[isg_uishots_1795098512781]', x=-3.50, y=-60.00, z=-32.50] died: Possessed Elf was killed
+[15:16:11] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2423, l='ServerLevel[isg_uishots_1795098512781]', x=21.50, y=-60.00, z=-14.50] died: Possessed Elf was killed
+[15:16:11] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2427, l='ServerLevel[isg_uishots_1795098512781]', x=18.50, y=-60.00, z=-4.50] died: Possessed Elf was killed
+[15:16:11] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2431, l='ServerLevel[isg_uishots_1795098512781]', x=17.50, y=-60.00, z=-12.50] died: Possessed Elf was killed
+[isg game tests] 447 / 448
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2443, l='ServerLevel[isg_uishots_1795098512781]', x=-22.50, y=-60.00, z=-13.50] died: Possessed Elf was killed
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2447, l='ServerLevel[isg_uishots_1795098512781]', x=-18.50, y=-60.00, z=-1.50] died: Possessed Elf was killed
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2451, l='ServerLevel[isg_uishots_1795098512781]', x=-21.50, y=-60.00, z=-6.50] died: Possessed Elf was killed
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2446, l='ServerLevel[isg_uishots_1795098512781]', x=-3.50, y=-60.00, z=13.50] died: Possessed Elf was killed
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2450, l='ServerLevel[isg_uishots_1795098512781]', x=-2.50, y=-60.00, z=15.50] died: Possessed Elf was killed
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2452, l='ServerLevel[isg_uishots_1795098512781]', x=-5.50, y=-60.00, z=-34.50] died: Possessed Elf was killed
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2442, l='ServerLevel[isg_uishots_1795098512781]', x=0.50, y=-60.00, z=13.50] died: Possessed Elf was killed
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2444, l='ServerLevel[isg_uishots_1795098512781]', x=7.50, y=-60.00, z=-32.50] died: Possessed Elf was killed
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2448, l='ServerLevel[isg_uishots_1795098512781]', x=5.50, y=-60.00, z=-31.50] died: Possessed Elf was killed
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2441, l='ServerLevel[isg_uishots_1795098512781]', x=16.50, y=-60.00, z=-0.50] died: Possessed Elf was killed
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2445, l='ServerLevel[isg_uishots_1795098512781]', x=25.50, y=-60.00, z=-10.50] died: Possessed Elf was killed
+[15:16:17] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2449, l='ServerLevel[isg_uishots_1795098512781]', x=21.50, y=-60.00, z=-15.50] died: Possessed Elf was killed
+[15:16:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Licht: You've made a name for yourself, mage. My people have come to take it.
+[15:16:23] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2467, l='ServerLevel[isg_uishots_1795098512781]', x=-22.50, y=-60.00, z=-4.50] died: Possessed Elf was killed
+[15:16:23] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2466, l='ServerLevel[isg_uishots_1795098512781]', x=-3.50, y=-60.00, z=16.50] died: Possessed Elf was killed
+[15:16:23] [Server thread/INFO] [minecraft/LivingEntity]: Named entity Licht['Licht, Leader of the Raid'/2469, l='ServerLevel[isg_uishots_1795098512781]', x=-0.50, y=-60.00, z=-1.50] died: Licht, Leader of the Raid was killed
+[15:16:23] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2468, l='ServerLevel[isg_uishots_1795098512781]', x=2.72, y=-60.00, z=-29.83] died: Possessed Elf was killed
+[15:16:23] [Server thread/INFO] [minecraft/LivingEntity]: Named entity MageEnemy['Possessed Elf'/2465, l='ServerLevel[isg_uishots_1795098512781]', x=20.50, y=-60.00, z=-15.50] died: Possessed Elf was killed
+[15:16:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] A TORN MEMORY PAGE  drifts down from Licht, Leader of the Raid - Chapter II, page 1. Use it to read it into your grimoire.
+[15:16:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Licht: So this is... how it ends. Protect what I could not.
+[15:16:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT]   The village leaves its thanks in a chest of Raid Spoils by the meeting place.
+[15:16:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] THE RAID IS BROKEN  +12 merit stars, 24 emeralds, two Elven Blade Shards, Mana Core, an upgrade, the Elf King's Leaf, Elven Ink.
+[15:16:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT]   Raids broken: 1 - the next will come back harder, and pay more.
+[15:16:23] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 52 advancements
+[15:16:25] [Render thread/INFO] [minecraft/Minecraft]: Stopping!
+[15:16:25] [Render thread/DEBUG] [io.re.ir.IronsSpellbooks/]: ClientPlayerNetworkEvent onPlayerLogOut
+[15:16:25] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: Tester lost connection: Disconnected
+[15:16:25] [Server thread/INFO] [minecraft/MinecraftServer]: Tester left the game
+[15:16:25] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: Stopping singleplayer server as player logged out
+[15:16:25] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[15:16:25] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[15:16:25] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[15:16:26] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/minecraft:overworld
+[15:16:26] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/minecraft:the_nether
+[15:16:26] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/irons_spellbooks:pocket_dimension
+[15:16:26] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/iron_spell_grimoire:rift
+[15:16:26] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795098512781]'/minecraft:the_end
+[15:16:26] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795098512781
+[15:16:26] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795098512781
+[15:16:26] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (isg_uishots_1795098512781): All chunks are saved
+[15:16:26] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[15:16:26] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (pocket_dimension): All chunks are saved
+[15:16:26] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (rift): All chunks are saved
+[15:16:26] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[15:16:26] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[15:16:26] [Server thread/DEBUG] [ne.mi.fm.co.ConfigTracker/CONFIG]: Unloading configs type SERVER
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1795098463452.json
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+See https://docs.gradle.org/8.1.1/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 48m 47s
+10 actionable tasks: 10 executed

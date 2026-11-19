@@ -1,0 +1,484 @@
+Iron Spell Grimoire - game tests: 433 passed, 1 failed, 28 warning(s)
+PASS | save: player data | 42 keys
+PASS | save: rifts | 0 rift(s)
+PASS | boards: new notes | cost 2 stars
+PASS | boards: take a bounty | Rhya the Disloyal
+PASS | boards: give up a bounty | 
+PASS | boards: take a quest | Monster Hunt
+PASS | boards: give up a quest | 
+INFO | casting | using public boolean io.redspace.ironsspellbooks.api.spells.AbstractSpell.attemptInitiateCast(net.minecraft.world.item.ItemStack,int,net.minecraft.world.level.Level,net.minecraft.world.entity.player.Player,io.redspace.ironsspellbooks.api.spells.CastSource,boolean,java.lang.String) -> true
+PASS | spell iron_spell_grimoire:summon_greatsword | 1 fx packets, 1500 mana, 0.0 damage, 1 messages, cd 20, book black_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:piercing_dash | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Hold the Demon Slayer Sword or the Demon Dweller Sword to use this spell. school=irons_spellbooks:evocation) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:piercing_dash | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 120, book black_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:zetten | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Hold the Demon Slayer Sword or the Demon Dweller Sword to use this spell. school=irons_spellbooks:evocation) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:zetten | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 100, book black_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:sky_splitter | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Hold the Demon Slayer Sword or the Demon Dweller Sword to use this spell. school=irons_spellbooks:evocation) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:sky_splitter | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 280, book black_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:anti_magic | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Hold the Demon Slayer Sword or the Demon Dweller Sword to use this spell. school=irons_spellbooks:evocation) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:anti_magic | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 400, book black_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:ki_sense | 5 fx packets, 0 mana, 0.0 damage, 5 messages, cd 600, book black_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:instinct_guard | 6 fx packets, 0 mana, 0.0 damage, 5 messages, cd 300, book black_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:dweller_slash | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Hold the Demon Dweller Sword to use this spell. school=irons_spellbooks:evocation) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:dweller_slash | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 120, book black_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:borrowed_slash | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Hold the Demon-Dweller Sword in your main hand. school=irons_spellbooks:evocation) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:borrowed_slash | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 200, book black_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:devil_union | 8 fx packets, 0 mana, 0.0 damage, 10 messages, cd 2400, book black_grimoire, 69 ticks
+INFO | spell iron_spell_grimoire:devil_summon | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_piercing_dash | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_zetten | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_sky_splitter | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_anti_magic | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_ki_sense | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_black_meteorite | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_instinct_guard | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_black_divider | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_black_hurricane | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_union_release | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_dweller_slash | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:devil_borrowed_slash | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+PASS | spell iron_spell_grimoire:black_blade | 5 fx packets, -110 mana, 0.0 damage, 6 messages, cd 600, book dark_grimoire, 67 ticks
+PASS | spell iron_spell_grimoire:dimension_slash | 3 fx packets, 0 mana, 0.0 damage, 3 messages, cd 240, book dark_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:avidya_slash | 6 fx packets, 0 mana, 0.0 damage, 6 messages, cd 160, book dark_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:black_cocoon | 27 fx packets, 0 mana, 0.0 damage, 34 messages, cd 400, book dark_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:death_thrust | 6 fx packets, 0 mana, 0.0 damage, 6 messages, cd 200, book dark_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:black_moon | 105 fx packets, 0 mana, 22.8 damage, 29 messages, cd 400, book dark_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:black_hole | 230 fx packets, 0 mana, 0.0 damage, 37 messages, cd 480, book dark_grimoire, 81 ticks
+PASS | spell iron_spell_grimoire:mana_zone_dimension_slash | 16 fx packets, 0 mana, 0.0 damage, 28 messages, cd 900, book dark_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ki_foresight | 15 fx packets, 0 mana, 0.0 damage, 23 messages, cd 360, book dark_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:event_horizon | 15 fx packets, 0 mana, 0.0 damage, 26 messages, cd 1800, book dark_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:violent_rotating_lance | 102 fx packets, 100 mana, 19.8 damage, 41 messages, cd 160, book steel_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:blazing_spiral_lance | 71 fx packets, 0 mana, 39.9 damage, 9 messages, cd 280, book steel_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:steel_castle_wall | 30 fx packets, 0 mana, 0.0 damage, 6 messages, cd 320, book steel_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:white_steel_horse_cart | 335 fx packets, 0 mana, 20.0 damage, 16 messages, cd 320, book steel_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:thunder_arrow | 75 fx packets, 0 mana, 48.5 damage, 9 messages, cd 600, book steel_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:acier_silva | 100 fx packets, 0 mana, 29.9 damage, 5 messages, cd 400, book steel_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:steel_prison | 27 fx packets, 0 mana, 0.0 damage, 5 messages, cd 440, book steel_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:knights_armor | 16 fx packets, 0 mana, 0.0 damage, 10 messages, cd 2400, book steel_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:wind_blade_shower | 149 fx packets, -84 mana, 6.4 damage, 24 messages, cd 120, book wind_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:tornado_fang | 73 fx packets, 0 mana, 10.0 damage, 62 messages, cd 280, book wind_grimoire, 74 ticks
+PASS | spell iron_spell_grimoire:sylphs_breath | 22 fx packets, 0 mana, 11.4 damage, 14 messages, cd 160, book wind_grimoire, 65 ticks
+PASS | spell iron_spell_grimoire:gale_white_bow | 182 fx packets, 0 mana, 14.0 damage, 26 messages, cd 140, book wind_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:hushed_dance | 23 fx packets, 0 mana, 0.0 damage, 13 messages, cd 360, book wind_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:spirit_of_zephyr | 52 fx packets, 0 mana, 31.4 damage, 13 messages, cd 200, book wind_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:spirit_of_boreas | 107 fx packets, 0 mana, 13.7 damage, 21 messages, cd 280, book wind_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:spirit_of_euros | 111 fx packets, 0 mana, 48.5 damage, 36 messages, cd 400, book wind_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:spirit_dive | 20 fx packets, 0 mana, 0.0 damage, 18 messages, cd 1800, book wind_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:mana_zone | 97 fx packets, 0 mana, 49.9 damage, 58 messages, cd 800, book wind_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:spirit_storm | 308 fx packets, 0 mana, 75.6 damage, 94 messages, cd 1200, book wind_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mercury_bullets | 127 fx packets, -50 mana, 49.9 damage, 55 messages, cd 100, book mercury_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mercury_spears | 150 fx packets, 0 mana, 53.6 damage, 67 messages, cd 180, book mercury_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:silver_rain | 177 fx packets, 0 mana, 0.0 damage, 64 messages, cd 320, book mercury_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:storm_of_blades | 113 fx packets, 0 mana, 10.3 damage, 32 messages, cd 240, book mercury_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mercury_eagle | 48 fx packets, 0 mana, 34.2 damage, 21 messages, cd 280, book mercury_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:silver_mirror | 22 fx packets, 0 mana, 0.0 damage, 13 messages, cd 320, book mercury_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mercury_sphere | 17 fx packets, 0 mana, 0.0 damage, 12 messages, cd 480, book mercury_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:regal_spear | 63 fx packets, 0 mana, 48.5 damage, 28 messages, cd 440, book mercury_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:silver_guardian | 22 fx packets, 0 mana, 0.0 damage, 22 messages, cd 1200, book mercury_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mercury_cage | 54 fx packets, 0 mana, 64.2 damage, 21 messages, cd 800, book mercury_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:exploding_fireball | 31 fx packets, 150 mana, 17.4 damage, 25 messages, cd 80, book fire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:explosive_scattershot | 80 fx packets, 0 mana, 13.8 damage, 36 messages, cd 180, book fire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:magna_special | 94 fx packets, 0 mana, 0.0 damage, 33 messages, cd 280, book fire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:flaming_bat | 88 fx packets, 0 mana, 0.0 damage, 35 messages, cd 160, book fire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:flame_knuckles | 21 fx packets, 0 mana, 0.0 damage, 19 messages, cd 600, book fire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ring_of_fire | 138 fx packets, 0 mana, 40.2 damage, 75 messages, cd 360, book fire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:fireball_barrage | 85 fx packets, 0 mana, 15.1 damage, 58 messages, cd 240, book fire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:fireball_rain | 121 fx packets, 0 mana, 0.0 damage, 50 messages, cd 440, book fire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:soul_chain | 288 fx packets, 0 mana, 17.5 damage, 54 messages, cd 900, book fire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:fire_cannon | 53 fx packets, 0 mana, 91.8 damage, 39 messages, cd 1200, book fire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thunder_fist | 27 fx packets, 0 mana, 17.4 damage, 16 messages, cd 100, book lightning_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thunder_kick | 31 fx packets, 0 mana, 8.9 damage, 15 messages, cd 160, book lightning_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thunder_orb | 63 fx packets, 0 mana, 10.4 damage, 17 messages, cd 200, book lightning_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:lightning_step | 37 fx packets, 0 mana, 11.9 damage, 14 messages, cd 80, book lightning_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:chain_lightning | 26 fx packets, 0 mana, 20.8 damage, 13 messages, cd 200, book lightning_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thunder_gloves | 28 fx packets, 0 mana, 0.0 damage, 20 messages, cd 600, book lightning_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mana_sense | 20 fx packets, 0 mana, 0.0 damage, 17 messages, cd 400, book lightning_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thunderfall | 110 fx packets, 0 mana, 32.1 damage, 33 messages, cd 400, book lightning_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thunder_god_mode | 30 fx packets, 0 mana, 0.0 damage, 25 messages, cd 1800, book lightning_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thunder_rampage | 200 fx packets, 0 mana, 90.1 damage, 49 messages, cd 1200, book lightning_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:calidos_brachium | 36 fx packets, -148 mana, 22.8 damage, 24 messages, cd 100, book hellfire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:calidos_brachium_barrage | 90 fx packets, 0 mana, 40.2 damage, 48 messages, cd 280, book hellfire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:flame_lion_paws | 177 fx packets, 0 mana, 40.2 damage, 41 messages, cd 320, book hellfire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:lioness_charge | 36 fx packets, 0 mana, 29.9 damage, 25 messages, cd 140, book hellfire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mana_skin | 20 fx packets, 0 mana, 0.0 damage, 18 messages, cd 800, book hellfire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:lion_mana_zone | 29 fx packets, 0 mana, 0.0 damage, 25 messages, cd 1200, book hellfire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ground_punch | 98 fx packets, 0 mana, 22.5 damage, 32 messages, cd 240, book hellfire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:burning_guard | 64 fx packets, 0 mana, 30.9 damage, 36 messages, cd 280, book hellfire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:hellfire_incarnate | 30 fx packets, 0 mana, 0.0 damage, 33 messages, cd 2400, book hellfire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:calidos_brachium_purgatory | 67 fx packets, 1012 mana, 182.4 damage, 48 messages, cd 2400, book hellfire_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:bone_spear_volley | 52 fx packets, 50 mana, 0.0 damage, 25 messages, cd 120, book bone_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:bone_spike_eruption | 47 fx packets, 0 mana, 20.8 damage, 29 messages, cd 200, book bone_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:bone_sword | 52 fx packets, 0 mana, 22.9 damage, 21 messages, cd 160, book bone_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:bone_whips | 58 fx packets, 0 mana, 21.6 damage, 17 messages, cd 280, book bone_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ribcage_prison | 89 fx packets, 0 mana, 29.8 damage, 43 messages, cd 400, book bone_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:marrow_regeneration | 25 fx packets, 0 mana, 0.0 damage, 19 messages, cd 800, book bone_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:bone_thicket | 43 fx packets, 0 mana, 0.0 damage, 21 messages, cd 440, book bone_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:spatial_cube | 57 fx packets, 0 mana, 38.7 damage, 14 messages, cd 520, book bone_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:beelzebub_union | 23 fx packets, 0 mana, 0.0 damage, 23 messages, cd 2000, book bone_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:bone_spear_storm | 217 fx packets, 0 mana, 0.0 damage, 69 messages, cd 1200, book bone_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:binding_threads | 27 fx packets, 100 mana, 9.9 damage, 19 messages, cd 160, book string_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:puppet_strings | 73 fx packets, 0 mana, 26.8 damage, 30 messages, cd 240, book string_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thread_net | 30 fx packets, 0 mana, 0.0 damage, 18 messages, cd 320, book string_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thread_cocoon | 29 fx packets, 0 mana, 0.0 damage, 23 messages, cd 480, book string_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:stitching | 106 fx packets, 0 mana, 0.0 damage, 21 messages, cd 600, book string_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:battle_dress | 30 fx packets, 0 mana, 0.0 damage, 24 messages, cd 900, book string_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thread_cage | 47 fx packets, 0 mana, 0.0 damage, 16 messages, cd 560, book string_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:red_thread_of_fate | 34 fx packets, 0 mana, 0.0 damage, 19 messages, cd 1800, book string_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:spatial_gate | 18 fx packets, -130 mana, 0.0 damage, 13 messages, cd 400, book spatial_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:short_hop | 37 fx packets, 0 mana, 0.0 damage, 14 messages, cd 100, book spatial_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:escort_gate | 57 fx packets, 0 mana, 0.0 damage, 17 messages, cd 800, book spatial_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:waypoint | 21 fx packets, 0 mana, 0.0 damage, 11 messages, cd 60, book spatial_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:sky_drop | 35 fx packets, 0 mana, 7.4 damage, 13 messages, cd 280, book spatial_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:redirect_gate | 24 fx packets, 0 mana, 0.0 damage, 12 messages, cd 360, book spatial_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:evasion_gate | 18 fx packets, 0 mana, 0.0 damage, 14 messages, cd 500, book spatial_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:space_deletion | 48 fx packets, 0 mana, 62.5 damage, 23 messages, cd 1500, book spatial_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:water_ball | 34 fx packets, 0 mana, 11.2 damage, 19 messages, cd 80, book water_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:torrent_lance | 39 fx packets, 0 mana, 20.5 damage, 14 messages, cd 160, book water_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:sea_dragons_nest | 100 fx packets, 0 mana, 20.2 damage, 49 messages, cd 360, book water_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:aqua_barrage | 118 fx packets, 0 mana, 6.2 damage, 28 messages, cd 200, book water_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:tidal_wave | 46 fx packets, 0 mana, 18.7 damage, 24 messages, cd 400, book water_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:sea_serpent | 60 fx packets, 0 mana, 20.8 damage, 25 messages, cd 320, book water_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:valkyrie_dress | 55 fx packets, 0 mana, 0.0 damage, 36 messages, cd 1200, book water_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:sea_dragons_wrath | 110 fx packets, 0 mana, 0.0 damage, 47 messages, cd 1600, book water_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mirror_shard | 52 fx packets, 50 mana, 5.6 damage, 26 messages, cd 80, book mirror_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mirror_step | 51 fx packets, 0 mana, 0.0 damage, 26 messages, cd 120, book mirror_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:reflect_guard | 22 fx packets, 0 mana, 0.0 damage, 14 messages, cd 440, book mirror_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:prism_beam | 34 fx packets, 0 mana, 16.1 damage, 15 messages, cd 240, book mirror_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mirror_cage | 177 fx packets, 0 mana, 17.5 damage, 27 messages, cd 400, book mirror_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mirror_barrage | 168 fx packets, 0 mana, 18.3 damage, 23 messages, cd 480, book mirror_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mirror_double | 36 fx packets, 0 mana, 27.1 damage, 14 messages, cd 280, book mirror_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:hall_of_mirrors | 263 fx packets, 0 mana, 193.7 damage, 48 messages, cd 1600, book mirror_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:spatial_cut | 26 fx packets, 50 mana, 16.4 damage, 14 messages, cd 80, book rift_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:rift_blades | 41 fx packets, 0 mana, 6.8 damage, 18 messages, cd 160, book rift_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:blink_strike | 29 fx packets, 0 mana, 28.2 damage, 15 messages, cd 240, book rift_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:severing_line | 46 fx packets, 0 mana, 33.9 damage, 17 messages, cd 280, book rift_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:gate_barrage | 78 fx packets, 0 mana, 10.1 damage, 22 messages, cd 360, book rift_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:space_collapse | 39 fx packets, 0 mana, 38.7 damage, 17 messages, cd 440, book rift_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:convergence | 76 fx packets, 0 mana, 13.5 damage, 35 messages, cd 480, book rift_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:dimensional_severance | 52 fx packets, 0 mana, 0.0 damage, 20 messages, cd 1800, book rift_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:salamander_flare | 43 fx packets, -100 mana, 15.2 damage, 22 messages, cd 80, book flame_spirit_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:spirit_lance | 59 fx packets, 0 mana, 29.1 damage, 23 messages, cd 160, book flame_spirit_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:flame_aegis | 141 fx packets, 0 mana, 0.0 damage, 46 messages, cd 440, book flame_spirit_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:salamander_coil | 81 fx packets, 0 mana, 26.3 damage, 31 messages, cd 320, book flame_spirit_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:flare_volley | 118 fx packets, 0 mana, 0.0 damage, 29 messages, cd 400, book flame_spirit_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:salamander_rush | 69 fx packets, 0 mana, 36.8 damage, 22 messages, cd 280, book flame_spirit_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:salamander_spirit | 33 fx packets, 0 mana, 0.0 damage, 26 messages, cd 1200, book flame_spirit_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:great_salamander | 105 fx packets, 0 mana, 0.0 damage, 38 messages, cd 1600, book flame_spirit_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ember_fist | 39 fx packets, 0 mana, 0.0 damage, 14 messages, cd 60, book lions_flame_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:lion_claw | 26 fx packets, 0 mana, 0.0 damage, 14 messages, cd 120, book lions_flame_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:flame_leap | 58 fx packets, 0 mana, 30.4 damage, 27 messages, cd 240, book lions_flame_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:roaring_burst | 59 fx packets, 0 mana, 20.5 damage, 21 messages, cd 280, book lions_flame_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:pride_barrage | 60 fx packets, 0 mana, 20.2 damage, 23 messages, cd 280, book lions_flame_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:prowl_dash | 37 fx packets, 0 mana, 13.6 damage, 16 messages, cd 180, book lions_flame_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mane_blaze | 25 fx packets, 0 mana, 0.0 damage, 24 messages, cd 1200, book lions_flame_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:king_lion_roar | 189 fx packets, 0 mana, 223.2 damage, 27 messages, cd 1600, book lions_flame_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:phantom_slash | 37 fx packets, 100 mana, 19.3 damage, 18 messages, cd 80, book slash_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:crescent_cut | 62 fx packets, 0 mana, 24.2 damage, 25 messages, cd 160, book slash_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:shadow_step_slash | 42 fx packets, 0 mana, 42.3 damage, 19 messages, cd 200, book slash_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thousand_cuts | 72 fx packets, 0 mana, 23.4 damage, 33 messages, cd 280, book slash_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:cross_reaper | 43 fx packets, 0 mana, 36.3 damage, 17 messages, cd 320, book slash_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:bleeding_edge | 45 fx packets, 0 mana, 40.5 damage, 19 messages, cd 360, book slash_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ripper_frenzy | 49 fx packets, 0 mana, 0.0 damage, 34 messages, cd 1100, book slash_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:bloody_massacre | 82 fx packets, 0 mana, 131.1 damage, 33 messages, cd 1800, book slash_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:stone_fist | 56 fx packets, -100 mana, 17.7 damage, 29 messages, cd 80, book earth_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:rock_spike | 42 fx packets, 0 mana, 12.6 damage, 21 messages, cd 160, book earth_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:earth_wall | 28 fx packets, 0 mana, 7.1 damage, 15 messages, cd 400, book earth_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:boulder_toss | 44 fx packets, 0 mana, 31.2 damage, 16 messages, cd 240, book earth_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:quake_stomp | 37 fx packets, 0 mana, 7.4 damage, 17 messages, cd 360, book earth_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:stone_golem | 125 fx packets, 0 mana, 55.1 damage, 32 messages, cd 480, book earth_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:bedrock_armor | 31 fx packets, 0 mana, 0.0 damage, 21 messages, cd 1200, book earth_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mountain_fall | 96 fx packets, 0 mana, 0.0 damage, 26 messages, cd 1700, book earth_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:clock_hand_bolt | 30 fx packets, -236 mana, 11.2 damage, 20 messages, cd 60, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:time_stop_point | 31 fx packets, 0 mana, 4.5 damage, 15 messages, cd 280, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:time_skip | 21 fx packets, 0 mana, 0.0 damage, 16 messages, cd 120, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:time_recovery | 27 fx packets, 0 mana, 0.0 damage, 19 messages, cd 700, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:chrono_acceleration | 18 fx packets, 0 mana, 0.0 damage, 12 messages, cd 560, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ticking_snare | 25 fx packets, 0 mana, 0.0 damage, 14 messages, cd 240, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:time_theft | 25 fx packets, 0 mana, 8.9 damage, 19 messages, cd 320, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:hourglass_barrage | 70 fx packets, 0 mana, 20.8 damage, 34 messages, cd 360, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:rewind_ward | 18 fx packets, 0 mana, 0.0 damage, 13 messages, cd 480, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:echo_of_the_past | 52 fx packets, 0 mana, 10.4 damage, 25 messages, cd 400, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:chronostasis_field | 29 fx packets, 0 mana, 8.9 damage, 16 messages, cd 1200, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:zenith_hour | 138 fx packets, 0 mana, 218.7 damage, 55 messages, cd 1800, book time_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:light_sword | 37 fx packets, 0 mana, 14.5 damage, 18 messages, cd 40, book light_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:light_speed_step | 34 fx packets, 0 mana, 11.9 damage, 16 messages, cd 120, book light_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:arrows_of_judgment | 48 fx packets, 0 mana, 12.1 damage, 22 messages, cd 180, book light_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:bright_judgment_whip | 30 fx packets, 0 mana, 17.9 damage, 17 messages, cd 160, book light_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:healing_ray | 19 fx packets, 0 mana, 0.0 damage, 16 messages, cd 280, book light_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:blinding_flash | 27 fx packets, 0 mana, 2.7 damage, 12 messages, cd 320, book light_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:light_swords_of_judgment | 58 fx packets, 0 mana, 5.0 damage, 15 messages, cd 400, book light_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:light_shaft | 40 fx packets, 0 mana, 25.0 damage, 18 messages, cd 360, book light_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:demon_light | 21 fx packets, 0 mana, 0.0 damage, 14 messages, cd 1200, book light_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:imperial_swords_of_conviction | 89 fx packets, 0 mana, 144.6 damage, 27 messages, cd 900, book light_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:crimson_edge | 22 fx packets, 0 mana, 0.0 damage, 19 messages, cd 40, book blood_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:hemorrhage | 38 fx packets, 0 mana, 12.1 damage, 37 messages, cd 160, book blood_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:sanguine_volley | 31 fx packets, 0 mana, 4.6 damage, 37 messages, cd 120, book blood_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:transfusion | 32 fx packets, 0 mana, 9.0 damage, 30 messages, cd 240, book blood_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:blood_pact | 23 fx packets, 0 mana, 0.0 damage, 23 messages, cd 400, book blood_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:red_tide | 27 fx packets, 0 mana, 29.5 damage, 22 messages, cd 240, book blood_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thorned_veins | 46 fx packets, 0 mana, 20.6 damage, 61 messages, cd 280, book blood_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:crimson_bulwark | 25 fx packets, 0 mana, 0.0 damage, 19 messages, cd 480, book blood_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:exsanguinate | 23 fx packets, 0 mana, 22.0 damage, 23 messages, cd 440, book blood_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:scarlet_moon | 24 fx packets, 0 mana, 0.0 damage, 16 messages, cd 60, book blood_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:gravity_bullet | 33 fx packets, 0 mana, 5.0 damage, 19 messages, cd 60, book gravity_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:weightless_step | 22 fx packets, 0 mana, 0.0 damage, 12 messages, cd 140, book gravity_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:crushing_field | 38 fx packets, 0 mana, 16.4 damage, 18 messages, cd 240, book gravity_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:repulse | 27 fx packets, 0 mana, 9.4 damage, 13 messages, cd 200, book gravity_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:gravity_well | 36 fx packets, 0 mana, 25.4 damage, 17 messages, cd 320, book gravity_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:gravity_lift | 32 fx packets, 0 mana, 19.6 damage, 14 messages, cd 280, book gravity_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:orbiting_mass | 40 fx packets, 0 mana, 32.7 damage, 22 messages, cd 360, book gravity_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:heavy_descent | 30 fx packets, 0 mana, 19.6 damage, 15 messages, cd 280, book gravity_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:mass_domain | 18 fx packets, 0 mana, 0.0 damage, 13 messages, cd 1200, book gravity_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:starfall_collapse | 32 fx packets, 0 mana, 92.9 damage, 15 messages, cd 900, book gravity_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:sonic_pulse | 30 fx packets, 0 mana, 3.3 damage, 17 messages, cd 60, book sound_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:echo_step | 27 fx packets, 0 mana, 3.6 damage, 13 messages, cd 120, book sound_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:tuning_strike | 22 fx packets, 0 mana, 6.7 damage, 13 messages, cd 100, book sound_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:sound_barrier | 22 fx packets, 0 mana, 0.0 damage, 14 messages, cd 480, book sound_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:silence_field | 39 fx packets, 0 mana, 11.0 damage, 20 messages, cd 360, book sound_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thunderclap | 22 fx packets, 0 mana, 0.0 damage, 12 messages, cd 200, book sound_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:sonic_lance | 24 fx packets, 0 mana, 17.9 damage, 13 messages, cd 240, book sound_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:echo_chamber | 52 fx packets, 0 mana, 29.5 damage, 21 messages, cd 360, book sound_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:crescendo | 18 fx packets, 0 mana, 0.0 damage, 13 messages, cd 1200, book sound_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:final_chord | 43 fx packets, 0 mana, 75.7 damage, 20 messages, cd 900, book sound_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:brush_stroke | 16 fx packets, 0 mana, 0.0 damage, 12 messages, cd 60, book ink_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ink_splash | 37 fx packets, 0 mana, 4.3 damage, 22 messages, cd 100, book ink_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ink_serpent | 30 fx packets, 0 mana, 11.9 damage, 18 messages, cd 180, book ink_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ink_blot | 39 fx packets, 0 mana, 14.5 damage, 17 messages, cd 280, book ink_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:seal_script | 24 fx packets, 0 mana, 22.9 damage, 14 messages, cd 240, book ink_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ink_beasts | 43 fx packets, 0 mana, 12.5 damage, 20 messages, cd 280, book ink_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ink_rain | 95 fx packets, 0 mana, 10.7 damage, 44 messages, cd 320, book ink_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:ink_wave | 27 fx packets, 0 mana, 14.7 damage, 14 messages, cd 280, book ink_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:masterpiece | 18 fx packets, 0 mana, 0.0 damage, 14 messages, cd 1200, book ink_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:grand_calligraphy | 37 fx packets, 0 mana, 88.6 damage, 18 messages, cd 900, book ink_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:glitch_bolt | 22 fx packets, 0 mana, 10.0 damage, 13 messages, cd 60, book error_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:frame_skip | 32 fx packets, 0 mana, 8.3 damage, 16 messages, cd 140, book error_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:corrupted_threads | 32 fx packets, 0 mana, 12.5 damage, 18 messages, cd 240, book error_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:lag_spike | 32 fx packets, 0 mana, 17.9 damage, 15 messages, cd 240, book error_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:copy_paste | 22 fx packets, 0 mana, 11.9 damage, 13 messages, cd 200, book error_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:crash_zone | 51 fx packets, 0 mana, 18.7 damage, 21 messages, cd 320, book error_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:error_windows | 33 fx packets, 0 mana, 21.3 damage, 22 messages, cd 280, book error_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:blue_screen | 29 fx packets, 0 mana, 28.6 damage, 15 messages, cd 360, book error_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:fatal_error | 18 fx packets, 0 mana, 0.0 damage, 14 messages, cd 1200, book error_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:system_crash | 29 fx packets, 0 mana, 71.4 damage, 14 messages, cd 900, book error_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:vault_volley | 28 fx packets, 0 mana, 5.0 damage, 14 messages, cd 60, book treasure_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:gilded_spear | 29 fx packets, 0 mana, 20.6 damage, 13 messages, cd 120, book treasure_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:vault_chains | 28 fx packets, 0 mana, 11.8 damage, 14 messages, cd 280, book treasure_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:blade_wall | 37 fx packets, 0 mana, 13.9 damage, 17 messages, cd 360, book treasure_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:blade_rain | 57 fx packets, 0 mana, 15.7 damage, 36 messages, cd 280, book treasure_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:seeking_blades | 39 fx packets, 0 mana, 16.7 damage, 14 messages, cd 240, book treasure_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:treasure_barrage | 70 fx packets, 0 mana, 11.5 damage, 34 messages, cd 320, book treasure_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:vault_aegis | 22 fx packets, 0 mana, 0.0 damage, 13 messages, cd 480, book treasure_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:kings_vault | 66 fx packets, 0 mana, 36.0 damage, 33 messages, cd 1200, book treasure_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:vault_breaker | 79 fx packets, 0 mana, 95.9 damage, 33 messages, cd 900, book treasure_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:chain_lash | 70 fx packets, 0 mana, 43.2 damage, 32 messages, cd 60, book chain_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:binding_chain | 73 fx packets, 0 mana, 38.0 damage, 33 messages, cd 200, book chain_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:dowsing_chain | 22 fx packets, 0 mana, 2.5 damage, 15 messages, cd 320, book chain_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:healing_chain | 21 fx packets, 0 mana, 0.0 damage, 12 messages, cd 280, book chain_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:judgment_chain | 21 fx packets, 0 mana, 6.5 damage, 14 messages, cd 280, book chain_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:stealing_chain | 27 fx packets, 0 mana, 13.4 damage, 14 messages, cd 240, book chain_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:chain_net | 23 fx packets, 0 mana, 20.8 damage, 13 messages, cd 320, book chain_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:anchor_chain | 25 fx packets, 0 mana, 8.9 damage, 13 messages, cd 200, book chain_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:restriction | 18 fx packets, 0 mana, 0.0 damage, 14 messages, cd 1200, book chain_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:thousand_chains | 52 fx packets, 0 mana, 105.0 damage, 18 messages, cd 900, book chain_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:saw_cleave | 17 fx packets, 0 mana, 0.0 damage, 13 messages, cd 60, book hunter_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:trick_switch | 28 fx packets, 0 mana, 14.9 damage, 14 messages, cd 120, book hunter_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:silver_shot | 21 fx packets, 0 mana, 6.7 damage, 13 messages, cd 100, book hunter_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:quickstep | 21 fx packets, 0 mana, 0.0 damage, 12 messages, cd 100, book hunter_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:visceral_strike | 16 fx packets, 0 mana, 0.0 damage, 12 messages, cd 240, book hunter_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:hunters_mark | 25 fx packets, 0 mana, 4.5 damage, 12 messages, cd 280, book hunter_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:rending_spin | 18 fx packets, 0 mana, 0.0 damage, 14 messages, cd 240, book hunter_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:blood_volley | 34 fx packets, 0 mana, 7.4 damage, 18 messages, cd 280, book hunter_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:blood_moon_hunt | 18 fx packets, 0 mana, 0.0 damage, 14 messages, cd 1200, book hunter_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:nightmare_cleave | 36 fx packets, 0 mana, 28.4 damage, 16 messages, cd 900, book hunter_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:erase | 24 fx packets, 0 mana, 10.5 damage, 18 messages, cd 60, book void_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:null_step | 27 fx packets, 0 mana, 6.0 damage, 16 messages, cd 140, book void_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:unmake | 26 fx packets, 0 mana, 9.4 damage, 20 messages, cd 240, book void_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:nullify | 28 fx packets, 0 mana, 6.0 damage, 17 messages, cd 280, book void_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:seam | 25 fx packets, 0 mana, 11.9 damage, 19 messages, cd 240, book void_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:absence | 23 fx packets, 0 mana, 0.0 damage, 15 messages, cd 400, book void_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:void_lance | 26 fx packets, 0 mana, 18.0 damage, 19 messages, cd 280, book void_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:delete | 34 fx packets, 0 mana, 44.6 damage, 20 messages, cd 360, book void_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:emptiness | 19 fx packets, 0 mana, 0.0 damage, 17 messages, cd 1200, book void_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:origin_zero | 31 fx packets, 0 mana, 96.6 damage, 18 messages, cd 900, book void_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:coin_toss | 22 fx packets, 0 mana, 11.2 damage, 14 messages, cd 60, book gambler_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:double_or_nothing | 21 fx packets, 0 mana, 0.0 damage, 12 messages, cd 200, book gambler_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:roulette | 24 fx packets, 0 mana, 13.5 damage, 15 messages, cd 240, book gambler_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:chip_shot | 30 fx packets, 0 mana, 3.7 damage, 13 messages, cd 120, book gambler_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:lucky_seven | 30 fx packets, 0 mana, 13.4 damage, 21 messages, cd 280, book gambler_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:slot_machine | 29 fx packets, 0 mana, 21.3 damage, 14 messages, cd 320, book gambler_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:loaded_dice | 24 fx packets, 0 mana, 14.3 damage, 14 messages, cd 200, book gambler_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:insurance | 22 fx packets, 0 mana, 0.0 damage, 9 messages, cd 480, book gambler_grimoire, 70 ticks
+PASS | spell iron_spell_grimoire:all_in | 5 fx packets, 0 mana, 0.0 damage, 4 messages, cd 1200, book gambler_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:jackpot | 16 fx packets, 0 mana, 25.7 damage, 5 messages, cd 900, book gambler_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:draw_card | 3 fx packets, 0 mana, 0.0 damage, 3 messages, cd 80, book tarot_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:the_magician | 18 fx packets, 0 mana, 6.0 damage, 8 messages, cd 120, book tarot_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:the_tower | 15 fx packets, 0 mana, 24.6 damage, 6 messages, cd 280, book tarot_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:the_star | 3 fx packets, 0 mana, 0.0 damage, 2 messages, cd 360, book tarot_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:death_card | 4 fx packets, 0 mana, 0.0 damage, 4 messages, cd 240, book tarot_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:wheel_of_fortune | 3 fx packets, 0 mana, 0.0 damage, 2 messages, cd 400, book tarot_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:the_hanged_man | 18 fx packets, 0 mana, 16.1 damage, 4 messages, cd 280, book tarot_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:three_card_spread | 5 fx packets, 0 mana, 0.0 damage, 5 messages, cd 320, book tarot_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:the_world | 5 fx packets, 0 mana, 0.0 damage, 4 messages, cd 1200, book tarot_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:judgement | 17 fx packets, 0 mana, 66.7 damage, 6 messages, cd 900, book tarot_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:crushing_pressure | 14 fx packets, 0 mana, 11.8 damage, 7 messages, cd 80, book abyss_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:anglers_lure | 14 fx packets, 0 mana, 19.7 damage, 8 messages, cd 200, book abyss_grimoire, 72 ticks
+PASS | spell iron_spell_grimoire:abyssal_grasp | 22 fx packets, 0 mana, 19.2 damage, 9 messages, cd 240, book abyss_grimoire, 63 ticks
+PASS | spell iron_spell_grimoire:undertow | 18 fx packets, 0 mana, 16.5 damage, 8 messages, cd 200, book abyss_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:abyssal_dive | 16 fx packets, 0 mana, 15.3 damage, 8 messages, cd 160, book abyss_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:depth_charge | 17 fx packets, 0 mana, 21.8 damage, 8 messages, cd 240, book abyss_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:leviathan | 16 fx packets, 0 mana, 23.2 damage, 7 messages, cd 320, book abyss_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:hadal_weight | 14 fx packets, 0 mana, 12.9 damage, 7 messages, cd 280, book abyss_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:bioluminescence | 5 fx packets, 0 mana, 0.0 damage, 5 messages, cd 1200, book abyss_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:the_trench | 19 fx packets, 0 mana, 109.3 damage, 9 messages, cd 900, book abyss_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:rivet_barrage | 28 fx packets, 0 mana, 15.5 damage, 12 messages, cd 60, book mech_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:thruster_dash | 15 fx packets, 0 mana, 11.4 damage, 7 messages, cd 140, book mech_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:rocket_fist | 17 fx packets, 0 mana, 17.1 damage, 9 messages, cd 160, book mech_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:piston_stomp | 7 fx packets, 0 mana, 0.0 damage, 6 messages, cd 200, book mech_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:bulwark_plating | 7 fx packets, 0 mana, 0.0 damage, 7 messages, cd 400, book mech_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:missile_swarm | 33 fx packets, 0 mana, 33.3 damage, 14 messages, cd 280, book mech_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:overclock | 6 fx packets, 0 mana, 0.0 damage, 6 messages, cd 400, book mech_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:rail_cannon | 19 fx packets, 0 mana, 35.7 damage, 9 messages, cd 320, book mech_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:pilot | 8 fx packets, 0 mana, 0.0 damage, 8 messages, cd 1200, book mech_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:titan_buster | 19 fx packets, 0 mana, 192.8 damage, 8 messages, cd 900, book mech_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:sunbeam | 65 fx packets, 0 mana, 25.7 damage, 19 messages, cd 100, book weather_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:downpour | 25 fx packets, 0 mana, 7.2 damage, 11 messages, cd 240, book weather_grimoire, 61 ticks
+PASS | spell iron_spell_grimoire:thunder_strike | 25 fx packets, 0 mana, 24.5 damage, 9 messages, cd 160, book weather_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:hailstorm | 37 fx packets, 0 mana, 18.6 damage, 14 messages, cd 240, book weather_grimoire, 71 ticks
+PASS | spell iron_spell_grimoire:gale | 12 fx packets, 0 mana, 7.4 damage, 8 messages, cd 160, book weather_grimoire, 69 ticks
+PASS | spell iron_spell_grimoire:fog_bank | 7 fx packets, 0 mana, 0.0 damage, 7 messages, cd 400, book weather_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:cyclone | 20 fx packets, 0 mana, 10.4 damage, 10 messages, cd 280, book weather_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:rainbow | 13 fx packets, 0 mana, 3.6 damage, 7 messages, cd 360, book weather_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:eye_of_the_storm | 13 fx packets, 0 mana, 3.2 damage, 13 messages, cd 1200, book weather_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:cataclysm | 69 fx packets, 0 mana, 98.0 damage, 34 messages, cd 900, book weather_grimoire, 80 ticks
+PASS | spell iron_spell_grimoire:draw_heartline | 19 fx packets, 0 mana, 1.0 damage, 4 messages, cd 40, book overdrive_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:pulse_cut | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE You can't understand this spell... school=irons_spellbooks:eldritch) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:pulse_cut | 1 fx packets, 0 mana, 0.0 damage, 2 messages, cd 60, book overdrive_grimoire, 64 ticks
+WARN | spell iron_spell_grimoire:adrenaline_rush | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE You can't understand this spell... school=irons_spellbooks:eldritch) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:adrenaline_rush | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 120, book overdrive_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:heartbeat | 2 fx packets, 0 mana, 0.0 damage, 2 messages, cd 200, book overdrive_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:flatline | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE You can't understand this spell... school=irons_spellbooks:eldritch) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:flatline | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 200, book overdrive_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:tachycardia | 2 fx packets, 0 mana, 0.0 damage, 2 messages, cd 280, book overdrive_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:second_wind | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE You can't understand this spell... school=irons_spellbooks:eldritch) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:second_wind | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 400, book overdrive_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:ribbon_bind | 2 fx packets, 0 mana, 0.0 damage, 2 messages, cd 200, book overdrive_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:redline | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE You can't understand this spell... school=irons_spellbooks:eldritch) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:redline | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 3000, book overdrive_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:final_beat | 2 fx packets, 0 mana, 0.0 damage, 2 messages, cd 900, book overdrive_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:dream_mote | 19 fx packets, -200 mana, 9.9 damage, 25 messages, cd 40, book dream_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:counting_sheep | 34 fx packets, 0 mana, 16.7 damage, 32 messages, cd 120, book dream_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:pillow_fortress | 13 fx packets, 0 mana, 0.0 damage, 22 messages, cd 320, book dream_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:sleepwalk | 13 fx packets, 0 mana, 0.0 damage, 23 messages, cd 160, book dream_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:dream_clock | 17 fx packets, 0 mana, 6.0 damage, 22 messages, cd 280, book dream_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:toy_parade | 25 fx packets, 0 mana, 17.9 damage, 28 messages, cd 200, book dream_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:nightmare_shard | 19 fx packets, 0 mana, 14.7 damage, 25 messages, cd 200, book dream_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:rude_awakening | 17 fx packets, 0 mana, 4.5 damage, 22 messages, cd 280, book dream_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:half_asleep | 35 fx packets, 0 mana, 11.3 damage, 35 messages, cd 1200, book dream_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:dream_world | 52 fx packets, 0 mana, 62.7 damage, 40 messages, cd 900, book dream_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:rise | 19 fx packets, 0 mana, 0.0 damage, 4 messages, cd 40, book shadow_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:shadow_exchange | did nothing visible (no effects, no mana, no damage; cast returned true, casting=true iron_spell_grimoire:shadow_exchange) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:shadow_exchange | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 120, book shadow_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:umbral_step | 12 fx packets, 0 mana, 13.4 damage, 5 messages, cd 100, book shadow_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:unseen_hand | 13 fx packets, 0 mana, 17.9 damage, 5 messages, cd 200, book shadow_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:gate_of_shade | 2 fx packets, 0 mana, 0.0 damage, 2 messages, cd 80, book shadow_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:command_hunt | 8 fx packets, 0 mana, 2.7 damage, 2 messages, cd 160, book shadow_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:veil | 2 fx packets, 0 mana, 0.0 damage, 2 messages, cd 280, book shadow_grimoire, 60 ticks
+INFO | spell iron_spell_grimoire:status | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:market | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+PASS | spell iron_spell_grimoire:sovereigns_grip | 16 fx packets, 0 mana, 28.6 damage, 4 messages, cd 240, book shadow_grimoire, 73 ticks
+WARN | spell iron_spell_grimoire:shadow_step | did nothing visible (no effects, no mana, no damage; cast returned true, casting=true iron_spell_grimoire:shadow_step) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:shadow_step | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 160, book shadow_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:dread_roar | 4 fx packets, 0 mana, 0.0 damage, 2 messages, cd 600, book shadow_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:mantle_of_shades | did nothing visible (no effects, no mana, no damage; cast returned true, casting=true iron_spell_grimoire:mantle_of_shades) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:mantle_of_shades | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 1200, book shadow_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:ranks_of_shade | did nothing visible (no effects, no mana, no damage; cast returned true, casting=true iron_spell_grimoire:ranks_of_shade) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:ranks_of_shade | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 500, book shadow_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:rally_of_the_fallen | did nothing visible (no effects, no mana, no damage; cast returned true, casting=true iron_spell_grimoire:rally_of_the_fallen) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:rally_of_the_fallen | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 1200, book shadow_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:sovereigns_domain | 3 fx packets, 0 mana, 0.0 damage, 3 messages, cd 2400, book shadow_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:night_legion | 16 fx packets, 0 mana, 31.2 damage, 5 messages, cd 1000, book shadow_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:consume | 20 fx packets, 300 mana, 0.0 damage, 4 messages, cd 60, book parasite_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:evolution | did nothing visible (no effects, no mana, no damage; cast returned true, casting=true iron_spell_grimoire:evolution) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:evolution | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 20, book parasite_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:marrow_barrage | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Needs more biomass school=irons_spellbooks:blood) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:marrow_barrage | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 360, book parasite_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:grasping_field | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Needs more biomass school=irons_spellbooks:blood) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:grasping_field | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 500, book parasite_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:spine_storm | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Needs more biomass school=irons_spellbooks:blood) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:spine_storm | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 600, book parasite_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:collapse_core | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Needs more biomass school=irons_spellbooks:blood) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:collapse_core | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 600, book parasite_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:pack_call | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Needs more biomass school=irons_spellbooks:blood) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:pack_call | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 1200, book parasite_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:draw_blade | 4 fx packets, 100 mana, 0.0 damage, 2 messages, cd 20, book hunger_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:gnash | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Draw the blade first school=irons_spellbooks:blood) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:gnash | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 80, book hunger_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:feast | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Draw the blade first school=irons_spellbooks:blood) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:feast | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 200, book hunger_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:unleash | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Draw the blade first school=irons_spellbooks:blood) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:unleash | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 700, book hunger_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:the_blade | did nothing visible (no effects, no mana, no damage; cast returned true, casting=true iron_spell_grimoire:the_blade) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:the_blade | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 20, book hunger_grimoire, 60 ticks
+WARN | spell iron_spell_grimoire:hunger_domain | did nothing visible (no effects, no mana, no damage; cast returned false, casting=false ; refused: FAILURE Needs the blade drawn and a stage 6 sword grown school=irons_spellbooks:blood) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:hunger_domain | 0 fx packets, 0 mana, 0.0 damage, 0 messages, cd 1800, book hunger_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:twin_swap | 4 fx packets, 0 mana, 0.0 damage, 2 messages, cd 20, book twins_grimoire, 60 ticks
+PASS | spell iron_spell_grimoire:twin_arts | 12 fx packets, 0 mana, 0.0 damage, 7 messages, cd 20, book twins_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:twin_strike | 15 fx packets, 0 mana, 0.0 damage, 10 messages, cd 240, book twins_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:eclipse_union | 20 fx packets, 0 mana, 0.0 damage, 10 messages, cd 6000, book twins_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:the_masks | 16 fx packets, 0 mana, 0.0 damage, 11 messages, cd 20, book twins_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:high_noon | 20 fx packets, 0 mana, 0.0 damage, 10 messages, cd 3600, book twins_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:eventide | 15 fx packets, 0 mana, 0.0 damage, 10 messages, cd 3600, book twins_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:fortress_rampart | 21 fx packets, 0 mana, 0.0 damage, 12 messages, cd 20, book architect_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:siege_mode | 54 fx packets, 0 mana, 59.5 damage, 24 messages, cd 20, book architect_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:fortress_room_1 | 21 fx packets, 0 mana, 0.0 damage, 11 messages, cd 20, book architect_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:fortress_room_2 | 16 fx packets, 0 mana, 0.0 damage, 11 messages, cd 20, book architect_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:fortress_room_3 | 21 fx packets, 0 mana, 0.0 damage, 11 messages, cd 20, book architect_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:fortress_room_4 | 16 fx packets, 0 mana, 0.0 damage, 11 messages, cd 20, book architect_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:the_fortress | 21 fx packets, 0 mana, 0.0 damage, 11 messages, cd 20, book architect_grimoire, 100 ticks
+PASS | spell iron_spell_grimoire:citadel | 15 fx packets, 0 mana, 0.0 damage, 10 messages, cd 20, book architect_grimoire, 100 ticks
+INFO | spell iron_spell_grimoire:absolute_zetten | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:moon_severing_iai | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:never_never_land | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:lamp_of_avior | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+INFO | spell iron_spell_grimoire:chrono_anastasis | not in any grimoire (a form's or a union's version) - cast through its form, not tested alone
+PASS | blood: Scarlet Moon ice moveset | damage dealt: crimson_edge 18, hemorrhage 20, sanguine_volley 16, transfusion 28, blood_pact 40, red_tide 36, thorned_veins 22, crimson_bulwark 0, exsanguinate 38, moonfall 93, ice_throne 28
+PASS | blood: evolution paths | 18 casts, 274 damage, gauge 150
+PASS | gravity: every move | damage dealt: gravity_bullet 5, weightless_step 4, crushing_field 11, repulse 7, gravity_well 5, gravity_lift 22, orbiting_mass 17, heavy_descent 11, mass_domain 0, starfall_collapse 26
+PASS | sound: every move | damage dealt: sonic_pulse 3, echo_step 3, tuning_strike 5, sound_barrier 3, silence_field 5, thunderclap 16, sonic_lance 10, echo_chamber 10, crescendo 9, final_chord 23
+PASS | ink: every move | damage dealt: brush_stroke 7, ink_splash 3, ink_serpent 10, ink_blot 7, seal_script 19, ink_beasts 9, ink_rain 8, ink_wave 9, masterpiece 0, grand_calligraphy 31
+PASS | error: every move | damage dealt: glitch_bolt 9, frame_skip 7, corrupted_threads 8, lag_spike 12, copy_paste 8, crash_zone 9, error_windows 17, blue_screen 16, fatal_error 0, system_crash 20
+PASS | treasure: every move | damage dealt: vault_volley 4, gilded_spear 13, vault_chains 9, blade_wall 14, blade_rain 18, seeking_blades 11, treasure_barrage 7, vault_aegis 0, kings_vault 20, vault_breaker 38
+PASS | chain: every move | damage dealt: chain_lash 4, binding_chain 8, dowsing_chain 2, healing_chain 0, judgment_chain 5, stealing_chain 11, chain_net 14, anchor_chain 6, restriction 6, thousand_chains 29
+PASS | hunter: every move | damage dealt: saw_cleave 10, trick_switch 8, silver_shot 5, quickstep 0, visceral_strike 9, hunters_mark 4, rending_spin 11, blood_volley 6, blood_moon_hunt 0, nightmare_cleave 8
+PASS | void: every move | damage dealt: erase 9, null_step 5, unmake 7, nullify 5, seam 8, absence 0, void_lance 11, delete 25, emptiness 0, origin_zero 27
+PASS | gambler: every move | damage dealt: coin_toss 9, double_or_nothing 0, roulette 48, chip_shot 3, lucky_seven 5, slot_machine 8, loaded_dice 8, insurance 0, all_in 0, jackpot 7
+PASS | tarot: every move | damage dealt: draw_card 3, the_magician 4, the_tower 15, the_star 0, death_card 9, wheel_of_fortune 4, the_hanged_man 12, three_card_spread 27, the_world 0, judgement 28
+PASS | abyss: every move | damage dealt: crushing_pressure 10, anglers_lure 13, abyssal_grasp 9, undertow 6, abyssal_dive 11, depth_charge 13, leviathan 14, hadal_weight 10, bioluminescence 0, the_trench 31
+PASS | mech: every move | damage dealt: rivet_barrage 15, thruster_dash 9, rocket_fist 12, piston_stomp 9, bulwark_plating 0, missile_swarm 26, overclock 0, rail_cannon 20, pilot 0, titan_buster 54
+PASS | weather: every move | damage dealt: sunbeam 21, downpour 5, thunder_strike 19, hailstorm 13, gale 6, fog_bank 0, cyclone 7, rainbow 4, eye_of_the_storm 20, cataclysm 36
+PASS | overdrive: every move | damage dealt: draw_heartline 0, pulse_cut 16, adrenaline_rush 10, heartbeat 0, flatline 16, tachycardia 30, second_wind 0, ribbon_bind 17, redline 0, final_beat 84
+PASS | dream: every move | damage dealt: dream_mote 10, counting_sheep 13, pillow_fortress 0, sleepwalk 0, dream_clock 5, toy_parade 14, nightmare_shard 9, rude_awakening 5, half_asleep 5, dream_world 11
+PASS | shadow: every move | damage dealt: rise 6, umbral_step 13, unseen_hand 21, shadow_exchange 3, gate_of_shade 0, command_hunt 3, veil 0, ranks_of_shade 0, status 0, market 0, sovereigns_grip 4, shadow_step 10, dread_roar 0, mantle_of_shades 0, rally_of_the_fallen 4, sovereigns_domain 16, night_legion 15
+PASS | shadow: hunter's ascension | level 80, stats applied, trial done, market and Reckoning work, level-up surge, job change, advancement, titles, lessons, loadouts, bonds
+PASS | parasite: every move | damage dealt: consume 107, evolution 0, marrow_barrage 50, grasping_field 18, spine_storm 37, spine_storm: tempest 42, spine_storm: impaler 40, grasping_field: maw 18, grasping_field: vortex 25, marrow_barrage: seeker 118, marrow_barrage: bomb 20, collapse_core 10, pack_call 27, final form consume 22
+PASS | parasite: the strain | devour, forms, evolution, strain, bulwark, frenzy
+PASS | hunger: every move | damage dealt: draw_blade 0, gnash 12, feast 15, unleash: devouring bite 20, unleash: ossuary eruption 36, unleash: shard nova 32, unleash: umbral rend 51, unleash: pyre sweep 50, gnash: thrown 12, unleash: awakened pact 41, charge: bite 5, charge: bone walls 49, charge: crystal lunge 29, charge: shadow blink 44, charge: fire wheel 35, unleash: fossil prism (two paths) 36, unleash: ashen eclipse (two paths) 51, hunger_domain 20, the_blade 0
+PASS | hunger: the blade | drew, grew, carried, switched, fed, moods, threw and caught
+PASS | twins: every move | damage dealt: sol: sunstrike 34, sol: flare shot 50, sol: solar lance 45, sol: helios wheel 33, sol: corona 31, sol: zenith leap 49, sol: dawnbreaker 59, sol: sunspear barrage 68, nyx: moonstep 14, nyx: frost needle 31, nyx: crescent fan 33, nyx: mirror double 14, nyx: lunar veil 14, nyx: starfall rain 55, nyx: tidelock 58, nyx: void rift 107, swap: sun flare 110, swap: crescent wave 51, twin_strike 61, eclipse_union 82, the_masks 24, high_noon 60, eventide 21, sol: helios wheel (perfected) 40, nyx: void rift (perfected) 94, echo shot 60
+PASS | twins: the masks | levels, the wheel, swaps, casting rules, stones, titles, Mirror Double, Lunar Veil and the trial
+PASS | architect: every move | damage dealt: barracks 16, armoury 21, training yard 20, watchtower 6, gatehouse 5, war room 0, observatory 0, library 0, arcanum 12, scrying pool 0, alchemy lab 9, rune vault 0, chapel 0, reliquary 0, crypt 12, bell tower 7, garden 0, hall of banners 0, forge 15, foundry 19, workshop 16, siege yard 16, cistern 6, treasury 0, herald's gate 0, map room 0, throne room 15, rampart 0, siege mode 28, citadel 211, the fortress 214
+PASS | architect: the fortress | built, paired, moved, upgraded, levelled, passives, garrison, siege, walls, keepsake, sigil, cleared
+PASS | architect: shapes, orders, prestige | ring, line, horseshoe, sneak to switch, citadel ring, hold, charge, fall back, breach, overcharge, prestige, stars, prestige rooms
+FAIL | elites: threat and every trait | Echo Strike's second blow never landed; an unclosed rift let out 4 elites, not 3; a closed rift still let elites out
+PASS | boss Ossuarch | 20 hits on the player, moved 25 blocks, phase 3, health down to 0%, 23 fx/s
+PASS | boss Beast of Despair | 12 hits on the player, moved 68 blocks, phase 3, health down to 0%, 27 fx/s
+PASS | boss Rhya | 8 hits on the player, moved 16 blocks, phase 3, health down to 0%, 10 fx/s
+PASS | boss Licht | 33 hits on the player, moved 30 blocks, phase 4, health down to 15%, 24 fx/s
+PASS | boss Revenant | 37 hits on the player, moved 5 blocks, phase 2, health down to 0%, 18 fx/s
+PASS | boss Curse Witch | 29 hits on the player, moved 16 blocks, phase 2, health down to 0%, 23 fx/s
+WARN | boss Cinder Sovereign | never moved in 40 s
+PASS | boss Cinder Sovereign | 10 hits on the player, moved 0 blocks, phase 2, health down to 33%, 38 fx/s
+PASS | boss Memory Guardian | 5 hits on the player, moved 14 blocks, phase 2, health down to 0%, 17 fx/s
+PASS | boss Dante | 12 hits on the player, moved 3 blocks, phase 2, health down to 33%, 21 fx/s
+PASS | rift: Magic Knight Exam | inside, 7 rooms
+PASS | rift: leaving | back in the overworld
+PASS | elf raid | 4 wave(s) beaten, spoils chest at 0,-60,-8
