@@ -26,54 +26,135 @@ import gilded_thorn as gt
 
 TEX = "architect_ruin"
 gt.REG.clear()
+# atlas regions in 256-space (the image itself is painted at twice that, for finer detail)
 gt.REG.update({"stone": (0, 0, 64, 64), "stone_d": (64, 0, 128, 64), "stone_l": (128, 0, 192, 64), "mortar": (192, 0, 256, 64),
-               "brass": (0, 64, 64, 96), "brass_d": (64, 64, 128, 96), "wood": (128, 64, 192, 96), "wood_d": (192, 64, 256, 96),
-               "cloth": (0, 96, 64, 128), "cloth_d": (64, 96, 128, 128), "ember": (128, 96, 160, 128), "arcane": (160, 96, 192, 128),
-               "bone": (192, 96, 224, 128), "iron": (224, 96, 256, 128), "slate": (0, 128, 64, 160), "hood": (64, 128, 128, 160),
-               "dark": (128, 128, 160, 160)})
+               "stone_g": (0, 64, 64, 128), "moss": (64, 64, 128, 128), "wood": (128, 64, 192, 128), "wood_d": (192, 64, 256, 128),
+               "bronze": (0, 128, 64, 160), "iron": (64, 128, 128, 160), "cloth": (128, 128, 192, 160), "rope": (192, 128, 256, 160),
+               "slate": (0, 160, 64, 192), "ember": (64, 160, 96, 192), "arcane": (96, 160, 128, 192), "bone": (128, 160, 192, 192),
+               "hood": (192, 160, 256, 192), "dark": (0, 192, 32, 224), "soot": (32, 192, 96, 224)})
 REG = gt.REG
 GLOW = []
 LOW = False
+K = 2   # texture scale
 
 
-# ------------------------------------------------------------------ the texture
+# ------------------------------------------------------------------ the texture: layered noise, grime, cracks
+import random
 def mix(a, b, t): t = max(0.0, min(1.0, t)); return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
 
 
+def _hash(x, y, s):
+    n = (x * 374761393 + y * 668265263 + s * 1442695041) & 0xffffffff
+    n = (n ^ (n >> 13)) * 1274126177 & 0xffffffff
+    return ((n ^ (n >> 16)) & 0xffff) / 65535.0
+
+
+def vnoise(x, y, s):   # smooth value noise
+    xi, yi = int(math.floor(x)), int(math.floor(y)); xf, yf = x - xi, y - yi
+    u, v = xf * xf * (3 - 2 * xf), yf * yf * (3 - 2 * yf)
+    a, b = _hash(xi, yi, s), _hash(xi + 1, yi, s); c, d = _hash(xi, yi + 1, s), _hash(xi + 1, yi + 1, s)
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v
+
+
+def fbm(x, y, s, oct=4):
+    t, amp, f, norm = 0.0, 1.0, 1.0, 0.0
+    for o in range(oct):
+        t += vnoise(x * f, y * f, s + o * 17) * amp; norm += amp; amp *= 0.5; f *= 2.0
+    return t / norm
+
+
 def paint(out):
-    im = Image.new("RGBA", (256, 256), (0, 0, 0, 255)); px = im.load()
+    S = 256 * K
+    im = Image.new("RGBA", (S, S), (0, 0, 0, 255)); px = im.load()
     def region(name, fn):
-        x0, y0, x1, y1 = REG[name]
+        x0, y0, x1, y1 = [c * K for c in REG[name]]
         for x in range(x0, x1):
             for y in range(y0, y1):
-                px[x, y] = fn((x - x0) / (x1 - x0 - 1), (y - y0) / (y1 - y0 - 1), x - x0, y - y0) + (255,)
-    def grain(x, y, a=0.37, b=0.23): return 0.5 + 0.25 * math.sin(x * a + y * b) + 0.25 * math.sin(x * 0.91 - y * 0.57)
-    def speck(x, y): return ((x * 73 + y * 151) % 17) / 16.0
-    region("stone", lambda u, v, x, y: mix((96, 98, 104), (148, 150, 156), 0.35 * grain(x, y) + 0.4 * speck(x, y)))
-    region("stone_d", lambda u, v, x, y: mix((58, 60, 68), (92, 94, 102), 0.35 * grain(x, y) + 0.4 * speck(x, y)))
-    region("stone_l", lambda u, v, x, y: mix((150, 152, 158), (196, 196, 198), 0.35 * grain(x, y) + 0.4 * speck(x, y)))
-    region("mortar", lambda u, v, x, y: mix((40, 40, 46), (62, 62, 68), speck(x, y)))
-    region("brass", lambda u, v, x, y: mix((176, 128, 52), (236, 196, 110), 0.5 + 0.35 * math.sin(x * 0.12 + y * 0.07)))
-    region("brass_d", lambda u, v, x, y: mix((96, 64, 24), (150, 104, 40), grain(x, y)))
-    region("wood", lambda u, v, x, y: mix((104, 70, 40), (150, 104, 62), 0.5 + 0.5 * math.sin(y * 0.9 + math.sin(x * 0.15) * 2)))
-    region("wood_d", lambda u, v, x, y: mix((58, 38, 22), (88, 58, 34), 0.5 + 0.5 * math.sin(y * 0.9 + math.sin(x * 0.15) * 2)))
-    region("cloth", lambda u, v, x, y: mix((214, 96, 28), (246, 150, 60), 0.5 + 0.3 * math.sin(x * 0.4) + 0.2 * v))
-    region("cloth_d", lambda u, v, x, y: mix((120, 44, 14), (170, 70, 22), 0.5 + 0.3 * math.sin(x * 0.4)))
-    region("ember", lambda u, v, x, y: mix((255, 236, 170), (255, 120, 30), abs(v - 0.5) * 2))
-    region("arcane", lambda u, v, x, y: mix((220, 255, 250), (60, 210, 200), abs(v - 0.5) * 2))
-    region("bone", lambda u, v, x, y: mix((200, 192, 170), (236, 230, 212), grain(x, y)))
-    region("iron", lambda u, v, x, y: mix((46, 48, 56), (96, 100, 112), grain(x, y)))
-    region("slate", lambda u, v, x, y: mix((44, 50, 66), (74, 82, 102), 0.5 + 0.5 * math.sin(y * 1.6)))
-    region("hood", lambda u, v, x, y: mix((40, 40, 50), (78, 76, 88), grain(x, y)))
-    region("dark", lambda u, v, x, y: (10, 10, 14))
+                u, v = (x - x0) / (x1 - x0 - 1), (y - y0) / (y1 - y0 - 1)
+                px[x, y] = tuple(max(0, min(255, int(c))) for c in fn(u, v, x - x0, y - y0)) + (255,)
+    def stone(base, var, seed, grime=0.0, moss=0.0):
+        def f(u, v, x, y):
+            n = fbm(x / 9.0, y / 9.0, seed)
+            fine = _hash(x, y, seed + 3) * 0.18
+            pits = 1.0 if _hash(x // 2, y // 2, seed + 9) > 0.965 else 0.0
+            crack = 1.0 if abs(fbm(x / 14.0, y / 14.0, seed + 5, 3) - 0.5) < 0.012 else 0.0
+            k = 0.55 + (n - 0.5) * 0.9 + fine - pits * 0.25 - crack * 0.35
+            c = tuple(base[i] + (k - 0.5) * var[i] * 2 for i in range(3))
+            if grime: c = mix(c, (38, 36, 32), grime * (0.35 + 0.65 * v) * (0.6 + 0.4 * fbm(x / 6, y / 6, seed + 7)))
+            if moss:
+                m = fbm(x / 7.0, y / 7.0, seed + 11)
+                if m > 0.55 - moss * 0.2: c = mix(c, (62, 80, 40) if _hash(x, y, seed) > 0.4 else (44, 60, 30), min(1, (m - 0.5) * 4))
+            return c
+        return f
+    region("stone", stone((118, 114, 106), (34, 32, 30), 1))
+    region("stone_d", stone((86, 83, 78), (26, 24, 22), 2))
+    region("stone_l", stone((146, 141, 130), (34, 32, 28), 3))
+    region("stone_g", stone((104, 100, 92), (30, 28, 26), 4, grime=0.8))
+    region("moss", stone((100, 98, 88), (30, 28, 26), 5, grime=0.3, moss=1.0))
+    region("mortar", lambda u, v, x, y: mix((34, 32, 30), (58, 55, 50), fbm(x / 4, y / 4, 6)))
+    def wood(base, dark, seed):
+        def f(u, v, x, y):
+            w = math.sin(y * 0.55 + fbm(x / 20.0, y / 6.0, seed) * 7.0) * 0.5 + 0.5
+            k = 0.3 + 0.5 * w + (_hash(x, y, seed) - 0.5) * 0.15
+            c = mix(dark, base, k)
+            if _hash(x // 6, y // 40, seed + 2) > 0.92 and abs(y % 40 - 20) < 2: c = mix(c, (20, 14, 8), 0.7)   # a knot
+            return c
+        return f
+    region("wood", wood((128, 96, 62), (70, 50, 30), 7))
+    region("wood_d", wood((84, 62, 40), (42, 30, 18), 8))
+    def metal(base, var, seed, patina):
+        def f(u, v, x, y):
+            n = fbm(x / 6.0, y / 6.0, seed)
+            c = tuple(base[i] + (n - 0.5) * var[i] * 2 + (_hash(x, y, seed) - 0.5) * 18 for i in range(3))
+            p = fbm(x / 8.0, y / 8.0, seed + 4)
+            if patina and p > 0.58: c = mix(c, patina, min(1, (p - 0.58) * 5))
+            return c
+        return f
+    region("bronze", metal((128, 96, 54), (34, 26, 16), 9, (74, 110, 92)))
+    region("iron", metal((58, 58, 62), (18, 18, 20), 10, (96, 58, 34)))
+    def cloth(u, v, x, y):
+        weave = 0.08 * ((x + y) % 2)
+        n = fbm(x / 10.0, y / 10.0, 12)
+        c = mix((92, 26, 24), (138, 44, 36), n * 0.8 + weave)
+        return mix(c, (60, 48, 40), max(0, v - 0.6) * 1.2)   # dirtier toward the hem
+    region("cloth", cloth)
+    region("rope", lambda u, v, x, y: mix((96, 80, 56), (150, 128, 92), 0.5 + 0.5 * math.sin((x + y * 0.6) * 1.3) * (0.6 + 0.4 * _hash(x, y, 13))))
+    def slate(u, v, x, y):
+        row = (y // 6) % 2
+        tile = _hash((x + row * 5) // 10, y // 6, 14)
+        c = mix((40, 44, 52), (78, 82, 92), tile * 0.7 + fbm(x / 5, y / 5, 15) * 0.3)
+        if y % 6 == 0 or (x + row * 5) % 10 == 0: c = mix(c, (20, 20, 24), 0.7)
+        return c
+    region("slate", slate)
+    region("ember", lambda u, v, x, y: mix((255, 214, 140), (220, 96, 28), abs(v - 0.5) * 2 + fbm(x / 3, y / 3, 16) * 0.3))
+    region("arcane", lambda u, v, x, y: mix((210, 240, 236), (60, 150, 150), abs(v - 0.5) * 1.6 + fbm(x / 3, y / 3, 17) * 0.4))
+    region("bone", stone((190, 182, 160), (26, 24, 20), 18, grime=0.35))
+    region("hood", lambda u, v, x, y: mix((30, 30, 34), (64, 62, 66), fbm(x / 5, y / 5, 19) * 0.8 + 0.1 * ((x // 2 + y) % 2)))
+    region("dark", lambda u, v, x, y: (12, 11, 10))
+    region("soot", lambda u, v, x, y: mix((22, 20, 18), (70, 66, 60), (1 - v) * 0.6 + fbm(x / 5, y / 5, 20) * 0.4))
     im.save(out)
 
 
 # ------------------------------------------------------------------ helpers
+R_ = random.Random(7)
+
+
 def box(name, c, s, region, bevel=0.0, glow=False):
-    o = gt.box(name, c, s, region, bevel=bevel, segs=1)
+    o = gt.box(name, c, s, region, bevel=0.0 if LOW else bevel, segs=1)   # the game's copy: plain edges (a third of the triangles)
     if glow: GLOW.append(o)
     return o
+
+
+def rbox(name, c, s, region, yaw=0.0, tilt=0.0, bevel=0.0):
+    """A box turned about Z by yaw (and tipped about its X by tilt): stones round a tower, voussoirs round an arch."""
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    bmesh.ops.scale(bm, vec=s, verts=bm.verts)
+    if bevel > 0 and not LOW: bmesh.ops.bevel(bm, geom=bm.verts[:] + bm.edges[:], offset=bevel, segments=1, affect="EDGES", profile=0.5)
+    if tilt: bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Matrix.Rotation(tilt, 3, "Y"), verts=bm.verts)
+    bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Matrix.Rotation(yaw, 3, "Z"), verts=bm.verts)
+    bmesh.ops.translate(bm, vec=c, verts=bm.verts)
+    return gt.new_obj(name, bm, REG[region], smooth=False)
 
 
 def tube(name, pts, region, res=4, bev=2, glow=False):
@@ -83,213 +164,337 @@ def tube(name, pts, region, res=4, bev=2, glow=False):
     return o
 
 
-def lathe(name, prof, region, M=12, glow=False, sx=1.0):
-    """A turned body through prof [(radius, z)], bottom first, capped at the top."""
+def lathe(name, prof, region, M=12, glow=False):
     bm = bmesh.new(); rows = []
     for (r, z) in prof:
-        rows.append([bm.verts.new((r * math.cos(2 * math.pi * j / M + math.pi / M) * sx, r * math.sin(2 * math.pi * j / M + math.pi / M), z)) for j in range(M)])
+        rows.append([bm.verts.new((r * math.cos(2 * math.pi * j / M + math.pi / M), r * math.sin(2 * math.pi * j / M + math.pi / M), z)) for j in range(M)])
     for i in range(len(rows) - 1):
         for j in range(M):
             k = (j + 1) % M
             bm.faces.new((rows[i][j], rows[i][k], rows[i + 1][k], rows[i + 1][j]))
     bm.faces.new(rows[-1][::-1]); bm.faces.new(rows[0])
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    o = gt.new_obj(name, bm, REG[region])
+    o = gt.new_obj(name, bm, REG[region], smooth=False)
     if glow: GLOW.append(o)
     return o
 
 
 def gem(name, c, r, h, region, glow=True):
-    """A long double-pointed crystal."""
     bm = bmesh.new()
     top = bm.verts.new((c[0], c[1], c[2] + h)); bot = bm.verts.new((c[0], c[1], c[2] - h))
     ring = [bm.verts.new((c[0] + r * math.cos(a * math.pi / 3), c[1] + r * math.sin(a * math.pi / 3), c[2])) for a in range(6)]
     for i in range(6):
         bm.faces.new((ring[i], ring[(i + 1) % 6], top)); bm.faces.new((ring[(i + 1) % 6], ring[i], bot))
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    o = gt.new_obj(name, bm, REG[region])
+    o = gt.new_obj(name, bm, REG[region], smooth=False)
     if glow: GLOW.append(o)
     return o
 
 
-def courses(prefix, x0, x1, z0, z1, y, depth, h=4.0, region_a="stone", region_b="stone_l"):
-    """Stone courses on a wall face: rows of blocks, every other row shifted half a block, a mortar back."""
-    box(prefix + "_back", ((x0 + x1) / 2, y + depth / 2, (z0 + z1) / 2), (x1 - x0, depth, z1 - z0), "mortar")
+def stone_for(z, z1, rnd):
+    """Weathering by height: grime and moss low down, cleaner stone higher, the odd pale one."""
+    h = z / max(1.0, z1)
+    r = rnd.random()
+    if h < 0.18: return "moss" if r < 0.35 else "stone_g"
+    if h < 0.4 and r < 0.3: return "stone_g"
+    if r < 0.12: return "stone_l"
+    if r < 0.35: return "stone_d"
+    return "stone"
+
+
+def courses(prefix, x0, x1, z0, z1, y, face, rnd, h=4.0, depth=1.4, gaps=True):
+    """A wall face of real-looking masonry: courses of uneven height, blocks of uneven length and depth, every joint
+    staggered, the odd stone missing or chipped. face: -1 the front (toward -Y), +1 the back."""
+    box(prefix + "_back", ((x0 + x1) / 2, y + face * 0.2, (z0 + z1) / 2), (x1 - x0, 0.6, z1 - z0), "mortar")
     row, z = 0, z0
-    while z < z1 - 0.01:
-        hh = min(h, z1 - z)
-        bw = 8.0
-        x = x0 - (bw / 2 if row % 2 else 0)
+    while z < z1 - 0.05:
+        hh = min(z1 - z, h + rnd.uniform(-0.7, 0.7))
+        if z1 - (z + hh) < 1.2: hh = z1 - z
+        x = x0 - rnd.uniform(0, 4.0) if row % 2 else x0
         k = 0
-        while x < x1 - 0.01:
+        while x < x1 - 0.05:
+            bw = rnd.uniform(4.5, 8.5)
             a, b = max(x, x0), min(x + bw, x1)
-            if b - a > 0.6:
-                reg = region_b if (row * 3 + k) % 5 == 0 else region_a
-                box("%s_%d_%d" % (prefix, row, k), ((a + b) / 2, y - 0.15, z + hh / 2), (b - a - 0.5, depth * 0.35, hh - 0.5), reg)
+            if b - a > 0.8:
+                if gaps and z > z0 + 4 and rnd.random() < 0.025:   # a stone missing
+                    pass
+                else:
+                    d = depth * rnd.uniform(0.7, 1.15)
+                    reg = stone_for(z, z1, rnd)
+                    cy = y + face * (0.2 + d / 2) - face * rnd.uniform(0, 0.25)
+                    sz = ((b - a) - 0.45, d, hh - 0.45)
+                    box("%s_%d_%d" % (prefix, row, k), ((a + b) / 2 + rnd.uniform(-0.1, 0.1), cy, z + hh / 2), sz, reg, bevel=0.18)
             x += bw; k += 1
-        z += h; row += 1
+        z += hh; row += 1
 
 
-def merlons(prefix, x0, x1, z, y, depth, n):
+def side_courses(prefix, x, y0, y1, z0, z1, face, rnd, h=4.0, depth=1.4):
+    """The same along a side face (toward -X face=-1 or +X face=+1)."""
+    row, z = 0, z0
+    while z < z1 - 0.05:
+        hh = min(z1 - z, h + rnd.uniform(-0.7, 0.7))
+        if z1 - (z + hh) < 1.2: hh = z1 - z
+        yy = y0 - rnd.uniform(0, 4.0) if row % 2 else y0
+        k = 0
+        while yy < y1 - 0.05:
+            bw = rnd.uniform(4.5, 8.5)
+            a, b = max(yy, y0), min(yy + bw, y1)
+            if b - a > 0.8:
+                d = depth * rnd.uniform(0.7, 1.15)
+                box("%s_%d_%d" % (prefix, row, k), (x + face * (d / 2 - rnd.uniform(0, 0.25)), (a + b) / 2, z + hh / 2), (d, (b - a) - 0.45, hh - 0.45), stone_for(z, z1, rnd), bevel=0.18)
+            yy += bw; k += 1
+        z += hh; row += 1
+
+
+def merlons(prefix, x0, x1, z, y, depth, n, rnd):
     w = (x1 - x0) / (2 * n - 1)
     for i in range(n):
         x = x0 + w * (2 * i) + w / 2
-        box("%s_m%d" % (prefix, i), (x, y, z + 2.2), (w, depth, 4.4), "stone", bevel=0.2)
+        hgt = 4.6 - (rnd.uniform(0.5, 1.6) if rnd.random() < 0.3 else rnd.uniform(0, 0.3))   # some chipped down
+        box("%s_m%d" % (prefix, i), (x, y, z + hgt / 2), (w - 0.3, depth, hgt), stone_for(30, 40, rnd), bevel=0.25)
+        if rnd.random() < 0.5: box("%s_mc%d" % (prefix, i), (x + rnd.uniform(-1, 1), y, z + hgt + 0.3), (w * 0.5, depth * 0.8, 0.7), "stone_d", bevel=0.15)
+
+
+def round_courses(prefix, r0, z0, z1, rnd, taper=0.0, n=14, h=4.0):
+    """A round tower built course by course: n stones a ring, each a turned box, joints staggered."""
+    row, z = 0, z0
+    while z < z1 - 0.05:
+        hh = min(z1 - z, h + rnd.uniform(-0.5, 0.5))
+        r = r0 - taper * (z - z0)
+        off = (math.pi / n) * (row % 2) + rnd.uniform(-0.05, 0.05)
+        chord = 2 * r * math.sin(math.pi / n)
+        for j in range(n):
+            a = off + 2 * math.pi * j / n
+            d = rnd.uniform(1.6, 2.2)
+            rr = r - d / 2 + rnd.uniform(-0.15, 0.1)
+            rbox("%s_%d_%d" % (prefix, row, j), (math.cos(a) * rr, math.sin(a) * rr, z + hh / 2), (d, chord + 0.15, hh - 0.4), stone_for(z, z1, rnd),
+                 yaw=a, bevel=0.15)
+        z += hh; row += 1
+    lathe(prefix + "_core", [(r0 - 1.2, z0), (r0 - 1.2 - taper * (z1 - z0), z1)], "mortar", M=n)
+
+
+def banner(prefix, x, y, z, w, hgt, rnd):
+    """A faded, frayed cloth hanging from a pole: a few strips so its hem is ragged."""
+    strips = 4
+    for i in range(strips):
+        sw = w / strips
+        drop = hgt - rnd.uniform(0, hgt * 0.25)
+        box("%s_s%d" % (prefix, i), (x - w / 2 + sw * (i + 0.5), y, z - drop / 2), (sw + 0.05, 0.35, drop), "cloth")
+    box(prefix + "_rod", (x, y, z + 0.3), (w + 1.2, 0.6, 0.6), "wood_d")
 
 
 # ------------------------------------------------------------------ the pieces
 def wall():
+    rnd = random.Random(11)
     W, Hh, D = 16.0, 38.0, 10.0   # one block wide: the game lines these up side by side
-    box("w_core", (0, 0, Hh / 2), (W, D - 1.5, Hh), "stone_d")
-    courses("w_front", -W / 2, W / 2, 0, Hh, -D / 2, 1.2)
-    courses("w_backside", -W / 2, W / 2, 0, Hh, D / 2 - 1.2, 1.2)
-    box("w_band", (0, 0, Hh * 0.62), (W, D + 0.6, 1.6), "brass")
-    box("w_band_d", (0, 0, Hh * 0.62 - 1.0), (W, D + 0.7, 0.5), "brass_d")
-    box("w_walk", (0, 0, Hh + 0.6), (W, D, 1.2), "stone_l")
-    merlons("w", -W / 2, W / 2, Hh + 1.2, 0, D, 2)
-    box("w_slit", (0, -D / 2 - 0.2, Hh * 0.35), (1.2, 0.8, 6.0), "dark")
-    box("w_slit2", (0, -D / 2 - 0.2, Hh * 0.35), (3.2, 0.8, 1.0), "dark")
-    box("w_plinth", (0, 0, 1.2), (W, D + 1.4, 2.4), "stone_d", bevel=0.3)
+    box("w_core", (0, 0, Hh / 2), (W - 0.2, D - 2.6, Hh), "mortar")
+    courses("w_front", -W / 2, W / 2, 2.2, Hh, -D / 2 + 1.4, -1, rnd)
+    courses("w_backside", -W / 2, W / 2, 2.2, Hh, D / 2 - 1.4, 1, rnd)
+    box("w_plinth", (0, 0, 1.1), (W, D + 1.2, 2.2), "stone_g", bevel=0.3)
+    box("w_walk", (0, 0, Hh + 0.5), (W, D, 1.0), "stone_d")
+    merlons("w", -W / 2, W / 2, Hh + 1.0, 0, D - 0.6, 2, rnd)
+    box("w_slit", (0, -D / 2 - 0.05, Hh * 0.45), (1.0, 1.2, 6.0), "dark")
+    box("w_slit2", (0, -D / 2 - 0.05, Hh * 0.45), (2.8, 1.2, 0.9), "dark")
+    for x in (-5.5, 5.5):   # iron cramps at the top course
+        box("w_cramp%.0f" % x, (x, -D / 2 - 0.1, Hh - 2.0), (2.2, 0.4, 0.5), "iron")
 
 
 def gatehouse():
+    rnd = random.Random(12)
     W, Hh, D = 48.0, 44.0, 12.0
+    for sx in (-1, 1):   # the two piers
+        cx = sx * 17
+        box("g_core%d" % sx, (cx, 0, Hh / 2), (13, D - 2.6, Hh), "mortar")
+        courses("g_front%d" % sx, cx - 7, cx + 7, 2.2, Hh, -D / 2 + 1.4, -1, rnd)
+        courses("g_back%d" % sx, cx - 7, cx + 7, 2.2, Hh, D / 2 - 1.4, 1, rnd)
+        side_courses("g_side%d" % sx, cx + sx * 7 - sx * 1.4, -D / 2, D / 2, 2.2, Hh, sx, rnd)
+        merlons("g_top%d" % sx, cx - 7, cx + 7, Hh, 0, D - 0.6, 2, rnd)
+        box("g_plinth%d" % sx, (cx, 0, 1.1), (14.4, D + 1.2, 2.2), "stone_g", bevel=0.3)
+        tube("g_pole%d" % sx, [(cx + sx * 4, 0, Hh + 3, 0.45), (cx + sx * 4, 0, Hh + 20, 0.4)], "wood_d")
+        banner("g_ban%d" % sx, cx + sx * 4 + sx * 3.6, 0, Hh + 19, 6.0, 9.0, rnd)
+    # the arch: wedge-shaped voussoirs round the opening, a keystone at the top
+    n = 11
+    for i in range(n):
+        a = math.pi * (i + 0.5) / n
+        rr = 11.2
+        cx, cz = rr * math.cos(a), 25 + rr * math.sin(a)
+        tilt = -(a - math.pi / 2)
+        reg = "stone_l" if i == n // 2 else stone_for(30, 40, rnd)
+        bm = bmesh.new(); bmesh.ops.create_cube(bm, size=1.0)
+        L = 3.4 if i == n // 2 else 2.8
+        bmesh.ops.scale(bm, vec=(3.1, D + 0.4, L), verts=bm.verts)
+        if not LOW: bmesh.ops.bevel(bm, geom=bm.verts[:] + bm.edges[:], offset=0.18, segments=1, affect="EDGES", profile=0.5)
+        bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Matrix.Rotation(tilt, 3, "Y"), verts=bm.verts)
+        bmesh.ops.translate(bm, vec=(cx, 0, cz), verts=bm.verts)
+        gt.new_obj("g_vous%d" % i, bm, REG[reg], smooth=False)
+    box("g_lintel", (0, 0, 40.5), (20, D - 2.6, 7), "mortar")
+    courses("g_lintelf", -10, 10, 37.5, Hh, -D / 2 + 1.4, -1, rnd, gaps=False)
+    courses("g_lintelb", -10, 10, 37.5, Hh, D / 2 - 1.4, 1, rnd, gaps=False)
+    merlons("g_topm", -10, 10, Hh, 0, D - 0.6, 3, rnd)
+    # the wooden doors, swung half open behind, and the iron portcullis in front of them
     for sx in (-1, 1):
-        box("g_pier%d" % sx, (sx * 17, 0, Hh / 2), (14, D, Hh), "stone_d")
-        courses("g_front%d" % sx, sx * 17 - 7, sx * 17 + 7, 0, Hh, -D / 2, 1.2)
-        merlons("g_top%d" % sx, sx * 17 - 7, sx * 17 + 7, Hh, 0, D, 2)
-        tube("g_pole%d" % sx, [(sx * 21, 0, Hh + 4, 0.5), (sx * 21, 0, Hh + 18, 0.5)], "wood_d")
-        bm_pts = [(sx * 21 + sx * 0.4, 0, Hh + 17, 0.2), (sx * 21 + sx * 8, 0, Hh + 15.5, 0.2)]
-        box("g_flag%d" % sx, (sx * 25, 0, Hh + 14.5), (7.5, 0.5, 5.5), "cloth")
-    # the arch over the opening
-    pts = []
-    for i in range(13):
-        a = math.pi * i / 12
-        pts.append((10 * math.cos(a), -D / 2 + 0.2, 26 + 10 * math.sin(a), 2.2))
-    tube("g_arch", pts, "stone_l", res=6)
-    box("g_lintel", (0, 0, 38), (20, D, 12), "stone_d")
-    courses("g_lintelf", -10, 10, 33, Hh, -D / 2, 1.2)
-    merlons("g_topm", -10, 10, Hh, 0, D, 3)
-    # the portcullis: iron bars, brass bands, spikes at the foot
-    for i in range(5):
-        x = -8 + 4 * i
-        box("g_bar%d" % i, (x, -1.0, 15), (1.0, 1.0, 26), "iron")
-        gt.cone("g_spike%d" % i, (x, -1.0, 2.2), (0, 0, -1), 0.7, 2.0, region="iron", segs=4)
-    for z in (8, 17, 25):
-        box("g_band%d" % z, (0, -1.0, z), (18, 1.4, 1.2), "brass")
-    box("g_crest", (0, -D / 2 - 0.5, 36), (6, 1, 6), "brass", bevel=0.4)
-    box("g_crest_g", (0, -D / 2 - 1.0, 36), (2.4, 0.6, 2.4), "ember", glow=True)
+        for k in range(4):
+            box("g_door%d_%d" % (sx, k), (sx * (2.5 + k * 2.2), 3.5, 13), (2.0, 1.2, 24), "wood" if k % 2 else "wood_d")
+        for z in (5, 20):
+            box("g_strap%d_%d" % (sx, z), (sx * 5.8, 2.7, z), (8.6, 0.4, 1.0), "iron")
+    for i in range(7):
+        x = -9 + 3 * i
+        box("g_bar%d" % i, (x, -1.0, 15.5), (0.9, 0.9, 27), "iron")
+        gt.cone("g_spike%d" % i, (x, -1.0, 1.9), (0, 0, -1), 0.6, 1.8, region="iron", segs=4)
+    for z in (6, 14, 22):
+        box("g_band%d" % z, (0, -1.0, z), (19, 1.1, 0.9), "iron")
+    box("g_crest", (0, -D / 2 - 0.4, 40), (5, 0.8, 5), "bronze", bevel=0.3)
+    box("g_crest_i", (0, -D / 2 - 0.85, 40), (2.2, 0.4, 2.2), "iron")
 
 
 def watchtower():
-    prof = [(11, 0), (10.5, 3), (9.5, 46), (11.5, 48), (11.5, 52)]
-    lathe("t_body", prof, "stone", M=12)
-    for i, z in enumerate(range(6, 44, 6)):   # course lines round it
-        lathe("t_ring%d" % i, [(9.9 + (44 - z) * 0.02, z), (9.9 + (44 - z) * 0.02, z + 0.6)], "mortar", M=12)
-    lathe("t_band", [(10.2, 30), (10.2, 31.6)], "brass", M=12)
-    for i in range(6):
-        a = 2 * math.pi * i / 6
-        box("t_m%d" % i, (math.cos(a) * 10, math.sin(a) * 10, 54.5), (5, 3.4, 5), "stone", bevel=0.2)
-    for a in (0, math.pi / 2, math.pi, 3 * math.pi / 2):
-        box("t_slit%.1f" % a, (math.cos(a + math.pi / 2) * 9.9, math.sin(a + math.pi / 2) * 9.9 * -1, 34), (1.2, 1.2, 6), "dark")
-    lathe("t_roof", [(8, 52), (0.2, 66)], "slate", M=12)
-    tube("t_pole", [(0, 0, 64, 0.45), (0, 0, 76, 0.45)], "wood_d")
-    box("t_banner", (4.6, 0, 72.5), (8.5, 0.5, 6.0), "cloth")
-    box("t_banner_d", (4.6, -0.3, 72.5), (2.0, 0.3, 2.0), "brass")
-    box("t_door", (0, -10, 5), (5, 1.4, 9), "wood_d")
+    rnd = random.Random(13)
+    round_courses("t", 11.0, 2.0, 46, rnd, taper=0.03, n=14)
+    lathe("t_base", [(12.4, 0), (12.0, 2.4), (11.0, 2.6)], "stone_g", M=14)
+    lathe("t_corbel", [(10.0, 45), (12.4, 47.5), (12.4, 49)], "stone_d", M=14)
+    for i in range(7):   # merlons round the top, some chipped
+        a = 2 * math.pi * i / 7
+        hgt = 4.8 - (rnd.uniform(0.6, 1.8) if rnd.random() < 0.3 else 0)
+        rbox("t_m%d" % i, (math.cos(a) * 11.2, math.sin(a) * 11.2, 49 + hgt / 2), (2.4, 4.4, hgt), stone_for(30, 40, rnd), yaw=a, bevel=0.2)
+    # the slate roof, in layered rings, a lead cap and the pole
+    for k in range(6):
+        r0, r1 = 9.5 - k * 1.55, 9.5 - (k + 1) * 1.55
+        z0 = 50 + k * 2.4
+        lathe("t_roof%d" % k, [(r0 + 0.5, z0), (r1 + 0.3, z0 + 3.2)], "slate", M=14)
+    gt.cone("t_cap", (0, 0, 64.2), (0, 0, 1), 0.9, 2.0, region="iron", segs=6)
+    tube("t_pole", [(0, 0, 64, 0.35), (0, 0, 76, 0.32)], "wood_d")
+    banner("t_banner", 4.0, 0, 75.2, 7.0, 6.0, rnd)
+    for a in (0.6, 2.2, 3.8, 5.4):
+        rbox("t_slit%.1f" % a, (math.cos(a) * 10.9, math.sin(a) * 10.9, 32), (1.0, 1.0, 5.0), "dark", yaw=a)
+    rbox("t_door", (0, -10.6, 5.6), (1.0, 5.2, 9.0), "wood_d", yaw=-math.pi / 2)
+    rbox("t_door_s", (0, -10.9, 8), (0.4, 5.4, 0.7), "iron", yaw=-math.pi / 2)
 
 
 def arcane_spire():
-    prof = [(8.5, 0), (8, 3), (6, 44), (8, 46), (8, 48)]
-    lathe("a_body", prof, "stone_d", M=8)
-    for i, z in enumerate((10, 22, 34)):
-        lathe("a_ring%d" % i, [(8.2 - z * 0.05, z), (8.2 - z * 0.05, z + 1.2)], "brass", M=8)
-    for i in range(4):   # four brass claws reaching up to hold the crystal
+    rnd = random.Random(14)
+    round_courses("a", 8.0, 2.0, 44, rnd, taper=0.045, n=10, h=3.6)
+    lathe("a_base", [(9.6, 0), (9.2, 2.2), (8.1, 2.4)], "stone_g", M=10)
+    lathe("a_lip", [(5.8, 43.5), (7.6, 45.5), (7.6, 47)], "stone_d", M=10)
+    for i in range(4):   # bronze claws reaching up to hold the crystal, weathered green
         a = math.pi / 4 + i * math.pi / 2
-        tube("a_claw%d" % i, [(math.cos(a) * 7, math.sin(a) * 7, 47, 0.8), (math.cos(a) * 6.5, math.sin(a) * 6.5, 53, 0.7),
-                               (math.cos(a) * 3.5, math.sin(a) * 3.5, 57, 0.5)], "brass")
-    gem("a_crystal", (0, 0, 60), 3.6, 7, "arcane")
-    lathe("a_runes", [(6.3, 18), (6.3, 19)], "arcane", M=8, glow=True)
-    lathe("a_runes2", [(5.7, 30), (5.7, 31)], "arcane", M=8, glow=True)
-    box("a_door", (0, -7.6, 5), (4, 1.4, 8), "wood_d")
+        tube("a_claw%d" % i, [(math.cos(a) * 6.6, math.sin(a) * 6.6, 46.5, 0.7), (math.cos(a) * 6.2, math.sin(a) * 6.2, 52, 0.6),
+                               (math.cos(a) * 3.2, math.sin(a) * 3.2, 56.5, 0.45)], "bronze")
+    gem("a_crystal", (0, 0, 59.5), 3.0, 6.5, "arcane")
+    for z in (14, 26, 36):   # rune-cut slits that glow faintly
+        for j in range(4):
+            a = j * math.pi / 2 + (z % 7) * 0.2
+            rr = 8.0 - 0.045 * (z - 2) + 0.05
+            rbox("a_rune%d_%d" % (z, j), (math.cos(a) * rr, math.sin(a) * rr, z), (0.4, 0.8, 2.8), "arcane", yaw=a)
+            GLOW.append(gt.PARTS[-1])
+    rbox("a_door", (0, -7.7, 5), (1.0, 4.0, 8.0), "wood_d", yaw=-math.pi / 2)
+
+
+def square_tower(prefix, S, Hh, rnd):
+    box(prefix + "_core", (0, 0, Hh / 2), (S - 2.6, S - 2.6, Hh), "mortar")
+    courses(prefix + "_f", -S / 2, S / 2, 2.2, Hh, -S / 2 + 1.4, -1, rnd)
+    courses(prefix + "_b", -S / 2, S / 2, 2.2, Hh, S / 2 - 1.4, 1, rnd)
+    side_courses(prefix + "_l", -S / 2 + 1.4, -S / 2 + 1.4, S / 2 - 1.4, 2.2, Hh, -1, rnd)
+    side_courses(prefix + "_r", S / 2 - 1.4, -S / 2 + 1.4, S / 2 - 1.4, 2.2, Hh, 1, rnd)
+    for sx in (-1, 1):   # quoins: big corner stones, alternating
+        for sy in (-1, 1):
+            z = 2.2
+            k = 0
+            while z < Hh - 1:
+                hh = 4.0
+                long_x = k % 2 == 0
+                box("%s_q%d%d_%d" % (prefix, sx, sy, k), (sx * (S / 2 - (2.2 if long_x else 1.0)), sy * (S / 2 - (1.0 if long_x else 2.2)), z + hh / 2),
+                    (4.6 if long_x else 2.2, 2.2 if long_x else 4.6, hh - 0.35), "stone_l" if k % 3 == 0 else "stone", bevel=0.2)
+                z += hh; k += 1
+    box(prefix + "_plinth", (0, 0, 1.1), (S + 1.2, S + 1.2, 2.2), "stone_g", bevel=0.3)
 
 
 def forge_tower():
+    rnd = random.Random(15)
     S, Hh = 20.0, 42.0
-    box("f_core", (0, 0, Hh / 2), (S - 1.5, S - 1.5, Hh), "stone_d")
-    for sy, rot in ((-1, 0), (1, 0)):
-        courses("f_fy%d" % sy, -S / 2, S / 2, 0, Hh, sy * (S / 2) - (1.2 if sy > 0 else 0), 1.2)
-    for sx in (-1, 1):
-        for i, z in enumerate(range(0, int(Hh), 4)):
-            box("f_side%d_%d" % (sx, i), (sx * (S / 2 - 0.3), 0, z + 2), (1.0, S - 0.6, 3.5), "stone" if i % 3 else "stone_l")
-    merlons("f_mf", -S / 2, S / 2, Hh, -S / 2 + 1.5, 3, 3)
-    merlons("f_mb", -S / 2, S / 2, Hh, S / 2 - 1.5, 3, 3)
-    box("f_floor", (0, 0, Hh + 0.6), (S, S, 1.2), "stone_l")
-    box("f_chimney", (5, 4, Hh + 9), (6, 6, 18), "stone_d", bevel=0.3)
-    box("f_chim_cap", (5, 4, Hh + 18.5), (7.5, 7.5, 1.4), "brass")
-    box("f_chim_glow", (5, 4, Hh + 18.2), (4, 4, 1.2), "ember", glow=True)
-    box("f_window", (0, -S / 2 - 0.2, 24), (7, 0.8, 8), "ember", glow=True)
-    for x in (-2.4, 0, 2.4):
-        box("f_wbar%.1f" % x, (x, -S / 2 - 0.6, 24), (0.6, 0.6, 8.4), "iron")
-    box("f_anvil", (0, -S / 2 - 0.9, 30), (6, 0.8, 2.4), "brass")
-    box("f_door", (0, -S / 2 - 0.2, 5), (6, 1.2, 10), "wood_d")
+    square_tower("f", S, Hh, rnd)
+    box("f_floor", (0, 0, Hh + 0.5), (S, S, 1.0), "stone_d")
+    merlons("f_mf", -S / 2, S / 2, Hh + 1, -S / 2 + 1.4, 2.8, 3, rnd)
+    merlons("f_mb", -S / 2, S / 2, Hh + 1, S / 2 - 1.4, 2.8, 3, rnd)
+    # the chimney: stone below, soot-blackened above, an iron cowl
+    box("f_chimney", (5, 4, Hh + 8), (6, 6, 15), "stone_d", bevel=0.3)
+    box("f_chim_top", (5, 4, Hh + 16.5), (6.4, 6.4, 3), "soot", bevel=0.3)
+    box("f_chim_cap", (5, 4, Hh + 18.4), (7.6, 7.6, 0.8), "iron")
+    box("f_chim_glow", (5, 4, Hh + 18.1), (4, 4, 0.6), "ember", glow=True)
+    # the forge window: a deep glowing opening with iron bars, soot above it
+    box("f_window", (0, -S / 2 - 0.05, 24), (6, 0.8, 7), "ember", glow=True)
+    box("f_soot", (0, -S / 2 - 0.1, 30), (7, 0.5, 5), "soot")
+    for x in (-2.0, 0, 2.0):
+        box("f_wbar%.1f" % x, (x, -S / 2 - 0.5, 24), (0.55, 0.55, 7.4), "iron")
+    box("f_sill", (0, -S / 2 - 0.4, 20.2), (7.6, 1.6, 0.9), "stone_l")
+    box("f_door", (0, -S / 2 - 0.1, 5.4), (5.4, 1.0, 9.6), "wood_d")
+    for z in (2.5, 8.0):
+        box("f_door_s%.0f" % z, (0, -S / 2 - 0.5, z), (5.6, 0.3, 0.6), "iron")
 
 
 def ballista(z0=0.0, scale=1.0):
     s = len(gt.PARTS)
-    box("b_base", (0, 0, 2), (10, 12, 4), "wood_d", bevel=0.3)
-    box("b_post", (0, 0, 6), (3, 3, 6), "wood")
-    box("b_stock", (0, -2, 9.5), (2.6, 18, 2.2), "wood")
-    box("b_rail", (0, -2, 10.9), (1.2, 18, 0.6), "brass_d")
-    for sx in (-1, 1):   # the arms bent back, brass capped, the string between their tips
-        tube("b_arm%d" % sx, [(0, -8, 10, 0.9), (sx * 6, -7, 10.4, 0.8), (sx * 11, -3, 10.6, 0.6)], "wood")
-        box("b_cap%d" % sx, (sx * 11, -3, 10.6), (1.6, 1.6, 1.6), "brass")
-    tube("b_string", [(-11, -3, 10.7, 0.18), (0, 5, 10.9, 0.18), (11, -3, 10.7, 0.18)], "bone", res=2)
-    tube("b_bolt", [(0, 5, 11.4, 0.45), (0, -14, 11.4, 0.45)], "wood_d")
-    gt.cone("b_tip", (0, -14, 11.4), (0, -1, 0), 0.9, 3.0, region="iron", segs=4)
+    rnd = random.Random(16)
+    box("b_base", (0, 0, 1.8), (10, 12, 3.6), "wood_d", bevel=0.3)
+    for y in (-4.5, 0, 4.5):
+        box("b_plank%.1f" % y, (0, y, 3.75), (10.2, 3.6, 0.3), "wood")
+    box("b_post", (0, 0, 6), (2.8, 2.8, 5), "wood")
+    box("b_stock", (0, -2, 9.5), (2.4, 18, 2.0), "wood")
+    box("b_rail", (0, -2, 10.65), (0.9, 18, 0.4), "iron")
+    for sx in (-1, 1):   # the bow arms, bound with rope at the middle, iron-tipped
+        tube("b_arm%d" % sx, [(0, -8, 10, 0.8), (sx * 6, -7, 10.3, 0.7), (sx * 11, -3.5, 10.5, 0.5)], "wood_d")
+        box("b_tip%d" % sx, (sx * 11, -3.5, 10.5), (1.2, 1.2, 1.2), "iron")
+        tube("b_bind%d" % sx, [(sx * 1.2, -8.1, 9.2, 0.35), (sx * 1.2, -8.1, 11.0, 0.35)], "rope")
+    tube("b_string", [(-11, -3.5, 10.6, 0.14), (0, 4.5, 10.8, 0.14), (11, -3.5, 10.6, 0.14)], "rope", res=2)
+    tube("b_bolt", [(0, 4.5, 11.2, 0.4), (0, -14, 11.2, 0.4)], "wood")
+    gt.cone("b_head", (0, -14, 11.2), (0, -1, 0), 0.8, 2.6, region="iron", segs=4)
     for sx in (-1, 1):
-        box("b_fl%d" % sx, (sx * 0.8, 4.4, 11.4), (1.4, 2.0, 0.2), "cloth")
-    box("b_wheel", (0, 6.5, 8), (5, 1.2, 5), "brass_d", bevel=0.4)
+        box("b_fl%d" % sx, (sx * 0.7, 3.8, 11.2), (1.2, 1.8, 0.15), "cloth")
+    lathe("b_winch", [(1.4, 0), (1.4, 5)], "wood_d", M=8)
+    for ob in gt.PARTS[-1:]:
+        ob.data.transform(Matrix.Translation((-2.5, 6.5, 8)) @ Matrix.Rotation(math.pi / 2, 4, "Y"))
     if scale != 1.0 or z0:
         M = Matrix.Translation((0, 0, z0)) @ Matrix.Scale(scale, 4)
         for ob in gt.PARTS[s:]: ob.data.transform(M)
 
 
 def siege_platform():
+    rnd = random.Random(17)
     S, Hh = 26.0, 22.0
-    box("p_core", (0, 0, Hh / 2), (S - 1.5, S - 1.5, Hh), "stone_d")
-    for sy in (-1, 1):
-        courses("p_fy%d" % sy, -S / 2, S / 2, 0, Hh, sy * (S / 2) - (1.2 if sy > 0 else 0), 1.2)
-    for sx in (-1, 1):
-        for i, z in enumerate(range(0, int(Hh), 4)):
-            box("p_side%d_%d" % (sx, i), (sx * (S / 2 - 0.3), 0, z + 2), (1.0, S - 0.6, 3.5), "stone" if i % 2 else "stone_l")
-    box("p_floor", (0, 0, Hh + 0.6), (S, S, 1.2), "wood_d")
+    square_tower("p", S, Hh, rnd)
+    for k in range(7):   # the plank deck
+        box("p_deck%d" % k, (0, -S / 2 + 1.9 + k * 3.7, Hh + 0.5), (S - 0.4, 3.4, 1.0), "wood" if k % 2 else "wood_d")
     for (x, y) in ((-S / 2 + 2, -S / 2 + 2), (S / 2 - 2, -S / 2 + 2), (-S / 2 + 2, S / 2 - 2), (S / 2 - 2, S / 2 - 2)):
-        box("p_post%.0f%.0f" % (x, y), (x, y, Hh + 4), (3.4, 3.4, 6), "stone", bevel=0.2)
-    box("p_band", (0, 0, Hh - 3), (S + 0.4, S + 0.4, 1.2), "brass")
-    ballista(Hh + 1.2, 1.0)
+        box("p_post%.0f%.0f" % (x, y), (x, y, Hh + 4), (3.4, 3.4, 6), stone_for(30, 40, rnd), bevel=0.25)
+    ballista(Hh + 1.0, 1.0)
 
 
 def bone_sentry():
-    # legs and robe
-    lathe("s_robe", [(5.2, 0), (5.0, 3), (4.0, 14), (3.4, 18)], "hood", M=10)
-    lathe("s_body", [(3.6, 17), (4.2, 22), (3.8, 27), (2.6, 29)], "stone_l", M=10)
-    lathe("s_belt", [(4.15, 18.5), (4.15, 19.8)], "brass", M=10)
-    for i in range(3):   # the ribs: bone bars across the chest
-        box("s_rib%d" % i, (0, -3.9, 21 + i * 1.8), (5.2, 0.6, 0.7), "bone")
-    lathe("s_hood", [(3.2, 28), (3.6, 31), (3.2, 35), (1.2, 37.5)], "hood", M=10)
-    box("s_face", (0, -2.5, 32), (3.2, 1.0, 3.6), "dark")
+    rnd = random.Random(18)
+    lathe("s_robe", [(5.2, 0), (5.0, 3), (4.0, 14), (3.5, 18)], "hood", M=10)
+    for i in range(5):   # the robe's ragged hem
+        a = i * 2 * math.pi / 5 + 0.3
+        rbox("s_hem%d" % i, (math.cos(a) * 4.9, math.sin(a) * 4.9, 0.8), (0.4, 3.0, rnd.uniform(1.0, 2.0)), "hood", yaw=a)
+    lathe("s_chest", [(3.6, 17), (4.2, 22), (3.9, 27), (2.6, 29)], "iron", M=10)   # a dented iron breastplate
+    box("s_belt", (0, 0, 19.2), (8.6, 8.6, 1.2), "wood_d")
+    box("s_buckle", (0, -4.3, 19.2), (1.4, 0.4, 1.4), "bronze")
+    for i in range(3):
+        box("s_rib%d" % i, (0, -3.95, 21.2 + i * 1.8), (4.4, 0.5, 0.6), "bone")
+    lathe("s_hood", [(3.2, 28), (3.7, 31), (3.3, 35), (1.4, 37.5)], "hood", M=10)
+    box("s_face", (0, -2.6, 32), (3.0, 1.0, 3.4), "dark")
+    box("s_skull", (0, -2.95, 31.8), (2.4, 0.5, 2.6), "bone")
     for sx in (-1, 1):
-        box("s_eye%d" % sx, (sx * 0.8, -3.1, 32.6), (0.7, 0.4, 0.5), "ember", glow=True)
-        box("s_shoulder%d" % sx, (sx * 4.6, 0, 26.5), (3.0, 4.0, 2.6), "bone", bevel=0.3)
-    # the tower shield on the left, the halberd in the right
-    box("s_shield", (-6.5, -2.0, 18), (1.2, 7.5, 13), "stone", bevel=0.3)
-    box("s_shield_rim", (-7.2, -2.0, 18), (0.4, 8.2, 13.8), "brass")
-    box("s_shield_boss", (-7.6, -2.0, 19), (0.6, 2.4, 2.4), "bone")
-    tube("s_haft", [(6.4, -1.5, 1, 0.45), (6.4, -1.5, 40, 0.45)], "wood_d")
-    gt.cone("s_point", (6.4, -1.5, 40), (0, 0, 1), 0.8, 4.0, region="bone", segs=4)
-    box("s_blade", (8.2, -1.5, 36.5), (3.4, 0.5, 5.0), "bone")
-    box("s_hook", (4.8, -1.5, 36.5), (1.6, 0.5, 2.2), "bone")
+        box("s_eye%d" % sx, (sx * 0.7, -3.25, 32.3), (0.6, 0.3, 0.5), "ember", glow=True)
+        box("s_pauldron%d" % sx, (sx * 4.6, 0, 26.5), (3.0, 4.0, 2.4), "iron", bevel=0.3)
+        box("s_arm%d" % sx, (sx * 4.8, -0.5, 22), (1.4, 1.4, 6), "bone")
+    # a battered tower shield (wood, iron rim and boss) and a halberd
+    box("s_shield", (-6.5, -2.0, 18), (1.0, 7.5, 13), "wood_d", bevel=0.2)
+    for z in (13, 18, 23):
+        box("s_sh_band%d" % z, (-7.05, -2.0, z), (0.25, 7.6, 0.7), "iron")
+    box("s_shield_boss", (-7.25, -2.0, 18.5), (0.6, 2.2, 2.2), "iron")
+    tube("s_haft", [(6.4, -1.5, 1, 0.4), (6.4, -1.5, 40, 0.38)], "wood_d")
+    gt.cone("s_point", (6.4, -1.5, 40), (0, 0, 1), 0.7, 3.6, region="iron", segs=4)
+    box("s_blade", (8.0, -1.5, 36.5), (3.0, 0.35, 4.6), "iron")
+    box("s_hook", (4.9, -1.5, 36.5), (1.4, 0.35, 2.0), "iron")
 
 
 MODELS = {"wall": wall, "gatehouse": gatehouse, "watchtower": watchtower, "arcane_spire": arcane_spire, "forge_tower": forge_tower,
@@ -311,7 +516,7 @@ def build(form, out_dir):
         m = bpy.data.materials.new(name); m.use_nodes = True
         nt = m.node_tree; bsdf = nt.nodes.get("Principled BSDF")
         img = nt.nodes.new("ShaderNodeTexImage"); img.image = image; img.interpolation = "Closest"
-        bsdf.inputs["Roughness"].default_value = 0.7
+        bsdf.inputs["Roughness"].default_value = 0.85
         if glow:
             bsdf.inputs["Base Color"].default_value = (0, 0, 0, 1)
             nt.links.new(img.outputs["Color"], bsdf.inputs["Emission Color"]); bsdf.inputs["Emission Strength"].default_value = 1.6
@@ -343,7 +548,7 @@ def render_sheet(out_dir, only=None):
         sc.view_settings.view_transform = "Standard"
         sc.render.resolution_x, sc.render.resolution_y = CW, CH
         world = bpy.data.worlds.new("w"); sc.world = world; world.use_nodes = True
-        world.node_tree.nodes["Background"].inputs[0].default_value = (0.05, 0.05, 0.07, 1)
+        world.node_tree.nodes["Background"].inputs[0].default_value = (0.09, 0.09, 0.1, 1)
         for name, rot, energy in (("key", (math.radians(50), 0, math.radians(-35)), 4.0), ("fill", (math.radians(70), 0, math.radians(150)), 1.6),
                                   ("top", (math.radians(10), 0, 0), 1.2)):
             L = bpy.data.lights.new(name, "SUN"); L.energy = energy

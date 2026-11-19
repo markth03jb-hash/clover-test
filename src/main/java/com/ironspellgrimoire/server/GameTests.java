@@ -1888,7 +1888,7 @@ public final class GameTests {
                 "rampart", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.rampartPage(pl, pw); }, "q",
                 "siege mode", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.handle(pl, 1, FortressFx.WATCHTOWER * 100); FortressFx.siegePage(pl, pw); }, "",
                 "citadel", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.testLevel(pl, 10); for (int r = 0; r < 24; r++) FortressFx.handle(pl, 1, r * 100 + r); FortressFx.citadelPage(pl, pw); }, "",
-                "the fortress", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> FortressFx.fortressPage(pl, pw), "q");
+                "the fortress", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> FortressFx.fortressPage(pl, pw), "q"));
         queue.add(new ArchitectTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
