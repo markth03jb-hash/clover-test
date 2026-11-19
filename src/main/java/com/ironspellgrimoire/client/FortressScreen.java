@@ -106,7 +106,7 @@ public class FortressScreen extends Screen {
     private void prestigeOverlay(GuiGraphics g, int x0, int y0, int W, int H, int mx, int my) {
         hits.clear();
         int st = FortressClient.stars() + 1;
-        int bw = Math.min(330, W - 30), bh = Math.min(176, H - 50), bx = x0 + (W - bw) / 2, by = y0 + 40 + (H - 40 - bh) / 2;
+        int bw = Math.min(330, W - 30), bh = Math.min(118, H - 50), bx = x0 + (W - bw) / 2, by = y0 + 40 + (H - 40 - bh) / 2;
         g.fill(bx, by, bx + bw, by + bh, 0xF01E1812);
         g.renderOutline(bx, by, bw, bh, BRASS);
         g.drawString(font, "REBUILD THE FORTRESS?", bx + 8, by + 7, BRASS, false);
@@ -578,7 +578,7 @@ public class FortressScreen extends Screen {
         g.drawString(font, TOPICS[guideTopic].toUpperCase(), ix, ly + 6, BRASS, false);
         if (guideTopic == TOPICS.length - 1) { encyclopedia(g, ix, ly + 19, iw, maxY, mx, my); return; }
         List<FormattedCharSequence> lines = new ArrayList<>();
-        for (String p : GUIDE[guideTopic]) { lines.addAll(font.split(Component.literal(p), iw)); lines.add(FormattedCharSequence.EMPTY); }
+        for (String p : GUIDE[guideTopic]) { lines.addAll(font.split(Component.literal(p), iw - 10)); lines.add(FormattedCharSequence.EMPTY); }   // (room for the scroll mark)
         int rows = (maxY - (ly + 19)) / 10;
         guideScroll = Mth.clamp(guideScroll, 0, Math.max(0, lines.size() - rows));
         int yy = ly + 19;

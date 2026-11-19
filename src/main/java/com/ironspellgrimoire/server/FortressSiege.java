@@ -227,13 +227,13 @@ public final class FortressSiege {
         int n = 0;
         List<int[]> spots = new ArrayList<>();
         Vec3 post = o.centre;
-        if (shape == FortressFx.LINE) {   // one long wall across your front; towers just behind its ends and behind you
-            int d = 4;
+        if (shape == FortressFx.LINE) {   // one long wall across your front, a tower capping each end, a third just behind it off to one side
+            int d = 4;   // (never right behind you or right in front: a tower there would fill the camera)
             for (int k = -6; k <= 6; k++)
                 if (spawnWall(p, sl, cx + fx * d + sx * k, y, cz + fz * d + sz * k, FortressWall.WALL, hp, life, citadel, across) != null) n++;
-            spots.add(new int[]{cx + fx * (d - 2) + sx * 5, cz + fz * (d - 2) + sz * 5});
-            spots.add(new int[]{cx + fx * (d - 2) - sx * 5, cz + fz * (d - 2) - sz * 5});
-            spots.add(new int[]{cx - fx * 2, cz - fz * 2});
+            spots.add(new int[]{cx + fx * d + sx * 8, cz + fz * d + sz * 8});
+            spots.add(new int[]{cx + fx * d - sx * 8, cz + fz * d - sz * 8});
+            spots.add(new int[]{cx + fx * (d - 2) + sx * 4, cz + fz * (d - 2) + sz * 4});
             post = o.centre.add(fx * 1.5, 0, fz * 1.5);
         } else {   // a square; a horseshoe leaves the back out and has no gate
             boolean ring = shape == FortressFx.RING;

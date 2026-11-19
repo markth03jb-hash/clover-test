@@ -108,6 +108,7 @@ public class FortressWheel extends Screen {
         g.drawCenteredString(font, "ORDERS", cx, cy - 8, 0xFFE8B860);
         g.drawCenteredString(font, FortressClient.defendersOut() > 0 ? FortressSiege.ORDER[Math.max(0, Math.min(3, ord))] : "-", cx, cy + 2, 0xFFC8C4BC);
         int y = cy + (int) (r1 + 18);
+        g.fill(cx - 170, y - 4, cx + 170, y + 21, 0xB0100C08);   // a backing, so the words read over any scene
         if (hover >= 0) {
             boolean ok = usable(hover);
             g.drawCenteredString(font, NAME[hover] + (current(hover) ? "  (in force - choose again to lift it)" : ""), cx, y, 0xFFFFFFFF);
