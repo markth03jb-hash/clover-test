@@ -891,8 +891,11 @@ public final class HungerFx {
                 Vec3 c = p.getEyePosition().add(d.scale(3)), side = rightOf(d);
                 FxSend.crescent(sl, Fx.CRIMSON, c.add(0, 0.9, 0), d, side, 2f, 2.6f, 6, 0.4f);
                 FxSend.crescent(sl, Fx.CRIMSON, c.add(0, -0.9, 0), d, side.scale(-1), 2f, 2.6f, 6, 0.4f);
-                AstaFx.later(4, () -> {
-                    for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(2.5))) { AstaFx.damage(p, t, dmg, "gnash"); p.heal(1f); }
+                Vec3 from = p.position().add(0, 1, 0);
+                AstaFx.later(4, () -> {   // everything along the lunge's path (a fast lunge can carry you past a foe in four ticks)
+                    Vec3 to = p.position().add(0, 1, 0);
+                    for (LivingEntity t : enemies(sl, p, new net.minecraft.world.phys.AABB(from, to).inflate(2.5)))
+                        if (mid(t).distanceTo(closestOnSegment(from, to, mid(t))) <= 2.5) { AstaFx.damage(p, t, dmg, "gnash"); p.heal(1f); }
                     OverdriveFx.play(sl, p.position(), "jaws", 1.3f, 0.8f);
                 });
             }
