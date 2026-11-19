@@ -1603,6 +1603,7 @@ public final class GameTests {
         sl().setDayTime(6000);
         // a creeper wandering in (or an enderman) would "change the world" in some boss's test: no griefing, always noon
         sl().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING).set(false, p.server);
+        sl().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING).set(false, p.server);   // no wild slime wandering in front of a spell
         sl().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_DAYLIGHT).set(false, p.server);
         UiShotsServer.prepare(p);
         queue.add(saving());

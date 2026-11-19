@@ -544,10 +544,21 @@ public final class HungerFx {
     /** The thrown blade came back (or was lost): into the empty hand it goes. */
     public static void caught(ServerPlayer p, ItemStack s) {
         root(p).putBoolean("thrown", false);
-        if (!p.getMainHandItem().isEmpty() && equipped(p)) {   // something picked up while it flew: into the bag (or dropped), the blade comes first
+        if (!p.getMainHandItem().isEmpty() && equipped(p)) {   // something picked up while it flew: into another slot (or dropped), the blade comes first
             ItemStack held = p.getMainHandItem().copy();
             p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-            if (!p.getInventory().add(held)) p.drop(held, false);
+            var inv = p.getInventory();
+            int sel = inv.selected;
+            for (int i = 0; i < inv.items.size() && !held.isEmpty(); i++) {   // stack it first, then an empty slot - never the hand's own
+                if (i == sel) continue;
+                ItemStack s2 = inv.items.get(i);
+                if (!s2.isEmpty() && ItemStack.isSameItemSameTags(s2, held) && s2.getCount() < s2.getMaxStackSize()) {
+                    int n = Math.min(held.getCount(), s2.getMaxStackSize() - s2.getCount());
+                    s2.grow(n); held.shrink(n);
+                }
+            }
+            for (int i = 0; i < inv.items.size() && !held.isEmpty(); i++) if (i != sel && inv.items.get(i).isEmpty()) { inv.items.set(i, held); held = ItemStack.EMPTY; }
+            if (!held.isEmpty()) p.drop(held, false);
         }
         if (p.getMainHandItem().isEmpty() && equipped(p)) {
             p.setItemInHand(InteractionHand.MAIN_HAND, s);
