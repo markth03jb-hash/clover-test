@@ -968,6 +968,244 @@ public final class GameTests {
         }
     }
 
+    /** Elite mobs: threat ranks, who may be one, what rolls, and every trait doing what the Codex says - and nothing changed in the world. */
+    private static final class EliteTest extends Test {
+        EliteTest() { super("elites: threat and every trait"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{EliteMobs.class, EliteTraits.class, com.ironspellgrimoire.entity.CursedChest.class, com.ironspellgrimoire.entity.EliteRift.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        BlockState[] before;
+        net.minecraft.world.entity.Mob over, echo, seeker, dagger, hunter, sprinter, anchored, reflector, pillager, twin0, ghostFrom;
+        Vec3 anchorAt, riftOpen, riftShut, chestBite, chestWait, twinAt;
+        java.util.UUID shadowId;
+        net.minecraft.world.entity.projectile.Arrow reflected;
+        boolean dashed;
+
+        net.minecraft.world.entity.Mob spawn(net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob> type, double dx, double dz, int rank, int mask) {
+            var m = type.create(sl());
+            m.moveTo(home.x + dx, home.y, home.z + dz, 180, 0);
+            m.setYBodyRot(180); m.setYHeadRot(180);
+            m.setNoAi(true);
+            sl().addFreshEntity(m);
+            EliteMobs.testMake(m, rank, mask);
+            return m;
+        }
+        static int bit(int t) { return 1 << t; }
+        void hitPlayer(net.minecraft.world.entity.Mob m, float amount) { p.invulnerableTime = 0; p.hurt(m.damageSources().mobAttack(m), amount); }
+        void hitMob(net.minecraft.world.entity.Mob m, float amount) { m.invulnerableTime = 0; m.hurt(p.damageSources().playerAttack(p), amount); }
+        java.util.List<net.minecraft.world.entity.Mob> marked(Vec3 c, double r) {
+            return sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new AABB(c, c).inflate(r), x -> x.isAlive() && EliteMobs.marked(x));
+        }
+
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            EliteTraits.testEchoHits = 0; EliteTraits.testBurstHits = 0; EliteTraits.testOrbs = 0; EliteTraits.testDaggers = 0;
+            EliteTraits.clearShots();
+            before = snapshot();
+        }
+
+        @Override boolean tick(int t) {
+            try {
+                var V = net.minecraft.world.entity.EntityType.VINDICATOR;
+                if (t == 2) {   // threat, who may be one, what rolls, what a rank does
+                    ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ARCHITECT_GRIMOIRE.get());
+                    CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+                    book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+                    EliteMobs.testForgetThreat(p);
+                    int th = EliteMobs.threat(p);
+                    if (th != 4) bad.add("a mastered grimoire gave threat " + th + ", not 4");
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, ItemStack.EMPTY));
+                    EliteMobs.testForgetThreat(p);
+                    if (EliteMobs.threat(p) != 0) bad.add("no grimoire still gave threat " + EliteMobs.threat(p));
+                    var plain = V.create(sl()); plain.moveTo(home.x + 20, home.y, home.z + 20);
+                    sl().addFreshEntity(plain);
+                    if (!EliteMobs.eligible(plain)) bad.add("a wild vindicator can't be an elite");
+                    plain.getPersistentData().putUUID("isg_bounty_owner", p.getUUID());
+                    if (EliteMobs.eligible(plain)) bad.add("a bounty target could be an elite");
+                    if (EliteMobs.eligible(dummy)) bad.add("a mob with no AI could be an elite");
+                    var golem = net.minecraft.world.entity.EntityType.IRON_GOLEM.create(sl()); golem.moveTo(home.x + 20, home.y, home.z - 20);
+                    sl().addFreshEntity(golem);
+                    if (EliteMobs.eligible(golem)) bad.add("an iron golem could be an elite");
+                    golem.discard(); plain.discard();
+                    int champs = 0, models = 0, tooMany = 0;
+                    for (int k = 0; k < 300; k++) {
+                        int m = EliteMobs.pick(plain, 2, 3);
+                        if ((m & EliteMobs.CHAMPION) != 0) champs++;
+                        if ((m & EliteMobs.MODEL_TRAITS) != 0 && !EliteMobs.modelsApproved) models++;
+                        if (Integer.bitCount(m) > 3) tooMany++;
+                        int m5 = EliteMobs.pick(plain, 5, 3);
+                        if (Integer.bitCount(m5 & EliteMobs.CHAMPION) > 1) tooMany++;
+                    }
+                    if (champs > 0) bad.add("champion traits rolled at threat 2");
+                    if (models > 0) bad.add("traits whose models aren't approved yet rolled");
+                    if (tooMany > 0) bad.add("too many traits (or two champion traits) rolled");
+                    var r3 = spawn(V, 20, -10, 3, 0);
+                    double hp = r3.getAttribute(Attributes.MAX_HEALTH).getValue() / r3.getAttribute(Attributes.MAX_HEALTH).getBaseValue();
+                    double dm = r3.getAttribute(Attributes.ATTACK_DAMAGE).getValue() / r3.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
+                    if (Math.abs(hp - 1.6) > 0.01 || Math.abs(dm - 1.3) > 0.01) bad.add("rank 3 gave " + hp + "x health and " + dm + "x damage, not 1.6 and 1.3");
+                    if (r3.getHealth() < r3.getMaxHealth() - 0.01) bad.add("a ranked mob didn't start at full health");
+                    if (EliteMobs.testPacket(r3) == null) bad.add("no sync packet");
+                    r3.discard();
+                }
+                if (t == 4) {   // Bulwark, Ironhide, Second Wind
+                    var b = spawn(V, 5, 3, 0, bit(EliteMobs.BULWARK));   // faces -z: toward the player at home
+                    p.teleportTo(sl(), home.x + 5, home.y, home.z, 0, 0);
+                    float h0 = b.getHealth(); hitMob(b, 10);
+                    float front = h0 - b.getHealth();
+                    p.teleportTo(sl(), home.x + 5, home.y, home.z + 6, 180, 0);
+                    h0 = b.getHealth(); hitMob(b, 10);
+                    float back = h0 - b.getHealth();
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0, 0);
+                    if (back <= 0 || Math.abs(front / back - 0.3f) > 0.03f) bad.add("Bulwark took " + front + " from the front and " + back + " from behind (want 30% from the front)");
+                    b.discard();
+                    var ih = spawn(V, -5, 3, 0, bit(EliteMobs.IRONHIDE));
+                    for (int k = 0; k < 3; k++) hitMob(ih, 5);
+                    if (ih.getHealth() < ih.getMaxHealth()) bad.add("Ironhide's plates didn't soak the first 3 hits");
+                    if (EliteMobs.data(ih).getInt("ih") != 3) bad.add("Ironhide counted " + EliteMobs.data(ih).getInt("ih") + " plates broken, not 3");
+                    hitMob(ih, 5);
+                    if (ih.getHealth() >= ih.getMaxHealth()) bad.add("the 4th hit on Ironhide didn't land");
+                    ih.discard();
+                    var sw = spawn(V, 8, 0, 0, bit(EliteMobs.SECOND_WIND));
+                    hitMob(sw, 1000);
+                    if (!sw.isAlive() || Math.abs(sw.getHealth() - sw.getMaxHealth() * 0.5f) > 0.1f) bad.add("Second Wind didn't bring it back at half health");
+                    hitMob(sw, 1000);
+                    if (sw.isAlive()) bad.add("Second Wind worked twice");
+                }
+                if (t == 6) {   // everything that takes a while
+                    over = spawn(V, -8, 0, 0, bit(EliteMobs.OVERCHARGED));
+                    for (int k = 0; k < 3; k++) hitPlayer(over, 2);
+                    if (EliteTraits.testWindup(over) != 20) bad.add("three blows didn't start Overcharged's wind-up (" + EliteTraits.testWindup(over) + ")");
+                    echo = spawn(V, 2, -2, 0, bit(EliteMobs.ECHO));
+                    hitPlayer(echo, 4);
+                    var leech = spawn(V, -2, -2, 0, bit(EliteMobs.LEECH));
+                    MagicData.getPlayerMagicData(p).setMana(100);
+                    hitPlayer(leech, 2);
+                    float mana = MagicData.getPlayerMagicData(p).getMana();
+                    if (Math.abs(mana - 90f) > 0.5f) bad.add("Mana Leech left " + mana + " mana of 100, not 90");
+                    leech.discard();
+                    var dis = spawn(V, -2, 2, 0, bit(EliteMobs.DISRUPTOR));
+                    hitPlayer(dis, 1);   // (not casting: nothing to cut off, and nothing breaks)
+                    dis.discard();
+                    var teth = spawn(V, 0, -14, 0, bit(EliteMobs.TETHER));
+                    p.setDeltaMovement(Vec3.ZERO);
+                    EliteTraits.testTether(teth, p);
+                    if (p.getDeltaMovement().z >= 0) bad.add("Tether didn't drag the player toward it");
+                    if (EliteTraits.testRun(teth) == null || EliteTraits.testRun(teth).chainTo != p.getId()) bad.add("Tether's chain isn't shown");
+                    teth.discard();
+                    p.setDeltaMovement(Vec3.ZERO);
+                    seeker = spawn(V, -4, -12, 0, bit(EliteMobs.SEEKER)); seeker.setTarget(p);
+                    dagger = spawn(V, 0, -7, 0, bit(EliteMobs.VOLLEY)); dagger.setTarget(p);
+                    hunter = spawn(V, 15, -12, 0, bit(EliteMobs.HUNTER)); hunter.setTarget(p);
+                    sprinter = spawn(V, -8, -4, 0, bit(EliteMobs.SPRINTER)); sprinter.setTarget(p);
+                    anchored = spawn(V, 6, -6, 0, bit(EliteMobs.ANCHORED));
+                    anchorAt = anchored.position();
+                    anchored.setDeltaMovement(2, 0.6, 0); anchored.hurtMarked = true;
+                    pillager = spawn(net.minecraft.world.entity.EntityType.PILLAGER, 8, 12, 0, bit(EliteMobs.VOLLEY));
+                    sl().addFreshEntity(new net.minecraft.world.entity.projectile.Arrow(sl(), pillager));
+                    reflector = spawn(V, -6, 3, 0, bit(EliteMobs.REFLECTOR));
+                    long g = sl().getGameTime();
+                    EliteMobs.data(reflector).putInt("phase", (int) ((EliteTraits.SHELL_CYCLE - g % EliteTraits.SHELL_CYCLE) % EliteTraits.SHELL_CYCLE));
+                    reflected = new net.minecraft.world.entity.projectile.Arrow(sl(), p);
+                    reflected.moveTo(reflector.getX(), reflector.getY() + 1, reflector.getZ() - 2.5, 0, 0);
+                    reflected.setDeltaMovement(0, 0, 1.2);
+                    sl().addFreshEntity(reflected);
+                    var split = spawn(V, 10, 0, 0, bit(EliteMobs.SPLITTER));
+                    hitMob(split, 1000);
+                    var children = marked(new Vec3(home.x + 10, home.y, home.z), 2.5);
+                    children.removeIf(x -> !EliteMobs.child(x));
+                    if (children.size() != 2) bad.add("Splitter left " + children.size() + " copies, not 2");
+                    else {
+                        var c = children.get(0);
+                        if (Math.abs(c.getMaxHealth() - 12f) > 0.1f) bad.add("a Splitter copy has " + c.getMaxHealth() + " max health, not 12");
+                        if (Math.abs(c.getBbHeight() - V.getHeight() * 0.6f) > 0.05f) bad.add("a Splitter copy is " + c.getBbHeight() + " tall, not 60%");
+                        if (EliteMobs.traits(c) != 0) bad.add("a Splitter copy has traits of its own");
+                    }
+                    var vol = spawn(V, 12, 4, 0, bit(EliteMobs.VOLATILE));
+                    var golem = net.minecraft.world.entity.EntityType.IRON_GOLEM.create(sl());
+                    golem.moveTo(home.x + 12, home.y, home.z + 5.5); golem.setNoAi(true); sl().addFreshEntity(golem);
+                    hitMob(vol, 1000);
+                    var c1 = spawn(V, 10, 8, 0, bit(EliteMobs.CURSED_LOOT)); chestBite = c1.position(); hitMob(c1, 1000);
+                    var c2 = spawn(V, -10, 8, 0, bit(EliteMobs.CURSED_LOOT)); chestWait = c2.position(); hitMob(c2, 1000);
+                    ghostFrom = spawn(V, 3, -3, 0, bit(EliteMobs.VENGEFUL)); hitMob(ghostFrom, 1000);
+                    var r1 = spawn(V, -12, -8, 4, bit(EliteMobs.RIFT_BORN)); riftShut = r1.position(); hitMob(r1, 1000);
+                    var r2 = spawn(V, 12, -8, 4, bit(EliteMobs.RIFT_BORN)); riftOpen = r2.position(); hitMob(r2, 1000);
+                    twin0 = spawn(V, -3, -10, 4, bit(EliteMobs.MIRROR_TWIN));
+                    if (!EliteMobs.data(twin0).hasUUID("tw")) bad.add("Mirror Twin made no shadow");
+                    else {
+                        shadowId = EliteMobs.data(twin0).getUUID("tw");
+                        var sh = sl().getEntity(shadowId);
+                        if (!(sh instanceof net.minecraft.world.entity.Mob sm) || !EliteMobs.shadow(sm)) bad.add("Mirror Twin's copy isn't a shadow");
+                    }
+                }
+                if (sprinter != null && EliteTraits.testRun(sprinter) != null && EliteTraits.testRun(sprinter).dashTicks > 0) dashed = true;
+                if (t == 7) {
+                    var ghosts = sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new AABB(home, home).inflate(12), x -> EliteMobs.ghost(x));
+                    if (ghosts.isEmpty()) bad.add("Vengeful left no ghost");
+                }
+                if (t == 9) {
+                    if (anchored.position().subtract(anchorAt).horizontalDistance() > 0.5) bad.add("Anchored was pushed " + anchored.position().subtract(anchorAt).horizontalDistance() + " blocks");
+                    long arrows = sl().getEntitiesOfClass(net.minecraft.world.entity.projectile.AbstractArrow.class, new AABB(home, home).inflate(30), a -> a.getOwner() == pillager).size();
+                    if (arrows != 3) bad.add("Volley's archer loosed " + arrows + " arrows, not 3");
+                    var chests = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.CursedChest.class, new AABB(chestBite, chestBite).inflate(2));
+                    if (chests.isEmpty()) bad.add("Cursed Loot left no chest");
+                    else { EliteTraits.openChest(chests.get(0), p); if (!chests.get(0).bit()) bad.add("a cursed chest opened at once didn't bite"); }
+                    var rifts = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.EliteRift.class, new AABB(riftShut, riftShut).inflate(2));
+                    if (rifts.isEmpty()) bad.add("Rift-Born left no rift");
+                    else for (int k = 0; k < 4; k++) rifts.get(0).hurt(p.damageSources().playerAttack(p), 1);
+                    if (!rifts.isEmpty() && rifts.get(0).isAlive()) bad.add("four hits didn't close the rift");
+                    var tw = sl().getEntity(twin0.getUUID());
+                    if (tw instanceof net.minecraft.world.entity.Mob m) { twinAt = m.position(); hitMob(m, 1000); }
+                }
+                if (t == 12) {
+                    if (reflected.getOwner() != reflector) bad.add("Reflector's shards didn't send the arrow back");
+                }
+                if (t == 40) {
+                    if (EliteTraits.testEchoHits == 0) bad.add("Echo Strike's second blow never landed");
+                    if (EliteTraits.testWindup(over) != 0 || EliteTraits.testRun(over).hits != 0) bad.add("Overcharged never slammed");
+                    if (EliteTraits.testBurstHits == 0) bad.add("Volatile's ring never burst");
+                    var mod = hunter.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(UUID.fromString("e1173000-0000-4000-8000-000000000011"));
+                    if (mod == null || Math.abs(mod.getAmount() - 0.6) > 0.01) bad.add("Hunter 19 blocks off isn't 60% faster (" + (mod == null ? "none" : mod.getAmount()) + ")");
+                    var ghosts = sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new AABB(home, home).inflate(20), x -> EliteMobs.ghost(x));
+                    if (!ghosts.isEmpty()) bad.add("the Vengeful ghost was still about after 34 ticks");
+                }
+                if (t == 70) {
+                    if (EliteTraits.testOrbs == 0) bad.add("Seeker sent no orb");
+                    if (EliteTraits.testDaggers == 0) bad.add("Volley's melee elite threw no dagger");
+                    var chests = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.CursedChest.class, new AABB(chestWait, chestWait).inflate(2));
+                    if (chests.isEmpty()) bad.add("the second cursed chest is gone");
+                    else { EliteTraits.openChest(chests.get(0), p); if (!chests.get(0).opened() || chests.get(0).bit()) bad.add("a cursed chest left 3 s still bit"); }
+                }
+                if (t == 112) {
+                    var back = marked(twinAt, 3);
+                    back.removeIf(x -> !EliteMobs.has(x, EliteMobs.MIRROR_TWIN));
+                    if (back.isEmpty()) bad.add("the fallen Mirror Twin didn't rise while its shadow stood");
+                    var news = marked(riftOpen, 4);
+                    news.removeIf(x -> !EliteMobs.elite(x));
+                    if (news.size() != 3) bad.add("an unclosed rift let out " + news.size() + " elites, not 3");
+                    for (var x : news) if (EliteMobs.champion(x)) bad.add("a rift let out a champion");
+                    if (marked(riftShut, 4).stream().anyMatch(EliteMobs::elite)) bad.add("a closed rift still let elites out");
+                    if (!dashed) bad.add("Sprinter never dashed");
+                    // both twins together: neither rises
+                    for (var x : back) hitMob(x, 1000);
+                    var sh = sl().getEntity(shadowId);
+                    if (sh instanceof net.minecraft.world.entity.Mob m) hitMob(m, 1000);
+                }
+                if (t == 220) {
+                    if (marked(twinAt, 6).stream().anyMatch(x -> EliteMobs.data(x).hasUUID("tw"))) bad.add("a twin rose though both fell together");
+                    clearArea();
+                    ensureDummy();
+                    String ch = changes(before);
+                    if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+                    if (bad.isEmpty()) pass(name, "threat, eligibility, rolls, ranks, all 20 traits");
+                    else fail(name, String.join("; ", bad));
+                    EliteTraits.clearShots();
+                    return true;
+                }
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); clearArea(); return true; }
+            return false;
+        }
+    }
+
     /** The Parasite Grimoire's strain: devouring, the arm forms (and the item they put away and give back), locked
      *  forms, evolving, a Strain, the Bulwark, the frenzy and its end, and everything dropped when the book is. */
     /** The Masked Twins: levels and the balance rule, choosing arts for the wheel, swapping (Resonance spent, the
@@ -2078,6 +2316,7 @@ public final class GameTests {
                 "the fortress", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> FortressFx.fortressPage(pl, pw), "q"));
         queue.add(new ArchitectTest());
         queue.add(new ArchitectCommandTest());
+        queue.add(new EliteTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

@@ -95,6 +95,12 @@ public final class AddonEntities {
 
     /** The Architect of Ruin's fortress: a block of wall or the gatehouse (entity/FortressWall), a tower (entity/FortressTower),
      *  a defender (entity/FortressDefender). None is ever saved. */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.EliteRift>> ELITE_RIFT = ENTITIES.register("elite_rift",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.EliteRift>of(com.ironspellgrimoire.entity.EliteRift::new, MobCategory.MISC).sized(1.2F, 2.2F)
+                    .fireImmune().noSave().clientTrackingRange(8).updateInterval(10).build("elite_rift"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.CursedChest>> CURSED_CHEST = ENTITIES.register("cursed_chest",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.CursedChest>of(com.ironspellgrimoire.entity.CursedChest::new, MobCategory.MISC).sized(0.9F, 0.9F)
+                    .fireImmune().noSave().clientTrackingRange(8).updateInterval(5).build("cursed_chest"));
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.FortressWall>> FORTRESS_WALL = ENTITIES.register("fortress_wall",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.FortressWall>of(com.ironspellgrimoire.entity.FortressWall::new, MobCategory.MISC).sized(1.0F, 2.6F)
                     .fireImmune().noSave().clientTrackingRange(10).updateInterval(20).build("fortress_wall"));

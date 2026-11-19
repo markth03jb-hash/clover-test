@@ -1448,5 +1448,7 @@
   "spell.iron_spell_grimoire.citadel": "Architect: Citadel",
   "spell.iron_spell_grimoire.citadel.guide": "Book level 10 and the grimoire mastered: a full fortress rises for 20 s, every room fires its spell once, then the walls fall inward on your foes.",
   "advancement.iron_spell_grimoire.prestige.title": "Rebuilt Stronger",
-  "advancement.iron_spell_grimoire.prestige.description": "Prestige your fortress for a star"
+  "advancement.iron_spell_grimoire.prestige.description": "Prestige your fortress for a star",
+  "entity.iron_spell_grimoire.cursed_chest": "Cursed Chest",
+  "entity.iron_spell_grimoire.elite_rift": "Rift"
 }

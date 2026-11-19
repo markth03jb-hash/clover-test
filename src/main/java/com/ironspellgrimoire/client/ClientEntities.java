@@ -16,6 +16,8 @@ public final class ClientEntities {
     public static void renderers(EntityRenderersEvent.RegisterRenderers e) {
         e.registerEntityRenderer(AddonEntities.MAGIC_BOLT.get(), NoopRenderer::new);
         e.registerEntityRenderer(AddonEntities.MAGE.get(), MageRenderer::new);
+        e.registerEntityRenderer(AddonEntities.ELITE_RIFT.get(), EliteRenderers.RiftRenderer::new);
+        e.registerEntityRenderer(AddonEntities.CURSED_CHEST.get(), EliteRenderers.ChestRenderer::new);
         e.registerEntityRenderer(AddonEntities.ZENON.get(), ZenonRenderer::new);
         e.registerEntityRenderer(AddonEntities.BEAST_OF_DESPAIR.get(), BeastRenderer::new);
         e.registerEntityRenderer(AddonEntities.RHYA.get(), RhyaRenderer::new);

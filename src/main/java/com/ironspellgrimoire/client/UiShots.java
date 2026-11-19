@@ -93,6 +93,9 @@ public final class UiShots {
         steps.add(new Step("codex", () -> mc.setScreen(new CodexScreen(0)), 10, false));
         steps.add(new Step("codex_book", () -> mc.setScreen(new CodexScreen(CodexScreen.chapters() + 1)), 10, false));
         steps.add(new Step("codex_rules", () -> mc.setScreen(new CodexScreen(CodexScreen.chapters() - 1)), 10, false));
+        steps.add(new Step("el_mobs", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.elites(p, "mobs")); }, 16, true));
+        steps.add(new Step("el_codex", () -> mc.setScreen(new CodexScreen(CodexScreen.chapter("Elite Mobs"))), 10, false));
+        steps.add(new Step("el_clear", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.elites(p, "clear")); }, 2, true));
         // the HUD with everything on it: a hunt, a quest, the world boss, the rift map, a raid's wave banner
         steps.add(new Step("take_hunt_and_quest", () -> { mc.setScreen(null); onServer(p -> { UiShotsServer.take(p, Boards.BOUNTY); UiShotsServer.take(p, Boards.QUEST); }); }, 30, false));
         steps.add(new Step("board_hunting", () -> onServer(p -> UiShotsServer.board(p, Boards.BOUNTY)), 20, false));
@@ -807,6 +810,7 @@ public final class UiShots {
             case "library" -> new Class<?>[]{LibraryScreen.class, com.ironspellgrimoire.server.GrimoireLibrary.class};
             case "waypoints" -> new Class<?>[]{WaypointScreen.class, com.ironspellgrimoire.server.Waypoints.class};
             case "codex", "codex_book", "codex_rules" -> new Class<?>[]{CodexScreen.class};
+            case "el_mobs", "el_codex", "el_clear" -> new Class<?>[]{EliteClient.class, EliteRenderers.class, CodexScreen.class, com.ironspellgrimoire.server.EliteMobs.class, com.ironspellgrimoire.server.EliteTraits.class};
             default -> null;
         };
     }

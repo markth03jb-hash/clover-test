@@ -3,6 +3,7 @@ package com.ironspellgrimoire.server;
 import com.ironspellgrimoire.registry.AddonItemRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import top.theillusivec4.curios.api.CuriosApi;
 
@@ -66,6 +67,58 @@ public final class UiShotsServer {
     private static void faceForward(ServerPlayer p) {
         p.setYRot(0); p.setYHeadRot(0); p.setYBodyRot(0); p.setXRot(0);
         p.connection.teleport(p.getX(), p.getY(), p.getZ(), 0, 0);
+    }
+
+    /** Elite mobs for the screenshots: a row of them in front of the player (no AI, so they hold still), a cursed chest
+     *  and a rift; "clear" takes them away. */
+    public static void elites(ServerPlayer p, String what) {
+        ServerLevel sl = p.serverLevel();
+        var box = p.getBoundingBox().inflate(16);
+        for (var e : sl.getEntities((net.minecraft.world.entity.Entity) null, box, e -> EliteMobs.marked(e) || e instanceof com.ironspellgrimoire.entity.CursedChest || e instanceof com.ironspellgrimoire.entity.EliteRift)) e.discard();
+        if (what.equals("clear")) return;
+        faceForward(p);
+        p.getPersistentData().putInt(EliteMobs.SEEN, (1 << EliteMobs.COUNT) - 1);
+        EliteMobs.testThreat(p, 4);
+        EliteMobs.sendSeen(p);
+        Object[][] row = {
+                {net.minecraft.world.entity.EntityType.VINDICATOR, -4.5, 1, 1 << EliteMobs.BULWARK | 1 << EliteMobs.IRONHIDE},
+                {net.minecraft.world.entity.EntityType.SKELETON, -1.5, 2, 1 << EliteMobs.REFLECTOR | 1 << EliteMobs.VOLLEY},
+                {net.minecraft.world.entity.EntityType.PILLAGER, 1.5, 5, 1 << EliteMobs.MIRROR_TWIN | 1 << EliteMobs.LEECH},
+                {net.minecraft.world.entity.EntityType.VINDICATOR, 5.0, 3, 1 << EliteMobs.TETHER | 1 << EliteMobs.HUNTER | 1 << EliteMobs.SPRINTER}};
+        for (Object[] r : row) {
+            @SuppressWarnings("unchecked") var type = (net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob>) r[0];
+            var m = type.create(sl);
+            if (m == null) continue;
+            m.moveTo(p.getX() + (double) r[1], p.getY(), p.getZ() + 6, 180, 0);
+            m.setYBodyRot(180); m.setYHeadRot(180);
+            m.setNoAi(true);
+            if (type == net.minecraft.world.entity.EntityType.SKELETON) m.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.BOW));
+            sl.addFreshEntity(m);
+            EliteMobs.testMake(m, (int) r[2], (int) r[3]);
+            if (EliteMobs.has(m, EliteMobs.REFLECTOR)) EliteMobs.data(m).putInt("phase", (int) ((EliteTraits.SHELL_CYCLE - sl.getGameTime() % EliteTraits.SHELL_CYCLE - 5 + EliteTraits.SHELL_CYCLE) % EliteTraits.SHELL_CYCLE));
+            if (EliteMobs.has(m, EliteMobs.TETHER)) EliteTraits.testChain(m, p, 200);
+            if (EliteMobs.has(m, EliteMobs.MIRROR_TWIN) && EliteMobs.data(m).hasUUID("tw") && sl.getEntity(EliteMobs.data(m).getUUID("tw")) instanceof net.minecraft.world.entity.Mob sh) {
+                sh.setNoAi(true);
+                sh.moveTo(p.getX() + 3.2, p.getY(), p.getZ() + 7, 180, 0);
+                sh.setYBodyRot(180); sh.setYHeadRot(180);
+            }
+        }
+        var half = net.minecraft.world.entity.EntityType.VINDICATOR.create(sl);   // a Splitter's copy
+        if (half != null) {
+            half.moveTo(p.getX() - 3, p.getY(), p.getZ() + 3.5, 160, 0); half.setYBodyRot(160); half.setNoAi(true);
+            net.minecraft.nbt.CompoundTag d = new net.minecraft.nbt.CompoundTag(); d.putInt("r", 2); d.putBoolean("child", true);
+            half.getPersistentData().put(EliteMobs.TAG, d);
+            half.refreshDimensions();
+            sl.addFreshEntity(half);
+            EliteMobs.testMake(half, 2, 0);
+            EliteMobs.data(half).putBoolean("child", true);
+            half.refreshDimensions();
+            EliteMobs.sync(half);
+        }
+        var chest = com.ironspellgrimoire.registry.AddonEntities.CURSED_CHEST.get().create(sl);
+        if (chest != null) { chest.setup(java.util.List.of(), 2); chest.moveTo(p.getX() + 1, p.getY(), p.getZ() + 3, 200, 0); sl.addFreshEntity(chest); }
+        var rift = com.ironspellgrimoire.registry.AddonEntities.ELITE_RIFT.get().create(sl);
+        if (rift != null) { rift.setup("minecraft:zombie", 0); rift.moveTo(p.getX() + 3.5, p.getY(), p.getZ() + 3.5, 0, 0); sl.addFreshEntity(rift); }
     }
 
     public static void element(ServerPlayer p, String which) {

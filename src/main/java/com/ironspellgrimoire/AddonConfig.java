@@ -17,6 +17,10 @@ public final class AddonConfig {
     public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> CEREMONY_EXCLUDED;
     public static final ForgeConfigSpec.BooleanValue TWIN_ECHO;
     public static final ForgeConfigSpec.BooleanValue STARTER_CODEX;
+    public static final ForgeConfigSpec.BooleanValue ELITES, THREAT;
+    public static final ForgeConfigSpec.DoubleValue ELITE_CHANCE;
+    public static final ForgeConfigSpec.IntValue ELITE_MAX_TRAITS;
+    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> ELITE_OFF;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -39,6 +43,16 @@ public final class AddonConfig {
         RIFTS = b.comment("Rifts open in the overworld near players.").define("rifts", true);
         RIFT_CHANCE = b.comment("The chance a rift opens near a player every 5 minutes (0.25 = one in four).")
                 .defineInRange("rift_chance", 0.25, 0.0, 1.0);
+        b.pop();
+        b.push("elites");
+        ELITES = b.comment("Elite mobs: some hostile mobs spawn with 1-3 traits (Bulwark, Mana Leech, Splitter...) and give more XP and drops.").define("elites", true);
+        ELITE_CHANCE = b.comment("The chance a hostile mob is an elite at threat rank 0 (it grows with rank, and doubles in rifts). 0.05 = 5%.")
+                .defineInRange("elite_chance", 0.05, 0.0, 1.0);
+        ELITE_MAX_TRAITS = b.comment("The most traits one elite can have.").defineInRange("elite_max_traits", 3, 1, 3);
+        ELITE_OFF = b.comment("Traits that never roll, by name - for example [\"Tether\", \"Disruptor\"].")
+                .defineListAllowEmpty(java.util.List.of("elite_traits_off"), java.util.List::of, o -> o instanceof String);
+        THREAT = b.comment("Threat levels: mobs near a mage with a well-mastered grimoire get up to +100% health and +50% damage (rank 0-5).",
+                        "Off = every mob is rank 0.").define("threat_levels", true);
         b.pop();
         b.push("grimoires");
         CEREMONY_EXCLUDED = b.comment("Grimoires the altar ceremony never gives, by id - for example [\"twins_grimoire\", \"shadow_grimoire\"].",
@@ -65,6 +79,18 @@ public final class AddonConfig {
     public static double riftChance() { return get(RIFT_CHANCE::get, 0.25); }
     public static boolean twinEcho() { return get(TWIN_ECHO::get, true); }
     public static boolean starterCodex() { return get(STARTER_CODEX::get, true); }
+    public static boolean elites() { return get(ELITES::get, true); }
+    public static boolean threat() { return get(THREAT::get, true); }
+    public static double eliteChance() { return get(ELITE_CHANCE::get, 0.05); }
+    public static int eliteMaxTraits() { return get(ELITE_MAX_TRAITS::get, 3); }
+    /** The traits turned off in the config, as a bit mask. */
+    public static int eliteOff() {
+        int m = 0;
+        for (String x : get(ELITE_OFF::get, java.util.List.<String>of()))
+            for (int i = 0; i < com.ironspellgrimoire.server.EliteMobs.COUNT; i++)
+                if (com.ironspellgrimoire.server.EliteMobs.NAME[i].equalsIgnoreCase(x.trim())) m |= 1 << i;
+        return m;
+    }
 
     /** Whether the ceremony may give this grimoire (by its item id, with or without the mod's prefix). */
     public static boolean ceremonyAllows(net.minecraft.world.item.Item item) {

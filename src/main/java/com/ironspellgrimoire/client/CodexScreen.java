@@ -56,6 +56,13 @@ public class CodexScreen extends Screen {
          "Nearly dead in a hard fight, your grimoire can answer: it heals you to half health, and for a minute its ultimate becomes an evolved version.",
          "## The Star Forge",
          "Sneak and right-click the altar with an empty hand to spend merit stars on your grimoire: empower spells, add ink pages, set a star sigil on the cover, or mutate a spell with a Mana Core."},
+        {"Elite Mobs",
+         "Some hostile mobs are elites: a coloured name and an icon over the head for each trait they carry. They hit harder in their own ways, and pay better - more XP and more drops.",
+         "## Threat",
+         "The better your grimoire, the more dangerous the mobs near you. Your threat rank (0 to 5) comes from the best grimoire you carry: a skull with pips over a mob shows its rank. Each rank gives a mob 20% more health and 10% more damage.",
+         "## Champions",
+         "At threat 4 and 5 a few elites are champions, with a purple name and a trait no lesser elite has. A champion is worth a bounty star.",
+         "## The traits you've met"},
         {"The World",
          "## Rifts",
          "Now and then a crack of light tears open near you and stays for a day. Step in to enter a dungeon of five to eight rooms under one or two laws. The relic at the end is found nowhere else.",
@@ -113,6 +120,8 @@ public class CodexScreen extends Screen {
     }
 
     public static int chapters() { return CHAPTERS.length; }
+    /** The index row of a chapter by its title (-1: none). */
+    public static int chapter(String title) { for (int i = 0; i < CHAPTERS.length; i++) if (CHAPTERS[i][0].equals(title)) return i; return -1; }
 
     public static void open() {
         Minecraft mc = Minecraft.getInstance();
@@ -143,6 +152,7 @@ public class CodexScreen extends Screen {
             String[] ch = CHAPTERS[e];
             pageTitle = ch[0];
             for (int i = 1; i < ch.length; i++) para(out, ch[i], w);
+            if (ch[0].equals("Elite Mobs")) elites(out, w);
         } else if (e <= -2) {
             GrimoireMastery.Book b = GrimoireMastery.BOOKS.get(-e - 2);
             pageIcon = new ItemStack(b.item().get());
@@ -164,6 +174,22 @@ public class CodexScreen extends Screen {
         } else pageTitle = "";
         page = out;
         pageScroll = 0;
+    }
+
+    /** The Elite Mobs chapter: your threat rank, then each trait - what it does and how to beat it - once you've met it. */
+    private void elites(List<Line> out, int w) {
+        int seen = EliteClient.seenMask(), n = Integer.bitCount(seen);
+        para(out, "Your threat rank: " + EliteClient.threat() + ".  Traits met: " + n + " of " + com.ironspellgrimoire.server.EliteMobs.COUNT + ".", w);
+        for (int i = 0; i < com.ironspellgrimoire.server.EliteMobs.COUNT; i++) {
+            boolean met = (seen & (1 << i)) != 0;
+            String champ = (com.ironspellgrimoire.server.EliteMobs.CHAMPION & (1 << i)) != 0 ? " (champion)" : "";
+            if (!met) { for (var l : font.split(Component.literal("???" + champ + " - not met yet"), w)) out.add(new Line(l, INK_SOFT, false)); continue; }
+            para(out, "## " + com.ironspellgrimoire.server.EliteMobs.NAME[i] + champ, w);
+            String[] says = com.ironspellgrimoire.server.EliteMobs.SAYS[i];
+            for (var l : font.split(Component.literal(says[0]), w)) out.add(new Line(l, INK, false));
+            for (var l : font.split(Component.literal("Beat it: " + says[1]).withStyle(ChatFormatting.ITALIC), w)) out.add(new Line(l, INK_SOFT, false));
+            out.add(new Line(FormattedCharSequence.EMPTY, INK, false));
+        }
     }
 
     private void para(List<Line> out, String s, int w) {

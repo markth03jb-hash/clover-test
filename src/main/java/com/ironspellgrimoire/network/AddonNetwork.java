@@ -6,7 +6,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class AddonNetwork {
-    private static final String PROTOCOL = "7";   // 7: batched effects (FxBatchPacket)   // 2: compact FxPacket encoding (server and client must match)
+    private static final String PROTOCOL = "8";   // 8: elite mobs   // 7: batched effects (FxBatchPacket)   // 2: compact FxPacket encoding (server and client must match)
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(IronSpellGrimoire.MODID, "main"),
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
@@ -74,6 +74,8 @@ public class AddonNetwork {
         CHANNEL.registerMessage(29, FirstStepsPacket.class, FirstStepsPacket::encode, FirstStepsPacket::decode, FirstStepsPacket::handle);
         CHANNEL.registerMessage(30, FortressPackets.Sync.class, FortressPackets.Sync::encode, FortressPackets.Sync::decode, FortressPackets.Sync::handle);
         CHANNEL.registerMessage(31, FortressPackets.Act.class, FortressPackets.Act::encode, FortressPackets.Act::decode, FortressPackets.Act::handle);
+        CHANNEL.registerMessage(32, ElitePackets.Sync.class, ElitePackets.Sync::encode, ElitePackets.Sync::decode, ElitePackets.Sync::handle);
+        CHANNEL.registerMessage(33, ElitePackets.Seen.class, ElitePackets.Seen::encode, ElitePackets.Seen::decode, ElitePackets.Seen::handle);
         CHANNEL.registerMessage(28, FxBatchPacket.class, FxBatchPacket::encode, FxBatchPacket::decode, FxBatchPacket::handle);
     }
 }
