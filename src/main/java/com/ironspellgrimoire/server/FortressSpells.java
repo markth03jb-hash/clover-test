@@ -144,22 +144,32 @@ public final class FortressSpells {
     // ================================================================== protections (Ward Sigil, Keepsake) and Mirror Ward
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onHurt(LivingHurtEvent e) {
-        LivingEntity v = e.getEntity();
-        if (v.level().isClientSide || PATCHES.isEmpty() && !(v instanceof ServerPlayer)) return;
-        for (Patch pa : PATCHES) {   // Ward Sigil: 40% less for anyone on its side standing in it
+        if (e.getEntity().level().isClientSide || PATCHES.isEmpty()) return;
+        e.setAmount(ward(e.getEntity(), e.getAmount()));
+    }
+
+    /** Ward Sigil: 40% less for anyone on its side standing in it. */
+    public static float ward(LivingEntity v, float amount) {
+        for (Patch pa : PATCHES) {
             if (pa.kind != 1 || pa.until < v.level().getGameTime() || v.distanceToSqr(pa.at) > (pa.r + 0.5) * (pa.r + 0.5) + 4) continue;
-            if (FortressSiege.friendOf(pa.owner, v)) { e.setAmount(e.getAmount() * 0.6f); break; }
+            if (FortressSiege.friendOf(pa.owner, v)) return amount * 0.6f;
         }
+        return amount;
     }
 
     /** Saint's Keepsake: the killing blow leaves you at 1 health instead (runs last, after every other change to the damage). */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onKeepsake(net.minecraftforge.event.entity.living.LivingDamageEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || e.getAmount() < p.getHealth()) return;   // (absorption is already taken off by now)
+        if (e.getEntity() instanceof ServerPlayer p) e.setAmount(keepsake(p, e.getAmount()));
+    }
+
+    /** What a blow becomes with the Keepsake up: a killing one leaves you at 1 health, once. */
+    public static float keepsake(ServerPlayer p, float amount) {
+        if (amount < p.getHealth()) return amount;   // (absorption is already taken off by now)
         CompoundTag r = FortressFx.root(p);
-        if (r.getLong("keep") <= p.level().getGameTime()) return;
+        if (r.getLong("keep") <= p.level().getGameTime()) return amount;
         r.putLong("keep", 0);
-        e.setAmount(Math.max(0, p.getHealth() - 1));
+        float out = Math.max(0, p.getHealth() - 1);
         ServerLevel sl = p.serverLevel();
         FxSend.ring(sl, BRASS, p.position().add(0, 1, 0), 0.3f, 2.6f, 0.12f, 14);
         Fx.flash(sl, p.position().add(0, 1, 0), 1.2f);
@@ -167,6 +177,7 @@ public final class FortressSpells {
         FortressFx.tell(p, "The Keepsake held");
         if (FortressFx.pair(p, FortressFx.indexOfPair(FortressFx.CRYPT, FortressFx.RELIQUARY)))   // Crypt + Reliquary: sentries rise round you
             for (int i = 0; i < 3; i++) FortressSiege.guard(p, "iron_spell_grimoire:bone_sentry", FortressDefender.SENTRY, p.position(), 200);
+        return out;
     }
 
     @SubscribeEvent
@@ -301,7 +312,7 @@ public final class FortressSpells {
                     Vec3 d2 = rotY(flat, yaw).add(0, dir.y, 0).normalize();
                     Vec3 end = Kit.aimFrom(sl, p, eye, d2, 18);
                     FxSend.trail(sl, STONE, eye.add(d2), end, 0.05f, 5);
-                    for (LivingEntity t : Kit.along(sl, p, eye, end, 0.5)) if (got.add(t.getId() * 16 + i / 3)) { hit(p, t, 2.5f * m, WATCHTOWER); break; }
+                    for (LivingEntity t : Kit.along(sl, p, eye, end, 0.9)) if (got.add(t.getId() * 16 + i / 3)) { hit(p, t, 2.5f * m, WATCHTOWER); break; }   // a bolt is thin, but they fly true
                 }
                 OverdriveFx.play(sl, p.position(), "fort_arrow", 1.0f, 0.9f);
             }

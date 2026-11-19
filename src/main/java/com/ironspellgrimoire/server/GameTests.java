@@ -566,6 +566,7 @@ public final class GameTests {
                     HungerFx.testStarvedFor(p, 0);
                     p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                     HungerFx.testHold(p, 2);
+                    p.tickCount = (p.tickCount / 20) * 20 + 19;   // the once-a-second mood check comes next tick, not maybe after the look at t 162
                 }
                 if (t == 162) {
                     var dm = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
@@ -750,21 +751,17 @@ public final class GameTests {
                     FortressFx.testReset(p); FortressFx.testUnlockAll(p); FortressFx.testStone(p, 1000);
                     FortressFx.handle(p, 1, FortressFx.RELIQUARY * 100);
                     FortressFx.castRoom(p, FortressFx.RELIQUARY);
-                    boolean inv = p.getAbilities().invulnerable;
-                    p.getAbilities().invulnerable = false; p.invulnerableTime = 0;
-                    p.hurt(p.damageSources().magic(), 500);   // magic: not scaled by the world's difficulty
-                    if (!p.isAlive() || p.getHealth() > 1.5f) bad.add("the Keepsake didn't leave the player at 1 health (" + p.getHealth() + ")");
+                    // (the harness zeroes every blow to the test player, so the two are asked directly)
+                    float kept = FortressSpells.keepsake(p, 500);
+                    if (Math.abs(kept - (p.getHealth() - 1)) > 0.01f) bad.add("the Keepsake let a killing blow of 500 through as " + kept);
                     if (FortressFx.testRoot(p).getLong("keep") != 0) bad.add("the Keepsake wasn't used up");
+                    if (FortressSpells.keepsake(p, 500) != 500) bad.add("the Keepsake saved twice");
                     p.setHealth(p.getMaxHealth());
                     FortressFx.handle(p, 1, FortressFx.RUNE_VAULT * 100 + 1);
                     FortressFx.castRoom(p, FortressFx.RUNE_VAULT);
-                    p.invulnerableTime = 0;
-                    float h1 = p.getHealth();
-                    p.hurt(p.damageSources().magic(), 10);
-                    p.getAbilities().invulnerable = inv;
-                    float took = h1 - p.getHealth();
-                    if (took <= 0.01f) bad.add("the test's hit didn't land (can't judge the Ward Sigil)");
-                    if (took > 7.5f) bad.add("the Ward Sigil didn't soften a hit (" + took + " of 10)");
+                    float took = FortressSpells.ward(p, 10);
+                    if (Math.abs(took - 6f) > 0.01f) bad.add("the Ward Sigil turned a hit of 10 into " + took + ", not 6");
+                    if (FortressSpells.ward(dummy, 10) != 10) bad.add("the Ward Sigil softened a foe's hit");
                     p.setHealth(p.getMaxHealth());
                 }
                 if (t == 22) {   // everything goes at once when it ends
