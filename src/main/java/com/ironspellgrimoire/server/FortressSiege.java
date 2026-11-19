@@ -523,7 +523,7 @@ public final class FortressSiege {
 
     static List<FortressDefender> defendersOut(Player p) {
         Out o = OUT.get(p.getUUID());
-        if (o == null) return List.of();
+        if (o == null) return new ArrayList<>();   // callers add to it
         o.defenders.removeIf(d -> !d.isAlive());
         return new ArrayList<>(o.defenders);
     }

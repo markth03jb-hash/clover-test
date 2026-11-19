@@ -88,13 +88,13 @@ public class FortressScreen extends Screen {
             String s = "Wear the Architect of Ruin Grimoire to build and fight with your fortress.";
             g.drawCenteredString(font, s, x0 + W / 2, y0 + H - 12, BAD);
         }
+        if (tour >= 0) { tourOverlay(g, x0, y0, W, H, mx, my); return; }   // the walkthrough shows only what it points at
         switch (tab) {
             case 0 -> floorPlan(g, x0, top, W, H - 40, mx, my);
             case 1 -> garrison(g, x0, top, W, H - 40, mx, my);
             case 2 -> spells(g, x0, top, W, H - 40, mx, my);
             default -> guide(g, x0, top, W, H - 40, mx, my);
         }
-        if (tour >= 0) tourOverlay(g, x0, y0, W, H, mx, my);
     }
 
     static boolean in(double mx, double my, int x, int y, int w, int h) { return mx >= x && mx < x + w && my >= y && my < y + h; }
@@ -323,7 +323,7 @@ public class FortressScreen extends Screen {
         var gar = FortressClient.garrison();
         String head = "GARRISON  " + gar.size() + " / " + FortressClient.cap();
         g.drawString(font, head, rx + 6, ly + 6, BRASS, false);
-        String sub = "Barracks: +1 room per level (8 at most)";
+        String sub = "+1 per Barracks level";
         g.drawString(font, fit(sub, rw - 18 - font.width(head)), rx + 12 + font.width(head), ly + 6, DIM, false);
         int cy = ly + 19, cw = (rw - 18) / 2, ch = 44;
         if (gar.isEmpty()) text(g, "No defenders yet. Claim a banner, or cast Call Guard: until then plain stone guards answer.", rx + 6, cy, rw - 12, DIM, ly + lh - 4);
@@ -336,8 +336,10 @@ public class FortressScreen extends Screen {
             int kills = e.getInt("kills"), rank = 0;
             for (int k = 0; k < FortressSiege.RANK_AT.length; k++) if (kills >= FortressSiege.RANK_AT[k]) rank = k;
             String role = FortressSiege.ROLE[Mth.clamp(e.getInt("role"), 0, 4)];
-            g.drawString(font, fit(FortressSiege.typeName(e.getString("type")), cw - 8), cx + 4, yy + 3, TEXT, false);
-            g.drawString(font, fit(FortressSiege.RANK[rank] + " " + role + " - " + kills + " kills", cw - 8), cx + 4, yy + 12, rank >= 2 ? BRASS : DIM, false);
+            String ks = kills + " kills";
+            g.drawString(font, fit(FortressSiege.typeName(e.getString("type")), cw - 12 - font.width(ks)), cx + 4, yy + 3, TEXT, false);
+            g.drawString(font, ks, cx + cw - 4 - font.width(ks), yy + 3, DIM, false);
+            g.drawString(font, fit(FortressSiege.RANK[rank] + " " + role, cw - 8), cx + 4, yy + 12, rank >= 2 ? BRASS : DIM, false);
             int post = e.getInt("post");
             String ps = post < 0 ? "Post: none" : "Post: " + FortressFx.ROOM[post].name();
             button(g, cx + 4, yy + 26, cw - 34, ps, true, mx, my, 7, i);
@@ -486,7 +488,8 @@ public class FortressScreen extends Screen {
         blitIcon(g, roomIcon(guideRoom), ix, y, 16);
         g.drawString(font, fit(r.name() + " - " + FortressFx.WING[r.wing()], iw - 20), ix + 20, y + 4, WING_COL[r.wing()], false);
         y += 20;
-        y = text(g, r.spell() + ": " + r.does() + " (" + r.cd() / 20 + " s, " + r.mana() + " mana)", ix, y, iw, TEXT, maxY);
+        y = text(g, r.spell() + ": " + r.does() + ".", ix, y, iw, TEXT, maxY);
+        y = text(g, r.cd() / 20 + " s cooldown, " + r.mana() + " mana.", ix, y, iw, DIM, maxY);
         if (!r.passive().equals("-")) y = text(g, "Passive: " + r.passive(), ix, y, iw, DIM, maxY);
         y = text(g, guideRoom < FortressFx.OPEN ? "Open from the start." : FortressClient.unlocked(guideRoom) ? "Blueprint found." : "Needs a blueprint.", ix, y, iw, DIM, maxY);
         for (FortressFx.Pair pr : FortressFx.PAIRS) {
@@ -508,20 +511,30 @@ public class FortressScreen extends Screen {
     private void tourOverlay(GuiGraphics g, int x0, int y0, int W, int H, int mx, int my) {
         hits.clear();   // only the walkthrough's buttons while it's up
         int step = Mth.clamp(tour, 0, TOUR.length - 1);
+        if (step == 1) {   // the empty floor plan it points at (cells only - no text under the box)
+            int gx = x0 + 12, gy = y0 + 46, n = FortressClient.gridSize();
+            int[] grid = FortressClient.grid();
+            for (int c = 0; c < 25; c++) {
+                if (c % 5 >= n || c / 5 >= n) continue;
+                int cx = cellX(gx, c), cy = cellY(gy, c);
+                g.fill(cx, cy, cx + CELL, cy + CELL, grid[c] >= 0 ? 0x902E2822 : 0x90221E1A);
+                if (grid[c] >= 0) blitIcon(g, roomIcon(grid[c] / 10), cx + 5, cy + 3, 20);
+                g.renderOutline(cx, cy, CELL, CELL, 0x60605848);
+            }
+        }
         int[] hl = switch (step) {   // what it points at
             case 1 -> new int[]{x0 + 7, y0 + 41, 5 * (CELL + GAP) + 7, 5 * (CELL + GAP) + 7};
             case 2 -> new int[]{x0 + (W - 84 * 4 - 12) / 2 + 2 * 88, y0 + 22, 84, 13};
             case 3 -> new int[]{x0 + (W - 84 * 4 - 12) / 2 + 3 * 88, y0 + 22, 84, 13};
             default -> null;
         };
-        g.fill(x0, y0, x0 + W, y0 + H, 0x90000000);
+        g.fill(x0 + 2, y0 + 38, x0 + W - 2, y0 + H - 2, 0x90000000);
         if (hl != null) {
             int a = (int) (0xA0 + 0x5F * Mth.sin(ticks * 0.3F));
             g.renderOutline(hl[0] - 2, hl[1] - 2, hl[2] + 4, hl[3] + 4, a << 24 | 0xE8B860);
             g.renderOutline(hl[0] - 3, hl[1] - 3, hl[2] + 6, hl[3] + 6, (a / 2) << 24 | 0xE8B860);
         }
-        int bw = 220, bh = 78, bx = x0 + W - bw - 14, by = y0 + H - bh - 14;
-        if (step == 0 || step == 4 || step == 5) { bx = x0 + (W - bw) / 2; by = y0 + (H - bh) / 2; }
+        int bw = Math.min(220, W - 5 * (CELL + GAP) - 40), bh = 86, bx = x0 + W - bw - 14, by = y0 + H - bh - 14;   // always right of the floor plan
         g.fill(bx, by, bx + bw, by + bh, 0xF0201A14);
         g.renderOutline(bx, by, bw, bh, BRASS);
         g.drawString(font, TOUR[step][0], bx + 8, by + 7, BRASS, false);

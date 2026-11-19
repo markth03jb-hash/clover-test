@@ -676,7 +676,7 @@ public final class UiShots {
 
         // the Masked Twins Grimoire: the masks worn (front, side, swapped, grown, fused), the arts, the wheel, every tab, the trial
         // the Architect of Ruin: the menu's tabs, the walkthrough, the tracker, Siege Mode and the Citadel
-        steps.add(new Step("ar_setup", () -> { mc.setScreen(null); mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "A:setup")); }, 20, true));
+        steps.add(new Step("ar_setup", () -> { mc.setScreen(null); mc.options.hideGui = false; TrackerMode.set(0); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "A:setup")); }, 20, true));
         steps.add(new Step("ar_hud", () -> {}, 4, true));
         String[] arTabs = {"plan", "garrison", "spells", "guide"};
         for (int k = 0; k < 4; k++) {
@@ -693,7 +693,7 @@ public final class UiShots {
         steps.add(new Step("ar_siege", () -> { mc.setScreen(null); FortressScreen.startTour = -1; FortressScreen.startTab = -1; FortressScreen.startCell = -1; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "A:siege")); }, 40, true));
         steps.add(new Step("ar_siege_front", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 8, true));
         steps.add(new Step("ar_citadel", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "A:citadel")); }, 40, true));
-        steps.add(new Step("ar_clear", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "A:clear")); }, 8, true));
+        steps.add(new Step("ar_clear", () -> { TrackerMode.set(2); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "A:clear")); }, 8, true));
         steps.add(new Step("tw_setup", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "T:setup")); }, 30, true));
         steps.add(new Step("tw_worn", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 12, true));
         steps.add(new Step("tw_worn_side", () -> onServer(p -> { p.setYRot(-90); p.setYHeadRot(-90); p.setYBodyRot(-90); p.connection.teleport(p.getX(), p.getY(), p.getZ(), -90, 0); }), 8, true));

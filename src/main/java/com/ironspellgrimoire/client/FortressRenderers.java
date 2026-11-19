@@ -116,9 +116,29 @@ public final class FortressRenderers {
             float sc = s.rankScale();
             ps.scale(sc, sc, sc);
             var r = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(d);
-            r.render(d, yaw, pt, ps, new ShadowSoldierRenderer.Tint(buf, 0.78F, 0.74F, 0.68F, 0), light);   // weathered stone
+            r.render(d, yaw, pt, ps, new ShadowSoldierRenderer.Tint(buf, 0.6F, 0.58F, 0.54F, 0), light);   // weathered stone
             ps.popPose();
+            crest(ps, buf, s.getBbHeight() * sc + 0.45F, s.tickCount + pt, s.rank());
             super.render(s, yaw, pt, ps, buf, light);
+        }
+
+        /** A small brass crest turning over its head: it's yours, not a wild mob (brighter with its rank). */
+        static void crest(PoseStack ps, MultiBufferSource buf, float y, float t, int rank) {
+            ps.pushPose();
+            ps.translate(0, y + 0.05F * Mth.sin(t * 0.1F), 0);
+            ps.mulPose(Axis.YP.rotationDegrees(t * 3F));
+            com.mojang.blaze3d.vertex.VertexConsumer vc = buf.getBuffer(net.minecraft.client.renderer.RenderType.lightning());
+            org.joml.Matrix4f m = ps.last().pose();
+            float s = 0.12F + 0.02F * rank, k = 0.55F + 0.12F * rank;
+            float r = 0.91F * k, g = 0.72F * k, b = 0.38F * k;
+            for (int face = 0; face < 2; face++) {   // a diamond, seen from both sides
+                float z = face == 0 ? 0.001F : -0.001F;
+                vc.vertex(m, 0, s * 1.4F, z).color(r, g, b, 1F).endVertex();
+                vc.vertex(m, face == 0 ? -s : s, 0, z).color(r, g, b, 1F).endVertex();
+                vc.vertex(m, 0, -s * 1.4F, z).color(r, g, b, 1F).endVertex();
+                vc.vertex(m, face == 0 ? s : -s, 0, z).color(r, g, b, 1F).endVertex();
+            }
+            ps.popPose();
         }
 
         @SuppressWarnings("deprecation")

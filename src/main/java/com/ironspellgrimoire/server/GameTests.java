@@ -750,6 +750,8 @@ public final class GameTests {
                     FortressFx.testReset(p); FortressFx.testUnlockAll(p); FortressFx.testStone(p, 1000);
                     FortressFx.handle(p, 1, FortressFx.RELIQUARY * 100);
                     FortressFx.castRoom(p, FortressFx.RELIQUARY);
+                    boolean inv = p.getAbilities().invulnerable;
+                    p.getAbilities().invulnerable = false; p.invulnerableTime = 0;
                     p.hurt(p.damageSources().magic(), 500);   // magic: not scaled by the world's difficulty
                     if (!p.isAlive() || p.getHealth() > 1.5f) bad.add("the Keepsake didn't leave the player at 1 health (" + p.getHealth() + ")");
                     if (FortressFx.testRoot(p).getLong("keep") != 0) bad.add("the Keepsake wasn't used up");
@@ -759,7 +761,9 @@ public final class GameTests {
                     p.invulnerableTime = 0;
                     float h1 = p.getHealth();
                     p.hurt(p.damageSources().magic(), 10);
+                    p.getAbilities().invulnerable = inv;
                     float took = h1 - p.getHealth();
+                    if (took <= 0.01f) bad.add("the test's hit didn't land (can't judge the Ward Sigil)");
                     if (took > 7.5f) bad.add("the Ward Sigil didn't soften a hit (" + took + " of 10)");
                     p.setHealth(p.getMaxHealth());
                 }

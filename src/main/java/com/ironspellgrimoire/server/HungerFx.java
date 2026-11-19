@@ -544,6 +544,11 @@ public final class HungerFx {
     /** The thrown blade came back (or was lost): into the empty hand it goes. */
     public static void caught(ServerPlayer p, ItemStack s) {
         root(p).putBoolean("thrown", false);
+        if (!p.getMainHandItem().isEmpty() && equipped(p)) {   // something picked up while it flew: into the bag (or dropped), the blade comes first
+            ItemStack held = p.getMainHandItem().copy();
+            p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            if (!p.getInventory().add(held)) p.drop(held, false);
+        }
         if (p.getMainHandItem().isEmpty() && equipped(p)) {
             p.setItemInHand(InteractionHand.MAIN_HAND, s);
             OverdriveFx.play(p.serverLevel(), p.position(), "blade_draw", 0.9f, 1.3f);

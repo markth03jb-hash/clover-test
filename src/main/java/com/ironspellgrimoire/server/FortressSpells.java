@@ -192,7 +192,7 @@ public final class FortressSpells {
     /** Cast a room's spell where the player looks. */
     static void cast(ServerPlayer p, int room) {
         double reach = room == SIEGE_YARD ? 40 : room == ARCANUM || room == FORGE ? 26 : 20;
-        Vec3 at = Kit.aim(p, reach);
+        Vec3 at = aimAt(p, reach);
         cast(p, room, at, false);
         Adv.grant(p, "first_room_spell");
     }
@@ -220,6 +220,17 @@ public final class FortressSpells {
             if (d < bd) { bd = d; best = t; }
         }
         return best;
+    }
+
+    /** Where a spell lands: at the feet of the first foe along your line of sight, else the first block in the way. */
+    static Vec3 aimAt(ServerPlayer p, double reach) {
+        Vec3 eye = p.getEyePosition(), block = Kit.aim(p, reach);
+        LivingEntity best = null; double bd = eye.distanceToSqr(block);
+        for (LivingEntity t : Kit.along(p.serverLevel(), p, eye, block, 1.0)) {
+            double d = t.distanceToSqr(eye);
+            if (d < bd) { bd = d; best = t; }
+        }
+        return best != null ? best.position().add(0, 0.1, 0) : block;
     }
 
     /** The one foe the player points at (or the nearest to where they look). */
