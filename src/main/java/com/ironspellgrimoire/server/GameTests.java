@@ -83,6 +83,17 @@ public final class GameTests {
         abstract boolean tick(int t);
     }
 
+    /** The Architect's per-move setup: a fresh fortress with every room open, Stone to spare, nothing left from the last move. */
+    static void archSetup(ServerPlayer pl) {
+        FortressFx.testReset(pl); FortressSpells.testClear();
+        FortressFx.testUnlockAll(pl); FortressFx.testStone(pl, 100000); FortressFx.testClearCds(pl);
+    }
+    static void archMove(ServerPlayer pl, int room) {
+        archSetup(pl);
+        FortressFx.handle(pl, 1, room * 100);
+        FortressFx.castRoom(pl, room);
+    }
+
     private static void pass(String test, String what) { results.add("PASS | " + test + " | " + what); }
     private static void fail(String test, String what) { results.add("FAIL | " + test + " | " + what); }
     private static void warn(String test, String what) { results.add("WARN | " + test + " | " + what); }
@@ -601,6 +612,175 @@ public final class GameTests {
                     return true;
                 }
             } catch (Throwable x) { fail(name, "threw " + x); return true; }
+            return false;
+        }
+    }
+
+    /** The Architect of Ruin: building, neighbours, levels and blueprints, passives, the garrison, Siege Mode's walls
+     *  (solid, breakable by foes but not by you, giving way if you're pushed in), the Keepsake and the Ward Sigil,
+     *  and that everything is cleared and nothing touches a block. */
+    private static final class ArchitectTest extends Test {
+        ArchitectTest() { super("architect: the fortress"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{FortressFx.class, FortressSiege.class, FortressSpells.class, com.ironspellgrimoire.entity.FortressWall.class,
+                com.ironspellgrimoire.entity.FortressTower.class, com.ironspellgrimoire.entity.FortressDefender.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        BlockState[] before;
+        com.ironspellgrimoire.entity.FortressWall probe;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ARCHITECT_GRIMOIRE.get());
+            CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+            book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+            FortressFx.testReset(p);
+            FortressSpells.testClear();
+            before = snapshot();
+        }
+        @Override boolean tick(int t) {
+            try {
+                MagicData.getPlayerMagicData(p).setMana(1000);
+                p.setHealth(p.getMaxHealth());
+                if (t == 2) {   // fresh, building, Stone, locked rooms, the plan's edge
+                    if (FortressFx.level(p) != 1 || FortressFx.gridSize(p) != 3 || FortressFx.stone(p) != 0) bad.add("a fresh fortress isn't level 1, 3x3, no Stone");
+                    FortressFx.handle(p, 1, FortressFx.BARRACKS * 100 + 0);
+                    if (FortressFx.built(p, FortressFx.BARRACKS)) bad.add("built the Barracks with no Stone");
+                    FortressFx.testStone(p, 2000);
+                    FortressFx.handle(p, 1, FortressFx.BARRACKS * 100 + 0);
+                    if (FortressFx.roomLevel(p, FortressFx.BARRACKS) != 1) bad.add("couldn't build the Barracks with Stone");
+                    if (FortressFx.stone(p) != 2000 - FortressFx.COST[0]) bad.add("building cost " + (2000 - FortressFx.stone(p)) + " Stone, not " + FortressFx.COST[0]);
+                    if (FortressFx.testSlots(p)[0] != FortressFx.BARRACKS) bad.add("the first room didn't fill the first Room page");
+                    FortressFx.handle(p, 1, FortressFx.FORGE * 100 + 1);
+                    if (FortressFx.built(p, FortressFx.FORGE)) bad.add("built the Forge without its blueprint");
+                    FortressFx.handle(p, 1, FortressFx.ARMOURY * 100 + 3);
+                    if (FortressFx.built(p, FortressFx.ARMOURY)) bad.add("built outside the 3x3 plan");
+                    FortressFx.testUnlockAll(p);
+                    FortressFx.handle(p, 1, FortressFx.FORGE * 100 + 1);
+                    FortressFx.handle(p, 1, FortressFx.ARMOURY * 100 + 2);
+                    if (!FortressFx.paired(p, FortressFx.FORGE, FortressFx.ARMOURY)) bad.add("the Forge and Armoury side by side don't pair");
+                    FortressFx.handle(p, 2, 2 * 100 + 6);   // the Armoury moves below the Barracks (cell 6 is row 1, col 1: below the Forge)
+                    if (FortressFx.testCell(p, FortressFx.ARMOURY) != 6) bad.add("couldn't move the Armoury");
+                    if (!FortressFx.paired(p, FortressFx.FORGE, FortressFx.ARMOURY)) bad.add("the Forge and Armoury one above the other don't pair");
+                    FortressFx.handle(p, 2, 6 * 100 + 8);
+                    if (!FortressFx.paired(p, FortressFx.FORGE, FortressFx.ARMOURY) || FortressFx.testCell(p, FortressFx.ARMOURY) != 8) {}   // cell 8 is row 1, col 3: off the plan, so it stays
+                    if (FortressFx.testCell(p, FortressFx.ARMOURY) == 8) bad.add("moved a room off the plan");
+                    int s0 = FortressFx.stone(p);
+                    FortressFx.handle(p, 1, FortressFx.BARRACKS * 100 + 0);
+                    if (FortressFx.roomLevel(p, FortressFx.BARRACKS) != 2 || s0 - FortressFx.stone(p) != FortressFx.COST[1]) bad.add("upgrading the Barracks didn't make it level 2 for " + FortressFx.COST[1]);
+                    if (FortressSiege.cap(p) != 6) bad.add("Barracks 2 gives a garrison of " + FortressSiege.cap(p) + ", not 6");
+                    for (int k = 0; k < 6; k++) FortressFx.handle(p, 1, FortressFx.BARRACKS * 100);
+                    if (FortressFx.roomLevel(p, FortressFx.BARRACKS) != 5) bad.add("the Barracks went past level 5 or stopped short (" + FortressFx.roomLevel(p, FortressFx.BARRACKS) + ")");
+                    FortressFx.handle(p, 3, 1 * 100 + FortressFx.FORGE + 1);
+                    if (FortressFx.testSlots(p)[1] != FortressFx.FORGE) bad.add("couldn't put the Molten Bolt on Room page 2");
+                    FortressFx.handle(p, 3, 2 * 100 + FortressFx.FORGE + 1);
+                    int[] sl = FortressFx.testSlots(p);
+                    if (sl[1] == FortressFx.FORGE && sl[2] == FortressFx.FORGE) bad.add("one spell sat on two Room pages");
+                    FortressFx.handle(p, 3, 3 * 100 + FortressFx.CHAPEL + 1);
+                    if (FortressFx.testSlots(p)[3] == FortressFx.CHAPEL) bad.add("a room not built went on a Room page");
+                }
+                if (t == 4) {   // levels: a blueprint each, the plan grows
+                    FortressFx.testReset(p);
+                    int bp0 = Integer.bitCount(FortressFx.testBlueprints(p));
+                    FortressFx.addXp(p, FortressFx.need(1) + FortressFx.need(2) + FortressFx.need(3) + 1);
+                    if (FortressFx.level(p) != 4) bad.add("XP for three levels gave level " + FortressFx.level(p));
+                    if (Integer.bitCount(FortressFx.testBlueprints(p)) != bp0 + 3) bad.add("three levels gave " + (Integer.bitCount(FortressFx.testBlueprints(p)) - bp0) + " blueprints, not 3");
+                    if (FortressFx.gridSize(p) != 4) bad.add("level 4's plan isn't 4x4");
+                    FortressFx.testLevel(p, 8);
+                    if (FortressFx.gridSize(p) != 5) bad.add("level 8's plan isn't 5x5");
+                    FortressFx.testRoot(p).putIntArray("grid", new int[]{99, -7, 3, 0, 1000, 11, 11});   // a broken save
+                    FortressFx.testRoot(p);
+                    if (FortressFx.builtCount(p) != 0) bad.add("a broken saved plan wasn't cleared");
+                }
+                if (t == 6) {   // passives while worn, gone when the book is off
+                    FortressFx.testReset(p); FortressFx.testUnlockAll(p); FortressFx.testStone(p, 1000);
+                    FortressFx.handle(p, 1, FortressFx.ARMOURY * 100);
+                    FortressFx.handle(p, 1, FortressFx.LIBRARY * 100 + 1);
+                    var ad = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+                    var mm = p.getAttribute(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA.get());
+                    if (ad.getModifiers().stream().noneMatch(m -> m.getName().equals("Armoury"))) bad.add("the Armoury's passive isn't on");
+                    if (mm.getModifiers().stream().noneMatch(m -> m.getName().equals("Library"))) bad.add("the Library's passive isn't on");
+                    ItemStack held = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, ItemStack.EMPTY));
+                    FortressFx.refreshPassives(p);
+                    if (ad.getModifiers().stream().anyMatch(m -> m.getName().equals("Armoury"))) bad.add("the Armoury's passive stayed with the book off");
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, held));
+                    FortressFx.refreshPassives(p);
+                }
+                if (t == 8) {   // banners and the garrison's limit
+                    FortressFx.testReset(p);
+                    for (int k = 0; k < 6; k++) FortressSiege.testBanner(p, k % 2 == 0 ? "minecraft:zombie" : "minecraft:skeleton");
+                    for (int k = 0; k < 6; k++) FortressFx.handle(p, 4, 0);
+                    if (FortressSiege.testGarrison(p) != 4) bad.add("the garrison took " + FortressSiege.testGarrison(p) + " with room for 4");
+                    if (FortressSiege.roleOf("minecraft:skeleton") != com.ironspellgrimoire.entity.FortressDefender.ARCHER) bad.add("a skeleton isn't an Archer");
+                    if (FortressSiege.roleOf("minecraft:ravager") != com.ironspellgrimoire.entity.FortressDefender.BRUTE) bad.add("a ravager isn't a Brute");
+                    FortressSiege.testKills(p, 1, 200);
+                    if (FortressSiege.rankOf(200) != 3) bad.add("200 kills isn't Captain");
+                }
+                if (t == 10) {   // Siege Mode: walls, a gate, towers, the garrison out
+                    FortressFx.testClearCds(p);
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    FortressFx.siegePage(p, 10);
+                    if (!FortressSiege.active(p)) bad.add("Siege Mode didn't start");
+                    int w = FortressSiege.testWalls(p);
+                    if (w < 30) bad.add("Siege Mode raised " + w + " wall blocks (a 6-wide ring has 41)");
+                    if (FortressSiege.testTowers(p) < 2) bad.add("Siege Mode raised " + FortressSiege.testTowers(p) + " towers, not at least 2");
+                    if (FortressSiege.testDefenders(p) != 4) bad.add(FortressSiege.testDefenders(p) + " defenders came out, not the garrison's 4");
+                    FortressFx.siegePage(p, 10);
+                    if (FortressSiege.testWalls(p) != w) bad.add("a second Siege Mode stacked another ring");
+                    long gates = FortressSiege.testWallList(p).stream().filter(x -> x.kind() == com.ironspellgrimoire.entity.FortressWall.GATE).count();
+                    if (gates != 1) bad.add(gates + " gatehouses, not 1");
+                    for (var x : FortressSiege.testWallList(p)) {
+                        if (x.kind() == com.ironspellgrimoire.entity.FortressWall.WALL && probe == null) probe = x;
+                        if (x.shouldBeSaved()) { bad.add("a wall would be saved with the world"); break; }
+                    }
+                    if (probe == null) bad.add("no wall block to test");
+                    else {
+                        if (!probe.canBeCollidedWith()) bad.add("a wall isn't solid");
+                        float h0 = probe.hp();
+                        probe.hurt(p.damageSources().playerAttack(p), 10);
+                        if (probe.hp() != h0) bad.add("the player knocked down their own wall");
+                        probe.hurt(dummy.damageSources().mobAttack(dummy), 10);
+                        if (probe.hp() >= h0) bad.add("a foe couldn't damage a wall");
+                    }
+                }
+                if (t == 12 && probe != null && probe.isAlive()) p.teleportTo(sl(), probe.getX(), probe.getY(), probe.getZ(), 0f, 0f);   // pushed into a wall
+                if (t == 20) {
+                    if (probe != null && probe.isAlive()) bad.add("a wall didn't give way with its owner inside it");
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    // the Keepsake and the Ward Sigil
+                    FortressFx.testReset(p); FortressFx.testUnlockAll(p); FortressFx.testStone(p, 1000);
+                    FortressFx.handle(p, 1, FortressFx.RELIQUARY * 100);
+                    FortressFx.castRoom(p, FortressFx.RELIQUARY);
+                    p.hurt(p.damageSources().magic(), 500);   // magic: not scaled by the world's difficulty
+                    if (!p.isAlive() || p.getHealth() > 1.5f) bad.add("the Keepsake didn't leave the player at 1 health (" + p.getHealth() + ")");
+                    if (FortressFx.testRoot(p).getLong("keep") != 0) bad.add("the Keepsake wasn't used up");
+                    p.setHealth(p.getMaxHealth());
+                    FortressFx.handle(p, 1, FortressFx.RUNE_VAULT * 100 + 1);
+                    FortressFx.castRoom(p, FortressFx.RUNE_VAULT);
+                    p.invulnerableTime = 0;
+                    float h1 = p.getHealth();
+                    p.hurt(p.damageSources().magic(), 10);
+                    float took = h1 - p.getHealth();
+                    if (took > 7.5f) bad.add("the Ward Sigil didn't soften a hit (" + took + " of 10)");
+                    p.setHealth(p.getMaxHealth());
+                }
+                if (t == 22) {   // everything goes at once when it ends
+                    FortressFx.testClearCds(p);
+                    FortressFx.siegePage(p, 10);
+                    FortressSiege.endAll(p, false);
+                    long left = sl().getEntities((Entity) null, new AABB(home, home).inflate(40), e -> e.isAlive() && (e instanceof com.ironspellgrimoire.entity.FortressWall
+                            || e instanceof com.ironspellgrimoire.entity.FortressTower || e instanceof com.ironspellgrimoire.entity.FortressDefender)).size();
+                    if (left > 0) bad.add(left + " fortress pieces stayed after the siege ended");
+                }
+                if (t == 24) {
+                    String ch = changes(before);
+                    if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+                    if (bad.isEmpty()) pass(name, "built, paired, moved, upgraded, levelled, passives, garrison, siege, walls, keepsake, sigil, cleared");
+                    else fail(name, String.join("; ", bad));
+                    FortressFx.testReset(p);
+                    FortressSpells.testClear();
+                    return true;
+                }
+            } catch (Throwable x) { fail(name, "threw " + x); FortressFx.testReset(p); return true; }
             return false;
         }
     }
@@ -1680,6 +1860,36 @@ public final class GameTests {
                 "nyx: void rift (perfected)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 7, -1, -1, -1); TwinsFx.testUses(pl, 1, 7, 250); TwinsArts.cast(pl, 1, 7); }, "",
                 "echo shot", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 0); TwinsFx.testCombat(pl); TwinsFx.testEcho(pl); }, "c"));
         queue.add(new TwinsTest());
+        queue.add(new BookMovesTest("architect", com.ironspellgrimoire.registry.AddonItemRegistry.ARCHITECT_GRIMOIRE::get, FortressFx.class,
+                "barracks", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 0), "",
+                "armoury", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 1), "",
+                "training yard", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 2), "",
+                "watchtower", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 3), "",
+                "gatehouse", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 4), "c",
+                "war room", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 5), "q",
+                "observatory", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 6), "q",
+                "library", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 7), "q",
+                "arcanum", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 8), "",
+                "scrying pool", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 9), "q",
+                "alchemy lab", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 10), "",
+                "rune vault", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 11), "q",
+                "chapel", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 12), "q",
+                "reliquary", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 13), "q",
+                "crypt", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 14), "q",
+                "bell tower", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 15), "c",
+                "garden", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 16), "q",
+                "hall of banners", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 17), "q",
+                "forge", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 18), "",
+                "foundry", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 19), "",
+                "workshop", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 20), "",
+                "siege yard", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 21), "",
+                "cistern", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 22), "",
+                "treasury", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 23), "q",
+                "rampart", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.rampartPage(pl, pw); }, "q",
+                "siege mode", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.handle(pl, 1, FortressFx.WATCHTOWER * 100); FortressFx.siegePage(pl, pw); }, "",
+                "citadel", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.testLevel(pl, 10); for (int r = 0; r < 24; r++) FortressFx.handle(pl, 1, r * 100 + r); FortressFx.citadelPage(pl, pw); }, "",
+                "the fortress", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> FortressFx.fortressPage(pl, pw), "q");
+        queue.add(new ArchitectTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

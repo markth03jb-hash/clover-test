@@ -90,6 +90,7 @@ public final class UiShotsServer {
             case 'p' -> AddonItemRegistry.PARASITE_GRIMOIRE.get();
             case 'H' -> AddonItemRegistry.HUNGER_GRIMOIRE.get();
             case 'T' -> AddonItemRegistry.TWINS_GRIMOIRE.get();
+            case 'A' -> AddonItemRegistry.ARCHITECT_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -100,6 +101,7 @@ public final class UiShotsServer {
         if (which.charAt(0) == 'p') { parasite(p, w); return; }
         if (which.charAt(0) == 'H') { hunger(p, w); return; }
         if (which.charAt(0) == 'T') { twins(p, w); return; }
+        if (which.charAt(0) == 'A') { architect(p, w); return; }
         switch (w) {
             case "target" -> {
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
@@ -630,5 +632,41 @@ public final class UiShotsServer {
         d.setNoAi(true);
         p.serverLevel().addFreshEntity(d);
         if (flare) d.setPose(BossKit.P_RAISE);
+    }
+
+    /** The Architect of Ruin's pictures: a fortress well on its way, Siege Mode, the Citadel. */
+    static void architect(ServerPlayer p, String w) {
+        switch (w) {
+            case "setup" -> {   // book level 6 (4x4 plan), eleven rooms with three pairs, a garrison of four, two banners waiting
+                faceForward(p);
+                FortressFx.testReset(p);
+                FortressFx.testLevel(p, 6);
+                FortressFx.testUnlockAll(p);
+                FortressFx.testStone(p, 100000);
+                int[][] plan = {{FortressFx.BARRACKS, 0}, {FortressFx.CHAPEL, 1}, {FortressFx.WATCHTOWER, 2}, {FortressFx.OBSERVATORY, 3},
+                        {FortressFx.ARMOURY, 5}, {FortressFx.FORGE, 6}, {FortressFx.ARCANUM, 7}, {FortressFx.GATEHOUSE, 10}, {FortressFx.WAR_ROOM, 11},
+                        {FortressFx.WORKSHOP, 12}, {FortressFx.LIBRARY, 15}};
+                for (int[] r : plan) FortressFx.handle(p, 1, r[0] * 100 + r[1]);
+                for (int k = 0; k < 3; k++) FortressFx.handle(p, 1, FortressFx.BARRACKS * 100);
+                for (int k = 0; k < 2; k++) FortressFx.handle(p, 1, FortressFx.FORGE * 100);
+                FortressFx.handle(p, 1, FortressFx.WATCHTOWER * 100);
+                FortressFx.handle(p, 3, 0 * 100 + FortressFx.FORGE + 1); FortressFx.handle(p, 3, 1 * 100 + FortressFx.ARMOURY + 1);
+                FortressFx.handle(p, 3, 2 * 100 + FortressFx.ARCANUM + 1); FortressFx.handle(p, 3, 3 * 100 + FortressFx.CHAPEL + 1);
+                for (String b : new String[]{"minecraft:zombie", "minecraft:skeleton", "minecraft:witch", "minecraft:ravager"}) { FortressSiege.testBanner(p, b); FortressFx.handle(p, 4, 0); }
+                FortressSiege.testKills(p, 1, 90); FortressSiege.testKills(p, 2, 30); FortressSiege.testKills(p, 4, 210);
+                FortressFx.handle(p, 6, 1 * 100 + FortressFx.FORGE + 1);
+                FortressSiege.testBanner(p, "minecraft:pillager"); FortressSiege.testBanner(p, "minecraft:spider");
+                FortressFx.testRoot(p).putInt("stone", 236);
+                FortressFx.testRoot(p).putFloat("xp", FortressFx.need(6) * 0.6f);
+                FortressFx.testRoot(p).putBoolean("toured", true);
+                FortressFx.testClearCds(p);
+                FortressFx.sync(p, false);
+            }
+            case "siege" -> { FortressFx.testClearCds(p); FortressFx.siegePage(p, 10f); }
+            case "citadel" -> { FortressSiege.endAll(p, false); FortressFx.testLevel(p, 10); FortressFx.testClearCds(p); FortressFx.citadelPage(p, 10f); }
+            case "clear" -> { FortressFx.testReset(p); FortressFx.sync(p, false); }
+            case "page" -> FortressFx.sync(p, true);
+            default -> {}
+        }
     }
 }

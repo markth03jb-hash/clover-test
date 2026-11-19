@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:lodestone"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.every_room.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.every_room.description"
+  },
+  "frame": "challenge",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": true
+ },
+ "parent": "iron_spell_grimoire:main/every_blueprint",
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ }
+}

@@ -675,6 +675,25 @@ public final class UiShots {
         steps.add(new Step("hb_done", () -> { mc.setScreen(null); mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "H:end")); }, 4, true));
 
         // the Masked Twins Grimoire: the masks worn (front, side, swapped, grown, fused), the arts, the wheel, every tab, the trial
+        // the Architect of Ruin: the menu's tabs, the walkthrough, the tracker, Siege Mode and the Citadel
+        steps.add(new Step("ar_setup", () -> { mc.setScreen(null); mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "A:setup")); }, 20, true));
+        steps.add(new Step("ar_hud", () -> {}, 4, true));
+        String[] arTabs = {"plan", "garrison", "spells", "guide"};
+        for (int k = 0; k < 4; k++) {
+            final int kk = k;
+            steps.add(new Step("ar_menu_" + arTabs[k], () -> { mc.setScreen(null); FortressScreen.startTab = kk; FortressScreen.startCell = -1; FortressScreen.startTour = -1; mc.setScreen(new FortressScreen()); }, 8, false));
+        }
+        steps.add(new Step("ar_menu_room", () -> { mc.setScreen(null); FortressScreen.startTab = 0; FortressScreen.startCell = 6; mc.setScreen(new FortressScreen()); }, 8, false));
+        steps.add(new Step("ar_menu_build", () -> { mc.setScreen(null); FortressScreen.startTab = 0; FortressScreen.startCell = 13; mc.setScreen(new FortressScreen()); }, 8, false));
+        steps.add(new Step("ar_menu_rooms", () -> { mc.setScreen(null); FortressScreen.startTab = 3; FortressScreen.startCell = -1; FortressScreen.startTopic = 9; mc.setScreen(new FortressScreen()); }, 8, false));
+        for (int k = 0; k < 6; k++) {
+            final int kk = k;
+            steps.add(new Step("ar_tour_" + k, () -> { mc.setScreen(null); FortressScreen.startTab = 0; FortressScreen.startTopic = 0; FortressScreen.startTour = kk; mc.setScreen(new FortressScreen()); }, 8, false));
+        }
+        steps.add(new Step("ar_siege", () -> { mc.setScreen(null); FortressScreen.startTour = -1; FortressScreen.startTab = -1; FortressScreen.startCell = -1; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "A:siege")); }, 40, true));
+        steps.add(new Step("ar_siege_front", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 8, true));
+        steps.add(new Step("ar_citadel", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "A:citadel")); }, 40, true));
+        steps.add(new Step("ar_clear", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "A:clear")); }, 8, true));
         steps.add(new Step("tw_setup", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "T:setup")); }, 30, true));
         steps.add(new Step("tw_worn", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 12, true));
         steps.add(new Step("tw_worn_side", () -> onServer(p -> { p.setYRot(-90); p.setYHeadRot(-90); p.setYBodyRot(-90); p.connection.teleport(p.getX(), p.getY(), p.getZ(), -90, 0); }), 8, true));
@@ -757,6 +776,7 @@ public final class UiShots {
         if (step.startsWith("book_")) return new Class<?>[]{GrimoireBookScreen.class};
         if (step.startsWith("board_")) return new Class<?>[]{BoardScreen.class, com.ironspellgrimoire.server.Boards.class};
         if (step.startsWith("hud_")) return new Class<?>[]{BountyHud.class, QuestHud.class, WorldBossHud.class, RiftMap.class, BroomHud.class, ModeHudOverlay.class, RaidBanner.class, TrackerMode.class};
+        if (step.startsWith("ar_")) return new Class<?>[]{FortressScreen.class, FortressHud.class, FortressClient.class, FortressRenderers.class, com.ironspellgrimoire.server.FortressFx.class, com.ironspellgrimoire.server.FortressSiege.class, com.ironspellgrimoire.server.FortressSpells.class};
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
         Class<?>[] shared = {GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class, FxBase.class, GravityFxClient.class, FxBooks.class, FxBookAuras.class, GrimoireFloatRenderer.class};
         String[][] books = {{"grav_", "Gravity"}, {"snd_", "Sound"}, {"ink_", "Ink"}, {"err_", "Error"}, {"tre_", "Treasure"}, {"chn_", "Chain"}, {"hun_", "Hunter"},

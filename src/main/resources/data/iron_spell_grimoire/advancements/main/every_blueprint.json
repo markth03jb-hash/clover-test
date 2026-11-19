@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:map"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.every_blueprint.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.every_blueprint.description"
+  },
+  "frame": "goal",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": true
+ },
+ "parent": "iron_spell_grimoire:main/fortress_level",
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ }
+}

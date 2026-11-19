@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:bricks"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.fortress_level.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.fortress_level.description"
+  },
+  "frame": "task",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": true
+ },
+ "parent": "iron_spell_grimoire:main/first_room_spell",
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ }
+}

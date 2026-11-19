@@ -36,12 +36,14 @@ public final class TrackerMode {
     public static int questY() { return 4 + (BountyHud.shown() ? (compact() ? 16 : 66) : 0); }
     public static int worldY() { return questY() + (QuestHud.shown() ? (compact() ? 16 : QuestHud.height() + 4) : 0); }
     /** The First Steps box goes under all the others. */
+    /** The Architect of Ruin's box: under First Steps. */
+    public static int archY() { return stepsY() + (FirstStepsHud.shown() ? (compact() ? 16 : FirstStepsHud.H + 4) : 0); }
     public static int stepsY() { return Math.max(4, riftY() + RiftMap.drawnH); }
     public static int riftY() { return worldY() + (WorldBossHud.shown() ? (compact() ? 16 : 44) : 0); }
     /** Where the trackers end (0 when none is on screen): the mode timers start under this, so they never overlap. */
     public static int bottom() {
         if (hidden()) return 0;
-        int y = stepsY() + (FirstStepsHud.shown() ? (compact() ? 16 : FirstStepsHud.H + 4) : 0);
+        int y = archY() + (FortressHud.shown() ? (compact() ? 16 : FortressHud.H + 4) : 0);
         return y > 4 ? y : 0;
     }
 

@@ -862,6 +862,24 @@ public class AddonSpellRegistry {
             .gate(com.ironspellgrimoire.server.TwinsFx::canNoon, "Wear Sol's mask, at level 40"));
     public static final RegistryObject<AbstractSpell> TWINS_EVENTIDE = registerSpell(twins("eventide", 180, 120, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.TwinsFx::eventide)
             .gate(com.ironspellgrimoire.server.TwinsFx::canEventide, "Wear Nyx's mask, at level 40"));
+    // ---- the Architect of Ruin Grimoire (server/FortressFx): the pages keep their own cooldowns and mana
+    private static com.ironspellgrimoire.spells.BookSpell architect(String id, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.EVOCATION_RESOURCE,
+                com.ironspellgrimoire.item.ArchitectGrimoireItem.class, "ui.iron_spell_grimoire.architect_grimoire_only", 1, 0, 10,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> ARCH_RAMPART = registerSpell(architect("fortress_rampart", "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.FortressFx::rampartPage));
+    public static final RegistryObject<AbstractSpell> ARCH_SIEGE = registerSpell(architect("siege_mode", "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.FortressFx::siegePage));
+    public static final RegistryObject<AbstractSpell> ARCH_ROOM1 = registerSpell(architect("fortress_room_1", "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.FortressFx::room1));
+    public static final RegistryObject<AbstractSpell> ARCH_ROOM2 = registerSpell(architect("fortress_room_2", "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.FortressFx::room2));
+    public static final RegistryObject<AbstractSpell> ARCH_ROOM3 = registerSpell(architect("fortress_room_3", "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.FortressFx::room3));
+    public static final RegistryObject<AbstractSpell> ARCH_ROOM4 = registerSpell(architect("fortress_room_4", "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.FortressFx::room4));
+    public static final RegistryObject<AbstractSpell> ARCH_FORTRESS = registerSpell(architect("the_fortress", "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.FortressFx::fortressPage));
+    public static final RegistryObject<AbstractSpell> ARCH_CITADEL = registerSpell(architect("citadel", "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.FortressFx::citadelPage)
+            .gate(com.ironspellgrimoire.server.FortressFx::canCitadel, "Book level 10, and the grimoire mastered"));
+    /** The eight Architect of Ruin pages, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> ARCHITECT_SPELLS = List.of(ARCH_RAMPART, ARCH_SIEGE, ARCH_ROOM1, ARCH_ROOM2, ARCH_ROOM3, ARCH_ROOM4, ARCH_FORTRESS, ARCH_CITADEL);
+
     /** The seven Masked Twins Grimoire pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> TWINS_SPELLS = List.of(TWINS_SWAP, TWINS_ARTS, TWINS_STRIKE, TWINS_ECLIPSE, TWINS_MASKS, TWINS_NOON, TWINS_EVENTIDE);
 

@@ -1,0 +1,9 @@
+newmtl forge_tower
+Kd 1 1 1
+Ka 0 0 0
+map_Kd iron_spell_grimoire:item/architect_ruin
+
+newmtl forge_tower_glow
+Kd 1 1 1
+Ka 1 1 1
+map_Kd iron_spell_grimoire:item/architect_ruin

@@ -93,6 +93,18 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.TwinEcho>of(com.ironspellgrimoire.entity.TwinEcho::new, MobCategory.MISC).sized(0.6F, 0.6F)
                     .fireImmune().clientTrackingRange(8).updateInterval(1).build("twin_echo"));
 
+    /** The Architect of Ruin's fortress: a block of wall or the gatehouse (entity/FortressWall), a tower (entity/FortressTower),
+     *  a defender (entity/FortressDefender). None is ever saved. */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.FortressWall>> FORTRESS_WALL = ENTITIES.register("fortress_wall",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.FortressWall>of(com.ironspellgrimoire.entity.FortressWall::new, MobCategory.MISC).sized(1.0F, 2.6F)
+                    .fireImmune().noSave().clientTrackingRange(10).updateInterval(20).build("fortress_wall"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.FortressTower>> FORTRESS_TOWER = ENTITIES.register("fortress_tower",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.FortressTower>of(com.ironspellgrimoire.entity.FortressTower::new, MobCategory.MISC).sized(1.4F, 3.6F)
+                    .fireImmune().noSave().clientTrackingRange(10).updateInterval(10).build("fortress_tower"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.FortressDefender>> FORTRESS_DEFENDER = ENTITIES.register("fortress_defender",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.FortressDefender>of(com.ironspellgrimoire.entity.FortressDefender::new, MobCategory.MISC).sized(0.7F, 1.95F)
+                    .noSave().clientTrackingRange(10).build("fortress_defender"));
+
     /** The Parasite Grimoire's molted husk (entity/MoltHusk). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MoltHusk>> MOLT_HUSK = ENTITIES.register("molt_husk",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.MoltHusk>of(com.ironspellgrimoire.entity.MoltHusk::new, MobCategory.MISC).sized(0.6F, 1.8F)

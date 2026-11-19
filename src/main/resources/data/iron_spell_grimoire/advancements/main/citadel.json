@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:beacon"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.citadel.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.citadel.description"
+  },
+  "frame": "challenge",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": true
+ },
+ "parent": "iron_spell_grimoire:main/every_room",
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ }
+}

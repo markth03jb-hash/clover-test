@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:golden_sword"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.captain.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.captain.description"
+  },
+  "frame": "challenge",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": true
+ },
+ "parent": "iron_spell_grimoire:main/full_garrison",
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ }
+}

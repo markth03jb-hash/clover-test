@@ -72,6 +72,8 @@ public class AddonNetwork {
         CHANNEL.registerMessage(26, TwinsPackets.Act.class, TwinsPackets.Act::encode, TwinsPackets.Act::decode, TwinsPackets.Act::handle);
         CHANNEL.registerMessage(27, TwinsPackets.Look.class, TwinsPackets.Look::encode, TwinsPackets.Look::decode, TwinsPackets.Look::handle);
         CHANNEL.registerMessage(29, FirstStepsPacket.class, FirstStepsPacket::encode, FirstStepsPacket::decode, FirstStepsPacket::handle);
+        CHANNEL.registerMessage(30, FortressPackets.Sync.class, FortressPackets.Sync::encode, FortressPackets.Sync::decode, FortressPackets.Sync::handle);
+        CHANNEL.registerMessage(31, FortressPackets.Act.class, FortressPackets.Act::encode, FortressPackets.Act::decode, FortressPackets.Act::handle);
         CHANNEL.registerMessage(28, FxBatchPacket.class, FxBatchPacket::encode, FxBatchPacket::decode, FxBatchPacket::handle);
     }
 }

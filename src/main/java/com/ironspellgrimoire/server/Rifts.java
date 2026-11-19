@@ -776,6 +776,7 @@ public final class Rifts {
         sl.playSound(null, BlockPos.containing(c), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1f, 1f);
         if (relic) for (ServerPlayer p : sl.players()) if (riftAt(sl.getServer(), p.position()) == r) {
             Quests.riftCleared(p, r.id);
+            FortressFx.riftCleared(p);
             GrimoireMastery.bountyXp(p, 400 + r.rank * 200);
             Bounties.addStars(p, 2 + r.rank * 2);
             p.sendSystemMessage(Component.literal("RIFT CLEARED  ").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD)

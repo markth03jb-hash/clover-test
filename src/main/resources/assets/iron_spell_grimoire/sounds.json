@@ -1176,5 +1176,185 @@
         "name": "iron_spell_grimoire:sfx/eclipse_toll_3"
       }
     ]
+  },
+  "sfx.fort_horn": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_horn_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_horn_2"
+      }
+    ]
+  },
+  "sfx.fort_build": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_build_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_build_2"
+      }
+    ]
+  },
+  "sfx.fort_wall": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_wall_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_wall_2"
+      }
+    ]
+  },
+  "sfx.fort_gate": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_gate_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_gate_2"
+      }
+    ]
+  },
+  "sfx.fort_collapse": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_collapse_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_collapse_2"
+      }
+    ]
+  },
+  "sfx.fort_crumble": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_crumble_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_crumble_2"
+      }
+    ]
+  },
+  "sfx.fort_arrow": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_arrow_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_arrow_2"
+      }
+    ]
+  },
+  "sfx.fort_ley": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_ley_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_ley_2"
+      }
+    ]
+  },
+  "sfx.fort_fire": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_fire_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_fire_2"
+      }
+    ]
+  },
+  "sfx.fort_bolt": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_bolt_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_bolt_2"
+      }
+    ]
+  },
+  "sfx.fort_blades": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_blades_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_blades_2"
+      }
+    ]
+  },
+  "sfx.fort_page": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_page_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_page_2"
+      }
+    ]
+  },
+  "sfx.fort_bell": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_bell_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_bell_2"
+      }
+    ]
+  },
+  "sfx.fort_flask": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_flask_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_flask_2"
+      }
+    ]
+  },
+  "sfx.fort_hammer": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_hammer_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_hammer_2"
+      }
+    ]
+  },
+  "sfx.fort_flood": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_flood_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_flood_2"
+      }
+    ]
+  },
+  "sfx.fort_coins": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_coins_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_coins_2"
+      }
+    ]
+  },
+  "sfx.fort_launch": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_launch_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_launch_2"
+      }
+    ]
   }
 }
