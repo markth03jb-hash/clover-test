@@ -663,7 +663,20 @@ public final class UiShotsServer {
                 FortressFx.sync(p, false);
             }
             case "siege" -> { FortressFx.testClearCds(p); FortressFx.siegePage(p, 10f); }
-            case "citadel" -> { FortressSiege.endAll(p, false); FortressFx.testLevel(p, 10); FortressFx.testClearCds(p); FortressFx.citadelPage(p, 10f); }
+            case "breach" -> {   // Hold the Gate, then a wall on the left broken by a foe
+                FortressFx.handle(p, 12, FortressSiege.HOLD);
+                var wall = FortressSiege.testWallList(p).stream().filter(x -> x.isAlive() && x.kind() == com.ironspellgrimoire.entity.FortressWall.WALL && x.getX() > p.getX() + 3).findFirst().orElse(null);
+                var foe = net.minecraft.world.entity.EntityType.ZOMBIE.create(p.serverLevel());
+                if (wall != null && foe != null) { foe.moveTo(wall.getX(), wall.getY(), wall.getZ()); wall.hurt(foe.damageSources().mobAttack(foe), 100000); }
+            }
+            case "line", "horseshoe" -> {
+                FortressSiege.endAll(p, false);
+                faceForward(p);
+                FortressFx.handle(p, 10, w.equals("line") ? FortressFx.LINE : FortressFx.HORSESHOE);
+                FortressFx.testClearCds(p);
+                FortressFx.siegePage(p, 10f);
+            }
+            case "citadel" -> { FortressSiege.endAll(p, false); FortressFx.handle(p, 10, FortressFx.RING); FortressFx.testLevel(p, 10); FortressFx.testClearCds(p); FortressFx.citadelPage(p, 10f); }
             case "clear" -> { FortressFx.testReset(p); FortressFx.sync(p, false); }
             case "page" -> FortressFx.sync(p, true);
             default -> {}

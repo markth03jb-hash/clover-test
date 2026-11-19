@@ -1356,5 +1356,97 @@
         "name": "iron_spell_grimoire:sfx/fort_launch_2"
       }
     ]
+  },
+  "sfx.fort_hold": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_hold_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_hold_2"
+      }
+    ]
+  },
+  "sfx.fort_charge": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_charge_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_charge_2"
+      }
+    ]
+  },
+  "sfx.fort_fallback": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_fallback_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_fallback_2"
+      }
+    ]
+  },
+  "sfx.fort_hum": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_hum_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_hum_2"
+      }
+    ]
+  },
+  "sfx.fort_alarm": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_alarm_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_alarm_2"
+      }
+    ]
+  },
+  "sfx.fort_prestige": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_prestige_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/fort_prestige_2"
+      }
+    ]
+  },
+  "sfx.fort_amb_wind": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_amb_wind",
+        "stream": false
+      }
+    ]
+  },
+  "sfx.fort_amb_works": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_amb_works",
+        "stream": false
+      }
+    ]
+  },
+  "sfx.fort_amb_forge": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_amb_forge",
+        "stream": false
+      }
+    ]
+  },
+  "sfx.fort_amb_bell": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/fort_amb_bell",
+        "stream": false
+      }
+    ]
   }
 }

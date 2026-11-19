@@ -43,7 +43,25 @@ public final class FortressClient {
     static int[] grid() { int[] g = tag.getIntArray("grid"); return g.length == 25 ? g : blank(); }
     private static int[] blank() { int[] g = new int[25]; java.util.Arrays.fill(g, -1); return g; }
     static int[] slots() { int[] s = tag.getIntArray("slots"); return s.length == 4 ? s : new int[]{-1, -1, -1, -1}; }
-    static boolean unlocked(int room) { return room < FortressFx.OPEN || (tag.getInt("bp") & (1 << room)) != 0; }
+    static boolean unlocked(int room) { return FortressFx.unlocked(room, tag.getInt("bp"), stars()); }
+    static int stars() { return tag.getInt("stars"); }
+    static int shape() { return Math.max(0, Math.min(FortressFx.HORSESHOE, tag.getInt("shape"))); }
+    static boolean prestigeOk() { return tag.getBoolean("prestigeOk"); }
+    /** The garrison's order (FortressSiege.FREE..FALL_BACK) and how many defenders are out. */
+    static int order() { return tag.getInt("order"); }
+    static int defendersOut() { return tag.getInt("defOut"); }
+    /** Ticks left on the breach alarm (0: none) and which side it's on. */
+    static int breachLeft() { return (int) Math.max(0, tag.getLong("breachUntil") - (tag.getLong("now") + since)); }
+    static String breachSide() { return tag.getString("breachSide"); }
+    /** Is the player inside their own walls while a siege is up? (the ambience) */
+    static boolean insideWalls(net.minecraft.world.entity.player.Player p) {
+        if (tag.getLong("siegeUntil") <= tag.getLong("now") + since || !tag.contains("fcx")) return false;
+        double dx = p.getX() - tag.getDouble("fcx"), dz = p.getZ() - tag.getDouble("fcz"), dy = p.getY() - tag.getDouble("fcy");
+        int hw = tag.getInt("fhw");
+        if (Math.abs(dy) > 12) return false;
+        if (tag.getInt("fshape") == FortressFx.LINE) return dx * dx + dz * dz < 9 * 9;
+        return Math.max(Math.abs(dx), Math.abs(dz)) < hw + 0.5;
+    }
     static int roomLevel(int room) { for (int c : grid()) if (c >= 0 && c / 10 == room) return c % 10; return 0; }
     static int cellOf(int room) { int[] g = grid(); for (int i = 0; i < 25; i++) if (g[i] >= 0 && g[i] / 10 == room) return i; return -1; }
     static int builtCount() { int n = 0; for (int c : grid()) if (c >= 0) n++; return n; }

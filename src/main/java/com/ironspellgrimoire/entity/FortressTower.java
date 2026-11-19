@@ -25,9 +25,11 @@ public class FortressTower extends Entity {
     private static final EntityDataAccessor<Integer> KIND = SynchedEntityData.defineId(FortressTower.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> HP = SynchedEntityData.defineId(FortressTower.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> AIM = SynchedEntityData.defineId(FortressTower.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Boolean> OVER = SynchedEntityData.defineId(FortressTower.class, EntityDataSerializers.BOOLEAN);
     public UUID owner;
     public float maxHp = 80, range = 16;
     public int life = 600, reload;
+    public long overUntil, overReady;   // overcharged until; may overcharge again from
 
     public FortressTower(EntityType<? extends FortressTower> type, Level level) {
         super(type, level);
@@ -51,6 +53,7 @@ public class FortressTower extends Entity {
         this.entityData.define(KIND, ARROWS);
         this.entityData.define(HP, 80f);
         this.entityData.define(AIM, 0f);
+        this.entityData.define(OVER, false);
     }
 
     public int kind() { return this.entityData.get(KIND); }
@@ -58,6 +61,9 @@ public class FortressTower extends Entity {
     /** Where the ballista on top points (degrees): turned toward what it shoots. */
     public float aim() { return this.entityData.get(AIM); }
     public void setAim(float yaw) { this.entityData.set(AIM, yaw); }
+    /** Overcharged (the G wheel): it fires twice as fast and glows brass. */
+    public boolean overcharged() { return this.entityData.get(OVER); }
+    public void setOver(boolean on) { this.entityData.set(OVER, on); }
     public Player ownerPlayer() { return owner == null ? null : level().getPlayerByUUID(owner); }
 
     @Override
@@ -66,6 +72,8 @@ public class FortressTower extends Entity {
         if (level().isClientSide) return;
         Player o = ownerPlayer();
         if (o == null || !o.isAlive() || o.level() != level() || tickCount >= life || o.distanceToSqr(this) > 80 * 80) { FortressSiege.towerGone(this, false); discard(); return; }
+        if (overcharged() && overUntil <= level().getGameTime()) setOver(false);
+        if (overcharged() && tickCount % 8 == 0) FortressSiege.towerGlow(this);
         FortressSiege.towerTick(this);
     }
 

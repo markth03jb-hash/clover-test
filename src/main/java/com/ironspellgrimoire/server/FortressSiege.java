@@ -61,6 +61,12 @@ public final class FortressSiege {
         long siegeUntil;
         boolean citadel;
         Vec3 centre;
+        int shape, half, order;          // Siege Mode's shape and half-width; the garrison's order (FREE, HOLD, CHARGE, FALL_BACK)
+        Vec3 gate, gateIn;               // the gatehouse (a ring only) and the spot just inside it
+        LivingEntity chargeTarget;
+        Vec3 breach;                     // the last gap an enemy broke in the walls
+        long breachUntil;
+        String breachSide = "";
     }
     static final Map<UUID, Out> OUT = new HashMap<>();
     static Out out(Player p) { return OUT.computeIfAbsent(p.getUUID(), k -> new Out()); }
@@ -179,8 +185,8 @@ public final class FortressSiege {
     // ================================================================== Siege Mode and the Citadel
     static int halfWidth(Player p) { int lv = FortressFx.level(p); return lv >= 8 ? 10 : lv >= 4 ? 8 : 6; }
 
-    /** The tower kinds the fortress has: two Watchtowers to begin with, one for each tower room (two at its level 3+). */
-    static List<Integer> towerKinds(Player p, boolean citadel) {
+    /** The tower kinds the fortress has: Watchtowers to make up the least, one for each tower room (two at its level 3+). */
+    static List<Integer> towerKinds(Player p, boolean citadel, int least, int most) {
         List<Integer> k = new ArrayList<>();
         int[][] rooms = {{FortressFx.WATCHTOWER, FortressTower.ARROWS}, {FortressFx.ARCANUM, FortressTower.BEAM}, {FortressFx.FORGE, FortressTower.FIRE}, {FortressFx.WORKSHOP, FortressTower.BOLTS}};
         for (int[] r : rooms) {
@@ -188,10 +194,14 @@ public final class FortressSiege {
             if (lv >= 1) k.add(r[1]);
             if (lv >= 3) k.add(r[1]);
         }
-        while (k.size() < 2) k.add(0, FortressTower.ARROWS);
-        if (citadel) while (k.size() < MAX_TOWERS) k.add(FortressTower.ARROWS);
-        return k.subList(0, Math.min(MAX_TOWERS, k.size()));
+        while (k.size() < least) k.add(0, FortressTower.ARROWS);
+        if (citadel) while (k.size() < most) k.add(FortressTower.ARROWS);
+        return new ArrayList<>(k.subList(0, Math.min(most, k.size())));
     }
+    static List<Integer> towerKinds(Player p, boolean citadel) { return towerKinds(p, citadel, 2, MAX_TOWERS); }
+
+    /** Towers each shape can have: {least, most}. */
+    public static int[] towerRange(int shape) { return shape == FortressFx.LINE ? new int[]{2, 3} : shape == FortressFx.HORSESHOE ? new int[]{3, 5} : new int[]{2, MAX_TOWERS}; }
 
     static void siege(ServerPlayer p, boolean citadel) {
         endAll(p, false);
@@ -200,38 +210,63 @@ public final class FortressSiege {
         int life = citadel ? CITADEL_LIFE : SIEGE_LIFE;
         o.siegeUntil = sl.getGameTime() + life;
         o.citadel = citadel;
+        int shape = citadel ? FortressFx.RING : FortressFx.shape(p);
+        o.shape = shape;
         int cx = (int) Math.floor(p.getX()), cz = (int) Math.floor(p.getZ()), y = (int) Math.floor(p.getY());
         o.centre = new Vec3(cx + 0.5, p.getY(), cz + 0.5);
         int R = halfWidth(p);
+        o.half = shape == FortressFx.LINE ? 6 : R;
         Vec3 look = FxUtil.flat(p.getLookAngle());
-        // the gate's side: the one you face (0 +z, 1 -z, 2 +x, 3 -x)
+        // the side you face (0 +z, 1 -z, 2 +x, 3 -x): the gate's side (a ring), the open side is behind you (a horseshoe)
         int gate = Math.abs(look.z) >= Math.abs(look.x) ? (look.z >= 0 ? 0 : 1) : (look.x >= 0 ? 2 : 3);
-        float hp = wallHp(p, citadel);
+        int back = gate ^ 1;
+        int fx = gate == 2 ? 1 : gate == 3 ? -1 : 0, fz = gate == 0 ? 1 : gate == 1 ? -1 : 0;   // forward
+        int sx = fz != 0 ? 1 : 0, sz = fx != 0 ? 1 : 0;                                             // across
+        float across = gate < 2 ? 0 : 90;
+        float hp = wallHp(p, citadel) * (shape == FortressFx.LINE ? 1.25f : 1f);
         int n = 0;
-        for (int k = -R + 1; k <= R - 1; k++) {
-            int[][] sides = {{cx + k, cz + R, 0}, {cx + k, cz - R, 1}, {cx + R, cz + k, 2}, {cx - R, cz + k, 3}};
-            for (int[] s : sides) {
-                boolean gap = s[2] == gate && Math.abs(k) <= 1;
-                if (gap) continue;
-                if (spawnWall(p, sl, s[0], y, s[1], FortressWall.WALL, hp, life, citadel, s[2] < 2 ? 0 : 90) != null) n++;
+        List<int[]> spots = new ArrayList<>();
+        Vec3 post = o.centre;
+        if (shape == FortressFx.LINE) {   // one long wall across your front; towers just behind its ends and behind you
+            int d = 4;
+            for (int k = -6; k <= 6; k++)
+                if (spawnWall(p, sl, cx + fx * d + sx * k, y, cz + fz * d + sz * k, FortressWall.WALL, hp, life, citadel, across) != null) n++;
+            spots.add(new int[]{cx + fx * (d - 2) + sx * 5, cz + fz * (d - 2) + sz * 5});
+            spots.add(new int[]{cx + fx * (d - 2) - sx * 5, cz + fz * (d - 2) - sz * 5});
+            spots.add(new int[]{cx - fx * 2, cz - fz * 2});
+            post = o.centre.add(fx * 1.5, 0, fz * 1.5);
+        } else {   // a square; a horseshoe leaves the back out and has no gate
+            boolean ring = shape == FortressFx.RING;
+            for (int k = -R + 1; k <= R - 1; k++) {
+                int[][] sides = {{cx + k, cz + R, 0}, {cx + k, cz - R, 1}, {cx + R, cz + k, 2}, {cx - R, cz + k, 3}};
+                for (int[] s : sides) {
+                    if (!ring && s[2] == back) continue;
+                    if (ring && s[2] == gate && Math.abs(k) <= 1) continue;
+                    if (spawnWall(p, sl, s[0], y, s[1], FortressWall.WALL, hp, life, citadel, s[2] < 2 ? 0 : 90) != null) n++;
+                }
             }
+            if (ring) {   // the gatehouse arch in the gap
+                int gx = cx + fx * R, gz = cz + fz * R;
+                spawnWall(p, sl, gx, y, gz, FortressWall.GATE, hp, life, citadel, across);
+                o.gate = new Vec3(gx + 0.5, p.getY(), gz + 0.5);
+                o.gateIn = o.gate.add(-fx * 2.5, 0, -fz * 2.5);
+            }
+            int[][] front = {{cx + fx * R + sx * R, cz + fz * R + sz * R}, {cx + fx * R - sx * R, cz + fz * R - sz * R}};
+            int[][] rear = {{cx - fx * R + sx * R, cz - fz * R + sz * R}, {cx - fx * R - sx * R, cz - fz * R - sz * R}};
+            int[][] flank = {{cx + sx * R, cz + sz * R}, {cx - sx * R, cz - sz * R}};
+            for (int[][] grp : ring ? new int[][][]{front, rear, flank} : new int[][][]{front, flank, rear}) for (int[] q : grp) spots.add(q);
         }
-        // the gatehouse arch in the gap
-        int gx = gate == 2 ? cx + R : gate == 3 ? cx - R : cx, gz = gate == 0 ? cz + R : gate == 1 ? cz - R : cz;
-        spawnWall(p, sl, gx, y, gz, FortressWall.GATE, hp, life, citadel, gate < 2 ? 0 : 90);
-        // the towers: corners first, then the middle of the two flanks
-        List<Integer> kinds = towerKinds(p, citadel);
-        int[][] spots = {{cx + R, cz + R}, {cx - R, cz + R}, {cx + R, cz - R}, {cx - R, cz - R},
-                gate < 2 ? new int[]{cx + R, cz} : new int[]{cx, cz + R}, gate < 2 ? new int[]{cx - R, cz} : new int[]{cx, cz - R}};
+        int[] tr = towerRange(shape);
+        List<Integer> kinds = towerKinds(p, citadel, tr[0], tr[1]);
         float range = 16 + (FortressFx.built(p, FortressFx.WATCHTOWER) ? 4 : 0);
-        for (int i = 0; i < kinds.size(); i++) spawnTower(p, sl, spots[i][0], y, spots[i][1], kinds.get(i), life, range, citadel);
-        // the garrison steps out to hold the middle
-        callGarrison(p, o.centre, life, cap(p));
+        for (int i = 0; i < kinds.size() && i < spots.size(); i++) spawnTower(p, sl, spots.get(i)[0], y, spots.get(i)[1], kinds.get(i), life, range, citadel);
+        // the garrison steps out to hold the middle (a line: just behind the wall)
+        callGarrison(p, post, life, cap(p));
         FortressFx.hint(p, FortressFx.HINT_SIEGE, "Siege! Walls and towers hold for " + life / 20 + " s - fight from the middle, leave by the gate");
         OverdriveFx.play(sl, p.position(), "fort_horn", 1.2f, citadel ? 0.8f : 1f);
         OverdriveFx.play(sl, p.position(), "fort_wall", 1.0f, 0.8f);
         FxSend.shake(sl, p.position(), citadel ? 0.8f : 0.45f, 14, R + 8);
-        FxSend.ring(sl, STONE, o.centre.add(0, 0.1, 0), 1, R + 1.5f, 0.2f, 14);
+        FxSend.ring(sl, STONE, o.centre.add(0, 0.1, 0), 1, (shape == FortressFx.LINE ? 6 : R) + 1.5f, 0.2f, 14);
         if (citadel) {
             FxSend.ring(sl, BRASS, o.centre.add(0, 0.2, 0), 1, R + 3f, 0.3f, 18);
             FortressSpells.citadelWave(p);
@@ -239,6 +274,7 @@ public final class FortressSiege {
             Adv.grant(p, "citadel");
         }
         if (n == 0) FortressFx.tell(p, "No ground here for walls");
+        FortressFx.hint(p, FortressFx.HINT_ORDERS, "Hold G for the garrison's orders, and to overcharge the tower you look at");
         FortressFx.sync(p, false);
     }
 
@@ -283,14 +319,18 @@ public final class FortressSiege {
         for (FortressWall w : o.walls) if (w.isAlive()) w.discard();
         for (FortressTower t : o.towers) if (t.isAlive()) t.discard();
         for (FortressDefender d : o.defenders) if (d.isAlive()) d.discard();
+        if (!quiet) FortressFx.sync(p, false);   // (quiet: the player is leaving)
     }
 
-    public static void wallGone(FortressWall w, boolean broken) {
+    public static void wallGone(FortressWall w, boolean broken) { wallGone(w, broken, broken); }
+    /** A wall is gone: broken (the rubble), and by a foe (a breach), or just timed out. */
+    public static void wallGone(FortressWall w, boolean broken, boolean byFoe) {
         Player p = w.ownerPlayer();
         if (p != null) { Out o = OUT.get(p.getUUID()); if (o != null) o.walls.remove(w); }
         if (broken && w.level() instanceof ServerLevel sl) {
             FxSend.box(sl, STONE, w.position().add(0, 0.6, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 0.35f, 0.35f, 0.35f, 8, 0, com.ironspellgrimoire.network.FxPacket.POP, 25, new Vec3(0, -0.08, 0), 8);
             OverdriveFx.play(sl, w.position(), "fort_crumble", 0.7f, 0.9f + ThreadLocalRandom.current().nextFloat() * 0.2f);
+            if (byFoe && p instanceof ServerPlayer sp && active(sp)) breach(sp, w);
         }
     }
 
@@ -319,17 +359,20 @@ public final class FortressSiege {
         ServerLevel sl = (ServerLevel) t.level();
         Vec3 top = t.position().add(0, t.kind() == FortressTower.BALLISTA ? 0.8 : t.kind() == FortressTower.BOLTS ? 1.8 : 3.4, 0);
         boolean sure = FortressFx.pair(p, FortressFx.indexOfPair(FortressFx.WATCHTOWER, FortressFx.OBSERVATORY));
+        Out o = OUT.get(p.getUUID());
+        Vec3 gap = o != null && o.breach != null && o.breachUntil > sl.getGameTime() && t.distanceToSqr(o.breach) < 12 * 12 ? o.breach : null;
         LivingEntity best = null; double bd = t.range * t.range;
         for (LivingEntity e : sl.getEntitiesOfClass(LivingEntity.class, t.getBoundingBox().inflate(t.range), e -> foe(p.getUUID(), p, e))) {
             if (!(e instanceof net.minecraft.world.entity.monster.Enemy) && e.getLastHurtByMob() == null && !FortressSpells.marked(e) && !(e instanceof Player)) continue;   // leave the peaceful alone
             double dd = e.distanceToSqr(top);
             boolean revealed = FortressSpells.marked(e) || FortressSpells.revealed(p, e);
             if (revealed) dd *= 0.25;   // marked or revealed foes first
+            if (gap != null && e.distanceToSqr(gap) < 4 * 4) dd *= 0.1;   // and whatever is coming through a breach before anything
             if (dd >= bd) continue;
             if (!(sure && revealed) && !seen(sl, top, FxUtil.mid(e))) continue;
             bd = dd; best = e;
         }
-        if (best == null) { t.reload = 5; return; }
+        if (best == null) { t.reload = t.overcharged() ? 3 : 5; return; }
         float m = FortressFx.mult(p, -1);
         Vec3 to = FxUtil.mid(best);
         t.setAim((float) Math.toDegrees(Math.atan2(-(to.x - t.getX()), to.z - t.getZ())));
@@ -371,6 +414,7 @@ public final class FortressSiege {
                     FortressSpells.trebuchet(p, to, 0.6f);
             }
         }
+        if (t.overcharged()) t.reload = Math.max(3, t.reload / 2);   // overcharged: twice as fast
     }
 
     static boolean seen(ServerLevel sl, Vec3 a, Vec3 b) {
@@ -414,13 +458,16 @@ public final class FortressSiege {
         return t == null ? type : t.getDescription().getString();
     }
 
+    /** Banners that can wait to be claimed: 6, one more per star. */
+    public static int maxBanners(Player p) { return MAX_BANNERS + FortressFx.stars(p); }
+
     /** A defeated hostile mob leaves a banner now and then (a boss always does): claim it in the Garrison tab. */
     static void maybeBanner(ServerPlayer p, LivingEntity t, boolean boss) {
         if (!boss && ThreadLocalRandom.current().nextFloat() >= 0.10f) return;
         String type = String.valueOf(ForgeRegistries.ENTITY_TYPES.getKey(t.getType()));
         if (boss) type = "minecraft:iron_golem";   // a boss's banner brings a brute you can field, not the boss
         ListTag b = banners(p);
-        if (b.size() >= MAX_BANNERS) b.remove(0);   // the oldest unclaimed banner is lost
+        if (b.size() >= maxBanners(p)) b.remove(0);   // the oldest unclaimed banner is lost
         b.add(net.minecraft.nbt.StringTag.valueOf(type));
         FortressFx.say(p, "A banner from the " + typeName(type) + " - claim it in the Garrison tab.");
         FortressFx.hint(p, FortressFx.HINT_BANNER, "You found a banner - open The Fortress, Garrison tab, to claim it");
@@ -500,6 +547,7 @@ public final class FortressSiege {
         if (o.defenders.size() >= MAX_DEFENDERS) return null;
         FortressDefender d = AddonEntities.FORTRESS_DEFENDER.get().create(sl);
         if (d == null) return null;
+        if (FortressFx.built(p, FortressFx.THRONE)) rank = Math.min(RANK.length - 1, rank + 1);   // the Throne Room: one rank higher
         float base = role == FortressDefender.BRUTE ? 60 : role == FortressDefender.SENTRY ? 30 : role == FortressDefender.FOOTMAN ? 30 : 22;
         float dmg = role == FortressDefender.BRUTE ? 8 : role == FortressDefender.SENTRY ? 5 : role == FortressDefender.FOOTMAN ? 5 : 4;
         float m = FortressFx.mult(p, -1) * (FortressFx.built(p, FortressFx.TRAINING) ? 1.1f : 1f);
@@ -580,6 +628,202 @@ public final class FortressSiege {
         }
     }
 
+    // ================================================================== orders, overcharge, breaches
+    public static final int FREE = 0, HOLD = 1, CHARGE = 2, FALL_BACK = 3;
+    public static final String[] ORDER = {"Free", "Hold the Gate", "Charge", "Fall Back"};
+    static final UUID CHARGE_SPEED = UUID.fromString("a7c1f001-0b3e-4c2a-9a01-5f0e1d2c0020");
+    public static final int OVER_TICKS = 100, OVER_REST = 400, OVER_MANA = 30, BREACH_TICKS = 200;
+
+    /** The garrison's order (the G wheel): Hold the Gate, Charge, Fall Back; the same order again (or FREE) lets them fight as they like. */
+    static void order(ServerPlayer p, int ord) {
+        if (ord < FREE || ord > FALL_BACK || !FortressFx.equipped(p)) return;
+        List<FortressDefender> ds = defendersOut(p);
+        if (ds.isEmpty()) { FortressFx.tell(p, "No defenders are out - cast Siege Mode or Call Guard first"); return; }
+        Out o = out(p);
+        if (ord == o.order && ord != CHARGE) ord = FREE;
+        LivingEntity target = null;
+        if (ord == CHARGE) {
+            target = strongestFoe(p, 24);
+            if (target == null) { FortressFx.tell(p, "No foe to charge"); return; }
+        }
+        setOrder(p, o, ord, target);
+        ServerLevel sl = p.serverLevel();
+        OverdriveFx.play(sl, p.position(), ord == HOLD ? "fort_hold" : ord == CHARGE ? "fort_charge" : ord == FALL_BACK ? "fort_fallback" : "fort_page", 1.0f, 1.0f);
+        for (FortressDefender d : ds) FxSend.ring(sl, ord == CHARGE ? Fx.CRIMSON : BRASS, d.position().add(0, 0.1, 0), 0.2f, 0.9f, 0.08f, 8);
+        if (target != null) FxSend.ring(sl, Fx.CRIMSON, target.position().add(0, 0.05, 0), 0.6f, 1.3f, 0.06f, 20);
+        FortressFx.tell(p, ord == HOLD ? (o.gate != null ? "Hold the Gate: your defenders stand at the gate" : "Hold: your defenders stand their ground") + " and won't chase"
+                : ord == CHARGE ? "Charge! Your defenders go for the " + target.getDisplayName().getString()
+                : ord == FALL_BACK ? "Fall Back: your defenders run to you and guard you" : "Your defenders fight as they see fit");
+        FortressFx.sync(p, false);
+    }
+
+    static void setOrder(ServerPlayer p, Out o, int ord, LivingEntity target) {
+        o.order = ord;
+        o.chargeTarget = target;
+        for (FortressDefender d : defendersOut(p)) {
+            var speed = d.getAttribute(Attributes.MOVEMENT_SPEED);
+            if (speed != null) {
+                speed.removeModifier(CHARGE_SPEED);
+                if (ord == CHARGE) speed.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(CHARGE_SPEED, "Charge", 0.2, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL));
+            }
+            if (ord == CHARGE) { d.focus = target; d.setTarget(target); }
+            else {
+                if (d.focus != null && d.focus == o.chargeTarget) d.focus = null;
+                if (d.getTarget() != null && !mayChase(d, d.getTarget())) d.setTarget(null);
+                if (ord == FALL_BACK) d.getNavigation().stop();
+            }
+        }
+    }
+
+    /** The foe with the most health within r of the player. */
+    static LivingEntity strongestFoe(ServerPlayer p, double r) {
+        LivingEntity best = null;
+        for (LivingEntity t : Kit.near(p.serverLevel(), p, p.position(), r)) {
+            if (!(t instanceof net.minecraft.world.entity.monster.Enemy) && !(t instanceof Player)) continue;
+            if (!foe(p.getUUID(), p, t)) continue;
+            if (best == null || t.getHealth() > best.getHealth()) best = t;
+        }
+        return best;
+    }
+
+    static Out outOf(FortressDefender d) { UUID u = d.ownerUUID(); return u == null ? null : OUT.get(u); }
+    public static int orderOf(FortressDefender d) { Out o = outOf(d); return o == null ? FREE : o.order; }
+    public static LivingEntity chargeTarget(FortressDefender d) {
+        Out o = outOf(d);
+        return o != null && o.order == CHARGE && o.chargeTarget != null && o.chargeTarget.isAlive() ? o.chargeTarget : null;
+    }
+
+    /** Where an order sends a defender when it has nothing to fight (null: its own post). */
+    public static Vec3 orderHome(FortressDefender d) {
+        Out o = outOf(d);
+        if (o == null) return null;
+        if (o.order == FALL_BACK) { Player p = d.owner(); return p == null ? null : p.position(); }
+        if (o.order == HOLD) {
+            if (o.breach != null && o.breachUntil > d.level().getGameTime()) return o.breach;   // fill the gap
+            if (o.gateIn != null && !d.ranged()) return o.gateIn;   // footmen and brutes at the gate; archers and mystics stay put
+        }
+        return null;
+    }
+
+    /** May this defender go after t under its order? Hold: only near where it holds. Fall Back: only near its master. */
+    public static boolean mayChase(FortressDefender d, LivingEntity t) {
+        Out o = outOf(d);
+        if (o == null || t == null) return true;
+        if (o.order == FALL_BACK) { Player p = d.owner(); return p == null || t.distanceToSqr(p) < 6 * 6; }
+        if (o.order == HOLD) {
+            Vec3 h = orderHome(d);
+            if (h == null) h = d.post != null ? d.post : d.position();
+            return t.distanceToSqr(h) < 7 * 7;
+        }
+        return true;
+    }
+
+    /** Overcharge the tower you look at: 30 mana, twice as fast for 5 s, then 20 s before it can again. */
+    static void overcharge(ServerPlayer p) {
+        if (!FortressFx.equipped(p)) return;
+        Out o = OUT.get(p.getUUID());
+        if (o != null) o.towers.removeIf(e -> !e.isAlive());
+        if (o == null || o.towers.isEmpty()) { FortressFx.tell(p, "No towers stand - cast Siege Mode (or the Workshop's Ballista) first"); return; }
+        Vec3 eye = p.getEyePosition(), dir = p.getLookAngle();
+        FortressTower best = null; double bd = Double.MAX_VALUE;
+        for (FortressTower t : o.towers) {
+            Vec3 c = t.position().add(0, t.getBbHeight() * 0.5, 0), to = c.subtract(eye);
+            double along = to.dot(dir);
+            if (along <= 0 || along > 48) continue;
+            double off = to.subtract(dir.scale(along)).length();
+            if (off > 1.2 + t.getBbHeight() * 0.5) continue;
+            double score = off / along;
+            if (score < bd) { bd = score; best = t; }
+        }
+        if (best == null) { FortressFx.tell(p, "Look at one of your towers to overcharge it"); return; }
+        long now = p.level().getGameTime();
+        if (best.overReady > now && !p.isCreative()) { FortressFx.tell(p, "That tower can overcharge again in " + (int) Math.ceil((best.overReady - now) / 20.0) + " s"); return; }
+        var md = io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p);
+        if (!p.isCreative() && md.getMana() < OVER_MANA) { FortressFx.tell(p, "Not enough mana (" + OVER_MANA + ")"); return; }
+        if (!p.isCreative()) md.setMana(md.getMana() - OVER_MANA);
+        best.overUntil = now + OVER_TICKS;
+        best.overReady = now + OVER_TICKS + OVER_REST;
+        best.setOver(true);
+        best.reload = Math.min(best.reload, 2);
+        ServerLevel sl = p.serverLevel();
+        Vec3 c = best.position();
+        FxSend.ring(sl, BRASS, c.add(0, 0.1, 0), 0.4f, 2.2f, 0.15f, 12);
+        FxSend.beam(sl, BRASS, eye.add(dir.scale(0.8)).add(0, -0.4, 0), c.add(0, best.getBbHeight() * 0.8, 0), 0.05f, 6);
+        OverdriveFx.play(sl, c, "fort_hum", 1.0f, 1.0f);
+        final FortressTower tw = best;
+        AstaFx.later(50, () -> { if (tw.isAlive() && tw.overcharged()) OverdriveFx.play(sl, tw.position(), "fort_hum", 0.9f, 1.1f); });
+        FortressFx.tell(p, "Overcharged: that tower fires twice as fast for 5 s");
+    }
+
+    /** An overcharged tower's brass glow: a ring climbing it now and then. */
+    public static void towerGlow(FortressTower t) {
+        if (!(t.level() instanceof ServerLevel sl)) return;
+        float h = t.kind() == FortressTower.BALLISTA ? 1.0f : t.getBbHeight();
+        FxSend.ring(sl, BRASS, t.position().add(0, (t.tickCount / 8 % 4) * h / 4 + 0.2, 0), 0.7f, 1.0f, 0.06f, 8);
+    }
+
+    /** An enemy broke a wall: a breach for 10 s - towers near it shoot through it first, defenders holding move to fill it. */
+    static void breach(ServerPlayer p, FortressWall w) {
+        Out o = OUT.get(p.getUUID());
+        if (o == null || o.centre == null) return;
+        long now = p.level().getGameTime();
+        boolean fresh = o.breach == null || o.breachUntil <= now || o.breach.distanceToSqr(w.position()) > 9;
+        o.breach = w.position();
+        o.breachUntil = now + BREACH_TICKS;
+        double dx = w.getX() - o.centre.x, dz = w.getZ() - o.centre.z;
+        o.breachSide = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? "east" : "west") : (dz > 0 ? "south" : "north");
+        if (!fresh) return;
+        OverdriveFx.play(p.serverLevel(), p.position(), "fort_alarm", 1.0f, 1.0f);
+        FxSend.ring(p.serverLevel(), Fx.CRIMSON, w.position().add(0, 0.1, 0), 0.4f, 3f, 0.1f, 20);
+        FortressFx.hint(p, FortressFx.HINT_BREACH, "Breach! Your towers shoot through the gap first; Hold the Gate sends defenders to fill it");
+        FortressFx.sync(p, false);
+    }
+
+    /** What the client needs about what's out: the siege's spot and shape, the order, a breach. */
+    static void syncInto(Player p, CompoundTag out) {
+        Out o = OUT.get(p.getUUID());
+        long now = p.level().getGameTime();
+        if (o == null) { out.putInt("order", FREE); out.putInt("defOut", 0); return; }
+        if (o.siegeUntil > now && o.centre != null) {
+            out.putLong("siegeUntil", o.siegeUntil);
+            out.putDouble("fcx", o.centre.x); out.putDouble("fcy", o.centre.y); out.putDouble("fcz", o.centre.z);
+            out.putInt("fhw", o.half);
+            out.putInt("fshape", o.shape);
+        }
+        out.putInt("order", o.order);
+        o.defenders.removeIf(d -> !d.isAlive());
+        out.putInt("defOut", o.defenders.size());
+        if (o.breach != null && o.breachUntil > now) { out.putLong("breachUntil", o.breachUntil); out.putString("breachSide", o.breachSide); }
+    }
+
+    /** Once a second per player (FortressFx.onTick): a charge that's over, a breach that closed, the prestige rooms' passives. */
+    static void tick(ServerPlayer p) {
+        Out o = OUT.get(p.getUUID());
+        if (o == null) return;
+        long now = p.level().getGameTime();
+        if (o.order == CHARGE && (o.chargeTarget == null || !o.chargeTarget.isAlive() || o.chargeTarget.distanceToSqr(p) > 40 * 40)) {
+            setOrder(p, o, FREE, null);
+            if (!defendersOut(p).isEmpty()) FortressFx.tell(p, "The charge is over - your defenders return");
+            FortressFx.sync(p, false);
+        }
+        if (o.order != FREE && defendersOut(p).isEmpty()) { o.order = FREE; FortressFx.sync(p, false); }
+        if (o.breach != null && o.breachUntil <= now && o.breachUntil > now - 20) FortressFx.sync(p, false);
+        if (o.siegeUntil <= now || o.centre == null) return;
+        ServerLevel sl = p.serverLevel();
+        if (o.gate != null && FortressFx.built(p, FortressFx.HERALD)) {   // Herald's Gate: foes round the walls drift toward the gate
+            double r = o.half + 8;
+            for (LivingEntity t : Kit.near(sl, p, o.centre, r)) {
+                if (!(t instanceof net.minecraft.world.entity.monster.Enemy)) continue;
+                double ex = Math.abs(t.getX() - o.centre.x), ez = Math.abs(t.getZ() - o.centre.z);
+                if (Math.max(ex, ez) < o.half + 0.5) continue;   // already inside
+                Vec3 to = o.gate.subtract(t.position());
+                if (to.horizontalDistanceSqr() > 4) Kit.push(t, to, 0.18, 0.0);
+            }
+        }
+        if (FortressFx.built(p, FortressFx.MAP_ROOM) && (now / 20) % 2 == 0)   // the Map Room: everything near shows through walls
+            FortressSpells.reveal(p, 32, 50, 24);
+    }
+
     // ================================================================== test hooks
     public static void testBanner(ServerPlayer p, String type) { banners(p).add(net.minecraft.nbt.StringTag.valueOf(type)); }
     public static int testWalls(ServerPlayer p) { Out o = OUT.get(p.getUUID()); return o == null ? 0 : (int) o.walls.stream().filter(Entity::isAlive).count(); }
@@ -587,6 +831,14 @@ public final class FortressSiege {
     public static int testDefenders(ServerPlayer p) { return defendersOut(p).size(); }
     public static int testGarrison(ServerPlayer p) { return garrison(p).size(); }
     public static List<FortressWall> testWallList(ServerPlayer p) { Out o = OUT.get(p.getUUID()); return o == null ? List.of() : new ArrayList<>(o.walls); }
+    public static List<FortressTower> testTowerList(ServerPlayer p) { Out o = OUT.get(p.getUUID()); return o == null ? List.of() : new ArrayList<>(o.towers); }
+    public static List<FortressDefender> testDefenderList(ServerPlayer p) { return defendersOut(p); }
+    public static int testOrder(ServerPlayer p) { Out o = OUT.get(p.getUUID()); return o == null ? FREE : o.order; }
+    public static void testOrderAt(ServerPlayer p, int ord, LivingEntity t) { Out o = out(p); setOrder(p, o, ord, t); }
+    public static Vec3 testBreach(ServerPlayer p) { Out o = OUT.get(p.getUUID()); return o == null || o.breachUntil <= p.level().getGameTime() ? null : o.breach; }
+    public static Vec3 testGate(ServerPlayer p) { Out o = OUT.get(p.getUUID()); return o == null ? null : o.gate; }
+    public static void testOvercharge(ServerPlayer p) { overcharge(p); }
+    public static void testOrder(ServerPlayer p, int ord) { order(p, ord); }
     public static void testKills(ServerPlayer p, int id, int kills) {
         ListTag g = garrison(p);
         for (int i = 0; i < g.size(); i++) if (g.getCompound(i).getInt("id") == id) g.getCompound(i).putInt("kills", kills);

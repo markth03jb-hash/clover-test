@@ -19,7 +19,7 @@ import java.util.List;
  *               upgrade or move it; rooms that pair are joined by a brass bar, and where a room would pair lights up
  *   Garrison    banners to claim, your defenders (role, rank, kills), where each is posted
  *   Spells      the four Room pages and the spells of every room you've built; Rampart, Siege Mode and the Citadel
- *   Guide       every system explained, and an encyclopedia of all 24 rooms
+ *   Guide       every system explained, and an encyclopedia of all 27 rooms
  * The first time it opens, a short walkthrough points at each part in turn (it can be skipped, and replayed from
  * the Guide).
  */
@@ -31,7 +31,10 @@ public class FortressScreen extends Screen {
     public static int startCell = -1;
     /** For the screenshots: the Guide's topic to open on. */
     public static int startTopic = 0;
-    private int tab, ticks, sel = -1, moving = -1, slotSel = 0, listScroll, guideTopic, guideRoom, guideScroll, tour = -1;
+    private int tab, ticks, sel = -1, moving = -1, slotSel = 0, listScroll, guideTopic, guideRoom, guideScroll, tour = -1, noteSel = -1, noteUntil;
+    private boolean confirmPrestige;
+    /** For the screenshots: open with the prestige question up. */
+    public static boolean startConfirm;
     private final List<int[]> hits = new ArrayList<>();   // {x0, y0, x1, y1, action, arg}
     static final String[] TABS = {"FLOOR PLAN", "GARRISON", "SPELLS", "GUIDE"};
     static final int BRASS = 0xFFE8B860, BRASS_D = 0xFF9A6A28, STONE_L = 0xFFC8C4BC, TEXT = 0xFFEDE6D8, DIM = 0xFF9A9286, EMBER = 0xFFFF9A40,
@@ -44,6 +47,7 @@ public class FortressScreen extends Screen {
         sel = startCell;
         guideTopic = Mth.clamp(startTopic, 0, TOPICS.length - 1);
         tour = startTour >= 0 ? startTour : FortressClient.toured() ? -1 : 0;
+        confirmPrestige = startConfirm;
     }
 
     @Override public boolean isPauseScreen() { return false; }
@@ -89,12 +93,75 @@ public class FortressScreen extends Screen {
             g.drawCenteredString(font, s, x0 + W / 2, y0 + H - 12, BAD);
         }
         if (tour >= 0) { tourOverlay(g, x0, y0, W, H, mx, my); return; }   // the walkthrough shows only what it points at
+        if (confirmPrestige) { prestigeOverlay(g, x0, y0, W, H, mx, my); return; }   // the question shows on its own
         switch (tab) {
             case 0 -> floorPlan(g, x0, top, W, H - 40, mx, my);
             case 1 -> garrison(g, x0, top, W, H - 40, mx, my);
             case 2 -> spells(g, x0, top, W, H - 40, mx, my);
             default -> guide(g, x0, top, W, H - 40, mx, my);
         }
+    }
+
+    // ================================================================== Prestige
+    private void prestigeOverlay(GuiGraphics g, int x0, int y0, int W, int H, int mx, int my) {
+        hits.clear();
+        int st = FortressClient.stars() + 1;
+        int bw = Math.min(330, W - 30), bh = Math.min(176, H - 50), bx = x0 + (W - bw) / 2, by = y0 + 40 + (H - 40 - bh) / 2;
+        g.fill(bx, by, bx + bw, by + bh, 0xF01E1812);
+        g.renderOutline(bx, by, bw, bh, BRASS);
+        g.drawString(font, "REBUILD THE FORTRESS?", bx + 8, by + 7, BRASS, false);
+        String sr = "Star " + st + " / " + FortressFx.MAX_STARS;
+        g.drawString(font, sr, bx + bw - 8 - font.width(sr), by + 7, STONE_L, false);
+        int y = by + 21, iw = bw - 16, maxY = by + bh - 20;
+        y = text(g, "You keep: your garrison, banners, blueprints and Stone.", bx + 8, y, iw, GOOD, maxY);
+        y = text(g, "You lose: the book level (back to 1), every room on the plan and the Room pages - you build again from a 3x3 plan.", bx + 8, y + 2, iw, BAD, maxY);
+        String gain = "You gain: towers, walls and defenders " + (5 * st) + "% stronger, " + (FortressSiege.MAX_BANNERS + st) + " banners can wait";
+        for (int i = 0; i < FortressFx.STAR_ROOM.length; i++) if (FortressFx.STAR_ROOM[i] == st) gain += ", and a new room: the " + FortressFx.ROOM[FortressFx.BASE_ROOMS + i].name();
+        text(g, gain + ".", bx + 8, y + 2, iw, BRASS, maxY);
+        button(g, bx + 8, by + bh - 17, 90, "Rebuild", true, mx, my, 21, 0);
+        button(g, bx + bw - 98, by + bh - 17, 90, "Cancel", true, mx, my, 22, 0);
+    }
+
+    // ================================================================== Builder's notes
+    /** A suggestion for the plan and the cells it's about. */
+    record Note(String text, int[] cells) {}
+
+    /** Up to three things worth doing with the plan you have, worked out from what you've built and unlocked. */
+    static List<Note> notes() {
+        List<Note> out = new ArrayList<>();
+        int n = FortressClient.gridSize();
+        int[] grid = FortressClient.grid();
+        for (FortressFx.Pair pr : FortressFx.PAIRS) {   // both built, not side by side: a free bonus by moving one
+            if (out.size() >= 3) break;
+            int a = FortressClient.cellOf(pr.a()), b = FortressClient.cellOf(pr.b());
+            if (a >= 0 && b >= 0 && !FortressClient.paired(pr.a(), pr.b()))
+                out.add(new Note("Move the " + FortressFx.ROOM[pr.a()].name() + " beside the " + FortressFx.ROOM[pr.b()].name() + ": " + pr.gives(), new int[]{a, b}));
+        }
+        for (FortressFx.Pair pr : FortressFx.PAIRS) {   // one built, its partner ready to build, room beside it
+            if (out.size() >= 3) break;
+            for (int[] ab : new int[][]{{pr.a(), pr.b()}, {pr.b(), pr.a()}}) {
+                int have = FortressClient.cellOf(ab[0]);
+                if (have < 0 || FortressClient.roomLevel(ab[1]) > 0 || !FortressClient.unlocked(ab[1])) continue;
+                List<Integer> free = new ArrayList<>();
+                for (int d : new int[]{-5, 5, -1, 1}) {
+                    int c = have + d;
+                    if (c < 0 || c >= 25 || (d == -1 || d == 1) && c / 5 != have / 5 || c % 5 >= n || c / 5 >= n || grid[c] >= 0) continue;
+                    free.add(c);
+                }
+                if (free.isEmpty()) continue;
+                out.add(new Note("Build the " + FortressFx.ROOM[ab[1]].name() + " beside the " + FortressFx.ROOM[ab[0]].name() + ": " + pr.gives(), free.stream().mapToInt(Integer::intValue).toArray()));
+                break;
+            }
+        }
+        int towers = 0;
+        for (int r : new int[]{FortressFx.WATCHTOWER, FortressFx.ARCANUM, FortressFx.FORGE, FortressFx.WORKSHOP}) if (FortressClient.roomLevel(r) > 0) towers++;
+        if (out.size() < 3 && towers == 0 && FortressClient.builtCount() >= 2)
+            out.add(new Note("Build a tower room (Watchtower, Arcanum, Forge or Workshop): each adds a tower to Siege Mode", new int[0]));
+        int gl = FortressClient.roomLevel(FortressFx.GATEHOUSE);
+        if (out.size() < 3 && FortressClient.level() >= 3 && gl < 2)
+            out.add(new Note(gl == 0 ? "Build the Gatehouse: your siege walls fall fast without it" : "Upgrade the Gatehouse: +20% wall toughness a level",
+                    gl == 0 ? new int[0] : new int[]{FortressClient.cellOf(FortressFx.GATEHOUSE)}));
+        return out;
     }
 
     static boolean in(double mx, double my, int x, int y, int w, int h) { return mx >= x && mx < x + w && my >= y && my < y + h; }
@@ -148,6 +215,7 @@ public class FortressScreen extends Screen {
 
     // ================================================================== Floor Plan
     static final int CELL = 30, GAP = 3;
+    private int[] noteCells;
 
     int cellX(int gx, int c) { return gx + (c % 5) * (CELL + GAP); }
     int cellY(int gy, int c) { return gy + (c / 5) * (CELL + GAP); }
@@ -194,6 +262,11 @@ public class FortressScreen extends Screen {
             }
             int edge = picked ? BRASS : hov ? 0xFFB0A890 : 0x60605848;
             g.renderOutline(cx, cy, CELL, CELL, edge);
+            if (noteSel >= 0 && ticks < noteUntil && noteCells != null) for (int nc : noteCells) if (nc == c) {   // a note points here
+                int a = (int) (0xA0 + 0x5F * Mth.sin(ticks * 0.35F));
+                g.renderOutline(cx - 1, cy - 1, CELL + 2, CELL + 2, a << 24 | 0xE8B860);
+                g.renderOutline(cx + 1, cy + 1, CELL - 2, CELL - 2, a << 24 | 0xE8B860);
+            }
             hits.add(new int[]{cx, cy, cx + CELL, cy + CELL, 1, c});
         }
         // the brass bars between rooms that pair
@@ -220,13 +293,31 @@ public class FortressScreen extends Screen {
             iy += 4;
             int pairs = 0; for (FortressFx.Pair pr : FortressFx.PAIRS) if (FortressClient.paired(pr.a(), pr.b())) pairs++;
             int open = 0; for (int r = 0; r < FortressFx.ROOMS; r++) if (FortressClient.unlocked(r)) open++;
-            iy = line(g, "Rooms built", FortressClient.builtCount() + " / 24", ix, iy, iw, maxY);
-            iy = line(g, "Blueprints", open + " / 24", ix, iy, iw, maxY);
+            iy = line(g, "Rooms built", FortressClient.builtCount() + " / " + Math.min(25, n * n), ix, iy, iw, maxY);
+            iy = line(g, "Rooms open", open + " / " + FortressFx.ROOMS, ix, iy, iw, maxY);
             iy = line(g, "Neighbours", pairs + " / " + FortressFx.PAIRS.length, ix, iy, iw, maxY);
             iy = line(g, "Floor plan", n + " x " + n + (n < 5 ? "  (grows at Lv " + (n == 3 ? 4 : 8) + ")" : ""), ix, iy, iw, maxY);
-            iy += 6;
+            if (FortressClient.stars() > 0) iy = line(g, "Stars", FortressClient.stars() + " / " + FortressFx.MAX_STARS + "  (+" + 5 * FortressClient.stars() + "%)", ix, iy, iw, maxY);
+            int bottom = FortressClient.prestigeOk() ? maxY - 18 : maxY;
+            iy += 4;
             g.drawString(font, "NEXT", ix, iy, BRASS, false);
-            text(g, FortressHud.goal(), ix, iy + 11, iw, TEXT, maxY);
+            iy = text(g, FortressHud.goal(), ix, iy + 11, iw, TEXT, bottom);
+            List<Note> notes = notes();
+            if (!notes.isEmpty() && iy + 22 < bottom) {
+                iy += 4;
+                g.drawString(font, "NOTES", ix, iy, BRASS, false);
+                g.drawString(font, "click to see", ix + iw - font.width("click to see"), iy, DIM, false);
+                iy += 11;
+                for (int i = 0; i < notes.size() && iy + 9 < bottom; i++) {
+                    int y1 = iy;
+                    int h = Math.min(font.split(Component.literal("- " + notes.get(i).text()), iw).size(), (bottom - iy) / 10) * 10;
+                    boolean on = i == noteSel && ticks < noteUntil, hov = in(mx, my, ix, y1, iw, h);
+                    iy = text(g, "- " + notes.get(i).text(), ix, iy, iw, on || hov ? BRASS : TEXT, bottom);
+                    hits.add(new int[]{ix, y1, ix + iw, iy, 23, i});
+                    iy += 2;
+                }
+            }
+            if (FortressClient.prestigeOk()) button(g, ix, maxY - 16, iw, "Prestige: rebuild for star " + (FortressClient.stars() + 1), true, mx, my, 20, 0);
         } else if (grid[sel] < 0) {
             buildList(g, ix, iy, iw, maxY, mx, my);
         } else roomInfo(g, grid[sel] / 10, grid[sel] % 10, ix, iy, iw, maxY, mx, my);
@@ -273,7 +364,7 @@ public class FortressScreen extends Screen {
             y += rowH;
         }
         if (can.size() > rows) g.drawString(font, (listScroll + rows < can.size() ? "v " : "^ ") + "scroll for more", ix, maxY - 11, DIM, false);
-        else if (locked > 0) g.drawString(font, fit(locked + " more need a blueprint", iw), ix, maxY - 11, DIM, false);
+        else if (locked > 0) g.drawString(font, fit(locked + " more need a blueprint or a star", iw), ix, maxY - 11, DIM, false);
     }
 
     /** A built room chosen: what it does, its level, what it pairs with, upgrade and move. */
@@ -398,9 +489,13 @@ public class FortressScreen extends Screen {
         int yy = ly + 20;
         yy = always(g, "Rampart", -1, FortressFx.RAMPART_MANA, rx + 6, yy, rw - 12, true);
         yy = always(g, "Siege Mode", -2, FortressFx.SIEGE_MANA, rx + 6, yy, rw - 12, true);
+        button(g, rx + 6, yy - 4, rw - 12, "Shape: " + FortressFx.SHAPE[FortressClient.shape()], true, mx, my, 18, 0);
+        yy += 14;
         yy = always(g, "Citadel", -3, FortressFx.CITADEL_MANA, rx + 6, yy, rw - 12, FortressClient.citadelOk());
         if (!FortressClient.citadelOk()) yy = text(g, "The Citadel: book level 10 and the grimoire mastered.", rx + 6, yy + 2, rw - 12, DIM, ly + lh - 4);
-        if (FortressClient.siegeUp()) text(g, "A siege is up now.", rx + 6, yy + 4, rw - 12, GOOD, ly + lh - 4);
+        if (FortressClient.siegeUp()) text(g, "A siege is up now.", rx + 6, yy + 4, rw - 12, GOOD, ly + lh - 22);
+        int amb = Math.round(com.ironspellgrimoire.AddonClientConfig.fortressAmbience() * 100);
+        button(g, rx + 6, ly + lh - 18, rw - 12, "Ambience: " + (amb == 0 ? "off" : amb + "%"), true, mx, my, 19, 0);
     }
 
     private int always(GuiGraphics g, String name, int key, int mana, int x, int y, int w, boolean can) {
@@ -413,17 +508,18 @@ public class FortressScreen extends Screen {
     }
 
     // ================================================================== Guide
-    static final String[] TOPICS = {"Getting started", "Stone and levels", "Rooms", "Neighbours", "Room pages", "Siege Mode", "Garrison", "Blueprints", "The Citadel", "All 24 rooms"};
+    static final String[] TOPICS = {"Getting started", "Stone and levels", "Rooms", "Neighbours", "Room pages", "Siege Mode", "Siege shapes", "Garrison", "Orders (G)", "Blueprints", "The Citadel", "Prestige", "All 27 rooms"};
     static final String[][] GUIDE = {
         {"The Architect of Ruin keeps a fortress inside its pages. You build it room by room, and it fights for you.",
          "1. Defeat foes to earn Stone.", "2. Open The Fortress (its page in the book) and build a room on the Floor Plan.",
          "3. Each room gives a spell: put it on one of the four Room pages (Spells tab), then cast it from the book like any spell.",
          "4. Cast Siege Mode to raise walls and towers round you, with your garrison holding the middle.",
-         "The tracker at the top right always shows your next goal."},
+         "The tracker at the top right always shows your next goal. The Floor Plan's notes suggest what to build or move next.",
+         "In a siege, hold G for the garrison's orders."},
         {"Stone builds and upgrades rooms. Every foe you defeat gives some (bigger foes more, bosses 50+), rifts give 30 and the world boss 80. The Treasury adds a quarter, and its Tribute triples it for 30 s.",
          "Rooms cost 20 Stone to build, then 40, 80, 160 and 320 for levels 2 to 5. Moving a room is free.",
          "The book has its own level, 1 to 10, from the foes you defeat. Every level gives a blueprint, makes your spells 4% stronger and, at 4 and 8, grows the floor plan (3x3, then 4x4, then 5x5)."},
-        {"There are 24 rooms in four wings: Martial (red), Arcane (teal), Sacred (gold) and Works (orange).",
+        {"There are 24 rooms in four wings: Martial (red), Arcane (teal), Sacred (gold) and Works (orange), and three more that Prestige opens.",
          "Each room gives one spell and some give a passive while the book is worn (more damage, mana, armour...).",
          "A room's level (1-5) makes its spell 15% stronger each time. Click a room on the Floor Plan to see it, upgrade it or move it."},
         {"Rooms placed side by side - up, down, left or right, not corners - can pair for a neighbour bonus: the Forge beside the Armoury makes Blade Rack's weapons burn, the Barracks beside the Chapel heals your defenders, and so on.",
@@ -436,15 +532,31 @@ public class FortressScreen extends Screen {
          "Towers stand at the corners: two Watchtowers to begin with, and one for each tower room you build - Watchtower (arrows), Arcanum (beams), Forge (fire) and Workshop (bolts), two at room level 3. Six at most.",
          "Your garrison steps out to hold the middle. Walls block mobs and arrows and can be broken; the Gatehouse makes them tougher.",
          "You can never be shut in: a wall gives way if you're pushed into it, and everything goes when the siege ends, or if you leave, log out or take the book off.",
-         "Rampart, always on its page, raises five blocks of wall in front of you for 12 s."},
+         "Rampart, always on its page, raises five blocks of wall in front of you for 12 s.",
+         "Breaches: when an enemy breaks a wall, the gap is marked for 10 s (the tracker says which side). Towers near it shoot whatever comes through first."},
+        {"Siege Mode has three shapes. Pick one on the Spells tab, or sneak and cast Siege Mode to switch (that costs nothing and casts nothing). The Citadel is always a Ring.",
+         "Ring: walls all round you with a gate on the side you face; 2 to 6 towers. The safest, and Hold the Gate sends defenders to the gate.",
+         "Line: one long wall (13 blocks) across your front, 25% tougher, with 2 or 3 towers behind it. For holding a corridor or a bridge, or when foes come from one side.",
+         "Horseshoe: walls in front and at your sides, open behind you so you can always fall back; 3 to 5 towers."},
         {"Hostile mobs you defeat sometimes leave a banner (one in ten; bosses always). Claim it on the Garrison tab and that mob joins your garrison.",
          "Its role comes from what it was: Footman, Archer, Mystic or Brute. Defenders rank up with their kills: Veteran at 25, Knight at 75, Captain at 200.",
          "You can keep 4, plus one per Barracks level (8 at most). Post a defender in a room and that room's spell hits a little harder.",
          "Defenders only appear in Siege Mode or when a spell calls them (Call Guard, Drill Charge), so they never crowd you."},
+        {"Hold G while the Architect of Ruin is worn to open the orders wheel; point and let go.",
+         "Hold the Gate: defenders stand at the gate (or fill a breach) and won't chase. Archers and mystics keep their posts.",
+         "Charge: they rush the strongest foe within 24 blocks, 20% faster, and come back once it falls.",
+         "Fall Back: they run to you and only fight what comes close to you.",
+         "Choosing the order in force again lifts it, and they fight as they like. The tracker shows the order in force.",
+         "Overcharge: look at one of your towers - it fires twice as fast for 5 s, for 30 mana, then rests 20 s before it can again. It glows brass while overcharged."},
         {"Rooms 1-8 (Barracks to Library) are open from the start. The other 16 need a blueprint first.",
-         "You get a blueprint at every book level, from every boss you defeat, from the Cinder Sovereign, and half the time from a cleared rift. Each one opens a random room you don't have yet."},
+         "You get a blueprint at every book level, from every boss you defeat, from the Cinder Sovereign, and half the time from a cleared rift. Each one opens a random room you don't have yet.",
+         "Three more rooms - the Herald's Gate, Map Room and Throne Room - never come from blueprints: Prestige opens them."},
         {"At book level 10 with the grimoire mastered, the Citadel opens: a full fortress rises for 20 s - walls twice as tough, every tower, the whole garrison.",
          "Every room you've built fires its spell once, in a wave, at the foes nearest you; then the walls fall inward on whoever is beside them."},
+        {"At book level 10 with the grimoire mastered, the Prestige button appears on the Floor Plan: rebuild the fortress for a star (five at most).",
+         "You keep your garrison, banners, blueprints and Stone. The book level goes back to 1 and the plan and Room pages are cleared, so you build again from 3x3.",
+         "Each star makes towers, walls and defenders 5% stronger and lets one more banner wait to be claimed.",
+         "Stars 1, 3 and 5 open the prestige rooms: the Herald's Gate (Lure Horn; in a siege foes drift toward your gate), the Map Room (Survey; in a siege every foe near shows through walls) and the Throne Room (Royal Decree; defenders fight a rank higher)."},
         {},
     };
 
@@ -483,7 +595,7 @@ public class FortressScreen extends Screen {
             g.drawString(font, fit(FortressFx.ROOM[r].name(), cw - 2), cx, cy, on ? BRASS : FortressClient.unlocked(r) ? TEXT : DIM, false);
             hits.add(new int[]{cx, cy - 1, cx + cw, cy + 9, 13, r});
         }
-        int y = iy + 8 * 10 + 6;
+        int y = iy + ((FortressFx.ROOMS + cols - 1) / cols) * 10 + 6;
         FortressFx.Room r = FortressFx.ROOM[guideRoom];
         blitIcon(g, roomIcon(guideRoom), ix, y, 16);
         g.drawString(font, fit(r.name() + " - " + FortressFx.WING[r.wing()], iw - 20), ix + 20, y + 4, WING_COL[r.wing()], false);
@@ -491,7 +603,8 @@ public class FortressScreen extends Screen {
         y = text(g, r.spell() + ": " + r.does() + ".", ix, y, iw, TEXT, maxY);
         y = text(g, r.cd() / 20 + " s cooldown, " + r.mana() + " mana.", ix, y, iw, DIM, maxY);
         if (!r.passive().equals("-")) y = text(g, "Passive: " + r.passive(), ix, y, iw, DIM, maxY);
-        y = text(g, guideRoom < FortressFx.OPEN ? "Open from the start." : FortressClient.unlocked(guideRoom) ? "Blueprint found." : "Needs a blueprint.", ix, y, iw, DIM, maxY);
+        y = text(g, guideRoom < FortressFx.OPEN ? "Open from the start." : guideRoom >= FortressFx.BASE_ROOMS ? "Opens at star " + FortressFx.STAR_ROOM[guideRoom - FortressFx.BASE_ROOMS] + (FortressClient.unlocked(guideRoom) ? " - open." : " (Prestige).")
+                : FortressClient.unlocked(guideRoom) ? "Blueprint found." : "Needs a blueprint.", ix, y, iw, DIM, maxY);
         for (FortressFx.Pair pr : FortressFx.PAIRS) {
             int other = pr.a() == guideRoom ? pr.b() : pr.b() == guideRoom ? pr.a() : -1;
             if (other >= 0) y = text(g, "Beside the " + FortressFx.ROOM[other].name() + ": " + pr.gives(), ix, y, iw, GOOD, maxY);
@@ -504,7 +617,7 @@ public class FortressScreen extends Screen {
         {"The Floor Plan", "Your rooms go on this grid. Click an empty space, then pick a room to build. It costs Stone, which you earn by defeating foes."},
         {"Rooms and their spells", "Every room gives a spell. Built rooms fill the four Room pages of your book - change them on the Spells tab."},
         {"Neighbours", "Some rooms work together when placed side by side. Paired rooms are joined by a brass bar. The Guide lists every pair."},
-        {"Siege Mode", "Cast Siege Mode from the book to raise walls and towers round you. Defeated foes give Stone, banners for your garrison and blueprints for new rooms."},
+        {"Siege Mode", "Cast Siege Mode to raise walls and towers round you - hold G there to command your garrison. Defeated foes give Stone, banners and blueprints."},
         {"You're ready", "The tracker at the top right shows your next goal. The Guide tab explains everything, and can replay this tour."},
     };
 
@@ -588,6 +701,19 @@ public class FortressScreen extends Screen {
             case 15 -> { tour = -1; FortressClient.send(7, 0); FortressClient.tag.putBoolean("toured", true); }
             case 16 -> { tour = 0; tab = 0; }
             case 17 -> moving = -1;
+            case 18 -> FortressClient.send(10, (FortressClient.shape() + 1) % FortressFx.SHAPE.length);
+            case 19 -> {   // ambience: off, 25, 50, 75, 100%
+                float v = com.ironspellgrimoire.AddonClientConfig.fortressAmbience();
+                int k = Math.round(v * 4) + 1;
+                com.ironspellgrimoire.AddonClientConfig.setFortressAmbience(k > 4 ? 0 : k / 4f);
+            }
+            case 20 -> confirmPrestige = true;
+            case 21 -> { confirmPrestige = false; FortressClient.send(11, 0); sel = -1; }
+            case 22 -> confirmPrestige = false;
+            case 23 -> {
+                List<Note> ns = notes();
+                if (arg < ns.size()) { noteSel = arg; noteUntil = ticks + 80; noteCells = ns.get(arg).cells(); }
+            }
             default -> {}
         }
     }
@@ -603,6 +729,7 @@ public class FortressScreen extends Screen {
     @Override
     public boolean keyPressed(int key, int scan, int mods) {
         if (key == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE && moving >= 0) { moving = -1; return true; }
+        if (key == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE && confirmPrestige) { confirmPrestige = false; return true; }
         return super.keyPressed(key, scan, mods);
     }
 }

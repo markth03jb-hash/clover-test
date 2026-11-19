@@ -685,13 +685,24 @@ public final class UiShots {
         }
         steps.add(new Step("ar_menu_room", () -> { mc.setScreen(null); FortressScreen.startTab = 0; FortressScreen.startCell = 6; mc.setScreen(new FortressScreen()); }, 8, false));
         steps.add(new Step("ar_menu_build", () -> { mc.setScreen(null); FortressScreen.startTab = 0; FortressScreen.startCell = 13; mc.setScreen(new FortressScreen()); }, 8, false));
-        steps.add(new Step("ar_menu_rooms", () -> { mc.setScreen(null); FortressScreen.startTab = 3; FortressScreen.startCell = -1; FortressScreen.startTopic = 9; mc.setScreen(new FortressScreen()); }, 8, false));
+        steps.add(new Step("ar_menu_rooms", () -> { mc.setScreen(null); FortressScreen.startTab = 3; FortressScreen.startCell = -1; FortressScreen.startTopic = FortressScreen.TOPICS.length - 1; mc.setScreen(new FortressScreen()); }, 8, false));
+        for (int k : new int[]{6, 8, 11}) {   // the guide's shapes, orders and prestige pages
+            final int kk = k;
+            steps.add(new Step("ar_guide_" + k, () -> { mc.setScreen(null); FortressScreen.startTab = 3; FortressScreen.startTopic = kk; mc.setScreen(new FortressScreen()); }, 8, false));
+        }
+        steps.add(new Step("ar_menu_prestige", () -> { mc.setScreen(null); FortressScreen.startTab = 0; FortressScreen.startTopic = 0; FortressScreen.startConfirm = true; mc.setScreen(new FortressScreen()); }, 8, false));
+        steps.add(new Step("ar_menu_prestige_done", () -> { FortressScreen.startConfirm = false; mc.setScreen(null); }, 2, true));
         for (int k = 0; k < 6; k++) {
             final int kk = k;
             steps.add(new Step("ar_tour_" + k, () -> { mc.setScreen(null); FortressScreen.startTab = 0; FortressScreen.startTopic = 0; FortressScreen.startTour = kk; mc.setScreen(new FortressScreen()); }, 8, false));
         }
         steps.add(new Step("ar_siege", () -> { mc.setScreen(null); FortressScreen.startTour = -1; FortressScreen.startTab = -1; FortressScreen.startCell = -1; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "A:siege")); }, 40, true));
         steps.add(new Step("ar_siege_front", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 8, true));
+        steps.add(new Step("ar_wheel", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); FortressWheel.forceHover = 0; mc.setScreen(new FortressWheel()); }, 10, false));
+        steps.add(new Step("ar_wheel_overcharge", () -> FortressWheel.forceHover = 3, 4, false));
+        steps.add(new Step("ar_breach", () -> { mc.setScreen(null); FortressWheel.forceHover = -1; onServer(p -> UiShotsServer.element(p, "A:breach")); }, 8, true));
+        steps.add(new Step("ar_line", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "A:line")); }, 40, true));
+        steps.add(new Step("ar_horseshoe", () -> onServer(p -> UiShotsServer.element(p, "A:horseshoe")), 40, true));
         steps.add(new Step("ar_citadel", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "A:citadel")); }, 40, true));
         steps.add(new Step("ar_clear", () -> { TrackerMode.set(2); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "A:clear")); }, 8, true));
         steps.add(new Step("tw_setup", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "T:setup")); }, 30, true));
@@ -776,7 +787,7 @@ public final class UiShots {
         if (step.startsWith("book_")) return new Class<?>[]{GrimoireBookScreen.class};
         if (step.startsWith("board_")) return new Class<?>[]{BoardScreen.class, com.ironspellgrimoire.server.Boards.class};
         if (step.startsWith("hud_")) return new Class<?>[]{BountyHud.class, QuestHud.class, WorldBossHud.class, RiftMap.class, BroomHud.class, ModeHudOverlay.class, RaidBanner.class, TrackerMode.class};
-        if (step.startsWith("ar_")) return new Class<?>[]{FortressScreen.class, FortressHud.class, FortressClient.class, FortressRenderers.class, com.ironspellgrimoire.server.FortressFx.class, com.ironspellgrimoire.server.FortressSiege.class, com.ironspellgrimoire.server.FortressSpells.class};
+        if (step.startsWith("ar_")) return new Class<?>[]{FortressScreen.class, FortressWheel.class, FortressHud.class, FortressClient.class, FortressRenderers.class, com.ironspellgrimoire.server.FortressFx.class, com.ironspellgrimoire.server.FortressSiege.class, com.ironspellgrimoire.server.FortressSpells.class};
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
         Class<?>[] shared = {GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class, FxBase.class, GravityFxClient.class, FxBooks.class, FxBookAuras.class, GrimoireFloatRenderer.class};
         String[][] books = {{"grav_", "Gravity"}, {"snd_", "Sound"}, {"ink_", "Ink"}, {"err_", "Error"}, {"tre_", "Treasure"}, {"chn_", "Chain"}, {"hun_", "Hunter"},

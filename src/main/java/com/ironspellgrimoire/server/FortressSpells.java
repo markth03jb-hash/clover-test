@@ -37,7 +37,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static com.ironspellgrimoire.server.FortressFx.*;
 
 /**
- * The Architect of Ruin's 24 room spells (FortressFx.ROOM) and what they leave behind: burning patches, the Ward
+ * The Architect of Ruin's 27 room spells (FortressFx.ROOM; the last three are the prestige rooms) and what they leave behind: burning patches, the Ward
  * Sigil, the Quiet Grove, Battle Plan's mark, Foresight's sight, Mirror Ward and the Keepsake. Each spell is aimed at
  * a spot - where you look, or (the Citadel's wave) at the nearest foe - so the same code serves both.
  */
@@ -331,14 +331,7 @@ public final class FortressSpells {
                 OverdriveFx.play(sl, p.position(), "fort_horn", 0.5f, 1.8f);
             }
             case OBSERVATORY -> {   // Foresight: every foe near you shows through walls for 20 s, and takes 10% more from you
-                Map<UUID, Long> s = SEEN.computeIfAbsent(p.getUUID(), k -> new HashMap<>());
-                int n = 0;
-                for (LivingEntity t : Kit.near(sl, p, p.position().add(0, 1, 0), 24)) {
-                    if (!(t instanceof net.minecraft.world.entity.monster.Enemy) && !(t instanceof Player)) continue;
-                    s.put(t.getUUID(), now + 400);
-                    AstaFx.sendKiMark(p, t, 400, false);
-                    n++;
-                }
+                int n = reveal(p, 24, 400, 64);
                 FxSend.ring(sl, ARCANE, p.position().add(0, 0.1, 0), 1, 24, 0.1f, 16);
                 OverdriveFx.play(sl, p.position(), "fort_ley", 0.8f, 0.7f);
                 tell(p, n == 0 ? "Nothing stirs nearby" : n + " foe" + (n == 1 ? "" : "s") + " revealed");
@@ -480,9 +473,62 @@ public final class FortressSpells {
                 OverdriveFx.play(sl, p.position(), "fort_coins", 1.0f, 1.0f);
                 tell(p, "Tribute: three times the Stone for 30 s");
             }
+            case HERALD -> {   // Lure Horn: foes within 14 blocks are dragged toward the spot
+                Vec3 c0 = FortressSiege.floorAt(sl, (int) Math.floor(at.x), (int) Math.floor(at.y), (int) Math.floor(at.z));
+                final Vec3 c = c0 != null ? c0 : at;
+                int n = 0;
+                for (LivingEntity t : Kit.near(sl, p, p.position(), 14)) {
+                    if (!(t instanceof net.minecraft.world.entity.monster.Enemy) && !(t instanceof Player)) continue;
+                    if (!FortressSiege.foe(p.getUUID(), p, t)) continue;
+                    Vec3 to = c.subtract(t.position());
+                    if (to.horizontalDistanceSqr() < 2.25) continue;
+                    Kit.push(t, to, Math.min(1.5, 0.35 + to.horizontalDistance() * 0.12), 0.25);
+                    FxSend.trail(sl, BRASS, FxUtil.mid(t), c.add(0, 1, 0), 0.04f, 6);
+                    n++;
+                }
+                FxSend.ring(sl, BRASS, c.add(0, 0.05, 0), 0.4f, 2.5f, 0.1f, 16);
+                FxSend.ring(sl, BRASS, p.position().add(0, 0.1, 0), 1f, 14f, 0.08f, 12);
+                OverdriveFx.play(sl, p.position(), "fort_horn", 1.1f, 0.65f);
+                if (!wave) tell(p, n == 0 ? "Nothing near answers the horn" : n + " foe" + (n == 1 ? "" : "s") + " dragged in");
+            }
+            case MAP_ROOM -> {   // Survey: every foe within 32 blocks shows through walls for 15 s (and takes 10% more from you)
+                int n = reveal(p, 32, 300, 64);
+                FxSend.ring(sl, ARCANE, p.position().add(0, 0.1, 0), 1, 32, 0.08f, 18);
+                OverdriveFx.play(sl, p.position(), "fort_page", 1.0f, 0.6f);
+                if (!wave) tell(p, n == 0 ? "The map shows nothing near" : n + " foe" + (n == 1 ? "" : "s") + " on the map");
+            }
+            case THRONE -> {   // Royal Decree: defenders heal fully and hit 30% harder for 10 s
+                List<FortressDefender> ds = FortressSiege.defendersOut(p);
+                if (ds.isEmpty()) { tell(p, "No defenders are out to hear the decree"); return; }
+                for (FortressDefender d : ds) {
+                    d.setHealth(d.getMaxHealth());
+                    TimedModifiers.apply(d, Attributes.ATTACK_DAMAGE, DECREE, "Royal Decree", 0.3, AttributeModifier.Operation.MULTIPLY_TOTAL, 200);
+                    FxSend.ring(sl, BRASS, d.position().add(0, d.getBbHeight() + 0.3, 0), 0.15f, 0.5f, 0.05f, 200);
+                }
+                FxSend.ring(sl, BRASS, p.position().add(0, 0.1, 0), 0.5f, 6f, 0.12f, 14);
+                OverdriveFx.play(sl, p.position(), "fort_prestige", 0.8f, 1.2f);
+            }
             default -> {}
         }
         FortressFx.sync(p, false);
+    }
+
+    static final UUID DECREE = UUID.fromString("a7c1f001-0b3e-4c2a-9a01-5f0e1d2c0011");
+
+    /** Show the foes within r through walls for this long (and they take 10% more from you); at most max of them. */
+    static int reveal(ServerPlayer p, double r, int ticks, int max) {
+        Map<UUID, Long> s = SEEN.computeIfAbsent(p.getUUID(), k -> new HashMap<>());
+        long now = p.level().getGameTime();
+        int n = 0;
+        for (LivingEntity t : Kit.near(p.serverLevel(), p, p.position().add(0, 1, 0), r)) {
+            if (n >= max) break;
+            if (!(t instanceof net.minecraft.world.entity.monster.Enemy) && !(t instanceof Player)) continue;
+            Long had = s.get(t.getUUID());
+            s.put(t.getUUID(), Math.max(had == null ? 0 : had, now + ticks));
+            if (had == null || had < now + ticks - 20) AstaFx.sendKiMark(p, t, ticks, false);   // (a refresh only when it's about to lapse)
+            n++;
+        }
+        return n;
     }
 
     static final UUID RALLY = UUID.fromString("a7c1f001-0b3e-4c2a-9a01-5f0e1d2c0010");

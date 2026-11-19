@@ -49,6 +49,12 @@ ROOM_ICONS = {
     'workshop': (WK, [('m', 'l', 2, 12, 12, 4), ('m', 'l', 3, 12, 13, 4), ('a', 'r', 10, 2, 14, 6), ('m', 'E', 2, 9, 6, 13), ('d', 'E', 3, 10, 5, 12)]),
     'siege_yard': (WK, [('m', 'l', 2, 13, 12, 3), ('m', 'r', 1, 12, 7, 14), ('a', 'E', 10, 1, 14, 5), ('w', 'p', 11, 2)]),
     'cistern': (WK, [('a', 'a', 1, 4, 8, 11, 180, 360), ('a', 'a', 7, 4, 14, 11, 180, 360), ('m', 'a', 1, 7, 8, 14, 180, 360), ('m', 'a', 7, 7, 14, 14, 180, 360), ('w', 'p', 4, 6)]),
+    # the prestige rooms
+    'heralds_gate': (MA, [('m', 'r', 1, 5, 9, 14), ('d', 'r', 3, 8, 7, 14), ('m', 'r', 1, 3, 3, 5), ('m', 'r', 7, 3, 9, 5), ('a', 'g', [(9, 8), (13, 5), (14, 5), (14, 11), (13, 11)]), ('w', 'p', 14, 7), ('d', 'l', 10, 8, 12, 8)]),
+    'map_room': (AR, [('m', 'g', [(1, 3), (5, 2), (10, 3), (14, 2), (14, 13), (10, 14), (5, 13), (1, 14)]), ('d', 'l', 5, 2, 5, 13), ('d', 'l', 10, 3, 10, 14),
+                      ('a', 'p', 3, 11), ('a', 'p', 4, 9), ('a', 'p', 6, 8), ('a', 'p', 8, 7), ('w', 'l', 11, 5, 13, 7), ('w', 'l', 13, 5, 11, 7)]),
+    'throne_room': (SA, [('m', 'r', 4, 3, 11, 10), ('d', 'r', 6, 5, 9, 9), ('m', 'r', 3, 9, 12, 11), ('m', 'r', 3, 11, 5, 14), ('m', 'r', 10, 11, 12, 14),
+                         ('a', 'g', [(5, 3), (5, 0), (6, 2), (7, 0), (8, 2), (9, 0), (10, 2), (10, 3)]), ('w', 'p', 7, 1)]),
     'treasury': (WK, [('a', 'E', 2, 8, 7, 13), ('a', 'E', 8, 8, 13, 13), ('m', 'E', 5, 3, 10, 8), ('w', 'p', 7, 5), ('d', 'l', 4, 10, 5, 10), ('d', 'l', 10, 10, 11, 10)]),
 }
 for k, (pal, cmds) in ROOM_ICONS.items():
@@ -136,6 +142,7 @@ ADV = [
     ("every_blueprint", "fortress_level", "minecraft:map", "goal", "Master Plans", "Find every blueprint", True),
     ("every_room", "every_blueprint", "minecraft:lodestone", "challenge", "The Whole Fortress", "Build all 24 rooms", True),
     ("citadel", "every_room", "minecraft:beacon", "challenge", "Citadel", "Raise the Citadel", True),
+    ("prestige", "citadel", "minecraft:nether_star", "challenge", "Rebuilt Stronger", "Prestige your fortress for a star", True),
 ]
 LP = os.path.join(A_, 'lang/en_us.json')
 lang = json.load(open(LP))
@@ -155,14 +162,15 @@ lang['entity.iron_spell_grimoire.fortress_tower'] = 'Fortress Tower'
 lang['entity.iron_spell_grimoire.fortress_defender'] = 'Fortress Defender'
 lang['ui.iron_spell_grimoire.architect_grimoire_only'] = 'Only the Architect of Ruin Grimoire can cast this.'
 lang['tooltip.iron_spell_grimoire.architect_grimoire.passive'] = ('Passive - a fortress inside the book. Defeat foes for Stone, then open The Fortress page to build rooms on its '
-    'floor plan (3x3, growing to 5x5). Each of the 24 rooms gives a spell for one of the four Room pages, and many a passive; rooms side by side can pair '
-    'for a bonus. Siege Mode raises walls and towers round you while your garrison - mobs whose banners you claimed - holds the middle. Blueprints for new '
-    'rooms come from book levels, bosses and rifts. Open The Fortress for a guided tour.')
+    'floor plan (3x3, growing to 5x5). Each room gives a spell for one of the four Room pages, and many a passive; rooms side by side can pair '
+    'for a bonus. Siege Mode raises walls and towers round you - a Ring, a Line or a Horseshoe - while your garrison, mobs whose banners you claimed, '
+    'holds the middle; hold G to give them orders or overcharge a tower. Blueprints for new rooms come from book levels, bosses and rifts, and Prestige '
+    'rebuilds a finished fortress for a star. Open The Fortress for a guided tour.')
 lang['tooltip.iron_spell_grimoire.architect_grimoire.desc'] = 'Eight pages, one fortress, built stone by stone.'
 lang['tooltip.iron_spell_grimoire.architect_grimoire.lore'] = 'Every ruin was a fortress once.'
 for k, (title, guide) in {
  'fortress_rampart': ('Rampart', 'Five blocks of wall rise across your path, three blocks ahead, for 12 s. They block mobs and arrows and can be broken. 8 s cooldown, 30 mana.'),
- 'siege_mode': ('Siege Mode', 'A square of walls rises round you for 30 s (wider as the book levels up) with a gate on the side you face, towers at the corners and your garrison holding the middle. 3 min cooldown, 120 mana.'),
+ 'siege_mode': ('Siege Mode', 'Walls and towers rise round you for 30 s with your garrison holding the middle: a Ring (a gate on the side you face), a Line across your front or a Horseshoe open behind you. Sneak and cast to switch the shape. Hold G for the garrison\'s orders. 3 min cooldown, 120 mana.'),
  'fortress_room_1': ('Room I', 'Casts the room spell on your first Room page (choose it on the Spells tab of The Fortress).'),
  'fortress_room_2': ('Room II', 'Casts the room spell on your second Room page.'),
  'fortress_room_3': ('Room III', 'Casts the room spell on your third Room page.'),

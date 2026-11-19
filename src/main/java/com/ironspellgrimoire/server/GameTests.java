@@ -90,6 +90,7 @@ public final class GameTests {
     }
     static void archMove(ServerPlayer pl, int room) {
         archSetup(pl);
+        if (room >= FortressFx.BASE_ROOMS) FortressFx.testStars(pl, FortressFx.MAX_STARS);   // the prestige rooms open with stars
         FortressFx.handle(pl, 1, room * 100);
         FortressFx.castRoom(pl, room);
     }
@@ -776,6 +777,187 @@ public final class GameTests {
                     String ch = changes(before);
                     if (!ch.isEmpty()) bad.add("changed the world: " + ch);
                     if (bad.isEmpty()) pass(name, "built, paired, moved, upgraded, levelled, passives, garrison, siege, walls, keepsake, sigil, cleared");
+                    else fail(name, String.join("; ", bad));
+                    FortressFx.testReset(p);
+                    FortressSpells.testClear();
+                    return true;
+                }
+            } catch (Throwable x) { fail(name, "threw " + x); FortressFx.testReset(p); return true; }
+            return false;
+        }
+    }
+
+    /** The Architect of Ruin's siege shapes, the garrison's orders, overcharging a tower, breaches, prestige and the
+     *  prestige rooms - and nothing changed in the world. */
+    private static final class ArchitectCommandTest extends Test {
+        ArchitectCommandTest() { super("architect: shapes, orders, prestige"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{FortressFx.class, FortressSiege.class, FortressSpells.class, com.ironspellgrimoire.entity.FortressWall.class,
+                com.ironspellgrimoire.entity.FortressTower.class, com.ironspellgrimoire.entity.FortressDefender.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        BlockState[] before;
+        com.ironspellgrimoire.entity.FortressTower charged;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ARCHITECT_GRIMOIRE.get());
+            CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+            book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+            FortressFx.testReset(p);
+            FortressSpells.testClear();
+            before = snapshot();
+        }
+        void fresh(int garrison) {
+            FortressSiege.endAll(p, false);
+            FortressFx.testReset(p); FortressFx.testUnlockAll(p); FortressFx.testStone(p, 100000); FortressFx.testClearCds(p);
+            for (int k = 0; k < garrison; k++) { FortressSiege.testBanner(p, "minecraft:zombie"); FortressFx.handle(p, 4, 0); }
+            p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+            p.setYRot(0); p.setXRot(0);
+        }
+        int gates() { return (int) FortressSiege.testWallList(p).stream().filter(x -> x.isAlive() && x.kind() == com.ironspellgrimoire.entity.FortressWall.GATE).count(); }
+        @Override boolean tick(int t) {
+            try {
+                MagicData.getPlayerMagicData(p).setMana(1000);
+                p.setHealth(p.getMaxHealth());
+                if (t == 2) {   // the three shapes, sneak to switch, the Citadel always a ring
+                    fresh(0);
+                    FortressFx.siegePage(p, 10);
+                    int ringWalls = FortressSiege.testWalls(p), ringTowers = FortressSiege.testTowers(p);
+                    if (ringWalls < 30 || gates() != 1 || ringTowers < 2) bad.add("Ring: " + ringWalls + " walls, " + gates() + " gates, " + ringTowers + " towers");
+                    fresh(0);
+                    p.setShiftKeyDown(true);
+                    FortressFx.siegePage(p, 10);
+                    p.setShiftKeyDown(false);
+                    if (FortressSiege.active(p)) bad.add("sneak-casting Siege Mode cast it instead of switching the shape");
+                    if (FortressFx.shape(p) != FortressFx.LINE) bad.add("sneak-casting Siege Mode didn't switch Ring to Line (shape " + FortressFx.shape(p) + ")");
+                    FortressFx.siegePage(p, 10);
+                    int lw = FortressSiege.testWalls(p), lt = FortressSiege.testTowers(p);
+                    if (lw < 10 || lw > 13 || gates() != 0 || lt < 2 || lt > 3) bad.add("Line: " + lw + " walls, " + gates() + " gates, " + lt + " towers (want 13, 0, 2-3)");
+                    var any = FortressSiege.testWallList(p).stream().filter(x -> x.isAlive()).findFirst();
+                    if (any.isPresent() && Math.abs(any.get().hp() - FortressSiege.wallHp(p, false) * 1.25f) > 0.01f) bad.add("the Line's walls aren't 25% tougher");
+                    for (var x : FortressSiege.testWallList(p)) if (x.isAlive() && x.getZ() < home.z) { bad.add("the Line's wall stands behind you, not in front"); break; }
+                    FortressSiege.endAll(p, false); FortressFx.testClearCds(p);
+                    FortressFx.handle(p, 10, FortressFx.HORSESHOE);
+                    FortressFx.siegePage(p, 10);
+                    int hw = FortressSiege.testWalls(p), ht = FortressSiege.testTowers(p);
+                    if (hw < 25 || hw > 33 || gates() != 0 || ht < 3 || ht > 5) bad.add("Horseshoe: " + hw + " walls, " + gates() + " gates, " + ht + " towers (want 33, 0, 3-5)");
+                    for (var x : FortressSiege.testWallList(p)) if (x.isAlive() && x.getZ() < home.z - 5) { bad.add("the Horseshoe isn't open behind you"); break; }
+                    FortressSiege.endAll(p, false); FortressFx.testClearCds(p);
+                    FortressFx.testLevel(p, 10);
+                    FortressFx.handle(p, 10, FortressFx.LINE);
+                    FortressFx.citadelPage(p, 10);
+                    if (!FortressSiege.active(p) || gates() != 1) bad.add("the Citadel wasn't a ring with its gate (" + gates() + " gates)");
+                    FortressSiege.endAll(p, false);
+                }
+                if (t == 4) {   // the orders
+                    fresh(4);
+                    FortressFx.handle(p, 12, FortressSiege.HOLD);
+                    if (FortressSiege.testOrder(p) != FortressSiege.FREE) bad.add("an order was given with no defenders out");
+                    FortressFx.siegePage(p, 10);
+                    var ds = FortressSiege.testDefenderList(p);
+                    if (ds.size() != 4) bad.add(ds.size() + " defenders out, not 4");
+                    FortressFx.handle(p, 12, FortressSiege.HOLD);
+                    if (FortressSiege.testOrder(p) != FortressSiege.HOLD) bad.add("Hold the Gate didn't take");
+                    var foot = ds.stream().filter(d -> !d.ranged()).findFirst().orElse(null);
+                    var gate = FortressSiege.testGate(p);
+                    if (foot != null && gate != null) {
+                        var h = FortressSiege.orderHome(foot);
+                        if (h == null || h.distanceTo(gate) > 3.5) bad.add("Hold the Gate didn't send a footman to the gate");
+                    }
+                    FortressFx.handle(p, 12, FortressSiege.HOLD);
+                    if (FortressSiege.testOrder(p) != FortressSiege.FREE) bad.add("giving Hold the Gate again didn't lift it");
+                    FortressFx.handle(p, 12, FortressSiege.CHARGE);
+                    if (FortressSiege.testOrder(p) != FortressSiege.CHARGE) bad.add("Charge didn't take with a foe near");
+                    if (!ds.isEmpty() && FortressSiege.chargeTarget(ds.get(0)) != dummy) bad.add("Charge didn't go for the dummy");
+                    if (!ds.isEmpty() && ds.get(0).getAttribute(Attributes.MOVEMENT_SPEED).getModifier(FortressSiege.CHARGE_SPEED) == null) bad.add("charging defenders aren't faster");
+                    FortressFx.handle(p, 12, FortressSiege.FALL_BACK);
+                    if (FortressSiege.testOrder(p) != FortressSiege.FALL_BACK) bad.add("Fall Back didn't take");
+                    if (!ds.isEmpty() && ds.get(0).getAttribute(Attributes.MOVEMENT_SPEED).getModifier(FortressSiege.CHARGE_SPEED) != null) bad.add("the charge's speed stayed after Fall Back");
+                    if (!ds.isEmpty() && (FortressSiege.orderHome(ds.get(0)) == null || FortressSiege.orderHome(ds.get(0)).distanceTo(p.position()) > 0.01)) bad.add("Fall Back doesn't send defenders to the player");
+                    dummy.teleportTo(home.x, home.y, home.z + 12);
+                    if (!ds.isEmpty() && FortressSiege.mayChase(ds.get(0), dummy)) bad.add("on Fall Back a defender would chase a foe 12 blocks away");
+                    dummy.teleportTo(home.x, home.y, home.z + 6);
+                    // a breach: an enemy breaks a wall; Hold the Gate sends defenders to fill it
+                    FortressFx.handle(p, 12, FortressSiege.HOLD);
+                    var w = FortressSiege.testWallList(p).stream().filter(x -> x.isAlive() && x.kind() == com.ironspellgrimoire.entity.FortressWall.WALL).findFirst().orElse(null);
+                    if (w == null) bad.add("no wall to breach");
+                    else {
+                        w.hurt(dummy.damageSources().mobAttack(dummy), 100000);
+                        var b = FortressSiege.testBreach(p);
+                        if (b == null) bad.add("a wall broken by a foe made no breach");
+                        else if (foot != null && (FortressSiege.orderHome(foot) == null || FortressSiege.orderHome(foot).distanceTo(b) > 0.01)) bad.add("Hold the Gate didn't send defenders to the breach");
+                    }
+                }
+                if (t == 6) {   // overcharging the tower you look at
+                    var towers = FortressSiege.testTowerList(p);
+                    if (towers.isEmpty()) bad.add("no tower to overcharge");
+                    else {
+                        charged = towers.get(0);
+                        p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, charged.position().add(0, charged.getBbHeight() * 0.5, 0));
+                        MagicData.getPlayerMagicData(p).setMana(100);
+                        FortressSiege.testOvercharge(p);
+                        if (!charged.overcharged()) bad.add("looking at a tower and overcharging didn't overcharge it");
+                        if (Math.abs(MagicData.getPlayerMagicData(p).getMana() - (100 - FortressSiege.OVER_MANA)) > 0.5f) bad.add("overcharging cost " + (100 - MagicData.getPlayerMagicData(p).getMana()) + " mana, not " + FortressSiege.OVER_MANA);
+                        float m0 = MagicData.getPlayerMagicData(p).getMana();
+                        FortressSiege.testOvercharge(p);
+                        if (MagicData.getPlayerMagicData(p).getMana() != m0) bad.add("overcharged the same tower again straight away");
+                        p.setXRot(-80);   // looking at the sky: nothing to overcharge
+                    }
+                }
+                if (t == 6 + FortressSiege.OVER_TICKS + 4) {
+                    if (charged != null && charged.isAlive() && charged.overcharged()) bad.add("the overcharge didn't wear off after 5 s");
+                }
+                if (t == 112) {   // prestige
+                    fresh(2);
+                    FortressFx.handle(p, 11, 0);
+                    if (FortressFx.stars(p) != 0) bad.add("prestiged at book level 1");
+                    FortressFx.testLevel(p, 10);
+                    FortressFx.handle(p, 1, FortressFx.BARRACKS * 100);
+                    FortressFx.handle(p, 1, FortressFx.FORGE * 100 + 1);
+                    int stone = FortressFx.stone(p), bp = FortressFx.testBlueprints(p);
+                    float m0 = FortressFx.mult(p, -1) / FortressFx.mult(p, 0);
+                    FortressFx.handle(p, 11, 0);
+                    if (FortressFx.stars(p) != 1) bad.add("prestige at level 10, mastered, gave " + FortressFx.stars(p) + " stars");
+                    if (FortressFx.level(p) != 1 || FortressFx.builtCount(p) != 0) bad.add("prestige didn't reset the level and the plan");
+                    if (FortressSiege.testGarrison(p) != 2) bad.add("prestige lost the garrison");
+                    if (FortressFx.stone(p) != stone || FortressFx.testBlueprints(p) != bp) bad.add("prestige lost Stone or blueprints");
+                    float m1 = FortressFx.mult(p, -1) / FortressFx.mult(p, 0);
+                    if (Math.abs(m1 / m0 - 1.05f) > 0.001f) bad.add("one star made towers " + m1 / m0 + "x, not 1.05x");
+                    if (!FortressFx.unlocked(p, FortressFx.HERALD) || FortressFx.unlocked(p, FortressFx.MAP_ROOM)) bad.add("star 1 didn't open the Herald's Gate alone");
+                    FortressSiege.banners(p).clear();
+                    for (int k = 0; k < 10; k++) FortressSiege.maybeBanner(p, dummy, true);
+                    if (FortressSiege.banners(p).size() != FortressSiege.MAX_BANNERS + 1) bad.add(FortressSiege.banners(p).size() + " banners wait with one star, not " + (FortressSiege.MAX_BANNERS + 1));
+                    FortressFx.testStars(p, FortressFx.MAX_STARS);
+                    FortressFx.testLevel(p, 10);
+                    FortressFx.handle(p, 11, 0);
+                    if (FortressFx.stars(p) != FortressFx.MAX_STARS || FortressFx.level(p) != 10) bad.add("prestiged past " + FortressFx.MAX_STARS + " stars");
+                }
+                if (t == 114) {   // the prestige rooms
+                    fresh(1);
+                    FortressFx.testStars(p, FortressFx.MAX_STARS);
+                    FortressFx.handle(p, 1, FortressFx.THRONE * 100);
+                    FortressFx.handle(p, 1, FortressFx.MAP_ROOM * 100 + 1);
+                    FortressFx.handle(p, 1, FortressFx.HERALD * 100 + 2);
+                    if (!FortressFx.built(p, FortressFx.THRONE) || !FortressFx.built(p, FortressFx.MAP_ROOM) || !FortressFx.built(p, FortressFx.HERALD)) bad.add("couldn't build the prestige rooms with five stars");
+                    FortressFx.siegePage(p, 10);
+                    var ds = FortressSiege.testDefenderList(p);
+                    if (ds.isEmpty() || ds.get(0).rank() != 1) bad.add("with the Throne Room a recruit didn't fight a rank higher (" + (ds.isEmpty() ? "none out" : "rank " + ds.get(0).rank()) + ")");
+                    FortressFx.castRoom(p, FortressFx.MAP_ROOM);
+                    if (!FortressSpells.revealed(p, dummy)) bad.add("Survey didn't reveal the dummy");
+                    FortressFx.castRoom(p, FortressFx.THRONE);
+                    if (!ds.isEmpty() && ds.get(0).getAttribute(Attributes.ATTACK_DAMAGE).getModifier(FortressSpells.DECREE) == null) bad.add("Royal Decree didn't strengthen the defenders");
+                    dummy.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                    p.setXRot(0); p.setYRot(180);   // look away from the dummy: the horn drags it toward that spot
+                    FortressFx.castRoom(p, FortressFx.HERALD);
+                    if (dummy.getDeltaMovement().horizontalDistanceSqr() < 1e-4) bad.add("the Lure Horn didn't drag the dummy");
+                    FortressSiege.endAll(p, false);
+                    FortressFx.testStars(p, 0);
+                    if (FortressFx.unlocked(p, FortressFx.THRONE)) bad.add("the Throne Room stayed open with no stars");
+                }
+                if (t == 118) {
+                    ensureDummy();
+                    String ch = changes(before);
+                    if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+                    if (bad.isEmpty()) pass(name, "ring, line, horseshoe, sneak to switch, citadel ring, hold, charge, fall back, breach, overcharge, prestige, stars, prestige rooms");
                     else fail(name, String.join("; ", bad));
                     FortressFx.testReset(p);
                     FortressSpells.testClear();
@@ -1887,11 +2069,15 @@ public final class GameTests {
                 "siege yard", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 21), "",
                 "cistern", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 22), "",
                 "treasury", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 23), "q",
+                "herald's gate", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 24), "q",
+                "map room", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 25), "q",
+                "throne room", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archMove(pl, 0); FortressFx.testStars(pl, 5); FortressFx.handle(pl, 1, 26 * 100 + 1); FortressFx.castRoom(pl, 26); }, "q",
                 "rampart", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.rampartPage(pl, pw); }, "q",
                 "siege mode", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.handle(pl, 1, FortressFx.WATCHTOWER * 100); FortressFx.siegePage(pl, pw); }, "",
                 "citadel", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.testLevel(pl, 10); for (int r = 0; r < 24; r++) FortressFx.handle(pl, 1, r * 100 + r); FortressFx.citadelPage(pl, pw); }, "",
                 "the fortress", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> FortressFx.fortressPage(pl, pw), "q"));
         queue.add(new ArchitectTest());
+        queue.add(new ArchitectCommandTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));

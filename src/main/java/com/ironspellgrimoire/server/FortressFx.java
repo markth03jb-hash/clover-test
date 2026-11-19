@@ -37,7 +37,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * The Architect of Ruin Grimoire: a pocket fortress inside a book (every name and look original).
  *
  * Stone (from kills, bosses and rifts) builds and upgrades rooms on a floor plan - 3x3 at first, 4x4 at book level 4,
- * 5x5 at 8. Each of the 24 rooms gives one spell and a small passive; rooms side by side (up, down, left, right) can
+ * 5x5 at 8. Each of the 24 rooms (and three prestige rooms) gives one spell and a small passive; rooms side by side (up, down, left, right) can
  * pair for a neighbour bonus. Four of your rooms' spells go in the book's four Room pages; the other pages are always
  * there: Rampart, Siege Mode (a ring of walls and towers round you, your garrison stepping out), The Fortress (the
  * menu) and, at book level 10 with mastery 5, the Citadel. Rooms 1-8 are open from the start; the rest come from
@@ -52,7 +52,12 @@ public final class FortressFx {
     private FortressFx() {}
 
     static final String ROOT = "isg_fortress";
-    public static final int ROOMS = 24, MAX_LV = 10, ROOM_MAX = 5, SLOTS = 4;
+    public static final int ROOMS = 27, BASE_ROOMS = 24, MAX_LV = 10, ROOM_MAX = 5, SLOTS = 4, MAX_STARS = 5;
+    /** The prestige rooms (24-26) open at these stars. */
+    public static final int[] STAR_ROOM = {1, 3, 5};
+    /** Siege Mode's shapes (the Citadel is always a ring). */
+    public static final int RING = 0, LINE = 1, HORSESHOE = 2;
+    public static final String[] SHAPE = {"Ring", "Line", "Horseshoe"};
     public static final int[] COST = {20, 40, 80, 160, 320};   // Stone for room level 1..5
     public static final int OPEN = 8;   // rooms 0-7 need no blueprint
 
@@ -84,11 +89,16 @@ public final class FortressFx {
         new Room("Siege Yard", 3, "Trebuchet Shot", 300, 70, "-", "A boulder lobbed far, crashing down on an area"),
         new Room("Cistern", 3, "Floodgate", 240, 60, "-", "A wall of water that sweeps foes away"),
         new Room("Treasury", 3, "Tribute", 1200, 30, "+25% Stone", "For 30 s, defeated foes give three times the Stone"),
+        // the prestige rooms: opened by the fortress's stars (1, 3 and 5), never by blueprints
+        new Room("Herald's Gate", 0, "Lure Horn", 300, 50, "In a siege, foes near your walls drift toward the gate", "Drags foes within 14 blocks toward where you look"),
+        new Room("Map Room", 1, "Survey", 600, 40, "In a siege, every foe within 32 blocks shows through walls", "Every foe within 32 blocks shows through walls for 15 s, and takes 10% more from you"),
+        new Room("Throne Room", 2, "Royal Decree", 600, 80, "Defenders fight one rank higher", "Your defenders heal fully and hit 30% harder for 10 s"),
     };
     public static final String[] WING = {"Martial", "Arcane", "Sacred", "Works"};
     public static final int BARRACKS = 0, ARMOURY = 1, TRAINING = 2, WATCHTOWER = 3, GATEHOUSE = 4, WAR_ROOM = 5, OBSERVATORY = 6, LIBRARY = 7,
             ARCANUM = 8, SCRYING = 9, ALCHEMY = 10, RUNE_VAULT = 11, CHAPEL = 12, RELIQUARY = 13, CRYPT = 14, BELL_TOWER = 15, GARDEN = 16,
-            HALL = 17, FORGE = 18, FOUNDRY = 19, WORKSHOP = 20, SIEGE_YARD = 21, CISTERN = 22, TREASURY = 23;
+            HALL = 17, FORGE = 18, FOUNDRY = 19, WORKSHOP = 20, SIEGE_YARD = 21, CISTERN = 22, TREASURY = 23,
+            HERALD = 24, MAP_ROOM = 25, THRONE = 26;
 
     /** The neighbour bonuses: two rooms side by side on the floor plan, and what they give. */
     public record Pair(int a, int b, String gives) {}
@@ -148,6 +158,10 @@ public final class FortressFx {
         int lv = r.getInt("lv");
         if (lv < 1 || lv > MAX_LV) r.putInt("lv", Math.max(1, Math.min(MAX_LV, lv)));
         if (r.getInt("stone") < 0) r.putInt("stone", 0);
+        int st = r.getInt("stars");
+        if (st < 0 || st > MAX_STARS) r.putInt("stars", Math.max(0, Math.min(MAX_STARS, st)));
+        int sh = r.getInt("shape");
+        if (sh < 0 || sh > HORSESHOE) r.putInt("shape", RING);
     }
 
     public static boolean equipped(Player p) {
@@ -180,7 +194,15 @@ public final class FortressFx {
     }
     public static boolean built(Player p, int room) { return roomLevel(p, room) > 0; }
     public static int builtCount(Player p) { int n = 0; for (int c : grid(p)) if (c >= 0) n++; return n; }
-    public static boolean unlocked(Player p, int room) { return room < OPEN || (root(p).getInt("bp") & (1 << room)) != 0; }
+    public static boolean unlocked(Player p, int room) { return unlocked(room, root(p).getInt("bp"), stars(p)); }
+    /** Rooms 0-7 are open; 8-23 need their blueprint; 24-26 need the fortress's stars. */
+    public static boolean unlocked(int room, int bp, int stars) {
+        if (room < 0 || room >= ROOMS) return false;
+        if (room >= BASE_ROOMS) return stars >= STAR_ROOM[room - BASE_ROOMS];
+        return room < OPEN || (bp & (1 << room)) != 0;
+    }
+    public static int stars(Player p) { return root(p).getInt("stars"); }
+    public static int shape(Player p) { return root(p).getInt("shape"); }
 
     /** Two rooms side by side (up, down, left or right) on the plan. */
     public static boolean paired(Player p, int a, int b) {
@@ -195,7 +217,8 @@ public final class FortressFx {
     /** How strong the book's spells are: book level, the room's level and spell power. */
     static float mult(ServerPlayer p, int room) {
         int rl = room < 0 ? 1 : Math.max(1, roomLevel(p, room));
-        return (1 + 0.04f * (level(p) - 1)) * (1 + 0.15f * (rl - 1)) * (float) p.getAttributeValue(AttributeRegistry.SPELL_POWER.get());
+        float stars = room < 0 ? 1 + 0.05f * stars(p) : 1f;   // each star: towers, walls and defenders +5%
+        return (1 + 0.04f * (level(p) - 1)) * (1 + 0.15f * (rl - 1)) * stars * (float) p.getAttributeValue(AttributeRegistry.SPELL_POWER.get());
     }
 
     static void tell(ServerPlayer p, String s) { p.displayClientMessage(Component.literal(s).withStyle(ChatFormatting.GRAY), true); }
@@ -204,7 +227,8 @@ public final class FortressFx {
     }
 
     /** The first time something happens, a short line above the hotbar (each hint once, ever). */
-    public static final int HINT_BANNER = 0, HINT_GRID4 = 1, HINT_GRID5 = 2, HINT_BLUEPRINT = 3, HINT_LEVEL = 4, HINT_SIEGE = 5, HINT_PAIR = 6, HINT_FIRST = 7;
+    public static final int HINT_BANNER = 0, HINT_GRID4 = 1, HINT_GRID5 = 2, HINT_BLUEPRINT = 3, HINT_LEVEL = 4, HINT_SIEGE = 5, HINT_PAIR = 6, HINT_FIRST = 7,
+            HINT_BREACH = 8, HINT_ORDERS = 9, HINT_PRESTIGE = 10, HINT_SHAPE = 11;
     static void hint(ServerPlayer p, int which, String text) {
         CompoundTag r = root(p);
         int h = r.getInt("hints");
@@ -243,6 +267,7 @@ public final class FortressFx {
         if (lv == 4) { say(p, "Your floor plan grows to 4x4."); hint(p, HINT_GRID4, "Your floor plan grew to 4x4 - more room to build"); }
         if (lv == 8) { say(p, "Your floor plan grows to 5x5."); hint(p, HINT_GRID5, "Your floor plan grew to 5x5"); }
         if (lv == MAX_LV) say(p, "The fortress stands complete. The Citadel answers you once the grimoire is mastered.");
+        if (lv == MAX_LV && canPrestige(p)) hint(p, HINT_PRESTIGE, "Your fortress can be rebuilt stronger - Prestige, on the Floor Plan");
         Adv.grant(p, "fortress_level");
     }
 
@@ -250,7 +275,7 @@ public final class FortressFx {
     static int giveBlueprint(ServerPlayer p, String from) {
         CompoundTag r = root(p);
         List<Integer> locked = new ArrayList<>();
-        for (int i = OPEN; i < ROOMS; i++) if (!unlocked(p, i)) locked.add(i);
+        for (int i = OPEN; i < BASE_ROOMS; i++) if (!unlocked(p, i)) locked.add(i);
         if (locked.isEmpty()) return -1;
         int room = locked.get(ThreadLocalRandom.current().nextInt(locked.size()));
         r.putInt("bp", r.getInt("bp") | (1 << room));
@@ -287,8 +312,8 @@ public final class FortressFx {
                 hint(p, HINT_PAIR, "Neighbour bonus! Rooms side by side work together");
             }
         }
-        int all = 0; for (int c : grid(p)) if (c >= 0) all++;
-        if (all >= ROOMS) Adv.grant(p, "every_room");
+        int all = 0; for (int c : grid(p)) if (c >= 0 && c / 10 < BASE_ROOMS) all++;
+        if (all >= BASE_ROOMS) Adv.grant(p, "every_room");
         refreshPassives(p);
     }
 
@@ -347,6 +372,7 @@ public final class FortressFx {
     // ================================================================== the pages
     public static void rampartPage(ServerPlayer p, float power) { if (pay(p, -1, "rampart", RAMPART_CD, RAMPART_MANA)) FortressSiege.rampart(p); }
     public static void siegePage(ServerPlayer p, float power) {
+        if (p.isShiftKeyDown() && equipped(p)) { setShape(p, (shape(p) + 1) % SHAPE.length); return; }   // sneak: the next shape, free
         int cd = Math.round(SIEGE_CD * (built(p, WAR_ROOM) ? 0.9f : 1f));
         if (FortressSiege.active(p)) { tell(p, "Siege Mode is already up"); return; }
         if (pay(p, -2, "siege", cd, SIEGE_MANA)) FortressSiege.siege(p, false);
@@ -361,6 +387,45 @@ public final class FortressFx {
     public static void room2(ServerPlayer p, float power) { roomPage(p, 1); }
     public static void room3(ServerPlayer p, float power) { roomPage(p, 2); }
     public static void room4(ServerPlayer p, float power) { roomPage(p, 3); }
+
+    /** Siege Mode's shape (0 ring, 1 line, 2 horseshoe). */
+    static void setShape(ServerPlayer p, int s) {
+        if (s < 0 || s >= SHAPE.length) return;
+        root(p).putInt("shape", s);
+        tell(p, "Siege Mode: " + SHAPE[s] + " - " + SHAPE_SAYS[s]);
+        OverdriveFx.play(p.serverLevel(), p.position(), "fort_page", 0.5f, 0.8f + 0.15f * s);
+        hint(p, HINT_SHAPE, "Sneak and cast Siege Mode to switch its shape (or pick it on the Spells tab)");
+        sync(p, false);
+    }
+    public static final String[] SHAPE_SAYS = {"walls all round you, a gate where you face", "one long wall across your front, towers behind it", "walls in front and at your sides, open behind"};
+
+    /** Prestige: a level-10 fortress with the grimoire mastered can be rebuilt for a star (5 at most). */
+    public static boolean canPrestige(Player p) { return canCitadel(p) && stars(p) < MAX_STARS; }
+
+    /** Rebuild: book level 1, an empty plan and Room pages; garrison, banners, blueprints, Stone and stars stay. */
+    static void prestige(ServerPlayer p) {
+        if (!canPrestige(p)) { tell(p, stars(p) >= MAX_STARS ? "Your fortress already has every star" : "Prestige needs book level 10 and the grimoire mastered"); return; }
+        FortressSiege.endAll(p, false);
+        CompoundTag r = root(p);
+        int st = r.getInt("stars") + 1;
+        r.putInt("stars", st);
+        r.putInt("lv", 1);
+        r.putFloat("xp", 0);
+        r.putIntArray("grid", blankGrid());
+        r.putIntArray("slots", new int[]{-1, -1, -1, -1});
+        ListTag g = FortressSiege.garrison(p);
+        for (int i = 0; i < g.size(); i++) g.getCompound(i).putInt("post", -1);   // their rooms are gone
+        refreshPassives(p);
+        say(p, "The fortress falls and rises again - star " + st + " of " + MAX_STARS + ". Towers, walls and defenders are " + (5 * st) + "% stronger.");
+        for (int i = 0; i < STAR_ROOM.length; i++) if (STAR_ROOM[i] == st) say(p, "A new room opens: the " + ROOM[BASE_ROOMS + i].name + " (" + ROOM[BASE_ROOMS + i].spell + ").");
+        prestigeFx(p);
+        Adv.grant(p, "prestige");
+    }
+    private static void prestigeFx(ServerPlayer p) {
+        OverdriveFx.play(p.serverLevel(), p.position(), "fort_prestige", 1.0f, 1.0f);
+        FxSend.ring(p.serverLevel(), FortressSiege.BRASS, p.position().add(0, 0.1, 0), 0.5f, 6f, 0.2f, 20);
+        FxSend.shake(p.serverLevel(), p.position(), 0.3f, 10, 8);
+    }
 
     public static boolean canCitadel(Player p) {
         if (level(p) < MAX_LV) return false;
@@ -435,12 +500,15 @@ public final class FortressFx {
         out.putBoolean("citadelOk", canCitadel(p));
         out.putBoolean("siegeUp", FortressSiege.active(p));
         out.putInt("cap", FortressSiege.cap(p));
+        out.putBoolean("prestigeOk", canPrestige(p));
+        FortressSiege.syncInto(p, out);
         AddonNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new FortressPackets.Sync(out, open));
     }
 
     /** From the menu: 1 build/upgrade (room * 100 + cell), 2 move (from * 100 + to), 3 set a Room page (slot * 100 + room + 1; 0 = clear),
      *  4 claim a banner (its index), 5 dismiss a defender (its id), 6 post a defender (id * 100 + room + 1; 0 = none),
-     *  7 the walkthrough finished, 8 open the menu, 9 release a banner (its index). */
+     *  7 the walkthrough finished, 8 open the menu, 9 release a banner (its index), 10 Siege Mode's shape, 11 prestige,
+     *  12 a garrison order (0 none, 1 hold, 2 charge, 3 fall back), 13 overcharge the tower you look at. */
     public static void handle(ServerPlayer p, int action, int arg) {
         if (arg < 0) return;
         switch (action) {
@@ -453,6 +521,10 @@ public final class FortressFx {
             case 7 -> root(p).putBoolean("toured", true);
             case 8 -> { sync(p, true); return; }
             case 9 -> FortressSiege.release(p, arg);
+            case 10 -> { setShape(p, arg); return; }
+            case 11 -> prestige(p);
+            case 12 -> { FortressSiege.order(p, arg); return; }
+            case 13 -> { FortressSiege.overcharge(p); return; }
             default -> { return; }
         }
         sync(p, false);
@@ -517,7 +589,7 @@ public final class FortressFx {
                 sync(p, false);
             }
         }
-        if (p.tickCount % 20 == 3) FortressSpells.tick(p);
+        if (p.tickCount % 20 == 3) { FortressSpells.tick(p); FortressSiege.tick(p); }
     }
 
     @SubscribeEvent
@@ -527,7 +599,7 @@ public final class FortressFx {
 
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {
-        if (e.getEntity() instanceof ServerPlayer p) FortressSiege.endAll(p, false);
+        if (e.getEntity() instanceof ServerPlayer p) FortressSiege.endAll(p, true);
     }
 
     @SubscribeEvent
@@ -548,6 +620,7 @@ public final class FortressFx {
         refreshPassives(p);
     }
     public static void testStone(ServerPlayer p, int n) { addStone(p, n); }
+    public static void testStars(ServerPlayer p, int n) { root(p).putInt("stars", Math.max(0, Math.min(MAX_STARS, n))); }
     public static void testLevel(ServerPlayer p, int lv) { root(p).putInt("lv", Math.max(1, Math.min(MAX_LV, lv))); }
     public static void testUnlockAll(ServerPlayer p) { root(p).putInt("bp", -1); }
     public static void testClearCds(ServerPlayer p) { root(p).putLongArray("cds", new long[ROOMS + 3]); }

@@ -77,7 +77,7 @@ public final class FortressRenderers {
             ps.translate(0, -rise(e.tickCount, pt) * 3.6F, 0);
             boolean turns = k == FortressTower.BALLISTA || k == FortressTower.BOLTS;   // the ballista turns to its target
             ps.mulPose(Axis.YP.rotationDegrees(turns ? -e.aim() + 180 : 0));
-            ParasiteArms.drawPiece(ps, buf, light, TOWER[k]);
+            ParasiteArms.drawPiece(ps, buf, e.overcharged() ? net.minecraft.client.renderer.LightTexture.FULL_BRIGHT : light, TOWER[k]);   // overcharged: lit from within
             ps.popPose();
             super.render(e, yaw, pt, ps, buf, light);
         }

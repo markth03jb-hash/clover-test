@@ -80,7 +80,7 @@ public class CodexScreen extends Screen {
          "## Masked Twins Grimoire",
          "Two masks, two twins, sixteen arts. Swap between Sol and Nyx, level both, set stones in the masks, beat the Twin Wardens and join them in the Eclipse.",
          "## Architect of Ruin Grimoire",
-         "A fortress inside a book. Earn Stone from foes, build up to 24 rooms on a floor plan that grows, pair rooms side by side, claim banners for a garrison and raise Siege Mode's walls and towers round you. Its own menu has a guided tour and a full guide."},
+         "A fortress inside a book. Earn Stone from foes, build rooms on a floor plan that grows, pair rooms side by side, claim banners for a garrison, raise Siege Mode's walls and towers round you (a Ring, a Line or a Horseshoe) and command it with G. A finished fortress can be rebuilt for stars. Its own menu has a guided tour and a full guide."},
         {"Server Rules",
          "Your server can change how the mod plays in its config file (iron_spell_grimoire-common.toml).",
          "## Player versus player",

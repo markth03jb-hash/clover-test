@@ -15,6 +15,7 @@ public final class AddonClientConfig {
     public static final ForgeConfigSpec.DoubleValue SCREEN_SHAKE;
     public static final ForgeConfigSpec.BooleanValue IMPACT_FRAMES;
     public static final ForgeConfigSpec.EnumValue<Quality> EFFECT_QUALITY;
+    public static final ForgeConfigSpec.DoubleValue FORTRESS_AMBIENCE;
 
     /** Overall effect quality: how many sprites and particles there may be, and how heavy the extras are. */
     public enum Quality { LOW, MEDIUM, HIGH }
@@ -34,11 +35,16 @@ public final class AddonClientConfig {
         IMPACT_FRAMES = b.comment("Anime impact frames (the flashing white/black frames on big hits). false = never shown.")
                 .define("impact_frames", true);
         b.pop();
+        b.push("sound");
+        FORTRESS_AMBIENCE = b.comment("How loud the Architect of Ruin's fortress sounds (wind, hammers, the forge, a distant bell) are while you stand",
+                        "inside your own walls. 1.0 = full, 0 = off. Also on the Fortress menu's Spells tab.")
+                .defineInRange("fortress_ambience", 0.6, 0.0, 1.0);
+        b.pop();
         SPEC = b.build();
     }
 
     // cached values, refreshed when the config (re)loads, so the hot render paths never touch the config system
-    private static float density = 1F, opacity = 1F, shake = 1F;
+    private static float density = 1F, opacity = 1F, shake = 1F, ambience = 0.6F;
     private static boolean frames = true;
     private static Quality quality = Quality.HIGH;
 
@@ -49,6 +55,7 @@ public final class AddonClientConfig {
             shake = SCREEN_SHAKE.get().floatValue();
             frames = IMPACT_FRAMES.get();
             quality = EFFECT_QUALITY.get();
+            ambience = FORTRESS_AMBIENCE.get().floatValue();
         } catch (IllegalStateException ignored) { }   // not loaded yet: keep the defaults
     }
 
@@ -69,6 +76,12 @@ public final class AddonClientConfig {
         try { EFFECT_QUALITY.set(q); SPEC.save(); } catch (Exception ignored) { }
     }
     public static float effectOpacity() { return opacity; }
+    public static float fortressAmbience() { return ambience; }
+    /** Change the fortress ambience from in game (saved to the config file). */
+    public static void setFortressAmbience(float v) {
+        ambience = Math.max(0F, Math.min(1F, v));
+        try { FORTRESS_AMBIENCE.set((double) ambience); SPEC.save(); } catch (Exception ignored) { }
+    }
     public static float screenShake() { return shake * (quality == Quality.LOW ? 0.6F : 1F); }
     public static boolean impactFrames() { return frames; }
 }

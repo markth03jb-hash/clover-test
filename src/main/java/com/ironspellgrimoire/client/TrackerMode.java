@@ -43,7 +43,7 @@ public final class TrackerMode {
     /** Where the trackers end (0 when none is on screen): the mode timers start under this, so they never overlap. */
     public static int bottom() {
         if (hidden()) return 0;
-        int y = archY() + (FortressHud.shown() ? (compact() ? 16 : FortressHud.H + 4) : 0);
+        int y = archY() + (FortressHud.shown() ? (compact() ? 16 : FortressHud.h() + 4) : 0);
         return y > 4 ? y : 0;
     }
 

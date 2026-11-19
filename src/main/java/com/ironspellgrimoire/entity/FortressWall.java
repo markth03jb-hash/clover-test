@@ -67,7 +67,7 @@ public class FortressWall extends Entity {
         if (level().isClientSide) return;
         Player o = ownerPlayer();
         if (o == null || !o.isAlive() || o.level() != level() || tickCount >= life || o.distanceToSqr(this) > 80 * 80) { FortressSiege.wallGone(this, false); discard(); return; }
-        if (kind() == WALL && tickCount % 5 == 0 && FortressSiege.someoneInside(this)) { FortressSiege.wallGone(this, true); discard(); }
+        if (kind() == WALL && tickCount % 5 == 0 && FortressSiege.someoneInside(this)) { FortressSiege.wallGone(this, true, false); discard(); }   // gives way: not a breach
     }
 
     /** Solid to everything, like a boat - except the gate, which is the way through. */

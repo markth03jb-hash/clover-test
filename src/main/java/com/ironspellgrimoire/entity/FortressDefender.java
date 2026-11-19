@@ -100,7 +100,7 @@ public class FortressDefender extends PathfinderMob {
         this.targetSelector.addGoal(1, new Defend(this));
     }
 
-    boolean ranged() { return role() == ARCHER || role() == MYSTIC; }
+    public boolean ranged() { return role() == ARCHER || role() == MYSTIC; }
 
     @Override
     public void tick() {
@@ -109,7 +109,7 @@ public class FortressDefender extends PathfinderMob {
         Player o = owner();
         if (o == null || !o.isAlive() || o.level() != level() || tickCount >= life || o.distanceToSqr(this) > 80 * 80) { FortressSiege.defenderGone(this); discard(); return; }
         LivingEntity t = getTarget();
-        if (t != null && (!t.isAlive() || isFriend(t) || t.distanceToSqr(this) > 28 * 28)) setTarget(null);
+        if (t != null && (!t.isAlive() || isFriend(t) || t.distanceToSqr(this) > 28 * 28 || !FortressSiege.mayChase(this, t))) setTarget(null);
         if (shot > 0) shot--;
         if (tickCount % 20 == 0) FortressSiege.defenderTick(this);
     }
@@ -148,6 +148,11 @@ public class FortressDefender extends PathfinderMob {
         final FortressDefender d;
         Guard(FortressDefender d) { this.d = d; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
         Vec3 home() {
+            Vec3 ordered = FortressSiege.orderHome(d);   // Hold the Gate, a breach, Fall Back
+            if (ordered != null) {
+                double a = (d.gid * 2.39996) % (Math.PI * 2);
+                return ordered.add(Math.cos(a) * 1.5, 0, Math.sin(a) * 1.5);
+            }
             if (d.post != null) {   // its own spot round the post
                 double a = (d.gid * 2.39996) % (Math.PI * 2);
                 double r = d.role() == SENTRY ? 1.5 : 2.5;
@@ -192,6 +197,12 @@ public class FortressDefender extends PathfinderMob {
         final FortressDefender d;
         Defend(FortressDefender d) { this.d = d; setFlags(EnumSet.of(Flag.TARGET)); }
         LivingEntity pick() {
+            LivingEntity charge = FortressSiege.chargeTarget(d);
+            if (charge != null) return charge;
+            LivingEntity best0 = pick0();
+            return best0 != null && FortressSiege.mayChase(d, best0) ? best0 : null;
+        }
+        LivingEntity pick0() {
             if (d.focus != null && d.focus.isAlive() && d.focus.distanceToSqr(d) < 28 * 28) return d.focus;
             Player o = d.owner();
             if (o == null) return null;
@@ -199,7 +210,9 @@ public class FortressDefender extends PathfinderMob {
                 if (e != null && e.isAlive() && !d.isFriend(e) && e.distanceToSqr(d) < 24 * 24 && !(e instanceof Player pl && (pl.isCreative() || !(o instanceof ServerPlayer sp && com.ironspellgrimoire.AddonConfig.mayHurt(sp, pl))))) return e;
             Vec3 c = d.post != null ? d.post : d.position();
             Mob best = null; double bd = 14 * 14;
-            for (Mob m : d.level().getEntitiesOfClass(Mob.class, new net.minecraft.world.phys.AABB(c, c).inflate(14), m -> m instanceof Enemy && m.isAlive() && !d.isFriend(m))) {
+            Vec3 held = FortressSiege.orderHome(d);
+            if (held != null) c = held;
+            for (Mob m : d.level().getEntitiesOfClass(Mob.class, new net.minecraft.world.phys.AABB(c, c).inflate(14), m -> m instanceof Enemy && m.isAlive() && !d.isFriend(m) && FortressSiege.mayChase(d, m))) {
                 double dd = m.distanceToSqr(c);
                 if (dd < bd) { bd = dd; best = m; }
             }

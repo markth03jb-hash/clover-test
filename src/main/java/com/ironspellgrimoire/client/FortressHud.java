@@ -18,6 +18,16 @@ public final class FortressHud {
     private FortressHud() {}
 
     public static final int H = 46, W = 176;
+    /** Taller by a line while an order is given or a breach is open. */
+    public static int h() { return H + (extra() != null ? 11 : 0); }
+
+    /** The extra line: a breach first, else the garrison's order. */
+    static String extra() {
+        if (FortressClient.breachLeft() > 0) return "BREACH - " + FortressClient.breachSide() + " wall";
+        int o = FortressClient.order();
+        if (o > 0 && o < com.ironspellgrimoire.server.FortressSiege.ORDER.length && FortressClient.defendersOut() > 0) return "Order: " + com.ironspellgrimoire.server.FortressSiege.ORDER[o];
+        return null;
+    }
 
     public static boolean shown() {
         Minecraft mc = Minecraft.getInstance();
@@ -40,9 +50,10 @@ public final class FortressHud {
         int cheapest = Integer.MAX_VALUE, which = -1;
         for (int r = 0; r < FortressFx.ROOMS; r++) { int lv = FortressClient.roomLevel(r); if (lv > 0 && lv < FortressFx.ROOM_MAX && FortressFx.COST[lv] < cheapest) { cheapest = FortressFx.COST[lv]; which = r; } }
         if (free == 0 && FortressClient.gridSize() < 5) return "Reach book level " + (FortressClient.gridSize() == 3 ? 4 : 8) + " to grow the floor plan";
-        if (canBuild == 0 && built < FortressFx.ROOMS && free > 0) return "Find blueprints: bosses, rifts, book levels";
+        if (canBuild == 0 && built < FortressFx.BASE_ROOMS && free > 0) return "Find blueprints: bosses, rifts, book levels";
         if (which >= 0) return "Upgrade the " + FortressFx.ROOM[which].name() + " (" + Math.min(FortressClient.stone(), cheapest) + " / " + cheapest + " Stone)";
         if (!FortressClient.citadelOk()) return "Reach book level 10 and master the grimoire for the Citadel";
+        if (FortressClient.prestigeOk()) return "Prestige for a star (" + FortressClient.stars() + " / " + FortressFx.MAX_STARS + ") - Floor Plan";
         return "The fortress is complete";
     }
 
@@ -55,13 +66,20 @@ public final class FortressHud {
         int y = TrackerMode.archY();
         String goal = goal();
         if (TrackerMode.compact()) {
-            TrackerMode.line(g, f, y, 0xFFE8B860, "FORTRESS", goal, 0, 0, false, mc.level.getGameTime(), 0);
+            String ex = extra();
+            TrackerMode.line(g, f, y, ex != null && FortressClient.breachLeft() > 0 ? 0xFFFF6A50 : 0xFFE8B860, "FORTRESS", ex != null ? ex : goal, 0, 0, false, mc.level.getGameTime(), 0);
             return;
         }
-        int x = g.guiWidth() - W - 4;
+        int x = g.guiWidth() - W - 4, H = h();
         g.fill(x, y, x + W, y + H, 0xA0141008);
         g.renderOutline(x, y, W, H, 0xC09A6A28);
         g.fill(x, y, x + 3, y + H, 0xFFE8B860);
+        String ex = extra();
+        if (ex != null) {
+            boolean breach = FortressClient.breachLeft() > 0;
+            int col = breach ? ((mc.level.getGameTime() / 5) % 2 == 0 ? 0xFFFF6A50 : 0xFFE0A090) : 0xFFE8B860;
+            g.drawString(f, ex, x + 8, y + 46, col, false);
+        }
         String head = "FORTRESS  Lv " + FortressClient.level();
         g.drawString(f, head, x + 8, y + 4, 0xFFE8B860, false);
         String st = FortressClient.stone() + " Stone";
