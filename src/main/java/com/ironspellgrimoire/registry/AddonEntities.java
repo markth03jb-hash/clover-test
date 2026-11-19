@@ -88,6 +88,11 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.TwinWarden>of(com.ironspellgrimoire.entity.TwinWarden::new, MobCategory.MONSTER).sized(1.0F, 2.6F)
                     .fireImmune().clientTrackingRange(10).build("twin_warden"));
 
+    /** The Masked Twins' Echo: the resting twin's mask, fighting beside you (entity/TwinEcho). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.TwinEcho>> TWIN_ECHO = ENTITIES.register("twin_echo",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.TwinEcho>of(com.ironspellgrimoire.entity.TwinEcho::new, MobCategory.MISC).sized(0.6F, 0.6F)
+                    .fireImmune().clientTrackingRange(8).updateInterval(1).build("twin_echo"));
+
     /** The Parasite Grimoire's molted husk (entity/MoltHusk). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MoltHusk>> MOLT_HUSK = ENTITIES.register("molt_husk",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.MoltHusk>of(com.ironspellgrimoire.entity.MoltHusk::new, MobCategory.MISC).sized(0.6F, 1.8F)

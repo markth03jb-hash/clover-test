@@ -102,6 +102,6 @@ public class InfectedBrute extends PathfinderMob {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide) com.ironspellgrimoire.server.ParasiteFx.bruteTick(this);
+        if (!level().isClientSide) com.ironspellgrimoire.server.ParasiteMoves.bruteTick(this);
     }
 }

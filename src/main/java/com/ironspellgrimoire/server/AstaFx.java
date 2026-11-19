@@ -103,6 +103,9 @@ public class AstaFx {
         TASKS.computeIfAbsent(serverTicks + Math.max(1, ticks), k -> new ArrayList<>()).add(r);
     }
 
+    /** Game tests only: drop every staged effect still waiting (the last spell's lingering field), so it can't hit the next one's dummy. */
+    static void testDropScheduled() { TASKS.clear(); }
+
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END) return;
@@ -142,7 +145,9 @@ public class AstaFx {
 
     private static boolean echoing;
 
-    static void damage(ServerPlayer p, LivingEntity t, float dmg0, String id) {
+    static void damage(ServerPlayer p, LivingEntity t, float dmg00, String id) {
+        float dmg0 = dmg00 * com.ironspellgrimoire.AddonConfig.spellDamage();   // the server's spell damage multiplier
+        if (t instanceof net.minecraft.world.entity.player.Player op && !com.ironspellgrimoire.AddonConfig.mayHurt(p, op)) return;   // the one PvP rule
         if (CastSync.clashLost(p)) return;   // the move was broken in a Spell Clash
         // empowered at the Star Forge; a grimoire's ultimate hits harder at mastery 6 and 7
         // ... an evolved spell harder still, and everything from an Ascended grimoire

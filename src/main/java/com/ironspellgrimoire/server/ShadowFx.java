@@ -692,7 +692,7 @@ public final class ShadowFx {
 
     /** Whether t is something p's moves should hit: not a player, and not one of p's own shadows. */
     static boolean foe(ServerPlayer p, LivingEntity t) {
-        return !(t instanceof Player) && !(t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()));
+        return t != p && !(t instanceof Player op && !com.ironspellgrimoire.AddonConfig.mayHurt(p, op)) && !(t instanceof ShadowSoldier s && p.getUUID().equals(s.ownerUUID()));
     }
 
     /** Gilded Thorn - Thornbite: a wide slash cutting everything within 4 blocks in front of you (full damage), and the

@@ -80,7 +80,7 @@ public final class GrimoireCeremony {
         Vec3 top = Vec3.atCenterOf(altar).add(0, 0.5, 0);
         FxPacket pk = new FxPacket();
         pk.shape = 45; pk.id = p.getId(); pk.c = top; pk.palette = (byte) pick; pk.life = TICKS;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(top.x, top.y, top.z, 64, sl.dimension())), pk);
+        FxBatch.near(sl, top, 64, pk);
         sl.playSound(null, altar, SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1f, 0.7f);
         sl.playSound(null, altar, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1f, 0.6f);
         for (int t = 10; t < 66; t += 8) {
@@ -116,6 +116,7 @@ public final class GrimoireCeremony {
     }
 
     private static void give(ServerPlayer p, int book) {
+        Adv.grant(p, "chosen");
         Item item = GrimoireMastery.BOOKS.get(book).item().get();
         ItemStack s = new ItemStack(item);
         if (item instanceof IPresetSpellContainer c) c.initializeSpellContainer(s);
@@ -131,8 +132,12 @@ public final class GrimoireCeremony {
     }
 
     // ------------------------------------------------------------------ the choice: every grimoire has the same chance
+    /** Any grimoire the config hasn't excluded, each with the same chance. */
     private static int pick(ServerPlayer p) {
-        return p.getRandom().nextInt(Math.max(1, GrimoireMastery.BOOKS.size()));
+        java.util.List<Integer> pool = new java.util.ArrayList<>();
+        for (int i = 0; i < GrimoireMastery.BOOKS.size(); i++) if (com.ironspellgrimoire.AddonConfig.ceremonyAllows(GrimoireMastery.BOOKS.get(i).item().get())) pool.add(i);
+        if (pool.isEmpty()) return p.getRandom().nextInt(Math.max(1, GrimoireMastery.BOOKS.size()));
+        return pool.get(p.getRandom().nextInt(pool.size()));
     }
 
     /** Keep the record on respawn (Forge copies the persisted tag, but be sure). */

@@ -26,9 +26,7 @@ public class FxSend {
     private static int vl(int pal, int life, double k) { return fat(pal) && life > 0 ? (int) Math.ceil(life * k) + 2 : life; }
     private static float vw(int pal, float w, double k) { return fat(pal) ? (float) (w * k) : w; }
 
-    private static void send(ServerLevel sl, Vec3 near, FxPacket p) {
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(near.x, near.y, near.z, 96, sl.dimension())), p);
-    }
+    private static void send(ServerLevel sl, Vec3 near, FxPacket p) { FxBatch.near(sl, near, 96, p); }
 
     /** Curved wall (arc of a circle in the plane d/u, extruded +-h along d x u). a0..a1 degrees; sweep = ticks to draw the swing. */
     public static int wall(ServerLevel sl, int pal, Vec3 c, Vec3 d, Vec3 u, float r, float r2, float a0, float a1, float h, int life, int sweep, float speed) {
@@ -161,14 +159,14 @@ public class FxSend {
     public static void impactFrame(ServerLevel sl, Vec3 at, int ticks, int style, double radius) {
         FxPacket p = new FxPacket();
         p.shape = 12; p.life = ticks; p.c = at; p.palette = (byte) style;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, radius, sl.dimension())), p);
+        FxBatch.near(sl, at, radius, p);
     }
 
     /** Screen shake for everyone within {@code radius}. */
     public static void shake(ServerLevel sl, Vec3 at, float strength, int ticks, double radius) {
         FxPacket p = new FxPacket();
         p.shape = 10; p.c = at; p.r = strength; p.life = ticks;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(at.x, at.y, at.z, radius, sl.dimension())), p);
+        FxBatch.near(sl, at, radius, p);
     }
 
     /**

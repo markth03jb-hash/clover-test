@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:iron_sword"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.magic_knight.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.magic_knight.description"
+  },
+  "frame": "challenge",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": false
+ },
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ },
+ "parent": "iron_spell_grimoire:main/mastery_max"
+}

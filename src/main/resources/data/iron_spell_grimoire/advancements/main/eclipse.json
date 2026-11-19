@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:clock"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.eclipse.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.eclipse.description"
+  },
+  "frame": "challenge",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": true
+ },
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ },
+ "parent": "iron_spell_grimoire:main/two_wardens"
+}

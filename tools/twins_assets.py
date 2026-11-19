@@ -28,6 +28,13 @@ make('eclipse_union', *NS, [('d', 'E', 4, 4, 11, 11), ('a', 'a', 3, 3, 12, 12, 9
 make('the_masks', *NS, [('a', 'g', [(7, 2), (7, 14), (4, 12), (3, 8), (4, 4)]), ('m', 'g', [(8, 2), (8, 14), (11, 12), (12, 8), (11, 4)]),
                         ('d', 'l', 4, 7, 6, 7), ('d', 'l', 9, 7, 11, 7), ('d', 'l', 6, 11, 9, 11), ('a', 'p', 2, 4), ('a', 'p', 1, 8), ('m', 'p', 13, 4)])
 
+# High Noon: a blazing sun, rays all round
+make('high_noon', *GS, [('m', 'E', 4, 4, 11, 11), ('w', 'E', 6, 6, 9, 9), ('m', 'l', 7, 0, 8, 0), ('m', 'l', 7, 15, 8, 15), ('m', 'l', 0, 7, 0, 8), ('m', 'l', 15, 7, 15, 8),
+                        ('a', 'l', 2, 2, 3, 3), ('a', 'l', 13, 2, 12, 3), ('a', 'l', 2, 13, 3, 12), ('a', 'l', 13, 13, 12, 12)])
+# Eventide: a crescent over a slow ring of stars
+make('eventide', *NS, [('m', 'a', 3, 2, 12, 11, 100, 280), ('m', 'a', 4, 2, 12, 10, 100, 280), ('d', 'E', 6, 3, 13, 10), ('a', 'p', 11, 4), ('a', 'p', 13, 8),
+                       ('a', 'p', 2, 13), ('a', 'p', 7, 14), ('a', 'p', 12, 13), ('w', 'p', 5, 6)])
+
 
 # ------------------------------------------------------------------ cover
 GOLD, GOLD_SH, GOLD_HI = (232, 178, 64, 255), (150, 98, 26, 255), (255, 230, 150, 255)
@@ -115,19 +122,23 @@ lang = json.load(open(LP))
 lang['item.iron_spell_grimoire.twins_grimoire'] = 'Masked Twins Grimoire'
 lang['item.iron_spell_grimoire.twin_mask'] = 'Twin Mask'
 lang['entity.iron_spell_grimoire.twin_warden'] = 'Twin Warden'
+lang['entity.iron_spell_grimoire.twin_echo'] = 'Twin Echo'
 lang['ui.iron_spell_grimoire.twins_grimoire_only'] = 'Only the Masked Twins Grimoire can cast this.'
 lang['tooltip.iron_spell_grimoire.twins_grimoire.passive'] = ('Passive - two masks, one soul: Sol, the sun twin (fire, fierce up close), and Nyx, the moon twin (frost and void, '
     'quick and slippery). Wear one at a time on your face - tap G to swap, hold G for the wheel of your four chosen arts. Each twin levels on its own (to 50) and learns '
     'eight arts; choose four of each for the wheel. The twin you are not wearing rests at your hip and charges Resonance as you fight - swap and it bursts out. '
     'Sol learns faster by day, Nyx by night, and a twin far ahead of the other learns slowly. Set Sunstones and Moonstones in the masks; '
-    'raise both and they learn to fight together: Twin Strike, Mirror Swap, and - after the Twin Wardens\' trial - Eclipse Union.')
-lang['tooltip.iron_spell_grimoire.twins_grimoire.desc'] = 'Five pages, two faces, one soul.'
+    'raise both and they learn to fight together: Twin Strike, Mirror Swap, and - after the Twin Wardens\' trial - Eclipse Union. Every art masters with use (Perfected at 250 casts), each socket takes one of three cuts, '
+    'from level 15 the resting twin\'s Echo fights beside you, and at 40 each twin has its own ultimate: High Noon and Eventide.')
+lang['tooltip.iron_spell_grimoire.twins_grimoire.desc'] = 'Seven pages, two faces, one soul.'
 lang['tooltip.iron_spell_grimoire.twins_grimoire.lore'] = 'One of them is always watching.'
 for k, (title, guide) in {
  'twin_swap': ('Swap', 'Trade masks: the resting twin takes your face and bursts out with all the Resonance it stored (Sol: a sun flare round you; Nyx: a crescent wave ahead), and you get a short Rush (Sol: harder hits; Nyx: faster feet). Sneak while you swap, once the twins have bonded deep enough, to step back to where you last swapped. Tapping G does the same.'),
  'twin_arts': ('Twin Arts', 'Cast the art last chosen on the G wheel - hold G and point at one of the four arts of the twin you wear.'),
  'twin_strike': ('Twin Strike', 'Both twins at level 10: the gold mask and the silver mask strike at once - two cuts on everything in front of you, and the resting twin\'s Resonance jumps.'),
  'eclipse_union': ('Eclipse Union', 'Both twins at level 40 and the Twin Wardens beaten: the masks fuse for 20 s - every art of both twins on the wheel, no art cooldowns, swaps twice as fast, and you hit harder and move faster.'),
+ 'high_noon': ('High Noon', 'Sol\'s ultimate (Sol worn, level 40): for 10 s a blazing aura scorches every foe near you each second, Sol\'s art cooldowns are cleared and halved while it lasts, and every hit of Sol\'s sets foes burning.'),
+ 'eventide': ('Eventide', 'Nyx\'s ultimate (Nyx worn, level 40): for 8 s every foe near you crawls at half speed, you run 40% faster, and the next three blows aimed at you miss.'),
  'the_masks': ('The Masks', 'Open the Masks: each twin\'s level and arts (choose four for the wheel), the bond between them, the stones set in each mask, your titles and a guide.'),
 }.items():
     lang[f'spell.iron_spell_grimoire.{k}'] = f'Twins: {title}'

@@ -408,6 +408,7 @@ public final class UiShotsServer {
             case "starved" -> { HungerFx.testHunger(p, 4); HungerFx.sync(p, false); }
             case "fed" -> { HungerFx.testHunger(p, 82); HungerFx.sync(p, false); }
             case "page" -> { HungerFx.testHunger(p, 55); HungerFx.theBlade(p, 10f); }
+            case "titles" -> { HungerFx.testBond(p, 1000); HungerFx.testDevours(p, 50); HungerFx.testTitles(p); HungerFx.handle(p, 4, 0); HungerFx.theBlade(p, 10f); }
             case "devour" -> {   // a husk near death in front, sneak-struck
                 faceForward(p);
                 var hs = p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(8));
@@ -444,7 +445,7 @@ public final class UiShotsServer {
             faceForward(p);
             int twin = w.startsWith("sol") ? TwinsFx.SOL : TwinsFx.NYX, art = w.charAt(3) - '0';
             TwinsFx.testCooldowns(p); TwinsFx.testActive(p, twin); TwinsFx.testLoad(p, twin, art, -1, -1, -1);
-            TwinsFx.cast(p, twin, art);
+            TwinsArts.cast(p, twin, art);
             return;
         }
         switch (w) {
@@ -455,6 +456,9 @@ public final class UiShotsServer {
                 TwinsFx.testLoad(p, TwinsFx.SOL, 0, 2, 3, 5); TwinsFx.testLoad(p, TwinsFx.NYX, 0, 1, 2, 5);
                 TwinsFx.testStones(p, 2, 1); TwinsFx.testSockets(p, 3, 1); TwinsFx.testTitles(p, 1 | 2); TwinsFx.testRes(p, 64);
                 TwinsFx.testXp(p, TwinsFx.SOL, 60);
+                TwinsFx.testUses(p, TwinsFx.SOL, 0, 120); TwinsFx.testUses(p, TwinsFx.SOL, 2, 260); TwinsFx.testUses(p, TwinsFx.SOL, 3, 45);
+                TwinsFx.testUses(p, TwinsFx.NYX, 1, 260); TwinsFx.testUses(p, TwinsFx.NYX, 2, 70);
+                TwinsFx.root(p).putIntArray("cut0", new int[]{0, 2, 0}); TwinsFx.root(p).putIntArray("cut1", new int[]{1, 0, 0});
                 p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
                 for (int k = -1; k <= 1; k++) {
@@ -471,11 +475,14 @@ public final class UiShotsServer {
             case "swap" -> { faceForward(p); TwinsFx.testCooldowns(p); TwinsFx.testRes(p, 100); TwinsFx.swap(p); }
             case "full" -> { TwinsFx.testSockets(p, 7, 7); TwinsFx.testLevels(p, 50, 50); TwinsFx.testActive(p, TwinsFx.SOL); TwinsFx.sync(p, false); }
             case "wearnyx" -> { TwinsFx.testActive(p, TwinsFx.NYX); TwinsFx.testCooldowns(p); TwinsFx.sync(p, false); }
-            case "strike" -> { faceForward(p); TwinsFx.twinStrike(p, 10f); }
-            case "eclipse" -> { faceForward(p); TwinsFx.testLevels(p, 50, 50); TwinsFx.testTrialWon(p); TwinsFx.testSockets(p, 7, 7); TwinsFx.eclipseUnion(p, 10f); }
+            case "strike" -> { faceForward(p); TwinsArts.twinStrike(p, 10f); }
+            case "eclipse" -> { faceForward(p); TwinsFx.testLevels(p, 50, 50); TwinsFx.testTrialWon(p); TwinsFx.testSockets(p, 7, 7); TwinsArts.eclipseUnion(p, 10f); }
             case "noeclipse" -> { TwinsFx.testEndEclipse(p); TwinsFx.sync(p, false); }
             case "trial" -> { faceForward(p); TwinsFx.testLevels(p, 40, 40); TwinsFx.handle(p, 6, 0); }
             case "page" -> TwinsFx.theMasks(p, 10f);
+            case "echo" -> { faceForward(p); TwinsFx.testCombat(p); TwinsFx.testEcho(p); }
+            case "noon" -> { faceForward(p); TwinsFx.testLevels(p, 50, 50); TwinsFx.testActive(p, TwinsFx.SOL); TwinsFx.highNoon(p, 10f); }
+            case "eventide" -> { faceForward(p); TwinsFx.testLevels(p, 50, 50); TwinsFx.testActive(p, TwinsFx.NYX); TwinsFx.eventide(p, 10f); }
             case "end" -> TwinsFx.testReset(p);
             default -> {}
         }
@@ -520,20 +527,20 @@ public final class UiShotsServer {
                 ParasiteFx.testUnlockAll(p); ParasiteFx.testMutations(p); ParasiteFx.testStrain(p, ParasiteFx.BRUTE); ParasiteFx.testFill(p); ParasiteFx.testCooldowns(p);
                 for (int m : new int[]{ParasiteFx.TWIN, ParasiteFx.BARBED, ParasiteFx.KEEN}) if (!ParasiteFx.wears(p, m)) ParasiteFx.handle(p, 10, m);
             }
-                        case "colossus" -> { ParasiteFx.testStrain(p, ParasiteFx.BRUTE); ParasiteFx.testCooldowns(p); ParasiteFx.strainArt(p); }
-            case "swarm" -> { ParasiteFx.testStrain(p, ParasiteFx.HIVE); ParasiteFx.testCooldowns(p); ParasiteFx.strainArt(p); }
-            case "apex" -> { faceForward(p); ParasiteFx.testStrain(p, ParasiteFx.HUNTER); ParasiteFx.testCooldowns(p); ParasiteFx.strainArt(p); }
-            case "final" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.testCooldowns(p); ParasiteFx.finalFormStart(p); }
+                        case "colossus" -> { ParasiteFx.testStrain(p, ParasiteFx.BRUTE); ParasiteFx.testCooldowns(p); ParasiteMoves.strainArt(p); }
+            case "swarm" -> { ParasiteFx.testStrain(p, ParasiteFx.HIVE); ParasiteFx.testCooldowns(p); ParasiteMoves.strainArt(p); }
+            case "apex" -> { faceForward(p); ParasiteFx.testStrain(p, ParasiteFx.HUNTER); ParasiteFx.testCooldowns(p); ParasiteMoves.strainArt(p); }
+            case "final" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.testCooldowns(p); ParasiteMoves.finalFormStart(p); }
             case "tempest", "impaler" -> { faceForward(p); ParasiteFx.testPath(p, ParasiteFx.U_STORM, w.equals("tempest") ? 1 : 2); ParasiteFx.testFill(p); ParasiteFx.spineStorm(p, 10f); }
             case "maw", "vortex" -> { faceForward(p); ParasiteFx.testPath(p, ParasiteFx.U_FIELD, w.equals("maw") ? 1 : 2); ParasiteFx.testFill(p); ParasiteFx.graspingField(p, 10f); }
             case "seeker", "bomb" -> { faceForward(p); ParasiteFx.testPath(p, ParasiteFx.U_BARRAGE, w.equals("seeker") ? 1 : 2); ParasiteFx.testFill(p); ParasiteFx.marrowBarrage(p, 10f); }
             case "starve" -> ParasiteFx.testStarve(p);
-            case "grapple" -> { faceForward(p); ParasiteFx.grapple(p); }
-            case "burrow" -> ParasiteFx.burrow(p);
-            case "collapse" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.collapseCore(p, 10f); }
+            case "grapple" -> { faceForward(p); ParasiteMoves.grapple(p); }
+            case "burrow" -> ParasiteMoves.burrow(p);
+            case "collapse" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteMoves.collapseCore(p, 10f); }
             case "pack" -> {}
             case "pack0", "pack1", "pack2", "pack3" -> {
-                faceForward(p); ParasiteFx.testFill(p); ParasiteFx.testStrain(p, w.charAt(4) - '0'); ParasiteFx.packCall(p, 0f);
+                faceForward(p); ParasiteFx.testFill(p); ParasiteFx.testStrain(p, w.charAt(4) - '0'); ParasiteMoves.packCall(p, 0f);
                 for (int k : new int[]{1, 10, 20}) AstaFx.later(k, () -> com.mojang.logging.LogUtils.getLogger().info("UISHOTS pack: {} brutes near after {} ticks (biomass {})",
                         p.serverLevel().getEntitiesOfClass(com.ironspellgrimoire.entity.InfectedBrute.class, p.getBoundingBox().inflate(16)).size(), k, ParasiteFx.biomass(p)));
             }
@@ -544,7 +551,7 @@ public final class UiShotsServer {
                 ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p);
                 p.connection.teleport(p.getX() + 6, p.getY(), p.getZ(), p.getYRot(), p.getXRot());
                 AstaFx.later(4, () -> { ParasiteFx.handle(p, 19, 0); p.connection.teleport(p.getX() - 6, p.getY(), p.getZ(), p.getYRot(), p.getXRot());
-                    AstaFx.later(4, () -> { ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); AstaFx.later(4, () -> ParasiteFx.sendNests(p)); }); });
+                    AstaFx.later(4, () -> { ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); AstaFx.later(4, () -> ParasiteNest.sendNests(p)); }); });
             }
             case "look1", "look2", "look3" -> { ParasiteFx.testUnlockAll(p); ParasiteFx.testFill(p); if (!ParasiteFx.hide(p)) ParasiteFx.toggleHide(p); ParasiteFx.handle(p, 29, w.charAt(4) - '0'); }
             case "nest" -> { faceForward(p); ParasiteFx.testFill(p); ParasiteFx.handle(p, 19, 0); p.connection.teleport(p.getX() - 3, p.getY(), p.getZ() - 3, -45, 20); }

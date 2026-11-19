@@ -42,12 +42,12 @@ public class MoltHusk extends PathfinderMob {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide && --life <= 0) com.ironspellgrimoire.server.ParasiteFx.huskCrumbles(this);
+        if (!level().isClientSide && --life <= 0) com.ironspellgrimoire.server.ParasiteMoves.huskCrumbles(this);
     }
 
     @Override
     public void die(net.minecraft.world.damagesource.DamageSource s) {
-        if (!level().isClientSide && !isRemoved()) com.ironspellgrimoire.server.ParasiteFx.huskCrumbles(this);
+        if (!level().isClientSide && !isRemoved()) com.ironspellgrimoire.server.ParasiteMoves.huskCrumbles(this);
         super.die(s);
     }
 }

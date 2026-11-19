@@ -65,6 +65,9 @@ public abstract class ThemedGrimoireItem extends SimpleAttributeSpellBook {
         GrimoireTooltip.add(tip, key, color);
     }
 
+    /** The pages this grimoire is made with. */
+    public List<RegistryObject<AbstractSpell>> presets() { return spells.get(); }
+
     @Override
     public void initializeSpellContainer(ItemStack stack) {
         if (stack == null || ISpellContainer.isSpellContainer(stack)) return;

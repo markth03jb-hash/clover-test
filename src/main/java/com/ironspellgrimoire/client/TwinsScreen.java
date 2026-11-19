@@ -45,18 +45,9 @@ public class TwinsScreen extends Screen {
         g.fill(x0, y0, x0 + W, y0 + H, 0xF00C0A12);
         g.fillGradient(x0 + 2, y0 + 2, mid, y0 + H - 2, 0xA0583A14, 0xA0281A08);
         g.fillGradient(mid, y0 + 2, x0 + W - 2, y0 + H - 2, 0xA0182454, 0xA0080C20);
-        for (int k = 0; k < 9; k++) {   // faint sun rays fanning from the top left
-            double a = 0.15 + k * 0.16;
-            for (int s = 10; s < Math.min(W / 2 - 6, 200); s += 3) {
-                int px = x0 + 4 + (int) (Math.cos(a) * s), py = y0 + 4 + (int) (Math.sin(a) * s * 0.9);
-                if (px < mid - 2 && py < y0 + H - 3) g.fill(px, py, px + 1, py + 1, 0x18FFD36E);
-            }
-        }
-        for (int k = 0; k < 46; k++) {   // stars on the night half, twinkling
-            int sx = mid + 4 + (k * 73 + 17) % (W / 2 - 8), sy = y0 + 4 + (k * 131 + 29) % (H - 8);
-            int al = (int) (40 + 60 * (0.5 + 0.5 * Mth.sin(t * 0.07F + k)));
-            g.fill(sx, sy, sx + 1, sy + 1, al << 24 | 0xE6EEFF);
-        }
+        final int fx0 = x0, fy0 = y0, fW = W, fH = H, fmid = mid;
+        final float ft = t;
+        g.drawManaged(() -> skyAndSun(g, fx0, fy0, fW, fH, fmid, ft));   // the rays and the stars: one batched draw
         int act = TwinsClient.active();
         for (int k = 1; k <= 6; k++) {   // the seam's glow, toward the worn twin
             int al = (int) ((0x50 - k * 7) * (0.8 + 0.2 * Mth.sin(t * 0.12F)));
@@ -84,6 +75,21 @@ public class TwinsScreen extends Screen {
             case 2 -> bond(g, x0, top, W, mid, mx, my);
             case 3 -> masks(g, x0, top, W, mid, mx, my);
             default -> guide(g, x0, top, W);
+        }
+    }
+
+    private static void skyAndSun(GuiGraphics g, int x0, int y0, int W, int H, int mid, float t) {
+        for (int k = 0; k < 9; k++) {   // faint sun rays fanning from the top left
+            double a = 0.15 + k * 0.16;
+            for (int s = 10; s < Math.min(W / 2 - 6, 200); s += 3) {
+                int px = x0 + 4 + (int) (Math.cos(a) * s), py = y0 + 4 + (int) (Math.sin(a) * s * 0.9);
+                if (px < mid - 2 && py < y0 + H - 3) g.fill(px, py, px + 1, py + 1, 0x18FFD36E);
+            }
+        }
+        for (int k = 0; k < 46; k++) {   // stars on the night half, twinkling
+            int sx = mid + 4 + (k * 73 + 17) % (W / 2 - 8), sy = y0 + 4 + (k * 131 + 29) % (H - 8);
+            int al = (int) (40 + 60 * (0.5 + 0.5 * Mth.sin(t * 0.07F + k)));
+            g.fill(sx, sy, sx + 1, sy + 1, al << 24 | 0xE6EEFF);
         }
     }
 
@@ -136,6 +142,8 @@ public class TwinsScreen extends Screen {
             g.fill(lx, ry, lx + lw, ry + rowH - 2, !known ? 0x50000000 : hover == a ? 0xC0403458 : at >= 0 ? 0x90302440 : 0x70181424);
             if (at >= 0) g.fill(lx, ry, lx + 2, ry + rowH - 2, col);
             g.drawString(font, ARTS[t][a], lx + 6, ry + (rowH - 10) / 2, known ? TEXT : 0xFF5E5A6A, false);
+            int ms = com.ironspellgrimoire.server.TwinsFx.mastery(TwinsClient.uses(t, a));
+            for (int k = 0; k < 3; k++) if (known) g.fill(lx + lw - 46 + k * 4, ry + rowH / 2 - 2, lx + lw - 44 + k * 4, ry + rowH / 2 + 1, k < ms ? col : 0x50FFFFFF);   // mastery pips
             String tag = !known ? "Lv " + ART_LV[a] : at >= 0 ? "slot " + (at + 1) : "";
             if (!tag.isEmpty()) g.drawString(font, tag, lx + lw - 4 - font.width(tag), ry + (rowH - 10) / 2, !known ? 0xFF6E6A7A : col, false);
             if (known) hits.add(new int[]{lx, ry, lx + lw, ry + rowH - 2, 1, t * 10 + a});
@@ -147,8 +155,11 @@ public class TwinsScreen extends Screen {
         g.drawString(font, ARTS[t][show], rx, ly, known ? col : DIM, true);
         String facts = "Lv " + ART_LV[show] + "  -  " + ART_CD[t][show] / 20 + " s  -  " + ART_MANA[t][show] + " mana";
         g.drawString(font, facts, rx, ly + 11, DIM, false);
+        int u = TwinsClient.uses(t, show), ms = com.ironspellgrimoire.server.TwinsFx.mastery(u);
+        String mline = ms >= 3 ? ART_PERF[t][show] : "Mastery " + (ms == 0 ? "-" : "I".repeat(ms)) + ": " + u + " / " + MASTERY_AT[ms] + " casts";
+        g.drawString(font, font.plainSubstrByWidth(mline, rw), rx, ly + 22, ms >= 3 ? col : 0xFFB0A8C0, false);
         List<FormattedCharSequence> lines = font.split(Component.literal(ART_DESC[t][show]), rw);
-        for (int i = 0; i < Math.min(3, lines.size()); i++) g.drawString(font, lines.get(i), rx, ly + 25 + i * 10, TEXT, false);
+        for (int i = 0; i < Math.min(2, lines.size()); i++) g.drawString(font, lines.get(i), rx, ly + 34 + i * 10, TEXT, false);
         // the wheel's four slots
         int sy = ly + 66;
         g.drawString(font, "G wheel: pick a slot, then an art", rx, sy, DIM, false);
@@ -164,6 +175,9 @@ public class TwinsScreen extends Screen {
             hits.add(new int[]{bx, by, bx + sw, by + 15, 2, s});
         }
         g.drawString(font, "Right-click a slot to empty it.", rx, sy + 50, 0xFF6E6A7A, false);
+        boolean ult = lv >= ULT_LV;
+        g.drawString(font, font.plainSubstrByWidth("Ultimate: " + ULT_NAME[t] + (ult ? " (its page)" : " at level " + ULT_LV), rw), rx, sy + 62, ult ? col : DIM, false);
+        g.drawString(font, font.plainSubstrByWidth(lv >= ECHO_LV ? "Echo: fights beside you while resting" : "Echo: at level " + ECHO_LV, rw), rx, sy + 74, lv >= ECHO_LV ? TEXT : DIM, false);
     }
 
     // ------------------------------------------------------------------ the bond (left) and the titles (right)
@@ -222,22 +236,35 @@ public class TwinsScreen extends Screen {
             g.renderItem(TwinsMasks.stack(TwinsClient.maskForm(t)), 0, 0);
             g.pose().popPose();
             int sock = TwinsClient.v[V_SOCK + t];
-            g.drawCenteredString(font, TWIN[t] + " - stage " + com.ironspellgrimoire.server.TwinsFx.stage(sock) + " of 3", cx, y + 74, TEXT);
+            g.drawCenteredString(font, TWIN[t] + " - stage " + com.ironspellgrimoire.server.TwinsFx.stage(sock) + " of 3", cx, y + 70, TEXT);
+            int have = t == SOL ? TwinsClient.v[V_SUN] : TwinsClient.v[V_MOON];
             for (int s = 0; s < 3; s++) {
-                int ry = y + 88 + s * 30;
+                int ry = y + 84 + s * 38;
                 boolean set = TwinsClient.socket(t, s), open = TwinsClient.lv(t) >= SOCKET_LV[s];
-                int have = t == SOL ? TwinsClient.v[V_SUN] : TwinsClient.v[V_MOON];
-                g.fill(cx0 - 2, ry - 2, cx1, ry + 20, set ? 0x70403050 : 0x40000000);
-                g.drawString(font, SOCKET_NAME[t][s], cx0, ry, set ? col : open ? 0xFFFFFFFF : DIM, false);
-                if (set) g.drawString(font, "SET", cx1 - 4 - font.width("SET"), ry, 0xFFA8F0A0, false);
-                else if (!open) g.drawString(font, "Lv " + SOCKET_LV[s], cx1 - 4 - font.width("Lv " + SOCKET_LV[s]), ry, 0xFF6E6A7A, false);
-                else button(g, cx1 - 52, ry - 2, 48, "SET", have > 0, col, mx, my, 3, t * 10 + s);
-                g.drawString(font, SOCKET_DESC[t][s], cx0, ry + 10, open ? TEXT : 0xFF6E6A7A, false);
+                int cur = set ? TwinsClient.cut(t, s) : -1, show = cur;
+                g.fill(cx0 - 2, ry - 2, cx1, ry + 34, set ? 0x70403050 : 0x40000000);
+                g.drawString(font, SOCKET_PLACE[t][s], cx0, ry, set ? col : open ? 0xFFFFFFFF : DIM, false);
+                String st = !open ? "Lv " + SOCKET_LV[s] : set ? "re-cut: 1 stone" : "1 stone";
+                g.drawString(font, st, cx1 - 4 - font.width(st), ry, !open ? 0xFF6E6A7A : DIM, false);
+                int bw = (cx1 - cx0 - 8) / 3;
+                for (int c = 0; c < 3; c++) {   // the three cuts: the set one lit, the others to choose
+                    int bx = cx0 + c * (bw + 3);
+                    boolean on = c == cur, can = open && !on && have > 0;
+                    if (open && mx >= bx && mx < bx + bw && my >= ry + 10 && my < ry + 23) show = c;
+                    if (on) {
+                        g.fill(bx, ry + 10, bx + bw, ry + 23, 0xE0403458);
+                        g.fill(bx, ry + 22, bx + bw, ry + 23, col);
+                        g.drawCenteredString(font, font.plainSubstrByWidth(SOCKET_NAME[t][s][c], bw - 4), bx + bw / 2, ry + 13, col);
+                    } else button(g, bx, ry + 10, bw, font.plainSubstrByWidth(SOCKET_NAME[t][s][c], bw - 6), can, col, mx, my, 3, t * 100 + s * 10 + c);
+                }
+                String desc = show >= 0 ? SOCKET_DESC[t][s][show] : open ? "Choose a cut." : "Opens at " + TWIN[t] + " level " + SOCKET_LV[s] + ".";
+                g.drawString(font, font.plainSubstrByWidth(desc, cx1 - cx0 - 4), cx0, ry + 25, open ? TEXT : 0xFF6E6A7A, false);
             }
         }
     }
 
     // ------------------------------------------------------------------ the guide
+    static final int[] GOLD_LABEL = {GOLD, SILVER};
     static final String[][] GUIDE = {
             {"Swap", "Tap G, or let go in the middle of the wheel. 3 s between swaps."},
             {"Arts", "Hold G and point at one of the worn twin's four arts."},
@@ -250,6 +277,10 @@ public class TwinsScreen extends Screen {
             {"Sockets", "Each mask opens a socket at levels 5, 15 and 30; each is a perk."},
             {"Bond", "Both 10: Twin Strike. Both 25: Mirror Swap. Both 40: the trial."},
             {"Eclipse", "Beat both wardens, then fuse for 20 s: all 16 arts, no cooldowns."},
+            {"Mastery", "Every art grows with use: +15% at 30 casts, -20% cooldown at 100, Perfected at 250."},
+            {"Cuts", "Each socket takes one of three cuts; re-cut it any time for another stone."},
+            {"Echo", "From level 15, the resting twin leaves your hip in a fight and shoots beside you."},
+            {"Ultimates", "Level 40: Sol's High Noon and Nyx's Eventide, each its own page (wear that twin)."},
             {"Titles", "Four to earn; wear one on the Bond tab."}};
 
     private void guide(GuiGraphics g, int x0, int y, int W) {
@@ -257,9 +288,9 @@ public class TwinsScreen extends Screen {
         int row = 0;
         for (String[] e : GUIDE) {
             List<FormattedCharSequence> lines = font.split(Component.literal(e[1]), vw);
-            g.drawString(font, e[0], x0 + 10, y + row * 11, row % 2 == 0 ? GOLD : SILVER, false);
-            for (FormattedCharSequence l : lines) { g.drawString(font, l, vx, y + row * 11, TEXT, false); row++; }
-            if (row * 11 > H() - 50) break;
+            if ((row + lines.size()) * 10 > H() - 44) break;
+            g.drawString(font, e[0], x0 + 10, y + row * 10, GOLD_LABEL[(int) java.util.Arrays.asList(GUIDE).indexOf(e) % 2], false);
+            for (FormattedCharSequence l : lines) { g.drawString(font, l, vx, y + row * 10, TEXT, false); row++; }
         }
     }
 

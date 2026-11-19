@@ -1,0 +1,26 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:end_crystal"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.rift.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.rift.description"
+  },
+  "frame": "task",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": false
+ },
+ "criteria": {
+  "rift": {
+   "trigger": "minecraft:changed_dimension",
+   "conditions": {
+    "to": "iron_spell_grimoire:rift"
+   }
+  }
+ },
+ "parent": "iron_spell_grimoire:main/chosen"
+}

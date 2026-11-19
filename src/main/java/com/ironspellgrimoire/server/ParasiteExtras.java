@@ -137,6 +137,7 @@ public final class ParasiteExtras {
         if (which < 1 || which > 3 || apex(p) != 0) return;
         if (ParasiteFx.evoRank(p) < ParasiteFx.RANKS.length - 1) { p.displayClientMessage(Component.literal("Reach the Sovereign rank first").withStyle(ChatFormatting.GRAY), true); return; }
         ParasiteFx.root(p).putInt("apex", which);
+        Adv.grant(p, "apex");
         ServerLevel sl = p.serverLevel();
         FxSend.ring(sl, RED | FxPacket.KEEP_SHAPE, p.position().add(0, 0.05, 0), 0.4f, 6f, 0.3f, 18);
         FxSend.beam(sl, RED | FxPacket.KEEP_SHAPE, p.position(), p.position().add(0, 7, 0), 0.7f, 16);

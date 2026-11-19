@@ -92,7 +92,7 @@ public class MercuryFx {
         FxPacket p = new FxPacket();
         if (life <= 3 && life > 0) life = 1;   // per-tick copies: the client moves each along its velocity through its tick
         p.shape = 19; p.palette = (byte) M; p.life = life; p.sweep = grow; p.c = c; p.v = vel; p.r = r;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 96, sl.dimension())), p);
+        FxBatch.near(sl, c, 96, p);
     }
 
     /** Mercury splashing where something hits: a few beads and a ring. */

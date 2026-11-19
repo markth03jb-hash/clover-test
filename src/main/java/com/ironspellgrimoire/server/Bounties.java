@@ -339,6 +339,7 @@ public final class Bounties {
     }
 
     private static void complete(ServerPlayer p, CompoundTag b) {
+        Adv.grant(p, "subjugated");
         int mods = b.getInt("Mods"), boss = b.getInt("Boss");
         int hard = Integer.bitCount(mods & ~WOUNDED);
         boolean wounded = (mods & WOUNDED) != 0;

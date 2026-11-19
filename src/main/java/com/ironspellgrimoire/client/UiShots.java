@@ -75,7 +75,11 @@ public final class UiShots {
     private static void plan() {
         Minecraft mc = Minecraft.getInstance();
         steps.add(new Step("setup", () -> onServer(UiShotsServer::prepare), 40, false));
-        steps.add(new Step("hud_empty", () -> mc.setScreen(null), 20, true));
+        steps.add(new Step("hud_empty", () -> { mc.setScreen(null); FirstStepsHud.set(0, 0, 0); }, 20, true));
+        steps.add(new Step("first_steps", () -> FirstStepsHud.force(1 | 8, 300, -120), 10, true));
+        steps.add(new Step("first_steps_codex", () -> FirstStepsHud.force(1 | 2 | 8, -40, 500), 10, true));
+        steps.add(new Step("first_steps_done", () -> { FirstStepsHud.force(1 | 2 | 4 | 8, 0, 0); }, 10, true));
+        steps.add(new Step("first_steps_off", () -> FirstStepsHud.set(0, 0, 0), 4, true));
         for (String part : new String[]{"spells:0", "spells:1", "spells:3", "combos", "path", "upgrades", "tree", "memories:0", "memories:1"})
             steps.add(new Step("book_" + part.replace(':', '_'), () -> book(part), 15, false));
         steps.add(new Step("board_bounty", () -> onServer(p -> UiShotsServer.board(p, Boards.BOUNTY)), 20, false));
@@ -86,6 +90,9 @@ public final class UiShots {
         steps.add(new Step("altar", () -> onServer(UiShotsServer::altar), 20, false));
         steps.add(new Step("library", () -> onServer(UiShotsServer::library), 20, false));
         steps.add(new Step("waypoints", () -> onServer(UiShotsServer::waypoints), 20, false));
+        steps.add(new Step("codex", () -> mc.setScreen(new CodexScreen(0)), 10, false));
+        steps.add(new Step("codex_book", () -> mc.setScreen(new CodexScreen(CodexScreen.chapters() + 1)), 10, false));
+        steps.add(new Step("codex_rules", () -> mc.setScreen(new CodexScreen(CodexScreen.chapters() - 1)), 10, false));
         // the HUD with everything on it: a hunt, a quest, the world boss, the rift map, a raid's wave banner
         steps.add(new Step("take_hunt_and_quest", () -> { mc.setScreen(null); onServer(p -> { UiShotsServer.take(p, Boards.BOUNTY); UiShotsServer.take(p, Boards.QUEST); }); }, 30, false));
         steps.add(new Step("board_hunting", () -> onServer(p -> UiShotsServer.board(p, Boards.BOUNTY)), 20, false));
@@ -100,11 +107,12 @@ public final class UiShots {
             m.c = new Vec3(v[0], v[1], v[2]); m.d = new Vec3(v[3], v[4], v[5]); m.u = new Vec3(v[6], 0, 0);
             RiftMap.set(m);
             FxPacket rb = fx(76); rb.sweep = 2; rb.h = 2; rb.life = 400; RaidBanner.start(rb);
+            FirstStepsHud.force(1 | 2 | 8, 300, -120);
         }, 20, true));
         steps.add(new Step("hud_compact", () -> TrackerMode.set(1), 10, true));
         // the Blood Grimoire: Scarlet Moon seen from the front and behind (third person), then two spells
         steps.add(new Step("blood_gauge", () -> {
-            TrackerMode.set(2); mc.options.hideGui = false; mc.setScreen(null);
+            TrackerMode.set(2); mc.options.hideGui = false; mc.setScreen(null); FirstStepsHud.set(0, 0, 0);
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             onServer(p -> UiShotsServer.bloodSpell(p, "gauge"));
         }, 30, true));
@@ -654,6 +662,9 @@ public final class UiShots {
         steps.add(new Step("hb_guide", () -> { mc.setScreen(null); BladeScreen.forceHover = -1; BladeScreen.startGuide = true; onServer(p -> UiShotsServer.element(p, "H:page")); }, 14, false));
         steps.add(new Step("hb_guide_young", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.element(p, "H:page_new")); }, 14, false));
         steps.add(new Step("hb_page_new", () -> BladeScreen.startGuide = false, 1, false));
+        steps.add(new Step("hb_titles", () -> { mc.setScreen(null); BladeScreen.startTitles = true; onServer(p -> UiShotsServer.element(p, "H:titles")); }, 14, false));
+        steps.add(new Step("hb_guide_deep", () -> { mc.setScreen(null); BladeScreen.startTitles = false; BladeScreen.startGuide = true; onServer(p -> UiShotsServer.element(p, "H:page")); }, 14, false));
+        steps.add(new Step("hb_titles_done", () -> BladeScreen.startGuide = false, 1, false));
         steps.add(new Step("hb_page_new2", () -> { mc.setScreen(null); BladeScreen.forceHover = 13; onServer(p -> UiShotsServer.element(p, "H:page_new")); }, 14, false));
         steps.add(new Step("hb_book", () -> {
             BladeScreen.forceHover = -1;
@@ -696,6 +707,11 @@ public final class UiShots {
             steps.add(new Step("tw_nyx_" + nyx[k], () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:full"); UiShotsServer.element(p, "T:nyx" + kk); }); }, kk == 5 || kk == 6 || kk == 7 ? 16 : 8, true));
         }
         steps.add(new Step("tw_strike", () -> onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:full"); UiShotsServer.element(p, "T:strike"); }), 5, true));
+        steps.add(new Step("tw_echo", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:full"); UiShotsServer.element(p, "T:echo"); }); }, 30, true));
+        steps.add(new Step("tw_echo_back", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 12, true));
+        steps.add(new Step("tw_noon", () -> onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:noon"); }), 25, true));
+        steps.add(new Step("tw_noon_hud", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); }, 4, true));
+        steps.add(new Step("tw_eventide", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:eventide"); }); }, 20, true));
         steps.add(new Step("tw_trial", () -> onServer(p -> { UiShotsServer.element(p, "T:setup"); UiShotsServer.element(p, "T:trial"); }), 40, true));
         steps.add(new Step("tw_trial_front", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 10, true));
         steps.add(new Step("tw_book", () -> {
@@ -759,6 +775,7 @@ public final class UiShots {
             case "altar" -> new Class<?>[]{AltarScreen.class, com.ironspellgrimoire.server.AltarMenu.class};
             case "library" -> new Class<?>[]{LibraryScreen.class, com.ironspellgrimoire.server.GrimoireLibrary.class};
             case "waypoints" -> new Class<?>[]{WaypointScreen.class, com.ironspellgrimoire.server.Waypoints.class};
+            case "codex", "codex_book", "codex_rules" -> new Class<?>[]{CodexScreen.class};
             default -> null;
         };
     }
@@ -801,7 +818,7 @@ public final class UiShots {
         Minecraft mc = Minecraft.getInstance();
         ticks++;
         if (!TESTS && ticks > 20 * 60 * 15) { report.add("run | gave up after 15 minutes at step " + index); finish(); return; }
-        if (TESTS && ticks > 20 * 60 * 40 && phase < 6) { writeTests("CRASH | run | gave up after 40 minutes at test " + com.ironspellgrimoire.server.GameTests.progress()); return; }
+        if (TESTS && ticks > 20 * 60 * 48 && phase < 6) { writeTests("CRASH | run | gave up after 48 minutes at test " + com.ironspellgrimoire.server.GameTests.progress()); return; }
         if (phase == 0) {   // wait for the title screen (or the first-launch screens), then make the world
             if (mc.getOverlay() != null || mc.screen == null || mc.level != null) return;
             if (!(mc.screen instanceof TitleScreen) && !mc.screen.getClass().getSimpleName().contains("Onboarding")) return;

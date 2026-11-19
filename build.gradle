@@ -59,6 +59,9 @@ dependencies {
     // The book uses SimpleAttributeSpellBook (not in the :api package) so compile against the full mod,
     // plus the Curios API it extends.
     implementation fg.deobf("io.redspace:irons_spellbooks:${irons_spells_version}")
+    // JEI: info pages only (compat/IsgJeiPlugin). Optional - the mod runs without JEI.
+    compileOnly fg.deobf("mezz.jei:jei-1.20.1-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge-api:${jei_version}")
     compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
     runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
     // Iron's other runtime requirements (versions match the jars you supplied)

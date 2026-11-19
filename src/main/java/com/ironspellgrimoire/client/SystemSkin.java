@@ -27,6 +27,10 @@ public final class SystemSkin {
 
     /** The dark round the window, the panel, its grid and lines, the brackets and the header. age: ticks since it opened. */
     static void window(GuiGraphics g, Font font, int x0, int y0, int w, int h, float age, String title) {
+        g.drawManaged(() -> windowBody(g, font, x0, y0, w, h, age, title));   // thousands of small fills: one draw, not one each
+    }
+
+    private static void windowBody(GuiGraphics g, Font font, int x0, int y0, int w, int h, float age, String title) {
         float t = age;
         int sw = g.guiWidth(), sh = g.guiHeight();
         g.fillGradient(0, 0, sw, sh, 0xC0010308, 0xE0030818);

@@ -33,7 +33,13 @@ public final class TowerCompass {
 
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || p.getPersistentData().getBoolean("isg_tower_compass")) return;
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        if (!p.getPersistentData().getBoolean("isg_codex") && com.ironspellgrimoire.AddonConfig.starterCodex()) {   // every new mage gets the guide
+            p.getPersistentData().putBoolean("isg_codex", true);
+            ItemStack codex = new ItemStack(AddonItemRegistry.GRIMOIRE_CODEX.get());
+            if (!p.getInventory().add(codex)) p.drop(codex, false);
+        }
+        if (p.getPersistentData().getBoolean("isg_tower_compass")) return;
         p.getPersistentData().putBoolean("isg_tower_compass", true);
         if (GrimoireCeremony.chosen(p) >= 0) return;   // already chosen: no need
         ServerLevel ow = p.server.getLevel(Level.OVERWORLD);
@@ -45,6 +51,7 @@ public final class TowerCompass {
         c.getOrCreateTag().putInt("TowerX", tower.getX());
         c.getOrCreateTag().putInt("TowerZ", tower.getZ());
         if (!p.getInventory().add(c)) p.drop(c, false);
+        FirstSteps.towerAt(p, tower.getX(), tower.getZ());
         double dx = tower.getX() - p.getX(), dz = tower.getZ() - p.getZ();
         p.sendSystemMessage(Component.literal("A compass for a new mage. ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
                 .append(Component.literal("It points to the Grimoire Tower - about " + (int) Math.hypot(dx, dz) + " blocks " + Bounties.direction(dx, dz)

@@ -447,7 +447,11 @@ public final class ShadowArmy {
     }
 
     public static void handle(ServerPlayer p, int action, int id, String name) {
-        if (!ShadowFx.equipped(p) && action != 0) return;
+        if (!ShadowFx.equipped(p)) {   // the army answers only to the System Grimoire
+            if (action == 0) p.displayClientMessage(net.minecraft.network.chat.Component.literal("Equip the System Grimoire to command your shadows")
+                    .withStyle(net.minecraft.ChatFormatting.GRAY), true);
+            return;
+        }
         if (action == 0) { open(p); return; }
         if (action == 5) { challenge(p, id); return; }
         if (action == 6) { arise(p, id); keep(p); open(p); return; }

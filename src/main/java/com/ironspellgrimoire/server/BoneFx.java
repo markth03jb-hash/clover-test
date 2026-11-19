@@ -93,7 +93,7 @@ public class BoneFx {
         if (mode == FxPacket.HOLD && life <= 2) life = 1;
         p.shape = 30; p.palette = (byte) B; p.life = life; p.sweep = rise; p.h = kind;
         p.c = c; p.d = axis.normalize(); p.u = bend; p.r = halfLen; p.r2 = radius; p.speed = mode; p.a0 = spin; p.v = vel; p.a1 = moveTicks;
-        AddonNetwork.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(c.x, c.y, c.z, 128, sl.dimension())), p);
+        FxBatch.near(sl, c, 128, p);
     }
 
     /** A spike of bone bursting out of the ground at {@code base}, pointing {@code dir}. */

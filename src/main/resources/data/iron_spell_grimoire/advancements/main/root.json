@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "iron_spell_grimoire:grimoire_codex"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.root.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.root.description"
+  },
+  "frame": "task",
+  "show_toast": false,
+  "announce_to_chat": false,
+  "hidden": false,
+  "background": "minecraft:textures/block/dark_oak_planks.png"
+ },
+ "criteria": {
+  "tick": {
+   "trigger": "minecraft:tick"
+  }
+ }
+}

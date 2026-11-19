@@ -35,11 +35,13 @@ public final class TrackerMode {
     /** Where each tracker starts: the bounty at the top, the quest under it, the world boss under both. */
     public static int questY() { return 4 + (BountyHud.shown() ? (compact() ? 16 : 66) : 0); }
     public static int worldY() { return questY() + (QuestHud.shown() ? (compact() ? 16 : QuestHud.height() + 4) : 0); }
+    /** The First Steps box goes under all the others. */
+    public static int stepsY() { return Math.max(4, riftY() + RiftMap.drawnH); }
     public static int riftY() { return worldY() + (WorldBossHud.shown() ? (compact() ? 16 : 44) : 0); }
     /** Where the trackers end (0 when none is on screen): the mode timers start under this, so they never overlap. */
     public static int bottom() {
         if (hidden()) return 0;
-        int y = riftY() + RiftMap.drawnH;
+        int y = stepsY() + (FirstStepsHud.shown() ? (compact() ? 16 : FirstStepsHud.H + 4) : 0);
         return y > 4 ? y : 0;
     }
 
@@ -72,12 +74,27 @@ public final class TrackerMode {
         @SubscribeEvent public static void register(RegisterKeyMappingsEvent e) { e.register(KEY); e.register(BOSS_KEY); }
     }
 
+    /** Each key once in Controls: if the key list ever holds the same binding more than once (it has shown the mod's
+     *  keys four times over), the copies go, keeping the first - and its key. */
+    static void dedupeKeys(Minecraft mc) {
+        KeyMapping[] all = mc.options.keyMappings;
+        java.util.LinkedHashMap<String, KeyMapping> seen = new java.util.LinkedHashMap<>();
+        for (KeyMapping k : all) seen.putIfAbsent(k.getName(), k);
+        if (seen.size() == all.length) return;
+        mc.options.keyMappings = seen.values().toArray(new KeyMapping[0]);
+        KeyMapping.resetMapping();
+        org.slf4j.LoggerFactory.getLogger("iron_spell_grimoire").info("Removed {} duplicate key bindings from Controls", all.length - seen.size());
+    }
+
     @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = Dist.CLIENT)
     public static final class Ticks {
+        private static boolean deduped;
+
         @SubscribeEvent
         public static void onTick(TickEvent.ClientTickEvent e) {
             if (e.phase != TickEvent.Phase.END) return;
             Minecraft mc = Minecraft.getInstance();
+            if (!deduped && mc.options != null) { deduped = true; dedupeKeys(mc); }
             while (KEY.consumeClick()) {
                 mode = (mode + 1) % 3;
                 if (mc.player != null) mc.player.displayClientMessage(Component.literal("Trackers: " + (mode == 0 ? "full" : mode == 1 ? "compact" : "hidden")).withStyle(ChatFormatting.GRAY), true);

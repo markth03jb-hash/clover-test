@@ -82,6 +82,7 @@ public final class MasteryClient {
         if (lvl > 1) tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.bonus", 4 * (lvl - 1), 3 * (lvl - 1), 50 * (lvl - 1)).withStyle(ChatFormatting.DARK_GREEN));
         if (!max) {
             List<String> next = GrimoireMastery.unlockedAt(b, lvl + 1);
+            int ours = tip.size();   // the mastery lines from here on are already scrambled: leave them be
             if (!next.isEmpty()) tip.add(Component.translatable("tooltip.iron_spell_grimoire.mastery.next", lvl + 1, GrimoireMastery.hiddenNames(next)).withStyle(ChatFormatting.AQUA));
             List<String> locked = new ArrayList<>();
             for (Map.Entry<String, Integer> en : b.unlocks().entrySet()) if (en.getValue() > lvl) locked.add(en.getKey());
@@ -90,15 +91,27 @@ public final class MasteryClient {
             List<String> names = new ArrayList<>();
             for (String id : locked) names.add(Component.translatable("spell.iron_spell_grimoire." + id).getString());
             for (int i = 0; i < tip.size(); i++) {
+                if (i >= ours && i < ours + 2) continue;   // "Mastery N unlocks" and "Locked"
                 String line = tip.get(i).getString();
-                for (String n : names) {
-                    if (n.isEmpty() || !line.contains(n)) continue;
-                    int at = line.indexOf(n);
-                    tip.set(i, Component.literal(line.substring(0, at)).withStyle(ChatFormatting.GRAY)
-                            .append(Component.literal(n).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.OBFUSCATED))
-                            .append(Component.literal(line.substring(at + n.length())).withStyle(ChatFormatting.DARK_GRAY)));
-                    break;
+                boolean any = false;
+                for (String n : names) if (!n.isEmpty() && line.contains(n)) { any = true; break; }
+                if (!any) continue;
+                // every locked name on the line scrambled, not just the first
+                net.minecraft.network.chat.MutableComponent out = Component.empty();
+                int pos = 0;
+                while (pos < line.length()) {
+                    int best = -1; String hit = null;
+                    for (String n : names) {
+                        if (n.isEmpty()) continue;
+                        int at = line.indexOf(n, pos);
+                        if (at >= 0 && (best < 0 || at < best)) { best = at; hit = n; }
+                    }
+                    if (best < 0) { out.append(Component.literal(line.substring(pos)).withStyle(ChatFormatting.GRAY)); break; }
+                    if (best > pos) out.append(Component.literal(line.substring(pos, best)).withStyle(ChatFormatting.GRAY));
+                    out.append(Component.literal(hit).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.OBFUSCATED));
+                    pos = best + hit.length();
                 }
+                tip.set(i, out);
             }
         }
     }

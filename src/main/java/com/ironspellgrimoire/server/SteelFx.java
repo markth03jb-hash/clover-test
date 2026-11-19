@@ -402,13 +402,15 @@ public class SteelFx {
         p.hurtMarked = true;
         p.resetFallDistance();
         double gallop = step * 0.9;
-        sendCart(sl, p.position(), d, gallop, FxPacket.HOLD, 2, v, false);
         Vec3 r = FxLib.right(d);
-        for (int a = -1; a <= 1; a += 2) for (int s = -1; s <= 1; s += 2) {   // wheels
-            Vec3 w = p.position().add(d.scale(-0.1 + 0.62 * a)).add(r.scale(0.8 * s)).add(0, 0.42, 0);
-            FxSend.wall(sl, WHITE, w, d, UP, 0.4f, 0.4f, -180, 180, 0.07f, 2, 0, (float) CART_SPEED);
-            FxSend.box(sl, ST, w, r, UP, 0.04f, 0.37f, 0.03f, 2, 0, FxPacket.HOLD, 75f, v, 0);
-            FxSend.box(sl, ST, w, r, d, 0.04f, 0.37f, 0.03f, 2, 0, FxPacket.HOLD, 75f, v, 0);
+        if (step % 2 == 0) {   // the cart is redrawn every other tick: its pieces carry the cart's speed, so they ride along in between
+            sendCart(sl, p.position(), d, gallop, FxPacket.HOLD, 3, v, false);
+            for (int a = -1; a <= 1; a += 2) for (int s = -1; s <= 1; s += 2) {   // wheels
+                Vec3 w = p.position().add(d.scale(-0.1 + 0.62 * a)).add(r.scale(0.8 * s)).add(0, 0.42, 0);
+                FxSend.wall(sl, WHITE, w, d, UP, 0.4f, 0.4f, -180, 180, 0.07f, 3, 0, (float) CART_SPEED);
+                FxSend.box(sl, ST, w, r, UP, 0.04f, 0.37f, 0.03f, 3, 0, FxPacket.HOLD, 75f, v, 0);
+                FxSend.box(sl, ST, w, r, d, 0.04f, 0.37f, 0.03f, 3, 0, FxPacket.HOLD, 75f, v, 0);
+            }
         }
         if (step % 2 == 0) FxLib.groundPuff(sl, SV, p.position().add(d.scale(-1.3)), 0.7f);
         if (step % 3 == 0) FxLib.spark(sl, GD, p.position().add(d.scale(2.4)), 0.4f);    // sparks off the hooves

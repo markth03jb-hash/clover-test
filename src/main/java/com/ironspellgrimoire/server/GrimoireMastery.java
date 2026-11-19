@@ -300,7 +300,7 @@ public final class GrimoireMastery {
         book(AddonItemRegistry.HUNGER_GRIMOIRE::get, Fx.CRIMSON,
                 "draw_blade", 1, "the_blade", 1, "gnash", 1, "feast", 2, "unleash", 3, "hunger_domain", 4);
         book(AddonItemRegistry.TWINS_GRIMOIRE::get, Fx.GOLD,
-                "twin_swap", 1, "the_masks", 1, "twin_arts", 1, "twin_strike", 2, "eclipse_union", 4);
+                "twin_swap", 1, "the_masks", 1, "twin_arts", 1, "twin_strike", 2, "high_noon", 3, "eventide", 3, "eclipse_union", 4);
     }
 
     // ------------------------------------------------------------------ book data (shared with the client)
@@ -492,6 +492,7 @@ public final class GrimoireMastery {
         if (b == null || !io.redspace.ironsspellbooks.api.spells.ISpellContainer.isSpellContainer(stack)) return;
         try {
             var c = io.redspace.ironsspellbooks.api.spells.ISpellContainer.get(stack);
+            if (repair(stack, c)) c = io.redspace.ironsspellbooks.api.spells.ISpellContainer.get(stack);
             List<io.redspace.ironsspellbooks.api.spells.SpellSlot> slots = new ArrayList<>(c.getActiveSpells());
             List<io.redspace.ironsspellbooks.api.spells.SpellSlot> sorted = new ArrayList<>(slots);
             sorted.sort(java.util.Comparator.comparingInt(sl -> required(b, sl.getSpell().getSpellResource().getPath())));
@@ -502,6 +503,33 @@ public final class GrimoireMastery {
             for (var sl : sorted) fresh.addSpell(sl.getSpell(), sl.getLevel(), sl.isLocked(), stack);
             fresh.save(stack);
         } catch (Throwable ignored) { }
+    }
+
+    /**
+     * A book made by an older version can hold a page that no longer exists (it shows as "None" on the spell wheel) or
+     * miss one of its pages: it's rebuilt from the book's own page list, keeping any other real spell it gained (an
+     * Awakening's). Returns whether it changed.
+     */
+    static boolean repair(ItemStack stack, io.redspace.ironsspellbooks.api.spells.ISpellContainer c) {
+        if (!(stack.getItem() instanceof com.ironspellgrimoire.item.ThemedGrimoireItem tg)) return false;
+        java.util.Set<net.minecraft.resources.ResourceLocation> want = new java.util.LinkedHashSet<>();
+        for (var ro : tg.presets()) want.add(ro.get().getSpellResource());
+        java.util.Set<net.minecraft.resources.ResourceLocation> have = new java.util.HashSet<>();
+        List<io.redspace.ironsspellbooks.api.spells.SpellSlot> extra = new ArrayList<>();
+        boolean stale = false;
+        for (var sl : c.getAllSpells()) {
+            if (sl == null) continue;
+            var sp = sl.getSpell();
+            if (sp == null || "none".equals(sp.getSpellResource().getPath())) { stale = true; continue; }
+            var id = sp.getSpellResource();
+            if (want.contains(id)) have.add(id); else extra.add(sl);
+        }
+        if (!stale && have.containsAll(want) && c.getMaxSpellCount() >= want.size() + extra.size()) return false;
+        var fresh = io.redspace.ironsspellbooks.api.spells.ISpellContainer.create(want.size() + extra.size(), c.isSpellWheel(), c.mustEquip());
+        for (var ro : tg.presets()) fresh.addSpell(ro.get(), 1, true, stack);
+        for (var sl : extra) fresh.addSpell(sl.getSpell(), sl.getLevel(), sl.isLocked(), stack);
+        fresh.save(stack);
+        return true;
     }
 
     private static void setMod(Player p, Attribute a, UUID id, String name, double amount, AttributeModifier.Operation op) {
@@ -534,6 +562,8 @@ public final class GrimoireMastery {
 
     // ------------------------------------------------------------------ level-up flourish
     private static void levelUp(ServerPlayer p, Book b, int level) {
+        if (level >= 3) Adv.grant(p, "mastery_3");
+        if (level >= MAX_LEVEL) Adv.grant(p, "mastery_max");
         ServerLevel sl = p.serverLevel();
         Vec3 at = p.position();
         int pal = b.palette();

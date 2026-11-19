@@ -41,6 +41,8 @@ public final class TwinsClient {
     static boolean knows(int twin, int art) { return art >= 0 && art < 8 && lv(twin) >= ART_LV[art]; }
     static boolean eclipse() { return v[V_ECLIPSE] > 0; }
     static boolean socket(int twin, int s) { return (v[V_SOCK + twin] & (1 << s)) != 0; }
+    static int uses(int twin, int art) { return v[V_USES + twin * 8 + art]; }
+    static int cut(int twin, int s) { return v[V_CUT + twin * 3 + s]; }
     static int maskForm(int twin) { return (twin == SOL ? 0 : 3) + TwinsFx.stage(v[V_SOCK + twin]) - 1; }
 
     public static void send(int action, int arg) { AddonNetwork.CHANNEL.sendToServer(new TwinsPackets.Act(action, arg)); }
@@ -50,7 +52,7 @@ public final class TwinsClient {
     public static void tick(TickEvent.ClientTickEvent e) {
         if (e.phase != TickEvent.Phase.END || Minecraft.getInstance().isPaused()) return;
         for (int i = 0; i < 16; i++) if (v[V_CD + i] > 0) v[V_CD + i]--;
-        for (int i : new int[]{V_SWAP, V_RUSH, V_ECLIPSE, V_CORONA}) if (v[i] > 0) v[i]--;
+        for (int i : new int[]{V_SWAP, V_RUSH, V_ECLIPSE, V_CORONA, V_NOON, V_EVENTIDE}) if (v[i] > 0) v[i]--;
     }
 
     // ------------------------------------------------------------------ the model of each mask
@@ -80,8 +82,9 @@ public final class TwinsClient {
         int x = 6, y = g.guiHeight() - 24, w = 92;
         shown += (v[V_RES] - shown) * 0.2F;
         boolean ecl = eclipse();
-        String head = ecl ? "ECLIPSE UNION " + (v[V_ECLIPSE] + 19) / 20 + "s" : TWIN[a] + "  Lv " + lv(a);
-        int col = ecl ? (((int) (t / 4)) % 2 == 0 ? GOLD : SILVER) : a == SOL ? GOLD : SILVER;
+        String head = ecl ? "ECLIPSE UNION " + (v[V_ECLIPSE] + 19) / 20 + "s" : v[V_NOON] > 0 ? "HIGH NOON " + (v[V_NOON] + 19) / 20 + "s"
+                : v[V_EVENTIDE] > 0 ? "EVENTIDE " + (v[V_EVENTIDE] + 19) / 20 + "s" : TWIN[a] + "  Lv " + lv(a);
+        int col = ecl ? (((int) (t / 4)) % 2 == 0 ? GOLD : SILVER) : v[V_NOON] > 0 ? (((int) (t / 4)) % 2 == 0 ? 0xFFFFFFFF : GOLD) : a == SOL ? GOLD : SILVER;
         g.drawString(mc.font, head, x, y - 10, col, true);
         // the resting twin's Resonance
         g.fill(x - 1, y - 1, x + w + 1, y + 7, 0xE0080812);
@@ -89,7 +92,7 @@ public final class TwinsClient {
         boolean full = v[V_RES] >= 100 && ((int) (t / 6)) % 2 == 0;
         int c0 = rest == SOL ? 0xFFB07818 : 0xFF5A6AA8, c1 = rest == SOL ? 0xFFFFD36E : 0xFFD6E2FF;
         g.fillGradient(x, y, x + fw, y + 6, full ? 0xFFFFFFFF : c1, c0);
-        if (!ecl) g.drawString(mc.font, TWIN[rest] + " " + v[V_RES] + "%", x + 64, y - 10, rest == SOL ? GOLD : SILVER, true);   // above the bar, clear of the hotbar
+        if (!ecl && v[V_NOON] == 0 && v[V_EVENTIDE] == 0) g.drawString(mc.font, TWIN[rest] + " " + v[V_RES] + "%", x + 64, y - 10, rest == SOL ? GOLD : SILVER, true);   // above the bar, clear of the hotbar
         String swap = v[V_SWAP] > 0 ? "Swap " + (v[V_SWAP] + 19) / 20 + "s" : "Swap ready (G)";
         g.drawString(mc.font, swap, x, y + 9, v[V_SWAP] > 0 ? 0xFF9098B0 : 0xFFE8E8F0, true);
         if (v[V_RUSH] > 0) g.drawString(mc.font, "RUSH", x + mc.font.width(swap) + 8, y + 9, a == SOL ? 0xFFFF9040 : 0xFF80E0FF, true);

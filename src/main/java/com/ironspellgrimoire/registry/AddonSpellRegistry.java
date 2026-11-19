@@ -818,9 +818,9 @@ public class AddonSpellRegistry {
             .gate(com.ironspellgrimoire.server.ParasiteFx::canField, "Needs more biomass"));
     public static final RegistryObject<AbstractSpell> PARASITE_STORM = registerSpell(parasite("spine_storm", 30, 60, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ParasiteFx::spineStorm)
             .gate(com.ironspellgrimoire.server.ParasiteFx::canStorm, "Needs more biomass"));
-    public static final RegistryObject<AbstractSpell> PARASITE_COLLAPSE = registerSpell(parasite("collapse_core", 30, 55, 9, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ParasiteFx::collapseCore)
+    public static final RegistryObject<AbstractSpell> PARASITE_COLLAPSE = registerSpell(parasite("collapse_core", 30, 55, 9, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ParasiteMoves::collapseCore)
             .gate(com.ironspellgrimoire.server.ParasiteFx::canCollapse, "Needs more biomass"));
-    public static final RegistryObject<AbstractSpell> PARASITE_PACK = registerSpell(parasite("pack_call", 60, 40, 0, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.ParasiteFx::packCall)
+    public static final RegistryObject<AbstractSpell> PARASITE_PACK = registerSpell(parasite("pack_call", 60, 40, 0, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.ParasiteMoves::packCall)
             .gate(com.ironspellgrimoire.server.ParasiteFx::canPack, "Needs more biomass"));
     /** The seven Parasite Grimoire pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> PARASITE_SPELLS = List.of(
@@ -853,13 +853,17 @@ public class AddonSpellRegistry {
     }
     public static final RegistryObject<AbstractSpell> TWINS_SWAP = registerSpell(twins("twin_swap", 1, 0, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.TwinsFx::swapPage));
     public static final RegistryObject<AbstractSpell> TWINS_ARTS = registerSpell(twins("twin_arts", 1, 0, 10, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.TwinsFx::artsPage));
-    public static final RegistryObject<AbstractSpell> TWINS_STRIKE = registerSpell(twins("twin_strike", 12, 40, 10, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.TwinsFx::twinStrike)
+    public static final RegistryObject<AbstractSpell> TWINS_STRIKE = registerSpell(twins("twin_strike", 12, 40, 10, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.TwinsArts::twinStrike)
             .gate(com.ironspellgrimoire.server.TwinsFx::canStrike, "Both twins must reach level 10"));
-    public static final RegistryObject<AbstractSpell> TWINS_ECLIPSE = registerSpell(twins("eclipse_union", 300, 150, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.TwinsFx::eclipseUnion)
+    public static final RegistryObject<AbstractSpell> TWINS_ECLIPSE = registerSpell(twins("eclipse_union", 300, 150, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.TwinsArts::eclipseUnion)
             .gate(com.ironspellgrimoire.server.TwinsFx::canEclipse, "Both twins at level 40, and the Twin Wardens beaten"));
     public static final RegistryObject<AbstractSpell> TWINS_MASKS = registerSpell(twins("the_masks", 1, 0, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.TwinsFx::theMasks));
-    /** The five Masked Twins Grimoire pages, in the order they fill the book. */
-    public static final List<RegistryObject<AbstractSpell>> TWINS_SPELLS = List.of(TWINS_SWAP, TWINS_ARTS, TWINS_STRIKE, TWINS_ECLIPSE, TWINS_MASKS);
+    public static final RegistryObject<AbstractSpell> TWINS_NOON = registerSpell(twins("high_noon", 180, 120, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.TwinsFx::highNoon)
+            .gate(com.ironspellgrimoire.server.TwinsFx::canNoon, "Wear Sol's mask, at level 40"));
+    public static final RegistryObject<AbstractSpell> TWINS_EVENTIDE = registerSpell(twins("eventide", 180, 120, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.TwinsFx::eventide)
+            .gate(com.ironspellgrimoire.server.TwinsFx::canEventide, "Wear Nyx's mask, at level 40"));
+    /** The seven Masked Twins Grimoire pages, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> TWINS_SPELLS = List.of(TWINS_SWAP, TWINS_ARTS, TWINS_STRIKE, TWINS_ECLIPSE, TWINS_MASKS, TWINS_NOON, TWINS_EVENTIDE);
 
     // ---- Awakened spells: the page each grimoire writes when it awakens (server/Awakening, server/AwakenedSpells)
     private static com.ironspellgrimoire.spells.BookSpell awakened(String id, net.minecraft.resources.ResourceLocation school, Class<? extends net.minecraft.world.item.Item> book,

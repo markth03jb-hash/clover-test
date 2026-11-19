@@ -149,6 +149,8 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> MAGIC_BROOM = ITEMS.register("magic_broom", com.ironspellgrimoire.item.MagicBroomItem::new);
     /** Every new player's way to the Grimoire Tower (server/TowerCompass). */
     public static final RegistryObject<Item> TOWER_COMPASS = ITEMS.register("tower_compass", com.ironspellgrimoire.item.TowerCompassItem::new);
+    /** The mod's guide book (client/CodexScreen). */
+    public static final RegistryObject<Item> GRIMOIRE_CODEX = ITEMS.register("grimoire_codex", com.ironspellgrimoire.item.CodexItem::new);
     /** Grimoire upgrades (server/GrimoireUpgrades): each boss's own, and the crafted and found ones. */
     public static final RegistryObject<Item> DESPAIR_FANG = ITEMS.register("despair_fang", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("despair_fang", true));
     public static final RegistryObject<Item> COPIED_SIGIL = ITEMS.register("copied_sigil", () -> new com.ironspellgrimoire.item.GrimoireUpgradeItem("copied_sigil", true));
@@ -271,6 +273,7 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(new ItemStack(MANA_CORE.get()));
+                out.accept(new ItemStack(GRIMOIRE_CODEX.get()));
                 out.accept(new ItemStack(MAGIC_BROOM.get()));
                 for (var u : UPGRADES) out.accept(new ItemStack(u.get()));
                 out.accept(AddonBlocks.GRIMOIRE_ALTAR_ITEM.get());

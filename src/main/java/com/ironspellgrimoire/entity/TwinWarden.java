@@ -2,6 +2,7 @@ package com.ironspellgrimoire.entity;
 
 import com.ironspellgrimoire.registry.AddonEntities;
 import com.ironspellgrimoire.server.TwinsFx;
+import com.ironspellgrimoire.server.TwinsTrial;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -72,7 +73,7 @@ public class TwinWarden extends Monster {
         setYRot(yaw); yBodyRot = yaw; yHeadRot = yaw;
         setTarget(p);
         if (--attackCd <= 0) {
-            TwinsFx.wardenAttack(this, p, turn++);
+            TwinsTrial.wardenAttack(this, p, turn++);
             attackCd = (dusk() ? 55 : 45) + random.nextInt(20);
         }
         bar.setProgress(getHealth() / getMaxHealth());
@@ -86,7 +87,7 @@ public class TwinWarden extends Monster {
 
     @Override
     public void die(DamageSource s) {
-        if (!level().isClientSide && owner != null && ((ServerLevel) level()).getPlayerByUUID(owner) instanceof ServerPlayer p) TwinsFx.wardenDown(this, p);
+        if (!level().isClientSide && owner != null && ((ServerLevel) level()).getPlayerByUUID(owner) instanceof ServerPlayer p) TwinsTrial.wardenDown(this, p);
         super.die(s);
     }
 

@@ -20,13 +20,13 @@ public final class HungerClient {
     private HungerClient() {}
 
     public static boolean equipped, drawn;
-    public static int growth, unlocked = 1, sel, bond, fed, pact;
+    public static int growth, unlocked = 1, sel, bond, fed, pact, titles, title = -1, devours;
     public static int[] load = {0, -1, -1, -1};
     public static float hunger = 60;
 
     public static void sync(HungerPackets.Sync p) {
         equipped = p.equipped; growth = p.growth; unlocked = p.unlocked; load = p.load.length == 4 ? p.load : load; sel = p.sel; hunger = p.hunger;
-        bond = p.bond; drawn = p.drawn; fed = p.fed; pact = p.pact;
+        bond = p.bond; drawn = p.drawn; fed = p.fed; pact = p.pact; titles = p.titles; title = p.title; devours = p.devours;
         Minecraft mc = Minecraft.getInstance();
         if (p.open) mc.setScreen(new BladeScreen());
         else if (mc.screen instanceof BladeScreen s) s.refresh();
@@ -37,7 +37,7 @@ public final class HungerClient {
     public static void look(int id, int form) { if (form < 0) SHEATHED.remove(id); else SHEATHED.put(id, form); }
 
     static boolean has(int f) { return f >= 0 && f < HungerFx.FORMS && (unlocked & (1 << f)) != 0; }
-    static int bondLevel() { int l = 0; while (l < 5 && bond >= HungerFx.BOND_AT[l + 1]) l++; return l; }
+    static int bondLevel() { int l = 0; while (l < HungerFx.MAX_BOND && bond >= HungerFx.BOND_AT[l + 1]) l++; return l; }
     static final String[] MOODS = {"Starved", "Hungry", "Content", "Well fed"};
     static final int[] MOOD_COL = {0xFFFF3030, 0xFFFF9040, 0xFFE8D8D0, 0xFF90E080};
 

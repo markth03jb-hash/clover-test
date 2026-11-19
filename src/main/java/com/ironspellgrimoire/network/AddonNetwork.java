@@ -6,7 +6,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class AddonNetwork {
-    private static final String PROTOCOL = "6";   // 2: compact FxPacket encoding (server and client must match)
+    private static final String PROTOCOL = "7";   // 7: batched effects (FxBatchPacket)   // 2: compact FxPacket encoding (server and client must match)
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(IronSpellGrimoire.MODID, "main"),
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
@@ -17,11 +17,18 @@ public class AddonNetwork {
 
     public static <M> void send(net.minecraftforge.network.PacketDistributor.PacketTarget target, M msg) {
         if (msg instanceof FxPacket fx) {
-            fxSent++;
-            com.ironspellgrimoire.server.CastSync.onSend(fx);
-            if (worldShape(fx.shape) && fromMeteor()) fx.palette = (byte) (fx.palette | FxPacket.PIXEL_ONLY);   // Black Meteorite: all pixel style
+            noteFx(fx);
+            com.ironspellgrimoire.server.FxBatch.flush();   // what's queued goes first, so effects arrive in order
+            com.ironspellgrimoire.server.FxBatch.messages++;
         }
         CHANNEL.send(target, msg);
+    }
+
+    /** Count an effect, show it to CastSync and give Black Meteorite's its pixel style (sent or queued alike). */
+    public static void noteFx(FxPacket fx) {
+        fxSent++;
+        com.ironspellgrimoire.server.CastSync.onSend(fx);
+        if (worldShape(fx.shape) && fromMeteor()) fx.palette = (byte) (fx.palette | FxPacket.PIXEL_ONLY);   // Black Meteorite: all pixel style
     }
 
     private static boolean worldShape(int s) {
@@ -64,5 +71,7 @@ public class AddonNetwork {
         CHANNEL.registerMessage(25, TwinsPackets.Sync.class, TwinsPackets.Sync::encode, TwinsPackets.Sync::decode, TwinsPackets.Sync::handle);
         CHANNEL.registerMessage(26, TwinsPackets.Act.class, TwinsPackets.Act::encode, TwinsPackets.Act::decode, TwinsPackets.Act::handle);
         CHANNEL.registerMessage(27, TwinsPackets.Look.class, TwinsPackets.Look::encode, TwinsPackets.Look::decode, TwinsPackets.Look::handle);
+        CHANNEL.registerMessage(29, FirstStepsPacket.class, FirstStepsPacket::encode, FirstStepsPacket::decode, FirstStepsPacket::handle);
+        CHANNEL.registerMessage(28, FxBatchPacket.class, FxBatchPacket::encode, FxBatchPacket::decode, FxBatchPacket::handle);
     }
 }

@@ -14,20 +14,23 @@ public final class HungerPackets {
     /** Server -> its player: the blade's whole state (the HUD, the wheel, The Blade page; open = show that page). */
     public static class Sync {
         public final boolean equipped, drawn, open;
-        public final int growth, unlocked, sel, bond, fed, pact;
+        public final int growth, unlocked, sel, bond, fed, pact, titles, title, devours;
         public final int[] load;
         public final float hunger;
-        public Sync(boolean equipped, int growth, int unlocked, int[] load, int sel, float hunger, int bond, boolean drawn, int fed, int pact, boolean open) {
+        public Sync(boolean equipped, int growth, int unlocked, int[] load, int sel, float hunger, int bond, boolean drawn, int fed, int pact, boolean open,
+                    int titles, int title, int devours) {
             this.equipped = equipped; this.growth = growth; this.unlocked = unlocked; this.load = load; this.sel = sel; this.hunger = hunger;
             this.bond = bond; this.drawn = drawn; this.fed = fed; this.pact = pact; this.open = open;
+            this.titles = titles; this.title = title; this.devours = devours;
         }
         public static void encode(Sync p, FriendlyByteBuf b) {
             b.writeBoolean(p.equipped); b.writeVarInt(p.growth); b.writeInt(p.unlocked); b.writeVarIntArray(p.load); b.writeVarInt(p.sel);
             b.writeFloat(p.hunger); b.writeVarInt(p.bond); b.writeBoolean(p.drawn); b.writeVarInt(p.fed); b.writeVarInt(p.pact); b.writeBoolean(p.open);
+            b.writeVarInt(p.titles); b.writeVarInt(p.title + 1); b.writeVarInt(p.devours);
         }
         public static Sync decode(FriendlyByteBuf b) {
             return new Sync(b.readBoolean(), b.readVarInt(), b.readInt(), b.readVarIntArray(), b.readVarInt(), b.readFloat(), b.readVarInt(), b.readBoolean(),
-                    b.readVarInt(), b.readVarInt(), b.readBoolean());
+                    b.readVarInt(), b.readVarInt(), b.readBoolean(), b.readVarInt(), b.readVarInt() - 1, b.readVarInt());
         }
         public static void handle(Sync p, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.ironspellgrimoire.client.HungerClient.sync(p)));
@@ -47,7 +50,8 @@ public final class HungerPackets {
         }
     }
 
-    /** Client -> server: 1 grow a sword (arg form), 2 switch to a slot, 3 put a sword in a slot (slot * 100 + form, 99 = empty). */
+    /** Client -> server: 1 grow a sword (arg form), 2 switch to a slot, 3 put a sword in a slot (slot * 100 + form, 99 = empty),
+     *  4 wear a title (99 = none). */
     public static class Act {
         public final int action, arg;
         public Act(int action, int arg) { this.action = action; this.arg = arg; }

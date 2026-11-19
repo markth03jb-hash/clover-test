@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "minecraft:book"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.mastery_3.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.mastery_3.description"
+  },
+  "frame": "task",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": false
+ },
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ },
+ "parent": "iron_spell_grimoire:main/chosen"
+}
