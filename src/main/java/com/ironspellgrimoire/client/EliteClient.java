@@ -90,22 +90,6 @@ public final class EliteClient {
     /** Called from FortressRenderers.Register, beside the fortress pieces' models. */
     static void registerModels(ModelEvent.RegisterAdditional e) {
         for (ResourceLocation r : new ResourceLocation[]{SHIELD, PLATE, SHARD, LINK, CHEST, CHEST_LID, RIFT}) e.register(r);
-        com.mojang.logging.LogUtils.getLogger().info("Elite models registered: 7");
-    }
-
-    private static boolean checked;
-    /** Once: say in the log whether each elite model loaded (and how many faces it has). */
-    static void checkModels() {
-        if (checked) return;
-        checked = true;
-        var mm = Minecraft.getInstance().getModelManager();
-        StringBuilder sb = new StringBuilder("Elite models:");
-        for (ResourceLocation r : new ResourceLocation[]{SHIELD, PLATE, SHARD, LINK, CHEST, CHEST_LID, RIFT, FortressRenderers.WALL}) {
-            var m = mm.getModel(r);
-            int n = m == null ? -1 : m.getQuads(null, null, net.minecraft.util.RandomSource.create(42), net.minecraftforge.client.model.data.ModelData.EMPTY, null).size();
-            sb.append(' ').append(r.getPath()).append('=').append(m == mm.getMissingModel() ? "MISSING" : String.valueOf(n));
-        }
-        com.mojang.logging.LogUtils.getLogger().info(sb.toString());
     }
 
     // ------------------------------------------------------------------ drawing
@@ -211,7 +195,7 @@ public final class EliteClient {
         if (len < 0.5) return;
         Vec3 base = en.getPosition(pt);
         float yaw = (float) Math.toDegrees(Math.atan2(d.x, d.z)), pitch = (float) Math.toDegrees(-Math.asin(d.y / len));
-        int n = (int) (len / 0.32);
+        int n = (int) (len / 0.14);   // links a seventh of a block long
         for (int k = 0; k < n; k++) {
             Vec3 p = a.add(d.scale((k + 0.5) / n)).subtract(base);
             ps.pushPose();
@@ -219,6 +203,8 @@ public final class EliteClient {
             ps.mulPose(Axis.YP.rotationDegrees(yaw));
             ps.mulPose(Axis.XP.rotationDegrees(pitch));
             ps.mulPose(Axis.ZP.rotationDegrees(k % 2 == 0 ? 0 : 90));
+            ps.mulPose(Axis.YP.rotationDegrees(90));   // the link's long side along the chain
+            ps.scale(0.4F, 0.4F, 0.4F);
             ParasiteArms.drawPiece(ps, buf, light, LINK);
             ps.popPose();
         }

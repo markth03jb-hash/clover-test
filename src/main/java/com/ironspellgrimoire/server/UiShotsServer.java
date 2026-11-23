@@ -82,10 +82,10 @@ public final class UiShotsServer {
         EliteMobs.testThreat(p, 4);
         EliteMobs.sendSeen(p);
         Object[][] row = {
-                {net.minecraft.world.entity.EntityType.VINDICATOR, -4.5, 1, 1 << EliteMobs.BULWARK | 1 << EliteMobs.IRONHIDE},
-                {net.minecraft.world.entity.EntityType.SKELETON, -1.5, 2, 1 << EliteMobs.REFLECTOR | 1 << EliteMobs.VOLLEY},
-                {net.minecraft.world.entity.EntityType.PILLAGER, 1.5, 5, 1 << EliteMobs.MIRROR_TWIN | 1 << EliteMobs.LEECH},
-                {net.minecraft.world.entity.EntityType.VINDICATOR, 5.0, 3, 1 << EliteMobs.TETHER | 1 << EliteMobs.HUNTER | 1 << EliteMobs.SPRINTER}};
+                {net.minecraft.world.entity.EntityType.VINDICATOR, 0.0, 1, 1 << EliteMobs.BULWARK | 1 << EliteMobs.IRONHIDE},
+                {net.minecraft.world.entity.EntityType.SKELETON, -3.0, 2, 1 << EliteMobs.REFLECTOR | 1 << EliteMobs.VOLLEY},
+                {net.minecraft.world.entity.EntityType.PILLAGER, 3.0, 5, 1 << EliteMobs.MIRROR_TWIN | 1 << EliteMobs.LEECH},
+                {net.minecraft.world.entity.EntityType.VINDICATOR, 6.5, 3, 1 << EliteMobs.TETHER | 1 << EliteMobs.HUNTER | 1 << EliteMobs.SPRINTER}};
         for (Object[] r : row) {
             @SuppressWarnings("unchecked") var type = (net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob>) r[0];
             var m = type.create(sl);
@@ -96,17 +96,20 @@ public final class UiShotsServer {
             if (type == net.minecraft.world.entity.EntityType.SKELETON) m.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.BOW));
             sl.addFreshEntity(m);
             EliteMobs.testMake(m, (int) r[2], (int) r[3]);
-            if (EliteMobs.has(m, EliteMobs.REFLECTOR)) EliteMobs.data(m).putInt("phase", (int) ((EliteTraits.SHELL_CYCLE - sl.getGameTime() % EliteTraits.SHELL_CYCLE - 5 + EliteTraits.SHELL_CYCLE) % EliteTraits.SHELL_CYCLE));
+            if (EliteMobs.has(m, EliteMobs.REFLECTOR)) {
+                EliteMobs.data(m).putInt("phase", (int) ((EliteTraits.SHELL_CYCLE - sl.getGameTime() % EliteTraits.SHELL_CYCLE - 5 + EliteTraits.SHELL_CYCLE) % EliteTraits.SHELL_CYCLE));
+                EliteMobs.sync(m);
+            }
             if (EliteMobs.has(m, EliteMobs.TETHER)) EliteTraits.testChain(m, p, 200);
             if (EliteMobs.has(m, EliteMobs.MIRROR_TWIN) && EliteMobs.data(m).hasUUID("tw") && sl.getEntity(EliteMobs.data(m).getUUID("tw")) instanceof net.minecraft.world.entity.Mob sh) {
                 sh.setNoAi(true);
-                sh.moveTo(p.getX() + 3.2, p.getY(), p.getZ() + 7, 180, 0);
+                sh.moveTo(p.getX() + 4.8, p.getY(), p.getZ() + 8, 180, 0);
                 sh.setYBodyRot(180); sh.setYHeadRot(180);
             }
         }
         var half = net.minecraft.world.entity.EntityType.VINDICATOR.create(sl);   // a Splitter's copy
         if (half != null) {
-            half.moveTo(p.getX() - 3, p.getY(), p.getZ() + 3.5, 160, 0); half.setYBodyRot(160); half.setNoAi(true);
+            half.moveTo(p.getX() - 1.8, p.getY(), p.getZ() + 3.5, 160, 0); half.setYBodyRot(160); half.setNoAi(true);
             net.minecraft.nbt.CompoundTag d = new net.minecraft.nbt.CompoundTag(); d.putInt("r", 2); d.putBoolean("child", true);
             half.getPersistentData().put(EliteMobs.TAG, d);
             half.refreshDimensions();
