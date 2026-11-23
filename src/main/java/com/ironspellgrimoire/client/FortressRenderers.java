@@ -39,6 +39,7 @@ public final class FortressRenderers {
         public static void models(ModelEvent.RegisterAdditional e) {
             e.register(WALL); e.register(GATE); e.register(SENTRY);
             for (ResourceLocation r : TOWER) e.register(r);
+            EliteClient.registerModels(e);   // the elite mobs' models
         }
     }
 

@@ -87,12 +87,10 @@ public final class EliteClient {
             CHEST = model("chest"), CHEST_LID = model("chest_lid"), RIFT = model("rift");
     static final ResourceLocation ICONS = ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "textures/gui/elite_icons.png");
 
-    @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static final class Register {
-        @SubscribeEvent
-        public static void models(ModelEvent.RegisterAdditional e) {
-            for (ResourceLocation r : new ResourceLocation[]{SHIELD, PLATE, SHARD, LINK, CHEST, CHEST_LID, RIFT}) e.register(r);
-        }
+    /** Called from FortressRenderers.Register, beside the fortress pieces' models. */
+    static void registerModels(ModelEvent.RegisterAdditional e) {
+        for (ResourceLocation r : new ResourceLocation[]{SHIELD, PLATE, SHARD, LINK, CHEST, CHEST_LID, RIFT}) e.register(r);
+        com.mojang.logging.LogUtils.getLogger().info("Elite models registered: 7");
     }
 
     private static boolean checked;
@@ -102,7 +100,7 @@ public final class EliteClient {
         checked = true;
         var mm = Minecraft.getInstance().getModelManager();
         StringBuilder sb = new StringBuilder("Elite models:");
-        for (ResourceLocation r : new ResourceLocation[]{SHIELD, PLATE, SHARD, LINK, CHEST, CHEST_LID, RIFT}) {
+        for (ResourceLocation r : new ResourceLocation[]{SHIELD, PLATE, SHARD, LINK, CHEST, CHEST_LID, RIFT, FortressRenderers.WALL}) {
             var m = mm.getModel(r);
             int n = m == null ? -1 : m.getQuads(null, null, net.minecraft.util.RandomSource.create(42), net.minecraftforge.client.model.data.ModelData.EMPTY, null).size();
             sb.append(' ').append(r.getPath()).append('=').append(m == mm.getMissingModel() ? "MISSING" : String.valueOf(n));
