@@ -975,7 +975,7 @@ public final class GameTests {
         final java.util.List<String> bad = new java.util.ArrayList<>();
         BlockState[] before;
         net.minecraft.world.entity.Mob over, echo, seeker, dagger, hunter, sprinter, anchored, reflector, pillager, twin0, ghostFrom;
-        Vec3 anchorAt, riftOpen, riftShut, chestBite, chestWait, twinAt;
+        Vec3 anchorAt, riftOpen, riftShut, chestBite, chestWait, twinAt, echoAt;
         java.util.UUID shadowId;
         net.minecraft.world.entity.projectile.Arrow reflected;
         boolean dashed;
@@ -993,7 +993,7 @@ public final class GameTests {
         void hitPlayer(net.minecraft.world.entity.Mob m, float amount) { p.invulnerableTime = 0; p.hurt(m.damageSources().mobAttack(m), amount); }
         void hitMob(net.minecraft.world.entity.Mob m, float amount) { m.invulnerableTime = 0; m.hurt(p.damageSources().playerAttack(p), amount); }
         java.util.List<net.minecraft.world.entity.Mob> marked(Vec3 c, double r) {
-            return sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new AABB(c, c).inflate(r), x -> x.isAlive() && EliteMobs.marked(x));
+            return sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new AABB(c, c).inflate(r), x -> x.isAlive() && EliteMobs.marked(x) && x.position().distanceTo(c) <= r);
         }
 
         @Override void start() {
@@ -1076,6 +1076,7 @@ public final class GameTests {
                     for (int k = 0; k < 3; k++) hitPlayer(over, 2);
                     if (EliteTraits.testWindup(over) != 20) bad.add("three blows didn't start Overcharged's wind-up (" + EliteTraits.testWindup(over) + ")");
                     echo = spawn(V, 2, -2, 0, bit(EliteMobs.ECHO));
+                    echoAt = p.position();
                     hitPlayer(echo, 4);
                     var leech = spawn(V, -2, -2, 0, bit(EliteMobs.LEECH));
                     MagicData.getPlayerMagicData(p).setMana(100);
@@ -1155,6 +1156,10 @@ public final class GameTests {
                     if (!rifts.isEmpty() && rifts.get(0).isAlive()) bad.add("four hits didn't close the rift");
                     var tw = sl().getEntity(twin0.getUUID());
                     if (tw instanceof net.minecraft.world.entity.Mob m) { twinAt = m.position(); hitMob(m, 1000); }
+                }
+                if (t == 23) {   // blows and the chest's bite have knocked the player about: back onto the echo's spot
+                    p.teleportTo(sl(), echoAt.x, echoAt.y, echoAt.z, 0, 0);
+                    p.setDeltaMovement(Vec3.ZERO);
                 }
                 if (t == 12) {
                     if (reflected.getOwner() != reflector) bad.add("Reflector's shards didn't send the arrow back");

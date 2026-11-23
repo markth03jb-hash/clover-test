@@ -95,6 +95,21 @@ public final class EliteClient {
         }
     }
 
+    private static boolean checked;
+    /** Once: say in the log whether each elite model loaded (and how many faces it has). */
+    static void checkModels() {
+        if (checked) return;
+        checked = true;
+        var mm = Minecraft.getInstance().getModelManager();
+        StringBuilder sb = new StringBuilder("Elite models:");
+        for (ResourceLocation r : new ResourceLocation[]{SHIELD, PLATE, SHARD, LINK, CHEST, CHEST_LID, RIFT}) {
+            var m = mm.getModel(r);
+            int n = m == null ? -1 : m.getQuads(null, null, net.minecraft.util.RandomSource.create(42), net.minecraftforge.client.model.data.ModelData.EMPTY, null).size();
+            sb.append(' ').append(r.getPath()).append('=').append(m == mm.getMissingModel() ? "MISSING" : String.valueOf(n));
+        }
+        com.mojang.logging.LogUtils.getLogger().info(sb.toString());
+    }
+
     // ------------------------------------------------------------------ drawing
     private static boolean nested;
     private static final Set<Integer> SCALED = new HashSet<>();

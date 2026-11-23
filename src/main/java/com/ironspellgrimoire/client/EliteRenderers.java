@@ -21,6 +21,7 @@ public final class EliteRenderers {
         public RiftRenderer(EntityRendererProvider.Context c) { super(c); this.shadowRadius = 0.4F; }
         @Override
         public void render(EliteRift e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
+            EliteClient.checkModels();
             float t = e.tickCount + pt, grow = Mth.clamp(t / 8F, 0F, 1F);
             ps.pushPose();
             ps.translate(0, 0.15F + 0.05F * Mth.sin(t * 0.2F), 0);
@@ -41,6 +42,7 @@ public final class EliteRenderers {
         public ChestRenderer(EntityRendererProvider.Context c) { super(c); this.shadowRadius = 0.45F; }
         @Override
         public void render(CursedChest e, float yaw, float pt, PoseStack ps, MultiBufferSource buf, int light) {
+            EliteClient.checkModels();
             float t = e.tickCount + pt;
             ps.pushPose();
             ps.mulPose(Axis.YP.rotationDegrees(-e.getYRot()));

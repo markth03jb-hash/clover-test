@@ -76,6 +76,7 @@ public final class UiShotsServer {
         var box = p.getBoundingBox().inflate(16);
         for (var e : sl.getEntities((net.minecraft.world.entity.Entity) null, box, e -> EliteMobs.marked(e) || e instanceof com.ironspellgrimoire.entity.CursedChest || e instanceof com.ironspellgrimoire.entity.EliteRift)) e.discard();
         if (what.equals("clear")) return;
+        p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete them at once
         faceForward(p);
         p.getPersistentData().putInt(EliteMobs.SEEN, (1 << EliteMobs.COUNT) - 1);
         EliteMobs.testThreat(p, 4);
