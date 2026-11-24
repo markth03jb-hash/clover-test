@@ -125,6 +125,23 @@ public final class UiShotsServer {
         if (rift != null) { rift.setup("minecraft:zombie", 0); rift.moveTo(p.getX() + 3.5, p.getY(), p.getZ() + 3.5, 0, 0); sl.addFreshEntity(rift); }
     }
 
+    /** The Meridian Grimoire's pictures: Dayreaver held at noon, the star and a flare, Zenith, the night (and back to noon). */
+    static void meridian(ServerPlayer p, String w) {
+        ServerLevel sl = p.serverLevel();
+        switch (w) {
+            case "noon" -> {
+                for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();   // what earlier pictures left
+                sl.setDayTime(6000); MeridianFx.testReset(p); MeridianFx.callDayreaver(p, 10);
+            }
+            case "star" -> MeridianFx.hearthStar(p, 10);
+            case "flare" -> MeridianFx.haughtyFlare(p, 26);
+            case "zenith" -> MeridianFx.zenithUnbound(p, 0);
+            case "night" -> { sl.setDayTime(18000); MeridianFx.lamplight(p, 7); MeridianFx.lastCoal(p, 0); }
+            default -> { sl.setDayTime(6000); MeridianFx.testReset(p); p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY); }
+        }
+        MeridianFx.sync(p);
+    }
+
     public static void element(ServerPlayer p, String which) {
         Moves.ends(p, BloodFx.MODE);
         String w = which.substring(2);
@@ -148,6 +165,7 @@ public final class UiShotsServer {
             case 'H' -> AddonItemRegistry.HUNGER_GRIMOIRE.get();
             case 'T' -> AddonItemRegistry.TWINS_GRIMOIRE.get();
             case 'A' -> AddonItemRegistry.ARCHITECT_GRIMOIRE.get();
+            case 'M' -> AddonItemRegistry.MERIDIAN_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -159,6 +177,7 @@ public final class UiShotsServer {
         if (which.charAt(0) == 'H') { hunger(p, w); return; }
         if (which.charAt(0) == 'T') { twins(p, w); return; }
         if (which.charAt(0) == 'A') { architect(p, w); return; }
+        if (which.charAt(0) == 'M') { meridian(p, w); return; }
         switch (w) {
             case "target" -> {
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
