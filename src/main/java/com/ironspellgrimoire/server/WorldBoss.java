@@ -225,6 +225,7 @@ public final class WorldBoss {
             if (share < 0.02f && e.getValue() < 60) continue;
             names.add(p.getGameProfile().getName());
             Adv.grant(p, "sovereign_slayer");
+            FortressFx.worldBossDown(p);
             int stars = Math.min(60, 20 + Math.round(share * 80));
             Bounties.addStars(p, stars);
             p.giveExperiencePoints(800 + Math.round(share * 1600));

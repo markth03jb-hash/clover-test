@@ -121,6 +121,7 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> HUNGER_BLADE = ITEMS.register("hunger_blade", com.ironspellgrimoire.item.HungerBladeItem::new);
     /** The Masked Twins Grimoire: Sol and Nyx, two masks sharing one soul (server/TwinsFx). */
     public static final RegistryObject<Item> TWINS_GRIMOIRE = ITEMS.register("twins_grimoire", com.ironspellgrimoire.item.TwinsGrimoireItem::new);
+    public static final RegistryObject<Item> ARCHITECT_GRIMOIRE = ITEMS.register("architect_grimoire", com.ironspellgrimoire.item.ArchitectGrimoireItem::new);
     /** The twins' masks (and the Twin Wardens) as models only: worn on the face, hung at the hip, drawn in the menus. */
     public static final RegistryObject<Item> TWIN_MASK = ITEMS.register("twin_mask", com.ironspellgrimoire.item.TwinMaskItem::new);
     public static final RegistryObject<Item> HEARTLINE = ITEMS.register("heartline", com.ironspellgrimoire.item.HeartlineItem::new);
@@ -200,6 +201,16 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> SHADE_LANTERN = ITEMS.register("shade_lantern", () -> new com.ironspellgrimoire.item.RelicItem(
             "Below half health, foes near you slow down.", "Its light is darker than the dark around it."));
     public static final java.util.List<RegistryObject<Item>> RELICS = java.util.List.of(CRACKED_LENS, RIFT_HEART, HOLLOW_BELL, SHADE_LANTERN);
+    /** The rivals' keepsakes (server/Rivals, server/RivalKeepsakes) - charms, each given for the first win over its rival - and the token that calls one. */
+    public static final RegistryObject<Item> PRISM_RIBBON = ITEMS.register("prism_ribbon", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Once every 12 seconds, a blow aimed at you strikes a reflection instead.", "Seren Vale's. It never quite holds one colour.", "Rival's Keepsake  -  charm slot"));
+    public static final RegistryObject<Item> WARLORDS_STANDARD = ITEMS.register("warlords_standard", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Your summons within 8 blocks of you hit 10% harder.", "Brannoch Tor's. The Legion still salutes it.", "Rival's Keepsake  -  charm slot"));
+    public static final RegistryObject<Item> LAST_BELL = ITEMS.register("last_bell", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Fall below half health and it rings: you and every ally within 8 blocks gain a 6-point shield (once every 30 s).", "The Bellmars'. Half red, half blue.", "Rival's Keepsake  -  charm slot"));
+    public static final RegistryObject<Item> LEDGER_COIN = ITEMS.register("ledger_coin", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Once a minute, a spell you cast below a quarter of your mana costs nothing.", "Mira Hollowell's. She wants it back.", "Rival's Keepsake  -  charm slot"));
+    public static final RegistryObject<Item> RIVAL_TOKEN = ITEMS.register("rival_token", com.ironspellgrimoire.item.RivalTokenItem::new);
     public static final RegistryObject<Item> LICHT_SPAWN_EGG = ITEMS.register("licht_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.LICHT, 0xF0EEE0, 0xE8C860, new Item.Properties()));
     public static final RegistryObject<Item> REVENANT_SPAWN_EGG = ITEMS.register("revenant_spawn_egg",
@@ -254,7 +265,7 @@ public class AddonItemRegistry {
                 ItemStack space = new ItemStack(SPACE_GRIMOIRE.get());
                 ((IPresetSpellContainer) SPACE_GRIMOIRE.get()).initializeSpellContainer(space);
                 out.accept(space);
-                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, TIME_GRIMOIRE, LIGHT_GRIMOIRE, BLOOD_GRIMOIRE, GRAVITY_GRIMOIRE, SOUND_GRIMOIRE, INK_GRIMOIRE, ERROR_GRIMOIRE, TREASURE_GRIMOIRE, CHAIN_GRIMOIRE, HUNTER_GRIMOIRE, VOID_GRIMOIRE, GAMBLER_GRIMOIRE, TAROT_GRIMOIRE, ABYSS_GRIMOIRE, MECH_GRIMOIRE, WEATHER_GRIMOIRE, OVERDRIVE_GRIMOIRE, DREAM_GRIMOIRE, SHADOW_GRIMOIRE, PARASITE_GRIMOIRE, HUNGER_GRIMOIRE, TWINS_GRIMOIRE)) {
+                for (var g : java.util.List.of(WATER_GRIMOIRE, MIRROR_GRIMOIRE, RIFT_GRIMOIRE, FLAME_SPIRIT_GRIMOIRE, LION_FLAME_GRIMOIRE, SLASH_GRIMOIRE, EARTH_GRIMOIRE, TIME_GRIMOIRE, LIGHT_GRIMOIRE, BLOOD_GRIMOIRE, GRAVITY_GRIMOIRE, SOUND_GRIMOIRE, INK_GRIMOIRE, ERROR_GRIMOIRE, TREASURE_GRIMOIRE, CHAIN_GRIMOIRE, HUNTER_GRIMOIRE, VOID_GRIMOIRE, GAMBLER_GRIMOIRE, TAROT_GRIMOIRE, ABYSS_GRIMOIRE, MECH_GRIMOIRE, WEATHER_GRIMOIRE, OVERDRIVE_GRIMOIRE, DREAM_GRIMOIRE, SHADOW_GRIMOIRE, PARASITE_GRIMOIRE, HUNGER_GRIMOIRE, TWINS_GRIMOIRE, ARCHITECT_GRIMOIRE)) {
                     ItemStack st = new ItemStack(g.get());
                     ((IPresetSpellContainer) g.get()).initializeSpellContainer(st);
                     out.accept(st);
@@ -270,6 +281,7 @@ public class AddonItemRegistry {
                 for (var r : RELICS) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(WORLD_TREE_LEAF.get()));
                 out.accept(new ItemStack(ELVEN_WIND_CHARM.get()));
+                for (var r : java.util.List.of(PRISM_RIBBON, WARLORDS_STANDARD, LAST_BELL, LEDGER_COIN, RIVAL_TOKEN)) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(new ItemStack(MANA_CORE.get()));

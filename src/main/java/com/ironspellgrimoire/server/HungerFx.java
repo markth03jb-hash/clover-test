@@ -544,6 +544,22 @@ public final class HungerFx {
     /** The thrown blade came back (or was lost): into the empty hand it goes. */
     public static void caught(ServerPlayer p, ItemStack s) {
         root(p).putBoolean("thrown", false);
+        if (!p.getMainHandItem().isEmpty() && equipped(p)) {   // something picked up while it flew: into another slot (or dropped), the blade comes first
+            ItemStack held = p.getMainHandItem().copy();
+            p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            var inv = p.getInventory();
+            int sel = inv.selected;
+            for (int i = 0; i < inv.items.size() && !held.isEmpty(); i++) {   // stack it first, then an empty slot - never the hand's own
+                if (i == sel) continue;
+                ItemStack s2 = inv.items.get(i);
+                if (!s2.isEmpty() && ItemStack.isSameItemSameTags(s2, held) && s2.getCount() < s2.getMaxStackSize()) {
+                    int n = Math.min(held.getCount(), s2.getMaxStackSize() - s2.getCount());
+                    s2.grow(n); held.shrink(n);
+                }
+            }
+            for (int i = 0; i < inv.items.size() && !held.isEmpty(); i++) if (i != sel && inv.items.get(i).isEmpty()) { inv.items.set(i, held); held = ItemStack.EMPTY; }
+            if (!held.isEmpty()) p.drop(held, false);
+        }
         if (p.getMainHandItem().isEmpty() && equipped(p)) {
             p.setItemInHand(InteractionHand.MAIN_HAND, s);
             OverdriveFx.play(p.serverLevel(), p.position(), "blade_draw", 0.9f, 1.3f);
@@ -875,8 +891,11 @@ public final class HungerFx {
                 Vec3 c = p.getEyePosition().add(d.scale(3)), side = rightOf(d);
                 FxSend.crescent(sl, Fx.CRIMSON, c.add(0, 0.9, 0), d, side, 2f, 2.6f, 6, 0.4f);
                 FxSend.crescent(sl, Fx.CRIMSON, c.add(0, -0.9, 0), d, side.scale(-1), 2f, 2.6f, 6, 0.4f);
-                AstaFx.later(4, () -> {
-                    for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(2.5))) { AstaFx.damage(p, t, dmg, "gnash"); p.heal(1f); }
+                Vec3 from = p.position().add(0, 1, 0);
+                AstaFx.later(4, () -> {   // everything along the lunge's path (a fast lunge can carry you past a foe in four ticks)
+                    Vec3 to = p.position().add(0, 1, 0);
+                    for (LivingEntity t : enemies(sl, p, new net.minecraft.world.phys.AABB(from, to).inflate(2.5)))
+                        if (mid(t).distanceTo(closestOnSegment(from, to, mid(t))) <= 2.5) { AstaFx.damage(p, t, dmg, "gnash"); p.heal(1f); }
                     OverdriveFx.play(sl, p.position(), "jaws", 1.3f, 0.8f);
                 });
             }

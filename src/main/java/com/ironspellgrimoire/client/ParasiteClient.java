@@ -75,7 +75,7 @@ public final class ParasiteClient {
 
     public static void send(int action, int arg) { AddonNetwork.CHANNEL.sendToServer(new ParasitePackets.Act(action, arg)); }
 
-    /** Which wheel G opens: 1 the Parasite forms, 2 the shadow commands, 0 none. */
+    /** Which wheel G opens: 1 the Parasite forms, 2 the shadow commands, 3 the Hunger Blade, 5 the Masked Twins, 6 the Architect's orders, 0 none. */
     static int wheelKind(Minecraft mc) {
         if (mc.player == null) return 0;
         var b = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(mc.player);
@@ -84,6 +84,7 @@ public final class ParasiteClient {
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.SHADOW_GRIMOIRE.get())) return 2;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE.get())) return 3;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.TWINS_GRIMOIRE.get())) return 5;
+        if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.ARCHITECT_GRIMOIRE.get())) return 6;
         return 0;
     }
 
@@ -116,9 +117,10 @@ public final class ParasiteClient {
         while (KEY.consumeClick()) {
             if (mc.screen != null) continue;
             int kind = wheelKind(mc);
-            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite, System, Hunger Blade and Masked Twins grimoires have a wheel")
+            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite, System, Hunger Blade, Masked Twins and Architect grimoires have a wheel")
                     .withStyle(net.minecraft.ChatFormatting.GRAY), true);
             else if (kind == 5) mc.setScreen(new TwinsWheel());
+            else if (kind == 6) mc.setScreen(new FortressWheel());
             else if (kind == 1 && !pl.isShiftKeyDown() && java.util.Arrays.stream(pins).anyMatch(f -> f > 0)) mc.setScreen(new ParasiteWheel(4));   // tap: the quick ring
             else mc.setScreen(new ParasiteWheel(kind));
         }

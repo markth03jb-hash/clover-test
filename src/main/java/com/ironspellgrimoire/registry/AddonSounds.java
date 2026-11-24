@@ -20,7 +20,7 @@ public final class AddonSounds {
     private static final Map<String, RegistryObject<SoundEvent>> BY_KIND = new HashMap<>();
 
     static {
-        for (String k : new String[]{"slash", "blast", "whoosh", "impact", "charge", "fire", "thunder", "roar", "familiar", "board_note", "sovereign_step", "ice_crack", "ice_shatter", "heartbeat", "freeze", "blood_splash", "gravity_hum", "gravity_crush", "sonic_boom", "sound_ping", "sound_chord", "brush", "ink_splash", "glitch", "error_beep", "portal_open", "blade_fly", "chain_rattle", "saw", "trick", "gunshot", "quickstep", "erase", "coin", "roulette", "slot", "dice", "jackpot", "card", "current", "deep_boom", "jaws", "leviathan", "lure_hum", "splash_deep", "tentacle", "clank", "missile", "railgun", "rivet", "rocket", "servo", "stomp", "hail", "rain", "sun_chime", "wind", "blade_draw", "rush", "flatline", "breath", "ribbon", "dream_chime", "dream_boing", "dream_hush", "dream_tick", "dream_alarm", "shadow_rise", "shadow_whisper", "shadow_slash", "shadow_gate", "twin_rise", "twin_fall", "sun_flare", "moon_shimmer", "eclipse_toll"}) {
+        for (String k : new String[]{"slash", "blast", "whoosh", "impact", "charge", "fire", "thunder", "roar", "familiar", "board_note", "sovereign_step", "ice_crack", "ice_shatter", "heartbeat", "freeze", "blood_splash", "gravity_hum", "gravity_crush", "sonic_boom", "sound_ping", "sound_chord", "brush", "ink_splash", "glitch", "error_beep", "portal_open", "blade_fly", "chain_rattle", "saw", "trick", "gunshot", "quickstep", "erase", "coin", "roulette", "slot", "dice", "jackpot", "card", "current", "deep_boom", "jaws", "leviathan", "lure_hum", "splash_deep", "tentacle", "clank", "missile", "railgun", "rivet", "rocket", "servo", "stomp", "hail", "rain", "sun_chime", "wind", "blade_draw", "rush", "flatline", "breath", "ribbon", "dream_chime", "dream_boing", "dream_hush", "dream_tick", "dream_alarm", "shadow_rise", "shadow_whisper", "shadow_slash", "shadow_gate", "twin_rise", "twin_fall", "sun_flare", "moon_shimmer", "eclipse_toll", "fort_horn", "fort_build", "fort_wall", "fort_gate", "fort_collapse", "fort_crumble", "fort_arrow", "fort_ley", "fort_fire", "fort_bolt", "fort_blades", "fort_page", "fort_bell", "fort_flask", "fort_hammer", "fort_flood", "fort_coins", "fort_launch", "fort_hold", "fort_charge", "fort_fallback", "fort_hum", "fort_alarm", "fort_prestige", "fort_amb_wind", "fort_amb_works", "fort_amb_forge", "fort_amb_bell", "elite_crack", "elite_windup", "elite_slam", "elite_orb", "elite_dagger", "elite_leech", "elite_disrupt", "elite_reflect", "elite_chain", "elite_dash", "elite_split", "elite_tick", "elite_boom", "elite_bite", "elite_chest", "elite_wail", "elite_rise", "elite_portal", "rival_glass_step", "rival_blade_fan", "rival_parry", "rival_noon", "rival_horn", "rival_shieldwall", "rival_cleave", "rival_rampart", "rival_bell", "rival_swap", "rival_bond", "rival_grief", "rival_coins", "rival_deal", "rival_stamp", "rival_foreclose", "rival_yield", "rival_arena"}) {
             String key = "sfx." + k;
             BY_KIND.put(k, SOUNDS.register(key, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", key))));
         }
@@ -53,6 +53,16 @@ public final class AddonSounds {
             SOUNDS.register("music.revenant_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.revenant_1"))));
     public static final java.util.List<RegistryObject<SoundEvent>> CURSE_WITCH_MUSIC = java.util.List.of(
             SOUNDS.register("music.curse_witch_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.curse_witch_1"))));
+
+    /** The rivals' music, one loop each (tools/rival_music.py). */
+    public static final java.util.List<RegistryObject<SoundEvent>> RIVAL_SEREN_MUSIC = java.util.List.of(
+            SOUNDS.register("music.rival_seren_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.rival_seren_1"))));
+    public static final java.util.List<RegistryObject<SoundEvent>> RIVAL_BRANNOCH_MUSIC = java.util.List.of(
+            SOUNDS.register("music.rival_brannoch_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.rival_brannoch_1"))));
+    public static final java.util.List<RegistryObject<SoundEvent>> RIVAL_TWINS_MUSIC = java.util.List.of(
+            SOUNDS.register("music.rival_twins_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.rival_twins_1"))));
+    public static final java.util.List<RegistryObject<SoundEvent>> RIVAL_MIRA_MUSIC = java.util.List.of(
+            SOUNDS.register("music.rival_mira_1", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("iron_spell_grimoire", "music.rival_mira_1"))));
 
     /** The registered sound for a kind ("slash", "blast"...), or null. */
     public static SoundEvent get(String kind) {

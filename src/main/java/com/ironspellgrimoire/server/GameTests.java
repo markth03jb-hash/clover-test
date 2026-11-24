@@ -83,6 +83,18 @@ public final class GameTests {
         abstract boolean tick(int t);
     }
 
+    /** The Architect's per-move setup: a fresh fortress with every room open, Stone to spare, nothing left from the last move. */
+    static void archSetup(ServerPlayer pl) {
+        FortressFx.testReset(pl); FortressSpells.testClear();
+        FortressFx.testUnlockAll(pl); FortressFx.testStone(pl, 100000); FortressFx.testClearCds(pl);
+    }
+    static void archMove(ServerPlayer pl, int room) {
+        archSetup(pl);
+        if (room >= FortressFx.BASE_ROOMS) FortressFx.testStars(pl, FortressFx.MAX_STARS);   // the prestige rooms open with stars
+        FortressFx.handle(pl, 1, room * 100);
+        FortressFx.castRoom(pl, room);
+    }
+
     private static void pass(String test, String what) { results.add("PASS | " + test + " | " + what); }
     private static void fail(String test, String what) { results.add("FAIL | " + test + " | " + what); }
     private static void warn(String test, String what) { results.add("WARN | " + test + " | " + what); }
@@ -555,6 +567,7 @@ public final class GameTests {
                     HungerFx.testStarvedFor(p, 0);
                     p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                     HungerFx.testHold(p, 2);
+                    p.tickCount = (p.tickCount / 20) * 20 + 19;   // the once-a-second mood check comes next tick, not maybe after the look at t 162
                 }
                 if (t == 162) {
                     var dm = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
@@ -601,6 +614,759 @@ public final class GameTests {
                     return true;
                 }
             } catch (Throwable x) { fail(name, "threw " + x); return true; }
+            return false;
+        }
+    }
+
+    /** The Architect of Ruin: building, neighbours, levels and blueprints, passives, the garrison, Siege Mode's walls
+     *  (solid, breakable by foes but not by you, giving way if you're pushed in), the Keepsake and the Ward Sigil,
+     *  and that everything is cleared and nothing touches a block. */
+    private static final class ArchitectTest extends Test {
+        ArchitectTest() { super("architect: the fortress"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{FortressFx.class, FortressSiege.class, FortressSpells.class, com.ironspellgrimoire.entity.FortressWall.class,
+                com.ironspellgrimoire.entity.FortressTower.class, com.ironspellgrimoire.entity.FortressDefender.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        BlockState[] before;
+        com.ironspellgrimoire.entity.FortressWall probe;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ARCHITECT_GRIMOIRE.get());
+            CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+            book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+            FortressFx.testReset(p);
+            FortressSpells.testClear();
+            before = snapshot();
+        }
+        @Override boolean tick(int t) {
+            try {
+                MagicData.getPlayerMagicData(p).setMana(1000);
+                p.setHealth(p.getMaxHealth());
+                if (t == 2) {   // fresh, building, Stone, locked rooms, the plan's edge
+                    if (FortressFx.level(p) != 1 || FortressFx.gridSize(p) != 3 || FortressFx.stone(p) != 0) bad.add("a fresh fortress isn't level 1, 3x3, no Stone");
+                    FortressFx.handle(p, 1, FortressFx.BARRACKS * 100 + 0);
+                    if (FortressFx.built(p, FortressFx.BARRACKS)) bad.add("built the Barracks with no Stone");
+                    FortressFx.testStone(p, 2000);
+                    FortressFx.handle(p, 1, FortressFx.BARRACKS * 100 + 0);
+                    if (FortressFx.roomLevel(p, FortressFx.BARRACKS) != 1) bad.add("couldn't build the Barracks with Stone");
+                    if (FortressFx.stone(p) != 2000 - FortressFx.COST[0]) bad.add("building cost " + (2000 - FortressFx.stone(p)) + " Stone, not " + FortressFx.COST[0]);
+                    if (FortressFx.testSlots(p)[0] != FortressFx.BARRACKS) bad.add("the first room didn't fill the first Room page");
+                    FortressFx.handle(p, 1, FortressFx.FORGE * 100 + 1);
+                    if (FortressFx.built(p, FortressFx.FORGE)) bad.add("built the Forge without its blueprint");
+                    FortressFx.handle(p, 1, FortressFx.ARMOURY * 100 + 3);
+                    if (FortressFx.built(p, FortressFx.ARMOURY)) bad.add("built outside the 3x3 plan");
+                    FortressFx.testUnlockAll(p);
+                    FortressFx.handle(p, 1, FortressFx.FORGE * 100 + 1);
+                    FortressFx.handle(p, 1, FortressFx.ARMOURY * 100 + 2);
+                    if (!FortressFx.paired(p, FortressFx.FORGE, FortressFx.ARMOURY)) bad.add("the Forge and Armoury side by side don't pair");
+                    FortressFx.handle(p, 2, 2 * 100 + 6);   // the Armoury moves below the Barracks (cell 6 is row 1, col 1: below the Forge)
+                    if (FortressFx.testCell(p, FortressFx.ARMOURY) != 6) bad.add("couldn't move the Armoury");
+                    if (!FortressFx.paired(p, FortressFx.FORGE, FortressFx.ARMOURY)) bad.add("the Forge and Armoury one above the other don't pair");
+                    FortressFx.handle(p, 2, 6 * 100 + 8);
+                    if (!FortressFx.paired(p, FortressFx.FORGE, FortressFx.ARMOURY) || FortressFx.testCell(p, FortressFx.ARMOURY) != 8) {}   // cell 8 is row 1, col 3: off the plan, so it stays
+                    if (FortressFx.testCell(p, FortressFx.ARMOURY) == 8) bad.add("moved a room off the plan");
+                    int s0 = FortressFx.stone(p);
+                    FortressFx.handle(p, 1, FortressFx.BARRACKS * 100 + 0);
+                    if (FortressFx.roomLevel(p, FortressFx.BARRACKS) != 2 || s0 - FortressFx.stone(p) != FortressFx.COST[1]) bad.add("upgrading the Barracks didn't make it level 2 for " + FortressFx.COST[1]);
+                    if (FortressSiege.cap(p) != 6) bad.add("Barracks 2 gives a garrison of " + FortressSiege.cap(p) + ", not 6");
+                    for (int k = 0; k < 6; k++) FortressFx.handle(p, 1, FortressFx.BARRACKS * 100);
+                    if (FortressFx.roomLevel(p, FortressFx.BARRACKS) != 5) bad.add("the Barracks went past level 5 or stopped short (" + FortressFx.roomLevel(p, FortressFx.BARRACKS) + ")");
+                    FortressFx.handle(p, 3, 1 * 100 + FortressFx.FORGE + 1);
+                    if (FortressFx.testSlots(p)[1] != FortressFx.FORGE) bad.add("couldn't put the Molten Bolt on Room page 2");
+                    FortressFx.handle(p, 3, 2 * 100 + FortressFx.FORGE + 1);
+                    int[] sl = FortressFx.testSlots(p);
+                    if (sl[1] == FortressFx.FORGE && sl[2] == FortressFx.FORGE) bad.add("one spell sat on two Room pages");
+                    FortressFx.handle(p, 3, 3 * 100 + FortressFx.CHAPEL + 1);
+                    if (FortressFx.testSlots(p)[3] == FortressFx.CHAPEL) bad.add("a room not built went on a Room page");
+                }
+                if (t == 4) {   // levels: a blueprint each, the plan grows
+                    FortressFx.testReset(p);
+                    int bp0 = Integer.bitCount(FortressFx.testBlueprints(p));
+                    FortressFx.addXp(p, FortressFx.need(1) + FortressFx.need(2) + FortressFx.need(3) + 1);
+                    if (FortressFx.level(p) != 4) bad.add("XP for three levels gave level " + FortressFx.level(p));
+                    if (Integer.bitCount(FortressFx.testBlueprints(p)) != bp0 + 3) bad.add("three levels gave " + (Integer.bitCount(FortressFx.testBlueprints(p)) - bp0) + " blueprints, not 3");
+                    if (FortressFx.gridSize(p) != 4) bad.add("level 4's plan isn't 4x4");
+                    FortressFx.testLevel(p, 8);
+                    if (FortressFx.gridSize(p) != 5) bad.add("level 8's plan isn't 5x5");
+                    FortressFx.testRoot(p).putIntArray("grid", new int[]{99, -7, 3, 0, 1000, 11, 11});   // a broken save
+                    FortressFx.testRoot(p);
+                    if (FortressFx.builtCount(p) != 0) bad.add("a broken saved plan wasn't cleared");
+                }
+                if (t == 6) {   // passives while worn, gone when the book is off
+                    FortressFx.testReset(p); FortressFx.testUnlockAll(p); FortressFx.testStone(p, 1000);
+                    FortressFx.handle(p, 1, FortressFx.ARMOURY * 100);
+                    FortressFx.handle(p, 1, FortressFx.LIBRARY * 100 + 1);
+                    var ad = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+                    var mm = p.getAttribute(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA.get());
+                    if (ad.getModifiers().stream().noneMatch(m -> m.getName().equals("Armoury"))) bad.add("the Armoury's passive isn't on");
+                    if (mm.getModifiers().stream().noneMatch(m -> m.getName().equals("Library"))) bad.add("the Library's passive isn't on");
+                    ItemStack held = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, ItemStack.EMPTY));
+                    FortressFx.refreshPassives(p);
+                    if (ad.getModifiers().stream().anyMatch(m -> m.getName().equals("Armoury"))) bad.add("the Armoury's passive stayed with the book off");
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, held));
+                    FortressFx.refreshPassives(p);
+                }
+                if (t == 8) {   // banners and the garrison's limit
+                    FortressFx.testReset(p);
+                    for (int k = 0; k < 6; k++) FortressSiege.testBanner(p, k % 2 == 0 ? "minecraft:zombie" : "minecraft:skeleton");
+                    for (int k = 0; k < 6; k++) FortressFx.handle(p, 4, 0);
+                    if (FortressSiege.testGarrison(p) != 4) bad.add("the garrison took " + FortressSiege.testGarrison(p) + " with room for 4");
+                    if (FortressSiege.roleOf("minecraft:skeleton") != com.ironspellgrimoire.entity.FortressDefender.ARCHER) bad.add("a skeleton isn't an Archer");
+                    if (FortressSiege.roleOf("minecraft:ravager") != com.ironspellgrimoire.entity.FortressDefender.BRUTE) bad.add("a ravager isn't a Brute");
+                    FortressSiege.testKills(p, 1, 200);
+                    if (FortressSiege.rankOf(200) != 3) bad.add("200 kills isn't Captain");
+                }
+                if (t == 10) {   // Siege Mode: walls, a gate, towers, the garrison out
+                    FortressFx.testClearCds(p);
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    FortressFx.siegePage(p, 10);
+                    if (!FortressSiege.active(p)) bad.add("Siege Mode didn't start");
+                    int w = FortressSiege.testWalls(p);
+                    if (w < 30) bad.add("Siege Mode raised " + w + " wall blocks (a 6-wide ring has 41)");
+                    if (FortressSiege.testTowers(p) < 2) bad.add("Siege Mode raised " + FortressSiege.testTowers(p) + " towers, not at least 2");
+                    if (FortressSiege.testDefenders(p) != 4) bad.add(FortressSiege.testDefenders(p) + " defenders came out, not the garrison's 4");
+                    FortressFx.siegePage(p, 10);
+                    if (FortressSiege.testWalls(p) != w) bad.add("a second Siege Mode stacked another ring");
+                    long gates = FortressSiege.testWallList(p).stream().filter(x -> x.kind() == com.ironspellgrimoire.entity.FortressWall.GATE).count();
+                    if (gates != 1) bad.add(gates + " gatehouses, not 1");
+                    for (var x : FortressSiege.testWallList(p)) {
+                        if (x.kind() == com.ironspellgrimoire.entity.FortressWall.WALL && probe == null) probe = x;
+                        if (x.shouldBeSaved()) { bad.add("a wall would be saved with the world"); break; }
+                    }
+                    if (probe == null) bad.add("no wall block to test");
+                    else {
+                        if (!probe.canBeCollidedWith()) bad.add("a wall isn't solid");
+                        float h0 = probe.hp();
+                        probe.hurt(p.damageSources().playerAttack(p), 10);
+                        if (probe.hp() != h0) bad.add("the player knocked down their own wall");
+                        probe.hurt(dummy.damageSources().mobAttack(dummy), 10);
+                        if (probe.hp() >= h0) bad.add("a foe couldn't damage a wall");
+                    }
+                }
+                if (t == 12 && probe != null && probe.isAlive()) p.teleportTo(sl(), probe.getX(), probe.getY(), probe.getZ(), 0f, 0f);   // pushed into a wall
+                if (t == 20) {
+                    if (probe != null && probe.isAlive()) bad.add("a wall didn't give way with its owner inside it");
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    // the Keepsake and the Ward Sigil
+                    FortressFx.testReset(p); FortressFx.testUnlockAll(p); FortressFx.testStone(p, 1000);
+                    FortressFx.handle(p, 1, FortressFx.RELIQUARY * 100);
+                    FortressFx.castRoom(p, FortressFx.RELIQUARY);
+                    // (the harness zeroes every blow to the test player, so the two are asked directly)
+                    float kept = FortressSpells.keepsake(p, 500);
+                    if (Math.abs(kept - (p.getHealth() - 1)) > 0.01f) bad.add("the Keepsake let a killing blow of 500 through as " + kept);
+                    if (FortressFx.testRoot(p).getLong("keep") != 0) bad.add("the Keepsake wasn't used up");
+                    if (FortressSpells.keepsake(p, 500) != 500) bad.add("the Keepsake saved twice");
+                    p.setHealth(p.getMaxHealth());
+                    FortressFx.handle(p, 1, FortressFx.RUNE_VAULT * 100 + 1);
+                    FortressFx.castRoom(p, FortressFx.RUNE_VAULT);
+                    float took = FortressSpells.ward(p, 10);
+                    if (Math.abs(took - 6f) > 0.01f) bad.add("the Ward Sigil turned a hit of 10 into " + took + ", not 6");
+                    if (FortressSpells.ward(dummy, 10) != 10) bad.add("the Ward Sigil softened a foe's hit");
+                    p.setHealth(p.getMaxHealth());
+                }
+                if (t == 22) {   // everything goes at once when it ends
+                    FortressFx.testClearCds(p);
+                    FortressFx.siegePage(p, 10);
+                    FortressSiege.endAll(p, false);
+                    long left = sl().getEntities((Entity) null, new AABB(home, home).inflate(40), e -> e.isAlive() && (e instanceof com.ironspellgrimoire.entity.FortressWall
+                            || e instanceof com.ironspellgrimoire.entity.FortressTower || e instanceof com.ironspellgrimoire.entity.FortressDefender)).size();
+                    if (left > 0) bad.add(left + " fortress pieces stayed after the siege ended");
+                }
+                if (t == 24) {
+                    String ch = changes(before);
+                    if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+                    if (bad.isEmpty()) pass(name, "built, paired, moved, upgraded, levelled, passives, garrison, siege, walls, keepsake, sigil, cleared");
+                    else fail(name, String.join("; ", bad));
+                    FortressFx.testReset(p);
+                    FortressSpells.testClear();
+                    return true;
+                }
+            } catch (Throwable x) { fail(name, "threw " + x); FortressFx.testReset(p); return true; }
+            return false;
+        }
+    }
+
+    /** The Architect of Ruin's siege shapes, the garrison's orders, overcharging a tower, breaches, prestige and the
+     *  prestige rooms - and nothing changed in the world. */
+    private static final class ArchitectCommandTest extends Test {
+        ArchitectCommandTest() { super("architect: shapes, orders, prestige"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{FortressFx.class, FortressSiege.class, FortressSpells.class, com.ironspellgrimoire.entity.FortressWall.class,
+                com.ironspellgrimoire.entity.FortressTower.class, com.ironspellgrimoire.entity.FortressDefender.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        BlockState[] before;
+        com.ironspellgrimoire.entity.FortressTower charged;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ARCHITECT_GRIMOIRE.get());
+            CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+            book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+            FortressFx.testReset(p);
+            FortressSpells.testClear();
+            before = snapshot();
+        }
+        void fresh(int garrison) {
+            FortressSiege.endAll(p, false);
+            FortressFx.testReset(p); FortressFx.testUnlockAll(p); FortressFx.testStone(p, 100000); FortressFx.testClearCds(p);
+            for (int k = 0; k < garrison; k++) { FortressSiege.testBanner(p, "minecraft:zombie"); FortressFx.handle(p, 4, 0); }
+            p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+            p.setYRot(0); p.setXRot(0);
+        }
+        int gates() { return (int) FortressSiege.testWallList(p).stream().filter(x -> x.isAlive() && x.kind() == com.ironspellgrimoire.entity.FortressWall.GATE).count(); }
+        @Override boolean tick(int t) {
+            try {
+                MagicData.getPlayerMagicData(p).setMana(1000);
+                p.setHealth(p.getMaxHealth());
+                if (t == 2) {   // the three shapes, sneak to switch, the Citadel always a ring
+                    fresh(0);
+                    FortressFx.siegePage(p, 10);
+                    int ringWalls = FortressSiege.testWalls(p), ringTowers = FortressSiege.testTowers(p);
+                    if (ringWalls < 30 || gates() != 1 || ringTowers < 2) bad.add("Ring: " + ringWalls + " walls, " + gates() + " gates, " + ringTowers + " towers");
+                    fresh(0);
+                    p.setShiftKeyDown(true);
+                    FortressFx.siegePage(p, 10);
+                    p.setShiftKeyDown(false);
+                    if (FortressSiege.active(p)) bad.add("sneak-casting Siege Mode cast it instead of switching the shape");
+                    if (FortressFx.shape(p) != FortressFx.LINE) bad.add("sneak-casting Siege Mode didn't switch Ring to Line (shape " + FortressFx.shape(p) + ")");
+                    FortressFx.siegePage(p, 10);
+                    int lw = FortressSiege.testWalls(p), lt = FortressSiege.testTowers(p);
+                    if (lw < 10 || lw > 13 || gates() != 0 || lt < 2 || lt > 3) bad.add("Line: " + lw + " walls, " + gates() + " gates, " + lt + " towers (want 13, 0, 2-3)");
+                    var any = FortressSiege.testWallList(p).stream().filter(x -> x.isAlive()).findFirst();
+                    if (any.isPresent() && Math.abs(any.get().hp() - FortressSiege.wallHp(p, false) * 1.25f) > 0.01f) bad.add("the Line's walls aren't 25% tougher");
+                    for (var x : FortressSiege.testWallList(p)) if (x.isAlive() && x.getZ() < home.z) { bad.add("the Line's wall stands behind you, not in front"); break; }
+                    FortressSiege.endAll(p, false); FortressFx.testClearCds(p);
+                    FortressFx.handle(p, 10, FortressFx.HORSESHOE);
+                    FortressFx.siegePage(p, 10);
+                    int hw = FortressSiege.testWalls(p), ht = FortressSiege.testTowers(p);
+                    if (hw < 25 || hw > 33 || gates() != 0 || ht < 3 || ht > 5) bad.add("Horseshoe: " + hw + " walls, " + gates() + " gates, " + ht + " towers (want 33, 0, 3-5)");
+                    for (var x : FortressSiege.testWallList(p)) if (x.isAlive() && x.getZ() < home.z - 5) { bad.add("the Horseshoe isn't open behind you"); break; }
+                    FortressSiege.endAll(p, false); FortressFx.testClearCds(p);
+                    FortressFx.testLevel(p, 10);
+                    FortressFx.handle(p, 10, FortressFx.LINE);
+                    FortressFx.citadelPage(p, 10);
+                    if (!FortressSiege.active(p) || gates() != 1) bad.add("the Citadel wasn't a ring with its gate (" + gates() + " gates)");
+                    FortressSiege.endAll(p, false);
+                }
+                if (t == 4) {   // the orders
+                    fresh(4);
+                    FortressFx.handle(p, 12, FortressSiege.HOLD);
+                    if (FortressSiege.testOrder(p) != FortressSiege.FREE) bad.add("an order was given with no defenders out");
+                    FortressFx.siegePage(p, 10);
+                    var ds = FortressSiege.testDefenderList(p);
+                    if (ds.size() != 4) bad.add(ds.size() + " defenders out, not 4");
+                    FortressFx.handle(p, 12, FortressSiege.HOLD);
+                    if (FortressSiege.testOrder(p) != FortressSiege.HOLD) bad.add("Hold the Gate didn't take");
+                    var foot = ds.stream().filter(d -> !d.ranged()).findFirst().orElse(null);
+                    var gate = FortressSiege.testGate(p);
+                    if (foot != null && gate != null) {
+                        var h = FortressSiege.orderHome(foot);
+                        if (h == null || h.distanceTo(gate) > 3.5) bad.add("Hold the Gate didn't send a footman to the gate");
+                    }
+                    FortressFx.handle(p, 12, FortressSiege.HOLD);
+                    if (FortressSiege.testOrder(p) != FortressSiege.FREE) bad.add("giving Hold the Gate again didn't lift it");
+                    FortressFx.handle(p, 12, FortressSiege.CHARGE);
+                    if (FortressSiege.testOrder(p) != FortressSiege.CHARGE) bad.add("Charge didn't take with a foe near");
+                    if (!ds.isEmpty() && FortressSiege.chargeTarget(ds.get(0)) != dummy) bad.add("Charge didn't go for the dummy");
+                    if (!ds.isEmpty() && ds.get(0).getAttribute(Attributes.MOVEMENT_SPEED).getModifier(FortressSiege.CHARGE_SPEED) == null) bad.add("charging defenders aren't faster");
+                    FortressFx.handle(p, 12, FortressSiege.FALL_BACK);
+                    if (FortressSiege.testOrder(p) != FortressSiege.FALL_BACK) bad.add("Fall Back didn't take");
+                    if (!ds.isEmpty() && ds.get(0).getAttribute(Attributes.MOVEMENT_SPEED).getModifier(FortressSiege.CHARGE_SPEED) != null) bad.add("the charge's speed stayed after Fall Back");
+                    if (!ds.isEmpty() && (FortressSiege.orderHome(ds.get(0)) == null || FortressSiege.orderHome(ds.get(0)).distanceTo(p.position()) > 0.01)) bad.add("Fall Back doesn't send defenders to the player");
+                    dummy.teleportTo(home.x, home.y, home.z + 12);
+                    if (!ds.isEmpty() && FortressSiege.mayChase(ds.get(0), dummy)) bad.add("on Fall Back a defender would chase a foe 12 blocks away");
+                    dummy.teleportTo(home.x, home.y, home.z + 6);
+                    // a breach: an enemy breaks a wall; Hold the Gate sends defenders to fill it
+                    FortressFx.handle(p, 12, FortressSiege.HOLD);
+                    var w = FortressSiege.testWallList(p).stream().filter(x -> x.isAlive() && x.kind() == com.ironspellgrimoire.entity.FortressWall.WALL).findFirst().orElse(null);
+                    if (w == null) bad.add("no wall to breach");
+                    else {
+                        w.hurt(dummy.damageSources().mobAttack(dummy), 100000);
+                        var b = FortressSiege.testBreach(p);
+                        if (b == null) bad.add("a wall broken by a foe made no breach");
+                        else if (foot != null && (FortressSiege.orderHome(foot) == null || FortressSiege.orderHome(foot).distanceTo(b) > 0.01)) bad.add("Hold the Gate didn't send defenders to the breach");
+                    }
+                }
+                if (t == 6) {   // overcharging the tower you look at
+                    var towers = FortressSiege.testTowerList(p);
+                    if (towers.isEmpty()) bad.add("no tower to overcharge");
+                    else {
+                        charged = towers.get(0);
+                        p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, charged.position().add(0, charged.getBbHeight() * 0.5, 0));
+                        MagicData.getPlayerMagicData(p).setMana(100);
+                        FortressSiege.testOvercharge(p);
+                        if (!charged.overcharged()) bad.add("looking at a tower and overcharging didn't overcharge it");
+                        if (Math.abs(MagicData.getPlayerMagicData(p).getMana() - (100 - FortressSiege.OVER_MANA)) > 0.5f) bad.add("overcharging cost " + (100 - MagicData.getPlayerMagicData(p).getMana()) + " mana, not " + FortressSiege.OVER_MANA);
+                        float m0 = MagicData.getPlayerMagicData(p).getMana();
+                        FortressSiege.testOvercharge(p);
+                        if (MagicData.getPlayerMagicData(p).getMana() != m0) bad.add("overcharged the same tower again straight away");
+                        p.setXRot(-80);   // looking at the sky: nothing to overcharge
+                    }
+                }
+                if (t == 6 + FortressSiege.OVER_TICKS + 4) {
+                    if (charged != null && charged.isAlive() && charged.overcharged()) bad.add("the overcharge didn't wear off after 5 s");
+                }
+                if (t == 112) {   // prestige
+                    fresh(2);
+                    FortressFx.handle(p, 11, 0);
+                    if (FortressFx.stars(p) != 0) bad.add("prestiged at book level 1");
+                    FortressFx.testLevel(p, 10);
+                    FortressFx.handle(p, 1, FortressFx.BARRACKS * 100);
+                    FortressFx.handle(p, 1, FortressFx.FORGE * 100 + 1);
+                    int stone = FortressFx.stone(p), bp = FortressFx.testBlueprints(p);
+                    float m0 = FortressFx.mult(p, -1) / FortressFx.mult(p, 0);
+                    FortressFx.handle(p, 11, 0);
+                    if (FortressFx.stars(p) != 1) bad.add("prestige at level 10, mastered, gave " + FortressFx.stars(p) + " stars");
+                    if (FortressFx.level(p) != 1 || FortressFx.builtCount(p) != 0) bad.add("prestige didn't reset the level and the plan");
+                    if (FortressSiege.testGarrison(p) != 2) bad.add("prestige lost the garrison");
+                    if (FortressFx.stone(p) != stone || FortressFx.testBlueprints(p) != bp) bad.add("prestige lost Stone or blueprints");
+                    float m1 = FortressFx.mult(p, -1) / FortressFx.mult(p, 0);
+                    if (Math.abs(m1 / m0 - 1.05f) > 0.001f) bad.add("one star made towers " + m1 / m0 + "x, not 1.05x");
+                    if (!FortressFx.unlocked(p, FortressFx.HERALD) || FortressFx.unlocked(p, FortressFx.MAP_ROOM)) bad.add("star 1 didn't open the Herald's Gate alone");
+                    FortressSiege.banners(p).clear();
+                    for (int k = 0; k < 10; k++) FortressSiege.maybeBanner(p, dummy, true);
+                    if (FortressSiege.banners(p).size() != FortressSiege.MAX_BANNERS + 1) bad.add(FortressSiege.banners(p).size() + " banners wait with one star, not " + (FortressSiege.MAX_BANNERS + 1));
+                    FortressFx.testStars(p, FortressFx.MAX_STARS);
+                    FortressFx.testLevel(p, 10);
+                    FortressFx.handle(p, 11, 0);
+                    if (FortressFx.stars(p) != FortressFx.MAX_STARS || FortressFx.level(p) != 10) bad.add("prestiged past " + FortressFx.MAX_STARS + " stars");
+                }
+                if (t == 114) {   // the prestige rooms
+                    fresh(1);
+                    FortressFx.testStars(p, FortressFx.MAX_STARS);
+                    FortressFx.handle(p, 1, FortressFx.THRONE * 100);
+                    FortressFx.handle(p, 1, FortressFx.MAP_ROOM * 100 + 1);
+                    FortressFx.handle(p, 1, FortressFx.HERALD * 100 + 2);
+                    if (!FortressFx.built(p, FortressFx.THRONE) || !FortressFx.built(p, FortressFx.MAP_ROOM) || !FortressFx.built(p, FortressFx.HERALD)) bad.add("couldn't build the prestige rooms with five stars");
+                    FortressFx.siegePage(p, 10);
+                    var ds = FortressSiege.testDefenderList(p);
+                    if (ds.isEmpty() || ds.get(0).rank() != 1) bad.add("with the Throne Room a recruit didn't fight a rank higher (" + (ds.isEmpty() ? "none out" : "rank " + ds.get(0).rank()) + ")");
+                    FortressFx.castRoom(p, FortressFx.MAP_ROOM);
+                    if (!FortressSpells.revealed(p, dummy)) bad.add("Survey didn't reveal the dummy");
+                    FortressFx.castRoom(p, FortressFx.THRONE);
+                    if (!ds.isEmpty() && ds.get(0).getAttribute(Attributes.ATTACK_DAMAGE).getModifier(FortressSpells.DECREE) == null) bad.add("Royal Decree didn't strengthen the defenders");
+                    dummy.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                    p.setXRot(0); p.setYRot(180);   // look away from the dummy: the horn drags it toward that spot
+                    FortressFx.castRoom(p, FortressFx.HERALD);
+                    if (dummy.getDeltaMovement().horizontalDistanceSqr() < 1e-4) bad.add("the Lure Horn didn't drag the dummy");
+                    FortressSiege.endAll(p, false);
+                    FortressFx.testStars(p, 0);
+                    if (FortressFx.unlocked(p, FortressFx.THRONE)) bad.add("the Throne Room stayed open with no stars");
+                }
+                if (t == 118) {
+                    ensureDummy();
+                    String ch = changes(before);
+                    if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+                    if (bad.isEmpty()) pass(name, "ring, line, horseshoe, sneak to switch, citadel ring, hold, charge, fall back, breach, overcharge, prestige, stars, prestige rooms");
+                    else fail(name, String.join("; ", bad));
+                    FortressFx.testReset(p);
+                    FortressSpells.testClear();
+                    return true;
+                }
+            } catch (Throwable x) { fail(name, "threw " + x); FortressFx.testReset(p); return true; }
+            return false;
+        }
+    }
+
+    /** Elite mobs: threat ranks, who may be one, what rolls, and every trait doing what the Codex says - and nothing changed in the world. */
+    /** The rivals: calling, the ring, records, yielding and rewards, rematch ranks, the twins' grief, the Legion, Mira's deals, the token. */
+    private static final class RivalTest extends Test {
+        RivalTest() { super("rivals: ring, yield, rewards, twins, legion, deals, token"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{Rivals.class, SerenAI.class, BrannochAI.class, TwinsAI.class, MiraAI.class, RivalKeepsakes.class,
+                com.ironspellgrimoire.entity.Rival.class, com.ironspellgrimoire.entity.TorLegionnaire.class, Boards.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        com.ironspellgrimoire.entity.Rival seren, alder, wren, bran, mira;
+        int stars0;
+
+        void yieldIt(com.ironspellgrimoire.entity.Rival r) {
+            r.setPhase(3);
+            r.setHealth(r.getMaxHealth() * 0.05f);
+            r.invulnerableTime = 0;
+            r.hurt(p.damageSources().playerAttack(p), r.getMaxHealth() * 0.1f);
+        }
+        void clearRivals() {
+            for (var r : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.Rival.class, new AABB(home, home).inflate(60))) r.discard();
+            for (var l : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.TorLegionnaire.class, new AABB(home, home).inflate(60))) l.discard();
+        }
+
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); clearRivals();
+            p.getPersistentData().remove(Rivals.KEY);
+            Bounties.addStars(p, 10 - Bounties.stars(p));
+            stars0 = Bounties.stars(p);
+            p.teleportTo(sl(), home.x, home.y, home.z, 0, 0);
+        }
+
+        @Override boolean tick(int t) {
+            try {
+                if (t != 3 && t < 200) { p.teleportTo(home.x, home.y, home.z); p.setHealth(p.getMaxHealth()); }
+                if (t == 1) {
+                    seren = Rivals.call(p, Rivals.SEREN, 0);
+                    if (seren == null) { fail(name, "Seren Vale couldn't be called"); return true; }
+                    if (seren.arena == null || !p.getUUID().equals(seren.challenger)) bad.add("a called rival has no ring or no challenger");
+                }
+                if (t == 3) {   // from outside the ring, blows don't land
+                    Vec3 out = seren.arena.add(seren.arena.subtract(home).normalize().scale(Rivals.RING + 6));
+                    p.teleportTo(out.x, home.y, out.z);
+                    float h = seren.getHealth();
+                    seren.invulnerableTime = 0;
+                    seren.hurt(p.damageSources().playerAttack(p), 10);
+                    if (seren.getHealth() < h) bad.add("a blow from outside the ring landed");
+                }
+                if (t == 6) {
+                    if (Rivals.met(p, Rivals.SEREN) != 1) bad.add("meeting Seren wasn't recorded (" + Rivals.met(p, Rivals.SEREN) + ")");
+                    ((com.ironspellgrimoire.entity.SerenVale) seren).dodgeAt = Long.MAX_VALUE; ((com.ironspellgrimoire.entity.SerenVale) seren).parryUntil = 0;   // no sidestep or parry for the test's blow
+                    yieldIt(seren);
+                    if (!seren.yielded || !seren.over || !seren.isAlive()) bad.add("Seren didn't yield at her last line (yielded " + seren.yielded + ", alive " + seren.isAlive() + ")");
+                    if (Rivals.wins(p, Rivals.SEREN) != 1) bad.add("the win wasn't recorded");
+                    if (Bounties.stars(p) != stars0 + 2) bad.add("a rank-0 win paid " + (Bounties.stars(p) - stars0) + " stars, not 2");
+                    if (!p.getInventory().contains(new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PRISM_RIBBON.get()))) bad.add("the first win gave no Prism Ribbon");
+                }
+                if (t == 110) {
+                    if (seren.isAlive() && !seren.isRemoved()) bad.add("a yielded rival never left");
+                    if (Rivals.rankFor(p, Rivals.SEREN) != 1) bad.add("the rematch isn't rank 1");
+                    var again = Rivals.call(p, Rivals.SEREN);
+                    if (again == null || Math.abs(again.getMaxHealth() - 300 * 1.3f) > 1) bad.add("a rank-1 rematch has " + (again == null ? "nothing" : again.getMaxHealth()) + " health, not 390");
+                    if (again != null) again.discard();
+                }
+                if (t == 112) {   // the twins
+                    clearRivals();
+                    Rivals.call(p, Rivals.TWINS);
+                    var as = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.AlderBellmar.class, new AABB(home, home).inflate(40));
+                    var ws = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.WrenBellmar.class, new AABB(home, home).inflate(40));
+                    if (as.size() != 1 || ws.size() != 1) { bad.add("the twins came " + as.size() + " + " + ws.size()); }
+                    else {
+                        alder = as.get(0); wren = ws.get(0);
+                        if (!wren.getUUID().equals(alder.partner) || !alder.getUUID().equals(wren.partner)) bad.add("the twins aren't linked");
+                    }
+                }
+                if (t == 116 && alder != null) {
+                    yieldIt(alder);
+                    if (!alder.yielded || alder.over) bad.add("one twin down ended the fight");
+                    if (((com.ironspellgrimoire.entity.WrenBellmar) wren).griefUntil <= sl().getGameTime()) bad.add("Wren didn't grieve");
+                    alder.yieldT = 598;
+                }
+                if (t == 120 && alder != null) {
+                    if (alder.yielded) bad.add("Alder didn't get back up after 30 s of Wren standing");
+                    else if (alder.getHealth() > alder.getMaxHealth() * 0.31f) bad.add("Alder got up with " + alder.getHealth() + " health");
+                    yieldIt(alder);
+                    yieldIt(wren);
+                    if (!alder.over || !wren.over) bad.add("both twins down didn't end the fight");
+                    if (Rivals.wins(p, Rivals.TWINS) != 1) bad.add("the twins' win wasn't recorded");
+                }
+                if (t == 124) {   // Brannoch and his Legion
+                    clearRivals();
+                    bran = Rivals.call(p, Rivals.BRANNOCH);
+                    if (bran instanceof com.ironspellgrimoire.entity.BrannochTor b) BrannochAI.shieldWall(b, p, 3);
+                }
+                if (t == 140 && bran instanceof com.ironspellgrimoire.entity.BrannochTor b) {
+                    var legion = BrannochAI.legion(b);
+                    if (legion.size() < 3) bad.add("Shield Wall raised " + legion.size() + " soldiers, not 3");
+                    if (legion.size() >= 2) {
+                        var front = legion.get(0); var back = legion.get(1);
+                        front.setNoAi(true); back.setNoAi(true);
+                        front.moveTo(home.x + 3, home.y, home.z, 0, 0); back.moveTo(home.x - 3, home.y, home.z, 0, 0);
+                        Vec3 tf = home.subtract(front.position()), tb = home.subtract(back.position());
+                        front.setYRot((float) Math.toDegrees(Math.atan2(-tf.x, tf.z))); front.yHeadRot = front.getYRot(); front.yBodyRot = front.getYRot();
+                        back.setYRot((float) Math.toDegrees(Math.atan2(tb.x, -tb.z))); back.yHeadRot = back.getYRot(); back.yBodyRot = back.getYRot();
+                        float a = BrannochAI.shield(front, p.damageSources().playerAttack(p), 10), c = BrannochAI.shield(back, p.damageSources().playerAttack(p), 10);
+                        if (a > 3.5f || c < 9.9f) bad.add("the shield took " + a + " of 10 from the front and " + c + " from behind");
+                    }
+                    BrannochAI.standard(b, p);
+                    if (!BrannochAI.bearerUp(b) || Math.abs(BrannochAI.guard(b, p.damageSources().playerAttack(p)) - 0.5f) > 0.01f) bad.add("the standard didn't halve his wounds");
+                    Rivals.leave(b, false);
+                    if (!BrannochAI.legion(b).isEmpty()) bad.add("the Legion stayed after he left");
+                }
+                if (t == 142) {   // Mira
+                    clearRivals();
+                    mira = Rivals.call(p, Rivals.MIRA);
+                    if (mira instanceof com.ironspellgrimoire.entity.MiraHollowell m) {
+                        MiraAI.testOffer(m, p);
+                        if (!MiraAI.offering(p)) bad.add("Mira's deal wasn't offered");
+                        MiraAI.answer(p, true);
+                        if (MiraAI.offering(p) || (MiraAI.deal(p) == null && !MiraAI.LOAN_DUE.containsKey(p.getUUID()))) bad.add("accepting a deal did nothing");
+                        var md = io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p);
+                        float max = (float) p.getAttributeValue(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA.get());
+                        md.setMana(max);
+                        MiraAI.testCollateralize(m, p);
+                        if (!MiraAI.testCollateral(p) || md.getMana() > max * 0.75f) bad.add("Collateral took no mana");
+                        for (int k = 0; k < 3; k++) MiraAI.struck(m, p);
+                        if (MiraAI.testCollateral(p) || md.getMana() < max * 0.99f) bad.add("three hits didn't get the collateral back (" + md.getMana() + "/" + max + ")");
+                        Rivals.leave(m, false);
+                    } else bad.add("Mira couldn't be called");
+                }
+                if (t == 146) {   // the Rival's Token, from the Poster Board
+                    clearRivals();
+                    int before = Bounties.stars(p);
+                    Boards.pick(p, Boards.BOUNTY, -3);
+                    if (Bounties.stars(p) != before - Boards.TOKEN_COST) bad.add("the token cost " + (before - Bounties.stars(p)) + " stars");
+                    boolean has = false;
+                    for (ItemStack st : p.getInventory().items) if (st.is(com.ironspellgrimoire.registry.AddonItemRegistry.RIVAL_TOKEN.get())) has = true;
+                    if (!has) bad.add("no token was given");
+                    if (!Rivals.useToken(p, Rivals.MIRA) || sl().getEntitiesOfClass(com.ironspellgrimoire.entity.MiraHollowell.class, new AABB(home, home).inflate(40)).isEmpty()) bad.add("the token didn't call Mira");
+                    if (Rivals.useToken(p, Rivals.SEREN)) bad.add("a second rival came while one was here");
+                    clearRivals();
+                    // the Prism Ribbon: a blow strikes a reflection
+                    ItemStack rib = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PRISM_RIBBON.get());
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, rib));
+                    RivalKeepsakes.RIBBON.remove(p.getUUID());
+                    var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(sl());
+                    z.moveTo(home.x + 2, home.y, home.z); sl().addFreshEntity(z);
+                    int hits = playerHits;
+                    p.invulnerableTime = 0;
+                    p.hurt(z.damageSources().mobAttack(z), 4);
+                    if (playerHits != hits || !RivalKeepsakes.RIBBON.containsKey(p.getUUID())) bad.add("the Prism Ribbon let the blow through");
+                    z.discard();
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, ItemStack.EMPTY));
+                    if (bad.isEmpty()) pass(name, "ring, records, yield, keepsake, rank 1 rematch, twins' grief and rising, shields, standard, deals, collateral, token, Prism Ribbon");
+                    else fail(name, String.join("; ", bad));
+                    clearRivals(); clearArea();
+                    p.getPersistentData().remove(Rivals.KEY);
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); clearRivals(); clearArea(); return true; }
+        }
+    }
+
+    private static final class EliteTest extends Test {
+        EliteTest() { super("elites: threat and every trait"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{EliteMobs.class, EliteTraits.class, com.ironspellgrimoire.entity.CursedChest.class, com.ironspellgrimoire.entity.EliteRift.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        BlockState[] before;
+        net.minecraft.world.entity.Mob over, echo, seeker, dagger, hunter, sprinter, anchored, reflector, pillager, twin0, ghostFrom;
+        Vec3 anchorAt, riftOpen, riftShut, chestBite, chestWait, twinAt, echoAt;
+        java.util.UUID shadowId;
+        net.minecraft.world.entity.projectile.Arrow reflected;
+        boolean dashed;
+
+        net.minecraft.world.entity.Mob spawn(net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob> type, double dx, double dz, int rank, int mask) {
+            var m = type.create(sl());
+            m.moveTo(home.x + dx, home.y, home.z + dz, 180, 0);
+            m.setYBodyRot(180); m.setYHeadRot(180);
+            m.setNoAi(true);
+            sl().addFreshEntity(m);
+            EliteMobs.testMake(m, rank, mask);
+            return m;
+        }
+        static int bit(int t) { return 1 << t; }
+        void hitPlayer(net.minecraft.world.entity.Mob m, float amount) { p.invulnerableTime = 0; p.hurt(m.damageSources().mobAttack(m), amount); }
+        void hitMob(net.minecraft.world.entity.Mob m, float amount) { m.invulnerableTime = 0; m.hurt(p.damageSources().playerAttack(p), amount); }
+        java.util.List<net.minecraft.world.entity.Mob> marked(Vec3 c, double r) {
+            return sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new AABB(c, c).inflate(r), x -> x.isAlive() && EliteMobs.marked(x) && x.position().distanceTo(c) <= r);
+        }
+
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); ensureDummy();
+            EliteTraits.testEchoHits = 0; EliteTraits.testBurstHits = 0; EliteTraits.testOrbs = 0; EliteTraits.testDaggers = 0;
+            EliteTraits.clearShots();
+            before = snapshot();
+        }
+
+        @Override boolean tick(int t) {
+            try {
+                var V = net.minecraft.world.entity.EntityType.VINDICATOR;
+                if (t == 2) {   // threat, who may be one, what rolls, what a rank does
+                    ItemStack book = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.ARCHITECT_GRIMOIRE.get());
+                    CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+                    book.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
+                    EliteMobs.testForgetThreat(p);
+                    int th = EliteMobs.threat(p);
+                    if (th != 4) bad.add("a mastered grimoire gave threat " + th + ", not 4");
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, ItemStack.EMPTY));
+                    EliteMobs.testForgetThreat(p);
+                    if (EliteMobs.threat(p) != 0) bad.add("no grimoire still gave threat " + EliteMobs.threat(p));
+                    var plain = V.create(sl()); plain.moveTo(home.x + 20, home.y, home.z + 20);
+                    sl().addFreshEntity(plain);
+                    if (!EliteMobs.eligible(plain)) bad.add("a wild vindicator can't be an elite");
+                    plain.getPersistentData().putUUID("isg_bounty_owner", p.getUUID());
+                    if (EliteMobs.eligible(plain)) bad.add("a bounty target could be an elite");
+                    if (EliteMobs.eligible(dummy)) bad.add("a mob with no AI could be an elite");
+                    var golem = net.minecraft.world.entity.EntityType.IRON_GOLEM.create(sl()); golem.moveTo(home.x + 20, home.y, home.z - 20);
+                    sl().addFreshEntity(golem);
+                    if (EliteMobs.eligible(golem)) bad.add("an iron golem could be an elite");
+                    golem.discard(); plain.discard();
+                    int champs = 0, models = 0, tooMany = 0;
+                    for (int k = 0; k < 300; k++) {
+                        int m = EliteMobs.pick(plain, 2, 3);
+                        if ((m & EliteMobs.CHAMPION) != 0) champs++;
+                        if ((m & EliteMobs.MODEL_TRAITS) != 0 && !EliteMobs.modelsApproved) models++;
+                        if (Integer.bitCount(m) > 3) tooMany++;
+                        int m5 = EliteMobs.pick(plain, 5, 3);
+                        if (Integer.bitCount(m5 & EliteMobs.CHAMPION) > 1) tooMany++;
+                    }
+                    if (champs > 0) bad.add("champion traits rolled at threat 2");
+                    if (models > 0) bad.add("traits whose models aren't approved yet rolled");
+                    if (tooMany > 0) bad.add("too many traits (or two champion traits) rolled");
+                    var r3 = spawn(V, 20, -10, 3, 0);
+                    double hp = r3.getAttribute(Attributes.MAX_HEALTH).getValue() / r3.getAttribute(Attributes.MAX_HEALTH).getBaseValue();
+                    double dm = r3.getAttribute(Attributes.ATTACK_DAMAGE).getValue() / r3.getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
+                    if (Math.abs(hp - 1.6) > 0.01 || Math.abs(dm - 1.3) > 0.01) bad.add("rank 3 gave " + hp + "x health and " + dm + "x damage, not 1.6 and 1.3");
+                    if (r3.getHealth() < r3.getMaxHealth() - 0.01) bad.add("a ranked mob didn't start at full health");
+                    if (EliteMobs.testPacket(r3) == null) bad.add("no sync packet");
+                    r3.discard();
+                }
+                if (t == 4) {   // Bulwark, Ironhide, Second Wind
+                    var b = spawn(V, 5, 3, 0, bit(EliteMobs.BULWARK));   // faces -z: toward the player at home
+                    p.teleportTo(sl(), home.x + 5, home.y, home.z, 0, 0);
+                    float h0 = b.getHealth(); hitMob(b, 10);
+                    float front = h0 - b.getHealth();
+                    p.teleportTo(sl(), home.x + 5, home.y, home.z + 6, 180, 0);
+                    h0 = b.getHealth(); hitMob(b, 10);
+                    float back = h0 - b.getHealth();
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0, 0);
+                    if (back <= 0 || Math.abs(front / back - 0.3f) > 0.03f) bad.add("Bulwark took " + front + " from the front and " + back + " from behind (want 30% from the front)");
+                    b.discard();
+                    var ih = spawn(V, -5, 3, 0, bit(EliteMobs.IRONHIDE));
+                    for (int k = 0; k < 3; k++) hitMob(ih, 5);
+                    if (ih.getHealth() < ih.getMaxHealth()) bad.add("Ironhide's plates didn't soak the first 3 hits");
+                    if (EliteMobs.data(ih).getInt("ih") != 3) bad.add("Ironhide counted " + EliteMobs.data(ih).getInt("ih") + " plates broken, not 3");
+                    hitMob(ih, 5);
+                    if (ih.getHealth() >= ih.getMaxHealth()) bad.add("the 4th hit on Ironhide didn't land");
+                    ih.discard();
+                    var sw = spawn(V, 8, 0, 0, bit(EliteMobs.SECOND_WIND));
+                    hitMob(sw, 1000);
+                    if (!sw.isAlive() || Math.abs(sw.getHealth() - sw.getMaxHealth() * 0.5f) > 0.1f) bad.add("Second Wind didn't bring it back at half health");
+                    hitMob(sw, 1000);
+                    if (sw.isAlive()) bad.add("Second Wind worked twice");
+                }
+                if (t == 6) {   // everything that takes a while
+                    over = spawn(V, -8, 0, 0, bit(EliteMobs.OVERCHARGED));
+                    for (int k = 0; k < 3; k++) hitPlayer(over, 2);
+                    if (EliteTraits.testWindup(over) != 20) bad.add("three blows didn't start Overcharged's wind-up (" + EliteTraits.testWindup(over) + ")");
+                    echo = spawn(V, 2, -2, 0, bit(EliteMobs.ECHO));
+                    echoAt = p.position();
+                    hitPlayer(echo, 4);
+                    var leech = spawn(V, -2, -2, 0, bit(EliteMobs.LEECH));
+                    MagicData.getPlayerMagicData(p).setMana(100);
+                    hitPlayer(leech, 2);
+                    float mana = MagicData.getPlayerMagicData(p).getMana();
+                    if (Math.abs(mana - 90f) > 0.5f) bad.add("Mana Leech left " + mana + " mana of 100, not 90");
+                    leech.discard();
+                    var dis = spawn(V, -2, 2, 0, bit(EliteMobs.DISRUPTOR));
+                    hitPlayer(dis, 1);   // (not casting: nothing to cut off, and nothing breaks)
+                    dis.discard();
+                    var teth = spawn(V, 0, -14, 0, bit(EliteMobs.TETHER));
+                    p.setDeltaMovement(Vec3.ZERO);
+                    EliteTraits.testTether(teth, p);
+                    if (p.getDeltaMovement().z >= 0) bad.add("Tether didn't drag the player toward it");
+                    if (EliteTraits.testRun(teth) == null || EliteTraits.testRun(teth).chainTo != p.getId()) bad.add("Tether's chain isn't shown");
+                    teth.discard();
+                    p.setDeltaMovement(Vec3.ZERO);
+                    seeker = spawn(V, -4, -12, 0, bit(EliteMobs.SEEKER)); seeker.setTarget(p);
+                    dagger = spawn(V, 0, -7, 0, bit(EliteMobs.VOLLEY)); dagger.setTarget(p);
+                    hunter = spawn(V, 15, -12, 0, bit(EliteMobs.HUNTER)); hunter.setTarget(p);
+                    sprinter = spawn(V, -8, -4, 0, bit(EliteMobs.SPRINTER)); sprinter.setTarget(p);
+                    anchored = spawn(V, 6, -6, 0, bit(EliteMobs.ANCHORED));
+                    anchorAt = anchored.position();
+                    anchored.setDeltaMovement(2, 0.6, 0); anchored.hurtMarked = true;
+                    pillager = spawn(net.minecraft.world.entity.EntityType.PILLAGER, 8, 12, 0, bit(EliteMobs.VOLLEY));
+                    sl().addFreshEntity(new net.minecraft.world.entity.projectile.Arrow(sl(), pillager));
+                    reflector = spawn(V, -6, 3, 0, bit(EliteMobs.REFLECTOR));
+                    long g = sl().getGameTime();
+                    EliteMobs.data(reflector).putInt("phase", (int) ((EliteTraits.SHELL_CYCLE - g % EliteTraits.SHELL_CYCLE) % EliteTraits.SHELL_CYCLE));
+                    reflected = new net.minecraft.world.entity.projectile.Arrow(sl(), p);
+                    reflected.moveTo(reflector.getX(), reflector.getY() + 1, reflector.getZ() - 2.5, 0, 0);
+                    reflected.setDeltaMovement(0, 0, 1.2);
+                    sl().addFreshEntity(reflected);
+                    var split = spawn(V, 10, 0, 0, bit(EliteMobs.SPLITTER));
+                    hitMob(split, 1000);
+                    var children = marked(new Vec3(home.x + 10, home.y, home.z), 2.5);
+                    children.removeIf(x -> !EliteMobs.child(x));
+                    if (children.size() != 2) bad.add("Splitter left " + children.size() + " copies, not 2");
+                    else {
+                        var c = children.get(0);
+                        if (Math.abs(c.getMaxHealth() - 12f) > 0.1f) bad.add("a Splitter copy has " + c.getMaxHealth() + " max health, not 12");
+                        if (Math.abs(c.getBbHeight() - V.getHeight() * 0.6f) > 0.05f) bad.add("a Splitter copy is " + c.getBbHeight() + " tall, not 60%");
+                        if (EliteMobs.traits(c) != 0) bad.add("a Splitter copy has traits of its own");
+                    }
+                    var vol = spawn(V, 12, 4, 0, bit(EliteMobs.VOLATILE));
+                    var golem = net.minecraft.world.entity.EntityType.IRON_GOLEM.create(sl());
+                    golem.moveTo(home.x + 12, home.y, home.z + 5.5); golem.setNoAi(true); sl().addFreshEntity(golem);
+                    hitMob(vol, 1000);
+                    var c1 = spawn(V, 10, 8, 0, bit(EliteMobs.CURSED_LOOT)); chestBite = c1.position(); hitMob(c1, 1000);
+                    var c2 = spawn(V, -10, 8, 0, bit(EliteMobs.CURSED_LOOT)); chestWait = c2.position(); hitMob(c2, 1000);
+                    ghostFrom = spawn(V, 3, -3, 0, bit(EliteMobs.VENGEFUL)); hitMob(ghostFrom, 1000);
+                    var r1 = spawn(V, -12, -8, 4, bit(EliteMobs.RIFT_BORN)); riftShut = r1.position(); hitMob(r1, 1000);
+                    var r2 = spawn(V, 12, -8, 4, bit(EliteMobs.RIFT_BORN)); riftOpen = r2.position(); hitMob(r2, 1000);
+                    twin0 = spawn(V, -3, -10, 4, bit(EliteMobs.MIRROR_TWIN));
+                    if (!EliteMobs.data(twin0).hasUUID("tw")) bad.add("Mirror Twin made no shadow");
+                    else {
+                        shadowId = EliteMobs.data(twin0).getUUID("tw");
+                        var sh = sl().getEntity(shadowId);
+                        if (!(sh instanceof net.minecraft.world.entity.Mob sm) || !EliteMobs.shadow(sm)) bad.add("Mirror Twin's copy isn't a shadow");
+                    }
+                }
+                if (sprinter != null && EliteTraits.testRun(sprinter) != null && EliteTraits.testRun(sprinter).dashTicks > 0) dashed = true;
+                if (t == 7) {
+                    var ghosts = sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new AABB(home, home).inflate(12), x -> EliteMobs.ghost(x));
+                    if (ghosts.isEmpty()) bad.add("Vengeful left no ghost");
+                }
+                if (t == 9) {
+                    if (anchored.position().subtract(anchorAt).horizontalDistance() > 0.5) bad.add("Anchored was pushed " + anchored.position().subtract(anchorAt).horizontalDistance() + " blocks");
+                    long arrows = sl().getEntitiesOfClass(net.minecraft.world.entity.projectile.AbstractArrow.class, new AABB(home, home).inflate(30), a -> a.getOwner() == pillager).size();
+                    if (arrows != 3) bad.add("Volley's archer loosed " + arrows + " arrows, not 3");
+                    var chests = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.CursedChest.class, new AABB(chestBite, chestBite).inflate(2));
+                    if (chests.isEmpty()) bad.add("Cursed Loot left no chest");
+                    else { EliteTraits.openChest(chests.get(0), p); if (!chests.get(0).bit()) bad.add("a cursed chest opened at once didn't bite"); }
+                    var rifts = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.EliteRift.class, new AABB(riftShut, riftShut).inflate(2));
+                    if (rifts.isEmpty()) bad.add("Rift-Born left no rift");
+                    else for (int k = 0; k < 4; k++) rifts.get(0).hurt(p.damageSources().playerAttack(p), 1);
+                    if (!rifts.isEmpty() && rifts.get(0).isAlive()) bad.add("four hits didn't close the rift");
+                    var tw = sl().getEntity(twin0.getUUID());
+                    if (tw instanceof net.minecraft.world.entity.Mob m) { twinAt = m.position(); hitMob(m, 1000); }
+                }
+                if (t == 23) {   // blows and the chest's bite have knocked the player about: back onto the echo's spot
+                    p.teleportTo(sl(), echoAt.x, echoAt.y, echoAt.z, 0, 0);
+                    p.setDeltaMovement(Vec3.ZERO);
+                }
+                if (t == 12) {
+                    if (reflected.getOwner() != reflector) bad.add("Reflector's shards didn't send the arrow back");
+                }
+                if (t == 40) {
+                    if (EliteTraits.testEchoHits == 0) bad.add("Echo Strike's second blow never landed");
+                    if (EliteTraits.testWindup(over) != 0 || EliteTraits.testRun(over).hits != 0) bad.add("Overcharged never slammed");
+                    if (EliteTraits.testBurstHits == 0) bad.add("Volatile's ring never burst");
+                    var mod = hunter.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(UUID.fromString("e1173000-0000-4000-8000-000000000011"));
+                    if (mod == null || Math.abs(mod.getAmount() - 0.6) > 0.01) bad.add("Hunter 19 blocks off isn't 60% faster (" + (mod == null ? "none" : mod.getAmount()) + ")");
+                    var ghosts = sl().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new AABB(home, home).inflate(20), x -> EliteMobs.ghost(x));
+                    if (!ghosts.isEmpty()) bad.add("the Vengeful ghost was still about after 34 ticks");
+                }
+                if (t == 70) {
+                    if (EliteTraits.testOrbs == 0) bad.add("Seeker sent no orb");
+                    if (EliteTraits.testDaggers == 0) bad.add("Volley's melee elite threw no dagger");
+                    var chests = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.CursedChest.class, new AABB(chestWait, chestWait).inflate(2));
+                    if (chests.isEmpty()) bad.add("the second cursed chest is gone");
+                    else { EliteTraits.openChest(chests.get(0), p); if (!chests.get(0).opened() || chests.get(0).bit()) bad.add("a cursed chest left 3 s still bit"); }
+                }
+                if (t == 112) {
+                    var back = marked(twinAt, 3);
+                    back.removeIf(x -> !EliteMobs.has(x, EliteMobs.MIRROR_TWIN));
+                    if (back.isEmpty()) bad.add("the fallen Mirror Twin didn't rise while its shadow stood");
+                    var news = marked(riftOpen, 4);
+                    news.removeIf(x -> !EliteMobs.elite(x));
+                    if (news.size() != 3) bad.add("an unclosed rift let out " + news.size() + " elites, not 3");
+                    for (var x : news) if (EliteMobs.champion(x)) bad.add("a rift let out a champion");
+                    if (marked(riftShut, 4).stream().anyMatch(EliteMobs::elite)) bad.add("a closed rift still let elites out");
+                    if (!dashed) bad.add("Sprinter never dashed");
+                    // both twins together: neither rises
+                    for (var x : back) hitMob(x, 1000);
+                    var sh = sl().getEntity(shadowId);
+                    if (sh instanceof net.minecraft.world.entity.Mob m) hitMob(m, 1000);
+                }
+                if (t == 220) {
+                    if (marked(twinAt, 6).stream().anyMatch(x -> EliteMobs.data(x).hasUUID("tw"))) bad.add("a twin rose though both fell together");
+                    clearArea();
+                    ensureDummy();
+                    String ch = changes(before);
+                    if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+                    if (bad.isEmpty()) pass(name, "threat, eligibility, rolls, ranks, all 20 traits");
+                    else fail(name, String.join("; ", bad));
+                    EliteTraits.clearShots();
+                    return true;
+                }
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); clearArea(); return true; }
             return false;
         }
     }
@@ -1422,6 +2188,7 @@ public final class GameTests {
         sl().setDayTime(6000);
         // a creeper wandering in (or an enderman) would "change the world" in some boss's test: no griefing, always noon
         sl().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING).set(false, p.server);
+        sl().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING).set(false, p.server);   // no wild slime wandering in front of a spell
         sl().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_DAYLIGHT).set(false, p.server);
         UiShotsServer.prepare(p);
         queue.add(saving());
@@ -1680,6 +2447,41 @@ public final class GameTests {
                 "nyx: void rift (perfected)", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 1); TwinsFx.testLoad(pl, 1, 7, -1, -1, -1); TwinsFx.testUses(pl, 1, 7, 250); TwinsArts.cast(pl, 1, 7); }, "",
                 "echo shot", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { TwinsFx.testReset(pl); TwinsFx.testLevels(pl, 50, 50); TwinsFx.testActive(pl, 0); TwinsFx.testCombat(pl); TwinsFx.testEcho(pl); }, "c"));
         queue.add(new TwinsTest());
+        queue.add(new BookMovesTest("architect", com.ironspellgrimoire.registry.AddonItemRegistry.ARCHITECT_GRIMOIRE::get, FortressFx.class,
+                "barracks", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 0), "",
+                "armoury", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 1), "",
+                "training yard", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 2), "",
+                "watchtower", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 3), "",
+                "gatehouse", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 4), "c",
+                "war room", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 5), "q",
+                "observatory", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 6), "q",
+                "library", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 7), "q",
+                "arcanum", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 8), "",
+                "scrying pool", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 9), "q",
+                "alchemy lab", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 10), "",
+                "rune vault", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 11), "q",
+                "chapel", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 12), "q",
+                "reliquary", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 13), "q",
+                "crypt", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 14), "q",
+                "bell tower", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 15), "c",
+                "garden", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 16), "q",
+                "hall of banners", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 17), "q",
+                "forge", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 18), "",
+                "foundry", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 19), "",
+                "workshop", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 20), "",
+                "siege yard", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 21), "",
+                "cistern", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 22), "",
+                "treasury", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 23), "q",
+                "herald's gate", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 24), "q",
+                "map room", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> archMove(pl, 25), "q",
+                "throne room", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archMove(pl, 0); FortressFx.testStars(pl, 5); FortressFx.handle(pl, 1, 26 * 100 + 1); FortressFx.castRoom(pl, 26); }, "q",
+                "rampart", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.rampartPage(pl, pw); }, "q",
+                "siege mode", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.handle(pl, 1, FortressFx.WATCHTOWER * 100); FortressFx.siegePage(pl, pw); }, "",
+                "citadel", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { archSetup(pl); FortressFx.testLevel(pl, 10); for (int r = 0; r < 24; r++) FortressFx.handle(pl, 1, r * 100 + r); FortressFx.citadelPage(pl, pw); }, "",
+                "the fortress", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> FortressFx.fortressPage(pl, pw), "q"));
+        queue.add(new ArchitectTest());
+        queue.add(new ArchitectCommandTest());
+        queue.add(new EliteTest());
         queue.add(new BossTest("Ossuarch", AddonEntities.ZENON));
         queue.add(new BossTest("Beast of Despair", AddonEntities.BEAST_OF_DESPAIR));
         queue.add(new BossTest("Rhya", AddonEntities.RHYA));
@@ -1689,6 +2491,12 @@ public final class GameTests {
         queue.add(new BossTest("Cinder Sovereign", AddonEntities.CINDER_SOVEREIGN));
         queue.add(new BossTest("Memory Guardian", AddonEntities.MEMORY_GUARDIAN));
         queue.add(new BossTest("Dante", AddonEntities.DANTE));
+        queue.add(new RivalTest());
+        queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
+        queue.add(new BossTest("Brannoch Tor", AddonEntities.BRANNOCH_TOR));
+        queue.add(new BossTest("Alder Bellmar", AddonEntities.ALDER_BELLMAR));
+        queue.add(new BossTest("Wren Bellmar", AddonEntities.WREN_BELLMAR));
+        queue.add(new BossTest("Mira Hollowell", AddonEntities.MIRA_HOLLOWELL));
         queue.add(exam());
         queue.add(raid());
         running = true;

@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "iron_spell_grimoire:architect_grimoire"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.first_room_spell.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.first_room_spell.description"
+  },
+  "frame": "task",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": true
+ },
+ "parent": "iron_spell_grimoire:main/chosen",
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ }
+}

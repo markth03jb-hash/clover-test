@@ -39,6 +39,8 @@ public class BoardScreen extends Screen {
     /** Shows the record instead of the notes (the automatic screenshot run, UiShots). */
     public void showRecord(boolean on) { history = on; }
     private int[] histBtn() { return new int[]{x0() + 10, y0() + H - 19, 70, 14}; }
+    /** Buy a Rival's Token (the Poster Board only). */
+    private int[] token() { return new int[]{x0() + 182, y0() + 7, 112, 14}; }
     private int[] reroll() { return new int[]{x0() + W - 112, y0() + H - 19, 102, 14}; }
     private int[] button(int i) { return data.active.isEmpty() ? new int[]{noteX(i) + 18, noteY() + NH - 22, NW - 36, 15} : new int[]{x0() + W / 2 - 45, noteY() + NH - 22, 90, 15}; }
 
@@ -48,6 +50,13 @@ public class BoardScreen extends Screen {
         int[] hb = histBtn();
         if (in(mx, my, hb[0], hb[1], hb[2], hb[3])) { history = !history; mc.player.playSound(SoundEvents.BOOK_PAGE_TURN, 0.8F, 1.2F); return true; }
         if (history) return super.mouseClicked(mx, my, btn);
+        int[] tk = token();
+        if (data.kind == 0 && in(mx, my, tk[0], tk[1], tk[2], tk[3]) && data.stars >= com.ironspellgrimoire.server.Boards.TOKEN_COST) {
+            AddonNetwork.CHANNEL.sendToServer(new BoardPackets.Pick(data.kind, -3));
+            data.stars -= com.ironspellgrimoire.server.Boards.TOKEN_COST;
+            mc.player.playSound(SoundEvents.BOOK_PAGE_TURN, 1F, 0.9F);
+            return true;
+        }
         if (!data.active.isEmpty()) {
             int[] b = button(0);
             if (in(mx, my, b[0], b[1], b[2], b[3])) { send(-1); return true; }
@@ -91,6 +100,8 @@ public class BoardScreen extends Screen {
         g.drawString(font, st, x0 + W - 10 - font.width(st), y0 + 10, 0xFFE8D090, true);
 
         buttonDraw(g, histBtn(), history ? "Notes" : "Record", mx, my, true, 0xFF6A4A20);
+        if (data.kind == 0 && !history) buttonDraw(g, token(), "Rival's Token (" + com.ironspellgrimoire.server.Boards.TOKEN_COST + "\u2605)", mx, my,
+                data.stars >= com.ironspellgrimoire.server.Boards.TOKEN_COST, 0xFF7A2020);
         if (history) {
             record(g, x0, y0);
         } else if (!data.active.isEmpty()) {   // the one under way

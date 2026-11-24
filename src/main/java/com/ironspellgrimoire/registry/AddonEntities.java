@@ -53,6 +53,26 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.CurseWitch>of(com.ironspellgrimoire.entity.CurseWitch::new, MobCategory.MONSTER).sized(0.6F, 1.9F)
                     .fireImmune().clientTrackingRange(10).build("curse_witch"));
 
+    /** The rivals (entity/Rival, server/Rivals) and Brannoch Tor's soldiers. */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.SerenVale>> SEREN_VALE = ENTITIES.register("seren_vale",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.SerenVale>of(com.ironspellgrimoire.entity.SerenVale::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("seren_vale"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.BrannochTor>> BRANNOCH_TOR = ENTITIES.register("brannoch_tor",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.BrannochTor>of(com.ironspellgrimoire.entity.BrannochTor::new, MobCategory.MONSTER).sized(0.75F, 2.35F)
+                    .fireImmune().clientTrackingRange(10).build("brannoch_tor"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.AlderBellmar>> ALDER_BELLMAR = ENTITIES.register("alder_bellmar",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.AlderBellmar>of(com.ironspellgrimoire.entity.AlderBellmar::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("alder_bellmar"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.WrenBellmar>> WREN_BELLMAR = ENTITIES.register("wren_bellmar",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.WrenBellmar>of(com.ironspellgrimoire.entity.WrenBellmar::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("wren_bellmar"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MiraHollowell>> MIRA_HOLLOWELL = ENTITIES.register("mira_hollowell",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.MiraHollowell>of(com.ironspellgrimoire.entity.MiraHollowell::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("mira_hollowell"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.TorLegionnaire>> TOR_LEGIONNAIRE = ENTITIES.register("tor_legionnaire",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.TorLegionnaire>of(com.ironspellgrimoire.entity.TorLegionnaire::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .clientTrackingRange(10).build("tor_legionnaire"));
+
     /** The Cinder Sovereign, the world boss (entity/CinderSovereign, server/WorldBoss). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.CinderSovereign>> CINDER_SOVEREIGN = ENTITIES.register("cinder_sovereign",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.CinderSovereign>of(com.ironspellgrimoire.entity.CinderSovereign::new, MobCategory.MONSTER).sized(4.5F, 12.5F)
@@ -92,6 +112,24 @@ public final class AddonEntities {
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.TwinEcho>> TWIN_ECHO = ENTITIES.register("twin_echo",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.TwinEcho>of(com.ironspellgrimoire.entity.TwinEcho::new, MobCategory.MISC).sized(0.6F, 0.6F)
                     .fireImmune().clientTrackingRange(8).updateInterval(1).build("twin_echo"));
+
+    /** The Architect of Ruin's fortress: a block of wall or the gatehouse (entity/FortressWall), a tower (entity/FortressTower),
+     *  a defender (entity/FortressDefender). None is ever saved. */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.EliteRift>> ELITE_RIFT = ENTITIES.register("elite_rift",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.EliteRift>of(com.ironspellgrimoire.entity.EliteRift::new, MobCategory.MISC).sized(1.2F, 2.2F)
+                    .fireImmune().noSave().clientTrackingRange(8).updateInterval(10).build("elite_rift"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.CursedChest>> CURSED_CHEST = ENTITIES.register("cursed_chest",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.CursedChest>of(com.ironspellgrimoire.entity.CursedChest::new, MobCategory.MISC).sized(0.9F, 0.9F)
+                    .fireImmune().noSave().clientTrackingRange(8).updateInterval(5).build("cursed_chest"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.FortressWall>> FORTRESS_WALL = ENTITIES.register("fortress_wall",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.FortressWall>of(com.ironspellgrimoire.entity.FortressWall::new, MobCategory.MISC).sized(1.0F, 2.6F)
+                    .fireImmune().noSave().clientTrackingRange(10).updateInterval(20).build("fortress_wall"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.FortressTower>> FORTRESS_TOWER = ENTITIES.register("fortress_tower",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.FortressTower>of(com.ironspellgrimoire.entity.FortressTower::new, MobCategory.MISC).sized(1.4F, 3.6F)
+                    .fireImmune().noSave().clientTrackingRange(10).updateInterval(10).build("fortress_tower"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.FortressDefender>> FORTRESS_DEFENDER = ENTITIES.register("fortress_defender",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.FortressDefender>of(com.ironspellgrimoire.entity.FortressDefender::new, MobCategory.MISC).sized(0.7F, 1.95F)
+                    .noSave().clientTrackingRange(10).build("fortress_defender"));
 
     /** The Parasite Grimoire's molted husk (entity/MoltHusk). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MoltHusk>> MOLT_HUSK = ENTITIES.register("molt_husk",

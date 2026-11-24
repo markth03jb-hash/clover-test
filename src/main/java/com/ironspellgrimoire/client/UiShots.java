@@ -93,6 +93,9 @@ public final class UiShots {
         steps.add(new Step("codex", () -> mc.setScreen(new CodexScreen(0)), 10, false));
         steps.add(new Step("codex_book", () -> mc.setScreen(new CodexScreen(CodexScreen.chapters() + 1)), 10, false));
         steps.add(new Step("codex_rules", () -> mc.setScreen(new CodexScreen(CodexScreen.chapters() - 1)), 10, false));
+        steps.add(new Step("el_mobs", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.elites(p, "mobs")); }, 16, true));
+        steps.add(new Step("el_codex", () -> mc.setScreen(new CodexScreen(CodexScreen.chapter("Elite Mobs"))), 10, false));
+        steps.add(new Step("el_clear", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.elites(p, "clear")); }, 2, true));
         // the HUD with everything on it: a hunt, a quest, the world boss, the rift map, a raid's wave banner
         steps.add(new Step("take_hunt_and_quest", () -> { mc.setScreen(null); onServer(p -> { UiShotsServer.take(p, Boards.BOUNTY); UiShotsServer.take(p, Boards.QUEST); }); }, 30, false));
         steps.add(new Step("board_hunting", () -> onServer(p -> UiShotsServer.board(p, Boards.BOUNTY)), 20, false));
@@ -675,6 +678,36 @@ public final class UiShots {
         steps.add(new Step("hb_done", () -> { mc.setScreen(null); mc.options.hideGui = true; onServer(p -> UiShotsServer.element(p, "H:end")); }, 4, true));
 
         // the Masked Twins Grimoire: the masks worn (front, side, swapped, grown, fused), the arts, the wheel, every tab, the trial
+        // the Architect of Ruin: the menu's tabs, the walkthrough, the tracker, Siege Mode and the Citadel
+        steps.add(new Step("ar_setup", () -> { mc.setScreen(null); mc.options.hideGui = false; TrackerMode.set(0); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "A:setup")); }, 20, true));
+        steps.add(new Step("ar_hud", () -> {}, 4, true));
+        String[] arTabs = {"plan", "garrison", "spells", "guide"};
+        for (int k = 0; k < 4; k++) {
+            final int kk = k;
+            steps.add(new Step("ar_menu_" + arTabs[k], () -> { mc.setScreen(null); FortressScreen.startTab = kk; FortressScreen.startCell = -1; FortressScreen.startTour = -1; mc.setScreen(new FortressScreen()); }, 8, false));
+        }
+        steps.add(new Step("ar_menu_room", () -> { mc.setScreen(null); FortressScreen.startTab = 0; FortressScreen.startCell = 6; mc.setScreen(new FortressScreen()); }, 8, false));
+        steps.add(new Step("ar_menu_build", () -> { mc.setScreen(null); FortressScreen.startTab = 0; FortressScreen.startCell = 13; mc.setScreen(new FortressScreen()); }, 8, false));
+        steps.add(new Step("ar_menu_rooms", () -> { mc.setScreen(null); FortressScreen.startTab = 3; FortressScreen.startCell = -1; FortressScreen.startTopic = FortressScreen.TOPICS.length - 1; mc.setScreen(new FortressScreen()); }, 8, false));
+        for (int k : new int[]{6, 8, 11}) {   // the guide's shapes, orders and prestige pages
+            final int kk = k;
+            steps.add(new Step("ar_guide_" + k, () -> { mc.setScreen(null); FortressScreen.startTab = 3; FortressScreen.startTopic = kk; mc.setScreen(new FortressScreen()); }, 8, false));
+        }
+        steps.add(new Step("ar_menu_prestige", () -> { mc.setScreen(null); FortressScreen.startTab = 0; FortressScreen.startTopic = 0; FortressScreen.startConfirm = true; mc.setScreen(new FortressScreen()); }, 8, false));
+        steps.add(new Step("ar_menu_prestige_done", () -> { FortressScreen.startConfirm = false; mc.setScreen(null); }, 2, true));
+        for (int k = 0; k < 6; k++) {
+            final int kk = k;
+            steps.add(new Step("ar_tour_" + k, () -> { mc.setScreen(null); FortressScreen.startTab = 0; FortressScreen.startTopic = 0; FortressScreen.startTour = kk; mc.setScreen(new FortressScreen()); }, 8, false));
+        }
+        steps.add(new Step("ar_siege", () -> { mc.setScreen(null); FortressScreen.startTour = -1; FortressScreen.startTab = -1; FortressScreen.startCell = -1; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "A:siege")); }, 40, true));
+        steps.add(new Step("ar_siege_front", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 8, true));
+        steps.add(new Step("ar_wheel", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); FortressWheel.forceHover = 0; mc.setScreen(new FortressWheel()); }, 10, false));
+        steps.add(new Step("ar_wheel_overcharge", () -> FortressWheel.forceHover = 3, 4, false));
+        steps.add(new Step("ar_breach", () -> { mc.setScreen(null); FortressWheel.forceHover = -1; onServer(p -> UiShotsServer.element(p, "A:breach")); }, 8, true));
+        steps.add(new Step("ar_line", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "A:line")); }, 40, true));
+        steps.add(new Step("ar_horseshoe", () -> onServer(p -> UiShotsServer.element(p, "A:horseshoe")), 40, true));
+        steps.add(new Step("ar_citadel", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "A:citadel")); }, 40, true));
+        steps.add(new Step("ar_clear", () -> { TrackerMode.set(2); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "A:clear")); }, 8, true));
         steps.add(new Step("tw_setup", () -> { mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "T:setup")); }, 30, true));
         steps.add(new Step("tw_worn", () -> { mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); }, 12, true));
         steps.add(new Step("tw_worn_side", () -> onServer(p -> { p.setYRot(-90); p.setYHeadRot(-90); p.setYBodyRot(-90); p.connection.teleport(p.getX(), p.getY(), p.getZ(), -90, 0); }), 8, true));
@@ -726,6 +759,16 @@ public final class UiShots {
         steps.add(new Step("dante_front", () -> { TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.dante(p, false, false); }); }, 30, true));
         steps.add(new Step("dante_back", () -> onServer(p -> UiShotsServer.dante(p, true, false)), 30, true));
         steps.add(new Step("dante_flare", () -> onServer(p -> UiShotsServer.dante(p, true, true)), 26, true));
+        // the rivals: a line-up front and back, mid-fight poses, Mira's offer, and their Codex page
+        steps.add(new Step("rv_front", () -> { mc.setScreen(null); TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(6); onServer(p -> { p.setXRot(6); UiShotsServer.rivals(p, "front"); }); }, 30, true));
+        steps.add(new Step("rv_back", () -> onServer(p -> UiShotsServer.rivals(p, "back")), 30, true));
+        steps.add(new Step("rv_action", () -> onServer(p -> UiShotsServer.rivals(p, "action")), 30, true));
+        steps.add(new Step("rv_deal", () -> { mc.options.hideGui = false; RivalClient.sample(); }, 8, true));
+        steps.add(new Step("rv_codex", () -> {
+            RivalClient.met = new int[]{3, 1, 2, 1}; RivalClient.wins = new int[]{2, 0, 1, 1}; RivalClient.losses = new int[]{1, 1, 0, 0};
+            mc.setScreen(new CodexScreen(CodexScreen.chapter("Rivals")));
+        }, 10, false));
+        steps.add(new Step("rv_clear", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.rivals(p, "clear")); }, 2, true));
         steps.add(new Step("hud_hidden", () -> TrackerMode.set(2), 10, true));
     }
 
@@ -757,7 +800,9 @@ public final class UiShots {
         if (step.startsWith("book_")) return new Class<?>[]{GrimoireBookScreen.class};
         if (step.startsWith("board_")) return new Class<?>[]{BoardScreen.class, com.ironspellgrimoire.server.Boards.class};
         if (step.startsWith("hud_")) return new Class<?>[]{BountyHud.class, QuestHud.class, WorldBossHud.class, RiftMap.class, BroomHud.class, ModeHudOverlay.class, RaidBanner.class, TrackerMode.class};
+        if (step.startsWith("ar_")) return new Class<?>[]{FortressScreen.class, FortressWheel.class, FortressHud.class, FortressClient.class, FortressRenderers.class, com.ironspellgrimoire.server.FortressFx.class, com.ironspellgrimoire.server.FortressSiege.class, com.ironspellgrimoire.server.FortressSpells.class};
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
+        if (step.startsWith("rv_")) return new Class<?>[]{RivalRenderer.class, RivalClient.class, CodexScreen.class, com.ironspellgrimoire.server.Rivals.class, com.ironspellgrimoire.server.UiShotsServer.class};
         Class<?>[] shared = {GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class, FxBase.class, GravityFxClient.class, FxBooks.class, FxBookAuras.class, GrimoireFloatRenderer.class};
         String[][] books = {{"grav_", "Gravity"}, {"snd_", "Sound"}, {"ink_", "Ink"}, {"err_", "Error"}, {"tre_", "Treasure"}, {"chn_", "Chain"}, {"hun_", "Hunter"},
                 {"voi_", "Void"}, {"gam_", "Gambler"}, {"tar_", "Tarot"}, {"aby_", "Abyss"}, {"mec_", "Mech"}, {"wea_", "Weather"}, {"ovd_", "Overdrive"}, {"drm_", "Dream"}, {"shd_", "Shadow"}};
@@ -776,6 +821,7 @@ public final class UiShots {
             case "library" -> new Class<?>[]{LibraryScreen.class, com.ironspellgrimoire.server.GrimoireLibrary.class};
             case "waypoints" -> new Class<?>[]{WaypointScreen.class, com.ironspellgrimoire.server.Waypoints.class};
             case "codex", "codex_book", "codex_rules" -> new Class<?>[]{CodexScreen.class};
+            case "el_mobs", "el_codex", "el_clear" -> new Class<?>[]{EliteClient.class, EliteRenderers.class, CodexScreen.class, com.ironspellgrimoire.server.EliteMobs.class, com.ironspellgrimoire.server.EliteTraits.class};
             default -> null;
         };
     }

@@ -121,6 +121,9 @@ public final class RiftRewards {
         }
     }
 
+    /** The spell being cast right now costs no mana (a rival's Ledger Coin). */
+    public static void freeNow(ServerPlayer p) { FREE.put(p.getUUID(), p.level().getGameTime()); }
+
     @SubscribeEvent
     public static void onMana(ChangeManaEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer p) || e.getNewMana() >= e.getOldMana()) return;

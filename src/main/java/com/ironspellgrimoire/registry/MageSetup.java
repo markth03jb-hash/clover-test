@@ -24,10 +24,17 @@ public final class MageSetup {
         e.put(AddonEntities.LICHT.get(), com.ironspellgrimoire.entity.Licht.attributes().build());
         e.put(AddonEntities.REVENANT.get(), com.ironspellgrimoire.entity.Revenant.attributes().build());
         e.put(AddonEntities.DANTE.get(), com.ironspellgrimoire.entity.Dante.attributes().build());
+        e.put(AddonEntities.SEREN_VALE.get(), com.ironspellgrimoire.entity.SerenVale.attributes().build());
+        e.put(AddonEntities.BRANNOCH_TOR.get(), com.ironspellgrimoire.entity.BrannochTor.attributes().build());
+        e.put(AddonEntities.ALDER_BELLMAR.get(), com.ironspellgrimoire.entity.AlderBellmar.attributes().build());
+        e.put(AddonEntities.WREN_BELLMAR.get(), com.ironspellgrimoire.entity.WrenBellmar.attributes().build());
+        e.put(AddonEntities.MIRA_HOLLOWELL.get(), com.ironspellgrimoire.entity.MiraHollowell.attributes().build());
+        e.put(AddonEntities.TOR_LEGIONNAIRE.get(), com.ironspellgrimoire.entity.TorLegionnaire.attributes().build());
         e.put(AddonEntities.CURSE_WITCH.get(), com.ironspellgrimoire.entity.CurseWitch.attributes().build());
         e.put(AddonEntities.REFLECTION.get(), com.ironspellgrimoire.entity.Reflection.attributes().build());
         e.put(AddonEntities.MEMORY_GUARDIAN.get(), com.ironspellgrimoire.entity.MemoryGuardian.attributes().build());
         e.put(AddonEntities.CINDER_SOVEREIGN.get(), com.ironspellgrimoire.entity.CinderSovereign.attributes().build());
+        e.put(AddonEntities.FORTRESS_DEFENDER.get(), com.ironspellgrimoire.entity.FortressDefender.attributes().build());
         e.put(AddonEntities.SHADOW_SOLDIER.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());
         e.put(AddonEntities.OATHBOUND_KNIGHT.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());
         e.put(AddonEntities.SHADOW_RAVENER.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());

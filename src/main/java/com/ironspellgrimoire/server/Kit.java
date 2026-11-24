@@ -70,4 +70,11 @@ final class Kit {
         p.shape = 20; p.palette = (byte) pal; p.life = Math.max(1, life <= 3 ? 1 : (fat ? (int) Math.ceil(life * 1.6) : life)); p.c = c; p.v = vel; p.r = r; p.r2 = r; p.h = 0;
         FxBatch.near(sl, c, 128, p);
     }
+
+    /** From a point along a direction: the first block in the way within range, else that far. */
+    static Vec3 aimFrom(ServerLevel sl, ServerPlayer p, Vec3 from, Vec3 dir, double range) {
+        Vec3 end = from.add(dir.normalize().scale(range));
+        HitResult hr = sl.clip(new ClipContext(from, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
+        return hr.getType() == HitResult.Type.MISS ? end : hr.getLocation();
+    }
 }

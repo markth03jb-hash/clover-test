@@ -3,6 +3,7 @@ package com.ironspellgrimoire.server;
 import com.ironspellgrimoire.registry.AddonItemRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import top.theillusivec4.curios.api.CuriosApi;
 
@@ -68,6 +69,62 @@ public final class UiShotsServer {
         p.connection.teleport(p.getX(), p.getY(), p.getZ(), 0, 0);
     }
 
+    /** Elite mobs for the screenshots: a row of them in front of the player (no AI, so they hold still), a cursed chest
+     *  and a rift; "clear" takes them away. */
+    public static void elites(ServerPlayer p, String what) {
+        ServerLevel sl = p.serverLevel();
+        var box = p.getBoundingBox().inflate(16);
+        for (var e : sl.getEntities((net.minecraft.world.entity.Entity) null, box, e -> EliteMobs.marked(e) || e instanceof com.ironspellgrimoire.entity.CursedChest || e instanceof com.ironspellgrimoire.entity.EliteRift)) e.discard();
+        if (what.equals("clear")) return;
+        p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete them at once
+        faceForward(p);
+        p.getPersistentData().putInt(EliteMobs.SEEN, (1 << EliteMobs.COUNT) - 1);
+        EliteMobs.testThreat(p, 4);
+        EliteMobs.sendSeen(p);
+        Object[][] row = {
+                {net.minecraft.world.entity.EntityType.VINDICATOR, 0.0, 1, 1 << EliteMobs.BULWARK | 1 << EliteMobs.IRONHIDE},
+                {net.minecraft.world.entity.EntityType.SKELETON, -3.0, 2, 1 << EliteMobs.REFLECTOR | 1 << EliteMobs.VOLLEY},
+                {net.minecraft.world.entity.EntityType.PILLAGER, 3.0, 5, 1 << EliteMobs.MIRROR_TWIN | 1 << EliteMobs.LEECH},
+                {net.minecraft.world.entity.EntityType.VINDICATOR, 6.5, 3, 1 << EliteMobs.TETHER | 1 << EliteMobs.HUNTER | 1 << EliteMobs.SPRINTER}};
+        for (Object[] r : row) {
+            @SuppressWarnings("unchecked") var type = (net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob>) r[0];
+            var m = type.create(sl);
+            if (m == null) continue;
+            m.moveTo(p.getX() + (double) r[1], p.getY(), p.getZ() + 6, 180, 0);
+            m.setYBodyRot(180); m.setYHeadRot(180);
+            m.setNoAi(true);
+            if (type == net.minecraft.world.entity.EntityType.SKELETON) m.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.BOW));
+            sl.addFreshEntity(m);
+            EliteMobs.testMake(m, (int) r[2], (int) r[3]);
+            if (EliteMobs.has(m, EliteMobs.REFLECTOR)) {
+                EliteMobs.data(m).putInt("phase", (int) ((EliteTraits.SHELL_CYCLE - sl.getGameTime() % EliteTraits.SHELL_CYCLE - 5 + EliteTraits.SHELL_CYCLE) % EliteTraits.SHELL_CYCLE));
+                EliteMobs.sync(m);
+            }
+            if (EliteMobs.has(m, EliteMobs.TETHER)) EliteTraits.testChain(m, p, 200);
+            if (EliteMobs.has(m, EliteMobs.MIRROR_TWIN) && EliteMobs.data(m).hasUUID("tw") && sl.getEntity(EliteMobs.data(m).getUUID("tw")) instanceof net.minecraft.world.entity.Mob sh) {
+                sh.setNoAi(true);
+                sh.moveTo(p.getX() + 4.8, p.getY(), p.getZ() + 8, 180, 0);
+                sh.setYBodyRot(180); sh.setYHeadRot(180);
+            }
+        }
+        var half = net.minecraft.world.entity.EntityType.VINDICATOR.create(sl);   // a Splitter's copy
+        if (half != null) {
+            half.moveTo(p.getX() - 1.8, p.getY(), p.getZ() + 3.5, 160, 0); half.setYBodyRot(160); half.setNoAi(true);
+            net.minecraft.nbt.CompoundTag d = new net.minecraft.nbt.CompoundTag(); d.putInt("r", 2); d.putBoolean("child", true);
+            half.getPersistentData().put(EliteMobs.TAG, d);
+            half.refreshDimensions();
+            sl.addFreshEntity(half);
+            EliteMobs.testMake(half, 2, 0);
+            EliteMobs.data(half).putBoolean("child", true);
+            half.refreshDimensions();
+            EliteMobs.sync(half);
+        }
+        var chest = com.ironspellgrimoire.registry.AddonEntities.CURSED_CHEST.get().create(sl);
+        if (chest != null) { chest.setup(java.util.List.of(), 2); chest.moveTo(p.getX() + 1, p.getY(), p.getZ() + 3, 200, 0); sl.addFreshEntity(chest); }
+        var rift = com.ironspellgrimoire.registry.AddonEntities.ELITE_RIFT.get().create(sl);
+        if (rift != null) { rift.setup("minecraft:zombie", 0); rift.moveTo(p.getX() + 3.5, p.getY(), p.getZ() + 3.5, 0, 0); sl.addFreshEntity(rift); }
+    }
+
     public static void element(ServerPlayer p, String which) {
         Moves.ends(p, BloodFx.MODE);
         String w = which.substring(2);
@@ -90,6 +147,7 @@ public final class UiShotsServer {
             case 'p' -> AddonItemRegistry.PARASITE_GRIMOIRE.get();
             case 'H' -> AddonItemRegistry.HUNGER_GRIMOIRE.get();
             case 'T' -> AddonItemRegistry.TWINS_GRIMOIRE.get();
+            case 'A' -> AddonItemRegistry.ARCHITECT_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -100,6 +158,7 @@ public final class UiShotsServer {
         if (which.charAt(0) == 'p') { parasite(p, w); return; }
         if (which.charAt(0) == 'H') { hunger(p, w); return; }
         if (which.charAt(0) == 'T') { twins(p, w); return; }
+        if (which.charAt(0) == 'A') { architect(p, w); return; }
         switch (w) {
             case "target" -> {
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
@@ -630,5 +689,91 @@ public final class UiShotsServer {
         d.setNoAi(true);
         p.serverLevel().addFreshEntity(d);
         if (flare) d.setPose(BossKit.P_RAISE);
+    }
+
+    /**
+     * The rivals' pictures: all five (and a Legionnaire) in a row in front of the camera - facing it, turned away, or
+     * mid-fight (Seren's parry, Brannoch's horn, Alder kneeling as he yields, Wren casting, Mira foreclosing, the
+     * standard-bearer) - or cleared away.
+     */
+    public static void rivals(ServerPlayer p, String what) {
+        p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete them at once
+        var sl = p.serverLevel();
+        for (var e : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.Rival.class, p.getBoundingBox().inflate(40))) e.discard();
+        for (var e : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) e.discard();   // and whatever earlier pictures left
+        if (what.equals("clear")) return;
+        boolean back = what.equals("back"), act = what.equals("action");
+        java.util.List<net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob>> types = java.util.List.of(
+                com.ironspellgrimoire.registry.AddonEntities.SEREN_VALE.get(), com.ironspellgrimoire.registry.AddonEntities.BRANNOCH_TOR.get(),
+                com.ironspellgrimoire.registry.AddonEntities.TOR_LEGIONNAIRE.get(), com.ironspellgrimoire.registry.AddonEntities.ALDER_BELLMAR.get(),
+                com.ironspellgrimoire.registry.AddonEntities.WREN_BELLMAR.get(), com.ironspellgrimoire.registry.AddonEntities.MIRA_HOLLOWELL.get());
+        var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+        var side = new net.minecraft.world.phys.Vec3(-look.z, 0, look.x);
+        float face = (float) Math.toDegrees(Math.atan2(look.x, -look.z)) + (back ? 180 : 0);
+        for (int i = 0; i < types.size(); i++) {
+            var m = types.get(i).create(sl);
+            if (m == null) continue;
+            var at = p.position().add(look.scale(6.5)).add(side.scale((i - 2.5) * 2.1));
+            m.moveTo(at.x, p.getY(), at.z, face, 0);
+            m.setYHeadRot(face); m.yBodyRot = face; m.yBodyRotO = face; m.yHeadRotO = face;
+            m.setNoAi(true);
+            sl.addFreshEntity(m);
+            if (!act) continue;
+            if (m instanceof com.ironspellgrimoire.entity.SerenVale r) r.setFlag(SerenAI.PARRY);
+            if (m instanceof com.ironspellgrimoire.entity.BrannochTor r) r.setPose(BossKit.P_RAISE);
+            if (m instanceof com.ironspellgrimoire.entity.TorLegionnaire l) l.setBearer(true);
+            if (m instanceof com.ironspellgrimoire.entity.AlderBellmar r) r.setFlag(com.ironspellgrimoire.entity.Rival.YIELDED);
+            if (m instanceof com.ironspellgrimoire.entity.WrenBellmar r) r.setPose(BossKit.P_CAST);
+            if (m instanceof com.ironspellgrimoire.entity.MiraHollowell r) r.setFlag(MiraAI.FORECLOSE);
+        }
+    }
+
+    /** The Architect of Ruin's pictures: a fortress well on its way, Siege Mode, the Citadel. */
+    static void architect(ServerPlayer p, String w) {
+        switch (w) {
+            case "setup" -> {   // book level 6 (4x4 plan), eleven rooms with three pairs, a garrison of four, two banners waiting
+                faceForward(p);
+                FortressFx.testReset(p);
+                FortressFx.testLevel(p, 6);
+                FortressFx.testUnlockAll(p);
+                FortressFx.testStone(p, 100000);
+                int[][] plan = {{FortressFx.BARRACKS, 0}, {FortressFx.CHAPEL, 1}, {FortressFx.WATCHTOWER, 2}, {FortressFx.OBSERVATORY, 3},
+                        {FortressFx.ARMOURY, 5}, {FortressFx.FORGE, 6}, {FortressFx.ARCANUM, 7}, {FortressFx.GATEHOUSE, 10}, {FortressFx.WAR_ROOM, 11},
+                        {FortressFx.WORKSHOP, 12}, {FortressFx.LIBRARY, 15}};
+                for (int[] r : plan) FortressFx.handle(p, 1, r[0] * 100 + r[1]);
+                for (int k = 0; k < 3; k++) FortressFx.handle(p, 1, FortressFx.BARRACKS * 100);
+                for (int k = 0; k < 2; k++) FortressFx.handle(p, 1, FortressFx.FORGE * 100);
+                FortressFx.handle(p, 1, FortressFx.WATCHTOWER * 100);
+                FortressFx.handle(p, 3, 0 * 100 + FortressFx.FORGE + 1); FortressFx.handle(p, 3, 1 * 100 + FortressFx.ARMOURY + 1);
+                FortressFx.handle(p, 3, 2 * 100 + FortressFx.ARCANUM + 1); FortressFx.handle(p, 3, 3 * 100 + FortressFx.CHAPEL + 1);
+                for (String b : new String[]{"minecraft:zombie", "minecraft:skeleton", "minecraft:witch", "minecraft:ravager"}) { FortressSiege.testBanner(p, b); FortressFx.handle(p, 4, 0); }
+                FortressSiege.testKills(p, 1, 90); FortressSiege.testKills(p, 2, 30); FortressSiege.testKills(p, 4, 210);
+                FortressFx.handle(p, 6, 1 * 100 + FortressFx.FORGE + 1);
+                FortressSiege.testBanner(p, "minecraft:pillager"); FortressSiege.testBanner(p, "minecraft:spider");
+                FortressFx.testRoot(p).putInt("stone", 236);
+                FortressFx.testRoot(p).putFloat("xp", FortressFx.need(6) * 0.6f);
+                FortressFx.testRoot(p).putBoolean("toured", true);
+                FortressFx.testClearCds(p);
+                FortressFx.sync(p, false);
+            }
+            case "siege" -> { FortressFx.testClearCds(p); FortressFx.siegePage(p, 10f); }
+            case "breach" -> {   // Hold the Gate, then a wall on the left broken by a foe
+                FortressFx.handle(p, 12, FortressSiege.HOLD);
+                var wall = FortressSiege.testWallList(p).stream().filter(x -> x.isAlive() && x.kind() == com.ironspellgrimoire.entity.FortressWall.WALL && x.getX() > p.getX() + 3).findFirst().orElse(null);
+                var foe = net.minecraft.world.entity.EntityType.ZOMBIE.create(p.serverLevel());
+                if (wall != null && foe != null) { foe.moveTo(wall.getX(), wall.getY(), wall.getZ()); wall.hurt(foe.damageSources().mobAttack(foe), 100000); }
+            }
+            case "line", "horseshoe" -> {
+                FortressSiege.endAll(p, false);
+                faceForward(p);
+                FortressFx.handle(p, 10, w.equals("line") ? FortressFx.LINE : FortressFx.HORSESHOE);
+                FortressFx.testClearCds(p);
+                FortressFx.siegePage(p, 10f);
+            }
+            case "citadel" -> { FortressSiege.endAll(p, false); FortressFx.handle(p, 10, FortressFx.RING); FortressFx.testLevel(p, 10); FortressFx.testClearCds(p); FortressFx.citadelPage(p, 10f); }
+            case "clear" -> { FortressFx.testReset(p); FortressFx.sync(p, false); }
+            case "page" -> FortressFx.sync(p, true);
+            default -> {}
+        }
     }
 }
