@@ -191,6 +191,8 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
      * (0, 0, 24); in game a bone's pivot is in model space (pixels/16, y down, front -Z), and an arm's pivot sits a
      * pixel (half for slim arms) inside its centre line.
      */
+    static boolean blade(Piece p) { return p.model().endsWith("_blade") || p.model().endsWith("_sword"); }
+
     static void place(PoseStack ps, Piece p, boolean slim, float spin) {
         boolean arm = p.bone() == Bone.RARM || p.bone() == Bone.LARM;
         float side = p.bone() == Bone.RARM ? -1 : 1;
@@ -202,6 +204,7 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
         Matrix4f m = new Matrix4f().rotateX(-p.armDeg() * d)
                 .translate(p.at()[0] - centre, p.at()[1], p.at()[2] - pivotZ)
                 .rotateZ((p.rot()[2] + spin) * d).rotateY(p.rot()[1] * d).rotateX(p.rot()[0] * d)
+                .rotateZ(blade(p) ? 90 * d : 0)   // a sword turned on its own length: edge up, the flat of the blade upright, not lying flat
                 .scale(p.scale());
         Matrix4f P = new Matrix4f(1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1);   // (x, y, z) -> (x, -z, y)  (columns)
         Matrix4f f = new Matrix4f().translate(inset / 16F, 0, 0).scale(1 / 16F).mul(P).mul(m).scale(16F).mul(P);
