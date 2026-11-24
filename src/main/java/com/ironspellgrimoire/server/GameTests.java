@@ -969,6 +969,166 @@ public final class GameTests {
     }
 
     /** Elite mobs: threat ranks, who may be one, what rolls, and every trait doing what the Codex says - and nothing changed in the world. */
+    /** The rivals: calling, the ring, records, yielding and rewards, rematch ranks, the twins' grief, the Legion, Mira's deals, the token. */
+    private static final class RivalTest extends Test {
+        RivalTest() { super("rivals: ring, yield, rewards, twins, legion, deals, token"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{Rivals.class, SerenAI.class, BrannochAI.class, TwinsAI.class, MiraAI.class, RivalKeepsakes.class,
+                com.ironspellgrimoire.entity.Rival.class, com.ironspellgrimoire.entity.TorLegionnaire.class, Boards.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        com.ironspellgrimoire.entity.Rival seren, alder, wren, bran, mira;
+        int stars0;
+
+        void yieldIt(com.ironspellgrimoire.entity.Rival r) {
+            r.setPhase(3);
+            r.setHealth(r.getMaxHealth() * 0.05f);
+            r.invulnerableTime = 0;
+            r.hurt(p.damageSources().playerAttack(p), r.getMaxHealth() * 0.1f);
+        }
+        void clearRivals() {
+            for (var r : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.Rival.class, new AABB(home, home).inflate(60))) r.discard();
+            for (var l : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.TorLegionnaire.class, new AABB(home, home).inflate(60))) l.discard();
+        }
+
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); clearRivals();
+            p.getPersistentData().remove(Rivals.KEY);
+            Bounties.addStars(p, 10 - Bounties.stars(p));
+            stars0 = Bounties.stars(p);
+            p.teleportTo(sl(), home.x, home.y, home.z, 0, 0);
+        }
+
+        @Override boolean tick(int t) {
+            try {
+                if (t != 3 && t < 200) { p.teleportTo(home.x, home.y, home.z); p.setHealth(p.getMaxHealth()); }
+                if (t == 1) {
+                    seren = Rivals.call(p, Rivals.SEREN, 0);
+                    if (seren == null) { fail(name, "Seren Vale couldn't be called"); return true; }
+                    if (seren.arena == null || !p.getUUID().equals(seren.challenger)) bad.add("a called rival has no ring or no challenger");
+                }
+                if (t == 3) {   // from outside the ring, blows don't land
+                    Vec3 out = seren.arena.add(seren.arena.subtract(home).normalize().scale(Rivals.RING + 6));
+                    p.teleportTo(out.x, home.y, out.z);
+                    float h = seren.getHealth();
+                    seren.invulnerableTime = 0;
+                    seren.hurt(p.damageSources().playerAttack(p), 10);
+                    if (seren.getHealth() < h) bad.add("a blow from outside the ring landed");
+                }
+                if (t == 6) {
+                    if (Rivals.met(p, Rivals.SEREN) != 1) bad.add("meeting Seren wasn't recorded (" + Rivals.met(p, Rivals.SEREN) + ")");
+                    seren.dodgeAt = Long.MAX_VALUE; seren.parryUntil = 0;   // no sidestep or parry for the test's blow
+                    yieldIt(seren);
+                    if (!seren.yielded || !seren.over || !seren.isAlive()) bad.add("Seren didn't yield at her last line (yielded " + seren.yielded + ", alive " + seren.isAlive() + ")");
+                    if (Rivals.wins(p, Rivals.SEREN) != 1) bad.add("the win wasn't recorded");
+                    if (Bounties.stars(p) != stars0 + 2) bad.add("a rank-0 win paid " + (Bounties.stars(p) - stars0) + " stars, not 2");
+                    if (!p.getInventory().contains(new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PRISM_RIBBON.get()))) bad.add("the first win gave no Prism Ribbon");
+                }
+                if (t == 110) {
+                    if (seren.isAlive() && !seren.isRemoved()) bad.add("a yielded rival never left");
+                    if (Rivals.rankFor(p, Rivals.SEREN) != 1) bad.add("the rematch isn't rank 1");
+                    var again = Rivals.call(p, Rivals.SEREN);
+                    if (again == null || Math.abs(again.getMaxHealth() - 300 * 1.3f) > 1) bad.add("a rank-1 rematch has " + (again == null ? "nothing" : again.getMaxHealth()) + " health, not 390");
+                    if (again != null) again.discard();
+                }
+                if (t == 112) {   // the twins
+                    clearRivals();
+                    Rivals.call(p, Rivals.TWINS);
+                    var as = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.AlderBellmar.class, new AABB(home, home).inflate(40));
+                    var ws = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.WrenBellmar.class, new AABB(home, home).inflate(40));
+                    if (as.size() != 1 || ws.size() != 1) { bad.add("the twins came " + as.size() + " + " + ws.size()); }
+                    else {
+                        alder = as.get(0); wren = ws.get(0);
+                        if (!wren.getUUID().equals(alder.partner) || !alder.getUUID().equals(wren.partner)) bad.add("the twins aren't linked");
+                    }
+                }
+                if (t == 116 && alder != null) {
+                    yieldIt(alder);
+                    if (!alder.yielded || alder.over) bad.add("one twin down ended the fight");
+                    if (wren.griefUntil <= sl().getGameTime()) bad.add("Wren didn't grieve");
+                    alder.yieldT = 598;
+                }
+                if (t == 120 && alder != null) {
+                    if (alder.yielded) bad.add("Alder didn't get back up after 30 s of Wren standing");
+                    else if (alder.getHealth() > alder.getMaxHealth() * 0.31f) bad.add("Alder got up with " + alder.getHealth() + " health");
+                    yieldIt(alder);
+                    yieldIt(wren);
+                    if (!alder.over || !wren.over) bad.add("both twins down didn't end the fight");
+                    if (Rivals.wins(p, Rivals.TWINS) != 1) bad.add("the twins' win wasn't recorded");
+                }
+                if (t == 124) {   // Brannoch and his Legion
+                    clearRivals();
+                    bran = Rivals.call(p, Rivals.BRANNOCH);
+                    if (bran instanceof com.ironspellgrimoire.entity.BrannochTor b) BrannochAI.shieldWall(b, p, 3);
+                }
+                if (t == 140 && bran instanceof com.ironspellgrimoire.entity.BrannochTor b) {
+                    var legion = BrannochAI.legion(b);
+                    if (legion.size() < 3) bad.add("Shield Wall raised " + legion.size() + " soldiers, not 3");
+                    if (legion.size() >= 2) {
+                        var front = legion.get(0); var back = legion.get(1);
+                        front.setNoAi(true); back.setNoAi(true);
+                        front.moveTo(home.x + 3, home.y, home.z, 0, 0); back.moveTo(home.x - 3, home.y, home.z, 0, 0);
+                        Vec3 tf = home.subtract(front.position()), tb = home.subtract(back.position());
+                        front.setYRot((float) Math.toDegrees(Math.atan2(-tf.x, tf.z))); front.yHeadRot = front.getYRot(); front.yBodyRot = front.getYRot();
+                        back.setYRot((float) Math.toDegrees(Math.atan2(tb.x, -tb.z))); back.yHeadRot = back.getYRot(); back.yBodyRot = back.getYRot();
+                        float a = BrannochAI.shield(front, p.damageSources().playerAttack(p), 10), c = BrannochAI.shield(back, p.damageSources().playerAttack(p), 10);
+                        if (a > 3.5f || c < 9.9f) bad.add("the shield took " + a + " of 10 from the front and " + c + " from behind");
+                    }
+                    BrannochAI.standard(b, p);
+                    if (!BrannochAI.bearerUp(b) || Math.abs(BrannochAI.guard(b, p.damageSources().playerAttack(p)) - 0.5f) > 0.01f) bad.add("the standard didn't halve his wounds");
+                    Rivals.leave(b, false);
+                    if (!BrannochAI.legion(b).isEmpty()) bad.add("the Legion stayed after he left");
+                }
+                if (t == 142) {   // Mira
+                    clearRivals();
+                    mira = Rivals.call(p, Rivals.MIRA);
+                    if (mira instanceof com.ironspellgrimoire.entity.MiraHollowell m) {
+                        MiraAI.testOffer(m, p);
+                        if (!MiraAI.offering(p)) bad.add("Mira's deal wasn't offered");
+                        MiraAI.answer(p, true);
+                        if (MiraAI.offering(p) || (MiraAI.deal(p) == null && !MiraAI.LOAN_DUE.containsKey(p.getUUID()))) bad.add("accepting a deal did nothing");
+                        var md = io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p);
+                        float max = (float) p.getAttributeValue(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA.get());
+                        md.setMana(max);
+                        MiraAI.testCollateralize(m, p);
+                        if (!MiraAI.testCollateral(p) || md.getMana() > max * 0.75f) bad.add("Collateral took no mana");
+                        for (int k = 0; k < 3; k++) MiraAI.struck(m, p);
+                        if (MiraAI.testCollateral(p) || md.getMana() < max * 0.99f) bad.add("three hits didn't get the collateral back (" + md.getMana() + "/" + max + ")");
+                        Rivals.leave(m, false);
+                    } else bad.add("Mira couldn't be called");
+                }
+                if (t == 146) {   // the Rival's Token, from the Poster Board
+                    clearRivals();
+                    int before = Bounties.stars(p);
+                    Boards.pick(p, Boards.BOUNTY, -3);
+                    if (Bounties.stars(p) != before - Boards.TOKEN_COST) bad.add("the token cost " + (before - Bounties.stars(p)) + " stars");
+                    boolean has = false;
+                    for (ItemStack st : p.getInventory().items) if (st.is(com.ironspellgrimoire.registry.AddonItemRegistry.RIVAL_TOKEN.get())) has = true;
+                    if (!has) bad.add("no token was given");
+                    if (!Rivals.useToken(p, Rivals.MIRA) || sl().getEntitiesOfClass(com.ironspellgrimoire.entity.MiraHollowell.class, new AABB(home, home).inflate(40)).isEmpty()) bad.add("the token didn't call Mira");
+                    if (Rivals.useToken(p, Rivals.SEREN)) bad.add("a second rival came while one was here");
+                    clearRivals();
+                    // the Prism Ribbon: a blow strikes a reflection
+                    ItemStack rib = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PRISM_RIBBON.get());
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, rib));
+                    RivalKeepsakes.RIBBON.remove(p.getUUID());
+                    var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(sl());
+                    z.moveTo(home.x + 2, home.y, home.z); sl().addFreshEntity(z);
+                    int hits = playerHits;
+                    p.invulnerableTime = 0;
+                    p.hurt(z.damageSources().mobAttack(z), 4);
+                    if (playerHits != hits || !RivalKeepsakes.RIBBON.containsKey(p.getUUID())) bad.add("the Prism Ribbon let the blow through");
+                    z.discard();
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, ItemStack.EMPTY));
+                    if (bad.isEmpty()) pass(name, "ring, records, yield, keepsake, rank 1 rematch, twins' grief and rising, shields, standard, deals, collateral, token, Prism Ribbon");
+                    else fail(name, String.join("; ", bad));
+                    clearRivals(); clearArea();
+                    p.getPersistentData().remove(Rivals.KEY);
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); clearRivals(); clearArea(); return true; }
+        }
+    }
+
     private static final class EliteTest extends Test {
         EliteTest() { super("elites: threat and every trait"); }
         @Override Class<?>[] roots() { return new Class<?>[]{EliteMobs.class, EliteTraits.class, com.ironspellgrimoire.entity.CursedChest.class, com.ironspellgrimoire.entity.EliteRift.class}; }
@@ -2331,6 +2491,12 @@ public final class GameTests {
         queue.add(new BossTest("Cinder Sovereign", AddonEntities.CINDER_SOVEREIGN));
         queue.add(new BossTest("Memory Guardian", AddonEntities.MEMORY_GUARDIAN));
         queue.add(new BossTest("Dante", AddonEntities.DANTE));
+        queue.add(new RivalTest());
+        queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
+        queue.add(new BossTest("Brannoch Tor", AddonEntities.BRANNOCH_TOR));
+        queue.add(new BossTest("Alder Bellmar", AddonEntities.ALDER_BELLMAR));
+        queue.add(new BossTest("Wren Bellmar", AddonEntities.WREN_BELLMAR));
+        queue.add(new BossTest("Mira Hollowell", AddonEntities.MIRA_HOLLOWELL));
         queue.add(exam());
         queue.add(raid());
         running = true;

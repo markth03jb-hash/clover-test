@@ -759,6 +759,16 @@ public final class UiShots {
         steps.add(new Step("dante_front", () -> { TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.dante(p, false, false); }); }, 30, true));
         steps.add(new Step("dante_back", () -> onServer(p -> UiShotsServer.dante(p, true, false)), 30, true));
         steps.add(new Step("dante_flare", () -> onServer(p -> UiShotsServer.dante(p, true, true)), 26, true));
+        // the rivals: a line-up front and back, mid-fight poses, Mira's offer, and their Codex page
+        steps.add(new Step("rv_front", () -> { mc.setScreen(null); TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(6); onServer(p -> { p.setXRot(6); UiShotsServer.rivals(p, "front"); }); }, 30, true));
+        steps.add(new Step("rv_back", () -> onServer(p -> UiShotsServer.rivals(p, "back")), 30, true));
+        steps.add(new Step("rv_action", () -> onServer(p -> UiShotsServer.rivals(p, "action")), 30, true));
+        steps.add(new Step("rv_deal", () -> { mc.options.hideGui = false; RivalClient.sample(); }, 8, true));
+        steps.add(new Step("rv_codex", () -> {
+            RivalClient.met = new int[]{3, 1, 2, 1}; RivalClient.wins = new int[]{2, 0, 1, 1}; RivalClient.losses = new int[]{1, 1, 0, 0};
+            mc.setScreen(new CodexScreen(CodexScreen.chapter("Rivals")));
+        }, 10, false));
+        steps.add(new Step("rv_clear", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.rivals(p, "clear")); }, 2, true));
         steps.add(new Step("hud_hidden", () -> TrackerMode.set(2), 10, true));
     }
 
@@ -792,6 +802,7 @@ public final class UiShots {
         if (step.startsWith("hud_")) return new Class<?>[]{BountyHud.class, QuestHud.class, WorldBossHud.class, RiftMap.class, BroomHud.class, ModeHudOverlay.class, RaidBanner.class, TrackerMode.class};
         if (step.startsWith("ar_")) return new Class<?>[]{FortressScreen.class, FortressWheel.class, FortressHud.class, FortressClient.class, FortressRenderers.class, com.ironspellgrimoire.server.FortressFx.class, com.ironspellgrimoire.server.FortressSiege.class, com.ironspellgrimoire.server.FortressSpells.class};
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
+        if (step.startsWith("rv_")) return new Class<?>[]{RivalRenderer.class, RivalClient.class, CodexScreen.class, com.ironspellgrimoire.server.Rivals.class, com.ironspellgrimoire.server.UiShotsServer.class};
         Class<?>[] shared = {GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class, FxBase.class, GravityFxClient.class, FxBooks.class, FxBookAuras.class, GrimoireFloatRenderer.class};
         String[][] books = {{"grav_", "Gravity"}, {"snd_", "Sound"}, {"ink_", "Ink"}, {"err_", "Error"}, {"tre_", "Treasure"}, {"chn_", "Chain"}, {"hun_", "Hunter"},
                 {"voi_", "Void"}, {"gam_", "Gambler"}, {"tar_", "Tarot"}, {"aby_", "Abyss"}, {"mec_", "Mech"}, {"wea_", "Weather"}, {"ovd_", "Overdrive"}, {"drm_", "Dream"}, {"shd_", "Shadow"}};

@@ -1628,5 +1628,225 @@
         "name": "iron_spell_grimoire:sfx/elite_portal_2"
       }
     ]
+  },
+  "sfx.rival_glass_step": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_glass_step_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_glass_step_2"
+      }
+    ]
+  },
+  "sfx.rival_blade_fan": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_blade_fan_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_blade_fan_2"
+      }
+    ]
+  },
+  "sfx.rival_parry": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_parry_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_parry_2"
+      }
+    ]
+  },
+  "sfx.rival_noon": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_noon_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_noon_2"
+      }
+    ]
+  },
+  "sfx.rival_horn": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_horn_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_horn_2"
+      }
+    ]
+  },
+  "sfx.rival_shieldwall": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_shieldwall_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_shieldwall_2"
+      }
+    ]
+  },
+  "sfx.rival_cleave": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_cleave_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_cleave_2"
+      }
+    ]
+  },
+  "sfx.rival_rampart": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_rampart_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_rampart_2"
+      }
+    ]
+  },
+  "sfx.rival_bell": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_bell_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_bell_2"
+      }
+    ]
+  },
+  "sfx.rival_swap": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_swap_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_swap_2"
+      }
+    ]
+  },
+  "sfx.rival_bond": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_bond_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_bond_2"
+      }
+    ]
+  },
+  "sfx.rival_grief": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_grief_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_grief_2"
+      }
+    ]
+  },
+  "sfx.rival_coins": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_coins_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_coins_2"
+      }
+    ]
+  },
+  "sfx.rival_deal": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_deal_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_deal_2"
+      }
+    ]
+  },
+  "sfx.rival_stamp": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_stamp_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_stamp_2"
+      }
+    ]
+  },
+  "sfx.rival_foreclose": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_foreclose_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_foreclose_2"
+      }
+    ]
+  },
+  "sfx.rival_yield": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_yield_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_yield_2"
+      }
+    ]
+  },
+  "sfx.rival_arena": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/rival_arena_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/rival_arena_2"
+      }
+    ]
+  },
+  "music.rival_seren_1": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.rival_seren",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/rival_seren_1",
+        "stream": true
+      }
+    ]
+  },
+  "music.rival_brannoch_1": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.rival_brannoch",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/rival_brannoch_1",
+        "stream": true
+      }
+    ]
+  },
+  "music.rival_twins_1": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.rival_twins",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/rival_twins_1",
+        "stream": true
+      }
+    ]
+  },
+  "music.rival_mira_1": {
+    "category": "music",
+    "subtitle": "subtitles.iron_spell_grimoire.music.rival_mira",
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:music/rival_mira_1",
+        "stream": true
+      }
+    ]
   }
 }

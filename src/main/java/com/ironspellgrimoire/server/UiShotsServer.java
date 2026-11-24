@@ -691,6 +691,43 @@ public final class UiShotsServer {
         if (flare) d.setPose(BossKit.P_RAISE);
     }
 
+    /**
+     * The rivals' pictures: all five (and a Legionnaire) in a row in front of the camera - facing it, turned away, or
+     * mid-fight (Seren's parry, Brannoch's horn, Alder kneeling as he yields, Wren casting, Mira foreclosing, the
+     * standard-bearer) - or cleared away.
+     */
+    public static void rivals(ServerPlayer p, String what) {
+        p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete them at once
+        var sl = p.serverLevel();
+        for (var e : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.Rival.class, p.getBoundingBox().inflate(40))) e.discard();
+        for (var e : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.TorLegionnaire.class, p.getBoundingBox().inflate(40))) e.discard();
+        if (what.equals("clear")) return;
+        boolean back = what.equals("back"), act = what.equals("action");
+        java.util.List<net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob>> types = java.util.List.of(
+                com.ironspellgrimoire.registry.AddonEntities.SEREN_VALE.get(), com.ironspellgrimoire.registry.AddonEntities.BRANNOCH_TOR.get(),
+                com.ironspellgrimoire.registry.AddonEntities.TOR_LEGIONNAIRE.get(), com.ironspellgrimoire.registry.AddonEntities.ALDER_BELLMAR.get(),
+                com.ironspellgrimoire.registry.AddonEntities.WREN_BELLMAR.get(), com.ironspellgrimoire.registry.AddonEntities.MIRA_HOLLOWELL.get());
+        var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+        var side = new net.minecraft.world.phys.Vec3(-look.z, 0, look.x);
+        float face = (float) Math.toDegrees(Math.atan2(look.x, -look.z)) + (back ? 180 : 0);
+        for (int i = 0; i < types.size(); i++) {
+            var m = types.get(i).create(sl);
+            if (m == null) continue;
+            var at = p.position().add(look.scale(6.5)).add(side.scale((i - 2.5) * 1.75));
+            m.moveTo(at.x, p.getY(), at.z, face, 0);
+            m.setYHeadRot(face); m.yBodyRot = face; m.yBodyRotO = face; m.yHeadRotO = face;
+            m.setNoAi(true);
+            sl.addFreshEntity(m);
+            if (!act) continue;
+            if (m instanceof com.ironspellgrimoire.entity.SerenVale r) r.setFlag(SerenAI.PARRY);
+            if (m instanceof com.ironspellgrimoire.entity.BrannochTor r) r.setPose(BossKit.P_RAISE);
+            if (m instanceof com.ironspellgrimoire.entity.TorLegionnaire l) l.setBearer(true);
+            if (m instanceof com.ironspellgrimoire.entity.AlderBellmar r) r.setFlag(com.ironspellgrimoire.entity.Rival.YIELDED);
+            if (m instanceof com.ironspellgrimoire.entity.WrenBellmar r) r.setPose(BossKit.P_CAST);
+            if (m instanceof com.ironspellgrimoire.entity.MiraHollowell r) r.setFlag(MiraAI.FORECLOSE);
+        }
+    }
+
     /** The Architect of Ruin's pictures: a fortress well on its way, Siege Mode, the Citadel. */
     static void architect(ServerPlayer p, String w) {
         switch (w) {

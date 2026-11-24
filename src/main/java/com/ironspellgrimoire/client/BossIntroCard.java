@@ -36,9 +36,10 @@ public final class BossIntroCard {
             "Your own magic, turned against you",
             com.ironspellgrimoire.server.MemoryStory.EPITHETS[0], com.ironspellgrimoire.server.MemoryStory.EPITHETS[1], com.ironspellgrimoire.server.MemoryStory.EPITHETS[2],
             "The fire beneath the world",
-            "Flesh that will not stay broken"};
-    private static final int[] BAND = {0x2A2420, 0x0E2A24, 0x241A30, 0x2A2614, 0x14102A, 0x22102A, 0x202024, 0x16161C, 0x141C26, 0x2A2010, 0x2A0806, 0x200A0C};
-    private static final int[] ACCENT = {0xE8DCC4, 0x5CE0B0, 0xC8A0FF, 0xFFE6A0, 0x9A7CFF, 0x8AE060, 0xFFFFFF, 0xD8D8E8, 0xA8C8E8, 0xFFD27A, 0xFF7A2A, 0xC83A3A};
+            "Flesh that will not stay broken",
+            "Rival  -  the Glass Duelist", "Rival  -  the Siege-Lord", "Rivals  -  Alder and Wren Bellmar", "Rival  -  the Debt-Keeper"};
+    private static final int[] BAND = {0x2A2420, 0x0E2A24, 0x241A30, 0x2A2614, 0x14102A, 0x22102A, 0x202024, 0x16161C, 0x141C26, 0x2A2010, 0x2A0806, 0x200A0C, 0x14202A, 0x2A0E0C, 0x241A10, 0x22200C};
+    private static final int[] ACCENT = {0xE8DCC4, 0x5CE0B0, 0xC8A0FF, 0xFFE6A0, 0x9A7CFF, 0x8AE060, 0xFFFFFF, 0xD8D8E8, 0xA8C8E8, 0xFFD27A, 0xFF7A2A, 0xC83A3A, 0xBFEFFF, 0xE85A40, 0xF0C860, 0xF2D870};
 
     private static int age = -1, life, idx, bossId;
     private static boolean full, unbound, third;

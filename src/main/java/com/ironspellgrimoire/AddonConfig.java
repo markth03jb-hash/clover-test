@@ -21,6 +21,8 @@ public final class AddonConfig {
     public static final ForgeConfigSpec.DoubleValue ELITE_CHANCE;
     public static final ForgeConfigSpec.IntValue ELITE_MAX_TRAITS;
     public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> ELITE_OFF;
+    public static final ForgeConfigSpec.BooleanValue RIVALS;
+    public static final ForgeConfigSpec.DoubleValue RIVAL_DAYS;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -54,6 +56,11 @@ public final class AddonConfig {
         THREAT = b.comment("Threat levels: mobs near a mage with a well-mastered grimoire get up to +100% health and +50% damage (rank 0-5).",
                         "Off = every mob is rank 0.").define("threat_levels", true);
         b.pop();
+        b.push("rivals");
+        RIVALS = b.comment("Rivals: four human mages (Seren Vale, Brannoch Tor, the Bellmar twins, Mira Hollowell) come looking for mages at threat rank 2+.",
+                "Off = they never come on their own (a Rival's Token still calls one).").define("rivals", true);
+        RIVAL_DAYS = b.comment("About how many in-game days pass between rival visits.").defineInRange("rival_days", 3.0, 0.5, 100.0);
+        b.pop();
         b.push("grimoires");
         CEREMONY_EXCLUDED = b.comment("Grimoires the altar ceremony never gives, by id - for example [\"twins_grimoire\", \"shadow_grimoire\"].",
                         "They can still be had in creative or with /give.")
@@ -82,6 +89,8 @@ public final class AddonConfig {
     public static boolean elites() { return get(ELITES::get, true); }
     public static boolean threat() { return get(THREAT::get, true); }
     public static double eliteChance() { return get(ELITE_CHANCE::get, 0.05); }
+    public static boolean rivals() { return get(RIVALS::get, true); }
+    public static double rivalDays() { return get(RIVAL_DAYS::get, 3.0); }
     public static int eliteMaxTraits() { return get(ELITE_MAX_TRAITS::get, 3); }
     /** The traits turned off in the config, as a bit mask. */
     public static int eliteOff() {

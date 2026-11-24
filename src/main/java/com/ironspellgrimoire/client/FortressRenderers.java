@@ -40,6 +40,7 @@ public final class FortressRenderers {
             e.register(WALL); e.register(GATE); e.register(SENTRY);
             for (ResourceLocation r : TOWER) e.register(r);
             EliteClient.registerModels(e);   // the elite mobs' models
+            RivalRenderer.registerModels(e);   // the rivals' gear
         }
     }
 

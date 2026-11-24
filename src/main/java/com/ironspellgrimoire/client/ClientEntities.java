@@ -25,6 +25,12 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.REVENANT.get(), c -> new BossRenderer<>(c, "revenant", false, 1.0F));
         e.registerEntityRenderer(AddonEntities.DANTE.get(), c -> { BossRenderer<com.ironspellgrimoire.entity.Dante> r = new BossRenderer<>(c, UiShots.ON ? "dante_mannequin" : "dante", true, 1.05F); return r.with(new DanteCloakLayer(r)); });   // his skin (slim arms) is supplied by the player; the cloak is drawn over it
         e.registerEntityRenderer(AddonEntities.CURSE_WITCH.get(), c -> new BossRenderer<>(c, "curse_witch", true, 0.95F));
+        e.registerEntityRenderer(AddonEntities.SEREN_VALE.get(), c -> new RivalRenderer<>(c, "rival_seren", true, 1.0F));
+        e.registerEntityRenderer(AddonEntities.BRANNOCH_TOR.get(), c -> new RivalRenderer<>(c, "rival_brannoch", false, 1.22F));
+        e.registerEntityRenderer(AddonEntities.ALDER_BELLMAR.get(), c -> new RivalRenderer<>(c, "rival_alder", false, 1.0F));
+        e.registerEntityRenderer(AddonEntities.WREN_BELLMAR.get(), c -> new RivalRenderer<>(c, "rival_wren", true, 1.0F));
+        e.registerEntityRenderer(AddonEntities.MIRA_HOLLOWELL.get(), c -> new RivalRenderer<>(c, "rival_mira", true, 1.0F));
+        e.registerEntityRenderer(AddonEntities.TOR_LEGIONNAIRE.get(), c -> new RivalRenderer<>(c, "rival_legion", false, 1.0F));
         e.registerEntityRenderer(AddonEntities.REFLECTION.get(), ReflectionRenderer::new);
         e.registerEntityRenderer(AddonEntities.BROOM.get(), BroomRenderer::new);
         e.registerEntityRenderer(AddonEntities.HIVE_NEST.get(), HiveNestRenderer::new);

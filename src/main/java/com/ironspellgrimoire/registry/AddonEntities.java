@@ -53,6 +53,26 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.CurseWitch>of(com.ironspellgrimoire.entity.CurseWitch::new, MobCategory.MONSTER).sized(0.6F, 1.9F)
                     .fireImmune().clientTrackingRange(10).build("curse_witch"));
 
+    /** The rivals (entity/Rival, server/Rivals) and Brannoch Tor's soldiers. */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.SerenVale>> SEREN_VALE = ENTITIES.register("seren_vale",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.SerenVale>of(com.ironspellgrimoire.entity.SerenVale::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("seren_vale"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.BrannochTor>> BRANNOCH_TOR = ENTITIES.register("brannoch_tor",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.BrannochTor>of(com.ironspellgrimoire.entity.BrannochTor::new, MobCategory.MONSTER).sized(0.75F, 2.35F)
+                    .fireImmune().clientTrackingRange(10).build("brannoch_tor"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.AlderBellmar>> ALDER_BELLMAR = ENTITIES.register("alder_bellmar",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.AlderBellmar>of(com.ironspellgrimoire.entity.AlderBellmar::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("alder_bellmar"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.WrenBellmar>> WREN_BELLMAR = ENTITIES.register("wren_bellmar",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.WrenBellmar>of(com.ironspellgrimoire.entity.WrenBellmar::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("wren_bellmar"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MiraHollowell>> MIRA_HOLLOWELL = ENTITIES.register("mira_hollowell",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.MiraHollowell>of(com.ironspellgrimoire.entity.MiraHollowell::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .fireImmune().clientTrackingRange(10).build("mira_hollowell"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.TorLegionnaire>> TOR_LEGIONNAIRE = ENTITIES.register("tor_legionnaire",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.TorLegionnaire>of(com.ironspellgrimoire.entity.TorLegionnaire::new, MobCategory.MONSTER).sized(0.6F, 1.95F)
+                    .clientTrackingRange(10).build("tor_legionnaire"));
+
     /** The Cinder Sovereign, the world boss (entity/CinderSovereign, server/WorldBoss). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.CinderSovereign>> CINDER_SOVEREIGN = ENTITIES.register("cinder_sovereign",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.CinderSovereign>of(com.ironspellgrimoire.entity.CinderSovereign::new, MobCategory.MONSTER).sized(4.5F, 12.5F)

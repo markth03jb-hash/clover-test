@@ -21,17 +21,21 @@ import top.theillusivec4.curios.api.type.capability.ICurioItem;
  * </ul>
  */
 public class RelicItem extends Item implements ICurioItem {
-    private final String what, how;
+    private final String what, how, label;
 
-    public RelicItem(String what, String how) {
+    public RelicItem(String what, String how) { this(what, how, "Rift Relic  -  charm slot"); }
+
+    /** A charm with its own label (a rival's keepsake: server/RivalKeepsakes). */
+    public RelicItem(String what, String how, String label) {
         super(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC).fireResistant());
         this.what = what;
         this.how = how;
+        this.label = label;
     }
 
     @Override
     public void appendHoverText(ItemStack s, Level level, List<Component> tip, TooltipFlag flag) {
-        tip.add(Component.literal("Rift Relic  -  charm slot").withStyle(ChatFormatting.LIGHT_PURPLE));
+        tip.add(Component.literal(label).withStyle(ChatFormatting.LIGHT_PURPLE));
         tip.add(Component.literal(what).withStyle(ChatFormatting.GRAY));
         tip.add(Component.literal(how).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
     }

@@ -1,0 +1,23 @@
+{
+ "display": {
+  "icon": {
+   "item": "iron_spell_grimoire:last_bell"
+  },
+  "title": {
+   "translate": "advancement.iron_spell_grimoire.rival_twins.title"
+  },
+  "description": {
+   "translate": "advancement.iron_spell_grimoire.rival_twins.description"
+  },
+  "frame": "challenge",
+  "show_toast": true,
+  "announce_to_chat": true,
+  "hidden": false
+ },
+ "parent": "iron_spell_grimoire:main/chosen",
+ "criteria": {
+  "code": {
+   "trigger": "minecraft:impossible"
+  }
+ }
+}

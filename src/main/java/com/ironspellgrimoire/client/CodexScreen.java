@@ -63,6 +63,13 @@ public class CodexScreen extends Screen {
          "## Champions",
          "At threat 4 and 5 a few elites are champions, with a purple name and a trait no lesser elite has. A champion is worth a bounty star.",
          "## The traits you've met"},
+        {"Rivals",
+         "Four human mages hear about you once your grimoire makes a name for itself (threat rank 2 and up). Now and then one of them finds you - or call one yourself with a Rival's Token from a Poster Board (3 merit stars; sneak and use it to choose who).",
+         "## The ring",
+         "A rival fights inside a ring 16 blocks across its middle. Step out and they stop and wait for you - and your blows from outside don't land. Stay away a minute and they leave.",
+         "## Yielding and rematches",
+         "Rivals never die: at the end they yield. A win pays merit stars and mastery XP; the first win over each also gives their keepsake (a charm) and a title. Every win raises their rank for the rematch, up to 3: more health, harder blows and a new move.",
+         "## Your record"},
         {"The World",
          "## Rifts",
          "Now and then a crack of light tears open near you and stays for a day. Step in to enter a dungeon of five to eight rooms under one or two laws. The relic at the end is found nowhere else.",
@@ -153,6 +160,7 @@ public class CodexScreen extends Screen {
             pageTitle = ch[0];
             for (int i = 1; i < ch.length; i++) para(out, ch[i], w);
             if (ch[0].equals("Elite Mobs")) elites(out, w);
+            if (ch[0].equals("Rivals")) rivals(out, w);
         } else if (e <= -2) {
             GrimoireMastery.Book b = GrimoireMastery.BOOKS.get(-e - 2);
             pageIcon = new ItemStack(b.item().get());
@@ -174,6 +182,23 @@ public class CodexScreen extends Screen {
         } else pageTitle = "";
         page = out;
         pageScroll = 0;
+    }
+
+    /** The Rivals chapter: each rival - your record, what they do (once you've met them), and the title won. */
+    private void rivals(List<Line> out, int w) {
+        for (int i = 0; i < com.ironspellgrimoire.server.Rivals.COUNT; i++) {
+            int met = i < RivalClient.met.length ? RivalClient.met[i] : 0, won = i < RivalClient.wins.length ? RivalClient.wins[i] : 0,
+                    lost = i < RivalClient.losses.length ? RivalClient.losses[i] : 0;
+            if (met == 0) { for (var l : font.split(Component.literal("??? - not met yet"), w)) out.add(new Line(l, INK_SOFT, false)); continue; }
+            para(out, "## " + com.ironspellgrimoire.server.Rivals.NAMES[i] + ", " + com.ironspellgrimoire.server.Rivals.EPITHETS[i], w);
+            String rec = "Met " + met + "  -  won " + won + ", lost " + lost + "  -  next rank " + Math.min(3, won)
+                    + (won > 0 ? "  -  title: " + com.ironspellgrimoire.server.Rivals.TITLES[i] : "");
+            for (var l : font.split(Component.literal(rec).withStyle(ChatFormatting.BOLD), w)) out.add(new Line(l, INK, false));
+            for (var l : font.split(Component.literal(com.ironspellgrimoire.server.Rivals.ABOUT[i]), w)) out.add(new Line(l, INK, false));
+            for (var l : font.split(Component.literal("Moves: " + com.ironspellgrimoire.server.Rivals.MOVES[i]).withStyle(ChatFormatting.ITALIC), w)) out.add(new Line(l, INK_SOFT, false));
+            for (var l : font.split(Component.literal(com.ironspellgrimoire.server.Rivals.RANK_MOVES[i]).withStyle(ChatFormatting.ITALIC), w)) out.add(new Line(l, INK_SOFT, false));
+            out.add(new Line(FormattedCharSequence.EMPTY, INK, false));
+        }
     }
 
     /** The Elite Mobs chapter: your threat rank, then each trait - what it does and how to beat it - once you've met it. */

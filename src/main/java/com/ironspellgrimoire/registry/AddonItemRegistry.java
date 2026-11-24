@@ -201,6 +201,16 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> SHADE_LANTERN = ITEMS.register("shade_lantern", () -> new com.ironspellgrimoire.item.RelicItem(
             "Below half health, foes near you slow down.", "Its light is darker than the dark around it."));
     public static final java.util.List<RegistryObject<Item>> RELICS = java.util.List.of(CRACKED_LENS, RIFT_HEART, HOLLOW_BELL, SHADE_LANTERN);
+    /** The rivals' keepsakes (server/Rivals, server/RivalKeepsakes) - charms, each given for the first win over its rival - and the token that calls one. */
+    public static final RegistryObject<Item> PRISM_RIBBON = ITEMS.register("prism_ribbon", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Once every 12 seconds, a blow aimed at you strikes a reflection instead.", "Seren Vale's. It never quite holds one colour.", "Rival's Keepsake  -  charm slot"));
+    public static final RegistryObject<Item> WARLORDS_STANDARD = ITEMS.register("warlords_standard", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Your summons within 8 blocks of you hit 10% harder.", "Brannoch Tor's. The Legion still salutes it.", "Rival's Keepsake  -  charm slot"));
+    public static final RegistryObject<Item> LAST_BELL = ITEMS.register("last_bell", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Fall below half health and it rings: you and every ally within 8 blocks gain a 6-point shield (once every 30 s).", "The Bellmars'. Half red, half blue.", "Rival's Keepsake  -  charm slot"));
+    public static final RegistryObject<Item> LEDGER_COIN = ITEMS.register("ledger_coin", () -> new com.ironspellgrimoire.item.RelicItem(
+            "Once a minute, a spell you cast below a quarter of your mana costs nothing.", "Mira Hollowell's. She wants it back.", "Rival's Keepsake  -  charm slot"));
+    public static final RegistryObject<Item> RIVAL_TOKEN = ITEMS.register("rival_token", com.ironspellgrimoire.item.RivalTokenItem::new);
     public static final RegistryObject<Item> LICHT_SPAWN_EGG = ITEMS.register("licht_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.LICHT, 0xF0EEE0, 0xE8C860, new Item.Properties()));
     public static final RegistryObject<Item> REVENANT_SPAWN_EGG = ITEMS.register("revenant_spawn_egg",
@@ -271,6 +281,7 @@ public class AddonItemRegistry {
                 for (var r : RELICS) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(WORLD_TREE_LEAF.get()));
                 out.accept(new ItemStack(ELVEN_WIND_CHARM.get()));
+                for (var r : java.util.List.of(PRISM_RIBBON, WARLORDS_STANDARD, LAST_BELL, LEDGER_COIN, RIVAL_TOKEN)) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(new ItemStack(MANA_CORE.get()));

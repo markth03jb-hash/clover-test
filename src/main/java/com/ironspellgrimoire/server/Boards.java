@@ -164,9 +164,22 @@ public final class Boards {
     }
 
     public static final int REROLL_COST = 2;
+    /** A Rival's Token (server/Rivals): calls a rival to fight you. */
+    public static final int TOKEN_COST = 3;
 
     /** A note taken (index), the current one given up (-1), or fresh notes for {@link #REROLL_COST} merit stars (-2). */
     public static void pick(ServerPlayer p, int kind, int index) {
+        if (index == -3) {   // a Rival's Token
+            if (Bounties.stars(p) < TOKEN_COST) { p.displayClientMessage(net.minecraft.network.chat.Component.literal("A Rival's Token costs " + TOKEN_COST + " merit stars.").withStyle(net.minecraft.ChatFormatting.GRAY), true); return; }
+            Bounties.addStars(p, -TOKEN_COST);
+            net.minecraft.world.item.ItemStack t = new net.minecraft.world.item.ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.RIVAL_TOKEN.get());
+            t.getOrCreateTag().putInt("Rival", Rivals.pick(p) < 0 ? 0 : Rivals.pick(p));
+            if (!p.getInventory().add(t)) p.drop(t, false);
+            p.displayClientMessage(net.minecraft.network.chat.Component.literal("You bought a Rival's Token.").withStyle(net.minecraft.ChatFormatting.GOLD), true);
+            CompoundTag box = p.getPersistentData().getCompound(KEY[kind]);
+            if (box.contains("BX")) open(p, kind, new BlockPos(box.getInt("BX"), p.getBlockY(), box.getInt("BZ")));
+            return;
+        }
         if (index == -2) {
             if (Bounties.stars(p) < REROLL_COST) { p.displayClientMessage(net.minecraft.network.chat.Component.literal("New notes cost " + REROLL_COST + " merit stars.").withStyle(net.minecraft.ChatFormatting.GRAY), true); return; }
             CompoundTag box = p.getPersistentData().getCompound(KEY[kind]);
