@@ -365,6 +365,16 @@ final class GameTestCases {
                 "last coal", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { pl.serverLevel().setDayTime(18000); MeridianFx.lastCoal(pl, pw); }, "q",
                 "zenith unbound", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { pl.serverLevel().setDayTime(6000); MeridianFx.testReset(pl); MeridianFx.zenithUnbound(pl, pw); }, "q"));
         queue.add(new MeridianTest());
+        queue.add(new BookMovesTest("omen", com.ironspellgrimoire.registry.AddonItemRegistry.OMEN_GRIMOIRE::get, OmenFx.class,
+                "ill-fated path", (java.util.function.BiConsumer<ServerPlayer, Float>) OmenFx::illFatedPath, "q",
+                "laden token", (java.util.function.BiConsumer<ServerPlayer, Float>) OmenFx::ladenToken, "q",
+                "afterimage", (java.util.function.BiConsumer<ServerPlayer, Float>) OmenFx::afterimage, "q",
+                "needle rain", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { for (var m : pl.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, pl.getBoundingBox().inflate(28))) m.setTarget(pl); OmenFx.needleRain(pl, pw); }, "",
+                "domino", (java.util.function.BiConsumer<ServerPlayer, Float>) OmenFx::domino, "q",
+                "stillness", (java.util.function.BiConsumer<ServerPlayer, Float>) OmenFx::stillness, "q",
+                "karma's ledger", (java.util.function.BiConsumer<ServerPlayer, Float>) OmenFx::karmasLedger, "",
+                "the law itself", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { for (var m : pl.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, pl.getBoundingBox().inflate(28))) m.setTarget(pl); OmenFx.theLawItself(pl, pw); }, ""));
+        queue.add(new OmenTest());
         queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
         queue.add(new BossTest("Brannoch Tor", AddonEntities.BRANNOCH_TOR));
         queue.add(new BossTest("Alder Bellmar", AddonEntities.ALDER_BELLMAR));
@@ -1204,6 +1214,111 @@ final class GameTestCases {
                 }
                 if (t == 6) {
                     if (bad.isEmpty()) pass(name, "sun curve, gates, heat, Zenith, Dayreaver comes and goes, night bank, Borrowed Noon and its price");
+                    else fail(name, String.join("; ", bad));
+                    end();
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); end(); return true; }
+        }
+    }
+
+    /** The Grimoire of Ill Omen: who counts as a pursuer (a monster that targets you, a villager that struck you - not a
+     *  cow minding its business), Misfortune building and calamity landing, Domino's leap, Stillness turning a blow back. */
+    static final class OmenTest extends Test {
+        OmenTest() { super("omen: pursuers incl. NPCs, misfortune, calamity, domino, stillness"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{OmenFx.class, com.ironspellgrimoire.entity.OmenAfterimage.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        ItemStack prev = ItemStack.EMPTY;
+        BlockState[] before;
+        net.minecraft.world.entity.Mob villager, husk, cow;
+        float vHp;
+        int huskCal;
+
+        net.minecraft.world.entity.Mob put(net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob> type, double dx, double dz) {
+            var m = type.create(sl());
+            if (m == null) return null;
+            m.moveTo(home.x + dx, home.y, home.z + dz, 180f, 0f);
+            m.setNoAi(true); m.setPersistenceRequired();
+            m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(500); m.setHealth(500);
+            sl().addFreshEntity(m);
+            return m;
+        }
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            ItemStack bk = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.OMEN_GRIMOIRE.get());
+            CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+            bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            prev = prev == null ? ItemStack.EMPTY : prev.copy();
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, bk));
+            OmenFx.testReset(p);
+            p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+            villager = put(net.minecraft.world.entity.EntityType.VILLAGER, 1.5, 3);
+            husk = put(net.minecraft.world.entity.EntityType.HUSK, -1.5, 4);
+            cow = put(net.minecraft.world.entity.EntityType.COW, 4, -3);
+            before = snapshot();
+        }
+        void end() {
+            for (var m : new net.minecraft.world.entity.Mob[]{villager, husk, cow}) if (m != null) m.discard();
+            for (var a : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.OmenAfterimage.class, new AABB(home, home).inflate(40))) a.discard();
+            ItemStack back = prev;
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, back));
+            OmenFx.testReset(p);
+            p.setHealth(p.getMaxHealth());
+        }
+        @Override boolean tick(int t) {
+            try {
+                p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                if (t == 2) {
+                    if (villager == null || husk == null || cow == null) { fail(name, "couldn't place the villager, husk and cow"); end(); return true; }
+                    husk.setTarget(p);
+                    // the villager strikes you: an NPC that hurt you is a pursuer
+                    p.invulnerableTime = 0;
+                    p.hurt(p.damageSources().mobAttack(villager), 2f);
+                    if (!OmenFx.pursues(villager, p)) bad.add("a villager that struck you isn't a pursuer");
+                    if (OmenFx.testMisfortune(villager) < 15f) bad.add("striking you gave the villager only " + OmenFx.testMisfortune(villager) + " Misfortune");
+                    if (!OmenFx.pursues(husk, p)) bad.add("a husk targeting you isn't a pursuer");
+                    if (OmenFx.pursues(cow, p)) bad.add("a cow minding its business counts as a pursuer");
+                }
+                if (t == 32) {
+                    if (OmenFx.testMisfortune(husk) <= 0f) bad.add("the husk built no Misfortune in 1.5 s of pursuit");
+                    if (OmenFx.testMisfortune(cow) > 0f) bad.add("the cow built Misfortune");
+                    // Domino, then the villager's luck runs out: the calamity must land, then leap to the husk
+                    OmenFx.domino(p, 0);
+                    vHp = villager.getHealth();
+                    huskCal = OmenFx.testCalamities(husk);
+                    OmenFx.testSet(villager, 99.5f, 4f);
+                }
+                if (t == 66) {
+                    if (OmenFx.testCalamities(villager) < 1) bad.add("a full villager had no calamity (misfortune " + OmenFx.testMisfortune(villager) + ")");
+                    else if (villager.getHealth() >= vHp) bad.add("the villager's calamity did no damage");
+                    if (OmenFx.testCalamities(husk) <= huskCal) bad.add("Domino didn't carry the calamity on to the husk");
+                    // Stillness: stand still, the husk strikes - the blow never lands and turns back on it
+                    OmenFx.stillness(p, 0);
+                    huskCal = OmenFx.testCalamities(husk);
+                    float hp = p.getHealth();
+                    p.invulnerableTime = 0;
+                    p.hurt(p.damageSources().mobAttack(husk), 4f);
+                    if (p.getHealth() < hp) bad.add("Stillness let a blow through standing still");
+                }
+                if (t == 70) {
+                    if (OmenFx.testCalamities(husk) <= huskCal) bad.add("Stillness didn't turn the husk's blow back as calamity");
+                    // every one of the twenty calamities, once each, on the husk (the villager nearby for Collision and Ricochet)
+                    villager.setHealth(villager.getMaxHealth()); husk.setHealth(husk.getMaxHealth());
+                    vHp = husk.getHealth();
+                    for (int k = 0; k < OmenFx.KINDS.length; k++) {
+                        OmenFx.testForce = k;
+                        try { OmenFx.calamity(p, husk, false); } catch (Throwable x) { bad.add(OmenFx.KINDS[k] + " threw " + x); }
+                        if (OmenFx.lastKind != k) bad.add(OmenFx.KINDS[k] + " wasn't the calamity that struck");
+                        husk.invulnerableTime = 0;
+                    }
+                }
+                if (t == 130) {
+                    if (!husk.isAlive() || husk.getHealth() >= vHp) bad.add("twenty calamities did no damage to the husk");
+                    String ch = changes(before);
+                    if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+                    if (bad.isEmpty()) pass(name, String.format("a villager that struck you and a husk that hunts you pursue, a cow doesn't; misfortune builds; calamity lands; Domino leaps; Stillness rebounds; all 20 calamities land (%.0f damage)", vHp - husk.getHealth()));
                     else fail(name, String.join("; ", bad));
                     end();
                     return true;

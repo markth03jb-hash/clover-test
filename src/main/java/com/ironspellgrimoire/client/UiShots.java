@@ -768,6 +768,11 @@ public final class UiShots {
         steps.add(new Step("mer_night", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "M:night")); }, 12, true));
         steps.add(new Step("mer_hud", () -> MeridianClient.sample(mc.player.getId(), 1.12f, 1f, 7, 0, false), 4, true));
         steps.add(new Step("mer_clear", () -> onServer(p -> UiShotsServer.element(p, "M:clear")), 4, true));
+        // the Grimoire of Ill Omen: marks over a zombie and a villager, the Afterimage walking off, The Law Itself
+        steps.add(new Step("om_marks", () -> { mc.setScreen(null); mc.options.hideGui = false; TrackerMode.set(2); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.player.setXRot(6); onServer(p -> { p.setXRot(6); UiShotsServer.element(p, "O:marks"); }); }, 30, true));
+        steps.add(new Step("om_after", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "O:after")); }, 18, true));
+        steps.add(new Step("om_law", () -> onServer(p -> UiShotsServer.element(p, "O:law")), 34, true));
+        steps.add(new Step("om_clear", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "O:clear")); }, 4, true));
         // the rivals: a line-up front and back, mid-fight poses, Mira's offer, and their Codex page
         steps.add(new Step("rv_front", () -> { mc.setScreen(null); TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(6); onServer(p -> { p.setXRot(6); UiShotsServer.rivals(p, "front"); }); }, 30, true));
         steps.add(new Step("rv_back", () -> onServer(p -> UiShotsServer.rivals(p, "back")), 30, true));
@@ -812,6 +817,7 @@ public final class UiShots {
         if (step.startsWith("ar_")) return new Class<?>[]{FortressScreen.class, FortressWheel.class, FortressHud.class, FortressClient.class, FortressRenderers.class, com.ironspellgrimoire.server.FortressFx.class, com.ironspellgrimoire.server.FortressSiege.class, com.ironspellgrimoire.server.FortressSpells.class};
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
         if (step.startsWith("mer_")) return new Class<?>[]{MeridianClient.class, com.ironspellgrimoire.server.MeridianFx.class, com.ironspellgrimoire.server.UiShotsServer.class};
+        if (step.startsWith("om_")) return new Class<?>[]{OmenClient.class, OmenAfterimageRenderer.class, com.ironspellgrimoire.server.OmenFx.class, com.ironspellgrimoire.entity.OmenAfterimage.class, com.ironspellgrimoire.server.UiShotsServer.class};
         if (step.startsWith("rv_")) return new Class<?>[]{RivalRenderer.class, RivalClient.class, CodexScreen.class, com.ironspellgrimoire.server.Rivals.class, com.ironspellgrimoire.server.UiShotsServer.class};
         Class<?>[] shared = {GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class, FxBase.class, GravityFxClient.class, FxBooks.class, FxBookAuras.class, GrimoireFloatRenderer.class};
         String[][] books = {{"grav_", "Gravity"}, {"snd_", "Sound"}, {"ink_", "Ink"}, {"err_", "Error"}, {"tre_", "Treasure"}, {"chn_", "Chain"}, {"hun_", "Hunter"},

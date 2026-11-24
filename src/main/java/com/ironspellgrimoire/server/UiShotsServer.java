@@ -142,6 +142,42 @@ public final class UiShotsServer {
         MeridianFx.sync(p);
     }
 
+    /** The Grimoire of Ill Omen's pictures: marks over a zombie and a villager that pursue, the Afterimage walking off,
+     *  The Law Itself coming down on both. */
+    static void omen(ServerPlayer p, String w) {
+        ServerLevel sl = p.serverLevel();
+        switch (w) {
+            case "marks" -> {
+                for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+                sl.setDayTime(6000); OmenFx.testReset(p);
+                var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+                var side = new net.minecraft.world.phys.Vec3(-look.z, 0, look.x);
+                var z = net.minecraft.world.entity.EntityType.HUSK.create(sl);   // a husk: a zombie would burn in the noon sun
+                var v = net.minecraft.world.entity.EntityType.VILLAGER.create(sl);
+                int i = 0;
+                for (var m : new net.minecraft.world.entity.Mob[]{z, v}) {
+                    if (m == null) continue;
+                    var at = p.position().add(look.scale(6)).add(side.scale(i++ == 0 ? -1.6 : 1.6));
+                    m.moveTo(at.x, p.getY(), at.z, p.getYRot() + 180, 0); m.setNoAi(true); m.setYHeadRot(p.getYRot() + 180);
+                    m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000); m.setHealth(1000);
+                    sl.addFreshEntity(m);
+                }
+                if (z != null) { z.setTarget(p); OmenFx.testSet(z, 45, 0); }
+                if (v != null) { OmenFx.testStruck(v, p); OmenFx.testSet(v, 88, 4); }   // a villager that struck you is a pursuer too
+            }
+            case "after" -> {
+                OmenFx.afterimage(p, 0);
+                var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+                for (var a : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.OmenAfterimage.class, p.getBoundingBox().inflate(4))) a.heading = new net.minecraft.world.phys.Vec3(-look.z, 0, look.x);
+            }
+            case "law" -> OmenFx.theLawItself(p, 0);
+            default -> {
+                for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+                OmenFx.testReset(p);
+            }
+        }
+    }
+
     public static void element(ServerPlayer p, String which) {
         Moves.ends(p, BloodFx.MODE);
         String w = which.substring(2);
@@ -166,6 +202,7 @@ public final class UiShotsServer {
             case 'T' -> AddonItemRegistry.TWINS_GRIMOIRE.get();
             case 'A' -> AddonItemRegistry.ARCHITECT_GRIMOIRE.get();
             case 'M' -> AddonItemRegistry.MERIDIAN_GRIMOIRE.get();
+            case 'O' -> AddonItemRegistry.OMEN_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -178,6 +215,7 @@ public final class UiShotsServer {
         if (which.charAt(0) == 'T') { twins(p, w); return; }
         if (which.charAt(0) == 'A') { architect(p, w); return; }
         if (which.charAt(0) == 'M') { meridian(p, w); return; }
+        if (which.charAt(0) == 'O') { omen(p, w); return; }
         switch (w) {
             case "target" -> {
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();
