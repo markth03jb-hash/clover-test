@@ -1304,9 +1304,21 @@ final class GameTestCases {
                 }
                 if (t == 70) {
                     if (OmenFx.testCalamities(husk) <= huskCal) bad.add("Stillness didn't turn the husk's blow back as calamity");
+                    // every one of the twenty calamities, once each, on the husk (the villager nearby for Collision and Ricochet)
+                    villager.setHealth(villager.getMaxHealth()); husk.setHealth(husk.getMaxHealth());
+                    vHp = husk.getHealth();
+                    for (int k = 0; k < OmenFx.KINDS.length; k++) {
+                        OmenFx.testForce = k;
+                        try { OmenFx.calamity(p, husk, false); } catch (Throwable x) { bad.add(OmenFx.KINDS[k] + " threw " + x); }
+                        if (OmenFx.lastKind != k) bad.add(OmenFx.KINDS[k] + " wasn't the calamity that struck");
+                        husk.invulnerableTime = 0;
+                    }
+                }
+                if (t == 130) {
+                    if (!husk.isAlive() || husk.getHealth() >= vHp) bad.add("twenty calamities did no damage to the husk");
                     String ch = changes(before);
                     if (!ch.isEmpty()) bad.add("changed the world: " + ch);
-                    if (bad.isEmpty()) pass(name, "a villager that struck you and a husk that hunts you pursue, a cow doesn't; misfortune builds; calamity lands; Domino leaps; Stillness rebounds");
+                    if (bad.isEmpty()) pass(name, String.format("a villager that struck you and a husk that hunts you pursue, a cow doesn't; misfortune builds; calamity lands; Domino leaps; Stillness rebounds; all 20 calamities land (%.0f damage)", vHp - husk.getHealth()));
                     else fail(name, String.join("; ", bad));
                     end();
                     return true;

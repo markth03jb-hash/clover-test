@@ -20,25 +20,66 @@ C.GLOW['omen'] = (60, 100, 255)
 
 
 def cover():
+    """Calamity, not weather: one jagged crack splits the cover corner to corner (broken by the medallion), shards
+    breaking off it; a weight falling at the top right; a row of dominoes toppling across the foot."""
     c = C.Cv((14, 18, 40), (4, 4, 12), 71, grain=8)
-    l, d = c.layer()
     X0, Y0, R0 = C.X0, C.Y0, C.R0
-    rnd = random.Random(5)
-    # needles of rain, falling slant round the medallion
-    for _ in range(70):
-        x, y = rnd.uniform(24, 232), rnd.uniform(24, 360)
-        if math.hypot(x - X0, y - Y0) < R0 + 12: continue
-        C.line(d, [(x, y), (x - 3, y + 14)], fill=(110, 150, 255, rnd.randint(90, 200)), width=1)
-    # footprints walking up from the foot to the medallion, stopping short
-    for k in range(7):
-        side = -1 if k % 2 else 1
-        fx, fy = X0 + side * 9 + (k % 3 - 1) * 2, 352 - k * 22
-        if fy < Y0 + R0 + 14: break
-        d.ellipse([(fx - 4) * C.S, (fy - 7) * C.S, (fx + 4) * C.S, (fy + 5) * C.S], fill=(150, 180, 240, 150 - k * 12))
-        d.ellipse([(fx - 3) * C.S, (fy - 12) * C.S, (fx + 3) * C.S, (fy - 8) * C.S], fill=(150, 180, 240, 140 - k * 12))
-    # one hairline crack off the rim
-    C.crack(d, X0 + R0 * 0.7, Y0 + R0 * 0.7, math.radians(40), 90, (120, 160, 255, 220), 2, rnd, 2)
-    c.put(l, (60, 100, 255), 6, 0.6)
+    rnd = random.Random(13)
+    BL, PALE = (110, 150, 255, 235), (190, 210, 255, 255)
+    # the crack: top-left to the medallion, and on from its far side to the bottom-right
+    def jag(x0, y0, x1, y1, n, amp):
+        pts = [(x0, y0)]
+        for i in range(1, n):
+            t = (i + rnd.uniform(-0.35, 0.35)) / n
+            nx, ny = -(y1 - y0), (x1 - x0); L = math.hypot(nx, ny); nx, ny = nx / L, ny / L
+            o = amp * (1 if i % 2 else -1) * rnd.uniform(0.5, 1.0)
+            pts.append((x0 + (x1 - x0) * t + nx * o, y0 + (y1 - y0) * t + ny * o))
+        pts.append((x1, y1)); return pts
+    ang = math.atan2(Y0 - 34, X0 - 34)
+    e1 = (X0 - math.cos(ang) * (R0 + 6), Y0 - math.sin(ang) * (R0 + 6))
+    e2 = (X0 + math.cos(ang) * (R0 + 6), Y0 + math.sin(ang) * (R0 + 6))
+    parts = [jag(34, 34, e1[0], e1[1], 15, 3.5), jag(e2[0], e2[1], 226, 262, 15, 3.5)]
+    l, d = c.layer()
+    for pts in parts:
+        C.line(d, pts, fill=BL, width=4)
+        C.line(d, pts, fill=(4, 5, 14, 255), width=2)   # the split itself: a dark gap lit at its edges
+        for k in (4, 10):   # branch cracks
+            bx, by = pts[k]
+            C.crack(d, bx, by, ang + rnd.choice([-1, 1]) * 1.1, 34, (110, 150, 255, 190), 1, rnd, 1)
+    # shards breaking off the crack, drifting away from it
+    for pts in parts:
+        for k in (3, 7, 12):
+            px_, py_ = pts[k]
+            side = 1 if k % 2 else -1
+            for j in range(2):
+                cx_ = px_ + side * (10 + j * 9) * math.sin(ang) * -1
+                cy_ = py_ + side * (10 + j * 9) * math.cos(ang)
+                r_ = 4.5 - j * 1.5; a0 = rnd.uniform(0, 6.28)
+                tri = [(cx_ + math.cos(a0 + q * 2.2) * r_ * (1.3 if q == 0 else 1), cy_ + math.sin(a0 + q * 2.2) * r_) for q in range(3)]
+                C.poly(d, tri, fill=(60, 90, 190, 210 - j * 60), outline=PALE)
+    c.put(l, (60, 100, 255), 7, 0.7)
+    # a weight falling, top right: an iron block with a ring, speed lines above it
+    l, d = c.layer()
+    wx, wy = 200, 72
+    C.poly(d, [(wx - 15, wy - 6), (wx + 15, wy - 6), (wx + 19, wy + 16), (wx - 19, wy + 16)], fill=(22, 26, 52, 255), outline=(150, 180, 240, 255))
+    d.ellipse([(wx - 6) * C.S, (wy - 17) * C.S, (wx + 6) * C.S, (wy - 5) * C.S], outline=(150, 180, 240, 255), width=2 * C.S)
+    C.line(d, [(wx - 9, wy + 7), (wx + 9, wy + 7)], fill=(110, 150, 255, 200), width=1)
+    for dx, ln in ((-12, 22), (0, 30), (12, 22)):
+        C.line(d, [(wx + dx, wy - 24 - ln), (wx + dx, wy - 22)], fill=(150, 180, 240, 140), width=1)
+    # dominoes toppling across the foot, each leaning further than the last
+    for i in range(6):
+        bx, by = 52 + i * 31, 300
+        lean = math.radians(min(78, i * 15))
+        w2, h = 6, 26
+        corners = [(-w2, 0), (w2, 0), (w2, -h), (-w2, -h)]
+        rot = [(bx + x * math.cos(lean) - y * math.sin(lean) * -1 * 0 + (-y) * math.sin(lean) * 1, by + x * math.sin(lean) + y * math.cos(lean)) for x, y in corners]
+        C.poly(d, rot, fill=(22, 26, 52, 255), outline=(150, 180, 240, 255))
+        for fy in (-0.28, -0.72):   # two pips
+            px_, py_ = bx + (-fy * h) * math.sin(lean), by + fy * h * math.cos(lean)
+            d.ellipse([(px_ - 1.6) * C.S, (py_ - 1.6) * C.S, (px_ + 1.6) * C.S, (py_ + 1.6) * C.S], fill=(150, 190, 255, 255))
+        mx_, my_ = bx + (h * 0.5) * math.sin(lean), by - h * 0.5 * math.cos(lean)
+        C.line(d, [(mx_ - 3 * math.cos(lean), my_ - 3 * math.sin(lean)), (mx_ + 3 * math.cos(lean), my_ + 3 * math.sin(lean))], fill=(110, 150, 255, 200), width=1)
+    c.put(l, (60, 100, 255), 5, 0.45)
     l, d = c.layer(); C.frame(d, (150, 180, 240, 255), 16, 2, 0, True); c.put(l)
     return c
 
