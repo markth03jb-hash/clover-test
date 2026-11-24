@@ -101,11 +101,6 @@ public final class ChainFx {
     static void anchor(ServerLevel sl, LivingEntity from, Vec3 u, int fly, int life) { FxPacket p = pk(9, from.position(), life); p.v = new Vec3(from.getId(), 1, 0); p.u = u; p.speed = fly; send(sl, p); }
 
     // ================================================================== helpers
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     /** Five Rules: when each chain was last used, per player; and whether the full set is ready. */
     private static final Map<UUID, long[]> RULES = new HashMap<>();
     private static final Map<UUID, Boolean> FULL = new HashMap<>();

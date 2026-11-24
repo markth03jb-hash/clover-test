@@ -238,7 +238,7 @@ public final class TwinsFx {
         if (lv == ULT_LV) p.sendSystemMessage(Component.literal("  " + TWIN[twin] + "'s ultimate: " + ULT_NAME[twin] + " - " + ULT_DESC[twin]).withStyle(ChatFormatting.GRAY));
         Fx.spark(sl, twin == SOL ? PAL_SOL : PAL_NYX, p.getEyePosition(), 1.2f);
         FxSend.ring(sl, twin == SOL ? PAL_SOL : PAL_NYX, p.position().add(0, 0.1, 0), 0.3f, 2.2f, 0.12f, 14);
-        OverdriveFx.play(sl, p.position(), twin == SOL ? "twin_rise" : "twin_fall", 0.9f, 1.2f);
+        FxUtil.play(sl, p.position(), twin == SOL ? "twin_rise" : "twin_fall", 0.9f, 1.2f);
         if (level(p, SOL) >= 25) award(p, 0);
         if (level(p, NYX) >= 25) award(p, 1);
         if (bonded(p, 20)) award(p, 2);
@@ -331,7 +331,7 @@ public final class TwinsFx {
         Vec3 face = p.getEyePosition().add(p.getLookAngle().scale(0.4));
         Fx.spark(sl, in == SOL ? PAL_SOL : PAL_NYX, face, 0.8f);
         FxSend.ring(sl, in == SOL ? PAL_SOL : PAL_NYX, p.position().add(0, 1.0, 0), 0.2f, 1.2f, 0.08f, 8);
-        OverdriveFx.play(sl, p.position(), in == SOL ? "twin_rise" : "twin_fall", 0.8f, 1f);
+        FxUtil.play(sl, p.position(), in == SOL ? "twin_rise" : "twin_fall", 0.8f, 1f);
         look(p, true);
         sync(p, false);
     }
@@ -346,7 +346,7 @@ public final class TwinsFx {
             FxSend.ring(sl, PAL_SOL2, p.position().add(0, 0.6, 0), 0.2f, rad * 0.8f, 0.25f, 10);
             Fx.pillar(sl, PAL_SOL, p.position(), 3f + 2 * k, 1.2f, 12);
             for (LivingEntity e : enemies(sl, p, p.getBoundingBox().inflate(rad))) if (e.distanceTo(p) <= rad) hit(p, e, dmg, SOL);
-            OverdriveFx.play(sl, p.position(), "sun_flare", 1f, 1f);
+            FxUtil.play(sl, p.position(), "sun_flare", 1f, 1f);
         } else {
             Vec3 d = flat(p.getLookAngle()), up = new Vec3(0, 1, 0);
             float reach = 6 + 4 * k, dmg = (4 + 12 * k) * m * (perk(p, NYX, 2, 1) ? 1.3f : 1f);
@@ -361,7 +361,7 @@ public final class TwinsFx {
                     slow(p, e, -0.3, 60);
                 }
             }
-            OverdriveFx.play(sl, p.position(), "moon_shimmer", 1f, 1f);
+            FxUtil.play(sl, p.position(), "moon_shimmer", 1f, 1f);
         }
         Fx.flash(sl, p.getEyePosition(), 0.6f + k);
     }
@@ -398,7 +398,7 @@ public final class TwinsFx {
         FxSend.ring(sl, PAL_SOL, at.add(0, 0.1, 0), 0.5f, 7f, 0.8f, 18);
         FxSend.ring(sl, PAL_SOL2, at.add(0, 0.3, 0), 0.3f, 5.5f, 0.4f, 16);
         FxSend.shake(sl, at, 0.5f, 8, 14);
-        OverdriveFx.play(sl, at, "sun_flare", 1.5f, 0.6f);
+        FxUtil.play(sl, at, "sun_flare", 1.5f, 0.6f);
         say(p, SOL, "Look at me.");
         sync(p, false);
     }
@@ -416,7 +416,7 @@ public final class TwinsFx {
         FxSend.ring(sl, Fx.VOID, at.add(0, 0.1, 0), 0.5f, 8f, 0.6f, 20);
         FxSend.ring(sl, PAL_NYX, at.add(0, 0.2, 0), 0.4f, 8f, 1.4f, 20);
         Fx.pillar(sl, PAL_NYX, at, 5f, 1.6f, 18);
-        OverdriveFx.play(sl, at, "eclipse_toll", 1.2f, 1.4f);
+        FxUtil.play(sl, at, "eclipse_toll", 1.2f, 1.4f);
         say(p, NYX, "Hush now. Everything is slow.");
         sync(p, false);
     }
@@ -475,7 +475,7 @@ public final class TwinsFx {
         Fx.spark(sl, rest == SOL ? PAL_SOL : PAL_NYX, to, 0.5f);
         hit(p, t, dmg, rest);
         if (rest == NYX) slow(p, t, -0.2, 40);
-        OverdriveFx.play(sl, from, rest == SOL ? "sun_flare" : "moon_shimmer", 0.35f, 1.9f);
+        FxUtil.play(sl, from, rest == SOL ? "sun_flare" : "moon_shimmer", 0.35f, 1.9f);
     }
 
     /** The Echo's target: the nearest foe within 12 blocks that it can see. */
@@ -571,7 +571,7 @@ public final class TwinsFx {
         r.putIntArray("cut" + twin, cuts);
         ServerLevel sl = p.serverLevel();
         Fx.spark(sl, twin == SOL ? PAL_SOL : PAL_NYX, p.getEyePosition(), 1f);
-        OverdriveFx.play(sl, p.position(), twin == SOL ? "twin_rise" : "twin_fall", 0.7f, 1.5f);
+        FxUtil.play(sl, p.position(), twin == SOL ? "twin_rise" : "twin_fall", 0.7f, 1.5f);
         say(p, twin, SOCKET_NAME[twin][s][c] + " is set. " + SOCKET_DESC[twin][s][c] + ".");
         look(p, true);
         sync(p, false);
@@ -625,7 +625,7 @@ public final class TwinsFx {
         ServerLevel sl = p.serverLevel();
         if (eventide(p)) {   // Eventide: the blow passes through, no step back
             Fx.flash(sl, p.position().add(0, 1, 0), 0.6f);
-            OverdriveFx.play(sl, p.position(), "moon_shimmer", 0.7f, 1.6f);
+            FxUtil.play(sl, p.position(), "moon_shimmer", 0.7f, 1.6f);
             tell(p, "Eventide: missed (" + left + " left)");
             return;
         }
@@ -635,7 +635,7 @@ public final class TwinsFx {
         Fx.pillar(sl, PAL_NYX, p.position(), 2.2f, 0.7f, 20);
         p.teleportTo(to.x, to.y, to.z);
         if (perk(p, NYX, 1, 0)) p.heal(4f);
-        OverdriveFx.play(sl, to, "moon_shimmer", 0.9f, 1.4f);
+        FxUtil.play(sl, to, "moon_shimmer", 0.9f, 1.4f);
         tell(p, "Lunar Veil: missed");
     }
 

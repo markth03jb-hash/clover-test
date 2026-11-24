@@ -124,11 +124,6 @@ public final class InkFx {
     }
 
     // ================================================================== helpers
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     private static final Map<UUID, Integer> STROKES = new HashMap<>();
     private static final Map<UUID, long[]> STAIN = new HashMap<>();
     /** Set while Masterpiece paints its copy (so the copy isn't copied again). */

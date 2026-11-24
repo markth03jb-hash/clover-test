@@ -63,7 +63,7 @@ public final class EliteTraits {
             HALF = UUID.fromString("e1173000-0000-4000-8000-000000000014");
     public static final int SHELL_CYCLE = 140, SHELL_UP = 40, IRON_PLATES = 3;
 
-    static void play(Mob m, String s, float vol, float pitch) { if (m.level() instanceof ServerLevel sl) OverdriveFx.play(sl, m.position(), s, vol, pitch); }
+    static void play(Mob m, String s, float vol, float pitch) { if (m.level() instanceof ServerLevel sl) FxUtil.play(sl, m.position(), s, vol, pitch); }
     static Vec3 mid(Entity e) { return e.position().add(0, e.getBbHeight() * 0.5, 0); }
     static Vec3 flat(Vec3 v) { Vec3 f = new Vec3(v.x, 0, v.z); return f.lengthSqr() < 1e-6 ? Vec3.ZERO : f.normalize(); }
     static float attack(Mob m) { var a = m.getAttribute(Attributes.ATTACK_DAMAGE); return a == null ? 4f : (float) Math.max(2, a.getValue()); }
@@ -334,7 +334,7 @@ public final class EliteTraits {
                         { t.hurt(a.damageSources().mobAttack(a), half); testEchoHits++; }
                 } finally { echoing = false; }
                 FxSend.ring(sl, Fx.CRIMSON, at.add(0, 0.1, 0), 0.2f, 1.3f, 0.25f, 8);
-                OverdriveFx.play(sl, at, "elite_slam", 0.6f, 1.5f);
+                FxUtil.play(sl, at, "elite_slam", 0.6f, 1.5f);
             });
         }
         if (v instanceof ServerPlayer p) {
@@ -405,7 +405,7 @@ public final class EliteTraits {
                 r.setup(net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(m.getType()).toString(), rank);
                 r.moveTo(m.getX(), m.getY() + 0.2, m.getZ(), m.getYRot(), 0);
                 sl.addFreshEntity(r);
-                OverdriveFx.play(sl, m.position(), "elite_portal", 1.1f, 1f);
+                FxUtil.play(sl, m.position(), "elite_portal", 1.1f, 1f);
             }
         }
     }
@@ -435,7 +435,7 @@ public final class EliteTraits {
             data(partner).putUUID("tw", back.getUUID());
             ACTIVE.computeIfAbsent(back, k -> new Run());
             Fx.pillar(sl, Fx.DARK, at, 2.4f, 0.8f, 14);
-            OverdriveFx.play(sl, at, "elite_rise", 1f, 0.7f);
+            FxUtil.play(sl, at, "elite_rise", 1f, 0.7f);
         });
     }
 
@@ -453,14 +453,14 @@ public final class EliteTraits {
         c.refreshDimensions();
         c.setDeltaMovement(side.scale(0.5).add(0, 0.3, 0));
         sl.addFreshEntity(c);
-        if (k == 0) { FxSend.ring(sl, Fx.CRIMSON, m.position().add(0, 0.1, 0), 0.2f, 1.2f, 0.2f, 10); OverdriveFx.play(sl, m.position(), "elite_split", 1f, 1f); }
+        if (k == 0) { FxSend.ring(sl, Fx.CRIMSON, m.position().add(0, 0.1, 0), 0.2f, 1.2f, 0.2f, 10); FxUtil.play(sl, m.position(), "elite_split", 1f, 1f); }
     }
 
     static void volatileRing(Mob m, ServerLevel sl) {
         final Vec3 at = m.position();
         final float dmg = 6 + 2 * rank(m);
         FxSend.ring(sl, Fx.FIRE, at.add(0, 0.05, 0), 2.8f, 3.0f, 0.05f, 30);
-        OverdriveFx.play(sl, at, "elite_tick", 1f, 1f);
+        FxUtil.play(sl, at, "elite_tick", 1f, 1f);
         AstaFx.later(30, () -> {
             for (LivingEntity v : sl.getEntitiesOfClass(LivingEntity.class, new net.minecraft.world.phys.AABB(at, at).inflate(3, 2, 3),
                     x -> x.isAlive() && !(x instanceof Enemy) && x.position().distanceTo(at) <= 3 && !(x instanceof Player pl && (pl.isCreative() || pl.isSpectator()))))
@@ -468,7 +468,7 @@ public final class EliteTraits {
             FxSend.ring(sl, Fx.FIRE, at.add(0, 0.1, 0), 0.3f, 3.0f, 0.6f, 10);
             Fx.impact(sl, Fx.FIRE, at.add(0, 0.6, 0), 1.6f);
             FxSend.shake(sl, at, 0.4f, 8, 10);
-            OverdriveFx.play(sl, at, "elite_boom", 1.2f, 1f);
+            FxUtil.play(sl, at, "elite_boom", 1.2f, 1f);
         });
     }
 
@@ -487,7 +487,7 @@ public final class EliteTraits {
         r.ghostFor = p.getUUID();
         r.ghostLife = 100;
         ACTIVE.put(g, r);
-        OverdriveFx.play(sl, g.position(), "elite_wail", 1f, 1f);
+        FxUtil.play(sl, g.position(), "elite_wail", 1f, 1f);
     }
 
     static void ghostTick(Mob g, Run r, ServerLevel sl) {
@@ -504,7 +504,7 @@ public final class EliteTraits {
         if (to.length() < 1.1) {
             p.hurt(sl.damageSources().magic(), 3 + rank(g));
             Fx.impact(sl, Fx.SILVER, mid(p), 0.9f);
-            OverdriveFx.play(sl, p.position(), "elite_wail", 0.8f, 1.4f);
+            FxUtil.play(sl, p.position(), "elite_wail", 0.8f, 1.4f);
             g.discard();
             return;
         }
@@ -541,11 +541,11 @@ public final class EliteTraits {
             Vec3 back = flat(p.position().subtract(c.position()));
             p.setDeltaMovement(back.x * 0.6, 0.3, back.z * 0.6);
             p.hurtMarked = true;
-            OverdriveFx.play(sl, c.position(), "elite_bite", 1.1f, 1f);
+            FxUtil.play(sl, c.position(), "elite_bite", 1.1f, 1f);
             if (p instanceof ServerPlayer sp) sp.displayClientMessage(Component.literal("Too soon - it bites!").withStyle(ChatFormatting.RED), true);
         } else {
             ExperienceOrb.award(sl, c.position().add(0, 0.5, 0), 10 * (1 + c.rank()));
-            OverdriveFx.play(sl, c.position(), "elite_chest", 1f, 1f);
+            FxUtil.play(sl, c.position(), "elite_chest", 1f, 1f);
             FxSend.ring(sl, Fx.GOLD, c.position().add(0, 0.1, 0), 0.2f, 1.2f, 0.4f, 12);
             if (p instanceof ServerPlayer sp) sp.displayClientMessage(Component.literal("Patience pays: double loot").withStyle(ChatFormatting.GOLD), true);
         }
@@ -565,14 +565,14 @@ public final class EliteTraits {
             make(m, r.rank(), pick(m, Math.min(3, r.rank()), 1));
         }
         FxSend.ring(sl, Fx.VOID, r.position().add(0, 0.1, 0), 0.3f, 2.5f, 0.6f, 14);
-        OverdriveFx.play(sl, r.position(), "elite_portal", 1.2f, 0.7f);
+        FxUtil.play(sl, r.position(), "elite_portal", 1.2f, 0.7f);
     }
 
     public static void riftClosed(EliteRift r, Player by) {
         if (!(r.level() instanceof ServerLevel sl)) return;
         ExperienceOrb.award(sl, r.position(), 8 * (1 + r.rank()));
         Fx.impact(sl, Fx.VOID, r.position().add(0, 1, 0), 1.4f);
-        OverdriveFx.play(sl, r.position(), "elite_crack", 1.2f, 0.6f);
+        FxUtil.play(sl, r.position(), "elite_crack", 1.2f, 0.6f);
         if (by instanceof ServerPlayer sp) sp.displayClientMessage(Component.literal("Rift closed").withStyle(ChatFormatting.GREEN), true);
     }
 

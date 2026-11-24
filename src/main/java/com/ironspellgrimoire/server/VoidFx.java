@@ -117,11 +117,6 @@ public final class VoidFx {
         return b != null && b.is(com.ironspellgrimoire.registry.AddonItemRegistry.VOID_GRIMOIRE.get());
     }
 
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     static boolean emptiness(ServerPlayer p) { return Moves.inMode(p, MODE); }
 
     private static final Map<UUID, long[]> WEAR = new HashMap<>();

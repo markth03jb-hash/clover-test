@@ -78,11 +78,6 @@ public final class ErrorFx {
     static void ghost(ServerLevel sl, Vec3 c, float h, int life) { FxPacket p = pk(9, c, life); p.r = h; send(sl, p); }
 
     // ================================================================== helpers
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     static boolean fatal(ServerPlayer p) { return Moves.inMode(p, MODE); }
     private static boolean twice = false;
 

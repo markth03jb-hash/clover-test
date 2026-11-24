@@ -145,11 +145,6 @@ public final class SoundFx {
     }
 
     // ================================================================== helpers
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     /** Crescendo: how loud the player has grown. */
     private static final Map<UUID, Integer> TIER = new HashMap<>();
     /** Resonance on each foe: {rings, until}. */

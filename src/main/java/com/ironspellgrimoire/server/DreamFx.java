@@ -145,11 +145,6 @@ public final class DreamFx {
         if (t.isAlive()) lull(p, t, lull);
     }
 
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     private static Vec3 look(ServerPlayer p) {
         Vec3 l = flat(p.getLookAngle());
         return l.lengthSqr() < 1.0E-4 ? new Vec3(0, 0, 1) : l.normalize();

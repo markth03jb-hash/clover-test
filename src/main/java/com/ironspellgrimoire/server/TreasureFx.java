@@ -87,11 +87,6 @@ public final class TreasureFx {
     static void aegis(ServerLevel sl, ServerPlayer pl, int life) { FxPacket p = pk(6, pl.position(), life); p.v = new Vec3(pl.getId(), 1, 0); send(sl, p); }
 
     // ================================================================== helpers
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     private static final Map<UUID, long[]> OPEN = new HashMap<>();
 
     static boolean kings(ServerPlayer p) { return Moves.inMode(p, MODE); }

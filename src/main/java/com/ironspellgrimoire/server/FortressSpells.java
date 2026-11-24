@@ -173,7 +173,7 @@ public final class FortressSpells {
         ServerLevel sl = p.serverLevel();
         FxSend.ring(sl, BRASS, p.position().add(0, 1, 0), 0.3f, 2.6f, 0.12f, 14);
         Fx.flash(sl, p.position().add(0, 1, 0), 1.2f);
-        OverdriveFx.play(sl, p.position(), "fort_bell", 1.0f, 1.4f);
+        FxUtil.play(sl, p.position(), "fort_bell", 1.0f, 1.4f);
         FortressFx.tell(p, "The Keepsake held");
         if (FortressFx.pair(p, FortressFx.indexOfPair(FortressFx.CRYPT, FortressFx.RELIQUARY)))   // Crypt + Reliquary: sentries rise round you
             for (int i = 0; i < 3; i++) FortressSiege.guard(p, "iron_spell_grimoire:bone_sentry", FortressDefender.SENTRY, p.position(), 200);
@@ -196,7 +196,7 @@ public final class FortressSpells {
         pr.hurtMarked = true;
         ServerLevel sl = p.serverLevel();
         FxSend.ring(sl, ARCANE, pr.position(), 0.2f, 1.2f, 0.06f, 8);
-        OverdriveFx.play(sl, p.position(), "fort_ley", 0.8f, 1.8f);
+        FxUtil.play(sl, p.position(), "fort_ley", 0.8f, 1.8f);
     }
 
     // ================================================================== the spells
@@ -268,7 +268,7 @@ public final class FortressSpells {
                 List<FortressDefender> d = FortressSiege.callGarrison(p, p.position(), 300, 2);
                 while (d.size() < 2) { FortressDefender g = FortressSiege.guard(p, "minecraft:vindicator", FortressDefender.FOOTMAN, p.position(), 300); if (g == null) break; d.add(g); }
                 for (FortressDefender g : d) g.post = null;   // they follow you
-                OverdriveFx.play(sl, p.position(), "fort_horn", 0.8f, 1.2f);
+                FxUtil.play(sl, p.position(), "fort_horn", 0.8f, 1.2f);
             }
             case ARMOURY -> {   // Blade Rack: six phantom weapons rain on the spot
                 boolean burn = FortressFx.pair(p, FortressFx.indexOfPair(FORGE, ARMOURY));
@@ -283,7 +283,7 @@ public final class FortressSpells {
                         if (burn) burnPatch(p, hitAt, 1.0f, 40, 1.0f * m);
                     });
                 }
-                OverdriveFx.play(sl, at, "fort_blades", 0.9f, 1.0f);
+                FxUtil.play(sl, at, "fort_blades", 0.9f, 1.0f);
             }
             case TRAINING -> {   // Drill Charge: your defenders dash at the target
                 LivingEntity t = wave ? nearestFoe(p, at, 6) : pointed(p, 20);
@@ -303,7 +303,7 @@ public final class FortressSpells {
                         d.drilling = false;
                     });
                 }
-                OverdriveFx.play(sl, p.position(), "fort_horn", 0.6f, 1.5f);
+                FxUtil.play(sl, p.position(), "fort_horn", 0.6f, 1.5f);
             }
             case WATCHTOWER -> {   // Arrow Slits: a fan of twelve bolts
                 Set<Integer> got = new HashSet<>();
@@ -314,7 +314,7 @@ public final class FortressSpells {
                     FxSend.trail(sl, STONE, eye.add(d2), end, 0.05f, 5);
                     for (LivingEntity t : Kit.along(sl, p, eye, end, 0.9)) if (got.add(t.getId() * 16 + i / 3)) { hit(p, t, 2.5f * m, WATCHTOWER); break; }   // a bolt is thin, but they fly true
                 }
-                OverdriveFx.play(sl, p.position(), "fort_arrow", 1.0f, 0.9f);
+                FxUtil.play(sl, p.position(), "fort_arrow", 1.0f, 0.9f);
             }
             case GATEHOUSE -> {   // Portcullis (and with the Bell Tower beside it, the toll)
                 FortressSiege.portcullis(p, m);
@@ -328,18 +328,18 @@ public final class FortressSpells {
                 FxSend.ring(sl, BRASS, t.position().add(0, t.getBbHeight() + 0.4, 0), 0.2f, 0.7f, 0.06f, 200);
                 FxSend.ring(sl, Fx.CRIMSON, t.position().add(0, 0.05, 0), 0.6f, 1.2f, 0.05f, 30);
                 AstaFx.sendKiMark(p, t, 200, true);
-                OverdriveFx.play(sl, p.position(), "fort_horn", 0.5f, 1.8f);
+                FxUtil.play(sl, p.position(), "fort_horn", 0.5f, 1.8f);
             }
             case OBSERVATORY -> {   // Foresight: every foe near you shows through walls for 20 s, and takes 10% more from you
                 int n = reveal(p, 24, 400, 64);
                 FxSend.ring(sl, ARCANE, p.position().add(0, 0.1, 0), 1, 24, 0.1f, 16);
-                OverdriveFx.play(sl, p.position(), "fort_ley", 0.8f, 0.7f);
+                FxUtil.play(sl, p.position(), "fort_ley", 0.8f, 0.7f);
                 tell(p, n == 0 ? "Nothing stirs nearby" : n + " foe" + (n == 1 ? "" : "s") + " revealed");
             }
             case LIBRARY -> {   // Annotated Page: the next three spells give back 30% of their mana
                 r.putInt("notes", 3);
                 FxSend.ring(sl, BRASS, p.position().add(0, 1.2, 0), 0.4f, 1.2f, 0.06f, 14);
-                OverdriveFx.play(sl, p.position(), "fort_page", 0.8f, 1.0f);
+                FxUtil.play(sl, p.position(), "fort_page", 0.8f, 1.0f);
                 tell(p, "Annotated: your next three spells give back 30% of their mana");
             }
             case ARCANUM -> {   // Ley Lance: a piercing beam
@@ -348,12 +348,12 @@ public final class FortressSpells {
                 FxSend.beam(sl, Fx.SILVER, eye.add(dir.scale(0.6)), end, 0.08f, 6);
                 for (LivingEntity t : Kit.along(sl, p, eye, end, 0.8)) hit(p, t, 10 * m, ARCANUM);
                 FxSend.ring(sl, ARCANE, end, 0.2f, 1.4f, 0.06f, 8);
-                OverdriveFx.play(sl, p.position(), "fort_ley", 1.0f, 1.0f);
+                FxUtil.play(sl, p.position(), "fort_ley", 1.0f, 1.0f);
             }
             case SCRYING -> {   // Mirror Ward
                 r.putLong("mirror", now + 100);
                 FxSend.ring(sl, ARCANE, p.position().add(0, 1, 0), 1.2f, 1.3f, 0.6f, 100);
-                OverdriveFx.play(sl, p.position(), "fort_ley", 0.7f, 1.6f);
+                FxUtil.play(sl, p.position(), "fort_ley", 0.7f, 1.6f);
             }
             case ALCHEMY -> {   // Volatile Flask: lobbed, then a ring
                 Vec3 land = at.distanceTo(eye) > 16 ? eye.add(dir.scale(16)) : at;
@@ -366,7 +366,7 @@ public final class FortressSpells {
                     FxSend.ring(sl, Fx.TREE, hitAt.add(0, 0.1, 0), 0.3f, 3.5f, 0.12f, 10);
                     FxSend.ring(sl, EMBER, hitAt.add(0, 0.2, 0), 0.2f, 2.6f, 0.08f, 8);
                     if (burn) burnPatch(p, hitAt, 2.2f, 60, 1.2f * m);
-                    OverdriveFx.play(sl, hitAt, "fort_flask", 1.0f, 1.0f);
+                    FxUtil.play(sl, hitAt, "fort_flask", 1.0f, 1.0f);
                 });
             }
             case RUNE_VAULT -> {   // Ward Sigil
@@ -376,7 +376,7 @@ public final class FortressSpells {
                 PATCHES.add(new Patch(p.getUUID(), c, 3.5f, now + 160, heal, 1));
                 FxSend.ring(sl, BRASS, c.add(0, 0.05, 0), 0.4f, 3.5f, 0.06f, 20);
                 FxSend.ring(sl, BRASS, c.add(0, 0.05, 0), 2.6f, 2.9f, 0.04f, 160);
-                OverdriveFx.play(sl, c, "fort_page", 0.9f, 0.7f);
+                FxUtil.play(sl, c, "fort_page", 0.9f, 0.7f);
             }
             case CHAPEL -> {   // Sanctuary Bell: heal over 4 s
                 float amt = 2f * Math.min(2f, m);
@@ -384,12 +384,12 @@ public final class FortressSpells {
                     for (LivingEntity a : allies(p, p.position(), 8)) a.heal(amt);
                     FxSend.ring(sl, BRASS, p.position().add(0, 0.1, 0), 0.5f, 8f, 0.08f, 12);
                 });
-                OverdriveFx.play(sl, p.position(), "fort_bell", 1.0f, 1.2f);
+                FxUtil.play(sl, p.position(), "fort_bell", 1.0f, 1.2f);
             }
             case RELIQUARY -> {   // Saint's Keepsake
                 r.putLong("keep", now + 600);
                 FxSend.ring(sl, BRASS, p.position().add(0, 2.2, 0), 0.2f, 0.5f, 0.05f, 600);
-                OverdriveFx.play(sl, p.position(), "fort_bell", 0.7f, 1.6f);
+                FxUtil.play(sl, p.position(), "fort_bell", 0.7f, 1.6f);
                 tell(p, "For 30 s, a killing blow leaves you at 1 health instead");
             }
             case CRYPT -> {   // Ossuary Sentries: three bone sentries guard the spot for 20 s
@@ -398,7 +398,7 @@ public final class FortressSpells {
                 int made = 0;
                 for (int i = 0; i < 3; i++) if (FortressSiege.guard(p, "iron_spell_grimoire:bone_sentry", FortressDefender.SENTRY, c, 400) != null) made++;
                 if (made == 0) tell(p, "Too many defenders are out already");
-                OverdriveFx.play(sl, c, "fort_crumble", 0.8f, 0.6f);
+                FxUtil.play(sl, c, "fort_crumble", 0.8f, 0.6f);
             }
             case BELL_TOWER -> toll(p, wave ? at : p.position(), m);
             case GARDEN -> {   // Quiet Grove
@@ -406,14 +406,14 @@ public final class FortressSpells {
                 if (c == null) c = p.position();
                 PATCHES.add(new Patch(p.getUUID(), c, 4f, now + 200, 0, 2));
                 FxSend.ring(sl, Fx.TREE, c.add(0, 0.05, 0), 0.4f, 4f, 0.08f, 20);
-                OverdriveFx.play(sl, c, "fort_page", 0.8f, 1.3f);
+                FxUtil.play(sl, c, "fort_page", 0.8f, 1.3f);
             }
             case HALL -> {   // Rally
                 for (LivingEntity a : allies(p, p.position(), 10))
                     TimedModifiers.apply(a, Attributes.ATTACK_SPEED, RALLY, "Rally", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 160);
                 if (FortressFx.pair(p, FortressFx.indexOfPair(TREASURY, HALL))) r.putLong("rallyStone", now + 160);
                 FxSend.ring(sl, Fx.CRIMSON, p.position().add(0, 0.1, 0), 0.4f, 10f, 0.08f, 14);
-                OverdriveFx.play(sl, p.position(), "fort_horn", 1.0f, 1.0f);
+                FxUtil.play(sl, p.position(), "fort_horn", 1.0f, 1.0f);
             }
             case FORGE -> {   // Molten Bolt
                 Vec3 end = Kit.aimFrom(sl, p, eye, dir, 26);
@@ -429,7 +429,7 @@ public final class FortressSpells {
                     Vec3 floor = FortressSiege.floorAt(sl, (int) Math.floor(hitAt.x), (int) Math.floor(hitAt.y), (int) Math.floor(hitAt.z));
                     burnPatch(p, floor != null ? floor : hitAt, 1.8f, 80, 1.5f * m);
                     FxSend.ring(sl, EMBER, hitAt, 0.2f, 1.4f, 0.08f, 8);
-                    OverdriveFx.play(sl, hitAt, "fort_fire", 0.9f, 1.0f);
+                    FxUtil.play(sl, hitAt, "fort_fire", 0.9f, 1.0f);
                 });
             }
             case FOUNDRY -> {   // Hammerfall
@@ -442,14 +442,14 @@ public final class FortressSpells {
                     for (LivingEntity t : Kit.near(sl, p, c.add(0, 0.8, 0), 3)) { hit(p, t, 16 * m, FOUNDRY); Kit.push(t, t.position().subtract(c), 0.5, 0.45); }
                     FxSend.ring(sl, STONE, c.add(0, 0.1, 0), 0.4f, 3.6f, 0.2f, 10);
                     FxSend.shake(sl, c, 0.6f, 8, 14);
-                    OverdriveFx.play(sl, c, "fort_hammer", 1.2f, 0.9f);
+                    FxUtil.play(sl, c, "fort_hammer", 1.2f, 0.9f);
                 });
             }
             case WORKSHOP -> {   // Ballista
                 Vec3 spot = p.position().add(flat.scale(2));
                 FortressTower t = FortressSiege.spawnTower(p, sl, (int) Math.floor(spot.x), (int) Math.floor(p.getY()), (int) Math.floor(spot.z), FortressTower.BALLISTA, 400, 20, false);
                 if (t == null) { tell(p, "No room for the ballista there"); return; }
-                OverdriveFx.play(sl, spot, "fort_build", 1.0f, 1.1f);
+                FxUtil.play(sl, spot, "fort_build", 1.0f, 1.1f);
             }
             case SIEGE_YARD -> trebuchet(p, at, m);
             case CISTERN -> {   // Floodgate: a wall of water sweeps forward
@@ -465,12 +465,12 @@ public final class FortressSpells {
                         if (heals) for (LivingEntity a : allies(p, c, 2.6)) if (got.add(-a.getId() - 1)) a.heal(3f);
                     });
                 }
-                OverdriveFx.play(sl, p.position(), "fort_flood", 1.0f, 1.0f);
+                FxUtil.play(sl, p.position(), "fort_flood", 1.0f, 1.0f);
             }
             case TREASURY -> {   // Tribute
                 r.putLong("tribute", now + 600);
                 FxSend.ring(sl, BRASS, p.position().add(0, 0.1, 0), 0.4f, 2.4f, 0.1f, 14);
-                OverdriveFx.play(sl, p.position(), "fort_coins", 1.0f, 1.0f);
+                FxUtil.play(sl, p.position(), "fort_coins", 1.0f, 1.0f);
                 tell(p, "Tribute: three times the Stone for 30 s");
             }
             case HERALD -> {   // Lure Horn: foes within 14 blocks are dragged toward the spot
@@ -488,13 +488,13 @@ public final class FortressSpells {
                 }
                 FxSend.ring(sl, BRASS, c.add(0, 0.05, 0), 0.4f, 2.5f, 0.1f, 16);
                 FxSend.ring(sl, BRASS, p.position().add(0, 0.1, 0), 1f, 14f, 0.08f, 12);
-                OverdriveFx.play(sl, p.position(), "fort_horn", 1.1f, 0.65f);
+                FxUtil.play(sl, p.position(), "fort_horn", 1.1f, 0.65f);
                 if (!wave) tell(p, n == 0 ? "Nothing near answers the horn" : n + " foe" + (n == 1 ? "" : "s") + " dragged in");
             }
             case MAP_ROOM -> {   // Survey: every foe within 32 blocks shows through walls for 15 s (and takes 10% more from you)
                 int n = reveal(p, 32, 300, 64);
                 FxSend.ring(sl, ARCANE, p.position().add(0, 0.1, 0), 1, 32, 0.08f, 18);
-                OverdriveFx.play(sl, p.position(), "fort_page", 1.0f, 0.6f);
+                FxUtil.play(sl, p.position(), "fort_page", 1.0f, 0.6f);
                 if (!wave) tell(p, n == 0 ? "The map shows nothing near" : n + " foe" + (n == 1 ? "" : "s") + " on the map");
             }
             case THRONE -> {   // Royal Decree: defenders heal fully and hit 30% harder for 10 s
@@ -506,7 +506,7 @@ public final class FortressSpells {
                     FxSend.ring(sl, BRASS, d.position().add(0, d.getBbHeight() + 0.3, 0), 0.15f, 0.5f, 0.05f, 200);
                 }
                 FxSend.ring(sl, BRASS, p.position().add(0, 0.1, 0), 0.5f, 6f, 0.12f, 14);
-                OverdriveFx.play(sl, p.position(), "fort_prestige", 0.8f, 1.2f);
+                FxUtil.play(sl, p.position(), "fort_prestige", 0.8f, 1.2f);
             }
             default -> {}
         }
@@ -540,7 +540,7 @@ public final class FortressSpells {
         FxSend.ring(sl, BRASS, c.add(0, 0.6, 0), 0.5f, 6f, 0.3f, 10);
         FxSend.ring(sl, Fx.SILVER, c.add(0, 1.2, 0), 0.3f, 5f, 0.15f, 8);
         FxSend.shake(sl, c, 0.4f, 8, 12);
-        OverdriveFx.play(sl, c, "fort_bell", 1.3f, 0.7f);
+        FxUtil.play(sl, c, "fort_bell", 1.3f, 0.7f);
     }
 
     /** Trebuchet Shot: a boulder on a high arc, crashing down on an area. */
@@ -554,9 +554,9 @@ public final class FortressSpells {
             for (LivingEntity t : Kit.near(sl, p, c.add(0, 0.8, 0), 3.5)) { hit(p, t, 14 * m, SIEGE_YARD); Kit.push(t, t.position().subtract(c), 0.6, 0.4); }
             FxSend.ring(sl, STONE, c.add(0, 0.1, 0), 0.4f, 4f, 0.25f, 10);
             FxSend.shake(sl, c, 0.7f, 8, 16);
-            OverdriveFx.play(sl, c, "fort_hammer", 1.4f, 0.7f);
+            FxUtil.play(sl, c, "fort_hammer", 1.4f, 0.7f);
         });
-        OverdriveFx.play(sl, p.position(), "fort_launch", 1.0f, 1.0f);
+        FxUtil.play(sl, p.position(), "fort_launch", 1.0f, 1.0f);
     }
 
     static Vec3 rotY(Vec3 v, double a) {

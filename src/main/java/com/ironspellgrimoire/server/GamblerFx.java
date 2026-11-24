@@ -79,11 +79,6 @@ public final class GamblerFx {
     static void machine(ServerLevel sl, Vec3 c, int[] sym, int stop, int life) { FxPacket p = pk(9, c, life); p.a0 = sym[0] + sym[1] * 8 + sym[2] * 64; p.sweep = stop; send(sl, p); }
 
     // ================================================================== luck
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     private static final Map<UUID, Integer> LUCK = new HashMap<>();
     private static final Map<UUID, Long> DOUBLE = new HashMap<>();
     private static final Map<UUID, Long> CURSE = new HashMap<>();

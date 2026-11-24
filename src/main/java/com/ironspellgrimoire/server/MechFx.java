@@ -138,11 +138,6 @@ public final class MechFx {
 
     static boolean piloting(ServerPlayer p) { return Moves.inMode(p, MODE); }
 
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     /** A Mech hit. */
     static void hit(ServerPlayer p, LivingEntity t, float amt, String id) {
         if (piloting(p)) amt *= 1.2f;

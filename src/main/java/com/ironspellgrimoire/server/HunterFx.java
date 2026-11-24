@@ -96,11 +96,6 @@ public final class HunterFx {
     static void trick(ServerLevel sl, ServerPlayer pl, boolean toLong) { FxPacket p = pk(10, pl.position(), 12); p.v = new Vec3(pl.getId(), 1, 0); p.a0 = toLong ? 1 : 0; send(sl, p); }
 
     // ================================================================== state
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     public static boolean isLong(ServerPlayer p) { return p.getPersistentData().getBoolean(FORM_KEY); }
     static void setLong(ServerPlayer p, boolean v) { p.getPersistentData().putBoolean(FORM_KEY, v); }
 

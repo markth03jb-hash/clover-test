@@ -148,11 +148,6 @@ public final class ShadowFx {
         sound(sl, r.position(), SoundEvents.WARDEN_ROAR, 0.3f, 1.9f);
     }
 
-    public static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     public static boolean equipped(ServerPlayer p) {
         var b = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
         return b != null && b.is(AddonItemRegistry.SHADOW_GRIMOIRE.get());

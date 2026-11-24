@@ -94,7 +94,7 @@ public final class HunterAscension {
         if ((t.getInt(TAUGHT) & (1 << bit)) != 0) return;
         t.putInt(TAUGHT, t.getInt(TAUGHT) | (1 << bit));
         p.sendSystemMessage(Component.literal("[ SYSTEM ] ").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD).append(Component.literal(text).withStyle(ChatFormatting.AQUA)));
-        ShadowFx.play(p.serverLevel(), p.position(), "shadow_whisper", 0.4f, 1.6f);
+        FxUtil.play(p.serverLevel(), p.position(), "shadow_whisper", 0.4f, 1.6f);
     }
 
     /** What the System teaches as the hunter grows (checked every second). */
@@ -172,7 +172,7 @@ public final class HunterAscension {
             teach(p, 1, "Stat points earned. Spend them in Status: Strength (melee), Agility (speed), Vitality (health), Focus (mana), Perception (spell power).");
             if (lvl >= MAX_LEVEL) award(p, 2);
             p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6f, 0.7f);
-            ShadowFx.play(p.serverLevel(), p.position(), "shadow_rise", 0.7f, 1.5f);
+            FxUtil.play(p.serverLevel(), p.position(), "shadow_rise", 0.7f, 1.5f);
             surge(p, lvl);
         }
     }

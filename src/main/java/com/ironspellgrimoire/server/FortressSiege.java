@@ -136,7 +136,7 @@ public final class FortressSiege {
             if (spawnWall(p, sl, x, (int) Math.floor(p.getY()), z, FortressWall.WALL, wallHp(p, false), 240, false, alongX ? 0 : 90) != null) n++;
         }
         if (n == 0) FortressFx.tell(p, "No ground there for a wall");
-        OverdriveFx.play(sl, c, "fort_wall", 0.9f, 1.1f);
+        FxUtil.play(sl, c, "fort_wall", 0.9f, 1.1f);
         FxSend.shake(sl, c, 0.25f, 6, 10);
     }
 
@@ -156,7 +156,7 @@ public final class FortressSiege {
         }
         FxSend.box(sl, Fx.STEEL, c.add(0, 3.2, 0), alongX ? new Vec3(1, 0, 0) : new Vec3(0, 0, 1), new Vec3(0, 1, 0), 1.6f, 0.1f, 1.4f, 10, 3, com.ironspellgrimoire.network.FxPacket.POP);
         FxSend.shake(sl, c, 0.4f, 6, 12);
-        OverdriveFx.play(sl, c, "fort_gate", 1.0f, 1.0f);
+        FxUtil.play(sl, c, "fort_gate", 1.0f, 1.0f);
     }
 
     static float wallHp(Player p, boolean grand) {
@@ -263,8 +263,8 @@ public final class FortressSiege {
         // the garrison steps out to hold the middle (a line: just behind the wall)
         callGarrison(p, post, life, cap(p));
         FortressFx.hint(p, FortressFx.HINT_SIEGE, "Siege! Walls and towers hold for " + life / 20 + " s - fight from the middle, leave by the gate");
-        OverdriveFx.play(sl, p.position(), "fort_horn", 1.2f, citadel ? 0.8f : 1f);
-        OverdriveFx.play(sl, p.position(), "fort_wall", 1.0f, 0.8f);
+        FxUtil.play(sl, p.position(), "fort_horn", 1.2f, citadel ? 0.8f : 1f);
+        FxUtil.play(sl, p.position(), "fort_wall", 1.0f, 0.8f);
         FxSend.shake(sl, p.position(), citadel ? 0.8f : 0.45f, 14, R + 8);
         FxSend.ring(sl, STONE, o.centre.add(0, 0.1, 0), 1, (shape == FortressFx.LINE ? 6 : R) + 1.5f, 0.2f, 14);
         if (citadel) {
@@ -308,7 +308,7 @@ public final class FortressSiege {
             if (w.getId() % 3 == 0) FxSend.box(sl, STONE, w.position().add(0, 1.2, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 0.5f, 0.5f, 0.5f, 10, 0, com.ironspellgrimoire.network.FxPacket.POP, 0, new Vec3(0, -0.12, 0), 8);
         }
         FxSend.shake(sl, p.position(), 0.9f, 14, 20);
-        OverdriveFx.play(sl, p.position(), "fort_collapse", 1.3f, 0.9f);
+        FxUtil.play(sl, p.position(), "fort_collapse", 1.3f, 0.9f);
         endAll(p, false);
     }
 
@@ -329,7 +329,7 @@ public final class FortressSiege {
         if (p != null) { Out o = OUT.get(p.getUUID()); if (o != null) o.walls.remove(w); }
         if (broken && w.level() instanceof ServerLevel sl) {
             FxSend.box(sl, STONE, w.position().add(0, 0.6, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 0.35f, 0.35f, 0.35f, 8, 0, com.ironspellgrimoire.network.FxPacket.POP, 25, new Vec3(0, -0.08, 0), 8);
-            OverdriveFx.play(sl, w.position(), "fort_crumble", 0.7f, 0.9f + ThreadLocalRandom.current().nextFloat() * 0.2f);
+            FxUtil.play(sl, w.position(), "fort_crumble", 0.7f, 0.9f + ThreadLocalRandom.current().nextFloat() * 0.2f);
             if (byFoe && p instanceof ServerPlayer sp && active(sp)) breach(sp, w);
         }
     }
@@ -339,7 +339,7 @@ public final class FortressSiege {
         if (p != null) { Out o = OUT.get(p.getUUID()); if (o != null) o.towers.remove(t); }
         if (broken && t.level() instanceof ServerLevel sl) {
             FxSend.ring(sl, STONE, t.position().add(0, 0.2, 0), 0.5f, 2.2f, 0.2f, 10);
-            OverdriveFx.play(sl, t.position(), "fort_crumble", 1.0f, 0.7f);
+            FxUtil.play(sl, t.position(), "fort_crumble", 1.0f, 0.7f);
         }
     }
 
@@ -383,14 +383,14 @@ public final class FortressSiege {
                 FxSend.trail(sl, STONE, top, to, 0.06f, 4);
                 FxSend.beam(sl, BRASS, top, to, 0.03f, 3);
                 FortressSpells.towerHit(p, tg, 4 * m);
-                OverdriveFx.play(sl, top, "fort_arrow", 0.5f, 1.2f);
+                FxUtil.play(sl, top, "fort_arrow", 0.5f, 1.2f);
             }
             case FortressTower.BEAM -> {
                 t.reload = 20;
                 FxSend.beam(sl, ARCANE, top, to, 0.14f, 6);
                 FxSend.ring(sl, ARCANE, to, 0.2f, 0.9f, 0.05f, 6);
                 FortressSpells.towerHit(p, tg, 5 * m);
-                OverdriveFx.play(sl, top, "fort_ley", 0.5f, 1.3f);
+                FxUtil.play(sl, top, "fort_ley", 0.5f, 1.3f);
             }
             case FortressTower.FIRE -> {
                 t.reload = 20;
@@ -400,7 +400,7 @@ public final class FortressSiege {
                     FortressSpells.towerHit(p, tg, 4 * m);
                     FortressSpells.burnPatch(p, tg.position(), 1.4f, 60, 1.0f * m);
                 });
-                OverdriveFx.play(sl, top, "fort_fire", 0.5f, 1.1f);
+                FxUtil.play(sl, top, "fort_fire", 0.5f, 1.1f);
             }
             default -> {   // bolts: the siege platform and the Ballista
                 t.reload = t.kind() == FortressTower.BALLISTA ? 20 : 25;
@@ -408,7 +408,7 @@ public final class FortressSiege {
                 FxSend.box(sl, Fx.STEEL, to, to.subtract(top).normalize(), new Vec3(0, 1, 0), 0.5f, 0.05f, 0.05f, 6, 0, com.ironspellgrimoire.network.FxPacket.POP);
                 FortressSpells.towerHit(p, tg, 7 * m);
                 Kit.push(tg, to.subtract(top), 0.4, 0.1);
-                OverdriveFx.play(sl, top, "fort_bolt", 0.6f, 1.0f);
+                FxUtil.play(sl, top, "fort_bolt", 0.6f, 1.0f);
                 if (t.kind() == FortressTower.BALLISTA && t.tickCount % 60 < 20
                         && FortressFx.pair(p, FortressFx.indexOfPair(FortressFx.WORKSHOP, FortressFx.SIEGE_YARD)))   // Workshop + Siege Yard
                     FortressSpells.trebuchet(p, to, 0.6f);
@@ -648,7 +648,7 @@ public final class FortressSiege {
         }
         setOrder(p, o, ord, target);
         ServerLevel sl = p.serverLevel();
-        OverdriveFx.play(sl, p.position(), ord == HOLD ? "fort_hold" : ord == CHARGE ? "fort_charge" : ord == FALL_BACK ? "fort_fallback" : "fort_page", 1.0f, 1.0f);
+        FxUtil.play(sl, p.position(), ord == HOLD ? "fort_hold" : ord == CHARGE ? "fort_charge" : ord == FALL_BACK ? "fort_fallback" : "fort_page", 1.0f, 1.0f);
         for (FortressDefender d : ds) FxSend.ring(sl, ord == CHARGE ? Fx.CRIMSON : BRASS, d.position().add(0, 0.1, 0), 0.2f, 0.9f, 0.08f, 8);
         if (target != null) FxSend.ring(sl, Fx.CRIMSON, target.position().add(0, 0.05, 0), 0.6f, 1.3f, 0.06f, 20);
         FortressFx.tell(p, ord == HOLD ? (o.gate != null ? "Hold the Gate: your defenders stand at the gate" : "Hold: your defenders stand their ground") + " and won't chase"
@@ -749,9 +749,9 @@ public final class FortressSiege {
         Vec3 c = best.position();
         FxSend.ring(sl, BRASS, c.add(0, 0.1, 0), 0.4f, 2.2f, 0.15f, 12);
         FxSend.beam(sl, BRASS, eye.add(dir.scale(0.8)).add(0, -0.4, 0), c.add(0, best.getBbHeight() * 0.8, 0), 0.05f, 6);
-        OverdriveFx.play(sl, c, "fort_hum", 1.0f, 1.0f);
+        FxUtil.play(sl, c, "fort_hum", 1.0f, 1.0f);
         final FortressTower tw = best;
-        AstaFx.later(50, () -> { if (tw.isAlive() && tw.overcharged()) OverdriveFx.play(sl, tw.position(), "fort_hum", 0.9f, 1.1f); });
+        AstaFx.later(50, () -> { if (tw.isAlive() && tw.overcharged()) FxUtil.play(sl, tw.position(), "fort_hum", 0.9f, 1.1f); });
         FortressFx.tell(p, "Overcharged: that tower fires twice as fast for 5 s");
     }
 
@@ -773,7 +773,7 @@ public final class FortressSiege {
         double dx = w.getX() - o.centre.x, dz = w.getZ() - o.centre.z;
         o.breachSide = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? "east" : "west") : (dz > 0 ? "south" : "north");
         if (!fresh) return;
-        OverdriveFx.play(p.serverLevel(), p.position(), "fort_alarm", 1.0f, 1.0f);
+        FxUtil.play(p.serverLevel(), p.position(), "fort_alarm", 1.0f, 1.0f);
         FxSend.ring(p.serverLevel(), Fx.CRIMSON, w.position().add(0, 0.1, 0), 0.4f, 3f, 0.1f, 20);
         FortressFx.hint(p, FortressFx.HINT_BREACH, "Breach! Your towers shoot through the gap first; Hold the Gate sends defenders to fill it");
         FortressFx.sync(p, false);

@@ -123,11 +123,6 @@ public final class BloodFx {
         if (ThreadLocalRandom.current().nextFloat() < 0.5f) play(p.serverLevel(), mid(t), "blood_splash", 0.8f, 0.9f + ThreadLocalRandom.current().nextFloat() * 0.3f);
     }
 
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     // ================================================================== bleed stacks
     static final int BLEED_MAX = 5, BLEED_T = 160;
 

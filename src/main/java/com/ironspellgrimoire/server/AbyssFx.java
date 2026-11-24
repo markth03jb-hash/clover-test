@@ -123,11 +123,6 @@ public final class AbyssFx {
 
     static boolean glowing(ServerPlayer p) { return Moves.inMode(p, MODE); }
 
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     /** How much harder the deep makes everything: 1.0 at the surface, 1.5 at the bottom. */
     static float deep(ServerPlayer p) { return 1f + depth(p) / 200f; }
 

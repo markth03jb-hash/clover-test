@@ -138,11 +138,6 @@ public final class WeatherFx {
 
     static boolean eyeOfStorm(ServerPlayer p) { return Moves.inMode(p, MODE); }
 
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     static boolean wet(LivingEntity t) { Long w = WET.get(t.getUUID()); return w != null && w > t.level().getGameTime(); }
 
     static void soak(LivingEntity t, int ticks) {

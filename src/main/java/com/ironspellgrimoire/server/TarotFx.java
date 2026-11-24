@@ -85,11 +85,6 @@ public final class TarotFx {
     static void judgementSky(ServerLevel sl, Vec3 c, float r, int life) { FxPacket p = pk(13, c, life); p.r = r; send(sl, p); }
 
     // ================================================================== the deck
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     static boolean world(ServerPlayer p) { return Moves.inMode(p, MODE); }
 
     /** The cards still in your deck, as a bit mask (bit i set = arcana i still to draw). */

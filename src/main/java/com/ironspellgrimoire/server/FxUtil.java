@@ -17,7 +17,7 @@ import java.util.List;
  * Small helpers every grimoire's effect code shares (they used to be copied into each Fx class). A class that needs
  * a different version of one keeps its own, which takes precedence over these.
  */
-final class FxUtil {
+public final class FxUtil {
     private FxUtil() {}
 
     /**
@@ -34,6 +34,12 @@ final class FxUtil {
             } else sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
         };
         if (kind == null || "charge".equals(kind) || !CastSync.deferSound(at, play)) play.run();
+    }
+
+    /** A sound of this mod's by kind ("slash", "elite_slam"...: AddonSounds), played for everyone near. */
+    public static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
+        SoundEvent s = com.ironspellgrimoire.registry.AddonSounds.get(kind);
+        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
     }
 
     static boolean alive(ServerPlayer p) { return p.isAlive() && !p.isRemoved(); }

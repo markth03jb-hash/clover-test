@@ -60,7 +60,7 @@ public final class TwinsTrial {
             sl.addFreshEntity(w);
             Fx.pillar(sl, k == 0 ? PAL_SOL : PAL_NYX, at.add(0, -1.5, 0), 4f, 1.4f, 16);
         }
-        OverdriveFx.play(sl, p.position(), "eclipse_toll", 1.2f, 0.8f);
+        FxUtil.play(sl, p.position(), "eclipse_toll", 1.2f, 0.8f);
         say(p, NYX, "They are what we were before we were us. Beat them both.");
         p.closeContainer();
         sync(p, false);
@@ -81,7 +81,7 @@ public final class TwinsTrial {
         award(p, 3);
         say(p, SOL, "The eclipse is ours.");
         p.sendSystemMessage(Component.literal("Eclipse Union is open: the Eclipse Union page.").withStyle(ChatFormatting.GOLD));
-        OverdriveFx.play(sl, p.position(), "eclipse_toll", 1.4f, 1.1f);
+        FxUtil.play(sl, p.position(), "eclipse_toll", 1.4f, 1.1f);
         sync(p, false);
     }
 
@@ -104,22 +104,22 @@ public final class TwinsTrial {
                 FxSend.ring(sl, PAL_SOL, c.add(0, 0.1, 0), 0.5f, 7f, 0.8f, 14);
                 Fx.pillar(sl, PAL_SOL, c, 4f, 1.6f, 12);
                 if (p.distanceTo(w) < 7.5) p.hurt(src, 9f);
-                OverdriveFx.play(sl, c, "sun_flare", 1.2f, 0.7f);
+                FxUtil.play(sl, c, "sun_flare", 1.2f, 0.7f);
             } else if (p.distanceTo(w) < 4.5) {   // a flare all round
                 FxSend.ring(sl, PAL_SOL, w.position().add(0, 0.5, 0), 0.4f, 4.5f, 0.4f, 12);
                 p.hurt(src, 7f);
-                OverdriveFx.play(sl, w.position(), "sun_flare", 1f, 1f);
+                FxUtil.play(sl, w.position(), "sun_flare", 1f, 1f);
             } else {   // a bolt of fire
                 FxSend.beam(sl, PAL_SOL2, from, to, 0.2f, 6);
                 if (w.hasLineOfSight(p)) p.hurt(src, 5f);
-                OverdriveFx.play(sl, from, "sun_flare", 0.6f, 1.6f);
+                FxUtil.play(sl, from, "sun_flare", 0.6f, 1.6f);
             }
         } else {
             if (turn % 3 == 1) {   // a blink to the far side
                 Vec3 behind = p.position().add(p.position().subtract(w.position()).multiply(1, 0, 1).normalize().scale(5)).add(0, 1.5, 0);
                 Fx.flash(sl, w.position().add(0, 1.2, 0), 0.8f);
                 w.teleportTo(behind.x, behind.y, behind.z);
-                OverdriveFx.play(sl, behind, "moon_shimmer", 0.8f, 1.3f);
+                FxUtil.play(sl, behind, "moon_shimmer", 0.8f, 1.3f);
             } else if (low && turn % 3 == 2) {   // a few stars on the player
                 Vec3 at = p.position();
                 for (int k = 0; k < 3; k++) {
@@ -133,7 +133,7 @@ public final class TwinsTrial {
             } else {   // a frost needle
                 FxSend.beam(sl, PAL_NYX2, from, to, 0.12f, 5);
                 if (w.hasLineOfSight(p)) { p.hurt(src, 5f); slow(p, -0.25, 40); }
-                OverdriveFx.play(sl, from, "moon_shimmer", 0.6f, 1.8f);
+                FxUtil.play(sl, from, "moon_shimmer", 0.6f, 1.8f);
             }
         }
     }

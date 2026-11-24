@@ -142,11 +142,6 @@ public final class GravityFx {
     static void kill(ServerLevel sl, int id, Vec3 at) { FxSend.kill(sl, id, at); }
 
     // ================================================================== helpers
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     static boolean domain(ServerPlayer p) { return Moves.inMode(p, MODE); }
 
     static float pw(ServerPlayer p, float power) { return domain(p) ? power * 1.3f : power; }
