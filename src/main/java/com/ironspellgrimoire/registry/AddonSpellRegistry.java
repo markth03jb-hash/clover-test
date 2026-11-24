@@ -880,6 +880,31 @@ public class AddonSpellRegistry {
     /** The eight Architect of Ruin pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> ARCHITECT_SPELLS = List.of(ARCH_RAMPART, ARCH_SIEGE, ARCH_ROOM1, ARCH_ROOM2, ARCH_ROOM3, ARCH_ROOM4, ARCH_FORTRESS, ARCH_CITADEL);
 
+    // ---- the Meridian Grimoire (server/MeridianFx): day pages while the sun is up, night pages while it's down
+    private static com.ironspellgrimoire.spells.BookSpell meridian(String id, boolean day, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, day ? io.redspace.ironsspellbooks.api.registry.SchoolRegistry.FIRE_RESOURCE : io.redspace.ironsspellbooks.api.registry.SchoolRegistry.HOLY_RESOURCE,
+                com.ironspellgrimoire.item.MeridianGrimoireItem.class, "ui.iron_spell_grimoire.meridian_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> MER_STAR = registerSpell(meridian("hearth_star", true, 6, 30, 8, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.MeridianFx::hearthStar)
+            .gate(com.ironspellgrimoire.server.MeridianFx::canDay, "The sun is down - the day's pages wait for dawn"));
+    public static final RegistryObject<AbstractSpell> MER_FLARE = registerSpell(meridian("haughty_flare", true, 18, 60, 26, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.MeridianFx::haughtyFlare)
+            .gate(com.ironspellgrimoire.server.MeridianFx::canDay, "The sun is down - the day's pages wait for dawn"));
+    public static final RegistryObject<AbstractSpell> MER_REAVER = registerSpell(meridian("call_dayreaver", true, 2, 10, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.MeridianFx::callDayreaver)
+            .gate(com.ironspellgrimoire.server.MeridianFx::canDay, "The sun is down - the day's pages wait for dawn"));
+    public static final RegistryObject<AbstractSpell> MER_WAVE = registerSpell(meridian("noonwave", true, 10, 45, 14, "iron_spell_grimoire:lion_ignis", com.ironspellgrimoire.server.MeridianFx::noonwave)
+            .gate(com.ironspellgrimoire.server.MeridianFx::canDay, "The sun is down - the day's pages wait for dawn"));
+    public static final RegistryObject<AbstractSpell> MER_LAMP = registerSpell(meridian("lamplight", false, 2, 10, 7, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.MeridianFx::lamplight)
+            .gate(com.ironspellgrimoire.server.MeridianFx::canNight, "The sun is too high - the night's pages wait for dusk"));
+    public static final RegistryObject<AbstractSpell> MER_WARM = registerSpell(meridian("warm_hands", false, 12, 35, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.MeridianFx::warmHands)
+            .gate(com.ironspellgrimoire.server.MeridianFx::canNight, "The sun is too high - the night's pages wait for dusk"));
+    public static final RegistryObject<AbstractSpell> MER_COAL = registerSpell(meridian("last_coal", false, 25, 40, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.MeridianFx::lastCoal)
+            .gate(com.ironspellgrimoire.server.MeridianFx::canNight, "The sun is too high - the night's pages wait for dusk"));
+    public static final RegistryObject<AbstractSpell> MER_ZENITH = registerSpell(meridian("zenith_unbound", true, 30, 120, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.MeridianFx::zenithUnbound)
+            .gate(com.ironspellgrimoire.server.MeridianFx::canZenith, "Only near noon under open sky - or, once a day, by borrowing it"));
+    /** The eight Meridian pages, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> MERIDIAN_SPELLS = List.of(MER_STAR, MER_REAVER, MER_WAVE, MER_FLARE, MER_LAMP, MER_WARM, MER_COAL, MER_ZENITH);
+
     /** The seven Masked Twins Grimoire pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> TWINS_SPELLS = List.of(TWINS_SWAP, TWINS_ARTS, TWINS_STRIKE, TWINS_ECLIPSE, TWINS_MASKS, TWINS_NOON, TWINS_EVENTIDE);
 

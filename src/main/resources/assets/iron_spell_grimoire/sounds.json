@@ -1848,5 +1848,125 @@
         "stream": true
       }
     ]
+  },
+  "sfx.meridian_star": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_star_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_star_2"
+      }
+    ]
+  },
+  "sfx.meridian_flare": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_flare_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_flare_2"
+      }
+    ]
+  },
+  "sfx.meridian_wave": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_wave_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_wave_2"
+      }
+    ]
+  },
+  "sfx.meridian_reaver": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_reaver_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_reaver_2"
+      }
+    ]
+  },
+  "sfx.meridian_bite": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_bite_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_bite_2"
+      }
+    ]
+  },
+  "sfx.meridian_zenith": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_zenith_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_zenith_2"
+      }
+    ]
+  },
+  "sfx.meridian_borrow": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_borrow_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_borrow_2"
+      }
+    ]
+  },
+  "sfx.meridian_lamp": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_lamp_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_lamp_2"
+      }
+    ]
+  },
+  "sfx.meridian_warm": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_warm_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_warm_2"
+      }
+    ]
+  },
+  "sfx.meridian_coal": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_coal_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_coal_2"
+      }
+    ]
+  },
+  "sfx.meridian_dawn": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_dawn_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_dawn_2"
+      }
+    ]
+  },
+  "sfx.meridian_pride": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_pride_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/meridian_pride_2"
+      }
+    ]
   }
 }

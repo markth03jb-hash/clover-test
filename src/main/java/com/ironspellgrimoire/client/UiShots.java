@@ -759,6 +759,15 @@ public final class UiShots {
         steps.add(new Step("dante_front", () -> { TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.dante(p, false, false); }); }, 30, true));
         steps.add(new Step("dante_back", () -> onServer(p -> UiShotsServer.dante(p, true, false)), 30, true));
         steps.add(new Step("dante_flare", () -> onServer(p -> UiShotsServer.dante(p, true, true)), 26, true));
+        // the Meridian Grimoire: Dayreaver in hand at noon (front and side), the Hearth Star and a flare, Zenith, the night, the sundial
+        steps.add(new Step("mer_noon", () -> { mc.setScreen(null); mc.options.hideGui = false; TrackerMode.set(2); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); mc.player.setXRot(8); onServer(p -> { p.setXRot(8); UiShotsServer.element(p, "M:noon"); }); }, 30, true));
+        steps.add(new Step("mer_side", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK), 8, true));
+        steps.add(new Step("mer_star", () -> onServer(p -> UiShotsServer.element(p, "M:star")), 16, true));
+        steps.add(new Step("mer_flare", () -> onServer(p -> UiShotsServer.element(p, "M:flare")), 21, true));
+        steps.add(new Step("mer_zenith", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); onServer(p -> UiShotsServer.element(p, "M:zenith")); }, 40, true));
+        steps.add(new Step("mer_night", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "M:night")); }, 12, true));
+        steps.add(new Step("mer_hud", () -> MeridianClient.sample(mc.player.getId(), 1.12f, 1f, 7, 0, false), 4, true));
+        steps.add(new Step("mer_clear", () -> onServer(p -> UiShotsServer.element(p, "M:clear")), 4, true));
         // the rivals: a line-up front and back, mid-fight poses, Mira's offer, and their Codex page
         steps.add(new Step("rv_front", () -> { mc.setScreen(null); TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(6); onServer(p -> { p.setXRot(6); UiShotsServer.rivals(p, "front"); }); }, 30, true));
         steps.add(new Step("rv_back", () -> onServer(p -> UiShotsServer.rivals(p, "back")), 30, true));
@@ -802,6 +811,7 @@ public final class UiShots {
         if (step.startsWith("hud_")) return new Class<?>[]{BountyHud.class, QuestHud.class, WorldBossHud.class, RiftMap.class, BroomHud.class, ModeHudOverlay.class, RaidBanner.class, TrackerMode.class};
         if (step.startsWith("ar_")) return new Class<?>[]{FortressScreen.class, FortressWheel.class, FortressHud.class, FortressClient.class, FortressRenderers.class, com.ironspellgrimoire.server.FortressFx.class, com.ironspellgrimoire.server.FortressSiege.class, com.ironspellgrimoire.server.FortressSpells.class};
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
+        if (step.startsWith("mer_")) return new Class<?>[]{MeridianClient.class, com.ironspellgrimoire.server.MeridianFx.class, com.ironspellgrimoire.server.UiShotsServer.class};
         if (step.startsWith("rv_")) return new Class<?>[]{RivalRenderer.class, RivalClient.class, CodexScreen.class, com.ironspellgrimoire.server.Rivals.class, com.ironspellgrimoire.server.UiShotsServer.class};
         Class<?>[] shared = {GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class, FxBase.class, GravityFxClient.class, FxBooks.class, FxBookAuras.class, GrimoireFloatRenderer.class};
         String[][] books = {{"grav_", "Gravity"}, {"snd_", "Sound"}, {"ink_", "Ink"}, {"err_", "Error"}, {"tre_", "Treasure"}, {"chn_", "Chain"}, {"hun_", "Hunter"},

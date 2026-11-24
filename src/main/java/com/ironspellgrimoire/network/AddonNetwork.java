@@ -6,7 +6,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class AddonNetwork {
-    private static final String PROTOCOL = "9";   // 9: rivals   // 8: elite mobs   // 7: batched effects (FxBatchPacket)   // 2: compact FxPacket encoding (server and client must match)
+    private static final String PROTOCOL = "10";   // 10: the Meridian Grimoire   // 9: rivals   // 8: elite mobs   // 7: batched effects (FxBatchPacket)   // 2: compact FxPacket encoding (server and client must match)
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(IronSpellGrimoire.MODID, "main"),
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
@@ -79,6 +79,7 @@ public class AddonNetwork {
         CHANNEL.registerMessage(34, RivalPackets.Sync.class, RivalPackets.Sync::encode, RivalPackets.Sync::decode, RivalPackets.Sync::handle);
         CHANNEL.registerMessage(35, RivalPackets.Offer.class, RivalPackets.Offer::encode, RivalPackets.Offer::decode, RivalPackets.Offer::handle);
         CHANNEL.registerMessage(36, RivalPackets.Answer.class, RivalPackets.Answer::encode, RivalPackets.Answer::decode, RivalPackets.Answer::handle);
+        CHANNEL.registerMessage(37, MeridianPackets.Sync.class, MeridianPackets.Sync::encode, MeridianPackets.Sync::decode, MeridianPackets.Sync::handle);
         CHANNEL.registerMessage(28, FxBatchPacket.class, FxBatchPacket::encode, FxBatchPacket::decode, FxBatchPacket::handle);
     }
 }

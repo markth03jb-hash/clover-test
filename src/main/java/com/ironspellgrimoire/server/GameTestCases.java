@@ -355,6 +355,16 @@ final class GameTestCases {
         queue.add(new BossTest("Memory Guardian", AddonEntities.MEMORY_GUARDIAN));
         queue.add(new BossTest("Dante", AddonEntities.DANTE));
         queue.add(new RivalTest());
+        queue.add(new BookMovesTest("meridian", com.ironspellgrimoire.registry.AddonItemRegistry.MERIDIAN_GRIMOIRE::get, MeridianFx.class,
+                "hearth star", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { pl.serverLevel().setDayTime(6000); MeridianFx.hearthStar(pl, pw); }, "",
+                "haughty flare", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { pl.serverLevel().setDayTime(6000); MeridianFx.hearthStar(pl, pw); MeridianFx.haughtyFlare(pl, pw); }, "",
+                "noonwave", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { pl.serverLevel().setDayTime(6000); MeridianFx.noonwave(pl, pw); }, "c",
+                "call dayreaver", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { pl.serverLevel().setDayTime(6000); MeridianFx.callDayreaver(pl, pw); }, "q",
+                "lamplight", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { pl.serverLevel().setDayTime(18000); MeridianFx.lamplight(pl, pw); }, "",
+                "warm hands", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { pl.serverLevel().setDayTime(18000); MeridianFx.warmHands(pl, pw); }, "q",
+                "last coal", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { pl.serverLevel().setDayTime(18000); MeridianFx.lastCoal(pl, pw); }, "q",
+                "zenith unbound", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { pl.serverLevel().setDayTime(6000); MeridianFx.testReset(pl); MeridianFx.zenithUnbound(pl, pw); }, "q"));
+        queue.add(new MeridianTest());
         queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
         queue.add(new BossTest("Brannoch Tor", AddonEntities.BRANNOCH_TOR));
         queue.add(new BossTest("Alder Bellmar", AddonEntities.ALDER_BELLMAR));
@@ -1119,6 +1129,85 @@ final class GameTestCases {
     }
 
     /** Elite mobs: threat ranks, who may be one, what rolls, and every trait doing what the Codex says - and nothing changed in the world. */
+    /** The Meridian Grimoire: the sun's curve, the gates, Zenith and Borrowed Noon (and its price), heat, Dayreaver, the night's bank. */
+    static final class MeridianTest extends Test {
+        MeridianTest() { super("meridian: sun, zenith, borrowed noon, heat, dayreaver"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{MeridianFx.class, com.ironspellgrimoire.item.DayreaverItem.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        long time0;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            time0 = sl().getDayTime();
+            ItemStack bk = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.MERIDIAN_GRIMOIRE.get());
+            CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+            bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, bk));
+            MeridianFx.testReset(p);
+        }
+        void end() {
+            sl().setDayTime(time0);
+            var hp = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
+            if (hp != null) hp.removeModifier(MeridianFx.BORROW_HP);
+            var ad = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+            if (ad != null) ad.removeModifier(MeridianFx.ZENITH_DMG);
+            MeridianFx.testReset(p);
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            p.setHealth(p.getMaxHealth());
+        }
+        @Override boolean tick(int t) {
+            try {
+                if (t == 1) {
+                    if (Math.abs(MeridianFx.sunAt(6000) - 1f) > 1e-3 || MeridianFx.sunAt(18000) != 0f || MeridianFx.sunAt(0) > 1e-3 || Math.abs(MeridianFx.sunAt(3000) - 0.7071f) > 1e-3)
+                        bad.add("the sun's curve is wrong");
+                    sl().setDayTime(6000);
+                    if (!MeridianFx.canDay(p)) bad.add("the day pages are shut at noon (meter " + MeridianFx.meter(p) + ")");
+                    if (MeridianFx.canNight(p)) bad.add("the night pages are open at noon");
+                    if (MeridianFx.base(p) < 0.99f) bad.add("a mastered book (Unclouded) gets only " + MeridianFx.base(p) + " of the noon sun");
+                    // heat: fire can't hurt past half
+                    int hits = playerHits;
+                    p.invulnerableTime = 0;
+                    p.hurt(p.damageSources().onFire(), 4);
+                    if (playerHits != hits) bad.add("fire hurt at noon");
+                    // Zenith at noon
+                    MeridianFx.zenithUnbound(p, 0);
+                    if (!MeridianFx.zenith(p)) bad.add("Zenith didn't start at noon");
+                    if (MeridianFx.testBorrowDay(p) >= 0) bad.add("a noon Zenith counted as borrowed");
+                    if (MeridianFx.meter(p) < 1f) bad.add("Zenith's meter is " + MeridianFx.meter(p));
+                    // Dayreaver
+                    MeridianFx.callDayreaver(p, 10);
+                    if (!p.getMainHandItem().is(com.ironspellgrimoire.registry.AddonItemRegistry.DAYREAVER.get())) bad.add("Dayreaver didn't come to hand");
+                    p.getInventory().selected = (p.getInventory().selected + 1) % 9;
+                }
+                if (t == 4) {
+                    boolean left = true;
+                    for (ItemStack s : p.getInventory().items) if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.DAYREAVER.get())) left = false;
+                    if (!left) bad.add("Dayreaver stayed when let go");
+                    // the night: the day pages shut, a night cast banks heat
+                    MeridianFx.testReset(p);
+                    sl().setDayTime(18000);
+                    if (MeridianFx.canDay(p)) bad.add("the day pages are open at midnight");
+                    if (!MeridianFx.canNight(p)) bad.add("the night pages are shut at midnight");
+                    MeridianFx.lamplight(p, 7);
+                    if (MeridianFx.testBanked(p) <= 0) bad.add("a night cast banked no heat");
+                    // Borrowed Noon: once a day, for 30% max health
+                    float max0 = p.getMaxHealth();
+                    if (!MeridianFx.canZenith(p)) bad.add("Borrowed Noon wasn't offered at midnight");
+                    MeridianFx.zenithUnbound(p, 0);
+                    if (!MeridianFx.zenith(p)) bad.add("Borrowed Noon didn't start");
+                    if (Math.abs(p.getMaxHealth() - max0 * 0.7f) > 0.6f) bad.add("Borrowed Noon cost " + (max0 - p.getMaxHealth()) + " of " + max0 + " max health, not 30%");
+                    if (MeridianFx.canZenith(p)) bad.add("a second Zenith was allowed while one burns");
+                }
+                if (t == 6) {
+                    if (bad.isEmpty()) pass(name, "sun curve, gates, heat, Zenith, Dayreaver comes and goes, night bank, Borrowed Noon and its price");
+                    else fail(name, String.join("; ", bad));
+                    end();
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); end(); return true; }
+        }
+    }
+
     /** The rivals: calling, the ring, records, yielding and rewards, rematch ranks, the twins' grief, the Legion, Mira's deals, the token. */
     private static final class RivalTest extends Test {
         RivalTest() { super("rivals: ring, yield, rewards, twins, legion, deals, token"); }
