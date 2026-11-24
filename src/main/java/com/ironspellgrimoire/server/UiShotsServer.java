@@ -700,7 +700,7 @@ public final class UiShotsServer {
         p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete them at once
         var sl = p.serverLevel();
         for (var e : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.Rival.class, p.getBoundingBox().inflate(40))) e.discard();
-        for (var e : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.TorLegionnaire.class, p.getBoundingBox().inflate(40))) e.discard();
+        for (var e : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) e.discard();   // and whatever earlier pictures left
         if (what.equals("clear")) return;
         boolean back = what.equals("back"), act = what.equals("action");
         java.util.List<net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob>> types = java.util.List.of(
@@ -713,7 +713,7 @@ public final class UiShotsServer {
         for (int i = 0; i < types.size(); i++) {
             var m = types.get(i).create(sl);
             if (m == null) continue;
-            var at = p.position().add(look.scale(6.5)).add(side.scale((i - 2.5) * 1.75));
+            var at = p.position().add(look.scale(6.5)).add(side.scale((i - 2.5) * 2.1));
             m.moveTo(at.x, p.getY(), at.z, face, 0);
             m.setYHeadRot(face); m.yBodyRot = face; m.yBodyRotO = face; m.yHeadRotO = face;
             m.setNoAi(true);
