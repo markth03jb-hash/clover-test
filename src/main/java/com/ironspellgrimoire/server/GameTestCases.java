@@ -1141,15 +1141,20 @@ final class GameTestCases {
             ItemStack bk = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.MERIDIAN_GRIMOIRE.get());
             CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
             bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            prev = prev == null || prev.is(com.ironspellgrimoire.registry.AddonItemRegistry.MERIDIAN_GRIMOIRE.get()) ? ItemStack.EMPTY : prev.copy();
             top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, bk));
             MeridianFx.testReset(p);
         }
+        ItemStack prev = ItemStack.EMPTY;
         void end() {
             sl().setDayTime(time0);
             var hp = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
             if (hp != null) hp.removeModifier(MeridianFx.BORROW_HP);
             var ad = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
             if (ad != null) ad.removeModifier(MeridianFx.ZENITH_DMG);
+            ItemStack back = prev;
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, back));   // the book the tests had before
             MeridianFx.testReset(p);
             p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             p.setHealth(p.getMaxHealth());

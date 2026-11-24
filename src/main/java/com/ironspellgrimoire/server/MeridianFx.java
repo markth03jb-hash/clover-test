@@ -277,7 +277,9 @@ public final class MeridianFx {
                 }
                 if (zenith(p) && !cleaving) cleave(p, t, e.getAmount() * m * 0.6f);
             }
-            e.setAmount(e.getAmount() * m);
+            float out = e.getAmount() * m;
+            if (t instanceof AddonBoss) out = Math.min(out, Math.max(e.getAmount(), t.getMaxHealth() * 0.15f));   // never past a boss's per-blow cap
+            e.setAmount(out);
         }
     }
 
@@ -329,8 +331,10 @@ public final class MeridianFx {
         ServerLevel sl = p.serverLevel();
         long now = sl.getGameTime();
         if (now >= s.starUntil || p.level() != sl) { s.star = null; return; }
-        // drift toward where you look (14 blocks, stopped by walls)
-        Vec3 eye = p.getEyePosition(), aim = clip(sl, p, eye, eye.add(p.getLookAngle().scale(14)));
+        // drift toward what you look at: a foe in your sights, else the point you look at (14 blocks, stopped by walls)
+        Vec3 eye = p.getEyePosition();
+        LivingEntity sighted = aimed(p, 14, 8);
+        Vec3 aim = sighted != null ? mid(sighted) : clip(sl, p, eye, eye.add(p.getLookAngle().scale(14)));
         Vec3 to = aim.subtract(s.star);
         double step = Math.min(to.length(), 0.9);
         if (step > 0.01) s.star = s.star.add(to.normalize().scale(step));

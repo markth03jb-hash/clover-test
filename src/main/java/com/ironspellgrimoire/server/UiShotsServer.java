@@ -129,7 +129,10 @@ public final class UiShotsServer {
     static void meridian(ServerPlayer p, String w) {
         ServerLevel sl = p.serverLevel();
         switch (w) {
-            case "noon" -> { sl.setDayTime(6000); MeridianFx.testReset(p); MeridianFx.callDayreaver(p, 10); }
+            case "noon" -> {
+                for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();   // what earlier pictures left
+                sl.setDayTime(6000); MeridianFx.testReset(p); MeridianFx.callDayreaver(p, 10);
+            }
             case "star" -> MeridianFx.hearthStar(p, 10);
             case "flare" -> MeridianFx.haughtyFlare(p, 26);
             case "zenith" -> MeridianFx.zenithUnbound(p, 0);

@@ -176,16 +176,23 @@ def to_game(out):
     glow_m, plain_m = bpy.data.materials.new("dayreaver_glow"), bpy.data.materials.new("dayreaver")
     for o in parts: o.data.materials.clear(); o.data.materials.append(glow_m if o in GLOW else plain_m)
     ob = join(parts, "dayreaver")
+    # the game draws an item model about the middle of its block (8 px in from the origin on each axis): moved by that
+    # much, the grip sits in the fist and the axe turns about it
+    ob.location = (8, -8, 8)
+    bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)
     bpy.ops.wm.obj_export(filepath=os.path.join(out, "dayreaver.obj"), export_selected_objects=True, export_uv=True, export_normals=True,
                           export_materials=True, export_triangulated_mesh=True, forward_axis="NEGATIVE_Z", up_axis="Y", global_scale=1 / 16, path_mode="STRIP")
     print("dayreaver tris", em.tris(ob))
-    disp = {"thirdperson_righthand": {"rotation": [0, -90, 0], "translation": [0, 2, 0.5], "scale": [0.9] * 3},
-            "thirdperson_lefthand": {"rotation": [0, 90, 0], "translation": [0, 2, 0.5], "scale": [0.9] * 3},
-            "firstperson_righthand": {"rotation": [0, -90, 20], "translation": [1.2, 1.6, 0], "scale": [0.6] * 3},
-            "firstperson_lefthand": {"rotation": [0, 90, -20], "translation": [1.2, 1.6, 0], "scale": [0.6] * 3},
-            "gui": {"rotation": [0, 90, -45], "translation": [0, 0, 0], "scale": [0.36] * 3},
+    # held: the haft level and forward out of the fist, the blade facing the ground (turned about the haft), tilted down
+    # to cancel the arm's forward lean
+    disp = {"thirdperson_righthand": {"rotation": [18, -90, 0], "translation": [0, 0, 0], "scale": [0.9] * 3},
+            "thirdperson_lefthand": {"rotation": [18, 90, 0], "translation": [0, 0, 0], "scale": [0.9] * 3},
+            # in first person the haft points ahead into the view, a little up, the blade hanging under it
+            "firstperson_righthand": {"rotation": [-75, 90, 0], "translation": [1.5, -1, -2], "scale": [0.55] * 3},
+            "firstperson_lefthand": {"rotation": [-75, -90, 0], "translation": [1.5, -1, -2], "scale": [0.55] * 3},
+            "gui": {"rotation": [0, 90, -45], "translation": [-4, -4, 0], "scale": [0.3] * 3},
             "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.4] * 3},
-            "fixed": {"rotation": [0, 90, -45], "translation": [0, 0, 0], "scale": [0.45] * 3}}
+            "fixed": {"rotation": [0, 90, -45], "translation": [-4, -4, 0], "scale": [0.36] * 3}}
     gt.export_to_game("dayreaver", out, disp, glowing={"dayreaver_glow"}, textures={"dayreaver": TEX, "dayreaver_glow": TEX}, render_type="minecraft:cutout")
 
 
