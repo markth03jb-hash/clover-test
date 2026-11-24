@@ -185,8 +185,11 @@ def to_game(out):
     print("dayreaver tris", em.tris(ob))
     # held: the haft level and forward out of the fist, the blade facing the ground (turned about the haft), tilted down
     # to cancel the arm's forward lean
-    disp = {"thirdperson_righthand": {"rotation": [-80, 90, 0], "translation": [0, 0, 0], "scale": [0.9] * 3},
-            "thirdperson_lefthand": {"rotation": [-80, -90, 0], "translation": [0, 0, 0], "scale": [0.9] * 3},
+    # (in the hand the item's axes are: x outward, y forward, z up - ItemInHandLayer turns the arm's -90 about x and 180
+    # about y. So a quarter about y puts the blade (+x) down and keeps the haft (+y) forward; -18 about x cancels the
+    # arm's forward lean. The left hand's entry is mirrored by the game.)
+    disp = {"thirdperson_righthand": {"rotation": [-18, 90, 0], "translation": [0, 0, 0], "scale": [0.9] * 3},
+            "thirdperson_lefthand": {"rotation": [-18, -90, 0], "translation": [0, 0, 0], "scale": [0.9] * 3},
             # in first person the haft points ahead into the view, a little up, the blade hanging under it
             "firstperson_righthand": {"rotation": [-75, 90, 0], "translation": [1.5, -1, -2], "scale": [0.55] * 3},
             "firstperson_lefthand": {"rotation": [-75, -90, 0], "translation": [1.5, -1, -2], "scale": [0.55] * 3},
