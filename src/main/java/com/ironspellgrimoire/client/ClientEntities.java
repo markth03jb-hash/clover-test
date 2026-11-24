@@ -32,6 +32,7 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.MIRA_HOLLOWELL.get(), c -> new RivalRenderer<>(c, "rival_mira", true, 1.0F));
         e.registerEntityRenderer(AddonEntities.TOR_LEGIONNAIRE.get(), c -> new RivalRenderer<>(c, "rival_legion", false, 1.0F));
         e.registerEntityRenderer(AddonEntities.REFLECTION.get(), ReflectionRenderer::new);
+        e.registerEntityRenderer(AddonEntities.OMEN_AFTERIMAGE.get(), OmenAfterimageRenderer::new);
         e.registerEntityRenderer(AddonEntities.BROOM.get(), BroomRenderer::new);
         e.registerEntityRenderer(AddonEntities.HIVE_NEST.get(), HiveNestRenderer::new);
         e.registerEntityRenderer(AddonEntities.MOLT_HUSK.get(), MoltHuskRenderer::new);

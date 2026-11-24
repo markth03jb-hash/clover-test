@@ -905,6 +905,23 @@ public class AddonSpellRegistry {
     /** The eight Meridian pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> MERIDIAN_SPELLS = List.of(MER_STAR, MER_REAVER, MER_WAVE, MER_FLARE, MER_LAMP, MER_WARM, MER_COAL, MER_ZENITH);
 
+    // ---- the Grimoire of Ill Omen (server/OmenFx): misfortune on whatever pursues you
+    private static com.ironspellgrimoire.spells.BookSpell omen(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ELDRITCH_RESOURCE,
+                com.ironspellgrimoire.item.OmenGrimoireItem.class, "ui.iron_spell_grimoire.omen_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> OMEN_PATH = registerSpell(omen("ill_fated_path", 14, 30, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.OmenFx::illFatedPath));
+    public static final RegistryObject<AbstractSpell> OMEN_TOKEN = registerSpell(omen("laden_token", 8, 25, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.OmenFx::ladenToken));
+    public static final RegistryObject<AbstractSpell> OMEN_AFTER = registerSpell(omen("afterimage", 20, 40, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.OmenFx::afterimage));
+    public static final RegistryObject<AbstractSpell> OMEN_RAIN = registerSpell(omen("needle_rain", 16, 45, 3, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.OmenFx::needleRain));
+    public static final RegistryObject<AbstractSpell> OMEN_DOMINO = registerSpell(omen("domino", 25, 40, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.OmenFx::domino));
+    public static final RegistryObject<AbstractSpell> OMEN_STILL = registerSpell(omen("stillness", 18, 35, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.OmenFx::stillness));
+    public static final RegistryObject<AbstractSpell> OMEN_LEDGER = registerSpell(omen("karmas_ledger", 22, 60, 8, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.OmenFx::karmasLedger));
+    public static final RegistryObject<AbstractSpell> OMEN_LAW = registerSpell(omen("the_law_itself", 90, 140, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.OmenFx::theLawItself));
+    /** The eight Ill Omen pages, in the order they fill the book. */
+    public static final List<RegistryObject<AbstractSpell>> OMEN_SPELLS = List.of(OMEN_PATH, OMEN_TOKEN, OMEN_AFTER, OMEN_RAIN, OMEN_DOMINO, OMEN_STILL, OMEN_LEDGER, OMEN_LAW);
+
     /** The seven Masked Twins Grimoire pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> TWINS_SPELLS = List.of(TWINS_SWAP, TWINS_ARTS, TWINS_STRIKE, TWINS_ECLIPSE, TWINS_MASKS, TWINS_NOON, TWINS_EVENTIDE);
 

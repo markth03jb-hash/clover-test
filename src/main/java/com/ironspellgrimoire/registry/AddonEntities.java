@@ -151,6 +151,11 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Reflection>of(com.ironspellgrimoire.entity.Reflection::new, MobCategory.MONSTER).sized(0.6F, 1.8F)
                     .fireImmune().clientTrackingRange(10).build("reflection"));
 
+    /** The Grimoire of Ill Omen's Afterimage: a black-blue silhouette its mage's pursuers chase instead (server/OmenFx). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.OmenAfterimage>> OMEN_AFTERIMAGE = ENTITIES.register("omen_afterimage",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.OmenAfterimage>of(com.ironspellgrimoire.entity.OmenAfterimage::new, MobCategory.MISC).sized(0.6F, 1.8F)
+                    .fireImmune().clientTrackingRange(10).updateInterval(1).build("omen_afterimage"));
+
     /** A shadow soldier of the Shadow Grimoire: the shadow of a mob its master slew and raised (server/ShadowArmy). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.ShadowSoldier>> SHADOW_SOLDIER = ENTITIES.register("shadow_soldier",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.ShadowSoldier>of(com.ironspellgrimoire.entity.ShadowSoldier::new, MobCategory.MISC).sized(0.6F, 1.9F)

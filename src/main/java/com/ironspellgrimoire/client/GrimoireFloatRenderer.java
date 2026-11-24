@@ -149,6 +149,7 @@ public class GrimoireFloatRenderer {
          case "twins_grimoire" -> new int[]{0, 20};
          case "architect_grimoire" -> new int[]{0, 20};
          case "meridian_grimoire" -> new int[]{8, 20};   // gold
+         case "omen_grimoire" -> new int[]{10, 20};   // black and deep blue
          default -> new int[]{8, 4};
       };
    }

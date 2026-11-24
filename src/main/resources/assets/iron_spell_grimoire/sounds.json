@@ -1968,5 +1968,125 @@
         "name": "iron_spell_grimoire:sfx/meridian_pride_2"
       }
     ]
+  },
+  "sfx.omen_step": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_step_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_step_2"
+      }
+    ]
+  },
+  "sfx.omen_fall": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_fall_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_fall_2"
+      }
+    ]
+  },
+  "sfx.omen_trip": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_trip_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_trip_2"
+      }
+    ]
+  },
+  "sfx.omen_rebound": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_rebound_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_rebound_2"
+      }
+    ]
+  },
+  "sfx.omen_shard": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_shard_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_shard_2"
+      }
+    ]
+  },
+  "sfx.omen_needles": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_needles_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_needles_2"
+      }
+    ]
+  },
+  "sfx.omen_token": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_token_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_token_2"
+      }
+    ]
+  },
+  "sfx.omen_afterimage": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_afterimage_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_afterimage_2"
+      }
+    ]
+  },
+  "sfx.omen_domino": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_domino_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_domino_2"
+      }
+    ]
+  },
+  "sfx.omen_still": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_still_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_still_2"
+      }
+    ]
+  },
+  "sfx.omen_ledger": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_ledger_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_ledger_2"
+      }
+    ]
+  },
+  "sfx.omen_law": {
+    "sounds": [
+      {
+        "name": "iron_spell_grimoire:sfx/omen_law_1"
+      },
+      {
+        "name": "iron_spell_grimoire:sfx/omen_law_2"
+      }
+    ]
   }
 }

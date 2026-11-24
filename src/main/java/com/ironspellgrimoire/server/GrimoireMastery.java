@@ -303,6 +303,8 @@ public final class GrimoireMastery {
                 "fortress_rampart", 1, "siege_mode", 1, "fortress_room_1", 1, "fortress_room_2", 1, "the_fortress", 1, "fortress_room_3", 2, "fortress_room_4", 3, "citadel", 5);
         book(AddonItemRegistry.MERIDIAN_GRIMOIRE::get, Fx.GOLD,
                 "hearth_star", 1, "call_dayreaver", 1, "lamplight", 1, "warm_hands", 2, "noonwave", 2, "last_coal", 3, "haughty_flare", 3, "zenith_unbound", 4);
+        book(AddonItemRegistry.OMEN_GRIMOIRE::get, Fx.WATER,
+                "ill_fated_path", 1, "laden_token", 1, "afterimage", 1, "needle_rain", 2, "stillness", 2, "domino", 3, "karmas_ledger", 3, "the_law_itself", 4);
         book(AddonItemRegistry.TWINS_GRIMOIRE::get, Fx.GOLD,
                 "twin_swap", 1, "the_masks", 1, "twin_arts", 1, "twin_strike", 2, "high_noon", 3, "eventide", 3, "eclipse_union", 4);
     }
