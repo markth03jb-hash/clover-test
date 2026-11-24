@@ -49,6 +49,25 @@ public abstract class Rival extends AddonBoss {
     @Override protected final float damageTaken(DamageSource src) { return Rivals.taken(this, src); }
     @Override protected void onHurt(DamageSource src, float amount) { Rivals.hurtBy(this, src, amount); }
 
+    /**
+     * Armour shrinks the blow that should carry a rival to a phase line, so its health would only creep towards the
+     * line and never reach it (Brannoch never yielded): close enough (within 1.5% of max health) counts as reached.
+     */
+    @Override
+    public boolean hurt(DamageSource src, float amount) {
+        boolean done = super.hurt(src, amount);
+        if (level().isClientSide || yielded || !isAlive()) return done;
+        float[] lines = phaseLines();
+        float max = getMaxHealth();
+        if (done && phase() <= lines.length && getHealth() <= max * (lines[phase() - 1] + 0.015f)) {
+            setHealth(Math.max(getHealth(), max * lines[phase() - 1]));
+            setPhase(phase() + 1);
+            busy = 0;
+            onPhase(phase());
+        }
+        return done;
+    }
+
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
