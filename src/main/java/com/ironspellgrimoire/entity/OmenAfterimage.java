@@ -64,7 +64,8 @@ public class OmenAfterimage extends PathfinderMob {
 
     /** It fades: everything chasing it turns back to its mage. */
     void fade() {
-        if (owner != null && level().getPlayerByUUID(owner) instanceof net.minecraft.world.entity.player.Player p && p.isAlive()) {
+        net.minecraft.world.entity.player.Player p = owner == null ? null : level().getPlayerByUUID(owner);
+        if (p != null && p.isAlive()) {
             for (Mob m : level().getEntitiesOfClass(Mob.class, getBoundingBox().inflate(32), x -> x.getTarget() == this)) m.setTarget(p);
         } else {
             for (Mob m : level().getEntitiesOfClass(Mob.class, getBoundingBox().inflate(32), x -> x.getTarget() == this)) m.setTarget(null);

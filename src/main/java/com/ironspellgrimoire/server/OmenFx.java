@@ -179,7 +179,7 @@ public final class OmenFx {
         Fate f = FATES.get(t);
         float k = 1f + (f == null ? 0 : Math.min(2f, f.dealt / 10f));
         if (t instanceof AddonBoss || TimeStop.isBoss(t)) k += 0.5f;
-        if (EliteMobs.isElite(t)) k += 0.5f;
+        if (EliteMobs.elite(t)) k += 0.5f;
         return k;
     }
 
