@@ -409,11 +409,11 @@ final class GameTestCases {
         @Override boolean tick(int t) {
             if (skip) return true;
             p.setHealth(p.getMaxHealth());
-            // run at least 3 s, and longer (up to 5 s) while the spell is still drawing or hurting, so a long spell's
+            // run at least 2 s, and longer (up to 5 s) while the spell is still drawing or hurting, so a long spell's
             // finisher counts in its damage; the effect count is judged per 3 s either way
             int fxNow = AddonNetwork.fxSent; float hpNow = dummy == null ? 0 : dummy.getHealth();
             if (fxNow != lastFx || hpNow != lastHp) { lastAct = t; lastFx = fxNow; lastHp = hpNow; }
-            if (t < 60 || (t < 100 && t - lastAct < 12)) return false;
+            if (t < 40 || (t < 100 && t - lastAct < 12)) return false;
             cancelCast();
             int fx = (AddonNetwork.fxSent - fx0) * 60 / t;
             float spent = mana0 - MagicData.getPlayerMagicData(p).getMana(), dealt = dummy == null ? 0 : hp0 - dummy.getHealth();

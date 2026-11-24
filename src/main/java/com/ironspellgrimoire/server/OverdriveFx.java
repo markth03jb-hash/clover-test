@@ -4,7 +4,6 @@ import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.network.FxPacket;
 import com.ironspellgrimoire.registry.AddonItemRegistry;
-import com.ironspellgrimoire.registry.AddonSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;

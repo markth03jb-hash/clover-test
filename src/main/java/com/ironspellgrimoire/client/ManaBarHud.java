@@ -119,7 +119,22 @@ public final class ManaBarHud {
     }
 
     /** Our bar inside Iron's 98 x 21 box at (ix, iy): the pill along the top, the numbers under it where Iron puts its own. */
+    /** The bar, then its numbers: the bar's thirty-odd fills go to the GPU in one batch (drawManaged), not one draw call each. */
     private static void draw(GuiGraphics g, Minecraft mc, int book, float pt, int ix, int iy) {
+        g.drawManaged(() -> bar(g, mc, book, pt, ix, iy));
+        int[] c = COL[book];
+        float max = (float) Math.max(1.0, mc.player.getAttributeValue(AttributeRegistry.MAX_MANA.get()));
+        float mana = Mth.clamp(mana(mc), 0F, max);
+        // the numbers (or ANTI MAGIC) centred under the bar, where Iron puts its own
+        Font f = mc.font;
+        String s = book == 0 ? "ANTI MAGIC" : (int) mana + " / " + (int) max;
+        boolean text = true;
+        try { text = io.redspace.ironsspellbooks.config.ClientConfigs.MANA_BAR_TEXT_VISIBLE.get(); } catch (Throwable ignored) { }
+        if (text) g.drawString(f, Component.literal(s), ix + 49 - f.width(s) / 2, iy + 11, 0xFF000000 | c[4], true);
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+    }
+
+    private static void bar(GuiGraphics g, Minecraft mc, int book, float pt, int ix, int iy) {
         int[] c = COL[book];
         boolean anti = book == 0;
         float max = (float) Math.max(1.0, mc.player.getAttributeValue(AttributeRegistry.MAX_MANA.get()));
@@ -174,13 +189,6 @@ public final class ManaBarHud {
                 g.fill(px, y + 1, px + 1, y + bh - 1, (al << 24) | c[2]);
             }
         }
-        // the numbers (or ANTI MAGIC) centred under the bar, where Iron puts its own
-        Font f = mc.font;
-        String s = anti ? "ANTI MAGIC" : (int) mana + " / " + (int) max;
-        boolean text = true;
-        try { text = io.redspace.ironsspellbooks.config.ClientConfigs.MANA_BAR_TEXT_VISIBLE.get(); } catch (Throwable ignored) { }
-        if (text) g.drawString(f, Component.literal(s), ix + 49 - f.width(s) / 2, iy + 11, 0xFF000000 | c[4], true);
-        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
     }
 
     private static int darker(int rgb, float k) {

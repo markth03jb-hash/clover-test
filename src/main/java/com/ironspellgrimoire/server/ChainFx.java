@@ -3,14 +3,11 @@ package com.ironspellgrimoire.server;
 import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.network.FxPacket;
-import com.ironspellgrimoire.registry.AddonSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.TamableAnimal;
