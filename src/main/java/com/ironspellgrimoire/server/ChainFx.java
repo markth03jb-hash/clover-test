@@ -3,14 +3,11 @@ package com.ironspellgrimoire.server;
 import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.network.FxPacket;
-import com.ironspellgrimoire.registry.AddonSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.TamableAnimal;
@@ -101,11 +98,6 @@ public final class ChainFx {
     static void anchor(ServerLevel sl, LivingEntity from, Vec3 u, int fly, int life) { FxPacket p = pk(9, from.position(), life); p.v = new Vec3(from.getId(), 1, 0); p.u = u; p.speed = fly; send(sl, p); }
 
     // ================================================================== helpers
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     /** Five Rules: when each chain was last used, per player; and whether the full set is ready. */
     private static final Map<UUID, long[]> RULES = new HashMap<>();
     private static final Map<UUID, Boolean> FULL = new HashMap<>();

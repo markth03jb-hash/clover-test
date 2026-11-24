@@ -3,14 +3,11 @@ package com.ironspellgrimoire.server;
 import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.network.FxPacket;
-import com.ironspellgrimoire.registry.AddonSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -122,11 +119,6 @@ public final class AbyssFx {
     }
 
     static boolean glowing(ServerPlayer p) { return Moves.inMode(p, MODE); }
-
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
 
     /** How much harder the deep makes everything: 1.0 at the surface, 1.5 at the bottom. */
     static float deep(ServerPlayer p) { return 1f + depth(p) / 200f; }

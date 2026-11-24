@@ -3,14 +3,11 @@ package com.ironspellgrimoire.server;
 import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.network.FxPacket;
-import com.ironspellgrimoire.registry.AddonSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -96,11 +93,6 @@ public final class HunterFx {
     static void trick(ServerLevel sl, ServerPlayer pl, boolean toLong) { FxPacket p = pk(10, pl.position(), 12); p.v = new Vec3(pl.getId(), 1, 0); p.a0 = toLong ? 1 : 0; send(sl, p); }
 
     // ================================================================== state
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     public static boolean isLong(ServerPlayer p) { return p.getPersistentData().getBoolean(FORM_KEY); }
     static void setLong(ServerPlayer p, boolean v) { p.getPersistentData().putBoolean(FORM_KEY, v); }
 

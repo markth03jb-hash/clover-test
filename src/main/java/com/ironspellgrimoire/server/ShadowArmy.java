@@ -198,7 +198,7 @@ public final class ShadowArmy {
                         .append(Component.literal(e.getString("name") + " has bonded with you: " + TRAITS[tr] + " (" + TRAIT_GIVES[tr] + ")").withStyle(ChatFormatting.AQUA)));
                 HunterAscension.teach(p, 8, "Bonds: a shadow that fights at your side for " + BOND_KILLS + " kills gains a trait - Loyal, Ferocious or Cautious. See it in the Army menu.");
                 FxSend.ring(p.serverLevel(), Fx.YAMI | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, s.position().add(0, 0.05, 0), 0.2f, 1.5f, 0.1f, 12);
-                ShadowFx.play(p.serverLevel(), s.position(), "shadow_rise", 0.8f, 1.5f);
+                FxUtil.play(p.serverLevel(), s.position(), "shadow_rise", 0.8f, 1.5f);
             }
         }
     }
@@ -252,7 +252,7 @@ public final class ShadowArmy {
         recallAll(p);
         if (ShadowFx.equipped(p)) keep(p);
         FxSend.ring(p.serverLevel(), Fx.YAMI | com.ironspellgrimoire.network.FxPacket.KEEP_SHAPE, p.position().add(0, 0.05, 0), 0.3f, 5f, 0.25f, 14);
-        ShadowFx.play(p.serverLevel(), p.position(), "shadow_rise", 1f, 1.1f);
+        FxUtil.play(p.serverLevel(), p.position(), "shadow_rise", 1f, 1.1f);
         p.displayClientMessage(Component.literal(loadouts(p).getCompound(slot).getString("name")).withStyle(ChatFormatting.AQUA), true);
         return true;
     }
@@ -477,7 +477,7 @@ public final class ShadowArmy {
                     p.displayClientMessage(Component.literal(e.getString("name") + " ranks up: " + RANKS[e.getInt("rank")]).withStyle(ChatFormatting.AQUA), true);
                     ShadowSoldier s = summoned(p, id);
                     if (s != null) { s.applyStats(e.getInt("lvl"), e.getInt("rank")); applyTrait(s, e); ShadowFx.rankUpFx(p.serverLevel(), s); }
-                    ShadowFx.play(p.serverLevel(), p.position(), "shadow_rise", 1.0f, 1.4f);
+                    FxUtil.play(p.serverLevel(), p.position(), "shadow_rise", 1.0f, 1.4f);
                 }
             }
             case 7 -> toggleStation(p, e);   // station here / call back

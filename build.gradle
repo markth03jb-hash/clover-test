@@ -32,6 +32,7 @@ minecraft {
             }
             if (System.getenv('ISG_GAMETESTS')) {   // the automatic game tests (server/GameTests, .github/workflows/tests.yml)
                 property 'isg.gametests', 'true'
+                if (System.getenv('ISG_SHARD')) property 'isg.shard', System.getenv('ISG_SHARD')   // "i/n": this job's share of the tests
                 args '--width', '854', '--height', '480', '--username', 'Tester'
             }
         }

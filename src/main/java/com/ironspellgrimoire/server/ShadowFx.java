@@ -7,15 +7,12 @@ import com.ironspellgrimoire.network.AddonNetwork;
 import com.ironspellgrimoire.network.FxPacket;
 import com.ironspellgrimoire.network.ShadowPackets;
 import com.ironspellgrimoire.registry.AddonItemRegistry;
-import com.ironspellgrimoire.registry.AddonSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -146,11 +143,6 @@ public final class ShadowFx {
         FxPacket p = pk(6, r.position(), life); p.v = new Vec3(r.getId(), 1, 0); send(sl, p);
         play(sl, r.position(), "shadow_rise", 1.2f, 1.8f);
         sound(sl, r.position(), SoundEvents.WARDEN_ROAR, 0.3f, 1.9f);
-    }
-
-    public static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
     }
 
     public static boolean equipped(ServerPlayer p) {

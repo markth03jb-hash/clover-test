@@ -80,7 +80,12 @@ public final class ClassKey {
     }
 
     /** This mod's classes named anywhere in a class file's constant pool (class refs and type descriptors). */
-    private static List<String> refs(byte[] b) {
+    private static final Map<byte[], List<String>> REFS = new java.util.IdentityHashMap<>();
+
+    /** The mod classes a class file names (worked out once per class: every test's key walks the same ones). */
+    private static List<String> refs(byte[] b) { return REFS.computeIfAbsent(b, ClassKey::parseRefs); }
+
+    private static List<String> parseRefs(byte[] b) {
         List<String> out = new ArrayList<>();
         int p = 8, n = u2(b, p);
         p += 2;

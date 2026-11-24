@@ -4,7 +4,6 @@ import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.network.FxPacket;
 import com.ironspellgrimoire.registry.AddonItemRegistry;
-import com.ironspellgrimoire.registry.AddonSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -148,11 +147,6 @@ public final class OverdriveFx {
 
     /** The Heartline in the main hand (every page but the first needs it). */
     public static boolean holding(Player p) { return p.getMainHandItem().is(AddonItemRegistry.HEARTLINE.get()); }
-
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
 
     static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float vol, float pitch) { sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch); }
 

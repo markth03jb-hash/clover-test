@@ -3,7 +3,6 @@ package com.ironspellgrimoire.server;
 import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.network.FxPacket;
-import com.ironspellgrimoire.registry.AddonSounds;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,9 +14,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
@@ -121,11 +118,6 @@ public final class BloodFx {
         if (t.isAlive()) addBleed(p, t);
         if (dealt > 0.5f) pool(p.serverLevel(), t.position(), 0.55f + Math.min(0.5f, dealt * 0.05f));
         if (ThreadLocalRandom.current().nextFloat() < 0.5f) play(p.serverLevel(), mid(t), "blood_splash", 0.8f, 0.9f + ThreadLocalRandom.current().nextFloat() * 0.3f);
-    }
-
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
     }
 
     // ================================================================== bleed stacks

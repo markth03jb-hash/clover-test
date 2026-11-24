@@ -82,7 +82,7 @@ public final class TwinsArts {
         if (mastery(u[i]) > before) {
             int nm = mastery(u[i]);
             say(p, twin, ARTS[twin][art] + " reached Mastery " + "I".repeat(nm) + ". " + (nm == 1 ? "+15% damage." : nm == 2 ? "20% shorter cooldown." : ART_PERF[twin][art]));
-            OverdriveFx.play(p.serverLevel(), p.position(), twin == SOL ? "twin_rise" : "twin_fall", 0.7f, 1.6f);
+            FxUtil.play(p.serverLevel(), p.position(), twin == SOL ? "twin_rise" : "twin_fall", 0.7f, 1.6f);
         }
         boost = mast >= 1 ? 1.15f : 1f;
         perfect = mast >= 3;
@@ -120,7 +120,7 @@ public final class TwinsArts {
                     });
                 }
                 FxSend.trail(sl, PAL_SOL, start.add(0, 1, 0), start.add(0, 1, 0).add(d.scale(6)), 0.5f, 8);
-                OverdriveFx.play(sl, p.position(), "rush", 0.9f, 1.2f);
+                FxUtil.play(sl, p.position(), "rush", 0.9f, 1.2f);
             }
             case 1 -> {   // Flare Shot: three bolts
                 for (int k = 0; k < (perf ? 5 : 3); k++) AstaFx.later(1 + k * 4, () -> {
@@ -132,7 +132,7 @@ public final class TwinsArts {
                     FxSend.beam(sl, PAL_SOL2, e0.add(l.scale(0.6)).add(0, -0.15, 0), end, 0.16f, 5);
                     Fx.spark(sl, PAL_SOL, end, 0.6f);
                     if (tg != null) { hit(p, tg, 5 * m, SOL); }
-                    OverdriveFx.play(sl, e0, "sun_flare", 0.4f, 1.8f);
+                    FxUtil.play(sl, e0, "sun_flare", 0.4f, 1.8f);
                 });
             }
             case 2 -> {   // Solar Lance: through every foe in a line
@@ -141,7 +141,7 @@ public final class TwinsArts {
                 FxSend.beam(sl, PAL_SOL2, eye.add(look.scale(0.6)).add(0, -0.2, 0), end, 0.2f, 8);
                 Fx.flash(sl, end, 1f);
                 for (LivingEntity e : onLine(p, eye, end, perf ? 2.0 : 1.2)) { hit(p, e, 14 * m, SOL); if (perf) burn(p, e, 3, 2f * m); }
-                OverdriveFx.play(sl, eye, "sun_flare", 1f, 1.3f);
+                FxUtil.play(sl, eye, "sun_flare", 1f, 1.3f);
             }
             case 3 -> {   // Helios Wheel: a disc bouncing between foes
                 LivingEntity first = aimed(p, 16, 25);
@@ -175,13 +175,13 @@ public final class TwinsArts {
                         from[0] = to;
                     });
                 }
-                OverdriveFx.play(sl, eye, "blade_fly", 0.8f, 1.3f);
+                FxUtil.play(sl, eye, "blade_fly", 0.8f, 1.3f);
             }
             case 4 -> {   // Corona: 8 s of a burning aura
                 root(p).putLong("corona", now(p) + (perf ? 240 : 160));
                 root(p).putBoolean("coronaWide", perf);
                 FxSend.ring(sl, PAL_SOL, p.position().add(0, 0.1, 0), 0.5f, 4f, 0.4f, 14);
-                OverdriveFx.play(sl, p.position(), "sun_flare", 0.9f, 0.8f);
+                FxUtil.play(sl, p.position(), "sun_flare", 0.9f, 0.8f);
             }
             case 5 -> {   // Zenith Leap: up, then down in fire
                 p.setDeltaMovement(d.scale(0.5).add(0, 1.25, 0));
@@ -208,7 +208,7 @@ public final class TwinsArts {
                                 hit(p, e, 16 * m, SOL);
                                 e.setDeltaMovement(e.getDeltaMovement().add(0, 0.4, 0)); e.hurtMarked = true;
                             }
-                            OverdriveFx.play(sl, at, "stomp", 1f, 0.9f);
+                            FxUtil.play(sl, at, "stomp", 1f, 0.9f);
                             if (perf) AstaFx.later(10, () -> {   // Perfected: a second blast
                                 if (!alive(p)) return;
                                 FxSend.ring(sl, PAL_SOL2, at.add(0, 0.1, 0), 0.5f, 6f, 0.5f, 12);
@@ -238,7 +238,7 @@ public final class TwinsArts {
                         }
                     });
                 }
-                OverdriveFx.play(sl, c, "sun_flare", 1.3f, 0.7f);
+                FxUtil.play(sl, c, "sun_flare", 1.3f, 0.7f);
                 if (perf) AstaFx.later(12, () -> {   // Perfected: a second, wider wave
                     if (!alive(p)) return;
                     FxSend.ring(sl, PAL_SOL, c.add(0, 0.1, 0), 1f, 10f, 0.6f, 14);
@@ -260,7 +260,7 @@ public final class TwinsArts {
                         if (first != null) { hit(p, first, 12 * m, SOL); Fx.spark(sl, PAL_SOL, end, 0.6f); }
                     });
                 }
-                OverdriveFx.play(sl, eye, "blade_fly", 1f, 1.1f);
+                FxUtil.play(sl, eye, "blade_fly", 1f, 1.1f);
             }
             default -> {}
         }
@@ -291,14 +291,14 @@ public final class TwinsArts {
                     FxSend.ring(sl, PAL_NYX2, at.add(0, 0.1, 0), 0.3f, 3f, 0.3f, 10);
                     for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(3))) if (e.position().distanceTo(at) <= 3.2) { hit(p, e, 6 * m, NYX); slow(p, e, -0.3, 60); }
                 }
-                OverdriveFx.play(sl, to, "moon_shimmer", 0.8f, 1.3f);
+                FxUtil.play(sl, to, "moon_shimmer", 0.8f, 1.3f);
             }
             case 1 -> {   // Frost Needle: through a line; slows
                 Vec3 end = clip(sl, p, eye, eye.add(look.scale(20)));
                 FxSend.beam(sl, PAL_NYX2, eye.add(look.scale(0.6)).add(0, -0.15, 0), end, 0.12f, 6);
                 FxSend.spike(sl, PAL_NYX, eye.add(look.scale(1.0)), look, 1.2f, 0.08f, 5, 0, FxPacket.HOLD, 0, look.scale(4), 4);
                 for (LivingEntity e : onLine(p, eye, end, 0.8)) { hit(p, e, 6 * m, NYX); slow(p, e, perf ? -0.5 : -0.3, 60); }
-                OverdriveFx.play(sl, eye, "moon_shimmer", 0.6f, 1.8f);
+                FxUtil.play(sl, eye, "moon_shimmer", 0.6f, 1.8f);
             }
             case 2 -> {   // Crescent Fan: five crescents
                 Set<Integer> got = new HashSet<>();
@@ -314,7 +314,7 @@ public final class TwinsArts {
                         AstaFx.later(Math.max(1, (int) (f.distanceTo(p) / 1.2)), () -> { if (alive(p)) hit(p, f, 7 * m, NYX); });
                     }
                 }
-                OverdriveFx.play(sl, eye, "moon_shimmer", 0.8f, 1.1f);
+                FxUtil.play(sl, eye, "moon_shimmer", 0.8f, 1.1f);
             }
             case 3 -> {   // Mirror Double: the next three blows strike twice
                 CompoundTag r = root(p);
@@ -322,13 +322,13 @@ public final class TwinsArts {
                 r.putInt("doubleLeft", perf ? 5 : 3);
                 Fx.pillar(sl, PAL_NYX, p.position(), 2.4f, 0.8f, 12);
                 FxSend.ring(sl, PAL_NYX, p.position().add(0, 1.0, 0), 0.3f, 1.4f, 0.1f, 10);
-                OverdriveFx.play(sl, p.position(), "moon_shimmer", 0.8f, 0.9f);
+                FxUtil.play(sl, p.position(), "moon_shimmer", 0.8f, 0.9f);
             }
             case 4 -> {   // Lunar Veil: the next blow misses
                 root(p).putLong("veil", now(p) + 120);
                 root(p).putInt("veilHits", perf ? 2 : 1);
                 FxSend.ring(sl, PAL_NYX, p.position().add(0, 1.0, 0), 1.2f, 1.3f, 1.2f, 16);
-                OverdriveFx.play(sl, p.position(), "moon_shimmer", 0.9f, 0.7f);
+                FxUtil.play(sl, p.position(), "moon_shimmer", 0.9f, 0.7f);
             }
             case 5 -> {   // Starfall Rain: stars falling where you aim
                 Vec3 c = aimPoint(p, 20);
@@ -348,7 +348,7 @@ public final class TwinsArts {
                         });
                     });
                 }
-                OverdriveFx.play(sl, c, "moon_shimmer", 1f, 0.8f);
+                FxUtil.play(sl, c, "moon_shimmer", 1f, 0.8f);
             }
             case 6 -> {   // Tidelock: an orb that pulls and slows
                 Vec3 c = aimPoint(p, 18).add(0, 1, 0);
@@ -367,7 +367,7 @@ public final class TwinsArts {
                         }
                     });
                 }
-                OverdriveFx.play(sl, c, "moon_shimmer", 1f, 0.6f);
+                FxUtil.play(sl, c, "moon_shimmer", 1f, 0.6f);
             }
             case 7 -> {   // Void Rift: a tear that cuts all inside it
                 Vec3 c = aimPoint(p, 18).add(0, 1, 0);
@@ -383,7 +383,7 @@ public final class TwinsArts {
                         for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(rr))) if (e.position().distanceTo(c) <= rr) hit(p, e, 3 * m, NYX);
                     });
                 }
-                OverdriveFx.play(sl, c, "eclipse_toll", 0.6f, 1.6f);
+                FxUtil.play(sl, c, "eclipse_toll", 0.6f, 1.6f);
             }
             default -> {}
         }
@@ -409,7 +409,7 @@ public final class TwinsArts {
         }
         CompoundTag r = root(p);
         r.putFloat("res", Math.min(100f, r.getFloat("res") + 30f));
-        OverdriveFx.play(sl, c, "slash", 1f, 1.1f);
+        FxUtil.play(sl, c, "slash", 1f, 1.1f);
         sync(p, false);
     }
 
@@ -425,7 +425,7 @@ public final class TwinsArts {
         FxSend.ring(sl, PAL_NYX, at.add(0, 0.3, 0), 0.3f, 5.5f, 0.3f, 18);
         Fx.pillar(sl, Fx.VOID, at, 5f, 1.6f, 16);
         FxSend.shake(sl, at, 0.5f, 10, 14);
-        OverdriveFx.play(sl, at, "eclipse_toll", 1.4f, 1f);
+        FxUtil.play(sl, at, "eclipse_toll", 1.4f, 1f);
         say(p, SOL, "Together, then.");
         look(p, true);
         sync(p, false);

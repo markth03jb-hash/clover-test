@@ -3,14 +3,11 @@ package com.ironspellgrimoire.server;
 import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.network.FxPacket;
-import com.ironspellgrimoire.registry.AddonSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -79,11 +76,6 @@ public final class GamblerFx {
     static void machine(ServerLevel sl, Vec3 c, int[] sym, int stop, int life) { FxPacket p = pk(9, c, life); p.a0 = sym[0] + sym[1] * 8 + sym[2] * 64; p.sweep = stop; send(sl, p); }
 
     // ================================================================== luck
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     private static final Map<UUID, Integer> LUCK = new HashMap<>();
     private static final Map<UUID, Long> DOUBLE = new HashMap<>();
     private static final Map<UUID, Long> CURSE = new HashMap<>();

@@ -122,7 +122,7 @@ public final class IceFx {
         send(sl, h);
         if (shatter) {
             CHILLED.remove(t.getUUID());
-            BloodFx.play(sl, mid(t), "ice_shatter", 0.9f, 1.2f + ThreadLocalRandom.current().nextFloat() * 0.2f);
+            FxUtil.play(sl, mid(t), "ice_shatter", 0.9f, 1.2f + ThreadLocalRandom.current().nextFloat() * 0.2f);
         } else CHILLED.put(t.getUUID(), now + 60);
         if (CHILLED.size() > 300) CHILLED.values().removeIf(u -> u < now);
         chill(t, 60);
@@ -149,13 +149,13 @@ public final class IceFx {
             t.setDeltaMovement(0, Math.min(0, t.getDeltaMovement().y), 0);
             t.hurtMarked = true;
         }
-        BloodFx.play(sl, t.position(), "freeze", 1.0f, 1.0f);
+        FxUtil.play(sl, t.position(), "freeze", 1.0f, 1.0f);
         final float shatter = burst;
         AstaFx.later(ticks, () -> {
             if (!t.isAlive()) return;
             TimedModifiers.remove(t, Attributes.MOVEMENT_SPEED, TimedModifiers.FROST_ROOT);
             if (alive(p)) hit(p, t, shatter, id);
-            BloodFx.play(sl, t.position(), "ice_shatter", 1.3f, 0.9f + ThreadLocalRandom.current().nextFloat() * 0.2f);
+            FxUtil.play(sl, t.position(), "ice_shatter", 1.3f, 0.9f + ThreadLocalRandom.current().nextFloat() * 0.2f);
         });
     }
 
@@ -169,8 +169,8 @@ public final class IceFx {
     }
 
     private static void coldSound(ServerLevel sl, Vec3 at, float pitch) {
-        BloodFx.play(sl, at, "ice_crack", 1.2f, pitch);
-        BloodFx.play(sl, at, "freeze", 0.7f, pitch * 1.1f);
+        FxUtil.play(sl, at, "ice_crack", 1.2f, pitch);
+        FxUtil.play(sl, at, "freeze", 0.7f, pitch * 1.1f);
     }
 
     // ================================================================== frozen ground, cracked armour
@@ -230,10 +230,10 @@ public final class IceFx {
             for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(1.3, 2, 1.3)))
                 if (struck.add(e.getUUID())) hit(p, e, pow, "frost_step");
         }
-        AstaFx.later(20, () -> BloodFx.play(sl, from, "ice_shatter", 1.0f, 1.1f));
+        AstaFx.later(20, () -> FxUtil.play(sl, from, "ice_shatter", 1.0f, 1.1f));
         says(p, "Frost Step");
-        BloodFx.play(sl, from, "freeze", 1.0f, 1.5f);
-        BloodFx.play(sl, to, "ice_crack", 1.0f, 1.3f);
+        FxUtil.play(sl, from, "freeze", 1.0f, 1.5f);
+        FxUtil.play(sl, to, "ice_crack", 1.0f, 1.3f);
     }
 
     // ================================================================== 2. Icicle Rain
@@ -270,11 +270,11 @@ public final class IceFx {
                 if (!alive(p)) return;
                 spire(sl, land.subtract(0, 0.6, 0), new Vec3(r.nextDouble(-0.3, 0.3), 1, r.nextDouble(-0.3, 0.3)).normalize(), 0.9f + r.nextFloat() * 0.5f, 0.16f, 40, 1);   // it stands in the ground where it struck
                 for (LivingEntity e : enemies(sl, p, new AABB(land, land).inflate(1.5, 2.5, 1.5))) hit(p, e, pow, "icicle_rain");
-                if (r.nextInt(3) == 0) BloodFx.play(sl, land, "ice_crack", 0.8f, 1.0f + r.nextFloat() * 0.4f);
+                if (r.nextInt(3) == 0) FxUtil.play(sl, land, "ice_crack", 0.8f, 1.0f + r.nextFloat() * 0.4f);
             });
         }
         says(p, "Icicle Rain");
-        BloodFx.play(sl, c, "freeze", 1.2f, 0.7f);
+        FxUtil.play(sl, c, "freeze", 1.2f, 0.7f);
     }
 
     // ================================================================== 3. Frost Sentries
@@ -303,13 +303,13 @@ public final class IceFx {
                     l.u = mid(tt); l.r = 0.9f; l.speed = flight;
                     send(sl, l);
                     AstaFx.later(flight, () -> { if (tt.isAlive() && alive(p)) hit(p, tt, pow, "frost_sentries"); });
-                    BloodFx.play(sl, at, "ice_crack", 0.5f, 1.8f);
+                    FxUtil.play(sl, at, "ice_crack", 0.5f, 1.8f);
                 });
             }
             AstaFx.later(162, () -> shards(sl, at, Vec3.ZERO, 0.15f, 14, 0.09f));
         }
         says(p, "Frost Sentries");
-        BloodFx.play(sl, base, "freeze", 1.0f, 1.2f);
+        FxUtil.play(sl, base, "freeze", 1.0f, 1.2f);
     }
 
     // ================================================================== 4. Glacier Prison
@@ -333,11 +333,11 @@ public final class IceFx {
         AstaFx.later(50, () -> {   // the walls crush in
             if (!alive(p)) return;
             for (LivingEntity e : enemies(sl, p, new AABB(c, c).inflate(3, 3, 3))) hit(p, e, pow * 1.3f, "glacier_prison");
-            BloodFx.play(sl, c, "ice_shatter", 1.5f, 0.6f);
+            FxUtil.play(sl, c, "ice_shatter", 1.5f, 0.6f);
             FxSend.shake(sl, c, 0.4f, 6, 14);
         });
         says(p, "Glacier Prison");
-        BloodFx.play(sl, c, "ice_crack", 1.4f, 0.6f);
+        FxUtil.play(sl, c, "ice_crack", 1.4f, 0.6f);
     }
 
     // ================================================================== 5. Snow Veil
@@ -363,10 +363,10 @@ public final class IceFx {
             if (!alive(p)) return;
             frost(sl, ZenonAI.ground(sl, p.position()), 3.5f, 4, 40);
             shards(sl, p.position().add(0, 1, 0), new Vec3(0, 0.15, 0), 0.25f, 18, 0.08f);
-            BloodFx.play(sl, p.position(), "ice_crack", 1.0f, 1.2f);
+            FxUtil.play(sl, p.position(), "ice_crack", 1.0f, 1.2f);
         });
         says(p, "Snow Veil");
-        BloodFx.play(sl, p.position(), "freeze", 1.4f, 0.9f);
+        FxUtil.play(sl, p.position(), "freeze", 1.4f, 0.9f);
     }
 
     private static final Map<UUID, Long> VEIL = new HashMap<>();
@@ -412,12 +412,12 @@ public final class IceFx {
                     e.hurtMarked = true;
                 }
                 FxSend.shake(sl, c, 0.7f, 10, 20);
-                BloodFx.play(sl, c, "ice_shatter", 1.6f, 0.6f);
-                BloodFx.play(sl, c, "ice_crack", 1.4f, 0.5f);
+                FxUtil.play(sl, c, "ice_shatter", 1.6f, 0.6f);
+                FxUtil.play(sl, c, "ice_crack", 1.4f, 0.5f);
             });
         }
         says(p, "Frost Nova");
-        BloodFx.play(sl, start, "freeze", 1.0f, 1.4f);
+        FxUtil.play(sl, start, "freeze", 1.0f, 1.4f);
     }
 
     // ================================================================== 7. Ice Serpent
@@ -454,9 +454,9 @@ public final class IceFx {
                     spire(sl, e.position().add(dir[0].scale(-0.5)).subtract(0, 0.3, 0), dir[0].add(0, 1.2, 0).normalize(), 2.2f, 0.25f, 26, 2);
                     spire(sl, e.position().add(dir[0].scale(0.5)).subtract(0, 0.3, 0), dir[0].scale(-1).add(0, 1.2, 0).normalize(), 2.2f, 0.25f, 26, 2);
                     e.setDeltaMovement(e.getDeltaMovement().add(0, 0.6, 0)); e.hurtMarked = true;
-                    BloodFx.play(sl, e.position(), "ice_shatter", 1.0f, 1.3f);
+                    FxUtil.play(sl, e.position(), "ice_shatter", 1.0f, 1.3f);
                 }
-                if (kk % 4 == 0) BloodFx.play(sl, head[0], "ice_crack", 0.6f, 1.5f);
+                if (kk % 4 == 0) FxUtil.play(sl, head[0], "ice_crack", 0.6f, 1.5f);
             });
         }
         says(p, "Ice Serpent");
@@ -498,10 +498,10 @@ public final class IceFx {
                 hit(p, e, pow * 0.9f, "glacier_wall");
                 e.setDeltaMovement(d.scale(1.0).add(0, 0.4, 0)); e.hurtMarked = true;
             }
-            BloodFx.play(sl, c, "ice_shatter", 1.6f, 0.7f);
+            FxUtil.play(sl, c, "ice_shatter", 1.6f, 0.7f);
         });
         says(p, "Glacier Wall");
-        BloodFx.play(sl, c, "ice_crack", 1.5f, 0.6f);
+        FxUtil.play(sl, c, "ice_crack", 1.5f, 0.6f);
     }
 
     private static final Map<UUID, Object[]> WALLS = new HashMap<>();
@@ -527,7 +527,7 @@ public final class IceFx {
         az.r = 10f; az.sweep = 14;
         send(sl, az);
         AstaFx.later(14, () -> { if (alive(p)) frost(sl, g, 10f, 6, 70); });
-        for (int k = 2; k < 14; k += 4) { final float pitch = 1.8f - k * 0.06f; AstaFx.later(k, () -> { if (alive(p)) BloodFx.play(sl, c, "freeze", 0.7f, pitch); }); }   // the cold drawing in
+        for (int k = 2; k < 14; k += 4) { final float pitch = 1.8f - k * 0.06f; AstaFx.later(k, () -> { if (alive(p)) FxUtil.play(sl, c, "freeze", 0.7f, pitch); }); }   // the cold drawing in
         AstaFx.later(14, () -> {
             if (!alive(p)) return;
             List<LivingEntity> foes = enemies(sl, p, new AABB(c, c).inflate(10, 4, 10));
@@ -536,7 +536,7 @@ public final class IceFx {
                 hit(p, e, pow * 0.4f, "absolute_zero");
                 encase(p, e, 30, pow * 2.2f, "absolute_zero");
             }
-            BloodFx.play(sl, c, "ice_crack", 1.6f, 0.5f);
+            FxUtil.play(sl, c, "ice_crack", 1.6f, 0.5f);
             FxSend.shake(sl, c, 0.4f, 8, 16);
         });
         says(p, "Absolute Zero");
@@ -589,12 +589,12 @@ public final class IceFx {
                         l.u = mid(tt); l.r = 1.3f; l.speed = flight;
                         send(sl, l);
                         AstaFx.later(flight, () -> { if (tt.isAlive() && alive(p)) hit(p, tt, pow, "ice_throne"); });
-                        BloodFx.play(sl, from, "ice_crack", 0.8f, 1.5f);
+                        FxUtil.play(sl, from, "ice_crack", 0.8f, 1.5f);
                     }
                 }
             });
         }
-        AstaFx.later(161, () -> { if (alive(p)) { p.fallDistance = 0; shards(sl, p.position(), new Vec3(0, 0.1, 0), 0.3f, 30, 0.12f); BloodFx.play(sl, p.position(), "ice_shatter", 1.6f, 0.7f); } });
+        AstaFx.later(161, () -> { if (alive(p)) { p.fallDistance = 0; shards(sl, p.position(), new Vec3(0, 0.1, 0), 0.3f, 30, 0.12f); FxUtil.play(sl, p.position(), "ice_shatter", 1.6f, 0.7f); } });
         says(p, "ICE THRONE");
         coldSound(sl, base, 0.5f);
     }
@@ -622,7 +622,7 @@ public final class IceFx {
         cm.u = at; cm.r = 3.2f; cm.sweep = HANG; cm.speed = IMPACT;
         send(sl, cm);
         sound(sl, at, SoundEvents.BEACON_ACTIVATE, 1.5f, 1.8f);
-        AstaFx.later(HANG, () -> { if (alive(p)) { BloodFx.play(sl, at, "ice_crack", 1.6f, 0.4f); sound(sl, at, SoundEvents.ELYTRA_FLYING, 0.8f, 1.4f); } });   // it cracks and starts to fall
+        AstaFx.later(HANG, () -> { if (alive(p)) { FxUtil.play(sl, at, "ice_crack", 1.6f, 0.4f); sound(sl, at, SoundEvents.ELYTRA_FLYING, 0.8f, 1.4f); } });   // it cracks and starts to fall
         AstaFx.later(IMPACT, () -> {
             if (!alive(p)) return;
             for (LivingEntity e : enemies(sl, p, new AABB(at, at).inflate(7, 5, 7))) {
@@ -634,7 +634,7 @@ public final class IceFx {
             }
             FxSend.shake(sl, at, 1.0f, 14, 26);
             sound(sl, at, SoundEvents.GENERIC_EXPLODE, 1.6f, 1.3f);
-            BloodFx.play(sl, at, "ice_shatter", 2.0f, 0.4f);
+            FxUtil.play(sl, at, "ice_shatter", 2.0f, 0.4f);
             coldSound(sl, at, 0.5f);
         });
         says(p, "MOONFALL");

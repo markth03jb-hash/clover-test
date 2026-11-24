@@ -4,13 +4,10 @@ import static com.ironspellgrimoire.server.FxUtil.*;
 
 import com.ironspellgrimoire.network.FxPacket;
 import com.ironspellgrimoire.registry.AddonItemRegistry;
-import com.ironspellgrimoire.registry.AddonSounds;
 import io.redspace.ironsspellbooks.api.util.Utils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -142,11 +139,6 @@ public final class GravityFx {
     static void kill(ServerLevel sl, int id, Vec3 at) { FxSend.kill(sl, id, at); }
 
     // ================================================================== helpers
-    static void play(ServerLevel sl, Vec3 at, String kind, float vol, float pitch) {
-        SoundEvent s = AddonSounds.get(kind);
-        if (s != null) sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch);
-    }
-
     static boolean domain(ServerPlayer p) { return Moves.inMode(p, MODE); }
 
     static float pw(ServerPlayer p, float power) { return domain(p) ? power * 1.3f : power; }

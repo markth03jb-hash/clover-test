@@ -261,7 +261,7 @@ public final class FortressFx {
 
     static void levelUp(ServerPlayer p, int lv) {
         say(p, "The fortress grows: book level " + lv + ".");
-        OverdriveFx.play(p.serverLevel(), p.position(), "fort_horn", 0.8f, 1.0f);
+        FxUtil.play(p.serverLevel(), p.position(), "fort_horn", 0.8f, 1.0f);
         hint(p, HINT_LEVEL, "Each book level gives a blueprint - open The Fortress to build a new room");
         giveBlueprint(p, "a level up");
         if (lv == 4) { say(p, "Your floor plan grows to 4x4."); hint(p, HINT_GRID4, "Your floor plan grew to 4x4 - more room to build"); }
@@ -303,7 +303,7 @@ public final class FortressFx {
         } else g[cellOf(p, room)] = room * 10 + lv + 1;
         r.putIntArray("grid", g);
         if (!p.isCreative()) r.putInt("stone", r.getInt("stone") - cost);
-        OverdriveFx.play(p.serverLevel(), p.position(), "fort_build", 0.7f, 0.9f + lv * 0.08f);
+        FxUtil.play(p.serverLevel(), p.position(), "fort_build", 0.7f, 0.9f + lv * 0.08f);
         if (lv == 0) {   // an empty Room page takes the new room's spell
             int[] s = r.getIntArray("slots");
             for (int i = 0; i < SLOTS; i++) if (s[i] == -1) { s[i] = room; r.putIntArray("slots", s); break; }
@@ -393,7 +393,7 @@ public final class FortressFx {
         if (s < 0 || s >= SHAPE.length) return;
         root(p).putInt("shape", s);
         tell(p, "Siege Mode: " + SHAPE[s] + " - " + SHAPE_SAYS[s]);
-        OverdriveFx.play(p.serverLevel(), p.position(), "fort_page", 0.5f, 0.8f + 0.15f * s);
+        FxUtil.play(p.serverLevel(), p.position(), "fort_page", 0.5f, 0.8f + 0.15f * s);
         hint(p, HINT_SHAPE, "Sneak and cast Siege Mode to switch its shape (or pick it on the Spells tab)");
         sync(p, false);
     }
@@ -422,7 +422,7 @@ public final class FortressFx {
         Adv.grant(p, "prestige");
     }
     private static void prestigeFx(ServerPlayer p) {
-        OverdriveFx.play(p.serverLevel(), p.position(), "fort_prestige", 1.0f, 1.0f);
+        FxUtil.play(p.serverLevel(), p.position(), "fort_prestige", 1.0f, 1.0f);
         FxSend.ring(p.serverLevel(), FortressSiege.BRASS, p.position().add(0, 0.1, 0), 0.5f, 6f, 0.2f, 20);
         FxSend.shake(p.serverLevel(), p.position(), 0.3f, 10, 8);
     }

@@ -265,7 +265,7 @@ public final class HungerFx {
             if (now(p) < root(p).getLong("sulkDraw")) return;
             root(p).putLong("sulkDraw", now(p) + 60);
             voice(p, 4);
-            AstaFx.later(60, () -> { if (alive(p) && equipped(p) && p.getMainHandItem().isEmpty() && !drawn(p)) { give(p, current(p)); OverdriveFx.play(sl, p.position(), "blade_draw", 0.7f, 0.6f); } });
+            AstaFx.later(60, () -> { if (alive(p) && equipped(p) && p.getMainHandItem().isEmpty() && !drawn(p)) { give(p, current(p)); FxUtil.play(sl, p.position(), "blade_draw", 0.7f, 0.6f); } });
             return;
         }
         give(p, current(p));
@@ -286,7 +286,7 @@ public final class HungerFx {
                     Fx.pillar(sl, Fx.SILVER, feet.add(Math.cos(a) * 1.3, 0, Math.sin(a) * 1.3), 0.9f * k, 0.12f, 8);
                 }
                 FxSend.cracks(sl, Fx.SILVER, feet.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 1.8f * k, 12, false, p.tickCount);
-                OverdriveFx.play(sl, feet, "impact", 0.7f * k, 1.3f);
+                FxUtil.play(sl, feet, "impact", 0.7f * k, 1.3f);
             }
             case 2 -> {   // crystal: shards converging into the hand
                 for (int i = 0; i < (out ? 7 : 4); i++) {
@@ -294,17 +294,17 @@ public final class HungerFx {
                     FxSend.beam(sl, Fx.CRIMSON, from, hand, 0.08f, 6);
                 }
                 Fx.flash(sl, hand, 0.8f * k);
-                OverdriveFx.play(sl, hand, "ice_crack", 0.8f * k, 1.6f);
+                FxUtil.play(sl, hand, "ice_crack", 0.8f * k, 1.6f);
             }
             case 3 -> {   // shadow: rising out of your shadow
                 FxSend.ring(sl, Fx.YAMI, feet.add(0, 0.05, 0), 0.2f, 1.6f, 0.05f, 10);
                 FxSend.trail(sl, Fx.YAMI, feet.add(0, 0.1, 0), hand, 0.25f * k, 8);
-                OverdriveFx.play(sl, feet, "shadow_rise", 0.8f * k, 1.2f);
+                FxUtil.play(sl, feet, "shadow_rise", 0.8f * k, 1.2f);
             }
             case 4 -> {   // flame: igniting in the grip
                 FxSend.wall(sl, Fx.FIRE, hand, d, new Vec3(0, 1, 0), 0.1f, 0.9f * k, -180, 180, 0.5f, 6, 0, 0);
                 Fx.impact(sl, Fx.FIRE, hand, 1.0f * k);
-                OverdriveFx.play(sl, hand, "fire", 0.9f * k, 1.3f);
+                FxUtil.play(sl, hand, "fire", 0.9f * k, 1.3f);
             }
             default -> {   // the jaw snapping out of the book
                 Vec3 side = rightOf(d);
@@ -313,8 +313,8 @@ public final class HungerFx {
                 Fx.flash(sl, hand, 0.7f * k);
             }
         }
-        OverdriveFx.play(sl, feet, "blade_draw", out ? 1f : 0.6f, out ? 0.8f : 1.2f);
-        if (out) OverdriveFx.play(sl, feet, "jaws", 0.5f, 1.3f);
+        FxUtil.play(sl, feet, "blade_draw", out ? 1f : 0.6f, out ? 0.8f : 1.2f);
+        if (out) FxUtil.play(sl, feet, "jaws", 0.5f, 1.3f);
     }
 
     static void give(ServerPlayer p, int f) {
@@ -332,7 +332,7 @@ public final class HungerFx {
         int pal = PAL[line(heldForm(p))];
         p.setDeltaMovement(d.scale(1.5).add(0, 0.22, 0));
         p.hurtMarked = true;
-        OverdriveFx.play(sl, p.position(), "rush", 0.9f, 1.1f);
+        FxUtil.play(sl, p.position(), "rush", 0.9f, 1.1f);
         float dmg = bladeDmg(p) * 1.3f * (power / 10f);
         final boolean[] bit = {false};
         for (int k = 1; k <= 7; k++) {
@@ -343,7 +343,7 @@ public final class HungerFx {
                     Vec3 c = mid(t), side = rightOf(d);
                     FxSend.crescent(sl, pal, c.add(0, 0.5, 0), d, side, 1.1f, 1.4f, 5, 0.5f);
                     FxSend.crescent(sl, pal, c.add(0, -0.5, 0), d, side.scale(-1), 1.1f, 1.4f, 5, 0.5f);
-                    OverdriveFx.play(sl, c, "jaws", 1.1f, 1f);
+                    FxUtil.play(sl, c, "jaws", 1.1f, 1f);
                     AstaFx.damage(p, t, dmg, "gnash");
                     p.heal(2f);
                     feed(p, 4f);
@@ -363,7 +363,7 @@ public final class HungerFx {
         Vec3 c = p.position().add(0, 1, 0);
         FxSend.wall(sl, pal, c, new Vec3(1, 0, 0), new Vec3(0, 0, 1), r * 0.5f, r, -180, 180, 0.6f, 8, 1, 0);   // a ring of blades round you (no travel: it used to slide off east)
         FxSend.ring(sl, pal, p.position().add(0, 0.1, 0), 0.5f, r, 0.1f, 9);
-        OverdriveFx.play(sl, c, "slash", 1.2f, 0.8f);
+        FxUtil.play(sl, c, "slash", 1.2f, 0.8f);
         float dmg = bladeDmg(p) * (power / 10f);
         int hits = 0;
         for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(r, 1.5, r))) {
@@ -375,7 +375,7 @@ public final class HungerFx {
         if (hits > 0) {
             p.heal(hits * (mood(hunger(p)) <= 1 ? 2f : 1f));
             feed(p, 2f * hits);
-            OverdriveFx.play(sl, c, "blood_splash", 0.8f, 1f);
+            FxUtil.play(sl, c, "blood_splash", 0.8f, 1f);
         }
     }
 
@@ -397,7 +397,7 @@ public final class HungerFx {
         Vec3 eye = p.getEyePosition(), d = flat(p.getLookAngle()), feet = p.position();
         switch (ln) {
             case 1 -> {   // Ossuary Eruption: rings of bone spires bursting up round you, wave on wave
-                OverdriveFx.play(sl, feet, "stomp", 1.2f, 0.7f);
+                FxUtil.play(sl, feet, "stomp", 1.2f, 0.7f);
                 for (int w = 0; w < 3; w++) {
                     final float rr = 2.5f + 2.5f * w;
                     AstaFx.later(w * 6, () -> {
@@ -414,12 +414,12 @@ public final class HungerFx {
                             AstaFx.damage(p, t, dmg * 0.6f, "unleash");
                             t.setDeltaMovement(t.getDeltaMovement().add(0, 0.5, 0)); t.hurtMarked = true;
                         }
-                        OverdriveFx.play(sl, feet, "impact", 0.9f, 0.8f + 0.1f * rr / 2.5f);
+                        FxUtil.play(sl, feet, "impact", 0.9f, 0.8f + 0.1f * rr / 2.5f);
                     });
                 }
             }
             case 2 -> {   // Shard Nova: sixteen crystal shards fired outward, each running through everything for 12 blocks
-                OverdriveFx.play(sl, feet, "ice_shatter", 1.2f, 1.2f);
+                FxUtil.play(sl, feet, "ice_shatter", 1.2f, 1.2f);
                 java.util.Set<LivingEntity> hit = new java.util.HashSet<>();
                 for (int k = 0; k < 16; k++) {
                     Vec3 dir = rotY(d, Math.PI * 2 * k / 16);
@@ -437,7 +437,7 @@ public final class HungerFx {
                 List<LivingEntity> path = enemies(sl, p, new net.minecraft.world.phys.AABB(a, b.add(0, 2, 0)).inflate(1.6));
                 FxSend.trail(sl, Fx.YAMI, a.add(0, 1, 0), b.add(0, 1, 0), 0.9f, 10);
                 p.teleportTo(b.x, b.y, b.z);
-                OverdriveFx.play(sl, b, "shadow_slash", 1.2f, 0.9f);
+                FxUtil.play(sl, b, "shadow_slash", 1.2f, 0.9f);
                 AstaFx.later(6, () -> {
                     if (!alive(p)) return;
                     for (LivingEntity t : path) {
@@ -447,11 +447,11 @@ public final class HungerFx {
                         AstaFx.damage(p, t, dmg, "unleash");
                         p.heal(2f);
                     }
-                    OverdriveFx.play(sl, p.position(), "shadow_whisper", 1f, 0.8f);
+                    FxUtil.play(sl, p.position(), "shadow_whisper", 1f, 0.8f);
                 });
             }
             case 4 -> {   // Pyre Sweep: three arcs of flame rolling out ahead, each further than the last
-                OverdriveFx.play(sl, feet, "fire", 1.2f, 0.8f);
+                FxUtil.play(sl, feet, "fire", 1.2f, 0.8f);
                 java.util.Set<LivingEntity> hit = new java.util.HashSet<>();
                 for (int w = 0; w < 3; w++) {
                     final float rr = 3.5f + 3f * w;
@@ -472,7 +472,7 @@ public final class HungerFx {
                 Vec3 c = eye.add(d.scale(3.2)).add(0, -0.4, 0), side = rightOf(d);
                 FxSend.crescent(sl, Fx.CRIMSON, c.add(0, 1.0, 0), d, side, 2.6f, 3.2f, 7, 0.4f);
                 FxSend.crescent(sl, Fx.CRIMSON, c.add(0, -1.0, 0), d, side.scale(-1), 2.6f, 3.2f, 7, 0.4f);
-                OverdriveFx.play(sl, c, "jaws", 1.4f, 0.7f);
+                FxUtil.play(sl, c, "jaws", 1.4f, 0.7f);
                 for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(6))) {
                     Vec3 to = mid(t).subtract(eye);
                     if (to.length() > 6.5 || flat(to).dot(d) < 0.5) continue;
@@ -510,7 +510,7 @@ public final class HungerFx {
         Vec3 c = mid(t), d = flat(c.subtract(p.position()));
         FxSend.slash(sl, PAL[line(form)], c, d, new Vec3(0, 1, 0), 1.3f, 1.7f, 5, 0.6f);
         AstaFx.damage(p, t, dmg, "unleash");
-        OverdriveFx.play(sl, c, "slash", 0.6f, 1.4f);
+        FxUtil.play(sl, c, "slash", 0.6f, 1.4f);
     }
 
     /** The Awakened Pact: 10 s of you and the blade as one - more damage, faster swings, a quicker step and more of every hit drunk. */
@@ -522,7 +522,7 @@ public final class HungerFx {
         TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, PACT_MOVE, "Awakened Pact", 0.15, AttributeModifier.Operation.MULTIPLY_TOTAL, 200);
         FxSend.ring(sl, PAL[line(heldForm(p))], p.position().add(0, 0.1, 0), 0.5f, 3.5f, 0.2f, 12);
         Fx.pillar(sl, PAL[line(heldForm(p))], p.position(), 3f, 0.6f, 10);
-        OverdriveFx.play(sl, p.position(), "heartbeat", 1.2f, 0.8f);
+        FxUtil.play(sl, p.position(), "heartbeat", 1.2f, 0.8f);
         say(p, "Now. Together.");
         sync(p, false);
     }
@@ -538,7 +538,7 @@ public final class HungerFx {
         root(p).putBoolean("thrown", true);
         ThrownHungerBlade b = new ThrownHungerBlade(sl, p, s, bladeDmg(p) * 1.2f);
         sl.addFreshEntity(b);
-        OverdriveFx.play(sl, p.position(), "blade_fly", 1.1f, 1f);
+        FxUtil.play(sl, p.position(), "blade_fly", 1.1f, 1f);
     }
 
     /** The thrown blade came back (or was lost): into the empty hand it goes. */
@@ -562,7 +562,7 @@ public final class HungerFx {
         }
         if (p.getMainHandItem().isEmpty() && equipped(p)) {
             p.setItemInHand(InteractionHand.MAIN_HAND, s);
-            OverdriveFx.play(p.serverLevel(), p.position(), "blade_draw", 0.9f, 1.3f);
+            FxUtil.play(p.serverLevel(), p.position(), "blade_draw", 0.9f, 1.3f);
         }
     }
 
@@ -604,7 +604,7 @@ public final class HungerFx {
         r.putIntArray("load", l);
         ServerLevel sl = p.serverLevel();
         Fx.pillar(sl, PAL[line(f)], p.position(), 2.5f, 0.5f, 10);
-        OverdriveFx.play(sl, p.position(), "jaws", 1f, 0.6f);
+        FxUtil.play(sl, p.position(), "jaws", 1f, 0.6f);
         String[] g = VOICE[line(f)][3];
         say(p, STAGE[f] == 7 ? "Two hungers, one blade. " + NAMES[f] + "." : STAGE[f] == 4 ? "I am becoming something. " + LINE_NAMES[line(f)] + "... yes."
                 : g[ThreadLocalRandom.current().nextInt(g.length)]);
@@ -623,8 +623,8 @@ public final class HungerFx {
             ServerLevel sl = p.serverLevel();
             Vec3 hand = p.getEyePosition().add(p.getLookAngle().scale(0.8)).add(0, -0.4, 0);
             Fx.impact(sl, PAL[line(f)], hand, 1.2f);
-            OverdriveFx.play(sl, p.position(), "blade_draw", 1f, 1.1f);
-            OverdriveFx.play(sl, p.position(), "jaws", 0.5f, 1.5f);
+            FxUtil.play(sl, p.position(), "blade_draw", 1f, 1.1f);
+            FxUtil.play(sl, p.position(), "jaws", 0.5f, 1.5f);
         }
         tell(p, NAMES[f]);
         sync(p, false);
@@ -696,7 +696,7 @@ public final class HungerFx {
             float chance = 0.2f + (branch(f) == 3 ? 0.15f : 0f);
             if (rnd.nextFloat() < chance) {
                 crit = true;
-                amt *= 1.5f; Fx.impact(sl, Fx.CRIMSON, mid(victim), 1.2f); OverdriveFx.play(sl, mid(victim), "ice_crack", 0.8f, 1.4f);
+                amt *= 1.5f; Fx.impact(sl, Fx.CRIMSON, mid(victim), 1.2f); FxUtil.play(sl, mid(victim), "ice_crack", 0.8f, 1.4f);
                 if (f == 23) splash(p, victim, 2.5, amt * 0.4f, Fx.SILVER);   // the Fossil Prism: its criticals splash
             }
         }
@@ -738,7 +738,7 @@ public final class HungerFx {
             }
             case 6 -> {
                 int times = f == 17 ? 2 : 1;
-                for (int k = 1; k <= times; k++) AstaFx.later(4 * k, () -> { if (victim.isAlive() && alive(p)) { extraHit(p, victim, hit * 0.35f, Fx.YAMI); OverdriveFx.play(sl, mid(victim), "jaws", 0.6f, 1.4f); } });
+                for (int k = 1; k <= times; k++) AstaFx.later(4 * k, () -> { if (victim.isAlive() && alive(p)) { extraHit(p, victim, hit * 0.35f, Fx.YAMI); FxUtil.play(sl, mid(victim), "jaws", 0.6f, 1.4f); } });
             }
             case 7 -> {
                 if (n % 3 == 0) {
@@ -749,7 +749,7 @@ public final class HungerFx {
                         extraHit(p, t, hit * 0.7f, Fx.FIRE);
                         burn(p, t, 2, 1.5f);
                     }
-                    OverdriveFx.play(sl, p.position(), "fire", 0.9f, 1.2f);
+                    FxUtil.play(sl, p.position(), "fire", 0.9f, 1.2f);
                 }
             }
             case 8 -> {
@@ -758,7 +758,7 @@ public final class HungerFx {
                     FxSend.ring(sl, Fx.FIRE, c, 0.3f, 3f, 0.6f, 8);
                     Fx.impact(sl, Fx.FIRE, c, 2f);
                     for (LivingEntity t : enemies(sl, p, victim.getBoundingBox().inflate(3))) if (t != victim) extraHit(p, t, hit * 0.8f, Fx.FIRE);
-                    OverdriveFx.play(sl, c, "blast", 1f, 1.1f);
+                    FxUtil.play(sl, c, "blast", 1f, 1.1f);
                 }
             }
             default -> {}
@@ -794,8 +794,8 @@ public final class HungerFx {
             case 4 -> FxSend.wall(sl, Fx.FIRE, t.position().add(0, 0.4, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 0.3f, 1.8f, -180, 180, 1.2f, 8, 1, 0);
             default -> Fx.impact(sl, Fx.CRIMSON, c, 1.8f);
         }
-        OverdriveFx.play(sl, c, "jaws", 1.3f, 0.6f);
-        OverdriveFx.play(sl, c, "blood_splash", 1f, 0.8f);
+        FxUtil.play(sl, c, "jaws", 1.3f, 0.6f);
+        FxUtil.play(sl, c, "blood_splash", 1f, 0.8f);
         p.heal(4f);
     }
 
@@ -811,10 +811,10 @@ public final class HungerFx {
             int f = heldForm(p);
             Vec3 at = p.getEyePosition().add(p.getLookAngle().scale(0.9)).add(0, -0.3, 0);
             Fx.impact(sl, PAL[line(f)], at, 1.3f);
-            OverdriveFx.play(sl, at, "clank", 1f, 1.2f);
+            FxUtil.play(sl, at, "clank", 1f, 1.2f);
             if (att != null && att.distanceTo(p) < 5) {
                 extraHit(p, att, bladeDmg(p) * 0.6f, PAL[line(f)]);
-                OverdriveFx.play(sl, mid(att), "jaws", 0.9f, 1.2f);
+                FxUtil.play(sl, mid(att), "jaws", 0.9f, 1.2f);
             }
             if (since <= 4) { feed(p, 8f); voice(p, 6); }   // a perfect parry
             return;
@@ -825,7 +825,7 @@ public final class HungerFx {
                 root(p).putLong("guardCd", now(p) + 160);
                 extraHit(p, att, bladeDmg(p) * 0.8f, PAL[line(heldForm(p))]);
                 FxSend.slash(sl, PAL[line(heldForm(p))], mid(att), to, new Vec3(0, 1, 0), 1.2f, 1.6f, 5, 0.6f);
-                OverdriveFx.play(sl, mid(att), "slash", 0.9f, 1.3f);
+                FxUtil.play(sl, mid(att), "slash", 0.9f, 1.3f);
                 voice(p, 5);
             }
         }
@@ -855,7 +855,7 @@ public final class HungerFx {
                     Vec3 out = flat(t.position().subtract(feet));
                     t.setDeltaMovement(out.scale(0.8).add(0, 0.4, 0)); t.hurtMarked = true;
                 }
-                OverdriveFx.play(sl, feet, "stomp", 1.2f, 0.8f);
+                FxUtil.play(sl, feet, "stomp", 1.2f, 0.8f);
             }
             case 2 -> {   // a long piercing lunge
                 Vec3 a = p.position().add(0, 1, 0), b = clip(sl, p, a, a.add(d.scale(7)));
@@ -863,7 +863,7 @@ public final class HungerFx {
                 FxSend.trail(sl, Fx.CRIMSON, a, b, 0.5f, 8);
                 for (LivingEntity t : enemies(sl, p, new net.minecraft.world.phys.AABB(a, b).inflate(1.3)))
                     if (mid(t).distanceTo(closestOnSegment(a, b, mid(t))) <= 1.3) { AstaFx.damage(p, t, dmg, "gnash"); Fx.impact(sl, Fx.CRIMSON, mid(t), 1.2f); }
-                OverdriveFx.play(sl, a, "ice_shatter", 1f, 1.3f);
+                FxUtil.play(sl, a, "ice_shatter", 1f, 1.3f);
             }
             case 3 -> {   // a blink behind your target, and a cut
                 LivingEntity t = aimed(p, 12, 25);
@@ -874,7 +874,7 @@ public final class HungerFx {
                 p.setYRot((float) Math.toDegrees(Math.atan2(-dir.scale(-1).x, dir.scale(-1).z)));
                 FxSend.slash(sl, Fx.YAMI, mid(t), dir.scale(-1), new Vec3(0, 1, 0), 1.6f, 2.0f, 6, 0.6f);
                 AstaFx.damage(p, t, dmg * 1.15f, "gnash");
-                OverdriveFx.play(sl, mid(t), "shadow_slash", 1.1f, 1f);
+                FxUtil.play(sl, mid(t), "shadow_slash", 1.1f, 1f);
             }
             case 4 -> {   // a spinning wheel of fire
                 for (int k = 0; k < 3; k++)
@@ -884,7 +884,7 @@ public final class HungerFx {
                     AstaFx.damage(p, t, dmg * 0.9f, "gnash");
                     burn(p, t, 3, 2f);
                 }
-                OverdriveFx.play(sl, feet, "fire", 1.2f, 1.1f);
+                FxUtil.play(sl, feet, "fire", 1.2f, 1.1f);
             }
             default -> {   // a big lunging bite
                 p.setDeltaMovement(d.scale(1.9).add(0, 0.2, 0)); p.hurtMarked = true;
@@ -896,7 +896,7 @@ public final class HungerFx {
                     Vec3 to = p.position().add(0, 1, 0);
                     for (LivingEntity t : enemies(sl, p, new net.minecraft.world.phys.AABB(from, to).inflate(2.5)))
                         if (mid(t).distanceTo(closestOnSegment(from, to, mid(t))) <= 2.5) { AstaFx.damage(p, t, dmg, "gnash"); p.heal(1f); }
-                    OverdriveFx.play(sl, p.position(), "jaws", 1.3f, 0.8f);
+                    FxUtil.play(sl, p.position(), "jaws", 1.3f, 0.8f);
                 });
             }
         }
@@ -914,8 +914,8 @@ public final class HungerFx {
         r.putDouble("domX", p.getX()); r.putDouble("domY", p.getY()); r.putDouble("domZ", p.getZ());
         ServerLevel sl = p.serverLevel();
         FxSend.impactFrame(sl, p.position(), 3, false, 24);
-        OverdriveFx.play(sl, p.position(), "jaws", 1.6f, 0.5f);
-        OverdriveFx.play(sl, p.position(), "deep_boom", 1f, 0.8f);
+        FxUtil.play(sl, p.position(), "jaws", 1.6f, 0.5f);
+        FxUtil.play(sl, p.position(), "deep_boom", 1f, 0.8f);
         voice(p, 0);
         domainPulse(p, true);
     }
@@ -1002,7 +1002,7 @@ public final class HungerFx {
         if (bond(p) > lv) {
             say(p, BOND_LINES[bond(p)]);
             if (bond(p) >= MAX_BOND) Adv.grant(p, "one_appetite");
-            OverdriveFx.play(sl, p.position(), "heartbeat", 1f, 1.1f);
+            FxUtil.play(sl, p.position(), "heartbeat", 1f, 1.1f);
         }
         sync(p, false);
     }

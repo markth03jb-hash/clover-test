@@ -38,7 +38,7 @@ public class ShadowTonicItem extends Item {
                 data.setMana((float) Math.min(max, data.getMana() + 150));
                 level.playSound(null, p.blockPosition(), SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 0.8f, 1.2f);
             }
-            com.ironspellgrimoire.server.ShadowFx.play(sp.serverLevel(), sp.position(), "shadow_whisper", 0.6f, 1.6f);
+            com.ironspellgrimoire.server.FxUtil.play(sp.serverLevel(), sp.position(), "shadow_whisper", 0.6f, 1.6f);
             if (!p.getAbilities().instabuild) st.shrink(1);
             p.getCooldowns().addCooldown(this, 20);
         }
