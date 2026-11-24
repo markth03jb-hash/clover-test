@@ -160,7 +160,7 @@ public final class MeridianFx {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || !p.isAlive()) return;
         if (!has(p)) { if (S.containsKey(p.getUUID()) && p.tickCount % 20 == 0) { star(p, null); sync(p); S.remove(p.getUUID()); } return; }
         State s = st(p);
-        if (s.star != null && p.tickCount % 2 == 0) starTick(p, s);
+        if (s.star != null) starTick(p, s);
         if (p.tickCount % 10 != 0) return;
         ServerLevel sl = p.serverLevel();
         long now = sl.getGameTime();
@@ -336,10 +336,12 @@ public final class MeridianFx {
         LivingEntity sighted = aimed(p, 14, 8);
         Vec3 aim = sighted != null ? mid(sighted) : clip(sl, p, eye, eye.add(p.getLookAngle().scale(14)));
         Vec3 to = aim.subtract(s.star);
-        double step = Math.min(to.length(), 0.9);
+        double step = Math.min(to.length(), 0.45);
         if (step > 0.01) s.star = s.star.add(to.normalize().scale(step));
-        Kit.orb(sl, SUN, s.star, Vec3.ZERO, s.starSize, 3);
-        Kit.orb(sl, WHITE, s.star, Vec3.ZERO, s.starSize * 0.55f, 3);
+        if (now % 2 == 0) {
+            Kit.orb(sl, SUN, s.star, Vec3.ZERO, s.starSize, 3);
+            Kit.orb(sl, WHITE, s.star, Vec3.ZERO, s.starSize * 0.55f, 3);
+        }
         if (now % 10 == 0) {
             FxSend.ring(sl, HEAT, s.star, s.starSize * 0.8f, s.starSize + 0.4f, 0.04f, 8);
             float dmg = (2f + 6f * Math.min(1.25f, meter(p))) * dawnbreak(p);

@@ -1142,7 +1142,7 @@ final class GameTestCases {
             CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
             bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
             prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
-            prev = prev == null || prev.is(com.ironspellgrimoire.registry.AddonItemRegistry.MERIDIAN_GRIMOIRE.get()) ? ItemStack.EMPTY : prev.copy();
+            prev = prev == null ? ItemStack.EMPTY : prev.copy();
             top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, bk));
             MeridianFx.testReset(p);
         }

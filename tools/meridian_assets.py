@@ -126,7 +126,7 @@ if __name__ == '__main__':
     b = Image.open(os.path.join(M, 'meridian_grimoire_front.png')).convert('RGBA')
     b = Image.blend(b, Image.new('RGBA', b.size, tuple(int(v) for v in b.resize((1, 1), Image.BOX).getpixel((0, 0)))), 0.55)
     b.save(os.path.join(M, 'meridian_grimoire_back.png'))
-    shift(Image.open(os.path.join(M, 'dark_grimoire_leather.png')), 0.09, 1.25, 1.25).save(os.path.join(M, 'meridian_grimoire_leather.png'))
+    shift(Image.open(os.path.join(M, 'dark_grimoire_leather.png')), 0.115, 1.0, 1.2).save(os.path.join(M, 'meridian_grimoire_leather.png'))
     t = Image.open(os.path.join(M, 'spatial_grimoire_trim.png')).convert('RGBA'); px = t.load()
     for y in range(t.height):
         for x in range(t.width):
