@@ -54,7 +54,7 @@ jobs:
         with: { path: shards }
       - name: One report from the three shards
         run: |
-          mkdir -p /tmp/out
+          mkdir -p /tmp/out && touch /tmp/body.txt
           ls shards
           for d in shards/shard-*; do
             n=${d##*-}
@@ -64,7 +64,7 @@ jobs:
             cp $d/console_tail.txt /tmp/out/console_tail_$n.txt 2>/dev/null || true
           done
           cp /tmp/out/latest_0.log /tmp/out/latest.log 2>/dev/null || true
-          ps=$(grep -c "^PASS" /tmp/body.txt); f=$(grep -cE "^(FAIL|CRASH)" /tmp/body.txt); w=$(grep -c "^WARN" /tmp/body.txt)
+          ps=$(grep -c "^PASS" /tmp/body.txt || true); f=$(grep -cE "^(FAIL|CRASH)" /tmp/body.txt || true); w=$(grep -c "^WARN" /tmp/body.txt || true)   # (grep -c exits 1 on none)
           { echo "Iron Spell Grimoire - game tests: $ps passed, $f failed, $w warning(s)"; cat /tmp/body.txt; } > /tmp/out/isg_gametests_report.txt
           cat /tmp/out/isg_gametests_report.txt
       - name: Keep the results on the game-tests branch
