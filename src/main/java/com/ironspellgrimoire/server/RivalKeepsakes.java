@@ -64,7 +64,7 @@ public final class RivalKeepsakes {
         if (a == null || a.level().isClientSide || a instanceof Player) return;
         LivingEntity owner = null;
         if (a instanceof IMagicSummon s && s.getSummoner() instanceof LivingEntity l0) owner = l0;
-        else if (a instanceof OwnableEntity o && o.getOwner() instanceof LivingEntity l) owner = l;
+        else if (a instanceof OwnableEntity o) owner = o.getOwner();
         if (owner instanceof ServerPlayer p && p.distanceTo(a) <= 8 && RiftRewards.wears(p, AddonItemRegistry.WARLORDS_STANDARD.get()))
             e.setAmount(e.getAmount() * 1.1f);
     }

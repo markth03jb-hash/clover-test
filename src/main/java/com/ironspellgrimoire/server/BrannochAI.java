@@ -155,7 +155,7 @@ public final class BrannochAI {
     }
 
     public static boolean legionHit(TorLegionnaire l, Entity t) {
-        Entity lord = l.lord == null ? null : l.level().getEntity(l.lord);
+        Entity lord = l.lord == null || !(l.level() instanceof ServerLevel sl) ? null : sl.getEntity(l.lord);
         return !(lord instanceof BrannochTor b) || inRing(b, t);
     }
 

@@ -1015,7 +1015,7 @@ public final class GameTests {
                 }
                 if (t == 6) {
                     if (Rivals.met(p, Rivals.SEREN) != 1) bad.add("meeting Seren wasn't recorded (" + Rivals.met(p, Rivals.SEREN) + ")");
-                    seren.dodgeAt = Long.MAX_VALUE; seren.parryUntil = 0;   // no sidestep or parry for the test's blow
+                    ((com.ironspellgrimoire.entity.SerenVale) seren).dodgeAt = Long.MAX_VALUE; ((com.ironspellgrimoire.entity.SerenVale) seren).parryUntil = 0;   // no sidestep or parry for the test's blow
                     yieldIt(seren);
                     if (!seren.yielded || !seren.over || !seren.isAlive()) bad.add("Seren didn't yield at her last line (yielded " + seren.yielded + ", alive " + seren.isAlive() + ")");
                     if (Rivals.wins(p, Rivals.SEREN) != 1) bad.add("the win wasn't recorded");
@@ -1043,7 +1043,7 @@ public final class GameTests {
                 if (t == 116 && alder != null) {
                     yieldIt(alder);
                     if (!alder.yielded || alder.over) bad.add("one twin down ended the fight");
-                    if (wren.griefUntil <= sl().getGameTime()) bad.add("Wren didn't grieve");
+                    if (((com.ironspellgrimoire.entity.WrenBellmar) wren).griefUntil <= sl().getGameTime()) bad.add("Wren didn't grieve");
                     alder.yieldT = 598;
                 }
                 if (t == 120 && alder != null) {

@@ -197,7 +197,6 @@ public final class Rivals {
             r.challenger = p.getUUID();
             r.focus = p.getUUID();
             r.setRank(rank);
-            r.setCustomName(Component.literal(r.getName().getString()));
             sl.addFreshEntity(r);
             made.add(r);
             if (first == null) first = r;
