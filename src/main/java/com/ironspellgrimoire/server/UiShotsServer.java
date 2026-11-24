@@ -152,7 +152,7 @@ public final class UiShotsServer {
                 sl.setDayTime(6000); OmenFx.testReset(p);
                 var look = p.getLookAngle().multiply(1, 0, 1).normalize();
                 var side = new net.minecraft.world.phys.Vec3(-look.z, 0, look.x);
-                var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(sl);
+                var z = net.minecraft.world.entity.EntityType.HUSK.create(sl);   // a husk: a zombie would burn in the noon sun
                 var v = net.minecraft.world.entity.EntityType.VILLAGER.create(sl);
                 int i = 0;
                 for (var m : new net.minecraft.world.entity.Mob[]{z, v}) {

@@ -59,7 +59,7 @@ import net.minecraftforge.network.PacketDistributor;
 public final class OmenFx {
     private OmenFx() {}
 
-    static final int DARK = Fx.YAMI, BLUE = Fx.WATER, PALE = Fx.ICE;
+    static final int DARK = 47, BLUE = 47, PALE = Fx.ICE;   // 47: the shadow palette - black with a blue sheen
     static final UUID TRIP = UUID.fromString("7a1e0000-0000-4000-8000-0000000000e1");
     public static final float FULL = 100f;
 
@@ -237,8 +237,8 @@ public final class OmenFx {
         Mage m = mage(p);
         float scale = karma(t) * (byLaw ? 1f + 0.25f * Math.min(8, m.lawCount) : 1f) * (nested ? 0.6f : 1f);
         int kind = pick(p, t, f, nested);
-        lastKind = kind;
         strike(p, t, f, kind, scale);
+        if (!nested) lastKind = kind;
         if (t.distanceTo(p) < 32) p.displayClientMessage(net.minecraft.network.chat.Component.literal("Calamity: " + KINDS[kind]).withStyle(net.minecraft.ChatFormatting.BLUE), true);
         if (nested) return;
         // it leaps on: Domino always, mastery 4 now and then

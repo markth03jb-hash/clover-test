@@ -907,7 +907,7 @@ public class AddonSpellRegistry {
 
     // ---- the Grimoire of Ill Omen (server/OmenFx): misfortune on whatever pursues you
     private static com.ironspellgrimoire.spells.BookSpell omen(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
-        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ELDRITCH_RESOURCE,
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ENDER_RESOURCE,   // not eldritch: that school must be learned first
                 com.ironspellgrimoire.item.OmenGrimoireItem.class, "ui.iron_spell_grimoire.omen_grimoire_only", cd, mana, power,
                 com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
     }

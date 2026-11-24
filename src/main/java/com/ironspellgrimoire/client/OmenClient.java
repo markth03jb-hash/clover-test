@@ -60,7 +60,7 @@ public final class OmenClient {
         Matrix4f m = ps.last().pose();
         VertexConsumer vc = e.getMultiBufferSource().getBuffer(RenderType.text(MARK));
         int light = LightTexture.FULL_BRIGHT;
-        float s = 10, x = -s / 2, y = -s / 2;
+        float s = 16, x = -s / 2, y = -s / 2;
         quad(vc, m, x, y, s, 0f, 1f, 0f, 0.5f, light);                    // the empty mark
         float k = Math.max(0f, Math.min(1f, f[0]));
         if (k > 0.01f) {                                                     // the full one, risen to its Misfortune

@@ -135,17 +135,19 @@ def omen_mark():
 
 
 def afterimage_skin():
-    """The Afterimage: a player's shape in black, its edges outlined in deep blue, no face but two pale points."""
-    sk = Image.new('RGBA', (64, 64), (0, 0, 0, 0)); d = ImageDraw.Draw(sk)
-    # the base layer regions (head, body, arms, legs) of the 64x64 skin layout, filled black with a blue rim
-    regions = [(0, 0, 32, 16), (16, 16, 40, 32), (40, 16, 56, 32), (0, 16, 16, 32), (32, 48, 48, 64), (16, 48, 32, 64)]
+    """The Afterimage: a player's shape in near-black, every edge rimmed in deep blue, no face but two pale points."""
+    sk = Image.new('RGBA', (64, 64), (0, 0, 0, 0))
     rnd = random.Random(9)
-    for x0, y0, x1, y1 in regions:
-        for x in range(x0, x1):
-            for y in range(y0, y1):
-                edge = (x - x0) % 4 in (0,) or (y - y0) % 4 == 0
-                v = rnd.randint(0, 14)
-                sk.putpixel((x, y), (8 + v, 10 + v, 24 + v * 2, 230) if not edge else (40, 70, 170, 230))
+    # the base boxes of the 64x64 player layout: (u, v, width, height, depth)
+    boxes = [(0, 0, 8, 8, 8), (16, 16, 8, 12, 4), (40, 16, 4, 12, 4), (32, 48, 4, 12, 4), (0, 16, 4, 12, 4), (16, 48, 4, 12, 4)]
+    for u, v, w, h, d in boxes:
+        faces = [(u + d, v, w, d), (u + d + w, v, w, d), (u, v + d, d, h), (u + d, v + d, w, h), (u + d + w, v + d, d, h), (u + 2 * d + w, v + d, w, h)]
+        for fx, fy, fw, fh in faces:
+            for x in range(fx, fx + fw):
+                for y in range(fy, fy + fh):
+                    edge = x in (fx, fx + fw - 1) or y in (fy, fy + fh - 1)
+                    k = rnd.randint(0, 6)
+                    sk.putpixel((x, y), (30, 60, 160, 235) if edge else (6 + k, 7 + k, 16 + k * 2, 225))
     for x, y in ((10, 12), (13, 12)): sk.putpixel((x, y), (200, 220, 255, 255))   # two pale points for eyes
     os.makedirs(os.path.join(ROOT, 'entity'), exist_ok=True)
     sk.save(os.path.join(ROOT, 'entity', 'omen_afterimage.png'))

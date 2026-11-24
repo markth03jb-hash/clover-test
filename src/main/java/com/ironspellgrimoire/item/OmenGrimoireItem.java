@@ -8,6 +8,6 @@ import net.minecraft.ChatFormatting;
  *  original). Eight pages. */
 public class OmenGrimoireItem extends ThemedGrimoireItem {
     public OmenGrimoireItem() {
-        super(8, "omen_grimoire", ChatFormatting.BLUE, () -> AddonSpellRegistry.OMEN_SPELLS, AttributeRegistry.ELDRITCH_SPELL_POWER::get, 900, 0.4, 0.2, 2);
+        super(8, "omen_grimoire", ChatFormatting.BLUE, () -> AddonSpellRegistry.OMEN_SPELLS, AttributeRegistry.ENDER_SPELL_POWER::get, 900, 0.4, 0.2, 2);
     }
 }
