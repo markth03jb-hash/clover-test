@@ -397,7 +397,7 @@ public final class LightFx {
                         if (struckBy.add(e.getUUID())) n = 0;
                         if (n >= 6) continue;   // no more than six swords count on one foe
                         e.getPersistentData().putInt("isg_light_rain", n + 1);
-                        hit(p, e, pow * 0.28f, "light_swords_of_judgment");
+                        hit(p, e, pow * 0.56f, "light_swords_of_judgment");
                     }
                 });
             }

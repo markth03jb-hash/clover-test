@@ -474,7 +474,7 @@ public class FireFx {
             Chain ch = new Chain(); ch.target = tg; ch.until = sl.getGameTime() + CHAIN_TICKS;
             CHAINS.put(p.getUUID(), ch);
             ModeHud.show(p, "soul_chain", CHAIN_TICKS);
-            hit(p, tg, power, "soul_chain");
+            hit(p, tg, power * 2f, "soul_chain");
             FxLib.impact(sl, F, mid(tg), 1.2f);
             p.displayClientMessage(Component.translatable("ui.iron_spell_grimoire.soul_chain.on").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
             sound(sl, tg.position(), net.minecraft.sounds.SoundEvents.CHAIN_PLACE, 1f, 0.6f);

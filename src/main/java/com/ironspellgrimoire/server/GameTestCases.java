@@ -375,6 +375,29 @@ final class GameTestCases {
                 "karma's ledger", (java.util.function.BiConsumer<ServerPlayer, Float>) OmenFx::karmasLedger, "",
                 "the law itself", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { for (var m : pl.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, pl.getBoundingBox().inflate(28))) m.setTarget(pl); OmenFx.theLawItself(pl, pw); }, ""));
         queue.add(new OmenTest());
+        queue.add(new BookMovesTest("vector", com.ironspellgrimoire.registry.AddonItemRegistry.VECTOR_GRIMOIRE::get, VectorFx.class,
+                "redirect", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::redirect, "", "recoil step", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::recoilStep, "q", "return to sender", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::returnToSender, "q",
+                "pressure gust", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::pressureGust, "", "pulse touch", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::pulseTouch, "q", "wind vector", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::windVector, "q",
+                "plasma point", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::plasmaPoint, "q", "vector absolute", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::vectorAbsolute, "q"));
+        queue.add(new BookMovesTest("quiet fuse", com.ironspellgrimoire.registry.AddonItemRegistry.FUSE_GRIMOIRE::get, FuseFx.class,
+                "prime item", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::primeItem, "q",
+                "detonate", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { for (var m : pl.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, pl.getBoundingBox().inflate(28))) FuseFx.arm(pl, m, true); FuseFx.detonate(pl, pw); }, "", "heat seeker", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::heatSeeker, "q",
+                "air bubble", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::airBubble, "q", "contact charge", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::contactCharge, "q", "chain fuse", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::chainFuse, "q",
+                "hidden tenant", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::hiddenTenant, "q", "loop of ruin", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { for (var m : pl.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, pl.getBoundingBox().inflate(28))) FuseFx.arm(pl, m, true); FuseFx.loopOfRuin(pl, pw); }, ""));
+        queue.add(new BookMovesTest("foreseen", com.ironspellgrimoire.registry.AddonItemRegistry.FORESEEN_GRIMOIRE::get, ForeseenFx.class,
+                "step through", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::stepThrough, "q", "read intent", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::readIntent, "q", "punish", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::punish, "c",
+                "false future", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::falseFuture, "q", "snap back", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::snapBack, "q", "inevitable", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::inevitable, "",
+                "seen it before", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::seenItBefore, "q", "rewrite", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::rewrite, "q"));
+        queue.add(new TrioTest(BookTree.VECTOR));
+        queue.add(new TrioTest(BookTree.FUSE));
+        queue.add(new TrioTest(BookTree.FORESEEN));
+        queue.add(new BookMovesTest("bound demon", com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE::get, BoundFx.class,
+                "demon draw", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::demonDraw, "q", "cursed edge", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::cursedEdge, "", "demon's whisper", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::demonsWhisper, "q",
+                "bond guard", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::bondGuard, "q", "demon flurry", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::demonFlurry, "c", "sinner's mark", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::sinnersMark, "q",
+                "salt lance", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::saltLance, "q", "the last seraph", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::lastSeraph, "q"));
+        queue.add(new TrioTest(BookTree.BOUND));
+        queue.add(new MultiplayerTest());
+        queue.add(new StressTest());
         queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
         queue.add(new BossTest("Brannoch Tor", AddonEntities.BRANNOCH_TOR));
         queue.add(new BossTest("Alder Bellmar", AddonEntities.ALDER_BELLMAR));
@@ -447,6 +470,9 @@ final class GameTestCases {
             if (fx > 360) warn(name, "heavy: " + fx + " effect packets in 3 s (" + fx / 3 + "/s)");
             if (fx <= 1 && spent <= 0 && dealt <= 0) warn(name, "did nothing visible (no effects, no mana, no damage; " + castState + ") - it may need a target, a form or a condition");
             if (ok) pass(name, String.format("%d fx packets, %.0f mana, %.1f damage, %d messages, cd %d, book %s", fx, spent, dealt, FxBatch.messages - msg0, spell.getSpellCooldown(), bookId) + ", " + t + " ticks");
+            // the balance survey (tools/balance.py): one line a page - what it dealt to the dummy, its mana, its cooldown
+            int manaCost = 0; try { manaCost = spell.getManaCost(1); } catch (Throwable ignored) {}
+            GameTests.results.add(String.format(java.util.Locale.ROOT, "BAL | %s | %s | %.1f | %d | %d | %s", spell.getSpellResource().getPath(), bookId, Math.max(0f, dealt), manaCost, spell.getSpellCooldown(), spell.getSchoolType().getId().getPath()));
             return true;
         }
     }
@@ -1223,6 +1249,367 @@ final class GameTestCases {
         }
     }
 
+    /** Equip a mastered grimoire (for the tests below). */
+    static void wear(net.minecraft.world.item.Item item) {
+        ItemStack bk = new ItemStack(item);
+        CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+        bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+        top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, bk));
+    }
+
+    /** Two players: a second (fake) player stands in front of the test player. With grimoire PvP on, magic may reach
+     *  them; with it off, it must not - for blasts and lines (FxUtil.enemies), Ill Omen's pursuit, the Bound Demon's
+     *  takeover. Either way they're family: Bond Guard binds them and a Hidden Tenant hides in them. And a player's blow
+     *  is foreseen like a mob's. */
+    static final class MultiplayerTest extends Test {
+        MultiplayerTest() { super("multiplayer: a second player, PvP on and off"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{FxUtil.class, OmenFx.class, ForeseenFx.class, BoundFx.class, FuseFx.class, com.ironspellgrimoire.AddonConfig.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        net.minecraftforge.common.util.FakePlayer other;
+        ItemStack prev = ItemStack.EMPTY;
+        boolean pvpWas;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            prev = prev == null ? ItemStack.EMPTY : prev.copy();
+            pvpWas = com.ironspellgrimoire.AddonConfig.pvp();
+            other = net.minecraftforge.common.util.FakePlayerFactory.get(sl(), new com.mojang.authlib.GameProfile(UUID.fromString("15a0e5e5-0000-4000-8000-0000000000aa"), "ISGTestFriend"));
+            other.moveTo(home.x, home.y, home.z + 3, 180f, 0f);
+            other.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+            if (!sl().players().contains(other)) sl().addNewPlayer(other);
+            p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);   // facing south, at the other player
+        }
+        void end() {
+            try { com.ironspellgrimoire.AddonConfig.PVP.set(pvpWas); } catch (Throwable ignored) {}
+            if (other != null) sl().removePlayerImmediately(other, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            ItemStack back = prev;
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, back));
+            BoundFx.testReset(p); FuseFx.testReset(p); ForeseenFx.testReset(p); OmenFx.testReset(p);
+        }
+        boolean nearEnemy() { return FxUtil.enemies(sl(), p, p.getBoundingBox().inflate(6)).contains(other); }
+        @Override boolean tick(int t) {
+            try {
+                if (t == 2) {
+                    com.ironspellgrimoire.AddonConfig.PVP.set(true);
+                    if (!com.ironspellgrimoire.AddonConfig.mayHurt(p, other)) bad.add("PvP on, but the rule says no (server pvp " + sl().getServer().isPvpAllowed() + ")");
+                    else {
+                        if (!nearEnemy()) bad.add("PvP on: blasts and lines don't see the other player");
+                        // a player's blow is foreseen like a mob's
+                        wear(com.ironspellgrimoire.registry.AddonItemRegistry.FORESEEN_GRIMOIRE.get());
+                        ForeseenFx.testReset(p);
+                        var ev = new net.minecraftforge.event.entity.living.LivingAttackEvent(p, other.damageSources().playerAttack(other), 3f);
+                        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(ev);
+                        if (!ev.isCanceled() || ForeseenFx.testHeld(p) != 1) bad.add("PvP on: another player's blow wasn't foreseen");
+                        // Ill Omen: a player closing in is a pursuer
+                        wear(com.ironspellgrimoire.registry.AddonItemRegistry.OMEN_GRIMOIRE.get());
+                        other.xo = other.getX(); other.yo = other.getY(); other.zo = other.getZ() + 0.3;   // it was further away a tick ago
+                        if (!OmenFx.pursues(other, p)) bad.add("PvP on: a player closing in isn't an Ill Omen pursuer");
+                        // the demon may go for them
+                        wear(com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE.get());
+                        BoundFx.testReset(p);
+                        if (BoundFx.testPick(p) != other) bad.add("PvP on: the demon wouldn't go for the other player (the only creature near)");
+                    }
+                }
+                if (t == 4) {
+                    com.ironspellgrimoire.AddonConfig.PVP.set(false);
+                    if (com.ironspellgrimoire.AddonConfig.mayHurt(p, other)) bad.add("PvP off, but the rule still says yes");
+                    if (nearEnemy()) bad.add("PvP off: blasts and lines still reach the other player");
+                    wear(com.ironspellgrimoire.registry.AddonItemRegistry.OMEN_GRIMOIRE.get());
+                    other.xo = other.getX(); other.yo = other.getY(); other.zo = other.getZ() + 0.3;
+                    if (OmenFx.pursues(other, p)) bad.add("PvP off: the other player still counts as an Ill Omen pursuer");
+                    wear(com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE.get());
+                    BoundFx.testReset(p);
+                    if (BoundFx.testPick(p) == other) bad.add("PvP off: the demon would still go for the other player");
+                    // family either way: Bond Guard binds them
+                    if (!BoundFx.ally(p, other)) bad.add("the other player isn't family to the Bound Demon");
+                    BoundFx.bondGuard(p, 0);
+                    if (BoundFx.testLinks(p) != 1) bad.add("Bond Guard didn't bind the other player");
+                    // and a Hidden Tenant hides in them
+                    wear(com.ironspellgrimoire.registry.AddonItemRegistry.FUSE_GRIMOIRE.get());
+                    FuseFx.testReset(p);
+                    FuseFx.hiddenTenant(p, 0);
+                    if (!FuseFx.testHost(p, other)) bad.add("Hidden Tenant didn't hide in the other player you looked at");
+                }
+                if (t == 6) {
+                    if (bad.isEmpty()) pass(name, "PvP on: reachable, foreseen, a pursuer, a takeover target; PvP off: none of those; family to Bond Guard and Hidden Tenant either way");
+                    else fail(name, String.join("; ", bad));
+                    end();
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); end(); return true; }
+        }
+    }
+
+    /** Under load: 40 husks hunting the player and five grimoires' heaviest moves going at once (The Law Itself, a
+     *  Loop of Ruin over armed husks, Vector Absolute, a Demon Flurry and the Last Seraph, the Afterimage). The server's
+     *  tick time is measured before and during; it fails if the moves push a tick past 50 ms (under 20 ticks a second). */
+    static final class StressTest extends Test {
+        StressTest() { super("stress: 40 hunters and five grimoires at once"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{OmenFx.class, FuseFx.class, VectorFx.class, BoundFx.class, BookTree.class}; }
+        final java.util.List<net.minecraft.world.entity.Mob> mobs = new java.util.ArrayList<>();
+        ItemStack prev = ItemStack.EMPTY;
+        double base, under, worst;
+        int baseN, underN;
+        BlockState[] before;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            prev = prev == null ? ItemStack.EMPTY : prev.copy();
+            p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+            for (int i = 0; i < 40; i++) {
+                var m = net.minecraft.world.entity.EntityType.HUSK.create(sl());
+                if (m == null) continue;
+                double a = i * Math.PI * 2 / 40, r = 6 + (i % 4) * 2;
+                m.moveTo(home.x + Math.cos(a) * r, home.y, home.z + Math.sin(a) * r, 0f, 0f);
+                m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(140); m.setHealth(140);
+                m.setPersistenceRequired();
+                sl().addFreshEntity(m);
+                m.setTarget(p);
+                mobs.add(m);
+            }
+            before = snapshot();
+        }
+        void end() {
+            for (var m : mobs) m.discard();
+            for (var a : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.OmenAfterimage.class, new AABB(home, home).inflate(48))) a.discard();
+            ItemStack back = prev;
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, back));
+            BoundFx.testReset(p); FuseFx.testReset(p); VectorFx.testReset(p); OmenFx.testReset(p);
+        }
+        double tickMs() { return sl().getServer().getAverageTickTime(); }
+        @Override boolean tick(int t) {
+            try {
+                p.setHealth(p.getMaxHealth());
+                MagicData.getPlayerMagicData(p).setMana(5000);
+                if (t > 20 && t <= 60) { base += tickMs(); baseN++; }   // hunters only
+                if (t == 61) {
+                    wear(com.ironspellgrimoire.registry.AddonItemRegistry.OMEN_GRIMOIRE.get()); OmenFx.theLawItself(p, 0); OmenFx.afterimage(p, 0);
+                }
+                if (t == 63) {
+                    wear(com.ironspellgrimoire.registry.AddonItemRegistry.FUSE_GRIMOIRE.get());
+                    for (var m : mobs) FuseFx.arm(p, m, true);
+                    FuseFx.loopOfRuin(p, 0);
+                }
+                if (t == 66) { wear(com.ironspellgrimoire.registry.AddonItemRegistry.VECTOR_GRIMOIRE.get()); VectorFx.vectorAbsolute(p, 0); VectorFx.windVector(p, 0); }
+                if (t == 69) { wear(com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE.get()); BoundFx.lastSeraph(p, 0); BoundFx.demonFlurry(p, 0); BoundFx.sinnersMark(p, 0); }
+                if (t > 70 && t <= 170) { double ms = tickMs(); under += ms; underN++; worst = Math.max(worst, ms); }
+                if (t == 171) {
+                    double b = base / Math.max(1, baseN), u = under / Math.max(1, underN);
+                    String ch = changes(before);
+                    String msg = String.format("server tick: %.1f ms with 40 hunters, %.1f ms (worst average %.1f) with the five grimoires going", b, u, worst);
+                    if (!ch.isEmpty()) fail(name, "changed the world: " + ch);
+                    else if (worst > 50) fail(name, msg + " - over 50 ms: the server falls under 20 ticks a second");
+                    else pass(name, msg);
+                    end();
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); end(); return true; }
+        }
+    }
+
+    /** The Vector, Quiet Fuse and Foreseen grimoires: their trees (points, requirements, keystone pairs, unlearning), their
+     *  G wheels (locked until learned, then on cooldown), and each passive at work - Vector turning an arrow back and a
+     *  blow's force, the Quiet Fuse arming with a blow and blowing on Detonate and on its timer, the Foreseen holding a
+     *  blow so that stepping away dodges it and staying lets it land. */
+    static final class TrioTest extends Test {
+        final int kind;
+        TrioTest(int kind) { super("trio: " + new String[]{"vector", "quiet fuse", "foreseen", "bound demon"}[kind] + " tree, wheel and passive"); this.kind = kind; }
+        @Override Class<?>[] roots() { return new Class<?>[]{BookTree.class, VectorFx.class, FuseFx.class, ForeseenFx.class, BoundFx.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        ItemStack prev = ItemStack.EMPTY, bk;
+        BlockState[] before;
+        net.minecraft.world.entity.Mob husk;
+        net.minecraft.world.entity.projectile.Arrow arrow;
+        float hp0, huskHp;
+        net.minecraft.world.entity.Mob villager;
+        int hits0;
+
+        net.minecraft.world.entity.Mob put(double dx, double dz) {
+            var m = net.minecraft.world.entity.EntityType.HUSK.create(sl());
+            if (m == null) return null;
+            m.moveTo(home.x + dx, home.y, home.z + dz, 180f, 0f);
+            m.setNoAi(true); m.setPersistenceRequired();
+            m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(120); m.setHealth(120);   // under 150: not a boss
+            sl().addFreshEntity(m);
+            return m;
+        }
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            bk = new ItemStack(kind == BookTree.VECTOR ? com.ironspellgrimoire.registry.AddonItemRegistry.VECTOR_GRIMOIRE.get()
+                    : kind == BookTree.FUSE ? com.ironspellgrimoire.registry.AddonItemRegistry.FUSE_GRIMOIRE.get()
+                    : kind == BookTree.BOUND ? com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE.get() : com.ironspellgrimoire.registry.AddonItemRegistry.FORESEEN_GRIMOIRE.get());
+            CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+            bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            prev = prev == null ? ItemStack.EMPTY : prev.copy();
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, bk));
+            bk = BookTree.book(p);
+            BookTree.testClearCd(p);
+            VectorFx.testReset(p); FuseFx.testReset(p); ForeseenFx.testReset(p); BoundFx.testReset(p);
+            p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+            husk = put(0, 1.6);
+            before = snapshot();
+        }
+        void end() {
+            if (husk != null) husk.discard();
+            if (villager != null) villager.discard();
+            if (arrow != null) arrow.discard();
+            for (var d : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.ForeseenDouble.class, new AABB(home, home).inflate(40))) d.discard();
+            ItemStack back = prev;
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, back));
+            VectorFx.testReset(p); FuseFx.testReset(p); ForeseenFx.testReset(p); BoundFx.testReset(p);
+            BookTree.testClearCd(p);
+            p.setHealth(p.getMaxHealth());
+        }
+        int rk(String id) { return BookTree.rank(BookTree.book(p), id); }
+
+        /** The tree, the same way for all three: points, requirements, ranks, keystone pairs, unlearning. */
+        void tree() {
+            ItemStack b = BookTree.book(p);
+            if (BookTree.kind(b) != kind) { bad.add("the book worn isn't the " + BookTree.TREE[kind] + "'s"); return; }
+            BookTree.testXp(b, 0);
+            int pts0 = BookTree.points(b);
+            if (pts0 < 2) bad.add("a fresh book at mastery " + GrimoireMastery.level(b) + " has only " + pts0 + " points");
+            BookTree.testXp(b, 100000);
+            if (BookTree.level(b) != BookTree.MAX_LEVEL) bad.add("100000 growth is level " + BookTree.level(b) + ", not " + BookTree.MAX_LEVEL);
+            if (BookTree.points(b) != pts0 + BookTree.MAX_LEVEL * (kind == BookTree.BOUND ? 2 : 1)) bad.add("points didn't grow by the level");
+            java.util.List<BookTree.Node> nodes = BookTree.TREES.get(kind);
+            BookTree.Node stat = nodes.stream().filter(n -> n.kind() == BookTree.STAT && n.ranks() >= 2).findFirst()
+                    .orElse(nodes.stream().filter(n -> n.kind() != BookTree.ROOT && n.req().length > 0 && n.req()[0].equals("root")).findFirst().orElse(null));   // the Bond Tree has no multi-rank stats
+            BookTree.Node deep = nodes.stream().filter(n -> n.kind() != BookTree.ROOT && n.kind() != BookTree.STAT && n.req().length > 0 && !n.req()[0].equals("root") && n.kind() != BookTree.KEY).findFirst().orElse(null);
+            if (stat == null || deep == null) { bad.add("the tree has no multi-rank stat or no deep node"); return; }
+            if (BookTree.blocked(b, deep) == null) bad.add(deep.name() + " could be learned without " + deep.req()[0]);
+            for (int i = 0; i < stat.ranks(); i++) BookTree.learn(p, stat.id());
+            if (rk(stat.id()) != stat.ranks()) bad.add(stat.name() + " is rank " + rk(stat.id()) + " after " + stat.ranks() + " learns");
+            BookTree.learn(p, stat.id());
+            if (rk(stat.id()) != stat.ranks()) bad.add(stat.name() + " went past its last rank");
+            // a keystone pair: learn everything a keystone needs, take it, the other side must shut
+            BookTree.Node key = nodes.stream().filter(n -> n.kind() == BookTree.KEY).findFirst().orElse(null);
+            if (key == null) { bad.add("no keystones"); return; }
+            BookTree.testSet(b, key.req()[0], 1);
+            BookTree.learn(p, key.id());
+            if (rk(key.id()) != 1) bad.add("couldn't take " + key.name() + ": " + BookTree.blocked(b, key));
+            BookTree.Node other = BookTree.node(kind, key.excl());
+            BookTree.learn(p, other.id());
+            if (rk(other.id()) != 0) bad.add(key.name() + " and " + other.name() + " were both taken");
+            if (BookTree.spent(b) > BookTree.points(b) + 200) bad.add("spent is wild: " + BookTree.spent(b));
+            // unlearning: free once, then a wait
+            BookTree.respec(p);
+            if (rk(stat.id()) != 0 || rk(key.id()) != 0) bad.add("Unlearn All left nodes learned");
+            BookTree.testSet(b, stat.id(), 1);
+            BookTree.respec(p);
+            if (rk(stat.id()) != 1) bad.add("Unlearn All worked twice in a row");
+            BookTree.testClearCd(p);
+            BookTree.respec(p);
+            // the wheel: slot 1 locked until its node, then on cooldown
+            String w1 = BookTree.WHEEL_IDS[kind][1];
+            if (BookTree.wheelOpen(p, 1)) bad.add("wheel slot 1 open without " + w1);
+            BookTree.testSet(b, w1, 1);
+            if (!BookTree.wheelOpen(p, 1)) bad.add("wheel slot 1 shut with " + w1);
+        }
+
+        @Override boolean tick(int t) {
+            try {
+                if (t == 2) {
+                    if (husk == null) { fail(name, "couldn't place the husk"); end(); return true; }
+                    tree();
+                    hp0 = p.getHealth(); huskHp = husk.getHealth();
+                    if (kind == BookTree.VECTOR) {
+                        BookTree.testSet(bk, "k1", 1);   // Total Reflection: every arrow comes back
+                        arrow = new net.minecraft.world.entity.projectile.Arrow(sl(), husk);
+                        arrow.setPos(home.x, home.y + 1.2, home.z - 6);
+                        arrow.shoot(0, 0.05, 1, 2.0f, 0f);
+                        sl().addFreshEntity(arrow);
+                    } else if (kind == BookTree.FUSE) {
+                        husk.hurt(p.damageSources().playerAttack(p), 1f);   // a blow arms it
+                        if (FuseFx.testArmed(p) != 1) bad.add("a blow armed " + FuseFx.testArmed(p) + ", not 1");
+                        huskHp = husk.getHealth();
+                        FuseFx.detonate(p, 0);
+                    } else if (kind == BookTree.BOUND) {
+                        // the demon fills, and takes over: no casting, the blade held, and it swings at the husk for you
+                        BoundFx.testFeed(p, 100f);
+                        if (!BoundFx.takenOver(p)) bad.add("100% Possession didn't take you over");
+                        var ev = new io.redspace.ironsspellbooks.api.events.SpellPreCastEvent(p, "iron_spell_grimoire:cursed_edge", 1, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.BLOOD.get(), io.redspace.ironsspellbooks.api.spells.CastSource.SPELLBOOK);
+                        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(ev);
+                        if (!ev.isCanceled()) bad.add("you could still cast while taken over");
+                        if (!p.getMainHandItem().is(com.ironspellgrimoire.registry.AddonItemRegistry.DEMON_KATANA.get())) bad.add("the katana isn't in your hand in a takeover");
+                    } else {
+                        husk.setTarget(p);
+                        p.invulnerableTime = 0;
+                        int seen0 = ForeseenFx.testSeen;
+                        hits0 = GameTests.playerHits;
+                        boolean took = p.hurt(p.damageSources().mobAttack(husk), 4f);
+                        if (ForeseenFx.testHeld(p) != 1) bad.add("the husk's blow wasn't held (" + ForeseenFx.testHeld(p) + " held; reached Foresight " + (ForeseenFx.testSeen - seen0)
+                                + "; hurt returned " + took + "; mode " + p.gameMode.getGameModeForPlayer() + ", invulnerable " + p.isInvulnerable() + ", hp " + p.getHealth() + ")");
+                        if (GameTests.playerHits > hits0) bad.add("a foreseen blow landed at once");
+                        p.teleportTo(sl(), home.x, home.y, home.z - 5, 0f, 0f);   // step out of reach
+                    }
+                }
+                if (t == 30) {
+                    if (kind == BookTree.VECTOR) {
+                        if (arrow == null || arrow.getOwner() != p) bad.add("the arrow wasn't turned back (owner " + (arrow == null ? "none" : arrow.getOwner()) + ")");
+                        // a blow: mastery 5's first blow comes back whole
+                        p.invulnerableTime = 0;
+                        int h = GameTests.playerHits;
+                        huskHp = husk.getHealth();
+                        p.hurt(p.damageSources().mobAttack(husk), 4f);
+                        if (GameTests.playerHits > h) bad.add("the first blow of the fight wasn't returned whole");
+                        BookTree.useWheel(p, 0);
+                        if (VectorFx.testStance(p) != 1) bad.add("Stance Shift didn't move to Return");
+                    } else if (kind == BookTree.FUSE) {
+                        if (husk.getHealth() >= huskHp) bad.add("Detonate did no damage to the armed husk");
+                        if (FuseFx.testArmed(p) != 0) bad.add("still " + FuseFx.testArmed(p) + " armed after Detonate");
+                        BookTree.testSet(bk, "w1", 1);
+                        BookTree.useWheel(p, 1);
+                        if (FuseFx.testMode(p) != FuseFx.TIMER) bad.add("Fuse Mode didn't switch to the timer");
+                        huskHp = husk.getHealth();
+                        husk.invulnerableTime = 0;
+                        husk.hurt(p.damageSources().playerAttack(p), 1f);
+                        huskHp = husk.getHealth();
+                    } else if (kind == BookTree.BOUND) {
+                        if (husk.getHealth() >= huskHp) bad.add("the demon never struck the husk in 1.5 s of takeover");
+                        // a villager about to die near you: the seraph wakes and it doesn't die
+                        villager = net.minecraft.world.entity.EntityType.VILLAGER.create(sl());
+                        if (villager != null) {
+                            villager.moveTo(home.x - 2, home.y, home.z - 2, 0f, 0f); villager.setNoAi(true); sl().addFreshEntity(villager);
+                            villager.setHealth(2f);
+                            villager.invulnerableTime = 0;
+                            villager.hurt(villager.damageSources().mobAttack(husk), 10f);
+                            if (!villager.isAlive()) bad.add("Never Again: the villager died beside you");
+                            if (!BoundFx.testAwake(p)) bad.add("Never Again: the seraph didn't wake for a dying ally");
+                            else if (!p.getAbilities().mayfly) bad.add("awake, but no flight");
+                        }
+                    } else {
+                        if (ForeseenFx.testHeld(p) != 0) bad.add("the held blow never resolved");
+                        if (GameTests.playerHits > hits0) bad.add("the blow landed though you stepped out of reach");
+                        if (ForeseenFx.testLastDodge(p) < 0) bad.add("stepping away wasn't a dodge");
+                        // now stay: it lands
+                        p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                        p.invulnerableTime = 0;
+                        hits0 = GameTests.playerHits;
+                        p.hurt(p.damageSources().mobAttack(husk), 4f);
+                    }
+                }
+                if (t == 34 && kind == BookTree.VECTOR) {
+                    if (husk.getHealth() >= huskHp) bad.add("the returned blow did no damage to the husk");
+                }
+                if (t == 100) {
+                    if (kind == BookTree.FUSE && husk.getHealth() >= huskHp) bad.add("the 3 s timer never set the armed husk off");
+                    if (kind == BookTree.FORESEEN && GameTests.playerHits <= hits0) bad.add("a blow you stayed for never landed");
+                    String ch = changes(before);
+                    if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+                    if (bad.isEmpty()) pass(name, "points, ranks, requirements, a keystone pair, Unlearn All, the wheel lock, and the passive all work");
+                    else fail(name, String.join("; ", bad));
+                    end();
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); end(); return true; }
+        }
+    }
+
     /** The Grimoire of Ill Omen: who counts as a pursuer (a monster that targets you, a villager that struck you - not a
      *  cow minding its business), Misfortune building and calamity landing, Domino's leap, Stillness turning a blow back. */
     static final class OmenTest extends Test {
@@ -1469,6 +1856,8 @@ final class GameTestCases {
                     ItemStack rib = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PRISM_RIBBON.get());
                     top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, rib));
                     RivalKeepsakes.RIBBON.remove(p.getUUID());
+                    // no grimoire on: a book from an earlier test (the Foreseen holds blows, Vector turns them) would take the blow first
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, ItemStack.EMPTY));
                     var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(sl());
                     z.moveTo(home.x + 2, home.y, home.z); sl().addFreshEntity(z);
                     int hits = playerHits;

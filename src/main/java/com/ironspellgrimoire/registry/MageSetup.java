@@ -35,6 +35,7 @@ public final class MageSetup {
         e.put(AddonEntities.MEMORY_GUARDIAN.get(), com.ironspellgrimoire.entity.MemoryGuardian.attributes().build());
         e.put(AddonEntities.CINDER_SOVEREIGN.get(), com.ironspellgrimoire.entity.CinderSovereign.attributes().build());
         e.put(AddonEntities.FORTRESS_DEFENDER.get(), com.ironspellgrimoire.entity.FortressDefender.attributes().build());
+        e.put(AddonEntities.FORESEEN_DOUBLE.get(), com.ironspellgrimoire.entity.ForeseenDouble.attributes().build());
         e.put(AddonEntities.OMEN_AFTERIMAGE.get(), com.ironspellgrimoire.entity.OmenAfterimage.attributes().build());
         e.put(AddonEntities.SHADOW_SOLDIER.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());
         e.put(AddonEntities.OATHBOUND_KNIGHT.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());

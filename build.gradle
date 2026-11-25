@@ -33,6 +33,7 @@ minecraft {
             if (System.getenv('ISG_GAMETESTS')) {   // the automatic game tests (server/GameTests, .github/workflows/tests.yml)
                 property 'isg.gametests', 'true'
                 if (System.getenv('ISG_SHARD')) property 'isg.shard', System.getenv('ISG_SHARD')   // "i/n": this job's share of the tests
+                if (System.getenv('ISG_ONLY')) property 'isg.only', System.getenv('ISG_ONLY')   // the compatibility run's subset of tests
                 args '--width', '854', '--height', '480', '--username', 'Tester'
             }
         }
@@ -76,6 +77,13 @@ dependencies {
     // If you use classes outside .api (e.g. damage.DamageSources, used in the example spell),
     // switch the compileOnly line above to: implementation fg.deobf("io.redspace:irons_spellbooks:${irons_spells_version}")
     runtimeOnly fg.deobf("io.redspace:irons_lib:${irons_lib_version}")
+    // the compatibility run (gradle -Pcompat ...): popular mods loaded alongside, to catch clashes before players do
+    if (project.hasProperty('compat')) {
+        runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:${jei_version}")
+        runtimeOnly fg.deobf("maven.modrinth:jade:xJQHCmWJ")            // 11.13.3+forge
+        runtimeOnly fg.deobf("maven.modrinth:embeddium:UTbfe5d1")       // 0.3.31+mc1.20.1 (a renderer: effects and HUDs drawn through it)
+        runtimeOnly fg.deobf("maven.modrinth:appleskin:XdXDExVF")       // 2.5.1+mc1.20.1 (HUD beside the hotbar)
+    }
 }
 
 tasks.withType(ProcessResources).configureEach {

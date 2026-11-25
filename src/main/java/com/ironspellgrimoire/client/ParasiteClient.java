@@ -85,6 +85,7 @@ public final class ParasiteClient {
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.HUNGER_GRIMOIRE.get())) return 3;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.TWINS_GRIMOIRE.get())) return 5;
         if (b.is(com.ironspellgrimoire.registry.AddonItemRegistry.ARCHITECT_GRIMOIRE.get())) return 6;
+        if (com.ironspellgrimoire.server.BookTree.kind(b) >= 0) return 7;   // the Vector, Quiet Fuse and Foreseen grimoires
         return 0;
     }
 
@@ -117,10 +118,11 @@ public final class ParasiteClient {
         while (KEY.consumeClick()) {
             if (mc.screen != null) continue;
             int kind = wheelKind(mc);
-            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite, System, Hunger Blade, Masked Twins and Architect grimoires have a wheel")
+            if (kind == 0) pl.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the Parasite, System, Hunger Blade, Masked Twins, Architect, Vector, Quiet Fuse and Foreseen grimoires have a wheel")
                     .withStyle(net.minecraft.ChatFormatting.GRAY), true);
             else if (kind == 5) mc.setScreen(new TwinsWheel());
             else if (kind == 6) mc.setScreen(new FortressWheel());
+            else if (kind == 7) { if (BookTreeClient.book < 0) BookTreeClient.send(0, 0, null); else mc.setScreen(new BookTreeWheel()); }
             else if (kind == 1 && !pl.isShiftKeyDown() && java.util.Arrays.stream(pins).anyMatch(f -> f > 0)) mc.setScreen(new ParasiteWheel(4));   // tap: the quick ring
             else mc.setScreen(new ParasiteWheel(kind));
         }

@@ -736,7 +736,7 @@ public class AddonSpellRegistry {
 
     // ------------------------------------------------------------------ Overdrive Grimoire (an original grimoire: OverdriveFx)
     private static com.ironspellgrimoire.spells.BookSpell overdrive(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx, boolean sword) {
-        com.ironspellgrimoire.spells.BookSpell s = new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ELDRITCH_RESOURCE,
+        com.ironspellgrimoire.spells.BookSpell s = new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.LIGHTNING_RESOURCE,   // not eldritch: that school must be learned first
                 com.ironspellgrimoire.item.OverdriveGrimoireItem.class, "ui.iron_spell_grimoire.overdrive_grimoire_only", cd, mana, power,
                 com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
         return sword ? s.gate(com.ironspellgrimoire.server.OverdriveFx::holding, "Needs the Heartline in your hand - draw it first") : s;   // sword-only pages
@@ -921,6 +921,70 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> OMEN_LAW = registerSpell(omen("the_law_itself", 90, 140, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.OmenFx::theLawItself));
     /** The eight Ill Omen pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> OMEN_SPELLS = List.of(OMEN_PATH, OMEN_TOKEN, OMEN_AFTER, OMEN_RAIN, OMEN_DOMINO, OMEN_STILL, OMEN_LEDGER, OMEN_LAW);
+
+    // ---- the Vector grimoire (server/VectorFx): its own tree in server/BookTree
+    private static com.ironspellgrimoire.spells.BookSpell vector(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.EVOCATION_RESOURCE,
+                com.ironspellgrimoire.item.VectorGrimoireItem.class, "ui.iron_spell_grimoire.vector_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> VEC_REDIRECT = registerSpell(vector("redirect", 6, 30, 5, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.VectorFx::redirect));
+    public static final RegistryObject<AbstractSpell> VEC_STEP = registerSpell(vector("recoil_step", 1, 15, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.VectorFx::recoilStep));
+    public static final RegistryObject<AbstractSpell> VEC_RETURN = registerSpell(vector("return_to_sender", 14, 40, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.VectorFx::returnToSender));
+    public static final RegistryObject<AbstractSpell> VEC_GUST = registerSpell(vector("pressure_gust", 8, 40, 5, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.VectorFx::pressureGust));
+    public static final RegistryObject<AbstractSpell> VEC_PULSE = registerSpell(vector("pulse_touch", 10, 30, 6, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.VectorFx::pulseTouch));
+    public static final RegistryObject<AbstractSpell> VEC_WIND = registerSpell(vector("wind_vector", 16, 55, 2, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.VectorFx::windVector));
+    public static final RegistryObject<AbstractSpell> VEC_PLASMA = registerSpell(vector("plasma_point", 14, 60, 12, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.VectorFx::plasmaPoint));
+    public static final RegistryObject<AbstractSpell> VEC_ABSOLUTE = registerSpell(vector("vector_absolute", 90, 150, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.VectorFx::vectorAbsolute));
+    public static final List<RegistryObject<AbstractSpell>> VECTOR_SPELLS = List.of(VEC_REDIRECT, VEC_STEP, VEC_RETURN, VEC_GUST, VEC_PULSE, VEC_WIND, VEC_PLASMA, VEC_ABSOLUTE);
+
+    // ---- the Fuse grimoire (server/FuseFx): its own tree in server/BookTree
+    private static com.ironspellgrimoire.spells.BookSpell fuse(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.FIRE_RESOURCE,
+                com.ironspellgrimoire.item.FuseGrimoireItem.class, "ui.iron_spell_grimoire.fuse_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> FUSE_DETONATE = registerSpell(fuse("detonate", 2, 20, 6, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.FuseFx::detonate));
+    public static final RegistryObject<AbstractSpell> FUSE_ITEM = registerSpell(fuse("prime_item", 6, 20, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.FuseFx::primeItem));
+    public static final RegistryObject<AbstractSpell> FUSE_SEEKER = registerSpell(fuse("heat_seeker", 12, 45, 7, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.FuseFx::heatSeeker));
+    public static final RegistryObject<AbstractSpell> FUSE_BUBBLE = registerSpell(fuse("air_bubble", 12, 45, 4, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.FuseFx::airBubble));
+    public static final RegistryObject<AbstractSpell> FUSE_CONTACT = registerSpell(fuse("contact_charge", 10, 25, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.FuseFx::contactCharge));
+    public static final RegistryObject<AbstractSpell> FUSE_CHAIN = registerSpell(fuse("chain_fuse", 20, 50, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.FuseFx::chainFuse));
+    public static final RegistryObject<AbstractSpell> FUSE_TENANT = registerSpell(fuse("hidden_tenant", 20, 40, 9, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.FuseFx::hiddenTenant));
+    public static final RegistryObject<AbstractSpell> FUSE_LOOP = registerSpell(fuse("loop_of_ruin", 90, 140, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.FuseFx::loopOfRuin));
+    public static final List<RegistryObject<AbstractSpell>> FUSE_SPELLS = List.of(FUSE_DETONATE, FUSE_ITEM, FUSE_SEEKER, FUSE_BUBBLE, FUSE_CONTACT, FUSE_CHAIN, FUSE_TENANT, FUSE_LOOP);
+
+    // ---- the Foreseen grimoire (server/ForeseenFx): its own tree in server/BookTree
+    private static com.ironspellgrimoire.spells.BookSpell foreseen(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.HOLY_RESOURCE,
+                com.ironspellgrimoire.item.ForeseenGrimoireItem.class, "ui.iron_spell_grimoire.foreseen_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> FORE_STEP = registerSpell(foreseen("step_through", 3, 25, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.ForeseenFx::stepThrough));
+    public static final RegistryObject<AbstractSpell> FORE_READ = registerSpell(foreseen("read_intent", 10, 30, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.ForeseenFx::readIntent));
+    public static final RegistryObject<AbstractSpell> FORE_PUNISH = registerSpell(foreseen("punish", 4, 25, 7, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.ForeseenFx::punish));
+    public static final RegistryObject<AbstractSpell> FORE_DOUBLE = registerSpell(foreseen("false_future", 16, 45, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.ForeseenFx::falseFuture));
+    public static final RegistryObject<AbstractSpell> FORE_SNAP = registerSpell(foreseen("snap_back", 20, 50, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.ForeseenFx::snapBack));
+    public static final RegistryObject<AbstractSpell> FORE_INEV = registerSpell(foreseen("inevitable", 10, 45, 9, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ForeseenFx::inevitable));
+    public static final RegistryObject<AbstractSpell> FORE_SEEN = registerSpell(foreseen("seen_it_before", 30, 70, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.ForeseenFx::seenItBefore));
+    public static final RegistryObject<AbstractSpell> FORE_REWRITE = registerSpell(foreseen("rewrite", 80, 140, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ForeseenFx::rewrite));
+    public static final List<RegistryObject<AbstractSpell>> FORESEEN_SPELLS = List.of(FORE_STEP, FORE_READ, FORE_PUNISH, FORE_DOUBLE, FORE_SNAP, FORE_INEV, FORE_SEEN, FORE_REWRITE);
+
+    // ---- the Grimoire of the Bound Demon (server/BoundFx): its Bond Tree in server/BookTree
+    private static com.ironspellgrimoire.spells.BookSpell bound(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.BLOOD_RESOURCE,
+                com.ironspellgrimoire.item.BoundGrimoireItem.class, "ui.iron_spell_grimoire.bound_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> BD_DRAW = registerSpell(bound("demon_draw", 3, 15, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.BoundFx::demonDraw));
+    public static final RegistryObject<AbstractSpell> BD_EDGE = registerSpell(bound("cursed_edge", 5, 35, 8, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.BoundFx::cursedEdge));
+    public static final RegistryObject<AbstractSpell> BD_WHISPER = registerSpell(bound("demons_whisper", 14, 30, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.BoundFx::demonsWhisper));
+    public static final RegistryObject<AbstractSpell> BD_BOND = registerSpell(bound("bond_guard", 12, 35, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.BoundFx::bondGuard));
+    public static final RegistryObject<AbstractSpell> BD_FLURRY = registerSpell(bound("demon_flurry", 10, 45, 3, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BoundFx::demonFlurry));
+    public static final RegistryObject<AbstractSpell> BD_MARK = registerSpell(bound("sinners_mark", 8, 25, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.BoundFx::sinnersMark));
+    public static final RegistryObject<AbstractSpell> BD_SALT = registerSpell(bound("salt_lance", 8, 40, 6, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BoundFx::saltLance));
+    public static final RegistryObject<AbstractSpell> BD_SERAPH = registerSpell(bound("last_seraph", 120, 180, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BoundFx::lastSeraph));
+    public static final List<RegistryObject<AbstractSpell>> BOUND_SPELLS = List.of(BD_DRAW, BD_EDGE, BD_WHISPER, BD_BOND, BD_FLURRY, BD_MARK, BD_SALT, BD_SERAPH);
 
     /** The seven Masked Twins Grimoire pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> TWINS_SPELLS = List.of(TWINS_SWAP, TWINS_ARTS, TWINS_STRIKE, TWINS_ECLIPSE, TWINS_MASKS, TWINS_NOON, TWINS_EVENTIDE);

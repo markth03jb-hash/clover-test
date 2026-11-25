@@ -238,6 +238,12 @@ public final class GameTests {
             for (int i = 0; i < queue.size(); i++) if (i % sn == si) mine.add(queue.get(i));
             queue.clear(); queue.addAll(mine);
         }
+        // the compatibility run (-Disg.only=a,b,...): only the tests whose names start with one of these
+        String only = System.getProperty("isg.only", "");
+        if (!only.isBlank()) {
+            String[] pre = only.split(",");
+            queue.removeIf(tst -> java.util.Arrays.stream(pre).noneMatch(x -> tst.name.startsWith(x.trim())));
+        }
         running = true;
     }
 

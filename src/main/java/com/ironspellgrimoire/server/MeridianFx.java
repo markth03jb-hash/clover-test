@@ -319,6 +319,7 @@ public final class MeridianFx {
         Vec3 at = s.star != null ? s.star : p.getEyePosition().add(p.getLookAngle().scale(2.5));
         star(p, at);
         s.starUntil = sl.getGameTime() + 400;
+        ModeHud.show(p, "hearth_star", 400);
         s.starSize = 0.35f + 1.4f * Math.min(1f, meter(p));
         if (zenith(p)) s.starSize = 2.2f;
         play(sl, at, "meridian_star", 1.1f, 1.2f - s.starSize * 0.2f);
@@ -344,7 +345,7 @@ public final class MeridianFx {
         }
         if (now % 10 == 0) {
             FxSend.ring(sl, HEAT, s.star, s.starSize * 0.8f, s.starSize + 0.4f, 0.04f, 8);
-            float dmg = (2f + 6f * Math.min(1.25f, meter(p))) * dawnbreak(p);
+            float dmg = (1.4f + 4.2f * Math.min(1.25f, meter(p))) * dawnbreak(p);
             for (LivingEntity t : enemies(sl, p, new AABB(s.star, s.star).inflate(s.starSize + 0.7))) {
                 if (mid(t).distanceTo(s.star) > s.starSize + 1.0) continue;
                 AstaFx.damage(p, t, dmg, "hearth_star");
@@ -406,7 +407,7 @@ public final class MeridianFx {
     public static void noonwave(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         float m = Math.min(1.25f, meter(p));
-        float dmg = (4f + 10f * m) * dawnbreak(p) * (zenith(p) ? 1.5f : 1f);
+        float dmg = (2.8f + 7f * m) * dawnbreak(p) * (zenith(p) ? 1.5f : 1f);
         Vec3 look = flat(p.getLookAngle()).normalize(), at = p.position().add(0, 1.0, 0);
         play(sl, at, "meridian_wave", 1.4f, 1f);
         for (int i = 0; i < 4; i++) {
@@ -469,6 +470,7 @@ public final class MeridianFx {
         bank(p);
         State s = st(p);
         s.coalUntil = p.level().getGameTime() + 300;
+        ModeHud.show(p, "last_coal", 300);
         p.setAbsorptionAmount(Math.max(p.getAbsorptionAmount(), 2f));
         play(p.serverLevel(), p.position(), "meridian_coal", 1f, 1f);
         FxSend.ring(p.serverLevel(), EMBER, p.position().add(0, 0.1, 0), 0.9f, 1.1f, 0.05f, 20);
@@ -487,6 +489,7 @@ public final class MeridianFx {
             s.borrowDay = today(sl);
             s.borrowed = true;
             TimedModifiers.apply(p, Attributes.MAX_HEALTH, BORROW_HP, "Borrowed Noon", -0.3, AttributeModifier.Operation.MULTIPLY_TOTAL, BORROW_COST_TICKS);
+            ModeHud.show(p, "borrowed_noon", BORROW_COST_TICKS);
             if (p.getHealth() > p.getMaxHealth()) p.setHealth(p.getMaxHealth());
             play(sl, p.position(), "meridian_borrow", 1.6f, 1f);
             say(p, BORROW, true);
@@ -497,6 +500,7 @@ public final class MeridianFx {
         }
         int len = noon ? ZENITH_TICKS : BORROW_TICKS;
         s.zenithUntil = now + len;
+        ModeHud.show(p, "zenith_unbound", len);
         s.climb = 0.25f;
         TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, ZENITH_DMG, "Zenith", noon ? 0.6 : 0.8, AttributeModifier.Operation.MULTIPLY_TOTAL, len);
         if (s.star != null) s.starSize = 2.2f;

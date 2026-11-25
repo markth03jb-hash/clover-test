@@ -1,0 +1,46 @@
+name: Compatibility
+# Starts the game with popular mods loaded alongside (JEI, Jade, Embeddium, AppleSkin - see build.gradle's -Pcompat) and
+# runs a smoke set of the game tests through it: a page from several grimoires, the exclusive trees and wheels, two
+# players, the stress test. It catches a clash (a crash, a mixin, a renderer) before a player does.
+# Runs when started by hand, or on a push whose commit message has [compat] in it.
+on:
+  workflow_dispatch:
+  push:
+    paths: ['src/**', 'build.gradle', 'gradle.properties', '.github/workflows/compat.yml']
+permissions:
+  contents: write
+jobs:
+  compat:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[compat]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: 8.1.1 }
+      - run: sudo apt-get update -q && sudo apt-get install -y -q xvfb libgl1-mesa-dri mesa-utils
+      - name: Run the game with the other mods, and the smoke tests
+        env:
+          ISG_GAMETESTS: '1'
+          ISG_ONLY: 'trio:,multiplayer,stress,omen:,spell iron_spell_grimoire:demon_draw,spell iron_spell_grimoire:redirect,spell iron_spell_grimoire:hearth_star,spell iron_spell_grimoire:detonate'
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          MESA_GL_VERSION_OVERRIDE: '4.5'
+        run: |
+          mkdir -p run && echo "eula=true" > run/eula.txt
+          xvfb-run -a -s "-screen 0 1920x1080x24" gradle runClient -Pcompat --no-daemon 2>&1 | tail -n 600 > run/console_tail.txt || true
+          ls run/mods 2>/dev/null || true
+          cat run/isg_gametests_report.txt || echo "no report written"
+      - name: Keep the results
+        if: always()
+        run: |
+          mkdir -p /tmp/out && cp run/isg_gametests_report.txt run/console_tail.txt run/logs/latest.log /tmp/out/ 2>/dev/null || true
+          grep -iE "mixin.*(fail|error)|Exception in|crash" run/logs/latest.log | head -50 > /tmp/out/clashes.txt 2>/dev/null || true
+          cd /tmp/out && git init -q && git checkout -q -b compat && git add -A
+          git -c user.name=ci -c user.email=ci@localhost commit -qm "Compatibility for ${GITHUB_SHA}" || exit 0
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" compat
+      - name: Fail if the game didn't come up, or a test failed
+        run: |
+          test -f run/isg_gametests_report.txt
+          ! grep -qE "^(FAIL|CRASH)" run/isg_gametests_report.txt

@@ -151,6 +151,11 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Reflection>of(com.ironspellgrimoire.entity.Reflection::new, MobCategory.MONSTER).sized(0.6F, 1.8F)
                     .fireImmune().clientTrackingRange(10).build("reflection"));
 
+    /** The Grimoire of the Foreseen's False Future double (server/ForeseenFx). */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.ForeseenDouble>> FORESEEN_DOUBLE = ENTITIES.register("foreseen_double",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.ForeseenDouble>of(com.ironspellgrimoire.entity.ForeseenDouble::new, MobCategory.MISC).sized(0.6F, 1.8F)
+                    .fireImmune().clientTrackingRange(10).updateInterval(2).build("foreseen_double"));
+
     /** The Grimoire of Ill Omen's Afterimage: a black-blue silhouette its mage's pursuers chase instead (server/OmenFx). */
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.OmenAfterimage>> OMEN_AFTERIMAGE = ENTITIES.register("omen_afterimage",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.OmenAfterimage>of(com.ironspellgrimoire.entity.OmenAfterimage::new, MobCategory.MISC).sized(0.6F, 1.8F)

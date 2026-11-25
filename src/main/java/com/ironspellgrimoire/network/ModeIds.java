@@ -11,7 +11,16 @@ public final class ModeIds {
             "lion_mana_zone", "hellfire_incarnate", "marrow_regeneration", "beelzebub_union",
             "surpassing_limits", "thread_cocoon", "battle_dress", "red_thread_of_fate", "evasion_gate", "waypoint",
             "spatial_gate", "thread_cage", "thread_net", "mana_zone", "valkyrie_dress", "reflect_guard",
-            "salamander_spirit", "mane_blaze", "world_tree_mantle", "ripper_frenzy", "bedrock_armor", "beast_instinct", "nean_armor", "chronostasis_field", "instinct_guard", "vampire_mode", "hardblood_barricade", "prescript_received", "golden_shell", "demon_light", "scarlet_moon", "mass_domain", "sound_barrier", "crescendo", "masterpiece", "fatal_error", "kings_vault", "vault_aegis", "restriction", "blood_moon_hunt", "emptiness", "absence", "all_in", "insurance", "the_world", "bioluminescence", "pilot", "bulwark_plating", "eye_of_the_storm", "fog_bank", "redline", "half_asleep", "sovereigns_domain"
+            "salamander_spirit", "mane_blaze", "world_tree_mantle", "ripper_frenzy", "bedrock_armor", "beast_instinct", "nean_armor", "chronostasis_field", "instinct_guard", "vampire_mode", "hardblood_barricade", "prescript_received", "golden_shell", "demon_light", "scarlet_moon", "mass_domain", "sound_barrier", "crescendo", "masterpiece", "fatal_error", "kings_vault", "vault_aegis", "restriction", "blood_moon_hunt", "emptiness", "absence", "all_in", "insurance", "the_world", "bioluminescence", "pilot", "bulwark_plating", "eye_of_the_storm", "fog_bank", "redline", "half_asleep", "sovereigns_domain",
+            // Meridian, Ill Omen, Vector, Quiet Fuse, Foreseen, Bound Demon
+            "zenith_unbound", "hearth_star", "last_coal", "borrowed_noon",
+            "ill_fated_path", "needle_rain", "domino", "stillness", "the_law_itself",
+            "return_to_sender", "pulse_touch", "vector_absolute", "vec_hover", "recoil_plating",
+            "contact_charge", "chain_fuse", "loop_of_ruin", "hidden_tenant",
+            "read_intent", "seen_it_before", "fore_glimpse", "untouchable", "fore_thread", "punish_ready",
+            "bd_takeover", "bd_warning", "bd_symbiosis", "last_seraph", "demons_whisper", "bond_guard", "bd_afterglow", "bd_last_stand", "bd_family", "bd_saltwall", "bd_parry", "demon_flurry",
+            // standing modes (no timer): stances and settings
+            "vec_stance_return", "vec_stance_flow", "fuse_mode_timer", "fuse_mode_near", "bd_restrain", "bd_release"
     };
 
     public static int index(String id) {
