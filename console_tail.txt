@@ -1,0 +1,600 @@
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/INFO] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes: irons_spellbooks:jei_plugin took 2.199 seconds
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes: iron_spell_grimoire:info...
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=jei:information, recipeClass=interface mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe]
+[08:34:48] [Render thread/INFO] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes: iron_spell_grimoire:info took 48.58 milliseconds
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes: jei:debug...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes: jei:gui...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes: jei:forge_gui...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes: curios:curios...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes: jei:internal...
+[08:34:48] [Render thread/DEBUG] [me.je.li.pl.je.ta.TagInfoRecipeMaker/]: No valid ingredients found for minecraft:block tag: #forge:enderman_place_on_blacklist (forge:enderman_place_on_blacklist)
+[08:34:48] [Render thread/DEBUG] [me.je.li.pl.je.ta.TagInfoRecipeMaker/]: No valid ingredients found for minecraft:block tag: #minecraft:invalid_spawn_inside (minecraft:invalid_spawn_inside)
+[08:34:48] [Render thread/DEBUG] [me.je.li.pl.je.ta.TagInfoRecipeMaker/]: No valid ingredients found for minecraft:block tag: #minecraft:portals (minecraft:portals)
+[08:34:48] [Render thread/DEBUG] [me.je.li.pl.je.ta.TagInfoRecipeMaker/]: No valid ingredients found for minecraft:block tag: #minecraft:strider_warm_blocks (minecraft:strider_warm_blocks)
+[08:34:48] [Render thread/DEBUG] [me.je.li.pl.je.ta.TagInfoRecipeMaker/]: No valid ingredients found for minecraft:block tag: #minecraft:fire (minecraft:fire)
+[08:34:48] [Render thread/DEBUG] [me.je.li.pl.je.ta.TagInfoRecipeMaker/]: No valid ingredients found for minecraft:block tag: #minecraft:candle_cakes (minecraft:candle_cakes)
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=minecraft:tag_recipes/block, recipeClass=interface mezz.jei.library.plugins.jei.tags.ITagInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.pl.je.ta.TagInfoRecipeMaker/]: No valid ingredients found for minecraft:fluid tag: #forge:milk (forge:milk)
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=minecraft:tag_recipes/fluid, recipeClass=interface mezz.jei.library.plugins.jei.tags.ITagInfoRecipe]
+[08:34:48] [Render thread/DEBUG] [me.je.li.pl.je.ta.TagInfoRecipeMaker/]: No valid ingredients found for minecraft:item tag: #irons_spellbooks:patchouli_drop (irons_spellbooks:patchouli_drop)
+[08:34:48] [Render thread/DEBUG] [me.je.li.re.RecipeManagerInternal/]: Adding recipes: RecipeType[uid=minecraft:tag_recipes/item, recipeClass=interface mezz.jei.library.plugins.jei.tags.ITagInfoRecipe]
+[08:34:48] [Render thread/INFO] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes: jei:internal took 136.8 milliseconds
+[08:34:48] [Render thread/INFO] [me.je.li.lo.PluginCaller/]: Registering recipes took 2.643 s
+[08:34:48] [Render thread/INFO] [me.je.li.lo.PluginCaller/]: Registering recipes transfer handlers...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes transfer handlers: jei:minecraft...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes transfer handlers: jade:main...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes transfer handlers: irons_spellbooks:jei_plugin...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes transfer handlers: iron_spell_grimoire:info...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes transfer handlers: jei:debug...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes transfer handlers: jei:gui...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes transfer handlers: jei:forge_gui...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes transfer handlers: curios:curios...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering recipes transfer handlers: jei:internal...
+[08:34:48] [Render thread/INFO] [me.je.li.lo.PluginCaller/]: Registering recipes transfer handlers took 3.535 ms
+[08:34:48] [Render thread/INFO] [me.je.co.ut.LoggedTimer/]: Building runtime...
+[08:34:48] [Render thread/INFO] [me.je.li.lo.PluginCaller/]: Registering gui handlers...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering gui handlers: jei:minecraft...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering gui handlers: jade:main...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering gui handlers: irons_spellbooks:jei_plugin...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering gui handlers: iron_spell_grimoire:info...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering gui handlers: jei:debug...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering gui handlers: jei:gui...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering gui handlers: jei:forge_gui...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering gui handlers: curios:curios...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering gui handlers: jei:internal...
+[08:34:48] [Render thread/INFO] [me.je.li.lo.PluginCaller/]: Registering gui handlers took 7.021 ms
+[08:34:48] [Render thread/INFO] [me.je.li.lo.PluginCaller/]: Registering Runtime...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering Runtime: jei:minecraft...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering Runtime: jade:main...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering Runtime: irons_spellbooks:jei_plugin...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering Runtime: iron_spell_grimoire:info...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering Runtime: jei:debug...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering Runtime: jei:gui...
+[08:34:48] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering Runtime: jei:forge_gui...
+[08:34:48] [Render thread/INFO] [me.je.gu.st.JeiGuiStarter/]: Starting JEI GUI
+[08:34:48] [Render thread/INFO] [me.je.co.ut.LoggedTimer/]: Building ingredient list...
+[08:34:48] [Render thread/DEBUG] [me.je.gu.in.IngredientListElementFactory/]: Registering ingredients: ItemStack
+[08:34:48] [Render thread/DEBUG] [me.je.gu.in.IngredientListElementFactory/]: Registering ingredients: FluidStack
+[08:34:48] [Render thread/INFO] [me.je.co.ut.LoggedTimer/]: Building ingredient list took 63.09 ms
+[08:34:48] [Render thread/INFO] [me.je.co.ut.LoggedTimer/]: Building ingredient filter...
+[08:34:48] [Render thread/INFO] [me.je.gu.in.IngredientFilter/]: Adding 2699 ingredients
+[08:34:49] [Render thread/INFO] [me.je.gu.in.IngredientFilter/]: Added 2699 ingredients
+[08:34:49] [Render thread/INFO] [me.je.co.ut.LoggedTimer/]: Building ingredient filter took 907.0 ms
+[08:34:49] [Render thread/INFO] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering Runtime: jei:forge_gui took 1.064 seconds
+[08:34:49] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering Runtime: curios:curios...
+[08:34:49] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Registering Runtime: jei:internal...
+[08:34:49] [Render thread/INFO] [me.je.li.lo.PluginCaller/]: Registering Runtime took 1.065 s
+[08:34:49] [Render thread/INFO] [me.je.co.ut.LoggedTimer/]: Building runtime took 1.076 s
+[08:34:49] [Render thread/INFO] [me.je.li.lo.PluginCaller/]: Sending Runtime...
+[08:34:49] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime: jei:minecraft...
+[08:34:49] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime: jade:main...
+[08:34:49] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime: irons_spellbooks:jei_plugin...
+[08:34:49] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime: iron_spell_grimoire:info...
+[08:34:49] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime: jei:debug...
+[08:34:49] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime: jei:gui...
+[08:34:49] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime: jei:forge_gui...
+[08:34:49] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime: curios:curios...
+[08:34:49] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime: jei:internal...
+[08:34:49] [Render thread/INFO] [me.je.li.lo.PluginCaller/]: Sending Runtime took 1.315 ms
+[08:34:49] [Render thread/INFO] [me.je.co.ut.LoggedTimer/]: Starting JEI took 4.140 s
+[08:34:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Welcome, mage! Your first steps are in the top right. Right-click the Grimoire Codex to read how it all works.
+[08:34:49] [Render thread/INFO] [Jade/]: Received config from the server: 
+[08:34:49] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 5 advancements
+[08:34:49] [Render thread/DEBUG] [mixin/]: Mixing core.postprocess.PostprocessorMixin from embeddium.mixins.json into me.jellysquid.mods.sodium.client.world.cloned.ClonedChunkSection
+[08:34:49] [Render thread/DEBUG] [mixin/]: Mixing ScreenEffectRendererMixin from irons_lib.mixins.json into net.minecraft.client.renderer.ScreenEffectRenderer
+[08:34:55] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has made the advancement [Magery]
+[08:34:55] [Render thread/DEBUG] [mixin/]: Mixing core.render.immediate.consumer.VertexConsumersMixin$DualMixin from embeddium.mixins.json into com.mojang.blaze3d.vertex.VertexMultiConsumer$Double
+[08:34:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has made the advancement [Magery]
+[08:34:55] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 9 advancements
+[08:34:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] A Magic Broom for a new mage. Use it to fly - it runs on your mana. You only get one, so keep it safe.
+[08:34:59] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[08:35:04] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 4 / 13
+[08:35:09] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 5 / 13
+[08:35:29] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[08:35:35] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has made the advancement [Take Aim]
+[08:35:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has made the advancement [Take Aim]
+[08:35:35] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 14 advancements
+[08:35:39] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[08:35:44] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 9 / 13
+[08:35:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[08:35:53] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has made the advancement [Monster Hunter]
+[08:35:53] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has made the advancement [Monster Hunter]
+[08:35:53] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 40 advancements
+[08:35:53] [Server thread/INFO] [minecraft/Villager]: Villager Villager['Unemployed'/31, l='ServerLevel[isg_uishots_1795595678554]', x=1.50, y=-60.00, z=-0.50] died, message: 'Unemployed was slain by Tester'
+[08:35:53] [Render thread/INFO] [minecraft/Villager]: Villager Villager['Unemployed'/31, l='ClientLevel', x=1.50, y=-60.00, z=-0.50] died, message: 'Unemployed died'
+[08:35:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[08:35:55] [Render thread/WARN] [minecraft/ClientPacketListener]: Server attempted to add player prior to sending player info (Player id 15a0e5e5-0000-4000-8000-0000000000aa)
+[08:35:55] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file iron_spell_grimoire-common.toml changed, sending notifies
+[08:35:55] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file iron_spell_grimoire-common.toml changed, sending notifies
+[08:35:55] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file iron_spell_grimoire-common.toml changed, sending notifies
+[08:35:55] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file iron_spell_grimoire-common.toml changed, sending notifies
+[08:35:55] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file iron_spell_grimoire-common.toml changed, sending notifies
+[08:35:58] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ✦ The Fuse Board: level 1 - a point to spend (G, then the middle)
+[08:35:59] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[08:36:04] [Render thread/INFO] [minecraft/Minecraft]: Stopping!
+[08:36:04] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: Tester lost connection: Disconnected
+[08:36:04] [Server thread/INFO] [minecraft/MinecraftServer]: Tester left the game
+[08:36:04] [Render thread/INFO] [me.je.fo.st.StartEventObserver/]: JEI StartEventObserver received class net.minecraftforge.client.event.ClientPlayerNetworkEvent$LoggingOut
+[08:36:04] [Render thread/INFO] [me.je.fo.st.StartEventObserver/]: JEI StartEventObserver transitioning state from JEI_STARTED to DISABLED
+[08:36:04] [Render thread/INFO] [me.je.li.st.JeiStarter/]: Stopping JEI
+[08:36:04] [Render thread/INFO] [me.je.li.lo.PluginCaller/]: Sending Runtime Unavailable...
+[08:36:04] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime Unavailable: jei:minecraft...
+[08:36:04] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime Unavailable: jade:main...
+[08:36:04] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime Unavailable: irons_spellbooks:jei_plugin...
+[08:36:04] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime Unavailable: iron_spell_grimoire:info...
+[08:36:04] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime Unavailable: jei:debug...
+[08:36:04] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime Unavailable: jei:gui...
+[08:36:04] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime Unavailable: jei:forge_gui...
+[08:36:04] [Render thread/INFO] [me.je.fo.pl.fo.ForgeGuiPlugin/]: Stopping JEI GUI
+[08:36:04] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime Unavailable: curios:curios...
+[08:36:04] [Render thread/DEBUG] [me.je.li.lo.PluginCallerTimerRunnable/]: Sending Runtime Unavailable: jei:internal...
+[08:36:04] [Render thread/INFO] [me.je.li.lo.PluginCaller/]: Sending Runtime Unavailable took 4.946 ms
+[08:36:04] [Render thread/DEBUG] [io.re.ir.IronsSpellbooks/]: ClientPlayerNetworkEvent onPlayerLogOut
+[08:36:04] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: Stopping singleplayer server as player logged out
+[08:36:04] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[08:36:04] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[08:36:04] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[08:36:04] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795595678554]'/minecraft:overworld
+[08:36:05] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795595678554]'/minecraft:the_nether
+[08:36:05] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795595678554]'/irons_spellbooks:pocket_dimension
+[08:36:05] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795595678554]'/iron_spell_grimoire:rift
+[08:36:05] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795595678554]'/minecraft:the_end
+[08:36:05] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795595678554
+[08:36:05] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795595678554
+[08:36:05] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (isg_uishots_1795595678554): All chunks are saved
+[08:36:05] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[08:36:05] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (pocket_dimension): All chunks are saved
+[08:36:05] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (rift): All chunks are saved
+[08:36:05] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[08:36:05] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[08:36:05] [Server thread/DEBUG] [ne.mi.fm.co.ConfigTracker/CONFIG]: Unloading configs type SERVER
+[08:36:05] [Render thread/INFO] [ChunkBuilder/]: Stopping worker threads
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1795595616392.json
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+See https://docs.gradle.org/8.1.1/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 2m 33s
+10 actionable tasks: 10 executed

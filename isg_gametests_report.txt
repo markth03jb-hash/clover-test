@@ -1,0 +1,96 @@
+Iron Spell Grimoire - game tests: 13 passed, 0 failed, 1 warning(s)
+INFO | casting | using public boolean io.redspace.ironsspellbooks.api.spells.AbstractSpell.attemptInitiateCast(net.minecraft.world.item.ItemStack,int,net.minecraft.world.level.Level,net.minecraft.world.entity.player.Player,io.redspace.ironsspellbooks.api.spells.CastSource,boolean,java.lang.String) -> true
+PASS | spell iron_spell_grimoire:redirect_gate | 10 fx packets, 564 mana, 0.0 damage, 2 messages, cd 360, book spatial_grimoire, 40 ticks
+BAL | redirect_gate | spatial_grimoire | 0.0 | 40 | 360 | ender
+TIME | spell iron_spell_grimoire:redirect_gate | 40 ticks
+PASS | spell iron_spell_grimoire:hearth_star | 108 fx packets, -100 mana, 90.4 damage, 56 messages, cd 120, book meridian_grimoire, 100 ticks
+BAL | hearth_star | meridian_grimoire | 90.4 | 30 | 120 | fire
+TIME | spell iron_spell_grimoire:hearth_star | 100 ticks
+PASS | spell iron_spell_grimoire:redirect | 13 fx packets, 0 mana, 5.0 damage, 3 messages, cd 120, book vector_grimoire, 40 ticks
+BAL | redirect | vector_grimoire | 5.0 | 30 | 120 | evocation
+TIME | spell iron_spell_grimoire:redirect | 40 ticks
+WARN | spell iron_spell_grimoire:detonate | did nothing visible (no effects, no mana, no damage; cast returned true, casting=true iron_spell_grimoire:detonate) - it may need a target, a form or a condition
+PASS | spell iron_spell_grimoire:detonate | 1 fx packets, 0 mana, 0.0 damage, 1 messages, cd 40, book fuse_grimoire, 40 ticks
+BAL | detonate | fuse_grimoire | 0.0 | 20 | 40 | fire
+TIME | spell iron_spell_grimoire:detonate | 40 ticks
+PASS | spell iron_spell_grimoire:demon_draw | 3 fx packets, 0 mana, 0.0 damage, 2 messages, cd 60, book bound_grimoire, 40 ticks
+BAL | demon_draw | bound_grimoire | 0.0 | 15 | 60 | blood
+TIME | spell iron_spell_grimoire:demon_draw | 40 ticks
+PASS | omen: every move | damage dealt: ill-fated path 0, laden token 0, afterimage 0, needle rain 15, domino 18, stillness 6, karma's ledger 28, the law itself 12
+TIME | omen: every move | 410 ticks
+PASS | omen: pursuers incl. NPCs, misfortune, calamity, domino, stillness | a villager that struck you and a husk that hunts you pursue, a cow doesn't; misfortune builds; calamity lands; Domino leaps; Stillness rebounds; all 20 calamities land (189 damage)
+TIME | omen: pursuers incl. NPCs, misfortune, calamity, domino, stillness | 130 ticks
+PASS | trio: vector tree, wheel and passive | points, ranks, requirements, a keystone pair, Unlearn All, the wheel lock, and the passive all work
+TIME | trio: vector tree, wheel and passive | 100 ticks
+PASS | trio: quiet fuse tree, wheel and passive | points, ranks, requirements, a keystone pair, Unlearn All, the wheel lock, and the passive all work
+TIME | trio: quiet fuse tree, wheel and passive | 100 ticks
+PASS | trio: foreseen tree, wheel and passive | points, ranks, requirements, a keystone pair, Unlearn All, the wheel lock, and the passive all work
+TIME | trio: foreseen tree, wheel and passive | 100 ticks
+PASS | trio: bound demon tree, wheel and passive | points, ranks, requirements, a keystone pair, Unlearn All, the wheel lock, and the passive all work
+TIME | trio: bound demon tree, wheel and passive | 100 ticks
+PASS | multiplayer: a second player, PvP on and off | PvP on: reachable, foreseen, a pursuer, a takeover target; PvP off: none of those; family to Bond Guard and Hidden Tenant either way
+TIME | multiplayer: a second player, PvP on and off | 6 ticks
+PASS | stress: 40 hunters and five grimoires at once | server tick: 9.2 ms with 40 hunters, 5.5 ms (worst average 9.1) with the five grimoires going
+TIME | stress: 40 hunters and five grimoires at once | 171 ticks
+PROF | Render thread | this mod: 6.3% of busy time (17687 samples)
+PROF | Render thread system |  2.47% client.__FxRenderer_onRender_RenderLevelStageEvent.invoke
+PROF | Render thread system |  1.29% client.__ModeHudOverlay_onGui_Post.invoke
+PROF | Render thread system |  0.52% client.__ManaBarHud_onOverlay_Pre.invoke
+PROF | Render thread system |  0.41% client.__GrimoireFloatRenderer_onClientTick_ClientTickEvent.invoke
+PROF | Render thread system |  0.40% client.__FirstStepsHud_onGui_Post.invoke
+PROF | Render thread system |  0.18% client.__FxRenderer_onTick_ClientTickEvent.invoke
+PROF | Render thread system |  0.17% client.__OmenClient_onPost_Post.invoke
+PROF | Render thread system |  0.16% client.__GrimoireFloatRenderer_onRender_RenderLevelStageEvent.invoke
+PROF | Render thread system |  0.15% client.__BoundClient_onHud_Post.invoke
+PROF | Render thread system |  0.09% client.__PortalRenderer_onRender_RenderLevelStageEvent.invoke
+PROF | Render thread system |  0.02% client.__RivalClient_onTick_ClientTickEvent.invoke
+PROF | Render thread system |  0.02% client.__MeridianClient_onGui_Post.invoke
+PROF | Render thread system |  0.02% client.__BossMusic_onTick_ClientTickEvent.invoke
+PROF | Render thread system |  0.02% client.__TwinsClient_hud_Post.invoke
+PROF | Render thread system |  0.01% client.__GrimoireCeremonyRenderer_onRender_RenderLevelStageEvent.invoke
+PROF | Render thread hot spot |  1.24% client.ModeHudOverlay.onGui
+PROF | Render thread hot spot |  1.09% client.PixelFx.render
+PROF | Render thread hot spot |  0.69% client.FxRenderer.onRender
+PROF | Render thread hot spot |  0.31% client.ManaBarHud.draw
+PROF | Render thread hot spot |  0.29% client.PixelFx.quad
+PROF | Render thread hot spot |  0.27% item.ThemedGrimoireItem.initializeSpellContainer
+PROF | Render thread hot spot |  0.27% client.FirstStepsHud.row
+PROF | Render thread hot spot |  0.17% client.OmenClient.onPost
+PROF | Render thread hot spot |  0.15% client.FxBase.quad
+PROF | Render thread hot spot |  0.13% client.FirstStepsHud.onGui
+PROF | Render thread hot spot |  0.12% client.GrimoireFloatRenderer.onClientTick
+PROF | Render thread hot spot |  0.10% client.ManaBarHud.ironsSpot
+PROF | Render thread hot spot |  0.09% client.PixelFx.draw
+PROF | Render thread hot spot |  0.08% client.PortalRenderer.draw
+PROF | Render thread hot spot |  0.08% client.PixelFx.tick
+PROF | Server thread | this mod: 8.5% of busy time (2432 samples)
+PROF | Server thread system |  1.64% server.ClassKey.of
+PROF | Server thread system |  0.58% server.__OmenFx_onTick_PlayerTickEvent.invoke
+PROF | Server thread system |  0.58% server.__AstaFx_onServerTick_ServerTickEvent.invoke
+PROF | Server thread system |  0.53% server.__HungerFx_onTick_PlayerTickEvent.invoke
+PROF | Server thread system |  0.49% server.__BoundFx_onTick_PlayerTickEvent.invoke
+PROF | Server thread system |  0.41% spells.BookSpell.onCast
+PROF | Server thread system |  0.37% server.__MeridianFx_onTick_PlayerTickEvent.invoke
+PROF | Server thread system |  0.33% client.UiShots$$Lambda$13122/0x000072e7d180d800.run
+PROF | Server thread system |  0.29% entity.OmenAfterimage.tick
+PROF | Server thread system |  0.29% server.__FxBatch_onTick_ServerTickEvent.invoke
+PROF | Server thread system |  0.21% server.__GrimoireMastery_onPlayerTick_PlayerTickEvent.invoke
+PROF | Server thread system |  0.12% server.__BookTree_onTick_PlayerTickEvent.invoke
+PROF | Server thread system |  0.12% server.__WeatherFx_onTick_PlayerTickEvent.invoke
+PROF | Server thread system |  0.12% server.OmenFx.calamity
+PROF | Server thread system |  0.08% server.__ParasiteMoves_onTarget_LivingChangeTargetEvent.invoke
+PROF | Server thread hot spot |  1.15% server.ClassKey.of
+PROF | Server thread hot spot |  0.45% server.AstaFx.damage
+PROF | Server thread hot spot |  0.37% server.ClassKey.lambda$bytes$0
+PROF | Server thread hot spot |  0.33% client.UiShots$$Lambda$13121/0x000072e7d180d5d0.accept
+PROF | Server thread hot spot |  0.25% server.BoundFx.possessed
+PROF | Server thread hot spot |  0.25% server.FxBatch.flush
+PROF | Server thread hot spot |  0.25% server.HungerFx.equipped
+PROF | Server thread hot spot |  0.25% entity.OmenAfterimage.tick
+PROF | Server thread hot spot |  0.21% server.OmenFx.onTick
+PROF | Server thread hot spot |  0.16% server.AnimImpact.at
+PROF | Server thread hot spot |  0.16% network.AddonNetwork.lambda$fromMeteor$2
+PROF | Server thread hot spot |  0.12% server.HungerFx.root
+PROF | Server thread hot spot |  0.12% server.ClassKey.parseRefs
+PROF | Server thread hot spot |  0.12% server.AnimImpact.load
+PROF | Server thread hot spot |  0.08% server.MercuryFx.onPlayerTick
