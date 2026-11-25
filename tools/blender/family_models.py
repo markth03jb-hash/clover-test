@@ -24,7 +24,7 @@ import gilded_thorn as gt
 import architect_ruin as ar
 
 # four more colours on the gear sheet
-EXTRA = {"moss": (70, 104, 52), "bark": (92, 66, 44), "bone": (226, 218, 192), "amber": (255, 176, 60), "marsh": (150, 255, 140), "sun": (255, 210, 110)}
+EXTRA = {"moss": (70, 104, 52), "bark": (92, 66, 44), "bone": (226, 218, 192), "amber": (255, 176, 60), "marsh": (150, 255, 140), "sun": (255, 210, 110), "teal": (80, 240, 220), "ice": (196, 232, 255)}
 for i, n in enumerate(EXTRA):
     k = 26 + i
     rm.REG[n] = ((k % 8) * 32, (k // 8) * 32, (k % 8) * 32 + 32, (k // 8) * 32 + 32)
@@ -165,7 +165,83 @@ def coat_tails():
     em.rbox("lining", (0, 2.05, -5), (8, 0.2, 10), "blue")
 
 
-GEAR = {"bog_club": bog_club, "reed_crown": reed_crown, "hexer_staff": hexer_staff, "root_crown": root_crown, "bone_rattle": bone_rattle,
+# ---- the Rimefolk
+def ice_axe():
+    cyl("haft", (0, 0, -4), 0.6, 17, "wood", sides=6)
+    em.prism("blade", [(0, 9), (4.4, 8), (5.6, 11), (4.4, 14.5), (0, 13.5)], -0.5, 0.5, "ice", glow=True)
+    em.rbox("cap", (0, 0, 13.4), (1.4, 1.4, 1.2), "iron")
+
+def fur_mantle():
+    em.rbox("mantle", (0, 0.4, 23.6), (10, 6.4, 2.2), "white", bevel=0.8)
+    for s in (-1, 1): em.rbox("drape%d" % s, (s * 4.6, 0.4, 21), (1.6, 6, 4), "white", bevel=0.6)
+
+def ice_staff():
+    cyl("staff", (0, 0, -8), 0.5, 25, "silver", sides=6)
+    em.gem("shard", (0, 0, 20.5), 1.6, 4.4, "ice", sides=5, glow=True)
+    for i in range(3): em.gem("chip%d" % i, (math.cos(i * 2.1) * 2.2, math.sin(i * 2.1) * 2.2, 19 + i * 0.8), 0.5, 1.2, "ice", sides=4, glow=True)
+
+def ice_crown():
+    em.torus("band", (0, 0, 0.4), 4.4, 0.5, "ice", M=12, N=4)
+    for i in range(7):
+        a = i * 2 * math.pi / 7
+        em.gem("spike%d" % i, (math.cos(a) * 4.2, math.sin(a) * 4.2, 1.4), 0.6, 2.4 + (i % 2) * 1.4, "ice", sides=4, glow=True)
+
+def frost_greatsword():
+    em.prism("blade", [(-1.1, 0.6), (1.1, 0.6), (1.3, 17), (0, 21), (-1.3, 17)], -0.4, 0.4, "ice", glow=True)
+    em.rbox("guard", (0, 0, 0), (5.2, 1.2, 1), "steel")
+    cyl("grip", (0, 0, -5), 0.55, 5, "leather", sides=6)
+    em.gem("pommel", (0, 0, -5.6), 0.9, 1.0, "ice", sides=6, glow=True)
+
+def fur_cloak():
+    em.rbox("cloak", (0, 2.6, 13), (9, 0.8, 14), "brownfur", tilt=0.08)
+    em.rbox("collar", (0, 1.0, 23.6), (9.6, 5.6, 2), "brownfur", bevel=0.6)
+
+# ---- the Hollowfolk
+def hook_claw():
+    for i in range(3):
+        em.prism("hook%d" % i, [(-0.4, 0), (0.4, 0), (0.8, 5.5), (2.6, 8.5), (1.8, 9.2), (-0.2, 6)], -0.25 + (i - 1) * 0.8, 0.25 + (i - 1) * 0.8, "silver")
+
+def fork_staff():
+    cyl("staff", (0, 0, -8), 0.5, 22, "black", sides=6)
+    for s in (-1, 1): em.rbox("tine%d" % s, (s * 1.4, 0, 17), (0.6, 0.6, 6), "silver")
+    em.rbox("bridge", (0, 0, 14), (3.4, 0.7, 0.7), "silver")
+    em.gem("hum", (0, 0, 18), 0.8, 1.4, "teal", sides=6, glow=True)
+
+def stone_shell():
+    for i, (x, z, w) in enumerate([(-3, 22, 5), (3, 22, 5), (0, 17, 8), (0, 13, 7)]): em.rbox("plate%d" % i, (x, 2.8, z), (w, 1.6, 4), "slate", bevel=0.4)
+    for s in (-1, 1): em.rbox("pauldron%d" % s, (s * 6, 0, 23.4), (4.6, 5, 2.4), "slate", roll=s * 0.3, bevel=0.5)
+
+def heart_lantern():
+    em.rbox("cage", (0, -2.4, 18), (3.2, 1.4, 3.6), "iron")
+    em.gem("heart", (0, -2.8, 18), 1.4, 1.8, "teal", sides=6, glow=True)
+
+# ---- the Ironbound Twins
+def tower_shield():
+    em.rbox("shield", (0, 0, 0), (8, 1.4, 15), "iron", bevel=0.4)
+    em.rbox("stripe", (0, -0.8, 0), (2.2, 0.3, 15), "red")
+    em.gem("boss", (0, -1.0, 2), 1.4, 0.8, "steel", sides=6, glow=False)
+
+def flanged_mace():
+    cyl("haft", (0, 0, -4), 0.55, 15, "iron", sides=6)
+    for i in range(6):
+        a = i * math.pi / 3
+        em.rbox("flange%d" % i, (math.cos(a) * 1.1, math.sin(a) * 1.1, 12.5), (0.5, 1.8, 3.6), "steel", yaw=a)
+
+def iron_greatsword():
+    em.prism("blade", [(-1.2, 0.6), (1.2, 0.6), (1.0, 19), (0, 22), (-1.0, 19)], -0.35, 0.35, "steel")
+    em.rbox("fuller", (0, 0, 9), (0.5, 0.75, 15), "iron")
+    em.rbox("guard", (0, 0, 0), (6, 1.2, 1.1), "iron")
+    cyl("grip", (0, 0, -6), 0.55, 6, "leather", sides=6)
+
+def wrist_chain():
+    em.torus("cuff", (0, 0, 0), 1.6, 0.45, "iron", M=10, N=4)
+    for i in range(5): em.torus("link%d" % i, (0, -0.6 - i * 1.0, -1.2 - i * 1.3), 0.6, 0.22, "iron", M=8, N=4)
+
+
+GEAR = {"ice_axe": ice_axe, "fur_mantle": fur_mantle, "ice_staff": ice_staff, "ice_crown": ice_crown, "frost_greatsword": frost_greatsword,
+        "fur_cloak": fur_cloak, "hook_claw": hook_claw, "fork_staff": fork_staff, "stone_shell": stone_shell, "heart_lantern": heart_lantern,
+        "tower_shield": tower_shield, "flanged_mace": flanged_mace, "iron_greatsword": iron_greatsword, "wrist_chain": wrist_chain,
+        "bog_club": bog_club, "reed_crown": reed_crown, "hexer_staff": hexer_staff, "root_crown": root_crown, "bone_rattle": bone_rattle,
         "moss_train": moss_train, "stone_maul": stone_maul, "rock_plates": rock_plates, "caller_staff": caller_staff, "horned_helm": horned_helm,
         "slab_shield": slab_shield, "warden_pick": warden_pick, "curved_blade": curved_blade, "head_wrap": head_wrap, "censer": censer,
         "sand_mantle": sand_mantle, "sun_disc": sun_disc, "glaive": glaive, "hooked_blade": hooked_blade, "gloam_hood": gloam_hood, "coat_tails": coat_tails}
@@ -215,11 +291,39 @@ fam("gloamstalker", True, 1.15, {"rarm": (-50, 0, -6)}, [
     ("gloam_hood", "HEAD", 0, (0, 0, 27 * 1.15), (0, 0, 0), 1.15),
     ("coat_tails", "BODY", 0, (0, 0, 13 * 1.15), (0, 0, 0), 1.15)])
 
+fam("rime_brute", False, 1.1, {"rarm": (-30, 0, -6)}, [
+    ("ice_axe", "RARM", -30, hand(-1, -30, False, 1.1), (70, 0, 0), 1.1 * 1.4),
+    ("fur_mantle", "BODY", 0, (0, 0, 0), (0, 0, 0), 1.1)])
+fam("frost_chanter", False, 1.0, {"larm": (-20, 0, 6)}, [
+    ("ice_staff", "LARM", -20, hand(1, -20), (-8, 0, 0), 1)])
+fam("hoarfrost_jarl", False, 1.25, {"rarm": (-35, 0, -6)}, [
+    ("ice_crown", "HEAD", 0, (0, 0, 30.8 * 1.25), (0, 0, 0), 1.25),
+    ("frost_greatsword", "RARM", -35, hand(-1, -35, False, 1.25), (75, 0, 0), 1.25),
+    ("fur_cloak", "BODY", 0, (0, 0, 0), (0, 0, 0), 1.25)])
+fam("hollow_crawler", True, 1.0, {"rarm": (-45, 0, -6), "larm": (-45, 0, 6)}, [
+    ("hook_claw", "RARM", -45, hand(-1, -45, True), (85, 0, 0), 1),
+    ("hook_claw", "LARM", -45, hand(1, -45, True), (85, 0, 0), 1)])
+fam("hollow_singer", True, 1.0, {"rarm": (-20, 0, -6)}, [
+    ("fork_staff", "RARM", -20, hand(-1, -20, True), (-8, 0, 0), 1)])
+fam("deepwarden", False, 1.3, {}, [
+    ("stone_shell", "BODY", 0, (0, 0, 0), (0, 0, 0), 1.3),
+    ("heart_lantern", "BODY", 0, (0, 0, 0), (0, 0, 0), 1.3)])
+fam("twin_haldric", False, 1.3, {"rarm": (-30, 0, -6), "larm": (-25, 0, 6)}, [
+    ("tower_shield", "LARM", -25, (7.4 * 1.3, -5.8 * 1.3, 13 * 1.3), (0, 0, 8), 1.3),
+    ("flanged_mace", "RARM", -30, hand(-1, -30, False, 1.3), (70, 0, 0), 1.3),
+    ("wrist_chain", "RARM", -30, hand(-1, -30, False, 1.3, 8), (60, 0, 0), 1.3)])
+fam("twin_oswin", False, 1.3, {"rarm": (-35, 0, -6), "larm": (-35, 0, 6)}, [
+    ("iron_greatsword", "RARM", -35, hand(-1, -35, False, 1.3), (75, 0, 0), 1.3),
+    ("wrist_chain", "LARM", -35, hand(1, -35, False, 1.3, 8), (60, 0, 0), 1.3)])
+
+
+def skin_of(name): return name if name.startswith("twin_") else "family_" + name
+
 
 def build(name):
     """One of them, with its gear (Blender: the front faces -Y)."""
     slim, k, pose, gear = FAMILY[name]
-    rm.body("family_" + name, slim, scale=k, pose=pose)
+    rm.body(skin_of(name), slim, scale=k, pose=pose)
     for form, bone, arm, at, rot, sc in gear: rm.gear(form, at, rot, sc)
 
 
@@ -229,7 +333,7 @@ def java():
     for name, (slim, k, pose, gear) in FAMILY.items():
         # in game the renderer scales the whole body by k: the placements go in unscaled
         ps = ",\n".join('                    new Piece("%s", Bone.%s, %g, v(%.3f, %.3f, %.3f), v(%g, %g, %g), %.3ff)' % ((f, b, a) + tuple(c / k for c in at) + tuple(rot) + (sc / k,)) for f, b, a, at, rot, sc in gear)
-        out.append('            Map.entry("family_%s", List.of(\n%s))' % (name, ps))
+        out.append('            Map.entry("%s", List.of(\n%s))' % (skin_of(name), ps))
     return ",\n".join(out)
 
 
@@ -255,18 +359,23 @@ def paint_into(out):
 
 
 ORDER = ["bog_crawler", "mire_hexer", "fen_matron", "scree_brute", "stonecaller", "peak_warden", "dune_stalker", "sandwraith", "sun_herald", "gloamstalker"]
-NAMES = {"bog_crawler": "Bog Crawler", "mire_hexer": "Mire Hexer", "fen_matron": "Fen Matron (leader)", "scree_brute": "Scree Brute",
+NEW = ["rime_brute", "frost_chanter", "hoarfrost_jarl", "hollow_crawler", "hollow_singer", "deepwarden", "twin_haldric", "twin_oswin"]
+NAMES = {"rime_brute": "Rime Brute", "frost_chanter": "Frost Chanter", "hoarfrost_jarl": "Hoarfrost Jarl (leader)", "hollow_crawler": "Hollow Crawler",
+         "hollow_singer": "Hollow Singer", "deepwarden": "Deepwarden (leader)", "twin_haldric": "Ser Haldric (Ironbound Twin)", "twin_oswin": "Ser Oswin (Ironbound Twin)",
+         "bog_crawler": "Bog Crawler", "mire_hexer": "Mire Hexer", "fen_matron": "Fen Matron (leader)", "scree_brute": "Scree Brute",
          "stonecaller": "Stonecaller", "peak_warden": "Peak Warden (leader)", "dune_stalker": "Dune Stalker", "sandwraith": "Sandwraith",
          "sun_herald": "Sun Herald (leader)", "gloamstalker": "Gloamstalker (night hunter)"}
 
 
-def render(out, skins):
+def render(out, skins, groups=None):
     from PIL import ImageDraw
+    groups = groups or (("a", ORDER[:len(ORDER) // 2]), ("b", ORDER[len(ORDER) // 2:]))
+    ORDER_ = [n for _, g in groups for n in g]
     rm.SKINS = skins
     tex = os.path.join(out, "family_gear.png")
     paint(tex)
     CW, CH = 300, 470
-    for name in ORDER:
+    for name in ORDER_:
         for view, yaw in (("front", -28), ("back", 152)):
             bpy.ops.wm.read_factory_settings(use_empty=True)
             gt.PARTS.clear(); GLOW.clear()
@@ -292,8 +401,7 @@ def render(out, skins):
             co.location = (0, -200 * math.cos(el), 22 + 200 * math.sin(el)); co.rotation_euler = (math.radians(90) - el, 0, 0)
             sc.render.filepath = os.path.join(out, "fam_%s_%s.png" % (name, view))
             bpy.ops.render.render(write_still=True)
-    half = len(ORDER) // 2
-    for part, names in (("a", ORDER[:half]), ("b", ORDER[half:])):
+    for part, names in groups:
         sheet = Image.new("RGB", (CW * len(names), CH * 2 + 30), (12, 12, 16))
         d = ImageDraw.Draw(sheet)
         for i, name in enumerate(names):
@@ -307,5 +415,6 @@ if __name__ == "__main__":
     mode, out = sys.argv[1], sys.argv[2]
     os.makedirs(out, exist_ok=True)
     if mode == "render": render(out, sys.argv[3])
+    if mode == "render_new": render(out, sys.argv[3], (("c", NEW[:6]), ("d", NEW[6:])))
     if mode == "game": to_game(out)
     if mode == "java": print(java())

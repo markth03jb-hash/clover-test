@@ -60,8 +60,8 @@ import net.minecraftforge.network.PacketDistributor;
 public final class Bounties {
     private Bounties() {}
 
-    public static final String[] BOSSES = {"zenon", "beast_of_despair", "rhya", "licht", "revenant", "curse_witch", "unbound"};
-    public static final String[] NAMES = {"The Ossuarch", "The Beast of Despair", "Rhya the Disloyal", "Licht", "The Revenant", "The Curse Witch", "???"};
+    public static final String[] BOSSES = {"zenon", "beast_of_despair", "rhya", "licht", "revenant", "curse_witch", "unbound", "ironbound_twins"};
+    public static final String[] NAMES = {"The Ossuarch", "The Beast of Despair", "Rhya the Disloyal", "Licht", "The Revenant", "The Curse Witch", "???", "The Ironbound Twins"};
     /** Merit gates: two modifiers on a poster from 20 stars; the secret "???" poster can turn up from 50. */
     public static final int TWO_MODS_AT = 20, SECRET_AT = 50, SECRET = 6;
     public static final int ENRAGED = 1, ARMOURED = 2, ESCORTED = 4, WOUNDED = 8;
@@ -206,7 +206,7 @@ public final class Bounties {
     /** The named bosses this player's tier allows on a poster (BossLadder). */
     static java.util.List<Integer> allowedBosses(ServerPlayer p) {
         java.util.List<Integer> l = new java.util.ArrayList<>();
-        for (int i = 0; i < SECRET; i++) if (BossLadder.allowed(p, i)) l.add(i);
+        for (int i = 0; i < BOSSES.length; i++) if (i != SECRET && BossLadder.allowed(p, i)) l.add(i);
         return l;
     }
 
@@ -287,6 +287,7 @@ public final class Bounties {
             case 3 -> AddonEntities.LICHT.get();
             case 4 -> AddonEntities.REVENANT.get();
             case 5 -> AddonEntities.CURSE_WITCH.get();
+            case 7 -> AddonEntities.TWIN_HALDRIC.get();
             default -> AddonEntities.LICHT.get();   // ??? - Licht, unbound
         };
         Mob m = type.create(sl);
@@ -336,6 +337,17 @@ public final class Bounties {
         FxSend.ring(sl, 18, at.add(0, 0.1, 0), 0.5f, 8f, 0.2f, 16);
         FxSend.shake(sl, at, 0.6f, 12, 40);
         sl.playSound(null, m.blockPosition(), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 2f, 1f);
+        if (m instanceof com.ironspellgrimoire.entity.IronboundTwin h) {   // the Twins: Oswin, chained to his brother
+            com.ironspellgrimoire.entity.IronboundTwin o = AddonEntities.TWIN_OSWIN.get().create(sl);
+            if (o != null) {
+                o.moveTo(at.x + 3, at.y, at.z, 180f, 0);
+                o.partner = h.getUUID(); h.partner = o.getUUID();
+                o.setPersistenceRequired();
+                o.setBarName(bar);
+                sl.addFreshEntity(o);
+                escort.add(o);
+            }
+        }
         lastEscort = escort;
         return m;
     }
@@ -380,7 +392,7 @@ public final class Bounties {
         int hard = Integer.bitCount(mods & ~WOUNDED);
         boolean wounded = (mods & WOUNDED) != 0;
         boolean hardened = b.getBoolean("Hardened");
-        float mult = BossLadder.streakUp(p) * (hardened ? 2f : 1f);
+        float mult = BossLadder.streakUp(p) * (hardened ? 2f : 1f) * (BloodMoon.on(p.server) ? 2f : 1f);
         int stars = Math.round((3 + hard * 2 - (wounded ? 1 : 0) + (boss == SECRET ? 15 : 0)) * mult) + GrimoireUpgrades.bonusStars(p);
         p.getPersistentData().putInt(STARS, stars(p) + stars);
         ItemStack trophy = poster(b);

@@ -14,6 +14,17 @@
     sun_herald    their leader: gold and white robes, a sun-red sash, a gilded veil
   and the night hunter
     gloamstalker  a long black coat lined in deep blue, a smooth mask with one blue slit
+  the Rimefolk (snow and ice)
+    rime_brute    frost-blue skin, a white fur mantle, rime on the brows
+    frost_chanter a white robe with pale blue runes, a hood rimmed in frost, a silver beard
+    hoarfrost_jarl their leader: a crown of ice, a blue-steel coat frosted white, a fur cloak
+  the Hollowfolk (caves and the deep dark)
+    hollow_crawler gaunt grey skin, no eyes - a teal glow where they'd be, ragged wraps
+    hollow_singer  tattered dark robes, a teal glow from the mouth, bare grey hands
+    deepwarden     their leader: a shell of dark stone plates, a teal lantern-heart in the chest
+  the Ironbound Twins (a tier II bounty)
+    twin_haldric  dark iron plate, a red tabard, a closed helm with a cross slit
+    twin_oswin    the same iron, a blue tabard, an open helm, a scarred face
 
 python3 tools/family_skins.py [OUT_DIR]   (default: the mod's textures/entity)
 """
@@ -189,7 +200,125 @@ def gloamstalker():
     s.save("family_gloamstalker")
 
 
-ALL = (bog_crawler, mire_hexer, fen_matron, scree_brute, stonecaller, peak_warden, dune_stalker, sandwraith, sun_herald, gloamstalker)
+def rime_brute():
+    s = Skin(111, False)
+    skin, fur, rime, eye = (150, 186, 214), (232, 236, 240), (210, 236, 255), (40, 90, 170)
+    s.face(skin, fur, eye, mouth=(90, 120, 150), fringe=1, sides=4, brow=rime)
+    s.clear("hat")
+    s.fill("body", shade(skin, 0.9), 8); s.fill("jacket", fur, 10, grain="v")
+    for j in range(4, 12):
+        for i in range(2, 6): s.px("jacket", "front", i, j, T, 0)
+    limbs(s, skin, (120, 110, 100), foot=(80, 70, 60), hand=shade(skin, 0.9))
+    for sl in ("rsleeve", "lsleeve"): s.ring(sl, 0, 4, fur, 10)
+    s.save("family_rime_brute")
+
+
+def frost_chanter():
+    s = Skin(112, False)
+    skin, robe, rune, beard, eye = (200, 196, 200), (236, 240, 246), (120, 190, 255), (210, 214, 220), (120, 190, 255)
+    s.face(skin, beard, eye, mouth=(150, 150, 160), fringe=1, sides=4, beard=beard)
+    s.fill("hat", robe, 6)
+    for i in range(1, 7):
+        for j in range(2, 8): s.px("hat", "front", i, j, T, 0)
+    s.ring("hat", 0, 1, rune, 6)
+    s.fill("body", shade(robe, 0.9), 6); s.fill("jacket", robe, 6, grain="v")
+    for j in (1, 3, 5, 7, 9): s.px("jacket", "front", 3 + j % 2, j, rune, 6)
+    limbs(s, robe, shade(robe, 0.9), foot=(150, 160, 180), hand=skin)
+    for sl in ("rsleeve", "lsleeve"): s.ring(sl, 0, 10, robe, 6); s.ring(sl, 9, 10, rune, 4)
+    for p in ("rpants", "lpants"): s.ring(p, 0, 11, robe, 6)
+    s.save("family_frost_chanter")
+
+
+def hoarfrost_jarl():
+    s = Skin(113, False)
+    skin, steel, frost, fur, eye = (176, 196, 214), (70, 96, 130), (226, 240, 250), (150, 140, 130), (60, 160, 255)
+    s.face(skin, frost, eye, mouth=(110, 120, 140), fringe=2, sides=6, beard=frost)
+    s.clear("hat")
+    s.fill("body", steel, 10, grain="h"); s.fill("jacket", T, 0); s.clear("jacket")
+    for j in range(12): s.px("jacket", "front", 0, j, frost, 6); s.px("jacket", "front", 7, j, frost, 6)
+    s.rows("jacket", "back", 0, 12, fur, 12)   # the fur cloak
+    limbs(s, steel, shade(steel, 0.85), foot=(50, 60, 80), hand=(90, 100, 120))
+    for sl in ("rsleeve", "lsleeve"): s.ring(sl, 0, 3, frost, 6)
+    s.save("family_hoarfrost_jarl")
+
+
+def hollow_crawler():
+    s = Skin(114, True)
+    skin, wrap, glow = (110, 112, 116), (60, 58, 56), (80, 230, 210)
+    s.fill("head", skin, 8)
+    for i in (1, 2, 5, 6): s.px("head", "front", i, 4, glow, 4)
+    for i in range(2, 6): s.px("head", "front", i, 6, (40, 40, 44))
+    s.clear("hat")
+    s.fill("body", skin, 8); s.clear("jacket")
+    for j in range(0, 12, 3): s.rows("jacket", "front", j, j + 1, wrap, 8)
+    limbs(s, skin, wrap, foot=(40, 40, 44), hand=shade(skin, 0.8))
+    s.save("family_hollow_crawler")
+
+
+def hollow_singer():
+    s = Skin(115, True)
+    skin, robe, glow = (120, 122, 128), (34, 36, 44), (90, 240, 220)
+    s.fill("head", skin, 6)
+    for i in (2, 5): s.px("head", "front", i, 4, (30, 30, 34))
+    for i in range(2, 6): s.px("head", "front", i, 6, glow, 4)
+    s.px("head", "front", 3, 7, glow, 4); s.px("head", "front", 4, 7, glow, 4)
+    s.fill("hat", robe, 6)
+    for i in range(1, 7):
+        for j in range(2, 8): s.px("hat", "front", i, j, T, 0)
+    s.fill("body", robe, 6); s.fill("jacket", robe, 8, grain="v")
+    for j in range(12):
+        if j % 4 == 3: s.px("jacket", "front", 1 + j % 6, j, T, 0)
+    limbs(s, robe, robe, foot=(20, 20, 24), hand=skin)
+    for sl in ("rsleeve", "lsleeve"): s.ring(sl, 0, 10, robe, 8)
+    for p in ("rpants", "lpants"): s.ring(p, 0, 12, robe, 8)
+    s.save("family_hollow_singer")
+
+
+def deepwarden():
+    s = Skin(116, False)
+    stone, dark, glow = (70, 72, 78), (40, 42, 48), (80, 240, 220)
+    s.fill("head", stone, 10)
+    s.rows("head", "front", 3, 5, dark, 4)
+    s.px("head", "front", 2, 4, glow, 4); s.px("head", "front", 5, 4, glow, 4)
+    s.clear("hat")
+    s.fill("body", dark, 8); s.fill("jacket", stone, 12, grain="h")
+    for i, j in ((3, 4), (4, 4), (3, 5), (4, 5)): s.px("jacket", "front", i, j, glow, 4)
+    for i, j in ((2, 4), (5, 4), (3, 3), (4, 6)): s.px("jacket", "front", i, j, shade(glow, 0.6), 4)
+    limbs(s, stone, dark, foot=(30, 30, 34), hand=dark)
+    for sl in ("rsleeve", "lsleeve"): s.ring(sl, 0, 5, stone, 12)
+    s.save("family_deepwarden")
+
+
+def twin(name, tabard, seed, open_helm):
+    s = Skin(seed, False)
+    iron, dark, skin = (88, 90, 96), (52, 54, 60), (186, 150, 128)
+    if open_helm:
+        s.face(skin, (70, 56, 46), (90, 120, 160), mouth=(120, 80, 70), fringe=2, sides=8)
+        for j in (2, 3, 4): s.px("head", "front", 6, j, (150, 90, 80))   # an old scar
+        s.fill("hat", iron, 8)
+        for i in range(1, 7):
+            for j in range(2, 8): s.px("hat", "front", i, j, T, 0)
+    else:
+        s.fill("head", iron, 8)
+        for i in range(1, 7): s.px("head", "front", i, 4, (14, 14, 16))   # the cross slit
+        for j in range(2, 7): s.px("head", "front", 3, j, (14, 14, 16)); s.px("head", "front", 4, j, (14, 14, 16))
+        s.clear("hat")
+    s.fill("body", iron, 10, grain="h")
+    s.fill("jacket", tabard, 8, grain="v", faces_only=("front", "back"))
+    for f in ("front", "back"):
+        for j in range(12):
+            for i in (0, 7): s.px("jacket", f, i, j, T, 0)
+    limbs(s, iron, dark, foot=(30, 30, 34), hand=dark, cuff=dark)
+    for sl in ("rsleeve", "lsleeve"): s.ring(sl, 0, 3, dark, 8)
+    s.save("twin_" + name)
+
+
+def twin_haldric(): twin("haldric", (150, 30, 34), 117, False)
+def twin_oswin(): twin("oswin", (36, 60, 140), 118, True)
+
+
+ALL = (rime_brute, frost_chanter, hoarfrost_jarl, hollow_crawler, hollow_singer, deepwarden, twin_haldric, twin_oswin,
+       bog_crawler, mire_hexer, fen_matron, scree_brute, stonecaller, peak_warden, dune_stalker, sandwraith, sun_herald, gloamstalker)
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)

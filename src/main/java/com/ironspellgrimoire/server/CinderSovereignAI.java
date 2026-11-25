@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -48,8 +49,9 @@ public final class CinderSovereignAI {
     public static void tick(CinderSovereign b) {
         ServerLevel sl = (ServerLevel) b.level();
         Player t = target(b);
-        if (b.tickCount % 10 == 0) {   // the ground smoulders round its feet
-            BossFx.ring(sl, Fx.FIRE, b.position().add(0, 0.1, 0), 3.4f, 3.8f, 0.05f, 12);
+        if (b.tickCount % 10 == 0) {   // the ground smoulders round its feet (white-blue under the Ashen Crown)
+            BossFx.ring(sl, b.phase() >= 4 ? Fx.ICE : Fx.FIRE, b.position().add(0, 0.1, 0), 3.4f, 3.8f, 0.05f, 12);
+            if (b.phase() >= 4) BossFx.ring(sl, Fx.SILVER, b.position().add(0, 9, 0), 2.6f, 3.4f, 0.06f, 12);   // the crown itself, a ring of white fire over its head
         }
         if (b.tickCount % 13 == 0 && b.onGround() && b.getDeltaMovement().horizontalDistanceSqr() > 0.0016) {   // its own heavy tread
             net.minecraft.sounds.SoundEvent step = com.ironspellgrimoire.registry.AddonSounds.get("sovereign_step");
@@ -79,8 +81,9 @@ public final class CinderSovereignAI {
         pool.add(CinderSovereignAI::volley);
         pool.add(CinderSovereignAI::emberRain);
         if (b.phase() >= 2) pool.add(CinderSovereignAI::heartBeam);
+        if (b.phase() >= 4) { pool.add(CinderSovereignAI::ashRings); pool.add(CinderSovereignAI::firePillars); pool.add(CinderSovereignAI::firePillars); }
         int took = pool.get(r.nextInt(pool.size())).applyAsInt(b, t);
-        b.busy = took + (b.phase() == 1 ? 24 : b.phase() == 2 ? 16 : 10);
+        b.busy = took + (b.phase() == 1 ? 24 : b.phase() == 2 ? 16 : b.phase() == 3 ? 10 : 8);
         if (b.tickCount > 12000) {   // ten minutes and still standing: it burns hotter, and faster
             if (!b.getPersistentData().getBoolean("isg_enraged")) {
                 b.getPersistentData().putBoolean("isg_enraged", true);
@@ -307,9 +310,71 @@ public final class CinderSovereignAI {
         return T + 12 + 40;
     }
 
+    /** The Ashen Crown's rings: under every mage near it, three times over - step out each time. */
+    static int ashRings(CinderSovereign b, Player t) {
+        ServerLevel sl = (ServerLevel) b.level();
+        b.play("roar");
+        for (int w = 0; w < 3; w++) {
+            int at = w * 16;
+            AstaFx.later(Math.max(1, at), () -> {
+                if (!b.isAlive()) return;
+                for (Player p : near(b, b.position(), 30)) {
+                    Vec3 c = p.position();
+                    warnCircle(sl, c, 3f, 28);
+                    AstaFx.later(28, () -> {
+                        if (!b.isAlive()) return;
+                        BossFx.ring(sl, Fx.ICE, c.add(0, 0.1, 0), 0.3f, 3.2f, 0.15f, 12);
+                        BossFx.beam(sl, Fx.SILVER, c, c.add(0, 6, 0), 1.2f, 10);
+                        for (Player q : near(b, c.add(0, 1, 0), 3)) hurt(b, q, dmg(b, 14f));
+                    });
+                }
+            });
+        }
+        return 3 * 16 + 30;
+    }
+
+    /** The Ashen Crown's pillars: five white-blue fires, one after another, each where you stood. */
+    static int firePillars(CinderSovereign b, Player t) {
+        ServerLevel sl = (ServerLevel) b.level();
+        for (int i = 0; i < 5; i++) {
+            AstaFx.later(1 + i * 10, () -> {
+                if (!b.isAlive() || !t.isAlive()) return;
+                Vec3 c = t.position();
+                warnCircle(sl, c, 1.7f, 18);
+                AstaFx.later(18, () -> {
+                    if (!b.isAlive()) return;
+                    BossFx.beam(sl, Fx.ICE, c, c.add(0, 14, 0), 1.6f, 14);
+                    FxSend.shake(sl, c, 0.4f, 6, 16);
+                    for (Player q : near(b, c.add(0, 1, 0), 1.8)) hurt(b, q, dmg(b, 12f));
+                });
+            });
+        }
+        return 5 * 10 + 20;
+    }
+
     /** The roar between phases: everyone thrown back, and its fires burn higher. */
     public static void phase(CinderSovereign b, int phase) {
         ServerLevel sl = (ServerLevel) b.level();
+        if (phase >= 4) {   // its second form's last stage
+            b.setTransforming(60);
+            b.play("roar");
+            line(b, "You thought me ended? I only burned down to the white.");
+            Vec3 c0 = b.position();
+            sl.playSound(null, b.blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 4f, 0.3f);
+            AstaFx.later(24, () -> {
+                BossFx.ring(sl, Fx.ICE, c0.add(0, 0.2, 0), 1f, 18f, 0.6f, 20);
+                BossFx.beam(sl, Fx.SILVER, c0, c0.add(0, 50, 0), 3.4f, 22);
+                FxSend.impactFrame(sl, c0.add(0, 6, 0), 5, FxSend.FRAME_LIGHT, 64);
+                FxSend.shake(sl, c0, 1.6f, 28, 64);
+                for (Player p : near(b, c0.add(0, 1, 0), 15)) {
+                    Vec3 away = flat(p.position().subtract(c0));
+                    if (away.lengthSqr() > 1e-4) { p.setDeltaMovement(away.normalize().scale(2.4).add(0, 0.8, 0)); p.hurtMarked = true; }
+                }
+            });
+            for (var p : sl.players()) if (p.distanceToSqr(b) < 160 * 160)
+                p.sendSystemMessage(Component.literal("THE ASHEN CROWN  ").withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD).append(Component.literal("The Sovereign's fire burns white. Watch the ground.").withStyle(ChatFormatting.GRAY)));
+            return;
+        }
         b.setTransforming(50);
         b.play("roar");
         line(b, phase == 2 ? "You think fire fears the rain? Burn." : "ENOUGH. The world beneath you is mine.");
@@ -333,7 +398,8 @@ public final class CinderSovereignAI {
         ServerLevel sl = (ServerLevel) b.level();
         Vec3 c = b.position(), f = fwd(b), rt = rightOf(f);
         if (t == 1) {
-            line(b, "No... the fire... it was mine...");
+            WorldGrowth.sovereignFell(sl.getServer());
+            line(b, b.ashen() ? "Again... you put out... the white..." : "No... the fire... it was mine...");
             sl.playSound(null, b.blockPosition(), SoundEvents.WITHER_DEATH, SoundSource.HOSTILE, 3f, 0.5f);
             WorldBoss.defeated(b);
         }

@@ -30,7 +30,9 @@ public class CinderSovereignRenderer extends GeoEntityRenderer<CinderSovereign> 
         private static final ResourceLocation ANIM = new ResourceLocation("iron_spell_grimoire", "animations/cinder_sovereign.animation.json");
 
         @Override public ResourceLocation getModelResource(CinderSovereign e) { return GEO; }
-        @Override public ResourceLocation getTextureResource(CinderSovereign e) { return TEX; }
+        private static final ResourceLocation ASHEN = new ResourceLocation("iron_spell_grimoire", "textures/entity/cinder_sovereign_ashen.png");
+        /** Its Ashen Crown (the second form's last stage): the fire in its veins burns white-blue. */
+        @Override public ResourceLocation getTextureResource(CinderSovereign e) { return e.ashen() && e.phase() >= 4 ? ASHEN : TEX; }
         @Override public ResourceLocation getAnimationResource(CinderSovereign e) { return ANIM; }
 
         /** Its head turns to follow whoever it's watching (on top of its animations). */

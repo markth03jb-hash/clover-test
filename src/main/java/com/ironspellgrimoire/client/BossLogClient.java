@@ -9,7 +9,7 @@ public final class BossLogClient {
 
     public static int[] arr(String k) {
         int[] a = data.getIntArray(k);
-        if (a.length < 7) { int[] b = new int[7]; System.arraycopy(a, 0, b, 0, a.length); a = b; }
+        if (a.length < 8) { int[] b = new int[8]; System.arraycopy(a, 0, b, 0, a.length); a = b; }
         return a;
     }
 }

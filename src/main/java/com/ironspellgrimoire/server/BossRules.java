@@ -86,7 +86,7 @@ public final class BossRules {
     static void setup(Mob m, ServerPlayer owner, int boss, boolean hardened) {
         CompoundTag t = new CompoundTag();
         t.putInt("b", boss);
-        t.putInt("t", BossLadder.TIER[Math.max(0, Math.min(6, boss))]);
+        t.putInt("t", BossLadder.TIER[Math.max(0, Math.min(7, boss))]);
         t.putInt("r", owner == null ? 0 : EliteMobs.threat(owner));
         t.putBoolean("h", hardened);
         t.putInt("m", owner == null ? 0 : BossLadder.memory(owner, boss));

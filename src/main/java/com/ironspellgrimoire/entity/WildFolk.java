@@ -21,13 +21,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 /**
- * The wild families (server/WildFolkAI): the Mirefolk of the marshes, the Stonefolk of the mountains and the
- * Sandwraiths of the deserts - each a grunt that closes in, a caster that keeps its distance and a leader that
+ * The wild families (server/WildFolkAI): the Mirefolk of the marshes, the Stonefolk of the mountains, the
+ * Sandwraiths of the deserts, the Rimefolk of the snows and the Hollowfolk of the caves - each a grunt that closes in, a caster that keeps its distance and a leader that
  * rallies them - and the Gloamstalker, a night hunter that comes for the strongest mage about. One class; what each
  * one is comes from its entity type (Kind).
  */
 public class WildFolk extends Monster {
-    public enum Family { MIRE, STONE, SAND, NIGHT }
+    public enum Family { MIRE, STONE, SAND, NIGHT, FROST, HOLLOW }
     public enum Role { GRUNT, CASTER, LEADER, HUNTER }
     public enum Kind {
         BOG_CRAWLER("bog_crawler", Family.MIRE, Role.GRUNT, 26, 5, 0.25, 2, false, 0.95f),
@@ -39,7 +39,13 @@ public class WildFolk extends Monster {
         DUNE_STALKER("dune_stalker", Family.SAND, Role.GRUNT, 22, 5, 0.31, 1, false, 1.0f),
         SANDWRAITH("sandwraith", Family.SAND, Role.CASTER, 20, 3, 0.26, 0, true, 1.0f),
         SUN_HERALD("sun_herald", Family.SAND, Role.LEADER, 60, 7, 0.26, 4, false, 1.2f),
-        GLOAMSTALKER("gloamstalker", Family.NIGHT, Role.HUNTER, 80, 9, 0.30, 6, true, 1.15f);
+        GLOAMSTALKER("gloamstalker", Family.NIGHT, Role.HUNTER, 80, 9, 0.30, 6, true, 1.15f),
+        RIME_BRUTE("rime_brute", Family.FROST, Role.GRUNT, 32, 6, 0.23, 4, false, 1.1f),
+        FROST_CHANTER("frost_chanter", Family.FROST, Role.CASTER, 22, 3, 0.24, 1, false, 1.0f),
+        HOARFROST_JARL("hoarfrost_jarl", Family.FROST, Role.LEADER, 70, 8, 0.24, 8, false, 1.25f),
+        HOLLOW_CRAWLER("hollow_crawler", Family.HOLLOW, Role.GRUNT, 24, 5, 0.30, 2, true, 1.0f),
+        HOLLOW_SINGER("hollow_singer", Family.HOLLOW, Role.CASTER, 20, 3, 0.25, 0, true, 1.0f),
+        DEEPWARDEN("deepwarden", Family.HOLLOW, Role.LEADER, 80, 8, 0.21, 12, false, 1.3f);
 
         public final String id;
         public final Family family;

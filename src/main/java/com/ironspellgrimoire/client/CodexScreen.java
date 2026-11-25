@@ -83,6 +83,12 @@ public class CodexScreen extends Screen {
          "Now and then a crack of light tears open near you and stays for a day. Step in to enter a dungeon of five to eight rooms under one or two laws. The relic at the end is found nowhere else. As you climb the boss tiers, rifts run deeper - two more rooms a tier, a mini-boss every third room, and better Mana Cores the deeper you go.",
          "## Wild families",
          "Three families live in the wild, each a grunt, a caster and a leader. The Mirefolk of the marshes (Bog Crawlers, Mire Hexers and the Fen Matron), the Stonefolk of the mountains (Scree Brutes, Stonecallers and the Peak Warden) and the Sandwraiths of the deserts and badlands (Dune Stalkers, Sandwraiths and the Sun Herald). A caster marks the ground under you, then strikes there a second later - step out. A leader rallies its family every 10 seconds, and has a move of its own. Leaders sometimes leave something the Grimoire Altar binds.",
+         "## The Rimefolk and the Hollowfolk",
+         "In the snows, the Rimefolk: Rime Brutes, Frost Chanters whose strikes slow you, and the Hoarfrost Jarl, whose slam chills. In the caves and the deep dark, the Hollowfolk: Hollow Crawlers, Hollow Singers who strike out of the dark with less warning, and the Deepwarden, whose lantern-heart pulls you in. Every family leader may drop its charm - the Moss Knot, Slate Ring, Sun Shard, Rime Pin or Lantern Eye.",
+         "## The Blood Moon",
+         "About one night in ten, everyone is told: until dawn, elites come oftener and each rolls one trait more, the wild leaders walk with their bands, and bounties pay twice the stars.",
+         "## Falling stars",
+         "Now and then a star falls a few hundred blocks from a mage, and everyone hears roughly where. It lands without harming the land, and elites gather round it. Bring them down, then take the Star Core: crack it open for a tier II or III Mana Core.",
          "## The Gloamstalker",
          "At night, a mage of threat rank 3 or more may be hunted. It steps behind you every 8 seconds, shrugs off 40% of the school of magic you cast most, and fades at dawn. It pays well.",
          "## Quest Board",
@@ -90,7 +96,7 @@ public class CodexScreen extends Screen {
          "## Wanted Posters",
          "The Poster Board hands out bounties on the bosses: find the boss's lair within three days and bring it down for merit stars and grimoire upgrades. The Bosses chapter has the rest.",
          "## The world boss",
-         "About once a real day the Cinder Sovereign rises somewhere in the world and every mage is told where. All who hurt it share the reward.",
+         "About once a real day the Cinder Sovereign rises somewhere in the world and every mage is told where. All who hurt it share the reward. Once it has fallen on the server it returns in its second form: below a quarter of its health it takes the Ashen Crown - its fire burns white-blue, rings of ash fall under every mage, and pillars of white fire follow you.",
          "## The Grimoire Library",
          "Every mage ever chosen gets a copy of their grimoire on the Library's shelves. Read it at the archive in a Grimoire Tower, or from any altar.",
          "## Familiars",
@@ -128,7 +134,7 @@ public class CodexScreen extends Screen {
         {"Bosses",
          "The bounty bosses come in three tiers. Posters only show the tiers you've reached.",
          "## Tiers",
-         "Tier I - the Revenant and the Curse Witch - is open from the start. Bring one down and tier II opens: the Ossuarch, Rhya and the Beast of Despair. Bring one of those down and the Poster Board offers the Gate - two gatekeepers, one after another. Pass it and tier III opens: Licht, and with 50 stars the poster with no name.",
+         "Tier I - the Revenant and the Curse Witch - is open from the start. Bring one down and tier II opens: the Ossuarch, Rhya, the Beast of Despair and the Ironbound Twins. Bring one of those down and the Poster Board offers the Gate - two gatekeepers, one after another. Pass it and tier III opens: Licht, and with 50 stars the poster with no name.",
          "## Lairs",
          "Reach the place on the poster and the boss's lair tears open there: step in, and it waits in the next room. Fall and you're thrown back out; the lair stays open while the poster lasts, and the boss rises again at full health.",
          "## How they fight you",
@@ -264,6 +270,15 @@ public class CodexScreen extends Screen {
             para(out, com.ironspellgrimoire.server.BookTree.TREE[k] + ": level " + com.ironspellgrimoire.server.BookTree.level(txp) + " (" + com.ironspellgrimoire.server.BookTree.GROWTH[k].toLowerCase() + ": " + (int) txp + "), "
                     + (com.ironspellgrimoire.server.BookTree.points(b) - com.ironspellgrimoire.server.BookTree.spent(b)) + " of " + com.ironspellgrimoire.server.BookTree.points(b) + " points to spend. G, then the wheel's middle, opens it.", w);
         }
+        para(out, "## Mastery quests", w);
+        int q = com.ironspellgrimoire.server.BookQuests.done(b);
+        for (int i = 0; i < 5; i++) {
+            int got = Math.min(com.ironspellgrimoire.server.BookQuests.progress(b, i), com.ironspellgrimoire.server.BookQuests.GOAL[i]);
+            boolean ok = (q & (1 << i)) != 0;
+            String line = (ok ? "[done] " : "[" + got + "/" + com.ironspellgrimoire.server.BookQuests.GOAL[i] + "] ") + com.ironspellgrimoire.server.BookQuests.TEXT[i];
+            for (var l : font.split(Component.literal(line).withStyle(ok ? ChatFormatting.STRIKETHROUGH : ChatFormatting.RESET), w)) out.add(new Line(l, ok ? INK_SOFT : INK, false));
+        }
+        para(out, "Each quest done: +" + com.ironspellgrimoire.server.BookQuests.XP + " mastery" + (k >= 0 ? " and a tree point" : "") + ".", w);
     }
 
     /** The Bosses chapter's log: your tier, the Gate, your streak, the land's danger, then each boss - its tier, your kills, best time, falls, what it remembers, its signature drop. */
@@ -275,7 +290,7 @@ public class CodexScreen extends Screen {
         int danger = Math.max(0, Math.min(4, d.getInt("danger")));
         para(out, "Where you stand: " + com.ironspellgrimoire.server.EliteMobs.DANGER_TEXT[danger] + ".  Your threat rank: " + d.getInt("rank") + ".", w);
         int[] k = BossLogClient.arr("k"), b = BossLogClient.arr("b"), f = BossLogClient.arr("d"), m = BossLogClient.arr("m");
-        int[] order = {4, 5, 0, 2, 1, 3, 6};
+        int[] order = {4, 5, 0, 2, 1, 7, 3, 6};
         for (int i : order) {
             int t = com.ironspellgrimoire.server.BossLadder.TIER[i];
             String name = i == 6 ? "Licht, the Unbound" : com.ironspellgrimoire.server.Bounties.NAMES[i];

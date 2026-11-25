@@ -1645,5 +1645,21 @@
   "entity.iron_spell_grimoire.dune_stalker": "Dune Stalker",
   "entity.iron_spell_grimoire.sandwraith": "Sandwraith",
   "entity.iron_spell_grimoire.sun_herald": "Sun Herald",
-  "entity.iron_spell_grimoire.gloamstalker": "Gloamstalker"
+  "entity.iron_spell_grimoire.gloamstalker": "Gloamstalker",
+  "entity.iron_spell_grimoire.rime_brute": "Rime Brute",
+  "entity.iron_spell_grimoire.frost_chanter": "Frost Chanter",
+  "entity.iron_spell_grimoire.hoarfrost_jarl": "Hoarfrost Jarl",
+  "entity.iron_spell_grimoire.hollow_crawler": "Hollow Crawler",
+  "entity.iron_spell_grimoire.hollow_singer": "Hollow Singer",
+  "entity.iron_spell_grimoire.deepwarden": "Deepwarden",
+  "entity.iron_spell_grimoire.twin_haldric": "Ser Haldric",
+  "entity.iron_spell_grimoire.twin_oswin": "Ser Oswin",
+  "entity.iron_spell_grimoire.falling_star": "Fallen Star",
+  "item.iron_spell_grimoire.moss_knot": "Moss Knot",
+  "item.iron_spell_grimoire.slate_ring": "Slate Ring",
+  "item.iron_spell_grimoire.sun_shard": "Sun Shard",
+  "item.iron_spell_grimoire.rime_pin": "Rime Pin",
+  "item.iron_spell_grimoire.lantern_eye": "Lantern Eye",
+  "item.iron_spell_grimoire.ironbound_vow": "Ironbound Vow",
+  "item.iron_spell_grimoire.star_core": "Star Core"
 }

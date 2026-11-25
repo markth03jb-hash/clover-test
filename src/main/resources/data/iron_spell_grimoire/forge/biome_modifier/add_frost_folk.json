@@ -1,0 +1,24 @@
+{
+  "type": "forge:add_spawns",
+  "biomes": "#forge:is_snowy",
+  "spawners": [
+    {
+      "type": "iron_spell_grimoire:rime_brute",
+      "weight": 14,
+      "minCount": 2,
+      "maxCount": 3
+    },
+    {
+      "type": "iron_spell_grimoire:frost_chanter",
+      "weight": 8,
+      "minCount": 1,
+      "maxCount": 2
+    },
+    {
+      "type": "iron_spell_grimoire:hoarfrost_jarl",
+      "weight": 2,
+      "minCount": 1,
+      "maxCount": 1
+    }
+  ]
+}

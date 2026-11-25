@@ -403,6 +403,9 @@ final class GameTestCases {
         queue.add(new MobProgressTest());
         queue.add(new RelicTest());
         queue.add(new FolkTest());
+        queue.add(new IronTwinsTest());
+        queue.add(new StarTest());
+        queue.add(new WorldEventsTest());
         queue.add(new MultiplayerTest());
         queue.add(new StressTest());
         queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
@@ -1702,6 +1705,7 @@ final class GameTestCases {
         }
         @Override boolean tick(int t) {
             try {
+                if (t < 24) p.invulnerableTime = 0;   // a blow from the band mustn't shield the player from the Hexer's strike
                 if (t == 26) {
                     if (WildFolkAI.testCasts != casts0 + 1) bad.add("the Mire Hexer didn't cast");
                     if (playerHits == hits0) bad.add("the Mire Hexer's strike didn't land where it marked");
@@ -1724,6 +1728,153 @@ final class GameTestCases {
                 }
                 return false;
             } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); clearArea(); return true; }
+        }
+    }
+
+    /** The Ironbound Twins: one health, the chain taut (more taken, the third blow staggers) or close (less taken), Oswin gone with Haldric. */
+    static final class IronTwinsTest extends Test {
+        IronTwinsTest() { super("the Ironbound Twins: shared health, the chain"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{com.ironspellgrimoire.entity.IronboundTwin.class, IronboundAI.class, Bounties.class}; }
+        final List<String> bad = new ArrayList<>();
+        com.ironspellgrimoire.entity.IronboundTwin h, o;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            h = AddonEntities.TWIN_HALDRIC.get().create(sl()); o = AddonEntities.TWIN_OSWIN.get().create(sl());
+            h.moveTo(home.x - 6, home.y, home.z + 8, 0, 0); o.moveTo(home.x + 6, home.y, home.z + 8, 0, 0);
+            h.partner = o.getUUID(); o.partner = h.getUUID();
+            h.setNoAi(true); o.setNoAi(true);
+            sl().addFreshEntity(h); sl().addFreshEntity(o);
+        }
+        @Override boolean tick(int t) {
+            try {
+                if (t == 2) {
+                    if (!h.isMain() || o.isMain()) bad.add("Haldric should carry the health");
+                    float hp = h.getHealth();
+                    o.hurt(p.damageSources().magic(), 10f);   // a blow on Oswin, taut (12 apart)
+                    float lost = hp - h.getHealth();
+                    if (Math.abs(lost - 15f) > 0.5f) bad.add("a 10 blow on Oswin with the chain taut took " + lost + " from Haldric (should be 15)");
+                    h.invulnerableTime = 0; h.hurt(p.damageSources().magic(), 10f);
+                    h.invulnerableTime = 0; h.hurt(p.damageSources().magic(), 10f);
+                    if (sl().getGameTime() >= h.staggerUntil) bad.add("the third blow with the chain taut didn't stagger them");
+                    o.teleportTo(h.getX() + 2, h.getY(), h.getZ());
+                    float hp2 = h.getHealth();
+                    h.invulnerableTime = 0; h.hurt(p.damageSources().magic(), 10f);
+                    if (Math.abs((hp2 - h.getHealth()) - 8f) > 0.5f) bad.add("close together a 10 blow took " + (hp2 - h.getHealth()) + " (should be 8)");
+                    BossLadder.testReset(p); BossLadder.testKill(p, 4, 0, 0);
+                    if (!Bounties.allowedBosses(p).contains(7)) bad.add("the Twins aren't on a tier II mage's posters");
+                    BossLadder.testReset(p);
+                    h.kill();
+                }
+                if (t == 6) {
+                    if (o.isAlive() && !o.isRemoved()) bad.add("Oswin stayed when Haldric fell");
+                    clearArea();
+                    if (bad.isEmpty()) pass(name, "one health (a blow on Oswin lands on Haldric), taut x1.5 and the third blow staggers, close x0.8, on tier II posters, Oswin goes with Haldric");
+                    else fail(name, String.join("; ", bad));
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); clearArea(); return true; }
+        }
+    }
+
+    /** A falling star: it comes down, lands, its guardians gather; with them down it can be taken, and its core cracked open. */
+    static final class StarTest extends Test {
+        StarTest() { super("falling stars: the fall, the guardians, the core"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{FallingStars.class, com.ironspellgrimoire.entity.FallingStar.class, com.ironspellgrimoire.item.StarCoreItem.class}; }
+        final List<String> bad = new ArrayList<>();
+        com.ironspellgrimoire.entity.FallingStar star;
+        int landed0;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            p.getInventory().clearContent();
+            landed0 = FallingStars.testLanded;
+            star = FallingStars.callDown(sl(), home.add(0, 0, 10), false);
+            if (star == null) bad.add("no star came");
+        }
+        @Override boolean tick(int t) {
+            try {
+                if (star == null) { fail(name, String.join("; ", bad)); return true; }
+                if (t == 70) {
+                    if (FallingStars.testLanded != landed0 + 1 || !star.landed()) bad.add("the star didn't land");
+                    if (star.guardians.size() < 3) bad.add("only " + star.guardians.size() + " guardians");
+                    if (!star.sealed()) bad.add("it isn't sealed while the guardians stand");
+                    FallingStars.take(star, p);
+                    if (!star.isAlive()) bad.add("it could be taken with its guardians up");
+                    for (var id : star.guardians) if (sl().getEntity(id) instanceof Mob g) g.kill();
+                }
+                if (t == 100) {
+                    if (star.sealed()) bad.add("still sealed with its guardians down");
+                    FallingStars.take(star, p);
+                    ItemStack core = ItemStack.EMPTY;
+                    for (ItemStack s : p.getInventory().items) if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.STAR_CORE.get())) core = s;
+                    if (core.isEmpty()) bad.add("no Star Core taken");
+                    else {
+                        p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, core.copy());
+                        p.getMainHandItem().use(sl(), p, net.minecraft.world.InteractionHand.MAIN_HAND);
+                        int best = 0;
+                        for (ItemStack s : p.getInventory().items) if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_CORE.get())) best = Math.max(best, BossRules.coreTier(s));
+                        if (best < 2) bad.add("the Star Core didn't crack into a tier II+ Mana Core");
+                    }
+                    p.getInventory().clearContent();
+                    clearArea();
+                    if (bad.isEmpty()) pass(name, "fell and landed, 3+ guardians sealed it, unsealed when they fell, taken, cracked into a tier II+ core");
+                    else fail(name, String.join("; ", bad));
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); clearArea(); return true; }
+        }
+    }
+
+    /** The Blood Moon, the Sovereign's second form, mastery quests, the leaders' charms. */
+    static final class WorldEventsTest extends Test {
+        WorldEventsTest() { super("blood moon, the Ashen Crown, mastery quests, leader charms"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{BloodMoon.class, CinderSovereignAI.class, BookQuests.class, FolkCharms.class, WorldGrowth.class}; }
+        @Override void start() { cancelCast(); clearArea(); resetPlayer(true); }
+        @Override boolean tick(int t) {
+            List<String> bad = new ArrayList<>();
+            ItemStack prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            prev = prev == null ? ItemStack.EMPTY : prev.copy();
+            boolean sov = WorldGrowth.sovereignFallen(sl().getServer());
+            try {
+                BloodMoon.testSet(sl().getServer(), true);
+                if (!BloodMoon.on(sl().getServer())) bad.add("the Blood Moon didn't start");
+                BloodMoon.testSet(sl().getServer(), false);
+                if (BloodMoon.on(sl().getServer())) bad.add("the Blood Moon didn't end");
+                var b = AddonEntities.CINDER_SOVEREIGN.get().create(sl());
+                b.setAshen(true);
+                if (b.maxPhase() != 4) bad.add("the second form has " + b.maxPhase() + " stages");
+                WorldGrowth.testSovereign(sl().getServer(), false);
+                WorldGrowth.sovereignFell(sl().getServer());
+                if (!WorldGrowth.sovereignFallen(sl().getServer())) bad.add("the Sovereign's fall wasn't kept");
+                b.discard();
+                // mastery quests
+                wear(com.ironspellgrimoire.registry.AddonItemRegistry.VECTOR_GRIMOIRE.get());
+                ItemStack book = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+                int pts = BookTree.points(book), xp = GrimoireMastery.xp(book);
+                BookQuests.add(p, 1, 25);
+                book = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+                if ((BookQuests.done(book) & 2) == 0) bad.add("25 elites didn't finish the quest");
+                if (BookTree.points(book) != pts + 1) bad.add("the quest didn't give a tree point (" + pts + " -> " + BookTree.points(book) + ")");
+                if (GrimoireMastery.xp(book) <= xp && xp < GrimoireMastery.THRESHOLDS[GrimoireMastery.cap(book)]) bad.add("the quest gave no mastery (below its cap)");
+                // the Slate Ring
+                ItemStack ring = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.SLATE_RING.get());
+                top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, ring));
+                double armor = p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+                p.tickCount = 20 * 1000;
+                FolkCharms.onPlayerTick(new net.minecraftforge.event.TickEvent.PlayerTickEvent(net.minecraftforge.event.TickEvent.Phase.END, p));
+                if (p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR) < armor + 1.9) bad.add("the Slate Ring gave no armour");
+                top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, ItemStack.EMPTY));
+                for (var f : com.ironspellgrimoire.entity.WildFolk.Family.values())
+                    if (f != com.ironspellgrimoire.entity.WildFolk.Family.NIGHT && FolkCharms.charm(f).isEmpty()) bad.add("no charm for the " + f);
+            } catch (Throwable x) { bad.add("threw " + x); }
+            WorldGrowth.testSovereign(sl().getServer(), sov);
+            ItemStack back = prev;
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, back));
+            clearArea();
+            if (bad.isEmpty()) pass(name, "the Blood Moon came and went, the second form has 4 stages and is remembered, a quest gave mastery and a tree point, the Slate Ring's armour, a charm for every family");
+            else fail(name, String.join("; ", bad));
+            return true;
         }
     }
 

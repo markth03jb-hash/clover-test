@@ -231,7 +231,9 @@ public final class EliteMobs {
         boolean rift = sl.dimension() == Rifts.RIFT;
         ThreadLocalRandom r = ThreadLocalRandom.current();
         double chance = AddonConfig.eliteChance() * (1 + 0.28 * rank) * (rift ? 2 : 1);
-        int mask = r.nextDouble() < chance ? pick(m, rank, 1 + (r.nextDouble() < 0.35 ? 1 : 0) + (rank >= 3 && r.nextDouble() < 0.3 ? 1 : 0)) : 0;
+        boolean blood = BloodMoon.on(sl.getServer());   // a Blood Moon: elites come oftener, each with a trait more
+        if (blood) chance = Math.min(1, chance * 1.5);
+        int mask = r.nextDouble() < chance ? pick(m, rank, 1 + (blood ? 1 : 0) + (r.nextDouble() < 0.35 ? 1 : 0) + (rank >= 3 && r.nextDouble() < 0.3 ? 1 : 0)) : 0;
         boolean lead = mask == 0 && !rift && PackMobs.mayLead(m, rank) && r.nextDouble() < 0.03 + 0.01 * rank;
         if (rank == 0 && mask == 0 && !lead) return;   // nothing to mark
         make(m, rank, mask);

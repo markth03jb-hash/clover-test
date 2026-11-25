@@ -41,6 +41,8 @@ public final class MageSetup {
         e.put(AddonEntities.OATHBOUND_KNIGHT.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());
         e.put(AddonEntities.SHADOW_RAVENER.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());
         for (var en : AddonEntities.FOLK.entrySet()) e.put(en.getValue().get(), en.getKey().attributes().build());
+        e.put(AddonEntities.TWIN_HALDRIC.get(), com.ironspellgrimoire.entity.IronboundTwin.attributes().build());
+        e.put(AddonEntities.TWIN_OSWIN.get(), com.ironspellgrimoire.entity.IronboundTwin.attributes().build());
     }
 
     @SubscribeEvent

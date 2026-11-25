@@ -110,7 +110,68 @@ def unbound_seal():
     return finish(im)
 
 
-ICONS = {"marrow_plate": marrow_plate, "hopeless_claw": hopeless_claw, "turncoat_sigil": turncoat_sigil, "lichs_page": lichs_page,
+def moss_knot():
+    im, g = canvas()
+    g.arc(box(2.5, 3, 9.5, 10), 30, 330, fill=(80, 120, 60), width=int(1.7 * S))
+    g.arc(box(6.5, 3, 13.5, 10), 210, 150, fill=(60, 96, 46), width=int(1.7 * S))
+    g.line(P(5, 9.5, 4, 14), fill=(80, 120, 60), width=int(1.5 * S)); g.line(P(11, 9.5, 12, 14), fill=(60, 96, 46), width=int(1.5 * S))
+    for x, y in ((4.4, 13.6), (11.6, 13.6)): g.ellipse(box(x - 1, y - 1, x + 1, y + 1), fill=(226, 218, 192))   # bone beads
+    return finish(im)
+
+
+def slate_ring():
+    im, g = canvas()
+    g.ellipse(box(2, 3, 14, 15), fill=(90, 94, 104)); g.ellipse(box(5, 6, 11, 12), fill=(0, 0, 0, 0))
+    g.ellipse(box(2.6, 3.6, 13.4, 14.4), outline=(130, 134, 144), width=S // 2 + 1)
+    g.polygon(P(6, 1, 10, 1, 11, 4, 8, 5.4, 5, 4), fill=(255, 176, 60))   # an amber set in the ring
+    return finish(im)
+
+
+def sun_shard():
+    im, g = canvas()
+    for i in range(8):
+        a = i * math.pi / 4
+        g.line(P(8, 8, 8 + math.cos(a) * 7, 8 + math.sin(a) * 7), fill=(240, 190, 80), width=S)
+    g.polygon(P(8, 2.5, 11, 8, 8, 13.5, 5, 8), fill=(255, 220, 130))
+    g.polygon(P(8, 4, 9.6, 8, 8, 12, 6.4, 8), fill=(255, 250, 220))
+    return finish(im)
+
+
+def rime_pin():
+    im, g = canvas()
+    g.line(P(3, 13, 12, 4), fill=(170, 180, 196), width=S)
+    for i in range(6):
+        a = i * math.pi / 3
+        g.line(P(11, 5, 11 + math.cos(a) * 4, 5 + math.sin(a) * 4), fill=(196, 232, 255), width=S)
+    g.ellipse(box(9.6, 3.6, 12.4, 6.4), fill=(240, 250, 255))
+    return finish(im)
+
+
+def lantern_eye():
+    im, g = canvas()
+    g.rectangle(box(4, 2, 12, 14), fill=(50, 52, 60)); g.rectangle(box(5, 3, 11, 13), fill=(24, 26, 30))
+    g.ellipse(box(5.5, 5.5, 10.5, 10.5), fill=(80, 240, 220)); g.ellipse(box(7, 7, 9, 9), fill=(10, 40, 40))
+    g.rectangle(box(6, 0.8, 10, 2.2), fill=(90, 94, 104))
+    return finish(im)
+
+
+def ironbound_vow():
+    im, g = canvas()
+    for k, (x, y) in enumerate(((5, 5), (8, 8), (11, 11))):
+        g.ellipse(box(x - 3, y - 2, x + 3, y + 2), outline=(150, 154, 164) if k != 1 else (190, 60, 60), width=int(1.3 * S))
+    return finish(im)
+
+
+def star_core():
+    im, g = canvas()
+    g.polygon(P(8, 1, 10, 6, 15, 8, 10, 10, 8, 15, 6, 10, 1, 8, 6, 6), fill=(200, 210, 255))
+    g.polygon(P(8, 4, 9.2, 7, 12, 8, 9.2, 9, 8, 12, 6.8, 9, 4, 8, 6.8, 7), fill=(255, 255, 255))
+    return finish(im)
+
+
+ICONS = {"moss_knot": moss_knot, "slate_ring": slate_ring, "sun_shard": sun_shard, "rime_pin": rime_pin, "lantern_eye": lantern_eye,
+         "ironbound_vow": ironbound_vow, "star_core": star_core,
+         "marrow_plate": marrow_plate, "hopeless_claw": hopeless_claw, "turncoat_sigil": turncoat_sigil, "lichs_page": lichs_page,
          "grave_knot": grave_knot, "hexbound_ink": hexbound_ink, "unbound_seal": unbound_seal}
 
 if __name__ == "__main__":
