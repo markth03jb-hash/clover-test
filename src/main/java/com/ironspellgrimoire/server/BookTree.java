@@ -380,7 +380,7 @@ public final class BookTree {
             {"Switch stance: Reflect (projectiles), Return (blows), Flow (no fall damage, faster).", "Hang in the air for 3 s.", "Turn the momentum of everything rushing you.", "A spear of compressed air through everything in its line."},
             {"Set off everything armed - no mana.", "Choose how armed targets blow: on Detonate, on a 3 s timer, or when a foe comes near.", "A coin that arms the first creature it strikes.", "Disarm everything; 8 mana back for each."},
             {"For 5 s, see every nearby foe's next blow, and foresee them all.", "Step back to where you stood a second ago.", "Mark a spot: 2 s later the strike lands there.", "Tie two foes together for 10 s."},
-            {"Balanced, then Restrain (the demon fills slowly and fades), then Release (it fills fast, and gives more).", "Your beasts come to you; allies within 16 gain speed and 4 absorption.", "A wall of salt for 4 s: arrows die in it, foes crossing are salted.", "One beat of the wing: 10 blocks, through foes."}};
+            {"Balanced, Restrain (fills slowly), Release (fills fast).", "Your beasts come to you; allies within 16 gain speed and 4 absorption.", "A wall of salt for 4 s: arrows die in it, foes crossing are salted.", "One beat of the wing: 10 blocks, through foes."}};
     public static final int[][] WHEEL_COOLDOWN = {{20, 300, 240, 160}, {40, 10, 120, 200}, {400, 200, 160, 300}, {10, 600, 300, 160}};
 
     public static boolean wheelOpen(Player p, int slot) {

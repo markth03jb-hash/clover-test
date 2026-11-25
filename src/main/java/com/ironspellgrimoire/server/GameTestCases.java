@@ -1474,9 +1474,10 @@ final class GameTestCases {
             if (pts0 < 2) bad.add("a fresh book at mastery " + GrimoireMastery.level(b) + " has only " + pts0 + " points");
             BookTree.testXp(b, 100000);
             if (BookTree.level(b) != BookTree.MAX_LEVEL) bad.add("100000 growth is level " + BookTree.level(b) + ", not " + BookTree.MAX_LEVEL);
-            if (BookTree.points(b) != pts0 + BookTree.MAX_LEVEL) bad.add("points didn't grow by the level");
+            if (BookTree.points(b) != pts0 + BookTree.MAX_LEVEL * (kind == BookTree.BOUND ? 2 : 1)) bad.add("points didn't grow by the level");
             java.util.List<BookTree.Node> nodes = BookTree.TREES.get(kind);
-            BookTree.Node stat = nodes.stream().filter(n -> n.kind() == BookTree.STAT && n.ranks() >= 2).findFirst().orElse(null);
+            BookTree.Node stat = nodes.stream().filter(n -> n.kind() == BookTree.STAT && n.ranks() >= 2).findFirst()
+                    .orElse(nodes.stream().filter(n -> n.kind() != BookTree.ROOT && n.req().length > 0 && n.req()[0].equals("root")).findFirst().orElse(null));   // the Bond Tree has no multi-rank stats
             BookTree.Node deep = nodes.stream().filter(n -> n.kind() != BookTree.ROOT && n.kind() != BookTree.STAT && n.req().length > 0 && !n.req()[0].equals("root") && n.kind() != BookTree.KEY).findFirst().orElse(null);
             if (stat == null || deep == null) { bad.add("the tree has no multi-rank stat or no deep node"); return; }
             if (BookTree.blocked(b, deep) == null) bad.add(deep.name() + " could be learned without " + deep.req()[0]);
