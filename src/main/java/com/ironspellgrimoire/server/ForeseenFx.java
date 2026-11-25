@@ -111,6 +111,7 @@ public final class ForeseenFx {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onAttack(LivingAttackEvent e) {
         if (landing || !(e.getEntity() instanceof ServerPlayer p) || !has(p)) return;
+        testSeen++;
         Entity src = e.getSource().getEntity();
         if (!(src instanceof LivingEntity by) || by == p || e.getSource().getDirectEntity() != by || !BookTree.melee(e.getSource())) return;   // blows only
         S s = s(p);
@@ -444,6 +445,7 @@ public final class ForeseenFx {
 
     // test hooks
     public static void testReset(ServerPlayer p) { STATE.remove(p.getUUID()); }
+    public static int testSeen;
     public static int testHeld(ServerPlayer p) { return s(p).held.size(); }
     public static long testLastDodge(ServerPlayer p) { return s(p).lastDodge; }
 }

@@ -73,7 +73,7 @@ public class BookTreeScreen extends Screen {
         Shapes.rect(x0 + 4, y0 + 4, x0 + W - 154, y0 + 30, PANEL);
         // the growth bar
         float[] nx = BookTree.toNext(BookTreeClient.xp);
-        double barX = x0 + 120, barW = W - 154 - 126;
+        double barX = x0 + 78, barW = W - 154 - 84;
         Shapes.rect(barX, y0 + 20, barX + barW, y0 + 24, Shapes.alpha(LINE, 1f));
         Shapes.rect(barX, y0 + 20, barX + barW * Math.min(1, nx[0] / Math.max(1, nx[1])), y0 + 24, ACC);
         // the paths
@@ -110,7 +110,6 @@ public class BookTreeScreen extends Screen {
         // the header
         g.drawString(font, BookTree.TREE[b], x0 + 10, y0 + 8, BRIGHT);
         g.drawString(font, "Level " + BookTreeClient.level() + (BookTreeClient.level() >= BookTree.MAX_LEVEL ? " (max)" : ""), x0 + 10, y0 + 19, ACC);
-        g.drawString(font, BookTree.GROWTH[b] + ": " + (int) BookTreeClient.xp, (int) barX, y0 + 8, DIM);
         String pts = BookTreeClient.free() + " / " + BookTreeClient.points + " points";
         g.drawString(font, pts, x0 + W - 158 - font.width(pts), y0 + 8, BookTreeClient.free() > 0 ? BRIGHT : DIM);
 
@@ -119,6 +118,7 @@ public class BookTreeScreen extends Screen {
         BookTree.Node n = show == null ? null : BookTree.node(b, show);
         if (n == null) {
             py = para(g, px, py, pw, "Point at a node to read it; click to learn it.", DIM);
+            py = para(g, px, py + 6, pw, BookTree.GROWTH[b] + ": " + (int) BookTreeClient.xp + ".", BRIGHT);
             py = para(g, px, py + 6, pw, "Points come from your " + BookTree.TREE[b] + " level (" + BookTree.GROWTH[b].toLowerCase() + ") and two for each mastery level.", DIM);
             py = para(g, px, py + 6, pw, "Keystones come in pairs: take one side, never both.", DIM);
             para(g, px, py + 6, pw, "G opens the wheel; its centre opens this tree.", DIM);
@@ -223,8 +223,9 @@ public class BookTreeScreen extends Screen {
             if (n.kind() == BookTree.STAT) { Shapes.rect(x - 3, y - 0.6, x + 3, y + 0.6, learned ? bright : dim); Shapes.rect(x - 0.6, y - 3, x + 0.6, y + 3, learned ? bright : dim); }
             if (n.kind() == BookTree.PASSIVE) Shapes.ring(x, y, 2, 3, learned ? bright : dim);
         } else {
-            double open = learned ? 1 : can ? 0.35 + 0.15 * Math.sin(t * 3) : 0;
-            Shapes.eye(x, y, r + 2, Math.max(open, 0.08), learned ? Shapes.alpha(acc, 0.35f) : bg, rim);
+            double open = learned ? 1 : can ? 0.45 + 0.15 * Math.sin(t * 3) : 0.22;   // shut (a slit), half-open when you can learn it, open when learned
+            Shapes.disc(x, y, r - 1, Shapes.alpha(line, 0.55f));
+            Shapes.eye(x, y, r + 2, open, learned ? Shapes.alpha(acc, 0.35f) : bg, rim);
             if (learned && n.kind() != BookTree.SKILL && n.kind() != BookTree.WHEEL && n.kind() != BookTree.ROOT) {
                 Shapes.disc(x, y, 3.2, acc); Shapes.disc(x, y, 1.4, bg);
             }

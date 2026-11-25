@@ -195,7 +195,8 @@ public final class UiShotsServer {
             case "double" -> {
                 for (var m : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
                 p.serverLevel().setDayTime(6000);
-                ForeseenFx.falseFuture(p, 0);
+                var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+                ForeseenFx.spawnDouble(p, p.position().add(look.scale(3)).add(-look.z * 2.2, 0, look.x * 2.2), 200);   // to one side, where the camera sees it
             }
             default -> {
                 for (var m : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();

@@ -44,7 +44,7 @@ public class BookTreeWheel extends Screen {
         int[] th = BookTreeClient.THEME[b];
         int BG = th[0], LINE = th[2], ACC = th[3], BRIGHT = th[4], DIM = th[5];
         int cx = width / 2, cy = height / 2;
-        double R = Math.min(96, height / 2.0 - 40), r0 = 30 * e, r1 = R * e;
+        double R = Math.min(108, height / 2.0 - 40), r0 = 30 * e, r1 = R * e;
         double dx = mx - cx, dy = my - cy, dist = Math.sqrt(dx * dx + dy * dy);
         double ang = Math.atan2(dx, -dy);
         if (ang < 0) ang += Math.PI * 2;
@@ -92,7 +92,7 @@ public class BookTreeWheel extends Screen {
         Shapes.end();
 
         for (int i = 0; i < 4; i++) {
-            double mid = i * Math.PI / 2, rr = r0 + (r1 - r0) * 0.55 + (i == hover ? 4 : 0);
+            double mid = i * Math.PI / 2, rr = r0 + (r1 - r0) * 0.62 + (i == hover ? 4 : 0);
             int tx = (int) (cx + Math.sin(mid) * rr), ty = (int) (cy - Math.cos(mid) * rr);
             boolean ok = BookTreeClient.wheelOpen(i);
             g.setColor(1f, 1f, 1f, ok ? 1f : 0.35f);
@@ -104,7 +104,7 @@ public class BookTreeWheel extends Screen {
         }
         g.drawCenteredString(font, b == BookTree.FORESEEN ? "" : "Tree", cx, cy - 4, centre ? 0xFFFFFFFF : BRIGHT);
         if (b == BookTree.FORESEEN) g.drawCenteredString(font, "Tree", cx, cy + 6, centre ? 0xFFFFFFFF : BRIGHT);
-        if (BookTreeClient.free() > 0) g.drawCenteredString(font, BookTreeClient.free() + " to spend", cx, cy + (b == BookTree.FORESEEN ? 16 : 6), ACC);
+        if (BookTreeClient.free() > 0) g.drawCenteredString(font, "+" + BookTreeClient.free(), cx, cy + (b == BookTree.FORESEEN ? 16 : 6), ACC);
 
         int y = cy + (int) (R + 18);
         g.drawCenteredString(font, state(b), cx, cy - (int) R - 22, ACC);
@@ -115,7 +115,7 @@ public class BookTreeWheel extends Screen {
             g.drawCenteredString(font, d, cx, y + 11, DIM);
         } else if (centre) {
             g.drawCenteredString(font, BookTree.TREE[b], cx, y, 0xFFFFFFFF);
-            g.drawCenteredString(font, "Let go here to open the tree.", cx, y + 11, DIM);
+            g.drawCenteredString(font, "Let go here to open the tree" + (BookTreeClient.free() > 0 ? " - " + BookTreeClient.free() + " points to spend." : "."), cx, y + 11, DIM);
         }
     }
 

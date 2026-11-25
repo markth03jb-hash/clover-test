@@ -380,7 +380,8 @@ final class GameTestCases {
                 "pressure gust", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::pressureGust, "", "pulse touch", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::pulseTouch, "q", "wind vector", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::windVector, "q",
                 "plasma point", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::plasmaPoint, "q", "vector absolute", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::vectorAbsolute, "q"));
         queue.add(new BookMovesTest("quiet fuse", com.ironspellgrimoire.registry.AddonItemRegistry.FUSE_GRIMOIRE::get, FuseFx.class,
-                "detonate", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { for (var m : pl.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, pl.getBoundingBox().inflate(28))) FuseFx.arm(pl, m, true); FuseFx.detonate(pl, pw); }, "", "prime item", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::primeItem, "q", "heat seeker", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::heatSeeker, "q",
+                "prime item", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::primeItem, "q",
+                "detonate", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { for (var m : pl.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, pl.getBoundingBox().inflate(28))) FuseFx.arm(pl, m, true); FuseFx.detonate(pl, pw); }, "", "heat seeker", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::heatSeeker, "q",
                 "air bubble", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::airBubble, "q", "contact charge", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::contactCharge, "q", "chain fuse", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::chainFuse, "q",
                 "hidden tenant", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::hiddenTenant, "q", "loop of ruin", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { for (var m : pl.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, pl.getBoundingBox().inflate(28))) FuseFx.arm(pl, m, true); FuseFx.loopOfRuin(pl, pw); }, ""));
         queue.add(new BookMovesTest("foreseen", com.ironspellgrimoire.registry.AddonItemRegistry.FORESEEN_GRIMOIRE::get, ForeseenFx.class,
@@ -1354,8 +1355,10 @@ final class GameTestCases {
                     } else {
                         husk.setTarget(p);
                         p.invulnerableTime = 0;
-                        p.hurt(p.damageSources().mobAttack(husk), 4f);
-                        if (ForeseenFx.testHeld(p) != 1) bad.add("the husk's blow wasn't held (" + ForeseenFx.testHeld(p) + " held)");
+                        int seen0 = ForeseenFx.testSeen;
+                        boolean took = p.hurt(p.damageSources().mobAttack(husk), 4f);
+                        if (ForeseenFx.testHeld(p) != 1) bad.add("the husk's blow wasn't held (" + ForeseenFx.testHeld(p) + " held; reached Foresight " + (ForeseenFx.testSeen - seen0)
+                                + "; hurt returned " + took + "; mode " + p.gameMode.getGameModeForPlayer() + ", invulnerable " + p.isInvulnerable() + ", hp " + p.getHealth() + ")");
                         if (p.getHealth() < hp0) bad.add("a foreseen blow landed at once");
                         p.teleportTo(sl(), home.x, home.y, home.z - 5, 0f, 0f);   // step out of reach
                     }
