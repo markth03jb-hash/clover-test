@@ -402,6 +402,7 @@ final class GameTestCases {
         queue.add(new GateTest());
         queue.add(new MobProgressTest());
         queue.add(new RelicTest());
+        queue.add(new FolkTest());
         queue.add(new MultiplayerTest());
         queue.add(new StressTest());
         queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
@@ -1413,19 +1414,19 @@ final class GameTestCases {
             try {
                 if (t == 2) {
                     m.hurt(p.damageSources().playerAttack(p), 4f);   // the fight starts
+                    // the weak point on its back: hit from behind (at full health, clear of its own phase lines)
+                    m.setYBodyRot(0f); m.setYRot(0f); m.yBodyRotO = 0f;
+                    BossRules.testWeak(m, 180f);
+                    p.teleportTo(sl(), m.getX(), m.getY(), m.getZ() - 3, 0f, 0f);
+                    m.invulnerableTime = 0;
+                    boolean landed = m.hurt(p.damageSources().playerAttack(p), 3f);
+                    if (!BossRules.testStaggered(m)) bad.add("a hit on the weak point from behind didn't stagger it (hit landed " + landed + ", body yaw " + m.yBodyRot + ")");
                     m.setHealth(m.getMaxHealth() * 0.45f);
                     BossRules.testTick(m);
                     if (BossRules.testStage(m) != 1) bad.add("tier I: below half health it should be in stage 2 (stage index " + BossRules.testStage(m) + ")");
                     BossRules.testStart(m, BossRules.ENRAGE_TICKS + 20);
                     BossRules.testTick(m);
                     if (!BossRules.testEnraged(m)) bad.add("not enraged after 3 minutes");
-                    // the weak point on its back: hit from behind
-                    m.setYBodyRot(0f); m.setYRot(0f);
-                    BossRules.testWeak(m, 180f);
-                    p.teleportTo(sl(), m.getX(), m.getY(), m.getZ() - 3, 0f, 0f);
-                    m.invulnerableTime = 0;
-                    m.hurt(p.damageSources().playerAttack(p), 3f);
-                    if (!BossRules.testStaggered(m)) bad.add("a hit on the weak point from behind didn't stagger it");
                 }
                 if (t == 4) {
                     m.kill();
@@ -1667,6 +1668,62 @@ final class GameTestCases {
             if (bad.isEmpty()) pass(name, "the Grave Knot held once, the Hexbound third cast was free, Lich's Page gave +3 points, the Turncoat Sigil raised a shadow");
             else fail(name, String.join("; ", bad));
             return true;
+        }
+    }
+
+    /** The wild families: every kind comes to life, a caster's strike lands, a leader brings its band and rallies, the night hunter steps behind you and resists your magic, the drops. */
+    static final class FolkTest extends Test {
+        FolkTest() { super("wild families: casters, leaders and bands, the night hunter"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{com.ironspellgrimoire.entity.WildFolk.class, WildFolkAI.class}; }
+        final List<String> bad = new ArrayList<>();
+        com.ironspellgrimoire.entity.WildFolk hexer, matron, hunter;
+        int hits0, casts0, rallies0, blinks0;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            sl().getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+            for (var k : com.ironspellgrimoire.entity.WildFolk.Kind.values()) {
+                var w = WildFolkAI.type(k).create(sl());
+                if (w == null) { bad.add("no " + k.id); continue; }
+                w.getPersistentData().putBoolean("isg_folk_band", true);
+                w.moveTo(home.x + (k.ordinal() - 5) * 2, home.y, home.z + 30, 0, 0);
+                w.setNoAi(true);
+                sl().addFreshEntity(w);
+                if (Math.abs(w.getMaxHealth() - k.hp) > 0.5) bad.add(k.id + " has " + w.getMaxHealth() + " health");
+            }
+            hits0 = playerHits; casts0 = WildFolkAI.testCasts; rallies0 = WildFolkAI.testRallies; blinks0 = WildFolkAI.testBlinks;
+            hexer = WildFolkAI.type(com.ironspellgrimoire.entity.WildFolk.Kind.MIRE_HEXER).create(sl());
+            hexer.getPersistentData().putBoolean("isg_folk_band", true);
+            hexer.moveTo(home.x, home.y, home.z + 8, 180, 0); hexer.setNoAi(true); sl().addFreshEntity(hexer);
+            WildFolkAI.cast(hexer, p);
+            matron = WildFolkAI.type(com.ironspellgrimoire.entity.WildFolk.Kind.FEN_MATRON).create(sl());
+            matron.moveTo(home.x - 6, home.y, home.z + 6, 180, 0); sl().addFreshEntity(matron);   // wild: she brings her band
+            hunter = WildFolkAI.type(com.ironspellgrimoire.entity.WildFolk.Kind.GLOAMSTALKER).create(sl());
+            hunter.moveTo(home.x + 6, home.y, home.z + 6, 180, 0); hunter.setNoAi(true); sl().addFreshEntity(hunter);
+        }
+        @Override boolean tick(int t) {
+            try {
+                if (t == 26) {
+                    if (WildFolkAI.testCasts != casts0 + 1) bad.add("the Mire Hexer didn't cast");
+                    if (playerHits == hits0) bad.add("the Mire Hexer's strike didn't land where it marked");
+                    int band = sl().getEntitiesOfClass(com.ironspellgrimoire.entity.WildFolk.class, matron.getBoundingBox().inflate(8), w -> w != matron && w.kind.family == com.ironspellgrimoire.entity.WildFolk.Family.MIRE && w != hexer).size();
+                    if (band < 3) bad.add("the Fen Matron came with " + band + " of her band");
+                    matron.setTarget(p); matron.cryCd = 0; WildFolkAI.tick(matron);
+                    if (WildFolkAI.testRallies != rallies0 + 1) bad.add("the Fen Matron didn't rally");
+                    hunter.setTarget(p); hunter.blinkCd = 0;
+                    p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                    WildFolkAI.tick(hunter);
+                    if (WildFolkAI.testBlinks != blinks0 + 1 || hunter.position().z > p.getZ()) bad.add("the Gloamstalker didn't step behind (" + hunter.position() + ")");
+                    SchoolUse.testReset(p); SchoolUse.testCount(p, "fire", 10);
+                    var fire = io.redspace.ironsspellbooks.api.registry.SpellRegistry.getSpell("irons_spellbooks:firebolt");
+                    if (fire != null && WildFolkAI.taken(hunter, fire.getDamageSource(p), 10f) > 6.01f) bad.add("the Gloamstalker didn't resist a fire mage's fire");
+                    SchoolUse.testReset(p);
+                    if (bad.isEmpty()) pass(name, "all 10 kinds spawn with their health, the Hexer's marked strike landed, the Matron brought her band and rallied, the Gloamstalker stepped behind and resisted fire");
+                    else fail(name, String.join("; ", bad));
+                    clearArea();
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); clearArea(); return true; }
         }
     }
 

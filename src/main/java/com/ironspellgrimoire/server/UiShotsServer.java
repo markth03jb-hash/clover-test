@@ -90,6 +90,27 @@ public final class UiShotsServer {
 
     /** Elite mobs for the screenshots: a row of them in front of the player (no AI, so they hold still), a cursed chest
      *  and a rift; "clear" takes them away. */
+    /** The wild families in a row, five at a time (a = the Mirefolk and Stonefolk's first two, b = the rest), facing the camera. */
+    public static void folk(ServerPlayer p, String what) {
+        ServerLevel sl = p.serverLevel();
+        for (var e : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.WildFolk.class, p.getBoundingBox().inflate(24))) e.discard();
+        if (what.equals("clear")) return;
+        p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+        faceForward(p);
+        var kinds = com.ironspellgrimoire.entity.WildFolk.Kind.values();
+        int from = what.equals("a") ? 0 : 5;
+        for (int i = 0; i < 5; i++) {
+            var k = kinds[from + i];
+            var m = WildFolkAI.type(k).create(sl);
+            if (m == null) continue;
+            m.getPersistentData().putBoolean("isg_folk_band", true);
+            m.moveTo(p.getX() + (i - 2) * 2.2, p.getY(), p.getZ() + 7, 180, 0);
+            m.setYBodyRot(180); m.setYHeadRot(180);
+            m.setNoAi(true);
+            sl.addFreshEntity(m);
+        }
+    }
+
     public static void elites(ServerPlayer p, String what) {
         ServerLevel sl = p.serverLevel();
         var box = p.getBoundingBox().inflate(16);

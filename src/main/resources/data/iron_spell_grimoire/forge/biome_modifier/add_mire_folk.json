@@ -1,0 +1,24 @@
+{
+  "type": "forge:add_spawns",
+  "biomes": "#forge:is_swamp",
+  "spawners": [
+    {
+      "type": "iron_spell_grimoire:bog_crawler",
+      "weight": 14,
+      "minCount": 2,
+      "maxCount": 3
+    },
+    {
+      "type": "iron_spell_grimoire:mire_hexer",
+      "weight": 8,
+      "minCount": 1,
+      "maxCount": 2
+    },
+    {
+      "type": "iron_spell_grimoire:fen_matron",
+      "weight": 2,
+      "minCount": 1,
+      "maxCount": 1
+    }
+  ]
+}

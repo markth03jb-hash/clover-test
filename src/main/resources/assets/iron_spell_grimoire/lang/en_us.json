@@ -1635,5 +1635,15 @@
   "item.iron_spell_grimoire.grave_knot": "Grave Knot",
   "item.iron_spell_grimoire.hexbound_ink": "Hexbound Ink",
   "item.iron_spell_grimoire.unbound_seal": "Unbound Seal",
-  "item.iron_spell_grimoire.hopeless_claw": "Hopeless Claw"
+  "item.iron_spell_grimoire.hopeless_claw": "Hopeless Claw",
+  "entity.iron_spell_grimoire.bog_crawler": "Bog Crawler",
+  "entity.iron_spell_grimoire.mire_hexer": "Mire Hexer",
+  "entity.iron_spell_grimoire.fen_matron": "Fen Matron",
+  "entity.iron_spell_grimoire.scree_brute": "Scree Brute",
+  "entity.iron_spell_grimoire.stonecaller": "Stonecaller",
+  "entity.iron_spell_grimoire.peak_warden": "Peak Warden",
+  "entity.iron_spell_grimoire.dune_stalker": "Dune Stalker",
+  "entity.iron_spell_grimoire.sandwraith": "Sandwraith",
+  "entity.iron_spell_grimoire.sun_herald": "Sun Herald",
+  "entity.iron_spell_grimoire.gloamstalker": "Gloamstalker"
 }

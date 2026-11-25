@@ -174,4 +174,12 @@ public final class AddonEntities {
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.ShadowRavener>> SHADOW_RAVENER = ENTITIES.register("ravener",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.ShadowRavener>of(com.ironspellgrimoire.entity.ShadowRavener::new, MobCategory.MISC).sized(0.9F, 2.8F)
                     .fireImmune().clientTrackingRange(10).build("ravener"));
+
+    /** The wild families and the night hunter (entity/WildFolk, server/WildFolkAI): one entity type each. */
+    public static final java.util.Map<com.ironspellgrimoire.entity.WildFolk.Kind, RegistryObject<EntityType<com.ironspellgrimoire.entity.WildFolk>>> FOLK = new java.util.EnumMap<>(com.ironspellgrimoire.entity.WildFolk.Kind.class);
+    static {
+        for (com.ironspellgrimoire.entity.WildFolk.Kind k : com.ironspellgrimoire.entity.WildFolk.Kind.values())
+            FOLK.put(k, ENTITIES.register(k.id, () -> EntityType.Builder.<com.ironspellgrimoire.entity.WildFolk>of((t, l) -> new com.ironspellgrimoire.entity.WildFolk(t, l, k), MobCategory.MONSTER)
+                    .sized(0.6F * k.size, 1.95F * k.size).clientTrackingRange(8).build(k.id)));
+    }
 }

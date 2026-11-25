@@ -1,0 +1,24 @@
+{
+  "type": "forge:add_spawns",
+  "biomes": "#minecraft:is_badlands",
+  "spawners": [
+    {
+      "type": "iron_spell_grimoire:dune_stalker",
+      "weight": 14,
+      "minCount": 2,
+      "maxCount": 3
+    },
+    {
+      "type": "iron_spell_grimoire:sandwraith",
+      "weight": 8,
+      "minCount": 1,
+      "maxCount": 2
+    },
+    {
+      "type": "iron_spell_grimoire:sun_herald",
+      "weight": 2,
+      "minCount": 1,
+      "maxCount": 1
+    }
+  ]
+}

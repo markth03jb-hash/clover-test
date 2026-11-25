@@ -31,6 +31,7 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.WREN_BELLMAR.get(), c -> new RivalRenderer<>(c, "rival_wren", true, 1.0F));
         e.registerEntityRenderer(AddonEntities.MIRA_HOLLOWELL.get(), c -> new RivalRenderer<>(c, "rival_mira", true, 1.0F));
         e.registerEntityRenderer(AddonEntities.TOR_LEGIONNAIRE.get(), c -> new RivalRenderer<>(c, "rival_legion", false, 1.0F));
+        for (var en : AddonEntities.FOLK.entrySet()) { var k = en.getKey(); e.registerEntityRenderer(en.getValue().get(), c -> new RivalRenderer<>(c, k.skin(), k.slim, k.size)); }
         e.registerEntityRenderer(AddonEntities.REFLECTION.get(), ReflectionRenderer::new);
         e.registerEntityRenderer(AddonEntities.OMEN_AFTERIMAGE.get(), OmenAfterimageRenderer::new);
         e.registerEntityRenderer(AddonEntities.FORESEEN_DOUBLE.get(), ForeseenDoubleRenderer::new);
