@@ -43,6 +43,9 @@
   "iron_spell_grimoire:twins_grimoire",
   "iron_spell_grimoire:architect_grimoire",
   "iron_spell_grimoire:meridian_grimoire",
-  "iron_spell_grimoire:omen_grimoire"
+  "iron_spell_grimoire:omen_grimoire",
+  "iron_spell_grimoire:vector_grimoire",
+  "iron_spell_grimoire:fuse_grimoire",
+  "iron_spell_grimoire:foreseen_grimoire"
  ]
 }

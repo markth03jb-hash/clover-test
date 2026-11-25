@@ -303,6 +303,12 @@ public final class GrimoireMastery {
                 "fortress_rampart", 1, "siege_mode", 1, "fortress_room_1", 1, "fortress_room_2", 1, "the_fortress", 1, "fortress_room_3", 2, "fortress_room_4", 3, "citadel", 5);
         book(AddonItemRegistry.MERIDIAN_GRIMOIRE::get, Fx.GOLD,
                 "hearth_star", 1, "call_dayreaver", 1, "lamplight", 1, "warm_hands", 2, "noonwave", 2, "last_coal", 3, "haughty_flare", 3, "zenith_unbound", 4);
+        book(AddonItemRegistry.VECTOR_GRIMOIRE::get, 29,
+                "redirect", 1, "recoil_step", 1, "return_to_sender", 1, "pressure_gust", 2, "pulse_touch", 2, "wind_vector", 3, "plasma_point", 4, "vector_absolute", 4);
+        book(AddonItemRegistry.FUSE_GRIMOIRE::get, 16,
+                "detonate", 1, "prime_item", 1, "heat_seeker", 1, "air_bubble", 2, "contact_charge", 2, "chain_fuse", 3, "hidden_tenant", 4, "loop_of_ruin", 4);
+        book(AddonItemRegistry.FORESEEN_GRIMOIRE::get, 13,
+                "step_through", 1, "read_intent", 1, "punish", 1, "false_future", 2, "snap_back", 2, "inevitable", 3, "seen_it_before", 4, "rewrite", 4);
         book(AddonItemRegistry.OMEN_GRIMOIRE::get, Fx.WATER,
                 "ill_fated_path", 1, "laden_token", 1, "afterimage", 1, "needle_rain", 2, "stillness", 2, "domino", 3, "karmas_ledger", 3, "the_law_itself", 4);
         book(AddonItemRegistry.TWINS_GRIMOIRE::get, Fx.GOLD,

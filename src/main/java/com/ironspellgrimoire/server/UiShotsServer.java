@@ -178,6 +178,32 @@ public final class UiShotsServer {
         }
     }
 
+    /** The Vector, Quiet Fuse and Foreseen pictures: each tree part-learned and open, the wheel, the False Future double. */
+    static void trio(ServerPlayer p, String w) {
+        ItemStack b = BookTree.book(p);
+        int k = BookTree.kind(b);
+        switch (w) {
+            case "tree" -> {
+                BookTree.testXp(b, 1500);
+                String[][] picks = {{"r1:3", "r2:1", "r4:1", "m1:2", "m3:1", "f1:1", "f2:1", "w1:1", "p1:1"},
+                        {"p1:2", "p2:1", "p3:1", "s1:1", "s4:1", "a1:2", "a2:1", "b1:1", "w1:1", "w3:1"},
+                        {"s1:2", "s3:1", "e1:2", "e2:1", "e3:1", "c1:1", "c2:1", "t1:1", "w2:1"}};
+                for (String s : picks[Math.max(0, k)]) { String[] q = s.split(":"); BookTree.testSet(b, q[0], Integer.parseInt(q[1])); }
+                BookTree.sync(p, true);
+            }
+            case "sync" -> BookTree.sync(p, false);
+            case "double" -> {
+                for (var m : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+                p.serverLevel().setDayTime(6000);
+                ForeseenFx.falseFuture(p, 0);
+            }
+            default -> {
+                for (var m : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+                BookTree.testClearCd(p);
+            }
+        }
+    }
+
     public static void element(ServerPlayer p, String which) {
         Moves.ends(p, BloodFx.MODE);
         String w = which.substring(2);
@@ -203,6 +229,9 @@ public final class UiShotsServer {
             case 'A' -> AddonItemRegistry.ARCHITECT_GRIMOIRE.get();
             case 'M' -> AddonItemRegistry.MERIDIAN_GRIMOIRE.get();
             case 'O' -> AddonItemRegistry.OMEN_GRIMOIRE.get();
+            case 'X' -> AddonItemRegistry.VECTOR_GRIMOIRE.get();
+            case 'Q' -> AddonItemRegistry.FUSE_GRIMOIRE.get();
+            case 'F' -> AddonItemRegistry.FORESEEN_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -216,6 +245,7 @@ public final class UiShotsServer {
         if (which.charAt(0) == 'A') { architect(p, w); return; }
         if (which.charAt(0) == 'M') { meridian(p, w); return; }
         if (which.charAt(0) == 'O') { omen(p, w); return; }
+        if ("XQF".indexOf(which.charAt(0)) >= 0) { trio(p, w); return; }
         switch (w) {
             case "target" -> {
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();

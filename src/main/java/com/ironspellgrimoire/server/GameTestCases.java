@@ -375,6 +375,21 @@ final class GameTestCases {
                 "karma's ledger", (java.util.function.BiConsumer<ServerPlayer, Float>) OmenFx::karmasLedger, "",
                 "the law itself", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { for (var m : pl.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, pl.getBoundingBox().inflate(28))) m.setTarget(pl); OmenFx.theLawItself(pl, pw); }, ""));
         queue.add(new OmenTest());
+        queue.add(new BookMovesTest("vector", com.ironspellgrimoire.registry.AddonItemRegistry.VECTOR_GRIMOIRE::get, VectorFx.class,
+                "redirect", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::redirect, "", "recoil step", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::recoilStep, "q", "return to sender", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::returnToSender, "q",
+                "pressure gust", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::pressureGust, "", "pulse touch", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::pulseTouch, "q", "wind vector", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::windVector, "q",
+                "plasma point", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::plasmaPoint, "q", "vector absolute", (java.util.function.BiConsumer<ServerPlayer, Float>) VectorFx::vectorAbsolute, "q"));
+        queue.add(new BookMovesTest("quiet fuse", com.ironspellgrimoire.registry.AddonItemRegistry.FUSE_GRIMOIRE::get, FuseFx.class,
+                "detonate", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { for (var m : pl.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, pl.getBoundingBox().inflate(28))) FuseFx.arm(pl, m, true); FuseFx.detonate(pl, pw); }, "", "prime item", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::primeItem, "q", "heat seeker", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::heatSeeker, "q",
+                "air bubble", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::airBubble, "q", "contact charge", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::contactCharge, "q", "chain fuse", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::chainFuse, "q",
+                "hidden tenant", (java.util.function.BiConsumer<ServerPlayer, Float>) FuseFx::hiddenTenant, "q", "loop of ruin", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { for (var m : pl.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, pl.getBoundingBox().inflate(28))) FuseFx.arm(pl, m, true); FuseFx.loopOfRuin(pl, pw); }, ""));
+        queue.add(new BookMovesTest("foreseen", com.ironspellgrimoire.registry.AddonItemRegistry.FORESEEN_GRIMOIRE::get, ForeseenFx.class,
+                "step through", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::stepThrough, "q", "read intent", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::readIntent, "q", "punish", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::punish, "c",
+                "false future", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::falseFuture, "q", "snap back", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::snapBack, "q", "inevitable", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::inevitable, "",
+                "seen it before", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::seenItBefore, "q", "rewrite", (java.util.function.BiConsumer<ServerPlayer, Float>) ForeseenFx::rewrite, "q"));
+        queue.add(new TrioTest(BookTree.VECTOR));
+        queue.add(new TrioTest(BookTree.FUSE));
+        queue.add(new TrioTest(BookTree.FORESEEN));
         queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
         queue.add(new BossTest("Brannoch Tor", AddonEntities.BRANNOCH_TOR));
         queue.add(new BossTest("Alder Bellmar", AddonEntities.ALDER_BELLMAR));
@@ -1214,6 +1229,178 @@ final class GameTestCases {
                 }
                 if (t == 6) {
                     if (bad.isEmpty()) pass(name, "sun curve, gates, heat, Zenith, Dayreaver comes and goes, night bank, Borrowed Noon and its price");
+                    else fail(name, String.join("; ", bad));
+                    end();
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); end(); return true; }
+        }
+    }
+
+    /** The Vector, Quiet Fuse and Foreseen grimoires: their trees (points, requirements, keystone pairs, unlearning), their
+     *  G wheels (locked until learned, then on cooldown), and each passive at work - Vector turning an arrow back and a
+     *  blow's force, the Quiet Fuse arming with a blow and blowing on Detonate and on its timer, the Foreseen holding a
+     *  blow so that stepping away dodges it and staying lets it land. */
+    static final class TrioTest extends Test {
+        final int kind;
+        TrioTest(int kind) { super("trio: " + new String[]{"vector", "quiet fuse", "foreseen"}[kind] + " tree, wheel and passive"); this.kind = kind; }
+        @Override Class<?>[] roots() { return new Class<?>[]{BookTree.class, VectorFx.class, FuseFx.class, ForeseenFx.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        ItemStack prev = ItemStack.EMPTY, bk;
+        BlockState[] before;
+        net.minecraft.world.entity.Mob husk;
+        net.minecraft.world.entity.projectile.Arrow arrow;
+        float hp0, huskHp;
+
+        net.minecraft.world.entity.Mob put(double dx, double dz) {
+            var m = net.minecraft.world.entity.EntityType.HUSK.create(sl());
+            if (m == null) return null;
+            m.moveTo(home.x + dx, home.y, home.z + dz, 180f, 0f);
+            m.setNoAi(true); m.setPersistenceRequired();
+            m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(500); m.setHealth(500);
+            sl().addFreshEntity(m);
+            return m;
+        }
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            bk = new ItemStack(kind == BookTree.VECTOR ? com.ironspellgrimoire.registry.AddonItemRegistry.VECTOR_GRIMOIRE.get()
+                    : kind == BookTree.FUSE ? com.ironspellgrimoire.registry.AddonItemRegistry.FUSE_GRIMOIRE.get() : com.ironspellgrimoire.registry.AddonItemRegistry.FORESEEN_GRIMOIRE.get());
+            CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+            bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+            prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            prev = prev == null ? ItemStack.EMPTY : prev.copy();
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, bk));
+            bk = BookTree.book(p);
+            BookTree.testClearCd(p);
+            VectorFx.testReset(p); FuseFx.testReset(p); ForeseenFx.testReset(p);
+            p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+            husk = put(0, 1.6);
+            before = snapshot();
+        }
+        void end() {
+            if (husk != null) husk.discard();
+            if (arrow != null) arrow.discard();
+            for (var d : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.ForeseenDouble.class, new AABB(home, home).inflate(40))) d.discard();
+            ItemStack back = prev;
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, back));
+            VectorFx.testReset(p); FuseFx.testReset(p); ForeseenFx.testReset(p);
+            BookTree.testClearCd(p);
+            p.setHealth(p.getMaxHealth());
+        }
+        int rk(String id) { return BookTree.rank(BookTree.book(p), id); }
+
+        /** The tree, the same way for all three: points, requirements, ranks, keystone pairs, unlearning. */
+        void tree() {
+            ItemStack b = BookTree.book(p);
+            if (BookTree.kind(b) != kind) { bad.add("the book worn isn't the " + BookTree.TREE[kind] + "'s"); return; }
+            BookTree.testXp(b, 0);
+            int pts0 = BookTree.points(b);
+            if (pts0 < 2) bad.add("a fresh book at mastery " + GrimoireMastery.level(b) + " has only " + pts0 + " points");
+            BookTree.testXp(b, 100000);
+            if (BookTree.level(b) != BookTree.MAX_LEVEL) bad.add("100000 growth is level " + BookTree.level(b) + ", not " + BookTree.MAX_LEVEL);
+            if (BookTree.points(b) != pts0 + BookTree.MAX_LEVEL) bad.add("points didn't grow by the level");
+            java.util.List<BookTree.Node> nodes = BookTree.TREES.get(kind);
+            BookTree.Node stat = nodes.stream().filter(n -> n.kind() == BookTree.STAT && n.ranks() >= 2).findFirst().orElse(null);
+            BookTree.Node deep = nodes.stream().filter(n -> n.kind() != BookTree.ROOT && n.kind() != BookTree.STAT && n.req().length > 0 && !n.req()[0].equals("root") && n.kind() != BookTree.KEY).findFirst().orElse(null);
+            if (stat == null || deep == null) { bad.add("the tree has no multi-rank stat or no deep node"); return; }
+            if (BookTree.blocked(b, deep) == null) bad.add(deep.name() + " could be learned without " + deep.req()[0]);
+            for (int i = 0; i < stat.ranks(); i++) BookTree.learn(p, stat.id());
+            if (rk(stat.id()) != stat.ranks()) bad.add(stat.name() + " is rank " + rk(stat.id()) + " after " + stat.ranks() + " learns");
+            BookTree.learn(p, stat.id());
+            if (rk(stat.id()) != stat.ranks()) bad.add(stat.name() + " went past its last rank");
+            // a keystone pair: learn everything a keystone needs, take it, the other side must shut
+            BookTree.Node key = nodes.stream().filter(n -> n.kind() == BookTree.KEY).findFirst().orElse(null);
+            if (key == null) { bad.add("no keystones"); return; }
+            BookTree.testSet(b, key.req()[0], 1);
+            BookTree.learn(p, key.id());
+            if (rk(key.id()) != 1) bad.add("couldn't take " + key.name() + ": " + BookTree.blocked(b, key));
+            BookTree.Node other = BookTree.node(kind, key.excl());
+            BookTree.learn(p, other.id());
+            if (rk(other.id()) != 0) bad.add(key.name() + " and " + other.name() + " were both taken");
+            if (BookTree.spent(b) > BookTree.points(b) + 200) bad.add("spent is wild: " + BookTree.spent(b));
+            // unlearning: free once, then a wait
+            BookTree.respec(p);
+            if (rk(stat.id()) != 0 || rk(key.id()) != 0) bad.add("Unlearn All left nodes learned");
+            BookTree.testSet(b, stat.id(), 1);
+            BookTree.respec(p);
+            if (rk(stat.id()) != 1) bad.add("Unlearn All worked twice in a row");
+            BookTree.testClearCd(p);
+            BookTree.respec(p);
+            // the wheel: slot 1 locked until its node, then on cooldown
+            String w1 = BookTree.WHEEL_IDS[kind][1];
+            if (BookTree.wheelOpen(p, 1)) bad.add("wheel slot 1 open without " + w1);
+            BookTree.testSet(b, w1, 1);
+            if (!BookTree.wheelOpen(p, 1)) bad.add("wheel slot 1 shut with " + w1);
+        }
+
+        @Override boolean tick(int t) {
+            try {
+                if (t == 2) {
+                    if (husk == null) { fail(name, "couldn't place the husk"); end(); return true; }
+                    tree();
+                    hp0 = p.getHealth(); huskHp = husk.getHealth();
+                    if (kind == BookTree.VECTOR) {
+                        BookTree.testSet(bk, "k1", 1);   // Total Reflection: every arrow comes back
+                        arrow = new net.minecraft.world.entity.projectile.Arrow(sl(), husk);
+                        arrow.setPos(home.x, home.y + 1.2, home.z - 6);
+                        arrow.shoot(0, 0.05, 1, 2.0f, 0f);
+                        sl().addFreshEntity(arrow);
+                    } else if (kind == BookTree.FUSE) {
+                        husk.hurt(p.damageSources().playerAttack(p), 1f);   // a blow arms it
+                        if (FuseFx.testArmed(p) != 1) bad.add("a blow armed " + FuseFx.testArmed(p) + ", not 1");
+                        huskHp = husk.getHealth();
+                        FuseFx.detonate(p, 0);
+                    } else {
+                        husk.setTarget(p);
+                        p.invulnerableTime = 0;
+                        p.hurt(p.damageSources().mobAttack(husk), 4f);
+                        if (ForeseenFx.testHeld(p) != 1) bad.add("the husk's blow wasn't held (" + ForeseenFx.testHeld(p) + " held)");
+                        if (p.getHealth() < hp0) bad.add("a foreseen blow landed at once");
+                        p.teleportTo(sl(), home.x, home.y, home.z - 5, 0f, 0f);   // step out of reach
+                    }
+                }
+                if (t == 30) {
+                    if (kind == BookTree.VECTOR) {
+                        if (arrow == null || arrow.getOwner() != p) bad.add("the arrow wasn't turned back (owner " + (arrow == null ? "none" : arrow.getOwner()) + ")");
+                        // a blow: mastery 5's first blow comes back whole
+                        p.invulnerableTime = 0;
+                        float h = p.getHealth();
+                        huskHp = husk.getHealth();
+                        p.hurt(p.damageSources().mobAttack(husk), 4f);
+                        if (p.getHealth() < h) bad.add("the first blow of the fight wasn't returned whole");
+                        BookTree.useWheel(p, 0);
+                        if (VectorFx.testStance(p) != 1) bad.add("Stance Shift didn't move to Return");
+                    } else if (kind == BookTree.FUSE) {
+                        if (husk.getHealth() >= huskHp) bad.add("Detonate did no damage to the armed husk");
+                        if (FuseFx.testArmed(p) != 0) bad.add("still " + FuseFx.testArmed(p) + " armed after Detonate");
+                        BookTree.testSet(bk, "w1", 1);
+                        BookTree.useWheel(p, 1);
+                        if (FuseFx.testMode(p) != FuseFx.TIMER) bad.add("Fuse Mode didn't switch to the timer");
+                        huskHp = husk.getHealth();
+                        husk.invulnerableTime = 0;
+                        husk.hurt(p.damageSources().playerAttack(p), 1f);
+                        huskHp = husk.getHealth();
+                    } else {
+                        if (ForeseenFx.testHeld(p) != 0) bad.add("the held blow never resolved");
+                        if (p.getHealth() < hp0) bad.add("the blow landed though you stepped out of reach");
+                        if (ForeseenFx.testLastDodge(p) < 0) bad.add("stepping away wasn't a dodge");
+                        // now stay: it lands
+                        p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+                        p.invulnerableTime = 0;
+                        hp0 = p.getHealth();
+                        p.hurt(p.damageSources().mobAttack(husk), 4f);
+                    }
+                }
+                if (t == 34 && kind == BookTree.VECTOR) {
+                    if (husk.getHealth() >= huskHp) bad.add("the returned blow did no damage to the husk");
+                }
+                if (t == 100) {
+                    if (kind == BookTree.FUSE && husk.getHealth() >= huskHp) bad.add("the 3 s timer never set the armed husk off");
+                    if (kind == BookTree.FORESEEN && p.getHealth() >= hp0) bad.add("a blow you stayed for never landed");
+                    String ch = changes(before);
+                    if (!ch.isEmpty()) bad.add("changed the world: " + ch);
+                    if (bad.isEmpty()) pass(name, "points, ranks, requirements, a keystone pair, Unlearn All, the wheel lock, and the passive all work");
                     else fail(name, String.join("; ", bad));
                     end();
                     return true;
