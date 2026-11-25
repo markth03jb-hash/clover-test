@@ -252,7 +252,7 @@ public final class BossRules {
     /** It can't strike while staggered. */
     @SubscribeEvent
     public static void onAttack(LivingAttackEvent e) {
-        if (e.getSource().getEntity() instanceof Mob m && LIVE.get(m) instanceof St s && m.level().getGameTime() < s.stagUntil) e.setCanceled(true);
+        if (e.getSource().getEntity() instanceof Mob m && ((Object) LIVE.get(m)) instanceof St s && m.level().getGameTime() < s.stagUntil) e.setCanceled(true);
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
@@ -260,11 +260,11 @@ public final class BossRules {
         DamageSource src = e.getSource();
         long now = e.getEntity().level().getGameTime();
         // its blows: Hardened, enraged, a last stand
-        if (src.getEntity() instanceof Mob a && LIVE.get(a) instanceof St sa) {
+        if (src.getEntity() instanceof Mob a && ((Object) LIVE.get(a)) instanceof St sa) {
             float k = (sa.hardened ? 1.2f : 1f) * (sa.enraged ? 1.25f : 1f) * (sa.lastStand && now < sa.lastStandUntil ? 1.3f : 1f);
             e.setAmount(e.getAmount() * k);
         }
-        if (!(e.getEntity() instanceof Mob m) || !(LIVE.get(m) instanceof St s) || !(m.level() instanceof ServerLevel sl)) return;
+        if (!(e.getEntity() instanceof Mob m) || !(((Object) LIVE.get(m)) instanceof St s) || !(m.level() instanceof ServerLevel sl)) return;
         Entity by = src.getEntity();
         if (by instanceof ServerPlayer && s.first == 0) { s.first = now; s.reckonNext = now + 100; s.weakNext = now + 160; }
         float amt = e.getAmount();
@@ -291,7 +291,7 @@ public final class BossRules {
     /** Who did how much (after armour), for the shared kill and the boss's memory. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onDamage(LivingDamageEvent e) {
-        if (!(e.getEntity() instanceof Mob m) || !(LIVE.get(m) instanceof St s)) return;
+        if (!(e.getEntity() instanceof Mob m) || !(((Object) LIVE.get(m)) instanceof St s)) return;
         if (e.getSource().getEntity() instanceof ServerPlayer p) {
             s.dmg.merge(p.getUUID(), e.getAmount(), Float::sum);
             s.how[how(e.getSource())] += e.getAmount();
@@ -307,7 +307,7 @@ public final class BossRules {
                 BossLadder.fell(p, en.getValue().boss);
             return;
         }
-        if (!(dead instanceof Mob m) || !(LIVE.get(m) instanceof St s) || !(m.level() instanceof ServerLevel sl)) return;
+        if (!(dead instanceof Mob m) || !(((Object) LIVE.get(m)) instanceof St s) || !(m.level() instanceof ServerLevel sl)) return;
         LIVE.remove(m);
         if (Rifts.isShade(m)) return;
         long ticks = s.first == 0 ? 0 : sl.getGameTime() - s.first;
