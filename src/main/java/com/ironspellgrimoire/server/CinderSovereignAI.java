@@ -49,8 +49,9 @@ public final class CinderSovereignAI {
     public static void tick(CinderSovereign b) {
         ServerLevel sl = (ServerLevel) b.level();
         Player t = target(b);
-        if (b.tickCount % 10 == 0) {   // the ground smoulders round its feet
-            BossFx.ring(sl, Fx.FIRE, b.position().add(0, 0.1, 0), 3.4f, 3.8f, 0.05f, 12);
+        if (b.tickCount % 10 == 0) {   // the ground smoulders round its feet (white-blue under the Ashen Crown)
+            BossFx.ring(sl, b.phase() >= 4 ? Fx.ICE : Fx.FIRE, b.position().add(0, 0.1, 0), 3.4f, 3.8f, 0.05f, 12);
+            if (b.phase() >= 4) BossFx.ring(sl, Fx.SILVER, b.position().add(0, 9, 0), 2.6f, 3.4f, 0.06f, 12);   // the crown itself, a ring of white fire over its head
         }
         if (b.tickCount % 13 == 0 && b.onGround() && b.getDeltaMovement().horizontalDistanceSqr() > 0.0016) {   // its own heavy tread
             net.minecraft.sounds.SoundEvent step = com.ironspellgrimoire.registry.AddonSounds.get("sovereign_step");

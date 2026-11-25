@@ -132,7 +132,7 @@ public final class UiShotsServer {
         for (var e : sl.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, p.getBoundingBox().inflate(48),
                 x -> x instanceof com.ironspellgrimoire.entity.IronboundTwin || x instanceof com.ironspellgrimoire.entity.FallingStar || x instanceof com.ironspellgrimoire.entity.CinderSovereign
                         || x.getPersistentData().contains(EliteMobs.TAG))) e.discard();
-        if (what.equals("clear")) return;
+        if (what.equals("clear") || what.equals("none")) return;
         p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
         faceForward(p);
         var kinds = com.ironspellgrimoire.entity.WildFolk.Kind.values();
@@ -153,7 +153,7 @@ public final class UiShotsServer {
         ServerLevel sl = p.serverLevel();
         var box = p.getBoundingBox().inflate(16);
         for (var e : sl.getEntities((net.minecraft.world.entity.Entity) null, box, e -> EliteMobs.marked(e) || e instanceof com.ironspellgrimoire.entity.CursedChest || e instanceof com.ironspellgrimoire.entity.EliteRift)) e.discard();
-        if (what.equals("clear")) return;
+        if (what.equals("clear") || what.equals("none")) return;
         p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // Peaceful would delete them at once
         faceForward(p);
         p.getPersistentData().putInt(EliteMobs.SEEN, (1 << EliteMobs.COUNT) - 1);
