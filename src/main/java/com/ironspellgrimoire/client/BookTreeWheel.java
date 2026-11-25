@@ -29,6 +29,11 @@ public class BookTreeWheel extends Screen {
         int[] x = BookTreeClient.extra;
         if (b == BookTree.VECTOR) return x.length > 0 ? new String[]{"Reflect", "Return", "Flow"}[Math.max(0, Math.min(2, x[0]))] + " stance" : "";
         if (b == BookTree.FUSE) return x.length > 2 ? x[1] + "/" + x[2] + " armed  -  " + new String[]{"on Detonate", "3 s timer", "proximity"}[Math.max(0, Math.min(2, x[0]))] : "";
+        if (b == BookTree.BOUND) {
+            if (x.length < 8) return "";
+            String mode = new String[]{"Balanced", "Restrain", "Release"}[Math.max(0, Math.min(2, x[5]))];
+            return x[1] > 0 ? "TAKEN OVER" : x[3] > 0 ? "Awake - " + (x[3] + 19) / 20 + " s" : "Possession " + x[0] + "%  -  " + mode;
+        }
         return x.length > 0 ? String.format("%.2f s warning", x[0] / 20f) : "";
     }
 
@@ -80,6 +85,11 @@ public class BookTreeWheel extends Screen {
                 double a = t * 0.8 + k * Math.PI / 4;
                 Shapes.arrowHead(cx + Math.cos(a) * 21, cy + Math.sin(a) * 21, a + Math.PI / 2, 2.5, Shapes.alpha(ACC, 0.6f));
             }
+        } else if (b == BookTree.BOUND) {   // the demon's eye, Possession filling it
+            float poss = BookTreeClient.extra.length > 0 ? Math.min(1f, BookTreeClient.extra[0] / 100f) : 0f;
+            Shapes.eye(cx, cy - 10, 14, 0.3 + 0.6 * poss, 0xEE140608, ACC);
+            Shapes.disc(cx, cy - 10, 2.5 + 2.5 * poss, ACC);
+            Shapes.disc(cx, cy - 10, 1.1, BG);
         } else if (b == BookTree.FUSE) {
             Shapes.line(cx + 14, cy - 14, cx + 20, cy - 21, 2, mc);
             Shapes.disc(cx + 21, cy - 22, 2 + Math.sin(t * 11), BRIGHT);
@@ -102,9 +112,10 @@ public class BookTreeWheel extends Screen {
             g.drawCenteredString(font, name, tx, ty + 4, !ok ? DIM : i == hover ? 0xFFFFFFFF : BRIGHT);
             if (ok && BookTreeClient.cd.length > i && BookTreeClient.cd[i] > 0) g.drawCenteredString(font, (BookTreeClient.cd[i] + 19) / 20 + "s", tx, ty + 14, DIM);
         }
-        g.drawCenteredString(font, b == BookTree.FORESEEN ? "" : "Tree", cx, cy - 4, centre ? 0xFFFFFFFF : BRIGHT);
-        if (b == BookTree.FORESEEN) g.drawCenteredString(font, "Tree", cx, cy + 6, centre ? 0xFFFFFFFF : BRIGHT);
-        if (BookTreeClient.free() > 0) g.drawCenteredString(font, "+" + BookTreeClient.free(), cx, cy + (b == BookTree.FORESEEN ? 16 : 6), ACC);
+        boolean eyeMid = b == BookTree.FORESEEN || b == BookTree.BOUND;
+        g.drawCenteredString(font, eyeMid ? "" : "Tree", cx, cy - 4, centre ? 0xFFFFFFFF : BRIGHT);
+        if (eyeMid) g.drawCenteredString(font, "Tree", cx, cy + 6, centre ? 0xFFFFFFFF : BRIGHT);
+        if (BookTreeClient.free() > 0) g.drawCenteredString(font, "+" + BookTreeClient.free(), cx, cy + (eyeMid ? 16 : 6), ACC);
 
         int y = cy + (int) (R + 18);
         g.drawCenteredString(font, state(b), cx, cy - (int) R - 22, ACC);

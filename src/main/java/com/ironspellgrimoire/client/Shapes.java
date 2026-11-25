@@ -75,6 +75,13 @@ final class Shapes {
         }
     }
 
+    static void octagon(double cx, double cy, double r, int c) {
+        for (int i = 0; i < 8; i++) {
+            double a0 = Math.PI / 8 + i * Math.PI / 4, a1 = a0 + Math.PI / 4;
+            tri(cx, cy, cx + Math.cos(a0) * r, cy + Math.sin(a0) * r, cx + Math.cos(a1) * r, cy + Math.sin(a1) * r, c);
+        }
+    }
+
     static void diamond(double cx, double cy, double r, int c) { quad(cx, cy - r, cx + r, cy, cx, cy + r, cx - r, cy, c); }
 
     static void diamondRing(double cx, double cy, double r, double w, int c) {

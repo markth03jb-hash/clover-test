@@ -26,7 +26,10 @@ public class BookTreeScreen extends Screen {
     private int ticks;
     private String hover, sel;
     private boolean confirm;
-    private int x0, y0, W, H, bx0, by0, bw, bh, cellW, cellH;
+    private int x0, y0, W, H, bx0, by0, bw, bh, cellW, cellH, cols, rows;
+    /** How far the board is scrolled (a tree bigger than the window - the Bond Tree - is dragged or wheeled about). */
+    private double scrollX, scrollY;
+    private boolean dragging, centred;
 
     public BookTreeScreen() { super(Component.literal("Grimoire Tree")); }
 
@@ -39,10 +42,19 @@ public class BookTreeScreen extends Screen {
         W = Math.min(452, width - 12); H = Math.min(262, height - 10);
         x0 = (width - W) / 2; y0 = (height - H) / 2;
         bx0 = x0 + 8; by0 = y0 + 34; bw = W - 150 - 16; bh = H - 34 - 10;
-        cellW = bw / 9; cellH = bh / 7;
+        cols = 9; rows = 7;
+        int b = BookTreeClient.book;
+        if (b >= 0) for (BookTree.Node n : BookTree.TREES.get(b)) { cols = Math.max(cols, n.x() + 1); rows = Math.max(rows, n.y() + 1); }
+        cellW = Math.max(bw / cols, 30); cellH = Math.max(bh / rows, 30);
+        scrollX = Math.max(0, Math.min(scrollX, maxX())); scrollY = Math.max(0, Math.min(scrollY, maxY()));
     }
-    private double nx(BookTree.Node n) { return bx0 + cellW * (n.x() + 0.5); }
-    private double ny(BookTree.Node n) { return by0 + cellH * (n.y() + 0.5); }
+    private double maxX() { return Math.max(0, cellW * cols - bw); }
+    private double maxY() { return Math.max(0, cellH * rows - bh); }
+    private double offX() { double c = cellW * cols; return c <= bw ? (bw - c) / 2.0 : -scrollX; }
+    private double offY() { double c = cellH * rows; return c <= bh ? (bh - c) / 2.0 : -scrollY; }
+    private double nx(BookTree.Node n) { return bx0 + offX() + cellW * (n.x() + 0.5); }
+    private double ny(BookTree.Node n) { return by0 + offY() + cellH * (n.y() + 0.5); }
+    private boolean onBoard(double mx, double my) { return mx >= bx0 && mx <= bx0 + bw && my >= by0 && my <= by0 + bh; }
     private double rad(BookTree.Node n) { return n.kind() == BookTree.ROOT ? 12 : n.kind() == BookTree.KEY ? 11 : 9; }
 
     @Override
@@ -54,8 +66,13 @@ public class BookTreeScreen extends Screen {
         int BG = th[0], PANEL = th[1], LINE = th[2], ACC = th[3], BRIGHT = th[4], DIM = th[5];
         float t = (ticks + pt) / 20f;
         List<BookTree.Node> nodes = BookTree.TREES.get(b);
+        if (!centred) {   // open on the node shown (the screenshots), or on the root
+            centred = true;
+            BookTree.Node c = BookTree.node(b, forceHover != null ? forceHover : "root");
+            if (c != null) { scrollX = cellW * (c.x() + 0.5) - bw / 2.0; scrollY = cellH * (c.y() + 0.5) - bh / 2.0; layout(); }
+        }
         hover = null;
-        for (BookTree.Node n : nodes) {
+        if (onBoard(mx, my)) for (BookTree.Node n : nodes) {
             double dx = mx - nx(n), dy = my - ny(n);
             if (dx * dx + dy * dy <= (rad(n) + 3) * (rad(n) + 3)) hover = n.id();
         }
@@ -65,7 +82,6 @@ public class BookTreeScreen extends Screen {
         g.fill(0, 0, width, height, 0x88000000);
         Shapes.begin(g);
         Shapes.rect(x0, y0, x0 + W, y0 + H, BG);
-        background(b, t, mx, my, ACC, BRIGHT);
         // the frame
         Shapes.rect(x0, y0, x0 + W, y0 + 1.5, ACC); Shapes.rect(x0, y0 + H - 1.5, x0 + W, y0 + H, ACC);
         Shapes.rect(x0, y0, x0 + 1.5, y0 + H, ACC); Shapes.rect(x0 + W - 1.5, y0, x0 + W, y0 + H, ACC);
@@ -76,6 +92,10 @@ public class BookTreeScreen extends Screen {
         double barX = x0 + 78, barW = W - 154 - 84;
         Shapes.rect(barX, y0 + 20, barX + barW, y0 + 24, Shapes.alpha(LINE, 1f));
         Shapes.rect(barX, y0 + 20, barX + barW * Math.min(1, nx[0] / Math.max(1, nx[1])), y0 + 24, ACC);
+        Shapes.end();
+        g.enableScissor(bx0, by0, bx0 + bw, by0 + bh);
+        Shapes.begin(g);
+        background(b, t, mx, my, ACC, BRIGHT);
         // the paths
         for (BookTree.Node n : nodes)
             for (String q : n.req()) {
@@ -105,6 +125,11 @@ public class BookTreeScreen extends Screen {
                 g.setColor(1f, 1f, 1f, 1f);
             }
             if (n.ranks() > 1) g.drawCenteredString(font, r + "/" + n.ranks(), (int) nx(n), (int) (ny(n) + rad(n) + 1), r > 0 ? BRIGHT : DIM);
+        }
+        g.disableScissor();
+        if (maxX() > 0 || maxY() > 0) {   // the board is bigger than its window: say how to move it, and show where you are
+            g.drawString(font, "drag or scroll to look round", bx0 + 3, by0 + bh - 10, Shapes.alpha(DIM, 0.9f));
+            g.fill(bx0 + bw - 3, by0 + (int) (bh * scrollY / (cellH * rows)), bx0 + bw - 1, by0 + (int) (bh * (scrollY + bh) / (cellH * rows)), Shapes.alpha(ACC, 0.7f));
         }
 
         // the header
@@ -155,6 +180,17 @@ public class BookTreeScreen extends Screen {
                     Shapes.line(x - Math.cos(a) * 4, y - Math.sin(a) * 4, x + Math.cos(a) * 3, y + Math.sin(a) * 3, 0.8, Shapes.alpha(acc, 0.18f));
                     Shapes.arrowHead(x + Math.cos(a) * 4, y + Math.sin(a) * 4, a, 2.2, Shapes.alpha(acc, 0.22f));
                 }
+        } else if (b == BookTree.BOUND) {   // salt drifting down, and the faint seams of a blade
+            Random r = new Random(13);
+            for (int i = 0; i < 46; i++) {
+                double sx = bx0 + r.nextDouble() * bw + Math.sin(t * 0.7 + i) * 4, sp = 4 + r.nextDouble() * 7;
+                double sy = by0 + ((r.nextDouble() * bh + t * sp) % bh);
+                Shapes.rect(sx, sy, sx + 1.2, sy + 1.2, Shapes.alpha(bright, 0.25f + 0.2f * (i % 3)));
+            }
+            for (int k = 0; k < 3; k++) {
+                double yy = by0 + bh * (0.25 + 0.3 * k);
+                Shapes.line(bx0, yy + 30, bx0 + bw, yy - 30, 0.7, Shapes.alpha(acc, 0.12f));
+            }
         } else if (b == BookTree.FUSE) {
             Random r = new Random(5);
             for (int i = 0; i < 26; i++) {
@@ -190,6 +226,9 @@ public class BookTreeScreen extends Screen {
         if (b == BookTree.VECTOR) {
             Shapes.line(ax, ay, bx, by, lit ? 1.6 : 1, col);
             Shapes.arrowHead((ax + bx) / 2 + ux * 2, (ay + by) / 2 + uy * 2, Math.atan2(uy, ux), lit ? 3.5 : 2.6, col);
+        } else if (b == BookTree.BOUND) {   // a cut: a dark line, lit crimson with a white core when learned
+            Shapes.line(ax, ay, bx, by, lit ? 2.2 : 1.2, col);
+            if (lit) Shapes.line(ax, ay, bx, by, 0.6, Shapes.alpha(bright, 0.8f));
         } else if (b == BookTree.FUSE) {
             Shapes.line(ax, ay, bx, by, lit ? 1.8 : 1.2, col);
             if (lit) {
@@ -214,6 +253,14 @@ public class BookTreeScreen extends Screen {
                 Shapes.arrowHead(x + 1, y, 0, n.kind() == BookTree.STAT ? 3.2 : 4, learned ? bright : dim);
                 if (n.kind() == BookTree.PASSIVE) Shapes.line(x - 4, y, x, y, 1.2, learned ? bright : dim);
             }
+        } else if (b == BookTree.BOUND) {   // a sword guard: eight-sided, an eye in it that opens when learned
+            Shapes.octagon(x, y, r + 1.2, rim);
+            Shapes.octagon(x, y, r - 0.6, learned ? Shapes.alpha(acc, 0.5f) : bg);
+            if (n.kind() == BookTree.KEY) { Shapes.octagon(x, y, r + 4.5, Shapes.alpha(rim, 0.5f)); Shapes.octagon(x, y, r + 3.3, bg); Shapes.octagon(x, y, r + 1.2, rim); Shapes.octagon(x, y, r - 0.6, learned ? Shapes.alpha(acc, 0.5f) : bg); }
+            if (n.kind() == BookTree.STAT || n.kind() == BookTree.PASSIVE) {
+                Shapes.eye(x, y, r * 0.65, learned ? 0.8 : can ? 0.4 : 0.15, learned ? 0xFF200608 : bg, learned ? bright : dim);
+                if (learned) Shapes.disc(x, y, 1.6, acc);
+            }
         } else if (b == BookTree.FUSE) {
             Shapes.line(x + r * 0.6, y - r * 0.6, x + r * 1.05, y - r * 1.15, 1.5, rim);
             Shapes.disc(x, y, r + 0.8, rim);
@@ -234,6 +281,27 @@ public class BookTreeScreen extends Screen {
     }
 
     // ------------------------------------------------------------------ input
+    @Override
+    public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
+        if (button == 0 && (dragging || onBoard(mx, my))) {
+            dragging = true;
+            scrollX -= dx; scrollY -= dy;
+            layout();
+            return true;
+        }
+        return super.mouseDragged(mx, my, button, dx, dy);
+    }
+
+    @Override
+    public boolean mouseReleased(double mx, double my, int button) { dragging = false; return super.mouseReleased(mx, my, button); }
+
+    @Override
+    public boolean mouseScrolled(double mx, double my, double delta) {
+        if (hasShiftDown()) scrollX -= delta * 24; else scrollY -= delta * 24;
+        layout();
+        return true;
+    }
+
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
         layout();

@@ -205,6 +205,52 @@ public final class UiShotsServer {
         }
     }
 
+    /** The Grimoire of the Bound Demon's pictures: the Bond Tree part-learned, a takeover (the eye burning), the branched
+     *  wing, the black pair. */
+    static void bound(ServerPlayer p, String w) {
+        ItemStack b = BookTree.book(p);
+        ServerLevel sl = p.serverLevel();
+        switch (w) {
+            case "tree" -> {
+                BookTree.testXp(b, 1500);
+                for (String s : new String[]{"d1", "d3", "d5", "k1", "k2", "k4", "b1", "b2", "s1", "s2", "w1"}) BookTree.testSet(b, s, 1);
+                BookTree.sync(p, true);
+            }
+            case "takeover" -> {
+                for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+                sl.setDayTime(6000);
+                BoundFx.testReset(p);
+                var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+                var h = net.minecraft.world.entity.EntityType.HUSK.create(sl);
+                if (h != null) { var at = p.position().add(look.scale(5)); h.moveTo(at.x, p.getY(), at.z, p.getYRot() + 180, 0); h.setNoAi(true);
+                    h.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(140); h.setHealth(140); sl.addFreshEntity(h); }
+                BoundFx.testFeed(p, 100f);
+                BookTree.sync(p, false);
+            }
+            case "awake" -> {
+                for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+                BoundFx.testReset(p);
+                BookTree.testSet(b, "K4", 0);
+                BoundFx.draw(p, false);
+                BoundFx.awaken(p, false);
+                BookTree.sync(p, false);
+            }
+            case "black" -> {
+                BoundFx.endAwake(p);
+                BookTree.testSet(b, "K4", 1);
+                BoundFx.awaken(p, false);
+                BookTree.sync(p, false);
+            }
+            default -> {
+                for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+                BoundFx.testReset(p);
+                BookTree.testSet(b, "K4", 0);
+                BoundFx.broadcast(p);
+                BookTree.testClearCd(p);
+            }
+        }
+    }
+
     public static void element(ServerPlayer p, String which) {
         Moves.ends(p, BloodFx.MODE);
         String w = which.substring(2);
@@ -233,6 +279,7 @@ public final class UiShotsServer {
             case 'X' -> AddonItemRegistry.VECTOR_GRIMOIRE.get();
             case 'Q' -> AddonItemRegistry.FUSE_GRIMOIRE.get();
             case 'F' -> AddonItemRegistry.FORESEEN_GRIMOIRE.get();
+            case 'B' -> AddonItemRegistry.BOUND_GRIMOIRE.get();
             default -> AddonItemRegistry.SOUND_GRIMOIRE.get();
         });
         net.minecraft.nbt.CompoundTag mt = new net.minecraft.nbt.CompoundTag(); mt.putInt("xp", 10_000_000);
@@ -247,6 +294,7 @@ public final class UiShotsServer {
         if (which.charAt(0) == 'M') { meridian(p, w); return; }
         if (which.charAt(0) == 'O') { omen(p, w); return; }
         if ("XQF".indexOf(which.charAt(0)) >= 0) { trio(p, w); return; }
+        if (which.charAt(0) == 'B') { bound(p, w); return; }
         switch (w) {
             case "target" -> {
                 for (var old : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Husk.class, p.getBoundingBox().inflate(40))) old.discard();

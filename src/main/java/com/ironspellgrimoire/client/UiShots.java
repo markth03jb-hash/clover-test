@@ -784,6 +784,14 @@ public final class UiShots {
         }
         steps.add(new Step("tr_double", () -> { mc.setScreen(null); BookTreeWheel.forceHover = -1; mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "F:double")); }, 16, true));
         steps.add(new Step("tr_clear", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "F:clear")); }, 4, true));
+        // the Grimoire of the Bound Demon: the Bond Tree (a node pointed at, then scrolled), its wheel, a takeover with the eye burning, the branched wing, the black pair
+        steps.add(new Step("bd_tree", () -> { mc.setScreen(null); BookTreeScreen.forceHover = "d5"; onServer(p -> UiShotsServer.element(p, "B:tree")); }, 14, false));
+        steps.add(new Step("bd_tree_salt", () -> { mc.setScreen(null); BookTreeScreen.forceHover = "s6"; onServer(p -> UiShotsServer.element(p, "B:tree")); }, 10, false));
+        steps.add(new Step("bd_wheel", () -> { mc.setScreen(null); BookTreeScreen.forceHover = null; BookTreeWheel.forceHover = 0; mc.setScreen(new BookTreeWheel()); }, 8, false));
+        steps.add(new Step("bd_takeover", () -> { mc.setScreen(null); BookTreeWheel.forceHover = -1; mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "B:takeover")); }, 30, true));
+        steps.add(new Step("bd_awake", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "B:awake")); }, 16, true));
+        steps.add(new Step("bd_black", () -> onServer(p -> UiShotsServer.element(p, "B:black")), 16, true));
+        steps.add(new Step("bd_clear", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "B:clear")); }, 4, true));
         // the rivals: a line-up front and back, mid-fight poses, Mira's offer, and their Codex page
         steps.add(new Step("rv_front", () -> { mc.setScreen(null); TrackerMode.set(2); mc.options.hideGui = true; mc.player.setXRot(6); onServer(p -> { p.setXRot(6); UiShotsServer.rivals(p, "front"); }); }, 30, true));
         steps.add(new Step("rv_back", () -> onServer(p -> UiShotsServer.rivals(p, "back")), 30, true));
@@ -828,6 +836,7 @@ public final class UiShots {
         if (step.startsWith("ar_")) return new Class<?>[]{FortressScreen.class, FortressWheel.class, FortressHud.class, FortressClient.class, FortressRenderers.class, com.ironspellgrimoire.server.FortressFx.class, com.ironspellgrimoire.server.FortressSiege.class, com.ironspellgrimoire.server.FortressSpells.class};
         if (step.startsWith("dante_")) return new Class<?>[]{DanteCloakLayer.class, BossRenderer.class};
         if (step.startsWith("mer_")) return new Class<?>[]{MeridianClient.class, com.ironspellgrimoire.server.MeridianFx.class, com.ironspellgrimoire.server.UiShotsServer.class};
+        if (step.startsWith("bd_")) return new Class<?>[]{BookTreeScreen.class, BookTreeWheel.class, BookTreeClient.class, Shapes.class, BoundClient.class, com.ironspellgrimoire.server.BoundFx.class, com.ironspellgrimoire.server.BookTree.class, com.ironspellgrimoire.server.UiShotsServer.class};
         if (step.startsWith("tr_")) return new Class<?>[]{BookTreeScreen.class, BookTreeWheel.class, BookTreeClient.class, Shapes.class, ForeseenDoubleRenderer.class, com.ironspellgrimoire.server.BookTree.class, com.ironspellgrimoire.server.UiShotsServer.class};
         if (step.startsWith("om_")) return new Class<?>[]{OmenClient.class, OmenAfterimageRenderer.class, com.ironspellgrimoire.server.OmenFx.class, com.ironspellgrimoire.entity.OmenAfterimage.class, com.ironspellgrimoire.server.UiShotsServer.class};
         if (step.startsWith("rv_")) return new Class<?>[]{RivalRenderer.class, RivalClient.class, CodexScreen.class, com.ironspellgrimoire.server.Rivals.class, com.ironspellgrimoire.server.UiShotsServer.class};

@@ -56,11 +56,11 @@ public final class BookTree {
                 || s.is(net.minecraft.world.damagesource.DamageTypes.MOB_ATTACK_NO_AGGRO);
     }
 
-    public static final int VECTOR = 0, FUSE = 1, FORESEEN = 2;
+    public static final int VECTOR = 0, FUSE = 1, FORESEEN = 2, BOUND = 3;
     public static final int STAT = 0, PASSIVE = 1, SKILL = 2, WHEEL = 3, KEY = 4, ROOT = 5;
     public static final int MAX_LEVEL = 30, RESPEC_TICKS = 6000;
-    public static final String[] TREE = {"The Vector Field", "The Fuse Board", "The Sightlines"};
-    public static final String[] GROWTH = {"Force redirected", "Foes caught in blasts", "Blows dodged"};
+    public static final String[] TREE = {"The Vector Field", "The Fuse Board", "The Sightlines", "The Bond Tree"};
+    public static final String[] GROWTH = {"Force redirected", "Foes caught in blasts", "Blows dodged", "Battles fought for others"};
 
     /** One node: where it sits on the board (x 0-8, y 0-7), what it needs (any one of), its ranks and cost a rank,
      *  what kind it is, its words, its icon (a spell icon, or "" for a drawn glyph), and the keystone it excludes. */
@@ -73,7 +73,7 @@ public final class BookTree {
         return new Node(id, x, y, req.split("\\|"), 1, 3, KEY, name, desc, "", excl);
     }
 
-    public static final List<List<Node>> TREES = List.of(vector(), fuse(), foreseen());
+    public static final List<List<Node>> TREES = List.of(vector(), fuse(), foreseen(), bound());
 
     // ------------------------------------------------------------------ the Vector Field
     private static List<Node> vector() {
@@ -188,8 +188,70 @@ public final class BookTree {
         return l;
     }
 
+    // ------------------------------------------------------------------ the Bond Tree (Grimoire of the Bound Demon): almost every node changes how something works
+    private static List<Node> bound() {
+        List<Node> l = new ArrayList<>();
+        l.add(n("root", 6, 0, null, 1, 0, ROOT, "The Bound Demon", "A demon lives in your katana. Possession rises as you fight; its power is yours - until it fills, and the demon takes the wheel. Allies near you calm it. Hurt them, and it wakes.", "demon_draw"));
+        // Demon
+        l.add(n("d1", 1, 1, "root", 1, 1, PASSIVE, "Hungry Edge", "Katana kills feed the demon: +8 Possession and 2 health each.", ""));
+        l.add(n("d2", 0, 2, "d1", 1, 2, PASSIVE, "Red Eye", "At 50% Possession or more, a quarter of each katana blow lands again past armour.", ""));
+        l.add(n("d3", 2, 2, "d1", 1, 2, PASSIVE, "Whispered Warning", "Before a takeover you get 3 s of warning. Demon Draw used then pushes the demon back by 25%.", ""));
+        l.add(n("d4", 0, 3, "d2", 1, 2, PASSIVE, "Shadow Limbs", "At 75% Possession or more, every 4th katana blow is followed by a demon arm's sweep: 60% of it to up to 3 foes in front.", ""));
+        l.add(n("d5", 2, 3, "d3", 1, 3, SKILL, "Inner Duel", "Demon's Whisper during the warning wins the fight in your head: no takeover, and 10 s of full Possession's power with full control.", "demons_whisper"));
+        l.add(n("d10", 3, 4, "d5", 1, 2, SKILL, "Demon's Tongue", "Demon's Whisper drags every foe within 6 blocks to you.", "demons_whisper"));
+        l.add(n("d6", 1, 4, "d4|d5", 1, 2, PASSIVE, "Ride the Frenzy", "In a takeover your wild blows land 50% harder and heal you for a tenth of what they deal.", ""));
+        l.add(n("d7", 0, 5, "d6", 1, 2, PASSIVE, "Demon Skin", "In a takeover you take 30% less damage instead of 25% more, and can't be knocked back.", ""));
+        l.add(n("d8", 2, 5, "d6", 1, 2, PASSIVE, "Feast", "Each kill in a takeover makes it last 2 s longer and heals you 4.", ""));
+        l.add(n("d9", 1, 6, "d7|d8", 1, 3, PASSIVE, "Afterglow", "When a takeover ends you keep the demon's strength for 6 s more - in your own hands.", ""));
+        // Blade
+        l.add(n("k1", 4, 1, "root", 1, 1, SKILL, "Draw Cut", "Demon Draw cuts as the blade comes out: an arc in front of you.", "demon_draw"));
+        l.add(n("k2", 3, 2, "k1", 1, 2, SKILL, "Smoke Trail", "Cursed Edge's black cut hangs in the air for 3 s and bites whatever crosses it.", "cursed_edge"));
+        l.add(n("k3", 5, 2, "k1", 1, 2, SKILL, "Double Edge", "Within 2 s of Cursed Edge, cast it again - free - to dash back the way you came.", "cursed_edge"));
+        l.add(n("k10", 3, 3, "k2", 1, 2, SKILL, "Severing Wind", "A flying cut leaves the end of Cursed Edge and runs on 10 blocks.", "cursed_edge"));
+        l.add(n("k4", 4, 3, "k2|k3", 1, 2, PASSIVE, "Parry", "Tap sneak with the katana drawn just as a blow lands: it doesn't, and its striker staggers.", ""));
+        l.add(n("k5", 5, 4, "k4", 1, 2, PASSIVE, "Iai Stance", "Stand still with the katana drawn for 2 s: your next Cursed Edge strikes three times as hard.", ""));
+        l.add(n("k9", 5, 5, "k5", 1, 2, PASSIVE, "Blood on Steel", "Each katana hit stores a drop (up to 10); Cursed Edge spends them, +10% each.", ""));
+        l.add(n("k6", 4, 5, "k4", 1, 2, SKILL, "Flowing Flurry", "Demon Flurry follows you as you move and lasts twice as long.", "demon_flurry"));
+        l.add(n("k7", 4, 6, "k6", 1, 2, SKILL, "Ghost Blades", "Demon Flurry leaves three spectral blades circling you, still cutting, for 3 s.", "demon_flurry"));
+        l.add(n("k8", 5, 7, "k7|k9", 1, 3, PASSIVE, "Executioner's Draw", "Katana blows on foes under 25% health cut through what's left: +40% of their missing health (up to 20).", ""));
+        // Bond
+        l.add(n("b1", 8, 1, "root", 1, 1, SKILL, "Shared Burden", "Bond Guard lasts 20 s, and you take only 30% of your ally's hurt instead of half.", "bond_guard"));
+        l.add(n("b2", 7, 2, "b1", 1, 2, PASSIVE, "A Voice You Know", "In a takeover, an ally within 4 blocks makes it end twice as fast - and your wild blows pass them by.", ""));
+        l.add(n("b3", 9, 2, "b1", 1, 2, SKILL, "Vow of Return", "If an ally was hurt in the last 3 s, Cursed Edge dashes straight at whatever hurt them.", "cursed_edge"));
+        l.add(n("b4", 8, 3, "b2|b3", 1, 2, PASSIVE, "Shield of the Elder", "An ally near you who falls below 30% health is bound to you by Bond Guard at once (every 30 s).", ""));
+        l.add(n("b5", 7, 4, "b4", 1, 2, PASSIVE, "Fight for Them", "Each ally within 10 blocks (up to 4): katana blows +10%, and the demon fills 10% slower.", ""));
+        l.add(n("b6", 9, 4, "b4", 1, 2, PASSIVE, "Grudge", "Whatever kills an ally near you is marked a Sinner for a minute and takes double from you.", ""));
+        l.add(n("b8", 7, 5, "b5", 1, 2, PASSIVE, "Carried Hope", "The ally bound by Bond Guard hits 20% harder.", ""));
+        l.add(n("b7", 9, 5, "b6", 1, 2, PASSIVE, "Family Meal", "Killing a Sinner heals every ally within 8 blocks for 4.", ""));
+        l.add(n("b9", 8, 6, "b7|b8", 1, 3, PASSIVE, "Never Again", "The awakening that saves a dying ally comes back twice as fast, and heals them to half.", ""));
+        l.add(n("b10", 8, 7, "b9", 1, 3, PASSIVE, "Last Stand Together", "A killing blow with an ally beside you leaves you at 1 health, and you both can't be hurt for 3 s (every 3 min).", ""));
+        // Salt
+        l.add(n("s1", 11, 1, "root", 1, 2, SKILL, "Salt in the Veins", "Salt Lance is yours before your first awakening, and pierces everything in its line.", "salt_lance"));
+        l.add(n("s2", 10, 2, "s1", 1, 2, PASSIVE, "Crystallize", "Three salt hits crust a foe: 60% slower for 3 s, and your next katana blow shatters it for 10 more.", ""));
+        l.add(n("s4", 12, 2, "s1", 1, 2, PASSIVE, "Trumpet Call", "The awakening begins with a ringing blast: foes within 10 are thrown back and salted.", ""));
+        l.add(n("s3", 10, 3, "s2", 1, 2, PASSIVE, "Pillar of Salt", "A crusted foe that dies bursts a second later: 6 to everything within 3 blocks.", ""));
+        l.add(n("s5", 12, 3, "s4", 1, 2, PASSIVE, "Judgment Sight", "Awakened, whatever hurts you or an ally is marked a Sinner on the spot.", ""));
+        l.add(n("s6", 11, 4, "s3|s5", 1, 2, PASSIVE, "Wing Guard", "Awakened, your wing curls round you: blows from behind never land.", ""));
+        l.add(n("s7", 10, 5, "s6", 1, 2, PASSIVE, "Salt Rain", "Awakened, salt spears fall on Sinners twice as often.", ""));
+        l.add(n("s8", 12, 5, "s6", 1, 2, PASSIVE, "Longer Wings", "The awakening lasts 30 s instead of 20.", ""));
+        l.add(n("s9", 11, 6, "s7|s8", 1, 2, PASSIVE, "Seraph's Mercy", "Awakened, allies within 8 blocks heal 1 every 2 s.", ""));
+        l.add(n("s10", 11, 7, "s9", 1, 3, PASSIVE, "Fallen Seraph", "Awaken in a takeover and the demon turns judge: still wild, but it never strikes an ally, every kill turns to salt, and it hits twice as hard.", ""));
+        // the G wheel
+        l.add(n("w1", 6, 2, "b1", 1, 2, WHEEL, "Call to Family", "G wheel: your tamed beasts come to you, and every ally within 16 gains speed and 4 absorption.", "bd_family"));
+        l.add(n("w2", 6, 3, "s1|s2", 1, 2, WHEEL, "Salt Wall", "G wheel: a wall of salt for 4 s - arrows and bolts die in it, foes crossing it are salted.", "bd_saltwall"));
+        l.add(n("w3", 6, 4, "s4|s8", 1, 2, WHEEL, "Wing Dash", "G wheel (after your first awakening): one beat of the wing - 10 blocks, through foes.", "bd_wingdash"));
+        // keystones
+        l.add(k("K1", 0, 8, "d9|d6", "K2", "Symbiosis", "The demon is your friend: Possession stops at 90% and you never lose control - but Demon's Whisper gives half."));
+        l.add(k("K2", 2, 8, "d9|d8", "K1", "Surrender", "Takeovers last 12 s and hit twice as hard - and the demon strikes what you look at."));
+        l.add(k("K5", 5, 8, "b9|k8", "K6", "Avenger", "Sinners stay marked until they fall, and take 50% more from you."));
+        l.add(k("K6", 7, 8, "b9|b10", "K5", "Guardian", "Bond Guard binds up to three allies at once."));
+        l.add(k("K3", 10, 8, "s9|s10", "K4", "One Wing", "The awakening keeps its one branched wing and gives no flight - but your blows land 40% harder in it."));
+        l.add(k("K4", 12, 8, "s9|s10", "K3", "Black Wings", "The true awakening: a pair of ragged black wings. You fly, and the wings turn six blows aside."));
+        return l;
+    }
+
     public static Node node(int book, String id) {
-        if (book < 0 || book > 2) return null;
+        if (book < 0 || book >= TREES.size()) return null;
         for (Node x : TREES.get(book)) if (x.id().equals(id)) return x;
         return null;
     }
@@ -200,6 +262,7 @@ public final class BookTree {
         if (b.is(AddonItemRegistry.VECTOR_GRIMOIRE.get())) return VECTOR;
         if (b.is(AddonItemRegistry.FUSE_GRIMOIRE.get())) return FUSE;
         if (b.is(AddonItemRegistry.FORESEEN_GRIMOIRE.get())) return FORESEEN;
+        if (b.is(AddonItemRegistry.BOUND_GRIMOIRE.get())) return BOUND;
         return -1;
     }
     public static ItemStack book(Player p) { ItemStack b = Utils.getPlayerSpellbookStack(p); return b == null ? ItemStack.EMPTY : b; }
@@ -234,7 +297,8 @@ public final class BookTree {
         return l >= MAX_LEVEL ? new float[]{0, 1} : new float[]{xp, need};
     }
 
-    public static int points(ItemStack b) { return level(b) + 2 * GrimoireMastery.level(b); }
+    /** Points: the growth level and two a mastery level - and the Bond Tree, the biggest, twice the growth level. */
+    public static int points(ItemStack b) { return level(b) * (kind(b) == BOUND ? 2 : 1) + 2 * GrimoireMastery.level(b); }
     public static int spent(ItemStack b) {
         int k = kind(b), s = 0;
         if (k < 0) return 0;
@@ -305,16 +369,19 @@ public final class BookTree {
     // ------------------------------------------------------------------ the G wheel
     private static final Map<UUID, long[]> WHEEL_CD = new HashMap<>();
     /** The wheel's four abilities: slot 0 is always there, 1-3 need their wheel node. */
-    public static final String[][] WHEEL_IDS = {{"", "w1", "w2", "w3"}, {"", "w1", "w2", "w3"}, {"", "w2", "w1", "w3"}};
+    public static final String[][] WHEEL_IDS = {{"", "w1", "w2", "w3"}, {"", "w1", "w2", "w3"}, {"", "w2", "w1", "w3"}, {"", "w1", "w2", "w3"}};
     public static final String[][] WHEEL_NAMES = {{"Stance Shift", "Hover Vector", "Reverse Charge", "Air Lance"},
-            {"Detonate All", "Fuse Mode", "Primed Coin", "Defuse"}, {"Glimpse", "Borrowed Second", "Foretold Strike", "Fate Thread"}};
+            {"Detonate All", "Fuse Mode", "Primed Coin", "Defuse"}, {"Glimpse", "Borrowed Second", "Foretold Strike", "Fate Thread"},
+            {"Restrain / Release", "Call to Family", "Salt Wall", "Wing Dash"}};
     public static final String[][] WHEEL_ICONS = {{"vec_stance", "vec_hover", "vec_reverse", "vec_lance"},
-            {"detonate", "fuse_mode", "fuse_coin", "fuse_defuse"}, {"fore_glimpse", "fore_second", "fore_strike", "fore_thread"}};
+            {"detonate", "fuse_mode", "fuse_coin", "fuse_defuse"}, {"fore_glimpse", "fore_second", "fore_strike", "fore_thread"},
+            {"bd_restrain", "bd_family", "bd_saltwall", "bd_wingdash"}};
     public static final String[][] WHEEL_DESC = {
             {"Switch stance: Reflect (projectiles), Return (blows), Flow (no fall damage, faster).", "Hang in the air for 3 s.", "Turn the momentum of everything rushing you.", "A spear of compressed air through everything in its line."},
             {"Set off everything armed - no mana.", "Choose how armed targets blow: on Detonate, on a 3 s timer, or when a foe comes near.", "A coin that arms the first creature it strikes.", "Disarm everything; 8 mana back for each."},
-            {"For 5 s, see every nearby foe's next blow, and foresee them all.", "Step back to where you stood a second ago.", "Mark a spot: 2 s later the strike lands there.", "Tie two foes together for 10 s."}};
-    public static final int[][] WHEEL_COOLDOWN = {{20, 300, 240, 160}, {40, 10, 120, 200}, {400, 200, 160, 300}};
+            {"For 5 s, see every nearby foe's next blow, and foresee them all.", "Step back to where you stood a second ago.", "Mark a spot: 2 s later the strike lands there.", "Tie two foes together for 10 s."},
+            {"Balanced, then Restrain (the demon fills slowly and fades), then Release (it fills fast, and gives more).", "Your beasts come to you; allies within 16 gain speed and 4 absorption.", "A wall of salt for 4 s: arrows die in it, foes crossing are salted.", "One beat of the wing: 10 blocks, through foes."}};
+    public static final int[][] WHEEL_COOLDOWN = {{20, 300, 240, 160}, {40, 10, 120, 200}, {400, 200, 160, 300}, {10, 600, 300, 160}};
 
     public static boolean wheelOpen(Player p, int slot) {
         int k = kind(p);
@@ -334,6 +401,7 @@ public final class BookTree {
         boolean done = switch (k) {
             case VECTOR -> VectorFx.wheel(p, slot);
             case FUSE -> FuseFx.wheel(p, slot);
+            case BOUND -> BoundFx.wheel(p, slot);
             default -> ForeseenFx.wheel(p, slot);
         };
         if (done) WHEEL_CD.computeIfAbsent(p.getUUID(), u -> new long[4])[slot] = p.level().getGameTime() + WHEEL_COOLDOWN[k][slot];
@@ -350,7 +418,7 @@ public final class BookTree {
         if (k >= 0) {
             for (Node x : TREES.get(k)) { int r = rank(b, x.id()); if (r > 0 && x.kind() != ROOT) s.append(x.id()).append(':').append(r).append(','); }
             for (int i = 0; i < 4; i++) cd[i] = wheelCd(p, i);
-            extra = switch (k) { case VECTOR -> VectorFx.extra(p); case FUSE -> FuseFx.extra(p); default -> ForeseenFx.extra(p); };
+            extra = switch (k) { case VECTOR -> VectorFx.extra(p); case FUSE -> FuseFx.extra(p); case BOUND -> BoundFx.extra(p); default -> ForeseenFx.extra(p); };
         }
         long until = RESPEC.getOrDefault(p.getUUID(), 0L);
         AddonNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new BookTreePackets.Sync(k, xp(b), points(b), s.toString(), cd, extra,

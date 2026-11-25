@@ -1,0 +1,45 @@
+{
+ "loader": "forge:obj",
+ "model": "iron_spell_grimoire:models/item/bound_wing.obj",
+ "flip_v": true,
+ "textures": {
+  "particle": "iron_spell_grimoire:item/rivals"
+ },
+ "display": {
+  "fixed": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1,
+    1,
+    1
+   ]
+  },
+  "gui": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.35,
+    0.35,
+    0.35
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout"
+}

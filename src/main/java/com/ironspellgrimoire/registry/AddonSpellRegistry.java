@@ -970,6 +970,22 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> FORE_REWRITE = registerSpell(foreseen("rewrite", 80, 140, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.ForeseenFx::rewrite));
     public static final List<RegistryObject<AbstractSpell>> FORESEEN_SPELLS = List.of(FORE_STEP, FORE_READ, FORE_PUNISH, FORE_DOUBLE, FORE_SNAP, FORE_INEV, FORE_SEEN, FORE_REWRITE);
 
+    // ---- the Grimoire of the Bound Demon (server/BoundFx): its Bond Tree in server/BookTree
+    private static com.ironspellgrimoire.spells.BookSpell bound(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.BLOOD_RESOURCE,
+                com.ironspellgrimoire.item.BoundGrimoireItem.class, "ui.iron_spell_grimoire.bound_grimoire_only", cd, mana, power,
+                com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
+    }
+    public static final RegistryObject<AbstractSpell> BD_DRAW = registerSpell(bound("demon_draw", 3, 15, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.BoundFx::demonDraw));
+    public static final RegistryObject<AbstractSpell> BD_EDGE = registerSpell(bound("cursed_edge", 5, 35, 8, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.BoundFx::cursedEdge));
+    public static final RegistryObject<AbstractSpell> BD_WHISPER = registerSpell(bound("demons_whisper", 14, 30, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.BoundFx::demonsWhisper));
+    public static final RegistryObject<AbstractSpell> BD_BOND = registerSpell(bound("bond_guard", 12, 35, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.BoundFx::bondGuard));
+    public static final RegistryObject<AbstractSpell> BD_FLURRY = registerSpell(bound("demon_flurry", 10, 45, 3, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BoundFx::demonFlurry));
+    public static final RegistryObject<AbstractSpell> BD_MARK = registerSpell(bound("sinners_mark", 8, 25, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.BoundFx::sinnersMark));
+    public static final RegistryObject<AbstractSpell> BD_SALT = registerSpell(bound("salt_lance", 8, 40, 6, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BoundFx::saltLance));
+    public static final RegistryObject<AbstractSpell> BD_SERAPH = registerSpell(bound("last_seraph", 120, 180, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BoundFx::lastSeraph));
+    public static final List<RegistryObject<AbstractSpell>> BOUND_SPELLS = List.of(BD_DRAW, BD_EDGE, BD_WHISPER, BD_BOND, BD_FLURRY, BD_MARK, BD_SALT, BD_SERAPH);
+
     /** The seven Masked Twins Grimoire pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> TWINS_SPELLS = List.of(TWINS_SWAP, TWINS_ARTS, TWINS_STRIKE, TWINS_ECLIPSE, TWINS_MASKS, TWINS_NOON, TWINS_EVENTIDE);
 
