@@ -298,7 +298,7 @@ public final class BookTree {
     }
 
     /** Points: the growth level and two a mastery level - and the Bond Tree, the biggest, twice the growth level. */
-    public static int points(ItemStack b) { return level(b) * (kind(b) == BOUND ? 2 : 1) + 2 * GrimoireMastery.level(b) + BossRelics.treePoints(b); }
+    public static int points(ItemStack b) { return level(b) * (kind(b) == BOUND ? 2 : 1) + 2 * GrimoireMastery.level(b) + BossRelics.treePoints(b) + BookQuests.treePoints(b); }
     public static int spent(ItemStack b) {
         int k = kind(b), s = 0;
         if (k < 0) return 0;

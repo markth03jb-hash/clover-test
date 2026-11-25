@@ -37,8 +37,10 @@ public class SignatureItem extends Item implements ICurioItem {
 
     @Override
     public void appendHoverText(ItemStack s, Level level, List<Component> tip, TooltipFlag flag) {
-        tip.add(Component.literal(boss + "'s signature  -  " + (charm ? "charm slot" : "use it to write it into your grimoire")).withStyle(ChatFormatting.LIGHT_PURPLE));
-        if (hardened(s)) {
+        tip.add(Component.literal(boss + (hard.isEmpty() ? "'s charm" : "'s signature") + "  -  " + (charm ? "charm slot" : "use it to write it into your grimoire")).withStyle(ChatFormatting.LIGHT_PURPLE));
+        if (hard.isEmpty()) {   // a charm from the wild: no Hardened form
+            tip.add(Component.literal(what).withStyle(ChatFormatting.GRAY));
+        } else if (hardened(s)) {
             tip.add(Component.literal("Hardened").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
             tip.add(Component.literal(hard).withStyle(ChatFormatting.GRAY));
         } else {

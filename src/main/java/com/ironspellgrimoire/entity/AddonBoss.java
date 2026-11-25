@@ -127,7 +127,9 @@ public abstract class AddonBoss extends Monster {
         if (deathTime >= 70 && !level().isClientSide && !isRemoved()) remove(RemovalReason.KILLED);
     }
 
-    @Override public void startSeenByPlayer(ServerPlayer p) { super.startSeenByPlayer(p); bar.addPlayer(p); }
+    /** Whether it shows its own boss bar (a boss that shares another's health doesn't). */
+    protected boolean showBar() { return true; }
+    @Override public void startSeenByPlayer(ServerPlayer p) { super.startSeenByPlayer(p); if (showBar()) bar.addPlayer(p); }
     @Override public void stopSeenByPlayer(ServerPlayer p) { super.stopSeenByPlayer(p); bar.removePlayer(p); }
 
     @Override public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag t) { super.addAdditionalSaveData(t); t.putInt("Phase", phase()); }

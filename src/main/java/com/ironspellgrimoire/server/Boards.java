@@ -152,7 +152,7 @@ public final class Boards {
                     boolean hard = BossLadder.hardenedNext(p, boss);
                     note.title = Bounties.NAMES[Math.min(Bounties.NAMES.length - 1, boss)];
                     note.twist = (hard ? "Hardened, " : "") + Bounties.modsText(mods).getString();
-                    note.text = boss == Bounties.SECRET ? "No name, no face. Tier III." : "Tier " + BossLadder.TIER_NAME[BossLadder.TIER[Math.min(6, boss)]] + " - three days.";
+                    note.text = boss == Bounties.SECRET ? "No name, no face. Tier III." : "Tier " + BossLadder.TIER_NAME[BossLadder.TIER[Math.min(7, boss)]] + " - three days.";
                     note.where = where;
                     note.pay = Bounties.starsFor(boss, mods) * (hard ? 2 : 1) + "★  emeralds" + (boss == Bounties.SECRET ? "  a relic" : "") + (hard ? "  (x2)" : "");
                     note.special = boss == Bounties.SECRET ? 2 : 0;

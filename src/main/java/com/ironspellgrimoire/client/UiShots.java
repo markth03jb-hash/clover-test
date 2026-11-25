@@ -100,6 +100,11 @@ public final class UiShots {
         steps.add(new Step("lad_clear", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.ladder(p, "clear")); }, 4, true));
         steps.add(new Step("folk_a", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.folk(p, "a")); }, 16, true));
         steps.add(new Step("folk_b", () -> onServer(p -> UiShotsServer.folk(p, "b")), 16, true));
+        steps.add(new Step("folk_c", () -> onServer(p -> UiShotsServer.folk(p, "c")), 16, true));
+        steps.add(new Step("folk_d", () -> onServer(p -> UiShotsServer.folk(p, "d")), 16, true));
+        steps.add(new Step("twins", () -> onServer(p -> UiShotsServer.twins(p)), 30, true));
+        steps.add(new Step("star", () -> onServer(p -> UiShotsServer.star(p)), 50, true));
+        steps.add(new Step("sovereign_ashen", () -> onServer(p -> UiShotsServer.ashen(p)), 40, true));
         steps.add(new Step("folk_clear", () -> onServer(p -> UiShotsServer.folk(p, "clear")), 2, true));
         steps.add(new Step("el_mobs", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.elites(p, "mobs")); }, 16, true));
         steps.add(new Step("el_codex", () -> mc.setScreen(new CodexScreen(CodexScreen.chapter("Elite Mobs"))), 10, false));
@@ -867,7 +872,7 @@ public final class UiShots {
             case "waypoints" -> new Class<?>[]{WaypointScreen.class, com.ironspellgrimoire.server.Waypoints.class};
             case "codex", "codex_book", "codex_rules", "codex_yours" -> new Class<?>[]{CodexScreen.class};
             case "lad_board", "lad_codex", "lad_codex_log", "lad_clear" -> new Class<?>[]{CodexScreen.class, BoardScreen.class, com.ironspellgrimoire.server.Boards.class, com.ironspellgrimoire.server.BossLadder.class, BossLogClient.class};
-            case "folk_a", "folk_b", "folk_clear" -> new Class<?>[]{RivalRenderer.class, com.ironspellgrimoire.entity.WildFolk.class, com.ironspellgrimoire.server.WildFolkAI.class};
+            case "folk_a", "folk_b", "folk_c", "folk_d", "twins", "star", "sovereign_ashen", "folk_clear" -> new Class<?>[]{RivalRenderer.class, com.ironspellgrimoire.entity.WildFolk.class, com.ironspellgrimoire.server.WildFolkAI.class};
             case "el_mobs", "el_codex", "el_clear" -> new Class<?>[]{EliteClient.class, EliteRenderers.class, CodexScreen.class, com.ironspellgrimoire.server.EliteMobs.class, com.ironspellgrimoire.server.EliteTraits.class};
             default -> null;
         };

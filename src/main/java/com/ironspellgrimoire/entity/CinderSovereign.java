@@ -67,8 +67,14 @@ public class CinderSovereign extends AddonBoss implements GeoEntity {
     /** Plays one of its moves on every watching client. */
     public void play(String move) { triggerAnim("main", move); }
 
-    @Override protected float[] phaseLines() { return new float[]{0.66f, 0.33f}; }
-    @Override public int maxPhase() { return 3; }
+    private static final net.minecraft.network.syncher.EntityDataAccessor<Boolean> ASHEN = net.minecraft.network.syncher.SynchedEntityData.defineId(CinderSovereign.class, net.minecraft.network.syncher.EntityDataSerializers.BOOLEAN);
+    @Override protected void defineSynchedData() { super.defineSynchedData(); this.entityData.define(ASHEN, false); }
+    /** Its second form: once it has fallen on the server, it returns with a fourth stage, the Ashen Crown (below 25%). */
+    public boolean ashen() { return this.entityData.get(ASHEN); }
+    public void setAshen(boolean b) { this.entityData.set(ASHEN, b); }
+
+    @Override protected float[] phaseLines() { return ashen() ? new float[]{0.66f, 0.33f, 0.25f} : new float[]{0.66f, 0.33f}; }
+    @Override public int maxPhase() { return ashen() ? 4 : 3; }
     @Override public List<RegistryObject<SoundEvent>> music() { return AddonSounds.BOSS_MUSIC; }
     @Override protected void aiTick() { CinderSovereignAI.tick(this); }
     @Override protected void onPhase(int phase) { CinderSovereignAI.phase(this, phase); }
@@ -98,6 +104,6 @@ public class CinderSovereign extends AddonBoss implements GeoEntity {
 
     @Override public boolean fireImmune() { return true; }
 
-    @Override public void addAdditionalSaveData(CompoundTag t) { super.addAdditionalSaveData(t); t.putLong("Expires", expires); }
-    @Override public void readAdditionalSaveData(CompoundTag t) { super.readAdditionalSaveData(t); expires = t.getLong("Expires"); }
+    @Override public void addAdditionalSaveData(CompoundTag t) { super.addAdditionalSaveData(t); t.putLong("Expires", expires); t.putBoolean("Ashen", ashen()); }
+    @Override public void readAdditionalSaveData(CompoundTag t) { super.readAdditionalSaveData(t); expires = t.getLong("Expires"); setAshen(t.getBoolean("Ashen")); }
 }

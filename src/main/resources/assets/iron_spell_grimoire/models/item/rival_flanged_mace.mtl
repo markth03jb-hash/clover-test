@@ -1,0 +1,4 @@
+newmtl flanged_mace
+Kd 1 1 1
+Ka 0 0 0
+map_Kd iron_spell_grimoire:item/rivals

@@ -91,15 +91,53 @@ public final class UiShotsServer {
     /** Elite mobs for the screenshots: a row of them in front of the player (no AI, so they hold still), a cursed chest
      *  and a rift; "clear" takes them away. */
     /** The wild families in a row, five at a time (a = the Mirefolk and Stonefolk's first two, b = the rest), facing the camera. */
+    /** The Ironbound Twins side by side, facing the camera, the chain drawn taut between them. */
+    public static void twins(ServerPlayer p) {
+        folk(p, "none");
+        ServerLevel sl = p.serverLevel();
+        var h = AddonEntities.TWIN_HALDRIC.get().create(sl); var o = AddonEntities.TWIN_OSWIN.get().create(sl);
+        if (h == null || o == null) return;
+        h.moveTo(p.getX() - 5, p.getY(), p.getZ() + 9, 180, 0); o.moveTo(p.getX() + 5, p.getY(), p.getZ() + 9, 180, 0);
+        for (var t : new com.ironspellgrimoire.entity.IronboundTwin[]{h, o}) { t.setYBodyRot(180); t.setYHeadRot(180); t.setNoAi(true); }
+        h.partner = o.getUUID(); o.partner = h.getUUID();
+        sl.addFreshEntity(h); sl.addFreshEntity(o);
+        for (int i = 0; i < 6; i++) AstaFx.later(1 + i * 4, () -> BossFx.beam(sl, Fx.STEEL, h.position().add(0, 1.6, 0), o.position().add(0, 1.6, 0), 0.25f, 6));
+    }
+
+    /** A star coming down in front of the camera; it lands and its guardians gather. */
+    public static void star(ServerPlayer p) {
+        folk(p, "none");
+        ServerLevel sl = p.serverLevel();
+        var s = FallingStars.callDown(sl, p.position().add(0, 0, 10), false);
+        if (s != null) s.setPos(s.getX(), s.groundY + 10, s.getZ());
+    }
+
+    /** The Cinder Sovereign in its second form's last stage (the Ashen Crown), standing still, a way off. */
+    public static void ashen(ServerPlayer p) {
+        folk(p, "none");
+        ServerLevel sl = p.serverLevel();
+        var b = AddonEntities.CINDER_SOVEREIGN.get().create(sl);
+        if (b == null) return;
+        b.setAshen(true);
+        b.setPhase(4);
+        b.moveTo(p.getX(), p.getY(), p.getZ() + 30, 180, 0);
+        b.setYBodyRot(180); b.setYHeadRot(180);
+        b.setNoAi(true);
+        sl.addFreshEntity(b);
+    }
+
     public static void folk(ServerPlayer p, String what) {
         ServerLevel sl = p.serverLevel();
         for (var e : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.WildFolk.class, p.getBoundingBox().inflate(24))) e.discard();
+        for (var e : sl.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, p.getBoundingBox().inflate(48),
+                x -> x instanceof com.ironspellgrimoire.entity.IronboundTwin || x instanceof com.ironspellgrimoire.entity.FallingStar || x instanceof com.ironspellgrimoire.entity.CinderSovereign
+                        || x.getPersistentData().contains(EliteMobs.TAG))) e.discard();
         if (what.equals("clear")) return;
         p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
         faceForward(p);
         var kinds = com.ironspellgrimoire.entity.WildFolk.Kind.values();
-        int from = what.equals("a") ? 0 : 5;
-        for (int i = 0; i < 5; i++) {
+        int from = what.equals("a") ? 0 : what.equals("b") ? 5 : what.equals("c") ? 10 : 15;
+        for (int i = 0; i < 5 && from + i < kinds.length; i++) {
             var k = kinds[from + i];
             var m = WildFolkAI.type(k).create(sl);
             if (m == null) continue;

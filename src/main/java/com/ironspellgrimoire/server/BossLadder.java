@@ -35,9 +35,9 @@ public final class BossLadder {
     private BossLadder() {}
 
     public static final String TAG = "isg_ladder";
-    public static final int BOSSES = 7, GATE = 7;
-    /** Each bounty boss's tier (Bounties.BOSSES order: the Ossuarch, the Beast, Rhya, Licht, the Revenant, the Curse Witch, ???). */
-    public static final int[] TIER = {2, 2, 2, 3, 1, 1, 3};
+    public static final int BOSSES = 8, GATE = 99;
+    /** Each bounty boss's tier (Bounties.BOSSES order: the Ossuarch, the Beast, Rhya, Licht, the Revenant, the Curse Witch, ???, the Ironbound Twins). */
+    public static final int[] TIER = {2, 2, 2, 3, 1, 1, 3, 2};
     public static final String[] TIER_NAME = {"", "I", "II", "III"};
     public static final int HARDENED_AFTER = 3;
     /** How a boss was beaten, for its memory: 1 blades and fists, 2 spells, 3 arrows and thrown things. */
@@ -115,7 +115,7 @@ public final class BossLadder {
 
     static void announceTier(ServerPlayer p, int tier) {
         p.sendSystemMessage(Component.literal("TIER " + TIER_NAME[tier] + " OPEN  ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-                .append(Component.literal(tier == 2 ? "The Ossuarch, Rhya and the Beast of Despair can now be on your posters."
+                .append(Component.literal(tier == 2 ? "The Ossuarch, Rhya, the Beast of Despair and the Ironbound Twins can now be on your posters."
                         : "Licht can now be on your posters - and, with 50 stars, the poster with no name.").withStyle(ChatFormatting.YELLOW)));
         p.serverLevel().playSound(null, p.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1f, 0.8f);
     }

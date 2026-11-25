@@ -175,6 +175,15 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.ShadowRavener>of(com.ironspellgrimoire.entity.ShadowRavener::new, MobCategory.MISC).sized(0.9F, 2.8F)
                     .fireImmune().clientTrackingRange(10).build("ravener"));
 
+    /** The Ironbound Twins (entity/IronboundTwin), a tier II bounty: Haldric carries the shared health. */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.IronboundTwin>> TWIN_HALDRIC = ENTITIES.register("twin_haldric",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.IronboundTwin>of(com.ironspellgrimoire.entity.IronboundTwin::new, MobCategory.MONSTER).sized(0.78F, 2.5F).clientTrackingRange(10).build("twin_haldric"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.IronboundTwin>> TWIN_OSWIN = ENTITIES.register("twin_oswin",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.IronboundTwin>of(com.ironspellgrimoire.entity.IronboundTwin::new, MobCategory.MONSTER).sized(0.78F, 2.5F).clientTrackingRange(10).build("twin_oswin"));
+    /** A fallen star (server/FallingStars): its heart, guarded until the guardians fall. */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.FallingStar>> FALLING_STAR = ENTITIES.register("falling_star",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.FallingStar>of(com.ironspellgrimoire.entity.FallingStar::new, MobCategory.MISC).sized(1.2F, 1.6F).clientTrackingRange(16).updateInterval(2).build("falling_star"));
+
     /** The wild families and the night hunter (entity/WildFolk, server/WildFolkAI): one entity type each. */
     public static final java.util.Map<com.ironspellgrimoire.entity.WildFolk.Kind, RegistryObject<EntityType<com.ironspellgrimoire.entity.WildFolk>>> FOLK = new java.util.EnumMap<>(com.ironspellgrimoire.entity.WildFolk.Kind.class);
     static {

@@ -429,7 +429,7 @@ public final class Rifts {
         if (r.lair) {
             int b = r.lairBounty.getInt("Boss");
             p.sendSystemMessage(Component.literal((r.lairBounty.getBoolean("Hardened") ? "HARDENED " : "") + "LAIR OF " + (b == Bounties.SECRET ? "LICHT, THE UNBOUND" : Bounties.NAMES[Math.min(Bounties.NAMES.length - 1, b)].toUpperCase())).withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD));
-            p.sendSystemMessage(Component.literal("  Tier " + BossLadder.TIER_NAME[BossLadder.TIER[Math.min(6, b)]] + ". It waits in the next room. Fall, and you're thrown back out - the lair stays open until the poster runs out.").withStyle(ChatFormatting.GRAY));
+            p.sendSystemMessage(Component.literal("  Tier " + BossLadder.TIER_NAME[BossLadder.TIER[Math.min(7, b)]] + ". It waits in the next room. Fall, and you're thrown back out - the lair stays open until the poster runs out.").withStyle(ChatFormatting.GRAY));
             return;
         }
         if (r.exam) {
@@ -779,7 +779,7 @@ public final class Rifts {
         Rift r = new Rift();
         r.id = d.next++;
         r.lair = true;
-        r.rank = Math.min(5, 1 + BossLadder.TIER[Math.min(6, bounty.getInt("Boss"))] + (bounty.getBoolean("Hardened") ? 1 : 0));
+        r.rank = Math.min(5, 1 + BossLadder.TIER[Math.min(7, bounty.getInt("Boss"))] + (bounty.getBoolean("Hardened") ? 1 : 0));
         r.owner = p.getUUID().toString();
         r.lairBounty = bounty.copy();
         r.dim = p.level().dimension().location().toString();
@@ -879,6 +879,7 @@ public final class Rifts {
 
     static void reward(ServerLevel sl, Rift r, Room room, ServerPlayer finder, boolean relic) {
         Vec3 c = r.centre(room).add(0, 0.5, 0);
+        if (relic) for (ServerPlayer p : sl.players()) if (riftAt(sl.getServer(), p.position()) == r) BookQuests.riftCleared(p);   // the mastery quest
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         List<ItemStack> loot = new ArrayList<>();
         loot.add(new ItemStack(Items.EMERALD, (relic ? 10 : 5) + r.rank * 3));

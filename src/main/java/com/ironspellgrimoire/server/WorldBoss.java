@@ -174,6 +174,7 @@ public final class WorldBoss {
         b.moveTo(at.x, at.y, at.z, yaw, 0);
         b.setYHeadRot(yaw); b.yBodyRot = yaw;
         b.busy = 70;
+        if (WorldGrowth.sovereignFallen(sl.getServer())) b.setAshen(true);   // its second form
         sl.addFreshEntity(b);
         b.play("roar");
         d.risen = true; d.boss = b.getUUID(); d.setDirty();

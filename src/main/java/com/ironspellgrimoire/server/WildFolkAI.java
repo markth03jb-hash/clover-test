@@ -52,7 +52,8 @@ public final class WildFolkAI {
     private WildFolkAI() {}
 
     static final UUID RALLY_DMG = UUID.fromString("f01c0000-0000-4000-8000-000000000001"), RALLY_SPD = UUID.fromString("f01c0000-0000-4000-8000-000000000002");
-    static final int[] PAL = {Fx.WIND, Fx.STEEL, Fx.GOLD, Fx.DARK};
+    static final int[] PAL = {Fx.WIND, Fx.STEEL, Fx.GOLD, Fx.DARK, Fx.ICE, Fx.VOID};
+    static final UUID CHILL = UUID.fromString("f01c0000-0000-4000-8000-000000000003");
     public static int testCasts, testRallies, testBlinks;
 
     static int pal(WildFolk m) { return PAL[m.kind.family.ordinal()]; }
@@ -69,14 +70,17 @@ public final class WildFolkAI {
         if (!(m.level() instanceof ServerLevel sl)) return;
         testCasts++;
         Vec3 at = t.position();
-        ZenonAI.warnCircle(sl, at, 1.8f, 20);
+        int T = m.kind.family == Family.HOLLOW ? 12 : 20;   // the Hollowfolk strike out of the dark: less warning
+        ZenonAI.warnCircle(sl, at, 1.8f, T);
         float dmg = (float) m.getAttributeValue(Attributes.ATTACK_DAMAGE) * 2f;
         Family f = m.kind.family;
-        FxUtil.play(sl, m.position(), f == Family.MIRE ? "fore_warn" : f == Family.STONE ? "vec_pulse" : "vec_wind", 0.8f, f == Family.MIRE ? 0.7f : 1f);
+        FxUtil.play(sl, m.position(), f == Family.MIRE || f == Family.FROST ? "fore_warn" : f == Family.STONE || f == Family.HOLLOW ? "vec_pulse" : "vec_wind", 0.8f, f == Family.MIRE ? 0.7f : f == Family.HOLLOW ? 0.5f : 1f);
         Kit.orb(sl, pal(m), m.position().add(0, m.getBbHeight() + 0.3, 0), Vec3.ZERO, 0.4f, 20);
-        AstaFx.later(20, () -> {
+        AstaFx.later(T, () -> {
             if (!m.isAlive()) return;
             switch (f) {
+                case FROST -> { FxSend.spike(sl, Fx.ICE, at, new Vec3(0, 1, 0), 1.8f, 0.35f, 14, 2, com.ironspellgrimoire.network.FxPacket.GROUND); FxSend.ring(sl, Fx.ICE, at.add(0, 0.1, 0), 0.3f, 1.9f, 0.1f, 12); }
+                case HOLLOW -> { Kit.orb(sl, Fx.VOID, at.add(0, 1, 0), Vec3.ZERO, 0.9f, 10); FxSend.ring(sl, Fx.VOID, at.add(0, 0.1, 0), 1.9f, 0.3f, 0.1f, 10); }
                 case MIRE -> { Kit.orb(sl, Fx.WIND, at.add(0, 0.6, 0), new Vec3(0, 0.05, 0), 0.8f, 14); FxSend.ring(sl, Fx.WIND, at.add(0, 0.1, 0), 0.3f, 1.9f, 0.1f, 12); }
                 case STONE -> FxSend.spike(sl, Fx.STEEL, at, new Vec3(0, 1, 0), 2.2f, 0.45f, 12, 2, com.ironspellgrimoire.network.FxPacket.GROUND);
                 default -> FxSend.beam(sl, Fx.GOLD, at.add(0, 6, 0), at, 0.4f, 8);
@@ -84,6 +88,7 @@ public final class WildFolkAI {
             for (LivingEntity v : sl.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(1.8, 2.2, 1.8), v -> v instanceof ServerPlayer p && !p.isSpectator() && !p.isCreative())) {
                 v.hurt(m.damageSources().indirectMagic(m, m), dmg);
                 if (f == Family.STONE) { v.setDeltaMovement(v.getDeltaMovement().add(0, 0.55, 0)); v.hurtMarked = true; }
+                if (f == Family.FROST) TimedModifiers.apply(v, Attributes.MOVEMENT_SPEED, CHILL, "Chilled", -0.3, AttributeModifier.Operation.MULTIPLY_TOTAL, 60);
                 if (f == Family.SAND) { Vec3 push = v.position().subtract(m.position()); push = new Vec3(push.x, 0, push.z); if (push.lengthSqr() > 1e-4) { v.setDeltaMovement(v.getDeltaMovement().add(push.normalize().scale(0.8))); v.hurtMarked = true; } }
             }
         });
@@ -99,9 +104,17 @@ public final class WildFolkAI {
         }
         FxSend.ring(sl, pal(m), m.position().add(0, 0.1, 0), 0.4f, 12f, 0.1f, 16);
         sl.playSound(null, m.blockPosition(), SoundEvents.EVOKER_PREPARE_WOLOLO, SoundSource.HOSTILE, 1f, m.kind == Kind.FEN_MATRON ? 0.7f : m.kind == Kind.PEAK_WARDEN ? 0.5f : 1.2f);
-        if (m.kind == Kind.PEAK_WARDEN || m.kind == Kind.SUN_HERALD) {
-            Vec3 at = m.kind == Kind.PEAK_WARDEN ? m.position() : t.position();
-            float r = m.kind == Kind.PEAK_WARDEN ? 4.5f : 3.2f;
+        if (m.kind == Kind.DEEPWARDEN) {   // its lantern-heart pulls everyone close to it
+            FxSend.ring(sl, Fx.VOID, m.position().add(0, 1, 0), 10f, 0.5f, 0.1f, 16);
+            for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, m.getBoundingBox().inflate(10))) {
+                if (p.isSpectator() || p.isCreative()) continue;
+                Vec3 in = m.position().subtract(p.position()); in = new Vec3(in.x, 0, in.z);
+                if (in.lengthSqr() > 4) { p.setDeltaMovement(p.getDeltaMovement().add(in.normalize().scale(1.1)).add(0, 0.2, 0)); p.hurtMarked = true; }
+            }
+        }
+        if (m.kind == Kind.PEAK_WARDEN || m.kind == Kind.SUN_HERALD || m.kind == Kind.HOARFROST_JARL) {
+            Vec3 at = m.kind == Kind.SUN_HERALD ? t.position() : m.position();
+            float r = m.kind == Kind.SUN_HERALD ? 3.2f : 4.5f;
             ZenonAI.warnCircle(sl, at, r, 18);
             AstaFx.later(18, () -> {
                 if (!m.isAlive()) return;
@@ -110,7 +123,8 @@ public final class WildFolkAI {
                 FxSend.shake(sl, at, 0.4f, 8, 16);
                 for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, new AABB(at, at).inflate(r, 2.5, r))) {
                     if (p.isSpectator() || p.isCreative()) continue;
-                    p.hurt(m.damageSources().mobAttack(m), m.kind == Kind.PEAK_WARDEN ? 6f : 5f);
+                    p.hurt(m.damageSources().mobAttack(m), m.kind == Kind.SUN_HERALD ? 5f : 6f);
+                    if (m.kind == Kind.HOARFROST_JARL) TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, CHILL, "Chilled", -0.35, AttributeModifier.Operation.MULTIPLY_TOTAL, 80);
                     Vec3 push = p.position().subtract(at); push = push.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : new Vec3(push.x, 0, push.z).normalize();
                     p.setDeltaMovement(push.scale(0.9).add(0, 0.35, 0)); p.hurtMarked = true;
                 }
@@ -123,7 +137,25 @@ public final class WildFolkAI {
     public static void onJoin(EntityJoinLevelEvent e) {
         if (e.getLevel().isClientSide() || e.loadedFromDisk() || !(e.getEntity() instanceof WildFolk m) || m.kind.role != Role.LEADER) return;
         if (m.getPersistentData().getBoolean("isg_folk_band") || !(e.getLevel() instanceof ServerLevel sl)) return;
+        bandUp(m, sl);
+    }
+
+    /** During a Blood Moon, a grunt that appears in the wild may bring its leader. */
+    @SubscribeEvent
+    public static void onGruntJoin(EntityJoinLevelEvent e) {
+        if (e.getLevel().isClientSide() || e.loadedFromDisk() || !(e.getEntity() instanceof WildFolk m) || m.kind.role != Role.GRUNT) return;
+        if (m.getPersistentData().getBoolean("isg_folk_band") || !(e.getLevel() instanceof ServerLevel sl) || !BloodMoon.on(sl.getServer())) return;
         m.getPersistentData().putBoolean("isg_folk_band", true);
+        if (ThreadLocalRandom.current().nextFloat() < 0.15f) {
+            Kind lead = Kind.values()[m.kind.ordinal() + 2];
+            AstaFx.later(1, () -> { WildFolk l = spawnNear(sl, lead, m.position(), 2); if (l != null) bandUp(l, sl); });
+        }
+    }
+
+    static void bandUp(WildFolk m, ServerLevel sl) {
+        m.getPersistentData().putBoolean("isg_folk_band", true);
+        if (m.getPersistentData().getBoolean("isg_folk_banded")) return;
+        m.getPersistentData().putBoolean("isg_folk_banded", true);
         Kind grunt = Kind.values()[m.kind.ordinal() - 2], caster = Kind.values()[m.kind.ordinal() - 1];
         AstaFx.later(1, () -> { for (Kind k : new Kind[]{grunt, grunt, caster}) spawnNear(sl, k, m.position(), 3); });
     }
@@ -202,12 +234,16 @@ public final class WildFolkAI {
             case MIRE -> { if (r.nextFloat() < 0.5f) m.spawnAtLocation(new ItemStack(Items.SLIME_BALL, 1 + r.nextInt(2 + looting))); }
             case STONE -> { if (r.nextFloat() < 0.5f) m.spawnAtLocation(new ItemStack(Items.IRON_NUGGET, 2 + r.nextInt(3 + looting))); }
             case SAND -> { if (r.nextFloat() < 0.5f) m.spawnAtLocation(new ItemStack(Items.GOLD_NUGGET, 2 + r.nextInt(3 + looting))); }
+            case FROST -> { if (r.nextFloat() < 0.5f) m.spawnAtLocation(new ItemStack(Items.SNOWBALL, 2 + r.nextInt(3 + looting))); }
+            case HOLLOW -> { if (r.nextFloat() < 0.35f) m.spawnAtLocation(new ItemStack(Items.AMETHYST_SHARD, 1 + r.nextInt(2 + looting))); }
             default -> {}
         }
         if (k.role == Role.LEADER) {
             m.spawnAtLocation(new ItemStack(Items.EMERALD, 2 + r.nextInt(3)));
             if (r.nextFloat() < 0.25f + 0.05f * looting)
-                m.spawnAtLocation(new ItemStack((k.family == Family.MIRE ? AddonItemRegistry.SWIFT_BOOKMARK : k.family == Family.STONE ? AddonItemRegistry.SILVER_CLASP : AddonItemRegistry.WIND_FEATHER).get()));
+                m.spawnAtLocation(new ItemStack((k.family == Family.MIRE ? AddonItemRegistry.SWIFT_BOOKMARK : k.family == Family.STONE ? AddonItemRegistry.SILVER_CLASP
+                        : k.family == Family.SAND ? AddonItemRegistry.WIND_FEATHER : k.family == Family.FROST ? AddonItemRegistry.SILVER_CLASP : AddonItemRegistry.SWIFT_BOOKMARK).get()));
+            if (r.nextFloat() < 0.08f + 0.02f * looting) m.spawnAtLocation(FolkCharms.charm(k.family));   // its charm: rare
         }
         if (k.role == Role.HUNTER) {
             m.spawnAtLocation(new ItemStack(Items.EMERALD, 4 + r.nextInt(4)));

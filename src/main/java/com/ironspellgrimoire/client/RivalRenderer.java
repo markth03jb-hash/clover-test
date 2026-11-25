@@ -112,7 +112,31 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
             Map.entry("family_gloamstalker", List.of(
                     new Piece("hooked_blade", Bone.RARM, -50, v(-5.500, -7.660, 15.572), v(75, 0, 0), 1.100f),
                     new Piece("gloam_hood", Bone.HEAD, 0, v(0.000, 0.000, 27.000), v(0, 0, 0), 1.000f),
-                    new Piece("coat_tails", Bone.BODY, 0, v(0.000, 0.000, 13.000), v(0, 0, 0), 1.000f))));
+                    new Piece("coat_tails", Bone.BODY, 0, v(0.000, 0.000, 13.000), v(0, 0, 0), 1.000f))),
+            Map.entry("family_rime_brute", List.of(
+                    new Piece("ice_axe", Bone.RARM, -30, v(-6.000, -5.000, 13.340), v(70, 0, 0), 1.400f),
+                    new Piece("fur_mantle", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f))),
+            Map.entry("family_frost_chanter", List.of(
+                    new Piece("ice_staff", Bone.LARM, -20, v(6.000, -3.420, 12.603), v(-8, 0, 0), 1.000f))),
+            Map.entry("family_hoarfrost_jarl", List.of(
+                    new Piece("ice_crown", Bone.HEAD, 0, v(0.000, 0.000, 30.800), v(0, 0, 0), 1.000f),
+                    new Piece("frost_greatsword", Bone.RARM, -35, v(-6.000, -5.736, 13.808), v(75, 0, 0), 1.000f),
+                    new Piece("fur_cloak", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f))),
+            Map.entry("family_hollow_crawler", List.of(
+                    new Piece("hook_claw", Bone.RARM, -45, v(-5.500, -7.071, 14.929), v(85, 0, 0), 1.000f),
+                    new Piece("hook_claw", Bone.LARM, -45, v(5.500, -7.071, 14.929), v(85, 0, 0), 1.000f))),
+            Map.entry("family_hollow_singer", List.of(
+                    new Piece("fork_staff", Bone.RARM, -20, v(-5.500, -3.420, 12.603), v(-8, 0, 0), 1.000f))),
+            Map.entry("family_deepwarden", List.of(
+                    new Piece("stone_shell", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f),
+                    new Piece("heart_lantern", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f))),
+            Map.entry("twin_haldric", List.of(
+                    new Piece("tower_shield", Bone.LARM, -25, v(7.400, -5.800, 13.000), v(0, 0, 8), 1.000f),
+                    new Piece("flanged_mace", Bone.RARM, -30, v(-6.000, -5.000, 13.340), v(70, 0, 0), 1.000f),
+                    new Piece("wrist_chain", Bone.RARM, -30, v(-6.000, -4.000, 15.072), v(60, 0, 0), 1.000f))),
+            Map.entry("twin_oswin", List.of(
+                    new Piece("iron_greatsword", Bone.RARM, -35, v(-6.000, -5.736, 13.808), v(75, 0, 0), 1.000f),
+                    new Piece("wrist_chain", Bone.LARM, -35, v(6.000, -4.589, 15.447), v(60, 0, 0), 1.000f))));
     static { GEAR.putAll(FAMILY_GEAR); }
 
     /** The legionnaire who carries Brannoch's standard: the banner instead of the spear. */
@@ -162,7 +186,7 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
             if (sword) this.rightArm.xRot = this.rightArm.xRot * 0.5F - 0.31F;
             if (skin.equals("rival_wren") || skin.equals("rival_legion")) this.leftArm.xRot = this.leftArm.xRot * 0.5F - 0.31F;
             if (skin.equals("rival_mira")) this.leftArm.xRot = -0.96F;   // her ledger held up to read
-            if (skin.startsWith("family_")) {   // a hand that holds something sits forward, as on the model sheet
+            if (skin.startsWith("family_") || skin.startsWith("twin_")) {   // a hand that holds something sits forward, as on the model sheet
                 List<Piece> g = FAMILY_GEAR.get(skin);
                 if (g != null) for (Piece p : g) {
                     if (p.bone() == Bone.RARM) this.rightArm.xRot = this.rightArm.xRot * 0.5F + p.armDeg() * Mth.DEG_TO_RAD;

@@ -237,7 +237,22 @@ public class AddonItemRegistry {
             "Written into a grimoire: cast the same spell three times in a row and the third costs no mana.", "The fourth in a row costs half, too.", "It writes itself a little further each night.", "Hexbound"));
     public static final RegistryObject<Item> UNBOUND_SEAL = ITEMS.register("unbound_seal", () -> new com.ironspellgrimoire.item.SignatureItem("Licht, the Unbound",
             "Written into an Ascended grimoire: its ultimate holds a second charge (it recharges every 3 minutes).", "The second charge recharges every 2 minutes.", "Whatever it held shut is open now.", "UnboundSeal"));
-    public static final java.util.List<RegistryObject<Item>> SIGNATURES = java.util.List.of(MARROW_PLATE, HOPELESS_CLAW, TURNCOAT_SIGIL, LICHS_PAGE, GRAVE_KNOT, HEXBOUND_INK, UNBOUND_SEAL);
+    public static final RegistryObject<Item> IRONBOUND_VOW = ITEMS.register("ironbound_vow", () -> new com.ironspellgrimoire.item.SignatureItem("The Ironbound Twins",
+            "While another mage stands within 8 blocks of you, you both take 10% less damage.", "15% less, within 12 blocks.", "Two oaths, one chain.", null));
+    public static final java.util.List<RegistryObject<Item>> SIGNATURES = java.util.List.of(MARROW_PLATE, HOPELESS_CLAW, TURNCOAT_SIGIL, LICHS_PAGE, GRAVE_KNOT, HEXBOUND_INK, UNBOUND_SEAL, IRONBOUND_VOW);
+    /** The wild leaders' charms (server/FolkCharms), rare drops. */
+    public static final RegistryObject<Item> MOSS_KNOT = ITEMS.register("moss_knot", () -> new com.ironspellgrimoire.item.SignatureItem("The Fen Matron",
+            "After 8 s without being hit, you heal 2 health every 4 s.", "", "Wet, warm, and still growing.", null));
+    public static final RegistryObject<Item> SLATE_RING = ITEMS.register("slate_ring", () -> new com.ironspellgrimoire.item.SignatureItem("The Peak Warden",
+            "+2 armour and 15% knockback resistance.", "", "Heavy as the mountain's patience.", null));
+    public static final RegistryObject<Item> SUN_SHARD = ITEMS.register("sun_shard", () -> new com.ironspellgrimoire.item.SignatureItem("The Sun Herald",
+            "Your spells do 8% more under the open daytime sky.", "", "Still warm, long after sunset.", null));
+    public static final RegistryObject<Item> RIME_PIN = ITEMS.register("rime_pin", () -> new com.ironspellgrimoire.item.SignatureItem("The Hoarfrost Jarl",
+            "Your melee hits slow the foe by 20% for 2 s.", "", "It never quite thaws.", null));
+    public static final RegistryObject<Item> LANTERN_EYE = ITEMS.register("lantern_eye", () -> new com.ironspellgrimoire.item.SignatureItem("The Deepwarden",
+            "You do 15% more damage while you stand in the dark.", "", "It sees what the dark keeps.", null));
+    /** A fallen star's heart (server/FallingStars): crack it open for a Mana Core of tier II or III. */
+    public static final RegistryObject<Item> STAR_CORE = ITEMS.register("star_core", () -> new com.ironspellgrimoire.item.StarCoreItem());
     public static final RegistryObject<Item> LICHT_SPAWN_EGG = ITEMS.register("licht_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.LICHT, 0xF0EEE0, 0xE8C860, new Item.Properties()));
     public static final RegistryObject<Item> REVENANT_SPAWN_EGG = ITEMS.register("revenant_spawn_egg",
@@ -310,6 +325,7 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(ELVEN_WIND_CHARM.get()));
                 for (var r : java.util.List.of(PRISM_RIBBON, WARLORDS_STANDARD, LAST_BELL, LEDGER_COIN, RIVAL_TOKEN)) out.accept(new ItemStack(r.get()));
                 for (var r : SIGNATURES) out.accept(new ItemStack(r.get()));
+                for (var r : java.util.List.of(MOSS_KNOT, SLATE_RING, SUN_SHARD, RIME_PIN, LANTERN_EYE, STAR_CORE)) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(new ItemStack(MANA_CORE.get()));

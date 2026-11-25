@@ -26,13 +26,27 @@ public final class WorldGrowth {
             "Champions stir twice as often in the far lands.",
             "Packs of the restless now gather even near spawn.",
             "Overseer elites now walk the far lands.",
+            "",
             ""};
 
     static final class Data extends SavedData {
         int mask;
-        static Data load(CompoundTag t) { Data d = new Data(); d.mask = t.getInt("Mask"); return d; }
-        @Override public CompoundTag save(CompoundTag t) { t.putInt("Mask", mask); return t; }
+        boolean sovereign;
+        static Data load(CompoundTag t) { Data d = new Data(); d.mask = t.getInt("Mask"); d.sovereign = t.getBoolean("Sovereign"); return d; }
+        @Override public CompoundTag save(CompoundTag t) { t.putInt("Mask", mask); t.putBoolean("Sovereign", sovereign); return t; }
     }
+
+    /** The Cinder Sovereign has fallen here once: from now on it comes back in its second form (the Ashen Crown). */
+    public static boolean sovereignFallen(MinecraftServer s) { return s != null && data(s).sovereign; }
+    static void sovereignFell(MinecraftServer s) {
+        Data d = data(s);
+        if (d.sovereign) return;
+        d.sovereign = true; d.setDirty();
+        Component c = Component.literal("THE WORLD STIRS  ").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD)
+                .append(Component.literal("The Cinder Sovereign has fallen - but its fire is not out. When it rises again, it will burn white.").withStyle(ChatFormatting.LIGHT_PURPLE));
+        for (var p : s.getPlayerList().getPlayers()) p.sendSystemMessage(c);
+    }
+    public static void testSovereign(MinecraftServer s, boolean v) { data(s).sovereign = v; data(s).setDirty(); }
 
     static Data data(MinecraftServer s) { return s.overworld().getDataStorage().computeIfAbsent(Data::load, Data::new, "isg_world_growth"); }
 
@@ -40,7 +54,7 @@ public final class WorldGrowth {
 
     /** A bounty boss down: the first time on this server, the world changes and everyone hears. */
     static void bossFell(MinecraftServer s, int boss) {
-        if (s == null || boss < 0 || boss >= 7) return;
+        if (s == null || boss < 0 || boss >= WAKES.length) return;
         Data d = data(s);
         if ((d.mask & (1 << boss)) != 0) return;
         d.mask |= 1 << boss;
