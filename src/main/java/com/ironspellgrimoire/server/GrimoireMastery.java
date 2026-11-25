@@ -83,6 +83,12 @@ public final class GrimoireMastery {
         return ultimates().contains(i < 0 ? id : id.substring(i + 1)) || Awakening.isAwakenedSpell(id);
     }
 
+    /** Whether a spell id (with or without the mod's prefix) is a grimoire's ultimate. */
+    public static boolean isUltimateId(String id) {
+        int i = id.indexOf(':');
+        return ultimates().contains(i < 0 ? id : id.substring(i + 1));
+    }
+
     private static java.util.Set<String> ultimates() {
         if (ULTIMATES == null) {
             java.util.Set<String> u = new java.util.HashSet<>();

@@ -62,6 +62,12 @@ public class CodexScreen extends Screen {
          "Some hostile mobs are elites: a coloured name and an icon over the head for each trait they carry. They hit harder in their own ways, and pay better - more XP and more drops.",
          "## Threat",
          "The better your grimoire, the more dangerous the mobs near you. Your threat rank (0 to 5) comes from the best grimoire you carry: a skull with pips over a mob shows its rank. Each rank gives a mob 20% more health and 10% more damage.",
+         "## Dangerous lands",
+         "The land sets a rank of its own: within 1000 blocks of the world's spawn, nothing; past that rank 1, from 2000 rank 2, from 3000 rank 3 and from 5000 rank 4. The Nether counts one band higher and the End starts at 3. A mob takes the higher of the land's rank and yours. You're told when you cross into a new band.",
+         "## Packs",
+         "Now and then a mob leads a pack: a gold ring at its feet, three of its kind beside it. While the leader lives, its pack hits 20% harder and moves faster. Bring the leader down and the pack scatters.",
+         "## Elites that learn",
+         "At rank 4 and 5 an elite may have learned your magic: it takes 35% less from the school you cast most. Switching books for a fight works.",
          "## Champions",
          "At threat 4 and 5 a few elites are champions, with a purple name and a trait no lesser elite has. A champion is worth a bounty star.",
          "## The traits you've met"},
@@ -74,11 +80,15 @@ public class CodexScreen extends Screen {
          "## Your record"},
         {"The World",
          "## Rifts",
-         "Now and then a crack of light tears open near you and stays for a day. Step in to enter a dungeon of five to eight rooms under one or two laws. The relic at the end is found nowhere else.",
+         "Now and then a crack of light tears open near you and stays for a day. Step in to enter a dungeon of five to eight rooms under one or two laws. The relic at the end is found nowhere else. As you climb the boss tiers, rifts run deeper - two more rooms a tier, a mini-boss every third room, and better Mana Cores the deeper you go.",
+         "## Wild families",
+         "Three families live in the wild, each a grunt, a caster and a leader. The Mirefolk of the marshes (Bog Crawlers, Mire Hexers and the Fen Matron), the Stonefolk of the mountains (Scree Brutes, Stonecallers and the Peak Warden) and the Sandwraiths of the deserts and badlands (Dune Stalkers, Sandwraiths and the Sun Herald). A caster marks the ground under you, then strikes there a second later - step out. A leader rallies its family every 10 seconds, and has a move of its own. Leaders sometimes leave something the Grimoire Altar binds.",
+         "## The Gloamstalker",
+         "At night, a mage of threat rank 3 or more may be hunted. It steps behind you every 8 seconds, shrugs off 40% of the school of magic you cast most, and fades at dawn. It pays well.",
          "## Quest Board",
          "Every village gets a Quest Board. Take one quest at a time: hooded mages, monster hunts, rift watches, great beasts and lost grimoire pages. The tracker shows the way.",
          "## Wanted Posters",
-         "The Poster Board hands out bounties on the bosses: find the boss within three days and bring it down for merit stars and grimoire upgrades.",
+         "The Poster Board hands out bounties on the bosses: find the boss's lair within three days and bring it down for merit stars and grimoire upgrades. The Bosses chapter has the rest.",
          "## The world boss",
          "About once a real day the Cinder Sovereign rises somewhere in the world and every mage is told where. All who hurt it share the reward.",
          "## The Grimoire Library",
@@ -115,6 +125,23 @@ public class CodexScreen extends Screen {
          "A stance or setting with no end (a Vector stance, a Fuse mode, the demon Restrained or Released) says \"active\" instead of a time, until you change it back.",
          "## The last ten seconds",
          "A timer blinks, like a potion's, in its last ten seconds."},
+        {"Bosses",
+         "The bounty bosses come in three tiers. Posters only show the tiers you've reached.",
+         "## Tiers",
+         "Tier I - the Revenant and the Curse Witch - is open from the start. Bring one down and tier II opens: the Ossuarch, Rhya and the Beast of Despair. Bring one of those down and the Poster Board offers the Gate - two gatekeepers, one after another. Pass it and tier III opens: Licht, and with 50 stars the poster with no name.",
+         "## Lairs",
+         "Reach the place on the poster and the boss's lair tears open there: step in, and it waits in the next room. Fall and you're thrown back out; the lair stays open while the poster lasts, and the boss rises again at full health.",
+         "## How they fight you",
+         "A boss grows with you: 10% more health for each threat rank of whoever took the poster, and 60% more for every other mage who comes to the fight. It fights in stages - two for tier I, three for tier II, four and a Last Stand for tier III - and each stage throws you back and makes it faster. Three minutes in, it enrages. From threat rank 3 it has the Reckoning: a ring under one of you, then a burst.",
+         "## Weak points",
+         "Every 15 seconds a gold light opens on a boss's back or side for 3 seconds. Hit it from that side and the boss is staggered: it can't move or strike for 2.5 seconds and takes 50% more.",
+         "## Memory",
+         "A boss you've beaten remembers how - melee, spells or projectiles - and guards against it for the first 30 seconds of the rematch.",
+         "## Rewards",
+         "Everyone who hurt the boss gets the kill in their log, mastery experience and a Mana Core of its tier. Each boss has a signature drop - certain for whoever took the poster, a good chance for the rest. A bounty streak pays up to 50% more stars; a poster that burns up or is torn up resets it. Beat a boss three times and its posters turn Hardened: harder, but paying twice, with the upgraded signature drop.",
+         "## The world grows",
+         "The first time each boss falls anywhere on the server, something new wakes in the world - packs near spawn, bigger packs, new elite traits at rank 4 and 5, more champions. Everyone is told.",
+         "## Your log"},
         {"Server Rules",
          "Your server can change how the mod plays in its config file (iron_spell_grimoire-common.toml).",
          "## Player versus player",
@@ -182,6 +209,7 @@ public class CodexScreen extends Screen {
             if (ch[0].equals("Elite Mobs")) elites(out, w);
             if (ch[0].equals("Rivals")) rivals(out, w);
             if (ch[0].equals("Your Grimoire")) yours(out, w);
+            if (ch[0].equals("Bosses")) bosses(out, w);
         } else if (e <= -2) {
             GrimoireMastery.Book b = GrimoireMastery.BOOKS.get(-e - 2);
             pageIcon = new ItemStack(b.item().get());
@@ -235,6 +263,34 @@ public class CodexScreen extends Screen {
             float txp = com.ironspellgrimoire.server.BookTree.xp(b);
             para(out, com.ironspellgrimoire.server.BookTree.TREE[k] + ": level " + com.ironspellgrimoire.server.BookTree.level(txp) + " (" + com.ironspellgrimoire.server.BookTree.GROWTH[k].toLowerCase() + ": " + (int) txp + "), "
                     + (com.ironspellgrimoire.server.BookTree.points(b) - com.ironspellgrimoire.server.BookTree.spent(b)) + " of " + com.ironspellgrimoire.server.BookTree.points(b) + " points to spend. G, then the wheel's middle, opens it.", w);
+        }
+    }
+
+    /** The Bosses chapter's log: your tier, the Gate, your streak, the land's danger, then each boss - its tier, your kills, best time, falls, what it remembers, its signature drop. */
+    private void bosses(List<Line> out, int w) {
+        var d = BossLogClient.data;
+        int tier = Math.max(1, d.getInt("tier"));
+        para(out, "Your tier: " + com.ironspellgrimoire.server.BossLadder.TIER_NAME[tier] + ".  " + (d.getBoolean("gate") ? "The Gate: passed." : d.getBoolean("gateOpen") ? "The Gate: on offer at any Poster Board." : "")
+                + "  Bounty streak: " + d.getInt("streak") + (d.getInt("streak") > 1 ? " (+" + Math.round((com.ironspellgrimoire.server.BossLadder.streakMult(d.getInt("streak")) - 1) * 100) + "% stars)" : "") + ".", w);
+        int danger = Math.max(0, Math.min(4, d.getInt("danger")));
+        para(out, "Where you stand: " + com.ironspellgrimoire.server.EliteMobs.DANGER_TEXT[danger] + ".  Your threat rank: " + d.getInt("rank") + ".", w);
+        int[] k = BossLogClient.arr("k"), b = BossLogClient.arr("b"), f = BossLogClient.arr("d"), m = BossLogClient.arr("m");
+        int[] order = {4, 5, 0, 2, 1, 3, 6};
+        for (int i : order) {
+            int t = com.ironspellgrimoire.server.BossLadder.TIER[i];
+            String name = i == 6 ? "Licht, the Unbound" : com.ironspellgrimoire.server.Bounties.NAMES[i];
+            if (t > tier && k[i] == 0) { for (var l : font.split(Component.literal("Tier " + com.ironspellgrimoire.server.BossLadder.TIER_NAME[t] + " - ??? (not open yet)"), w)) out.add(new Line(l, INK_SOFT, false)); continue; }
+            para(out, "## " + name + "  (tier " + com.ironspellgrimoire.server.BossLadder.TIER_NAME[t] + ")", w);
+            String rec = "Brought down " + k[i] + "  -  best time " + (b[i] > 0 ? com.ironspellgrimoire.server.BossRules.time(b[i]) : "-") + "  -  fell to it " + f[i]
+                    + (k[i] >= com.ironspellgrimoire.server.BossLadder.HARDENED_AFTER ? "  -  its posters are Hardened" : "");
+            for (var l : font.split(Component.literal(rec).withStyle(ChatFormatting.BOLD), w)) out.add(new Line(l, INK, false));
+            if (m[i] > 0) for (var l : font.split(Component.literal("It remembers you beat it with " + com.ironspellgrimoire.server.BossLadder.HOW[m[i]] + ".").withStyle(ChatFormatting.ITALIC), w)) out.add(new Line(l, INK_SOFT, false));
+            ItemStack sig = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.SIGNATURES.get(i).get());
+            List<Component> tip = new ArrayList<>();
+            sig.getItem().appendHoverText(sig, null, tip, net.minecraft.world.item.TooltipFlag.NORMAL);
+            String what = tip.size() > 1 ? tip.get(1).getString() : "";
+            for (var l : font.split(Component.literal("Signature: " + sig.getHoverName().getString() + " - " + what), w)) out.add(new Line(l, INK, false));
+            out.add(new Line(FormattedCharSequence.EMPTY, INK, false));
         }
     }
 
@@ -304,6 +360,9 @@ public class CodexScreen extends Screen {
         if (i >= 0) { select(i); return true; }
         return super.mouseClicked(mx, my, btn);
     }
+
+    /** For the pictures (UiShots): scroll the page down by rows. */
+    public void scrollPage(int rows) { pageScroll = Mth.clamp(pageScroll + rows, 0, Math.max(0, page.size() - pageRows())); }
 
     @Override
     public boolean mouseScrolled(double mx, double my, double d) {

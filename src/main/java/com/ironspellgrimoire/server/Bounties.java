@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -78,6 +79,8 @@ public final class Bounties {
     }
 
     public static int stars(ServerPlayer p) { return p.getPersistentData().getInt(STARS); }
+    /** Whether this player is still hunting this bounty. */
+    static boolean active(ServerPlayer p, int id) { CompoundTag b = bounty(p); return b != null && b.getInt("Id") == id && b.getInt("State") < STATE_DONE; }
 
     public static void addStars(ServerPlayer p, int n) { p.getPersistentData().putInt(STARS, stars(p) + n); sync(p); }
 
@@ -98,6 +101,7 @@ public final class Bounties {
         t.putString("Dim", p.level().dimension().location().toString());
         t.putLong("Deadline", p.level().getGameTime() + LIMIT);
         t.putInt("State", STATE_HUNT);
+        if (boss < BossLadder.BOSSES && BossLadder.hardenedNext(p, boss)) t.putBoolean("Hardened", true);
         p.getPersistentData().put(TAG, t);
         return t;
     }
@@ -161,8 +165,9 @@ public final class Bounties {
             return;
         }
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        boolean secret = stars(p) >= SECRET_AT && r.nextInt(5) == 0;   // 50 stars: now and then, a poster with no name on it
-        give(p, Vec3.atCenterOf(pos), secret ? SECRET : r.nextInt(SECRET));
+        boolean secret = stars(p) >= SECRET_AT && BossLadder.tier(p) >= 3 && r.nextInt(5) == 0;   // 50 stars and tier III: now and then, a poster with no name on it
+        java.util.List<Integer> open = allowedBosses(p);
+        give(p, Vec3.atCenterOf(pos), secret ? SECRET : open.get(r.nextInt(open.size())));
     }
 
     /** Tearing up your poster: the bounty is dropped, with no penalty, and the board has a new one sooner. */
@@ -174,6 +179,8 @@ public final class Bounties {
             Entity m = sl.getEntity(b.getUUID("BossUUID"));
             if (m != null) { FxSend.ring(sl, 18, m.position().add(0, 1, 0), 2f, 0.3f, 0.1f, 12); m.discard(); }
         }
+        if (b.contains("Lair")) Rifts.closeLair(p.server, b.getInt("Lair"));
+        BossLadder.streakLost(p);
         Boards.log(p, Boards.BOUNTY, Boards.GAVE_UP, b.getInt("Boss") == SECRET ? "Licht, the Unbound" : NAMES[Math.min(NAMES.length - 1, b.getInt("Boss"))], 0);
         removePoster(p, b.getInt("Id"));
         p.getPersistentData().remove(TAG);
@@ -194,6 +201,13 @@ public final class Bounties {
         b.putInt("Mods", o.getInt("Mods")); b.putInt("X", o.getInt("X")); b.putInt("Z", o.getInt("Z"));
         p.getPersistentData().put(TAG, b);
         deliver(p, b);
+    }
+
+    /** The named bosses this player's tier allows on a poster (BossLadder). */
+    static java.util.List<Integer> allowedBosses(ServerPlayer p) {
+        java.util.List<Integer> l = new java.util.ArrayList<>();
+        for (int i = 0; i < SECRET; i++) if (BossLadder.allowed(p, i)) l.add(i);
+        return l;
     }
 
     static boolean hunting(ServerPlayer p) { return bounty(p) != null; }
@@ -240,15 +254,32 @@ public final class Bounties {
         if (now > b.getLong("Deadline")) { expire(p, b); return; }
         if (state == STATE_HUNT && sl.dimension().location().toString().equals(b.getString("Dim"))) {
             double dx = b.getInt("X") + 0.5 - p.getX(), dz = b.getInt("Z") + 0.5 - p.getZ();
-            if (dx * dx + dz * dz < 40 * 40) spawn(p, sl, b);
+            if (dx * dx + dz * dz < 40 * 40) lair(p, sl, b);
+        }
+        if (state == STATE_FOUND && b.contains("Lair") && !Rifts.lairOpen(p.server, b.getInt("Lair"))) {   // the lair is gone, the boss still out there: it opens again
+            b.remove("Lair");
+            b.putInt("State", STATE_HUNT);
         }
         if (p.tickCount % 200 == 0) sync(p);
     }
 
-    private static void spawn(ServerPlayer p, ServerLevel sl, CompoundTag b) {
+    /** The sighting reached: the boss's lair opens there - a rift of its own, the fight inside it (Rifts, room LAIR). */
+    private static void lair(ServerPlayer p, ServerLevel sl, CompoundTag b) {
         int x = b.getInt("X"), z = b.getInt("Z");
         int y = sl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+        int boss = b.getInt("Boss");
+        int id = Rifts.openLair(p, new Vec3(x + 0.5, y, z + 0.5), b);
+        b.putInt("State", STATE_FOUND);
+        b.putInt("Lair", id);
+        sl.playSound(null, BlockPos.containing(x, y, z), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 2f, 0.8f);
+        p.displayClientMessage(Component.literal("You found " + (boss == SECRET ? "Licht, the Unbound" : NAMES[boss]) + "'s lair - step into the rift.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), true);
+        sync(p);
+    }
+
+    /** The boss itself, at {@code at} (in its lair): owner may be offline - the bounty's own tag says who it belongs to. */
+    static Mob spawnBoss(ServerLevel sl, Vec3 at, CompoundTag b, java.util.UUID ownerId) {
         int boss = b.getInt("Boss"), mods = b.getInt("Mods");
+        boolean hard = b.getBoolean("Hardened");
         EntityType<? extends Mob> type = switch (boss) {
             case 0 -> AddonEntities.ZENON.get();
             case 1 -> AddonEntities.BEAST_OF_DESPAIR.get();
@@ -259,10 +290,10 @@ public final class Bounties {
             default -> AddonEntities.LICHT.get();   // ??? - Licht, unbound
         };
         Mob m = type.create(sl);
-        if (m == null) return;
-        m.moveTo(x + 0.5, y, z + 0.5, ThreadLocalRandom.current().nextFloat() * 360f, 0);
+        if (m == null) return null;
+        m.moveTo(at.x, at.y, at.z, 180f, 0);
         m.finalizeSpawn(sl, sl.getCurrentDifficultyAt(m.blockPosition()), MobSpawnType.EVENT, null, null);
-        m.getPersistentData().putUUID("isg_bounty_owner", p.getUUID());
+        m.getPersistentData().putUUID("isg_bounty_owner", ownerId);
         m.getPersistentData().putInt("isg_bounty_mods", mods);
         m.getPersistentData().putInt("isg_bounty_id", b.getInt("Id"));
         if ((mods & ENRAGED) != 0) {
@@ -275,35 +306,40 @@ public final class Bounties {
         }
         if (boss == SECRET) unbind(m);
         // its modifiers written on its boss bar, so they can be seen in the fight
-        Component bar = Component.literal(boss == SECRET ? "Licht, the Unbound" : NAMES[boss]).append(Component.literal("  [").withStyle(ChatFormatting.GRAY))
+        Component bar = Component.literal((hard ? "Hardened " : "") + (boss == SECRET ? "Licht, the Unbound" : NAMES[boss])).append(Component.literal("  [").withStyle(ChatFormatting.GRAY))
                 .append(modsText(mods)).append(Component.literal("]").withStyle(ChatFormatting.GRAY));
         if (m instanceof com.ironspellgrimoire.entity.AddonBoss ab) ab.setBarName(bar);
         else if (m instanceof com.ironspellgrimoire.entity.Zenon zn) zn.setBarName(bar);
         else if (m instanceof com.ironspellgrimoire.entity.BeastOfDespair bd) bd.setBarName(bar);
         else if (m instanceof com.ironspellgrimoire.entity.Rhya rh) rh.setBarName(bar);
         sl.addFreshEntity(m);
+        ServerPlayer owner = sl.getServer().getPlayerList().getPlayer(ownerId);
+        BossRules.setup(m, owner, boss, hard);
         if ((mods & WOUNDED) != 0) m.setHealth(m.getMaxHealth() * 0.7f);
+        java.util.List<Mob> escort = new java.util.ArrayList<>();
         if ((mods & ESCORTED) != 0) {
             for (int i = 0; i < 3; i++) {
                 Mob g = AddonEntities.MAGE.get().create(sl);
                 if (g == null) continue;
                 double a = i * Math.PI * 2 / 3;
-                int gx = (int) Math.floor(x + Math.cos(a) * 4), gz = (int) Math.floor(z + Math.sin(a) * 4);
-                g.moveTo(gx + 0.5, sl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, gx, gz), gz + 0.5, 0, 0);
+                g.moveTo(at.x + Math.cos(a) * 4, at.y, at.z + Math.sin(a) * 4, 0, 0);
                 g.finalizeSpawn(sl, sl.getCurrentDifficultyAt(g.blockPosition()), MobSpawnType.EVENT, null, null);
                 g.setPersistenceRequired();
                 sl.addFreshEntity(g);
+                escort.add(g);
             }
         }
-        b.putInt("State", STATE_FOUND);
-        b.putUUID("BossUUID", m.getUUID());
-        Vec3 at = m.position();
+        if (owner != null) {
+            CompoundTag live = bounty(owner);
+            if (live != null && live.getInt("Id") == b.getInt("Id")) live.putUUID("BossUUID", m.getUUID());
+        }
         FxSend.ring(sl, 18, at.add(0, 0.1, 0), 0.5f, 8f, 0.2f, 16);
         FxSend.shake(sl, at, 0.6f, 12, 40);
         sl.playSound(null, m.blockPosition(), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 2f, 1f);
-        p.displayClientMessage(Component.literal("You found " + (boss == SECRET ? "Licht, the Unbound" : NAMES[boss]) + "!").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), true);
-        sync(p);
+        lastEscort = escort;
+        return m;
     }
+    static java.util.List<Mob> lastEscort = java.util.List.of();
 
     private static final UUID UNBOUND_HP = UUID.fromString("b0a7e000-0000-4000-8000-0000000000c3");
 
@@ -343,7 +379,9 @@ public final class Bounties {
         int mods = b.getInt("Mods"), boss = b.getInt("Boss");
         int hard = Integer.bitCount(mods & ~WOUNDED);
         boolean wounded = (mods & WOUNDED) != 0;
-        int stars = 3 + hard * 2 - (wounded ? 1 : 0) + (boss == SECRET ? 15 : 0) + GrimoireUpgrades.bonusStars(p);
+        boolean hardened = b.getBoolean("Hardened");
+        float mult = BossLadder.streakUp(p) * (hardened ? 2f : 1f);
+        int stars = Math.round((3 + hard * 2 - (wounded ? 1 : 0) + (boss == SECRET ? 15 : 0)) * mult) + GrimoireUpgrades.bonusStars(p);
         p.getPersistentData().putInt(STARS, stars(p) + stars);
         ItemStack trophy = poster(b);
         CompoundTag pt = trophy.getOrCreateTag().getCompound("Bounty");
@@ -352,14 +390,14 @@ public final class Bounties {
         trophy.getOrCreateTag().put("Bounty", pt);
         removePoster(p, b.getInt("Id"));
         giveItem(p, trophy);
-        giveItem(p, new ItemStack(Items.EMERALD, 8 + hard * 6 - (wounded ? 3 : 0)));
+        giveItem(p, new ItemStack(Items.EMERALD, (8 + hard * 6 - (wounded ? 3 : 0)) * (hardened ? 2 : 1)));
         if (ThreadLocalRandom.current().nextInt(3) == 0 || hard >= 2)
             giveItem(p, new ItemStack((ThreadLocalRandom.current().nextBoolean() ? AddonItemRegistry.RUNED_SPINE : AddonItemRegistry.WARDING_GLYPH).get()));   // (Devil Shards come only from Zenon)
         if (boss == SECRET) {   // the secret poster: a relic as well
             var relics = AddonItemRegistry.RELICS;
             giveItem(p, new ItemStack(relics.get(ThreadLocalRandom.current().nextInt(relics.size())).get()));
         }
-        GrimoireMastery.bountyXp(p, 600 + hard * 300);
+        GrimoireMastery.bountyXp(p, (600 + hard * 300) * (hardened ? 2 : 1));
         Boards.log(p, Boards.BOUNTY, Boards.DONE, boss == SECRET ? "Licht, the Unbound" : NAMES[boss], stars);
         p.getPersistentData().remove(TAG);
         p.getPersistentData().putLong(NEXT, p.level().getGameTime() + DAY);
@@ -367,7 +405,8 @@ public final class Bounties {
         sl.playSound(null, p.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1f, 1f);
         p.sendSystemMessage(Component.literal("SUBJUGATED: ").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD)
                 .append(Component.literal(boss == SECRET ? "Licht, the Unbound" : NAMES[boss]).withStyle(ChatFormatting.GOLD))
-                .append(Component.literal("  +" + stars + " merit stars (" + stars(p) + " total)").withStyle(ChatFormatting.YELLOW)));
+                .append(Component.literal("  +" + stars + " merit stars (" + stars(p) + " total)").withStyle(ChatFormatting.YELLOW))
+                .append(Component.literal(BossLadder.streak(p) > 1 ? "  streak " + BossLadder.streak(p) : "").withStyle(ChatFormatting.GOLD)));
         FxPacket k = new FxPacket();   // the tracker shows "Subjugated" for a moment, then clears
         k.shape = 67; k.id = b.getInt("Id"); k.sweep = boss + 1; k.h = mods; k.a0 = STATE_DONE; k.a1 = stars(p); k.life = 0;
         k.c = new Vec3(b.getInt("X"), 0, b.getInt("Z"));
@@ -384,6 +423,8 @@ public final class Bounties {
                 m.discard();
             }
         }
+        if (b.contains("Lair")) Rifts.closeLair(p.server, b.getInt("Lair"));
+        BossLadder.streakLost(p);
         removePoster(p, b.getInt("Id"));
         p.getPersistentData().remove(TAG);
         p.getPersistentData().putLong(NEXT, sl.getGameTime() + DAY / 2);

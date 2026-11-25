@@ -41,9 +41,12 @@ public final class StarForge {
 
     public static final int MUT_ECHO = 1, MUT_SIPHON = 2, MUT_BLAST = 3, MUT_FROST = 4, MUT_EXECUTE = 5, MUT_LEECH = 6, MUT_CHAIN = 7, MUT_WEAKEN = 8;
     public static final String[] MUT_NAMES = {"", "Echo", "Siphon", "Blast", "Frost", "Execute", "Leech", "Chain", "Weaken"};
-    public static final String[] MUT_TEXT = {"", "Each hit lands again for 40%.", "15% of the damage returns as mana.",
-            "Hits burst: 30% to foes near the target.", "Hits slow foes by 30% for 2 s.", "+40% damage to foes below 30% health.", "5% of the damage heals you.",
-            "Hits leap to one more foe for 50%.", "Hit foes strike 20% softer for 3 s."};
+    public static final String[] MUT_TEXT = {"", "Each hit lands again for 40%. (Tier III core)", "15% of the damage returns as mana.",
+            "Hits burst: 30% to foes near the target. (Tier II core)", "Hits slow foes by 30% for 2 s.", "+40% damage to foes below 30% health. (Tier II core)", "5% of the damage heals you.",
+            "Hits leap to one more foe for 50%. (Tier III core)", "Hit foes strike 20% softer for 3 s."};
+
+    /** The Mana Core tier each mutation needs: Siphon, Frost, Leech and Weaken any; Blast and Execute tier II; Echo and Chain tier III. */
+    public static final int[] MUT_TIER = {1, 3, 1, 2, 1, 2, 1, 3, 1};
 
     public static int boostCost(int toLevel) { return 10 * toLevel; }
 
@@ -111,9 +114,11 @@ public final class StarForge {
                 try { m = Integer.parseInt(arg.substring(bar + 1)); } catch (NumberFormatException e) { return; }
                 if (m < 1 || m >= MUT_NAMES.length || !GrimoireMastery.bookOf(b).unlocks().containsKey(id)) return;
                 if (t.getCompound("StarBoost").getInt(id) < MAX_BOOST || t.getCompound("StarMut").getInt(id) != 0) return;
-                ItemStack core = null;
-                for (ItemStack s : p.getInventory().items) if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_CORE.get())) { core = s; break; }
-                if (core == null) { p.displayClientMessage(Component.literal("You need a Mana Core - bosses drop them.").withStyle(ChatFormatting.RED), true); return; }
+                int need = MUT_TIER[m];
+                ItemStack core = null;   // the lowest tier that will do
+                for (ItemStack s : p.getInventory().items) if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_CORE.get()) && BossRules.coreTier(s) >= need
+                        && (core == null || BossRules.coreTier(s) < BossRules.coreTier(core))) core = s;
+                if (core == null) { p.displayClientMessage(Component.literal(need == 1 ? "You need a Mana Core - bosses drop them." : MUT_NAMES[m] + " needs a tier " + (need == 2 ? "II" : "III") + " Mana Core - from a tier " + (need == 2 ? "II" : "III") + " boss, or deep in a rift.").withStyle(ChatFormatting.RED), true); return; }
                 if (!p.isCreative()) core.shrink(1);
                 CompoundTag mut = t.getCompound("StarMut");
                 mut.putInt(id, m);

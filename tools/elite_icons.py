@@ -6,7 +6,7 @@ import os
 from PIL import Image, ImageDraw
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "src/main/resources/assets/iron_spell_grimoire/textures/gui/elite_icons.png")
-FAM = {"def": (120, 160, 200), "off": (220, 70, 60), "mag": (170, 100, 230), "mov": (90, 200, 110), "die": (235, 160, 50), "champ": (230, 80, 220)}
+FAM = {"def": (120, 160, 200), "off": (220, 70, 60), "mag": (170, 100, 230), "mov": (90, 200, 110), "die": (235, 160, 50), "champ": (230, 80, 220), "late": (240, 200, 80)}
 W, L, D = (240, 236, 228), (200, 196, 188), (20, 16, 14)
 S = 4   # drawn at 64 px, then reduced, for clean edges
 
@@ -22,7 +22,7 @@ def P(*xy): return [(x * S, y * S) for x, y in zip(xy[::2], xy[1::2])]
 
 
 def draw(i):
-    fam = ["def", "def", "def", "off", "off", "off", "off", "mag", "mag", "mag", "mov", "mov", "mov", "mov", "die", "die", "die", "die", "champ", "champ"][i]
+    fam = ["def", "def", "def", "off", "off", "off", "off", "mag", "mag", "mag", "mov", "mov", "mov", "mov", "die", "die", "die", "die", "champ", "champ", "late", "late", "late"][i]
     im, g = tile(fam)
     c = FAM[fam]
     if i == 0: g.polygon(P(8, 3, 13, 4.5, 12.5, 9, 8, 13, 3.5, 9, 3, 4.5), fill=W); g.line(P(8, 4.5, 8, 11.5), fill=c, width=S)            # shield
@@ -68,6 +68,15 @@ def draw(i):
     if i == 19:
         g.ellipse((4 * S, 2 * S, 12 * S, 14 * S), outline=W, width=S); g.ellipse((6 * S, 4.5 * S, 10 * S, 11.5 * S), fill=(110, 60, 170))
         g.arc((5 * S, 3.5 * S, 11 * S, 12.5 * S), 40, 200, fill=c, width=S)   # a rift
+    if i == 20:   # Overseer: an eye in a ring
+        g.ellipse((1.5 * S, 1.5 * S, 14.5 * S, 14.5 * S), outline=L, width=S // 2 + 1)
+        g.ellipse((3.5 * S, 5.5 * S, 12.5 * S, 10.5 * S), fill=W); g.ellipse((6.5 * S, 6 * S, 9.5 * S, 10 * S), fill=c)
+    if i == 21:   # Unyielding: a wall, and a fifth of a bar
+        for k in range(3): g.rectangle((3 * S, (3 + k * 3.2) * S, 13 * S, (5.6 + k * 3.2) * S), fill=W if k != 1 else L)
+        g.rectangle((3 * S, 12.6 * S, 5 * S, 13.8 * S), fill=c)
+    if i == 22:   # Blinker: a figure, a dashed arc behind it
+        g.ellipse((9 * S, 3 * S, 12 * S, 6 * S), fill=W); g.polygon(P(8.5, 13.5, 9.2, 7, 11.8, 7, 12.5, 13.5), fill=W)
+        for a in range(150, 300, 30): g.arc((1.5 * S, 3 * S, 13.5 * S, 15 * S), a, a + 14, fill=c, width=S)
     return im.resize((16, 16), Image.LANCZOS)
 
 
@@ -85,7 +94,7 @@ def skull(rank):
 
 
 atlas = Image.new("RGBA", (128, 64), (0, 0, 0, 0))
-for i in range(20): atlas.paste(draw(i), ((i % 8) * 16, (i // 8) * 16))
+for i in range(23): atlas.paste(draw(i), ((i % 8) * 16, (i // 8) * 16))
 for r in range(6): atlas.paste(skull(r), (((24 + r) % 8) * 16, ((24 + r) // 8) * 16))
 atlas.save(OUT)
 print("elite icons:", OUT)

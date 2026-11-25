@@ -28,7 +28,7 @@ public final class BossCores {
         LivingEntity b = e.getEntity();
         if (!(b.level() instanceof ServerLevel sl) || !isBoss(b.getType()) || !(e.getSource().getEntity() instanceof ServerPlayer killer)) return;
         if (Rifts.isShade(b)) { finisher(sl, b, killer, e.getSource()); return; }   // a rift's shade: the finish, but no core or trophy
-        b.spawnAtLocation(new ItemStack(AddonItemRegistry.MANA_CORE.get()), 1f);
+        if (!BossRules.tracked(b)) b.spawnAtLocation(new ItemStack(AddonItemRegistry.MANA_CORE.get()), 1f);   // a bounty boss: every mage in the fight gets a core of its tier (BossRules)
         ItemStack trophy = GrimoireUpgrades.trophy(b.getType());   // and its own grimoire upgrade
         if (!trophy.isEmpty()) b.spawnAtLocation(trophy, 1.4f);
         FxSend.ring(sl, Fx.GOLD, b.position().add(0, 1, 0), 0.2f, 2.4f, 0.08f, 16);

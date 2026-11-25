@@ -40,11 +40,14 @@ public final class MageSetup {
         e.put(AddonEntities.SHADOW_SOLDIER.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());
         e.put(AddonEntities.OATHBOUND_KNIGHT.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());
         e.put(AddonEntities.SHADOW_RAVENER.get(), com.ironspellgrimoire.entity.ShadowSoldier.attributes().build());
+        for (var en : AddonEntities.FOLK.entrySet()) e.put(en.getValue().get(), en.getKey().attributes().build());
     }
 
     @SubscribeEvent
     public static void spawns(SpawnPlacementRegisterEvent e) {
         e.register(AddonEntities.MAGE.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        for (var t : AddonEntities.FOLK.values())
+            e.register(t.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 }

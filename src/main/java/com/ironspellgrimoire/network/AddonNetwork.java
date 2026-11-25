@@ -6,7 +6,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class AddonNetwork {
-    private static final String PROTOCOL = "13";   // 13: the Bound Demon   // 12: the Vector, Quiet Fuse and Foreseen trees   // 11: the Grimoire of Ill Omen   // 10: the Meridian Grimoire   // 9: rivals   // 8: elite mobs   // 7: batched effects (FxBatchPacket)   // 2: compact FxPacket encoding (server and client must match)
+    private static final String PROTOCOL = "14";   // 14: the boss ladder   // 13: the Bound Demon   // 12: the Vector, Quiet Fuse and Foreseen trees   // 11: the Grimoire of Ill Omen   // 10: the Meridian Grimoire   // 9: rivals   // 8: elite mobs   // 7: batched effects (FxBatchPacket)   // 2: compact FxPacket encoding (server and client must match)
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(IronSpellGrimoire.MODID, "main"),
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
@@ -84,6 +84,7 @@ public class AddonNetwork {
         CHANNEL.registerMessage(39, BookTreePackets.Sync.class, BookTreePackets.Sync::encode, BookTreePackets.Sync::decode, BookTreePackets.Sync::handle);
         CHANNEL.registerMessage(40, BookTreePackets.Act.class, BookTreePackets.Act::encode, BookTreePackets.Act::decode, BookTreePackets.Act::handle);
         CHANNEL.registerMessage(41, BoundPackets.State.class, BoundPackets.State::encode, BoundPackets.State::decode, BoundPackets.State::handle);
+        CHANNEL.registerMessage(42, BossLogPackets.Sync.class, BossLogPackets.Sync::encode, BossLogPackets.Sync::decode, BossLogPackets.Sync::handle);
         CHANNEL.registerMessage(28, FxBatchPacket.class, FxBatchPacket::encode, FxBatchPacket::decode, FxBatchPacket::handle);
     }
 }

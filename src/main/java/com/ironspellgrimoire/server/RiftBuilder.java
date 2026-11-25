@@ -172,7 +172,7 @@ public final class RiftBuilder {
     static void features(ServerLevel sl, Rift r, Room room, int cx, int cz, ThreadLocalRandom rnd) {
         int side = freeSide(room);
         int ax = side == 0 ? 1 : side == 1 ? -1 : 0, az = side == 2 ? 1 : side == 3 ? -1 : 0, sx = az != 0 ? 1 : 0, sz = ax != 0 ? 1 : 0;
-        switch (room.type) {
+        switch (room.type == Rifts.LAIR ? Rifts.RELIC : room.type == Rifts.GATE ? Rifts.EXAM : room.type) {   // a lair dressed like a relic chamber, the Gate like the Exam Hall
             case COMBAT -> {
                 for (int i = 0; i < 6; i++) {   // broken columns round the edge
                     double a = rnd.nextDouble(Math.PI * 2);
@@ -215,7 +215,7 @@ public final class RiftBuilder {
                 }
             }
             case ELITE, RELIC -> {
-                boolean relic = room.type == RELIC;
+                boolean relic = room.type == RELIC || room.type == Rifts.LAIR;
                 for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++)   // a dais in the middle
                     set(sl, cx + dx, Y - 1, cz + dz, Math.abs(dx) == 2 || Math.abs(dz) == 2 ? st(relic ? Blocks.GILDED_BLACKSTONE : Blocks.POLISHED_BLACKSTONE) : st(Blocks.CRYING_OBSIDIAN));
                 if (side >= 0) {   // a stepped throne against the back wall

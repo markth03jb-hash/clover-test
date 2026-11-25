@@ -37,6 +37,25 @@ public final class UiShotsServer {
     /** Takes the first note on a board (so the HUD has a hunt and a quest to track). */
     public static void take(ServerPlayer p, int kind) { Boards.open(p, kind, p.blockPosition()); Boards.pick(p, kind, 0); }
     public static void forge(ServerPlayer p) { StarForge.open(p); }
+    /** The boss ladder for the pictures: a mage two tiers up with the Gate on offer, a streak, a few kills and best times. */
+    public static void ladder(ServerPlayer p, String what) {
+        if (what.equals("setup")) {
+            BossLadder.testReset(p);
+            BossLadder.testKill(p, 4, 2460, 2); BossLadder.testKill(p, 4, 1980, 2); BossLadder.testKill(p, 4, 1700, 1);
+            BossLadder.testKill(p, 5, 3300, 3); BossLadder.testKill(p, 0, 4100, 1);
+            BossLadder.data(p).putInt("streak", 3);
+            BossLadder.fell(p, 0);
+            p.getPersistentData().remove(Boards.KEY[Boards.BOUNTY]);
+            p.getPersistentData().remove("isg_bounty"); p.getPersistentData().remove("isg_bounty_next");
+            BossLadder.sync(p);
+        } else if (what.equals("board")) {
+            Boards.open(p, Boards.BOUNTY, p.blockPosition());
+        } else {
+            BossLadder.testReset(p);
+            p.getPersistentData().remove(Boards.KEY[Boards.BOUNTY]);
+            BossLadder.sync(p);
+        }
+    }
     public static void altar(ServerPlayer p) { AltarMenu.open(p, p.blockPosition()); }
     public static void library(ServerPlayer p) { GrimoireLibrary.open(p); }
     public static void waypoints(ServerPlayer p) { Waypoints.open(p); }
@@ -71,6 +90,27 @@ public final class UiShotsServer {
 
     /** Elite mobs for the screenshots: a row of them in front of the player (no AI, so they hold still), a cursed chest
      *  and a rift; "clear" takes them away. */
+    /** The wild families in a row, five at a time (a = the Mirefolk and Stonefolk's first two, b = the rest), facing the camera. */
+    public static void folk(ServerPlayer p, String what) {
+        ServerLevel sl = p.serverLevel();
+        for (var e : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.WildFolk.class, p.getBoundingBox().inflate(24))) e.discard();
+        if (what.equals("clear")) return;
+        p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+        faceForward(p);
+        var kinds = com.ironspellgrimoire.entity.WildFolk.Kind.values();
+        int from = what.equals("a") ? 0 : 5;
+        for (int i = 0; i < 5; i++) {
+            var k = kinds[from + i];
+            var m = WildFolkAI.type(k).create(sl);
+            if (m == null) continue;
+            m.getPersistentData().putBoolean("isg_folk_band", true);
+            m.moveTo(p.getX() + (i - 2) * 2.2, p.getY(), p.getZ() + 7, 180, 0);
+            m.setYBodyRot(180); m.setYHeadRot(180);
+            m.setNoAi(true);
+            sl.addFreshEntity(m);
+        }
+    }
+
     public static void elites(ServerPlayer p, String what) {
         ServerLevel sl = p.serverLevel();
         var box = p.getBoundingBox().inflate(16);

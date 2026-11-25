@@ -49,7 +49,7 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
     static final float S30 = Mth.sin(30 * Mth.DEG_TO_RAD), C30 = Mth.cos(30 * Mth.DEG_TO_RAD);
 
     /** Each skin's gear, in the sheet's numbers (tools/blender/rival_models.py, rival()). */
-    public static final Map<String, List<Piece>> GEAR = Map.of(
+    public static final Map<String, List<Piece>> GEAR = new java.util.HashMap<>(Map.of(
             "rival_seren", List.of(
                     new Piece("seren_blade", Bone.RARM, -35, v(-5.5, -10 * S35, 22 - 10 * C35), v(75, 0, 0), 1),
                     new Piece("seren_tail", Bone.HEAD, 0, v(0, 0, 23.5), v(0, 0, 0), 1),
@@ -78,7 +78,42 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
                     new Piece("mira_book", Bone.LARM, -55, v(8, -7, 20), v(60, 0, 20), 1),
                     new Piece("mira_cat", Bone.BODY, 0, v(5.4, -0.6, 24.2), v(0, 0, 30), 0.7f),
                     new Piece("mira_coins", Bone.BODY, 0, v(0, 0, 16), v(0, 0, 0), 1, 2f),
-                    new Piece("mira_scales", Bone.BODY, 0, v(-4.8, -2.4, 11.5), v(0, 0, 0), 0.8f)));
+                    new Piece("mira_scales", Bone.BODY, 0, v(-4.8, -2.4, 11.5), v(0, 0, 0), 0.8f))));
+    /** The wild families and the night hunter (tools/blender/family_models.py, FAMILY - printed by its "java" mode). */
+    static final Map<String, List<Piece>> FAMILY_GEAR = Map.ofEntries(
+            Map.entry("family_bog_crawler", List.of(
+                    new Piece("bog_club", Bone.RARM, -35, v(-6.000, -5.736, 13.808), v(75, 0, 0), 1.000f),
+                    new Piece("reed_crown", Bone.HEAD, 0, v(0.000, 0.000, 31.500), v(0, 0, 0), 1.000f))),
+            Map.entry("family_mire_hexer", List.of(
+                    new Piece("hexer_staff", Bone.RARM, -20, v(-5.500, -3.420, 12.603), v(-8, 0, 0), 1.000f))),
+            Map.entry("family_fen_matron", List.of(
+                    new Piece("root_crown", Bone.HEAD, 0, v(0.000, 0.000, 32.000), v(0, 0, 0), 1.000f),
+                    new Piece("bone_rattle", Bone.LARM, -40, v(5.500, -6.428, 14.340), v(80, 0, 0), 1.000f),
+                    new Piece("moss_train", Bone.BODY, 0, v(0.000, 0.000, 15.000), v(0, 0, 0), 1.000f))),
+            Map.entry("family_scree_brute", List.of(
+                    new Piece("stone_maul", Bone.RARM, -30, v(-6.000, -5.000, 13.340), v(70, 0, 0), 1.000f),
+                    new Piece("rock_plates", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f))),
+            Map.entry("family_stonecaller", List.of(
+                    new Piece("caller_staff", Bone.LARM, -20, v(6.000, -3.420, 12.603), v(-8, 0, 0), 1.000f))),
+            Map.entry("family_peak_warden", List.of(
+                    new Piece("horned_helm", Bone.HEAD, 0, v(0.000, 0.000, 27.500), v(0, 0, 0), 1.000f),
+                    new Piece("slab_shield", Bone.LARM, -20, v(7.600, -5.500, 13.000), v(0, 0, 10), 1.000f),
+                    new Piece("warden_pick", Bone.RARM, -30, v(-6.000, -5.000, 13.340), v(70, 0, 0), 1.000f))),
+            Map.entry("family_dune_stalker", List.of(
+                    new Piece("curved_blade", Bone.RARM, -40, v(-6.000, -6.428, 14.340), v(80, 0, 0), 1.300f),
+                    new Piece("curved_blade", Bone.LARM, -40, v(6.000, -6.428, 14.340), v(80, 0, 0), 1.300f),
+                    new Piece("head_wrap", Bone.HEAD, 0, v(0.000, 0.000, 29.000), v(0, 0, 0), 1.000f))),
+            Map.entry("family_sandwraith", List.of(
+                    new Piece("censer", Bone.LARM, -30, v(5.500, -5.000, 13.340), v(-30, 0, 0), 1.300f),
+                    new Piece("sand_mantle", Bone.BODY, 0, v(0.000, 0.000, 21.000), v(0, 0, 0), 1.000f))),
+            Map.entry("family_sun_herald", List.of(
+                    new Piece("sun_disc", Bone.BODY, 0, v(0.000, 5.000, 29.000), v(0, 0, 0), 1.000f),
+                    new Piece("glaive", Bone.RARM, -20, v(-6.000, -3.420, 12.603), v(-8, 0, 0), 1.000f))),
+            Map.entry("family_gloamstalker", List.of(
+                    new Piece("hooked_blade", Bone.RARM, -50, v(-5.500, -7.660, 15.572), v(75, 0, 0), 1.100f),
+                    new Piece("gloam_hood", Bone.HEAD, 0, v(0.000, 0.000, 27.000), v(0, 0, 0), 1.000f),
+                    new Piece("coat_tails", Bone.BODY, 0, v(0.000, 0.000, 13.000), v(0, 0, 0), 1.000f))));
+    static { GEAR.putAll(FAMILY_GEAR); }
 
     /** The legionnaire who carries Brannoch's standard: the banner instead of the spear. */
     static final List<Piece> BEARER = List.of(
@@ -127,6 +162,13 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
             if (sword) this.rightArm.xRot = this.rightArm.xRot * 0.5F - 0.31F;
             if (skin.equals("rival_wren") || skin.equals("rival_legion")) this.leftArm.xRot = this.leftArm.xRot * 0.5F - 0.31F;
             if (skin.equals("rival_mira")) this.leftArm.xRot = -0.96F;   // her ledger held up to read
+            if (skin.startsWith("family_")) {   // a hand that holds something sits forward, as on the model sheet
+                List<Piece> g = FAMILY_GEAR.get(skin);
+                if (g != null) for (Piece p : g) {
+                    if (p.bone() == Bone.RARM) this.rightArm.xRot = this.rightArm.xRot * 0.5F + p.armDeg() * Mth.DEG_TO_RAD;
+                    if (p.bone() == Bone.LARM) this.leftArm.xRot = this.leftArm.xRot * 0.5F + p.armDeg() * Mth.DEG_TO_RAD;
+                }
+            }
             if (e instanceof Rival r) {
                 float t = (age - r.poseAt()) / 20F;
                 float in = Mth.clamp(t * 4F, 0F, 1F), out = Mth.clamp((1.4F - t) * 3F, 0F, 1F), k = in * out;
