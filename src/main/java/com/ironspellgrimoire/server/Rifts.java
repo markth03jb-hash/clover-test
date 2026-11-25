@@ -88,8 +88,8 @@ public final class Rifts {
     public static final String[] RULE_NAMES = {"Mana Burn", "Low Gravity", "Echo", "Hunted"};
     static final String[] RULE_TEXT = {"Spells cost health instead of mana.", "You fall slowly and jump high.",
             "Every spell hit lands again a second later - on friends nearby too.", "A shade you cannot kill drifts after you through the walls."};
-    static final int START = 0, COMBAT = 1, TRAP = 2, REST = 3, ELITE = 4, RELIC = 5, EXAM = 6, MIRROR = 7;
-    static final String[] ROOM_NAMES = {"Entrance", "Combat", "Traps", "Rest", "Elite", "Relic Chamber", "Exam Hall", "Hall of Mirrors"};
+    static final int START = 0, COMBAT = 1, TRAP = 2, REST = 3, ELITE = 4, RELIC = 5, EXAM = 6, MIRROR = 7, LAIR = 8, GATE = 9;
+    static final String[] ROOM_NAMES = {"Entrance", "Combat", "Traps", "Rest", "Elite", "Relic Chamber", "Exam Hall", "Hall of Mirrors", "Lair", "The Gate"};
     /** The exam's rooms in order and the law each floor is under. */
     static final int[] EXAM_ROOMS = {START, COMBAT, COMBAT, TRAP, COMBAT, ELITE, EXAM};
     static final int[] FLOOR_LAWS = {0, MANA_BURN, LOW_GRAVITY, ECHO, HUNTED, MANA_BURN | ECHO, 0};
@@ -113,9 +113,13 @@ public final class Rifts {
         double x, y, z;
         long until;
         boolean built, closed, relicTaken, exam, ascension;   // ascension: the Ascension Trial (also counts as an exam: no crack in the world)
+        /** A bounty boss's lair (BossLadder): the bounty it belongs to (Boss, Mods, Id, Hardened) and whose it is; or the Gate. */
+        boolean lair, gate;
+        CompoundTag lairBounty = new CompoundTag();
         String owner = "";
         final List<Room> rooms = new ArrayList<>();
         int floor = -1;   // runtime: the exam floor whose law is in force
+        int depth;   // extra rooms, for mages up the boss ladder (only while laying it out)
         // runtime only
         final Map<Integer, List<UUID>> mobs = new HashMap<>();
         Vec3 shade;
@@ -140,6 +144,7 @@ public final class Rifts {
                 r.x = c.getDouble("X"); r.y = c.getDouble("Y"); r.z = c.getDouble("Z"); r.until = c.getLong("Until");
                 r.built = c.getBoolean("Built"); r.closed = c.getBoolean("Closed"); r.relicTaken = c.getBoolean("Relic");
                 r.exam = c.getBoolean("Exam"); r.owner = c.getString("Owner"); r.ascension = c.getBoolean("Asc");
+                r.lair = c.getBoolean("Lair"); r.gate = c.getBoolean("Gate"); r.lairBounty = c.getCompound("LairB");
                 for (Tag re : c.getList("Rooms", Tag.TAG_COMPOUND)) {
                     CompoundTag rc = (CompoundTag) re;
                     Room room = new Room(rc.getInt("GX"), rc.getInt("GZ"), rc.getInt("T"));
@@ -163,6 +168,7 @@ public final class Rifts {
                 c.putDouble("X", r.x); c.putDouble("Y", r.y); c.putDouble("Z", r.z); c.putLong("Until", r.until);
                 c.putBoolean("Built", r.built); c.putBoolean("Closed", r.closed); c.putBoolean("Relic", r.relicTaken);
                 c.putBoolean("Exam", r.exam); c.putString("Owner", r.owner); c.putBoolean("Asc", r.ascension);
+                c.putBoolean("Lair", r.lair); c.putBoolean("Gate", r.gate); c.put("LairB", r.lairBounty);
                 ListTag rl = new ListTag();
                 for (Room room : r.rooms) {
                     CompoundTag rc = new CompoundTag();
@@ -217,6 +223,7 @@ public final class Rifts {
         r.dim = near.level().dimension().location().toString();
         r.x = at.x; r.y = at.y; r.z = at.z;
         r.until = near.level().getGameTime() + 24000;
+        r.depth = 2 * (BossLadder.tier(near) - 1);   // deeper as you climb the boss tiers
         layout(r, rnd);
         d.rifts.add(r);
         d.setDirty();
@@ -335,7 +342,7 @@ public final class Rifts {
 
     /** The rooms: a random walk on a grid, an elite room hung off the side. */
     static void layout(Rift r, ThreadLocalRandom rnd) {
-        int n = 5 + Math.min(3, r.rank / 2 + rnd.nextInt(2));
+        int n = Math.min(17, 5 + Math.min(3, r.rank / 2 + rnd.nextInt(2)) + r.depth);
         int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         for (int attempt = 0; attempt < 50; attempt++) {
             r.rooms.clear();
@@ -368,6 +375,7 @@ public final class Rifts {
             List<Integer> mids = new ArrayList<>();
             for (int i = 1; i < last; i++) if (r.rooms.get(i).type == COMBAT) mids.add(i);
             if (!mids.isEmpty()) r.rooms.get(mids.get(rnd.nextInt(mids.size()))).type = TRAP;
+            if (r.depth > 0) for (int i = 3; i < last; i += 3) if (r.rooms.get(i).type == COMBAT) r.rooms.get(i).type = ELITE;   // deep rifts: a mini-boss every third room
             // the elite room, off to one side of a middle room
             for (int i = 1; i < last && r.rooms.size() == n; i++) {
                 Room m = r.rooms.get(rnd.nextInt(1, last));
@@ -410,6 +418,18 @@ public final class Rifts {
             p.sendSystemMessage(Component.literal("THE ASCENSION TRIAL").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
             p.sendSystemMessage(Component.literal("  In the Hall of Mirrors your Reflection waits - your own magic, turned on you.").withStyle(ChatFormatting.GRAY));
             p.sendSystemMessage(Component.literal("  Beat it and your grimoire ascends. Fall and you are sent back to the altar.").withStyle(ChatFormatting.DARK_GRAY));
+            return;
+        }
+        if (r.gate) {
+            p.sendSystemMessage(Component.literal("THE GATE").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD));
+            p.sendSystemMessage(Component.literal("  Two gatekeepers wait: a shade of a tier I boss, then of a tier II one.").withStyle(ChatFormatting.GRAY));
+            p.sendSystemMessage(Component.literal("  Pass and tier III opens on your posters. Fall and you can try again from the board.").withStyle(ChatFormatting.DARK_GRAY));
+            return;
+        }
+        if (r.lair) {
+            int b = r.lairBounty.getInt("Boss");
+            p.sendSystemMessage(Component.literal((r.lairBounty.getBoolean("Hardened") ? "HARDENED " : "") + "LAIR OF " + (b == Bounties.SECRET ? "LICHT, THE UNBOUND" : Bounties.NAMES[Math.min(Bounties.NAMES.length - 1, b)].toUpperCase())).withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD));
+            p.sendSystemMessage(Component.literal("  Tier " + BossLadder.TIER_NAME[BossLadder.TIER[Math.min(6, b)]] + ". It waits in the next room. Fall, and you're thrown back out - the lair stays open until the poster runs out.").withStyle(ChatFormatting.GRAY));
             return;
         }
         if (r.exam) {
@@ -496,7 +516,10 @@ public final class Rifts {
             world.playSound(null, BlockPos.containing(at), SoundEvents.BEACON_AMBIENT, SoundSource.AMBIENT, 1.2f, 0.6f);   // its hum
         for (ServerPlayer p : near) {
             double dx = p.getX() - r.x, dz = p.getZ() - r.z, dy = p.getY() - r.y;
-            if (tick % 20 == 0 && dx * dx + dz * dz < 100) {
+            if (tick % 20 == 0 && dx * dx + dz * dz < 100 && r.lair) {
+                int b = r.lairBounty.getInt("Boss");
+                p.displayClientMessage(Component.literal("Lair of " + (b == Bounties.SECRET ? "Licht, the Unbound" : Bounties.NAMES[Math.min(Bounties.NAMES.length - 1, b)]) + "  -  step in to face it").withStyle(ChatFormatting.DARK_RED), true);
+            } else if (tick % 20 == 0 && dx * dx + dz * dz < 100) {
                 StringBuilder rules = new StringBuilder();
                 for (int i = 0; i < 4; i++) if ((r.rules & (1 << i)) != 0) rules.append(rules.length() > 0 ? ", " : "").append(RULE_NAMES[i]);
                 p.displayClientMessage(Component.literal(stars(r.rank) + " Rift  -  " + rules + "  -  step in to enter").withStyle(ChatFormatting.LIGHT_PURPLE), true);
@@ -517,7 +540,7 @@ public final class Rifts {
 
     static void run(ServerLevel sl, Rift r, List<ServerPlayer> inside, long tick) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
-        if (r.exam && !r.ascension) examFloor(r, inside);
+        if (r.exam && !r.ascension && !r.gate) examFloor(r, inside);
         // laws that act on everyone inside
         if ((r.rules & LOW_GRAVITY) != 0 && tick % 20 == 0) for (ServerPlayer p : inside)
             TimedModifiers.apply(p, ForgeMod.ENTITY_GRAVITY.get(), GRAV, "Rift: low gravity", -0.65, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
@@ -531,7 +554,7 @@ public final class Rifts {
             List<ServerPlayer> here = in.getOrDefault(room, List.of());
             if (!room.cleared && !room.active && !here.isEmpty()) activate(sl, r, i, room, inside.size());
             if (room.active) tickRoom(sl, r, i, room, here, inside.size(), tick, rnd);
-            if (room.type == REST || ((room.type == RELIC || room.type == EXAM || room.type == MIRROR) && room.cleared)) pad(sl, r, room, here, tick);
+            if (room.type == REST || ((room.type == RELIC || room.type == EXAM || room.type == MIRROR || room.type == LAIR || room.type == GATE) && room.cleared)) pad(sl, r, room, here, tick);
         }
         if (tick % 20 == 0) for (ServerPlayer p : inside) { Room at = roomOf(r, p.position()); objective(p, r, at); map(p, r, at); }
         if (tick % 15 == 0) for (Room room : in.keySet()) ambience(sl, r, room, rnd);
@@ -552,6 +575,8 @@ public final class Rifts {
             case ELITE, RELIC -> { room.active = true; seal(sl, r, room, true); guardian(sl, r, idx, room); }
             case EXAM -> { room.active = true; room.wave = 0; seal(sl, r, room, true); examShade(sl, r, idx, room, 0); }
             case MIRROR -> { room.active = true; seal(sl, r, room, true); reflection(sl, r, idx, room); }
+            case LAIR -> { room.active = true; room.timer = 30; seal(sl, r, room, true); }   // the boss comes after a breath (and checks it isn't already here)
+            case GATE -> { room.active = true; room.wave = 0; seal(sl, r, room, true); gatekeeper(sl, r, idx, room, 0); }
             default -> room.cleared = true;
         }
     }
@@ -609,6 +634,49 @@ public final class Rifts {
                 r.relicTaken = true;
                 for (ServerPlayer p : here) if (p.getUUID().toString().equals(r.owner)) Ascension.ascend(p);
                 for (ServerPlayer p : here) p.sendSystemMessage(Component.literal("Stand on the circle to leave.").withStyle(ChatFormatting.GRAY));
+            }
+            case LAIR -> {   // the bounty's boss: here until the bounty is done
+                if (tick % 10 != 0) return;
+                int bid = r.lairBounty.getInt("Id");
+                java.util.UUID owner = r.owner.isEmpty() ? null : java.util.UUID.fromString(r.owner);
+                ServerPlayer op = owner == null ? null : sl.getServer().getPlayerList().getPlayer(owner);
+                boolean done = op != null && !Bounties.active(op, bid);
+                if (done) { clear(sl, r, idx, room); r.relicTaken = true; return; }
+                if (alive(sl, r, idx) > 0) return;
+                if (room.timer > 0) { room.timer -= 10; return; }
+                // nothing alive here: is it loaded in from before? if not, it rises (full health - you left it)
+                Vec3 cc = r.centre(room);
+                for (Mob m : sl.getEntitiesOfClass(Mob.class, new AABB(cc, cc).inflate(HALF + 2, 12, HALF + 2), x -> x.isAlive() && x.getPersistentData().getInt("isg_bounty_id") == bid)) {
+                    r.mobs.computeIfAbsent(idx, k -> new ArrayList<>()).add(m.getUUID());
+                    return;
+                }
+                if (op == null || here.isEmpty()) return;   // (the poster's owner must be on the server for it to rise)
+                Mob m = Bounties.spawnBoss(sl, cc.add(0, 0, 3), r.lairBounty, owner);
+                if (m == null) return;
+                r.mobs.computeIfAbsent(idx, k -> new ArrayList<>()).add(m.getUUID());
+                for (Mob g : Bounties.lastEscort) r.mobs.get(idx).add(g.getUUID());
+                RiftFx.cut(sl, m.position().add(0, 1.6, 0), new Vec3(0, 1, 0), new Vec3(1, 0, 0), 2.6f, 24);
+                FxSend.impactFrame(sl, m.position().add(0, 1.5, 0), 4, FxSend.FRAME_LIGHT, 24);
+                room.timer = 60;
+            }
+            case GATE -> {   // two gatekeepers, one after the other
+                if (tick % 10 != 0) return;
+                if (room.timer > 0) { if (--room.timer == 0) gatekeeper(sl, r, idx, room, room.wave); return; }
+                if (alive(sl, r, idx) > 0) return;
+                if (room.wave >= 1) {
+                    clear(sl, r, idx, room);
+                    r.relicTaken = true;
+                    for (ServerPlayer p : sl.players()) if (riftAt(sl.getServer(), p.position()) == r) {
+                        BossLadder.passGate(p);
+                        Bounties.addStars(p, 5);
+                        p.sendSystemMessage(Component.literal("THE GATE IS PASSED  ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD).append(Component.literal("+5 merit stars. Stand on the circle to leave.").withStyle(ChatFormatting.YELLOW)));
+                    }
+                    return;
+                }
+                room.wave++;
+                room.timer = 4;
+                FxSend.ring(sl, Fx.CRIMSON, c.add(0, 0.1, 0), 0.4f, 6f, 0.12f, 14);
+                for (ServerPlayer p : here) p.displayClientMessage(Component.literal("The second gatekeeper comes...").withStyle(ChatFormatting.DARK_RED), true);
             }
             case EXAM -> {   // three shades, one after the other, with a breath between them
                 if (tick % 10 != 0) return;
@@ -695,6 +763,70 @@ public final class Rifts {
             default -> rnd.nextBoolean() ? AddonEntities.ZENON.get() : AddonEntities.LICHT.get();
         };
         shade(sl, r, idx, room, t, n == 0 ? 0.45f : n == 1 ? 0.4f : 0.5f, "Examiner");
+    }
+
+    /** The Gate's keepers: a shade of a tier I boss, then of a tier II one (60% of their strength). */
+    static void gatekeeper(ServerLevel sl, Rift r, int idx, Room room, int n) {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        EntityType<? extends Mob> t = n == 0 ? (rnd.nextBoolean() ? AddonEntities.REVENANT.get() : AddonEntities.CURSE_WITCH.get())
+                : switch (rnd.nextInt(3)) { case 0 -> AddonEntities.ZENON.get(); case 1 -> AddonEntities.RHYA.get(); default -> AddonEntities.BEAST_OF_DESPAIR.get(); };
+        shade(sl, r, idx, room, t, 0.6f, "Gatekeeper");
+    }
+
+    /** A bounty boss's lair, opened where it was sighted: an entrance, then the lair. Returns the rift's id. */
+    static int openLair(ServerPlayer p, Vec3 at, CompoundTag bounty) {
+        Data d = data(p.server);
+        Rift r = new Rift();
+        r.id = d.next++;
+        r.lair = true;
+        r.rank = Math.min(5, 1 + BossLadder.TIER[Math.min(6, bounty.getInt("Boss"))] + (bounty.getBoolean("Hardened") ? 1 : 0));
+        r.owner = p.getUUID().toString();
+        r.lairBounty = bounty.copy();
+        r.dim = p.level().dimension().location().toString();
+        r.x = at.x; r.y = at.y; r.z = at.z;
+        r.until = bounty.getLong("Deadline");
+        Room a = new Room(0, 0, START), b = new Room(1, 0, LAIR);
+        link(a, b);
+        r.rooms.add(a); r.rooms.add(b);
+        d.rifts.add(r);
+        d.setDirty();
+        ServerLevel sl = p.serverLevel();
+        RiftFx.cut(sl, at.add(0, 1.6, 0), new Vec3(0, 1, 0), new Vec3(1, 0, 0), 2.2f, 30);
+        FxSend.shake(sl, at, 0.6f, 12, 40);
+        return r.id;
+    }
+
+    /** The Gate (BossLadder): taken from a Poster Board, straight in. */
+    public static void startGate(ServerPlayer p) {
+        Data d = data(p.server);
+        Rift r = new Rift();
+        r.id = d.next++;
+        r.rank = 4;
+        r.exam = true;   // no crack in the world: the board takes you in
+        r.gate = true;
+        r.owner = p.getUUID().toString();
+        r.dim = p.level().dimension().location().toString();
+        r.x = p.getX() - 2.5; r.y = p.getY(); r.z = p.getZ() - 2.5;
+        r.until = p.level().getGameTime() + 24000;
+        Room a = new Room(0, 0, START), b = new Room(1, 0, GATE);
+        link(a, b);
+        r.rooms.add(a); r.rooms.add(b);
+        d.rifts.add(r);
+        d.setDirty();
+        FxSend.ring(p.serverLevel(), Fx.CRIMSON, p.position().add(0, 0.1, 0), 0.3f, 4f, 0.12f, 16);
+        enter(p, r);
+    }
+
+    static void closeLair(MinecraftServer s, int id) {
+        for (Rift r : data(s).rifts) if (r.id == id && r.lair && !r.closed) {
+            ServerLevel rift = s.getLevel(RIFT);
+            if (rift != null) for (ServerPlayer p : new ArrayList<>(rift.players())) if (riftAt(s, p.position()) == r) leave(p);
+            close(s, r);
+        }
+    }
+    static boolean lairOpen(MinecraftServer s, int id) {
+        for (Rift r : data(s).rifts) if (r.id == id && r.lair && !r.closed) return true;
+        return false;
     }
 
     /** A shade of one of the bosses, at a fraction of its strength. */
@@ -813,7 +945,8 @@ public final class Rifts {
             Room room = r.rooms.get(i);
             int doors = 0;
             for (int dd : room.doors) doors |= 1 << dd;
-            v[i] = ((room.gx + 16) & 31) | ((room.gz + 16) & 31) << 5 | (room.type & 7) << 10 | (room.cleared ? 1 : 0) << 13 | (room.active ? 1 : 0) << 14 | doors << 15;
+            int shown = room.type == LAIR ? RELIC : room.type == GATE ? EXAM : room.type;   // the map knows eight kinds
+            v[i] = ((room.gx + 16) & 31) | ((room.gz + 16) & 31) << 5 | (shown & 7) << 10 | (room.cleared ? 1 : 0) << 13 | (room.active ? 1 : 0) << 14 | doors << 15;
         }
         k.c = new Vec3(v[0], v[1], v[2]); k.d = new Vec3(v[3], v[4], v[5]); k.u = new Vec3(v[6], v[7], v[8]); k.v = new Vec3(v[9], v[10], v[11]);
         k.r = (float) v[12]; k.r2 = (float) v[13]; k.a0 = (float) v[14]; k.a1 = (float) v[15]; k.h = (float) v[16]; k.speed = (float) v[17];
@@ -830,9 +963,11 @@ public final class Rifts {
             case RELIC -> room.cleared ? "Relic Chamber - stand on the circle to leave" : "Relic Chamber - defeat the guardian";
             case EXAM -> room.cleared ? "Exam passed - stand on the circle to leave" : "Exam Hall - shade " + (room.wave + 1) + "/3";
             case MIRROR -> room.cleared ? "Ascended - stand on the circle to leave" : "Hall of Mirrors - defeat your Reflection";
+            case LAIR -> room.cleared ? "Subjugated - stand on the circle to leave" : "The lair - bring it down";
+            case GATE -> room.cleared ? "The Gate is passed - stand on the circle to leave" : "The Gate - gatekeeper " + (room.wave + 1) + "/2";
             default -> r.exam ? "The Magic Knight Exam - go on through the floors" : "Find the relic chamber";
         };
-        if (r.exam && !r.ascension && room.type != EXAM && room.type != START) s = "Floor " + r.rooms.indexOf(room) + "/5 - " + s;
+        if (r.exam && !r.ascension && !r.gate && room.type != EXAM && room.type != START) s = "Floor " + r.rooms.indexOf(room) + "/5 - " + s;
         p.displayClientMessage(Component.literal(s).withStyle(r.exam ? ChatFormatting.GOLD : ChatFormatting.LIGHT_PURPLE), true);
     }
 
@@ -916,6 +1051,8 @@ public final class Rifts {
         Rift r = riftOf(p);
         leave(p);
         if (r != null && r.ascension) p.sendSystemMessage(Component.literal("Your Reflection won this time. The altar will let you try again.").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
+        else if (r != null && r.gate) p.sendSystemMessage(Component.literal("You fell at the Gate. The Poster Board will offer it again.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC));
+        else if (r != null && r.lair) p.sendSystemMessage(Component.literal("You were thrown out of the lair. Step back in while the poster lasts.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC));
         else if (r != null && r.exam) p.sendSystemMessage(Component.literal("You fell in the Magic Knight Exam. The altar will let you try again.").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
         else p.sendSystemMessage(Component.literal("The rift threw you out.").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
     }

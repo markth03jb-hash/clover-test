@@ -126,7 +126,7 @@ public class BoardScreen extends Screen {
         g.pose().translate(x + NW / 2F, y + 4, 0);
         g.pose().mulPose(Axis.ZP.rotationDegrees(tilt));
         g.pose().translate(-(x + NW / 2F), -(y + 4), 0);
-        boolean secret = n != null && n.special == 2, daily = n != null && n.special == 1;
+        boolean secret = n != null && (n.special == 2 || n.special == 3), daily = n != null && n.special == 1, gate = n != null && n.special == 3;
         int paper = secret ? 0xFF2A2226 : PAPER, ink = secret ? 0xFFE8DCC8 : INK, soft = secret ? 0xFFB0A090 : INK_SOFT;
         g.fill(x + 3, y + 3, x + NW + 3, y + NH + 3, 0x60000000);   // its shadow
         g.fill(x, y, x + NW, y + NH, paper);
@@ -145,7 +145,8 @@ public class BoardScreen extends Screen {
             g.pose().popPose();
             return;
         }
-        if (data.kind == 0) ty = text(g, Component.literal("WANTED").withStyle(ChatFormatting.BOLD), x + (NW - font.width("WANTED") - 6) / 2, ty, w, secret ? 0xFFC0A0A0 : RED) + 4;
+        String head = gate ? "TRIAL" : "WANTED";
+        if (data.kind == 0) ty = text(g, Component.literal(head).withStyle(ChatFormatting.BOLD), x + (NW - font.width(head) - 6) / 2, ty, w, gate ? 0xFFE0B050 : secret ? 0xFFC0A0A0 : RED) + 4;
         else if (daily) ty = text(g, Component.literal("✦ DAILY SPECIAL").withStyle(ChatFormatting.BOLD), tx, ty, w, 0xFF9A6A10) + 3;
         ty = text(g, Component.literal(n.title).withStyle(ChatFormatting.BOLD), tx, ty, w, ink) + 3;
         if (!n.twist.isEmpty()) ty = text(g, Component.literal(n.twist), tx, ty, w, daily ? 0xFF9A6A10 : secret ? 0xFFE08080 : RED) + 3;

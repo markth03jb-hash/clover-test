@@ -222,6 +222,22 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> LEDGER_COIN = ITEMS.register("ledger_coin", () -> new com.ironspellgrimoire.item.RelicItem(
             "Once a minute, a spell you cast below a quarter of your mana costs nothing.", "Mira Hollowell's. She wants it back.", "Rival's Keepsake  -  charm slot"));
     public static final RegistryObject<Item> RIVAL_TOKEN = ITEMS.register("rival_token", com.ironspellgrimoire.item.RivalTokenItem::new);
+    /** The bounty bosses' signature drops (server/BossRules, server/BossRelics), in Bounties.BOSSES order. */
+    public static final RegistryObject<Item> MARROW_PLATE = ITEMS.register("marrow_plate", () -> new com.ironspellgrimoire.item.SignatureItem("The Ossuarch",
+            "The first hit you take in a fight is 60% softer (a fight: 10 s since you were last hit).", "The first hit is 80% softer.", "A plate of bone that knows where the blow will land.", null));
+    public static final RegistryObject<Item> HOPELESS_CLAW = ITEMS.register("hopeless_claw", () -> new com.ironspellgrimoire.item.SignatureItem("The Beast of Despair",
+            "Your hits on foes below 30% health do 25% more.", "40% more.", "It still aches for the end of things.", null));
+    public static final RegistryObject<Item> TURNCOAT_SIGIL = ITEMS.register("turncoat_sigil", () -> new com.ironspellgrimoire.item.SignatureItem("Rhya the Disloyal",
+            "An elite you kill has a 20% chance to rise as a shadow that fights for you for 20 s.", "35% chance, for 30 s.", "Loyalty, Rhya said, is only a price not yet named.", null));
+    public static final RegistryObject<Item> LICHS_PAGE = ITEMS.register("lichs_page", () -> new com.ironspellgrimoire.item.SignatureItem("Licht",
+            "Written into a grimoire with its own tree: +3 tree points.", "+5 tree points.", "A page from a book that was never finished.", "LichPage"));
+    public static final RegistryObject<Item> GRAVE_KNOT = ITEMS.register("grave_knot", () -> new com.ironspellgrimoire.item.SignatureItem("The Revenant",
+            "Once every 5 minutes, a killing blow leaves you at 1 health and gives back 30% of your mana.", "Every 3 minutes, and 50% of your mana.", "Tied by someone who refused to stay buried.", null));
+    public static final RegistryObject<Item> HEXBOUND_INK = ITEMS.register("hexbound_ink", () -> new com.ironspellgrimoire.item.SignatureItem("The Curse Witch",
+            "Written into a grimoire: cast the same spell three times in a row and the third costs no mana.", "The fourth in a row costs half, too.", "It writes itself a little further each night.", "Hexbound"));
+    public static final RegistryObject<Item> UNBOUND_SEAL = ITEMS.register("unbound_seal", () -> new com.ironspellgrimoire.item.SignatureItem("Licht, the Unbound",
+            "Written into an Ascended grimoire: its ultimate holds a second charge (it recharges every 3 minutes).", "The second charge recharges every 2 minutes.", "Whatever it held shut is open now.", "UnboundSeal"));
+    public static final java.util.List<RegistryObject<Item>> SIGNATURES = java.util.List.of(MARROW_PLATE, HOPELESS_CLAW, TURNCOAT_SIGIL, LICHS_PAGE, GRAVE_KNOT, HEXBOUND_INK, UNBOUND_SEAL);
     public static final RegistryObject<Item> LICHT_SPAWN_EGG = ITEMS.register("licht_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.LICHT, 0xF0EEE0, 0xE8C860, new Item.Properties()));
     public static final RegistryObject<Item> REVENANT_SPAWN_EGG = ITEMS.register("revenant_spawn_egg",
@@ -293,6 +309,7 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(WORLD_TREE_LEAF.get()));
                 out.accept(new ItemStack(ELVEN_WIND_CHARM.get()));
                 for (var r : java.util.List.of(PRISM_RIBBON, WARLORDS_STANDARD, LAST_BELL, LEDGER_COIN, RIVAL_TOKEN)) out.accept(new ItemStack(r.get()));
+                for (var r : SIGNATURES) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(new ItemStack(MANA_CORE.get()));

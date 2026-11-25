@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -65,9 +66,9 @@ public final class EliteMobs {
     // ------------------------------------------------------------------ the traits
     public static final int BULWARK = 0, IRONHIDE = 1, SECOND_WIND = 2, OVERCHARGED = 3, SEEKER = 4, VOLLEY = 5, ECHO = 6, LEECH = 7,
             DISRUPTOR = 8, REFLECTOR = 9, ANCHORED = 10, HUNTER = 11, TETHER = 12, SPRINTER = 13, SPLITTER = 14, VOLATILE = 15,
-            CURSED_LOOT = 16, VENGEFUL = 17, MIRROR_TWIN = 18, RIFT_BORN = 19, COUNT = 20;
+            CURSED_LOOT = 16, VENGEFUL = 17, MIRROR_TWIN = 18, RIFT_BORN = 19, OVERSEER = 20, UNYIELDING = 21, BLINKER = 22, COUNT = 23;
     public static final String[] NAME = {"Bulwark", "Ironhide", "Second Wind", "Overcharged", "Seeker", "Volley", "Echo Strike", "Mana Leech",
-            "Disruptor", "Reflector", "Anchored", "Hunter", "Tether", "Sprinter", "Splitter", "Volatile", "Cursed Loot", "Vengeful", "Mirror Twin", "Rift-Born"};
+            "Disruptor", "Reflector", "Anchored", "Hunter", "Tether", "Sprinter", "Splitter", "Volatile", "Cursed Loot", "Vengeful", "Mirror Twin", "Rift-Born", "Overseer", "Unyielding", "Blinker"};
     /** What it does, then how to beat it (the Codex). */
     public static final String[][] SAYS = {
             {"Takes 70% less damage from the front.", "Get round it - hits from the side or behind land in full."},
@@ -89,12 +90,17 @@ public final class EliteMobs {
             {"Drops a cursed chest. Open it within 3 s and it bites; wait, and it pays out double.", "Be patient."},
             {"Its ghost chases you for 5 s after it dies.", "Dodge it for a reward."},
             {"A shadow copy fights beside it. Both must fall within 5 s of each other, or the fallen one rises again.", "Bring them both low, then finish them together."},
-            {"Dying tears open a small rift. Hit it 4 times in 5 s to close it, or three elites step out.", "Keep a few hits ready for the rift."}};
+            {"Dying tears open a small rift. Hit it 4 times in 5 s to close it, or three elites step out.", "Keep a few hits ready for the rift."},
+            {"Hostile mobs within 8 blocks of it (the ring round it) take 30% less damage.", "Kill it first - the rest soften when it falls."},
+            {"No single hit takes more than a fifth of its health.", "Many quick hits beat one big one."},
+            {"Every third hit it takes, it steps behind whoever hit it (once every 5 s).", "Keep your back to a wall, or hit it twice and wait."}};
     /** Traits that need their own model: they roll only once those models are approved (until then, tests only). */
     public static final int MODEL_TRAITS = 1 << BULWARK | 1 << IRONHIDE | 1 << REFLECTOR | 1 << TETHER | 1 << CURSED_LOOT | 1 << RIFT_BORN;
     public static boolean modelsApproved = false;
     /** Champion traits: rank 4-5 only. */
     public static final int CHAMPION = 1 << MIRROR_TWIN | 1 << RIFT_BORN;
+    /** The late traits: rank 4-5 only, and each only once its boss has fallen somewhere on the server (WorldGrowth). */
+    public static final int LATE = 1 << OVERSEER | 1 << UNYIELDING | 1 << BLINKER;
 
     // ------------------------------------------------------------------ the data on the mob
     public static CompoundTag data(Entity m) { return m.getPersistentData().getCompound(TAG); }
@@ -130,6 +136,23 @@ public final class EliteMobs {
     public static void testForgetThreat(Player p) { THREAT.remove(p.getUUID()); }
     public static ElitePackets.Sync testPacket(Mob m) { return packet(m); }
     public static void testThreat(Player p, int r) { THREAT.put(p.getUUID(), new int[]{r, (int) p.level().getGameTime()}); }
+
+    /**
+     * The land's own danger: the further from the world's spawn, the higher a mob's rank at the least - under 1000
+     * blocks nothing, then rank 1, 2 (from 2000), 3 (from 3000) and 4 (from 5000). The Nether counts one band higher,
+     * the End starts at 3. The rifts set their own.
+     */
+    public static int dangerAt(ServerLevel sl, Vec3 pos) {
+        if (!AddonConfig.threat() || sl.dimension() == Rifts.RIFT) return 0;
+        var spawn = sl.getServer().overworld().getSharedSpawnPos();
+        boolean nether = sl.dimension() == net.minecraft.world.level.Level.NETHER;
+        double d = nether ? Math.hypot(pos.x * 8 - spawn.getX(), pos.z * 8 - spawn.getZ()) : Math.hypot(pos.x - spawn.getX(), pos.z - spawn.getZ());
+        int band = d < 1000 ? 0 : d < 2000 ? 1 : d < 3000 ? 2 : d < 5000 ? 3 : 4;
+        if (nether) band = Math.min(4, band + 1);
+        if (sl.dimension() == net.minecraft.world.level.Level.END) band = Math.max(3, band);
+        return band;
+    }
+    public static final String[] DANGER_TEXT = {"Safe lands", "The wilds (rank 1)", "Far lands (rank 2)", "Deep wilds (rank 3)", "The edge of the world (rank 4)"};
 
     static final UUID RANK_HP = UUID.fromString("e1173000-0000-4000-8000-000000000001"), RANK_DMG = UUID.fromString("e1173000-0000-4000-8000-000000000002");
 
@@ -204,14 +227,27 @@ public final class EliteMobs {
         if (!(m.level() instanceof ServerLevel sl)) return;
         Player near = sl.getNearestPlayer(m, 48);
         if (near == null || near.isSpectator()) return;
-        int rank = threat(near);
+        int rank = Math.max(threat(near), dangerAt(sl, m.position()));
         boolean rift = sl.dimension() == Rifts.RIFT;
         ThreadLocalRandom r = ThreadLocalRandom.current();
         double chance = AddonConfig.eliteChance() * (1 + 0.28 * rank) * (rift ? 2 : 1);
         int mask = r.nextDouble() < chance ? pick(m, rank, 1 + (r.nextDouble() < 0.35 ? 1 : 0) + (rank >= 3 && r.nextDouble() < 0.3 ? 1 : 0)) : 0;
-        if (rank == 0 && mask == 0) return;   // nothing to mark
+        boolean lead = mask == 0 && !rift && PackMobs.mayLead(m, rank) && r.nextDouble() < 0.03 + 0.01 * rank;
+        if (rank == 0 && mask == 0 && !lead) return;   // nothing to mark
         make(m, rank, mask);
+        if (rank >= 4 && mask != 0 && near instanceof ServerPlayer sp) adapt(m, sp);
+        if (lead) PackMobs.lead(m, rank);
     }
+
+    // ------------------------------------------------------------------ elites that learn your magic (rank 4-5)
+    /** A rank 4-5 elite resists the school of magic the nearest mage casts most (35% less from it). */
+    static void adapt(Mob m, ServerPlayer p) {
+        String top = SchoolUse.top(p);
+        if (top == null) return;
+        data(m).putString("res", top);
+        sync(m);
+    }
+    public static String resists(Entity m) { return marked(m) ? data(m).getString("res") : ""; }
 
     /** Pick n traits this mob can have at this rank. */
     static int pick(Mob m, int rank, int n) {
@@ -223,7 +259,9 @@ public final class EliteMobs {
             if ((off & bit) != 0) continue;
             if ((MODEL_TRAITS & bit) != 0 && !modelsApproved) continue;
             if ((CHAMPION & bit) != 0 && rank < 4) continue;
+            if ((LATE & bit) != 0 && (rank < 4 || !WorldGrowth.traitOpen(m.getServer(), i))) continue;
             pool.add(i);
+            if ((CHAMPION & bit) != 0 && WorldGrowth.fallen(m.getServer(), 3)) pool.add(i);   // Licht has fallen: champions twice as often
         }
         int mask = 0, champions = 0;
         ThreadLocalRandom r = ThreadLocalRandom.current();

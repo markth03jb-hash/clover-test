@@ -1628,5 +1628,12 @@
   "spell.iron_spell_grimoire.fuse_mode_timer": "Fuse: 3 s Timer",
   "spell.iron_spell_grimoire.fuse_mode_near": "Fuse: Proximity",
   "spell.iron_spell_grimoire.bd_restrain": "Demon: Restrained",
-  "spell.iron_spell_grimoire.bd_release": "Demon: Released"
+  "spell.iron_spell_grimoire.bd_release": "Demon: Released",
+  "item.iron_spell_grimoire.marrow_plate": "Marrow Plate",
+  "item.iron_spell_grimoire.turncoat_sigil": "Turncoat Sigil",
+  "item.iron_spell_grimoire.lichs_page": "Lich's Page",
+  "item.iron_spell_grimoire.grave_knot": "Grave Knot",
+  "item.iron_spell_grimoire.hexbound_ink": "Hexbound Ink",
+  "item.iron_spell_grimoire.unbound_seal": "Unbound Seal",
+  "item.iron_spell_grimoire.hopeless_claw": "Hopeless Claw"
 }

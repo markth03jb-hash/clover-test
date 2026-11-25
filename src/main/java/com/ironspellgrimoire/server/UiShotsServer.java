@@ -37,6 +37,25 @@ public final class UiShotsServer {
     /** Takes the first note on a board (so the HUD has a hunt and a quest to track). */
     public static void take(ServerPlayer p, int kind) { Boards.open(p, kind, p.blockPosition()); Boards.pick(p, kind, 0); }
     public static void forge(ServerPlayer p) { StarForge.open(p); }
+    /** The boss ladder for the pictures: a mage two tiers up with the Gate on offer, a streak, a few kills and best times. */
+    public static void ladder(ServerPlayer p, String what) {
+        if (what.equals("setup")) {
+            BossLadder.testReset(p);
+            BossLadder.testKill(p, 4, 2460, 2); BossLadder.testKill(p, 4, 1980, 2); BossLadder.testKill(p, 4, 1700, 1);
+            BossLadder.testKill(p, 5, 3300, 3); BossLadder.testKill(p, 0, 4100, 1);
+            BossLadder.data(p).putInt("streak", 3);
+            BossLadder.fell(p, 0);
+            p.getPersistentData().remove(Boards.KEY[Boards.BOUNTY]);
+            p.getPersistentData().remove("isg_bounty"); p.getPersistentData().remove("isg_bounty_next");
+            BossLadder.sync(p);
+        } else if (what.equals("board")) {
+            Boards.open(p, Boards.BOUNTY, p.blockPosition());
+        } else {
+            BossLadder.testReset(p);
+            p.getPersistentData().remove(Boards.KEY[Boards.BOUNTY]);
+            BossLadder.sync(p);
+        }
+    }
     public static void altar(ServerPlayer p) { AltarMenu.open(p, p.blockPosition()); }
     public static void library(ServerPlayer p) { GrimoireLibrary.open(p); }
     public static void waypoints(ServerPlayer p) { Waypoints.open(p); }

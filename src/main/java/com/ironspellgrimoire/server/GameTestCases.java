@@ -396,6 +396,12 @@ final class GameTestCases {
                 "bond guard", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::bondGuard, "q", "demon flurry", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::demonFlurry, "c", "sinner's mark", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::sinnersMark, "q",
                 "salt lance", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::saltLance, "q", "the last seraph", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::lastSeraph, "q"));
         queue.add(new TrioTest(BookTree.BOUND));
+        queue.add(new LadderTest());
+        queue.add(new BossFightTest());
+        queue.add(new LairTest());
+        queue.add(new GateTest());
+        queue.add(new MobProgressTest());
+        queue.add(new RelicTest());
         queue.add(new MultiplayerTest());
         queue.add(new StressTest());
         queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
@@ -1338,6 +1344,329 @@ final class GameTestCases {
                 }
                 return false;
             } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); end(); return true; }
+        }
+    }
+
+    // ================================================================== the boss ladder (BossLadder, BossRules, BossRelics, PackMobs...)
+    /** The ladder's rules: tiers, the Gate, Hardened posters, the streak, the posters a board offers, tiered cores. */
+    static final class LadderTest extends Test {
+        LadderTest() { super("boss ladder: tiers, the Gate, Hardened, streak, posters, cores"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{BossLadder.class, Bounties.class, Boards.class, BossRules.class, StarForge.class}; }
+        @Override void start() { cancelCast(); clearArea(); resetPlayer(true); BossLadder.testReset(p); }
+        @Override boolean tick(int t) {
+            List<String> bad = new ArrayList<>();
+            try {
+                if (BossLadder.tier(p) != 1) bad.add("a new mage isn't tier I");
+                if (BossLadder.allowed(p, 0) || !BossLadder.allowed(p, 4) || !BossLadder.allowed(p, 5)) bad.add("tier I should allow only the Revenant and the Curse Witch");
+                for (int i = 0; i < 20; i++) for (int b : Bounties.allowedBosses(p)) if (BossLadder.TIER[b] != 1) bad.add("a tier " + BossLadder.TIER[b] + " boss on a new mage's posters");
+                BossLadder.testKill(p, 4, 1200, 2);
+                if (BossLadder.tier(p) != 2) bad.add("a tier I kill didn't open tier II");
+                if (BossLadder.gateOpen(p)) bad.add("the Gate is offered before any tier II kill");
+                if (BossLadder.memory(p, 4) != 2) bad.add("the Revenant didn't remember being beaten with spells");
+                BossLadder.testKill(p, 0, 2400, 1);
+                if (!BossLadder.gateOpen(p) || BossLadder.tier(p) != 2) bad.add("a tier II kill should offer the Gate, still tier II");
+                if (BossLadder.allowed(p, 3)) bad.add("Licht allowed before the Gate");
+                BossLadder.testGate(p);
+                if (BossLadder.tier(p) != 3 || !BossLadder.allowed(p, 3) || BossLadder.gateOpen(p)) bad.add("passing the Gate didn't open tier III");
+                BossLadder.testKill(p, 4, 900, 2); BossLadder.testKill(p, 4, 0, 2);
+                if (!BossLadder.hardenedNext(p, 4) || BossLadder.hardenedNext(p, 5)) bad.add("three kills should make only that boss's posters Hardened");
+                if (BossLadder.data(p).getIntArray("b")[4] != 900) bad.add("the best time wasn't kept (" + BossLadder.data(p).getIntArray("b")[4] + ")");
+                float m1 = BossLadder.streakUp(p), m2 = BossLadder.streakUp(p); BossLadder.streakUp(p);
+                if (m1 != 1f || Math.abs(m2 - 1.1f) > 1e-4) bad.add("streak multipliers " + m1 + ", " + m2);
+                BossLadder.streakLost(p);
+                if (BossLadder.streak(p) != 0) bad.add("the streak wasn't reset");
+                if (BossLadder.streakMult(20) > 1.5001f) bad.add("the streak goes past +50%");
+                if (BossRules.coreTier(BossRules.core(3)) != 3 || BossRules.core(1).hasTag()) bad.add("Mana Core tiers are wrong");
+                if (StarForge.MUT_TIER[StarForge.MUT_ECHO] != 3 || StarForge.MUT_TIER[StarForge.MUT_SIPHON] != 1) bad.add("mutation tiers are wrong");
+                for (int i = 0; i < 7; i++) if (BossRules.signature(i, false).isEmpty() || !BossRules.signature(i, true).getTag().getBoolean("Hardened")) bad.add("no signature drop for boss " + i);
+            } catch (Throwable x) { bad.add("threw " + x); }
+            BossLadder.testReset(p);
+            if (bad.isEmpty()) pass(name, "tier I to III through the Gate, Hardened after 3 kills, best times and memory kept, streak +10% a bounty up to +50%, cores and signature drops for every boss");
+            else fail(name, String.join("; ", bad));
+            return true;
+        }
+    }
+
+    /** A bounty boss's fight: threat scaling, stages, enrage, weak point and stagger, then the shared kill - log, core, signature. */
+    static final class BossFightTest extends Test {
+        BossFightTest() { super("boss fight: threat, stages, enrage, weak point, shared kill"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{BossRules.class, BossLadder.class, WorldGrowth.class, com.ironspellgrimoire.entity.AddonBoss.class}; }
+        final List<String> bad = new ArrayList<>();
+        Mob m;
+        int growthWas;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); BossLadder.testReset(p);
+            growthWas = WorldGrowth.testMask(sl().getServer());
+            WorldGrowth.testSet(sl().getServer(), 0);
+            p.getInventory().clearContent();
+            m = AddonEntities.REVENANT.get().create(sl());
+            m.moveTo(home.x, home.y, home.z + 6, 0f, 0f);
+            sl().addFreshEntity(m);
+            m.setNoAi(true);
+            float base = m.getMaxHealth();
+            m.getPersistentData().putUUID("isg_bounty_owner", p.getUUID());
+            EliteMobs.testThreat(p, 3);
+            BossRules.testSetup(m, p, 4, false);
+            if (Math.abs(m.getMaxHealth() - base * 1.3f) > 1f) bad.add("threat 3 should give +30% health (" + base + " -> " + m.getMaxHealth() + ")");
+        }
+        @Override boolean tick(int t) {
+            try {
+                if (t == 2) {
+                    m.hurt(p.damageSources().playerAttack(p), 4f);   // the fight starts
+                    m.setHealth(m.getMaxHealth() * 0.45f);
+                    BossRules.testTick(m);
+                    if (BossRules.testStage(m) != 1) bad.add("tier I: below half health it should be in stage 2 (stage index " + BossRules.testStage(m) + ")");
+                    BossRules.testStart(m, BossRules.ENRAGE_TICKS + 20);
+                    BossRules.testTick(m);
+                    if (!BossRules.testEnraged(m)) bad.add("not enraged after 3 minutes");
+                    // the weak point on its back: hit from behind
+                    m.setYBodyRot(0f); m.setYRot(0f);
+                    BossRules.testWeak(m, 180f);
+                    p.teleportTo(sl(), m.getX(), m.getY(), m.getZ() - 3, 0f, 0f);
+                    m.invulnerableTime = 0;
+                    m.hurt(p.damageSources().playerAttack(p), 3f);
+                    if (!BossRules.testStaggered(m)) bad.add("a hit on the weak point from behind didn't stagger it");
+                }
+                if (t == 4) {
+                    m.kill();
+                }
+                if (t == 8) {
+                    if (BossLadder.kills(p, 4) != 1) bad.add("the kill isn't in the log");
+                    boolean sig = false, core = false;
+                    for (ItemStack s : p.getInventory().items) { if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.GRAVE_KNOT.get())) sig = true; if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_CORE.get())) core = true; }
+                    if (!sig) bad.add("the poster's owner didn't get the Grave Knot");
+                    if (!core) bad.add("no Mana Core for the mage in the fight");
+                    if (!WorldGrowth.fallen(sl().getServer(), 4)) bad.add("the world didn't grow when the Revenant fell");
+                    end();
+                    if (bad.isEmpty()) pass(name, "+30% health at threat 3, stage 2 at half, enraged at 3 min, staggered from behind, the kill logged with a core and the signature drop, the world grew");
+                    else fail(name, String.join("; ", bad));
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); end(); return true; }
+        }
+        void end() {
+            if (m != null && m.isAlive()) m.discard();
+            EliteMobs.testForgetThreat(p);
+            WorldGrowth.testSet(sl().getServer(), growthWas);
+            BossLadder.testReset(p);
+            p.getInventory().clearContent();
+        }
+    }
+
+    /** A bounty's lair: it opens at the sighting, the boss rises inside, and bringing it down completes the bounty. */
+    static final class LairTest extends Test {
+        LairTest() { super("lairs: the bounty boss in its own rift"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{Rifts.class, RiftBuilder.class, Bounties.class, BossRules.class}; }
+        final List<String> bad = new ArrayList<>();
+        int lair;
+        Mob boss;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true); BossLadder.testReset(p);
+            p.getPersistentData().remove("isg_bounty");
+            p.getPersistentData().remove("isg_bounty_next");
+            Bounties.give(p, p.position(), 5);   // a Curse Witch poster
+            CompoundTag b = p.getPersistentData().getCompound("isg_bounty");
+            lair = Rifts.openLair(p, home.add(4, 0, 0), b);
+            b.putInt("Lair", lair); b.putInt("State", Bounties.STATE_FOUND);
+            if (!Rifts.lairOpen(sl().getServer(), lair)) bad.add("the lair didn't open");
+            for (Rifts.Rift r : Rifts.data(sl().getServer()).rifts) if (r.id == lair) Rifts.enter(p, r);
+        }
+        @Override boolean tick(int t) {
+            try {
+                if (t == 5) {   // walk into the lair room
+                    Rifts.Rift r = Rifts.riftOf(p);
+                    if (r == null || !r.lair) { bad.add("not inside the lair after stepping in"); return finish(); }
+                    Vec3 c = r.centre(r.rooms.get(1));
+                    p.teleportTo(p.serverLevel(), c.x, Rifts.Y, c.z - 4, 0f, 0f);
+                }
+                if (t > 5 && t < 200 && boss == null && t % 10 == 0) {
+                    for (Mob x : p.serverLevel().getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(20), x -> x.isAlive() && x.getPersistentData().contains("isg_bounty_owner"))) boss = x;
+                    if (boss != null) {
+                        if (!BossRules.tracked(boss)) bad.add("the lair's boss isn't under the ladder's rules");
+                        boss.hurt(p.damageSources().playerAttack(p), 2f);
+                        boss.kill();
+                    }
+                }
+                if (boss != null && t % 10 == 0 && !boss.isAlive()) {
+                    if (Bounties.hunting(p)) { if (t > 190) bad.add("the bounty wasn't completed when its boss fell in the lair"); else return false; }
+                    return finish();
+                }
+                if (t >= 200) { if (boss == null) bad.add("no boss rose in the lair"); return finish(); }
+                return false;
+            } catch (Throwable x) { bad.add("threw " + x + " at tick " + t); return finish(); }
+        }
+        boolean finish() {
+            if (p.level().dimension().equals(Rifts.RIFT)) Rifts.leave(p);
+            Rifts.closeLair(sl().getServer(), lair);
+            p.getPersistentData().remove("isg_bounty"); p.getPersistentData().remove("isg_bounty_next");
+            BossLadder.testReset(p);
+            p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+            if (bad.isEmpty()) pass(name, "the lair opened at the sighting, the Curse Witch rose inside under the ladder's rules, and its fall completed the bounty");
+            else fail(name, String.join("; ", bad));
+            return true;
+        }
+    }
+
+    /** The Gate: two gatekeepers in turn; passing it opens tier III. */
+    static final class GateTest extends Test {
+        GateTest() { super("the Gate: two gatekeepers, then tier III"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{Rifts.class, BossLadder.class}; }
+        final List<String> bad = new ArrayList<>();
+        int kills;
+        @Override void start() { cancelCast(); clearArea(); resetPlayer(true); BossLadder.testReset(p); BossLadder.testKill(p, 4, 0, 0); BossLadder.testKill(p, 0, 0, 0); Rifts.startGate(p); }
+        @Override boolean tick(int t) {
+            try {
+                Rifts.Rift r = Rifts.riftOf(p);
+                if (t == 3) {
+                    if (r == null || !r.gate) { bad.add("not inside the Gate"); return finish(); }
+                    Vec3 c = r.centre(r.rooms.get(1));
+                    p.teleportTo(p.serverLevel(), c.x, Rifts.Y, c.z - 4, 0f, 0f);
+                }
+                if (t > 5 && t % 10 == 0 && r != null) {
+                    for (Mob x : p.serverLevel().getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(20), x -> x.isAlive() && Rifts.isShade(x))) { x.kill(); kills++; }
+                    if (BossLadder.gatePassed(p)) return finish();
+                }
+                if (t >= 300) { bad.add("the Gate wasn't passed (" + kills + " gatekeepers down)"); return finish(); }
+                return false;
+            } catch (Throwable x) { bad.add("threw " + x + " at tick " + t); return finish(); }
+        }
+        boolean finish() {
+            if (BossLadder.tier(p) != 3 && bad.isEmpty()) bad.add("tier III didn't open");
+            if (kills < 2 && bad.isEmpty()) bad.add("only " + kills + " gatekeepers came");
+            if (p.level().dimension().equals(Rifts.RIFT)) Rifts.leave(p);
+            BossLadder.testReset(p);
+            p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+            if (bad.isEmpty()) pass(name, "two gatekeepers, one after the other, then tier III open");
+            else fail(name, String.join("; ", bad));
+            return true;
+        }
+    }
+
+    /** The mobs' side: danger by distance, packs, the late traits, elites that learn your magic, deeper rifts. */
+    static final class MobProgressTest extends Test {
+        MobProgressTest() { super("mob progression: danger, packs, late traits, learning elites, deep rifts"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{EliteMobs.class, EliteTraits.class, PackMobs.class, SchoolUse.class, WorldGrowth.class, Rifts.class}; }
+        final List<String> bad = new ArrayList<>();
+        Mob leader, unyield, over, ward, blink;
+        Vec3 blinkAt;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            var sp = sl().getSharedSpawnPos();
+            if (EliteMobs.dangerAt(sl(), new Vec3(sp.getX() + 100, 64, sp.getZ())) != 0) bad.add("danger near spawn isn't 0");
+            if (EliteMobs.dangerAt(sl(), new Vec3(sp.getX() + 1500, 64, sp.getZ())) != 1) bad.add("danger at 1500 blocks isn't 1");
+            if (EliteMobs.dangerAt(sl(), new Vec3(sp.getX() + 6000, 64, sp.getZ())) != 4) bad.add("danger at 6000 blocks isn't 4");
+            leader = zombie(0, 4);
+            PackMobs.testLead(leader, 1);
+            unyield = zombie(4, 6); EliteMobs.testMake(unyield, 4, 1 << EliteMobs.UNYIELDING);
+            over = zombie(-4, 6); EliteMobs.testMake(over, 4, 1 << EliteMobs.OVERSEER);
+            ward = zombie(-5, 7);
+            blink = zombie(2, 8); EliteMobs.testMake(blink, 4, 1 << EliteMobs.BLINKER);
+            SchoolUse.testReset(p); SchoolUse.testCount(p, "fire", 10);
+        }
+        Mob zombie(double dx, double dz) {
+            Mob z = EntityType.ZOMBIE.create(sl());
+            z.moveTo(home.x + dx, home.y, home.z + dz, 0f, 0f);
+            z.setNoAi(true);
+            z.getPersistentData().put(EliteMobs.TAG, new CompoundTag());   // no roll of its own
+            sl().addFreshEntity(z);
+            return z;
+        }
+        @Override boolean tick(int t) {
+            try {
+                if (t == 2) {
+                    int n = PackMobs.testPack(leader).size();
+                    if (n < 3) bad.add("the pack leader came with " + n + " followers");
+                    float hp = unyield.getHealth();
+                    unyield.hurt(p.damageSources().playerAttack(p), 100f);
+                    if (hp - unyield.getHealth() > unyield.getMaxHealth() * 0.2f + 0.01f) bad.add("Unyielding took more than a fifth of its health in one hit");
+                    float w0 = ward.getHealth();
+                    ward.hurt(p.damageSources().magic(), 10f);
+                    if (Math.abs((w0 - ward.getHealth()) - 7f) > 0.2f) bad.add("a mob beside an Overseer took " + (w0 - ward.getHealth()) + " of 10 (should be 7)");
+                    blinkAt = blink.position();
+                    for (int i = 0; i < 3; i++) { blink.invulnerableTime = 0; blink.hurt(p.damageSources().playerAttack(p), 1f); }
+                    if (blink.position().distanceTo(blinkAt) < 1) bad.add("the Blinker didn't step behind after three hits");
+                    Mob learner = zombie(0, 10);
+                    EliteMobs.testMake(learner, 4, 1 << EliteMobs.SPRINTER);
+                    EliteMobs.adapt(learner, p);
+                    if (!"fire".equals(EliteMobs.resists(learner))) bad.add("a rank 4 elite didn't learn fire from a fire mage (" + EliteMobs.resists(learner) + ")");
+                    leader.kill();
+                }
+                if (t == 4) {
+                    int scattering = 0;
+                    for (Mob k : sl().getEntitiesOfClass(Mob.class, new AABB(home, home).inflate(20), k -> k.getPersistentData().hasUUID(PackMobs.MEMBER))) if (PackMobs.testScattering(k)) scattering++;
+                    if (scattering < 3) bad.add("only " + scattering + " of the pack scattered when the leader fell");
+                    // deeper rifts for a higher tier
+                    BossLadder.testReset(p); BossLadder.testKill(p, 4, 0, 0); BossLadder.testKill(p, 0, 0, 0); BossLadder.testGate(p);
+                    Rifts.Rift r = new Rifts.Rift(); r.rank = 2; r.depth = 2 * (BossLadder.tier(p) - 1);
+                    Rifts.layout(r, java.util.concurrent.ThreadLocalRandom.current());
+                    int elites = 0; for (Rifts.Room room : r.rooms) if (room.type == Rifts.ELITE) elites++;
+                    if (r.rooms.size() < 9) bad.add("a tier III rift has only " + r.rooms.size() + " rooms");
+                    if (elites < 2) bad.add("a deep rift has " + elites + " mini-boss rooms");
+                    BossLadder.testReset(p);
+                    SchoolUse.testReset(p);
+                    clearArea();
+                    if (bad.isEmpty()) pass(name, "danger 0/1/4 at 100/1500/6000 blocks, a pack of 3+ that scatters, Unyielding capped at a fifth, Overseer -30%, Blinker steps behind, a rank 4 elite learned fire, a tier III rift runs deeper with mini-bosses");
+                    else fail(name, String.join("; ", bad));
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); clearArea(); return true; }
+        }
+    }
+
+    /** The signature drops at work: Grave Knot, Hexbound Ink, Lich's Page, Turncoat Sigil. */
+    static final class RelicTest extends Test {
+        RelicTest() { super("signature drops: Grave Knot, Hexbound Ink, Lich's Page, Turncoat Sigil"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{BossRelics.class, com.ironspellgrimoire.item.SignatureItem.class, BookTree.class}; }
+        @Override void start() { cancelCast(); clearArea(); resetPlayer(true); BossRelics.testForget(p); }
+        @Override boolean tick(int t) {
+            List<String> bad = new ArrayList<>();
+            ItemStack prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            prev = prev == null ? ItemStack.EMPTY : prev.copy();
+            try {
+                // the Grave Knot: a killing blow leaves you at 1
+                ItemStack knot = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.GRAVE_KNOT.get());
+                top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, knot));
+                var death = new net.minecraftforge.event.entity.living.LivingDeathEvent(p, p.damageSources().magic());
+                net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(death);
+                if (!death.isCanceled() || p.getHealth() > 1.01f) bad.add("the Grave Knot didn't hold");
+                var again = new net.minecraftforge.event.entity.living.LivingDeathEvent(p, p.damageSources().magic());
+                net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(again);
+                if (again.isCanceled()) bad.add("the Grave Knot held twice in a row");
+                top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, ItemStack.EMPTY));
+                p.setHealth(p.getMaxHealth());
+                // the Hexbound Ink: the third cast in a row is free
+                wear(com.ironspellgrimoire.registry.AddonItemRegistry.VECTOR_GRIMOIRE.get());
+                ItemStack book = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+                if (!BossRelics.inscribe(p, new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.HEXBOUND_INK.get()), (com.ironspellgrimoire.item.SignatureItem) com.ironspellgrimoire.registry.AddonItemRegistry.HEXBOUND_INK.get())) bad.add("the Hexbound Ink wouldn't write");
+                int[] costs = new int[3];
+                for (int i = 0; i < 3; i++) {
+                    var ev = new io.redspace.ironsspellbooks.api.events.SpellOnCastEvent(p, "iron_spell_grimoire:redirect", 1, 30, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.EVOCATION.get(), io.redspace.ironsspellbooks.api.spells.CastSource.SPELLBOOK);
+                    net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(ev);
+                    costs[i] = ev.getManaCost();
+                }
+                if (costs[0] != 30 || costs[1] != 30 || costs[2] != 0) bad.add("Hexbound costs " + costs[0] + ", " + costs[1] + ", " + costs[2]);
+                // Lich's Page: +3 tree points
+                int pts = BookTree.points(book);
+                BossRelics.inscribe(p, new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.LICHS_PAGE.get()), (com.ironspellgrimoire.item.SignatureItem) com.ironspellgrimoire.registry.AddonItemRegistry.LICHS_PAGE.get());
+                if (BookTree.points(book) != pts + 3) bad.add("Lich's Page gave " + (BookTree.points(book) - pts) + " points");
+                // the Turncoat Sigil's shadow
+                Mob z = EntityType.ZOMBIE.create(sl());
+                z.moveTo(home.x, home.y, home.z + 4, 0, 0);
+                sl().addFreshEntity(z);
+                int before = BossRelics.testTurned;
+                BossRelics.testTurn(p, z);
+                if (BossRelics.testTurned != before + 1) bad.add("the Turncoat Sigil raised nothing");
+                z.discard();
+            } catch (Throwable x) { bad.add("threw " + x); }
+            ItemStack back = prev;
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, back));
+            BossRelics.testForget(p);
+            clearArea();
+            if (bad.isEmpty()) pass(name, "the Grave Knot held once, the Hexbound third cast was free, Lich's Page gave +3 points, the Turncoat Sigil raised a shadow");
+            else fail(name, String.join("; ", bad));
+            return true;
         }
     }
 

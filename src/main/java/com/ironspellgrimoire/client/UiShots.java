@@ -94,6 +94,10 @@ public final class UiShots {
         steps.add(new Step("codex_book", () -> mc.setScreen(new CodexScreen(CodexScreen.chapters() + 1)), 10, false));
         steps.add(new Step("codex_yours", () -> mc.setScreen(new CodexScreen(CodexScreen.chapter("Your Grimoire"))), 10, false));
         steps.add(new Step("codex_rules", () -> mc.setScreen(new CodexScreen(CodexScreen.chapters() - 1)), 10, false));
+        steps.add(new Step("lad_board", () -> { onServer(p -> UiShotsServer.ladder(p, "setup")); onServer(p -> UiShotsServer.ladder(p, "board")); }, 24, false));
+        steps.add(new Step("lad_codex", () -> mc.setScreen(new CodexScreen(CodexScreen.chapter("Bosses"))), 12, false));
+        steps.add(new Step("lad_codex_log", () -> { if (mc.screen instanceof CodexScreen c) c.scrollPage(400); }, 6, false));
+        steps.add(new Step("lad_clear", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.ladder(p, "clear")); }, 4, true));
         steps.add(new Step("el_mobs", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.elites(p, "mobs")); }, 16, true));
         steps.add(new Step("el_codex", () -> mc.setScreen(new CodexScreen(CodexScreen.chapter("Elite Mobs"))), 10, false));
         steps.add(new Step("el_clear", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.elites(p, "clear")); }, 2, true));
@@ -859,6 +863,7 @@ public final class UiShots {
             case "library" -> new Class<?>[]{LibraryScreen.class, com.ironspellgrimoire.server.GrimoireLibrary.class};
             case "waypoints" -> new Class<?>[]{WaypointScreen.class, com.ironspellgrimoire.server.Waypoints.class};
             case "codex", "codex_book", "codex_rules", "codex_yours" -> new Class<?>[]{CodexScreen.class};
+            case "lad_board", "lad_codex", "lad_codex_log", "lad_clear" -> new Class<?>[]{CodexScreen.class, BoardScreen.class, com.ironspellgrimoire.server.Boards.class, com.ironspellgrimoire.server.BossLadder.class, BossLogClient.class};
             case "el_mobs", "el_codex", "el_clear" -> new Class<?>[]{EliteClient.class, EliteRenderers.class, CodexScreen.class, com.ironspellgrimoire.server.EliteMobs.class, com.ironspellgrimoire.server.EliteTraits.class};
             default -> null;
         };

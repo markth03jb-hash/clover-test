@@ -24,7 +24,7 @@ public final class Boards {
     private Boards() {}
 
     public static final int BOUNTY = 0, QUEST = 1;
-    private static final String[] KEY = {"isg_bounty_offers", "isg_quest_offers"};
+    static final String[] KEY = {"isg_bounty_offers", "isg_quest_offers"};
 
     private static ListTag offers(ServerPlayer p, int kind, BlockPos pos) {
         CompoundTag d = p.getPersistentData();
@@ -58,12 +58,17 @@ public final class Boards {
 
     private static ListTag bountyNotes(ServerPlayer p, BlockPos pos) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        List<Integer> bosses = new ArrayList<>();
-        for (int i = 0; i < Bounties.SECRET; i++) bosses.add(i);
+        List<Integer> bosses = Bounties.allowedBosses(p);   // only the tiers you've reached (BossLadder)
         java.util.Collections.shuffle(bosses);
         ListTag l = new ListTag();
-        for (int i = 0; i < 3; i++) {
-            int boss = i == 2 && Bounties.stars(p) >= Bounties.SECRET_AT && r.nextInt(5) == 0 ? Bounties.SECRET : bosses.get(i);   // now and then a poster with no name on it
+        if (BossLadder.gateOpen(p)) {   // the Gate: a trial, pinned first until it's passed
+            CompoundTag g = new CompoundTag();
+            g.putInt("Boss", BossLadder.GATE);
+            g.putInt("X", pos.getX()); g.putInt("Z", pos.getZ());
+            l.add(g);
+        }
+        for (int i = 0; l.size() < 3; i++) {
+            int boss = i == 2 && Bounties.stars(p) >= Bounties.SECRET_AT && BossLadder.tier(p) >= 3 && r.nextInt(5) == 0 ? Bounties.SECRET : bosses.get(i % bosses.size());   // now and then a poster with no name on it
             CompoundTag o = at(pos, 400, 900);
             o.putInt("Boss", boss);
             o.putInt("Mods", Bounties.rollMods(p, boss));
@@ -134,13 +139,22 @@ public final class Boards {
                 double dx = n.getInt("X") - p.getX(), dz = n.getInt("Z") - p.getZ();
                 String where = "About " + (int) Math.hypot(dx, dz) + " blocks " + Bounties.direction(dx, dz);
                 BoardPackets.Note note = new BoardPackets.Note();
-                if (kind == BOUNTY) {
+                if (kind == BOUNTY && n.getInt("Boss") == BossLadder.GATE) {
+                    note.title = "The Gate";
+                    note.twist = "A trial - once only";
+                    note.text = "Two gatekeepers, one after another: shades of a tier I and a tier II boss. Pass and tier III opens. Fall and you can try again.";
+                    note.where = "Taken from here - no journey";
+                    note.pay = "5★  tier III";
+                    note.special = 3;
+                    note.icon = 3;
+                } else if (kind == BOUNTY) {
                     int boss = n.getInt("Boss"), mods = n.getInt("Mods");
+                    boolean hard = BossLadder.hardenedNext(p, boss);
                     note.title = Bounties.NAMES[Math.min(Bounties.NAMES.length - 1, boss)];
-                    note.twist = Bounties.modsText(mods).getString();
-                    note.text = boss == Bounties.SECRET ? "No name, no face. Only a price." : "Three days to bring them down.";
+                    note.twist = (hard ? "Hardened, " : "") + Bounties.modsText(mods).getString();
+                    note.text = "Tier " + BossLadder.TIER_NAME[BossLadder.TIER[Math.min(6, boss)]] + ".  " + (boss == Bounties.SECRET ? "No name, no face. Only a price." : "Three days to bring them down.");
                     note.where = where;
-                    note.pay = Bounties.starsFor(boss, mods) + "★  emeralds" + (boss == Bounties.SECRET ? "  a relic" : "");
+                    note.pay = Bounties.starsFor(boss, mods) * (hard ? 2 : 1) + "★  emeralds" + (boss == Bounties.SECRET ? "  a relic" : "") + (hard ? "  (x2)" : "");
                     note.special = boss == Bounties.SECRET ? 2 : 0;
                     note.icon = boss;
                 } else {
@@ -201,6 +215,7 @@ public final class Boards {
         if (index >= l.size()) return;
         CompoundTag o = l.getCompound(index);
         p.getPersistentData().remove(KEY[kind]);   // fresh notes next time
+        if (kind == BOUNTY && o.getInt("Boss") == BossLadder.GATE) { p.closeContainer(); Rifts.startGate(p); return; }
         if (kind == BOUNTY) Bounties.takeOffer(p, o); else Quests.takeOffer(p, o);
     }
 }

@@ -49,6 +49,8 @@ public final class EliteTraits {
 
     /** An elite's moment-to-moment state (not saved: it starts fresh after a reload). */
     public static final class Run {
+        int blinkHits;
+        long blinkAt;
         int hits, windup, seekerCd = 60, daggerCd = 60, tetherCd = 60, dashCd = 80, dashTele, dashTicks, seenCd;
         boolean dashHit, shell;
         Vec3 dashDir = Vec3.ZERO;
@@ -118,6 +120,7 @@ public final class EliteTraits {
         int t = traits(m);
         if (t == 0) return;
         long now = sl.getGameTime();
+        if ((t & (1 << OVERSEER)) != 0 && now % 40 == 0) FxSend.ring(sl, Fx.GOLD, m.position().add(0, 0.05, 0), 7.8f, 8f, 0.03f, 38);
         if (--run.seenCd <= 0) {
             run.seenCd = 20;
             for (Player p : sl.players()) if (p instanceof ServerPlayer sp && p.distanceToSqr(m) < 16 * 16 && sees(m, p)) seen(sp, t);
@@ -277,6 +280,12 @@ public final class EliteTraits {
         }
     }
 
+    /** Whether a hostile mob stands within 8 blocks of a living Overseer. */
+    static boolean overseen(Mob m) {
+        for (Mob o : ACTIVE.keySet()) if (o != null && o != m && o.isAlive() && o.level() == m.level() && has(o, OVERSEER) && o.distanceToSqr(m) < 64) return true;
+        return false;
+    }
+
     // ------------------------------------------------------------------ blows given and taken
     private static boolean echoing;
     /** For the tests: how many things an Echo Strike or a Volatile burst has hit. */
@@ -286,9 +295,34 @@ public final class EliteTraits {
     public static void onHurt(LivingHurtEvent e) {
         if (e.getEntity().level().isClientSide()) return;
         DamageSource src = e.getSource();
+        if (e.getEntity() instanceof Enemy && e.getEntity() instanceof Mob shielded && !has(shielded, OVERSEER) && overseen(shielded))
+            e.setAmount(e.getAmount() * 0.7f);   // an Overseer nearby
         if (e.getEntity() instanceof Mob m && marked(m)) {   // an elite is hit
             if (ghost(m)) { e.setCanceled(true); return; }
             boolean real = !src.is(DamageTypeTags.BYPASSES_INVULNERABILITY);
+            String res = resists(m);   // a rank 4-5 elite that has learned your magic
+            if (!res.isEmpty() && src instanceof io.redspace.ironsspellbooks.damage.SpellDamageSource sds && sds.spell() != null
+                    && res.equals(sds.spell().getSchoolType().getId().getPath())) {
+                e.setAmount(e.getAmount() * 0.65f);
+                if (src.getEntity() instanceof ServerPlayer sp && m.tickCount % 40 < 20)
+                    sp.displayClientMessage(net.minecraft.network.chat.Component.literal("It has learned your " + res + " magic: 35% less from it").withStyle(net.minecraft.ChatFormatting.GRAY), true);
+            }
+            if (has(m, UNYIELDING) && real) e.setAmount(Math.min(e.getAmount(), m.getMaxHealth() * 0.2f));
+            if (has(m, BLINKER) && real && src.getEntity() instanceof Player hitter && m.level() instanceof ServerLevel bsl) {
+                Run br = ACTIVE.get(m);
+                if (br != null && ++br.blinkHits >= 3 && bsl.getGameTime() - br.blinkAt >= 100) {
+                    br.blinkHits = 0;
+                    br.blinkAt = bsl.getGameTime();
+                    Vec3 back = flat(hitter.getLookAngle()).scale(-2.2), to = hitter.position().add(back);
+                    if (bsl.noCollision(m, m.getBoundingBox().move(to.subtract(m.position())))) {
+                        FxSend.ring(bsl, Fx.VOID, m.position().add(0, 0.1, 0), 1.2f, 0.2f, 0.05f, 10);
+                        m.teleportTo(to.x, to.y, to.z);
+                        m.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, hitter.getEyePosition());
+                        FxSend.ring(bsl, Fx.VOID, to.add(0, 0.1, 0), 0.2f, 1.2f, 0.05f, 10);
+                        play(m, "elite_reflect", 0.8f, 1.6f);
+                    }
+                }
+            }
             if (has(m, IRONHIDE) && real && e.getAmount() > 0) {
                 CompoundTag d = data(m);
                 int ih = d.getInt("ih");
