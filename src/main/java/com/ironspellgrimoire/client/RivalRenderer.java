@@ -110,7 +110,7 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
                     new Piece("sun_disc", Bone.BODY, 0, v(0.000, 5.000, 29.000), v(0, 0, 0), 1.000f),
                     new Piece("glaive", Bone.RARM, -20, v(-6.000, -3.420, 12.603), v(-8, 0, 0), 1.000f))),
             Map.entry("family_gloamstalker", List.of(
-                    new Piece("hooked_blade", Bone.RARM, -50, v(-5.500, -7.660, 15.572), v(90, 0, 0), 1.400f),
+                    new Piece("hooked_blade", Bone.RARM, -50, v(-5.500, -7.660, 15.572), v(75, 0, 0), 1.100f),
                     new Piece("gloam_hood", Bone.HEAD, 0, v(0.000, 0.000, 27.000), v(0, 0, 0), 1.000f),
                     new Piece("coat_tails", Bone.BODY, 0, v(0.000, 0.000, 13.000), v(0, 0, 0), 1.000f))));
     static { GEAR.putAll(FAMILY_GEAR); }

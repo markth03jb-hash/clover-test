@@ -211,7 +211,7 @@ fam("sun_herald", False, 1.2, {"rarm": (-20, 0, -6)}, [
     ("sun_disc", "BODY", 0, (0, 5 * 1.2, 29 * 1.2), (0, 0, 0), 1.2),
     ("glaive", "RARM", -20, hand(-1, -20, False, 1.2), (-8, 0, 0), 1.2)])
 fam("gloamstalker", True, 1.15, {"rarm": (-50, 0, -6)}, [
-    ("hooked_blade", "RARM", -50, hand(-1, -50, True, 1.15), (90, 0, 0), 1.15 * 1.4),
+    ("hooked_blade", "RARM", -50, hand(-1, -50, True, 1.15), (75, 0, 0), 1.15 * 1.1),
     ("gloam_hood", "HEAD", 0, (0, 0, 27 * 1.15), (0, 0, 0), 1.15),
     ("coat_tails", "BODY", 0, (0, 0, 13 * 1.15), (0, 0, 0), 1.15)])
 
