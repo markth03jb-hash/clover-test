@@ -57,17 +57,23 @@ public class WildFolk extends Monster {
         }
     }
 
-    public final Kind kind;
+    public Kind kind;
     public int castCd = 40, cryCd = 100, blinkCd = 120;
 
     public WildFolk(EntityType<? extends WildFolk> type, Level level, Kind kind) {
-        super(type, level);
+        super(type, level);   // (registerGoals runs inside this, before kind is set: it looks the kind up by type)
         this.kind = kind;
         this.xpReward = kind.role == Role.LEADER ? 15 : kind.role == Role.HUNTER ? 25 : 6;
     }
 
+    static Kind kindOf(EntityType<?> t) {
+        for (var en : com.ironspellgrimoire.registry.AddonEntities.FOLK.entrySet()) if (en.getValue().get() == t) return en.getKey();
+        return Kind.BOG_CRAWLER;
+    }
+
     @Override
     protected void registerGoals() {
+        if (kind == null) kind = kindOf(getType());
         this.goalSelector.addGoal(0, new FloatGoal(this));
         if (kind.role == Role.CASTER) this.goalSelector.addGoal(2, new CastGoal(this));
         else this.goalSelector.addGoal(2, new MeleeAttackGoal(this, kind.role == Role.HUNTER ? 1.15 : 1.0, false));
