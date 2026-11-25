@@ -1253,13 +1253,14 @@ final class GameTestCases {
         net.minecraft.world.entity.Mob husk;
         net.minecraft.world.entity.projectile.Arrow arrow;
         float hp0, huskHp;
+        int hits0;
 
         net.minecraft.world.entity.Mob put(double dx, double dz) {
             var m = net.minecraft.world.entity.EntityType.HUSK.create(sl());
             if (m == null) return null;
             m.moveTo(home.x + dx, home.y, home.z + dz, 180f, 0f);
             m.setNoAi(true); m.setPersistenceRequired();
-            m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(500); m.setHealth(500);
+            m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(120); m.setHealth(120);   // under 150: not a boss
             sl().addFreshEntity(m);
             return m;
         }
@@ -1356,10 +1357,11 @@ final class GameTestCases {
                         husk.setTarget(p);
                         p.invulnerableTime = 0;
                         int seen0 = ForeseenFx.testSeen;
+                        hits0 = GameTests.playerHits;
                         boolean took = p.hurt(p.damageSources().mobAttack(husk), 4f);
                         if (ForeseenFx.testHeld(p) != 1) bad.add("the husk's blow wasn't held (" + ForeseenFx.testHeld(p) + " held; reached Foresight " + (ForeseenFx.testSeen - seen0)
                                 + "; hurt returned " + took + "; mode " + p.gameMode.getGameModeForPlayer() + ", invulnerable " + p.isInvulnerable() + ", hp " + p.getHealth() + ")");
-                        if (p.getHealth() < hp0) bad.add("a foreseen blow landed at once");
+                        if (GameTests.playerHits > hits0) bad.add("a foreseen blow landed at once");
                         p.teleportTo(sl(), home.x, home.y, home.z - 5, 0f, 0f);   // step out of reach
                     }
                 }
@@ -1368,10 +1370,10 @@ final class GameTestCases {
                         if (arrow == null || arrow.getOwner() != p) bad.add("the arrow wasn't turned back (owner " + (arrow == null ? "none" : arrow.getOwner()) + ")");
                         // a blow: mastery 5's first blow comes back whole
                         p.invulnerableTime = 0;
-                        float h = p.getHealth();
+                        int h = GameTests.playerHits;
                         huskHp = husk.getHealth();
                         p.hurt(p.damageSources().mobAttack(husk), 4f);
-                        if (p.getHealth() < h) bad.add("the first blow of the fight wasn't returned whole");
+                        if (GameTests.playerHits > h) bad.add("the first blow of the fight wasn't returned whole");
                         BookTree.useWheel(p, 0);
                         if (VectorFx.testStance(p) != 1) bad.add("Stance Shift didn't move to Return");
                     } else if (kind == BookTree.FUSE) {
@@ -1386,12 +1388,12 @@ final class GameTestCases {
                         huskHp = husk.getHealth();
                     } else {
                         if (ForeseenFx.testHeld(p) != 0) bad.add("the held blow never resolved");
-                        if (p.getHealth() < hp0) bad.add("the blow landed though you stepped out of reach");
+                        if (GameTests.playerHits > hits0) bad.add("the blow landed though you stepped out of reach");
                         if (ForeseenFx.testLastDodge(p) < 0) bad.add("stepping away wasn't a dodge");
                         // now stay: it lands
                         p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
                         p.invulnerableTime = 0;
-                        hp0 = p.getHealth();
+                        hits0 = GameTests.playerHits;
                         p.hurt(p.damageSources().mobAttack(husk), 4f);
                     }
                 }
@@ -1400,7 +1402,7 @@ final class GameTestCases {
                 }
                 if (t == 100) {
                     if (kind == BookTree.FUSE && husk.getHealth() >= huskHp) bad.add("the 3 s timer never set the armed husk off");
-                    if (kind == BookTree.FORESEEN && p.getHealth() >= hp0) bad.add("a blow you stayed for never landed");
+                    if (kind == BookTree.FORESEEN && GameTests.playerHits <= hits0) bad.add("a blow you stayed for never landed");
                     String ch = changes(before);
                     if (!ch.isEmpty()) bad.add("changed the world: " + ch);
                     if (bad.isEmpty()) pass(name, "points, ranks, requirements, a keystone pair, Unlearn All, the wheel lock, and the passive all work");
