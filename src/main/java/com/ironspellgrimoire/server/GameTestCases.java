@@ -403,7 +403,7 @@ final class GameTestCases {
         queue.add(new MobProgressTest());
         queue.add(new RelicTest());
         queue.add(new FolkTest());
-        queue.add(new TwinsTest());
+        queue.add(new IronTwinsTest());
         queue.add(new StarTest());
         queue.add(new WorldEventsTest());
         queue.add(new MultiplayerTest());
@@ -1731,8 +1731,8 @@ final class GameTestCases {
     }
 
     /** The Ironbound Twins: one health, the chain taut (more taken, the third blow staggers) or close (less taken), Oswin gone with Haldric. */
-    static final class TwinsTest extends Test {
-        TwinsTest() { super("the Ironbound Twins: shared health, the chain"); }
+    static final class IronTwinsTest extends Test {
+        IronTwinsTest() { super("the Ironbound Twins: shared health, the chain"); }
         @Override Class<?>[] roots() { return new Class<?>[]{com.ironspellgrimoire.entity.IronboundTwin.class, IronboundAI.class, Bounties.class}; }
         final List<String> bad = new ArrayList<>();
         com.ironspellgrimoire.entity.IronboundTwin h, o;
