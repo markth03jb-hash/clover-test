@@ -76,11 +76,12 @@ public final class ModeHudOverlay {
             double left = f[1] - now;
             Component name = Component.translatable("spell.iron_spell_grimoire." + id);
             int secs = (int) Math.ceil(left / 20.0);
-            String time = String.format("%d:%02d", secs / 60, secs % 60);
+            boolean standing = f[2] >= 900_000;   // a stance or setting: no countdown
+            String time = standing ? "active" : String.format("%d:%02d", secs / 60, secs % 60);
             if (f.length > 3 && f[3] >= 0) time += "  \u00b7  " + (int) f[3] + " left";   // hits / dodges / shield left
             int w = Math.max(96, Math.max(font.width(name), font.width(time)) + 28);
             int x = right - w;
-            boolean blink = left < 200 && ((int) (now / 4) % 2 == 0);   // last 10 s, like vanilla
+            boolean blink = !standing && left < 200 && ((int) (now / 4) % 2 == 0);   // last 10 s, like vanilla
             int accent = accent(id);
             if (gold) {   // a mastered grimoire: gold trim round the whole panel
                 g.fill(x - 1, y - 1, right + 1, y, 0xFFE8B830);
@@ -95,7 +96,8 @@ public final class ModeHudOverlay {
             float frac = (float) Mth.clamp(left / Math.max(1.0, f[2]), 0.0, 1.0);
             g.fill(x + 1, y + 21, x + 1 + (int) ((w - 2) * frac), y + 23, accent);
             if (!blink) {
-                ResourceLocation icon = new ResourceLocation("iron_spell_grimoire", "textures/gui/spell_icons/" + (id.equals("scarlet_moon") ? "ice_" : "") + id + ".png");
+                String ic = id.startsWith("vec_stance") ? "vec_stance" : id.startsWith("fuse_mode") ? "fuse_mode" : id.equals("bd_release") ? "bd_restrain" : id;
+                ResourceLocation icon = new ResourceLocation("iron_spell_grimoire", "textures/gui/spell_icons/" + (id.equals("scarlet_moon") ? "ice_" : "") + ic + ".png");
                 g.blit(icon, x + 4, y + 3, 0, 0, 16, 16, 16, 16);
             }
             g.drawString(font, name, x + 24, y + 3, 0xFFFFFF, true);
@@ -129,6 +131,15 @@ public final class ModeHudOverlay {
     private static int accent(String id) {
         return switch (id) {
             case "devil_union" -> 0xFFB01020;
+            case "zenith_unbound", "hearth_star", "last_coal", "borrowed_noon" -> 0xFFFFC040;
+            case "ill_fated_path", "needle_rain", "domino", "stillness", "the_law_itself" -> 0xFF5A82FF;
+            case "return_to_sender", "pulse_touch", "vector_absolute", "vec_hover", "recoil_plating", "vec_stance_return", "vec_stance_flow" -> 0xFF6FDFFF;
+            case "fuse_mode_timer", "fuse_mode_near" -> 0xFFFF7FB4;
+            case "bd_restrain", "bd_release" -> 0xFFE0303C;
+            case "contact_charge", "chain_fuse", "loop_of_ruin", "hidden_tenant" -> 0xFFFF7FB4;
+            case "read_intent", "seen_it_before", "fore_glimpse", "untouchable", "fore_thread", "punish_ready" -> 0xFF9DB9FF;
+            case "last_seraph", "bd_symbiosis", "bd_last_stand", "bd_saltwall" -> 0xFFF4F0F2;
+            case "bd_takeover", "bd_warning", "demons_whisper", "bond_guard", "bd_afterglow", "bd_family", "bd_parry", "demon_flurry" -> 0xFFE0303C;
             case "mana_zone_dimension_slash", "black_blade", "black_cocoon", "ki_foresight" -> 0xFF8A4DE0;
             case "knights_armor" -> 0xFFB8C4D0;
             case "spirit_dive", "hushed_dance", "mana_zone" -> 0xFF6BE09A;

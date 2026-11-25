@@ -142,6 +142,7 @@ public final class ForeseenFx {
         long now = sl.getGameTime();
         s.streak++;
         s.lastDodge = now;
+        ModeHud.show(p, "punish_ready", 40);
         FxSend.ring(sl, PALE, mid(p), 0.3f, 1.2f, 0.05f, 8);
         play(sl, p.position(), "fore_dodge", 0.9f, 1.2f + 0.05f * Math.min(6, s.streak));
         BookTree.grow(p, BookTree.FORESEEN, 1);
@@ -155,6 +156,7 @@ public final class ForeseenFx {
         if (r(p, "c2") > 0 && by != null) EXPOSED.put(by, now + 80);
         if (r(p, "e4") > 0 && s.streak >= 3) {
             s.untouchableUntil = now + 80; s.streak = 0;
+            ModeHud.show(p, "untouchable", 80);
             p.displayClientMessage(Component.literal("Untouchable").withStyle(ChatFormatting.AQUA), true);
         }
     }
@@ -291,6 +293,7 @@ public final class ForeseenFx {
         if (t == null) return;
         long until = sl.getGameTime() + 200;
         MARK.put(t, until);
+        ModeHud.show(p, "read_intent", 200);
         FxSend.ring(sl, PALE, mid(t), 0.2f, 1.2f, 0.06f, 10);
         if (r(p, "t2") > 0) {
             int n = 0;
@@ -379,6 +382,7 @@ public final class ForeseenFx {
         S s = s(p);
         s.seen.clear();
         s.seenUntil = p.level().getGameTime() + 200 + 100 * r(p, "t3");
+        ModeHud.show(p, "seen_it_before", 200 + 100 * r(p, "t3"));
         FxSend.ring(p.serverLevel(), PALE, mid(p), 0.8f, 1.0f, 0.04f, (int) (s.seenUntil - p.level().getGameTime()));
         play(p.serverLevel(), p.position(), "fore_read", 1f, 1.3f);
     }
@@ -413,6 +417,7 @@ public final class ForeseenFx {
         switch (slot) {
             case 0 -> {
                 s.glimpseUntil = sl.getGameTime() + 100;
+                ModeHud.show(p, "fore_glimpse", 100);
                 play(sl, p.position(), "fore_read", 1.1f, 1.2f);
                 FxSend.ring(sl, PALE, p.position().add(0, 0.1, 0), 0.3f, (float) range(p), 0.06f, 12);
             }
@@ -431,6 +436,7 @@ public final class ForeseenFx {
                 if (b == null) { p.displayClientMessage(Component.literal("No second foe within 8 blocks").withStyle(ChatFormatting.GRAY), true); return false; }
                 long until = sl.getGameTime() + 200;
                 THREAD.put(a, b); THREAD.put(b, a); THREAD_UNTIL.put(a, until); THREAD_UNTIL.put(b, until);
+                ModeHud.show(p, "fore_thread", 200);
                 FxSend.trail(sl, PALE, mid(a), mid(b), 0.05f, 200);
                 play(sl, a.position(), "fore_read", 1f, 0.7f);
             }

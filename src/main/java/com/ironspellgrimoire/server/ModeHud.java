@@ -39,4 +39,12 @@ public final class ModeHud {
     }
 
     public static void hide(ServerPlayer p, String spellId) { show(p, spellId, 0); }
+
+    /** A standing mode - a stance or a setting - shown as "active" until hidden. */
+    public static final int ALWAYS = 1_000_000;
+
+    /** Show exactly one of a set of standing modes (or none, for -1): the rest are hidden. */
+    public static void standing(ServerPlayer p, String[] set, int which) {
+        for (int i = 0; i < set.length; i++) show(p, set[i], i == which ? ALWAYS : 0);
+    }
 }

@@ -134,6 +134,7 @@ public final class BoundFx {
         if (s.poss >= 100f && s.warnUntil == 0) {
             if (r(p, "d3") > 0) {
                 s.warnUntil = now + 60;
+                ModeHud.show(p, "bd_warning", 60);
                 p.displayClientMessage(Component.literal("The demon is at the door...").withStyle(ChatFormatting.DARK_RED), true);
                 play(p.serverLevel(), p.position(), "bd_whisper", 1f, 0.7f);
             } else takeover(p);
@@ -145,7 +146,9 @@ public final class BoundFx {
         ServerLevel sl = p.serverLevel();
         long now = sl.getGameTime();
         s.warnUntil = 0;
+        ModeHud.hide(p, "bd_warning");
         s.takeoverUntil = now + (r(p, "K2") > 0 ? 240 : 160);
+        ModeHud.show(p, "bd_takeover", (int) (s.takeoverUntil - now));
         s.poss = 100f;
         draw(p, false);
         p.displayClientMessage(Component.literal("The demon has your hands.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), true);
@@ -159,10 +162,11 @@ public final class BoundFx {
     static void endTakeover(ServerPlayer p) {
         S s = s(p);
         s.takeoverUntil = 0;
+        ModeHud.hide(p, "bd_takeover");
         s.poss = 40f;
         s.target = null;
         s.fallen = false;
-        if (r(p, "d9") > 0) s.afterUntil = p.level().getGameTime() + 120;
+        if (r(p, "d9") > 0) { s.afterUntil = p.level().getGameTime() + 120; ModeHud.show(p, "bd_afterglow", 120); }
         p.displayClientMessage(Component.literal("You are yourself again.").withStyle(ChatFormatting.GRAY), true);
         play(p.serverLevel(), p.position(), "bd_whisper", 0.8f, 1.3f);
         BookTree.grow(p, BookTree.BOUND, 3);
@@ -228,6 +232,8 @@ public final class BoundFx {
         BookTree.data(b).putInt("aw", BookTree.data(b).getInt("aw") + 1);
         if (r(p, "K3") <= 0 && !p.getAbilities().mayfly) { p.getAbilities().mayfly = true; p.onUpdateAbilities(); s.flyGranted = true; }
         s.wingGuards = r(p, "K4") > 0 ? 6 : 0;
+        ModeHud.show(p, "last_seraph", (int) (s.awakeUntil - now), s.wingGuards > 0 ? s.wingGuards : -1);
+        if (s.fallen) ModeHud.show(p, "bd_takeover", (int) (s.takeoverUntil - now));
         FxSend.ring(sl, SALT, p.position().add(0, 0.1, 0), 0.4f, 6f, 0.2f, 14);
         FxSend.beam(sl, SALT, p.position().add(0, 12, 0), p.position(), 0.8f, 12);
         FxSend.shake(sl, p.position(), 0.4f, 8, 16);
@@ -248,6 +254,7 @@ public final class BoundFx {
     static void endAwake(ServerPlayer p) {
         S s = s(p);
         s.awakeUntil = 0;
+        ModeHud.hide(p, "last_seraph");
         if (s.flyGranted && !p.isCreative() && !p.isSpectator()) { p.getAbilities().mayfly = false; p.getAbilities().flying = false; p.onUpdateAbilities(); }
         s.flyGranted = false;
         p.fallDistance = 0;
@@ -338,7 +345,7 @@ public final class BoundFx {
             }
             if (now < s.awakeUntil && att != null) {
                 if (r(p, "s6") > 0 && mid(att).subtract(mid(p)).normalize().dot(p.getLookAngle()) < -0.3) { e.setCanceled(true); FxSend.ring(sl, SALT, mid(p), 0.3f, 1.4f, 0.06f, 6); return; }
-                if (s.wingGuards > 0) { s.wingGuards--; e.setCanceled(true); FxSend.ring(sl, SALT, mid(p), 0.3f, 1.4f, 0.06f, 6); play(sl, p.position(), "bd_salt", 0.8f, 1.4f); return; }
+                if (s.wingGuards > 0) { s.wingGuards--; ModeHud.show(p, "last_seraph", (int) (s.awakeUntil - now), s.wingGuards); e.setCanceled(true); FxSend.ring(sl, SALT, mid(p), 0.3f, 1.4f, 0.06f, 6); play(sl, p.position(), "bd_salt", 0.8f, 1.4f); return; }
             }
             if (att != null && r(p, "k4") > 0 && holding(p) && BookTree.melee(e.getSource()) && now - s.sneakAt <= 6) {   // Parry
                 e.setCanceled(true);
@@ -346,6 +353,7 @@ public final class BoundFx {
                 if (!boss(att)) Kit.push(att, flatAway(att, p), 0.6, 0.2);
                 FxSend.slash(sl, RED, mid(p).add(p.getLookAngle()), p.getLookAngle(), new Vec3(0, 1, 0), 0.8f, 1.6f, 5, 0);
                 play(sl, p.position(), "bd_parry", 1f, 1.2f);
+                ModeHud.show(p, "bd_parry", 20);
                 BookTree.grow(p, BookTree.BOUND, 1);
                 return;
             }
@@ -356,6 +364,7 @@ public final class BoundFx {
                     s.lastStandAt = now;
                     e.setAmount(Math.max(0f, p.getHealth() - 1f));
                     s.untouchUntil = now + 60; UNTOUCH.put(a, now + 60);
+                    ModeHud.show(p, "bd_last_stand", 60);
                     FxSend.ring(sl, SALT, mid(p), 0.3f, 2f, 0.1f, 60); FxSend.ring(sl, SALT, mid(a), 0.3f, 2f, 0.1f, 60);
                     p.displayClientMessage(Component.literal("Not yet - not while they're here.").withStyle(ChatFormatting.WHITE), true);
                 }
@@ -453,6 +462,7 @@ public final class BoundFx {
         if (!has(p)) {
             S old = STATE.remove(p.getUUID());
             if (old != null && old.flyGranted && !p.isCreative() && !p.isSpectator()) { p.getAbilities().mayfly = false; p.getAbilities().flying = false; p.onUpdateAbilities(); }
+            if (old != null && old.mode != 0) ModeHud.standing(p, new String[]{"bd_restrain", "bd_release"}, -1);
             if (old != null) AddonNetwork.CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p), new BoundPackets.State(p.getId(), 0, false, false, false));
             return;
         }
@@ -672,6 +682,8 @@ public final class BoundFx {
         play(sl, p.position(), "bd_whisper", 1.2f, 0.9f);
         if (s.warnUntil > 0 && r(p, "d5") > 0) {   // Inner Duel
             s.warnUntil = 0; s.symUntil = now + 200; s.poss = 70f;
+            ModeHud.hide(p, "bd_warning");
+            ModeHud.show(p, "bd_symbiosis", 200);
             p.displayClientMessage(Component.literal("You and the demon want the same thing - for now.").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
             FxSend.ring(sl, RED, mid(p), 0.3f, 2.6f, 0.12f, 14);
             BookTree.grow(p, BookTree.BOUND, 3);
@@ -679,6 +691,7 @@ public final class BoundFx {
         }
         feed(p, (r(p, "K1") > 0 ? 15f : 30f) * gainMul(p));
         TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, WHISPER, "Demon's Whisper", 0.5, AttributeModifier.Operation.MULTIPLY_TOTAL, 160);
+        ModeHud.show(p, "demons_whisper", 160);
         FxSend.ring(sl, DARK, mid(p), 0.2f, 1.8f, 0.1f, 10);
         if (r(p, "d10") > 0) for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(6))) {
             if (ally(p, t) || boss(t)) continue;
@@ -709,6 +722,7 @@ public final class BoundFx {
         int max = r(p, "K6") > 0 ? 3 : 1;
         while (s.links.size() >= max) { Iterator<LivingEntity> it = s.links.keySet().iterator(); it.next(); it.remove(); }
         s.links.put(a, sl.getGameTime() + (r(p, "b1") > 0 ? 400 : 200));
+        ModeHud.show(p, "bond_guard", r(p, "b1") > 0 ? 400 : 200, s.links.size());
         FxSend.trail(sl, RED, mid(p), mid(a), 0.08f, 12);
         FxSend.ring(sl, RED, mid(a), 0.2f, 1.2f, 0.06f, 10);
         play(sl, a.position(), "bd_bond", 1f, 1f);
@@ -720,6 +734,7 @@ public final class BoundFx {
         S s = s(p);
         long now = p.level().getGameTime();
         s.flurryUntil = now + (r(p, "k6") > 0 ? 40 : 20);
+        ModeHud.show(p, "demon_flurry", (int) (s.flurryUntil - now) + (r(p, "k7") > 0 ? 60 : 0));
         s.flurryAt = mid(p);
         if (r(p, "k7") > 0) s.ghostUntil = s.flurryUntil + 60;
         play(p.serverLevel(), p.position(), "bd_cut", 1.2f, 0.8f);
@@ -770,6 +785,7 @@ public final class BoundFx {
         switch (slot) {
             case 0 -> {
                 s.mode = (s.mode + 1) % 3;
+                ModeHud.standing(p, new String[]{"bd_restrain", "bd_release"}, s.mode - 1);
                 p.displayClientMessage(Component.literal(new String[]{"Balanced: the demon as it is", "Restrain: it fills slowly, and fades even with the blade drawn", "Release: it fills fast, and gives more"}[s.mode]).withStyle(ChatFormatting.DARK_RED), true);
                 play(sl, p.position(), "bd_whisper", 0.7f, 1.2f + 0.2f * s.mode);
             }
@@ -782,10 +798,12 @@ public final class BoundFx {
                     FxSend.ring(sl, RED, mid(a), 0.2f, 1f, 0.05f, 10);
                 }
                 play(sl, p.position(), "bd_bond", 1.2f, 0.8f);
+                ModeHud.show(p, "bd_family", 200);
             }
             case 2 -> {
                 Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
                 s.walls.add(new Wall(p.position().add(look.scale(3)), new Vec3(-look.z, 0, look.x), sl.getGameTime() + 80));
+                ModeHud.show(p, "bd_saltwall", 80);
                 play(sl, p.position(), "bd_salt", 1.2f, 0.7f);
             }
             default -> {

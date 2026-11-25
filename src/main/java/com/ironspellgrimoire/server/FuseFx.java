@@ -181,6 +181,7 @@ public final class FuseFx {
         // Contact Charge: the next creature to strike you is armed
         if (victim instanceof ServerPlayer p && has(p) && p.level().getGameTime() < f(p).contactUntil && e.getSource().getDirectEntity() == attacker && BookTree.melee(e.getSource())) {
             f(p).contactUntil = 0;
+            ModeHud.hide(p, "contact_charge");
             arm(p, attacker, true);
             e.setAmount(e.getAmount() * 0.5f);
         }
@@ -191,6 +192,7 @@ public final class FuseFx {
             if (until == null || until < p.level().getGameTime() || attacker == p) return;
             f(p).tenants.remove(victim);
             HOSTS.remove(victim);
+            if (f(p).tenants.isEmpty()) ModeHud.hide(p, "hidden_tenant");
             blast(p, mid(attacker), Math.max(2.5, radius(p)), baseDamage(p) * 1.5f, attacker, true);
             if (r(p, "a4") > 0) victim.heal(4f);
         }
@@ -216,7 +218,7 @@ public final class FuseFx {
     @SubscribeEvent
     public static void onTick(TickEvent.PlayerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || !p.isAlive()) return;
-        if (!has(p)) { STATE.remove(p.getUUID()); return; }
+        if (!has(p)) { F old = STATE.remove(p.getUUID()); if (old != null && old.mode != 0) ModeHud.standing(p, new String[]{"fuse_mode_timer", "fuse_mode_near"}, -1); return; }
         F s = f(p);
         ServerLevel sl = p.serverLevel();
         long now = sl.getGameTime();
@@ -351,6 +353,7 @@ public final class FuseFx {
     /** Contact Charge: for 10 s, the next creature to strike you is armed (past your limit), and its blow is halved. */
     public static void contactCharge(ServerPlayer p, float power) {
         f(p).contactUntil = p.level().getGameTime() + 200;
+        ModeHud.show(p, "contact_charge", 200);
         FxSend.ring(p.serverLevel(), PAL, mid(p), 0.6f, 0.9f, 0.04f, 200);
         play(p.serverLevel(), p.position(), "fuse_arm", 1f, 0.7f);
     }
@@ -358,6 +361,7 @@ public final class FuseFx {
     /** Chain Fuse: for 15 s every blast arms what it catches. */
     public static void chainFuse(ServerPlayer p, float power) {
         f(p).chainUntil = p.level().getGameTime() + 300;
+        ModeHud.show(p, "chain_fuse", 300);
         FxSend.ring(p.serverLevel(), HOT, p.position().add(0, 0.1, 0), 0.3f, 2.4f, 0.05f, 12);
         play(p.serverLevel(), p.position(), "fuse_click", 1f, 0.7f);
     }
@@ -375,6 +379,7 @@ public final class FuseFx {
         }
         if (host == null) host = p;
         f(p).tenants.put(host, sl.getGameTime() + (r(p, "a4") > 0 ? 1200 : 600));
+        ModeHud.show(p, "hidden_tenant", r(p, "a4") > 0 ? 1200 : 600);
         HOSTS.put(host, p.getUUID());
         FxSend.ring(sl, PAL, mid(host), 0.3f, 1.0f, 0.05f, 10);
         play(sl, host.position(), "fuse_arm", 1f, 0.8f);
@@ -384,6 +389,7 @@ public final class FuseFx {
     /** Loop of Ruin: for 15 s every blast you set off happens again 3 s later, where it was (twice with Endless Loop). */
     public static void loopOfRuin(ServerPlayer p, float power) {
         f(p).loopUntil = p.level().getGameTime() + 300;
+        ModeHud.show(p, "loop_of_ruin", 300);
         ServerLevel sl = p.serverLevel();
         FxSend.ring(sl, PAL, p.position().add(0, 0.1, 0), 0.3f, 12f, 0.1f, 16);
         FxSend.ring(sl, HOT, p.position().add(0, 0.1, 0), 11.6f, 12f, 0.05f, 300);
@@ -399,6 +405,7 @@ public final class FuseFx {
             case 0 -> { return detonateAll(p) > 0; }
             case 1 -> {
                 s.mode = (s.mode + 1) % 3;
+                ModeHud.standing(p, new String[]{"fuse_mode_timer", "fuse_mode_near"}, s.mode - 1);
                 p.displayClientMessage(Component.literal(new String[]{"Armed targets blow on Detonate", "Armed targets blow 3 s after arming", "Armed targets blow when a foe comes near"}[s.mode]).withStyle(ChatFormatting.LIGHT_PURPLE), true);
                 play(sl, p.position(), "fuse_click", 0.8f, 1.4f);
             }

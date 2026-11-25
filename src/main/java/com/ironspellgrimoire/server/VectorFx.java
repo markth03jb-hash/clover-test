@@ -109,6 +109,7 @@ public final class VectorFx {
         s.plating = now < s.platingUntil ? Math.min(5, s.plating + 1) : 1;
         s.platingUntil = now + 120;
         TimedModifiers.apply(p, Attributes.ARMOR, PLATING, "Recoil Plating", s.plating, AttributeModifier.Operation.ADDITION, 120);
+        ModeHud.show(p, "recoil_plating", 120, s.plating);
     }
 
     /** Every page cast: Overpressure counts them. */
@@ -182,6 +183,7 @@ public final class VectorFx {
         // Pulse Touch: the next blow carries through
         if (attacker instanceof ServerPlayer p && melee && has(p) && p.level().getGameTime() < v(p).pulseUntil) {
             v(p).pulseUntil = 0;
+            ModeHud.hide(p, "pulse_touch");
             pulse(p, victim);
         }
         if (!(victim instanceof ServerPlayer p) || !has(p) || !melee) return;
@@ -241,7 +243,7 @@ public final class VectorFx {
     @SubscribeEvent
     public static void onTick(TickEvent.PlayerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || !p.isAlive()) return;
-        if (!has(p)) { STATE.remove(p.getUUID()); return; }
+        if (!has(p)) { V old = STATE.remove(p.getUUID()); if (old != null && old.stance != 0) ModeHud.standing(p, new String[]{"vec_stance_return", "vec_stance_flow"}, -1); return; }
         V s = v(p);
         ServerLevel sl = p.serverLevel();
         long now = sl.getGameTime();
@@ -395,6 +397,7 @@ public final class VectorFx {
     public static void returnToSender(ServerPlayer p, float power) {
         cast(p);
         v(p).returnUntil = p.level().getGameTime() + (r(p, "r5") > 0 ? 100 : 60);
+        ModeHud.show(p, "return_to_sender", r(p, "r5") > 0 ? 100 : 60);
         FxSend.ring(p.serverLevel(), PAL, mid(p), 0.4f, 6f, 0.06f, 10);
         play(p.serverLevel(), p.position(), "vec_return", 1f, 1f);
     }
@@ -426,6 +429,7 @@ public final class VectorFx {
     public static void pulseTouch(ServerPlayer p, float power) {
         cast(p);
         v(p).pulseUntil = p.level().getGameTime() + 120;
+        ModeHud.show(p, "pulse_touch", 120);
         FxSend.ring(p.serverLevel(), PALE, Kit.hand(p), 0.1f, 0.5f, 0.04f, 120);
         play(p.serverLevel(), p.position(), "vec_pulse", 0.8f, 1.4f);
     }
@@ -478,6 +482,7 @@ public final class VectorFx {
         cast(p);
         V s = v(p);
         s.absoluteUntil = p.level().getGameTime() + (r(p, "k3") > 0 ? 400 : 240);
+        ModeHud.show(p, "vector_absolute", r(p, "k3") > 0 ? 400 : 240);
         s.redirects = 0;
         ServerLevel sl = p.serverLevel();
         FxSend.ring(sl, PALE, p.position().add(0, 0.1, 0), 0.4f, 16f, 0.2f, 16);
@@ -492,12 +497,14 @@ public final class VectorFx {
         switch (slot) {
             case 0 -> {
                 s.stance = (s.stance + 1) % 3;
+                ModeHud.standing(p, new String[]{"vec_stance_return", "vec_stance_flow"}, s.stance - 1);
                 p.displayClientMessage(Component.literal(new String[]{"Reflect stance: projectiles", "Return stance: blows", "Flow stance: no fall damage, faster"}[s.stance]).withStyle(ChatFormatting.AQUA), true);
                 FxSend.ring(sl, PAL, mid(p), 0.3f, 1.4f, 0.05f, 8);
                 play(sl, p.position(), "vec_step", 0.8f, 1.4f);
             }
             case 1 -> {
                 s.hoverUntil = sl.getGameTime() + 60;
+                ModeHud.show(p, "vec_hover", 60);
                 p.setDeltaMovement(p.getDeltaMovement().x, 0.4, p.getDeltaMovement().z); p.hurtMarked = true;
                 play(sl, p.position(), "vec_return", 0.8f, 1.5f);
             }

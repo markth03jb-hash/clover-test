@@ -476,6 +476,7 @@ public final class OmenFx {
     public static void illFatedPath(ServerPlayer p, float power) {
         Mage m = mage(p);
         m.pathUntil = p.level().getGameTime() + 200;
+        ModeHud.show(p, "ill_fated_path", 200);
         m.lastPrintAt = null;
         play(p.serverLevel(), p.position(), "omen_step", 1f, 0.8f);
         FxSend.ring(p.serverLevel(), DARK, p.position().add(0, 0.05, 0), 0.3f, 1.4f, 0.04f, 10);
@@ -567,6 +568,7 @@ public final class OmenFx {
     /** For 5 s ill luck falls as needles on everyone pursuing you within 10 blocks - harder in real rain. */
     public static void needleRain(ServerPlayer p, float power) {
         mage(p).rainUntil = p.level().getGameTime() + 100;
+        ModeHud.show(p, "needle_rain", 100);
         play(p.serverLevel(), p.position(), "omen_needles", 1.3f, 0.9f);
         FxSend.ring(p.serverLevel(), BLUE, p.position().add(0, 0.05, 0), 9.8f, 10f, 0.05f, 100);
     }
@@ -589,6 +591,7 @@ public final class OmenFx {
     /** Domino: for 15 s every calamity leaps to the nearest other pursuer. */
     public static void domino(ServerPlayer p, float power) {
         mage(p).dominoUntil = p.level().getGameTime() + 300;
+        ModeHud.show(p, "domino", 300);
         play(p.serverLevel(), p.position(), "omen_domino", 1.2f, 1f);
         FxSend.ring(p.serverLevel(), BLUE, mid(p), 0.3f, 2.2f, 0.05f, 10);
     }
@@ -596,6 +599,7 @@ public final class OmenFx {
     /** Stillness: for 4 s, while you stand still, blows aimed at you rebound on their senders as calamity. */
     public static void stillness(ServerPlayer p, float power) {
         mage(p).stillUntil = p.level().getGameTime() + 80;
+        ModeHud.show(p, "stillness", 80);
         play(p.serverLevel(), p.position(), "omen_still", 1.2f, 1f);
         FxSend.ring(p.serverLevel(), PALE, p.position().add(0, 0.05, 0), 1.3f, 1.5f, 0.05f, 80);
     }
@@ -621,6 +625,7 @@ public final class OmenFx {
     public static void theLawItself(ServerPlayer p, float power) {
         Mage m = mage(p);
         m.lawUntil = p.level().getGameTime() + 400;
+        ModeHud.show(p, "the_law_itself", 400);
         m.lawCount = 0;
         ServerLevel sl = p.serverLevel();
         play(sl, p.position(), "omen_law", 1.6f, 1f);
