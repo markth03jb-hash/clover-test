@@ -306,7 +306,7 @@ public final class GravityFx {
                 if (!alive(p)) return;
                 for (LivingEntity e : Kit.near(sl, p, c, R)) pull(e, c, 0.32);
                 if (kk % 20 == 0) {
-                    for (LivingEntity e : Kit.near(sl, p, c, 2.5)) hit(p, e, pow * 0.15f, "gravity_well");
+                    for (LivingEntity e : Kit.near(sl, p, c, 2.5)) hit(p, e, pow * 0.3f, "gravity_well");
                     play(sl, c, "gravity_hum", 0.6f, 0.6f + kk * 0.006f);
                 }
             });
@@ -315,7 +315,7 @@ public final class GravityFx {
             kill(sl, id, c);
             wave(sl, c, 4.5f, 10, false);
             for (LivingEntity e : Kit.near(sl, p, c, 4)) {
-                hit(p, e, pow * 1.1f, "gravity_well");
+                hit(p, e, pow * 2.2f, "gravity_well");
                 Kit.push(e, mid(e).subtract(c), 0.5 * give(e), 0.3);
             }
             FxSend.shake(sl, c, 0.35f, 6, 16);

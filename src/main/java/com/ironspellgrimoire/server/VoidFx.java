@@ -290,7 +290,7 @@ public final class VoidFx {
         final LivingEntity tt = t;
         final int W = 40;
         delete(sl, t, W);
-        hit(p, t, power * 0.3f, "delete");
+        hit(p, t, power * 0.6f, "delete");
         play(sl, mid(t), "erase", 0.7f, 1.8f);
         AstaFx.later(W, () -> {
             if (!alive(p) || !tt.isAlive()) return;
@@ -301,7 +301,7 @@ public final class VoidFx {
                 play(sl, mid(tt), "erase", 1.4f, 0.4f);
                 p.displayClientMessage(Component.literal("Deleted").withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD), true);
             } else {
-                hit(p, tt, power * (IceFx.boss(tt) ? 2.2f : 1.6f), "delete");
+                hit(p, tt, power * (IceFx.boss(tt) ? 4.4f : 3.2f), "delete");
                 unmake(sl, tt, 30);
                 play(sl, mid(tt), "erase", 1.2f, 0.7f);
             }

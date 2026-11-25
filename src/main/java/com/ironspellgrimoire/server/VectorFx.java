@@ -327,7 +327,7 @@ public final class VectorFx {
                 double k = boss(t) ? 0.03 : 0.12;
                 t.setDeltaMovement(t.getDeltaMovement().scale(0.6).add(to.x * k, Math.max(-0.05, to.y * 0.15), to.z * k));
                 t.hurtMarked = true; t.fallDistance = 0;
-                if (now % 20 == 0) hit(p, t, 1.5f, "wind_vector");
+                if (now % 20 == 0) hit(p, t, 3.5f, "wind_vector");
             }
         }
         // Plasma Point

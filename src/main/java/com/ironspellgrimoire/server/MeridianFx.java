@@ -345,7 +345,7 @@ public final class MeridianFx {
         }
         if (now % 10 == 0) {
             FxSend.ring(sl, HEAT, s.star, s.starSize * 0.8f, s.starSize + 0.4f, 0.04f, 8);
-            float dmg = (2f + 6f * Math.min(1.25f, meter(p))) * dawnbreak(p);
+            float dmg = (1.4f + 4.2f * Math.min(1.25f, meter(p))) * dawnbreak(p);
             for (LivingEntity t : enemies(sl, p, new AABB(s.star, s.star).inflate(s.starSize + 0.7))) {
                 if (mid(t).distanceTo(s.star) > s.starSize + 1.0) continue;
                 AstaFx.damage(p, t, dmg, "hearth_star");
@@ -407,7 +407,7 @@ public final class MeridianFx {
     public static void noonwave(ServerPlayer p, float power) {
         ServerLevel sl = p.serverLevel();
         float m = Math.min(1.25f, meter(p));
-        float dmg = (4f + 10f * m) * dawnbreak(p) * (zenith(p) ? 1.5f : 1f);
+        float dmg = (2.8f + 7f * m) * dawnbreak(p) * (zenith(p) ? 1.5f : 1f);
         Vec3 look = flat(p.getLookAngle()).normalize(), at = p.position().add(0, 1.0, 0);
         play(sl, at, "meridian_wave", 1.4f, 1f);
         for (int i = 0; i < 4; i++) {

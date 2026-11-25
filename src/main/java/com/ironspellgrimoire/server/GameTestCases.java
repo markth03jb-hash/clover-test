@@ -1856,6 +1856,8 @@ final class GameTestCases {
                     ItemStack rib = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.PRISM_RIBBON.get());
                     top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, rib));
                     RivalKeepsakes.RIBBON.remove(p.getUUID());
+                    // no grimoire on: a book from an earlier test (the Foreseen holds blows, Vector turns them) would take the blow first
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, ItemStack.EMPTY));
                     var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(sl());
                     z.moveTo(home.x + 2, home.y, home.z); sl().addFreshEntity(z);
                     int hits = playerHits;
