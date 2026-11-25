@@ -37,6 +37,8 @@ public class CodexScreen extends Screen {
          "Go back to any altar. It calls your grimoire back to you if you no longer carry it.",
          "## Casting",
          "Equip your grimoire as your spellbook and cast its spells like any other Iron's Spellbooks spell. Many grimoires also have modes, forms or menus of their own - their pages in this Codex say how."},
+        {"Your Grimoire",
+         "The grimoire you wear right now, and how far it has come with you. This page reads your book as it is."},
         {"Mastery",
          "Every grimoire grows as you fight with its magic, from level 1 to 5. Its stronger spells unlock as it does, and its ultimate waits at level 5.",
          "## Earning mastery",
@@ -95,6 +97,24 @@ public class CodexScreen extends Screen {
          "Two masks, two twins, sixteen arts. Swap between Sol and Nyx, level both, set stones in the masks, beat the Twin Wardens and join them in the Eclipse.",
          "## Architect of Ruin Grimoire",
          "A fortress inside a book. Earn Stone from foes, build rooms on a floor plan that grows, pair rooms side by side, claim banners for a garrison, raise Siege Mode's walls and towers round you (a Ring, a Line or a Horseshoe) and command it with G. A finished fortress can be rebuilt for stars. Its own menu has a guided tour and a full guide."},
+        {"Exclusive Trees and the G Wheel",
+         "Some grimoires grow a tree of their own, apart from the Mana Tree: the Vector Field, the Fuse Board, the Sightlines and the Bond Tree.",
+         "## Growing it",
+         "Each of those books counts what it does best - force turned aside, foes caught in a blast, blows dodged, battles fought for others - and that growth makes levels, up to 30. Every level is a point, and every mastery level two more (the Bond Tree, the biggest, gets twice the growth's).",
+         "## What's in a tree",
+         "Small stats with a few ranks; passives that change how the book behaves; upgrades that change a page; wheel nodes that open an ability on the G wheel; and keystones, in pairs - take one side, and the other shuts. There is always more to learn than points to learn it with.",
+         "## Changing your mind",
+         "Unlearn All is free, once every five minutes, at the foot of the tree's side panel.",
+         "## The G wheel",
+         "G opens the wheel of the book you wear (if it has one). Hold G, point, let go - or click. Its middle opens the book's own menu or tree. Abilities still locked say what opens them; ones resting show their seconds."},
+        {"Mode Timers",
+         "Whatever you have running - a stance, a shield, a buff, a held parry, a takeover - shows top right, under any potion icons: its icon, its name and the time left, with a bar that drains.",
+         "## Charges",
+         "Anything that counts - blows left to block, stacks, allies bound - shows the count beside the time.",
+         "## Standing modes",
+         "A stance or setting with no end (a Vector stance, a Fuse mode, the demon Restrained or Released) says \"active\" instead of a time, until you change it back.",
+         "## The last ten seconds",
+         "A timer blinks, like a potion's, in its last ten seconds."},
         {"Server Rules",
          "Your server can change how the mod plays in its config file (iron_spell_grimoire-common.toml).",
          "## Player versus player",
@@ -161,6 +181,7 @@ public class CodexScreen extends Screen {
             for (int i = 1; i < ch.length; i++) para(out, ch[i], w);
             if (ch[0].equals("Elite Mobs")) elites(out, w);
             if (ch[0].equals("Rivals")) rivals(out, w);
+            if (ch[0].equals("Your Grimoire")) yours(out, w);
         } else if (e <= -2) {
             GrimoireMastery.Book b = GrimoireMastery.BOOKS.get(-e - 2);
             pageIcon = new ItemStack(b.item().get());
@@ -178,10 +199,43 @@ public class CodexScreen extends Screen {
                 }
                 out.add(new Line(FormattedCharSequence.EMPTY, INK, false));
             }
+            int tk = com.ironspellgrimoire.server.BookTree.kind(pageIcon);
+            if (tk >= 0) {   // its own tree and wheel
+                para(out, "## " + com.ironspellgrimoire.server.BookTree.TREE[tk] + " - its own tree", w);
+                para(out, "Grows with: " + com.ironspellgrimoire.server.BookTree.GROWTH[tk].toLowerCase() + ". " + com.ironspellgrimoire.server.BookTree.TREES.get(tk).size() + " nodes.", w);
+                StringBuilder keys = new StringBuilder("Keystones: ");
+                for (var n : com.ironspellgrimoire.server.BookTree.TREES.get(tk))
+                    if (n.kind() == com.ironspellgrimoire.server.BookTree.KEY && n.id().compareTo(n.excl()) < 0)
+                        keys.append(n.name()).append(" or ").append(com.ironspellgrimoire.server.BookTree.node(tk, n.excl()).name()).append(";  ");
+                para(out, keys.toString().replaceAll(";  $", "."), w);
+                para(out, "## The G wheel", w);
+                for (int i = 0; i < 4; i++) para(out, com.ironspellgrimoire.server.BookTree.WHEEL_NAMES[tk][i] + " - " + com.ironspellgrimoire.server.BookTree.WHEEL_DESC[tk][i], w);
+            }
             if (I18n.exists(key + ".lore")) for (var l : font.split(Component.literal(I18n.get(key + ".lore")).withStyle(ChatFormatting.ITALIC), w)) out.add(new Line(l, INK_SOFT, false));
         } else pageTitle = "";
         page = out;
         pageScroll = 0;
+    }
+
+    /** Your Grimoire: the book you wear - its mastery and the way to the next level, evolved spells, Mana Tree leaves,
+     *  and its own tree's level and points if it has one. */
+    private void yours(List<Line> out, int w) {
+        var mc = Minecraft.getInstance();
+        ItemStack b = mc.player == null ? ItemStack.EMPTY : io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(mc.player);
+        if (b == null || b.isEmpty() || GrimoireMastery.bookOf(b) == null) { para(out, "You aren't wearing a grimoire. Equip one as your spellbook, then open this page again.", w); return; }
+        para(out, "## " + b.getHoverName().getString(), w);
+        int xp = GrimoireMastery.xp(b), cap = GrimoireMastery.cap(b), lvl = GrimoireMastery.levelFor(xp, cap);
+        int[] th = GrimoireMastery.THRESHOLDS;
+        para(out, "Mastery level " + lvl + " of " + cap + (lvl >= cap ? " - the most it can reach." : " - " + (th[lvl + 1] - xp) + " experience to level " + (lvl + 1) + "."), w);
+        int ev = b.hasTag() ? b.getTag().getCompound("Evolved").size() : 0;
+        para(out, "Spells evolved: " + ev + ".  " + (GrimoireMastery.ascended(b) ? "Ascended." : ""), w);
+        para(out, "Mana Tree leaves spent: " + com.ironspellgrimoire.server.SkillTree.spent(b) + ".", w);
+        int k = com.ironspellgrimoire.server.BookTree.kind(b);
+        if (k >= 0) {
+            float txp = com.ironspellgrimoire.server.BookTree.xp(b);
+            para(out, com.ironspellgrimoire.server.BookTree.TREE[k] + ": level " + com.ironspellgrimoire.server.BookTree.level(txp) + " (" + com.ironspellgrimoire.server.BookTree.GROWTH[k].toLowerCase() + ": " + (int) txp + "), "
+                    + (com.ironspellgrimoire.server.BookTree.points(b) - com.ironspellgrimoire.server.BookTree.spent(b)) + " of " + com.ironspellgrimoire.server.BookTree.points(b) + " points to spend. G, then the wheel's middle, opens it.", w);
+        }
     }
 
     /** The Rivals chapter: each rival - your record, what they do (once you've met them), and the title won. */

@@ -26,12 +26,15 @@ jobs:
         with: { gradle-version: 8.1.1 }
       - run: sudo apt-get update -q && sudo apt-get install -y -q xvfb libgl1-mesa-dri mesa-utils
       - name: Run this shard of the game tests
-        env: { ISG_GAMETESTS: '1', ISG_SHARD: '${{ matrix.shard }}/3', LIBGL_ALWAYS_SOFTWARE: '1', MESA_GL_VERSION_OVERRIDE: '4.5' }
+        env: { ISG_GAMETESTS: '1', ISG_SHARD: '${{ matrix.shard }}/3', LIBGL_ALWAYS_SOFTWARE: '1', MESA_GL_VERSION_OVERRIDE: '4.5', MSG: '${{ github.event.head_commit.message }}' }
         run: |
           mkdir -p run && echo "eula=true" > run/eula.txt
           # what passed last time: skipped this time unless its code changed
-          git fetch -q origin game-tests:prev 2>/dev/null && mkdir -p /tmp/prev && git --work-tree=/tmp/prev checkout prev -- . 2>/dev/null || true
-          cp /tmp/prev/isg_test_cache.txt run/ 2>/dev/null || true
+          # ([full] in the commit message: no cache - every test runs, e.g. for the balance survey)
+          if ! printf '%s' "$MSG" | grep -q '\[full\]'; then
+            git fetch -q origin game-tests:prev 2>/dev/null && mkdir -p /tmp/prev && git --work-tree=/tmp/prev checkout prev -- . 2>/dev/null || true
+            cp /tmp/prev/isg_test_cache.txt run/ 2>/dev/null || true
+          fi
           xvfb-run -a -s "-screen 0 1920x1080x24" gradle runClient --no-daemon 2>&1 | tail -n 400 > run/console_tail.txt || true
           cat run/isg_gametests_report.txt || echo "no report written"
       - name: Keep this shard's results

@@ -396,6 +396,8 @@ final class GameTestCases {
                 "bond guard", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::bondGuard, "q", "demon flurry", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::demonFlurry, "c", "sinner's mark", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::sinnersMark, "q",
                 "salt lance", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::saltLance, "q", "the last seraph", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::lastSeraph, "q"));
         queue.add(new TrioTest(BookTree.BOUND));
+        queue.add(new MultiplayerTest());
+        queue.add(new StressTest());
         queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
         queue.add(new BossTest("Brannoch Tor", AddonEntities.BRANNOCH_TOR));
         queue.add(new BossTest("Alder Bellmar", AddonEntities.ALDER_BELLMAR));
@@ -468,6 +470,9 @@ final class GameTestCases {
             if (fx > 360) warn(name, "heavy: " + fx + " effect packets in 3 s (" + fx / 3 + "/s)");
             if (fx <= 1 && spent <= 0 && dealt <= 0) warn(name, "did nothing visible (no effects, no mana, no damage; " + castState + ") - it may need a target, a form or a condition");
             if (ok) pass(name, String.format("%d fx packets, %.0f mana, %.1f damage, %d messages, cd %d, book %s", fx, spent, dealt, FxBatch.messages - msg0, spell.getSpellCooldown(), bookId) + ", " + t + " ticks");
+            // the balance survey (tools/balance.py): one line a page - what it dealt to the dummy, its mana, its cooldown
+            int manaCost = 0; try { manaCost = spell.getManaCost(1); } catch (Throwable ignored) {}
+            GameTests.results.add(String.format(java.util.Locale.ROOT, "BAL | %s | %s | %.1f | %d | %d | %s", spell.getSpellResource().getPath(), bookId, Math.max(0f, dealt), manaCost, spell.getSpellCooldown(), spell.getSchoolType().getId().getPath()));
             return true;
         }
     }
@@ -1236,6 +1241,166 @@ final class GameTestCases {
                 if (t == 6) {
                     if (bad.isEmpty()) pass(name, "sun curve, gates, heat, Zenith, Dayreaver comes and goes, night bank, Borrowed Noon and its price");
                     else fail(name, String.join("; ", bad));
+                    end();
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); end(); return true; }
+        }
+    }
+
+    /** Equip a mastered grimoire (for the tests below). */
+    static void wear(net.minecraft.world.item.Item item) {
+        ItemStack bk = new ItemStack(item);
+        CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
+        bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
+        top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, bk));
+    }
+
+    /** Two players: a second (fake) player stands in front of the test player. With grimoire PvP on, magic may reach
+     *  them; with it off, it must not - for blasts and lines (FxUtil.enemies), Ill Omen's pursuit, the Bound Demon's
+     *  takeover. Either way they're family: Bond Guard binds them and a Hidden Tenant hides in them. And a player's blow
+     *  is foreseen like a mob's. */
+    static final class MultiplayerTest extends Test {
+        MultiplayerTest() { super("multiplayer: a second player, PvP on and off"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{FxUtil.class, OmenFx.class, ForeseenFx.class, BoundFx.class, FuseFx.class, com.ironspellgrimoire.AddonConfig.class}; }
+        final java.util.List<String> bad = new java.util.ArrayList<>();
+        net.minecraftforge.common.util.FakePlayer other;
+        ItemStack prev = ItemStack.EMPTY;
+        boolean pvpWas;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            prev = prev == null ? ItemStack.EMPTY : prev.copy();
+            pvpWas = com.ironspellgrimoire.AddonConfig.pvp();
+            other = net.minecraftforge.common.util.FakePlayerFactory.get(sl(), new com.mojang.authlib.GameProfile(UUID.fromString("15a0e5e5-0000-4000-8000-0000000000aa"), "ISGTestFriend"));
+            other.moveTo(home.x, home.y, home.z + 3, 180f, 0f);
+            other.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+            if (!sl().players().contains(other)) sl().addNewPlayer(other);
+            p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);   // facing south, at the other player
+        }
+        void end() {
+            try { com.ironspellgrimoire.AddonConfig.PVP.set(pvpWas); } catch (Throwable ignored) {}
+            if (other != null) sl().removePlayerImmediately(other, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+            ItemStack back = prev;
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, back));
+            BoundFx.testReset(p); FuseFx.testReset(p); ForeseenFx.testReset(p); OmenFx.testReset(p);
+        }
+        boolean nearEnemy() { return FxUtil.enemies(sl(), p, p.getBoundingBox().inflate(6)).contains(other); }
+        @Override boolean tick(int t) {
+            try {
+                if (t == 2) {
+                    com.ironspellgrimoire.AddonConfig.PVP.set(true);
+                    if (!com.ironspellgrimoire.AddonConfig.mayHurt(p, other)) bad.add("PvP on, but the rule says no (server pvp " + sl().getServer().isPvpAllowed() + ")");
+                    else {
+                        if (!nearEnemy()) bad.add("PvP on: blasts and lines don't see the other player");
+                        // a player's blow is foreseen like a mob's
+                        wear(com.ironspellgrimoire.registry.AddonItemRegistry.FORESEEN_GRIMOIRE.get());
+                        ForeseenFx.testReset(p);
+                        var ev = new net.minecraftforge.event.entity.living.LivingAttackEvent(p, other.damageSources().playerAttack(other), 3f);
+                        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(ev);
+                        if (!ev.isCanceled() || ForeseenFx.testHeld(p) != 1) bad.add("PvP on: another player's blow wasn't foreseen");
+                        // Ill Omen: a player closing in is a pursuer
+                        wear(com.ironspellgrimoire.registry.AddonItemRegistry.OMEN_GRIMOIRE.get());
+                        other.xo = other.getX(); other.yo = other.getY(); other.zo = other.getZ() + 0.3;   // it was further away a tick ago
+                        if (!OmenFx.pursues(other, p)) bad.add("PvP on: a player closing in isn't an Ill Omen pursuer");
+                        // the demon may go for them
+                        wear(com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE.get());
+                        BoundFx.testReset(p);
+                        if (BoundFx.testPick(p) != other) bad.add("PvP on: the demon wouldn't go for the other player (the only creature near)");
+                    }
+                }
+                if (t == 4) {
+                    com.ironspellgrimoire.AddonConfig.PVP.set(false);
+                    if (com.ironspellgrimoire.AddonConfig.mayHurt(p, other)) bad.add("PvP off, but the rule still says yes");
+                    if (nearEnemy()) bad.add("PvP off: blasts and lines still reach the other player");
+                    wear(com.ironspellgrimoire.registry.AddonItemRegistry.OMEN_GRIMOIRE.get());
+                    other.xo = other.getX(); other.yo = other.getY(); other.zo = other.getZ() + 0.3;
+                    if (OmenFx.pursues(other, p)) bad.add("PvP off: the other player still counts as an Ill Omen pursuer");
+                    wear(com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE.get());
+                    BoundFx.testReset(p);
+                    if (BoundFx.testPick(p) == other) bad.add("PvP off: the demon would still go for the other player");
+                    // family either way: Bond Guard binds them
+                    if (!BoundFx.ally(p, other)) bad.add("the other player isn't family to the Bound Demon");
+                    BoundFx.bondGuard(p, 0);
+                    if (BoundFx.testLinks(p) != 1) bad.add("Bond Guard didn't bind the other player");
+                    // and a Hidden Tenant hides in them
+                    wear(com.ironspellgrimoire.registry.AddonItemRegistry.FUSE_GRIMOIRE.get());
+                    FuseFx.testReset(p);
+                    FuseFx.hiddenTenant(p, 0);
+                    if (!FuseFx.testHost(p, other)) bad.add("Hidden Tenant didn't hide in the other player you looked at");
+                }
+                if (t == 6) {
+                    if (bad.isEmpty()) pass(name, "PvP on: reachable, foreseen, a pursuer, a takeover target; PvP off: none of those; family to Bond Guard and Hidden Tenant either way");
+                    else fail(name, String.join("; ", bad));
+                    end();
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); end(); return true; }
+        }
+    }
+
+    /** Under load: 40 husks hunting the player and five grimoires' heaviest moves going at once (The Law Itself, a
+     *  Loop of Ruin over armed husks, Vector Absolute, a Demon Flurry and the Last Seraph, the Afterimage). The server's
+     *  tick time is measured before and during; it fails if the moves push a tick past 50 ms (under 20 ticks a second). */
+    static final class StressTest extends Test {
+        StressTest() { super("stress: 40 hunters and five grimoires at once"); }
+        @Override Class<?>[] roots() { return new Class<?>[]{OmenFx.class, FuseFx.class, VectorFx.class, BoundFx.class, BookTree.class}; }
+        final java.util.List<net.minecraft.world.entity.Mob> mobs = new java.util.ArrayList<>();
+        ItemStack prev = ItemStack.EMPTY;
+        double base, under, worst;
+        int baseN, underN;
+        BlockState[] before;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
+            prev = prev == null ? ItemStack.EMPTY : prev.copy();
+            p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
+            for (int i = 0; i < 40; i++) {
+                var m = net.minecraft.world.entity.EntityType.HUSK.create(sl());
+                if (m == null) continue;
+                double a = i * Math.PI * 2 / 40, r = 6 + (i % 4) * 2;
+                m.moveTo(home.x + Math.cos(a) * r, home.y, home.z + Math.sin(a) * r, 0f, 0f);
+                m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(140); m.setHealth(140);
+                m.setPersistenceRequired();
+                sl().addFreshEntity(m);
+                m.setTarget(p);
+                mobs.add(m);
+            }
+            before = snapshot();
+        }
+        void end() {
+            for (var m : mobs) m.discard();
+            for (var a : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.OmenAfterimage.class, new AABB(home, home).inflate(48))) a.discard();
+            ItemStack back = prev;
+            top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, back));
+            BoundFx.testReset(p); FuseFx.testReset(p); VectorFx.testReset(p); OmenFx.testReset(p);
+        }
+        double tickMs() { return sl().getServer().getAverageTickTime(); }
+        @Override boolean tick(int t) {
+            try {
+                p.setHealth(p.getMaxHealth());
+                MagicData.getPlayerMagicData(p).setMana(5000);
+                if (t > 20 && t <= 60) { base += tickMs(); baseN++; }   // hunters only
+                if (t == 61) {
+                    wear(com.ironspellgrimoire.registry.AddonItemRegistry.OMEN_GRIMOIRE.get()); OmenFx.theLawItself(p, 0); OmenFx.afterimage(p, 0);
+                }
+                if (t == 63) {
+                    wear(com.ironspellgrimoire.registry.AddonItemRegistry.FUSE_GRIMOIRE.get());
+                    for (var m : mobs) FuseFx.arm(p, m, true);
+                    FuseFx.loopOfRuin(p, 0);
+                }
+                if (t == 66) { wear(com.ironspellgrimoire.registry.AddonItemRegistry.VECTOR_GRIMOIRE.get()); VectorFx.vectorAbsolute(p, 0); VectorFx.windVector(p, 0); }
+                if (t == 69) { wear(com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE.get()); BoundFx.lastSeraph(p, 0); BoundFx.demonFlurry(p, 0); BoundFx.sinnersMark(p, 0); }
+                if (t > 70 && t <= 170) { double ms = tickMs(); under += ms; underN++; worst = Math.max(worst, ms); }
+                if (t == 171) {
+                    double b = base / Math.max(1, baseN), u = under / Math.max(1, underN);
+                    String ch = changes(before);
+                    String msg = String.format("server tick: %.1f ms with 40 hunters, %.1f ms (worst average %.1f) with the five grimoires going", b, u, worst);
+                    if (!ch.isEmpty()) fail(name, "changed the world: " + ch);
+                    else if (worst > 50) fail(name, msg + " - over 50 ms: the server falls under 20 ticks a second");
+                    else pass(name, msg);
                     end();
                     return true;
                 }

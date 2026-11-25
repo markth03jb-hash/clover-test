@@ -441,4 +441,5 @@ public final class FuseFx {
     public static void testReset(ServerPlayer p) { STATE.remove(p.getUUID()); }
     public static int testArmed(ServerPlayer p) { return f(p).armed.size(); }
     public static int testMode(ServerPlayer p) { return f(p).mode; }
+    public static boolean testHost(ServerPlayer p, LivingEntity host) { return p.getUUID().equals(HOSTS.get(host)); }
 }

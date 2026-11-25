@@ -736,7 +736,7 @@ public class AddonSpellRegistry {
 
     // ------------------------------------------------------------------ Overdrive Grimoire (an original grimoire: OverdriveFx)
     private static com.ironspellgrimoire.spells.BookSpell overdrive(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx, boolean sword) {
-        com.ironspellgrimoire.spells.BookSpell s = new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.ELDRITCH_RESOURCE,
+        com.ironspellgrimoire.spells.BookSpell s = new com.ironspellgrimoire.spells.BookSpell(id, io.redspace.ironsspellbooks.api.registry.SchoolRegistry.LIGHTNING_RESOURCE,   // not eldritch: that school must be learned first
                 com.ironspellgrimoire.item.OverdriveGrimoireItem.class, "ui.iron_spell_grimoire.overdrive_grimoire_only", cd, mana, power,
                 com.ironspellgrimoire.spells.BookSpell.anim(anim), fx);
         return sword ? s.gate(com.ironspellgrimoire.server.OverdriveFx::holding, "Needs the Heartline in your hand - draw it first") : s;   // sword-only pages

@@ -92,6 +92,7 @@ public final class UiShots {
         steps.add(new Step("waypoints", () -> onServer(UiShotsServer::waypoints), 20, false));
         steps.add(new Step("codex", () -> mc.setScreen(new CodexScreen(0)), 10, false));
         steps.add(new Step("codex_book", () -> mc.setScreen(new CodexScreen(CodexScreen.chapters() + 1)), 10, false));
+        steps.add(new Step("codex_yours", () -> mc.setScreen(new CodexScreen(CodexScreen.chapter("Your Grimoire"))), 10, false));
         steps.add(new Step("codex_rules", () -> mc.setScreen(new CodexScreen(CodexScreen.chapters() - 1)), 10, false));
         steps.add(new Step("el_mobs", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.elites(p, "mobs")); }, 16, true));
         steps.add(new Step("el_codex", () -> mc.setScreen(new CodexScreen(CodexScreen.chapter("Elite Mobs"))), 10, false));
@@ -857,7 +858,7 @@ public final class UiShots {
             case "altar" -> new Class<?>[]{AltarScreen.class, com.ironspellgrimoire.server.AltarMenu.class};
             case "library" -> new Class<?>[]{LibraryScreen.class, com.ironspellgrimoire.server.GrimoireLibrary.class};
             case "waypoints" -> new Class<?>[]{WaypointScreen.class, com.ironspellgrimoire.server.Waypoints.class};
-            case "codex", "codex_book", "codex_rules" -> new Class<?>[]{CodexScreen.class};
+            case "codex", "codex_book", "codex_rules", "codex_yours" -> new Class<?>[]{CodexScreen.class};
             case "el_mobs", "el_codex", "el_clear" -> new Class<?>[]{EliteClient.class, EliteRenderers.class, CodexScreen.class, com.ironspellgrimoire.server.EliteMobs.class, com.ironspellgrimoire.server.EliteTraits.class};
             default -> null;
         };

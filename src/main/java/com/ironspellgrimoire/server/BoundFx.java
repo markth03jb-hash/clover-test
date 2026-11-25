@@ -574,19 +574,7 @@ public final class BoundFx {
         }
         boolean calm = r(p, "b2") > 0 && !allies(p, 4).isEmpty();
         if (calm) s.takeoverUntil--;   // a voice it knows: it lets go twice as fast
-        if (now % 2 == 0) {
-            boolean spareFamily = r(p, "b2") > 0 || s.fallen;
-            LivingEntity t;
-            if (r(p, "K2") > 0) t = aimed(p, 12, 35);
-            else {
-                t = null; double bd = 100;
-                for (LivingEntity x : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(10), x -> x != p && x.isAlive() && !(x instanceof ArmorStand)
-                        && !(x instanceof Player op && !com.ironspellgrimoire.AddonConfig.mayHurt(p, op)) && !(spareFamily && ally(p, x)))) {
-                    double d = x.distanceToSqr(p); if (d < bd) { bd = d; t = x; }
-                }
-            }
-            s.target = t;
-        }
+        if (now % 2 == 0) s.target = pick(p, s);
         LivingEntity t = s.target;
         if (t != null && t.isAlive()) {
             if (r(p, "K2") <= 0) p.lookAt(EntityAnchorArgument.Anchor.EYES, mid(t));
@@ -604,6 +592,19 @@ public final class BoundFx {
         }
         if (now % 10 == 0) FxSend.ring(sl, s.fallen ? SALT : RED, p.position().add(0, 0.05, 0), 0.3f, 1.2f, 0.04f, 10);
         if (now % 40 == 0) play(sl, p.position(), "bd_whisper", 0.6f, 0.6f);
+    }
+
+    /** What the demon goes for: what you look at (Surrender), else the nearest creature - family too, unless a voice it
+     *  knows or the fallen seraph spares them; never a player the PvP rule protects. */
+    static LivingEntity pick(ServerPlayer p, S s) {
+        if (r(p, "K2") > 0) return aimed(p, 12, 35);
+        boolean spareFamily = r(p, "b2") > 0 || s.fallen;
+        LivingEntity t = null; double bd = 100;
+        for (LivingEntity x : p.serverLevel().getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(10), x -> x != p && x.isAlive() && !(x instanceof ArmorStand)
+                && !(x instanceof Player op && !com.ironspellgrimoire.AddonConfig.mayHurt(p, op)) && !(spareFamily && ally(p, x)))) {
+            double d = x.distanceToSqr(p); if (d < bd) { bd = d; t = x; }
+        }
+        return t;
     }
 
     // ------------------------------------------------------------------ the pages
@@ -840,4 +841,5 @@ public final class BoundFx {
     public static boolean testAwake(ServerPlayer p) { return awake(p); }
     public static int testMode(ServerPlayer p) { return s(p).mode; }
     public static int testLinks(ServerPlayer p) { return s(p).links.size(); }
+    public static LivingEntity testPick(ServerPlayer p) { return pick(p, s(p)); }
 }
