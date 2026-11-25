@@ -1705,6 +1705,7 @@ final class GameTestCases {
         }
         @Override boolean tick(int t) {
             try {
+                if (t < 24) p.invulnerableTime = 0;   // a blow from the band mustn't shield the player from the Hexer's strike
                 if (t == 26) {
                     if (WildFolkAI.testCasts != casts0 + 1) bad.add("the Mire Hexer didn't cast");
                     if (playerHits == hits0) bad.add("the Mire Hexer's strike didn't land where it marked");
@@ -1855,7 +1856,7 @@ final class GameTestCases {
                 book = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
                 if ((BookQuests.done(book) & 2) == 0) bad.add("25 elites didn't finish the quest");
                 if (BookTree.points(book) != pts + 1) bad.add("the quest didn't give a tree point (" + pts + " -> " + BookTree.points(book) + ")");
-                if (GrimoireMastery.xp(book) <= xp) bad.add("the quest gave no mastery");
+                if (GrimoireMastery.xp(book) <= xp && xp < GrimoireMastery.THRESHOLDS[GrimoireMastery.cap(book)]) bad.add("the quest gave no mastery (below its cap)");
                 // the Slate Ring
                 ItemStack ring = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.SLATE_RING.get());
                 top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, ring));
