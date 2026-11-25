@@ -95,7 +95,7 @@ public final class UiShotsServer {
     public static void twins(ServerPlayer p) {
         folk(p, "none");
         ServerLevel sl = p.serverLevel();
-        var h = AddonEntities.TWIN_HALDRIC.get().create(sl); var o = AddonEntities.TWIN_OSWIN.get().create(sl);
+        var h = com.ironspellgrimoire.registry.AddonEntities.TWIN_HALDRIC.get().create(sl); var o = com.ironspellgrimoire.registry.AddonEntities.TWIN_OSWIN.get().create(sl);
         if (h == null || o == null) return;
         h.moveTo(p.getX() - 5, p.getY(), p.getZ() + 9, 180, 0); o.moveTo(p.getX() + 5, p.getY(), p.getZ() + 9, 180, 0);
         for (var t : new com.ironspellgrimoire.entity.IronboundTwin[]{h, o}) { t.setYBodyRot(180); t.setYHeadRot(180); t.setNoAi(true); }
@@ -116,7 +116,7 @@ public final class UiShotsServer {
     public static void ashen(ServerPlayer p) {
         folk(p, "none");
         ServerLevel sl = p.serverLevel();
-        var b = AddonEntities.CINDER_SOVEREIGN.get().create(sl);
+        var b = com.ironspellgrimoire.registry.AddonEntities.CINDER_SOVEREIGN.get().create(sl);
         if (b == null) return;
         b.setAshen(true);
         b.setPhase(4);
