@@ -107,7 +107,9 @@ public final class VectorFxClient {
             Vec3 s = ax.cross(a.subtract(cam));
             if (s.lengthSqr() < 1e-10) continue;
             s = s.normalize();
-            FxBase.quad(vc, m, n, cam, a.add(s.scale(w[i])), b.add(s.scale(w[i + 1])), b.subtract(s.scale(w[i + 1])), a.subtract(s.scale(w[i])), col, al[i], al[i + 1], al[i + 1], al[i]);
+            Vec3 p0 = a.add(s.scale(w[i])), p1 = b.add(s.scale(w[i + 1])), p2 = b.subtract(s.scale(w[i + 1])), p3 = a.subtract(s.scale(w[i]));
+            FxBase.quad(vc, m, n, cam, p0, p1, p2, p3, col, al[i], al[i + 1], al[i + 1], al[i]);
+            FxBase.quad(vc, m, n, cam, p3, p2, p1, p0, col, al[i], al[i + 1], al[i + 1], al[i]);   // both faces: seen from either side
         }
     }
 
@@ -244,6 +246,7 @@ public final class VectorFxClient {
             Vec3 i0 = g.add(Math.cos(a0) * gr * 0.8, 0, Math.sin(a0) * gr * 0.8), i1 = g.add(Math.cos(a1) * gr * 0.8, 0, Math.sin(a1) * gr * 0.8);
             Vec3 o0 = g.add(Math.cos(a0) * gr, 0, Math.sin(a0) * gr), o1 = g.add(Math.cos(a1) * gr, 0, Math.sin(a1) * gr);
             FxBase.quad(vc, m, n, cam, i0, i1, o1, o0, BLACK, a * 0.2F, a * 0.2F, a * 0.85F, a * 0.85F);
+            FxBase.quad(vc, m, n, cam, o0, o1, i1, i0, BLACK, a * 0.85F, a * 0.85F, a * 0.2F, a * 0.2F);
         }
         GravityFxClient.ring(m, cam, g, UP, gr, 0.06, WHITE, a);
         // sparks flung out, vectors all

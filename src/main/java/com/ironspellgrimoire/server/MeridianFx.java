@@ -532,6 +532,9 @@ public final class MeridianFx {
     public static float testBanked(Player p) { return st(p).banked; }
     public static boolean testStar(Player p) { return st(p).star != null; }
     public static void testCombat(Player p) { st(p).lastCombat = p.level().getGameTime(); }
-    public static void testReset(Player p) { S.remove(p.getUUID()); }
+    public static void testReset(Player p) {
+        S.remove(p.getUUID());
+        if (p instanceof ServerPlayer sp) for (int k : new int[]{0, 6, 7}) { var c = fx(98, sp.position(), 1); c.v = new Vec3(sp.getId(), 0, 0); c.a0 = k; send(sp.serverLevel(), c); }   // and its looks
+    }
     public static long testBorrowDay(Player p) { return st(p).borrowDay; }
 }
