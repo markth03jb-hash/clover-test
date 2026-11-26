@@ -310,7 +310,7 @@ public final class GrimoireMastery {
         book(AddonItemRegistry.MERIDIAN_GRIMOIRE::get, Fx.GOLD,
                 "hearth_star", 1, "call_dayreaver", 1, "lamplight", 1, "warm_hands", 2, "noonwave", 2, "last_coal", 3, "haughty_flare", 3, "zenith_unbound", 4);
         book(AddonItemRegistry.BOUND_GRIMOIRE::get, 18,
-                "demon_draw", 1, "cursed_edge", 1, "demons_whisper", 1, "bond_guard", 2, "demon_flurry", 2, "sinners_mark", 3, "salt_lance", 3, "last_seraph", 4);
+                "demon_draw", 1, "cursed_edge", 1, "demons_whisper", 1, "bond_guard", 2, "demon_flurry", 2, "sinners_mark", 3, "demons_reach", 3, "last_seraph", 4);
         book(AddonItemRegistry.VECTOR_GRIMOIRE::get, 29,
                 "redirect", 1, "recoil_step", 1, "return_to_sender", 1, "pressure_gust", 2, "pulse_touch", 2, "wind_vector", 3, "plasma_point", 4, "vector_absolute", 4);
         book(AddonItemRegistry.FUSE_GRIMOIRE::get, 16,

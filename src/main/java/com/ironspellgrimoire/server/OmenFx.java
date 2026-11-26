@@ -40,7 +40,8 @@ import net.minecraftforge.network.PacketDistributor;
 /**
  * The Grimoire of Ill Omen: a law of misfortune around you (every name, look and line here is original).
  * <ul>
- *   <li><b>The Law of Ill Fortune</b> (passive): anything that pursues you - a monster, an animal, a villager, a guard,
+ *   <li><b>The Law of Ill Fortune</b> (passive): every enemy within 10 blocks of you charges a bar over its head -
+ *       the closer, the faster - and so does anything that pursues you - a monster, an animal, a villager, a guard,
  *       another mod's NPC, another player where PvP is allowed - builds Misfortune on itself. Pursuing means targeting
  *       you, closing in on you, standing behind you facing your back, or having struck you in the last 10 s. Misfortune
  *       fades once it gives up. When it fills, a calamity strikes: a falling weight, a stumble, its own blow turned back,
@@ -100,6 +101,16 @@ public final class OmenFx {
         return e instanceof Player o && o != p && com.ironspellgrimoire.AddonConfig.mayHurt(p, o) && closing(o, p) > 0.15;
     }
 
+    /** How near an enemy must come before its bar starts to charge. */
+    static final double NEAR = 10;
+
+    /** An enemy of yours: a monster, or anything pursuing you (never a friend, a pet or a player you can't hurt). */
+    static boolean hostile(ServerPlayer p, LivingEntity t) {
+        if (t instanceof Player o) return o != p && com.ironspellgrimoire.AddonConfig.mayHurt(p, o) && pursues(t, p);
+        if (t.isAlliedTo(p) || (t instanceof net.minecraft.world.entity.TamableAnimal ta && p.getUUID().equals(ta.getOwnerUUID()))) return false;
+        return t instanceof net.minecraft.world.entity.monster.Enemy || pursues(t, p);
+    }
+
     /** v laid flat, not normalised (FxUtil.flat normalises, and turns a standstill into a direction). */
     static Vec3 hz(Vec3 v) { return new Vec3(v.x, 0, v.z); }
 
@@ -144,10 +155,13 @@ public final class OmenFx {
             Fate f = FATES.get(t);
             boolean chasing = pursues(t, p);
             boolean targetsOnly = !chasing && lvl >= 5 && t instanceof Mob mb && mb.getTarget() == p;
-            if (chasing || targetsOnly) {
+            double dist = t.distanceTo(p);
+            boolean near = dist <= NEAR && hostile(p, t);   // an enemy close to you: its bar charges, the closer the faster
+            if (chasing || targetsOnly || near) {
                 f = fate(t);
                 f.by = p.getUUID();
-                float add = targetsOnly ? 0.5f : 1f;          // per half second
+                float add = targetsOnly && !near ? 0.5f : 1f;   // per half second
+                if (near) add += (float) (4.0 * (1.0 - dist / NEAR));
                 if (chasing) {
                     double c = closing(t, p);
                     if (c > 0.05) add += 2f;                    // closing in
@@ -237,6 +251,7 @@ public final class OmenFx {
         Mage m = mage(p);
         float scale = karma(t) * (byLaw ? 1f + 0.25f * Math.min(8, m.lawCount) : 1f) * (nested ? 0.6f : 1f);
         int kind = pick(p, t, f, nested);
+        omen(sl, t, nested);
         strike(p, t, f, kind, scale);
         if (!nested) lastKind = kind;
         if (t.distanceTo(p) < 32) p.displayClientMessage(net.minecraft.network.chat.Component.literal("Calamity: " + KINDS[kind]).withStyle(net.minecraft.ChatFormatting.BLUE), true);
@@ -255,6 +270,26 @@ public final class OmenFx {
     }
     private static boolean chaining;
 
+    /** The calamity's sign, before the accident lands: a black-blue sigil opens on the ground under it, cracked and
+     *  rayed, a shaft of ill light falls on it from far above, and the world jolts. */
+    static void omen(ServerLevel sl, LivingEntity t, boolean small) {
+        Vec3 feet = t.position().add(0, 0.06, 0), c = mid(t);
+        float k = small ? 0.6f : 1f;
+        FxSend.ring(sl, DARK, feet, 0.3f * k, 3.4f * k, 0.12f, 16);
+        FxSend.ring(sl, PALE, feet.add(0, 0.02, 0), 3.1f * k, 3.4f * k, 0.04f, 18);
+        FxSend.cracks(sl, DARK, feet, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 2.8f * k, 22, false, t.getId());
+        for (int i = 0; i < 8; i++) {   // the sigil's rays
+            double a = i * Math.PI / 4 + (t.getId() % 7) * 0.2;
+            Vec3 o = feet.add(Math.cos(a) * 1.0 * k, 0, Math.sin(a) * 1.0 * k), e = feet.add(Math.cos(a) * 3.2 * k, 0, Math.sin(a) * 3.2 * k);
+            FxSend.trail(sl, i % 2 == 0 ? DARK : PALE, o, e, i % 2 == 0 ? 0.09f : 0.04f, 14);
+        }
+        FxSend.beam(sl, DARK, c.add(0, 22, 0), feet, 0.9f * k, 9);
+        FxSend.beam(sl, PALE, c.add(0, 22, 0), feet, 0.25f * k, 10);
+        FxSend.shake(sl, feet, small ? 0.2f : 0.45f, 6, 18);
+        if (!small) FxSend.impactFrame(sl, c, 3, false, 18);
+        play(sl, c, "omen_ledger", 1.2f, 0.5f);
+    }
+
     static Vec3 away(ServerPlayer p, LivingEntity t) {
         Vec3 d = hz(t.position().subtract(p.position()));
         return d.lengthSqr() < 1e-4 ? hz(t.getLookAngle()).normalize() : d.normalize();
@@ -268,12 +303,13 @@ public final class OmenFx {
             case 0 -> {   // Falling Weight: an iron weight drops out of nowhere
                 Vec3 top = feet.add(0, t.getBbHeight() + 5, 0);
                 FxSend.ring(sl, DARK, feet.add(0, 0.06, 0), 0.2f, 1.1f, 0.05f, 8);
-                for (int i = 0; i < 4; i++) { final int k = i; AstaFx.later(i * 2, () -> Kit.orb(sl, BLUE, top.add(0, -k * 1.25, 0), new Vec3(0, -1.25, 0), 0.55f, 3)); }
+                for (int i = 0; i < 4; i++) { final int k = i; AstaFx.later(i * 2, () -> { Kit.orb(sl, BLUE, top.add(0, -k * 1.25, 0), new Vec3(0, -1.25, 0), 1.1f, 3); FxSend.box(sl, DARK, top.add(0, -k * 1.25, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 0.6f, 0.6f, 0.5f, 3, 0, com.ironspellgrimoire.network.FxPacket.POP); }); }
                 AstaFx.later(8, () -> {
                     if (!t.isAlive()) return;
-                    FxSend.ring(sl, BLUE, t.position().add(0, 0.1, 0), 0.2f, 1.6f, 0.1f, 8);
-                    FxSend.shake(sl, t.position(), 0.2f, 4, 12);
-                    play(sl, t.position(), "omen_fall", 1f, 1f);
+                    FxSend.ring(sl, BLUE, t.position().add(0, 0.1, 0), 0.2f, 3.2f, 0.2f, 10);
+                    FxSend.cracks(sl, DARK, t.position().add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 2f, 20, false, t.getId() + 3);
+                    FxSend.shake(sl, t.position(), 0.5f, 6, 16);
+                    play(sl, t.position(), "omen_fall", 1.3f, 0.8f);
                     AstaFx.damage(p, t, 7f * scale, "the_law_itself");
                 });
             }

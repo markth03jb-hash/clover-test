@@ -874,6 +874,13 @@ public final class UiShots {
         steps.add(new Step("bd_tree_salt", () -> { mc.setScreen(null); BookTreeScreen.forceHover = "s6"; onServer(p -> UiShotsServer.element(p, "B:tree")); }, 10, false));
         steps.add(new Step("bd_wheel", () -> { mc.setScreen(null); BookTreeScreen.forceHover = null; BookTreeWheel.forceHover = 0; mc.setScreen(new BookTreeWheel()); }, 8, false));
         steps.add(new Step("bd_takeover", () -> { mc.setScreen(null); BookTreeWheel.forceHover = -1; mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "B:takeover")); }, 30, true));
+        steps.add(new Step("pose_katana_front", () -> { mc.setScreen(null); mc.options.hideGui = true; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.poseBench(p, "katana:front")); }, 10, true));
+        steps.add(new Step("pose_katana_side", () -> { onServer(p -> UiShotsServer.poseBench(p, "katana:side")); }, 10, true));
+        steps.add(new Step("pose_katana_top", () -> { onServer(p -> UiShotsServer.poseBench(p, "katana:top")); }, 10, true));
+        steps.add(new Step("pose_heart_front", () -> { onServer(p -> UiShotsServer.poseBench(p, "heart:front")); }, 10, true));
+        steps.add(new Step("pose_heart_side", () -> { onServer(p -> UiShotsServer.poseBench(p, "heart:side")); }, 10, true));
+        steps.add(new Step("pose_heart_top", () -> { onServer(p -> UiShotsServer.poseBench(p, "heart:top")); }, 10, true));
+        steps.add(new Step("pose_clear", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.poseBench(p, "clear")); }, 2, true));
         steps.add(new Step("bd_hold_fp", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "B:hold")); }, 10, true));   // the katana: in first person,
         steps.add(new Step("bd_hold_front", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 6, true));   // ...from the front
         steps.add(new Step("bd_hold_side", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); mc.player.setYRot(mc.player.getYRot() + 90); }, 6, true));   // ...and the side
@@ -891,6 +898,61 @@ public final class UiShots {
             mc.setScreen(new CodexScreen(CodexScreen.chapter("Rivals")));
         }, 10, false));
         steps.add(new Step("rv_clear", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.rivals(p, "clear")); }, 2, true));
+        // the Architect's room spells, each cast at a husk in front of you (every one should be plainly visible)
+        steps.add(new Step("arch_armoury", () -> { mc.setScreen(null); mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.architect(p, 1)); }, 6, true));
+        steps.add(new Step("arch_watchtower", () -> { onServer(p -> UiShotsServer.architect(p, 3)); }, 6, true));
+        steps.add(new Step("arch_war_room", () -> { onServer(p -> UiShotsServer.architect(p, 5)); }, 6, true));
+        steps.add(new Step("arch_observatory", () -> { onServer(p -> UiShotsServer.architect(p, 6)); }, 6, true));
+        steps.add(new Step("arch_library", () -> { onServer(p -> UiShotsServer.architect(p, 7)); }, 6, true));
+        steps.add(new Step("arch_arcanum", () -> { onServer(p -> UiShotsServer.architect(p, 8)); }, 6, true));
+        steps.add(new Step("arch_scrying", () -> { onServer(p -> UiShotsServer.architect(p, 9)); }, 6, true));
+        steps.add(new Step("arch_alchemy", () -> { onServer(p -> UiShotsServer.architect(p, 10)); }, 24, true));
+        steps.add(new Step("arch_rune_vault", () -> { onServer(p -> UiShotsServer.architect(p, 11)); }, 6, true));
+        steps.add(new Step("arch_chapel", () -> { onServer(p -> UiShotsServer.architect(p, 12)); }, 6, true));
+        steps.add(new Step("arch_reliquary", () -> { onServer(p -> UiShotsServer.architect(p, 13)); }, 6, true));
+        steps.add(new Step("arch_bell_tower", () -> { onServer(p -> UiShotsServer.architect(p, 15)); }, 6, true));
+        steps.add(new Step("arch_garden", () -> { onServer(p -> UiShotsServer.architect(p, 16)); }, 6, true));
+        steps.add(new Step("arch_hall", () -> { onServer(p -> UiShotsServer.architect(p, 17)); }, 6, true));
+        steps.add(new Step("arch_forge", () -> { onServer(p -> UiShotsServer.architect(p, 18)); }, 24, true));
+        steps.add(new Step("arch_foundry", () -> { onServer(p -> UiShotsServer.architect(p, 19)); }, 24, true));
+        steps.add(new Step("arch_siege_yard", () -> { onServer(p -> UiShotsServer.architect(p, 21)); }, 24, true));
+        steps.add(new Step("arch_cistern", () -> { onServer(p -> UiShotsServer.architect(p, 22)); }, 6, true));
+        steps.add(new Step("arch_treasury", () -> { onServer(p -> UiShotsServer.architect(p, 23)); }, 6, true));
+        steps.add(new Step("arch_herald", () -> { onServer(p -> UiShotsServer.architect(p, 24)); }, 6, true));
+        steps.add(new Step("arch_map_room", () -> { onServer(p -> UiShotsServer.architect(p, 25)); }, 6, true));
+        steps.add(new Step("arch_clear", () -> onServer(p -> UiShotsServer.architect(p, -1)), 4, true));
+        steps.add(new Step("fxs_hit_overdrive", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "o:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_dream", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "d:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_shadow", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "s:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_parasite", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "p:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_hunger", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "H:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_architect", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "A:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_meridian", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_bound", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "B:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_vector", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_fuse", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "Q:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_foreseen", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "F:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_omen", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:hit")); }, 3, true));
+        steps.add(new Step("fxs_hit_twins", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "T:hit")); }, 3, true));
+        steps.add(new Step("fxs_vec_redirect", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:redirect")); }, 4, true));
+        steps.add(new Step("fxs_vec_gust", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:gust")); }, 4, true));
+        steps.add(new Step("fxs_vec_plasma", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:plasma")); }, 30, true));
+        steps.add(new Step("fxs_vec_plasma_burst", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:none")); }, 14, true));
+        steps.add(new Step("fxs_vec_wind", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:wind")); }, 14, true));
+        steps.add(new Step("fxs_vec_absolute", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "X:absolute")); }, 8, true));
+        steps.add(new Step("fxs_vec_absolute_fp", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:none")); }, 4, true));
+        steps.add(new Step("fxs_omen_bar", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:omen_bar")); }, 22, true));
+        steps.add(new Step("fxs_omen_calamity", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:calamity")); }, 6, true));
+        steps.add(new Step("fxs_bd_flurry", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "B:flurry")); }, 8, true));
+        steps.add(new Step("fxs_bd_flurry_end", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "B:none")); }, 12, true));
+        steps.add(new Step("fxs_bd_reach", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "B:reach")); }, 4, true));
+        steps.add(new Step("fxs_seraph", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "B:seraph")); }, 10, true));
+        steps.add(new Step("fxs_seraph_feathers", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "B:feathers")); }, 8, true));
+        steps.add(new Step("fxs_seraph_cleave", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "B:cleave")); }, 4, true));
+        steps.add(new Step("fxs_seraph_lance", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "B:lance")); }, 6, true));
+        steps.add(new Step("fxs_seraph_verdict", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "B:verdict")); }, 20, true));
+        steps.add(new Step("fxs_seraph_descent", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "B:descent")); }, 16, true));
+        steps.add(new Step("fxs_clear", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "clear")); }, 4, true));
         steps.add(new Step("hud_hidden", () -> TrackerMode.set(2), 10, true));
     }
 
@@ -941,6 +1003,10 @@ public final class UiShots {
             } catch (ClassNotFoundException ex) { return null; }
         }
         if (step.startsWith("blood_") || step.startsWith("ice_")) return new Class<?>[]{com.ironspellgrimoire.server.BloodFx.class, BloodFxClient.class, AuraOutlineLayer.class, IceFxClient.class, BloodHud.class, GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class};
+        if (step.startsWith("pose_")) return new Class<?>[]{com.ironspellgrimoire.server.UiShotsServer.class};
+        if (step.startsWith("fxs_")) return new Class<?>[]{com.ironspellgrimoire.server.UiShotsServer.class, com.ironspellgrimoire.server.HitFx.class, com.ironspellgrimoire.server.VectorFx.class, com.ironspellgrimoire.server.OmenFx.class,
+                com.ironspellgrimoire.server.BoundFx.class, com.ironspellgrimoire.server.SeraphFx.class, OmenClient.class, BoundClient.class, FxRenderer.class, PixelFx.class};
+        if (step.startsWith("arch_")) return new Class<?>[]{com.ironspellgrimoire.server.FortressSpells.class, com.ironspellgrimoire.server.UiShotsServer.class, FxRenderer.class, PixelFx.class};
         if (step.startsWith("story3_")) return new Class<?>[]{StoryClient.class, DialogueScreen.class, JournalScreen.class, RivalRenderer.class, com.ironspellgrimoire.server.Story.class,
                 com.ironspellgrimoire.server.StoryArc3.class, com.ironspellgrimoire.server.StoryStage.class, com.ironspellgrimoire.server.StoryStage3.class, com.ironspellgrimoire.entity.StoryNpc.class,
                 com.ironspellgrimoire.entity.MotherBelow.class, com.ironspellgrimoire.server.MotherAI.class, com.ironspellgrimoire.entity.Militia.class};
@@ -967,6 +1033,7 @@ public final class UiShots {
                     "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json", "textures/geo/shadow_ravener_living.png",
                     "geo/mantle_helm.geo.json", "geo/mantle_chest.geo.json", "geo/mantle_arm.geo.json", "geo/mantle_leg.geo.json", "textures/item/nightfang.png", "models/item/nightfang_3d.json",
                     "models/item/duskglass_kris.json", "geo/item/dragon_fang.geo.json", "textures/item/dragon_fang.png", "models/item/gilded_thorn.obj", "textures/item/gilded_thorn.png", "models/item/bloodrend.obj", "textures/item/bloodrend.png", "models/item/rosewrath.obj", "textures/item/rosewrath.png", "models/item/frostwing.obj", "textures/item/frostwing.png"},
+            {"pose_", "models/item/demon_katana.obj", "models/item/demon_katana.json", "models/item/heartline_3d.json"},
             {"bd_", "textures/item/rivals.png", "models/item/demon_katana.obj", "models/item/demon_katana.json", "models/item/bound_wing.obj", "models/item/seraph_halo.obj"},
             {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"},
             // the gear the families, the Twins and ASHFALL's people hold is on the rivals' sheet; their skins are their own

@@ -182,8 +182,8 @@ model = {
         "thirdperson_righthand": {"rotation": [40, 0, 0], "translation": [0, 1.0, 0.5], "scale": [0.95, 0.95, 0.95]},
         "thirdperson_lefthand": {"rotation": [40, 0, 0], "translation": [0, 1.0, 0.5], "scale": [0.95, 0.95, 0.95]},
         # first person: the edge (the model's -Z) turned to face forward, away from you, the blade leaning forward
-        "firstperson_righthand": {"rotation": [-18, -12, 0], "translation": [1.13, 1.2, 1.13], "scale": [0.66, 0.66, 0.66]},
-        "firstperson_lefthand": {"rotation": [-18, 12, 0], "translation": [1.13, 1.2, 1.13], "scale": [0.66, 0.66, 0.66]},
+        "firstperson_righthand": {"rotation": [-15, -30, 0], "translation": [1.13, 1.2, 1.13], "scale": [0.66, 0.66, 0.66]},
+        "firstperson_lefthand": {"rotation": [-15, 30, 0], "translation": [1.13, 1.2, 1.13], "scale": [0.66, 0.66, 0.66]},
         "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.8, 0.8, 0.8]},
         "head": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
     },

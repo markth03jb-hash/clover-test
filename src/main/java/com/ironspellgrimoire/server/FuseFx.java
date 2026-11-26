@@ -222,6 +222,8 @@ public final class FuseFx {
         F s = f(p);
         ServerLevel sl = p.serverLevel();
         long now = sl.getGameTime();
+        // Contact Charge, while it waits: a short ring that goes with you (re-drawn, so it's gone the moment it's spent)
+        if (now < s.contactUntil && now % 5 == 0) FxSend.ring(sl, PAL, mid(p), 0.6f, 0.9f, 0.04f, 6);
         // the armed: marks, timers, proximity, running away
         for (Iterator<Armed> it = s.armed.iterator(); it.hasNext(); ) {
             Armed a = it.next();
@@ -354,7 +356,7 @@ public final class FuseFx {
     public static void contactCharge(ServerPlayer p, float power) {
         f(p).contactUntil = p.level().getGameTime() + 200;
         ModeHud.show(p, "contact_charge", 200);
-        FxSend.ring(p.serverLevel(), PAL, mid(p), 0.6f, 0.9f, 0.04f, 200);
+        FxSend.ring(p.serverLevel(), PAL, mid(p), 0.2f, 1.2f, 0.06f, 8);   // (the waiting ring goes with you - FuseFx.onTick)
         play(p.serverLevel(), p.position(), "fuse_arm", 1f, 0.7f);
     }
 

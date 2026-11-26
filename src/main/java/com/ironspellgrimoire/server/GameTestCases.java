@@ -392,9 +392,15 @@ final class GameTestCases {
         queue.add(new TrioTest(BookTree.FUSE));
         queue.add(new TrioTest(BookTree.FORESEEN));
         queue.add(new BookMovesTest("bound demon", com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE::get, BoundFx.class,
-                "demon draw", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::demonDraw, "q", "cursed edge", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::cursedEdge, "", "demon's whisper", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::demonsWhisper, "q",
+                "demon draw", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::demonDraw, "q", "cursed edge", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { BoundFx.draw(pl, false); BoundFx.cursedEdge(pl, pw); }, "", "demon's whisper", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::demonsWhisper, "q",
                 "bond guard", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::bondGuard, "q", "demon flurry", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::demonFlurry, "c", "sinner's mark", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::sinnersMark, "q",
-                "salt lance", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::saltLance, "q", "the last seraph", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::lastSeraph, "q"));
+                "demon's reach", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::demonsReach, "", "the last seraph", (java.util.function.BiConsumer<ServerPlayer, Float>) BoundFx::lastSeraph, "q",
+                "seraph: judgment feathers", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { BoundFx.awaken(pl, false); SeraphFx.feathers(pl, pw); }, "",
+                "seraph: wing cleave", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { BoundFx.awaken(pl, false); SeraphFx.wingCleave(pl, pw); }, "c",
+                "seraph: salt lance", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { BoundFx.awaken(pl, false); SeraphFx.saltLance(pl, pw); }, "",
+                "seraph: verdict", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { BoundFx.awaken(pl, false); SeraphFx.verdict(pl, pw); }, "",
+                "seraph: fall of heaven", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { BoundFx.awaken(pl, false); SeraphFx.fallOfHeaven(pl, pw); }, "",
+                "seraph: fold the wing", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { BoundFx.awaken(pl, false); SeraphFx.foldWing(pl, pw); if (BoundFx.testAwake(pl)) throw new IllegalStateException("the wing didn't fold"); }, "q"));
         queue.add(new TrioTest(BookTree.BOUND));
         queue.add(new LadderTest());
         queue.add(new BossFightTest());

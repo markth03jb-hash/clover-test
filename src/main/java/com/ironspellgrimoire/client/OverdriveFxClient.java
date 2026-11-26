@@ -110,7 +110,7 @@ public final class OverdriveFxClient {
             }
         }
         // the monitor, left of the hotbar
-        int w = 74, h = 26, x0 = g.guiWidth() / 2 - 91 - 8 - w - 22, y0 = g.guiHeight() - h - 3;
+        int w = 74, h = 26, x0 = Math.min(g.guiWidth() - w - 2, g.guiWidth() / 2 + 91 + 28), y0 = g.guiHeight() - h - 3;   // right of the hotbar: the left is the spell bar's
         g.fill(x0 - 1, y0 - 1, x0 + w + 1, y0 + h + 1, s == 2 && (int) (t / 3) % 2 == 0 ? 0xFFB01020 : 0xFF2A2E34);
         g.fill(x0, y0, x0 + w, y0 + h, 0xE0080A0C);
         for (int gx = x0 + 6; gx < x0 + w; gx += 8) g.fill(gx, y0, gx + 1, y0 + h, 0x2030FF60);   // the grid

@@ -23,7 +23,8 @@ public final class ModeHud {
         java.util.Map<String, Long> m = ACTIVE.computeIfAbsent(p.getUUID(), k -> new java.util.HashMap<>());
         if (ticks > 0) m.put(spellId, p.serverLevel().getGameTime() + ticks); else m.remove(spellId);
         FxPacket pkt = new FxPacket();
-        pkt.shape = 32; pkt.id = p.getId(); pkt.palette = (byte) i; pkt.life = Math.max(0, ticks); pkt.sweep = count;
+        pkt.shape = 32; pkt.id = p.getId(); pkt.r = i;   // the mode's index (not in the palette byte: that loses a bit above 63)
+        pkt.life = Math.max(0, ticks); pkt.sweep = count;
         AddonNetwork.send(PacketDistributor.PLAYER.with(() -> p), pkt);
     }
 
