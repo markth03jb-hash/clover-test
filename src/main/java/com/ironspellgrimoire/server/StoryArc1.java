@@ -700,7 +700,7 @@ public final class StoryArc1 {
 
     /** Each tick of a story person: Corvin keeps up with the leader; a stale one (another's replaced it) goes. */
     public static void npcTick(StoryNpc n) {
-        if (!(n.level() instanceof ServerLevel sl)) return;
+        if (!(n.level() instanceof ServerLevel sl) || n.party == 0) return;   // (0: one stood up by hand, belonging to no story)
         Story.Party pt = Story.byId(sl.getServer(), n.party);
         if (pt == null) { n.discard(); return; }
         if (!n.follower) return;

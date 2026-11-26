@@ -155,7 +155,7 @@ public final class StoryClient {
         CompoundTag t = state.getCompound("target");
         double tx = t.getDouble("x"), tz = t.getDouble("z");
         double dx = tx - cam.x, dz = tz - cam.z, d = Math.sqrt(dx * dx + dz * dz);
-        if (d > 600 || d < 6) return;
+        if (d > 600 || d < 24) return;   // close by, the tracker's arrow is enough
         double ground = t.getDouble("y");
         int bx = Mth.floor(tx), bz = Mth.floor(tz);
         if (ground < 0) ground = mc.level.hasChunk(bx >> 4, bz >> 4) ? mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz) : mc.player.getY();

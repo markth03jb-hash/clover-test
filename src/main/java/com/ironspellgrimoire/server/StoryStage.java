@@ -96,15 +96,15 @@ public final class StoryStage {
             if (rr > R + 0.5) continue;
             int x = ox + dx, z = oz + dz;
             for (int y = 0; y <= 16; y++) set(sl, x, Y + y, z, air);
-            set(sl, x, Y - 1, z, ash(rnd));
+            set(sl, x, Y - 1, z, ash(dx, dz, rnd));
             int depth = 2 + (int) ((R + 1 - rr) * 0.45) + rnd.nextInt(2);   // the island's underside tapers away
             for (int d = 2; d <= depth; d++) set(sl, x, Y - d, z, d < 4 ? st(Blocks.TUFF) : rnd.nextInt(3) == 0 ? st(Blocks.BLACKSTONE) : st(Blocks.DEEPSLATE));
             if (rr > R - 1.5) for (int y = 0; y <= 8; y++) set(sl, x, Y + y, z, st(Blocks.BARRIER));   // the edge: nothing to see, nothing to fall off
-            else if (rnd.nextInt(45) == 0 && rr > 5) set(sl, x, Y - 1, z, st(Blocks.SHROOMLIGHT));   // embers in the ash
+            else if (rnd.nextInt(90) == 0 && rr > 5) set(sl, x, Y - 1, z, st(Blocks.SHROOMLIGHT));   // embers in the ash
         }
         // the road from the gate in, and the north road the Penitents come down
         for (int dz = -R + 2; dz <= R - 2; dz++) for (int dx = -1; dx <= 1; dx++)
-            if (Math.abs(dz) > 6 && rnd.nextInt(4) != 0) set(sl, ox + dx, Y - 1, oz + dz, rnd.nextBoolean() ? st(Blocks.COARSE_DIRT) : st(Blocks.GRAVEL));
+            if (Math.abs(dz) > 6 && rnd.nextInt(3) != 0) set(sl, ox + dx, Y - 1, oz + dz, rnd.nextInt(3) == 0 ? st(Blocks.COARSE_DIRT) : rnd.nextBoolean() ? st(Blocks.GRAVEL) : st(Blocks.PACKED_MUD));
         // the crater
         for (int dx = -6; dx <= 6; dx++) for (int dz = -6; dz <= 6; dz++) {
             double rr = Math.sqrt(dx * dx + (dz + 2) * (dz + 2));
@@ -140,10 +140,16 @@ public final class StoryStage {
         for (int[] l : new int[][]{{6, 10}, {-9, -3}, {4, -12}, {-3, 15}}) set(sl, ox + l[0], Y, oz + l[1], st(Blocks.LANTERN));
     }
 
-    static BlockState ash(Random rnd) {
-        int k = rnd.nextInt(20);
-        return st(k < 6 ? Blocks.GRAY_CONCRETE_POWDER : k < 9 ? Blocks.LIGHT_GRAY_CONCRETE_POWDER : k < 12 ? Blocks.COARSE_DIRT : k < 14 ? Blocks.GRAVEL
-                : k < 16 ? Blocks.TUFF : k < 18 ? Blocks.SOUL_SOIL : Blocks.BLACK_CONCRETE_POWDER);
+    static BlockState ash(Random rnd) { return ash(rnd.nextInt(1000), rnd.nextInt(1000), rnd); }
+
+    /** Ash lies in drifts, not a checkerboard: smooth patches of grey (a little noise on top), soot darker in the hollows. */
+    static BlockState ash(int x, int z, Random rnd) {
+        double n = Math.sin(x * 0.21 + Math.cos(z * 0.13) * 2.1) + Math.sin(z * 0.19 + Math.sin(x * 0.11) * 1.7) + rnd.nextDouble() * 0.7;
+        if (n > 1.5) return st(Blocks.LIGHT_GRAY_CONCRETE_POWDER);
+        if (n > 0.6) return st(rnd.nextInt(5) == 0 ? Blocks.GRAVEL : Blocks.GRAY_CONCRETE_POWDER);
+        if (n > -0.4) return st(rnd.nextInt(4) == 0 ? Blocks.TUFF : Blocks.GRAY_CONCRETE_POWDER);
+        if (n > -1.2) return st(rnd.nextInt(3) == 0 ? Blocks.SOUL_SOIL : Blocks.TUFF);
+        return st(rnd.nextInt(3) == 0 ? Blocks.BLACK_CONCRETE_POWDER : Blocks.SOUL_SOIL);
     }
 
     /** A burnt house: its floor, a low stone course, what's left of the walls and posts, the roof fallen in, a chimney. */

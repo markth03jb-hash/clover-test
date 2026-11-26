@@ -2402,6 +2402,7 @@ final class GameTestCases {
                     z.moveTo(home.x + 2, home.y, home.z); sl().addFreshEntity(z);
                     int hits = playerHits;
                     p.invulnerableTime = 0;
+                    BossIntro.testRelease(p.getUUID());   // a rival's intro card still holding the player would take the blow first
                     p.hurt(z.damageSources().mobAttack(z), 4);
                     if (playerHits != hits || !RivalKeepsakes.RIBBON.containsKey(p.getUUID())) bad.add("the Prism Ribbon let the blow through");
                     z.discard();

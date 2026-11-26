@@ -154,13 +154,13 @@ public final class UiShots {
         steps.add(new Step("sovereign_ashen", () -> onServer(p -> UiShotsServer.ashen(p)), 40, true));
         steps.add(new Step("folk_clear", () -> onServer(p -> UiShotsServer.folk(p, "clear")), 2, true));
         // ASHFALL: the cast, a scene, a vote, the Journal, the tracker, Emberfall, the chapel
-        steps.add(new Step("story_cast", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.story(p, "cast")); }, 20, true));
+        steps.add(new Step("story_cast", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { UiShotsServer.story(p, "clear"); UiShotsServer.story(p, "cast"); }); }, 20, true));
         steps.add(new Step("story_dialogue", () -> mc.setScreen(new DialogueScreen(storyTalk(false))), 12, true));
         steps.add(new Step("story_vote", () -> { DialogueScreen d = new DialogueScreen(storyTalk(true)); mc.setScreen(d); d.showLine(99); }, 12, true));
         steps.add(new Step("story_journal", () -> { StoryClient.sync(storyState()); mc.setScreen(new JournalScreen(-1)); }, 10, false));
         steps.add(new Step("story_journal_party", () -> { if (mc.screen instanceof JournalScreen j) j.showTab(1); }, 5, false));
         steps.add(new Step("story_journal_page", () -> mc.setScreen(new JournalScreen(2)), 5, false));
-        steps.add(new Step("story_tracker", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.story(p, "clear")); StoryClient.sync(storyState()); }, 10, true));
+        steps.add(new Step("story_tracker", () -> { mc.setScreen(null); mc.getToasts().clear(); }, 10, true));
         steps.add(new Step("story_ember", () -> onServer(p -> UiShotsServer.story(p, "ember")), 60, true));
         steps.add(new Step("story_ember_view", () -> mc.setScreen(null), 30, true));
         steps.add(new Step("story_chapel", () -> onServer(p -> UiShotsServer.story(p, "chapel")), 60, true));

@@ -85,7 +85,7 @@ public class DialogueScreen extends Screen {
     // ---- layout
     int bw() { return Math.min(380, width - 20); }
     int bx() { return (width - bw()) / 2; }
-    int by() { return height - 96; }
+    int by() { return height - 136; }   // above the hotbar, the mana bar and the spell bar
     int choiceY(int i) { return by() - 22 - (choices.size() - i) * 20; }
 
     @Override
@@ -94,7 +94,7 @@ public class DialogueScreen extends Screen {
         String[] l = lines.get(line);
         Who w = who(l[0]);
         int x = bx(), y = by(), bw = bw(), bh = 72;
-        g.fill(x, y, x + bw, y + bh, 0xE0120C0A);
+        g.fill(x, y, x + bw, y + bh, 0xF4120C0A);
         BookUi.frame(g, x, y, bw, bh, 0xFFB0602A);
         g.fill(x, y, x + bw, y + 1, 0xFFFF9A3C);
         int tx = x + 10;

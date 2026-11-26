@@ -49,6 +49,8 @@ public final class BossIntro {
     private static final Map<UUID, Set<UUID>> SHOWN = new HashMap<>();
     /** Players held in a full intro: until when. */
     private static final Map<UUID, Long> HELD = new HashMap<>();
+    /** For the tests: let go of a player an intro card is still holding. */
+    static void testRelease(java.util.UUID u) { HELD.remove(u); }
 
     @SubscribeEvent
     public static void onTick(TickEvent.PlayerTickEvent e) {
