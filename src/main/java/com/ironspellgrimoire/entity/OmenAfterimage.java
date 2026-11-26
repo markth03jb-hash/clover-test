@@ -65,6 +65,7 @@ public class OmenAfterimage extends PathfinderMob {
     /** It fades: everything chasing it turns back to its mage. */
     void fade() {
         net.minecraft.world.entity.player.Player p = owner == null ? null : level().getPlayerByUUID(owner);
+        if (p instanceof net.minecraft.server.level.ServerPlayer sp && sp.isAlive()) com.ironspellgrimoire.server.OmenFx.afterimageFades(sp, position());   // Shadow Burst
         if (p != null && p.isAlive()) {
             for (Mob m : level().getEntitiesOfClass(Mob.class, getBoundingBox().inflate(32), x -> x.getTarget() == this)) m.setTarget(p);
         } else {

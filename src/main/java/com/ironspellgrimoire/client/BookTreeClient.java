@@ -26,7 +26,8 @@ public final class BookTreeClient {
             {0xFF0B1118, 0xEE111B24, 0xFF2E4656, 0xFF6FDFFF, 0xFFE6F8FF, 0xFF7E98A8},   // Vector: white and cyan on slate
             {0xFF180A13, 0xEE22101B, 0xFF5C3248, 0xFFFF7FB4, 0xFFFFE6C8, 0xFFA88496},   // Quiet Fuse: rose on charcoal plum
             {0xFF060A1C, 0xEE0C1230, 0xFF2C3A6C, 0xFF9DB9FF, 0xFFEAF0FF, 0xFF8090C0},   // Foreseen: ice-white on deep navy
-            {0xFF100508, 0xEE1A090D, 0xFF4A1E24, 0xFFE0303C, 0xFFF4F0F2, 0xFF9A7A80}};  // Bound Demon: crimson and salt-white on black
+            {0xFF100508, 0xEE1A090D, 0xFF4A1E24, 0xFFE0303C, 0xFFF4F0F2, 0xFF9A7A80},   // Bound Demon: crimson and salt-white on black
+            {0xFF04050C, 0xEE080A16, 0xFF1E2A52, 0xFF6E96FF, 0xFFDCE6FF, 0xFF6E7898}};  // Ill Omen: ink-black, a cold blue sheen
 
     public static void sync(BookTreePackets.Sync m) {
         book = m.book; xp = m.xp; points = m.points; cd = m.cd; extra = m.extra; respec = m.respec;

@@ -461,7 +461,8 @@ public final class ForeseenFx {
         ServerLevel sl = p.serverLevel();
         Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
         switch (what) {
-            case "held" -> { h.teleportTo(p.getX() + look.x * 2.2, p.getY(), p.getZ() + look.z * 2.2); var hb = fx(0, p.position(), 20); hb.v = new Vec3(p.getId(), h.getId(), 0); send(sl, hb); }
+            case "held" -> { h.teleportTo(p.getX() + look.x * 2.6 - look.z * 1.6, p.getY(), p.getZ() + look.z * 2.6 + look.x * 1.6);   // ahead and to one side, so you don't hide it
+                 var hb = fx(0, p.position(), 20); hb.v = new Vec3(p.getId(), h.getId(), 0); send(sl, hb); }
             case "dodge" -> shatter(sl, mid(p).add(look.scale(1.5)), 1f);
             case "step" -> { var st = fx(2, p.position().add(look.scale(1)), 20); st.u = p.position().add(look.scale(6)); send(sl, st); }
             case "eye" -> send(sl, on(3, h, 200));

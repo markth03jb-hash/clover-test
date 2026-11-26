@@ -46,7 +46,8 @@ final class FxBookAuras extends FxBase {
 
    static final float[] SILVER = {0.78F, 0.82F, 0.9F}, IVORY_C = {0.95F, 0.93F, 0.86F}, ROCK = {0.42F, 0.33F, 0.24F}, ROCK_D = {0.26F, 0.2F, 0.15F},
          INK = {0.03F, 0.03F, 0.05F}, BLOOD = {0.45F, 0.02F, 0.04F}, CARD = {0.96F, 0.95F, 0.92F}, CARD_BACK = {0.22F, 0.08F, 0.34F},
-         HOLE = {0.0F, 0.0F, 0.01F}, CLOUD = {0.86F, 0.88F, 0.92F}, CLOUD_D = {0.6F, 0.64F, 0.72F}, RED = {0.8F, 0.06F, 0.08F}, GOLD = {1.0F, 0.82F, 0.3F};
+         HOLE = {0.0F, 0.0F, 0.01F}, CLOUD = {0.86F, 0.88F, 0.92F}, CLOUD_D = {0.6F, 0.64F, 0.72F}, RED = {0.8F, 0.06F, 0.08F}, GOLD = {1.0F, 0.82F, 0.3F},
+         FLESH = {0.55F, 0.12F, 0.2F}, BONE = {0.9F, 0.86F, 0.76F}, BLUEPRINT = {0.12F, 0.26F, 0.55F}, CORD = {0.42F, 0.3F, 0.18F}, GLASS_C = {0.75F, 0.86F, 1.0F};
 
    static Vec3 P(double x, double y, double z) { return new Vec3(x, y, z); }
    static Vec3 polar(double a, double rx, double ry, double z) { return new Vec3(Math.cos(a) * rx, Math.sin(a) * ry, z); }
@@ -685,6 +686,172 @@ final class FxBookAuras extends FxBase {
             }
             double blink = (t % 120) < 6 ? 0.1 : 1.0;   // two burning eyes in the dark, blinking now and then
             for (int s = -1; s <= 1; s += 2) FxBooks.lstar(m, P(0.72 + s * 0.05, 0.5, Z + 0.02), (float) (0.03 * blink), pal, al);
+         }
+         case 37 -> {   // Parasite: veins creeping in from the edge, bulbs swelling along them
+            FxBooks.underglow(m, HW, HH, pal, 0.2F * al);
+            for (int k = 0; k < 6; k++) {
+               double a = Math.PI * 2 * k / 6 + 0.4;
+               Vec3 prev = polar(a, 0.72, 0.64, Z);
+               double grow = 0.6 + 0.4 * Math.sin(t * 0.03 + k);
+               for (int i = 1; i <= 5; i++) {
+                  double u = i / 5.0 * grow;
+                  Vec3 q = polar(a + Math.sin(u * 5 + k) * 0.25, 0.72 - 0.42 * u, 0.64 - 0.38 * u, Z);
+                  stroke(vc, m, n, prev, q, (float) (0.035 * (1 - u * 0.6)), (float) (0.035 * (1 - u * 0.7)), FLESH, al * 0.9F);
+                  gl(m, prev, q, 0.006F, pal, al * 0.5F);
+                  prev = q;
+               }
+               double pulse = 0.5 + 0.5 * Math.sin(t * 0.15 + k * 1.7);
+               FxBooks.lstar(m, prev, (float) (0.03 + 0.03 * pulse), pal, al * (float) pulse);
+            }
+         }
+         case 38 -> {   // Hunger: a ring of fangs, the jaw slowly working
+            FxBooks.underglow(m, HW, HH, pal, 0.22F * al);
+            double bite = 0.5 + 0.5 * Math.sin(t * 0.06);
+            for (int k = 0; k < 14; k++) {
+               double a = Math.PI * 2 * k / 14 + t * 0.004;
+               double r0 = 0.74, r1 = 0.74 - (0.12 + 0.08 * bite) * (k % 2 == 0 ? 1.0 : 0.6);
+               Vec3 b0 = polar(a - 0.12, r0, r0 * 0.9, Z), b1 = polar(a + 0.12, r0, r0 * 0.9, Z), tip = polar(a, r1, r1 * 0.9, Z);
+               fill(vc, m, n, new Vec3[]{b0, b1, tip, tip}, BONE, al * 0.9F);
+               gl(m, b0, tip, 0.006F, pal, al * 0.6F);
+            }
+            ring(m, 0.76, 0.68, Z, pal, al * 0.7F, 0.016F, 48, 0);
+         }
+         case 39 -> {   // Twins: two rings circling each other, a thread between them
+            FxBooks.underglow(m, HW, HH, pal, 0.2F * al);
+            Vec3 c0 = polar(t * 0.03, 0.3, 0.26, Z), c1 = polar(t * 0.03 + Math.PI, 0.3, 0.26, Z);
+            for (Vec3 c : new Vec3[]{c0, c1}) {
+               Vec3 prev = null;
+               for (int i = 0; i <= 28; i++) {
+                  Vec3 q = c.add(polar(Math.PI * 2 * i / 28 + t * 0.05, 0.3, 0.3, 0));
+                  if (prev != null) gl(m, prev, q, 0.014F, pal, al * 0.85F);
+                  prev = q;
+               }
+               FxBooks.lstar(m, c, 0.05F, pal, al);
+            }
+            gl(m, c0, c1, 0.006F, pal, al * 0.5F);
+         }
+         case 40 -> {   // Architect: a blueprint - a grid, a square frame turning on it, measure marks
+            FxBooks.underglow(m, HW, HH, pal, 0.18F * al);
+            fill(vc, m, n, rect(P(0, 0, Z - 0.005), 0.66, 0.56, 0), BLUEPRINT, al * 0.35F);
+            for (int i = -3; i <= 3; i++) {
+               gl(m, P(i * 0.2, -0.56, Z), P(i * 0.2, 0.56, Z), 0.004F, pal, al * 0.35F);
+               if (Math.abs(i) <= 2) gl(m, P(-0.66, i * 0.2, Z), P(0.66, i * 0.2, Z), 0.004F, pal, al * 0.35F);
+            }
+            outline(m, rect(P(0, 0, Z + 0.003), 0.42, 0.42, t * 0.01), 0.012F, pal, al * 0.9F);
+            outline(m, rect(P(0, 0, Z + 0.003), 0.28, 0.28, -t * 0.015), 0.008F, pal, al * 0.7F);
+            for (int k = 0; k < 8; k++) { double x = -0.6 + k * 0.17; gl(m, P(x, -0.62, Z), P(x, -0.66 + (k % 2) * 0.02, Z), 0.006F, pal, al); }
+         }
+         case 41 -> {   // Meridian: a sun dial - the face, its rays, the shadow of its hand sweeping round
+            FxBooks.underglow(m, HW, HH, pal, 0.3F * al);
+            ring(m, 0.66, 0.6, Z, pal, al * 0.8F, 0.02F, 48, 0);
+            for (int k = 0; k < 16; k++) {
+               double a = Math.PI * 2 * k / 16 + t * 0.005;
+               double l = k % 4 == 0 ? 0.2 : 0.1;
+               gl(m, polar(a, 0.68, 0.62, Z), polar(a, 0.68 + l, 0.62 + l, Z), k % 4 == 0 ? 0.018F : 0.01F, pal, al * 0.8F);
+            }
+            double sh = -t * 0.008;
+            stroke(vc, m, n, P(0, 0, Z + 0.002), polar(sh, 0.55, 0.5, Z + 0.002), 0.05F, 0.01F, INK, al * 0.6F);
+            FxBooks.lstar(m, P(0, 0, Z + 0.01), 0.07F, pal, al);
+         }
+         case 42 -> {   // Ill Omen: a ragged circle of ink, and an eye at its head, watching
+            FxBooks.underglow(m, HW, HH, pal, 0.22F * al);
+            Vec3 prev = null;
+            for (int i = 0; i <= 36; i++) {
+               double a = Math.PI * 2 * i / 36;
+               double r = 0.66 + 0.04 * Math.sin(a * 7 + t * 0.02) + 0.03 * h(i);
+               Vec3 q = polar(a, r, r * 0.9, Z);
+               if (prev != null) { stroke(vc, m, n, prev, q, 0.045F, 0.045F, INK, al * 0.9F); gl(m, prev, q, 0.006F, pal, al * 0.4F); }
+               prev = q;
+            }
+            for (int k = 0; k < 5; k++) {   // ink running down from it
+               double a = -Math.PI / 2 + (k - 2) * 0.35, len = 0.08 + 0.1 * ((t * 0.01 + h(k + 3)) % 1.0);
+               Vec3 b0 = polar(a, 0.66, 0.6, Z);
+               stroke(vc, m, n, b0, b0.add(0, -len, 0), 0.02F, 0.008F, INK, al * 0.8F);
+            }
+            double open = (t % 160) < 8 ? 0.15 : 1.0;
+            Vec3 e = P(0, 0.62, Z + 0.01);
+            for (int sgn = -1; sgn <= 1; sgn += 2) {
+               Vec3 pv = null;
+               for (int i = 0; i <= 8; i++) {
+                  double u = -1 + 2 * i / 8.0;
+                  Vec3 q = e.add(u * 0.16, sgn * (1 - u * u) * 0.07 * open, 0);
+                  if (pv != null) gl(m, pv, q, 0.01F, pal, al);
+                  pv = q;
+               }
+            }
+            FxBooks.lstar(m, e, (float) (0.04 * open), pal, al);
+         }
+         case 43 -> {   // Bound Demon: a ring of crimson chain, a horned sigil at its head
+            FxBooks.underglow(m, HW, HH, pal, 0.22F * al);
+            for (int k = 0; k < 22; k++) {
+               double a = Math.PI * 2 * k / 22 + t * 0.006;
+               Vec3 c = polar(a, 0.66, 0.6, Z);
+               Vec3 tg = polar(a + Math.PI / 2, 1, 1, 0).scale(0.045), nr = polar(a, 1, 1, 0).scale(k % 2 == 0 ? 0.025 : 0.012);
+               Vec3[] link = {c.subtract(tg).subtract(nr), c.add(tg).subtract(nr), c.add(tg).add(nr), c.subtract(tg).add(nr)};
+               outline(m, link, 0.01F, pal, al * 0.9F);
+               fill(vc, m, n, link, RED, al * 0.35F);
+            }
+            Vec3 c = P(0, 0.66, Z + 0.01);
+            for (int sgn = -1; sgn <= 1; sgn += 2) {
+               Vec3 pv = c.add(sgn * 0.06, 0, 0);
+               for (int i = 1; i <= 5; i++) {
+                  double u = i / 5.0;
+                  Vec3 q = c.add(sgn * (0.06 + 0.08 * u - 0.03 * u * u), 0.2 * u, 0);
+                  stroke(vc, m, n, pv, q, (float) (0.03 * (1 - u * 0.7)), (float) (0.03 * (1 - u * 0.8)), INK, al);
+                  gl(m, pv, q, 0.006F, pal, al * 0.7F);
+                  pv = q;
+               }
+            }
+            FxBooks.lstar(m, c, 0.04F, pal, al);
+         }
+         case 44 -> {   // Vector: arrows running round, and straight vectors bent at its rim
+            FxBooks.underglow(m, HW, HH, pal, 0.2F * al);
+            ring(m, 0.64, 0.58, Z, pal, al * 0.35F, 0.006F, 48, 0);
+            for (int k = 0; k < 6; k++) {
+               double a = t * 0.04 + k * Math.PI / 3;
+               Vec3 tip = polar(a, 0.64, 0.58, Z), back = polar(a - 0.3, 0.64, 0.58, Z);
+               Vec3 dir = tip.subtract(back).normalize(), side = new Vec3(-dir.y, dir.x, 0);
+               gl(m, back, tip, 0.012F, pal, al);
+               gl(m, tip, tip.subtract(dir.scale(0.08)).add(side.scale(0.05)), 0.012F, pal, al);
+               gl(m, tip, tip.subtract(dir.scale(0.08)).subtract(side.scale(0.05)), 0.012F, pal, al);
+            }
+            for (int k = 0; k < 4; k++) {   // vectors from the middle, bending off at the rim
+               double a = Math.PI / 4 + k * Math.PI / 2 - t * 0.01;
+               Vec3 mid = polar(a, 0.5, 0.45, Z), end = mid.add(polar(a + 1.2, 0.22, 0.22, 0));
+               gl(m, P(0, 0, Z), mid, 0.008F, pal, al * 0.6F);
+               gl(m, mid, end, 0.008F, pal, al * 0.6F);
+            }
+         }
+         case 45 -> {   // Quiet Fuse: a cord coiled round it, burning, a spark fizzing along
+            FxBooks.underglow(m, HW, HH, pal, 0.2F * al);
+            double burn = (t * 0.004) % 1.0;
+            Vec3 prev = null, spark = null;
+            for (int i = 0; i <= 60; i++) {
+               double u = i / 60.0, a = u * Math.PI * 4.0 + 0.5, r = 0.42 + 0.3 * u;
+               Vec3 q = polar(a, r, r * 0.9, Z);
+               if (prev != null) stroke(vc, m, n, prev, q, 0.025F, 0.025F, u > burn ? CORD : INK, al * 0.9F);
+               if (spark == null && u > burn) spark = q;
+               prev = q;
+            }
+            if (spark != null) {
+               FxBooks.lstar(m, spark, (float) (0.06 + 0.02 * Math.sin(t * 1.3)), pal, al);
+               for (int k = 0; k < 4; k++) { double a = h(k + Math.floor(t * 0.3)) * Math.PI * 2; gl(m, spark, spark.add(polar(a, 0.08, 0.08, 0)), 0.006F, pal, al * 0.8F); }
+            }
+         }
+         case 46 -> {   // Foreseen: the ring and its echoes running ahead of it, shards of mirror turning in them
+            FxBooks.underglow(m, HW, HH, pal, 0.22F * al);
+            for (int e = 0; e < 3; e++) {
+               double lead = e * 0.35;
+               ring(m, 0.62 + e * 0.05, 0.56 + e * 0.05, Z, pal, al * (0.85F - e * 0.25F), 0.012F - e * 0.003F, 48, 0);
+               FxBooks.lstar(m, polar(t * 0.03 + lead, 0.62 + e * 0.05, 0.56 + e * 0.05, Z), 0.04F, pal, al * (1 - e * 0.3F));
+            }
+            for (int k = 0; k < 5; k++) {
+               double a = -t * 0.015 + k * Math.PI * 2 / 5;
+               Vec3 c = polar(a, 0.48, 0.42, Z + 0.005);
+               Vec3[] sh = {c.add(polar(a, 0.07, 0.07, 0)), c.add(polar(a + 2.2, 0.06, 0.06, 0)), c.add(polar(a + 4.0, 0.05, 0.05, 0)), c.add(polar(a + 4.0, 0.05, 0.05, 0))};
+               fill(vc, m, n, sh, GLASS_C, al * 0.6F);
+               gl(m, sh[0], sh[1], 0.006F, pal, al);
+            }
          }
          default -> FxBooks.underglow(m, HW, HH, pal, 0.25F * al);
       }

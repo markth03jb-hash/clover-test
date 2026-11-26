@@ -56,11 +56,11 @@ public final class BookTree {
                 || s.is(net.minecraft.world.damagesource.DamageTypes.MOB_ATTACK_NO_AGGRO);
     }
 
-    public static final int VECTOR = 0, FUSE = 1, FORESEEN = 2, BOUND = 3;
+    public static final int VECTOR = 0, FUSE = 1, FORESEEN = 2, BOUND = 3, OMEN = 4;
     public static final int STAT = 0, PASSIVE = 1, SKILL = 2, WHEEL = 3, KEY = 4, ROOT = 5;
     public static final int MAX_LEVEL = 30, RESPEC_TICKS = 6000;
-    public static final String[] TREE = {"The Vector Field", "The Fuse Board", "The Sightlines", "The Bond Tree"};
-    public static final String[] GROWTH = {"Force redirected", "Foes caught in blasts", "Blows dodged", "Battles fought for others"};
+    public static final String[] TREE = {"The Vector Field", "The Fuse Board", "The Sightlines", "The Bond Tree", "The Ledger of Ill Luck"};
+    public static final String[] GROWTH = {"Force redirected", "Foes caught in blasts", "Blows dodged", "Battles fought for others", "Calamities called"};
 
     /** One node: where it sits on the board (x 0-8, y 0-7), what it needs (any one of), its ranks and cost a rank,
      *  what kind it is, its words, its icon (a spell icon, or "" for a drawn glyph), and the keystone it excludes. */
@@ -73,7 +73,7 @@ public final class BookTree {
         return new Node(id, x, y, req.split("\\|"), 1, 3, KEY, name, desc, "", excl);
     }
 
-    public static final List<List<Node>> TREES = List.of(vector(), fuse(), foreseen(), bound());
+    public static final List<List<Node>> TREES = List.of(vector(), fuse(), foreseen(), bound(), omen());
 
     // ------------------------------------------------------------------ the Vector Field
     private static List<Node> vector() {
@@ -250,6 +250,77 @@ public final class BookTree {
         return l;
     }
 
+    // ------------------------------------------------------------------ the Ledger of Ill Luck (the Grimoire of Ill Omen)
+    private static List<Node> omen() {
+        List<Node> l = new ArrayList<>();
+        l.add(n("root", 8, 0, null, 1, 0, ROOT, "The Law of Ill Fortune", "Every enemy near you charges a bar of Misfortune - the nearer, the faster - and so does anything that hunts you. When the bar fills, a calamity strikes it. Each calamity you call grows this tree.", "ill_fated_path"));
+        // Footprints
+        l.add(n("p1", 1, 1, "root", 1, 1, SKILL, "Long Shadow", "Ill-Fated Path lasts 15 s instead of 10.", "ill_fated_path"));
+        l.add(n("p2", 0, 2, "p1", 1, 2, PASSIVE, "Black Cat", "Two of your prints trodden call a calamity, not three.", ""));
+        l.add(n("p3", 2, 2, "p1", 1, 2, SKILL, "Ink Pools", "Your footprints wait 12 s instead of 8.", "ill_fated_path"));
+        l.add(n("p4", 0, 3, "p2", 1, 2, PASSIVE, "Deep Prints", "Each print trodden brings 50 Misfortune instead of 34.", ""));
+        l.add(n("p7", 2, 3, "p3", 1, 2, SKILL, "Haunted Steps", "Ill-Fated Path leaves its prints twice as close together.", "ill_fated_path"));
+        l.add(n("p5", 0, 4, "p4", 1, 2, PASSIVE, "Tripwire", "Whatever treads a print is 40% slower for 1.5 s.", ""));
+        l.add(n("p6", 2, 4, "p7", 1, 2, PASSIVE, "Walk It Off", "Each footprint you leave gives you 2 mana.", ""));
+        // the Token
+        l.add(n("t1", 4, 1, "root", 1, 1, SKILL, "Cursed Coin", "Laden Token splits in three: one where you aim, one to each side.", "laden_token"));
+        l.add(n("t2", 3, 2, "t1", 1, 2, PASSIVE, "Heavy Coin", "A calamity a token calls strikes 30% harder.", ""));
+        l.add(n("t3", 5, 2, "t1", 1, 2, SKILL, "Long Wait", "A token on the ground waits 60 s instead of 30.", "laden_token"));
+        l.add(n("t5", 3, 3, "t2", 1, 2, PASSIVE, "Spreading Debt", "When a laden creature's calamity lands, the nearest other enemy within 6 is laden in its place.", ""));
+        l.add(n("t4", 5, 3, "t3", 1, 2, PASSIVE, "Sticky Fortune", "A token on the ground is touched from twice as far.", ""));
+        l.add(n("t6", 4, 4, "t5|t4", 1, 2, PASSIVE, "Lucky Coin", "Each calamity a token calls heals you 3.", ""));
+        // Calamity itself
+        l.add(n("c1", 8, 1, "root", 3, 1, STAT, "Ill Star", "Calamities strike 8% harder a rank.", ""));
+        l.add(n("c2", 7, 2, "c1", 1, 2, PASSIVE, "Wide Sign", "A calamity splashes: 30% of it to every other enemy within 3 blocks.", ""));
+        l.add(n("c3", 9, 2, "c1", 1, 2, PASSIVE, "Aftershock", "After a calamity its bar starts again at 40, not 20.", ""));
+        l.add(n("c4", 8, 3, "c2|c3", 1, 2, PASSIVE, "Omen Reader", "The marks over enemies show from 16 blocks farther.", ""));
+        l.add(n("c5", 7, 4, "c4", 1, 2, PASSIVE, "Feast of Ill Luck", "Each calamity gives you 5 mana.", ""));
+        l.add(n("c6", 9, 4, "c4", 1, 2, PASSIVE, "Rare Misfortune", "The rare calamities come twice as often.", ""));
+        l.add(n("c7", 8, 5, "c5|c6", 1, 3, PASSIVE, "Snowballing", "Each calamity on the same creature within 10 s strikes 15% harder than the last (up to 60%).", ""));
+        // Pursuit
+        l.add(n("a1", 11, 1, "root", 1, 1, SKILL, "Second Shadow", "Afterimage sends out two silhouettes, walking different ways.", "afterimage"));
+        l.add(n("a3", 10, 2, "a1", 3, 1, STAT, "Dread Range", "Enemies start charging their bar from 2 blocks farther a rank.", ""));
+        l.add(n("a4", 12, 2, "a1", 3, 1, STAT, "Creeping Dread", "Bars charge 10% faster a rank.", ""));
+        l.add(n("a2", 10, 3, "a3", 1, 2, PASSIVE, "Lure", "Whatever chases your Afterimage charges its bar twice as fast.", ""));
+        l.add(n("a5", 12, 3, "a4", 1, 2, PASSIVE, "Evil Eye", "An enemy looking straight at you charges its bar 50% faster.", ""));
+        l.add(n("a6", 11, 4, "a2|a5", 1, 2, SKILL, "Shadow Burst", "When your Afterimage fades it bursts: every enemy within 4 gains 40 Misfortune.", "afterimage"));
+        l.add(n("a7", 11, 5, "a6", 1, 2, PASSIVE, "Lingering Doom", "A bar fades half as fast once its creature gives up.", ""));
+        // Rain and Ruin
+        l.add(n("n1", 14, 1, "root", 1, 1, SKILL, "Downpour", "Needle Rain lasts 8 s instead of 5.", "needle_rain"));
+        l.add(n("n2", 13, 2, "n1", 1, 2, PASSIVE, "Barbed Needles", "Each needle brings 15 Misfortune instead of 10.", ""));
+        l.add(n("n3", 15, 2, "n1", 1, 2, SKILL, "Wide Rain", "Needle Rain reaches 14 blocks instead of 10.", "needle_rain"));
+        l.add(n("n4", 13, 3, "n2", 1, 2, SKILL, "Long Fall", "Domino lasts 25 s instead of 15.", "domino"));
+        l.add(n("n5", 15, 3, "n3|n4", 1, 2, PASSIVE, "Toppling Chain", "A calamity that leaps may leap once more.", ""));
+        l.add(n("n6", 14, 4, "n5", 1, 2, PASSIVE, "Heavy Pieces", "A calamity that leaps strikes 20% harder.", ""));
+        // Stillness
+        l.add(n("s1", 17, 1, "root", 1, 1, SKILL, "Long Breath", "Stillness lasts 6 s instead of 4.", "stillness"));
+        l.add(n("s2", 16, 2, "s1", 1, 2, PASSIVE, "Broken Mirror", "A blow turned back by Stillness throws shards: 4 to every other enemy within 4.", ""));
+        l.add(n("s3", 18, 2, "s1", 1, 2, PASSIVE, "Calm Feet", "Stillness holds while you walk slowly, not only standing still.", ""));
+        l.add(n("s4", 16, 3, "s2", 1, 2, PASSIVE, "Turned Fate", "A blow turned back heals you for half of it.", ""));
+        l.add(n("s5", 18, 3, "s3|s4", 1, 2, PASSIVE, "Glass Heart", "Each blow turned back adds 1 s to Stillness.", ""));
+        // Debt
+        l.add(n("l1", 20, 1, "root", 1, 1, SKILL, "Compound Interest", "Karma's Ledger counts Misfortune at 25% instead of 15%.", "karmas_ledger"));
+        l.add(n("l2", 19, 2, "l1", 1, 2, PASSIVE, "Unpaid Debt", "What the Ledger's target can't pay - the damage past its health - falls on the nearest enemy within 8.", ""));
+        l.add(n("l3", 21, 2, "l1", 1, 2, SKILL, "Audit", "Karma's Ledger also lands on up to 2 more marked enemies near it, at half.", "karmas_ledger"));
+        l.add(n("l4", 19, 3, "l2", 1, 2, PASSIVE, "Bad Credit", "The Ledger's target charges its bar twice as fast for 10 s after.", ""));
+        l.add(n("l5", 21, 3, "l3", 1, 2, SKILL, "Long Arm", "The Law Itself reaches 32 blocks instead of 24.", "the_law_itself"));
+        l.add(n("l6", 20, 4, "l4|l5", 1, 2, PASSIVE, "Harsh Sentence", "Each strike of The Law Itself grows 35% instead of 25%.", ""));
+        l.add(n("l8", 21, 5, "l5", 1, 2, SKILL, "No Mercy", "The Law Itself lasts 25 s instead of 20.", "the_law_itself"));
+        l.add(n("l7", 20, 6, "l6|l8", 1, 3, PASSIVE, "Thirteenth Hour", "13 s after The Law Itself ends, it strikes every pursuer once more.", ""));
+        // the G wheel
+        l.add(n("w1", 1, 6, "p5|p6", 1, 2, WHEEL, "Cross My Path", "G wheel: a line of five footprints ahead of you, at once.", "omen_cross"));
+        l.add(n("w2", 4, 6, "t6", 1, 2, WHEEL, "Bad Penny", "G wheel: a Laden Token at your feet, waiting.", "omen_penny"));
+        l.add(n("w3", 14, 6, "n6|a7", 1, 2, WHEEL, "Final Notice", "G wheel: every enemy within 16 whose bar is half full or more meets its calamity now.", "omen_notice"));
+        // keystones
+        l.add(k("K1", 7, 7, "c7", "K2", "Prophet", "Bars charge 20% faster - but calamities strike 15% softer."));
+        l.add(k("K2", 9, 7, "c7", "K1", "Harbinger", "Calamities strike 40% harder - but bars charge 20% slower."));
+        l.add(k("K3", 16, 5, "s5|s4", "K4", "Jinx", "Every calamity leaps once to the nearest enemy within 8, at half."));
+        l.add(k("K4", 18, 5, "s5|s4", "K3", "Curse-Bearer", "Enemies with half a bar or more hit you 10% softer, and their blows bring 30 Misfortune instead of 15."));
+        l.add(k("K5", 19, 8, "l7", "K6", "Judge", "Karma's Ledger strikes bosses and elites 50% harder."));
+        l.add(k("K6", 21, 8, "l7", "K5", "Executioner", "A calamity on an enemy under 30% health strikes twice."));
+        return l;
+    }
+
     public static Node node(int book, String id) {
         if (book < 0 || book >= TREES.size()) return null;
         for (Node x : TREES.get(book)) if (x.id().equals(id)) return x;
@@ -263,6 +334,7 @@ public final class BookTree {
         if (b.is(AddonItemRegistry.FUSE_GRIMOIRE.get())) return FUSE;
         if (b.is(AddonItemRegistry.FORESEEN_GRIMOIRE.get())) return FORESEEN;
         if (b.is(AddonItemRegistry.BOUND_GRIMOIRE.get())) return BOUND;
+        if (b.is(AddonItemRegistry.OMEN_GRIMOIRE.get())) return OMEN;
         return -1;
     }
     public static ItemStack book(Player p) { ItemStack b = Utils.getPlayerSpellbookStack(p); return b == null ? ItemStack.EMPTY : b; }
@@ -298,7 +370,7 @@ public final class BookTree {
     }
 
     /** Points: the growth level and two a mastery level - and the Bond Tree, the biggest, twice the growth level. */
-    public static int points(ItemStack b) { return level(b) * (kind(b) == BOUND ? 2 : 1) + 2 * GrimoireMastery.level(b) + BossRelics.treePoints(b) + BookQuests.treePoints(b); }
+    public static int points(ItemStack b) { return level(b) * (kind(b) == BOUND || kind(b) == OMEN ? 2 : 1) + 2 * GrimoireMastery.level(b) + BossRelics.treePoints(b) + BookQuests.treePoints(b); }
     public static int spent(ItemStack b) {
         int k = kind(b), s = 0;
         if (k < 0) return 0;
@@ -369,19 +441,20 @@ public final class BookTree {
     // ------------------------------------------------------------------ the G wheel
     private static final Map<UUID, long[]> WHEEL_CD = new HashMap<>();
     /** The wheel's four abilities: slot 0 is always there, 1-3 need their wheel node. */
-    public static final String[][] WHEEL_IDS = {{"", "w1", "w2", "w3"}, {"", "w1", "w2", "w3"}, {"", "w2", "w1", "w3"}, {"", "w1", "w2", "w3"}};
+    public static final String[][] WHEEL_IDS = {{"", "w1", "w2", "w3"}, {"", "w1", "w2", "w3"}, {"", "w2", "w1", "w3"}, {"", "w1", "w2", "w3"}, {"", "w1", "w2", "w3"}};
     public static final String[][] WHEEL_NAMES = {{"Stance Shift", "Hover Vector", "Reverse Charge", "Air Lance"},
             {"Detonate All", "Fuse Mode", "Primed Coin", "Defuse"}, {"Glimpse", "Borrowed Second", "Foretold Strike", "Fate Thread"},
-            {"Restrain / Release", "Call to Family", "Salt Wall", "Wing Dash"}};
+            {"Restrain / Release", "Call to Family", "Salt Wall", "Wing Dash"}, {"Read the Signs", "Cross My Path", "Bad Penny", "Final Notice"}};
     public static final String[][] WHEEL_ICONS = {{"vec_stance", "vec_hover", "vec_reverse", "vec_lance"},
             {"detonate", "fuse_mode", "fuse_coin", "fuse_defuse"}, {"fore_glimpse", "fore_second", "fore_strike", "fore_thread"},
-            {"bd_restrain", "bd_family", "bd_saltwall", "bd_wingdash"}};
+            {"bd_restrain", "bd_family", "bd_saltwall", "bd_wingdash"}, {"omen_signs", "omen_cross", "omen_penny", "omen_notice"}};
     public static final String[][] WHEEL_DESC = {
             {"Switch stance: Reflect (projectiles), Return (blows), Flow (no fall damage, faster).", "Hang in the air for 3 s.", "Turn the momentum of everything rushing you.", "A spear of compressed air through everything in its line."},
             {"Set off everything armed - no mana.", "Choose how armed targets blow: on Detonate, on a 3 s timer, or when a foe comes near.", "A coin that arms the first creature it strikes.", "Disarm everything; 8 mana back for each."},
             {"For 5 s, see every nearby foe's next blow, and foresee them all.", "Step back to where you stood a second ago.", "Mark a spot: 2 s later the strike lands there.", "Tie two foes together for 10 s."},
-            {"Balanced, Restrain (fills slowly), Release (fills fast).", "Your beasts come to you; allies within 16 gain speed and 4 absorption.", "A wall of salt for 4 s: arrows die in it, foes crossing are salted.", "One beat of the wing: 10 blocks, through foes."}};
-    public static final int[][] WHEEL_COOLDOWN = {{20, 300, 240, 160}, {40, 10, 120, 200}, {400, 200, 160, 300}, {10, 600, 300, 160}};
+            {"Balanced, Restrain (fills slowly), Release (fills fast).", "Your beasts come to you; allies within 16 gain speed and 4 absorption.", "A wall of salt for 4 s: arrows die in it, foes crossing are salted.", "One beat of the wing: 10 blocks, through foes."},
+            {"Every enemy within 16 blocks: +15 Misfortune.", "A line of five footprints ahead of you, at once.", "A Laden Token at your feet, waiting.", "Every enemy within 16 whose bar is half full or more meets its calamity now."}};
+    public static final int[][] WHEEL_COOLDOWN = {{20, 300, 240, 160}, {40, 10, 120, 200}, {400, 200, 160, 300}, {10, 600, 300, 160}, {300, 400, 300, 900}};
 
     public static boolean wheelOpen(Player p, int slot) {
         int k = kind(p);
@@ -402,6 +475,7 @@ public final class BookTree {
             case VECTOR -> VectorFx.wheel(p, slot);
             case FUSE -> FuseFx.wheel(p, slot);
             case BOUND -> BoundFx.wheel(p, slot);
+            case OMEN -> OmenFx.wheel(p, slot);
             default -> ForeseenFx.wheel(p, slot);
         };
         if (done) WHEEL_CD.computeIfAbsent(p.getUUID(), u -> new long[4])[slot] = p.level().getGameTime() + WHEEL_COOLDOWN[k][slot];
@@ -418,7 +492,7 @@ public final class BookTree {
         if (k >= 0) {
             for (Node x : TREES.get(k)) { int r = rank(b, x.id()); if (r > 0 && x.kind() != ROOT) s.append(x.id()).append(':').append(r).append(','); }
             for (int i = 0; i < 4; i++) cd[i] = wheelCd(p, i);
-            extra = switch (k) { case VECTOR -> VectorFx.extra(p); case FUSE -> FuseFx.extra(p); case BOUND -> BoundFx.extra(p); default -> ForeseenFx.extra(p); };
+            extra = switch (k) { case VECTOR -> VectorFx.extra(p); case FUSE -> FuseFx.extra(p); case BOUND -> BoundFx.extra(p); case OMEN -> OmenFx.extra(p); default -> ForeseenFx.extra(p); };
         }
         long until = RESPEC.getOrDefault(p.getUUID(), 0L);
         AddonNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new BookTreePackets.Sync(k, xp(b), points(b), s.toString(), cd, extra,

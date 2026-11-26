@@ -1,130 +1,147 @@
 {
- "loader": "forge:obj",
- "model": "iron_spell_grimoire:models/item/demon_katana.obj",
- "flip_v": true,
- "textures": {
-  "particle": "iron_spell_grimoire:item/rivals"
- },
- "display": {
-  "thirdperson_righthand": {
-   "rotation": [
-    40,
-    90,
-    0
-   ],
-   "translation": [
-    0,
-    1.5,
-    0.5
-   ],
-   "scale": [
-    0.85,
-    0.85,
-    0.85
-   ]
+  "loader": "forge:obj",
+  "model": "iron_spell_grimoire:models/item/demon_katana.obj",
+  "flip_v": true,
+  "textures": {
+    "particle": "iron_spell_grimoire:item/rivals"
   },
-  "thirdperson_lefthand": {
-   "rotation": [
-    40,
-    -90,
-    0
-   ],
-   "translation": [
-    0,
-    1.5,
-    0.5
-   ],
-   "scale": [
-    0.85,
-    0.85,
-    0.85
-   ]
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        180,
+        -10
+      ],
+      "translation": [
+        0,
+        4,
+        0.5
+      ],
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        180,
+        10
+      ],
+      "translation": [
+        0,
+        4,
+        0.5
+      ],
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        180,
+        20
+      ],
+      "translation": [
+        1.13,
+        3.2,
+        1.13
+      ],
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        180,
+        -20
+      ],
+      "translation": [
+        1.13,
+        3.2,
+        1.13
+      ],
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        -45
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "gui": {
+      "rotation": [
+        117.5,
+        -138.5,
+        109
+      ],
+      "translation": [
+        -2.8,
+        -2.8,
+        0
+      ],
+      "scale": [
+        0.58,
+        0.58,
+        0.58
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    }
   },
-  "firstperson_righthand": {
-   "rotation": [
-    0,
-    65,
-    -20
-   ],
-   "translation": [
-    1.5,
-    2,
-    0
-   ],
-   "scale": [
-    0.6,
-    0.6,
-    0.6
-   ]
-  },
-  "firstperson_lefthand": {
-   "rotation": [
-    0,
-    -65,
-    20
-   ],
-   "translation": [
-    1.5,
-    2,
-    0
-   ],
-   "scale": [
-    0.6,
-    0.6,
-    0.6
-   ]
-  },
-  "gui": {
-   "rotation": [
-    0,
-    90,
-    -45
-   ],
-   "translation": [
-    -1,
-    -1,
-    0
-   ],
-   "scale": [
-    0.36,
-    0.36,
-    0.36
-   ]
-  },
-  "ground": {
-   "rotation": [
-    0,
-    0,
-    0
-   ],
-   "translation": [
-    0,
-    2,
-    0
-   ],
-   "scale": [
-    0.5,
-    0.5,
-    0.5
-   ]
-  },
-  "fixed": {
-   "rotation": [
-    0,
-    90,
-    -45
-   ],
-   "translation": [
-    0,
-    0,
-    0
-   ],
-   "scale": [
-    0.6,
-    0.6,
-    0.6
-   ]
-  }
- },
- "render_type": "minecraft:cutout"
+  "render_type": "minecraft:cutout"
 }

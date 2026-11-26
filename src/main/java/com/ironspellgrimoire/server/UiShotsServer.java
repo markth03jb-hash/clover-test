@@ -530,6 +530,13 @@ public final class UiShotsServer {
         if (which.charAt(0) == 'T') { twins(p, w); return; }
         if (which.charAt(0) == 'A') { architect(p, w); return; }
         if (which.charAt(0) == 'M') { meridian(p, w); return; }
+        if (which.charAt(0) == 'O' && w.equals("tree")) {   // the Ledger of Ill Luck part-learned, open
+            ItemStack b = BookTree.book(p);
+            BookTree.testXp(b, 1500);
+            for (String s : new String[]{"p1", "p2", "t1", "t3", "c1", "c2", "a1", "a3", "n1", "s1", "l1", "l3", "w2"}) BookTree.testSet(b, s, 1);
+            BookTree.sync(p, true);
+            return;
+        }
         if (which.charAt(0) == 'O') { omen(p, w); return; }
         if ("XQF".indexOf(which.charAt(0)) >= 0) { trio(p, w); return; }
         if (which.charAt(0) == 'B') { bound(p, w); return; }
@@ -1182,7 +1189,7 @@ public final class UiShotsServer {
         String[] w = what.split(":");
         if (w[0].equals("clear")) { architect(p, -1); BoundFx.testReset(p); VectorFx.testReset(p); OmenFx.testReset(p); MeridianFx.testReset(p); sl.setDayTime(6000); sl.getServer().setDifficulty(net.minecraft.world.Difficulty.PEACEFUL, true); return; }
         equip(p, w[0].charAt(0));
-        if (sl.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) sl.getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // a husk vanishes the moment it spawns in Peaceful
+        if (sl.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) { sl.getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL, true); sl.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING).set(false, sl.getServer()); }   // a husk vanishes the moment it spawns in Peaceful (and no slimes wandering in)
         var old = sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30), m -> m.getPersistentData().getBoolean("isg_ui_arch"));
         if (old.isEmpty()) { architect(p, 99); old = sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30), m -> m.getPersistentData().getBoolean("isg_ui_arch")); }
         if (old.isEmpty()) return;

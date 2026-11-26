@@ -1,6 +1,7 @@
 package com.ironspellgrimoire.client;
 
 import com.ironspellgrimoire.server.BookTree;
+import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -34,6 +35,7 @@ public class BookTreeWheel extends Screen {
             String mode = new String[]{"Balanced", "Restrain", "Release"}[Math.max(0, Math.min(2, x[5]))];
             return x[1] > 0 ? "TAKEN OVER" : x[3] > 0 ? "Awake - " + (x[3] + 19) / 20 + " s" : "Possession " + x[0] + "%  -  " + mode;
         }
+        if (b == BookTree.OMEN) return x.length > 2 ? (x[2] > 0 ? "The Law holds - " + (x[2] + 19) / 20 + " s" : x[0] + " marked  -  fullest bar " + x[1] + "%") : "";
         return x.length > 0 ? String.format("%.2f s warning", x[0] / 20f) : "";
     }
 
@@ -112,22 +114,40 @@ public class BookTreeWheel extends Screen {
             g.drawCenteredString(font, name, tx, ty + 4, !ok ? DIM : i == hover ? 0xFFFFFFFF : BRIGHT);
             if (ok && BookTreeClient.cd.length > i && BookTreeClient.cd[i] > 0) g.drawCenteredString(font, (BookTreeClient.cd[i] + 19) / 20 + "s", tx, ty + 14, DIM);
         }
-        boolean eyeMid = b == BookTree.FORESEEN || b == BookTree.BOUND;
+        boolean eyeMid = b == BookTree.FORESEEN || b == BookTree.BOUND || b == BookTree.OMEN;
         g.drawCenteredString(font, eyeMid ? "" : "Tree", cx, cy - 4, centre ? 0xFFFFFFFF : BRIGHT);
         if (eyeMid) g.drawCenteredString(font, "Tree", cx, cy + 6, centre ? 0xFFFFFFFF : BRIGHT);
         if (BookTreeClient.free() > 0) g.drawCenteredString(font, "+" + BookTreeClient.free(), cx, cy + (eyeMid ? 16 : 6), ACC);
 
-        int y = cy + (int) (R + 18);
         g.drawCenteredString(font, state(b), cx, cy - (int) R - 22, ACC);
+        String title = null, desc = null;
         if (hover >= 0) {
             boolean ok = BookTreeClient.wheelOpen(hover);
-            g.drawCenteredString(font, BookTree.WHEEL_NAMES[b][hover], cx, y, 0xFFFFFFFF);
-            String d = ok ? BookTree.WHEEL_DESC[b][hover] : "Learn " + BookTree.node(b, BookTree.WHEEL_IDS[b][hover]).name() + " in the tree to use this.";
-            g.drawCenteredString(font, d, cx, y + 11, DIM);
+            title = BookTree.WHEEL_NAMES[b][hover];
+            desc = ok ? BookTree.WHEEL_DESC[b][hover] : "Learn " + BookTree.node(b, BookTree.WHEEL_IDS[b][hover]).name() + " in the tree to use this.";
         } else if (centre) {
-            g.drawCenteredString(font, BookTree.TREE[b], cx, y, 0xFFFFFFFF);
-            g.drawCenteredString(font, "Let go here to open the tree" + (BookTreeClient.free() > 0 ? " - " + BookTreeClient.free() + " points to spend." : "."), cx, y + 11, DIM);
+            title = BookTree.TREE[b];
+            desc = "Let go here to open the tree" + (BookTreeClient.free() > 0 ? " - " + BookTreeClient.free() + " points to spend." : ".");
         }
+        if (title != null) caption(g, title, desc, cx, cy + (int) R + 10);
+    }
+
+    /** The name and words of what's under the cursor, on a dark plate so they never melt into the world or the bars:
+     *  wrapped to a readable width, white with a shadow, and kept clear of the hotbar and the mana bar. */
+    private void caption(GuiGraphics g, String title, String desc, int cx, int want) {
+        int maxW = Math.min(g.guiWidth() - 24, 340);
+        List<net.minecraft.util.FormattedCharSequence> lines = font.split(net.minecraft.network.chat.Component.literal(desc == null ? "" : desc), maxW);
+        int w = font.width(title);
+        for (var l : lines) w = Math.max(w, font.width(l));
+        int h = 12 + lines.size() * 10 + 6;
+        int top = Math.min(want, g.guiHeight() - 64 - h);   // above the hotbar, the mana bar and the action-bar line
+        int x0 = cx - w / 2 - 6, x1 = cx + w / 2 + 6;
+        g.fill(x0, top - 3, x1, top + h - 3, 0xD80A0D14);
+        g.fill(x0, top - 3, x1, top - 2, 0xFF6A7A8C);
+        g.fill(x0, top + h - 4, x1, top + h - 3, 0xFF6A7A8C);
+        g.drawCenteredString(font, title, cx, top + 1, 0xFFFFFFFF);
+        int ly = top + 13;
+        for (var l : lines) { g.drawCenteredString(font, l, cx, ly, 0xFFE6ECF3); ly += 10; }
     }
 
     private void pick() {

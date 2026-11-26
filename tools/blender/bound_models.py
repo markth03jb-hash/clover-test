@@ -238,22 +238,65 @@ def export(name, fn, shift, disp, out):
     gt.export_to_game(name, out, disp, glowing={name + "_glow"}, textures={name: TEX, name + "_glow": TEX}, render_type="minecraft:cutout")
 
 
+
+def align_like_yami(obj_path):
+    """Turn and move the exported katana into the Yami katana's frame (models/item/dark_katana_model.json): blade up +Y,
+    its flat across X, the edge toward +Z, the guard's top at 5.7 px and the grip centred on (8, 8) - so the Yami
+    katana's own display transforms hold it the same way. A turn of 90 degrees about Y (not a mirror: the faces keep
+    their winding). Plain Python, run after export."""
+    XC, ZC, DY = 8.6 / 16, 8.0 / 16, (5.7 - 13.3) / 16
+    out = []
+    for line in open(obj_path):
+        if line.startswith("v ") or line.startswith("vn "):
+            tag, x, y, z = line.split()[:4]
+            x, y, z = float(x), float(y), float(z)
+            if tag == "v": x, y, z = -(z - ZC) + 0.5, y + DY, (x - XC) + 0.5
+            else: x, z = -z, x
+            out.append("%s %.6f %.6f %.6f\n" % (tag, x, y, z))
+        else: out.append(line)
+    open(obj_path, "w").writelines(out)
+
+
+
+def recolor_wing_black(obj_path):
+    """The first wing in the Last Seraph's true colour: black (the anime's), its glowing finest tips left salt-white.
+    Moves the UVs of the wing's plain faces from the atlas's "white" cell to its "ink" cell (rivals.png, 32 px cells:
+    white at (224, 64), ink at (0, 96)); the glow material's faces keep theirs. Plain Python, run after export."""
+    lines = open(obj_path).read().split("\n")
+    vts = [i for i, l in enumerate(lines) if l.startswith("vt ")]
+    plain, glow, mtl = set(), set(), None
+    for l in lines:
+        if l.startswith("usemtl"): mtl = l.split()[1]
+        elif l.startswith("f "):
+            for c in l.split()[1:]:
+                t = int(c.split("/")[1]) - 1
+                (glow if mtl.endswith("_glow") else plain).add(t)
+    for t in plain - glow:
+        u, v = map(float, lines[vts[t]].split()[1:3])
+        lines[vts[t]] = "vt %.6f %.6f" % (u - 224 / 256, v - 32 / 256)
+    open(obj_path, "w").write("\n".join(lines))
+
+
 def to_game(out):
     rm.paint(os.path.join(out, TEX + ".png"))
     ar.LOW = True
     # held like a sword: the blade up and forward out of the fist, edge forward
     # (the edge is the model's +X; turned +90 about Y it faces the foe: forward, away from you)
-    kd = {"thirdperson_righthand": {"rotation": [40, 90, 0], "translation": [0, 1.5, 0.5], "scale": [0.85] * 3},   # (as the Heartline: blade up and forward, edge to the foe)
-          "thirdperson_lefthand": {"rotation": [40, -90, 0], "translation": [0, 1.5, 0.5], "scale": [0.85] * 3},
-          "firstperson_righthand": {"rotation": [0, 65, -20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},   # edge away from you, a little of the flat showing
-          "firstperson_lefthand": {"rotation": [0, -65, 20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},
-          "gui": {"rotation": [0, 90, -45], "translation": [-1, -1, 0], "scale": [0.36] * 3},
-          "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5] * 3},
-          "fixed": {"rotation": [0, 90, -45], "translation": [0, 0, 0], "scale": [0.6] * 3}}
+    # held exactly as the Yami katana (dark_katana_model.json): its display transforms, with the model turned into its frame
+    kd = {"thirdperson_righthand": {"rotation": [0, 180, -10], "translation": [0, 4, 0.5], "scale": [0.9] * 3},
+          "thirdperson_lefthand": {"rotation": [0, 180, 10], "translation": [0, 4, 0.5], "scale": [0.9] * 3},
+          "firstperson_righthand": {"rotation": [0, 180, 20], "translation": [1.13, 3.2, 1.13], "scale": [0.68] * 3},
+          "firstperson_lefthand": {"rotation": [0, 180, -20], "translation": [1.13, 3.2, 1.13], "scale": [0.68] * 3},
+          "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.4] * 3},
+          "fixed": {"rotation": [0, 0, -45], "translation": [0, 0, 0], "scale": [0.5] * 3},
+          "gui": {"rotation": [117.5, -138.5, 109], "translation": [-2.8, -2.8, 0], "scale": [0.58] * 3},
+          "head": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [0.6] * 3}}
     export("demon_katana", katana, GRIP, kd, out)
+    align_like_yami(os.path.join(out, "demon_katana.obj"))
     wd = {"fixed": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
           "gui": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [0.35] * 3}}
     export("bound_wing", wing, 0.0, wd, out)
+    recolor_wing_black(os.path.join(out, "bound_wing.obj"))
     export("bound_wing_black", black_wings, 0.0, wd, out)
     export("seraph_halo", seraph_halo, 0.0, wd, out)
 

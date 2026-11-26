@@ -402,6 +402,7 @@ final class GameTestCases {
                 "seraph: fall of heaven", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { BoundFx.awaken(pl, false); SeraphFx.fallOfHeaven(pl, pw); }, "",
                 "seraph: fold the wing", (java.util.function.BiConsumer<ServerPlayer, Float>) (pl, pw) -> { BoundFx.awaken(pl, false); SeraphFx.foldWing(pl, pw); if (BoundFx.testAwake(pl)) throw new IllegalStateException("the wing didn't fold"); }, "q"));
         queue.add(new TrioTest(BookTree.BOUND));
+        queue.add(new TrioTest(BookTree.OMEN));
         queue.add(new LadderTest());
         queue.add(new BossFightTest());
         queue.add(new LairTest());
@@ -1969,8 +1970,8 @@ final class GameTestCases {
      *  blow so that stepping away dodges it and staying lets it land. */
     static final class TrioTest extends Test {
         final int kind;
-        TrioTest(int kind) { super("trio: " + new String[]{"vector", "quiet fuse", "foreseen", "bound demon"}[kind] + " tree, wheel and passive"); this.kind = kind; }
-        @Override Class<?>[] roots() { return new Class<?>[]{BookTree.class, VectorFx.class, FuseFx.class, ForeseenFx.class, BoundFx.class}; }
+        TrioTest(int kind) { super("trio: " + new String[]{"vector", "quiet fuse", "foreseen", "bound demon", "ill omen"}[kind] + " tree, wheel and passive"); this.kind = kind; }
+        @Override Class<?>[] roots() { return new Class<?>[]{BookTree.class, VectorFx.class, FuseFx.class, ForeseenFx.class, BoundFx.class, OmenFx.class}; }
         final java.util.List<String> bad = new java.util.ArrayList<>();
         ItemStack prev = ItemStack.EMPTY, bk;
         BlockState[] before;
@@ -1993,7 +1994,8 @@ final class GameTestCases {
             cancelCast(); clearArea(); resetPlayer(true);
             bk = new ItemStack(kind == BookTree.VECTOR ? com.ironspellgrimoire.registry.AddonItemRegistry.VECTOR_GRIMOIRE.get()
                     : kind == BookTree.FUSE ? com.ironspellgrimoire.registry.AddonItemRegistry.FUSE_GRIMOIRE.get()
-                    : kind == BookTree.BOUND ? com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE.get() : com.ironspellgrimoire.registry.AddonItemRegistry.FORESEEN_GRIMOIRE.get());
+                    : kind == BookTree.BOUND ? com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE.get()
+                    : kind == BookTree.OMEN ? com.ironspellgrimoire.registry.AddonItemRegistry.OMEN_GRIMOIRE.get() : com.ironspellgrimoire.registry.AddonItemRegistry.FORESEEN_GRIMOIRE.get());
             CompoundTag mt = new CompoundTag(); mt.putInt("xp", 10_000_000);
             bk.getOrCreateTag().put(GrimoireMastery.masteryTag(), mt);
             prev = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
@@ -2001,7 +2003,7 @@ final class GameTestCases {
             top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, bk));
             bk = BookTree.book(p);
             BookTree.testClearCd(p);
-            VectorFx.testReset(p); FuseFx.testReset(p); ForeseenFx.testReset(p); BoundFx.testReset(p);
+            VectorFx.testReset(p); FuseFx.testReset(p); ForeseenFx.testReset(p); BoundFx.testReset(p); OmenFx.testReset(p);
             p.teleportTo(sl(), home.x, home.y, home.z, 0f, 0f);
             husk = put(0, 1.6);
             before = snapshot();
@@ -2013,7 +2015,7 @@ final class GameTestCases {
             for (var d : sl().getEntitiesOfClass(com.ironspellgrimoire.entity.ForeseenDouble.class, new AABB(home, home).inflate(40))) d.discard();
             ItemStack back = prev;
             top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, back));
-            VectorFx.testReset(p); FuseFx.testReset(p); ForeseenFx.testReset(p); BoundFx.testReset(p);
+            VectorFx.testReset(p); FuseFx.testReset(p); ForeseenFx.testReset(p); BoundFx.testReset(p); OmenFx.testReset(p);
             BookTree.testClearCd(p);
             p.setHealth(p.getMaxHealth());
         }
@@ -2028,7 +2030,7 @@ final class GameTestCases {
             if (pts0 < 2) bad.add("a fresh book at mastery " + GrimoireMastery.level(b) + " has only " + pts0 + " points");
             BookTree.testXp(b, 100000);
             if (BookTree.level(b) != BookTree.MAX_LEVEL) bad.add("100000 growth is level " + BookTree.level(b) + ", not " + BookTree.MAX_LEVEL);
-            if (BookTree.points(b) != pts0 + BookTree.MAX_LEVEL * (kind == BookTree.BOUND ? 2 : 1)) bad.add("points didn't grow by the level");
+            if (BookTree.points(b) != pts0 + BookTree.MAX_LEVEL * (kind == BookTree.BOUND || kind == BookTree.OMEN ? 2 : 1)) bad.add("points didn't grow by the level");
             java.util.List<BookTree.Node> nodes = BookTree.TREES.get(kind);
             BookTree.Node stat = nodes.stream().filter(n -> n.kind() == BookTree.STAT && n.ranks() >= 2).findFirst()
                     .orElse(nodes.stream().filter(n -> n.kind() != BookTree.ROOT && n.req().length > 0 && n.req()[0].equals("root")).findFirst().orElse(null));   // the Bond Tree has no multi-rank stats
@@ -2089,6 +2091,18 @@ final class GameTestCases {
                         net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(ev);
                         if (!ev.isCanceled()) bad.add("you could still cast while taken over");
                         if (!p.getMainHandItem().is(com.ironspellgrimoire.registry.AddonItemRegistry.DEMON_KATANA.get())) bad.add("the katana isn't in your hand in a takeover");
+                    } else if (kind == BookTree.OMEN) {
+                        // the Ledger of Ill Luck: a calamity grows the tree, Ill Star makes it land harder, Read the Signs marks
+                        BookTree.testSet(bk, "c1", 3);
+                        float xp0 = BookTree.xp(bk);
+                        OmenFx.testSet(husk, 60f, 0f);
+                        OmenFx.calamity(p, husk, false);
+                        if (BookTree.xp(BookTree.book(p)) <= xp0) bad.add("a calamity didn't grow the tree");
+                        BookTree.testClearCd(p);
+                        husk.setTarget(p);
+                        float m0 = OmenFx.testMisfortune(husk);
+                        BookTree.useWheel(p, 0);
+                        if (OmenFx.testMisfortune(husk) < m0 + 14f) bad.add("Read the Signs didn't add Misfortune (" + m0 + " -> " + OmenFx.testMisfortune(husk) + ")");
                     } else {
                         husk.setTarget(p);
                         p.invulnerableTime = 0;
@@ -2135,6 +2149,12 @@ final class GameTestCases {
                             if (!BoundFx.testAwake(p)) bad.add("Never Again: the seraph didn't wake for a dying ally");
                             else if (!p.getAbilities().mayfly) bad.add("awake, but no flight");
                         }
+                    } else if (kind == BookTree.OMEN) {
+                        if (husk.getHealth() >= huskHp) bad.add("the calamity did no damage to the husk");
+                        BookTree.testSet(bk, "w2", 1);
+                        int toks = OmenFx.testTokens(p);
+                        BookTree.useWheel(p, 2);
+                        if (OmenFx.testTokens(p) != toks + 1) bad.add("Bad Penny didn't leave a token");
                     } else {
                         if (ForeseenFx.testHeld(p) != 0) bad.add("the held blow never resolved");
                         if (GameTests.playerHits > hits0) bad.add("the blow landed though you stepped out of reach");

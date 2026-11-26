@@ -144,16 +144,16 @@ public class GrimoireFloatRenderer {
          case "overdrive_grimoire" -> new int[]{45, 34};
          case "dream_grimoire" -> new int[]{46, 35};
          case "shadow_grimoire" -> new int[]{47, 36};
-         case "parasite_grimoire" -> new int[]{0, 20};
-         case "hunger_grimoire" -> new int[]{0, 20};
-         case "twins_grimoire" -> new int[]{0, 20};
-         case "architect_grimoire" -> new int[]{0, 20};
-         case "meridian_grimoire" -> new int[]{8, 20};   // gold
-         case "omen_grimoire" -> new int[]{47, 20};
-         case "bound_grimoire" -> new int[]{18, 20};    // crimson
-         case "vector_grimoire" -> new int[]{29, 20};   // clockwork cyan
-         case "fuse_grimoire" -> new int[]{16, 20};     // rose
-         case "foreseen_grimoire" -> new int[]{13, 20};  // deep blue   // black and deep blue
+         case "parasite_grimoire" -> new int[]{0, 37};
+         case "hunger_grimoire" -> new int[]{0, 38};
+         case "twins_grimoire" -> new int[]{0, 39};
+         case "architect_grimoire" -> new int[]{0, 40};
+         case "meridian_grimoire" -> new int[]{8, 41};   // gold
+         case "omen_grimoire" -> new int[]{47, 42};
+         case "bound_grimoire" -> new int[]{18, 43};    // crimson
+         case "vector_grimoire" -> new int[]{29, 44};   // clockwork cyan
+         case "fuse_grimoire" -> new int[]{16, 45};     // rose
+         case "foreseen_grimoire" -> new int[]{13, 46};  // deep blue   // black and deep blue
          default -> new int[]{8, 4};
       };
    }

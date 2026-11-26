@@ -13,7 +13,7 @@ import org.joml.Matrix4f;
 
 /**
  * The Bound Demon Grimoire, drawn. The demon side is black with a blue sheen and pure crimson - torn air, smoke that
- * curls like fingers, chains, a clawed hand; the Last Seraph is salt-white and gold - crystal, feathers, pillars.
+ * curls like fingers, chains, a clawed hand; the Last Seraph is black-winged, with salt - matte white cubes - and gold: black feathers, heaps and pillars of salt.
  * <ul>
  *   <li>0 a demon cut: a black crescent with a crimson edge, wisps of black peeling off it;</li>
  *   <li>1 Cursed Edge: a tear in the air along the line, black and jagged, crimson glowing in it;</li>
@@ -91,6 +91,7 @@ public final class BoundFxClient {
                 case 12 -> lance(vc, m, n, cam, p, age);
                 case 13 -> verdictMark(m, cam, p, age, now);
                 case 14 -> pillar(vc, m, n, cam, p, age);
+                case 15 -> drift(vc, m, n, cam, p, age);
                 default -> LIVE.remove(i);
             }
         }
@@ -108,25 +109,61 @@ public final class BoundFxClient {
         VectorFxClient.sseg(vc, m, n, cam, a, b, w, aa, ab, col);
     }
 
-    /** A six-sided crystal from a to b (pointed at b), radius w, solid both ways, with a bright edge. */
+    /** One grain of salt: a cube (salt grows in cubes), matte and off-white, lit from above - its top brightest, its
+     *  sides duller, a little of its own tint so a heap never looks like one flat colour. */
+    static void cube(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, double h, double yaw, double tilt, double seed, float al) {
+        Vec3 x = new Vec3(Math.cos(yaw), 0, Math.sin(yaw)), z = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw));
+        Vec3 y = UP.scale(Math.cos(tilt)).add(x.scale(Math.sin(tilt)));
+        x = x.scale(Math.cos(tilt)).subtract(UP.scale(Math.sin(tilt)));
+        float tint = (float) (0.9 + 0.1 * hash(seed));
+        float[] base = {SALT[0] * tint, SALT[1] * tint * 0.985F, SALT[2] * tint * 0.95F};
+        Vec3 X = x.scale(h), Y = y.scale(h), Z = z.scale(h);
+        Vec3[][] faces = {
+                {c.add(Y).subtract(X).subtract(Z), c.add(Y).add(X).subtract(Z), c.add(Y).add(X).add(Z), c.add(Y).subtract(X).add(Z)},
+                {c.subtract(Y).subtract(X).add(Z), c.subtract(Y).add(X).add(Z), c.subtract(Y).add(X).subtract(Z), c.subtract(Y).subtract(X).subtract(Z)},
+                {c.add(X).subtract(Y).subtract(Z), c.add(X).subtract(Y).add(Z), c.add(X).add(Y).add(Z), c.add(X).add(Y).subtract(Z)},
+                {c.subtract(X).subtract(Y).add(Z), c.subtract(X).subtract(Y).subtract(Z), c.subtract(X).add(Y).subtract(Z), c.subtract(X).add(Y).add(Z)},
+                {c.add(Z).subtract(X).subtract(Y), c.add(Z).add(X).subtract(Y), c.add(Z).add(X).add(Y), c.add(Z).subtract(X).add(Y)},
+                {c.subtract(Z).add(X).subtract(Y), c.subtract(Z).subtract(X).subtract(Y), c.subtract(Z).subtract(X).add(Y), c.subtract(Z).add(X).add(Y)}};
+        float[] shade = {1F, 0.55F, 0.82F, 0.74F, 0.78F, 0.7F};
+        for (int f = 0; f < 6; f++) {
+            float[] col = {base[0] * shade[f], base[1] * shade[f], base[2] * shade[f]};
+            Vec3[] q = faces[f];
+            FxBase.quad(vc, m, n, cam, q[0], q[1], q[2], q[3], col, al, al, al, al);
+            FxBase.quad(vc, m, n, cam, q[3], q[2], q[1], q[0], col, al, al, al, al);
+        }
+    }
+
+    /** A column of salt from a to b, w across at its root: cubes heaped along it, smaller toward b, a few knocked askew
+     *  and some grains crumbling off its sides - rough and matte, never glassy. */
     static void crystal(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 a, Vec3 b, double w, float al) {
         Vec3 d = b.subtract(a);
         double len = d.length();
         if (len < 1e-3) return;
         Vec3 f = d.scale(1 / len);
         Vec3 ax = Math.abs(f.y) > 0.9 ? new Vec3(1, 0, 0) : UP;
-        Vec3 x = f.cross(ax).normalize(), y = x.cross(f).normalize();
-        Vec3 shoulder = a.add(f.scale(len * 0.78));
-        for (int i = 0; i < 6; i++) {
-            double a0 = i * TAU / 6, a1 = (i + 1) * TAU / 6;
-            Vec3 o0 = x.scale(Math.cos(a0) * w).add(y.scale(Math.sin(a0) * w)), o1 = x.scale(Math.cos(a1) * w).add(y.scale(Math.sin(a1) * w));
-            float[] col = i % 2 == 0 ? SALT : SALTSH;
-            FxBase.quad(vc, m, n, cam, a.add(o0), a.add(o1), shoulder.add(o1), shoulder.add(o0), col, al, al, al, al);
-            FxBase.quad(vc, m, n, cam, shoulder.add(o0), shoulder.add(o1), a.add(o1), a.add(o0), col, al, al, al, al);
-            FxBase.quad(vc, m, n, cam, shoulder.add(o0), shoulder.add(o1), b, b, col, al, al, al, al);
-            FxBase.quad(vc, m, n, cam, b, b, shoulder.add(o1), shoulder.add(o0), col, al, al, al, al);
+        Vec3 sx = f.cross(ax).normalize(), sy = sx.cross(f).normalize();
+        double yaw0 = Math.atan2(f.z, f.x), tilt0 = Math.acos(Mth.clamp(f.y, -1, 1));
+        double step = Math.max(0.05, w * 1.1);
+        int N = Math.min(40, Math.max(1, (int) (len / step)));
+        double seed = a.x * 3.1 + a.z * 1.7 + b.y;
+        for (int i = 0; i < N; i++) {
+            double u = (i + 0.5) / N, h = w * (1 - 0.6 * u) * (0.8 + 0.35 * hash(seed + i));
+            Vec3 c = a.add(d.scale(u)).add(sx.scale((hash(seed + i * 3) - 0.5) * w * 0.6)).add(sy.scale((hash(seed + i * 5) - 0.5) * w * 0.6));
+            cube(vc, m, n, cam, c, h, yaw0 + hash(seed + i * 7) * 1.5, tilt0 * 0.3 + (hash(seed + i * 11) - 0.5) * 0.6, seed + i, al);
+            if (hash(seed + i * 13) < 0.4) {   // a grain beside it
+                Vec3 g = c.add(sx.scale(h * 1.3 * (hash(seed + i) < 0.5 ? 1 : -1))).add(sy.scale((hash(seed + i * 17) - 0.5) * h));
+                cube(vc, m, n, cam, g, h * 0.4, hash(seed + i * 19) * 3, hash(seed + i * 23), seed + i * 29, al);
+            }
         }
-        GravityFxClient.gseg(m, cam, shoulder, b, w * 0.25, al * 0.8F, al, WHITE);
+    }
+
+    /** A drift of salt dust: pale grey puffs, settling. */
+    static void dust(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, Vec3 c, double r, float al, double seed) {
+        for (int i = 0; i < 6; i++) {
+            Vec3 p = c.add((hash(seed + i) - 0.5) * r * 1.6, hash(seed + i * 3) * r * 0.8, (hash(seed + i * 5) - 0.5) * r * 1.6);
+            FuseFxClient.puff(vc, m, n, cam, p, r * (0.35 + 0.3 * hash(seed + i * 7)), SALTSH, al * 0.45F, 0, seed + i);
+        }
     }
 
     // ------------------------------------------------------------------ 0 a demon cut
@@ -140,7 +177,7 @@ public final class BoundFxClient {
         double roll = (hash(p.a1 * 7) - 0.5) * 1.3;   // each cut at its own slant, so it never reads as a flat line
         Vec3 up0 = side0.cross(f).normalize();
         Vec3 side = side0.scale(Math.cos(roll)).add(up0.scale(Math.sin(roll)));
-        double R = p.r > 0 ? p.r : 2, th = (p.r2 > 0 ? p.r2 : 1) * 0.35 * R / 2, sweep = p.a0 != 0 ? p.a0 : 2.4;
+        double R = p.r > 0 ? p.r : 2, th = (p.r2 > 0 ? p.r2 : 1) * 0.55 * R / 2, sweep = p.a0 != 0 ? p.a0 : 2.4;
         int N = 22;
         Vec3[] outer = new Vec3[N + 1], inner = new Vec3[N + 1];
         double[] w = new double[N + 1];
@@ -150,7 +187,7 @@ public final class BoundFxClient {
             Vec3 dir = f.scale(Math.cos(an)).add(side.scale(Math.sin(an)));
             outer[i] = p.c.add(dir.scale(R));
             inner[i] = p.c.add(dir.scale(R - thick));
-            w[i] = 0.06 * Math.sin(Math.PI * u) + 0.01;
+            w[i] = 0.1 * Math.sin(Math.PI * u) + 0.015;
             al[i] = a;
         }
         for (int i = 0; i < N; i++) {   // the black body (both faces), jagged on its inside
@@ -381,14 +418,16 @@ public final class BoundFxClient {
             double u = i / (double) N, wd = len * 0.18 * Math.sin(Math.PI * Math.min(1, u * 1.15)) * (u < 0.15 ? 0.3 : 1);
             Vec3 c = base.add(f.scale(len * u));
             Vec3 l = c.add(side.scale(wd)).subtract(f.scale(len * 0.08)), r = c.subtract(side.scale(wd * 0.8)).subtract(f.scale(len * 0.08));
-            float[] col = gold && i == N ? GOLD : SALT;
+            float[] col = gold && i == N ? GOLD : BLACK;
             FxBase.quad(vc, m, n, cam, prevC, c, l, prevL, col, a, a, a, a);
             FxBase.quad(vc, m, n, cam, prevL, l, c, prevC, col, a, a, a, a);
-            FxBase.quad(vc, m, n, cam, prevC, prevR, r, c, SALTSH, a, a, a, a);
-            FxBase.quad(vc, m, n, cam, c, r, prevR, prevC, SALTSH, a, a, a, a);
+            FxBase.quad(vc, m, n, cam, prevC, prevR, r, c, BLACK, a, a, a, a);
+            FxBase.quad(vc, m, n, cam, c, r, prevR, prevC, BLACK, a, a, a, a);
+            GravityFxClient.gseg(m, cam, prevL, l, len * 0.012, a * 0.7F, a * 0.7F, SALT);   // a thin salt-white edge, so black reads on dark ground
+            GravityFxClient.gseg(m, cam, prevR, r, len * 0.01, a * 0.5F, a * 0.5F, SALT);
             prevL = l; prevR = r; prevC = c;
         }
-        GravityFxClient.gseg(m, cam, base.subtract(f.scale(len * 0.15)), tip, len * 0.025, a, a, gold ? GOLD : WHITE);   // the quill
+        sseg(vc, m, n, cam, base.subtract(f.scale(len * 0.15)), tip, len * 0.03, a, a, gold ? GOLD : SALTSH);   // the quill
     }
 
     private static void feather(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age) {
@@ -398,8 +437,8 @@ public final class BoundFxClient {
         float a = (float) Mth.clamp((p.life - age) / 8, 0, 1);
         boolean gold = p.a0 > 0;
         featherAt(vc, m, n, cam, pos.subtract(ab.normalize().scale(0.6)), ab, 0.7, p.a1 + (q < 1 ? age * 0.4 : 0), a, gold);
-        if (q < 1) GravityFxClient.gseg(m, cam, p.c.add(ab.scale(Math.max(0, q - 0.25))), pos, 0.04, 0, a * 0.7F, gold ? GOLD : SALT);
-        else if (age - fly < 4) GravityFxClient.ring(m, cam, p.u, ab.normalize(), 0.2 + (age - fly) * 0.12, 0.03, SALT, (float) (1 - (age - fly) / 4));
+        if (q < 1) sseg(vc, m, n, cam, p.c.add(ab.scale(Math.max(0, q - 0.25))), pos, 0.03, 0, a * 0.6F, BLACK);
+        else if (age - fly < 6) dust(vc, m, n, cam, p.u, 0.25, (float) (1 - (age - fly) / 6), p.a1);   // salt shaken off where it struck
     }
 
     // ------------------------------------------------------------------ 11 Wing Cleave
@@ -422,7 +461,7 @@ public final class BoundFxClient {
         if (age < 6) {
             double an = -1.9 + 3.8 * sweep;
             Vec3 lead = p.c.add(f.scale(Math.cos(an) * R)).add(side.scale(Math.sin(an) * R));
-            GravityFxClient.gglow(m, cam, lead, 1.2, (float) (1 - age / 6), WHITE);
+            sseg(vc, m, n, cam, p.c, lead, 0.12, 0, (float) (1 - age / 6) * 0.8F, BLACK);
         }
     }
 
@@ -434,7 +473,6 @@ public final class BoundFxClient {
         Vec3 end = p.c.add(ab.scale(shoot));
         double w = p.r > 0 ? p.r : 0.3;
         crystal(vc, m, n, cam, p.c, end, w, a);
-        GravityFxClient.gseg(m, cam, p.c, end, w * 2.2, a * 0.35F, a * 0.5F, SALTSH);
         if (shoot >= 1) {   // it bursts where it strikes: crystals thrown out in a crown
             double q = (age - 2) / Math.max(1, p.life - 2);
             Vec3 f = ab.normalize();
@@ -445,8 +483,16 @@ public final class BoundFxClient {
                 Vec3 dir = x.scale(Math.cos(an)).add(y.scale(Math.sin(an))).add(f.scale(-0.6)).normalize();
                 crystal(vc, m, n, cam, p.u, p.u.add(dir.scale(0.5 + 0.4 * Math.min(1, q * 4))), w * 0.5, a);
             }
-            if (age < 6) GravityFxClient.gglow(m, cam, p.u, 1.2, (float) (1 - (age - 2) / 4), WHITE);
+            dust(vc, m, n, cam, p.u, 0.6, a * (float) Mth.clamp(1 - q, 0, 1), p.a1);
         }
+    }
+
+    /** 15: a black feather drifting down, rocking side to side as it falls. */
+    private static void drift(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age) {
+        float a = (float) (Mth.clamp(age / 3, 0, 1) * Mth.clamp((p.life - age) / 6, 0, 1));
+        double sway = Math.sin(age * 0.25 + p.a1);
+        Vec3 c = p.c.add(sway * 0.35, -age * 0.06, Math.cos(age * 0.2 + p.a1) * 0.15).add(p.u.scale(age));
+        featherAt(vc, m, n, cam, c, new Vec3(sway * 0.6, -1, 0.3), 0.45, p.a1 + sway, a, false);
     }
 
     // ------------------------------------------------------------------ 13 the Verdict foretold, 14 the pillar
@@ -474,13 +520,12 @@ public final class BoundFxClient {
         float a = (float) Mth.clamp((p.life - age) / 10, 0, 1);
         Vec3 g = p.c.add(0, 0.05, 0);
         Vec3 bottom = g.add(0, H * (1 - drop), 0);
-        crystal(vc, m, n, cam, bottom.add(0, H, 0), bottom, R * 0.55, a);   // the pillar of salt, point down
-        GravityFxClient.gseg(m, cam, bottom.add(0, H, 0), bottom, R * 1.2, a * 0.3F, a * 0.5F, SALTSH);
+        crystal(vc, m, n, cam, bottom, bottom.add(0, H, 0), R * 0.6, a);   // the pillar of salt, a great heap of cubes
         if (drop >= 1) {
             double q = (age - 3) / Math.max(1, p.life - 3);
             GravityFxClient.ring(m, cam, g, UP, R * (0.5 + 2.2 * Math.min(1, q * 3)), 0.15 * R, SALT, a * (float) (1 - q));
             GravityFxClient.ring(m, cam, g, UP, R * (0.3 + 1.6 * Math.min(1, q * 3)), 0.08 * R, GOLD, a * (float) (1 - q));
-            if (age < 7) GravityFxClient.gglow(m, cam, g.add(0, 1, 0), R * 2.5, (float) (1 - (age - 3) / 4), WHITE);
+            dust(vc, m, n, cam, g.add(0, 0.3, 0), R * 1.2, a * (float) (1 - q), p.a1);   // salt thrown up in a cloud
             int N = 6 + (int) (R * 4);
             for (int i = 0; i < N; i++) {   // crystals bursting up out of the ground round it
                 double s = p.a1 + i * 1.3, an = s * 2.1, rr = R * (0.6 + 1.4 * hash(s));

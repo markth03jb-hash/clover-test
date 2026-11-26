@@ -61,14 +61,14 @@ public final class OmenFx {
     private OmenFx() {}
 
     static final int DARK = 47, BLUE = 47, PALE = Fx.ICE;   // 47: the shadow palette - black with a blue sheen
-    static final UUID TRIP = UUID.fromString("7a1e0000-0000-4000-8000-0000000000e1");
+    static final UUID TRIP = UUID.fromString("7a1e0000-0000-4000-8000-0000000000e1"), TRIPWIRE = UUID.fromString("7a1e0000-0000-4000-8000-0000000000e5");
     public static final float FULL = 100f;
 
     /** What the law knows about one creature: its Misfortune, its karma, and its brushes with your marks. */
     static final class Fate {
         float misfortune, dealt;
-        int calamities, prints;
-        long lastStruckYou = -1000, ladenUntil, lastPrint;
+        int calamities, prints, snow;
+        long lastStruckYou = -1000, ladenUntil, lastPrint, lastCalAt = -1000, badCreditUntil;
         UUID by;   // the Ill Omen mage it is pursuing
     }
     static final Map<LivingEntity, Fate> FATES = new WeakHashMap<>();
@@ -77,6 +77,7 @@ public final class OmenFx {
     static final class Mage {
         long pathUntil, dominoUntil, stillUntil, lawUntil, rainUntil;
         int lawCount;
+        boolean lawEcho = true;
         Vec3 lastPrintAt;
         final List<Print> prints = new ArrayList<>();
         final List<Token> tokens = new ArrayList<>();
@@ -103,6 +104,11 @@ public final class OmenFx {
     static ItemStack book(Player p) { return Utils.getPlayerSpellbookStack(p); }
     public static boolean has(Player p) { ItemStack b = book(p); return b != null && b.is(AddonItemRegistry.OMEN_GRIMOIRE.get()); }
     static int level(Player p) { ItemStack b = book(p); return b == null ? 0 : GrimoireMastery.level(b); }
+    /** A node of the Ledger of Ill Luck (BookTree.OMEN): its rank. */
+    static int r(Player p, String id) { return BookTree.rank(p, id); }
+    /** Scales the next calamity (a token's, a leap's), then goes back to 1. */
+    private static float nextScale = 1f;
+    private static int chainDepth;
 
     // ================================================================== who is pursuing
     /** Pursuing p: targets p (or p's Afterimage), struck p in the last 10 s, or closes in on / stands behind p. */
@@ -153,28 +159,32 @@ public final class OmenFx {
         Mage m = mage(p);
         ServerLevel sl = p.serverLevel();
         long now = sl.getGameTime();
-        if (now < m.pathUntil && now % 4 == 0) leavePrint(p, m, now);
+        if (now < m.pathUntil && now % (r(p, "p7") > 0 ? 2 : 4) == 0) leavePrint(p, m, now);
         if (now % 5 == 0) {
             prints(p, m, now);
             tokens(p, m, now);
         }
         if (now % 10 != 0) return;
         int lvl = level(p);
-        float rate = lvl >= 3 ? 1.25f : 1f;
+        float rate = (lvl >= 3 ? 1.25f : 1f) * (1f + 0.1f * r(p, "a4")) * (r(p, "K1") > 0 ? 1.2f : 1f) * (r(p, "K2") > 0 ? 0.8f : 1f);
+        double nearR = NEAR + 2 * r(p, "a3");
         List<Integer> ids = new ArrayList<>();
         List<Float> fills = new ArrayList<>();
-        double markRange = lvl >= 2 ? 32 : 16;
-        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(32), x -> x != p && x.isAlive() && !(x instanceof OmenAfterimage))) {
+        double markRange = (lvl >= 2 ? 32 : 16) + (r(p, "c4") > 0 ? 16 : 0);
+        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(Math.max(32, markRange)), x -> x != p && x.isAlive() && !(x instanceof OmenAfterimage))) {
             Fate f = FATES.get(t);
             boolean chasing = pursues(t, p);
             boolean targetsOnly = !chasing && lvl >= 5 && t instanceof Mob mb && mb.getTarget() == p;
             double dist = t.distanceTo(p);
-            boolean near = dist <= NEAR && hostile(p, t);   // an enemy close to you: its bar charges, the closer the faster
+            boolean near = dist <= nearR && hostile(p, t);   // an enemy close to you: its bar charges, the closer the faster
             if (chasing || targetsOnly || near) {
                 f = fate(t);
                 f.by = p.getUUID();
                 float add = targetsOnly && !near ? 0.5f : 1f;   // per half second
-                if (near) add += (float) (4.0 * (1.0 - dist / NEAR));
+                if (near) add += (float) (4.0 * (1.0 - dist / nearR));
+                if (r(p, "a2") > 0 && t instanceof Mob mb2 && mb2.getTarget() instanceof OmenAfterimage) add *= 2f;   // Lure
+                if (r(p, "a5") > 0 && t.getLookAngle().dot(p.getEyePosition().subtract(t.getEyePosition()).normalize()) > 0.9) add *= 1.5f;   // Evil Eye
+                if (f.badCreditUntil > now) add *= 2f;   // Bad Credit
                 if (chasing) {
                     double c = closing(t, p);
                     if (c > 0.05) add += 2f;                    // closing in
@@ -183,14 +193,21 @@ public final class OmenFx {
                 f.misfortune += add * rate * 2f;
                 if (f.misfortune >= FULL) calamity(p, t, false);
             } else if (f != null && f.misfortune > 0) {
-                f.misfortune = Math.max(0f, f.misfortune - 3f);   // it gives up: the omen fades
+                f.misfortune = Math.max(0f, f.misfortune - (r(p, "a7") > 0 ? 1.5f : 3f));   // it gives up: the omen fades
             }
             if (f != null && f.misfortune > 0 && t.distanceTo(p) <= markRange) { ids.add(t.getId()); fills.add(Math.min(1f, f.misfortune / FULL)); }
         }
         // The Law Itself: calamity hunts every pursuer, worse each time
+        double lawR = r(p, "l5") > 0 ? 32 : 24;
         if (now < m.lawUntil && now % 20 == 0) {
-            for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(24), x -> x != p && pursues(x, p))) calamity(p, t, true);
+            for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(lawR), x -> x != p && pursues(x, p))) calamity(p, t, true);
             m.lawCount++;
+        }
+        // Thirteenth Hour: once more, 13 s after the Law ends
+        if (!m.lawEcho && m.lawUntil > 0 && now >= m.lawUntil + 260) {
+            m.lawEcho = true;
+            for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(lawR), x -> x != p && pursues(x, p))) calamity(p, t, true);
+            play(sl, p.position(), "omen_law", 1.2f, 0.7f);
         }
         // Needle Rain
         if (now < m.rainUntil) needles(p, m, now);
@@ -243,7 +260,7 @@ public final class OmenFx {
         if (sl.isRainingAt(t.blockPosition().above())) w[11] = 8;
         if (!t.onGround() && t.getDeltaMovement().y < 0.1) w[12] = 14;
         if (t.getHealth() < t.getMaxHealth() * 0.3f) w[13] = 14;
-        int rare = level(p) >= 5 ? 6 : 3;
+        int rare = (level(p) >= 5 ? 6 : 3) * (r(p, "c6") > 0 ? 2 : 1);
         for (int i = 14; i < 20; i++) w[i] = rare;
         if (nested) w[19] = 0;
         int sum = 0; for (int x : w) sum += x;
@@ -259,30 +276,45 @@ public final class OmenFx {
         if (!t.isAlive() || t == p) return;
         ServerLevel sl = p.serverLevel();
         Fate f = fate(t);
-        f.misfortune = 20f;
+        long now0 = sl.getGameTime();
+        f.misfortune = r(p, "c3") > 0 ? 40f : 20f;
         f.calamities++;
         Mage m = mage(p);
-        float scale = karma(t) * (byLaw ? 1f + 0.25f * Math.min(8, m.lawCount) : 1f) * (nested ? 0.6f : 1f);
+        float scale = karma(t) * (byLaw ? 1f + (r(p, "l6") > 0 ? 0.35f : 0.25f) * Math.min(8, m.lawCount) : 1f) * (nested ? 0.6f : 1f);
+        scale *= nextScale; nextScale = 1f;
+        scale *= 1f + 0.08f * r(p, "c1");
+        if (r(p, "K1") > 0) scale *= 0.85f;
+        if (r(p, "K2") > 0) scale *= 1.4f;
+        if (r(p, "c7") > 0) { f.snow = now0 - f.lastCalAt <= 200 ? Math.min(4, f.snow + 1) : 0; scale *= 1f + 0.15f * f.snow; }   // Snowballing
+        f.lastCalAt = now0;
+        BookTree.grow(p, BookTree.OMEN, 1);
+        if (r(p, "c5") > 0) { var md = io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p); md.setMana(md.getMana() + 5); }
         int kind = pick(p, t, f, nested);
         if (byLaw) { var sh = fx(11, t.position(), 10); sh.u = p.position().add(0, 6, 0); send(sl, sh); }
         omen(sl, t, nested);
         strike(p, t, f, kind, scale);
+        if (r(p, "c2") > 0) for (LivingEntity o : sl.getEntitiesOfClass(LivingEntity.class, t.getBoundingBox().inflate(3), x -> x != t && x != p && x.isAlive() && hostile(p, x)))
+            AstaFx.damage(p, o, 5f * scale * 0.3f, "the_law_itself");   // Wide Sign
+        if (r(p, "K6") > 0 && t.isAlive() && t.getHealth() < t.getMaxHealth() * 0.3f) { final float sc = scale; final int kk = kind; AstaFx.later(6, () -> { if (t.isAlive()) strike(p, t, fate(t), kk, sc); }); }   // Executioner
         if (!nested) lastKind = kind;
         if (t.distanceTo(p) < 32) p.displayClientMessage(net.minecraft.network.chat.Component.literal("Calamity: " + KINDS[kind]).withStyle(net.minecraft.ChatFormatting.BLUE), true);
         if (nested) return;
         // it leaps on: Domino always, mastery 4 now and then
-        boolean leap = sl.getGameTime() < m.dominoUntil || (level(p) >= 4 && ThreadLocalRandom.current().nextInt(10) < 3);
-        if (leap && !chaining) {
-            LivingEntity n = neighbour(p, t, 8, true);
+        boolean domino = sl.getGameTime() < m.dominoUntil || (level(p) >= 4 && ThreadLocalRandom.current().nextInt(10) < 3);
+        boolean jinx = r(p, "K3") > 0;
+        int maxDepth = r(p, "n5") > 0 ? 2 : 1;
+        if ((domino || jinx) && chainDepth < maxDepth) {
+            LivingEntity n = neighbour(p, t, 8, !jinx || domino);
             if (n != null) {
                 Vec3 c = mid(t);
                 line(sl, c, mid(n));
                 play(sl, c, "omen_domino", 0.7f, 1.2f);
-                AstaFx.later(6, () -> { chaining = true; try { calamity(p, n, false); } finally { chaining = false; } });
+                float lead = (domino ? 1f : 0.5f) * (r(p, "n6") > 0 ? 1.2f : 1f);
+                final int depth = chainDepth + 1;
+                AstaFx.later(6, () -> { int was = chainDepth; chainDepth = depth; nextScale = lead; try { calamity(p, n, false); } finally { chainDepth = was; nextScale = 1f; } });
             }
         }
     }
-    private static boolean chaining;
 
     /** The calamity's sign, before the accident lands: a black-blue sigil opens on the ground under it, cracked and
      *  rayed, a shaft of ill light falls on it from far above, and the world jolts. */
@@ -489,23 +521,30 @@ public final class OmenFx {
         if (lf != null && lf.ladenUntil > attacker.level().getGameTime() && lf.by != null && attacker.level() instanceof ServerLevel sl
                 && sl.getPlayerByUUID(lf.by) instanceof ServerPlayer owner) {
             lf.ladenUntil = 0;
-            AstaFx.later(1, () -> calamity(owner, attacker, false));
+            AstaFx.later(1, () -> { tokenCalamity(owner, attacker); });
         }
         if (!(victim instanceof ServerPlayer p) || !has(p)) return;
         Fate f = fate(attacker);
         f.by = p.getUUID();
         f.lastStruckYou = p.level().getGameTime();
+        if (r(p, "K4") > 0 && f.misfortune >= FULL * 0.5f) e.setAmount(e.getAmount() * 0.9f);   // Curse-Bearer
         f.dealt += e.getAmount();
-        f.misfortune += 15f;   // striking you is the surest pursuit there is
+        f.misfortune += r(p, "K4") > 0 ? 30f : 15f;   // striking you is the surest pursuit there is
         // Stillness: standing still, the blow is turned back as calamity
         Mage m = mage(p);
         Vec3 v = p.getDeltaMovement();
-        if (p.level().getGameTime() < m.stillUntil && v.x * v.x + v.z * v.z < 0.004) {
+        if (p.level().getGameTime() < m.stillUntil && v.x * v.x + v.z * v.z < (r(p, "s3") > 0 ? 0.02 : 0.004)) {
             float amt = e.getAmount();
             e.setCanceled(true);
             play(p.serverLevel(), p.position(), "omen_rebound", 1f, 0.8f);
             { var cr = on(8, p, 14); cr.d = attacker.position().subtract(p.position()).add(0, 0.01, 0); send(p.serverLevel(), cr); }
             f.dealt = Math.max(f.dealt, amt * 1.5f);
+            if (r(p, "s4") > 0) p.heal(amt * 0.5f);   // Turned Fate
+            if (r(p, "s5") > 0) m.stillUntil += 20;   // Glass Heart
+            if (r(p, "s2") > 0) for (LivingEntity o : p.serverLevel().getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(4), x -> x != attacker && x != p && x.isAlive() && hostile(p, x))) {
+                AstaFx.damage(p, o, 4f, "stillness");   // Broken Mirror
+                line(p.serverLevel(), mid(p), mid(o));
+            }
             AstaFx.later(1, () -> calamity(p, attacker, false));
         }
     }
@@ -516,8 +555,9 @@ public final class OmenFx {
     /** For 10 s you leave footprints; whatever follows in them pays. Three prints, and a calamity. */
     public static void illFatedPath(ServerPlayer p, float power) {
         Mage m = mage(p);
-        m.pathUntil = p.level().getGameTime() + 200;
-        ModeHud.show(p, "ill_fated_path", 200);
+        int dur = r(p, "p1") > 0 ? 300 : 200;
+        m.pathUntil = p.level().getGameTime() + dur;
+        ModeHud.show(p, "ill_fated_path", dur);
         m.lastPrintAt = null;
         play(p.serverLevel(), p.position(), "omen_step", 1f, 0.8f);
         send(p.serverLevel(), fx(12, p.position(), 26));
@@ -526,10 +566,18 @@ public final class OmenFx {
     static void leavePrint(ServerPlayer p, Mage m, long now) {
         if (!p.onGround()) return;
         Vec3 at = p.position();
-        if (m.lastPrintAt != null && m.lastPrintAt.distanceToSqr(at) < 0.8 * 0.8) return;
+        double gap = r(p, "p7") > 0 ? 0.45 : 0.8;
+        if (m.lastPrintAt != null && m.lastPrintAt.distanceToSqr(at) < gap * gap) return;
+        print(p, m, at, now, p.getYRot());
+    }
+
+    /** One footprint at 'at' (yaw in degrees): it waits for a walker. */
+    static void print(ServerPlayer p, Mage m, Vec3 at, long now, float yawDeg) {
         m.lastPrintAt = at;
-        m.prints.add(new Print(at, now + 160, ++printIds));
-        { double yaw = Math.toRadians(p.getYRot()); double side = (printIds % 2 == 0 ? 0.13 : -0.13); var pr = fx(0, at.add(Math.cos(yaw) * side, 0, Math.sin(yaw) * side), 160); pr.a0 = (float) yaw; send(p.serverLevel(), pr); }
+        int life = r(p, "p3") > 0 ? 240 : 160;
+        m.prints.add(new Print(at, now + life, ++printIds));
+        if (r(p, "p6") > 0) { var md = io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p); md.setMana(md.getMana() + 2); }
+        { double yaw = Math.toRadians(yawDeg); double side = (printIds % 2 == 0 ? 0.13 : -0.13); var pr = fx(0, at.add(Math.cos(yaw) * side, 0, Math.sin(yaw) * side), life); pr.a0 = (float) yaw; send(p.serverLevel(), pr); }
     }
 
     static void prints(ServerPlayer p, Mage m, long now) {
@@ -541,10 +589,11 @@ public final class OmenFx {
             for (Print pr : m.prints) {
                 if (pr.id <= f.lastPrint || t.position().distanceToSqr(pr.at) > 0.9 * 0.9) continue;
                 f.lastPrint = pr.id;
-                f.misfortune += 34f;
+                f.misfortune += r(p, "p4") > 0 ? 50f : 34f;
                 play(sl, pr.at, "omen_step", 0.8f, 1f + 0.1f * f.prints);
                 splash(sl, pr.at);
-                if (++f.prints >= 3) { f.prints = 0; calamity(p, t, false); }
+                if (r(p, "p5") > 0) TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, TRIPWIRE, "Tripwire", -0.4, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
+                if (++f.prints >= (r(p, "p2") > 0 ? 2 : 3)) { f.prints = 0; calamity(p, t, false); }
                 break;
             }
         }
@@ -557,6 +606,14 @@ public final class OmenFx {
         play(sl, p.position(), "omen_token", 1f, 1f);
         Vec3 eye = p.getEyePosition(), dir = p.getLookAngle();
         LivingEntity aimed = aimed(p, 16, 6);
+        if (aimed != null && r(p, "t1") > 0) {   // Cursed Coin: two more, to the enemies nearest it
+            int k = 0;
+            for (LivingEntity o : sl.getEntitiesOfClass(LivingEntity.class, aimed.getBoundingBox().inflate(6), x -> x != aimed && x != p && x.isAlive() && hostile(p, x))) {
+                if (k++ >= 2) break;
+                Fate g = fate(o); g.by = p.getUUID(); g.ladenUntil = sl.getGameTime() + 600; g.misfortune += 25f;
+                var fl2 = fx(2, eye.add(0, -0.3, 0), 6); fl2.u = mid(o); send(sl, fl2);
+            }
+        }
         if (aimed != null) {
             Fate f = fate(aimed);
             f.by = p.getUUID();
@@ -568,9 +625,35 @@ public final class OmenFx {
             return;
         }
         Vec3 land = BossKit.ground(sl, clip(sl, p, eye, eye.add(dir.scale(10))).add(0, 0.5, 0));
-        mage(p).tokens.add(new Token(land, sl.getGameTime() + 600));
-        var fl = fx(2, eye.add(0, -0.3, 0), 8); fl.u = land.add(0, 0.35, 0); send(sl, fl);
-        AstaFx.later(8, () -> send(sl, fx(3, land, 592)));
+        dropToken(p, land, eye);
+        if (r(p, "t1") > 0) {   // Cursed Coin: one to each side
+            Vec3 side = new Vec3(-dir.z, 0, dir.x).normalize().scale(2.5);
+            dropToken(p, BossKit.ground(sl, land.add(side).add(0, 1, 0)), eye);
+            dropToken(p, BossKit.ground(sl, land.subtract(side).add(0, 1, 0)), eye);
+        }
+    }
+
+    /** A token flicked from 'from' to lie at 'land', waiting for a toucher. */
+    static void dropToken(ServerPlayer p, Vec3 land, Vec3 from) {
+        ServerLevel sl = p.serverLevel();
+        int wait = r(p, "t3") > 0 ? 1200 : 600;
+        mage(p).tokens.add(new Token(land, sl.getGameTime() + wait));
+        var fl = fx(2, from.add(0, -0.3, 0), 8); fl.u = land.add(0, 0.35, 0); send(sl, fl);
+        AstaFx.later(8, () -> send(sl, fx(3, land, wait - 8)));
+    }
+
+    /** A calamity a token called: Heavy Coin, Spreading Debt, Lucky Coin. */
+    static void tokenCalamity(ServerPlayer p, LivingEntity t) {
+        if (!t.isAlive()) return;
+        if (r(p, "t2") > 0) nextScale = 1.3f;
+        calamity(p, t, false);
+        if (r(p, "t6") > 0) p.heal(3f);
+        if (r(p, "t5") > 0) {
+            ServerLevel sl = p.serverLevel();
+            LivingEntity n = null; double bd = 36;
+            for (LivingEntity o : sl.getEntitiesOfClass(LivingEntity.class, t.getBoundingBox().inflate(6), x -> x != t && x != p && x.isAlive() && hostile(p, x))) { double d = o.distanceToSqr(t); if (d < bd) { bd = d; n = o; } }
+            if (n != null) { Fate g = fate(n); g.by = p.getUUID(); g.ladenUntil = sl.getGameTime() + 600; var fl = fx(2, mid(t), 6); fl.u = mid(n); send(sl, fl); }
+        }
     }
 
     static void tokens(ServerPlayer p, Mage m, long now) {
@@ -579,12 +662,13 @@ public final class OmenFx {
         for (Iterator<Token> it = m.tokens.iterator(); it.hasNext(); ) {
             Token tk = it.next();
             if (now >= tk.until) { it.remove(); continue; }
-            for (LivingEntity t : enemies(sl, p, new AABB(tk.at, tk.at).inflate(0.9, 1.5, 0.9))) {
+            double reach = r(p, "t4") > 0 ? 1.8 : 0.9;
+            for (LivingEntity t : enemies(sl, p, new AABB(tk.at, tk.at).inflate(reach, 1.5, reach))) {
                 if (t instanceof OmenAfterimage) continue;
                 it.remove();
                 play(sl, tk.at, "omen_token", 1f, 0.7f);
                 send(sl, fx(4, tk.at, 14));
-                calamity(p, t, false);
+                tokenCalamity(p, t);
                 break;
             }
         }
@@ -602,16 +686,40 @@ public final class OmenFx {
         a.owner = p.getUUID();
         a.heading = dir;
         sl.addFreshEntity(a);
+        if (r(p, "a1") > 0) {   // Second Shadow: another, walking off the other way round
+            OmenAfterimage b2 = AddonEntities.OMEN_AFTERIMAGE.get().create(sl);
+            if (b2 != null) {
+                Vec3 d2 = rotY(dir, 1.2);
+                Vec3 at2 = p.position().add(d2.scale(1.5));
+                b2.moveTo(at2.x, p.getY(), at2.z, p.getYRot() + 70, 0);
+                b2.owner = p.getUUID(); b2.heading = d2;
+                sl.addFreshEntity(b2);
+                send(sl, fx(12, at2, 24));
+            }
+        }
         for (Mob mob : sl.getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(16), x -> x.isAlive() && (x.getTarget() == p || x instanceof net.minecraft.world.entity.monster.Enemy) && !x.isAlliedTo(p))) mob.setTarget(a);
         play(sl, at, "omen_afterimage", 1.2f, 1f);
         send(sl, fx(12, at, 24));
     }
 
+    /** Shadow Burst: an Afterimage of p's fades, and the enemies near it take its dread. */
+    public static void afterimageFades(ServerPlayer p, Vec3 at) {
+        if (r(p, "a6") <= 0) return;
+        ServerLevel sl = p.serverLevel();
+        send(sl, fx(12, at, 24));
+        play(sl, at, "omen_afterimage", 1f, 0.6f);
+        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(4), x -> x != p && x.isAlive() && hostile(p, x))) {
+            Fate f = fate(t); f.by = p.getUUID(); f.misfortune += 40f;
+            if (f.misfortune >= FULL) calamity(p, t, false);
+        }
+    }
+
     // ================================================================== 4. Needle Rain
     /** For 5 s ill luck falls as needles on everyone pursuing you within 10 blocks - harder in real rain. */
     public static void needleRain(ServerPlayer p, float power) {
-        mage(p).rainUntil = p.level().getGameTime() + 100;
-        ModeHud.show(p, "needle_rain", 100);
+        int dur = r(p, "n1") > 0 ? 160 : 100;
+        mage(p).rainUntil = p.level().getGameTime() + dur;
+        ModeHud.show(p, "needle_rain", dur);
         play(p.serverLevel(), p.position(), "omen_needles", 1.3f, 0.9f);
         send(p.serverLevel(), fx(12, p.position(), 30));
     }
@@ -620,12 +728,12 @@ public final class OmenFx {
         ServerLevel sl = p.serverLevel();
         boolean rain = sl.isRainingAt(p.blockPosition().above());
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(10), x -> x != p && x.isAlive() && pursues(x, p))) {
+        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(r(p, "n3") > 0 ? 14 : 10), x -> x != p && x.isAlive() && pursues(x, p))) {
             Vec3 c = mid(t);
             send(sl, fx(5, t.position(), 26));
             AstaFx.damage(p, t, 3f * (rain ? 1.6f : 1f), "needle_rain");
             Fate f = fate(t);
-            f.misfortune += 10f;
+            f.misfortune += r(p, "n2") > 0 ? 15f : 10f;
             if (f.misfortune >= FULL) calamity(p, t, false);
         }
     }
@@ -633,18 +741,20 @@ public final class OmenFx {
     // ================================================================== 5-8
     /** Domino: for 15 s every calamity leaps to the nearest other pursuer. */
     public static void domino(ServerPlayer p, float power) {
-        mage(p).dominoUntil = p.level().getGameTime() + 300;
-        ModeHud.show(p, "domino", 300);
+        int dur = r(p, "n4") > 0 ? 500 : 300;
+        mage(p).dominoUntil = p.level().getGameTime() + dur;
+        ModeHud.show(p, "domino", dur);
         play(p.serverLevel(), p.position(), "omen_domino", 1.2f, 1f);
         send(p.serverLevel(), fx(12, p.position(), 24));
     }
 
     /** Stillness: for 4 s, while you stand still, blows aimed at you rebound on their senders as calamity. */
     public static void stillness(ServerPlayer p, float power) {
-        mage(p).stillUntil = p.level().getGameTime() + 80;
-        ModeHud.show(p, "stillness", 80);
+        int dur = r(p, "s1") > 0 ? 120 : 80;
+        mage(p).stillUntil = p.level().getGameTime() + dur;
+        ModeHud.show(p, "stillness", dur);
         play(p.serverLevel(), p.position(), "omen_still", 1.2f, 1f);
-        send(p.serverLevel(), on(7, p, 80));
+        send(p.serverLevel(), on(7, p, dur));
     }
 
     /** Karma's Ledger: the one you look at pays for everything at once - its Misfortune and what it has done to you. */
@@ -654,7 +764,22 @@ public final class OmenFx {
         play(sl, p.position(), "omen_ledger", 1.3f, 1f);
         if (t == null) return;
         Fate f = fate(t);
-        float dmg = (8f + f.misfortune * 0.15f + f.dealt) * karma(t);
+        float dmg = (8f + f.misfortune * (r(p, "l1") > 0 ? 0.25f : 0.15f) + f.dealt) * karma(t);
+        if (r(p, "K5") > 0 && (t instanceof AddonBoss || TimeStop.isBoss(t) || EliteMobs.elite(t))) dmg *= 1.5f;   // Judge
+        if (r(p, "l4") > 0) f.badCreditUntil = sl.getGameTime() + 200;   // Bad Credit
+        if (r(p, "l3") > 0) {   // Audit: up to two more marked enemies near it, at half
+            int k = 0;
+            for (LivingEntity o : sl.getEntitiesOfClass(LivingEntity.class, t.getBoundingBox().inflate(8), x -> x != t && x != p && x.isAlive() && hostile(p, x))) {
+                Fate g = FATES.get(o);
+                if (g == null || g.misfortune <= 0 || k >= 2) continue;
+                k++;
+                float half = (8f + g.misfortune * 0.15f + g.dealt) * karma(o) * 0.5f;
+                g.misfortune = 0; g.dealt = 0;
+                send(sl, fx(9, o.position(), 30));
+                final LivingEntity oo = o;
+                AstaFx.later(13, () -> { if (oo.isAlive() && p.isAlive()) AstaFx.damage(p, oo, half, "karmas_ledger"); });
+            }
+        }
         f.misfortune = 0;
         f.dealt = 0;
         Vec3 c = mid(t);
@@ -664,19 +789,78 @@ public final class OmenFx {
             if (!tt.isAlive() || !p.isAlive()) return;
             FxSend.shake(sl, tt.position(), 0.4f, 6, 16);
             play(sl, tt.position(), "omen_fall", 1.2f, 0.6f);
+            float over = dmg - tt.getHealth();
             AstaFx.damage(p, tt, dmg, "karmas_ledger");
+            if (r(p, "l2") > 0 && over > 0 && !tt.isAlive()) {   // Unpaid Debt
+                LivingEntity n = null; double bd = 64;
+                for (LivingEntity o : sl.getEntitiesOfClass(LivingEntity.class, tt.getBoundingBox().inflate(8), x -> x != tt && x != p && x.isAlive() && hostile(p, x))) { double d = o.distanceToSqr(tt); if (d < bd) { bd = d; n = o; } }
+                if (n != null) { line(sl, mid(tt), mid(n)); AstaFx.damage(p, n, over, "karmas_ledger"); }
+            }
         });
     }
 
     /** The Law Itself: for 20 s calamity hunts every pursuer within 24 blocks, each blow worse than the last. */
     public static void theLawItself(ServerPlayer p, float power) {
         Mage m = mage(p);
-        m.lawUntil = p.level().getGameTime() + 400;
-        ModeHud.show(p, "the_law_itself", 400);
+        int dur = r(p, "l8") > 0 ? 500 : 400;
+        m.lawUntil = p.level().getGameTime() + dur;
+        ModeHud.show(p, "the_law_itself", dur);
         m.lawCount = 0;
+        m.lawEcho = r(p, "l7") <= 0;
         ServerLevel sl = p.serverLevel();
         play(sl, p.position(), "omen_law", 1.6f, 1f);
-        send(sl, on(10, p, 400));   // the sigil over you, for as long as the Law holds
+        send(sl, on(10, p, dur));   // the sigil over you, for as long as the Law holds
+    }
+
+    // ================================================================== the G wheel (the Ledger of Ill Luck)
+    static boolean wheel(ServerPlayer p, int slot) {
+        ServerLevel sl = p.serverLevel();
+        Mage m = mage(p);
+        long now = sl.getGameTime();
+        switch (slot) {
+            case 0 -> {   // Read the Signs
+                int n = 0;
+                for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(16), x -> x != p && x.isAlive() && hostile(p, x))) {
+                    Fate f = fate(t); f.by = p.getUUID(); f.misfortune += 15f; n++;
+                    splash(sl, t.position());
+                    if (f.misfortune >= FULL) calamity(p, t, false);
+                }
+                play(sl, p.position(), "omen_still", 1f, 1.3f);
+                if (n == 0) { p.displayClientMessage(net.minecraft.network.chat.Component.literal("No enemy near to read").withStyle(net.minecraft.ChatFormatting.GRAY), true); return false; }
+            }
+            case 1 -> {   // Cross My Path
+                Vec3 d = hz(p.getLookAngle()).normalize();
+                for (int i = 1; i <= 5; i++) print(p, m, BossKit.ground(sl, p.position().add(d.scale(i * 0.9)).add(0, 1, 0)), now, p.getYRot());
+                m.lastPrintAt = null;
+                play(sl, p.position(), "omen_step", 1f, 0.7f);
+            }
+            case 2 -> { dropToken(p, p.position(), p.getEyePosition()); play(sl, p.position(), "omen_token", 1f, 1f); }   // Bad Penny
+            default -> {   // Final Notice
+                int n = 0;
+                for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(16), x -> x != p && x.isAlive() && hostile(p, x))) {
+                    Fate f = FATES.get(t);
+                    if (f == null || f.misfortune < FULL * 0.5f) continue;
+                    final LivingEntity tt = t;
+                    AstaFx.later(2 * n++, () -> { if (tt.isAlive()) calamity(p, tt, false); });
+                }
+                if (n == 0) { p.displayClientMessage(net.minecraft.network.chat.Component.literal("No bar half full yet").withStyle(net.minecraft.ChatFormatting.GRAY), true); return false; }
+                play(sl, p.position(), "omen_law", 1.2f, 1.2f);
+            }
+        }
+        return true;
+    }
+
+    /** For the wheel: enemies marked, the fullest bar (%), calamities this session, the Law's seconds left. */
+    static int[] extra(ServerPlayer p) {
+        ServerLevel sl = p.serverLevel();
+        int n = 0; float best = 0;
+        for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(32), x -> x != p && x.isAlive())) {
+            Fate f = FATES.get(t);
+            if (f == null || f.misfortune <= 0 || !p.getUUID().equals(f.by)) continue;
+            n++; best = Math.max(best, f.misfortune);
+        }
+        Mage m = mage(p);
+        return new int[]{n, Math.round(Math.min(100f, best)), (int) Math.max(0, m.lawUntil - sl.getGameTime())};
     }
 
     // ================================================================== the UI showcase (client/UiShots fxs_omen_*)
@@ -711,5 +895,6 @@ public final class OmenFx {
     public static int testCalamities(LivingEntity e) { Fate f = FATES.get(e); return f == null ? 0 : f.calamities; }
     public static void testStruck(LivingEntity e, Player p) { Fate f = fate(e); f.by = p.getUUID(); f.lastStruckYou = e.level().getGameTime(); }
     public static int testPrints(Player p) { return mage(p).prints.size(); }
+    public static int testTokens(Player p) { return mage(p).tokens.size(); }
     public static void testReset(Player p) { MAGES.remove(p.getUUID()); }
 }

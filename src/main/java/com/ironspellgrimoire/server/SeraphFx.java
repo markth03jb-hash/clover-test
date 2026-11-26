@@ -186,7 +186,7 @@ public final class SeraphFx {
         for (int k = 0; k < 12; k++) {
             double a = k * Math.PI / 6;
             Vec3 d = new Vec3(Math.cos(a), 0.4, Math.sin(a)).normalize();
-            FxSend.spike(sl, SALT, mid(p), d, 0.9f, 0.1f, 10, 0, FxPacket.POP, 0, d.scale(0.4), 8);
+            { var fe = BoundFx.bfx(10, mid(p), 20); fe.u = mid(p).add(d.scale(3.2)); fe.r2 = 6; BoundFx.bsend(sl, fe); }
         }
         play(sl, p.position(), "bd_seraph", 1f, 1.8f);
         BoundFx.endAwake(p);
@@ -198,7 +198,7 @@ public final class SeraphFx {
             ThreadLocalRandom r = ThreadLocalRandom.current();
             Vec3 left = rotY(p.getLookAngle(), Math.PI / 2).multiply(1, 0, 1).normalize();
             Vec3 at = p.position().add(left.scale(1 + r.nextDouble(3))).add(0, 1.5 + r.nextDouble(3), 0);   // a feather drifting down
-            FxSend.spike(sl, SALT, at, new Vec3(r.nextDouble(-0.3, 0.3), -1, r.nextDouble(-0.3, 0.3)), 0.45f, 0.06f, 20, 0, FxPacket.POP, 0, new Vec3(0, -0.06, 0), 18);
+            { var df = BoundFx.bfx(15, at, 26); df.u = new Vec3(r.nextDouble(-0.02, 0.02), 0, r.nextDouble(-0.02, 0.02)); BoundFx.bsend(sl, df); }   // a black feather drifting down
         }
         if (now % 20 == 0) FxSend.ring(sl, SALT, p.position().add(0, 0.05, 0), 1.4f, 1.6f, 0.03f, 20);
     }

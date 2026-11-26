@@ -191,6 +191,20 @@ public class BookTreeScreen extends Screen {
                 double yy = by0 + bh * (0.25 + 0.3 * k);
                 Shapes.line(bx0, yy + 30, bx0 + bw, yy - 30, 0.7, Shapes.alpha(acc, 0.12f));
             }
+        } else if (b == BookTree.OMEN) {   // ink blots spreading and fading, a few black feathers... no - footprints walking across
+            Random r = new Random(21);
+            for (int i = 0; i < 14; i++) {
+                double bx = bx0 + r.nextDouble() * bw, by = by0 + r.nextDouble() * bh, ph = (t * 0.15 + r.nextDouble()) % 1.0;
+                Shapes.disc(bx, by, 2 + ph * 9, Shapes.alpha(0xFF000000, 0.35f * (float) (1 - ph)));
+                Shapes.ring(bx, by, 1.5 + ph * 9, 2.2 + ph * 9, Shapes.alpha(acc, 0.12f * (float) (1 - ph)));
+            }
+            for (int k = 0; k < 3; k++) {   // a trail of prints crossing the board
+                double yy = by0 + bh * (0.2 + 0.3 * k), off = (t * 12 + k * 90) % (bw + 80) - 40;
+                for (int j = 0; j < 6; j++) {
+                    double fx = bx0 + off - j * 16, fy = yy + (j % 2 == 0 ? -3 : 3);
+                    if (fx > bx0 && fx < bx0 + bw) { Shapes.disc(fx, fy, 2.2, Shapes.alpha(acc, 0.14f * (6 - j) / 6f)); Shapes.disc(fx - 3, fy, 1.4, Shapes.alpha(acc, 0.12f * (6 - j) / 6f)); }
+                }
+            }
         } else if (b == BookTree.FUSE) {
             Random r = new Random(5);
             for (int i = 0; i < 26; i++) {
@@ -229,6 +243,9 @@ public class BookTreeScreen extends Screen {
         } else if (b == BookTree.BOUND) {   // a cut: a dark line, lit crimson with a white core when learned
             Shapes.line(ax, ay, bx, by, lit ? 2.2 : 1.2, col);
             if (lit) Shapes.line(ax, ay, bx, by, 0.6, Shapes.alpha(bright, 0.8f));
+        } else if (b == BookTree.OMEN) {   // a line of ink; learned, a pale thread runs in it
+            Shapes.line(ax, ay, bx, by, lit ? 2.4 : 1.4, lit ? col : Shapes.alpha(col, 0.6f));
+            if (lit) Shapes.line(ax, ay, bx, by, 0.7, Shapes.alpha(bright, 0.7f));
         } else if (b == BookTree.FUSE) {
             Shapes.line(ax, ay, bx, by, lit ? 1.8 : 1.2, col);
             if (lit) {
@@ -261,6 +278,13 @@ public class BookTreeScreen extends Screen {
                 Shapes.eye(x, y, r * 0.65, learned ? 0.8 : can ? 0.4 : 0.15, learned ? 0xFF200608 : bg, learned ? bright : dim);
                 if (learned) Shapes.disc(x, y, 1.6, acc);
             }
+        } else if (b == BookTree.OMEN) {   // a coin: a rim, a black face, and an eye on it that opens when learned
+            Shapes.disc(x, y, r + 1.2, rim);
+            Shapes.disc(x, y, r - 0.4, learned ? 0xFF05060C : bg);
+            Shapes.ring(x, y, r - 2.4, r - 1.6, Shapes.alpha(rim, 0.6f));
+            Shapes.eye(x, y, r * 0.6, learned ? 0.85 : can ? 0.4 : 0.12, learned ? Shapes.alpha(acc, 0.4f) : bg, learned ? bright : dim);
+            if (n.kind() == BookTree.KEY) { Shapes.ring(x, y, r + 3.2, r + 4.4, rim); Shapes.ring(x, y, r + 5.6, r + 6.2, Shapes.alpha(rim, 0.5f)); }
+            if (n.kind() == BookTree.STAT) for (int k = 0; k < 4; k++) { double a = k * Math.PI / 2 + t; Shapes.disc(x + Math.cos(a) * (r + 2.5), y + Math.sin(a) * (r + 2.5), 0.9, learned ? bright : dim); }
         } else if (b == BookTree.FUSE) {
             Shapes.line(x + r * 0.6, y - r * 0.6, x + r * 1.05, y - r * 1.15, 1.5, rim);
             Shapes.disc(x, y, r + 0.8, rim);

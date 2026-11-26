@@ -872,6 +872,10 @@ public final class UiShots {
         steps.add(new Step("om_marks", () -> { mc.setScreen(null); mc.options.hideGui = false; TrackerMode.set(2); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); mc.player.setXRot(6); onServer(p -> { p.setXRot(6); UiShotsServer.element(p, "O:marks"); }); }, 30, true));
         steps.add(new Step("om_after", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "O:after")); }, 18, true));
         steps.add(new Step("om_law", () -> onServer(p -> UiShotsServer.element(p, "O:law")), 34, true));
+        steps.add(new Step("om_tree", () -> { mc.setScreen(null); BookTreeScreen.forceHover = "c2"; onServer(p -> UiShotsServer.element(p, "O:tree")); }, 14, false));
+        steps.add(new Step("om_tree_debt", () -> { mc.setScreen(null); BookTreeScreen.forceHover = "l3"; onServer(p -> UiShotsServer.element(p, "O:tree")); }, 10, false));
+        steps.add(new Step("om_wheel", () -> { mc.setScreen(null); BookTreeScreen.forceHover = null; BookTreeWheel.forceHover = 2; mc.setScreen(new BookTreeWheel()); }, 8, false));
+        steps.add(new Step("om_wheel_done", () -> { mc.setScreen(null); BookTreeWheel.forceHover = -1; }, 3, false));
         steps.add(new Step("om_clear", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "O:clear")); }, 4, true));
         // the Vector, Quiet Fuse and Foreseen grimoires: each tree (part-learned, a node pointed at), each G wheel, the False Future double
         String[] trioBooks = {"X", "Q", "F"}, trioKeys = {"vec", "fuse", "fore"}, trioHover = {"r4", "s4", "e2"};

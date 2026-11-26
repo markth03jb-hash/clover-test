@@ -89,7 +89,7 @@ public final class ModeHudOverlay {
                 g.fill(x - 1, y - 1, x, y + 25, 0xFFE8B830);
                 g.fill(right, y - 1, right + 1, y + 25, 0xFFE8B830);
             }
-            g.fill(x, y, right, y + 24, id.equals("scarlet_moon") ? 0xC00A1A2E : 0xB0100A16);   // the Moon's panel is frosted
+            g.fill(x, y, right, y + 24, id.equals("scarlet_moon") ? 0xD80A1A2E : 0xD8100A16);   // the Moon's panel is frosted
             g.fill(x, y, right, y + 1, accent);
             g.fill(x, y + 23, right, y + 24, 0x60000000);
             g.fill(x, y, x + 1, y + 24, accent);
@@ -101,7 +101,7 @@ public final class ModeHudOverlay {
                 g.blit(icon, x + 4, y + 3, 0, 0, 16, 16, 16, 16);
             }
             g.drawString(font, name, x + 24, y + 3, 0xFFFFFF, true);
-            g.drawString(font, time, x + 24, y + 12, blink ? 0xFF5555 : 0xBBBBBB, true);
+            g.drawString(font, time, x + 24, y + 12, blink ? 0xFF6666 : 0xE2E2E2, true);
             y += 26;
         }
         if (showXp) {   // mastery XP popup: level and progress to the next one
