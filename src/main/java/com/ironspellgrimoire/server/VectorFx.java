@@ -77,7 +77,7 @@ public final class VectorFx {
     static void deflect(ServerLevel sl, Vec3 at, Vec3 in, Vec3 out) {
         Vec3 i = in.lengthSqr() < 1e-4 ? out.scale(-1) : in;
         Vec3 o = out.lengthSqr() < 1e-4 ? new Vec3(0, 1, 0) : out.normalize();
-        var p = fx(0, at.subtract(i.normalize().scale(1.6)), 10); p.u = at; p.d = at.add(o.scale(2.4)); p.r = 0.05f; send(sl, p);
+        var p = fx(0, at.subtract(i.normalize().scale(2.0)), 12); p.u = at; p.d = at.add(o.scale(3.2)); p.r = 0.08f; send(sl, p);
     }
     /** The air warped round c. */
     static void warp(ServerLevel sl, Vec3 c, float r, int life) { var p = fx(1, c, life + 4); p.r = r; send(sl, p); }
@@ -382,7 +382,7 @@ public final class VectorFx {
         }
     }
 
-    static void burstPlasma(ServerPlayer p, Vec3 at, float k) {
+    public static void burstPlasma(ServerPlayer p, Vec3 at, float k) {
         ServerLevel sl = p.serverLevel();
         double rr = 3 + (r(p, "p2") > 0 ? 1 : 0);
         { var b = fx(4, at, 18); b.r = (float) rr + 0.5f; b.u = BossKit.ground(sl, at.add(0, 0.5, 0)); send(sl, b); }
@@ -516,7 +516,7 @@ public final class VectorFx {
         Vec3 eye = p.getEyePosition();
         Vec3 at = clip(sl, p, eye, eye.add(p.getLookAngle().scale(12)));
         v(p).plasma.add(new Plasma(at, sl.getGameTime() + 40, r(p, "p2") > 0));
-        { var c = fx(3, at, 40); c.r = 0.55f; send(sl, c); }   // the point, charging
+        { var c = fx(3, at, 40); c.r = 0.85f; send(sl, c); }   // the point, charging
         play(sl, at, "vec_charge", 1f, 1f);
     }
 

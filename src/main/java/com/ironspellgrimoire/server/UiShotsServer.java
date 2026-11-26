@@ -1201,6 +1201,7 @@ public final class UiShotsServer {
             case "coal" -> MeridianFx.lastCoal(p, 10f);
             case "zenith" -> { sl.setDayTime(6000); MeridianFx.testReset(p); MeridianFx.zenithUnbound(p, 10f); }
             case "step" -> VectorFx.recoilStep(p, 10f);
+            case "pburst" -> VectorFx.burstPlasma(p, h.position().add(0, 2.5, 0).subtract(p.getLookAngle().multiply(1, 0, 1).normalize().scale(2)), 1f);
             case "return" -> VectorFx.returnToSender(p, 10f);
             case "redirect" -> VectorFx.redirect(p, 10f);
             case "gust" -> VectorFx.pressureGust(p, 10f);

@@ -151,7 +151,7 @@ public final class VectorFxClient {
         if (u <= l1) { arrow(vc, m, n, cam, p.c, p.c.add(p.u.subtract(p.c).scale(u / l1)), w, a * 0.7F, false); return; }
         arrow(vc, m, n, cam, p.c, p.u, w, a * 0.55F, false);   // the way it came, already fading
         arrow(vc, m, n, cam, p.u, p.u.add(p.d.subtract(p.u).scale((u - l1) / l2)), w * 1.3, a, true);   // the way it's going now
-        star(m, cam, p.u, 0.45 * (1 - age / p.life) + 0.15, a);
+        star(m, cam, p.u, 0.8 * (1 - age / p.life) + 0.25, a);
     }
 
     // ------------------------------------------------------------------ 1 warped air
@@ -328,12 +328,12 @@ public final class VectorFxClient {
     private static void step(VertexConsumer vc, Matrix4f m, Matrix3f n, Vec3 cam, FxPacket p, double age) {
         double q = age / p.life;
         float a = (float) (1 - q);
-        double r = 0.5 + 1.1 * FxBase.smooth(Math.min(1, q * 2));
+        double r = 0.8 + 1.8 * FxBase.smooth(Math.min(1, q * 2));
         Vec3 prev = null;
         for (int i = 0; i <= 6; i++) {   // a hexagon of compressed air, snapping out
             double an = i * TAU / 6 + 0.5;
             Vec3 c = p.c.add(Math.cos(an) * r, 0.05, Math.sin(an) * r);
-            if (prev != null) { GravityFxClient.gseg(m, cam, prev, c, 0.06, a, a, WHITE); sseg(vc, m, n, cam, prev, c, 0.1, a * 0.5F, a * 0.5F, BLACK); }
+            if (prev != null) { GravityFxClient.gseg(m, cam, prev, c, 0.1, a, a, WHITE); sseg(vc, m, n, cam, prev, c, 0.16, a * 0.6F, a * 0.6F, BLACK); }
             prev = c;
         }
         Vec3 d = p.d.normalize();

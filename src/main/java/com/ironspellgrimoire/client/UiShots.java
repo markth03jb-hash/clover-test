@@ -968,7 +968,7 @@ public final class UiShots {
         steps.add(new Step("fxs_vec_redirect", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:redirect")); }, 4, true));
         steps.add(new Step("fxs_vec_gust", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:gust")); }, 4, true));
         steps.add(new Step("fxs_vec_plasma", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:plasma")); }, 30, true));
-        steps.add(new Step("fxs_vec_plasma_burst", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:none")); }, 14, true));
+        steps.add(new Step("fxs_vec_plasma_burst", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:pburst")); }, 4, true));
         steps.add(new Step("fxs_vec_wind", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:wind")); }, 14, true));
         steps.add(new Step("fxs_vec_absolute", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "X:absolute")); }, 8, true));
         steps.add(new Step("fxs_vec_absolute_fp", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:none")); }, 4, true));
