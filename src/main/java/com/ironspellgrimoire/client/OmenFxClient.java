@@ -223,13 +223,13 @@ public final class OmenFxClient {
             double ox = (hash(p.a1 + i * 3) - 0.5) * 1.6, oz = (hash(p.a1 + i * 5) - 0.5) * 1.6;
             Vec3 ground = p.c.add(ox, 0, oz);
             Vec3 dir = new Vec3(-0.15, -1, 0.05).normalize();
-            double len = 0.9;
+            double len = 1.4;
             Vec3 tip;
             float a;
             if (fall < 1) { tip = ground.subtract(dir.scale(5 * (1 - fall))); a = 1F; }   // falling
             else { tip = ground.add(dir.scale(0.25)); a = (float) Mth.clamp(1 - (age - t0 - 4) / 14, 0, 1); }   // stuck in the ground, fading
             Vec3 tail = tip.subtract(dir.scale(len));
-            sseg(vc, m, n, cam, tail, tip, 0.035, a, a, INK);
+            sseg(vc, m, n, cam, tail, tip, 0.07, a, a, INK);
             GravityFxClient.gseg(m, cam, tail, tip, 0.012, a * 0.8F, a, PALE);
             if (fall >= 1 && fall < 1.6) GravityFxClient.ring(m, cam, ground.add(0, 0.04, 0), UP, 0.1 + (fall - 1) * 0.5, 0.03, PALE, (float) (1.6 - fall));
         }
@@ -344,7 +344,7 @@ public final class OmenFxClient {
         Vec3 f = at(mc, p, pt);
         if (f == null) return;
         float a = (float) (Mth.clamp(age / 10, 0, 1) * Mth.clamp((p.life - age) / 15, 0, 1));
-        Vec3 c = f.add(0, 9, 0);
+        Vec3 c = f.add(0, 6, 0);
         sigil(vc, m, n, cam, c, 5.5, t, a, true);
     }
 

@@ -264,7 +264,7 @@ public final class OmenFx {
         Mage m = mage(p);
         float scale = karma(t) * (byLaw ? 1f + 0.25f * Math.min(8, m.lawCount) : 1f) * (nested ? 0.6f : 1f);
         int kind = pick(p, t, f, nested);
-        if (byLaw) { var sh = fx(11, t.position(), 10); sh.u = p.position().add(0, 9, 0); send(sl, sh); }
+        if (byLaw) { var sh = fx(11, t.position(), 10); sh.u = p.position().add(0, 6, 0); send(sl, sh); }
         omen(sl, t, nested);
         strike(p, t, f, kind, scale);
         if (!nested) lastKind = kind;
@@ -698,7 +698,7 @@ public final class OmenFx {
             case "domino" -> { Vec3 b = h.position().add(look.cross(new Vec3(0, 1, 0)).scale(4)).add(0, 1, 0); var q = fx(6, mid(h), 24); q.u = b; send(sl, q); }
             case "still" -> { stillness(p, 0); var cr = on(8, p, 20); cr.d = look; send(sl, cr); }
             case "ledger" -> karmasLedger(p, 0);
-            case "law" -> { theLawItself(p, 0); var sh = fx(11, h.position(), 14); sh.u = p.position().add(0, 9, 0); send(sl, sh); }
+            case "law" -> { theLawItself(p, 0); var sh = fx(11, h.position(), 14); sh.u = p.position().add(0, 6, 0); send(sl, sh); }
             case "clear" -> { for (int k : new int[]{7, 10}) { var q = fx(98, p.position(), 1); q.v = new Vec3(p.getId(), 0, 0); q.a0 = k; send(sl, q); } }
             default -> {}
         }
