@@ -155,23 +155,6 @@ public final class UiShots {
         steps.add(new Step("folk_clear", () -> onServer(p -> UiShotsServer.folk(p, "clear")), 2, true));
         // ASHFALL: the cast, a scene, a vote, the Journal, the tracker, Emberfall, the chapel
         steps.add(new Step("story_cast", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> { UiShotsServer.story(p, "clear"); UiShotsServer.story(p, "cast"); }); }, 20, true));
-        steps.add(new Step("story_probe", () -> {   // what draws the cast: the renderer, its gear, whether the gear's models loaded
-            for (var e : mc.level.entitiesForRendering()) {
-                if (!(e instanceof net.minecraft.world.entity.Mob m) || !m.getPersistentData().getBoolean("isg_ui_story") && !(m instanceof com.ironspellgrimoire.entity.FatherSallow) && !(m instanceof com.ironspellgrimoire.entity.Penitent)) continue;
-                var r = mc.getEntityRenderDispatcher().getRenderer(m);
-                StringBuilder sb = new StringBuilder("probe | " + net.minecraft.world.entity.EntityType.getKey(m.getType()) + " | " + r.getClass().getSimpleName());
-                if (r instanceof RivalRenderer<?> rr) {
-                    var g = RivalRenderer.GEAR.get(rr.skinName());
-                    sb.append(" skin=").append(rr.skinName()).append(" gear=").append(g == null ? "null" : g.size());
-                    if (g != null) for (var pc : g) {
-                        var bm = mc.getModelManager().getModel(pc.rl());
-                        int q = bm == null ? -1 : bm.getQuads(null, null, net.minecraft.util.RandomSource.create(42), net.minecraftforge.client.model.data.ModelData.EMPTY, null).size();
-                        sb.append(" ").append(pc.model()).append("=").append(q).append(bm == mc.getModelManager().getMissingModel() ? "(missing)" : "");
-                    }
-                }
-                report.add(sb.toString());
-            }
-        }, 4, false));
         steps.add(new Step("story_dialogue", () -> mc.setScreen(new DialogueScreen(storyTalk(false))), 12, true));
         steps.add(new Step("story_vote", () -> { DialogueScreen d = new DialogueScreen(storyTalk(true)); mc.setScreen(d); d.showLine(99); }, 12, true));
         steps.add(new Step("story_journal", () -> { StoryClient.sync(storyState()); mc.setScreen(new JournalScreen(-1)); }, 10, false));
@@ -942,7 +925,6 @@ public final class UiShots {
             } catch (ClassNotFoundException ex) { return null; }
         }
         if (step.startsWith("blood_") || step.startsWith("ice_")) return new Class<?>[]{com.ironspellgrimoire.server.BloodFx.class, BloodFxClient.class, AuraOutlineLayer.class, IceFxClient.class, BloodHud.class, GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class};
-        if (step.equals("story_probe")) return null;
         if (step.startsWith("story_")) return new Class<?>[]{StoryClient.class, DialogueScreen.class, JournalScreen.class, RivalRenderer.class, com.ironspellgrimoire.server.Story.class,
                 com.ironspellgrimoire.server.StoryArc1.class, com.ironspellgrimoire.server.StoryStage.class, com.ironspellgrimoire.entity.StoryNpc.class};
         return switch (step) {
