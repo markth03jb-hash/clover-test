@@ -152,7 +152,7 @@ public final class BoundFx {
         s.poss = 100f;
         draw(p, false);
         p.displayClientMessage(Component.literal("The demon has your hands.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), true);
-        FxSend.ring(sl, RED, mid(p), 0.3f, 2.4f, 0.12f, 12);
+        stir(sl, mid(p), 2.4f);
         FxSend.shake(sl, p.position(), 0.3f, 6, 10);
         play(sl, p.position(), "bd_takeover", 1.3f, 0.8f);
         if (r(p, "d7") > 0) TimedModifiers.apply(p, Attributes.KNOCKBACK_RESISTANCE, SKIN, "Demon Skin", 1.0, AttributeModifier.Operation.ADDITION, (int) (s.takeoverUntil - now));
@@ -183,10 +183,31 @@ public final class BoundFx {
         p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(AddonItemRegistry.DEMON_KATANA.get()));
         if (fx) {
             play(p.serverLevel(), p.position(), "bd_draw", 1f, 1f);
-            FxSend.ring(p.serverLevel(), RED, mid(p), 0.2f, 1.2f, 0.06f, 8);
+            stir(p.serverLevel(), mid(p), 1.2f);
         }
         return true;
     }
+
+    // ------------------------------------------------------------------ its own look (client/BoundFxClient, shape 104)
+    static com.ironspellgrimoire.network.FxPacket bfx(int kind, Vec3 c, int life) {
+        com.ironspellgrimoire.network.FxPacket q = new com.ironspellgrimoire.network.FxPacket();
+        q.shape = 104; q.id = FxSend.nextId(); q.h = kind; q.c = c; q.life = life; q.v = new Vec3(-1, -1, 0); q.a1 = (float) (Math.random() * 6.28);
+        return q;
+    }
+    static com.ironspellgrimoire.network.FxPacket bon(int kind, Entity e, int life) { var q = bfx(kind, e.position(), life); q.v = new Vec3(e.getId(), -1, 0); return q; }
+    static void bsend(ServerLevel sl, com.ironspellgrimoire.network.FxPacket q) { FxSend.sendNear(sl, q.c, q); }
+    /** A demon cut: a black crescent with a crimson edge (c middle, d facing, u its plane's up, r radius). */
+    static void cut(ServerLevel sl, Vec3 c, Vec3 d, Vec3 u, float r, int life) { var q = bfx(0, c, Math.max(6, life + 2)); q.d = d; q.u = u; q.r = r; bsend(sl, q); }
+    /** The demon stirs: black smoke reaching out, a broken crimson ring. */
+    static void stir(ServerLevel sl, Vec3 c, float r) { var q = bfx(2, c, 14); q.r = r; bsend(sl, q); }
+    /** Salt crystals growing out of a creature. */
+    static void saltOn(ServerLevel sl, Entity e, float size, int life) { var q = bon(6, e, life); q.r = size; bsend(sl, q); }
+    /** Salt crystals at a point (on the ground). */
+    static void saltAt(ServerLevel sl, Vec3 at, float size, int life) { var q = bfx(6, at, life); q.r = size; bsend(sl, q); }
+    /** A crimson chain between two creatures. */
+    static void chain(ServerLevel sl, Entity a, Entity b, int life) { var q = bfx(4, a.position(), life); q.v = new Vec3(a.getId(), b.getId(), 0); bsend(sl, q); }
+    /** A pillar of salt falling from heaven on a point. */
+    static void pillar(ServerLevel sl, Vec3 g, float r, int life) { var q = bfx(14, g, life); q.r = r; bsend(sl, q); }
 
     // ------------------------------------------------------------------ salt and sinners
     static void salt(ServerPlayer p, LivingEntity t, int n) {
@@ -197,7 +218,7 @@ public final class BoundFx {
         if (v[0] >= 3) {
             v[0] = 0; v[1] = now + 60;
             TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, SALTED, "Salt Crust", -0.6, AttributeModifier.Operation.MULTIPLY_TOTAL, 60);
-            FxSend.ring(p.serverLevel(), SALT, mid(t), 0.2f, 1.1f, 0.08f, 60);
+            saltOn(p.serverLevel(), t, 1.5f, 60);
             play(p.serverLevel(), t.position(), "bd_salt", 0.9f, 1.2f);
         }
     }
@@ -215,8 +236,7 @@ public final class BoundFx {
     /** A salt statue: where a creature died, its shape in white, crumbling (effects only - no block). */
     static void statue(ServerLevel sl, LivingEntity t) {
         Vec3 c = t.position().add(0, t.getBbHeight() / 2, 0);
-        FxSend.box(sl, SALT, c, new Vec3(1, 0, 0), new Vec3(0, 1, 0), t.getBbWidth() * 0.5f, t.getBbWidth() * 0.5f, t.getBbHeight() * 0.5f, 30, 0, com.ironspellgrimoire.network.FxPacket.GROUND);
-        for (int i = 0; i < 6; i++) Kit.orb(sl, SALT, c.add((i % 3 - 1) * 0.3, (i / 3) * 0.4 - 0.2, 0), new Vec3(0, -0.05, 0), 0.12f, 16);
+        saltAt(sl, t.position(), 2.5f + t.getBbHeight(), 40);
         play(sl, c, "bd_salt", 1f, 0.8f);
     }
 
@@ -234,8 +254,7 @@ public final class BoundFx {
         s.wingGuards = r(p, "K4") > 0 ? 6 : 0;
         ModeHud.show(p, "last_seraph", (int) (s.awakeUntil - now), s.wingGuards > 0 ? s.wingGuards : -1);
         if (s.fallen) ModeHud.show(p, "bd_takeover", (int) (s.takeoverUntil - now));
-        FxSend.ring(sl, SALT, p.position().add(0, 0.1, 0), 0.4f, 6f, 0.2f, 14);
-        FxSend.beam(sl, SALT, p.position().add(0, 12, 0), p.position(), 0.8f, 12);
+        pillar(sl, p.position(), 1.8f, 34);
         FxSend.shake(sl, p.position(), 0.4f, 8, 16);
         play(sl, p.position(), "bd_seraph", 1.6f, 1f);
         p.displayClientMessage(Component.literal(s.fallen ? "The fallen seraph wakes." : saving ? "Never again." : "The seraph wakes.").withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD), true);
@@ -249,7 +268,6 @@ public final class BoundFx {
         }
         SeraphFx.apply(p, true);   // the seraph's own moves on the wheel while it lasts
         FxSend.impactFrame(sl, p.position().add(0, 1, 0), 5, false, 32);
-        FxSend.cracks(sl, SALT, p.position().add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 4.5f, 30, false, 11);
         BookTree.grow(p, BookTree.BOUND, 5);
         broadcast(p);
     }
@@ -309,7 +327,7 @@ public final class BoundFx {
                 if (crusted(victim, now)) {   // the crust shatters
                     SALTS.get(victim)[1] = 0;
                     AstaFx.later(1, () -> { if (victim.isAlive()) { echo = true; try { AstaFx.damage(p, victim, 10f, "salt_lance"); } finally { echo = false; } } });
-                    FxSend.ring(sl, SALT, mid(victim), 0.2f, 1.6f, 0.1f, 8);
+                    saltOn(sl, victim, 2f, 10);
                 }
             }
             float amt = e.getAmount() * m;
@@ -318,7 +336,7 @@ public final class BoundFx {
             if (katana && r(p, "d2") > 0 && s.poss >= 50f) AstaFx.later(1, () -> { if (victim.isAlive()) { echo = true; try { AstaFx.damage(p, victim, amt * 0.25f, "cursed_edge"); } finally { echo = false; } } });
             if (katana && r(p, "d4") > 0 && s.poss >= 75f && s.hitCount % 4 == 0) {   // Shadow Limbs
                 Vec3 look = p.getLookAngle();
-                FxSend.slash(sl, DARK, mid(p).add(look.scale(1.5)), look, new Vec3(0, 1, 0), 1.5f, 3.2f, 6, 0);
+                cut(sl, mid(p).add(look.scale(1.5)), look, new Vec3(0, 1, 0), 3.2f, 6);
                 int n = 0;
                 for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(4))) {
                     if (t == victim || n >= 3 || ally(p, t) || mid(t).subtract(p.getEyePosition()).normalize().dot(look) < 0.3) continue;
@@ -348,14 +366,14 @@ public final class BoundFx {
                 if (now < s.awakeUntil && r(p, "s5") > 0) mark(p, att, 200, false);
             }
             if (now < s.awakeUntil && att != null) {
-                if (r(p, "s6") > 0 && mid(att).subtract(mid(p)).normalize().dot(p.getLookAngle()) < -0.3) { e.setCanceled(true); FxSend.ring(sl, SALT, mid(p), 0.3f, 1.4f, 0.06f, 6); return; }
-                if (s.wingGuards > 0) { s.wingGuards--; ModeHud.show(p, "last_seraph", (int) (s.awakeUntil - now), s.wingGuards); e.setCanceled(true); FxSend.ring(sl, SALT, mid(p), 0.3f, 1.4f, 0.06f, 6); play(sl, p.position(), "bd_salt", 0.8f, 1.4f); return; }
+                if (r(p, "s6") > 0 && mid(att).subtract(mid(p)).normalize().dot(p.getLookAngle()) < -0.3) { e.setCanceled(true); saltOn(sl, p, 1f, 10); return; }
+                if (s.wingGuards > 0) { s.wingGuards--; ModeHud.show(p, "last_seraph", (int) (s.awakeUntil - now), s.wingGuards); e.setCanceled(true); saltOn(sl, p, 1f, 10); play(sl, p.position(), "bd_salt", 0.8f, 1.4f); return; }
             }
             if (att != null && r(p, "k4") > 0 && holding(p) && BookTree.melee(e.getSource()) && now - s.sneakAt <= 6) {   // Parry
                 e.setCanceled(true);
                 TimedModifiers.apply(att, Attributes.MOVEMENT_SPEED, STAGGER, "Staggered", -0.5, AttributeModifier.Operation.MULTIPLY_TOTAL, 20);
                 if (!boss(att)) Kit.push(att, flatAway(att, p), 0.6, 0.2);
-                FxSend.slash(sl, RED, mid(p).add(p.getLookAngle()), p.getLookAngle(), new Vec3(0, 1, 0), 0.8f, 1.6f, 5, 0);
+                cut(sl, mid(p).add(p.getLookAngle()), p.getLookAngle(), new Vec3(0, 1, 0), 1.6f, 5);
                 play(sl, p.position(), "bd_parry", 1f, 1.2f);
                 ModeHud.show(p, "bd_parry", 20);
                 BookTree.grow(p, BookTree.BOUND, 1);
@@ -369,7 +387,7 @@ public final class BoundFx {
                     e.setAmount(Math.max(0f, p.getHealth() - 1f));
                     s.untouchUntil = now + 60; UNTOUCH.put(a, now + 60);
                     ModeHud.show(p, "bd_last_stand", 60);
-                    FxSend.ring(sl, SALT, mid(p), 0.3f, 2f, 0.1f, 60); FxSend.ring(sl, SALT, mid(a), 0.3f, 2f, 0.1f, 60);
+                    saltOn(sl, p, 1.5f, 60); saltOn(sl, a, 1.5f, 60);
                     p.displayClientMessage(Component.literal("Not yet - not while they're here.").withStyle(ChatFormatting.WHITE), true);
                 }
             }
@@ -393,14 +411,14 @@ public final class BoundFx {
                     float amt = e.getAmount();
                     e.setAmount(amt * (1 - share));
                     AstaFx.later(1, () -> { if (p.isAlive()) p.hurt(p.damageSources().magic(), amt * share); });
-                    FxSend.trail(sl, RED, mid(victim), mid(p), 0.05f, 6);
+                    { var dr = bfx(7, mid(victim), 12); dr.u = mid(p); bsend(sl, dr); }
                     BookTree.grow(p, BookTree.BOUND, 0.5f);
                 }
                 if (e.getAmount() >= victim.getHealth() && now - s.neverAgainAt >= (r(p, "b9") > 0 ? 6000 : 12000) && !awake(p)) {   // Never Again
                     s.neverAgainAt = now;
                     e.setCanceled(true);
                     if (r(p, "b9") > 0) victim.setHealth(Math.max(victim.getHealth(), victim.getMaxHealth() * 0.5f));
-                    FxSend.ring(sl, SALT, mid(victim), 0.3f, 2f, 0.12f, 12);
+                    saltOn(sl, victim, 2f, 20);
                     awaken(p, true);
                     BookTree.grow(p, BookTree.BOUND, 3);
                     return;
@@ -432,12 +450,12 @@ public final class BoundFx {
             if (r(p, "s3") > 0 && crusted(dead, now)) {
                 Vec3 at = mid(dead);
                 AstaFx.later(20, () -> {
-                    FxSend.ring(sl, SALT, at, 0.2f, 3f, 0.3f, 10);
+                    saltAt(sl, at.add(0, -0.8, 0), 3f, 20);
                     play(sl, at, "bd_salt", 1.2f, 0.7f);
                     for (LivingEntity t : enemies(sl, p, new AABB(at, at).inflate(3))) if (!ally(p, t)) AstaFx.damage(p, t, 6f, "salt_lance");
                 });
             }
-            if (sinner(p, dead) && r(p, "b7") > 0) for (LivingEntity a : allies(p, 8)) { a.heal(4f); FxSend.ring(sl, SALT, mid(a), 0.2f, 0.9f, 0.05f, 8); }
+            if (sinner(p, dead) && r(p, "b7") > 0) for (LivingEntity a : allies(p, 8)) { a.heal(4f); saltOn(sl, a, 0.5f, 10); }
             s.sinners.remove(dead);
             BookTree.grow(p, BookTree.BOUND, 1);
         }
@@ -515,7 +533,7 @@ public final class BoundFx {
                 LivingEntity t = en.getKey();
                 if (en.getValue()[0] <= now || !t.isAlive() || t.level() != sl || t.distanceToSqr(p) > 576) continue;
                 Vec3 c = mid(t);
-                FxSend.beam(sl, SALT, c.add(0, 7, 0), c, 0.2f, 6);
+                pillar(sl, t.position(), 0.5f, 16);
                 AstaFx.damage(p, t, 4f, "salt_lance");
                 salt(p, t, 1);
             }
@@ -524,17 +542,17 @@ public final class BoundFx {
         }
         // the links
         s.links.entrySet().removeIf(en -> en.getValue() <= now || !en.getKey().isAlive());
-        if (now % 10 == 0) for (LivingEntity a : s.links.keySet()) if (a.level() == sl) FxSend.trail(sl, RED, mid(p), mid(a), 0.02f, 10);
+        if (now % 10 == 0) for (LivingEntity a : s.links.keySet()) if (a.level() == sl) chain(sl, p, a, 14);
         // Sinners glow
         if (now % 20 == 0) for (Map.Entry<LivingEntity, long[]> en : s.sinners.entrySet())
             if (en.getValue()[0] > now && en.getKey().isAlive() && en.getKey().level() == sl && en.getKey().distanceToSqr(p) < 1600)
-                FxSend.ring(sl, RED, en.getKey().position().add(0, en.getKey().getBbHeight() + 0.3, 0), 0.15f, 0.45f, 0.05f, 20);
+                bsend(sl, bon(5, en.getKey(), 24));
         // Smoke Trail
         for (Iterator<Trail> it = s.trails.iterator(); it.hasNext(); ) {
             Trail t = it.next();
             if (now >= t.until()) { it.remove(); continue; }
             if (now % 10 == 0) {
-                FxSend.trail(sl, DARK, t.a(), t.b(), 0.12f, 10);
+                { var tr = bfx(1, t.a(), 12); tr.u = t.b(); bsend(sl, tr); }
                 for (LivingEntity x : enemies(sl, p, new AABB(t.a(), t.b()).inflate(1))) if (!ally(p, x) && closestOnSegment(t.a(), t.b(), mid(x)).distanceTo(mid(x)) < 1.1) AstaFx.damage(p, x, 2f, "cursed_edge");
             }
         }
@@ -543,9 +561,8 @@ public final class BoundFx {
             Wall w = it.next();
             if (now >= w.until()) { it.remove(); continue; }
             Vec3 a = w.c().subtract(w.along().scale(3)), b = w.c().add(w.along().scale(3));
-            if (now % 5 == 0) for (int k = 0; k < 3; k++) FxSend.trail(sl, SALT, a.add(0, k, 0), b.add(0, k, 0), 0.15f, 5);
             AABB box = new AABB(a, b.add(0, 3, 0)).inflate(0.6, 0, 0.6);
-            for (Projectile pr : sl.getEntitiesOfClass(Projectile.class, box, x -> x.getOwner() != p)) { pr.discard(); FxSend.ring(sl, SALT, pr.position(), 0.1f, 0.5f, 0.04f, 5); }
+            for (Projectile pr : sl.getEntitiesOfClass(Projectile.class, box, x -> x.getOwner() != p)) { pr.discard(); saltAt(sl, pr.position(), 0.5f, 8); }
             if (now % 10 == 0) for (LivingEntity x : enemies(sl, p, box)) if (!ally(p, x)) { AstaFx.damage(p, x, 2f, "salt_lance"); salt(p, x, 1); }
         }
         // Demon Flurry and its ghosts: a storm of black and red cuts at every angle, the blade's afterimages flickering
@@ -559,7 +576,7 @@ public final class BoundFx {
                     Vec3 d = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
                     Vec3 u = new Vec3(0, Math.cos(tilt), 0).add(new Vec3(-d.z, 0, d.x).scale(Math.sin(tilt))).normalize();
                     Vec3 at = c.add(rr.nextDouble(-1.2, 1.2), rr.nextDouble(-0.6, 0.9), rr.nextDouble(-1.2, 1.2));
-                    FxSend.slash(sl, now % 4 == 0 ? RED : DARK, at, d, u, 1.6f + rr.nextFloat(), 2.8f + rr.nextFloat() * 1.4f, 4, 0, now % 4 == 0 ? 0.45f : 0.9f);
+                    cut(sl, at, d, u, 2.8f + rr.nextFloat() * 1.4f, 4);
                     // the blade itself, an afterimage across the storm
                     Vec3 bd = new Vec3(rr.nextDouble(-1, 1), rr.nextDouble(-0.6, 0.6), rr.nextDouble(-1, 1)).normalize();
                     FxSend.spike(sl, DARK, at.subtract(bd.scale(1.4)), bd, 2.8f, 0.07f, 3, 0, com.ironspellgrimoire.network.FxPacket.POP);
@@ -569,14 +586,13 @@ public final class BoundFx {
                     float dmg = 3f * (1f + s.poss / 100f);
                     for (LivingEntity x : enemies(sl, p, new AABB(c, c).inflate(3.5))) if (!ally(p, x)) AstaFx.damage(p, x, dmg, "demon_flurry");
                     play(sl, c, "bd_cut", 0.7f, 1.0f + (now % 3) * 0.15f);
-                    FxSend.ring(sl, RED, c.add(0, -0.9, 0), 2.6f, 3.2f, 0.02f, 4);
                 }
                 if (now == s.flurryUntil - 1) {   // the last cut: a great black-and-red cross, and the screen jolts
                     Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
                     Vec3 side = new Vec3(-look.z, 0, look.x);
                     Vec3 d1 = side.add(0, 1, 0).normalize(), d2 = side.add(0, -1, 0).normalize();
-                    FxSend.slash(sl, DARK, c, d1, look, 3.6f, 5.2f, 8, 0, 1.2f);
-                    FxSend.slash(sl, RED, c, d2, look, 3.6f, 5.2f, 8, 0, 0.7f);
+                    cut(sl, c, d1, look, 5.2f, 8);
+                    cut(sl, c, d2, look, 5.2f, 8);
                     FxSend.impactFrame(sl, c, 3, true, 20);
                     FxSend.shake(sl, c, 0.45f, 6, 18);
                     play(sl, c, "bd_cut", 1.4f, 0.6f);
@@ -587,7 +603,7 @@ public final class BoundFx {
             for (int k = 0; k < 3; k++) {
                 double a = now * 0.3 + k * Math.PI * 2 / 3;
                 Vec3 at = mid(p).add(Math.cos(a) * 2, 0, Math.sin(a) * 2);
-                FxSend.slash(sl, DARK, at, new Vec3(-Math.sin(a), 0, Math.cos(a)), new Vec3(0, 1, 0), 0.6f, 1.2f, 5, 0);
+                cut(sl, at, new Vec3(-Math.sin(a), 0, Math.cos(a)), new Vec3(0, 1, 0), 1.2f, 5);
             }
             for (LivingEntity x : enemies(sl, p, p.getBoundingBox().inflate(3))) if (!ally(p, x)) AstaFx.damage(p, x, 2f, "demon_flurry");
         }
@@ -621,7 +637,7 @@ public final class BoundFx {
                 p.resetAttackStrengthTicker();
             }
         }
-        if (now % 10 == 0) FxSend.ring(sl, s.fallen ? SALT : RED, p.position().add(0, 0.05, 0), 0.3f, 1.2f, 0.04f, 10);
+        if (now % 10 == 0) { var ps = bon(8, p, 14); ps.a0 = s.fallen ? 1 : 0; bsend(sl, ps); }
         if (now % 40 == 0) play(sl, p.position(), "bd_whisper", 0.6f, 0.6f);
     }
 
@@ -657,7 +673,7 @@ public final class BoundFx {
         } else feed(p, 5f * gainMul(p));
         if (r(p, "k1") > 0) {   // Draw Cut
             Vec3 look = p.getLookAngle();
-            FxSend.slash(sl, RED, mid(p).add(look.scale(1.6)), look, new Vec3(0, 1, 0), 2f, 4f, 6, 0);
+            cut(sl, mid(p).add(look.scale(1.6)), look, new Vec3(0, 1, 0), 4f, 6);
             for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(4))) if (!ally(p, t) && mid(t).subtract(p.getEyePosition()).normalize().dot(look) > 0.2) AstaFx.damage(p, t, 6f, "demon_draw");
         }
     }
@@ -684,13 +700,12 @@ public final class BoundFx {
             to = clip(sl, p, from.add(0, 0.5, 0), from.add(0, 0.5, 0).add(d.scale(7))).subtract(d.scale(0.5)).add(0, -0.5, 0);
         }
         float k = 1f;
-        if (r(p, "k5") > 0 && holding(p) && now - s.stillSince >= 40) { k *= 3f; FxSend.ring(sl, RED, mid(p), 0.2f, 1.6f, 0.08f, 8); }
+        if (r(p, "k5") > 0 && holding(p) && now - s.stillSince >= 40) { k *= 3f; stir(sl, mid(p), 1.6f); }
         if (r(p, "k9") > 0 && s.blood > 0) { k *= 1f + 0.1f * s.blood; s.blood = 0; }
         p.teleportTo(to.x, to.y, to.z);
         p.fallDistance = 0;
         Vec3 a = from.add(0, 1, 0), b = to.add(0, 1, 0);
-        FxSend.trail(sl, DARK, a, b, 0.3f, 10);
-        FxSend.trail(sl, RED, a, b, 0.06f, 10);
+        { var tr = bfx(1, a, 16); tr.u = b; bsend(sl, tr); }   // a tear in the air where you went
         play(sl, from, "bd_cut", 1.2f, 0.9f);
         for (LivingEntity t : enemies(sl, p, new AABB(a, b).inflate(1.5))) {
             if (ally(p, t) || closestOnSegment(a, b, mid(t)).distanceTo(mid(t)) > 1.5) continue;
@@ -700,7 +715,7 @@ public final class BoundFx {
         if (r(p, "k10") > 0) {   // Severing Wind
             Vec3 dir = b.subtract(a).lengthSqr() < 1e-3 ? p.getLookAngle() : b.subtract(a).normalize();
             Vec3 end = clip(sl, p, b, b.add(dir.scale(10)));
-            FxSend.slash(sl, RED, b.add(dir), dir, new Vec3(0, 1, 0), 1.2f, 2.4f, 8, 1.2f);
+            cut(sl, b.add(dir), dir, new Vec3(0, 1, 0), 2.4f, 8);
             for (LivingEntity t : enemies(sl, p, new AABB(b, end).inflate(1.2))) if (!ally(p, t) && closestOnSegment(b, end, mid(t)).distanceTo(mid(t)) < 1.3) AstaFx.damage(p, t, 6f, "cursed_edge");
         }
         if (!back) { s.lastEdge = now; s.edgeFrom = from; }
@@ -718,19 +733,19 @@ public final class BoundFx {
             ModeHud.hide(p, "bd_warning");
             ModeHud.show(p, "bd_symbiosis", 200);
             p.displayClientMessage(Component.literal("You and the demon want the same thing - for now.").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
-            FxSend.ring(sl, RED, mid(p), 0.3f, 2.6f, 0.12f, 14);
+            stir(sl, mid(p), 2.6f);
             BookTree.grow(p, BookTree.BOUND, 3);
             return;
         }
         feed(p, (r(p, "K1") > 0 ? 15f : 30f) * gainMul(p));
         TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, WHISPER, "Demon's Whisper", 0.5, AttributeModifier.Operation.MULTIPLY_TOTAL, 160);
         ModeHud.show(p, "demons_whisper", 160);
-        FxSend.ring(sl, DARK, mid(p), 0.2f, 1.8f, 0.1f, 10);
+        stir(sl, mid(p), 1.8f);
         if (r(p, "d10") > 0) for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(6))) {
             if (ally(p, t) || boss(t)) continue;
             Vec3 to = p.position().subtract(t.position());
             t.setDeltaMovement(to.normalize().scale(Math.min(1.2, to.length() * 0.25)).add(0, 0.2, 0)); t.hurtMarked = true;
-            FxSend.trail(sl, DARK, mid(t), mid(p), 0.05f, 6);
+            { var dr = bfx(7, mid(t), 10); dr.u = mid(p); bsend(sl, dr); }
         }
     }
 
@@ -756,8 +771,7 @@ public final class BoundFx {
         while (s.links.size() >= max) { Iterator<LivingEntity> it = s.links.keySet().iterator(); it.next(); it.remove(); }
         s.links.put(a, sl.getGameTime() + (r(p, "b1") > 0 ? 400 : 200));
         ModeHud.show(p, "bond_guard", r(p, "b1") > 0 ? 400 : 200, s.links.size());
-        FxSend.trail(sl, RED, mid(p), mid(a), 0.08f, 12);
-        FxSend.ring(sl, RED, mid(a), 0.2f, 1.2f, 0.06f, 10);
+        chain(sl, p, a, 20);
         play(sl, a.position(), "bd_bond", 1f, 1f);
     }
 
@@ -798,20 +812,16 @@ public final class BoundFx {
         Vec3 reach = got == null ? end : mid(got);
         play(sl, p.position(), "bd_whisper", 1.1f, 0.6f);
         // the shadow arm: it grows out over three ticks, a red claw at its end
-        for (int k = 1; k <= 3; k++) {
-            final Vec3 tip = eye.add(reach.subtract(eye).scale(k / 3.0));
-            AstaFx.later(k - 1, () -> { FxSend.trail(sl, DARK, eye.add(d.scale(0.6)), tip, 0.22f, 8); FxSend.trail(sl, RED, eye.add(d.scale(0.6)), tip, 0.05f, 8); });
-        }
-        if (got == null) { AstaFx.later(3, () -> FxSend.slash(sl, RED, reach, d, new Vec3(0, 1, 0), 0.6f, 1.2f, 5, 0)); return; }
+        { var hd = bfx(3, eye.add(d.scale(0.5)).add(0, -0.35, 0), 12); hd.u = reach; hd.a0 = got == null ? 0 : 1; bsend(sl, hd); }
+        if (got == null) { AstaFx.later(3, () -> cut(sl, reach, d, new Vec3(0, 1, 0), 1.2f, 5)); return; }
         final LivingEntity t = got;
         AstaFx.later(3, () -> {
             if (!t.isAlive()) return;
-            FxSend.slash(sl, RED, mid(t), new Vec3(0, -1, 0), d, 0.6f, 1.2f, 5, 0, 0.7f);
+            cut(sl, mid(t), new Vec3(0, -1, 0), d, 1.2f, 5);
             Vec3 to = p.position().add(new Vec3(d.x, 0, d.z).normalize().scale(1.6));
             if (!boss(t)) { t.teleportTo(to.x, p.getY(), to.z); t.setDeltaMovement(Vec3.ZERO); t.hurtMarked = true; }
-            FxSend.trail(sl, DARK, reach, mid(t), 0.3f, 8);
-            FxSend.slash(sl, DARK, mid(t), rotY(d, 0.6), new Vec3(0, 1, 0), 1.6f, 2.6f, 6, 0, 0.9f);
-            FxSend.slash(sl, RED, mid(t), rotY(d, -0.6), new Vec3(0, 1, 0), 1.4f, 2.4f, 6, 0, 0.5f);
+            cut(sl, mid(t), rotY(d, 0.6), new Vec3(0, 1, 0), 2.6f, 6);
+            cut(sl, mid(t), rotY(d, -0.6), new Vec3(0, 1, 0), 2.4f, 6);
             play(sl, t.position(), "bd_cut", 1.2f, 0.8f);
             AstaFx.damage(p, t, 7f, "demons_reach");
             if (r(p, "s1") > 0) salt(p, t, 1);
@@ -842,7 +852,7 @@ public final class BoundFx {
                 for (LivingEntity a : allies(p, 16)) {
                     TimedModifiers.apply(a, Attributes.MOVEMENT_SPEED, CALL, "Call to Family", 0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 200);
                     a.setAbsorptionAmount(Math.max(a.getAbsorptionAmount(), 4f));
-                    FxSend.ring(sl, RED, mid(a), 0.2f, 1f, 0.05f, 10);
+                    stir(sl, mid(a), 1f);
                 }
                 play(sl, p.position(), "bd_bond", 1.2f, 0.8f);
                 ModeHud.show(p, "bd_family", 200);
@@ -850,6 +860,7 @@ public final class BoundFx {
             case 2 -> {
                 Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
                 s.walls.add(new Wall(p.position().add(look.scale(3)), new Vec3(-look.z, 0, look.x), sl.getGameTime() + 80));
+                for (int i = -3; i <= 3; i++) saltAt(sl, BossKit.ground(sl, p.position().add(look.scale(3)).add(new Vec3(-look.z, 0, look.x).scale(i)).add(0, 1, 0)), 3.5f, 80);
                 ModeHud.show(p, "bd_saltwall", 80);
                 play(sl, p.position(), "bd_salt", 1.2f, 0.7f);
             }
@@ -859,7 +870,7 @@ public final class BoundFx {
                 Vec3 to = clip(sl, p, from.add(0, 1, 0), from.add(0, 1, 0).add(d.scale(10))).subtract(d.scale(0.6)).add(0, -1, 0);
                 p.teleportTo(to.x, to.y, to.z);
                 p.fallDistance = 0;
-                FxSend.trail(sl, SALT, from.add(0, 1.2, 0), to.add(0, 1.2, 0), 0.5f, 10);
+                { var ln = bfx(12, from.add(0, 1.2, 0), 12); ln.u = to.add(0, 1.2, 0); ln.r = 0.25f; bsend(sl, ln); }
                 play(sl, from, "bd_seraph", 0.9f, 1.6f);
                 for (LivingEntity t : enemies(sl, p, new AABB(from, to).inflate(1.5))) if (!ally(p, t)) { AstaFx.damage(p, t, 6f, "last_seraph"); if (!boss(t)) Kit.push(t, flatAway(t, p), 0.8, 0.3); }
             }
@@ -873,6 +884,22 @@ public final class BoundFx {
         long now = p.level().getGameTime();
         return new int[]{Math.round(s.poss), (int) Math.max(0, s.takeoverUntil - now), (int) Math.max(0, s.warnUntil - now), (int) Math.max(0, s.awakeUntil - now),
                 (int) Math.max(0, s.symUntil - now), s.mode, awakenings(p), s.wingGuards};
+    }
+
+    // ------------------------------------------------------------------ the UI showcase (client/UiShots fxs_bd_*)
+    public static void showcase(ServerPlayer p, LivingEntity h, String what) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
+        switch (what) {
+            case "cut" -> cut(sl, mid(h).add(look.scale(-2)), look, new Vec3(0, 1, 0), 3f, 10);
+            case "tear" -> { var tr = bfx(1, p.position().add(look.scale(2)).add(new Vec3(-look.z, 0, look.x).scale(-2)).add(0, 1, 0), 30); tr.u = h.position().add(0, 1, 0); bsend(sl, tr); }
+            case "stir" -> stir(sl, mid(h), 2.4f);
+            case "mark" -> { bsend(sl, bon(5, h, 100)); chain(sl, p, h, 100); }
+            case "salt" -> saltOn(sl, h, 2f, 60);
+            case "possessed" -> { var ps = bon(8, p, 60); bsend(sl, ps); }
+            case "clear" -> { for (int k : new int[]{4, 5, 6, 8}) { var q = bfx(98, p.position(), 1); q.v = new Vec3(k == 5 || k == 6 ? h.getId() : p.getId(), 0, 0); q.a0 = k; bsend(sl, q); } }
+            default -> {}
+        }
     }
 
     @SubscribeEvent public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) {

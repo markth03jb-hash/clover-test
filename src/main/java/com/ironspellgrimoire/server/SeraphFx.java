@@ -76,11 +76,9 @@ public final class SeraphFx {
                 Vec3 d = to.subtract(from).normalize();
                 double len = Math.max(1, to.distanceTo(from));
                 int ticks = (int) Math.max(3, Math.min(10, len / 3));
-                FxSend.spike(sl, k % 4 == 0 ? GOLD : SALT, from, d, 1.1f, 0.12f, ticks + 2, 0, FxPacket.POP, 0, d.scale(len / ticks), ticks);
-                FxSend.trail(sl, SALT, from, to, 0.04f, ticks + 4);
+                { var fe = BoundFx.bfx(10, from, ticks + 24); fe.u = to; fe.r2 = ticks; fe.a0 = k % 4 == 0 ? 1 : 0; BoundFx.bsend(sl, fe); }   // a feather, flying, then stuck where it lands
                 AstaFx.later(ticks, () -> {
                     for (LivingEntity t : Kit.near(sl, p, to, 1.4)) if (foe(p, t)) { AstaFx.damage(p, t, 2.5f, "seraph_feathers"); BoundFx.salt(p, t, 1); }
-                    FxSend.ring(sl, SALT, to, 0.1f, 0.7f, 0.04f, 6);
                 });
             });
         }
@@ -94,11 +92,7 @@ public final class SeraphFx {
         Vec3 c = p.position().add(0, 1.1, 0);
         play(sl, p.position(), "bd_seraph", 1.6f, 0.7f);
         // the sweep: three rising walls of light from your left round to your right, the last widest
-        for (int k = 0; k < 3; k++) {
-            final int kk = k;
-            AstaFx.later(k, () -> FxSend.wall(sl, kk == 2 ? GOLD : SALT, c.add(0, kk * 0.4, 0), look, new Vec3(0, 1, 0), 2f + kk * 1.6f, 4.5f + kk * 1.6f, -115, 115, 1.4f - kk * 0.3f, 10, 6, 0));
-        }
-        FxSend.crescent(sl, SALT, c.add(look.scale(2)), look, new Vec3(0, 1, 0), 3.5f, 7.5f, 9, 1.1f);
+        { var wg = BoundFx.bfx(11, c, 18); wg.d = look; wg.r = 7.5f; BoundFx.bsend(sl, wg); }   // the great wing sweeping round, its feathers blades
         FxSend.impactFrame(sl, c, 4, true, 24);
         FxSend.shake(sl, c, 0.6f, 8, 24);
         for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(7.5, 3, 7.5))) {
@@ -117,17 +111,13 @@ public final class SeraphFx {
         ServerLevel sl = p.serverLevel();
         Vec3 eye = p.getEyePosition();
         play(sl, p.position(), "bd_salt", 1.4f, 0.8f);
-        FxSend.ring(sl, SALT, eye.add(p.getLookAngle().scale(1.5)), 0.3f, 2.2f, 0.12f, 8);
         double[] fan = {-0.2, -0.1, 0, 0.1, 0.2};
         for (int i = 0; i < fan.length; i++) {
             final double ang = fan[i];
             AstaFx.later(i, () -> {
                 Vec3 d = rotY(p.getLookAngle(), ang).normalize();
                 Vec3 end = clip(sl, p, eye, eye.add(d.scale(30)));
-                FxSend.beam(sl, SALT, eye.add(d), end, 0.32f, 10);
-                FxSend.beam(sl, Fx.SILVER, eye.add(d), end, 0.12f, 12);
-                FxSend.cracks(sl, SALT, end, d.scale(-1), new Vec3(0, 1, 0), 1.6f, 14, false, (int) (ang * 100) + 7);
-                FxSend.ring(sl, SALT, end, 0.2f, 1.4f, 0.08f, 8);
+                { var ln = BoundFx.bfx(12, eye.add(d).add(0, -0.2, 0), 16); ln.u = end; ln.r = 0.28f; BoundFx.bsend(sl, ln); }   // a lance of crystal, bursting where it ends
                 for (LivingEntity t : enemies(sl, p, new AABB(eye, end).inflate(1.2)))
                     if (foe(p, t) && closestOnSegment(eye, end, mid(t)).distanceTo(mid(t)) < 1.2) { AstaFx.damage(p, t, 6f, "salt_lance"); BoundFx.salt(p, t, 1); }
             });
@@ -147,17 +137,9 @@ public final class SeraphFx {
         play(sl, p.position(), "bd_trumpet", 1.4f, 1.2f);
         for (Vec3 g : at) {
             BossKit.warnCircle(sl, g, 2.4f, T);
-            FxSend.ring(sl, GOLD, g.add(0, 0.05, 0), 2.2f, 2.4f, 0.05f, T);
+            { var vm = BoundFx.bfx(13, g, T); vm.r = 2.4f; BoundFx.bsend(sl, vm); }   // the scales of judgment, and the circle closing
             AstaFx.later(T, () -> {
-                FxSend.beam(sl, SALT, g.add(0, 26, 0), g, 1.3f, 12);
-                FxSend.beam(sl, Fx.SILVER, g.add(0, 26, 0), g, 0.5f, 14);
-                FxSend.ring(sl, SALT, g.add(0, 0.1, 0), 0.4f, 3.4f, 0.25f, 12);
-                FxSend.cracks(sl, SALT, g.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 2.6f, 20, false, (int) (g.x * 7 + g.z));
-                for (int k = 0; k < 6; k++) {   // salt crystals thrust up round it
-                    double a = k * Math.PI / 3;
-                    Vec3 b = g.add(Math.cos(a) * 1.6, 0, Math.sin(a) * 1.6);
-                    FxSend.spike(sl, SALT, b, new Vec3(Math.cos(a) * 0.3, 1, Math.sin(a) * 0.3), 1.4f, 0.25f, 24, 3, FxPacket.GROUND);
-                }
+                BoundFx.pillar(sl, g, 1.3f, 30);
                 FxSend.shake(sl, g, 0.5f, 6, 18);
                 for (LivingEntity t : Kit.near(sl, p, g.add(0, 1, 0), 2.4)) if (foe(p, t)) { AstaFx.damage(p, t, 8f, "seraph_verdict"); BoundFx.salt(p, t, 2); }
             });
@@ -174,24 +156,16 @@ public final class SeraphFx {
         p.hurtMarked = true;
         p.fallDistance = 0;
         play(sl, p.position(), "bd_seraph", 1.6f, 1.3f);
-        FxSend.ring(sl, SALT, p.position().add(0, 0.1, 0), 0.3f, 3f, 0.15f, 10);
         BossKit.warnCircle(sl, land, 8f, 16);
+        { var vm = BoundFx.bfx(13, land, 16); vm.r = 8f; BoundFx.bsend(sl, vm); }
         AstaFx.later(14, () -> {
             if (!p.isAlive() || p.level() != sl) return;
             Vec3 from = p.position();
             p.teleportTo(land.x, land.y, land.z);
             p.setDeltaMovement(0, 0, 0); p.hurtMarked = true;
             p.fallDistance = 0;
-            FxSend.beam(sl, SALT, from.add(0, 1, 0), land.add(0, 1, 0), 1.4f, 8);
-            FxSend.ring(sl, SALT, land.add(0, 0.1, 0), 0.5f, 9f, 0.4f, 16);
-            FxSend.ring(sl, GOLD, land.add(0, 0.1, 0), 0.3f, 6f, 0.2f, 12);
-            FxSend.cracks(sl, SALT, land.add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 6f, 30, false, 31);
-            for (int k = 0; k < 12; k++) {   // salt thrown up round the crater's rim
-                double a = k * Math.PI / 6;
-                Vec3 b = land.add(Math.cos(a) * 5, 0, Math.sin(a) * 5);
-                FxSend.spike(sl, SALT, b, new Vec3(Math.cos(a) * 0.5, 1, Math.sin(a) * 0.5), 2.2f, 0.35f, 30, 3, FxPacket.GROUND);
-            }
-            FxSend.beam(sl, SALT, land.add(0, 30, 0), land, 2.2f, 10);
+            { var ln = BoundFx.bfx(12, from.add(0, 1, 0), 10); ln.u = land.add(0, 1, 0); ln.r = 0.6f; BoundFx.bsend(sl, ln); }
+            BoundFx.pillar(sl, land, 4f, 44);
             FxSend.impactFrame(sl, land, 5, false, 32);
             FxSend.shake(sl, land, 1f, 14, 32);
             play(sl, land, "bd_seraph", 2f, 0.6f);

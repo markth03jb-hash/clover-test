@@ -107,6 +107,17 @@ public final class ForeseenFx {
         return near == null || near == by;
     }
 
+    // ------------------------------------------------------------------ its own look (client/ForeseenFxClient, shape 103)
+    static com.ironspellgrimoire.network.FxPacket fx(int kind, Vec3 c, int life) {
+        com.ironspellgrimoire.network.FxPacket q = new com.ironspellgrimoire.network.FxPacket();
+        q.shape = 103; q.id = FxSend.nextId(); q.h = kind; q.c = c; q.life = life; q.v = new Vec3(-1, -1, 0); q.a1 = (float) (Math.random() * 6.28);
+        return q;
+    }
+    static com.ironspellgrimoire.network.FxPacket on(int kind, Entity e, int life) { var q = fx(kind, e.position(), life); q.v = new Vec3(e.getId(), -1, 0); return q; }
+    static void send(ServerLevel sl, com.ironspellgrimoire.network.FxPacket q) { FxSend.sendNear(sl, q.c, q); }
+    /** Mirror glass breaking at a point (size 1 = a dodge). */
+    static void shatter(ServerLevel sl, Vec3 at, float size) { var q = fx(1, at, 14); q.r = size; send(sl, q); }
+
     // ------------------------------------------------------------------ the held blow
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onAttack(LivingAttackEvent e) {
@@ -129,8 +140,7 @@ public final class ForeseenFx {
         s.held.add(new Held(by, e.getSource(), e.getAmount(), now + w));
         ServerLevel sl = p.serverLevel();
         Vec3 to = mid(p).subtract(mid(by)).normalize();
-        FxSend.slash(sl, PALE, mid(by).add(to.scale(0.8)), to, new Vec3(0, 1, 0), 0.6f, 1.4f, w, 0);
-        FxSend.ring(sl, PAL, p.position().add(0, 0.05, 0), 0.2f, 0.9f, 0.04f, w);
+        var hb = fx(0, p.position(), w); hb.v = new Vec3(p.getId(), by.getId(), 0); send(sl, hb);   // its ghost already swinging, a clock closing under you
         play(sl, p.position(), "fore_warn", 0.6f, 1.6f);
     }
 
@@ -143,7 +153,7 @@ public final class ForeseenFx {
         s.streak++;
         s.lastDodge = now;
         ModeHud.show(p, "punish_ready", 40);
-        FxSend.ring(sl, PALE, mid(p), 0.3f, 1.2f, 0.05f, 8);
+        shatter(sl, mid(p), 1f);
         play(sl, p.position(), "fore_dodge", 0.9f, 1.2f + 0.05f * Math.min(6, s.streak));
         BookTree.grow(p, BookTree.FORESEEN, 1);
         float mana = (r(p, "e2") > 0 ? 15 : 0) + (mastery(p) >= 3 ? 10 : 0);
@@ -177,7 +187,7 @@ public final class ForeseenFx {
             if (!threading && other != null && tu != null && tu > now && other.isAlive()) {
                 float half = e.getAmount() * 0.5f;
                 AstaFx.later(1, () -> { threading = true; try { if (other.isAlive()) AstaFx.damage(p, other, half, "fore_thread"); } finally { threading = false; } });
-                FxSend.trail(p.serverLevel(), PALE, mid(victim), mid(other), 0.04f, 6);
+                { var th = fx(10, victim.position(), 10); th.v = new Vec3(victim.getId(), other.getId(), 0); th.r = 1; send(p.serverLevel(), th); }
             }
         }
         if (!(victim instanceof ServerPlayer p) || !has(p)) return;
@@ -185,7 +195,7 @@ public final class ForeseenFx {
         // Seen It Before
         if (now < s.seenUntil) {
             String key = e.getSource().getMsgId() + "|" + (src == null ? "" : src.getType().toString());
-            if (!s.seen.add(key)) { e.setCanceled(true); FxSend.ring(p.serverLevel(), PALE, mid(p), 0.2f, 1f, 0.05f, 6); return; }
+            if (!s.seen.add(key)) { e.setCanceled(true); shatter(p.serverLevel(), mid(p).add(0, 0.2, 0), 0.6f); return; }
         }
         // Almighty Eye: what you did not see hurts more
         if (r(p, "k1") > 0 && s.unforeseenAt == now && !landing) e.setAmount(e.getAmount() * 1.15f);
@@ -194,7 +204,7 @@ public final class ForeseenFx {
             s.lastSave = now;
             e.setCanceled(true);
             p.displayClientMessage(Component.literal("You saw that one coming.").withStyle(ChatFormatting.AQUA), true);
-            FxSend.ring(p.serverLevel(), PALE, mid(p), 0.3f, 2.4f, 0.1f, 12);
+            shatter(p.serverLevel(), mid(p), 2f);
             play(p.serverLevel(), p.position(), "fore_rewrite", 1f, 1.4f);
             return;
         }
@@ -233,32 +243,30 @@ public final class ForeseenFx {
         double rr = range(p);
         // a creeper about to burst shows how far it reaches
         if (now % 5 == 0) for (Creeper c : sl.getEntitiesOfClass(Creeper.class, p.getBoundingBox().inflate(rr), x -> x.getSwellDir() > 0))
-            FxSend.ring(sl, PAL, c.position().add(0, 0.1, 0), 2.6f, 3.0f, 0.04f, 6);
+            { var cl = fx(6, c.position(), 7); cl.r = 3f; send(sl, cl); }
         // Arrow Sight
         if (r(p, "s4") > 0 && now % 2 == 0)
             for (Projectile pr : sl.getEntitiesOfClass(Projectile.class, p.getBoundingBox().inflate(rr), x -> x.getOwner() != p && x.getDeltaMovement().lengthSqr() > 0.05 && !x.getPersistentData().getBoolean("isg_seen"))) {
                 Vec3 to = mid(p).subtract(pr.position());
                 if (to.normalize().dot(pr.getDeltaMovement().normalize()) < 0.8) continue;
                 pr.getPersistentData().putBoolean("isg_seen", true);
-                FxSend.trail(sl, PALE, pr.position(), pr.position().add(pr.getDeltaMovement().scale(Math.min(20, to.length() / pr.getDeltaMovement().length() + 2))), 0.04f, 10);
+                { var pa = fx(11, pr.position(), 12); pa.u = pr.position().add(pr.getDeltaMovement().scale(Math.min(20, to.length() / pr.getDeltaMovement().length() + 2))); send(sl, pa); }
             }
         // Glimpse: every foe's next blow drawn
         if (now < s.glimpseUntil && now % 10 == 0)
             for (Mob m : sl.getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(rr), x -> x.getTarget() == p && x.isAlive())) {
-                FxSend.ring(sl, PAL, m.position().add(0, 0.1, 0), 0.6f, 0.9f, 0.04f, 10);
-                FxSend.trail(sl, PALE, mid(m), mid(m).add(mid(p).subtract(mid(m)).normalize().scale(Math.min(3, m.distanceTo(p)))), 0.04f, 10);
+                { var lg = fx(12, m.position(), 10); Vec3 dd = p.position().subtract(m.position()); lg.d = new Vec3(dd.x, 0, dd.z).normalize(); send(sl, lg); }
             }
         // marks
         if (now % 20 == 0) for (Map.Entry<LivingEntity, Long> en : MARK.entrySet())
             if (en.getValue() > now && en.getKey().isAlive() && en.getKey().level() == sl && en.getKey().distanceToSqr(p) < 1600)
-                FxSend.ring(sl, PALE, en.getKey().position().add(0, en.getKey().getBbHeight() + 0.4, 0), 0.15f, 0.4f, 0.04f, 20);
+                send(sl, on(3, en.getKey(), 24));
         // foretold strikes
         for (Iterator<Strike> it = s.strikes.iterator(); it.hasNext(); ) {
             Strike k = it.next();
-            if (now < k.when()) { if ((k.when() - now) % 10 == 0) FxSend.ring(sl, PAL, k.at().add(0, 0.05, 0), 1.7f, 2f, 0.04f, 10); continue; }
+            if (now < k.when()) continue;
             it.remove();
-            FxSend.beam(sl, PALE, k.at().add(0, 6, 0), k.at(), 0.4f, 8);
-            FxSend.ring(sl, PAL, k.at().add(0, 0.1, 0), 0.2f, 2.2f, 0.12f, 10);
+            { var mo = fx(7, k.at(), 14); mo.r = 2f; send(sl, mo); }
             play(sl, k.at(), "fore_strike", 1.1f, 1f);
             for (LivingEntity t : enemies(sl, p, new AABB(k.at(), k.at()).inflate(2, 2.5, 2))) AstaFx.damage(p, t, 10f, "inevitable");
         }
@@ -275,7 +283,7 @@ public final class ForeseenFx {
         Vec3 to = clip(sl, p, from.add(0, 0.5, 0), from.add(0, 0.5, 0).add(d.scale(dist))).subtract(d.scale(0.5)).add(0, -0.5, 0);
         p.teleportTo(to.x, to.y, to.z);
         p.fallDistance = 0;
-        FxSend.trail(sl, PALE, from.add(0, 1, 0), to.add(0, 1, 0), 0.25f, 8);
+        { var st = fx(2, from, 14); st.u = to; send(sl, st); }
         play(sl, from, "fore_step", 1f, 1.2f);
         if (!s.held.isEmpty()) {   // free when you're dodging
             var md = io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p);
@@ -294,10 +302,10 @@ public final class ForeseenFx {
         long until = sl.getGameTime() + 200;
         MARK.put(t, until);
         ModeHud.show(p, "read_intent", 200);
-        FxSend.ring(sl, PALE, mid(t), 0.2f, 1.2f, 0.06f, 10);
+        send(sl, on(3, t, 200));
         if (r(p, "t2") > 0) {
             int n = 0;
-            for (LivingEntity o : enemies(sl, p, t.getBoundingBox().inflate(8))) { if (o == t || n >= 2) continue; MARK.put(o, until); FxSend.ring(sl, PALE, mid(o), 0.2f, 1f, 0.05f, 10); n++; }
+            for (LivingEntity o : enemies(sl, p, t.getBoundingBox().inflate(8))) { if (o == t || n >= 2) continue; MARK.put(o, until); send(sl, on(3, o, 200)); n++; }
         }
     }
 
@@ -308,13 +316,13 @@ public final class ForeseenFx {
         LivingEntity t = aimed(p, 6, 25);
         play(sl, p.position(), "fore_punish", 1f, 1f);
         Vec3 look = p.getLookAngle();
-        FxSend.slash(sl, PALE, p.getEyePosition().add(look.scale(1.5)), look, new Vec3(0, 1, 0), 1.2f, 2.2f, 6, 0);
+        { var ct = fx(4, p.getEyePosition().add(look.scale(1.4)).add(0, -0.3, 0), 8); ct.d = look; ct.r = 1.8f; ct.a0 = (float) (Math.random() - 0.5); send(sl, ct); }
         if (t == null) return;
         boolean after = sl.getGameTime() - s.lastDodge <= 40;
         float dmg = 7f * (1 + 0.15f * r(p, "c1")) * (after ? 3f : 1f);
         if (r(p, "c4") > 0 && ++s.punishes % 4 == 0) dmg *= 2f;
         AstaFx.damage(p, t, dmg, "punish");
-        if (after) { FxSend.ring(sl, PAL, mid(t), 0.2f, 1.6f, 0.1f, 8); play(sl, t.position(), "fore_strike", 0.9f, 1.4f); }
+        if (after) { shatter(sl, mid(t), 1.4f); play(sl, t.position(), "fore_strike", 0.9f, 1.4f); }
     }
 
     /** False Future: a pale double where the future says you'll be; foes near strike at it for 6 s. */
@@ -334,7 +342,7 @@ public final class ForeseenFx {
         d.life = life;
         sl.addFreshEntity(d);
         for (Mob m : sl.getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(16), x -> x.isAlive() && x.getTarget() == p && !boss(x))) m.setTarget(d);
-        FxSend.ring(sl, PALE, at.add(0, 0.05, 0), 0.2f, 1.2f, 0.04f, 10);
+        { var st = fx(2, p.position(), 12); st.u = at; send(sl, st); }
     }
 
     /** Snap Back: back to where you stood 3 s ago (more with Deep Memory), with the health you had then if it was more. */
@@ -348,11 +356,10 @@ public final class ForeseenFx {
         if (best == null) best = s.past.peekFirst();
         if (best == null) return false;
         ServerLevel sl = p.serverLevel();
-        FxSend.trail(sl, PALE, p.position().add(0, 1, 0), best.at().add(0, 1, 0), 0.2f, 10);
+        { var rw = fx(5, p.position(), 24); rw.u = best.at(); send(sl, rw); }
         p.teleportTo(best.at().x, best.at().y, best.at().z);
         p.fallDistance = 0;
         if (hp && best.hp() > p.getHealth()) p.setHealth(Math.min(p.getMaxHealth(), best.hp()));
-        FxSend.ring(sl, PAL, best.at().add(0, 0.05, 0), 0.2f, 1.2f, 0.05f, 10);
         play(sl, best.at(), "fore_rewind", 1f, 1f);
         s.held.clear();   // the blows aimed at where you were miss
         return true;
@@ -368,9 +375,9 @@ public final class ForeseenFx {
         double[] when = r(p, "c3") > 0 ? new double[]{10, 20, 30} : new double[]{20};
         for (double w : when) {
             Vec3 at = t.position().add(v.x * w, 0, v.z * w);
-            FxSend.ring(sl, PAL, at.add(0, 0.05, 0), 1.2f, 1.5f, 0.04f, 10);
+            { var fo = fx(6, at, 10); fo.r = 1.5f; send(sl, fo); }
             AstaFx.later(10, () -> {
-                FxSend.beam(sl, PALE, at.add(0, 5, 0), at, 0.3f, 8);
+                { var mo = fx(7, at, 12); mo.r = 1.5f; send(sl, mo); }
                 play(sl, at, "fore_strike", 1f, 1.1f);
                 for (LivingEntity o : enemies(sl, p, new AABB(at, at).inflate(1.5, 2.5, 1.5))) AstaFx.damage(p, o, 9f, "inevitable");
             });
@@ -383,7 +390,7 @@ public final class ForeseenFx {
         s.seen.clear();
         s.seenUntil = p.level().getGameTime() + 200 + 100 * r(p, "t3");
         ModeHud.show(p, "seen_it_before", 200 + 100 * r(p, "t3"));
-        FxSend.ring(p.serverLevel(), PALE, mid(p), 0.8f, 1.0f, 0.04f, (int) (s.seenUntil - p.level().getGameTime()));
+        send(p.serverLevel(), on(8, p, (int) (s.seenUntil - p.level().getGameTime())));
         play(p.serverLevel(), p.position(), "fore_read", 1f, 1.3f);
     }
 
@@ -396,14 +403,15 @@ public final class ForeseenFx {
         List<Taken> undo = new ArrayList<>();
         for (Iterator<Taken> it = s.ledger.descendingIterator(); it.hasNext() && undo.size() < count; ) { Taken x = it.next(); if (now - x.t() <= win) undo.add(x); }
         play(sl, p.position(), "fore_rewrite", 1.3f, 1f);
-        FxSend.ring(sl, PALE, p.position().add(0, 0.1, 0), 0.3f, 3f, 0.08f, 14);
+        if (undo.isEmpty()) send(sl, fx(9, p.position(), 20));
         if (undo.isEmpty()) { p.displayClientMessage(Component.literal("Nothing to rewrite").withStyle(ChatFormatting.GRAY), true); return; }
         for (Taken x : undo) {
             s.ledger.remove(x);
             p.heal(x.amount() * (r(p, "k4") > 0 ? 1.3f : 1f));
             LivingEntity by = x.by();
             if (by != null && by.isAlive() && by != p) {
-                FxSend.trail(sl, PALE, mid(p), mid(by), 0.08f, 8);
+                { var rw = fx(9, p.position(), 24); rw.u = mid(by); send(sl, rw); }
+                AstaFx.later(7, () -> { if (by.isAlive()) shatter(sl, mid(by), 1.2f); });
                 AstaFx.damage(p, by, x.amount(), "rewrite");
                 if (r(p, "k4") > 0) AstaFx.later(8, () -> { if (by.isAlive()) AstaFx.damage(p, by, x.amount(), "rewrite"); });
             }
@@ -419,13 +427,14 @@ public final class ForeseenFx {
                 s.glimpseUntil = sl.getGameTime() + 100;
                 ModeHud.show(p, "fore_glimpse", 100);
                 play(sl, p.position(), "fore_read", 1.1f, 1.2f);
-                FxSend.ring(sl, PALE, p.position().add(0, 0.1, 0), 0.3f, (float) range(p), 0.06f, 12);
+                send(sl, on(3, p, 100));
             }
             case 1 -> { return rewind(p, 20, false); }
             case 2 -> {
                 Vec3 eye = p.getEyePosition();
                 Vec3 at = BossKit.ground(sl, clip(sl, p, eye, eye.add(p.getLookAngle().scale(20))));
                 s.strikes.add(new Strike(at, sl.getGameTime() + 40));
+                { var fo = fx(6, at, 40); fo.r = 2f; send(sl, fo); }
                 play(sl, at, "fore_warn", 1f, 0.9f);
             }
             default -> {
@@ -437,7 +446,7 @@ public final class ForeseenFx {
                 long until = sl.getGameTime() + 200;
                 THREAD.put(a, b); THREAD.put(b, a); THREAD_UNTIL.put(a, until); THREAD_UNTIL.put(b, until);
                 ModeHud.show(p, "fore_thread", 200);
-                FxSend.trail(sl, PALE, mid(a), mid(b), 0.05f, 200);
+                { var th = fx(10, a.position(), 200); th.v = new Vec3(a.getId(), b.getId(), 0); send(sl, th); }
                 play(sl, a.position(), "fore_read", 1f, 0.7f);
             }
         }
@@ -446,6 +455,28 @@ public final class ForeseenFx {
 
     /** For the wheel's middle: warning ticks, reach, dodge streak. */
     static int[] extra(ServerPlayer p) { return new int[]{warning(p), (int) range(p), s(p).streak}; }
+
+    // ------------------------------------------------------------------ the UI showcase (client/UiShots fxs_fore_*)
+    public static void showcase(ServerPlayer p, LivingEntity h, String what) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
+        switch (what) {
+            case "held" -> { h.teleportTo(p.getX() + look.x * 2.2, p.getY(), p.getZ() + look.z * 2.2); var hb = fx(0, p.position(), 20); hb.v = new Vec3(p.getId(), h.getId(), 0); send(sl, hb); }
+            case "dodge" -> shatter(sl, mid(p).add(look.scale(1.5)), 1f);
+            case "step" -> { var st = fx(2, p.position().add(look.scale(1)), 20); st.u = p.position().add(look.scale(6)); send(sl, st); }
+            case "eye" -> send(sl, on(3, h, 200));
+            case "punish" -> { var ct = fx(4, p.getEyePosition().add(look.scale(2.5)).add(0, -0.3, 0), 12); ct.d = look; ct.r = 1.8f; ct.a0 = 0.3f; send(sl, ct); }
+            case "rewind" -> { var rw = fx(5, p.position().add(look.scale(2)), 30); rw.u = p.position().add(look.scale(5)); send(sl, rw); }
+            case "foretold" -> { var fo = fx(6, h.position(), 40); fo.r = 2f; send(sl, fo); }
+            case "moment" -> { var mo = fx(7, h.position(), 16); mo.r = 2f; send(sl, mo); }
+            case "seen" -> send(sl, on(8, p, 200));
+            case "rewrite" -> { var rw = fx(9, p.position(), 30); rw.u = mid(h); send(sl, rw); }
+            case "thread" -> { var th = fx(10, p.position(), 100); th.v = new Vec3(p.getId(), h.getId(), 0); send(sl, th); }
+            case "lunge" -> { var lg = fx(12, h.position(), 14); lg.d = look.scale(-1); send(sl, lg); }
+            case "clear" -> { for (int k : new int[]{3, 8, 10}) { var q = fx(98, p.position(), 1); q.v = new Vec3(k == 3 ? h.getId() : p.getId(), 0, 0); q.a0 = k; send(sl, q); } STATE.remove(p.getUUID()); }
+            default -> {}
+        }
+    }
 
     @SubscribeEvent public static void onLogout(PlayerEvent.PlayerLoggedOutEvent e) { STATE.remove(e.getEntity().getUUID()); }
 

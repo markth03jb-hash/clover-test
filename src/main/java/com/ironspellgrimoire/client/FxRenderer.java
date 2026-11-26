@@ -139,9 +139,11 @@ public class FxRenderer extends FxBase {
       if (p.shape == 94) { MechFxClient.spawn(p); return; }   // the Mech Grimoire (server/MechFx)
       if (p.shape == 95) { WeatherFxClient.spawn(p); return; }   // the Weather Grimoire (server/WeatherFx)
       if (p.shape == 96) { OverdriveFxClient.spawn(p); return; }   // the Overdrive Grimoire (server/OverdriveFx)
-      if (p.shape == 99) { MeridianFxClient.spawn(p); return; }
+      if (p.shape == 99) { MeridianFxClient.spawn(p); return; }    // the Meridian Grimoire (server/MeridianFx)
       if (p.shape == 101) { OmenFxClient.spawn(p); return; }     // the Grimoire of Ill Omen (server/OmenFx)
-      if (p.shape == 102) { FuseFxClient.spawn(p); return; }     // the Grimoire of the Quiet Fuse (server/FuseFx)    // the Meridian Grimoire (server/MeridianFx)
+      if (p.shape == 102) { FuseFxClient.spawn(p); return; }     // the Grimoire of the Quiet Fuse (server/FuseFx)
+      if (p.shape == 103) { ForeseenFxClient.spawn(p); return; }     // the Foreseen Grimoire (server/ForeseenFx)
+      if (p.shape == 104) { BoundFxClient.spawn(p); return; }     // the Bound Demon Grimoire and its Last Seraph (server/BoundFx, SeraphFx)
       if (p.shape == 100) { VectorFxClient.spawn(p); return; }     // the Vector Grimoire (server/VectorFx)
       if (p.shape == 97) { DreamFxClient.spawn(p); return; }   // the Dream Grimoire (server/DreamFx)
       if (p.shape == 98) { ShadowClient.spawn(p); return; }   // the Shadow Grimoire (server/ShadowFx)
@@ -334,7 +336,7 @@ public class FxRenderer extends FxBase {
             TRACK.clear();
             ORBITS.clear();
             WHIPS.clear();
-            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear(); ShadowClient.clear(); DreamFxClient.clear(); GravityFxClient.clear(); SoundFxClient.clear(); InkFxClient.clear(); ErrorFxClient.clear(); TreasureFxClient.clear(); ChainFxClient.clear(); HunterFxClient.clear(); VoidFxClient.clear(); GamblerFxClient.clear(); TarotFxClient.clear(); AbyssFxClient.clear(); MechFxClient.clear(); WeatherFxClient.clear(); OverdriveFxClient.clear(); MeridianFxClient.clear(); VectorFxClient.clear(); OmenFxClient.clear(); FuseFxClient.clear();
+            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear(); ShadowClient.clear(); DreamFxClient.clear(); GravityFxClient.clear(); SoundFxClient.clear(); InkFxClient.clear(); ErrorFxClient.clear(); TreasureFxClient.clear(); ChainFxClient.clear(); HunterFxClient.clear(); VoidFxClient.clear(); GamblerFxClient.clear(); TarotFxClient.clear(); AbyssFxClient.clear(); MechFxClient.clear(); WeatherFxClient.clear(); OverdriveFxClient.clear(); MeridianFxClient.clear(); VectorFxClient.clear(); OmenFxClient.clear(); FuseFxClient.clear(); ForeseenFxClient.clear(); BoundFxClient.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
@@ -561,6 +563,8 @@ public class FxRenderer extends FxBase {
             MeridianFxClient.draw(vc, m, n, cam, now, pt);
             OmenFxClient.draw(vc, m, n, cam, now, pt);
             FuseFxClient.draw(vc, m, n, cam, now, pt);
+            ForeseenFxClient.draw(vc, m, n, cam, now, pt);
+            BoundFxClient.draw(vc, m, n, cam, now, pt);
             VectorFxClient.draw(vc, m, n, cam, now, pt);
             DreamFxClient.draw(vc, m, n, cam, now, pt);
             ShadowClient.draw(vc, m, n, cam, now, pt);
