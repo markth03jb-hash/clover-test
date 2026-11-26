@@ -896,20 +896,6 @@ public final class UiShots {
         steps.add(new Step("pose_heart_side", () -> { onServer(p -> UiShotsServer.poseBench(p, "heart:side")); }, 10, true));
         steps.add(new Step("pose_heart_top", () -> { onServer(p -> UiShotsServer.poseBench(p, "heart:top")); }, 10, true));
         steps.add(new Step("pose_clear", () -> { mc.options.hideGui = false; onServer(p -> UiShotsServer.poseBench(p, "clear")); }, 2, true));
-        // first-person calibration: the same sword held with different first-person turns (set on the live model)
-        steps.add(new Step("fpcal_katana_0", () -> { mc.setScreen(null); mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.hold(p, "katana")); fpTurn(0f, 90f, -20f); }, 8, true));
-        steps.add(new Step("fpcal_katana_1", () -> { fpTurn(0f, 0f, -20f); }, 4, true));
-        steps.add(new Step("fpcal_katana_2", () -> { fpTurn(0f, 180f, -20f); }, 4, true));
-        steps.add(new Step("fpcal_katana_3", () -> { fpTurn(0f, -90f, -20f); }, 4, true));
-        steps.add(new Step("fpcal_katana_4", () -> { fpTurn(0f, 45f, -20f); }, 4, true));
-        steps.add(new Step("fpcal_katana_5", () -> { fpTurn(0f, 135f, -20f); }, 4, true));
-        steps.add(new Step("fpcal_heart_0", () -> { mc.setScreen(null); mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.hold(p, "heart")); fpTurn(-15f, -30f, 0f); }, 8, true));
-        steps.add(new Step("fpcal_heart_1", () -> { fpTurn(0f, -90f, 25f); }, 4, true));
-        steps.add(new Step("fpcal_heart_2", () -> { fpTurn(0f, 0f, 25f); }, 4, true));
-        steps.add(new Step("fpcal_heart_3", () -> { fpTurn(0f, 90f, 25f); }, 4, true));
-        steps.add(new Step("fpcal_heart_4", () -> { fpTurn(0f, 180f, 25f); }, 4, true));
-        steps.add(new Step("fpcal_heart_5", () -> { fpTurn(0f, -45f, 25f); }, 4, true));
-        steps.add(new Step("fpcal_done", () -> { fpTurn(Float.NaN, 0, 0); mc.options.hideGui = false; }, 2, true));
         steps.add(new Step("bd_hold_fp", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "B:hold")); }, 10, true));   // the katana: in first person,
         steps.add(new Step("bd_hold_front", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 6, true));   // ...from the front
         steps.add(new Step("bd_hold_side", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); mc.player.setYRot(mc.player.getYRot() + 90); }, 6, true));   // ...and the side

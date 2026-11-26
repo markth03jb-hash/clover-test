@@ -3166,9 +3166,9 @@
     },
     "firstperson_righthand": {
       "rotation": [
-        -15,
-        -30,
-        0
+        0,
+        205,
+        25
       ],
       "translation": [
         1.13,
@@ -3183,9 +3183,9 @@
     },
     "firstperson_lefthand": {
       "rotation": [
-        -15,
-        30,
-        0
+        0,
+        -205,
+        -25
       ],
       "translation": [
         1.13,

@@ -245,8 +245,8 @@ def to_game(out):
     # (the edge is the model's +X; turned +90 about Y it faces the foe: forward, away from you)
     kd = {"thirdperson_righthand": {"rotation": [40, 90, 0], "translation": [0, 1.5, 0.5], "scale": [0.85] * 3},   # (as the Heartline: blade up and forward, edge to the foe)
           "thirdperson_lefthand": {"rotation": [40, -90, 0], "translation": [0, 1.5, 0.5], "scale": [0.85] * 3},
-          "firstperson_righthand": {"rotation": [0, 90, -20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},
-          "firstperson_lefthand": {"rotation": [0, -90, 20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},
+          "firstperson_righthand": {"rotation": [0, 65, -20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},   # edge away from you, a little of the flat showing
+          "firstperson_lefthand": {"rotation": [0, -65, 20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},
           "gui": {"rotation": [0, 90, -45], "translation": [-1, -1, 0], "scale": [0.36] * 3},
           "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5] * 3},
           "fixed": {"rotation": [0, 90, -45], "translation": [0, 0, 0], "scale": [0.6] * 3}}
