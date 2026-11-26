@@ -1,0 +1,400 @@
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.applyAllMultihandAttributes does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.betterCreeperThunderHit was corrected from null to its default, true. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.betterCreeperThunderHit does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.spellGriefing was corrected from null to its default, false. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.spellGriefing does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.additionalWanderingTraderTrades was corrected from null to its default, true. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.additionalWanderingTraderTrades does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.disableAdventureModeCasting was corrected from null to its default, false. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.disableAdventureModeCasting does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.hoglinOffspringProtection was corrected from null to its default, true. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.hoglinOffspringProtection does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.manaRegenMultiplier was corrected from null to its default, 1.0. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.manaRegenMultiplier does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.scrollMerging was corrected from null to its default, true. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.scrollMerging does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.creativeMana was corrected from null to its default, false. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.creativeMana does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Misc.creativeCooldowns was corrected from null to its default, false. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Misc.creativeCooldowns does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Upgrade Overrides was corrected from null to its default, SimpleCommentedConfig:{}. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: List on key upgradeWhitelist is deemed to need correction, as it is null or not a list.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Upgrade Overrides.upgradeWhitelist was corrected from null to its default, []. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Upgrade Overrides.upgradeWhitelist does not match the spec. This may create a backup.
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: List on key upgradeBlacklist is deemed to need correction, as it is null or not a list.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Upgrade Overrides.upgradeBlacklist was corrected from null to its default, []. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Upgrade Overrides.upgradeBlacklist does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Imbue Overrides was corrected from null to its default, SimpleCommentedConfig:{}. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: List on key imbueWhitelist is deemed to need correction, as it is null or not a list.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Imbue Overrides.imbueWhitelist was corrected from null to its default, []. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Imbue Overrides.imbueWhitelist does not match the spec. This may create a backup.
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: List on key imbueBlacklist is deemed to need correction, as it is null or not a list.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Imbue Overrides.imbueBlacklist was corrected from null to its default, []. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Imbue Overrides.imbueBlacklist does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Worldgen was corrected from null to its default, SimpleCommentedConfig:{}. 
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Worldgen.priestHouseWeight was corrected from null to its default, 4. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Worldgen.priestHouseWeight does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Worldgen.aquiferDetection was corrected from null to its default, true. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Worldgen.aquiferDetection does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Worldgen.iceSpiderPatrols was corrected from null to its default, true. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Worldgen.iceSpiderPatrols does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config was corrected from null to its default, SimpleCommentedConfig:{}. 
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Tyros was corrected from null to its default, SimpleCommentedConfig:{}. 
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Tyros.additionalHealth was corrected from null to its default, 0.0. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Tyros.additionalHealth does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Tyros.additionalAttackDamage was corrected from null to its default, 0.0. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Tyros.additionalAttackDamage does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Tyros.additionalSpellPower was corrected from null to its default, 0.0. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Tyros.additionalSpellPower does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Tyros.tyrosOminousEnabled was corrected from null to its default, false. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Tyros.tyrosOminousEnabled does not match the spec. This may create a backup.
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Tyros does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Dead King was corrected from null to its default, SimpleCommentedConfig:{}. 
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Dead King.additionalHealth was corrected from null to its default, 0.0. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Dead King.additionalHealth does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Dead King.additionalAttackDamage was corrected from null to its default, 0.0. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Dead King.additionalAttackDamage does not match the spec. This may create a backup.
+[17:22:30] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key Boss Config.Dead King.additionalSpellPower was corrected from null to its default, 0.0. 
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.ForgeConfigSpec/CORE]: The comment on key Boss Config.Dead King.additionalSpellPower does not match the spec. This may create a backup.
+[17:22:30] [Server thread/DEBUG] [io.re.ir.IronsSpellbooks/]: ServerConfigs load item blacklists:
+[17:22:30] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file irons_spellbooks-server.toml changed, sending notifies
+[17:22:30] [Thread-4/DEBUG] [io.re.ir.IronsSpellbooks/]: ServerConfigs load item blacklists:
+[17:22:30] [Thread-4/DEBUG] [ne.mi.fm.co.ConfigFileTypeHandler/CONFIG]: Config file irons_spellbooks-server.toml changed, sending notifies
+[17:22:30] [Thread-4/DEBUG] [io.re.ir.IronsSpellbooks/]: ServerConfigs load item blacklists:
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.tr.CoreModBaseTransformer/COREMOD]: Transforming net/minecraft/world/level/levelgen/PhantomSpawner
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.tr.CoreModBaseTransformer/COREMOD]: Transforming net/minecraft/world/level/levelgen/PatrolSpawner
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.tr.CoreModBaseTransformer/COREMOD]: Transforming net/minecraft/world/entity/npc/CatSpawner
+[17:22:30] [Server thread/DEBUG] [ne.mi.co.tr.CoreModBaseTransformer/COREMOD]: Transforming net/minecraft/world/entity/ai/village/VillageSiege
+[17:22:30] [Server thread/DEBUG] [mixin/]: Mixing MapDataMixin from moonlight-common.mixins.json into net.minecraft.world.level.saveddata.maps.MapItemSavedData
+[17:22:30] [Server thread/DEBUG] [mixin/]: Renaming synthetic method lambda$save$3(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/resources/ResourceLocation;Lnet/mehvahdjukaar/moonlight/api/map/CustomMapData;)V to md37b702$lambda$save$3$0 in moonlight-common.mixins.json:MapDataMixin
+[17:22:30] [Server thread/DEBUG] [mixin/]: Renaming synthetic method lambda$load$2(Lnet/minecraft/nbt/CompoundTag;Lnet/mehvahdjukaar/moonlight/api/map/CustomMapData;)V to md37b702$lambda$load$2$1 in moonlight-common.mixins.json:MapDataMixin
+[17:22:30] [Server thread/DEBUG] [mixin/]: Renaming synthetic method lambda$setCustomDataDirty$1(Lnet/mehvahdjukaar/moonlight/api/map/CustomMapData$Type;Ljava/util/function/Consumer;Lnet/minecraft/world/level/saveddata/maps/MapItemSavedData$HoldingPlayer;)V to md37b702$lambda$setCustomDataDirty$1$2 in moonlight-common.mixins.json:MapDataMixin
+[17:22:30] [Server thread/DEBUG] [mixin/]: Renaming synthetic method lambda$setCustomDecorationsDirty$0(Lnet/minecraft/world/level/saveddata/maps/MapItemSavedData$HoldingPlayer;)V to md37b702$lambda$setCustomDecorationsDirty$0$3 in moonlight-common.mixins.json:MapDataMixin
+[17:22:31] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[17:22:32] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[17:22:32] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[17:22:32] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 2%
+[17:22:32] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 23%
+[17:22:33] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 71%
+[17:22:33] [Server thread/INFO] [ne.mi.se.pe.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[17:22:33] [Render thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 2266 ms
+[17:22:33] [Server thread/DEBUG] [io.ne.bu.AbstractByteBuf/]: -Dio.netty.buffer.checkAccessible: true
+[17:22:33] [Server thread/DEBUG] [io.ne.bu.AbstractByteBuf/]: -Dio.netty.buffer.checkBounds: true
+[17:22:33] [Server thread/DEBUG] [io.ne.ut.ResourceLeakDetectorFactory/]: Loaded default ResourceLeakDetector: io.netty.util.ResourceLeakDetector@774415ef
+[17:22:33] [Server thread/DEBUG] [ne.mi.co.tr.CoreModBaseTransformer/COREMOD]: Transforming net/minecraft/world/level/NaturalSpawner
+[17:22:33] [Server thread/INFO] [minecraft/IntegratedServer]: Changing view distance to 12, from 10
+[17:22:33] [Server thread/INFO] [minecraft/IntegratedServer]: Changing simulation distance to 12, from 0
+[17:22:33] [Render thread/DEBUG] [io.ne.ch.MultithreadEventLoopGroup/]: -Dio.netty.eventLoopThreads: 8
+[17:22:33] [Render thread/DEBUG] [io.ne.ch.ni.NioEventLoop/]: -Dio.netty.noKeySetOptimization: false
+[17:22:33] [Render thread/DEBUG] [io.ne.ch.ni.NioEventLoop/]: -Dio.netty.selectorAutoRebuildThreshold: 512
+[17:22:33] [Render thread/DEBUG] [io.ne.ut.in.PlatformDependent/]: org.jctools-core.MpscChunkedArrayQueue: available
+[17:22:33] [Render thread/DEBUG] [io.ne.ch.DefaultChannelId/]: -Dio.netty.processId: 3134 (auto-detected)
+[17:22:33] [Render thread/WARN] [io.ne.ut.in.SystemPropertyUtil/]: Unable to parse the boolean system property 'java.net.preferIPv6Addresses':system - using the default value: false
+[17:22:33] [Render thread/DEBUG] [io.ne.ut.NetUtil/]: -Djava.net.preferIPv4Stack: false
+[17:22:33] [Render thread/DEBUG] [io.ne.ut.NetUtil/]: -Djava.net.preferIPv6Addresses: false
+[17:22:33] [Render thread/DEBUG] [io.ne.ut.NetUtilInitializations/]: Loopback interface: lo (lo, 0:0:0:0:0:0:0:1%lo)
+[17:22:33] [Render thread/DEBUG] [io.ne.ut.NetUtil/]: /proc/sys/net/core/somaxconn: 4096
+[17:22:33] [Render thread/DEBUG] [io.ne.ch.DefaultChannelId/]: -Dio.netty.machineId: 60:45:bd:ff:fe:ef:75:e5 (auto-detected)
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numHeapArenas: 8
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.numDirectArenas: 8
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.pageSize: 8192
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxOrder: 9
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.chunkSize: 4194304
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.smallCacheSize: 256
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.normalCacheSize: 64
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedBufferCapacity: 32768
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimInterval: 8192
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimIntervalMillis: 0
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.useCacheForAllThreads: false
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedByteBuffersPerChunk: 1023
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.allocator.type: pooled
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.threadLocalDirectBufferSize: 0
+[17:22:33] [Render thread/DEBUG] [io.ne.bu.ByteBufUtil/]: -Dio.netty.maxThreadLocalCharBufferSize: 16384
+[17:22:34] [ForkJoinPool.commonPool-worker-1/INFO] [io.re.ir.IronsLib/]: Loaded 283
+[17:22:34] [Server thread/DEBUG] [mixin/]: Mixing PacketDistributorHackMixin from moonlight.mixins.json into net.minecraftforge.network.PacketDistributor
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Starting local connection.
+[17:22:34] [Netty Server IO #1/DEBUG] [mixin/]: Mixing MapItemDataPacketMixin from moonlight-common.mixins.json into net.minecraft.network.protocol.game.ClientboundMapItemDataPacket
+[17:22:34] [Netty Server IO #1/DEBUG] [mixin/]: Renaming synthetic method lambda$moonlight$sendCustomDecorations$1(I)[Lnet/mehvahdjukaar/moonlight/api/map/CustomMapDecoration; to md37b702$lambda$moonlight$sendCustomDecorations$1$0 in moonlight-common.mixins.json:MapItemDataPacketMixin
+[17:22:34] [Netty Server IO #1/DEBUG] [mixin/]: Renaming synthetic method lambda$moonlight$sendCustomDecorations$0(Lnet/minecraft/network/FriendlyByteBuf;Lnet/mehvahdjukaar/moonlight/api/map/CustomMapDecoration;)Lnet/mehvahdjukaar/moonlight/api/map/CustomMapDecoration; to md37b702$lambda$moonlight$sendCustomDecorations$0$1 in moonlight-common.mixins.json:MapItemDataPacketMixin
+[17:22:34] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.maxCapacityPerThread: 4096
+[17:22:34] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.ratio: 8
+[17:22:34] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.chunkSize: 32
+[17:22:34] [Netty Local Client IO #0/DEBUG] [io.ne.ut.Recycler/]: -Dio.netty.recycler.blocking: false
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Starting local connection.
+[17:22:34] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'net.minecraftforge.network.HandshakeMessages$S2CModData' to 'fml:handshake' sequence 0
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 0
+[17:22:34] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'net.minecraftforge.network.HandshakeMessages$S2CModList' to 'fml:handshake' sequence 1
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 1
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Logging into server with mod list [minecraft, moonlight, mixinsquared, geckolib, playeranimator, irons_spellbooks, iron_spell_grimoire, irons_lib, forge, curios]
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_spellbooks:messages' : Version test of '1.0' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:loginwrapper' : Version test of 'FML3' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:tier_sorting' : Version test of '1.0' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:unregister' : Version test of 'FML3' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:play' : Version test of 'FML3' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_lib:messages' : Version test of '1.0' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:handshake' : Version test of 'FML3' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'curios:main' : Version test of '1' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'iron_spell_grimoire:main' : Version test of '15' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:register' : Version test of 'FML3' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:split' : Version test of '1.1' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'geckolib:main' : Version test of '1' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'moonlight:channel' : Version test of '0' from server : ACCEPTED
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Accepting channel list from server
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Dispatching wrapped packet reply for channel fml:handshake with index 1
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 1
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client indexed reply 1 of type net.minecraftforge.network.HandshakeMessages$C2SModListReply
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client connection with modlist [minecraft, moonlight, mixinsquared, geckolib, playeranimator, irons_spellbooks, iron_spell_grimoire, irons_lib, forge, curios]
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_spellbooks:messages' : Version test of '1.0' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:loginwrapper' : Version test of 'FML3' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:tier_sorting' : Version test of '1.0' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:unregister' : Version test of 'FML3' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:play' : Version test of 'FML3' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'irons_lib:messages' : Version test of '1.0' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'fml:handshake' : Version test of 'FML3' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'curios:main' : Version test of '1' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'iron_spell_grimoire:main' : Version test of '15' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'minecraft:register' : Version test of 'FML3' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'forge:split' : Version test of '1.1' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'geckolib:main' : Version test of '1' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Channel 'moonlight:channel' : Version test of '0' from client : ACCEPTED
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.NetworkRegistry/NETREGISTRY]: Accepting channel list from client
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Accepted server connection
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Accepted client connection mod list
+[17:22:34] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'Config curios-server.toml' to 'fml:handshake' sequence 2
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 2
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received config sync from server
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Dispatching wrapped packet reply for channel fml:handshake with index 2
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 2
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client indexed reply 2 of type net.minecraftforge.network.HandshakeMessages$C2SAcknowledge
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received acknowledgement from client
+[17:22:34] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Sending ticking packet info 'Config irons_spellbooks-server.toml' to 'fml:handshake' sequence 3
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 3
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received config sync from server
+[17:22:34] [Netty Local Client IO #0/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Dispatching wrapped packet reply for channel fml:handshake with index 3
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.LoginWrapper/FMLHANDSHAKE]: Recieved login wrapper packet event for channel fml:handshake with index 3
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received client indexed reply 3 of type net.minecraftforge.network.HandshakeMessages$C2SAcknowledge
+[17:22:34] [Netty Server IO #1/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Received acknowledgement from client
+[17:22:34] [Server thread/DEBUG] [ne.mi.ne.HandshakeHandler/FMLHANDSHAKE]: Handshake complete!
+[17:22:34] [Netty Local Client IO #0/INFO] [ne.mi.ne.NetworkHooks/]: Connected to a modded server.
+[17:22:34] [Netty Local Client IO #0/DEBUG] [mixin/]: Mixing ClientPacketListenerMixin from moonlight-common.mixins.json into net.minecraft.client.multiplayer.ClientPacketListener
+[17:22:34] [Server thread/DEBUG] [mixin/]: Mixing CurioHooksMixin from mixins.irons_spellbooks.json into top.theillusivec4.curios.mixin.CuriosImplMixinHooks
+[17:22:34] [Server thread/INFO] [minecraft/PlayerList]: Tester[local:E:b3d8911d] logged in with entity id 1 at (-1.5, -60.0, -0.5)
+[17:22:34] [Server thread/INFO] [minecraft/MinecraftServer]: Tester joined the game
+[17:22:35] [Render thread/INFO] [io.re.ir.IronsSpellbooks/]: Handling spell config sync 0 files
+[17:22:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Welcome, mage! Your first steps are in the top right. Right-click the Grimoire Codex to read how it all works.
+[17:22:35] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 5 advancements
+[17:22:36] [Render thread/DEBUG] [mixin/]: Mixing ScreenEffectRendererMixin from irons_lib.mixins.json into net.minecraft.client.renderer.ScreenEffectRenderer
+[17:22:46] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 5160ms or 103 ticks behind
+[17:22:46] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has made the advancement [Magery]
+[17:22:47] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has made the advancement [Magery]
+[17:22:47] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 9 advancements
+[17:22:47] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] A Magic Broom for a new mage. Use it to fly - it runs on your mana. You only get one, so keep it safe.
+[17:22:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 4 / 90
+[17:22:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:23:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:23:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:23:10] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 8 / 90
+[17:23:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:23:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:23:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:23:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 17 / 90
+[17:23:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:23:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:23:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:23:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 24 / 90
+[17:23:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:24:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:24:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:24:10] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 34 / 90
+[17:24:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:24:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:24:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:24:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 44 / 90
+[17:24:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:24:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:24:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:24:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 53 / 90
+[17:24:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:25:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:25:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:25:10] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 59 / 90
+[17:25:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ SYSTEM ] You have been chosen as a Player. Kills made with this grimoire - or by your shadows - raise your Hunter level. Open Status from the G wheel.
+[17:25:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] [ SYSTEM ] A Daily Trial has been issued: three tasks each day. Leave it undone when the day turns and the Reckoning comes.
+[17:25:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:25:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:25:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:25:29] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We are one body now.  [G: the form wheel (sneak + G: all slices; tap G: your 4 pinned forms) - Evolution page: spend EP]
+[17:25:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 63 / 90
+[17:25:35] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:25:38] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sol: Two of us, one face at a time.  [tap G to swap masks - hold G for the wheel of your four arts; The Masks page has it all]
+[17:25:40] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:25:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:25:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 67 / 90
+[17:25:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:26:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:26:05] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:26:10] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 71 / 90
+[17:26:15] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:26:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:26:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 16 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:26:30] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 77 / 90
+[isg game tests] 77 / 90
+[17:26:55] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 78 / 90
+[17:27:20] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 79 / 90
+[17:27:40] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795713747639
+[17:27:40] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795713747639
+[17:27:45] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has made the advancement [Monster Hunter]
+[17:27:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has made the advancement [Monster Hunter]
+[17:27:45] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 40 advancements
+[17:27:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We are one body now.  [G: the form wheel (sneak + G: all slices; tap G: your 4 pinned forms) - Evolution page: spend EP]
+[17:27:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: Eat. Grow.  [kills feed biomass; Consume devours a weakened foe whole for EP]
+[17:27:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 2 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:27:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The strain settles: Brute
+[17:27:46] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Grafted: the Brute strain, at half strength
+[17:27:47] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The parasite: We are one body now.  [G: the form wheel (sneak + G: all slices; tap G: your 4 pinned forms) - Evolution page: spend EP]
+[isg game tests] 80 / 90
+[17:27:59] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has completed the challenge [Apex]
+[17:27:59] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has completed the challenge [Apex]
+[17:27:59] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 41 advancements
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Neighbours: the Forge and the Armoury - Blade Rack's weapons burn.
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Neighbours: Blade Rack's weapons burn.
+[17:28:00] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has made the advancement [Raising the Walls]
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The fortress grows: book level 2.
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A blueprint from a level up: the Hall of Banners (Rally).
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has made the advancement [Raising the Walls]
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The fortress grows: book level 3.
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A blueprint from a level up: the Garden (Quiet Grove).
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The fortress grows: book level 4.
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: A blueprint from a level up: the Arcanum (Ley Lance).
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: Your floor plan grows to 4x4.
+[17:28:00] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 43 advancements
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Skeleton joins your garrison as a Archer.
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Zombie joins your garrison as a Footman.
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Architect: The Skeleton joins your garrison as a Archer.
+[17:28:00] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has made the advancement [Foundations]
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has made the advancement [Foundations]
+[17:28:00] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 43 advancements
+[17:28:00] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:28:01] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Licht: You carry a grimoire... Then show me what you would protect with it.
+[isg game tests] 82 / 90
+[17:28:13] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Licht: Not bad. This one is heavier.
+[17:28:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Seren Vale: You're the one they talk about. Draw - I'd like to see if the stories are true.
+[17:28:16] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has completed the challenge [Glassbreaker]
+[17:28:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Seren Vale: Enough - enough. You saw the step. Take it; you've earned it.
+[17:28:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has completed the challenge [Glassbreaker]
+[17:28:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Keepsake: Air
+[17:28:16] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] You beat Seren Vale  (+2★, mastery XP)  - title: Glassbreaker  - next time, rank 1
+[17:28:16] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 44 advancements
+[17:28:18] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Seren Vale: That Architect of Ruin Grimoire of yours - loud magic. Mine is quiet. Watch.
+[17:28:21] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Alder Bellmar: Wren, look - the one from the posters.
+[17:28:21] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Wren Bellmar: ALDER!
+[17:28:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Alder Bellmar: Not yet - not while Wren's standing!
+[17:28:22] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has completed the challenge [The Third Bell]
+[17:28:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Wren Bellmar: ALDER!
+[17:28:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Wren Bellmar: We yield. Both of us. Ring this for us sometime.
+[17:28:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has completed the challenge [The Third Bell]
+[17:28:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Keepsake: Air
+[17:28:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] You beat The Bellmar Twins  (+2★, mastery XP)  - title: The Third Bell  - next time, rank 1
+[17:28:22] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 45 advancements
+[17:28:22] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Brannoch Tor: Tor's Legion holds this field. You hold a grimoire. Let's see which holds longer.
+[17:28:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Mira Hollowell: A proposition. Advance - yes or no?
+[17:28:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Mira Hollowell: Signed. Pleasure doing business.
+[17:28:25] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[isg game tests] 84 / 90
+[17:28:45] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ☘ Your grimoire grew a leaf - 10 to spend on its Mana Tree (open it, then the Tree ribbon).
+[17:28:47] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 45 advancements
+[17:28:47] [Server thread/INFO] [minecraft/Villager]: Villager Villager['Villager'/422, l='ServerLevel[isg_uishots_1795713747639]', x=-3.50, y=-60.00, z=-2.50] died, message: 'Villager was slain by Tester'
+[17:28:47] [Render thread/INFO] [minecraft/Villager]: Villager Villager['Villager'/422, l='ClientLevel', x=-3.50, y=-60.00, z=-2.50] died, message: 'Villager died'
+[17:28:48] [Server thread/INFO] [minecraft/LivingEntity]: Named entity Zombie['Pack Leader'/430, l='ServerLevel[isg_uishots_1795713747639]', x=-1.50, y=-60.00, z=3.50] died: Pack Leader was killed
+[17:28:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] TIER II OPEN  The Ossuarch, Rhya, the Beast of Despair and the Ironbound Twins can now be on your posters.
+[17:28:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] THE GATE  A Poster Board now offers the Gate - pass it and tier III opens.
+[17:28:49] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] TIER III OPEN  Licht can now be on your posters - and, with 50 stars, the poster with no name.
+[17:28:50] [Server thread/INFO] [minecraft/MinecraftServer]: Tester has made the advancement [Through the Crack]
+[17:28:50] [Server thread/INFO] [minecraft/IntegratedServer]: Saving and pausing game...
+[17:28:50] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:overworld
+[17:28:50] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:the_end
+[17:28:50] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/irons_spellbooks:pocket_dimension
+[17:28:50] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:the_nether
+[17:28:50] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/iron_spell_grimoire:rift
+[17:28:50] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795713747639
+[17:28:50] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795713747639
+[17:28:50] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Tester has made the advancement [Through the Crack]
+[17:28:50] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 46 advancements
+[isg game tests] 87 / 90
+[17:28:53] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Lanterns on the north road. They're coming.
+[17:28:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] More of them - out of the smoke.
+[17:28:54] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Penitents part. Someone else walks between them.
+[17:28:58] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Sallow's Hand: The girl first. Father wants the girl.
+[17:28:58] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Ilsa: No - let go of me! HELP ME -
+[17:29:12] [Server thread/INFO] [minecraft/IntegratedServer]: Saving and pausing game...
+[17:29:12] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:overworld
+[17:29:12] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:the_end
+[17:29:12] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/irons_spellbooks:pocket_dimension
+[17:29:12] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:the_nether
+[17:29:12] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/iron_spell_grimoire:rift
+[17:29:12] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795713747639
+[17:29:12] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795713747639
+[isg game tests] 87 / 90
+[17:29:19] [Server thread/WARN] [minecraft/MinecraftServer]: Can't keep up! Is the server overloaded? Running 2903ms or 58 ticks behind
+[17:29:23] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] The Mother Below: The light... is so... loud...
+[17:29:26] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] ARC III COMPLETE  +5000 mastery, a tier III Mana Core, Sedge's Reed.
+[17:29:26] [Server thread/INFO] [minecraft/IntegratedServer]: Saving and pausing game...
+[17:29:26] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:overworld
+[17:29:26] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:the_end
+[17:29:26] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/irons_spellbooks:pocket_dimension
+[17:29:26] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:the_nether
+[17:29:26] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/iron_spell_grimoire:rift
+[17:29:26] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795713747639
+[17:29:26] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795713747639
+[17:29:26] [Render thread/INFO] [minecraft/AdvancementList]: Loaded 47 advancements
+[isg game tests] 89 / 90
+[17:29:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Wren Bellmar: We yield. Both of us. Ring this for us sometime.
+[17:29:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] Keepsake: Air
+[17:29:37] [Render thread/INFO] [minecraft/ChatComponent]: [System] [CHAT] You beat The Bellmar Twins  (+2★, mastery XP)  - title: The Third Bell  - next time, rank 1
+[17:29:41] [Render thread/INFO] [minecraft/Minecraft]: Stopping!
+[17:29:41] [Render thread/DEBUG] [io.re.ir.IronsSpellbooks/]: ClientPlayerNetworkEvent onPlayerLogOut
+[17:29:41] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: Tester lost connection: Disconnected
+[17:29:41] [Server thread/INFO] [minecraft/MinecraftServer]: Tester left the game
+[17:29:41] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: Stopping singleplayer server as player logged out
+[17:29:41] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[17:29:41] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[17:29:41] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[17:29:42] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:overworld
+[17:29:42] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:the_end
+[17:29:42] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/irons_spellbooks:pocket_dimension
+[17:29:42] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/minecraft:the_nether
+[17:29:42] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[isg_uishots_1795713747639]'/iron_spell_grimoire:rift
+[17:29:42] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: Gathering id map for writing to world save isg_uishots_1795713747639
+[17:29:42] [Server thread/DEBUG] [ne.mi.co.ForgeHooks/WP]: ID Map collection complete isg_uishots_1795713747639
+[17:29:42] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (isg_uishots_1795713747639): All chunks are saved
+[17:29:42] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[17:29:42] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (pocket_dimension): All chunks are saved
+[17:29:42] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[17:29:42] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (rift): All chunks are saved
+[17:29:42] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[17:29:43] [Server thread/DEBUG] [ne.mi.fm.co.ConfigTracker/CONFIG]: Unloading configs type SERVER
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1795713688662.json
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+See https://docs.gradle.org/8.1.1/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 8m 18s
+10 actionable tasks: 10 executed
