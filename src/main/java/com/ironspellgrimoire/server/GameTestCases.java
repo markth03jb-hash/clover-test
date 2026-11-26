@@ -1810,7 +1810,11 @@ final class GameTestCases {
                     for (var id : star.guardians) if (sl().getEntity(id) instanceof Mob g) { g.kill(); if (g.isAlive()) g.kill(); }   // (an elite's Second Wind takes the first)
                 }
                 if (t == 100) {
-                    if (star.sealed()) bad.add("still sealed with its guardians down");
+                    if (star.sealed()) {
+                        StringBuilder why = new StringBuilder();
+                        for (var id : star.guardians) { var g = sl().getEntity(id); why.append(g == null ? "gone" : g.getType().toShortString() + (g.isAlive() ? " alive " + ((Mob) g).getHealth() : " dead") + (g.isRemoved() ? " removed" : "")).append(", "); }
+                        bad.add("still sealed with its guardians down (" + why + "star alive " + star.isAlive() + ", life " + star.tickCount + ")");
+                    }
                     FallingStars.take(star, p);
                     ItemStack core = ItemStack.EMPTY;
                     for (ItemStack s : p.getInventory().items) if (s.is(com.ironspellgrimoire.registry.AddonItemRegistry.STAR_CORE.get())) core = s;
