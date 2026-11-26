@@ -1,0 +1,8 @@
+30:[26Nov2026 17:22:28.756] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file /home/runner/work/clover-test/clover-test/srv/config/iron_spell_grimoire-common.toml is not correct. Correcting
+62:com.google.gson.JsonSyntaxException: Missing name, expected to find a string
+111:com.google.gson.JsonSyntaxException: Unknown type 'minecraft:set_written_book_pages'
+295:[26Nov2026 17:23:04.607] [Server thread/INFO] [net.minecraft.server.dedicated.DedicatedServer/]: Done (31.268s)! For help, type "help"
+301:[26Nov2026 17:23:25.703] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generated structure "iron_spell_grimoire:grimoire_tower" at 208, 64, 208
+305:[26Nov2026 17:23:51.521] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: The nearest iron_spell_grimoire:grimoire_tower is at [288, ~, -672] (744 blocks away)
+306:[26Nov2026 17:23:51.522] [Server thread/INFO] [net.minecraft.server.commands.LocateCommand/]: Locating element iron_spell_grimoire:grimoire_tower took 30 ms
+315:[26Nov2026 17:24:03.459] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/iron_spell_grimoire:rift
