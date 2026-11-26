@@ -43,7 +43,7 @@ public final class StoryStage2 {
             for (int y = 0; y <= 22; y++) set(sl, x, Y + y, z, air);
             if (r <= 16.5) {   // the sand: rings and spokes, the bout's circle in the middle
                 BlockState f = r <= 2.2 ? st(Blocks.CHISELED_SANDSTONE) : (r > 7 && r < 8) || (r > 13 && r < 14) ? st(Blocks.CUT_RED_SANDSTONE)
-                        : (dx == 0 || dz == 0) ? st(Blocks.CUT_SANDSTONE) : rnd.nextInt(5) == 0 ? st(Blocks.RED_SAND) : st(Blocks.SAND);
+                        : (dx == 0 || dz == 0) ? st(Blocks.CUT_SANDSTONE) : (Math.sin(dx * 0.5) + Math.cos(dz * 0.45) > 1.4 && rnd.nextInt(3) > 0) ? st(Blocks.RED_SAND) : st(Blocks.SAND);   // a few dark patches, not a checkerboard
                 set(sl, x, Y - 1, z, f);
                 for (int y = 2; y <= 4; y++) set(sl, x, Y - y, z, st(Blocks.SANDSTONE));
             } else if (r <= 18.5) {   // the arena wall, banded in gold
