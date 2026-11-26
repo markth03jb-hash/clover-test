@@ -185,6 +185,56 @@ public final class UiShotsServer {
                     sl.addFreshEntity(m);
                 }
             }
+            case "cast3", "mother" -> {
+                folk(p, "none");
+                faceForward(p);
+                boolean mother = what.equals("mother");
+                var types = mother ? java.util.List.<net.minecraft.world.entity.EntityType<?>>of(com.ironspellgrimoire.registry.AddonEntities.MOTHER_BELOW.get())
+                        : java.util.List.<net.minecraft.world.entity.EntityType<?>>of(com.ironspellgrimoire.registry.AddonEntities.STORY_MAREN.get(), com.ironspellgrimoire.registry.AddonEntities.STORY_SEDGE.get(),
+                        com.ironspellgrimoire.registry.AddonEntities.MILITIA.get(), com.ironspellgrimoire.registry.AddonEntities.STORY_REFUGEE.get());
+                double[] xs = mother ? new double[]{0} : new double[]{-4.2, -1.4, 1.4, 4.2};
+                for (int i = 0; i < types.size(); i++) {
+                    var m = (net.minecraft.world.entity.Mob) types.get(i).create(sl);
+                    if (m == null) continue;
+                    m.moveTo(p.getX() + xs[i], p.getY(), p.getZ() + (mother ? 9 : 7), 180, 0);
+                    m.setYBodyRot(180); m.setYHeadRot(180);
+                    m.setNoAi(true);
+                    m.getPersistentData().putBoolean("isg_ui_story", true);
+                    sl.addFreshEntity(m);
+                }
+            }
+            case "ashwick" -> {   // Arc III begins: the road to Ashwick
+                story(p, "clear");
+                Story.testClear(p.server);
+                Story.Party pt = Story.ensure(p);
+                StoryArc1.toChapter(p.server, pt, 5);
+                Story.begin(p);
+                StoryArc2.toChapter(p.server, pt, 7);
+                Story.setBrand(p, 2); pt.brand = 2;
+                Story.begin(p);
+            }
+            case "ashwick_look" -> {   // from the south gate, in over the village to the well
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                var at = StoryStage.at(pt.id, StoryStage.ASHWICK, 0, 1, 19);
+                p.teleportTo(StoryStage.rift(p.server), at.x, at.y, at.z, 180, 4);
+            }
+            case "tunnels" -> {   // a hive, before it's burnt
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                StoryArc3.toChapter(p.server, pt, 2);
+                int[] h = StoryStage3.HIVES[0];
+                var at = StoryStage.at(pt.id, StoryStage.TUNNELS, h[0] + 5, 0, h[1]);
+                StoryStage.enter(p, pt, StoryStage.TUNNELS, at, 90);
+                p.teleportTo(StoryStage.rift(p.server), at.x, at.y, at.z, 90, 8);
+            }
+            case "deep" -> {
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                StoryArc3.toChapter(p.server, pt, 4);
+                pt.step = 1;   // past her waking words: she's there
+                StoryStage.enter(p, pt, StoryStage.DEEP, StoryStage.spawn(pt.id, StoryStage.DEEP), 180);
+            }
             case "arena" -> {
                 story(p, "clear");
                 Story.testClear(p.server);

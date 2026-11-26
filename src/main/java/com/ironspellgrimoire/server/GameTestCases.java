@@ -411,6 +411,8 @@ final class GameTestCases {
         queue.add(new SallowTest());
         queue.add(new ProvingTest(false));
         queue.add(new ProvingTest(true));
+        queue.add(new HollowWarTest(true));
+        queue.add(new HollowWarTest(false));
         queue.add(new MultiplayerTest());
         queue.add(new StressTest());
         queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
@@ -3811,6 +3813,166 @@ final class GameTestCases {
                 p.tickCount = keep;
                 if (!(p.getHealth() < 10f)) bad.add("Brand II took no health while it burned");
             } else if (pt.ch != 3) bad.add("the cells didn't open chapter 4 (ch " + pt.ch + ")");
+            p.getInventory().clearContent();
+            try { storyHome(); } catch (Throwable ignored) {}
+            resetPlayer(true); clearArea();
+            if (bad.isEmpty()) pass(name, "played through: " + String.join(", ", seen));
+            else fail(name, String.join("; ", bad));
+        }
+    }
+
+    static final class HollowWarTest extends Test {
+        final boolean down;
+        HollowWarTest(boolean down) { super(down ? "ASHFALL Arc III: the road, holding the Brand, the hives, the siege, the Mother, going down" : "ASHFALL Arc III: the Mother, holding Ashwick, Sedge's Reed"); this.down = down; }
+        @Override Class<?>[] roots() { return new Class<?>[]{Story.class, StoryArc1.class, StoryArc3.class, StoryStage.class, StoryStage3.class, Brand.class, MotherAI.class, FolkCharms.class,
+                com.ironspellgrimoire.entity.MotherBelow.class, com.ironspellgrimoire.entity.Militia.class, com.ironspellgrimoire.entity.AddonBoss.class}; }
+        final List<String> bad = new ArrayList<>(), seen = new ArrayList<>();
+        Story.Party pt;
+        int burns;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+            Story.testClear(p.server);
+            Brand.testReset(p);
+            pt = Story.testParty(p);
+            StoryArc1.toChapter(p.server, pt, 5);
+            Story.begin(p);
+            StoryArc2.toChapter(p.server, pt, 7);
+            Story.setBrand(p, 2); pt.brand = 2;
+            if (!Story.nextArc(pt)) bad.add("Arc II done didn't offer the next arc");
+            Story.begin(p);
+            if (!down) { StoryArc3.toChapter(p.server, pt, 4); go(StoryStage.DEEP, 0, 0, 18); }
+        }
+        void go(int place, double x, double y, double z) { var at = StoryStage.at(pt.id, place, x, y, z); p.teleportTo(StoryStage.rift(p.server), at.x, at.y, at.z, 0, 0); }
+        void go(int place, double[] a) { go(place, a[0], a[1], a[2]); }
+        void mark(String m) { if (!seen.contains(m)) seen.add(m); }
+        void clearFoes(net.minecraft.server.level.ServerLevel rift) { for (var m : StoryArc3.foes(rift, pt)) { mark(m instanceof com.ironspellgrimoire.entity.WildFolk w && w.kind == com.ironspellgrimoire.entity.WildFolk.Kind.DEEPWARDEN ? "deepwarden" : "hollowfolk"); m.discard(); } }
+        void brandTick() {
+            int keep = p.tickCount; p.tickCount = 40;
+            Brand.onPlayerTick(new net.minecraftforge.event.TickEvent.PlayerTickEvent(net.minecraftforge.event.TickEvent.Phase.END, p));
+            p.tickCount = keep;
+        }
+        @Override boolean tick(int t) {
+            try {
+                var s = p.server;
+                var rift = StoryStage.rift(s);
+                if (t == 1) {
+                    if (pt.arc != 3) bad.add("Arc III didn't begin (arc " + pt.arc + ", ch " + pt.ch + ")");
+                    if (down && !StoryStage.inside(p, pt, StoryStage.ASHWICK)) bad.add("Arc III didn't begin at Ashwick");
+                    return false;
+                }
+                if (t > (down ? 3600 : 1600)) {
+                    bad.add("stuck at chapter " + pt.ch + " step " + pt.step + " (seen: " + String.join(", ", seen) + ")");
+                    finish();
+                    return true;
+                }
+                if (t % 5 != 0) return false;
+                p.setHealth(p.getMaxHealth());
+                if (pt.talk != null) {
+                    mark(pt.talk.id);
+                    if (pt.talk.choices.length > 0) Story.vote(p, pt, pt.talk.id, down ? 1 : 0);
+                    else Story.resolve(s, pt);
+                    return false;
+                }
+                if (pt.ch >= 7) { finish(); return true; }
+                switch (pt.ch) {
+                    case 0 -> {
+                        if (!StoryStage.inStage(p)) go(StoryStage.ASHWICK, StoryStage3.ASHWICK_SPAWN);
+                        if (pt.step == 1) clearFoes(rift);
+                        if (pt.step == 3) go(StoryStage.ASHWICK, StoryStage3.GATE);
+                    }
+                    case 1 -> {
+                        if (t % 20 != 0) return false;
+                        if (StoryStage.inStage(p)) bad.add("still in Ashwick for the fights to hold the Brand");
+                        burns++;
+                        Brand.testBurnOut(p, burns != 1);   // the first: fell under half - it mustn't count
+                        brandTick();
+                        if (burns == 1 && pt.count("held") != 0) bad.add("a burn that fell under half health counted as held");
+                        if (burns > 1) mark("held");
+                    }
+                    case 2 -> {
+                        if (!StoryStage.inside(p, pt, StoryStage.TUNNELS)) {   // down the well
+                            if (seen.contains("well")) bad.add("left the tunnels");
+                            go(StoryStage.ASHWICK, StoryStage3.WELL[0], -3, StoryStage3.WELL[2]);
+                            return false;
+                        }
+                        mark("well");
+                        for (int i = 0; i < 3; i++) {
+                            if (pt.n.getBoolean("hive" + i + "burnt")) {
+                                var c = StoryStage.at(pt.id, StoryStage.TUNNELS, StoryStage3.HIVES[i][0], 1, StoryStage3.HIVES[i][1]);
+                                if (rift.getBlockState(net.minecraft.core.BlockPos.containing(c)).is(net.minecraft.world.level.block.Blocks.MAGMA_BLOCK)) mark("hive burnt");
+                                else bad.add("hive " + i + " counted burnt but its heart still glows");
+                                continue;
+                            }
+                            go(StoryStage.TUNNELS, StoryStage3.HIVES[i][0] + 2, 0, StoryStage3.HIVES[i][1]);
+                            if (pt.n.getBoolean("hive" + i + "woke")) clearFoes(rift);
+                            if (!Brand.burning(p)) { Brand.testReset(p); Brand.use(p); }
+                            break;
+                        }
+                    }
+                    case 3 -> {
+                        if (!StoryStage.inside(p, pt, StoryStage.ASHWICK)) go(StoryStage.ASHWICK, 0, 0, 6);
+                        if (pt.step == 1) {
+                            if (!rift.getEntitiesOfClass(com.ironspellgrimoire.entity.Militia.class, p.getBoundingBox().inflate(60), m -> m.isAlive()).isEmpty()) mark("militia");
+                            clearFoes(rift);
+                        }
+                    }
+                    case 4 -> {
+                        if (!StoryStage.inside(p, pt, StoryStage.DEEP)) bad.add("the siege didn't take the party down to the deep");
+                        for (var b : StoryArc3.mother(rift, pt)) {
+                            mark("mother");
+                            BossIntro.testRelease(p.getUUID());
+                            b.setTransforming(0);
+                            b.setHealth(b.getMaxHealth() * 0.5f + 2f);
+                            b.hurt(p.damageSources().playerAttack(p), 10f);
+                        }
+                    }
+                    case 5 -> {
+                        clearFoes(rift);
+                        if (pt.flag("down") && !StoryArc1.npcs(rift, pt, com.ironspellgrimoire.registry.AddonEntities.STORY_REFUGEE.get()).isEmpty()
+                                && StoryStage.inside(p, pt, StoryStage.DEEP)) mark("cages");
+                        if (pt.flag("hold") && StoryStage.inside(p, pt, StoryStage.ASHWICK)) mark("back up");
+                        for (var b : StoryArc3.mother(rift, pt)) {
+                            mark("mother again");
+                            if (b.half != 2 || b.getHealth() > b.getMaxHealth() * 0.51f) bad.add("the second half didn't start at half health");
+                            if (pt.flag("hold") && b.getPersistentData().getInt("isg_place") != StoryStage.ASHWICK) bad.add("holding Ashwick, the Mother didn't come up into the village");
+                            BossIntro.testRelease(p.getUUID());
+                            b.setTransforming(0); b.setPhase(3);
+                            b.setHealth(2f);
+                            b.hurt(p.damageSources().playerAttack(p), 10f);
+                        }
+                    }
+                    case 6 -> go(pt.flag("down") ? StoryStage.DEEP : StoryStage.ASHWICK, pt.flag("down") ? StoryArc3.EXIT_DEEP : StoryStage3.GATE);
+                    default -> {}
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); try { storyHome(); } catch (Throwable ignored) {} clearArea(); return true; }
+        }
+        void finish() {
+            String[] want = down ? new String[]{"exodus_arrive", "hollowfolk", "sedge_meet", "maren_gate", "held", "brand_held", "well", "hive burnt", "tunnels_done", "siege_begins", "militia",
+                    "deepwarden", "siege_won", "mother_wakes", "mother", "mother_retreats", "the_choice", "go_down", "cages", "mother again", "aftermath_down"}
+                    : new String[]{"mother_wakes", "mother", "mother_retreats", "the_choice", "hold_up", "back up", "mother again", "aftermath_hold"};
+            for (String w : want) if (!seen.contains(w)) bad.add("never saw " + w);
+            if (pt.ch != 7) bad.add("the arc didn't end (ch " + pt.ch + ")");
+            if (down != pt.flag("down") || down == pt.flag("hold")) bad.add("the vote wasn't kept");
+            var charm = down ? com.ironspellgrimoire.registry.AddonItemRegistry.FENWATER_BEADS.get() : com.ironspellgrimoire.registry.AddonItemRegistry.SEDGE_REED.get();
+            if (!p.getInventory().contains(new ItemStack(charm))) bad.add("no " + new ItemStack(charm).getHoverName().getString() + " at the end");
+            if (down) {
+                if (!pt.flag("brandHeld")) bad.add("holding the Brand three times didn't mark it held");
+                // held: Cinderheart takes a point every 2 s, not every second
+                Brand.testReset(p); Brand.use(p);
+                p.setHealth(10f);
+                int keep = p.tickCount;
+                p.tickCount = 20;
+                Brand.onPlayerTick(new net.minecraftforge.event.TickEvent.PlayerTickEvent(net.minecraftforge.event.TickEvent.Phase.END, p));
+                boolean took1 = p.getHealth() < 10f;
+                p.tickCount = 40;
+                Brand.onPlayerTick(new net.minecraftforge.event.TickEvent.PlayerTickEvent(net.minecraftforge.event.TickEvent.Phase.END, p));
+                p.tickCount = keep;
+                if (took1) bad.add("held, Brand II still took health every second");
+                if (!(p.getHealth() < 10f)) bad.add("held, Brand II took nothing at all");
+                Brand.testReset(p);
+            }
             p.getInventory().clearContent();
             try { storyHome(); } catch (Throwable ignored) {}
             resetPlayer(true); clearArea();

@@ -266,6 +266,11 @@ public class AddonItemRegistry {
             "Each hit on the same foe within 4 s does 3% more than the last, up to 15% more.", "", "Every blow, written down. Every debt, collected.", null));
     public static final RegistryObject<Item> CINDER_TOKEN = ITEMS.register("cinder_token", () -> new com.ironspellgrimoire.item.SignatureItem("The crowd of Cindermarch",
             "Below 40% health, you take 15% less damage.", "", "Thrown down to you from the stands, still warm from someone's hand.", null));
+    /** ASHFALL, Arc III: what the party is left with - Sedge's reed (held Ashwick) or the Mirefolk's beads (went down for them). */
+    public static final RegistryObject<Item> SEDGE_REED = ITEMS.register("sedge_reed", () -> new com.ironspellgrimoire.item.SignatureItem("Old Sedge",
+            "Stand your ground: after 1 s without moving, you take 12% less damage.", "", "Pressed into the Reeve's hand by someone going down into the dark.", null));
+    public static final RegistryObject<Item> FENWATER_BEADS = ITEMS.register("fenwater_beads", () -> new com.ironspellgrimoire.item.SignatureItem("The Fenwater clans",
+            "Each foe you kill heals you 2 health (at most once every 2 s).", "", "Forty strings of them, from forty people who came up alive. This is one.", null));
     public static final RegistryObject<Item> LICHT_SPAWN_EGG = ITEMS.register("licht_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.LICHT, 0xF0EEE0, 0xE8C860, new Item.Properties()));
     public static final RegistryObject<Item> REVENANT_SPAWN_EGG = ITEMS.register("revenant_spawn_egg",
@@ -338,7 +343,7 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(ELVEN_WIND_CHARM.get()));
                 for (var r : java.util.List.of(PRISM_RIBBON, WARLORDS_STANDARD, LAST_BELL, LEDGER_COIN, RIVAL_TOKEN)) out.accept(new ItemStack(r.get()));
                 for (var r : SIGNATURES) out.accept(new ItemStack(r.get()));
-                for (var r : java.util.List.of(MOSS_KNOT, SLATE_RING, SUN_SHARD, RIME_PIN, LANTERN_EYE, STAR_CORE, STORY_JOURNAL, SALLOW_HOOK, SALLOW_ROSARY, VEY_SEAL, CINDER_TOKEN)) out.accept(new ItemStack(r.get()));
+                for (var r : java.util.List.of(MOSS_KNOT, SLATE_RING, SUN_SHARD, RIME_PIN, LANTERN_EYE, STAR_CORE, STORY_JOURNAL, SALLOW_HOOK, SALLOW_ROSARY, VEY_SEAL, CINDER_TOKEN, SEDGE_REED, FENWATER_BEADS)) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(new ItemStack(MANA_CORE.get()));

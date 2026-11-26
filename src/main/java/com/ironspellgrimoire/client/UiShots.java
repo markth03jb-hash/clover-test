@@ -171,6 +171,12 @@ public final class UiShots {
         steps.add(new Step("story2_catacomb", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.story(p, "catacomb")); }, 40, true));
         steps.add(new Step("story2_vault", () -> onServer(p -> UiShotsServer.story(p, "vault")), 60, true));
         steps.add(new Step("story2_vault_view", () -> mc.setScreen(null), 30, true));
+        steps.add(new Step("story3_cast", () -> { mc.setScreen(null); onServer(p -> { UiShotsServer.story(p, "clear"); UiShotsServer.story(p, "cast3"); }); }, 20, true));
+        steps.add(new Step("story3_mother", () -> onServer(p -> { UiShotsServer.story(p, "clear"); UiShotsServer.story(p, "mother"); }), 20, true));
+        steps.add(new Step("story3_ashwick", () -> onServer(p -> UiShotsServer.story(p, "ashwick")), 60, true));
+        steps.add(new Step("story3_ashwick_view", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.story(p, "ashwick_look")); }, 40, true));
+        steps.add(new Step("story3_tunnels", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.story(p, "tunnels")); }, 50, true));
+        steps.add(new Step("story3_deep", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.story(p, "deep")); }, 60, true));
         steps.add(new Step("story_clear", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.story(p, "clear")); }, 30, true));
         steps.add(new Step("el_mobs", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.elites(p, "mobs")); }, 16, true));
         steps.add(new Step("el_codex", () -> mc.setScreen(new CodexScreen(CodexScreen.chapter("Elite Mobs"))), 10, false));
@@ -931,6 +937,9 @@ public final class UiShots {
             } catch (ClassNotFoundException ex) { return null; }
         }
         if (step.startsWith("blood_") || step.startsWith("ice_")) return new Class<?>[]{com.ironspellgrimoire.server.BloodFx.class, BloodFxClient.class, AuraOutlineLayer.class, IceFxClient.class, BloodHud.class, GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class};
+        if (step.startsWith("story3_")) return new Class<?>[]{StoryClient.class, DialogueScreen.class, JournalScreen.class, RivalRenderer.class, com.ironspellgrimoire.server.Story.class,
+                com.ironspellgrimoire.server.StoryArc3.class, com.ironspellgrimoire.server.StoryStage.class, com.ironspellgrimoire.server.StoryStage3.class, com.ironspellgrimoire.entity.StoryNpc.class,
+                com.ironspellgrimoire.entity.MotherBelow.class, com.ironspellgrimoire.server.MotherAI.class, com.ironspellgrimoire.entity.Militia.class};
         if (step.startsWith("story2_")) return new Class<?>[]{StoryClient.class, DialogueScreen.class, RivalRenderer.class, com.ironspellgrimoire.server.Story.class,
                 com.ironspellgrimoire.server.StoryArc2.class, com.ironspellgrimoire.server.StoryStage.class, com.ironspellgrimoire.server.StoryStage2.class, com.ironspellgrimoire.entity.StoryNpc.class};
         if (step.startsWith("story_")) return new Class<?>[]{StoryClient.class, DialogueScreen.class, JournalScreen.class, RivalRenderer.class, com.ironspellgrimoire.server.Story.class,
@@ -958,6 +967,8 @@ public final class UiShots {
             // the gear the families, the Twins and ASHFALL's people hold is on the rivals' sheet; their skins are their own
             {"folk_", "textures/item/rivals.png", "models/item/rival_bog_club.obj", "models/item/rival_hooked_blade.obj"},
             {"twins", "textures/item/rivals.png", "models/item/rival_tower_shield.obj", "models/item/rival_iron_greatsword.obj"},
+            {"story3_", "textures/item/rivals.png", "textures/entity/story_mother.png", "textures/entity/story_maren.png", "textures/entity/story_sedge.png", "textures/entity/story_militia.png",
+                    "models/item/rival_mother_crown.obj", "models/item/rival_mother_limbs.obj", "models/item/rival_boar_spear.obj", "models/item/rival_pitchfork.obj"},
             {"story2_", "textures/item/rivals.png", "textures/entity/story_vey.png", "textures/entity/story_warden.png", "textures/entity/story_tamsin.png",
                     "models/item/rival_ledger_staff.obj", "models/item/rival_warden_halberd.obj", "models/item/rival_tamsin_wand.obj"},
             {"story_", "textures/item/rivals.png", "textures/entity/story_corvin.png", "textures/entity/story_sallow.png", "textures/entity/story_penitent.png", "textures/entity/story_ilsa.png",

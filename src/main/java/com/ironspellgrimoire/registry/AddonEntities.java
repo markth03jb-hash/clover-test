@@ -213,4 +213,16 @@ public final class AddonEntities {
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.MagistrateVey>of(com.ironspellgrimoire.entity.MagistrateVey::new, MobCategory.MONSTER).sized(0.75F, 2.4F).clientTrackingRange(10).build("magistrate_vey"));
     public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Warden>> WARDEN = ENTITIES.register("vey_warden",
             () -> EntityType.Builder.<com.ironspellgrimoire.entity.Warden>of(com.ironspellgrimoire.entity.Warden::new, MobCategory.MONSTER).sized(0.66F, 2.2F).clientTrackingRange(8).build("vey_warden"));
+
+    /** ASHFALL, Arc III: Reeve Maren, Old Sedge, the Mirefolk refugees, Ashwick's militia, the Mother Below. */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.StoryNpc>> STORY_MAREN = ENTITIES.register("story_maren",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.StoryNpc>of((t, l) -> new com.ironspellgrimoire.entity.StoryNpc(t, l, "maren"), MobCategory.MISC).sized(0.6F, 1.95F).clientTrackingRange(10).build("story_maren"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.StoryNpc>> STORY_SEDGE = ENTITIES.register("story_sedge",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.StoryNpc>of((t, l) -> new com.ironspellgrimoire.entity.StoryNpc(t, l, "sedge"), MobCategory.MISC).sized(0.6F, 1.9F).clientTrackingRange(10).build("story_sedge"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.StoryNpc>> STORY_REFUGEE = ENTITIES.register("story_refugee",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.StoryNpc>of((t, l) -> new com.ironspellgrimoire.entity.StoryNpc(t, l, "refugee"), MobCategory.MISC).sized(0.6F, 1.9F).clientTrackingRange(10).build("story_refugee"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Militia>> MILITIA = ENTITIES.register("ashwick_militia",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Militia>of(com.ironspellgrimoire.entity.Militia::new, MobCategory.MISC).sized(0.6F, 1.95F).clientTrackingRange(8).build("ashwick_militia"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MotherBelow>> MOTHER_BELOW = ENTITIES.register("mother_below",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.MotherBelow>of(com.ironspellgrimoire.entity.MotherBelow::new, MobCategory.MONSTER).sized(1.3F, 3.8F).fireImmune().clientTrackingRange(12).build("mother_below"));
 }

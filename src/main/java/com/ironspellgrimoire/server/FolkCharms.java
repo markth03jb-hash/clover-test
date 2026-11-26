@@ -50,6 +50,8 @@ public final class FolkCharms {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || p.tickCount % 20 != 0) return;
+        STILL.compute(p.getUUID(), (k, v) -> v != null && Math.abs(v[0] - p.getX()) < 0.25 && Math.abs(v[1] - p.getZ()) < 0.25 ? v
+                : new double[]{p.getX(), p.getZ(), p.serverLevel().getGameTime()});   // where they stood still from
         if (wears(p, AddonItemRegistry.SLATE_RING.get())) {
             TimedModifiers.apply(p, Attributes.ARMOR, RING_ARMOR, "Slate Ring", 2, AttributeModifier.Operation.ADDITION, 30);
             TimedModifiers.apply(p, Attributes.KNOCKBACK_RESISTANCE, RING_KB, "Slate Ring", 0.15, AttributeModifier.Operation.ADDITION, 30);
@@ -65,6 +67,8 @@ public final class FolkCharms {
         if (e.getEntity() instanceof ServerPlayer v) {
             LAST_HIT.put(v.getUUID(), v.serverLevel().getGameTime());
             if (v.getHealth() < v.getMaxHealth() * 0.4f && wears(v, AddonItemRegistry.CINDER_TOKEN.get())) e.setAmount(e.getAmount() * 0.85f);
+            double[] still = STILL.get(v.getUUID());
+            if (still != null && v.serverLevel().getGameTime() - still[2] >= 20 && wears(v, AddonItemRegistry.SEDGE_REED.get())) e.setAmount(e.getAmount() * 0.88f);
             float vow = vow(v);
             if (vow < 1f) e.setAmount(e.getAmount() * vow);
         }
@@ -88,6 +92,19 @@ public final class FolkCharms {
 
     static final Map<UUID, Long> ROSARY = new HashMap<>();
     static final Map<UUID, long[]> SEAL = new HashMap<>();
+    static final Map<UUID, double[]> STILL = new HashMap<>();
+    static final Map<UUID, Long> BEADS = new HashMap<>();
+
+    /** Fenwater Beads: a kill heals 2 (once every 2 s). */
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void onKill(net.minecraftforge.event.entity.living.LivingDeathEvent e) {
+        if (e.isCanceled() || !(e.getSource().getEntity() instanceof ServerPlayer p) || e.getEntity() == p || !(e.getEntity() instanceof net.minecraft.world.entity.Mob)) return;
+        if (!wears(p, AddonItemRegistry.FENWATER_BEADS.get())) return;
+        long now = p.serverLevel().getGameTime();
+        if (now - BEADS.getOrDefault(p.getUUID(), -100L) < 40) return;
+        BEADS.put(p.getUUID(), now);
+        p.heal(2f);
+    }
     public static final int ROSARY_CD = 2400;
 
     /** Sallow's Rosary: the blow that would have killed you leaves you at 1 health (once every 2 minutes). */

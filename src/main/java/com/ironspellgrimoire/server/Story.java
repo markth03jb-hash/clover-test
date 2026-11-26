@@ -204,7 +204,7 @@ public final class Story {
         Party solo = create(p);
         solo.arc = pt.arc; solo.ch = pt.ch; solo.brand = pt.brand;
         solo.f = pt.f.copy(); solo.log.addAll(pt.log);
-        if (solo.arc == 2) StoryArc2.restartChapter(s, solo); else StoryArc1.restartChapter(s, solo);
+        if (solo.arc == 3) StoryArc3.restartChapter(s, solo); else if (solo.arc == 2) StoryArc2.restartChapter(s, solo); else StoryArc1.restartChapter(s, solo);
         for (ServerPlayer o : online(s, pt)) tell(o, p.getGameProfile().getName() + (kicked ? " was removed from the party." : " left the party."));
         tell(p, kicked ? "You were removed from the party. Your story goes on alone, from the start of the chapter." : "You left the party. Your story goes on alone, from the start of the chapter.");
         pt.dirty = true; solo.dirty = true;
@@ -306,7 +306,7 @@ public final class Story {
                 if (online(s, pt).size() > 1) o.sendSystemMessage(Component.literal("The party chose: ").withStyle(ChatFormatting.GOLD).append(Component.literal(t.choices[choice]).withStyle(ChatFormatting.YELLOW)));
             }
         }
-        if (pt.arc == 2) StoryArc2.onTalkDone(s, pt, t.id, choice); else StoryArc1.onTalkDone(s, pt, t.id, choice);
+        if (pt.arc == 3) StoryArc3.onTalkDone(s, pt, t.id, choice); else if (pt.arc == 2) StoryArc2.onTalkDone(s, pt, t.id, choice); else StoryArc1.onTalkDone(s, pt, t.id, choice);
         pt.dirty = true;
     }
 
@@ -324,17 +324,21 @@ public final class Story {
             case "brand" -> Brand.use(p);
             case "journal" -> sync(p, "journal");
             case "begin" -> begin(p);
-            case "enter" -> { if (pt != null) { if (pt.arc == 2) StoryArc2.enterRequest(p.server, pt, p); else StoryArc1.enterRequest(p.server, pt, p); } }
+            case "enter" -> { if (pt != null) { if (pt.arc == 3) StoryArc3.enterRequest(p.server, pt, p); else if (pt.arc == 2) StoryArc2.enterRequest(p.server, pt, p); else StoryArc1.enterRequest(p.server, pt, p); } }
             default -> {}
         }
     }
 
     static void begin(ServerPlayer p) {
         Party pt = ensure(p);
-        boolean next = pt.arc == 1 && pt.ch >= 5;   // Arc I done: the next arc begins
+        boolean next = nextArc(pt);   // an arc done: the next one begins
         if (pt.ch >= 0 && !next) { sync(p, "journal"); return; }
         if (!p.getUUID().equals(pt.leader)) { tell(p, "Only the party's leader can begin " + (next ? "the next arc." : "the story.")); return; }
-        if (next) StoryArc2.begin(p.server, pt); else StoryArc1.begin(p.server, pt);
+        if (next && pt.arc == 2) StoryArc3.begin(p.server, pt); else if (next) StoryArc2.begin(p.server, pt); else StoryArc1.begin(p.server, pt);
+    }
+
+    /** The party's arc is done and the next one is there to begin. */
+    static boolean nextArc(Party pt) { return pt.arc == 1 && pt.ch >= 5 || pt.arc == 2 && pt.ch >= 7;
     }
 
     // ================================================================== the journal and tracker
@@ -360,8 +364,9 @@ public final class Story {
                 ms.add(x);
             }
             t.put("members", ms);
-            if (pt.arc == 2) StoryArc2.journal(s, pt, t); else StoryArc1.journal(s, pt, t);
-            t.putBoolean("next", pt.arc == 1 && pt.ch >= 5);
+            if (pt.arc == 3) StoryArc3.journal(s, pt, t); else if (pt.arc == 2) StoryArc2.journal(s, pt, t); else StoryArc1.journal(s, pt, t);
+            t.putBoolean("next", nextArc(pt));
+            t.putString("nextName", pt.arc == 2 ? "Begin Arc III" : "Begin Arc II");
             if (pt.target) {
                 CompoundTag g = new CompoundTag();
                 g.putString("dim", pt.tdim); g.putDouble("x", pt.tx); g.putDouble("y", pt.ty); g.putDouble("z", pt.tz);
@@ -451,11 +456,12 @@ public final class Story {
                             c.getSource().sendSuccess(() -> Component.literal("Story: chapter " + pt.ch), true);
                             return 1;
                         })))
-                        .then(Commands.literal("arc").then(Commands.argument("arc", IntegerArgumentType.integer(1, 2)).then(Commands.argument("ch", IntegerArgumentType.integer(0, 7)).executes(c -> {
+                        .then(Commands.literal("arc").then(Commands.argument("arc", IntegerArgumentType.integer(1, 3)).then(Commands.argument("ch", IntegerArgumentType.integer(0, 7)).executes(c -> {
                             ServerPlayer p = c.getSource().getPlayerOrException();
                             Party pt = ensure(p);
                             int arc = IntegerArgumentType.getInteger(c, "arc"), ch = IntegerArgumentType.getInteger(c, "ch");
-                            if (arc == 2) { if (pt.arc != 2) StoryArc2.begin(p.server, pt); StoryArc2.toChapter(p.server, pt, ch); }
+                            if (arc == 3) { if (pt.arc != 3) StoryArc3.begin(p.server, pt); StoryArc3.toChapter(p.server, pt, ch); }
+                            else if (arc == 2) { if (pt.arc != 2) StoryArc2.begin(p.server, pt); StoryArc2.toChapter(p.server, pt, ch); }
                             else { pt.arc = 1; StoryArc1.toChapter(p.server, pt, ch); }
                             c.getSource().sendSuccess(() -> Component.literal("Story: arc " + pt.arc + ", chapter " + pt.ch), true);
                             return 1;

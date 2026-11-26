@@ -28,7 +28,8 @@ import net.minecraftforge.fml.common.Mod;
  *   <li><b>Brand I - Ember Surge</b> (Arc I): for 12 s your spells hit 20% harder, you move 10% faster and your
  *       melee blows burn for 3 more. Then it sleeps for 90 s.</li>
  *   <li><b>Brand II - Cinderheart</b> (Arc II): 30% and 15%, and your spells kindle what they hit (3 more, each foe
- *       at most twice a second) - but it takes 1 health every second it burns (never your last).</li>
+ *       at most twice a second) - but it takes 1 health every second it burns (never your last). Held (Arc III:
+ *       three fights won with it burning, never under half health), it takes 1 every two seconds.</li>
  * </ul>
  * The later stages (and what they cost) come with the later arcs.
  */
@@ -39,10 +40,10 @@ public final class Brand {
     public static final String[] NAMES = {"", "Ember Surge", "Cinderheart", "Cinderheart", "Cinderheart"};
     public static final int LASTS = 240, SLEEPS = 1800;
     static final UUID POWER = UUID.fromString("b4a2d000-0000-4000-8000-000000000001"), SPEED = UUID.fromString("b4a2d000-0000-4000-8000-000000000002");
-    /** When each mage's Brand burns until, and sleeps until (game time). */
+    /** Each mage's Brand: [burns until, sleeps until (game time), kills while it burned, 0 held / 1 fell under half / 2 counted]. */
     static final Map<UUID, long[]> STATE = new HashMap<>();
 
-    static long[] st(ServerPlayer p) { return STATE.computeIfAbsent(p.getUUID(), k -> new long[2]); }
+    static long[] st(ServerPlayer p) { return STATE.computeIfAbsent(p.getUUID(), k -> new long[4]); }
     public static boolean burning(ServerPlayer p) { return p.serverLevel().getGameTime() < st(p)[0]; }
 
     /** [ticks until it can burn again, ticks it still burns] for the HUD. */
@@ -58,7 +59,7 @@ public final class Brand {
         long now = p.serverLevel().getGameTime();
         long[] s = st(p);
         if (now < s[1]) { p.displayClientMessage(Component.literal("The Brand is spent. " + (s[1] - now + 19) / 20 + " s.").withStyle(ChatFormatting.GRAY), true); return; }
-        s[0] = now + LASTS; s[1] = now + SLEEPS;
+        s[0] = now + LASTS; s[1] = now + SLEEPS; s[2] = 0; s[3] = 0;
         double power = 0.2 + 0.1 * (stage - 1);
         TimedModifiers.apply(p, AttributeRegistry.SPELL_POWER.get(), POWER, "Ember Surge", power, AttributeModifier.Operation.MULTIPLY_BASE, LASTS);
         TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, SPEED, "Ember Surge", stage >= 2 ? 0.15 : 0.1, AttributeModifier.Operation.MULTIPLY_TOTAL, LASTS);
@@ -80,8 +81,15 @@ public final class Brand {
     public static void onPlayerTick(TickEvent.PlayerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || p.tickCount % 8 != 0) return;
         long[] s = STATE.get(p.getUUID());
-        if (s == null || p.serverLevel().getGameTime() >= s[0]) return;
-        if (Story.brand(p) >= 2 && p.tickCount % 20 == 0 && p.getHealth() > 1.5f) p.setHealth(Math.max(1f, p.getHealth() - 1f));   // Cinderheart takes its price
+        if (s == null) return;
+        if (p.serverLevel().getGameTime() >= s[0]) {   // it's gone out: was that fight held? (Arc III)
+            if (s[0] > 0 && s[3] != 2) { if (s[3] == 0 && s[2] > 0) StoryArc3.onBrandHeld(p); s[3] = 2; }
+            return;
+        }
+        if (p.getHealth() < p.getMaxHealth() * 0.5f) s[3] = 1;
+        Story.Party pt = Story.partyOf(p);
+        int every = pt != null && pt.flag("brandHeld") ? 40 : 20;   // held (Arc III): it takes half as much
+        if (Story.brand(p) >= 2 && p.tickCount % every == 0 && p.getHealth() > 1.5f) p.setHealth(Math.max(1f, p.getHealth() - 1f));   // Cinderheart takes its price
         Vec3 arm = p.position().add(Vec3.directionFromRotation(0, p.yBodyRot + 90).scale(-0.35)).add(0, 1.05, 0);   // the right arm
         Kit.orb(p.serverLevel(), Fx.FIRE, arm, new Vec3(0, 0.05, 0), 0.08f, 10);
     }
@@ -105,7 +113,16 @@ public final class Brand {
         Kit.orb(p.serverLevel(), Fx.FIRE, e.getEntity().position().add(0, e.getEntity().getBbHeight() * 0.6, 0), new Vec3(0, 0.08, 0), 0.25f, 8);
     }
 
+    /** A foe killed while the Brand burns (a fight to hold it through). */
+    @SubscribeEvent
+    public static void onKill(net.minecraftforge.event.entity.living.LivingDeathEvent e) {
+        if (!(e.getSource().getEntity() instanceof ServerPlayer p) || !(e.getEntity() instanceof Enemy) || !burning(p)) return;
+        st(p)[2]++;
+    }
+
     @SubscribeEvent public static void onStopping(net.minecraftforge.event.server.ServerStoppingEvent e) { STATE.clear(); KINDLED.clear(); }
 
     static void testReset(ServerPlayer p) { STATE.remove(p.getUUID()); }
+    /** Tests: as if a burn just ended - with a kill in it, and held or not. */
+    static void testBurnOut(ServerPlayer p, boolean held) { long[] s = st(p); s[0] = p.serverLevel().getGameTime() - 1; s[2] = 1; s[3] = held ? 0 : 1; }
 }

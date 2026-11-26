@@ -338,6 +338,102 @@ def tamsin_satchel():
     em.rbox("flap", (3.6, -2.7, 11.4), (3.2, 0.3, 1.6), "brownfur")
 
 
+# ---- ASHFALL, Arc III
+def seg(name, a, b, w, region, glow=False):
+    """A bar of width w from point a to point b (the limbs, horns and ribs are made of these)."""
+    d = [b[k] - a[k] for k in range(3)]
+    L = math.sqrt(sum(x * x for x in d)) or 0.01
+    tilt = math.acos(max(-1, min(1, d[2] / L)))
+    yaw = math.atan2(d[0], -d[1]) if abs(d[0]) + abs(d[1]) > 1e-6 else 0.0
+    o = em.rbox(name, tuple((a[k] + b[k]) / 2 for k in range(3)), (w, w, L), region, yaw=yaw, tilt=tilt)
+    if glow: GLOW.append(o)
+    return o
+
+def chain(name, pts, ws, region, joints=True, tip=None):
+    for i in range(len(pts) - 1):
+        seg("%s%d" % (name, i), pts[i], pts[i + 1], ws[i], region)
+        if joints and 0 < i: em.gem("%sj%d" % (name, i), pts[i], ws[i] * 0.75, ws[i] * 0.9, "teal", sides=5, glow=True)
+    if tip: seg(name + "tip", pts[-1], tip, ws[-1] * 0.6, "bone")
+
+def mother_crown():   # a tall horn, two swept-back horns hung with teal shards, a ring of spikes, and a broken halo behind
+    seg("horn", (0, 0, 0), (0, 1.4, 6), 1.5, "slate"); seg("horn2", (0, 1.4, 6), (0, 3.2, 10.5), 0.9, "slate")
+    em.gem("horntip", (0, 3.2, 10.4), 0.5, 1.4, "teal", sides=4, glow=True)
+    for sx in (-1, 1):
+        chain("sweep%d" % (sx > 0), [(sx * 3.2, 0.8, 0), (sx * 6.2, 3.4, 3.6), (sx * 7.4, 7.2, 3.0)], [1.2, 0.8], "slate", tip=(sx * 7.6, 9.4, 1.4))
+        em.gem("shard%d" % (sx > 0), (sx * 6.4, 3.6, 2.0), 0.6, 1.6, "teal", sides=4, glow=True)
+    for i in range(5):
+        a = (i - 2) * 0.5
+        em.gem("spike%d" % i, (math.sin(a) * 3.8, -math.cos(a) * 3.8 + 1, 0.2), 0.55, 1.6 + (i % 2), "slate", sides=4, glow=False)
+    for i in range(14):   # the halo, broken: every third piece missing
+        if i % 5 == 4: continue
+        a0, a1 = i * 2 * math.pi / 14, (i + 0.8) * 2 * math.pi / 14
+        p0 = (math.cos(a0) * 7, 5.5, -4 + math.sin(a0) * 7); p1 = (math.cos(a1) * 7, 5.5, -4 + math.sin(a1) * 7)
+        seg("halo%d" % i, p0, p1, 0.45, "teal" if i % 2 else "slate", glow=i % 2 == 1)
+
+def mother_limbs():   # four spider limbs off her back, arched over the shoulders, tipped in bone; shards hang in the air by them
+    for sx in (-1, 1):
+        chain("upper%d" % (sx > 0), [(sx * 2.2, 2.6, 21.5), (sx * 7.2, 7.5, 31.5), (sx * 11.5, 4.5, 28), (sx * 12.5, -3, 19)], [1.3, 1.0, 0.7], "slate", tip=(sx * 12.2, -5.5, 15.5))
+        chain("lower%d" % (sx > 0), [(sx * 2.2, 2.6, 16.5), (sx * 8, 8, 22), (sx * 12.5, 6, 15), (sx * 13.5, 0, 8)], [1.1, 0.85, 0.6], "slate", tip=(sx * 13.2, -2, 4.5))
+        em.gem("mote%d" % (sx > 0), (sx * 9.5, -4, 33), 0.5, 1.2, "teal", sides=4, glow=True)
+        em.gem("mote2%d" % (sx > 0), (sx * 15, 1, 24), 0.4, 1.0, "teal", sides=4, glow=True)
+
+def mother_heart():   # the heart in a cage of stone ribs, its light running out along veins
+    em.gem("heart", (0, -2.5, 17.5), 1.9, 2.8, "teal", sides=6, glow=True)
+    for k, z in enumerate((21, 19, 16.5, 14)):
+        for sx in (-1, 1):
+            seg("rib%d%d" % (k, sx > 0), (sx * 3.6, -1.6, z), (sx * 1.0, -2.8, z - 1.0 - k * 0.2), 0.6, "slate")
+    for sx in (-1, 1):
+        seg("vein%d" % (sx > 0), (sx * 0.8, -2.25, 18.5), (sx * 3.4, -2.25, 22.5), 0.25, "teal", glow=True)
+        seg("vein2%d" % (sx > 0), (sx * 0.8, -2.25, 16), (sx * 3.2, -2.25, 12.6), 0.25, "teal", glow=True)
+
+def mother_pauldrons():   # layered shell on each shoulder, three spikes rising off it
+    for sx in (-1, 1):
+        for k in range(3):
+            em.rbox("shell%d%d" % (sx > 0, k), (sx * (5.6 + k * 0.5), 0, 24.6 - k * 1.4), (5.0 - k * 0.6, 5.2, 1.4), "slate", roll=sx * (0.3 + k * 0.15), bevel=0.3)
+        for k, (x, z, h) in enumerate([(4.6, 25.4, 2.6), (6.2, 25.0, 3.4), (7.6, 24.2, 2.4)]):
+            em.gem("pspike%d%d" % (sx > 0, k), (sx * x, 0, z), 0.5, h, "bone", sides=4, glow=False)
+
+def mother_skirt():   # a skirt of hive comb hanging from her waist, its cells lit; tendrils trailing under it
+    for i in range(10):
+        a = i * 2 * math.pi / 10
+        cx, cy = math.cos(a) * 4.6, math.sin(a) * 3.0
+        em.rbox("comb%d" % i, (cx, cy, 6.5), (3.0, 0.8, 11 - (i % 3)), "slate", yaw=a + math.pi / 2, tilt=0.12 * math.sin(a), bevel=0.2)
+        for k, z in enumerate((9.5, 5.5)):
+            em.box("cell%d%d" % (i, k), (cx * 1.12, cy * 1.12, z), (0.9, 0.9, 0.9), "teal", glow=True)
+    for i, (x, y) in enumerate([(-2.2, -2.6), (1.8, -2.8), (-3.5, 2.4), (3.2, 2.6)]):
+        seg("tendril%d" % i, (x, y, 3), (x * 1.3, y * 1.4, -0.5), 0.4, "slate")
+        em.gem("drop%d" % i, (x * 1.3, y * 1.4, -0.6), 0.35, 0.6, "teal", sides=4, glow=True)
+
+def mother_claw():   # three hooked talons fanned from the fist, their inner edges lit
+    for k in range(3):
+        off = (k - 1) * 0.9
+        em.prism("talon%d" % k, [(-0.5 + off, 0), (0.6 + off, 0), (1.2 + off * 1.6, 6.5), (3.6 + off * 1.4, 10.5), (2.4 + off * 1.4, 11.4), (-0.1 + off * 1.6, 7.2)], -0.35, 0.35, "slate")
+        em.prism("edge%d" % k, [(0.5 + off, 1), (0.8 + off, 1), (1.4 + off * 1.6, 6.4), (3.4 + off * 1.4, 10.1), (3.0 + off * 1.4, 10.5), (1.0 + off * 1.6, 6.9)], -0.4, 0.4, "teal", glow=True)
+    em.rbox("knuckle", (0, 0, 0), (3.6, 1.4, 1.2), "slate", bevel=0.2)
+
+def boar_spear():
+    cyl("haft", (0, 0, -9), 0.5, 27, "wood", sides=6)
+    em.prism("head", [(-0.9, 17.5), (0.9, 17.5), (0.5, 21.5), (0, 23.5), (-0.5, 21.5)], -0.3, 0.3, "steel")
+    em.rbox("lug", (0, 0, 17.2), (2.8, 0.5, 0.5), "iron")
+
+def round_shield():
+    em.torus("rim", (0, 0, 0), 4.2, 0.5, "iron", sx=1.0, M=14, N=4)
+    em.gem("boss", (0, -0.6, 0), 1.1, 0.9, "iron", sides=8, glow=False)
+    for i in range(5): em.rbox("plank%d" % i, ((i - 2) * 1.6, 0, 0), (1.5, 0.6, 7.6 - abs(i - 2) * 1.8), "wood")
+
+def sedge_cane():   # a gnarled cane, a bundle of reeds tied at the top, a bone charm hanging
+    em.rbox("lower", (0, 0, -3), (0.8, 0.8, 9), "bark")
+    em.rbox("upper", (0.4, 0, 5.5), (0.7, 0.7, 8), "bark", roll=-0.12)
+    for i in range(5): em.rbox("reed%d" % i, (0.6 + (i - 2) * 0.35, 0, 11.5), (0.25, 0.25, 4 + (i % 2)), "moss", roll=(i - 2) * 0.12)
+    em.torus("tie", (0.6, 0, 9.8), 0.7, 0.18, "rope", M=8, N=4)
+    em.gem("charm", (1.6, 0, 8.4), 0.5, 0.8, "bone", sides=4, glow=False)
+
+def pitchfork():
+    cyl("haft", (0, 0, -8), 0.45, 24, "wood", sides=6)
+    em.rbox("bar", (0, 0, 16.2), (3.2, 0.5, 0.5), "iron")
+    for x in (-1.3, 0, 1.3): em.rbox("tine%d" % int(x * 10), (x, 0, 18.3), (0.35, 0.35, 4.2), "iron")
+
+
 GEAR = {"ice_axe": ice_axe, "fur_mantle": fur_mantle, "ice_staff": ice_staff, "ice_crown": ice_crown, "frost_greatsword": frost_greatsword,
         "fur_cloak": fur_cloak, "hook_claw": hook_claw, "fork_staff": fork_staff, "stone_shell": stone_shell, "heart_lantern": heart_lantern,
         "tower_shield": tower_shield, "flanged_mace": flanged_mace, "iron_greatsword": iron_greatsword, "wrist_chain": wrist_chain,
@@ -347,10 +443,13 @@ GEAR = {"ice_axe": ice_axe, "fur_mantle": fur_mantle, "ice_staff": ice_staff, "i
         "sand_mantle": sand_mantle, "sun_disc": sun_disc, "glaive": glaive, "hooked_blade": hooked_blade, "gloam_hood": gloam_hood, "coat_tails": coat_tails,
         "knight_longsword": spun(knight_longsword, 90), "half_cloak": half_cloak, "sallow_mitre": sallow_mitre, "brand_knife": spun(brand_knife, -90), "reliquary": reliquary, "rust_sickle": spun(rust_sickle, 90),
         "vey_mantle": vey_mantle, "chain_of_office": chain_of_office, "ledger_staff": ledger_staff, "warden_halberd": spun(warden_halberd, 90),
-        "warden_crest": warden_crest, "tamsin_wand": tamsin_wand, "tamsin_satchel": tamsin_satchel}
+        "warden_crest": warden_crest, "tamsin_wand": tamsin_wand, "tamsin_satchel": tamsin_satchel,
+        "mother_crown": mother_crown, "mother_heart": mother_heart, "mother_claw": spun(mother_claw, 90), "mother_limbs": mother_limbs,
+        "mother_pauldrons": mother_pauldrons, "mother_skirt": mother_skirt,
+        "boar_spear": spun(boar_spear, 90), "round_shield": round_shield, "sedge_cane": sedge_cane, "pitchfork": spun(pitchfork, 90)}
 # the grip's middle goes in the fist
 rm.GRIP.update({"knight_longsword": 2.4, "brand_knife": 1.9, "rust_sickle": 0.5, "tamsin_wand": 1.5,
-               "ledger_staff": -5.5, "warden_halberd": -4.5})   # (a pole is held a little below its middle, upright)
+               "ledger_staff": -5.5, "warden_halberd": -4.5, "boar_spear": -4, "pitchfork": -4, "sedge_cane": -1})   # (a pole is held a little below its middle, upright)
 rm.GEAR.update(GEAR)
 
 def hand(side, arm, slim=False, k=1.0, reach=10.0):
@@ -433,6 +532,22 @@ fam("sallow", False, 1.3, {"rarm": (-45, 0, -6), "larm": (-15, 0, 6)}, [
 fam("penitent", False, 1.0, {"rarm": (-40, 0, -6)}, [
     ("rust_sickle", "RARM", -40, hand(-1, -40), (80, 0, 0), 1.4)])
 fam("ilsa", True, 0.95, {}, [])
+# ASHFALL, Arc III
+fam("mother", False, 1.9, {"rarm": (-35, 0, -6), "larm": (-35, 0, 6)}, [
+    ("mother_crown", "HEAD", 0, (0, 0, 32 * 1.9), (0, 0, 0), 1.9),
+    ("mother_heart", "BODY", 0, (0, 0, 0), (0, 0, 0), 1.9),
+    ("mother_limbs", "BODY", 0, (0, 0, 0), (0, 0, 0), 1.9),
+    ("mother_pauldrons", "BODY", 0, (0, 0, 0), (0, 0, 0), 1.9),
+    ("mother_skirt", "BODY", 0, (0, 0, 0), (0, 0, 0), 1.9),
+    ("mother_claw", "RARM", -35, hand(-1, -35, False, 1.9), (75, 0, 0), 1.9),
+    ("mother_claw", "LARM", -35, hand(1, -35, False, 1.9), (75, 0, 0), 1.9)])
+fam("maren", True, 1.0, {"rarm": (-15, 0, -6), "larm": (-25, 0, 6)}, [
+    ("boar_spear", "RARM", -15, hand(-1, -15, True), (0, 0, 0), 1),
+    ("round_shield", "LARM", -25, (7.2, -5.2, 13), (0, 0, 10), 1)])
+fam("sedge", False, 0.95, {"larm": (-20, 0, 6)}, [
+    ("sedge_cane", "LARM", -20, hand(1, -20, False, 0.95), (0, 0, 0), 0.95)])
+fam("militia", False, 1.0, {"rarm": (-15, 0, -6)}, [
+    ("pitchfork", "RARM", -15, hand(-1, -15), (0, 0, 0), 1)])
 # ASHFALL, Arc II
 fam("vey", False, 1.25, {"larm": (-25, 0, 6)}, [
     ("vey_mantle", "BODY", 0, (0, 0, 0), (0, 0, 0), 1.25),
@@ -489,9 +604,10 @@ def paint_into(out):
 
 ORDER = ["bog_crawler", "mire_hexer", "fen_matron", "scree_brute", "stonecaller", "peak_warden", "dune_stalker", "sandwraith", "sun_herald", "gloamstalker"]
 NEW = ["rime_brute", "frost_chanter", "hoarfrost_jarl", "hollow_crawler", "hollow_singer", "deepwarden", "twin_haldric", "twin_oswin"]
-STORY = ["corvin", "sallow", "penitent", "ilsa", "vey", "warden", "tamsin"]
-STORY1, STORY2 = STORY[:4], STORY[4:]
-NAMES = {"vey": "Magistrate Vey (boss)", "warden": "Vey's Warden", "tamsin": "Tamsin Reed",
+STORY = ["corvin", "sallow", "penitent", "ilsa", "vey", "warden", "tamsin", "mother", "maren", "sedge", "militia"]
+STORY1, STORY2, STORY3 = STORY[:4], STORY[4:7], STORY[7:]
+NAMES = {"mother": "The Mother Below (boss)", "maren": "Reeve Maren of Ashwick", "sedge": "Old Sedge (Mirefolk elder)", "militia": "Ashwick militia",
+         "vey": "Magistrate Vey (boss)", "warden": "Vey's Warden", "tamsin": "Tamsin Reed",
          "corvin": "Corvin Hale (mentor)", "sallow": "Father Sallow (boss)", "penitent": "Penitent (Sallow's freed)", "ilsa": "Ilsa Marr (the other survivor)",
          "rime_brute": "Rime Brute", "frost_chanter": "Frost Chanter", "hoarfrost_jarl": "Hoarfrost Jarl (leader)", "hollow_crawler": "Hollow Crawler",
          "hollow_singer": "Hollow Singer", "deepwarden": "Deepwarden (leader)", "twin_haldric": "Ser Haldric (Ironbound Twin)", "twin_oswin": "Ser Oswin (Ironbound Twin)",
@@ -553,8 +669,9 @@ if __name__ == "__main__":
     if mode == "render": render(out, sys.argv[3])
     if mode == "render_new": render(out, sys.argv[3], (("c", NEW[:6]), ("d", NEW[6:])))
     if mode == "render_story":
-        CAM = (64, 27)
+        CAM = (92, 40)
         if len(sys.argv) > 4: VIEWS = (("side", -90), ("top", 0)) if sys.argv[4] == "side" else (("front0", 0), ("side", -90))
-        render(out, sys.argv[3], (("story1", STORY1),) if len(sys.argv) > 5 else (("story2", STORY2),))
+        if os.environ.get("CAMZ"): CAM = tuple(float(v) for v in os.environ["CAMZ"].split(","))
+        render(out, sys.argv[3], ((os.environ.get("SHEET", "story3"), [n for n in STORY3 if n in os.environ.get("ONLY", ",".join(STORY3)).split(",")]),))
     if mode == "game": to_game(out)
     if mode == "java": print(java())

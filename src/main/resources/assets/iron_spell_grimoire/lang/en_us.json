@@ -1678,5 +1678,12 @@
   "entity.iron_spell_grimoire.magistrate_vey": "Magistrate Vey",
   "entity.iron_spell_grimoire.vey_warden": "Vey's Warden",
   "item.iron_spell_grimoire.vey_seal": "Vey's Seal",
-  "item.iron_spell_grimoire.cinder_token": "Cindermarch Token"
+  "item.iron_spell_grimoire.cinder_token": "Cindermarch Token",
+  "entity.iron_spell_grimoire.story_maren": "Reeve Maren",
+  "entity.iron_spell_grimoire.story_sedge": "Old Sedge",
+  "entity.iron_spell_grimoire.story_refugee": "Mirefolk Refugee",
+  "entity.iron_spell_grimoire.ashwick_militia": "Ashwick Militia",
+  "entity.iron_spell_grimoire.mother_below": "The Mother Below",
+  "item.iron_spell_grimoire.sedge_reed": "Sedge's Reed",
+  "item.iron_spell_grimoire.fenwater_beads": "Fenwater Beads"
 }
