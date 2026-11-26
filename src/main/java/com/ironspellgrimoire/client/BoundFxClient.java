@@ -136,7 +136,10 @@ public final class BoundFxClient {
         float a = (float) Mth.clamp((p.life - age) / 4, 0, 1);
         Vec3 f = p.d.normalize();
         Vec3 up = p.u.lengthSqr() < 1e-4 ? UP : p.u.normalize();
-        Vec3 side = f.cross(up).lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : f.cross(up).normalize();
+        Vec3 side0 = f.cross(up).lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : f.cross(up).normalize();
+        double roll = (hash(p.a1 * 7) - 0.5) * 1.3;   // each cut at its own slant, so it never reads as a flat line
+        Vec3 up0 = side0.cross(f).normalize();
+        Vec3 side = side0.scale(Math.cos(roll)).add(up0.scale(Math.sin(roll)));
         double R = p.r > 0 ? p.r : 2, th = (p.r2 > 0 ? p.r2 : 1) * 0.35 * R / 2, sweep = p.a0 != 0 ? p.a0 : 2.4;
         int N = 22;
         Vec3[] outer = new Vec3[N + 1], inner = new Vec3[N + 1];
