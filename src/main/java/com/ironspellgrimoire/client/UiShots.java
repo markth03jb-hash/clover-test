@@ -874,6 +874,10 @@ public final class UiShots {
         steps.add(new Step("bd_tree_salt", () -> { mc.setScreen(null); BookTreeScreen.forceHover = "s6"; onServer(p -> UiShotsServer.element(p, "B:tree")); }, 10, false));
         steps.add(new Step("bd_wheel", () -> { mc.setScreen(null); BookTreeScreen.forceHover = null; BookTreeWheel.forceHover = 0; mc.setScreen(new BookTreeWheel()); }, 8, false));
         steps.add(new Step("bd_takeover", () -> { mc.setScreen(null); BookTreeWheel.forceHover = -1; mc.options.hideGui = false; mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "B:takeover")); }, 30, true));
+        steps.add(new Step("bd_hold_fp", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "B:hold")); }, 10, true));   // the katana: in first person,
+        steps.add(new Step("bd_hold_front", () -> mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT), 6, true));   // ...from the front
+        steps.add(new Step("bd_hold_side", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); mc.player.setYRot(mc.player.getYRot() + 90); }, 6, true));   // ...and the side
+        steps.add(new Step("bd_hold_back", () -> mc.player.setYRot(mc.player.getYRot() - 90), 6, true));
         steps.add(new Step("bd_awake", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.element(p, "B:awake")); }, 16, true));
         steps.add(new Step("bd_black", () -> onServer(p -> UiShotsServer.element(p, "B:black")), 16, true));
         steps.add(new Step("bd_clear", () -> { mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.element(p, "B:clear")); }, 4, true));
@@ -963,6 +967,7 @@ public final class UiShots {
                     "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json", "textures/geo/shadow_ravener_living.png",
                     "geo/mantle_helm.geo.json", "geo/mantle_chest.geo.json", "geo/mantle_arm.geo.json", "geo/mantle_leg.geo.json", "textures/item/nightfang.png", "models/item/nightfang_3d.json",
                     "models/item/duskglass_kris.json", "geo/item/dragon_fang.geo.json", "textures/item/dragon_fang.png", "models/item/gilded_thorn.obj", "textures/item/gilded_thorn.png", "models/item/bloodrend.obj", "textures/item/bloodrend.png", "models/item/rosewrath.obj", "textures/item/rosewrath.png", "models/item/frostwing.obj", "textures/item/frostwing.png"},
+            {"bd_", "textures/item/rivals.png", "models/item/demon_katana.obj", "models/item/demon_katana.json", "models/item/bound_wing.obj", "models/item/seraph_halo.obj"},
             {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"},
             // the gear the families, the Twins and ASHFALL's people hold is on the rivals' sheet; their skins are their own
             {"folk_", "textures/item/rivals.png", "models/item/rival_bog_club.obj", "models/item/rival_hooked_blade.obj"},

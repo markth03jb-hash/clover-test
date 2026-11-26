@@ -450,6 +450,12 @@ public final class UiShotsServer {
                 BoundFx.testFeed(p, 100f);
                 BookTree.sync(p, false);
             }
+            case "hold" -> {
+                for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+                BoundFx.testReset(p);
+                BoundFx.draw(p, false);
+                p.setXRot(0);
+            }
             case "awake" -> {
                 for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
                 BoundFx.testReset(p);

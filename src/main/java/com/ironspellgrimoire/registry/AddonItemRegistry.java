@@ -128,6 +128,7 @@ public class AddonItemRegistry {
     public static final RegistryObject<Item> DEMON_KATANA = ITEMS.register("demon_katana", com.ironspellgrimoire.item.DemonKatanaItem::new);
     public static final RegistryObject<Item> BOUND_WING = ITEMS.register("bound_wing", com.ironspellgrimoire.item.BoundWingItem::new);
     public static final RegistryObject<Item> BOUND_WING_BLACK = ITEMS.register("bound_wing_black", com.ironspellgrimoire.item.BoundWingItem::new);
+    public static final RegistryObject<Item> SERAPH_HALO = ITEMS.register("seraph_halo", com.ironspellgrimoire.item.BoundWingItem::new);
     public static final RegistryObject<Item> VECTOR_GRIMOIRE = ITEMS.register("vector_grimoire", com.ironspellgrimoire.item.VectorGrimoireItem::new);
     public static final RegistryObject<Item> FUSE_GRIMOIRE = ITEMS.register("fuse_grimoire", com.ironspellgrimoire.item.FuseGrimoireItem::new);
     public static final RegistryObject<Item> FORESEEN_GRIMOIRE = ITEMS.register("foreseen_grimoire", com.ironspellgrimoire.item.ForeseenGrimoireItem::new);
