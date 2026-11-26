@@ -1807,7 +1807,7 @@ final class GameTestCases {
                     if (!star.sealed()) bad.add("it isn't sealed while the guardians stand");
                     FallingStars.take(star, p);
                     if (!star.isAlive()) bad.add("it could be taken with its guardians up");
-                    for (var id : star.guardians) if (sl().getEntity(id) instanceof Mob g) g.kill();
+                    for (var id : star.guardians) if (sl().getEntity(id) instanceof Mob g) { g.kill(); if (g.isAlive()) g.kill(); }   // (an elite's Second Wind takes the first)
                 }
                 if (t == 100) {
                     if (star.sealed()) bad.add("still sealed with its guardians down");
