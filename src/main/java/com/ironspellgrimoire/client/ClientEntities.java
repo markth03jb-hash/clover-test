@@ -38,6 +38,11 @@ public final class ClientEntities {
         e.registerEntityRenderer(AddonEntities.STORY_ILSA.get(), c -> new RivalRenderer<>(c, "story_ilsa", true, 0.95F));
         e.registerEntityRenderer(AddonEntities.PENITENT.get(), c -> new RivalRenderer<>(c, "story_penitent", false, 1.0F));
         e.registerEntityRenderer(AddonEntities.FATHER_SALLOW.get(), c -> new RivalRenderer<>(c, "story_sallow", false, 1.3F));
+        e.registerEntityRenderer(AddonEntities.STORY_TAMSIN.get(), c -> new RivalRenderer<>(c, "story_tamsin", true, 0.95F));
+        e.registerEntityRenderer(AddonEntities.TAMSIN_DUELIST.get(), c -> new RivalRenderer<>(c, "story_tamsin", true, 0.95F));
+        e.registerEntityRenderer(AddonEntities.STORY_VEY.get(), c -> new RivalRenderer<>(c, "story_vey", false, 1.25F));
+        e.registerEntityRenderer(AddonEntities.MAGISTRATE_VEY.get(), c -> new RivalRenderer<>(c, "story_vey", false, 1.25F));
+        e.registerEntityRenderer(AddonEntities.WARDEN.get(), c -> new RivalRenderer<>(c, "story_warden", false, 1.15F));
         for (var en : AddonEntities.FOLK.entrySet()) { var k = en.getKey(); e.registerEntityRenderer(en.getValue().get(), c -> new RivalRenderer<>(c, k.skin(), k.slim, k.size)); }
         e.registerEntityRenderer(AddonEntities.REFLECTION.get(), ReflectionRenderer::new);
         e.registerEntityRenderer(AddonEntities.OMEN_AFTERIMAGE.get(), OmenAfterimageRenderer::new);

@@ -410,10 +410,76 @@ def ilsa_marr():
 STORY = (corvin_hale, father_sallow, penitent, ilsa_marr)
 
 
+# ---- ASHFALL, Arc II ("The Proving")
+GOLD = (206, 164, 64)
+
+def magistrate_vey():
+    """Magistrate Vey: tall and pale, grey hair combed flat, amber eyes; black robes edged in gold, gold cuffs."""
+    s = Skin(211, False)
+    skin, hair, robe = (226, 214, 200), (96, 98, 104), (28, 26, 32)
+    s.face(skin, hair, (214, 168, 60), brow=(70, 70, 76), mouth=(150, 110, 104), fringe=1, sides=3)
+    for i in (2, 5): s.px("head", "front", i, 6, shade(skin, 0.88))   # the thin smile's lines
+    s.clear("hat")
+    s.fill("body", robe, 6, grain="v")
+    s.fill("jacket", robe, 6, grain="v")
+    for f in ("front", "back"):
+        for j in range(12):
+            for i in (2, 5): s.px("jacket", f, i, j, GOLD, 8)
+        s.rows("jacket", f, 11, 12, GOLD, 8)
+    for j in (3, 6, 9): s.px("jacket", "front", 3, j, GOLD); s.px("jacket", "front", 4, j, GOLD)
+    for a, sl in (("rarm", "rsleeve"), ("larm", "lsleeve")):
+        s.fill(a, skin, 6); s.fill(sl, robe, 6)
+        cut(s, sl, 11, 12)
+        s.ring(sl, 9, 11, GOLD, 8)
+    for l, p in (("rleg", "rpants"), ("lleg", "lpants")):
+        s.fill(l, robe, 6); s.fill(p, robe, 6, grain="v"); s.ring(p, 10, 12, GOLD, 8); s.ring(l, 11, 12, (20, 18, 22), 4)
+    s.save("story_vey")
+
+
+def warden():
+    """Vey's Wardens: black-lacquered plate edged in gold, a smooth gold mask with one dark slit for the eyes."""
+    s = Skin(212, False)
+    plate, dark = (34, 32, 38), (18, 18, 22)
+    s.fill("head", plate, 6)
+    s.rows("head", "front", 0, 8, GOLD, 6)
+    for i in range(1, 7): s.px("head", "front", i, 3, (12, 10, 10), 2)   # the slit
+    for j in range(4, 7): s.px("head", "front", 3, j, shade(GOLD, 0.8)); s.px("head", "front", 4, j, shade(GOLD, 0.8))   # the nose ridge
+    s.clear("hat")
+    s.fill("body", plate, 8, grain="h")
+    s.fill("jacket", plate, 8, grain="h")
+    for f in ("front", "back"):
+        s.rows("jacket", f, 0, 1, GOLD, 6); s.rows("jacket", f, 7, 8, GOLD, 6)
+        for j in range(12): s.px("jacket", f, 0, j, GOLD, 6); s.px("jacket", f, 7, j, GOLD, 6)
+    limbs(s, plate, plate, foot=dark, hand=dark, cuff=GOLD)
+    for a in ("rarm", "larm"): s.ring(a, 4, 5, GOLD, 6)
+    for l in ("rleg", "lleg"): s.ring(l, 4, 5, GOLD, 6)
+    s.save("story_warden")
+
+
+def tamsin_reed():
+    """Tamsin Reed: a young hedge-mage - copper hair in a braid, freckles, a patched green tunic, sleeves rolled up, a satchel strap."""
+    s = Skin(213, True)
+    skin, hair, tunic, patch, strap = (228, 192, 162), (178, 86, 40), (72, 98, 60), (120, 88, 56), (88, 60, 38)
+    s.face(skin, hair, (90, 150, 80), mouth=(170, 104, 96), fringe=2, sides=6)
+    for i, j in ((1, 5), (2, 5), (5, 5), (6, 5)): s.px("head", "front", i, j, shade(skin, 0.8), 2)   # freckles
+    s.clear("hat")
+    for j in range(2, 8): s.px("hat", "left", 6, j, hair, 10); s.px("hat", "left", 5, j, shade(hair, 0.85), 10)   # the braid over one shoulder
+    s.fill("body", tunic, 10, grain="v")
+    for i, j in ((1, 7), (2, 7), (1, 8), (2, 8), (5, 3), (6, 3)): s.px("body", "front", i, j, patch, 8)
+    s.clear("jacket")
+    for j in range(12): s.px("jacket", "front", j * 7 // 11, j, strap, 6); s.px("jacket", "back", 7 - j * 7 // 11, j, strap, 6)
+    s.ring("jacket", 9, 10, strap, 6)
+    limbs(s, skin, (96, 72, 50), foot=(60, 44, 32))
+    for sl in ("rsleeve", "lsleeve"): s.fill(sl, tunic, 8); cut(s, sl, 5, 12)
+    s.save("story_tamsin")
+
+STORY2 = (magistrate_vey, warden, tamsin_reed)
+
+
 ALL = (rime_brute, frost_chanter, hoarfrost_jarl, hollow_crawler, hollow_singer, deepwarden, twin_haldric, twin_oswin,
        bog_crawler, mire_hexer, fen_matron, scree_brute, stonecaller, peak_warden, dune_stalker, sandwraith, sun_herald, gloamstalker)
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    for f in ALL + STORY: f()
+    for f in ALL + STORY + STORY2: f()
     print("family skins written to", OUT)

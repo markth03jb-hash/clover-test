@@ -170,8 +170,6 @@ public final class SallowAI {
 
     /** Brought to the last of his health: he kneels, and the party decides. */
     public static void yieldNow(FatherSallow b) {
-        b.setYielded(true);
-        b.getNavigation().stop();
         if (b.level() instanceof ServerLevel sl) {
             BossFx.ring(sl, Fx.FIRE, b.position().add(0, 0.1, 0), 3f, 0.2f, 0.08f, 16);
             sl.playSound(null, b.blockPosition(), SoundEvents.BELL_RESONATE, SoundSource.HOSTILE, 1.2f, 0.5f);

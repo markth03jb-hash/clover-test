@@ -1671,5 +1671,12 @@
   "item.iron_spell_grimoire.sallow_hook": "Sallow's Hook",
   "item.iron_spell_grimoire.sallow_rosary": "Sallow's Rosary",
   "key.iron_spell_grimoire.brand": "The Brand (ASHFALL)",
-  "key.iron_spell_grimoire.journal": "Story Journal (ASHFALL)"
+  "key.iron_spell_grimoire.journal": "Story Journal (ASHFALL)",
+  "entity.iron_spell_grimoire.story_tamsin": "Tamsin Reed",
+  "entity.iron_spell_grimoire.tamsin_duelist": "Tamsin Reed",
+  "entity.iron_spell_grimoire.story_vey": "Magistrate Vey",
+  "entity.iron_spell_grimoire.magistrate_vey": "Magistrate Vey",
+  "entity.iron_spell_grimoire.vey_warden": "Vey's Warden",
+  "item.iron_spell_grimoire.vey_seal": "Vey's Seal",
+  "item.iron_spell_grimoire.cinder_token": "Cindermarch Token"
 }

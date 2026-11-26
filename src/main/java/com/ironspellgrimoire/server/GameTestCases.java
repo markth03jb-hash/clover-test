@@ -409,6 +409,8 @@ final class GameTestCases {
         queue.add(new StoryFlowTest());
         queue.add(new StoryPartsTest());
         queue.add(new SallowTest());
+        queue.add(new ProvingTest(false));
+        queue.add(new ProvingTest(true));
         queue.add(new MultiplayerTest());
         queue.add(new StressTest());
         queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
@@ -3697,6 +3699,123 @@ final class GameTestCases {
                 }
                 return false;
             } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); try { storyHome(); } catch (Throwable ignored) {} clearArea(); return true; }
+        }
+    }
+
+
+    /**
+     * ASHFALL, Arc II, played through by a script: whatever the story is waiting for, the test does - reads the
+     * scenes, steps on the circles, brings the bouts down, walks the catacomb - and checks the milestones on the way.
+     * From the start (to the ledger), or from the ledger to the end (throwing the final).
+     */
+    static final class ProvingTest extends Test {
+        final boolean late;
+        ProvingTest(boolean late) { super(late ? "ASHFALL Arc II: the catacomb, the semifinal, the thrown final, the vault, Brand II" : "ASHFALL Arc II: Cindermarch, the qualifiers, Brannoch, Tamsin"); this.late = late; }
+        @Override Class<?>[] roots() { return new Class<?>[]{Story.class, StoryArc1.class, StoryArc2.class, StoryStage.class, StoryStage2.class, Brand.class, TamsinAI.class, VeyAI.class, Rivals.class,
+                com.ironspellgrimoire.entity.TamsinDuelist.class, com.ironspellgrimoire.entity.MagistrateVey.class, com.ironspellgrimoire.entity.Warden.class, com.ironspellgrimoire.entity.YieldingBoss.class}; }
+        final List<String> bad = new ArrayList<>(), seen = new ArrayList<>();
+        Story.Party pt;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+            Story.testClear(p.server);
+            Brand.testReset(p);
+            pt = Story.testParty(p);
+            StoryArc1.toChapter(p.server, pt, 5);
+            Story.begin(p);
+            if (late) StoryArc2.toChapter(p.server, pt, 3);
+        }
+        void go(int place, double x, double y, double z) { var at = StoryStage.at(pt.id, place, x, y, z); p.teleportTo(StoryStage.rift(p.server), at.x, at.y, at.z, 0, 0); }
+        void mark(String m) { if (!seen.contains(m)) seen.add(m); }
+        @Override boolean tick(int t) {
+            try {
+                var s = p.server;
+                var rift = StoryStage.rift(s);
+                if (t == 1) {
+                    if (pt.arc != 2 || !pt.flag("built2") || !StoryStage.inside(p, pt, StoryStage.ARENA)) bad.add("Arc II didn't begin in the arena (arc " + pt.arc + ", ch " + pt.ch + ")");
+                    return false;
+                }
+                if (t > (late ? 2200 : 1800)) {
+                    bad.add("stuck at chapter " + pt.ch + " step " + pt.step + " (seen: " + String.join(", ", seen) + ")");
+                    finish();
+                    return true;
+                }
+                if (t % 5 != 0) return false;
+                if (pt.talk != null) {
+                    mark(pt.talk.id);
+                    if (pt.talk.choices.length > 0) Story.vote(p, pt, pt.talk.id, 1);   // throw the final
+                    else Story.resolve(s, pt);
+                    return false;
+                }
+                if (!late && pt.ch >= 3) { finish(); return true; }
+                if (pt.ch >= 7) { finish(); return true; }
+                switch (pt.ch) {
+                    case 0 -> {
+                        if (pt.step == 1) go(StoryStage.ARENA, 0, 0, 0);
+                        if (pt.step == 2) { if (!StoryArc2.bouts(rift, pt).isEmpty()) mark("qualifier"); StoryArc2.testClearBout(s, pt); }
+                        if (pt.step == 3) go(StoryStage.ARENA, 2, 0, 34);
+                    }
+                    case 1, 4 -> {
+                        if (pt.step == 0) go(StoryStage.ARENA, 0, 0, 0);
+                        if (pt.step == 1) for (var m : StoryArc2.bouts(rift, pt)) if (m instanceof com.ironspellgrimoire.entity.Rival r && !r.yielded) { mark("rival" + pt.ch); Rivals.yieldNow(r); }
+                    }
+                    case 2 -> {
+                        if (pt.step == 0) go(StoryStage.ARENA, 0, 0, 0);
+                        if (pt.step == 1) for (var m : StoryArc2.bouts(rift, pt)) if (m instanceof com.ironspellgrimoire.entity.TamsinDuelist d) {
+                            mark("tamsin bout");
+                            d.setTransforming(0); d.setHealth(3f); d.hurt(p.damageSources().playerAttack(p), 10f);
+                            if (!d.isAlive()) bad.add("a blow killed Tamsin - she should yield");
+                        }
+                        if (pt.step == 4) go(StoryStage.ARENA, 2, 0, 34);
+                    }
+                    case 3 -> {
+                        for (int i = 0; i < StoryStage2.ROOMS.length; i++) {
+                            int[] rm = StoryStage2.ROOMS[i];
+                            if (pt.flag("room" + i + "read")) continue;
+                            if (pt.flag("room" + i + "woke")) { mark("wardens"); StoryArc2.testClearBout(s, pt); }
+                            go(StoryStage.ARENA, rm[0], StoryStage2.CY, rm[1]);
+                            break;
+                        }
+                    }
+                    case 5 -> {
+                        if (pt.step == 1) go(StoryStage.ARENA, 0, 0, 0);
+                        if (pt.step == 2) mark("final bout");
+                    }
+                    case 6 -> {
+                        if (pt.step == 1) for (var b : StoryArc2.vey(rift, pt)) { mark("vey"); b.hurt(b.damageSources().fellOutOfWorld(), Float.MAX_VALUE); }
+                        if (pt.step == 5) go(StoryStage.VAULT, 0, 0, 0);
+                    }
+                    default -> {}
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); try { storyHome(); } catch (Throwable ignored) {} clearArea(); return true; }
+        }
+        void finish() {
+            String[] want = late ? new String[]{"wardens", "proof", "rival4", "twins_after", "vey_offer", "final bout", "throw_final", "vault_throw", "vey", "tamsin_grimoire", "brand2"}
+                    : new String[]{"trials_arrive", "qualifier", "tamsin_meet", "rival1", "brannoch_after", "tamsin bout", "tamsin_taken", "cell_empty"};
+            for (String w : want) if (!seen.contains(w)) bad.add("never saw " + w);
+            if (late) {
+                if (pt.ch != 7) bad.add("the arc didn't end (ch " + pt.ch + ")");
+                if (pt.count("ledger") < 3 && pt.ch == 3) bad.add("the ledger pages didn't count");
+                if (!pt.flag("threw")) bad.add("the vote to throw the final wasn't kept");
+                if (Story.brand(p) < 2) bad.add("Brand II didn't wake (stage " + Story.brand(p) + ")");
+                boolean token = p.getInventory().contains(new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.CINDER_TOKEN.get()));
+                if (!token) bad.add("no Cindermarch Token for throwing the final");
+                // Brand II's price: a second of burning costs a point of health
+                Brand.testReset(p);
+                Brand.use(p);
+                p.setHealth(10f);
+                int keep = p.tickCount;
+                p.tickCount = 40;
+                Brand.onPlayerTick(new net.minecraftforge.event.TickEvent.PlayerTickEvent(net.minecraftforge.event.TickEvent.Phase.END, p));
+                p.tickCount = keep;
+                if (!(p.getHealth() < 10f)) bad.add("Brand II took no health while it burned");
+            } else if (pt.ch != 3) bad.add("the cells didn't open chapter 4 (ch " + pt.ch + ")");
+            p.getInventory().clearContent();
+            try { storyHome(); } catch (Throwable ignored) {}
+            resetPlayer(true); clearArea();
+            if (bad.isEmpty()) pass(name, "played through: " + String.join(", ", seen));
+            else fail(name, String.join("; ", bad));
         }
     }
 

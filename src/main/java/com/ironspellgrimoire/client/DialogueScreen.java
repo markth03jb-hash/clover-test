@@ -34,6 +34,9 @@ public class DialogueScreen extends Screen {
             case "ilsa" -> new Who("Ilsa Marr", "story_ilsa", 0xFFFFB060);
             case "sallow" -> new Who("Father Sallow", "story_sallow", 0xFFE05050);
             case "penitent" -> new Who("Penitent", "story_penitent", 0xFFB08060);
+            case "tamsin" -> new Who("Tamsin Reed", "story_tamsin", 0xFF80D070);
+            case "vey" -> new Who("Magistrate Vey", "story_vey", 0xFFE8C060);
+            case "warden" -> new Who("Warden", "story_warden", 0xFFC8A050);
             default -> new Who("", null, 0xFFB8B0A8);
         };
     }

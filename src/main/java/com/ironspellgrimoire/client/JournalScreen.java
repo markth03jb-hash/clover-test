@@ -82,8 +82,9 @@ public class JournalScreen extends Screen {
             }
             y = yy + 3;
         }
-        String enter = s().getString("enter");
-        if (!enter.isEmpty()) BookUi.button(g, font, x + 3, y0 + BookUi.BH - 26, PW - 6, 16, enter, BookUi.in(mx, my, x + 3, y0 + BookUi.BH - 26, PW - 6, 16), true);
+        String enter = s().getBoolean("next") ? "Begin Arc II" : s().getString("enter");
+        boolean can = !s().getBoolean("next") || s().getBoolean("leader");
+        if (!enter.isEmpty()) BookUi.button(g, font, x + 3, y0 + BookUi.BH - 26, PW - 6, 16, enter, BookUi.in(mx, my, x + 3, y0 + BookUi.BH - 26, PW - 6, 16), can);
     }
 
     // ---- the right page: tabs
@@ -122,8 +123,9 @@ public class JournalScreen extends Screen {
             }
             case 1 -> {
                 int b = s().getInt("brand");
-                r.add(new Object[]{"Your Brand: " + (b <= 0 ? "asleep" : "Brand " + new String[]{"0", "I", "II", "III", "IV"}[Math.min(4, b)] + " - Ember Surge"), BookUi.RED_INK});
-                if (b > 0) r.add(new Object[]{"Press " + StoryClient.BRAND.getTranslatedKeyMessage().getString() + ": 12 s of fire - spells 20% harder, 10% faster, melee burns. Then it sleeps 90 s.", BookUi.INK_SOFT});
+                r.add(new Object[]{"Your Brand: " + (b <= 0 ? "asleep" : "Brand " + new String[]{"0", "I", "II", "III", "IV"}[Math.min(4, b)] + (b >= 2 ? " - Cinderheart" : " - Ember Surge")), BookUi.RED_INK});
+                if (b == 1) r.add(new Object[]{"Press " + StoryClient.BRAND.getTranslatedKeyMessage().getString() + ": 12 s of fire - spells 20% harder, 10% faster, melee burns. Then it sleeps 90 s.", BookUi.INK_SOFT});
+                if (b >= 2) r.add(new Object[]{"Press " + StoryClient.BRAND.getTranslatedKeyMessage().getString() + ": 12 s of fire - spells 30% harder, 15% faster, melee burns, and your spells kindle what they hit. It takes 1 health a second while it burns. Then it sleeps 90 s.", BookUi.INK_SOFT});
                 r.add(new Object[]{null, 6});
                 r.add(new Object[]{"Party", BookUi.RED_INK});
                 ListTag ms = s().getList("members", Tag.TAG_COMPOUND);
@@ -161,7 +163,8 @@ public class JournalScreen extends Screen {
         int y0 = y0(), x = rx(), tw = (PW - 4) / 3;
         for (int i = 0; i < TABS.length; i++) if (BookUi.in(mx, my, x + i * (tw + 2), y0 + 8, tw, 13)) { tab = i; page = -1; scroll = 0; return true; }
         if (!begun() && BookUi.in(mx, my, lx() + 13, y0 + BookUi.BH - 30, 100, 16)) { StoryClient.act("begin"); onClose(); return true; }
-        if (begun() && !s().getString("enter").isEmpty() && BookUi.in(mx, my, lx() + 3, y0 + BookUi.BH - 26, PW - 6, 16)) { StoryClient.act("enter"); onClose(); return true; }
+        if (begun() && s().getBoolean("next") && s().getBoolean("leader") && BookUi.in(mx, my, lx() + 3, y0 + BookUi.BH - 26, PW - 6, 16)) { StoryClient.act("begin"); onClose(); return true; }
+        if (begun() && !s().getBoolean("next") && !s().getString("enter").isEmpty() && BookUi.in(mx, my, lx() + 3, y0 + BookUi.BH - 26, PW - 6, 16)) { StoryClient.act("enter"); onClose(); return true; }
         if (tab == 2 && page >= 0 && BookUi.in(mx, my, x, y0 + BookUi.BH - 22, 40, 13)) { page = -1; scroll = 0; return true; }
         if (tab == 2 && page < 0) {   // a page's title: read it
             ListTag ps = s().getList("pages", Tag.TAG_COMPOUND);

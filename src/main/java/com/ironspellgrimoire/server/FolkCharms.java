@@ -64,6 +64,7 @@ public final class FolkCharms {
     public static void onHurt(LivingHurtEvent e) {
         if (e.getEntity() instanceof ServerPlayer v) {
             LAST_HIT.put(v.getUUID(), v.serverLevel().getGameTime());
+            if (v.getHealth() < v.getMaxHealth() * 0.4f && wears(v, AddonItemRegistry.CINDER_TOKEN.get())) e.setAmount(e.getAmount() * 0.85f);
             float vow = vow(v);
             if (vow < 1f) e.setAmount(e.getAmount() * vow);
         }
@@ -73,12 +74,20 @@ public final class FolkCharms {
                 && wears(a, AddonItemRegistry.SUN_SHARD.get())) k *= 1.08f;
         if (a.level().getMaxLocalRawBrightness(a.blockPosition()) < 7 && wears(a, AddonItemRegistry.LANTERN_EYE.get())) k *= 1.15f;
         if (e.getEntity().getHealth() < e.getEntity().getMaxHealth() * 0.3f && wears(a, AddonItemRegistry.SALLOW_HOOK.get())) k *= 1.15f;
+        if (wears(a, AddonItemRegistry.VEY_SEAL.get())) {   // the ledger: the same foe, again and again
+            long now = a.serverLevel().getGameTime();
+            long[] st = SEAL.get(a.getUUID());
+            int stacks = st != null && st[0] == e.getEntity().getId() && now - st[2] <= 80 ? (int) st[1] : 0;
+            k *= 1f + 0.03f * stacks;
+            SEAL.put(a.getUUID(), new long[]{e.getEntity().getId(), Math.min(5, stacks + 1), now});
+        }
         if (BookTree.melee(e.getSource()) && wears(a, AddonItemRegistry.RIME_PIN.get()))
             TimedModifiers.apply(e.getEntity(), Attributes.MOVEMENT_SPEED, PIN_SLOW, "Rime Pin", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
         if (k != 1f) e.setAmount(e.getAmount() * k);
     }
 
     static final Map<UUID, Long> ROSARY = new HashMap<>();
+    static final Map<UUID, long[]> SEAL = new HashMap<>();
     public static final int ROSARY_CD = 2400;
 
     /** Sallow's Rosary: the blow that would have killed you leaves you at 1 health (once every 2 minutes). */

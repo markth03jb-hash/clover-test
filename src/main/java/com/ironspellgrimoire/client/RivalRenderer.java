@@ -147,7 +147,18 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
                     new Piece("reliquary", Bone.LARM, -15, v(6.000, -2.588, 12.341), v(-15, 0, 0), 1.000f))),
             Map.entry("story_penitent", List.of(
                     new Piece("rust_sickle", Bone.RARM, -40, v(-6.000, -6.428, 14.340), v(80, 0, 0), 1.400f))),
-            Map.entry("story_ilsa", List.<Piece>of()));
+            Map.entry("story_ilsa", List.<Piece>of()),
+            // ASHFALL, Arc II
+            Map.entry("story_vey", List.of(
+                    new Piece("vey_mantle", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f),
+                    new Piece("chain_of_office", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f),
+                    new Piece("ledger_staff", Bone.LARM, -25, v(6.000, -4.226, 12.937), v(0, 0, 0), 1.000f))),
+            Map.entry("story_warden", List.of(
+                    new Piece("warden_halberd", Bone.RARM, -20, v(-6.000, -3.420, 12.603), v(0, 0, 0), 1.000f),
+                    new Piece("warden_crest", Bone.HEAD, 0, v(0.000, 0.000, 32.000), v(0, 0, 0), 1.000f))),
+            Map.entry("story_tamsin", List.of(
+                    new Piece("tamsin_wand", Bone.RARM, -40, v(-5.500, -6.428, 14.340), v(80, 0, 0), 1.600f),
+                    new Piece("tamsin_satchel", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f))));
     static { GEAR.putAll(FAMILY_GEAR); }
 
     /** The legionnaire who carries Brannoch's standard: the banner instead of the spear. */
@@ -178,7 +189,7 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
     public String skinName() { return skin; }
     @Override protected void scale(T e, PoseStack ps, float pt) { ps.scale(size, size, size); }
 
-    static boolean kneeling(Mob e) { return e instanceof Rival r && (r.flag() & Rival.YIELDED) != 0 || e instanceof com.ironspellgrimoire.entity.FatherSallow s && s.yielded(); }
+    static boolean kneeling(Mob e) { return e instanceof Rival r && (r.flag() & Rival.YIELDED) != 0 || e instanceof com.ironspellgrimoire.entity.YieldingBoss s && s.yielded(); }
 
     @Override
     protected void setupRotations(T e, PoseStack ps, float bob, float yaw, float pt) {

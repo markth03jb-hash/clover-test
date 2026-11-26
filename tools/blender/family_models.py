@@ -292,6 +292,52 @@ def rust_sickle():
     em.prism("blade", [(-0.4, 2.8), (0.5, 2.8), (2.6, 5), (3.6, 8.5), (2.6, 11.5), (-1.2, 12.6), (1.8, 9.8), (2.2, 6.8), (0.3, 4.6)], -0.25, 0.25, "iron")
 
 
+# ---- ASHFALL, Arc II
+def vey_mantle():   # a stiff high collar and a short mantle, black edged in gold
+    em.rbox("collar", (0, 2.6, 26.4), (9.4, 1.0, 5.2), "black", bevel=0.3)
+    em.rbox("collar_rim", (0, 2.0, 29.0), (9.6, 1.2, 0.6), "gold")
+    em.rbox("mantle", (0, 0.4, 23.7), (10.6, 5.8, 1.6), "black", bevel=0.4)
+    em.rbox("mantle_rim", (0, 0.4, 22.8), (10.8, 6.0, 0.4), "gold")
+
+def chain_of_office():
+    for i in range(7):
+        t = (i - 3) / 3.0
+        em.torus("link%d" % i, (t * 3.2, -2.5, 23.4 - (1 - t * t) * 3.2), 0.55, 0.2, "gold", M=8, N=4)
+    em.gem("medallion", (0, -2.7, 19.6), 1.3, 0.6, "gold", sides=8, glow=False)
+    em.gem("stone", (0, -3.1, 19.6), 0.5, 0.4, "red", sides=6, glow=False)
+
+def ledger_staff():   # a black staff banded in gold, a ledger caged at its head, its open pages glowing
+    cyl("staff", (0, 0, -8), 0.5, 26, "black", sides=6)
+    for z in (2, 9, 15): em.torus("band%d" % z, (0, 0, z), 0.62, 0.2, "gold", M=8, N=4)
+    em.rbox("cover", (0, 0.5, 20.5), (3.2, 0.5, 4), "red")
+    em.box("pages", (0, 0, 20.5), (3.0, 0.6, 3.6), "page", glow=True)
+    for x in (-1.9, 1.9):
+        for y in (-1.2, 1.2): em.rbox("bar%d%d" % (x > 0, y > 0), (x, y, 20.5), (0.3, 0.3, 5), "gold")
+    em.rbox("cap", (0, 0, 23.2), (4.2, 2.8, 0.6), "gold")
+
+def warden_halberd():
+    cyl("haft", (0, 0, -10), 0.5, 30, "black", sides=6)
+    em.torus("collar", (0, 0, 16), 0.65, 0.22, "gold", M=8, N=4)
+    em.prism("axe", [(0.4, 16.5), (4.2, 15.5), (4.8, 18.5), (4.2, 21.5), (0.4, 20.5)], -0.3, 0.3, "steel")
+    em.prism("hook", [(-0.4, 17.5), (-2.6, 18.2), (-1.4, 19.2), (-0.4, 19)], -0.25, 0.25, "steel")
+    em.prism("spike", [(-0.5, 20.5), (0.5, 20.5), (0, 25)], -0.3, 0.3, "steel")
+
+def warden_crest():
+    em.prism("crest", [(-0.6, 0), (0.6, 0), (0.4, 2.6), (0, 3.4), (-0.4, 2.6)], -3.6, 3.6, "gold")
+    em.rbox("base", (0, 0, 0.2), (1.6, 7.6, 0.5), "gold")
+
+def tamsin_wand():   # crooked wood, a white feather tied on, a green bead that glows
+    em.rbox("lower", (0, 0, -1.5), (0.7, 0.7, 6), "wood")
+    em.rbox("upper", (0.5, 0, 5), (0.6, 0.6, 7), "wood", roll=-0.18)
+    em.gem("bead", (1.1, 0, 9), 0.7, 1.1, "marsh", sides=6, glow=True)
+    em.rbox("feather", (-0.8, 0.3, 6), (0.3, 1.2, 3.6), "white", roll=0.5)
+    em.torus("tie", (0.3, 0, 5.6), 0.55, 0.15, "red", M=8, N=4)
+
+def tamsin_satchel():
+    em.rbox("bag", (3.6, -1.6, 10.6), (3.2, 2.0, 3.0), "leather", bevel=0.3)
+    em.rbox("flap", (3.6, -2.7, 11.4), (3.2, 0.3, 1.6), "brownfur")
+
+
 GEAR = {"ice_axe": ice_axe, "fur_mantle": fur_mantle, "ice_staff": ice_staff, "ice_crown": ice_crown, "frost_greatsword": frost_greatsword,
         "fur_cloak": fur_cloak, "hook_claw": hook_claw, "fork_staff": fork_staff, "stone_shell": stone_shell, "heart_lantern": heart_lantern,
         "tower_shield": tower_shield, "flanged_mace": flanged_mace, "iron_greatsword": iron_greatsword, "wrist_chain": wrist_chain,
@@ -299,9 +345,12 @@ GEAR = {"ice_axe": ice_axe, "fur_mantle": fur_mantle, "ice_staff": ice_staff, "i
         "moss_train": moss_train, "stone_maul": stone_maul, "rock_plates": rock_plates, "caller_staff": caller_staff, "horned_helm": horned_helm,
         "slab_shield": slab_shield, "warden_pick": warden_pick, "curved_blade": curved_blade, "head_wrap": head_wrap, "censer": censer,
         "sand_mantle": sand_mantle, "sun_disc": sun_disc, "glaive": glaive, "hooked_blade": hooked_blade, "gloam_hood": gloam_hood, "coat_tails": coat_tails,
-        "knight_longsword": spun(knight_longsword, 90), "half_cloak": half_cloak, "sallow_mitre": sallow_mitre, "brand_knife": spun(brand_knife, -90), "reliquary": reliquary, "rust_sickle": spun(rust_sickle, 90)}
+        "knight_longsword": spun(knight_longsword, 90), "half_cloak": half_cloak, "sallow_mitre": sallow_mitre, "brand_knife": spun(brand_knife, -90), "reliquary": reliquary, "rust_sickle": spun(rust_sickle, 90),
+        "vey_mantle": vey_mantle, "chain_of_office": chain_of_office, "ledger_staff": ledger_staff, "warden_halberd": spun(warden_halberd, 90),
+        "warden_crest": warden_crest, "tamsin_wand": tamsin_wand, "tamsin_satchel": tamsin_satchel}
 # the grip's middle goes in the fist
-rm.GRIP.update({"knight_longsword": 2.4, "brand_knife": 1.9, "rust_sickle": 0.5})
+rm.GRIP.update({"knight_longsword": 2.4, "brand_knife": 1.9, "rust_sickle": 0.5, "tamsin_wand": 1.5,
+               "ledger_staff": -5.5, "warden_halberd": -4.5})   # (a pole is held a little below its middle, upright)
 rm.GEAR.update(GEAR)
 
 def hand(side, arm, slim=False, k=1.0, reach=10.0):
@@ -384,6 +433,17 @@ fam("sallow", False, 1.3, {"rarm": (-45, 0, -6), "larm": (-15, 0, 6)}, [
 fam("penitent", False, 1.0, {"rarm": (-40, 0, -6)}, [
     ("rust_sickle", "RARM", -40, hand(-1, -40), (80, 0, 0), 1.4)])
 fam("ilsa", True, 0.95, {}, [])
+# ASHFALL, Arc II
+fam("vey", False, 1.25, {"larm": (-25, 0, 6)}, [
+    ("vey_mantle", "BODY", 0, (0, 0, 0), (0, 0, 0), 1.25),
+    ("chain_of_office", "BODY", 0, (0, 0, 0), (0, 0, 0), 1.25),
+    ("ledger_staff", "LARM", -25, hand(1, -25, False, 1.25), (0, 0, 0), 1.25)])
+fam("warden", False, 1.15, {"rarm": (-20, 0, -6)}, [
+    ("warden_halberd", "RARM", -20, hand(-1, -20, False, 1.15), (0, 0, 0), 1.15),
+    ("warden_crest", "HEAD", 0, (0, 0, 32 * 1.15), (0, 0, 0), 1.15)])
+fam("tamsin", True, 0.95, {"rarm": (-40, 0, -6)}, [
+    ("tamsin_wand", "RARM", -40, hand(-1, -40, True, 0.95), (80, 0, 0), 0.95 * 1.6),
+    ("tamsin_satchel", "BODY", 0, (0, 0, 0), (0, 0, 0), 0.95)])
 
 
 def skin_of(name): return name if name.startswith("twin_") else ("story_" + name if name in STORY else "family_" + name)
@@ -429,8 +489,10 @@ def paint_into(out):
 
 ORDER = ["bog_crawler", "mire_hexer", "fen_matron", "scree_brute", "stonecaller", "peak_warden", "dune_stalker", "sandwraith", "sun_herald", "gloamstalker"]
 NEW = ["rime_brute", "frost_chanter", "hoarfrost_jarl", "hollow_crawler", "hollow_singer", "deepwarden", "twin_haldric", "twin_oswin"]
-STORY = ["corvin", "sallow", "penitent", "ilsa"]
-NAMES = {"corvin": "Corvin Hale (mentor)", "sallow": "Father Sallow (boss)", "penitent": "Penitent (Sallow's freed)", "ilsa": "Ilsa Marr (the other survivor)",
+STORY = ["corvin", "sallow", "penitent", "ilsa", "vey", "warden", "tamsin"]
+STORY1, STORY2 = STORY[:4], STORY[4:]
+NAMES = {"vey": "Magistrate Vey (boss)", "warden": "Vey's Warden", "tamsin": "Tamsin Reed",
+         "corvin": "Corvin Hale (mentor)", "sallow": "Father Sallow (boss)", "penitent": "Penitent (Sallow's freed)", "ilsa": "Ilsa Marr (the other survivor)",
          "rime_brute": "Rime Brute", "frost_chanter": "Frost Chanter", "hoarfrost_jarl": "Hoarfrost Jarl (leader)", "hollow_crawler": "Hollow Crawler",
          "hollow_singer": "Hollow Singer", "deepwarden": "Deepwarden (leader)", "twin_haldric": "Ser Haldric (Ironbound Twin)", "twin_oswin": "Ser Oswin (Ironbound Twin)",
          "bog_crawler": "Bog Crawler", "mire_hexer": "Mire Hexer", "fen_matron": "Fen Matron (leader)", "scree_brute": "Scree Brute",
@@ -492,7 +554,7 @@ if __name__ == "__main__":
     if mode == "render_new": render(out, sys.argv[3], (("c", NEW[:6]), ("d", NEW[6:])))
     if mode == "render_story":
         CAM = (64, 27)
-        if len(sys.argv) > 4: VIEWS = (("side", -90), ("top", 0))
-        render(out, sys.argv[3], (("story1", STORY),))
+        if len(sys.argv) > 4: VIEWS = (("side", -90), ("top", 0)) if sys.argv[4] == "side" else (("front0", 0), ("side", -90))
+        render(out, sys.argv[3], (("story1", STORY1),) if len(sys.argv) > 5 else (("story2", STORY2),))
     if mode == "game": to_game(out)
     if mode == "java": print(java())

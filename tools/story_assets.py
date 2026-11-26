@@ -46,7 +46,23 @@ def sallow_rosary():
     return finish(im)
 
 
-ICONS = {"story_journal": story_journal, "ashen_page": ashen_page, "sallow_hook": sallow_hook, "sallow_rosary": sallow_rosary}
+def vey_seal():
+    im, g = canvas()
+    g.ellipse(box(2.5, 2.5, 13.5, 13.5), fill=(206, 164, 64)); g.ellipse(box(4, 4, 12, 12), fill=(170, 128, 44))
+    g.rectangle(box(6.2, 5.5, 9.8, 10.5), fill=(122, 30, 26)); g.rectangle(box(6.8, 6.2, 9.2, 9.8), fill=(226, 214, 180))   # a ledger in the wax
+    for y in (7, 8.2): g.line(P(7.2, y, 8.8, y), fill=(122, 30, 26), width=S // 2)
+    return finish(im)
+
+
+def cinder_token():
+    im, g = canvas()
+    g.polygon(P(8, 1.5, 13.5, 5, 13.5, 11, 8, 14.5, 2.5, 11, 2.5, 5), fill=(52, 46, 48))
+    g.polygon(P(8, 3, 12, 5.8, 12, 10.2, 8, 13, 4, 10.2, 4, 5.8), fill=(84, 74, 70))
+    g.polygon(P(8, 4.5, 9.6, 7.6, 8.8, 7.8, 10, 10.5, 7.6, 8.4, 8.4, 8.2, 7, 5.2), fill=(255, 150, 50))   # a flame stamped in it
+    return finish(im)
+
+
+ICONS = {"vey_seal": vey_seal, "cinder_token": cinder_token, "story_journal": story_journal, "ashen_page": ashen_page, "sallow_hook": sallow_hook, "sallow_rosary": sallow_rosary}
 
 if __name__ == "__main__":
     made = {}

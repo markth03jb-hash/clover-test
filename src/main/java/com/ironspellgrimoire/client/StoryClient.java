@@ -59,7 +59,7 @@ public final class StoryClient {
     static void act(String a) { CompoundTag t = new CompoundTag(); t.putString("a", a); act(t); }
 
     // ------------------------------------------------------------------ the tracker
-    static boolean begun() { return state.getBoolean("has") && state.getInt("ch") >= 0 && state.getInt("ch") < 5; }
+    static boolean begun() { int ch = state.getInt("ch"); return state.getBoolean("has") && ch >= 0 && (state.getInt("arc") == 2 ? ch < 7 : ch < 5); }
     public static boolean trackerShown() { return begun() || state.getInt("brand") > 0; }
     static ListTag goals() { return state.getList("goals", Tag.TAG_COMPOUND); }
     /** The goals still open (the tracker shows those). */

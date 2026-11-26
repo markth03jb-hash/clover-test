@@ -169,6 +169,47 @@ public final class UiShotsServer {
                 }
                 p.teleportTo(rift, p.getX(), p.getY(), p.getZ() + 6, 0, 0);
             }
+            case "cast2" -> {
+                folk(p, "none");
+                faceForward(p);
+                var types = java.util.List.of(com.ironspellgrimoire.registry.AddonEntities.STORY_TAMSIN.get(), com.ironspellgrimoire.registry.AddonEntities.STORY_VEY.get(),
+                        com.ironspellgrimoire.registry.AddonEntities.WARDEN.get());
+                double[] xs = {-3.2, 0, 3.2};
+                for (int i = 0; i < types.size(); i++) {
+                    var m = (net.minecraft.world.entity.Mob) types.get(i).create(sl);
+                    if (m == null) continue;
+                    m.moveTo(p.getX() + xs[i], p.getY(), p.getZ() + 7, 180, 0);
+                    m.setYBodyRot(180); m.setYHeadRot(180);
+                    m.setNoAi(true);
+                    m.getPersistentData().putBoolean("isg_ui_story", true);
+                    sl.addFreshEntity(m);
+                }
+            }
+            case "arena" -> {
+                story(p, "clear");
+                Story.testClear(p.server);
+                Story.Party pt = Story.ensure(p);
+                StoryArc1.toChapter(p.server, pt, 5);
+                Story.begin(p);
+            }
+            case "arena_look" -> {   // from the gate, out over the sand to the balcony
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                var at = StoryStage.at(pt.id, StoryStage.ARENA, 0, 1, 15);
+                p.teleportTo(StoryStage.rift(p.server), at.x, at.y, at.z, 180, -8);
+            }
+            case "catacomb" -> {
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                var at = StoryStage.at(pt.id, StoryStage.ARENA, 9, StoryStage2.CY, 0);
+                p.teleportTo(StoryStage.rift(p.server), at.x, at.y, at.z, -90, 5);
+            }
+            case "vault" -> {
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                StoryArc2.toChapter(p.server, pt, 6);
+                StoryStage.enter(p, pt, StoryStage.VAULT, StoryStage.spawn(pt.id, StoryStage.VAULT), 0);
+            }
             default -> {   // clear
                 for (var e : sl.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, p.getBoundingBox().inflate(48), x -> x.getPersistentData().getBoolean("isg_ui_story"))) e.discard();
                 Story.Party pt = Story.partyOf(p);

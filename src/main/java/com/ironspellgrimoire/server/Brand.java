@@ -27,6 +27,8 @@ import net.minecraftforge.fml.common.Mod;
  * <ul>
  *   <li><b>Brand I - Ember Surge</b> (Arc I): for 12 s your spells hit 20% harder, you move 10% faster and your
  *       melee blows burn for 3 more. Then it sleeps for 90 s.</li>
+ *   <li><b>Brand II - Cinderheart</b> (Arc II): 30% and 15%, and your spells kindle what they hit (3 more, each foe
+ *       at most twice a second) - but it takes 1 health every second it burns (never your last).</li>
  * </ul>
  * The later stages (and what they cost) come with the later arcs.
  */
@@ -34,7 +36,7 @@ import net.minecraftforge.fml.common.Mod;
 public final class Brand {
     private Brand() {}
 
-    public static final String[] NAMES = {"", "Ember Surge", "Ember Surge", "Ember Surge", "Ember Surge"};
+    public static final String[] NAMES = {"", "Ember Surge", "Cinderheart", "Cinderheart", "Cinderheart"};
     public static final int LASTS = 240, SLEEPS = 1800;
     static final UUID POWER = UUID.fromString("b4a2d000-0000-4000-8000-000000000001"), SPEED = UUID.fromString("b4a2d000-0000-4000-8000-000000000002");
     /** When each mage's Brand burns until, and sleeps until (game time). */
@@ -59,7 +61,7 @@ public final class Brand {
         s[0] = now + LASTS; s[1] = now + SLEEPS;
         double power = 0.2 + 0.1 * (stage - 1);
         TimedModifiers.apply(p, AttributeRegistry.SPELL_POWER.get(), POWER, "Ember Surge", power, AttributeModifier.Operation.MULTIPLY_BASE, LASTS);
-        TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, SPEED, "Ember Surge", 0.1, AttributeModifier.Operation.MULTIPLY_TOTAL, LASTS);
+        TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, SPEED, "Ember Surge", stage >= 2 ? 0.15 : 0.1, AttributeModifier.Operation.MULTIPLY_TOTAL, LASTS);
         var sl = p.serverLevel();
         FxSend.ring(sl, Fx.FIRE, p.position().add(0, 0.1, 0), 0.4f, 3.2f, 0.1f, 14);
         FxSend.ring(sl, Fx.FUEGO, p.position().add(0, 1.1, 0), 0.2f, 1.4f, 0.06f, 10);
@@ -79,19 +81,31 @@ public final class Brand {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || p.tickCount % 8 != 0) return;
         long[] s = STATE.get(p.getUUID());
         if (s == null || p.serverLevel().getGameTime() >= s[0]) return;
+        if (Story.brand(p) >= 2 && p.tickCount % 20 == 0 && p.getHealth() > 1.5f) p.setHealth(Math.max(1f, p.getHealth() - 1f));   // Cinderheart takes its price
         Vec3 arm = p.position().add(Vec3.directionFromRotation(0, p.yBodyRot + 90).scale(-0.35)).add(0, 1.05, 0);   // the right arm
         Kit.orb(p.serverLevel(), Fx.FIRE, arm, new Vec3(0, 0.05, 0), 0.08f, 10);
     }
 
-    /** Ember Surge: melee blows burn for 3 more. */
+    static final Map<java.util.UUID, Long> KINDLED = new HashMap<>();
+
+    /** Ember Surge: melee blows burn for 3 more. Cinderheart: spells kindle what they hit, too. */
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onHurt(LivingHurtEvent e) {
-        if (!(e.getSource().getEntity() instanceof ServerPlayer p) || e.getEntity() == p || !BookTree.melee(e.getSource()) || !burning(p)) return;
+        if (!(e.getSource().getEntity() instanceof ServerPlayer p) || e.getEntity() == p || !burning(p)) return;
+        if (e.getSource() instanceof io.redspace.ironsspellbooks.damage.SpellDamageSource && Story.brand(p) >= 2) {
+            long now = p.serverLevel().getGameTime();
+            if (now - KINDLED.getOrDefault(e.getEntity().getUUID(), -100L) >= 10) {
+                KINDLED.put(e.getEntity().getUUID(), now);
+                e.setAmount(e.getAmount() + 3f);
+                FxSend.ring(p.serverLevel(), Fx.FIRE, e.getEntity().position().add(0, e.getEntity().getBbHeight() * 0.5, 0), 0.2f, 0.9f, 0.05f, 8);
+            }
+        }
+        if (!BookTree.melee(e.getSource())) return;
         e.setAmount(e.getAmount() + 3f);
         Kit.orb(p.serverLevel(), Fx.FIRE, e.getEntity().position().add(0, e.getEntity().getBbHeight() * 0.6, 0), new Vec3(0, 0.08, 0), 0.25f, 8);
     }
 
-    @SubscribeEvent public static void onStopping(net.minecraftforge.event.server.ServerStoppingEvent e) { STATE.clear(); }
+    @SubscribeEvent public static void onStopping(net.minecraftforge.event.server.ServerStoppingEvent e) { STATE.clear(); KINDLED.clear(); }
 
     static void testReset(ServerPlayer p) { STATE.remove(p.getUUID()); }
 }

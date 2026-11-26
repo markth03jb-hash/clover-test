@@ -58,14 +58,18 @@ public final class StoryArc1 {
             "Sallow's people walk the roads, hunting anyone with the mark. Corvin says faith that ugly always writes itself down - take what they carry and read it.",
             "The Hand's letter came from the north. Sallow's chapel won't be on any map: it's where the ash still falls. Follow it.",
             "Candles, hundreds of them, and under the incense the smell of a butcher's yard. Ilsa is somewhere inside.",
-            "Father Sallow's chapel is done. Ilsa is gone - out there with a brand bigger than yours and a voice in her head. Corvin has a name from Sallow's list: the Ember Trials.\n\nARC II - THE PROVING comes in a later update."};
+            "Father Sallow's chapel is done. Ilsa is gone - out there with a brand bigger than yours and a voice in her head. Corvin has a name from Sallow's list: the Ember Trials.\n\nWhen your party is ready, its leader begins ARC II - THE PROVING from this Journal."};
 
     // ================================================================== the pages
-    static final String[] PAGE_TITLES = {"The Litany of the Freed, I", "The Litany of the Freed, II", "A Letter, Unsigned"};
+    static final String[] PAGE_TITLES = {"The Litany of the Freed, I", "The Litany of the Freed, II", "A Letter, Unsigned",
+            "The Harvest Ledger, Spring", "The Harvest Ledger, Autumn", "A Receipt, Sealed in Gold"};
     static final String[] PAGES = {
             "The star is a wound in the sky, and the wound bleeds into the faithless. Those it marks are not chosen. They are infected.\n\nWe do not hate the marked. We pity them. We cut because we love.",
             "Brother Aud held the girl from Harrowmere while I worked. She thanked me before the end. They always thank me, after a while.\n\nThe mark comes out whole, like a seed. It is still warm in the jar.",
-            "Father - we found two at Emberfall. The girl is in the lower cells. The other ran with the one-armed knight.\n\nThe girl's brand is larger than any you have taken. She will not stop praying to it. Send word what to do.\n\n- your Hand"};
+            "Father - we found two at Emberfall. The girl is in the lower cells. The other ran with the one-armed knight.\n\nThe girl's brand is larger than any you have taken. She will not stop praying to it. Send word what to do.\n\n- your Hand",
+            "Bout 4, first round. Loser: a fire-singer from the coast. Grimoire: twelve pages, three of them strong. Vault, shelf nine.\nBout 6. Loser: a boy from Harrowmere. Grimoire: poor. Kept for the binding.\nBout 9. Loser...\n\nThe list goes on for forty pages.",
+            "Received from Father S.: four names, all marked. Sent on to the Trials as invited guests. Two lost in the first round; their books are on shelf eleven.\n\nA note in the margin, in the same hand: 'He sends us the branded now. Their books burn warmer.'",
+            "To the Magistrate, from the Choir: payment for one grimoire carrying the star's mark. More are wanted. More will be paid.\n\nSealed in gold wax. The seal is a crown of ash."};
     public static String pageTitle(int i) { return PAGE_TITLES[Math.max(0, Math.min(PAGE_TITLES.length - 1, i))]; }
 
     // ================================================================== the scenes
@@ -225,13 +229,14 @@ public final class StoryArc1 {
     static final Map<UUID, Integer> PAD = new HashMap<>();
 
     static void tick(MinecraftServer s, Story.Party pt, List<ServerPlayer> on) {
+        if (pt.arc == 2) { catchFalls(pt, on); follow(s, pt); StoryArc2.tick(s, pt, on); return; }
         if (pt.ch < 0) return;
         long now = s.overworld().getGameTime();
         // nobody falls off a story place
         for (ServerPlayer p : on) {
             int[] w = StoryStage.where(p);
             if (w != null && p.getY() < StoryStage.Y - 15) {
-                Vec3 sp = pos(pt, w[1], w[1] == StoryStage.EMBER ? EMBER_SPAWN : CHAPEL_SPAWN);
+                Vec3 sp = StoryStage.spawn(pt.id, w[1]);
                 p.teleportTo(sp.x, sp.y, sp.z); p.fallDistance = 0;
             }
         }
@@ -248,6 +253,13 @@ public final class StoryArc1 {
 
     static Component corvinLine(String t) {
         return Component.literal("Corvin: ").withStyle(ChatFormatting.AQUA).append(Component.literal(t).withStyle(ChatFormatting.WHITE));
+    }
+
+    static void catchFalls(Story.Party pt, List<ServerPlayer> on) {
+        for (ServerPlayer p : on) {
+            int[] w = StoryStage.where(p);
+            if (w != null && p.getY() < StoryStage.Y - 25) { Vec3 sp = StoryStage.spawn(pt.id, w[1]); p.teleportTo(sp.x, sp.y, sp.z); p.fallDistance = 0; }
+        }
     }
 
     // ---- chapter 1: Emberfall
@@ -421,7 +433,8 @@ public final class StoryArc1 {
         Story.Party pt = Story.partyOf(p);
         if (pt != null && !pt.flag("page" + idx)) {
             pt.set("page" + idx);
-            if (pt.ch == 2) pt.add("pages", 1);
+            if (pt.arc == 1 && pt.ch == 2 && idx < 3) pt.add("pages", 1);
+            if (pt.arc == 2 && pt.ch == 3 && idx >= 3) pt.add("ledger", 1);
             pt.note("Found: " + PAGE_TITLES[idx] + ".");
         }
         Story.sync(p, "page:" + idx);
@@ -613,7 +626,7 @@ public final class StoryArc1 {
 
     static void onCast(MinecraftServer s, Story.Party pt, ServerPlayer p) { if (pt.ch == 1) pt.add("cast", 1); }
 
-    static void onBrand(MinecraftServer s, Story.Party pt, ServerPlayer p, boolean fight) { if (pt.ch == 2 && pt.step == 1 && fight) pt.add("brand", 1); }
+    static void onBrand(MinecraftServer s, Story.Party pt, ServerPlayer p, boolean fight) { if (pt.arc == 1 && pt.ch == 2 && pt.step == 1 && fight) pt.add("brand", 1); }
 
     /** Any mob's death: a patrol's last Penitent drops a page. */
     static void onDeath(Mob m, ServerPlayer by) {
@@ -649,6 +662,7 @@ public final class StoryArc1 {
         if (pt == null || npc.party != pt.id) { p.displayClientMessage(Component.literal(npc.who.equals("corvin") ? "Corvin looks past you. He's waiting for someone else." : "She doesn't seem to see you.").withStyle(ChatFormatting.GRAY), true); return; }
         MinecraftServer s = p.server;
         if (Story.talking(pt)) return;
+        if (pt.arc == 2) { StoryArc2.talkTo(p, pt, npc); return; }
         if (npc.who.equals("ilsa")) {
             if (pt.ch == 0 && pt.step == 0) { pt.step = 1; play(s, pt, "ilsa"); }
             else p.sendSystemMessage(Component.literal("Ilsa: ").withStyle(ChatFormatting.GOLD).append(Component.literal(pt.ch == 4 ? "Get me out. Please. Before he comes back." : "Stay close. Please.").withStyle(ChatFormatting.WHITE)));
@@ -676,7 +690,7 @@ public final class StoryArc1 {
 
     /** Corvin walks with the leader once he's met them (outside the story's places). */
     static void follow(MinecraftServer s, Story.Party pt) {
-        if (pt.ch < 1 || s.getTickCount() % 40 != 0) return;
+        if (pt.arc == 1 && pt.ch < 1 || s.getTickCount() % 40 != 0) return;
         ServerPlayer l = Story.lead(s, pt);
         if (l == null || StoryStage.inStage(l) || Rifts.riftOf(l) != null || l.isSpectator()) return;
         ServerLevel sl = l.serverLevel();
@@ -704,7 +718,7 @@ public final class StoryArc1 {
         Story.Party pt = Story.byId(sl.getServer(), n.party);
         if (pt == null) { n.discard(); return; }
         if (!n.follower) return;
-        if (pt.ch < 1 || !n.getUUID().equals(pt.corvin)) { n.discard(); return; }
+        if (pt.arc == 1 && pt.ch < 1 || !n.getUUID().equals(pt.corvin)) { n.discard(); return; }
         ServerPlayer l = Story.lead(sl.getServer(), pt);
         if (l == null || l.level() != n.level()) { n.getNavigation().stop(); return; }
         double d = n.distanceTo(l);
@@ -733,8 +747,8 @@ public final class StoryArc1 {
 
     static List<StoryNpc> npcs(ServerLevel sl, Story.Party pt, EntityType<StoryNpc> type) {
         List<StoryNpc> out = new ArrayList<>();
-        for (int place = 0; place <= StoryStage.CHAPEL; place++) {
-            Vec3 c = StoryStage.at(pt.id, place, 0, 0, place == StoryStage.CHAPEL ? 22 : 0);
+        for (int place = 0; place <= StoryStage.VAULT; place++) {
+            Vec3 c = StoryStage.centre(pt.id, place);
             out.addAll(sl.getEntitiesOfClass(StoryNpc.class, new AABB(c, c).inflate(60, 30, 60), n -> n.getType() == type && n.party == pt.id && !n.follower && n.isAlive()));
         }
         return out;
@@ -744,8 +758,8 @@ public final class StoryArc1 {
     static void clearScenes(MinecraftServer s, Story.Party pt) {
         ServerLevel sl = StoryStage.rift(s);
         if (sl == null) return;
-        for (int place = 0; place <= StoryStage.CHAPEL; place++) {
-            Vec3 c = StoryStage.at(pt.id, place, 0, 0, place == StoryStage.CHAPEL ? 22 : 0);
+        for (int place = 0; place <= StoryStage.VAULT; place++) {
+            Vec3 c = StoryStage.centre(pt.id, place);
             for (Entity e : sl.getEntitiesOfClass(Entity.class, new AABB(c, c).inflate(60, 30, 60), e -> e.getPersistentData().getInt("isg_story") == pt.id && !(e instanceof ServerPlayer))) e.discard();
         }
     }

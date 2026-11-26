@@ -18,10 +18,8 @@ import net.minecraftforge.registries.RegistryObject;
  * last of his health he yields and kneels, and the party decides what's done with him (StoryArc1). His fight is in
  * server/SallowAI.
  */
-public class FatherSallow extends AddonBoss {
-    public static final int YIELDED = 1;
+public class FatherSallow extends YieldingBoss {
     public int knifeCd = 40, lanternCd = 100, callCd = 200, pillarCd = 160;
-    public int party;
 
     public FatherSallow(EntityType<? extends FatherSallow> type, Level level) {
         super(type, level, "Father Sallow", BossEvent.BossBarColor.WHITE);
@@ -32,22 +30,7 @@ public class FatherSallow extends AddonBoss {
                 .add(Attributes.MOVEMENT_SPEED, 0.27).add(Attributes.FOLLOW_RANGE, 48.0).add(Attributes.ATTACK_DAMAGE, 7.0);
     }
 
-    public boolean yielded() { return (flag() & YIELDED) != 0; }
-    public void setYielded(boolean y) { setFlag(y ? flag() | YIELDED : flag() & ~YIELDED); }
-
-    @Override
-    protected void actuallyHurt(DamageSource src, float amount) {
-        boolean bypass = src.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
-        super.actuallyHurt(src, amount);
-        if (bypass || level().isClientSide || getHealth() > 1.01f) return;
-        setHealth(1f);   // he doesn't die of a blow: he yields
-        if (!yielded()) SallowAI.yieldNow(this);
-    }
-
-    @Override public boolean hurt(DamageSource src, float amount) {
-        if (yielded() && !src.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return false;
-        return super.hurt(src, amount);
-    }
+    @Override protected void onYield() { SallowAI.yieldNow(this); }
 
     @Override protected float[] phaseLines() { return new float[]{0.66f, 0.33f}; }
     @Override public int maxPhase() { return 3; }
@@ -56,6 +39,4 @@ public class FatherSallow extends AddonBoss {
     @Override protected void onPhase(int phase) { SallowAI.phase(this, phase); }
     @Override protected void onDying(int t) { SallowAI.dying(this, t); }
 
-    @Override public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag t) { super.addAdditionalSaveData(t); t.putInt("StoryParty", party); }
-    @Override public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag t) { super.readAdditionalSaveData(t); party = t.getInt("StoryParty"); }
 }
