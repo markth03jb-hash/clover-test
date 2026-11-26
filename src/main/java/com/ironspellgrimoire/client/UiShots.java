@@ -1115,6 +1115,49 @@ public final class UiShots {
         return Long.toHexString(h);
     }
 
+    /** A share of the pictures for this job ("i/n", -Disg.shard: the CI splits them over parallel jobs). Everything up to
+     *  the first book's pictures goes together (it sets things up for what follows); after that each group of pictures
+     *  (the steps sharing a name before the first "_") goes whole to one job. Groups are shared by how much of them will
+     *  really be taken (unchanged ones are skipped), the biggest first, each to the job with the least so far. Every job
+     *  also does "setup". */
+    private static void shard() {
+        String sh = System.getProperty("isg.shard", "");
+        if (!sh.matches("\\d+/\\d+")) return;
+        int si = Integer.parseInt(sh.split("/")[0]), sn = Math.max(1, Integer.parseInt(sh.split("/")[1]));
+        if (sn <= 1) return;
+        List<List<Step>> groups = new ArrayList<>();
+        String last = null;
+        boolean opening = true;
+        for (Step s : steps) {
+            String g = s.name().contains("_") ? s.name().substring(0, s.name().indexOf('_')) : s.name();
+            if (s.name().equals("blood_gauge")) opening = false;
+            if (groups.isEmpty() || (!opening && !g.equals(last))) groups.add(new ArrayList<>());
+            groups.get(groups.size() - 1).add(s);
+            last = g;
+        }
+        long[] cost = new long[groups.size()];
+        for (int i = 0; i < groups.size(); i++) for (Step s : groups.get(i)) {
+            Class<?>[] roots = rootsFor(s.name());
+            String key = roots == null ? null : com.ironspellgrimoire.server.ClassKey.of(s.name() + "|" + HARNESS + "|" + assetsKey(s.name()), roots);
+            cost[i] += key != null && cache().unchanged(s.name(), key) ? 1 : s.delay() + 30;   // (+ the pictures at each scale)
+        }
+        Integer[] order = new Integer[groups.size()];
+        for (int i = 0; i < order.length; i++) order[i] = i;
+        java.util.Arrays.sort(order, (a, b) -> Long.compare(cost[b], cost[a]));
+        long[] load = new long[sn];
+        boolean[] mine = new boolean[groups.size()];
+        for (int gi : order) {
+            int best = 0;
+            for (int j = 1; j < sn; j++) if (load[j] < load[best]) best = j;
+            load[best] += cost[gi];
+            mine[gi] = best == si;
+        }
+        Step setup = steps.get(0);
+        steps.clear();
+        if (!mine[0]) steps.add(setup);
+        for (int i = 0; i < groups.size(); i++) if (mine[i]) steps.addAll(groups.get(i));
+    }
+
     private static void finish() {
         Minecraft mc = Minecraft.getInstance();
         Path out = mc.gameDirectory.toPath().resolve("isg_uishots_report.txt");
@@ -1154,7 +1197,7 @@ public final class UiShots {
             if (++wait < 100) return;
             wait = 0;
             if (TESTS) { phase = 5; onServer(com.ironspellgrimoire.server.GameTests::start); return; }
-            phase = 2; plan();
+            phase = 2; plan(); shard();
             return;
         }
         if (phase == 5) {   // the game tests (server/GameTests) run on the server; wait for them

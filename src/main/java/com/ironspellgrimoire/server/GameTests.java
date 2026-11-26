@@ -12,8 +12,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -234,8 +236,35 @@ public final class GameTests {
         String shard = System.getProperty("isg.shard", "");
         if (shard.matches("\\d+/\\d+")) {
             int si = Integer.parseInt(shard.split("/")[0]), sn = Math.max(1, Integer.parseInt(shard.split("/")[1]));
+            // Only the tests that will really run are shared out (the unchanged ones are skipped in a moment anyway, so the
+            // first job takes them all), and they are shared by how long each took last time - the longest first, each to the
+            // job with the least so far - so the jobs finish together instead of one waiting on a few long tests.
+            Map<String, Integer> took = new HashMap<>();
+            try {
+                java.nio.file.Path prev = net.minecraftforge.fml.loading.FMLPaths.GAMEDIR.get().resolve("isg_prev_report.txt");
+                if (java.nio.file.Files.exists(prev)) for (String l : java.nio.file.Files.readAllLines(prev)) {
+                    String[] f = l.split(" \\| ");
+                    if (f.length == 3 && f[0].equals("TIME") && f[2].endsWith(" ticks")) took.put(f[1], Integer.parseInt(f[2].replace(" ticks", "").trim()));
+                }
+            } catch (Exception ignored) {}
+            List<Test> skipped = new ArrayList<>(), toRun = new ArrayList<>();
+            for (Test tst : queue) {
+                Class<?>[] roots = tst.roots();
+                String key = roots == null ? null : ClassKey.of(tst.extra() + "|" + HARNESS + "|" + ClassKey.single(tst.getClass()), roots);
+                if (key != null && cache != null && cache.unchanged(tst.name, key)) skipped.add(tst); else toRun.add(tst);
+            }
+            List<Test> byLength = new ArrayList<>(toRun);
+            byLength.sort((a, b) -> Integer.compare(took.getOrDefault(b.name, 600), took.getOrDefault(a.name, 600)));
+            long[] load = new long[sn];
+            Set<Test> minePick = new HashSet<>();
+            for (Test tst : byLength) {
+                int best = 0;
+                for (int j = 1; j < sn; j++) if (load[j] < load[best]) best = j;
+                load[best] += took.getOrDefault(tst.name, 600) + 40;   // (+ a little for starting each one)
+                if (best == si) minePick.add(tst);
+            }
             List<Test> mine = new ArrayList<>();
-            for (int i = 0; i < queue.size(); i++) if (i % sn == si) mine.add(queue.get(i));
+            for (Test tst : queue) if (minePick.contains(tst) || (si == 0 && skipped.contains(tst))) mine.add(tst);
             queue.clear(); queue.addAll(mine);
         }
         // the compatibility run (-Disg.only=a,b,...): only the tests whose names start with one of these

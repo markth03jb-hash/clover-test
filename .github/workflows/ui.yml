@@ -13,6 +13,10 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[ui]')
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]   # the pictures are split over four jobs side by side (client/UiShots.shard); "merge" puts them together
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -21,7 +25,7 @@ jobs:
         with: { gradle-version: 8.1.1 }
       - run: sudo apt-get update -q && sudo apt-get install -y -q xvfb libgl1-mesa-dri mesa-utils
       - name: Run the game and take the pictures
-        env: { ISG_UISHOTS: '1', LIBGL_ALWAYS_SOFTWARE: '1', MESA_GL_VERSION_OVERRIDE: '4.5' }
+        env: { ISG_UISHOTS: '1', ISG_SHARD: '${{ matrix.shard }}/4', LIBGL_ALWAYS_SOFTWARE: '1', MESA_GL_VERSION_OVERRIDE: '4.5' }
         run: |
           mkdir -p run && echo "eula=true" > run/eula.txt
           # what passed last time (and its pictures): skipped this time unless its code changed
@@ -32,20 +36,52 @@ jobs:
           ls run/screenshots || true
           cat run/isg_uishots_report.txt || echo "no report written"
           echo "----- console (last 120 lines)"; tail -n 120 run/console_tail.txt
-      - name: Keep the results on the ui-shots branch
+      - name: Keep this shard's results
         if: always()
         run: |
-          mkdir -p /tmp/out && cp run/screenshots/*.png run/isg_uishots_report.txt run/isg_ui_cache.txt run/console_tail.txt /tmp/out/ 2>/dev/null || true
-          cp run/logs/latest.log /tmp/out/ 2>/dev/null || true
-          cd /tmp/out && git init -q && git checkout -q -b ui-shots && git add -A
-          git -c user.name=ci -c user.email=ci@localhost commit -qm "UI screenshots for ${GITHUB_SHA}" || exit 0
-          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" ui-shots
+          mkdir -p out/new out/base && cp run/isg_uishots_report.txt run/isg_ui_cache.txt run/console_tail.txt out/ 2>/dev/null || true
+          cp run/logs/latest.log out/ 2>/dev/null || true
+          # only the pictures this job took (the rest are last time's, kept once - by the first job - as the base)
+          for f in run/screenshots/*.png; do [ -f "$f" ] || continue; b=$(basename "$f"); cmp -s "$f" "/tmp/prev/$b" || cp "$f" out/new/; done
+          [ "${{ matrix.shard }}" = "0" ] && cp /tmp/prev/*.png out/base/ 2>/dev/null || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ui-shots
-          path: |
-            run/screenshots/*.png
-            run/isg_uishots_report.txt
-            run/console_tail.txt
-            run/logs/latest.log
+          name: ui-${{ matrix.shard }}
+          path: out/
+
+  merge:
+    needs: shots
+    if: always() && needs.shots.result != 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: shards, pattern: 'ui-*' }
+      - name: One report from the shards
+        run: |
+          mkdir -p /tmp/out && touch /tmp/body.txt /tmp/out/isg_ui_cache.txt
+          n=0; p=0
+          cp shards/ui-0/base/*.png /tmp/out/ 2>/dev/null || true
+          for d in shards/ui-*; do
+            k=${d##*-}
+            cp $d/new/*.png /tmp/out/ 2>/dev/null || true
+            cat $d/isg_ui_cache.txt >> /tmp/out/isg_ui_cache.txt 2>/dev/null || true
+            cp $d/console_tail.txt /tmp/out/console_tail_$k.txt 2>/dev/null || true
+            cp $d/latest.log /tmp/out/latest_$k.log 2>/dev/null || true
+            if [ -f $d/isg_uishots_report.txt ]; then
+              h=$(head -1 $d/isg_uishots_report.txt)
+              n=$((n + $(echo "$h" | sed -E 's/.*: ([0-9]+) steps.*/\1/'))); p=$((p + $(echo "$h" | sed -E 's/.*, ([0-9]+) problem.*/\1/')))
+              tail -n +2 $d/isg_uishots_report.txt >> /tmp/body.txt
+            else
+              echo "shard $k | CRASH: wrote no report (the game crashed or timed out)" >> /tmp/body.txt; p=$((p + 1))
+            fi
+          done
+          cp /tmp/out/console_tail_0.txt /tmp/out/console_tail.txt 2>/dev/null || true
+          cp /tmp/out/latest_0.log /tmp/out/latest.log 2>/dev/null || true
+          { echo "Iron Spell Grimoire - automatic UI check: $n steps, $p problem(s)"; cat /tmp/body.txt; } > /tmp/out/isg_uishots_report.txt
+          head -1 /tmp/out/isg_uishots_report.txt
+      - name: Keep the results on the ui-shots branch
+        run: |
+          cd /tmp/out && git init -q && git checkout -q -b ui-shots && git add -A
+          git -c user.name=ci -c user.email=ci@localhost commit -qm "UI screenshots for ${GITHUB_SHA}" || exit 0
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" ui-shots
