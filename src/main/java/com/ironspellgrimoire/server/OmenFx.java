@@ -785,12 +785,13 @@ public final class OmenFx {
         Vec3 c = mid(t);
         send(sl, fx(9, t.position(), 30));   // the ledger opens over it, the debt writes itself in, and the page slams down
         final LivingEntity tt = t;
+        final float dmg0 = dmg;
         AstaFx.later(13, () -> {
             if (!tt.isAlive() || !p.isAlive()) return;
             FxSend.shake(sl, tt.position(), 0.4f, 6, 16);
             play(sl, tt.position(), "omen_fall", 1.2f, 0.6f);
-            float over = dmg - tt.getHealth();
-            AstaFx.damage(p, tt, dmg, "karmas_ledger");
+            float over = dmg0 - tt.getHealth();
+            AstaFx.damage(p, tt, dmg0, "karmas_ledger");
             if (r(p, "l2") > 0 && over > 0 && !tt.isAlive()) {   // Unpaid Debt
                 LivingEntity n = null; double bd = 64;
                 for (LivingEntity o : sl.getEntitiesOfClass(LivingEntity.class, tt.getBoundingBox().inflate(8), x -> x != tt && x != p && x.isAlive() && hostile(p, x))) { double d = o.distanceToSqr(tt); if (d < bd) { bd = d; n = o; } }
