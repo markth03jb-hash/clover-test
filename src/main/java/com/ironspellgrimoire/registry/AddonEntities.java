@@ -191,4 +191,26 @@ public final class AddonEntities {
             FOLK.put(k, ENTITIES.register(k.id, () -> EntityType.Builder.<com.ironspellgrimoire.entity.WildFolk>of((t, l) -> new com.ironspellgrimoire.entity.WildFolk(t, l, k), MobCategory.MONSTER)
                     .sized(0.6F * k.size, 1.95F * k.size).clientTrackingRange(8).build(k.id)));
     }
+
+    /** ASHFALL, Arc I (server/Story, StoryArc1): Corvin Hale and Ilsa Marr, Sallow's Penitents, Father Sallow. */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.StoryNpc>> STORY_CORVIN = ENTITIES.register("story_corvin",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.StoryNpc>of((t, l) -> new com.ironspellgrimoire.entity.StoryNpc(t, l, "corvin"), MobCategory.MISC).sized(0.66F, 2.1F).clientTrackingRange(10).build("story_corvin"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.StoryNpc>> STORY_ILSA = ENTITIES.register("story_ilsa",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.StoryNpc>of((t, l) -> new com.ironspellgrimoire.entity.StoryNpc(t, l, "ilsa"), MobCategory.MISC).sized(0.57F, 1.85F).clientTrackingRange(10).build("story_ilsa"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Penitent>> PENITENT = ENTITIES.register("penitent",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Penitent>of(com.ironspellgrimoire.entity.Penitent::new, MobCategory.MONSTER).sized(0.6F, 1.95F).clientTrackingRange(8).build("penitent"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.FatherSallow>> FATHER_SALLOW = ENTITIES.register("father_sallow",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.FatherSallow>of(com.ironspellgrimoire.entity.FatherSallow::new, MobCategory.MONSTER).sized(0.78F, 2.5F).clientTrackingRange(10).build("father_sallow"));
+
+    /** ASHFALL, Arc II: Tamsin Reed (in the cells, and in her bout), Magistrate Vey (on his balcony, and in his vault), his Wardens. */
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.StoryNpc>> STORY_TAMSIN = ENTITIES.register("story_tamsin",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.StoryNpc>of((t, l) -> new com.ironspellgrimoire.entity.StoryNpc(t, l, "tamsin"), MobCategory.MISC).sized(0.57F, 1.85F).clientTrackingRange(10).build("story_tamsin"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.StoryNpc>> STORY_VEY = ENTITIES.register("story_vey",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.StoryNpc>of((t, l) -> new com.ironspellgrimoire.entity.StoryNpc(t, l, "vey"), MobCategory.MISC).sized(0.75F, 2.4F).clientTrackingRange(10).build("story_vey"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.TamsinDuelist>> TAMSIN_DUELIST = ENTITIES.register("tamsin_duelist",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.TamsinDuelist>of(com.ironspellgrimoire.entity.TamsinDuelist::new, MobCategory.MONSTER).sized(0.57F, 1.85F).clientTrackingRange(10).build("tamsin_duelist"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.MagistrateVey>> MAGISTRATE_VEY = ENTITIES.register("magistrate_vey",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.MagistrateVey>of(com.ironspellgrimoire.entity.MagistrateVey::new, MobCategory.MONSTER).sized(0.75F, 2.4F).clientTrackingRange(10).build("magistrate_vey"));
+    public static final RegistryObject<EntityType<com.ironspellgrimoire.entity.Warden>> WARDEN = ENTITIES.register("vey_warden",
+            () -> EntityType.Builder.<com.ironspellgrimoire.entity.Warden>of(com.ironspellgrimoire.entity.Warden::new, MobCategory.MONSTER).sized(0.66F, 2.2F).clientTrackingRange(8).build("vey_warden"));
 }

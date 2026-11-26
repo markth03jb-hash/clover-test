@@ -126,6 +126,101 @@ public final class UiShotsServer {
         sl.addFreshEntity(b);
     }
 
+    /** ASHFALL: the Arc I cast standing in a row; Emberfall and the chapel (each party's own, in the Rift dimension); clearing up. */
+    public static void story(ServerPlayer p, String what) {
+        ServerLevel sl = p.serverLevel();
+        switch (what) {
+            case "cast" -> {
+                folk(p, "none");
+                p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+                faceForward(p);
+                var types = java.util.List.of(com.ironspellgrimoire.registry.AddonEntities.STORY_CORVIN.get(), com.ironspellgrimoire.registry.AddonEntities.FATHER_SALLOW.get(),
+                        com.ironspellgrimoire.registry.AddonEntities.PENITENT.get(), com.ironspellgrimoire.registry.AddonEntities.STORY_ILSA.get());
+                double[] xs = {-4.8, -1.6, 1.6, 4.6};
+                for (int i = 0; i < types.size(); i++) {
+                    var m = (net.minecraft.world.entity.Mob) types.get(i).create(sl);
+                    if (m == null) continue;
+                    m.moveTo(p.getX() + xs[i], p.getY(), p.getZ() + 7, 180, 0);
+                    m.setYBodyRot(180); m.setYHeadRot(180);
+                    m.setNoAi(true);
+                    m.getPersistentData().putBoolean("isg_ui_story", true);
+                    sl.addFreshEntity(m);
+                }
+            }
+            case "ember" -> {
+                story(p, "clear");
+                Story.testClear(p.server);
+                Story.begin(p);
+            }
+            case "chapel" -> {
+                Story.Party pt = Story.ensure(p);
+                StoryArc1.toChapter(p.server, pt, 3);
+                StoryArc1.enterChapel(p.server, pt, p);
+                ServerLevel rift = StoryStage.rift(p.server);
+                if (rift == null) return;
+                StoryArc1.ensureNpc(rift, pt, com.ironspellgrimoire.registry.AddonEntities.STORY_CORVIN.get(), StoryStage.CHAPEL, StoryArc1.CORVIN_DOOR, 180);
+                StoryArc1.ensureNpc(rift, pt, com.ironspellgrimoire.registry.AddonEntities.STORY_ILSA.get(), StoryStage.CHAPEL, new double[]{StoryStage.CAGES[0][0], 0, StoryStage.CAGES[0][1]}, 90);
+                var b = com.ironspellgrimoire.registry.AddonEntities.FATHER_SALLOW.get().create(rift);
+                if (b != null) {
+                    var at = StoryStage.at(pt.id, StoryStage.CHAPEL, 0, 0, 30);
+                    b.moveTo(at.x, at.y, at.z, 180, 0); b.setYBodyRot(180); b.setYHeadRot(180); b.setNoAi(true);
+                    StoryArc1.tag(b, pt, StoryStage.CHAPEL);
+                    rift.addFreshEntity(b);
+                }
+                p.teleportTo(rift, p.getX(), p.getY(), p.getZ() + 6, 0, 0);
+            }
+            case "cast2" -> {
+                folk(p, "none");
+                faceForward(p);
+                var types = java.util.List.of(com.ironspellgrimoire.registry.AddonEntities.STORY_TAMSIN.get(), com.ironspellgrimoire.registry.AddonEntities.STORY_VEY.get(),
+                        com.ironspellgrimoire.registry.AddonEntities.WARDEN.get());
+                double[] xs = {-3.2, 0, 3.2};
+                for (int i = 0; i < types.size(); i++) {
+                    var m = (net.minecraft.world.entity.Mob) types.get(i).create(sl);
+                    if (m == null) continue;
+                    m.moveTo(p.getX() + xs[i], p.getY(), p.getZ() + 7, 180, 0);
+                    m.setYBodyRot(180); m.setYHeadRot(180);
+                    m.setNoAi(true);
+                    m.getPersistentData().putBoolean("isg_ui_story", true);
+                    sl.addFreshEntity(m);
+                }
+            }
+            case "arena" -> {
+                story(p, "clear");
+                Story.testClear(p.server);
+                Story.Party pt = Story.ensure(p);
+                StoryArc1.toChapter(p.server, pt, 5);
+                Story.begin(p);
+            }
+            case "arena_look" -> {   // from the gate, out over the sand to the balcony
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                var at = StoryStage.at(pt.id, StoryStage.ARENA, 0, 1, 15);
+                p.teleportTo(StoryStage.rift(p.server), at.x, at.y, at.z, 180, -8);
+            }
+            case "catacomb" -> {
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                var at = StoryStage.at(pt.id, StoryStage.ARENA, 9, StoryStage2.CY, 0);
+                p.teleportTo(StoryStage.rift(p.server), at.x, at.y, at.z, -90, 5);
+            }
+            case "vault" -> {
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                StoryArc2.toChapter(p.server, pt, 6);
+                StoryStage.enter(p, pt, StoryStage.VAULT, StoryStage.spawn(pt.id, StoryStage.VAULT), 0);
+            }
+            default -> {   // clear
+                for (var e : sl.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, p.getBoundingBox().inflate(48), x -> x.getPersistentData().getBoolean("isg_ui_story"))) e.discard();
+                Story.Party pt = Story.partyOf(p);
+                if (StoryStage.inStage(p)) StoryStage.leave(p);
+                if (pt != null) StoryArc1.dissolve(p.server, pt);
+                Story.testClear(p.server);
+                Story.sync(p, null);
+            }
+        }
+    }
+
     public static void folk(ServerPlayer p, String what) {
         ServerLevel sl = p.serverLevel();
         for (var e : sl.getEntitiesOfClass(com.ironspellgrimoire.entity.WildFolk.class, p.getBoundingBox().inflate(24))) e.discard();

@@ -317,10 +317,169 @@ def twin_haldric(): twin("haldric", (150, 30, 34), 117, False)
 def twin_oswin(): twin("oswin", (36, 60, 140), 118, True)
 
 
+# ---- ASHFALL, Arc 1 ("Embers")
+EMBER = (255, 150, 50)
+
+def cut(s, part, j0, j1):
+    """Gaps in an outer layer, rows j0..j1 all round (rows() can't: it paints opaque)."""
+    for f in ("front", "back", "left", "right"):
+        for j in range(j0, j1):
+            for i in range(8): s.px(part, f, i, j, T, 0)
+
+def corvin_hale():
+    """Corvin Hale: a one-armed exiled knight - grey and scarred, a worn navy gambeson, an empty left sleeve under a black half-cloak."""
+    s = Skin(201, False)
+    skin, hair, navy, leather, cloak = (192, 156, 130), (148, 146, 142), (40, 48, 72), (92, 64, 42), (30, 30, 38)
+    s.face(skin, hair, (96, 120, 156), mouth=(130, 90, 80), fringe=1, sides=5, beard=shade(hair, 0.92), scar=True)
+    s.clear("hat")
+    s.fill("body", navy, 10, grain="h")
+    s.clear("jacket")
+    for j in range(12):   # a baldric across the chest, a belt
+        s.px("jacket", "front", 7 - j * 7 // 11, j, leather, 6); s.px("jacket", "back", j * 7 // 11, j, leather, 6)
+    s.ring("jacket", 8, 9, leather, 6)
+    s.px("jacket", "front", 3, 8, (170, 150, 90)); s.px("jacket", "front", 4, 8, (170, 150, 90))   # the buckle
+    s.fill("rarm", navy, 8); s.clear("rsleeve"); s.ring("rarm", 9, 12, leather, 6); s.ring("rsleeve", 7, 9, leather, 6)
+    s.clear("larm"); s.clear("lsleeve")   # the arm he lost
+    for l, p in (("rleg", "rpants"), ("lleg", "lpants")):
+        s.fill(l, (58, 58, 64), 8); s.clear(p); s.ring(l, 8, 12, shade(leather, 0.8), 6)
+    s.save("story_corvin")
+
+
+def father_sallow():
+    """Father Sallow: a gaunt priest in grey-white vestments gone yellow at the hem, a red-brown stole, ash-grey skin, pale eyes."""
+    s = Skin(202, False)
+    skin, vest, stain, stole = (196, 190, 182), (206, 202, 188), (164, 150, 110), (100, 34, 30)
+    s.face(skin, (60, 58, 56), (214, 214, 200), brow=(90, 86, 80), mouth=(110, 80, 80), fringe=1, sides=3)
+    for i in (2, 5): s.px("head", "front", i, 5, shade(skin, 0.8))   # hollow cheeks
+    s.fill("hat", vest, 8); 
+    for i in range(8):
+        for j in range(8): 
+            if j >= 2: s.px("hat", "front", i, j, T, 0)   # a cowl back from the face
+    s.fill("body", vest, 8, grain="v")
+    s.fill("jacket", vest, 8, grain="v")
+    for f in ("front", "back"):
+        for j in range(12):
+            for i in (3, 4): s.px("jacket", f, i, j, stole, 6)
+        s.rows("jacket", f, 9, 12, stain, 10)
+    for j in (2, 4, 6): s.px("jacket", "front", 3, j, (200, 180, 120)); s.px("jacket", "front", 4, j, (200, 180, 120))
+    for a, sl in (("rarm", "rsleeve"), ("larm", "lsleeve")):
+        s.fill(a, skin, 6); s.fill(sl, vest, 8)
+        cut(s, sl, 10, 12)
+        s.ring(sl, 8, 10, stain, 8)
+    for l, p in (("rleg", "rpants"), ("lleg", "lpants")):
+        s.fill(l, vest, 8); s.fill(p, vest, 8, grain="v"); s.ring(p, 9, 12, stain, 10); s.ring(l, 11, 12, (40, 36, 34), 4)
+    s.save("story_sallow")
+
+
+def penitent():
+    """Sallow's Penitents: the 'freed' - sackcloth hoods with no face, a stitched wound where the brand was cut out, bare grey arms."""
+    s = Skin(203, False)
+    sack, grey, stitch, wound = (150, 128, 96), (128, 122, 116), (40, 30, 26), (120, 40, 34)
+    s.fill("head", sack, 12)
+    for i in (2, 5): s.px("head", "front", i, 4, (20, 16, 14))   # two holes
+    for j in (6,): 
+        for i in range(2, 6): s.px("head", "front", i, j, shade(sack, 0.7))
+    s.clear("hat"); s.ring("hat", 7, 8, (80, 66, 50), 6)   # the cord round the neck
+    s.fill("body", grey, 8)
+    for j in range(3, 9): s.px("body", "front", 5, j, wound, 6); s.px("body", "front", 6, j, shade(wound, 0.8), 6)
+    for j in range(3, 9, 2): s.px("body", "front", 4, j, stitch); s.px("body", "front", 7, j, stitch)
+    s.clear("jacket"); s.rows("jacket", "front", 9, 12, sack, 10); s.rows("jacket", "back", 0, 12, sack, 10)
+    for f in ("left", "right"): s.rows("jacket", f, 9, 12, sack, 10)
+    limbs(s, grey, sack, foot=(70, 60, 50), hand=shade(grey, 0.85))
+    for sl in ("rarm", "larm"): s.px(sl, "front", 1, 3, wound); s.px(sl, "front", 2, 4, wound)
+    s.save("story_penitent")
+
+
+def ilsa_marr():
+    """Ilsa Marr, the other survivor of the village: plain village wool, soot-dark hair, a burn up her neck, an ember-lit brand on her right arm."""
+    s = Skin(204, True)
+    skin, hair, wool, apron = (214, 176, 148), (44, 34, 30), (120, 86, 60), (180, 168, 140)
+    s.face(skin, hair, (120, 96, 64), mouth=(150, 96, 90), fringe=3, sides=7)
+    for j, i in ((6, 0), (7, 0), (7, 1), (5, 0)): s.px("head", "front", i, j, (170, 100, 84))   # the burn
+    s.fill("hat", hair, 10, faces_only=("back", "left", "right")); s.clear("hat")
+    s.rows("hat", "back", 0, 8, hair, 10)
+    s.fill("body", wool, 10, grain="v")
+    s.clear("jacket"); s.rows("jacket", "front", 4, 12, apron, 8, 1, 7)
+    for i in range(8): s.px("jacket", "front", i, 8, shade(apron, 0.6))   # soot
+    limbs(s, skin, (88, 66, 50), foot=(54, 40, 30))
+    s.fill("rsleeve", wool, 8); s.fill("lsleeve", wool, 8)
+    for sl in ("rsleeve", "lsleeve"): cut(s, sl, 5, 12)
+    for j, i in ((6, 1), (7, 1), (7, 2), (8, 1), (9, 0), (9, 1)): s.px("rarm", "front", i, j, EMBER, 4)   # the brand
+    s.save("story_ilsa")
+
+STORY = (corvin_hale, father_sallow, penitent, ilsa_marr)
+
+
+# ---- ASHFALL, Arc II ("The Proving")
+GOLD = (206, 164, 64)
+
+def magistrate_vey():
+    """Magistrate Vey: tall and pale, grey hair combed flat, amber eyes; black robes edged in gold, gold cuffs."""
+    s = Skin(211, False)
+    skin, hair, robe = (226, 214, 200), (96, 98, 104), (28, 26, 32)
+    s.face(skin, hair, (214, 168, 60), brow=(70, 70, 76), mouth=(150, 110, 104), fringe=1, sides=3)
+    for i in (2, 5): s.px("head", "front", i, 6, shade(skin, 0.88))   # the thin smile's lines
+    s.clear("hat")
+    s.fill("body", robe, 6, grain="v")
+    s.fill("jacket", robe, 6, grain="v")
+    for f in ("front", "back"):
+        for j in range(12):
+            for i in (2, 5): s.px("jacket", f, i, j, GOLD, 8)
+        s.rows("jacket", f, 11, 12, GOLD, 8)
+    for j in (3, 6, 9): s.px("jacket", "front", 3, j, GOLD); s.px("jacket", "front", 4, j, GOLD)
+    for a, sl in (("rarm", "rsleeve"), ("larm", "lsleeve")):
+        s.fill(a, skin, 6); s.fill(sl, robe, 6)
+        cut(s, sl, 11, 12)
+        s.ring(sl, 9, 11, GOLD, 8)
+    for l, p in (("rleg", "rpants"), ("lleg", "lpants")):
+        s.fill(l, robe, 6); s.fill(p, robe, 6, grain="v"); s.ring(p, 10, 12, GOLD, 8); s.ring(l, 11, 12, (20, 18, 22), 4)
+    s.save("story_vey")
+
+
+def warden():
+    """Vey's Wardens: black-lacquered plate edged in gold, a smooth gold mask with one dark slit for the eyes."""
+    s = Skin(212, False)
+    plate, dark = (34, 32, 38), (18, 18, 22)
+    s.fill("head", plate, 6)
+    s.rows("head", "front", 0, 8, GOLD, 6)
+    for i in range(1, 7): s.px("head", "front", i, 3, (12, 10, 10), 2)   # the slit
+    for j in range(4, 7): s.px("head", "front", 3, j, shade(GOLD, 0.8)); s.px("head", "front", 4, j, shade(GOLD, 0.8))   # the nose ridge
+    s.clear("hat")
+    s.fill("body", plate, 8, grain="h")
+    s.fill("jacket", plate, 8, grain="h")
+    for f in ("front", "back"):
+        s.rows("jacket", f, 0, 1, GOLD, 6); s.rows("jacket", f, 7, 8, GOLD, 6)
+        for j in range(12): s.px("jacket", f, 0, j, GOLD, 6); s.px("jacket", f, 7, j, GOLD, 6)
+    limbs(s, plate, plate, foot=dark, hand=dark, cuff=GOLD)
+    for a in ("rarm", "larm"): s.ring(a, 4, 5, GOLD, 6)
+    for l in ("rleg", "lleg"): s.ring(l, 4, 5, GOLD, 6)
+    s.save("story_warden")
+
+
+def tamsin_reed():
+    """Tamsin Reed: a young hedge-mage - copper hair in a braid, freckles, a patched green tunic, sleeves rolled up, a satchel strap."""
+    s = Skin(213, True)
+    skin, hair, tunic, patch, strap = (228, 192, 162), (178, 86, 40), (72, 98, 60), (120, 88, 56), (88, 60, 38)
+    s.face(skin, hair, (90, 150, 80), mouth=(170, 104, 96), fringe=2, sides=6)
+    for i, j in ((1, 5), (2, 5), (5, 5), (6, 5)): s.px("head", "front", i, j, shade(skin, 0.8), 2)   # freckles
+    s.clear("hat")
+    for j in range(2, 8): s.px("hat", "left", 6, j, hair, 10); s.px("hat", "left", 5, j, shade(hair, 0.85), 10)   # the braid over one shoulder
+    s.fill("body", tunic, 10, grain="v")
+    for i, j in ((1, 7), (2, 7), (1, 8), (2, 8), (5, 3), (6, 3)): s.px("body", "front", i, j, patch, 8)
+    s.clear("jacket")
+    for j in range(12): s.px("jacket", "front", j * 7 // 11, j, strap, 6); s.px("jacket", "back", 7 - j * 7 // 11, j, strap, 6)
+    s.ring("jacket", 9, 10, strap, 6)
+    limbs(s, skin, (96, 72, 50), foot=(60, 44, 32))
+    for sl in ("rsleeve", "lsleeve"): s.fill(sl, tunic, 8); cut(s, sl, 5, 12)
+    s.save("story_tamsin")
+
+STORY2 = (magistrate_vey, warden, tamsin_reed)
+
+
 ALL = (rime_brute, frost_chanter, hoarfrost_jarl, hollow_crawler, hollow_singer, deepwarden, twin_haldric, twin_oswin,
        bog_crawler, mire_hexer, fen_matron, scree_brute, stonecaller, peak_warden, dune_stalker, sandwraith, sun_herald, gloamstalker)
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    for f in ALL: f()
+    for f in ALL + STORY + STORY2: f()
     print("family skins written to", OUT)

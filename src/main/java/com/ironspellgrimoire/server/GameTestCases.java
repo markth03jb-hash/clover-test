@@ -406,6 +406,11 @@ final class GameTestCases {
         queue.add(new IronTwinsTest());
         queue.add(new StarTest());
         queue.add(new WorldEventsTest());
+        queue.add(new StoryFlowTest());
+        queue.add(new StoryPartsTest());
+        queue.add(new SallowTest());
+        queue.add(new ProvingTest(false));
+        queue.add(new ProvingTest(true));
         queue.add(new MultiplayerTest());
         queue.add(new StressTest());
         queue.add(new BossTest("Seren Vale", AddonEntities.SEREN_VALE));
@@ -2399,6 +2404,7 @@ final class GameTestCases {
                     z.moveTo(home.x + 2, home.y, home.z); sl().addFreshEntity(z);
                     int hits = playerHits;
                     p.invulnerableTime = 0;
+                    BossIntro.testRelease(p.getUUID());   // a rival's intro card still holding the player would take the blow first
                     p.hurt(z.damageSources().mobAttack(z), 4);
                     if (playerHits != hits || !RivalKeepsakes.RIBBON.containsKey(p.getUUID())) bad.add("the Prism Ribbon let the blow through");
                     z.discard();
@@ -3463,6 +3469,354 @@ final class GameTestCases {
             NbtIo.write(t, new DataOutputStream(bo));
             return NbtIo.read(new DataInputStream(new ByteArrayInputStream(bo.toByteArray())));
         } catch (Exception e) { throw new RuntimeException(e); }
+    }
+
+
+    // ================================================================== ASHFALL
+    static final Class<?>[] STORY_ROOTS = {Story.class, StoryArc1.class, StoryStage.class, Brand.class, SallowAI.class, com.ironspellgrimoire.entity.StoryNpc.class,
+            com.ironspellgrimoire.entity.Penitent.class, com.ironspellgrimoire.entity.FatherSallow.class};
+
+    /** Out of the story's places and back at the test spot, in the overworld. */
+    static void storyHome() {
+        StoryStage.leaveIfInside(p);
+        ServerLevel ow = p.server.overworld();
+        if (p.level() != ow) p.teleportTo(ow, home.x, home.y, home.z, 0f, 0f);
+        Story.Party pt = Story.partyOf(p);
+        if (pt != null) StoryArc1.dissolve(p.server, pt);
+        Story.testClear(p.server);
+        Brand.testReset(p);
+    }
+
+    /** Emberfall from waking to walking out with Corvin, then Corvin's first lesson. */
+    static final class StoryFlowTest extends Test {
+        StoryFlowTest() { super("ASHFALL: Emberfall, the Penitents, Corvin, the first lesson"); }
+        @Override Class<?>[] roots() { return STORY_ROOTS; }
+        final List<String> bad = new ArrayList<>();
+        Story.Party pt;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+            Story.testClear(p.server);
+            pt = Story.testParty(p);
+            Story.begin(p);
+        }
+        @Override boolean tick(int t) {
+            try {
+                var s = p.server;
+                if (t == 1) {
+                    if (pt.ch != 0) bad.add("begin didn't start chapter 1 (ch " + pt.ch + ")");
+                    if (!StoryStage.inside(p, pt, StoryStage.EMBER)) bad.add("begin didn't take the party into Emberfall");
+                    if (pt.talk == null || !pt.talk.id.equals("wake")) bad.add("no opening scene");
+                    if (!pt.flag("built0")) bad.add("Emberfall wasn't built");
+                    if (!p.getInventory().contains(new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.STORY_JOURNAL.get()))) bad.add("no Story Journal given");
+                    Story.resolve(s, pt);
+                }
+                if (t == 25) {
+                    var rift = StoryStage.rift(s);
+                    if (StoryArc1.npcs(rift, pt, AddonEntities.STORY_ILSA.get()).isEmpty()) bad.add("Ilsa isn't in the village");
+                    var at = StoryArc1.pos(pt, StoryStage.EMBER, StoryArc1.ILSA);
+                    p.teleportTo(at.x + 2, at.y, at.z);
+                }
+                if (t == 45) {
+                    if (pt.step != 1 || pt.talk == null || !pt.talk.id.equals("ilsa")) bad.add("reaching Ilsa didn't start her scene (step " + pt.step + ")");
+                    Story.resolve(s, pt);
+                    if (pt.step != 2) bad.add("after her scene the Penitents don't come");
+                }
+                if (t == 60 || t == 80) {
+                    if (StoryArc1.penitents(StoryStage.rift(s), pt, StoryStage.EMBER).isEmpty()) bad.add("wave " + pt.count("wave") + " didn't come");
+                    StoryArc1.testWaveClear(s, pt);
+                }
+                if (t == 100) {
+                    boolean hand = false;
+                    for (var m : StoryArc1.penitents(StoryStage.rift(s), pt, StoryStage.EMBER)) hand |= m.getPersistentData().getBoolean("isg_hand");
+                    if (!hand) bad.add("Sallow's Hand isn't in the third wave");
+                }
+                if (t == 200) {
+                    if (!pt.flag("ilsaTaken")) bad.add("they didn't take Ilsa");
+                    StoryArc1.testWaveClear(s, pt);
+                }
+                if (t == 380) {
+                    if (pt.step != 3 || pt.talk == null || !pt.talk.id.equals("corvin_meet")) bad.add("Corvin didn't come (step " + pt.step + ")");
+                    Story.resolve(s, pt);
+                    var pad = StoryArc1.pos(pt, StoryStage.EMBER, StoryArc1.GATE_PAD);
+                    p.teleportTo(pad.x, pad.y, pad.z);
+                }
+                if (t == 470) {
+                    if (pt.ch != 1) bad.add("the gate's circle didn't end the chapter (ch " + pt.ch + ", step " + pt.step + ")");
+                    if (StoryStage.inStage(p)) bad.add("still in Emberfall after leaving");
+                    if (p.level() != s.overworld()) p.teleportTo(s.overworld(), home.x, home.y, home.z, 0f, 0f);
+                }
+                if (t == 520) {
+                    var c = pt.corvin == null ? null : sl().getEntity(pt.corvin);
+                    if (!(c instanceof com.ironspellgrimoire.entity.StoryNpc n) || !n.follower) bad.add("Corvin doesn't walk with the party");
+                    pt.add("cast", 40); pt.add("night", 12); pt.add("elite", 1);
+                    if (c instanceof com.ironspellgrimoire.entity.StoryNpc n) StoryArc1.talkTo(p, n);
+                    if (pt.talk == null || !pt.talk.id.equals("corvin_lesson")) bad.add("Corvin's lesson didn't play when the goals were met");
+                    Story.resolve(s, pt);
+                    if (pt.ch != 2) bad.add("the lesson didn't open chapter 3");
+                    storyHome(); clearArea();
+                    if (bad.isEmpty()) pass(name, "began in Emberfall (built, journal given), Ilsa's scene, three waves with the Hand, Ilsa taken, Corvin came, out through the gate, Corvin follows, his lesson opened chapter 3");
+                    else fail(name, String.join("; ", bad));
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); try { storyHome(); } catch (Throwable ignored) {} clearArea(); return true; }
+        }
+    }
+
+    /** The vote, the Brand, the patrols' pages, Sallow's Rosary. */
+    static final class StoryPartsTest extends Test {
+        StoryPartsTest() { super("ASHFALL: votes, the Brand, pages, the Rosary"); }
+        @Override Class<?>[] roots() { return STORY_ROOTS; }
+        @Override void start() { cancelCast(); clearArea(); resetPlayer(true); p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true); Story.testClear(p.server); }
+        @Override boolean tick(int t) {
+            List<String> bad = new ArrayList<>();
+            try {
+                var s = p.server;
+                Story.Party pt = Story.testParty(p);
+                // the vote: majority, a tie to the leader, a tie without the leader to the first
+                UUID a = UUID.randomUUID(), b = UUID.randomUUID(), c = UUID.randomUUID();
+                pt.leader = a;
+                var talk = new Story.Talk("x", Story.lines("narrator", "."), new String[]{"one", "two"}, 0);
+                talk.votes.put(a, 0); talk.votes.put(b, 1); talk.votes.put(c, 1);
+                if (Story.decide(pt, talk) != 1) bad.add("the majority didn't win");
+                talk.votes.remove(c);
+                if (Story.decide(pt, talk) != 0) bad.add("a tie didn't go the leader's way");
+                talk.votes.clear(); talk.votes.put(b, 1); talk.votes.put(c, 0);
+                if (Story.decide(pt, talk) != 0) bad.add("a tie without the leader didn't go to the first choice");
+                pt.leader = p.getUUID();
+                // the Brand
+                Brand.testReset(p);
+                Story.setBrand(p, 0);
+                Brand.use(p);
+                var sp = p.getAttribute(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.SPELL_POWER.get());
+                if (sp != null && sp.getModifier(Brand.POWER) != null) bad.add("the Brand burned before it woke");
+                Story.setBrand(p, 1);
+                Brand.use(p);
+                if (sp == null || sp.getModifier(Brand.POWER) == null) bad.add("Brand I didn't raise spell power");
+                if (!Brand.burning(p)) bad.add("Brand I isn't burning");
+                long sleeps = Brand.st(p)[1];
+                Brand.use(p);
+                if (Brand.st(p)[1] != sleeps) bad.add("the Brand burned again while it slept");
+                // a patrol's last Penitent drops a page; reading it counts
+                StoryArc1.toChapter(s, pt, 2);
+                var m = AddonEntities.PENITENT.get().create(sl());
+                if (m != null) {
+                    m.moveTo(home.x + 3, home.y, home.z + 3, 0, 0);
+                    StoryArc1.tag(m, pt, -1);
+                    m.getPersistentData().putInt("isg_patrol", 1);
+                    sl().addFreshEntity(m);
+                    m.hurt(p.damageSources().playerAttack(p), 999f);
+                    boolean page = !sl().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, m.getBoundingBox().inflate(4), i -> i.getItem().is(com.ironspellgrimoire.registry.AddonItemRegistry.ASHEN_PAGE.get())).isEmpty();
+                    if (!page) bad.add("the patrol's last Penitent dropped no page");
+                }
+                StoryArc1.readPage(p, 0);
+                StoryArc1.readPage(p, 0);
+                if (pt.count("pages") != 1) bad.add("reading a page counted " + pt.count("pages") + " (want 1, once)");
+                // Sallow's Rosary: the killing blow leaves you at 1, once
+                ItemStack r = new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.SALLOW_ROSARY.get());
+                top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, r));
+                FolkCharms.ROSARY.remove(p.getUUID());
+                var e1 = new net.minecraftforge.event.entity.living.LivingDeathEvent(p, p.damageSources().generic());
+                FolkCharms.onDeath(e1);
+                if (!e1.isCanceled() || p.getHealth() > 1.01f) bad.add("the Rosary didn't hold off death");
+                var e2 = new net.minecraftforge.event.entity.living.LivingDeathEvent(p, p.damageSources().generic());
+                FolkCharms.onDeath(e2);
+                if (e2.isCanceled()) bad.add("the Rosary held twice in two minutes");
+                top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("charm", 0, ItemStack.EMPTY));
+                Story.sync(p, "journal");
+            } catch (Throwable x) { bad.add("threw " + x); }
+            try { storyHome(); } catch (Throwable ignored) {}
+            resetPlayer(true); clearArea();
+            if (bad.isEmpty()) pass(name, "majority wins, ties to the leader, Brand I burns once per sleep, a patrol's page drops and counts once, the Rosary holds once");
+            else fail(name, String.join("; ", bad));
+            return true;
+        }
+    }
+
+    /** The chapel: the nave, Sallow's fight to his knees, the vote, the arc's end. */
+    static final class SallowTest extends Test {
+        SallowTest() { super("ASHFALL: the chapel and Father Sallow"); }
+        @Override Class<?>[] roots() { return STORY_ROOTS; }
+        final List<String> bad = new ArrayList<>();
+        Story.Party pt;
+        com.ironspellgrimoire.entity.FatherSallow b;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+            Story.testClear(p.server);
+            pt = Story.testParty(p);
+            StoryArc1.toChapter(p.server, pt, 3);
+            StoryArc1.enterChapel(p.server, pt, p);
+        }
+        void go(double z) { var at = StoryStage.at(pt.id, StoryStage.CHAPEL, 0, 0, z); p.teleportTo(at.x, at.y, at.z); }
+        @Override boolean tick(int t) {
+            try {
+                var s = p.server;
+                var rift = StoryStage.rift(s);
+                if (t == 1) {
+                    if (pt.ch != 4 || !StoryStage.inside(p, pt, StoryStage.CHAPEL)) bad.add("the door didn't take the party into the chapel (ch " + pt.ch + ")");
+                    if (!pt.flag("built1")) bad.add("the chapel wasn't built");
+                }
+                if (t == 15) { if (pt.talk == null || !pt.talk.id.equals("chapel_enter")) bad.add("no scene on entering"); Story.resolve(s, pt); go(15); }
+                if (t == 30) { if (pt.step != 2 || StoryArc1.penitents(rift, pt, StoryStage.CHAPEL).isEmpty()) bad.add("the nave's Penitents didn't rise (step " + pt.step + ")"); StoryArc1.testWaveClear(s, pt); }
+                if (t == 45) go(29);
+                if (t == 60) { if (pt.talk == null || !pt.talk.id.equals("sallow_meet")) bad.add("no scene at the altar (step " + pt.step + ")"); Story.resolve(s, pt); }
+                if (t == 75) {
+                    var l = StoryArc1.sallow(rift, pt);
+                    if (l.isEmpty()) { bad.add("Father Sallow didn't come"); fail(name, String.join("; ", bad)); storyHome(); clearArea(); return true; }
+                    b = l.get(0);
+                    if (Math.abs(b.getMaxHealth() - 320f) > 1f) bad.add("his health is " + b.getMaxHealth() + " for one mage (want 320)");
+                    b.setPhase(3); SallowAI.phase(b, 3);
+                    if (!pt.flag("ilsaFled") || !StoryArc1.npcs(rift, pt, AddonEntities.STORY_ILSA.get()).isEmpty()) bad.add("Ilsa didn't break out at stage 3");
+                    b.setTransforming(0);
+                    b.setHealth(5f);
+                    b.hurt(p.damageSources().playerAttack(p), 30f);
+                    if (!b.isAlive()) bad.add("a blow killed him - he should yield");
+                    if (!b.yielded()) bad.add("he didn't yield at the last of his health");
+                    if (pt.step != 6 || pt.talk == null || pt.talk.choices.length != 2) bad.add("no vote when he yielded (step " + pt.step + ")");
+                    Story.vote(p, pt, "sallow_yield", 1);
+                    if (!pt.flag("sallowKilled")) bad.add("the vote to end him didn't");
+                    if (pt.talk == null || !pt.talk.id.equals("sallow_killed")) bad.add("no scene after the vote");
+                    Story.resolve(s, pt);
+                    boolean hook = p.getInventory().contains(new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.SALLOW_HOOK.get()));
+                    if (!hook) bad.add("no Sallow's Hook for ending him");
+                    if (pt.talk == null || !pt.talk.id.equals("arc1_end")) bad.add("no closing scene");
+                    Story.resolve(s, pt);
+                    go(1);
+                }
+                if (t == 160) {
+                    if (pt.ch != 5) bad.add("the circle didn't end the arc (ch " + pt.ch + ", step " + pt.step + ")");
+                    if (StoryStage.inStage(p)) bad.add("still in the chapel");
+                    boolean core = false;
+                    for (ItemStack it : p.getInventory().items) core |= it.is(com.ironspellgrimoire.registry.AddonItemRegistry.MANA_CORE.get()) && BossRules.coreTier(it) == 2;
+                    if (!core) bad.add("no tier II core for the arc");
+                    p.getInventory().clearContent();
+                    storyHome(); clearArea();
+                    if (bad.isEmpty()) pass(name, "entered by the door, the nave rose, the altar scene, Sallow at 320 health, Ilsa broke out at stage 3, he yielded instead of dying, the vote ended him, the Hook, the closing scene, out through the circle with the arc's reward");
+                    else fail(name, String.join("; ", bad));
+                    return true;
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); try { storyHome(); } catch (Throwable ignored) {} clearArea(); return true; }
+        }
+    }
+
+
+    /**
+     * ASHFALL, Arc II, played through by a script: whatever the story is waiting for, the test does - reads the
+     * scenes, steps on the circles, brings the bouts down, walks the catacomb - and checks the milestones on the way.
+     * From the start (to the ledger), or from the ledger to the end (throwing the final).
+     */
+    static final class ProvingTest extends Test {
+        final boolean late;
+        ProvingTest(boolean late) { super(late ? "ASHFALL Arc II: the catacomb, the semifinal, the thrown final, the vault, Brand II" : "ASHFALL Arc II: Cindermarch, the qualifiers, Brannoch, Tamsin"); this.late = late; }
+        @Override Class<?>[] roots() { return new Class<?>[]{Story.class, StoryArc1.class, StoryArc2.class, StoryStage.class, StoryStage2.class, Brand.class, TamsinAI.class, VeyAI.class, Rivals.class,
+                com.ironspellgrimoire.entity.TamsinDuelist.class, com.ironspellgrimoire.entity.MagistrateVey.class, com.ironspellgrimoire.entity.Warden.class, com.ironspellgrimoire.entity.YieldingBoss.class}; }
+        final List<String> bad = new ArrayList<>(), seen = new ArrayList<>();
+        Story.Party pt;
+        @Override void start() {
+            cancelCast(); clearArea(); resetPlayer(true);
+            p.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+            Story.testClear(p.server);
+            Brand.testReset(p);
+            pt = Story.testParty(p);
+            StoryArc1.toChapter(p.server, pt, 5);
+            Story.begin(p);
+            if (late) StoryArc2.toChapter(p.server, pt, 3);
+        }
+        void go(int place, double x, double y, double z) { var at = StoryStage.at(pt.id, place, x, y, z); p.teleportTo(StoryStage.rift(p.server), at.x, at.y, at.z, 0, 0); }
+        void mark(String m) { if (!seen.contains(m)) seen.add(m); }
+        @Override boolean tick(int t) {
+            try {
+                var s = p.server;
+                var rift = StoryStage.rift(s);
+                if (t == 1) {
+                    if (pt.arc != 2 || !pt.flag("built2") || !StoryStage.inside(p, pt, StoryStage.ARENA)) bad.add("Arc II didn't begin in the arena (arc " + pt.arc + ", ch " + pt.ch + ")");
+                    return false;
+                }
+                if (t > (late ? 2200 : 1800)) {
+                    bad.add("stuck at chapter " + pt.ch + " step " + pt.step + " (seen: " + String.join(", ", seen) + ")");
+                    finish();
+                    return true;
+                }
+                if (t % 5 != 0) return false;
+                if (pt.talk != null) {
+                    mark(pt.talk.id);
+                    if (pt.talk.choices.length > 0) Story.vote(p, pt, pt.talk.id, 1);   // throw the final
+                    else Story.resolve(s, pt);
+                    return false;
+                }
+                if (!late && pt.ch >= 3) { finish(); return true; }
+                if (pt.ch >= 7) { finish(); return true; }
+                switch (pt.ch) {
+                    case 0 -> {
+                        if (pt.step == 1) go(StoryStage.ARENA, 0, 0, 0);
+                        if (pt.step == 2) { if (!StoryArc2.bouts(rift, pt).isEmpty()) mark("qualifier"); StoryArc2.testClearBout(s, pt); }
+                        if (pt.step == 3) go(StoryStage.ARENA, 2, 0, 34);
+                    }
+                    case 1, 4 -> {
+                        if (pt.step == 0) go(StoryStage.ARENA, 0, 0, 0);
+                        if (pt.step == 1) for (var m : StoryArc2.bouts(rift, pt)) if (m instanceof com.ironspellgrimoire.entity.Rival r && !r.yielded) { mark("rival" + pt.ch); Rivals.yieldNow(r); }
+                    }
+                    case 2 -> {
+                        if (pt.step == 0) go(StoryStage.ARENA, 0, 0, 0);
+                        if (pt.step == 1) for (var m : StoryArc2.bouts(rift, pt)) if (m instanceof com.ironspellgrimoire.entity.TamsinDuelist d) {
+                            mark("tamsin bout");
+                            d.setTransforming(0); d.setHealth(3f); d.hurt(p.damageSources().playerAttack(p), 10f);
+                            if (!d.isAlive()) bad.add("a blow killed Tamsin - she should yield");
+                        }
+                        if (pt.step == 4) go(StoryStage.ARENA, 2, 0, 34);
+                    }
+                    case 3 -> {
+                        for (int i = 0; i < StoryStage2.ROOMS.length; i++) {
+                            int[] rm = StoryStage2.ROOMS[i];
+                            if (pt.flag("room" + i + "read")) continue;
+                            if (pt.flag("room" + i + "woke")) { mark("wardens"); StoryArc2.testClearBout(s, pt); }
+                            go(StoryStage.ARENA, rm[0], StoryStage2.CY, rm[1]);
+                            break;
+                        }
+                    }
+                    case 5 -> {
+                        if (pt.step == 1) go(StoryStage.ARENA, 0, 0, 0);
+                        if (pt.step == 2) mark("final bout");
+                    }
+                    case 6 -> {
+                        if (pt.step == 1) for (var b : StoryArc2.vey(rift, pt)) { mark("vey"); b.hurt(b.damageSources().fellOutOfWorld(), Float.MAX_VALUE); }
+                        if (pt.step == 5) go(StoryStage.VAULT, 0, 0, 0);
+                    }
+                    default -> {}
+                }
+                return false;
+            } catch (Throwable x) { fail(name, "threw " + x + " at tick " + t); try { storyHome(); } catch (Throwable ignored) {} clearArea(); return true; }
+        }
+        void finish() {
+            String[] want = late ? new String[]{"wardens", "proof", "rival4", "twins_after", "vey_offer", "final bout", "throw_final", "vault_throw", "vey", "tamsin_grimoire", "brand2"}
+                    : new String[]{"trials_arrive", "qualifier", "tamsin_meet", "rival1", "brannoch_after", "tamsin bout", "tamsin_taken", "cell_empty"};
+            for (String w : want) if (!seen.contains(w)) bad.add("never saw " + w);
+            if (late) {
+                if (pt.ch != 7) bad.add("the arc didn't end (ch " + pt.ch + ")");
+                if (pt.count("ledger") < 3 && pt.ch == 3) bad.add("the ledger pages didn't count");
+                if (!pt.flag("threw")) bad.add("the vote to throw the final wasn't kept");
+                if (Story.brand(p) < 2) bad.add("Brand II didn't wake (stage " + Story.brand(p) + ")");
+                boolean token = p.getInventory().contains(new ItemStack(com.ironspellgrimoire.registry.AddonItemRegistry.CINDER_TOKEN.get()));
+                if (!token) bad.add("no Cindermarch Token for throwing the final");
+                // Brand II's price: a second of burning costs a point of health
+                Brand.testReset(p);
+                Brand.use(p);
+                p.setHealth(10f);
+                int keep = p.tickCount;
+                p.tickCount = 40;
+                Brand.onPlayerTick(new net.minecraftforge.event.TickEvent.PlayerTickEvent(net.minecraftforge.event.TickEvent.Phase.END, p));
+                p.tickCount = keep;
+                if (!(p.getHealth() < 10f)) bad.add("Brand II took no health while it burned");
+            } else if (pt.ch != 3) bad.add("the cells didn't open chapter 4 (ch " + pt.ch + ")");
+            p.getInventory().clearContent();
+            try { storyHome(); } catch (Throwable ignored) {}
+            resetPlayer(true); clearArea();
+            if (bad.isEmpty()) pass(name, "played through: " + String.join(", ", seen));
+            else fail(name, String.join("; ", bad));
+        }
     }
 
 }

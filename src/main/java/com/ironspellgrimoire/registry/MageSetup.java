@@ -43,6 +43,15 @@ public final class MageSetup {
         for (var en : AddonEntities.FOLK.entrySet()) e.put(en.getValue().get(), en.getKey().attributes().build());
         e.put(AddonEntities.TWIN_HALDRIC.get(), com.ironspellgrimoire.entity.IronboundTwin.attributes().build());
         e.put(AddonEntities.TWIN_OSWIN.get(), com.ironspellgrimoire.entity.IronboundTwin.attributes().build());
+        e.put(AddonEntities.STORY_CORVIN.get(), com.ironspellgrimoire.entity.StoryNpc.attributes().build());
+        e.put(AddonEntities.STORY_ILSA.get(), com.ironspellgrimoire.entity.StoryNpc.attributes().build());
+        e.put(AddonEntities.PENITENT.get(), com.ironspellgrimoire.entity.Penitent.attributes().build());
+        e.put(AddonEntities.FATHER_SALLOW.get(), com.ironspellgrimoire.entity.FatherSallow.attributes().build());
+        e.put(AddonEntities.STORY_TAMSIN.get(), com.ironspellgrimoire.entity.StoryNpc.attributes().build());
+        e.put(AddonEntities.STORY_VEY.get(), com.ironspellgrimoire.entity.StoryNpc.attributes().build());
+        e.put(AddonEntities.TAMSIN_DUELIST.get(), com.ironspellgrimoire.entity.TamsinDuelist.attributes().build());
+        e.put(AddonEntities.MAGISTRATE_VEY.get(), com.ironspellgrimoire.entity.MagistrateVey.attributes().build());
+        e.put(AddonEntities.WARDEN.get(), com.ironspellgrimoire.entity.Warden.attributes().build());
     }
 
     @SubscribeEvent

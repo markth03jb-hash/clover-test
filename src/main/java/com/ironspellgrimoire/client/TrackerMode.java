@@ -43,9 +43,11 @@ public final class TrackerMode {
     /** Where the trackers end (0 when none is on screen): the mode timers start under this, so they never overlap. */
     public static int bottom() {
         if (hidden()) return 0;
-        int y = archY() + (FortressHud.shown() ? (compact() ? 16 : FortressHud.h() + 4) : 0);
+        int y = storyY() + (StoryClient.trackerShown() ? (compact() ? 16 : StoryClient.trackerH() + 4) : 0);
         return y > 4 ? y : 0;
     }
+    /** ASHFALL's tracker: under the Architect's box. */
+    public static int storyY() { return Math.max(4, archY() + (FortressHud.shown() ? (compact() ? 16 : FortressHud.h() + 4) : 0)); }
 
     /** Closes (or reopens) just the world boss box - default J. A new world boss opens it again. */
     public static final KeyMapping BOSS_KEY = new KeyMapping("key.iron_spell_grimoire.world_boss", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J, "key.categories.iron_spell_grimoire");

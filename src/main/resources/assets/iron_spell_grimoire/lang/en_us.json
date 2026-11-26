@@ -1661,5 +1661,22 @@
   "item.iron_spell_grimoire.rime_pin": "Rime Pin",
   "item.iron_spell_grimoire.lantern_eye": "Lantern Eye",
   "item.iron_spell_grimoire.ironbound_vow": "Ironbound Vow",
-  "item.iron_spell_grimoire.star_core": "Star Core"
+  "item.iron_spell_grimoire.star_core": "Star Core",
+  "entity.iron_spell_grimoire.story_corvin": "Corvin Hale",
+  "entity.iron_spell_grimoire.story_ilsa": "Ilsa Marr",
+  "entity.iron_spell_grimoire.penitent": "Penitent",
+  "entity.iron_spell_grimoire.father_sallow": "Father Sallow",
+  "item.iron_spell_grimoire.story_journal": "Story Journal",
+  "item.iron_spell_grimoire.ashen_page": "Ashen Page",
+  "item.iron_spell_grimoire.sallow_hook": "Sallow's Hook",
+  "item.iron_spell_grimoire.sallow_rosary": "Sallow's Rosary",
+  "key.iron_spell_grimoire.brand": "The Brand (ASHFALL)",
+  "key.iron_spell_grimoire.journal": "Story Journal (ASHFALL)",
+  "entity.iron_spell_grimoire.story_tamsin": "Tamsin Reed",
+  "entity.iron_spell_grimoire.tamsin_duelist": "Tamsin Reed",
+  "entity.iron_spell_grimoire.story_vey": "Magistrate Vey",
+  "entity.iron_spell_grimoire.magistrate_vey": "Magistrate Vey",
+  "entity.iron_spell_grimoire.vey_warden": "Vey's Warden",
+  "item.iron_spell_grimoire.vey_seal": "Vey's Seal",
+  "item.iron_spell_grimoire.cinder_token": "Cindermarch Token"
 }

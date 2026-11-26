@@ -366,6 +366,7 @@ public final class Rivals {
         for (Rival r : all) { r.over = true; r.yielded = true; r.setFlag(r.flag() | Rival.YIELDED); r.yieldT = 0; }
         line(b, YIELD[id]);
         snd(sl, b.position(), "rival_yield", 1.3f, 1f);
+        if (b.getPersistentData().getInt("isg_trial") > 0) { StoryArc2.trialWon(b); return; }   // the Ember Trials (ASHFALL): the story pays, not the record
         for (Player p : sl.players()) {
             if (!(p instanceof ServerPlayer sp) || sp.isSpectator() || !inRing(b, sp) || sp.distanceTo(b) > 40) continue;
             reward(sp, b);
