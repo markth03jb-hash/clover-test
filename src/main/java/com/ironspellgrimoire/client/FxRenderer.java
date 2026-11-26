@@ -139,6 +139,8 @@ public class FxRenderer extends FxBase {
       if (p.shape == 94) { MechFxClient.spawn(p); return; }   // the Mech Grimoire (server/MechFx)
       if (p.shape == 95) { WeatherFxClient.spawn(p); return; }   // the Weather Grimoire (server/WeatherFx)
       if (p.shape == 96) { OverdriveFxClient.spawn(p); return; }   // the Overdrive Grimoire (server/OverdriveFx)
+      if (p.shape == 99) { MeridianFxClient.spawn(p); return; }    // the Meridian Grimoire (server/MeridianFx)
+      if (p.shape == 100) { VectorFxClient.spawn(p); return; }     // the Vector Grimoire (server/VectorFx)
       if (p.shape == 97) { DreamFxClient.spawn(p); return; }   // the Dream Grimoire (server/DreamFx)
       if (p.shape == 98) { ShadowClient.spawn(p); return; }   // the Shadow Grimoire (server/ShadowFx)
       if (p.shape == 3) { GravityFxClient.kill(p.id); }
@@ -330,7 +332,7 @@ public class FxRenderer extends FxBase {
             TRACK.clear();
             ORBITS.clear();
             WHIPS.clear();
-            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear(); ShadowClient.clear(); DreamFxClient.clear(); GravityFxClient.clear(); SoundFxClient.clear(); InkFxClient.clear(); ErrorFxClient.clear(); TreasureFxClient.clear(); ChainFxClient.clear(); HunterFxClient.clear(); VoidFxClient.clear(); GamblerFxClient.clear(); TarotFxClient.clear(); AbyssFxClient.clear(); MechFxClient.clear(); WeatherFxClient.clear(); OverdriveFxClient.clear();
+            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear(); ShadowClient.clear(); DreamFxClient.clear(); GravityFxClient.clear(); SoundFxClient.clear(); InkFxClient.clear(); ErrorFxClient.clear(); TreasureFxClient.clear(); ChainFxClient.clear(); HunterFxClient.clear(); VoidFxClient.clear(); GamblerFxClient.clear(); TarotFxClient.clear(); AbyssFxClient.clear(); MechFxClient.clear(); WeatherFxClient.clear(); OverdriveFxClient.clear(); MeridianFxClient.clear(); VectorFxClient.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
@@ -554,6 +556,8 @@ public class FxRenderer extends FxBase {
             MechFxClient.draw(vc, m, n, cam, now, pt);
             WeatherFxClient.draw(vc, m, n, cam, now, pt);
             OverdriveFxClient.draw(vc, m, n, cam, now, pt);
+            MeridianFxClient.draw(vc, m, n, cam, now, pt);
+            VectorFxClient.draw(vc, m, n, cam, now, pt);
             DreamFxClient.draw(vc, m, n, cam, now, pt);
             ShadowClient.draw(vc, m, n, cam, now, pt);
             BountyHud.drawBeacon(m, cam, now);

@@ -1180,7 +1180,7 @@ public final class UiShotsServer {
     public static void showcase(ServerPlayer p, String what) {
         ServerLevel sl = p.serverLevel();
         String[] w = what.split(":");
-        if (w[0].equals("clear")) { architect(p, -1); BoundFx.testReset(p); VectorFx.testReset(p); OmenFx.testReset(p); return; }
+        if (w[0].equals("clear")) { architect(p, -1); BoundFx.testReset(p); VectorFx.testReset(p); OmenFx.testReset(p); MeridianFx.testReset(p); sl.setDayTime(6000); return; }
         equip(p, w[0].charAt(0));
         var old = sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30), m -> m.getPersistentData().getBoolean("isg_ui_arch"));
         if (old.isEmpty()) { architect(p, 99); old = sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30), m -> m.getPersistentData().getBoolean("isg_ui_arch")); }
@@ -1190,6 +1190,17 @@ public final class UiShotsServer {
         faceForward(p);
         switch (w[1]) {
             case "hit" -> AstaFx.damage(p, h, 12f, "ui_hit");
+            case "star" -> { sl.setDayTime(6000); MeridianFx.testReset(p); MeridianFx.hearthStar(p, 10f); }
+            case "flare" -> MeridianFx.haughtyFlare(p, 10f);
+            case "wave" -> { sl.setDayTime(6000); MeridianFx.noonwave(p, 10f); }
+            case "reaver" -> { MeridianFx.callDayreaver(p, 10f); }
+            case "cleave" -> MeridianFx.cleave(p, h, 4f);
+            case "lamp" -> { sl.setDayTime(18000); MeridianFx.lamplight(p, 10f); }
+            case "warm" -> MeridianFx.warmHands(p, 10f);
+            case "coal" -> MeridianFx.lastCoal(p, 10f);
+            case "zenith" -> { sl.setDayTime(6000); MeridianFx.testReset(p); MeridianFx.zenithUnbound(p, 10f); }
+            case "step" -> VectorFx.recoilStep(p, 10f);
+            case "return" -> VectorFx.returnToSender(p, 10f);
             case "redirect" -> VectorFx.redirect(p, 10f);
             case "gust" -> VectorFx.pressureGust(p, 10f);
             case "plasma" -> VectorFx.plasmaPoint(p, 10f);

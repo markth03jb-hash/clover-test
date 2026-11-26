@@ -949,6 +949,21 @@ public final class UiShots {
         steps.add(new Step("fxs_hit_foreseen", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "F:hit")); }, 3, true));
         steps.add(new Step("fxs_hit_omen", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:hit")); }, 3, true));
         steps.add(new Step("fxs_hit_twins", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "T:hit")); }, 3, true));
+        steps.add(new Step("fxs_mer_star", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:star")); }, 20, true));
+        steps.add(new Step("fxs_mer_star_tp", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "M:none")); }, 4, true));
+        steps.add(new Step("fxs_mer_flare_swell", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:flare")); }, 12, true));
+        steps.add(new Step("fxs_mer_flare_burst", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:none")); }, 12, true));
+        steps.add(new Step("fxs_mer_wave", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:wave")); }, 6, true));
+        steps.add(new Step("fxs_mer_wave_late", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:none")); }, 6, true));
+        steps.add(new Step("fxs_mer_reaver", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:reaver")); }, 3, true));
+        steps.add(new Step("fxs_mer_cleave", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "M:cleave")); }, 3, true));
+        steps.add(new Step("fxs_mer_lamp", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:lamp")); }, 3, true));
+        steps.add(new Step("fxs_mer_warm", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "M:warm")); }, 10, true));
+        steps.add(new Step("fxs_mer_coal", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "M:coal")); }, 20, true));
+        steps.add(new Step("fxs_mer_zenith", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "M:zenith")); }, 16, true));
+        steps.add(new Step("fxs_mer_zenith_fp", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:none")); }, 4, true));
+        steps.add(new Step("fxs_vec_step", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "X:step")); }, 3, true));
+        steps.add(new Step("fxs_vec_return", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "X:return")); }, 14, true));
         steps.add(new Step("fxs_vec_redirect", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:redirect")); }, 4, true));
         steps.add(new Step("fxs_vec_gust", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:gust")); }, 4, true));
         steps.add(new Step("fxs_vec_plasma", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:plasma")); }, 30, true));
@@ -1021,7 +1036,8 @@ public final class UiShots {
         if (step.startsWith("fpcal_")) return null;
         if (step.startsWith("pose_")) return new Class<?>[]{com.ironspellgrimoire.server.UiShotsServer.class};
         if (step.startsWith("fxs_")) return new Class<?>[]{com.ironspellgrimoire.server.UiShotsServer.class, com.ironspellgrimoire.server.HitFx.class, com.ironspellgrimoire.server.VectorFx.class, com.ironspellgrimoire.server.OmenFx.class,
-                com.ironspellgrimoire.server.BoundFx.class, com.ironspellgrimoire.server.SeraphFx.class, OmenClient.class, BoundClient.class, FxRenderer.class, PixelFx.class};
+                com.ironspellgrimoire.server.BoundFx.class, com.ironspellgrimoire.server.SeraphFx.class, OmenClient.class, BoundClient.class, FxRenderer.class, PixelFx.class,
+                com.ironspellgrimoire.server.MeridianFx.class, MeridianFxClient.class, VectorFxClient.class};
         if (step.startsWith("arch_")) return new Class<?>[]{com.ironspellgrimoire.server.FortressSpells.class, com.ironspellgrimoire.server.UiShotsServer.class, FxRenderer.class, PixelFx.class};
         if (step.startsWith("story3_")) return new Class<?>[]{StoryClient.class, DialogueScreen.class, JournalScreen.class, RivalRenderer.class, com.ironspellgrimoire.server.Story.class,
                 com.ironspellgrimoire.server.StoryArc3.class, com.ironspellgrimoire.server.StoryStage.class, com.ironspellgrimoire.server.StoryStage3.class, com.ironspellgrimoire.entity.StoryNpc.class,

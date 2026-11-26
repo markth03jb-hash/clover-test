@@ -134,13 +134,8 @@ public final class HitFx {
             }
             return true;
         }
-        if (book == com.ironspellgrimoire.registry.AddonItemRegistry.MERIDIAN_GRIMOIRE.get()) {   // a sun-flare: eight rays round a white core
-            FxSend.wall(sl, Fx.SILVER, at, side, up, 0.05f, 0.3f * s, -180, 180, 0.06f * s, 3, 0, 0);
-            for (int k = 0; k < 8; k++) {
-                double a = Math.PI * 2 * k / 8 + r.nextDouble(0.3);
-                Vec3 d = side.scale(Math.cos(a)).add(up.scale(Math.sin(a)));
-                FxSend.spike(sl, k % 2 == 0 ? Fx.GOLD : Fx.FIRE, at.add(d.scale(0.2 * s)), d, (k % 2 == 0 ? 0.8f : 0.5f) * s, 0.05f * s, 5, 0, FxPacket.POP);
-            }
+        if (book == com.ironspellgrimoire.registry.AddonItemRegistry.MERIDIAN_GRIMOIRE.get()) {   // a sun-flare (client/MeridianFxClient)
+            MeridianFx.hitFlare(sl, at, 0.9f * s);
             return true;
         }
         if (book == com.ironspellgrimoire.registry.AddonItemRegistry.BOUND_GRIMOIRE.get()) {   // a black cross-cut with a red core
@@ -149,13 +144,9 @@ public final class HitFx {
             FxSend.slash(sl, BLADE_RED, at, d2, dir, 0.6f * s, 1.0f * s, 5, 0, 0.5f);
             return true;
         }
-        if (book == com.ironspellgrimoire.registry.AddonItemRegistry.VECTOR_GRIMOIRE.get()) {   // the blow's vector, turned: white arrows bent away
-            Vec3 bent = dir.add(up.scale(0.8)).normalize();
-            for (int k = -1; k <= 1; k++) {
-                Vec3 o = at.add(side.scale(0.25 * k * s));
-                FxSend.spike(sl, Fx.SILVER, o, k == 0 ? bent : bent.add(side.scale(0.35 * k)).normalize(), 0.9f * s, 0.05f * s, 5, 0, FxPacket.POP, 0, bent.scale(0.25), 4);
-            }
-            FxSend.wall(sl, Fx.TIME, at, side, up, 0.3f * s, 0.45f * s, -180, 180, 0.02f, 4, 0, 0);
+        if (book == com.ironspellgrimoire.registry.AddonItemRegistry.VECTOR_GRIMOIRE.get()) {   // the blow's vector, turned (client/VectorFxClient)
+            VectorFx.deflect(sl, at, dir, dir.add(up.scale(0.8)).normalize());
+            VectorFx.warp(sl, at, 0.6f * s, 6);
             return true;
         }
         if (book == com.ironspellgrimoire.registry.AddonItemRegistry.FUSE_GRIMOIRE.get()) {   // a spark-pop: a little burst of fire and pink sparks
