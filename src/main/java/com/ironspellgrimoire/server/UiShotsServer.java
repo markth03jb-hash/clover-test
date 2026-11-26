@@ -1194,7 +1194,7 @@ public final class UiShotsServer {
             case "flare" -> MeridianFx.haughtyFlare(p, 10f);
             case "wave" -> { sl.setDayTime(6000); MeridianFx.noonwave(p, 10f); }
             case "reaver" -> { MeridianFx.callDayreaver(p, 10f); }
-            case "cleave" -> MeridianFx.cleave(p, h, 4f);
+            case "mcleave" -> MeridianFx.cleave(p, h, 4f);
             case "lamp" -> { sl.setDayTime(18000); MeridianFx.lamplight(p, 10f); }
             case "warm" -> MeridianFx.warmHands(p, 10f);
             case "coal" -> MeridianFx.lastCoal(p, 10f);

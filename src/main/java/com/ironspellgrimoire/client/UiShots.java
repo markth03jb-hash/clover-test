@@ -956,7 +956,7 @@ public final class UiShots {
         steps.add(new Step("fxs_mer_wave", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:wave")); }, 6, true));
         steps.add(new Step("fxs_mer_wave_late", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:none")); }, 6, true));
         steps.add(new Step("fxs_mer_reaver", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:reaver")); }, 3, true));
-        steps.add(new Step("fxs_mer_cleave", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "M:cleave")); }, 3, true));
+        steps.add(new Step("fxs_mer_cleave", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "M:mcleave")); }, 3, true));
         steps.add(new Step("fxs_mer_lamp", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "M:lamp")); }, 3, true));
         steps.add(new Step("fxs_mer_warm", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "M:warm")); }, 10, true));
         steps.add(new Step("fxs_mer_coal", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "M:coal")); }, 20, true));
