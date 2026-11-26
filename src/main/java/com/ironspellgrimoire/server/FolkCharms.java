@@ -23,6 +23,8 @@ import net.minecraftforge.fml.common.Mod;
  * knockback resistance. Sun Shard (the Sun Herald): spells +8% under the open daytime sky. Rime Pin (the Hoarfrost
  * Jarl): melee hits slow by 20% for 2 s. Lantern Eye (the Deepwarden): +15% damage standing in the dark.
  * Ironbound Vow: with another mage within 8 blocks (12 Hardened), you both take 10% less (15% Hardened).
+ * Father Sallow's (ASHFALL - one or the other, as the party chose): Sallow's Hook, +15% on a foe below 30% health;
+ * Sallow's Rosary, a killing blow leaves you at 1 health instead, once every 2 minutes.
  */
 @Mod.EventBusSubscriber(modid = IronSpellGrimoire.MODID)
 public final class FolkCharms {
@@ -70,9 +72,29 @@ public final class FolkCharms {
         if (e.getSource() instanceof io.redspace.ironsspellbooks.damage.SpellDamageSource && a.level().isDay() && a.level().canSeeSky(a.blockPosition())
                 && wears(a, AddonItemRegistry.SUN_SHARD.get())) k *= 1.08f;
         if (a.level().getMaxLocalRawBrightness(a.blockPosition()) < 7 && wears(a, AddonItemRegistry.LANTERN_EYE.get())) k *= 1.15f;
+        if (e.getEntity().getHealth() < e.getEntity().getMaxHealth() * 0.3f && wears(a, AddonItemRegistry.SALLOW_HOOK.get())) k *= 1.15f;
         if (BookTree.melee(e.getSource()) && wears(a, AddonItemRegistry.RIME_PIN.get()))
             TimedModifiers.apply(e.getEntity(), Attributes.MOVEMENT_SPEED, PIN_SLOW, "Rime Pin", -0.2, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
         if (k != 1f) e.setAmount(e.getAmount() * k);
+    }
+
+    static final Map<UUID, Long> ROSARY = new HashMap<>();
+    public static final int ROSARY_CD = 2400;
+
+    /** Sallow's Rosary: the blow that would have killed you leaves you at 1 health (once every 2 minutes). */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onDeath(net.minecraftforge.event.entity.living.LivingDeathEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || e.getSource().is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
+        if (!wears(p, AddonItemRegistry.SALLOW_ROSARY.get())) return;
+        long now = p.serverLevel().getGameTime();
+        if (now < ROSARY.getOrDefault(p.getUUID(), 0L)) return;
+        ROSARY.put(p.getUUID(), now + ROSARY_CD);
+        e.setCanceled(true);
+        p.setHealth(1f);
+        p.invulnerableTime = 40;
+        FxSend.ring(p.serverLevel(), Fx.FIRE, p.position().add(0, 1, 0), 0.3f, 2.2f, 0.08f, 14);
+        p.serverLevel().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.BELL_RESONATE, net.minecraft.sounds.SoundSource.PLAYERS, 1f, 0.7f);
+        p.displayClientMessage(net.minecraft.network.chat.Component.literal("A bead of the rosary burns out. You're still standing.").withStyle(net.minecraft.ChatFormatting.GOLD), true);
     }
 
     /** The Ironbound Vow: the wearer, and any mage beside a wearer, take less while they stand together. */

@@ -136,7 +136,18 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
                     new Piece("wrist_chain", Bone.RARM, -30, v(-6.000, -4.000, 15.072), v(60, 0, 0), 1.000f))),
             Map.entry("twin_oswin", List.of(
                     new Piece("iron_greatsword", Bone.RARM, -35, v(-6.000, -5.736, 13.808), v(75, 0, 0), 1.000f),
-                    new Piece("wrist_chain", Bone.LARM, -35, v(6.000, -4.589, 15.447), v(60, 0, 0), 1.000f))));
+                    new Piece("wrist_chain", Bone.LARM, -35, v(6.000, -4.589, 15.447), v(60, 0, 0), 1.000f))),
+            // ASHFALL, Arc 1
+            Map.entry("story_corvin", List.of(
+                    new Piece("knight_longsword", Bone.RARM, -30, v(-6.000, -5.000, 13.340), v(70, 0, 0), 1.000f),
+                    new Piece("half_cloak", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f))),
+            Map.entry("story_sallow", List.of(
+                    new Piece("sallow_mitre", Bone.HEAD, 0, v(0.000, 0.000, 32.000), v(0, 0, 0), 1.000f),
+                    new Piece("brand_knife", Bone.RARM, -45, v(-6.000, -7.071, 14.929), v(85, 0, 0), 1.308f),
+                    new Piece("reliquary", Bone.LARM, -15, v(6.000, -2.588, 12.341), v(-15, 0, 0), 1.000f))),
+            Map.entry("story_penitent", List.of(
+                    new Piece("rust_sickle", Bone.RARM, -40, v(-6.000, -6.428, 14.340), v(80, 0, 0), 1.400f))),
+            Map.entry("story_ilsa", List.<Piece>of()));
     static { GEAR.putAll(FAMILY_GEAR); }
 
     /** The legionnaire who carries Brannoch's standard: the banner instead of the spear. */
@@ -166,7 +177,7 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
     @Override public ResourceLocation getTextureLocation(T e) { return tex; }
     @Override protected void scale(T e, PoseStack ps, float pt) { ps.scale(size, size, size); }
 
-    static boolean kneeling(Mob e) { return e instanceof Rival r && (r.flag() & Rival.YIELDED) != 0; }
+    static boolean kneeling(Mob e) { return e instanceof Rival r && (r.flag() & Rival.YIELDED) != 0 || e instanceof com.ironspellgrimoire.entity.FatherSallow s && s.yielded(); }
 
     @Override
     protected void setupRotations(T e, PoseStack ps, float bob, float yaw, float pt) {
@@ -186,7 +197,7 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
             if (sword) this.rightArm.xRot = this.rightArm.xRot * 0.5F - 0.31F;
             if (skin.equals("rival_wren") || skin.equals("rival_legion")) this.leftArm.xRot = this.leftArm.xRot * 0.5F - 0.31F;
             if (skin.equals("rival_mira")) this.leftArm.xRot = -0.96F;   // her ledger held up to read
-            if (skin.startsWith("family_") || skin.startsWith("twin_")) {   // a hand that holds something sits forward, as on the model sheet
+            if (skin.startsWith("family_") || skin.startsWith("twin_") || skin.startsWith("story_")) {   // a hand that holds something sits forward, as on the model sheet
                 List<Piece> g = FAMILY_GEAR.get(skin);
                 if (g != null) for (Piece p : g) {
                     if (p.bone() == Bone.RARM) this.rightArm.xRot = this.rightArm.xRot * 0.5F + p.armDeg() * Mth.DEG_TO_RAD;

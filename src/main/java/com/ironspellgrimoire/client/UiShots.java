@@ -70,6 +70,53 @@ public final class UiShots {
         b.showPart(part);
     }
 
+    /** A scene for the screenshots: Corvin's first words, or Sallow yielding (the vote). */
+    private static net.minecraft.nbt.CompoundTag storyTalk(boolean vote) {
+        var t = new net.minecraft.nbt.CompoundTag();
+        t.putString("id", vote ? "sallow_yield" : "corvin_meet");
+        var ls = new net.minecraft.nbt.ListTag();
+        String[][] lines = vote ? new String[][]{{"sallow", "Enough - enough! Mercy. You understand mercy, don't you? I gave it to so many."}, {"corvin", "He's a butcher. But he isn't lying about knowing things. Your call."}}
+                : new String[][]{{"corvin", "Corvin Hale. Once a knight. Now a man who follows falling stars - and gets there too late."}, {"narrator", "..."}};
+        for (String[] l : lines) { var x = new net.minecraft.nbt.CompoundTag(); x.putString("s", l[0]); x.putString("t", l[1]); ls.add(x); }
+        t.put("lines", ls);
+        var cs = new net.minecraft.nbt.ListTag();
+        if (vote) { cs.add(net.minecraft.nbt.StringTag.valueOf("Spare him")); cs.add(net.minecraft.nbt.StringTag.valueOf("End him")); }
+        t.put("choices", cs);
+        t.putInt("of", vote ? 3 : 1);
+        return t;
+    }
+
+    /** The Journal's state for the screenshots: chapter 3 under way, a party of three, two pages found. */
+    private static net.minecraft.nbt.CompoundTag storyState() {
+        var t = new net.minecraft.nbt.CompoundTag();
+        t.putBoolean("has", true); t.putBoolean("leader", true); t.putInt("arc", 1); t.putInt("ch", 2); t.putInt("brand", 1);
+        t.putString("arcTitle", "ARC I - EMBERS"); t.putString("chTitle", "Chapter 3 - What Burns in You");
+        t.putString("chText", "Sallow's people walk the roads, hunting anyone with the mark. Corvin says faith that ugly always writes itself down - take what they carry and read it.");
+        var goals = new net.minecraft.nbt.ListTag();
+        Object[][] gs = {{"Take Ashen Pages from Sallow's patrols", 3, 3}, {"Use the Brand in a fight (X)", 1, 3}};
+        for (Object[] g : gs) { var x = new net.minecraft.nbt.CompoundTag(); x.putString("t", (String) g[0]); x.putInt("h", (Integer) g[1]); x.putInt("n", (Integer) g[2]); goals.add(x); }
+        t.put("goals", goals);
+        var ms = new net.minecraft.nbt.ListTag();
+        String[] names = {"Dev", "Rook", "Ashwin"};
+        for (int i = 0; i < 3; i++) { var x = new net.minecraft.nbt.CompoundTag(); x.putString("n", names[i]); x.putBoolean("on", i < 2); x.putBoolean("lead", i == 0); ms.add(x); }
+        t.put("members", ms);
+        var log = new net.minecraft.nbt.ListTag();
+        for (String l : new String[]{"ARC I - EMBERS began.", "Sallow's Penitents took Ilsa.", "Corvin Hale came out of the smoke.", "Chapter 2: The Knight in the Ash.", "Chapter 3: What Burns in You.", "Found: The Litany of the Freed, I.", "Found: A Letter, Unsigned.", "The Brand woke: Brand I, Ember Surge."})
+            log.add(net.minecraft.nbt.StringTag.valueOf(l));
+        t.put("log", log);
+        var ps = new net.minecraft.nbt.ListTag();
+        String[][] pages = {{"0", "The Litany of the Freed, I", "The star is a wound in the sky, and the wound bleeds into the faithless. Those it marks are not chosen. They are infected.\n\nWe do not hate the marked. We pity them. We cut because we love."},
+                {"2", "A Letter, Unsigned", "Father - we found two at Emberfall. The girl is in the lower cells. The other ran with the one-armed knight.\n\nThe girl's brand is larger than any you have taken. She will not stop praying to it. Send word what to do.\n\n- your Hand"}};
+        for (String[] p : pages) { var x = new net.minecraft.nbt.CompoundTag(); x.putInt("i", Integer.parseInt(p[0])); x.putString("t", p[1]); x.putString("b", p[2]); ps.add(x); }
+        t.put("pages", ps);
+        var tg = new net.minecraft.nbt.CompoundTag();
+        tg.putString("dim", "minecraft:overworld");
+        var pl = Minecraft.getInstance().player;
+        tg.putDouble("x", pl == null ? 300 : pl.getX() + 310); tg.putDouble("y", -1); tg.putDouble("z", pl == null ? -200 : pl.getZ() - 180);
+        t.put("target", tg);
+        return t;
+    }
+
     private static FxPacket fx(int shape) { FxPacket p = new FxPacket(); p.shape = (byte) shape; return p; }
 
     private static void plan() {
@@ -106,6 +153,19 @@ public final class UiShots {
         steps.add(new Step("star", () -> onServer(p -> UiShotsServer.star(p)), 50, true));
         steps.add(new Step("sovereign_ashen", () -> onServer(p -> UiShotsServer.ashen(p)), 40, true));
         steps.add(new Step("folk_clear", () -> onServer(p -> UiShotsServer.folk(p, "clear")), 2, true));
+        // ASHFALL: the cast, a scene, a vote, the Journal, the tracker, Emberfall, the chapel
+        steps.add(new Step("story_cast", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.story(p, "cast")); }, 20, true));
+        steps.add(new Step("story_dialogue", () -> mc.setScreen(new DialogueScreen(storyTalk(false))), 12, true));
+        steps.add(new Step("story_vote", () -> { DialogueScreen d = new DialogueScreen(storyTalk(true)); mc.setScreen(d); d.showLine(99); }, 12, true));
+        steps.add(new Step("story_journal", () -> { StoryClient.sync(storyState()); mc.setScreen(new JournalScreen(-1)); }, 10, false));
+        steps.add(new Step("story_journal_party", () -> { if (mc.screen instanceof JournalScreen j) j.showTab(1); }, 5, false));
+        steps.add(new Step("story_journal_page", () -> mc.setScreen(new JournalScreen(2)), 5, false));
+        steps.add(new Step("story_tracker", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.story(p, "clear")); StoryClient.sync(storyState()); }, 10, true));
+        steps.add(new Step("story_ember", () -> onServer(p -> UiShotsServer.story(p, "ember")), 60, true));
+        steps.add(new Step("story_ember_view", () -> mc.setScreen(null), 30, true));
+        steps.add(new Step("story_chapel", () -> onServer(p -> UiShotsServer.story(p, "chapel")), 60, true));
+        steps.add(new Step("story_chapel_view", () -> mc.setScreen(null), 30, true));
+        steps.add(new Step("story_clear", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.story(p, "clear")); }, 30, true));
         steps.add(new Step("el_mobs", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.elites(p, "mobs")); }, 16, true));
         steps.add(new Step("el_codex", () -> mc.setScreen(new CodexScreen(CodexScreen.chapter("Elite Mobs"))), 10, false));
         steps.add(new Step("el_clear", () -> { mc.setScreen(null); onServer(p -> UiShotsServer.elites(p, "clear")); }, 2, true));
@@ -865,6 +925,8 @@ public final class UiShots {
             } catch (ClassNotFoundException ex) { return null; }
         }
         if (step.startsWith("blood_") || step.startsWith("ice_")) return new Class<?>[]{com.ironspellgrimoire.server.BloodFx.class, BloodFxClient.class, AuraOutlineLayer.class, IceFxClient.class, BloodHud.class, GrimoireWheel.class, GrimoireBookScreen.class, ManaBarHud.class, ModeHudOverlay.class};
+        if (step.startsWith("story_")) return new Class<?>[]{StoryClient.class, DialogueScreen.class, JournalScreen.class, RivalRenderer.class, com.ironspellgrimoire.server.Story.class,
+                com.ironspellgrimoire.server.StoryArc1.class, com.ironspellgrimoire.server.StoryStage.class, com.ironspellgrimoire.entity.StoryNpc.class};
         return switch (step) {
             case "star_forge" -> new Class<?>[]{StarForgeScreen.class, com.ironspellgrimoire.server.StarForge.class};
             case "altar" -> new Class<?>[]{AltarScreen.class, com.ironspellgrimoire.server.AltarMenu.class};

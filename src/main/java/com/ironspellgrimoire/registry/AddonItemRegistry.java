@@ -253,6 +253,13 @@ public class AddonItemRegistry {
             "You do 15% more damage while you stand in the dark.", "", "It sees what the dark keeps.", null));
     /** A fallen star's heart (server/FallingStars): crack it open for a Mana Core of tier II or III. */
     public static final RegistryObject<Item> STAR_CORE = ITEMS.register("star_core", () -> new com.ironspellgrimoire.item.StarCoreItem());
+    /** ASHFALL (server/Story): the Journal, the pages Sallow's people carry, and what the party takes from Father Sallow. */
+    public static final RegistryObject<Item> STORY_JOURNAL = ITEMS.register("story_journal", () -> new com.ironspellgrimoire.item.StoryJournalItem());
+    public static final RegistryObject<Item> ASHEN_PAGE = ITEMS.register("ashen_page", () -> new com.ironspellgrimoire.item.AshenPageItem());
+    public static final RegistryObject<Item> SALLOW_HOOK = ITEMS.register("sallow_hook", () -> new com.ironspellgrimoire.item.SignatureItem("Father Sallow",
+            "Your hits on a foe below 30% health do 15% more.", "", "Taken from his hand. It's still sharp.", null));
+    public static final RegistryObject<Item> SALLOW_ROSARY = ITEMS.register("sallow_rosary", () -> new com.ironspellgrimoire.item.SignatureItem("Father Sallow",
+            "A blow that would kill you leaves you at 1 health instead - once every 2 minutes.", "", "He gave it for his life. One bead still burns.", null));
     public static final RegistryObject<Item> LICHT_SPAWN_EGG = ITEMS.register("licht_spawn_egg",
             () -> new net.minecraftforge.common.ForgeSpawnEggItem(com.ironspellgrimoire.registry.AddonEntities.LICHT, 0xF0EEE0, 0xE8C860, new Item.Properties()));
     public static final RegistryObject<Item> REVENANT_SPAWN_EGG = ITEMS.register("revenant_spawn_egg",
@@ -325,7 +332,7 @@ public class AddonItemRegistry {
                 out.accept(new ItemStack(ELVEN_WIND_CHARM.get()));
                 for (var r : java.util.List.of(PRISM_RIBBON, WARLORDS_STANDARD, LAST_BELL, LEDGER_COIN, RIVAL_TOKEN)) out.accept(new ItemStack(r.get()));
                 for (var r : SIGNATURES) out.accept(new ItemStack(r.get()));
-                for (var r : java.util.List.of(MOSS_KNOT, SLATE_RING, SUN_SHARD, RIME_PIN, LANTERN_EYE, STAR_CORE)) out.accept(new ItemStack(r.get()));
+                for (var r : java.util.List.of(MOSS_KNOT, SLATE_RING, SUN_SHARD, RIME_PIN, LANTERN_EYE, STAR_CORE, STORY_JOURNAL, SALLOW_HOOK, SALLOW_ROSARY)) out.accept(new ItemStack(r.get()));
                 out.accept(new ItemStack(PHYLACTERY.get()));
                 out.accept(new ItemStack(DEVIL_SHARD.get()));
                 out.accept(new ItemStack(MANA_CORE.get()));

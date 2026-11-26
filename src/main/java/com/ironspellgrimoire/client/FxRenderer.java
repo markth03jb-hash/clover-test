@@ -558,6 +558,7 @@ public class FxRenderer extends FxBase {
             ShadowClient.draw(vc, m, n, cam, now, pt);
             BountyHud.drawBeacon(m, cam, now);
             QuestHud.drawBeacon(m, cam, now);
+            StoryClient.drawBeacon(m, cam, now);
             WorldBossHud.drawBeacon(m, cam, now);
             GrimoireCeremonyRenderer.glow(m, cam, now, pt);
             for (GolemFx.Golem g : GolemFx.GOLEMS) GolemFx.draw(vc, m, n, cam, g, now, pt);

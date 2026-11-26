@@ -445,7 +445,7 @@ public final class Rifts {
     }
 
     /** Back out to where you came in. */
-    static void leave(ServerPlayer p) {
+    public static void leave(ServerPlayer p) {
         CompoundTag ret = p.getPersistentData().getCompound(RETURN);
         ServerLevel to = null;
         if (!ret.isEmpty()) to = p.server.getLevel(ResourceKey.create(Registries.DIMENSION, new ResourceLocation(ret.getString("Dim"))));
@@ -1050,7 +1050,9 @@ public final class Rifts {
         p.removeAllEffects();
         p.invulnerableTime = 60;
         Rift r = riftOf(p);
+        int[] story = StoryStage.where(p);
         leave(p);
+        if (story != null) { StoryArc1.onFall(p, story); return; }
         if (r != null && r.ascension) p.sendSystemMessage(Component.literal("Your Reflection won this time. The altar will let you try again.").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
         else if (r != null && r.gate) p.sendSystemMessage(Component.literal("You fell at the Gate. The Poster Board will offer it again.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC));
         else if (r != null && r.lair) p.sendSystemMessage(Component.literal("You were thrown out of the lair. Step back in while the poster lasts.").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC));

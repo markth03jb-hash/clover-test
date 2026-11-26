@@ -6,7 +6,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class AddonNetwork {
-    private static final String PROTOCOL = "14";   // 14: the boss ladder   // 13: the Bound Demon   // 12: the Vector, Quiet Fuse and Foreseen trees   // 11: the Grimoire of Ill Omen   // 10: the Meridian Grimoire   // 9: rivals   // 8: elite mobs   // 7: batched effects (FxBatchPacket)   // 2: compact FxPacket encoding (server and client must match)
+    private static final String PROTOCOL = "15";   // 15: ASHFALL, the story   // 14: the boss ladder   // 13: the Bound Demon   // 12: the Vector, Quiet Fuse and Foreseen trees   // 11: the Grimoire of Ill Omen   // 10: the Meridian Grimoire   // 9: rivals   // 8: elite mobs   // 7: batched effects (FxBatchPacket)   // 2: compact FxPacket encoding (server and client must match)
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(IronSpellGrimoire.MODID, "main"),
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
@@ -85,6 +85,9 @@ public class AddonNetwork {
         CHANNEL.registerMessage(40, BookTreePackets.Act.class, BookTreePackets.Act::encode, BookTreePackets.Act::decode, BookTreePackets.Act::handle);
         CHANNEL.registerMessage(41, BoundPackets.State.class, BoundPackets.State::encode, BoundPackets.State::decode, BoundPackets.State::handle);
         CHANNEL.registerMessage(42, BossLogPackets.Sync.class, BossLogPackets.Sync::encode, BossLogPackets.Sync::decode, BossLogPackets.Sync::handle);
+        CHANNEL.registerMessage(43, StoryPackets.Sync.class, StoryPackets.Sync::encode, StoryPackets.Sync::decode, StoryPackets.Sync::handle);
+        CHANNEL.registerMessage(44, StoryPackets.Talk.class, StoryPackets.Talk::encode, StoryPackets.Talk::decode, StoryPackets.Talk::handle);
+        CHANNEL.registerMessage(45, StoryPackets.Act.class, StoryPackets.Act::encode, StoryPackets.Act::decode, StoryPackets.Act::handle);
         CHANNEL.registerMessage(28, FxBatchPacket.class, FxBatchPacket::encode, FxBatchPacket::decode, FxBatchPacket::handle);
     }
 }
