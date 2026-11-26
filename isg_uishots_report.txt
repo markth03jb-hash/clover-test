@@ -1,0 +1,7 @@
+Iron Spell Grimoire - automatic UI check: 850 steps, 6 problem(s)
+om_tree_debt | off-screen | [scale 3] "1/3" (-26,138 18x8) on a 640x360 screen
+om_tree_debt | off-screen | [scale 4] "1/3" (-106,94 18x8) on a 480x270 screen
+om_tree_debt | off-screen | [scale 4] "1/3" (-46,124 18x8) on a 480x270 screen
+om_wheel | overlap | [scale 3] "Bad Penny" (294,266 52x8)  over  "Bad Penny" (294,269 52x8)
+om_wheel_done | the menu didn't open
+tr_fuse_wheel | overlap | [scale 3] "Primed Coin" (292,262 56x8)  over  "Fuse Mode" (294,259 52x8)
