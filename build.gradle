@@ -28,6 +28,7 @@ minecraft {
             property 'forge.enabledGameTestNamespaces', mod_id
             if (System.getenv('ISG_UISHOTS')) {   // the automatic screenshot run (client/UiShots, .github/workflows/ui.yml)
                 property 'isg.uishots', 'true'
+                if (System.getenv('ISG_SHARD')) property 'isg.shard', System.getenv('ISG_SHARD')   // "i/n": this job's share of the pictures
                 args '--width', '1920', '--height', '1080', '--username', 'UiTester'
             }
             if (System.getenv('ISG_GAMETESTS')) {   // the automatic game tests (server/GameTests, .github/workflows/tests.yml)

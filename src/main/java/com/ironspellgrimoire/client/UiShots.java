@@ -974,6 +974,31 @@ public final class UiShots {
         steps.add(new Step("fxs_vec_absolute_fp", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "X:none")); }, 4, true));
         steps.add(new Step("fxs_omen_bar", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:omen_bar")); }, 22, true));
         steps.add(new Step("fxs_omen_calamity", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:calamity")); }, 6, true));
+        steps.add(new Step("fxs_omen_path", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:o_path")); }, 8, true));
+        steps.add(new Step("fxs_omen_token", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:o_token")); }, 4, true));
+        steps.add(new Step("fxs_omen_token_late", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:none")); }, 12, true));
+        steps.add(new Step("fxs_omen_needles", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:o_needles")); }, 5, true));
+        steps.add(new Step("fxs_omen_needles_stuck", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:none")); }, 8, true));
+        steps.add(new Step("fxs_omen_domino", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:o_domino")); }, 4, true));
+        steps.add(new Step("fxs_omen_still", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "O:o_still")); }, 4, true));
+        steps.add(new Step("fxs_omen_ledger", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:o_ledger")); }, 8, true));
+        steps.add(new Step("fxs_omen_ledger_slam", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:none")); }, 6, true));
+        steps.add(new Step("fxs_omen_law", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "O:o_law")); }, 14, true));
+        steps.add(new Step("fxs_omen_law_fp", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:none")); }, 4, true));
+        steps.add(new Step("fxs_omen_calamity_sign", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "O:calamity")); }, 8, true));
+        steps.add(new Step("fxs_omen_clear", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "O:o_clear")); }, 4, true));
+        steps.add(new Step("fxs_fuse_arm", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "Q:q_arm")); }, 8, true));
+        steps.add(new Step("fxs_fuse_blast", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "Q:q_blast")); }, 3, true));
+        steps.add(new Step("fxs_fuse_blast_smoke", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "Q:none")); }, 9, true));
+        steps.add(new Step("fxs_fuse_seeker", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "Q:q_seeker")); }, 14, true));
+        steps.add(new Step("fxs_fuse_bubble", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "Q:q_bubble")); }, 12, true));
+        steps.add(new Step("fxs_fuse_contact", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "Q:q_contact")); }, 6, true));
+        steps.add(new Step("fxs_fuse_contact_fp", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "Q:none")); }, 4, true));
+        steps.add(new Step("fxs_fuse_chain", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "Q:q_chain")); }, 12, true));
+        steps.add(new Step("fxs_fuse_tenant", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "Q:q_tenant")); }, 10, true));
+        steps.add(new Step("fxs_fuse_loop", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "Q:q_loop")); }, 10, true));
+        steps.add(new Step("fxs_fuse_burn", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "Q:q_burn")); }, 8, true));
+        steps.add(new Step("fxs_fuse_clear", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "Q:q_clear")); }, 4, true));
         steps.add(new Step("fxs_bd_flurry", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "B:flurry")); }, 8, true));
         steps.add(new Step("fxs_bd_flurry_end", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); onServer(p -> UiShotsServer.showcase(p, "B:none")); }, 12, true));
         steps.add(new Step("fxs_bd_reach", () -> { mc.setScreen(null); mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); onServer(p -> UiShotsServer.showcase(p, "B:reach")); }, 4, true));
@@ -1038,7 +1063,7 @@ public final class UiShots {
         if (step.startsWith("pose_")) return new Class<?>[]{com.ironspellgrimoire.server.UiShotsServer.class};
         if (step.startsWith("fxs_")) return new Class<?>[]{com.ironspellgrimoire.server.UiShotsServer.class, com.ironspellgrimoire.server.HitFx.class, com.ironspellgrimoire.server.VectorFx.class, com.ironspellgrimoire.server.OmenFx.class,
                 com.ironspellgrimoire.server.BoundFx.class, com.ironspellgrimoire.server.SeraphFx.class, OmenClient.class, BoundClient.class, FxRenderer.class, PixelFx.class,
-                com.ironspellgrimoire.server.MeridianFx.class, MeridianFxClient.class, VectorFxClient.class};
+                com.ironspellgrimoire.server.MeridianFx.class, MeridianFxClient.class, VectorFxClient.class, OmenFxClient.class, FuseFxClient.class, com.ironspellgrimoire.server.FuseFx.class};
         if (step.startsWith("arch_")) return new Class<?>[]{com.ironspellgrimoire.server.FortressSpells.class, com.ironspellgrimoire.server.UiShotsServer.class, FxRenderer.class, PixelFx.class};
         if (step.startsWith("story3_")) return new Class<?>[]{StoryClient.class, DialogueScreen.class, JournalScreen.class, RivalRenderer.class, com.ironspellgrimoire.server.Story.class,
                 com.ironspellgrimoire.server.StoryArc3.class, com.ironspellgrimoire.server.StoryStage.class, com.ironspellgrimoire.server.StoryStage3.class, com.ironspellgrimoire.entity.StoryNpc.class,
@@ -1090,6 +1115,49 @@ public final class UiShots {
         return Long.toHexString(h);
     }
 
+    /** A share of the pictures for this job ("i/n", -Disg.shard: the CI splits them over parallel jobs). Everything up to
+     *  the first book's pictures goes together (it sets things up for what follows); after that each group of pictures
+     *  (the steps sharing a name before the first "_") goes whole to one job. Groups are shared by how much of them will
+     *  really be taken (unchanged ones are skipped), the biggest first, each to the job with the least so far. Every job
+     *  also does "setup". */
+    private static void shard() {
+        String sh = System.getProperty("isg.shard", "");
+        if (!sh.matches("\\d+/\\d+")) return;
+        int si = Integer.parseInt(sh.split("/")[0]), sn = Math.max(1, Integer.parseInt(sh.split("/")[1]));
+        if (sn <= 1) return;
+        List<List<Step>> groups = new ArrayList<>();
+        String last = null;
+        boolean opening = true;
+        for (Step s : steps) {
+            String g = s.name().contains("_") ? s.name().substring(0, s.name().indexOf('_')) : s.name();
+            if (s.name().equals("blood_gauge")) opening = false;
+            if (groups.isEmpty() || (!opening && !g.equals(last))) groups.add(new ArrayList<>());
+            groups.get(groups.size() - 1).add(s);
+            last = g;
+        }
+        long[] cost = new long[groups.size()];
+        for (int i = 0; i < groups.size(); i++) for (Step s : groups.get(i)) {
+            Class<?>[] roots = rootsFor(s.name());
+            String key = roots == null ? null : com.ironspellgrimoire.server.ClassKey.of(s.name() + "|" + HARNESS + "|" + assetsKey(s.name()), roots);
+            cost[i] += key != null && cache().unchanged(s.name(), key) ? 1 : s.delay() + 30;   // (+ the pictures at each scale)
+        }
+        Integer[] order = new Integer[groups.size()];
+        for (int i = 0; i < order.length; i++) order[i] = i;
+        java.util.Arrays.sort(order, (a, b) -> Long.compare(cost[b], cost[a]));
+        long[] load = new long[sn];
+        boolean[] mine = new boolean[groups.size()];
+        for (int gi : order) {
+            int best = 0;
+            for (int j = 1; j < sn; j++) if (load[j] < load[best]) best = j;
+            load[best] += cost[gi];
+            mine[gi] = best == si;
+        }
+        Step setup = steps.get(0);
+        steps.clear();
+        if (!mine[0]) steps.add(setup);
+        for (int i = 0; i < groups.size(); i++) if (mine[i]) steps.addAll(groups.get(i));
+    }
+
     private static void finish() {
         Minecraft mc = Minecraft.getInstance();
         Path out = mc.gameDirectory.toPath().resolve("isg_uishots_report.txt");
@@ -1129,7 +1197,7 @@ public final class UiShots {
             if (++wait < 100) return;
             wait = 0;
             if (TESTS) { phase = 5; onServer(com.ironspellgrimoire.server.GameTests::start); return; }
-            phase = 2; plan();
+            phase = 2; plan(); shard();
             return;
         }
         if (phase == 5) {   // the game tests (server/GameTests) run on the server; wait for them
