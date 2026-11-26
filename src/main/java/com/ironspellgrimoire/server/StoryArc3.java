@@ -558,7 +558,12 @@ public final class StoryArc3 {
                 for (ServerPlayer p : Story.online(s, pt)) title(p, "BRAND II HELD", "Cinderheart takes half as much");
                 toChapter(s, pt, 2);
             }
-            case "tunnels_done" -> { if (pt.ch == 2) toChapter(s, pt, 3); }
+            case "tunnels_done" -> {
+                if (pt.ch != 2) return;
+                List<ServerPlayer> in = StoryStage.inside(s, pt, StoryStage.TUNNELS);
+                toChapter(s, pt, 3);
+                for (ServerPlayer p : in) StoryStage.enter(p, pt, StoryStage.ASHWICK, pos(pt, StoryStage.ASHWICK, new double[]{0, 0, 6}), 0);   // up the well, to the north wall
+            }
             case "siege_won" -> {
                 if (pt.ch != 3) return;
                 List<ServerPlayer> in = StoryStage.inside(s, pt, StoryStage.ASHWICK);

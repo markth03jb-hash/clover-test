@@ -3923,7 +3923,7 @@ final class GameTestCases {
                             mark("mother");
                             BossIntro.testRelease(p.getUUID());
                             b.setTransforming(0);
-                            b.setHealth(b.getMaxHealth() * 0.5f + 2f);
+                            b.setHealth(b.getMaxHealth() * 0.5f + 0.005f);   // a hair over the line: what armour leaves of the blow still crosses it
                             b.hurt(p.damageSources().playerAttack(p), 10f);
                         }
                     }
