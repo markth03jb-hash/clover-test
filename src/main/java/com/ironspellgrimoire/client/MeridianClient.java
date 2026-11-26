@@ -62,7 +62,7 @@ public final class MeridianClient {
         MeridianPackets.Sync m = ALL.get(mc.player.getId());
         if (m == null) return;
         GuiGraphics g = e.getGuiGraphics();
-        int x = g.guiWidth() / 2 - 91 - 29 - 52 - 6, y = g.guiHeight() - 32;
+        int x = Math.min(g.guiWidth() - 54, g.guiWidth() / 2 + 91 + 28), y = g.guiHeight() - 32;   // right of the hotbar (past the attack indicator): the left is the spell bar's
         draw(g, mc, m, x, y, mc.level.getDayTime() + e.getPartialTick());
     }
 

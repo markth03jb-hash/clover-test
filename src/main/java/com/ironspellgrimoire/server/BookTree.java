@@ -226,7 +226,7 @@ public final class BookTree {
         l.add(n("b9", 8, 6, "b7|b8", 1, 3, PASSIVE, "Never Again", "The awakening that saves a dying ally comes back twice as fast, and heals them to half.", ""));
         l.add(n("b10", 8, 7, "b9", 1, 3, PASSIVE, "Last Stand Together", "A killing blow with an ally beside you leaves you at 1 health, and you both can't be hurt for 3 s (every 3 min).", ""));
         // Salt
-        l.add(n("s1", 11, 1, "root", 1, 2, SKILL, "Salt in the Veins", "Salt Lance is yours before your first awakening, and pierces everything in its line.", "salt_lance"));
+        l.add(n("s1", 11, 1, "root", 1, 2, SKILL, "Salt in the Veins", "Demon's Reach leaves salt in what it drags to you.", "demons_reach"));
         l.add(n("s2", 10, 2, "s1", 1, 2, PASSIVE, "Crystallize", "Three salt hits crust a foe: 60% slower for 3 s, and your next katana blow shatters it for 10 more.", ""));
         l.add(n("s4", 12, 2, "s1", 1, 2, PASSIVE, "Trumpet Call", "The awakening begins with a ringing blast: foes within 10 are thrown back and salted.", ""));
         l.add(n("s3", 10, 3, "s2", 1, 2, PASSIVE, "Pillar of Salt", "A crusted foe that dies bursts a second later: 6 to everything within 3 blocks.", ""));

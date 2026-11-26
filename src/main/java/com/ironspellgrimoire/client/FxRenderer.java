@@ -95,9 +95,9 @@ public class FxRenderer extends FxBase {
       // (plus sprites); blocks, spikes, bones, lightning and cracks keep their solid shape (plus sprites).
       boolean worldShape = p.shape == 19 || p.shape == 20 || p.shape == 0 || p.shape == 1 || p.shape == 2 || p.shape == 28 || p.shape == 29;
       boolean keep = false;
-      if (worldShape && (p.palette & FxPacket.KEEP_SHAPE) != 0) { p.palette = (byte)(p.palette & 0x1F); keep = true; }
+      if (worldShape && (p.palette & FxPacket.KEEP_SHAPE) != 0) { p.palette = (byte)(p.palette & 0x3F); keep = true; }
       // wind (Yuno: Tornado Fang, Sylph's Breath, Spirit Dive...) keeps its 3D shape too - it looked best that way
-      if (worldShape && !keep && !p.pixelOnly && (p.palette & 0x1F) != 5) p.pixelOnly = true;
+      if (worldShape && !keep && !p.pixelOnly && (p.palette & 0x3F) != 5) p.pixelOnly = true;
       if (p.shape >= 49 && p.shape <= 58) { TimeFxClient.spawn(p); return; }   // Julius's Time Magic (TimeFxClient)
       if (p.shape == 3 && TimeFxClient.kill(p.id)) return;
       if (p.shape == 42) { FxSync.cast(p.id, p.sweep, p.life); return; }
@@ -139,6 +139,8 @@ public class FxRenderer extends FxBase {
       if (p.shape == 94) { MechFxClient.spawn(p); return; }   // the Mech Grimoire (server/MechFx)
       if (p.shape == 95) { WeatherFxClient.spawn(p); return; }   // the Weather Grimoire (server/WeatherFx)
       if (p.shape == 96) { OverdriveFxClient.spawn(p); return; }   // the Overdrive Grimoire (server/OverdriveFx)
+      if (p.shape == 99) { MeridianFxClient.spawn(p); return; }    // the Meridian Grimoire (server/MeridianFx)
+      if (p.shape == 100) { VectorFxClient.spawn(p); return; }     // the Vector Grimoire (server/VectorFx)
       if (p.shape == 97) { DreamFxClient.spawn(p); return; }   // the Dream Grimoire (server/DreamFx)
       if (p.shape == 98) { ShadowClient.spawn(p); return; }   // the Shadow Grimoire (server/ShadowFx)
       if (p.shape == 3) { GravityFxClient.kill(p.id); }
@@ -204,7 +206,7 @@ public class FxRenderer extends FxBase {
       }
       if (p.shape == 35) { LimitClient.set(p.id, p.palette, p.life); return; }   // Surpassing Limits aura: palette = book index
       if (p.shape == 34) { MasteryClient.setEnabled(p.life > 0); return; }   // Grimoire Mastery on/off
-      if (p.shape == 32) { ModeHudOverlay.set(p.palette & 0xFF, p.life, p.sweep); return; }   // mode timer on the HUD: palette = mode, life = ticks (0 = off)
+      if (p.shape == 32) { ModeHudOverlay.set(Math.round(p.r), p.life, p.sweep); return; }   // mode timer on the HUD: palette = mode, life = ticks (0 = off)
       if (p.shape == 27) { DarkSmoke.hellfire(p.id, p.life); return; }   // Hellfire Incarnate body: id = player, life = ticks
       if (p.shape == 21) { DarkSmoke.burning(p.id, p.life); return; }    // burning: id = entity, life = ticks
       if (p.shape == 22) { DarkSmoke.knuckles(p.id, p.life); return; }   // Flame Knuckles: id = player, life = ticks
@@ -330,7 +332,7 @@ public class FxRenderer extends FxBase {
             TRACK.clear();
             ORBITS.clear();
             WHIPS.clear();
-            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear(); ShadowClient.clear(); DreamFxClient.clear(); GravityFxClient.clear(); SoundFxClient.clear(); InkFxClient.clear(); ErrorFxClient.clear(); TreasureFxClient.clear(); ChainFxClient.clear(); HunterFxClient.clear(); VoidFxClient.clear(); GamblerFxClient.clear(); TarotFxClient.clear(); AbyssFxClient.clear(); MechFxClient.clear(); WeatherFxClient.clear(); OverdriveFxClient.clear();
+            GolemFx.GOLEMS.clear(); AltarFx.clear(); ModeAuraFx.clear(); LightFxClient.clear(); BloodFxClient.clear(); IceFxClient.clear(); ShadowClient.clear(); DreamFxClient.clear(); GravityFxClient.clear(); SoundFxClient.clear(); InkFxClient.clear(); ErrorFxClient.clear(); TreasureFxClient.clear(); ChainFxClient.clear(); HunterFxClient.clear(); VoidFxClient.clear(); GamblerFxClient.clear(); TarotFxClient.clear(); AbyssFxClient.clear(); MechFxClient.clear(); WeatherFxClient.clear(); OverdriveFxClient.clear(); MeridianFxClient.clear(); VectorFxClient.clear();
          } else {
             double now = (double)mc.level.getGameTime();
             FxSync.tick();   // release effects held for the swing BEFORE walking the list (adding while iterating crashes)
@@ -554,6 +556,8 @@ public class FxRenderer extends FxBase {
             MechFxClient.draw(vc, m, n, cam, now, pt);
             WeatherFxClient.draw(vc, m, n, cam, now, pt);
             OverdriveFxClient.draw(vc, m, n, cam, now, pt);
+            MeridianFxClient.draw(vc, m, n, cam, now, pt);
+            VectorFxClient.draw(vc, m, n, cam, now, pt);
             DreamFxClient.draw(vc, m, n, cam, now, pt);
             ShadowClient.draw(vc, m, n, cam, now, pt);
             BountyHud.drawBeacon(m, cam, now);

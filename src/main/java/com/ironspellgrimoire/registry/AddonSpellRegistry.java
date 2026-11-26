@@ -750,7 +750,8 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> OVERDRIVE_SECOND_WIND = registerSpell(overdrive("second_wind", 20, 30, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.OverdriveFx::secondWind, true));
     public static final RegistryObject<AbstractSpell> OVERDRIVE_RIBBON_BIND = registerSpell(overdrive("ribbon_bind", 10, 25, 9, "iron_spell_grimoire:light_whip", com.ironspellgrimoire.server.OverdriveFx::ribbonBind, true));
     public static final RegistryObject<AbstractSpell> OVERDRIVE_REDLINE = registerSpell(overdrive("redline", 150, 90, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.OverdriveFx::lastMinute, true));
-    public static final RegistryObject<AbstractSpell> OVERDRIVE_FINAL_BEAT = registerSpell(overdrive("final_beat", 45, 120, 16, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.OverdriveFx::finalBeat, true));
+    public static final RegistryObject<AbstractSpell> OVERDRIVE_FINAL_BEAT = registerSpell(overdrive("final_beat", 45, 120, 16, "iron_spell_grimoire:light_conviction", com.ironspellgrimoire.server.OverdriveFx::finalBeat, true)
+            .gate(com.ironspellgrimoire.server.OverdriveFx::finalReady, "Only in your Last Minute - with the Heartline in hand"));
     /** The ten Overdrive Grimoire spells, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> OVERDRIVE_SPELLS = List.of(
             OVERDRIVE_DRAW_HEARTLINE, OVERDRIVE_PULSE_CUT, OVERDRIVE_ADRENALINE_RUSH, OVERDRIVE_HEARTBEAT, OVERDRIVE_FLATLINE, OVERDRIVE_TACHYCARDIA, OVERDRIVE_SECOND_WIND, OVERDRIVE_RIBBON_BIND, OVERDRIVE_REDLINE, OVERDRIVE_FINAL_BEAT);
@@ -982,9 +983,33 @@ public class AddonSpellRegistry {
     public static final RegistryObject<AbstractSpell> BD_BOND = registerSpell(bound("bond_guard", 12, 35, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.BoundFx::bondGuard));
     public static final RegistryObject<AbstractSpell> BD_FLURRY = registerSpell(bound("demon_flurry", 10, 45, 3, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BoundFx::demonFlurry));
     public static final RegistryObject<AbstractSpell> BD_MARK = registerSpell(bound("sinners_mark", 8, 25, 0, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.BoundFx::sinnersMark));
-    public static final RegistryObject<AbstractSpell> BD_SALT = registerSpell(bound("salt_lance", 8, 40, 6, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BoundFx::saltLance));
+    public static final RegistryObject<AbstractSpell> BD_REACH = registerSpell(bound("demons_reach", 8, 35, 7, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.BoundFx::demonsReach));
+    // the Last Seraph's own moves: in the book only while the seraph is awake (server/SeraphFx swaps them in and out)
+    private static com.ironspellgrimoire.spells.BookSpell seraph(String id, int cd, int mana, float power, String anim, com.ironspellgrimoire.spells.BookSpell.Effect fx) {
+        return bound(id, cd, mana, power, anim, fx).gate(com.ironspellgrimoire.server.SeraphFx::ready, "Only while the seraph is awake");
+    }
+    public static final RegistryObject<AbstractSpell> SR_FEATHERS = registerSpell(seraph("seraph_feathers", 4, 25, 3, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.SeraphFx::feathers));
+    public static final RegistryObject<AbstractSpell> SR_CLEAVE = registerSpell(seraph("seraph_wing_cleave", 6, 35, 10, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.SeraphFx::wingCleave));
+    public static final RegistryObject<AbstractSpell> BD_SALT = registerSpell(seraph("salt_lance", 8, 40, 6, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.SeraphFx::saltLance));
+    public static final RegistryObject<AbstractSpell> SR_VERDICT = registerSpell(seraph("seraph_verdict", 10, 50, 8, "iron_spell_grimoire:light_flash", com.ironspellgrimoire.server.SeraphFx::verdict));
+    public static final RegistryObject<AbstractSpell> SR_DESCENT = registerSpell(seraph("seraph_descent", 14, 60, 14, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.SeraphFx::fallOfHeaven));
+    public static final RegistryObject<AbstractSpell> SR_FOLD = registerSpell(seraph("fold_wing", 2, 0, 0, "iron_spell_grimoire:light_heal", com.ironspellgrimoire.server.SeraphFx::foldWing));
     public static final RegistryObject<AbstractSpell> BD_SERAPH = registerSpell(bound("last_seraph", 120, 180, 0, "iron_spell_grimoire:lightning_mode", com.ironspellgrimoire.server.BoundFx::lastSeraph));
-    public static final List<RegistryObject<AbstractSpell>> BOUND_SPELLS = List.of(BD_DRAW, BD_EDGE, BD_WHISPER, BD_BOND, BD_FLURRY, BD_MARK, BD_SALT, BD_SERAPH);
+    public static final List<RegistryObject<AbstractSpell>> BOUND_SPELLS = List.of(BD_DRAW, BD_EDGE, BD_WHISPER, BD_BOND, BD_FLURRY, BD_MARK, BD_REACH, BD_SERAPH);
+    /** The demon's page -> the seraph's page in its slot while the Last Seraph lasts. */
+    private static java.util.List<RegistryObject<AbstractSpell>[]> seraphPairs() {
+        @SuppressWarnings("unchecked") RegistryObject<AbstractSpell>[][] a = new RegistryObject[][]{{BD_DRAW, SR_FEATHERS}, {BD_EDGE, SR_CLEAVE}, {BD_REACH, BD_SALT}, {BD_FLURRY, SR_VERDICT}, {BD_MARK, SR_DESCENT}, {BD_SERAPH, SR_FOLD}};
+        return java.util.Arrays.asList(a);
+    }
+    public static AbstractSpell seraphVersionOf(AbstractSpell spell) {
+        for (var pr : seraphPairs()) if (pr[0].get() == spell) return pr[1].get();
+        return null;
+    }
+    /** Back to the demon's page (Salt Lance - an old book's base page before the rework - becomes Demon's Reach too). */
+    public static AbstractSpell demonVersionOf(AbstractSpell spell) {
+        for (var pr : seraphPairs()) if (pr[1].get() == spell) return pr[0].get();
+        return null;
+    }
 
     /** The seven Masked Twins Grimoire pages, in the order they fill the book. */
     public static final List<RegistryObject<AbstractSpell>> TWINS_SPELLS = List.of(TWINS_SWAP, TWINS_ARTS, TWINS_STRIKE, TWINS_ECLIPSE, TWINS_MASKS, TWINS_NOON, TWINS_EVENTIDE);

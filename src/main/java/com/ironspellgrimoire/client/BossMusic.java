@@ -37,13 +37,14 @@ public final class BossMusic {
         for (net.minecraft.world.entity.LivingEntity o : mc.level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, mc.player.getBoundingBox().inflate(48),
                 x -> x instanceof Zenon || x instanceof com.ironspellgrimoire.entity.BeastOfDespair || x instanceof com.ironspellgrimoire.entity.Rhya || x instanceof com.ironspellgrimoire.entity.AddonBoss)) {
             if (!o.isAlive()) continue;
+            if (o instanceof com.ironspellgrimoire.entity.AddonBoss ab0 && ab0.music().isEmpty()) continue;   // a boss with no tracks of its own (the second Ironbound Twin) - its partner carries the music
             double d = o.distanceToSqr(mc.player);
             if (d < best) {
                 best = d; boss = o;
                 if (o instanceof Zenon os) { bossPhase = os.phase(); tracks = AddonSounds.BOSS_MUSIC; }
                 else if (o instanceof com.ironspellgrimoire.entity.BeastOfDespair v) { bossPhase = v.phase(); tracks = AddonSounds.BEAST_MUSIC; }
                 else if (o instanceof com.ironspellgrimoire.entity.Rhya rh) { bossPhase = rh.phase(); tracks = AddonSounds.RHYA_MUSIC; }
-                else if (o instanceof com.ironspellgrimoire.entity.AddonBoss ab) { bossPhase = Math.min(ab.music().size(), ab.phase()); tracks = ab.music(); }
+                else if (o instanceof com.ironspellgrimoire.entity.AddonBoss ab) { bossPhase = Math.max(1, Math.min(ab.music().size(), ab.phase())); tracks = ab.music(); }
             }
         }
         if (boss == null) { stop(); return; }

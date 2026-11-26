@@ -46,14 +46,14 @@ public final class BoundClient {
     @SubscribeEvent public static void onLogout(ClientPlayerNetworkEvent.LoggingOut e) { STATE.clear(); }
 
     // ------------------------------------------------------------------ the wing
-    static ItemStack wing, black;
+    static ItemStack wing, black, halo;
 
     @SubscribeEvent
     public static void onRender(RenderPlayerEvent.Post e) {
         Player pl = e.getEntity();
         long[] st = STATE.get(pl.getId());
         if (st == null || st[0] <= ticks() || pl.isInvisible()) return;
-        if (wing == null) { wing = new ItemStack(AddonItemRegistry.BOUND_WING.get()); black = new ItemStack(AddonItemRegistry.BOUND_WING_BLACK.get()); }
+        if (wing == null) { wing = new ItemStack(AddonItemRegistry.BOUND_WING.get()); black = new ItemStack(AddonItemRegistry.BOUND_WING_BLACK.get()); halo = new ItemStack(AddonItemRegistry.SERAPH_HALO.get()); }
         PoseStack ps = e.getPoseStack();
         float pt = e.getPartialTick();
         float body = Mth.rotLerp(pt, pl.yBodyRotO, pl.yBodyRot);
@@ -79,8 +79,16 @@ public final class BoundClient {
         ps.scale(-1, 1, 1);   // the model reaches +x; the left shoulder is -x
         ps.mulPose(Axis.YP.rotationDegrees(-15 + 8 * Mth.sin(t)));
         ps.mulPose(Axis.ZP.rotationDegrees(4 * Mth.sin(t * 0.7f)));
-        ps.scale(1.5f, 1.5f, 1.5f);
+        ps.scale(2.0f, 2.0f, 2.0f);   // the Last Seraph: the wing is huge
         Minecraft.getInstance().getItemRenderer().renderStatic(wing, ItemDisplayContext.FIXED, 0xF000F0, OverlayTexture.NO_OVERLAY, ps, e.getMultiBufferSource(), pl.level(), pl.getId());
+        ps.popPose();
+        // and the broken halo behind the head, turning slowly
+        ps.pushPose();
+        ps.mulPose(Axis.YP.rotationDegrees(180f - body));
+        ps.translate(0, (pl.isCrouching() ? 1.55 : 1.85) + 0.04 * Mth.sin(t), 0.32);
+        ps.mulPose(Axis.ZP.rotationDegrees((pl.tickCount + pt) * 1.5f));
+        ps.scale(0.85f, 0.85f, 0.85f);
+        Minecraft.getInstance().getItemRenderer().renderStatic(halo, ItemDisplayContext.FIXED, 0xF000F0, OverlayTexture.NO_OVERLAY, ps, e.getMultiBufferSource(), pl.level(), pl.getId());
         ps.popPose();
     }
 

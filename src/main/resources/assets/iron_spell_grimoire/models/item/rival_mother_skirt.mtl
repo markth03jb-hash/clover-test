@@ -1,0 +1,9 @@
+newmtl mother_skirt
+Kd 1 1 1
+Ka 0 0 0
+map_Kd iron_spell_grimoire:item/rivals
+
+newmtl mother_skirt_glow
+Kd 1 1 1
+Ka 1 1 1
+map_Kd iron_spell_grimoire:item/rivals

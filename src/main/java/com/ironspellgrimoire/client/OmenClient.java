@@ -20,7 +20,7 @@ import org.joml.Matrix4f;
 
 /**
  * The Grimoire of Ill Omen's marks: over every creature carrying Misfortune toward you, a small black-blue diamond
- * that fills from the bottom up as its Misfortune rises - so you can see whose luck is about to run out. Only its
+ * that fills from the bottom up as its Misfortune rises, and a doom bar under it charging toward the calamity - so you can see whose luck is about to run out. Only its
  * mage sees them. Small and high, so nothing is hidden behind it.
  */
 @Mod.EventBusSubscriber(modid = "iron_spell_grimoire", value = Dist.CLIENT)
@@ -28,6 +28,7 @@ public final class OmenClient {
     private OmenClient() {}
 
     static final ResourceLocation MARK = new ResourceLocation("iron_spell_grimoire", "textures/gui/omen_mark.png");
+    static final ResourceLocation BAR = new ResourceLocation("iron_spell_grimoire", "textures/gui/omen_bar.png");
     /** entity id -> shown fill (eased toward the server's). */
     static final Map<Integer, float[]> FILL = new HashMap<>();
 
@@ -67,6 +68,11 @@ public final class OmenClient {
             float top = y + s * (1 - k);
             quadPart(vc, m, x, top, s, y + s, 0.5f + 0.5f * (1 - k), 1f, light);
         }
+        // the doom bar under it: charging as it stays near you; when it's full, the calamity
+        VertexConsumer bv = e.getMultiBufferSource().getBuffer(RenderType.text(BAR));
+        float bw = 30, bh = 4, bx = -bw / 2, by = y + s + 2;
+        rect(bv, m, bx, by, bx + bw, by + bh, 0f, 1f, 0f, 0.5f, 0, light);
+        if (k > 0.01f) rect(bv, m, bx, by, bx + bw * k, by + bh, 0f, k, 0.5f, 1f, -0.01f, light);
         ps.popPose();
     }
 
@@ -75,6 +81,13 @@ public final class OmenClient {
         vc.vertex(m, x + s, y + s, 0).color(1F, 1F, 1F, 1F).uv(u1, v1).uv2(light).endVertex();
         vc.vertex(m, x + s, y, 0).color(1F, 1F, 1F, 1F).uv(u1, v0).uv2(light).endVertex();
         vc.vertex(m, x, y, 0).color(1F, 1F, 1F, 1F).uv(u0, v0).uv2(light).endVertex();
+    }
+
+    static void rect(VertexConsumer vc, Matrix4f m, float x0, float y0, float x1, float y1, float u0, float u1, float v0, float v1, float z, int light) {
+        vc.vertex(m, x0, y1, z).color(1F, 1F, 1F, 1F).uv(u0, v1).uv2(light).endVertex();
+        vc.vertex(m, x1, y1, z).color(1F, 1F, 1F, 1F).uv(u1, v1).uv2(light).endVertex();
+        vc.vertex(m, x1, y0, z).color(1F, 1F, 1F, 1F).uv(u1, v0).uv2(light).endVertex();
+        vc.vertex(m, x0, y0, z).color(1F, 1F, 1F, 1F).uv(u0, v0).uv2(light).endVertex();
     }
 
     /** The lower part of the full mark, from y0 down to y1 (texture rows v0..v1), drawn a hair in front. */

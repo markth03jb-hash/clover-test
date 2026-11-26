@@ -82,7 +82,7 @@ public class JournalScreen extends Screen {
             }
             y = yy + 3;
         }
-        String enter = s().getBoolean("next") ? "Begin Arc II" : s().getString("enter");
+        String enter = s().getBoolean("next") ? (s().getString("nextName").isEmpty() ? "Begin Arc II" : s().getString("nextName")) : s().getString("enter");
         boolean can = !s().getBoolean("next") || s().getBoolean("leader");
         if (!enter.isEmpty()) BookUi.button(g, font, x + 3, y0 + BookUi.BH - 26, PW - 6, 16, enter, BookUi.in(mx, my, x + 3, y0 + BookUi.BH - 26, PW - 6, 16), can);
     }

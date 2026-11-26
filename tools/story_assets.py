@@ -1,6 +1,6 @@
 """Icons for ASHFALL (original designs, drawn here): the Story Journal (a black book, an ember brand on its cover),
 the Ashen Page (a scorched page, its writing red), Sallow's Hook (the hooked knife) and Sallow's Rosary (bone beads,
-one of amber).
+one of amber); Arc II's Vey's Seal and Cindermarch Token; Arc III's Sedge's Reed and Fenwater Beads.
 python3 tools/story_assets.py [preview.png]"""
 import os, sys, json
 sys.path.insert(0, os.path.dirname(__file__))
@@ -62,7 +62,27 @@ def cinder_token():
     return finish(im)
 
 
-ICONS = {"vey_seal": vey_seal, "cinder_token": cinder_token, "story_journal": story_journal, "ashen_page": ashen_page, "sallow_hook": sallow_hook, "sallow_rosary": sallow_rosary}
+def sedge_reed():
+    im, g = canvas()
+    g.line(P(4, 14.5, 11.5, 2), fill=(96, 120, 60), width=S + 1)   # the reed, cut for a pipe
+    for t in (0.3, 0.55): x, y = 4 + 7.5 * t, 14.5 - 12.5 * t; g.line(P(x - 0.8, y - 0.4, x + 0.8, y + 0.4), fill=(60, 78, 40), width=S // 2 + 1)
+    for t in (0.4, 0.66, 0.82): x, y = 4 + 7.5 * t, 14.5 - 12.5 * t; g.ellipse(box(x - 0.45, y - 0.45, x + 0.45, y + 0.45), fill=(34, 30, 26))   # finger holes
+    g.line(P(9.6, 5, 12.4, 7.4, 12, 10), fill=(150, 40, 34), width=S // 2 + 1)   # a red thread tied round it
+    return finish(im)
+
+
+def fenwater_beads():
+    im, g = canvas()
+    beads = [(3.5, 4), (5.6, 2.8), (8, 2.4), (10.4, 2.8), (12.5, 4), (12, 6.6), (10.2, 8.4), (8, 9), (5.8, 8.4), (4, 6.6)]
+    for i, (x, y) in enumerate(beads):
+        g.ellipse(box(x - 1.2, y - 1.2, x + 1.2, y + 1.2), fill=(70, 150, 120) if i % 3 == 0 else (120, 150, 80))
+    g.line(P(8, 9, 8, 11.2), fill=(90, 70, 56), width=S // 2 + 1)
+    g.polygon(P(6.4, 11.2, 9.6, 11.2, 10, 13.6, 8, 15, 6, 13.6), fill=(150, 200, 180))   # a river stone, worn smooth
+    g.polygon(P(7.2, 12, 8.6, 12, 8.4, 13.4, 7.4, 13.4), fill=(210, 240, 225))
+    return finish(im)
+
+
+ICONS = {"sedge_reed": sedge_reed, "fenwater_beads": fenwater_beads, "vey_seal": vey_seal, "cinder_token": cinder_token, "story_journal": story_journal, "ashen_page": ashen_page, "sallow_hook": sallow_hook, "sallow_rosary": sallow_rosary}
 
 if __name__ == "__main__":
     made = {}

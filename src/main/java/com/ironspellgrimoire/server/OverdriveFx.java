@@ -147,6 +147,8 @@ public final class OverdriveFx {
 
     /** The Heartline in the main hand (every page but the first needs it). */
     public static boolean holding(Player p) { return p.getMainHandItem().is(AddonItemRegistry.HEARTLINE.get()); }
+    /** Final Beat's gate: the Heartline in hand, and inside your Last Minute (the client can't see the mode; the server decides). */
+    public static boolean finalReady(Player p) { return holding(p) && (!(p instanceof ServerPlayer sp) || Moves.inMode(sp, MODE)); }
 
     static void sound(ServerLevel sl, Vec3 at, SoundEvent s, float vol, float pitch) { sl.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, vol, pitch); }
 

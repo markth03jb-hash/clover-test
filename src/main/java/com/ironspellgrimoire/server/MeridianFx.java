@@ -63,6 +63,17 @@ public final class MeridianFx {
     private MeridianFx() {}
 
     static final int SUN = Fx.GOLD, WHITE = Fx.SILVER, HEAT = Fx.FIRE, EMBER = Fx.FIRE;
+
+    // ------------------------------------------------------------------ the look (client/MeridianFxClient, FxPacket shape 99)
+    static com.ironspellgrimoire.network.FxPacket fx(int kind, Vec3 c, int life) {
+        com.ironspellgrimoire.network.FxPacket p = new com.ironspellgrimoire.network.FxPacket();
+        p.shape = 99; p.id = FxSend.nextId(); p.h = kind; p.c = c; p.life = life; p.v = new Vec3(-1, 0, 0); p.a1 = (float) (Math.random() * 6.28);
+        return p;
+    }
+    static com.ironspellgrimoire.network.FxPacket on(int kind, LivingEntity e, int life) { com.ironspellgrimoire.network.FxPacket p = fx(kind, e.position(), life); p.v = new Vec3(e.getId(), 0, 0); return p; }
+    static void send(ServerLevel sl, com.ironspellgrimoire.network.FxPacket p) { FxSend.sendNear(sl, p.c, p); }
+    /** A sun-flare where a blow lands (HitFx). */
+    public static void hitFlare(ServerLevel sl, Vec3 at, float size) { var p = fx(9, at, 8); p.r = size; send(sl, p); }
     static final UUID ZENITH_DMG = UUID.fromString("7a1e0000-0000-4000-8000-0000000000d1"), BORROW_HP = UUID.fromString("7a1e0000-0000-4000-8000-0000000000d2"),
             STRIDE = UUID.fromString("7a1e0000-0000-4000-8000-0000000000d3");
     public static final int ZENITH_TICKS = 1200, BORROW_TICKS = 600, BORROW_COST_TICKS = 12000;
@@ -204,7 +215,7 @@ public final class MeridianFx {
             TimedModifiers.apply(p, Attributes.MOVEMENT_SPEED, STRIDE, "Sunstride", 0.15, AttributeModifier.Operation.MULTIPLY_TOTAL, 20);
         // Zenith: a heat round you; and its end
         if (zenith(p)) {
-            FxSend.ring(sl, s.borrowed ? HEAT : SUN, p.position().add(0, 0.1, 0), 1.4f, 1.6f, 0.05f, 12);
+            if (now % 100 == 0) { var z = on(7, p, (int) (s.zenithUntil - now)); z.a0 = s.borrowed ? 1 : 0; send(sl, z); }   // (re-sent: a late arrival sees it too)
             if (now % 20 == 0) for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(3))) { AstaFx.damage(p, t, 2f, "zenith_unbound"); t.setSecondsOnFire(2); }
         } else if (s.zenithUntil > 0 && now >= s.zenithUntil) {
             s.zenithUntil = 0;
@@ -217,7 +228,7 @@ public final class MeridianFx {
             float cap = 6f + 4f * night(p);
             if (v.x * v.x + v.z * v.z < 0.003 && p.getAbsorptionAmount() < cap) {
                 p.setAbsorptionAmount(Math.min(cap, p.getAbsorptionAmount() + 1f));
-                FxSend.ring(sl, EMBER, p.position().add(0, 0.1, 0), 0.6f, 0.8f, 0.04f, 10);
+                var c = on(6, p, (int) (s.coalUntil - now)); c.a0 = p.getAbsorptionAmount() / cap; send(sl, c);
             }
         }
         // noon's call
@@ -272,7 +283,7 @@ public final class MeridianFx {
                 ServerLevel sl = p.serverLevel();
                 if (sunNow >= 0.3f) {   // Kindled Edge
                     t.setSecondsOnFire(3);
-                    FxSend.slash(sl, HEAT, mid(t), p.getLookAngle(), new Vec3(0, 1, 0), 1.1f, 1.6f, 6, 0);
+                    var arc = fx(2, p.position().add(0, 1.15, 0), 12); arc.d = flat(p.getLookAngle()).normalize(); arc.r = 1.9f; arc.a0 = (float) (Math.random() - 0.5); arc.a1 = 0; send(sl, arc);
                     play(sl, t.position(), "meridian_bite", 0.9f, 1f);
                 }
                 if (zenith(p) && !cleaving) cleave(p, t, e.getAmount() * m * 0.6f);
@@ -289,7 +300,7 @@ public final class MeridianFx {
     static void cleave(ServerPlayer p, LivingEntity hit, float dmg) {
         ServerLevel sl = p.serverLevel();
         Vec3 look = flat(p.getLookAngle()).normalize();
-        FxSend.slash(sl, SUN, p.position().add(0, 1.1, 0), look, new Vec3(0, 1, 0), 3.6f, 4.4f, 7, 1.6f);
+        var arc = fx(2, p.position().add(0, 1.1, 0), 26); arc.d = look; arc.r = 4.0f; arc.a0 = 0.15f; arc.a1 = 1; arc.u = p.position(); send(sl, arc);
         cleaving = true;
         try {
             for (LivingEntity o : enemies(sl, p, p.getBoundingBox().inflate(4.5))) {
@@ -323,7 +334,7 @@ public final class MeridianFx {
         s.starSize = 0.35f + 1.4f * Math.min(1f, meter(p));
         if (zenith(p)) s.starSize = 2.2f;
         play(sl, at, "meridian_star", 1.1f, 1.2f - s.starSize * 0.2f);
-        FxSend.ring(sl, SUN, at, 0.1f, s.starSize + 0.6f, 0.08f, 8);
+        var b = fx(9, at, 10); b.r = s.starSize * 2.2f; send(sl, b);
     }
 
     static void star(Player p, Vec3 at) { st(p).star = at; }
@@ -339,12 +350,8 @@ public final class MeridianFx {
         Vec3 to = aim.subtract(s.star);
         double step = Math.min(to.length(), 0.45);
         if (step > 0.01) s.star = s.star.add(to.normalize().scale(step));
-        if (now % 2 == 0) {
-            Kit.orb(sl, SUN, s.star, Vec3.ZERO, s.starSize, 3);
-            Kit.orb(sl, WHITE, s.star, Vec3.ZERO, s.starSize * 0.55f, 3);
-        }
+        if (now % 2 == 0) { var st = fx(0, s.star, 4); st.v = new Vec3(p.getId(), 0, 0); st.r = s.starSize; send(sl, st); }   // the sun itself (client: one per mage, moved)
         if (now % 10 == 0) {
-            FxSend.ring(sl, HEAT, s.star, s.starSize * 0.8f, s.starSize + 0.4f, 0.04f, 8);
             float dmg = (1.4f + 4.2f * Math.min(1.25f, meter(p))) * dawnbreak(p);
             for (LivingEntity t : enemies(sl, p, new AABB(s.star, s.star).inflate(s.starSize + 0.7))) {
                 if (mid(t).distanceTo(s.star) > s.starSize + 1.0) continue;
@@ -368,14 +375,10 @@ public final class MeridianFx {
         Vec3 g = BossKit.ground(sl, c.add(0, 1, 0));
         ZenonAI.warnCircle(sl, g, R, 20);
         play(sl, c, "meridian_flare", 1.6f, 1f);
-        for (int k = 0; k < 20; k += 4) {
-            final float f = k / 20f;
-            AstaFx.later(k, () -> { Kit.orb(sl, SUN, c, Vec3.ZERO, (big ? 1.2f : 0.6f) + f * (big ? 2.2f : 1f), 5); Kit.orb(sl, WHITE, c, Vec3.ZERO, 0.6f + f, 5); });
-        }
+        { var fl = fx(1, c, 44); fl.r = R; fl.a1 = big ? s.starSize : 0.5f; fl.u = g; send(sl, fl); }   // swells 20 ticks, then bursts
+        { var kill = fx(98, c, 1); kill.v = new Vec3(p.getId(), 0, 0); kill.a0 = 0; send(sl, kill); }   // the star itself is spent
         AstaFx.later(20, () -> {
             if (!alive(p)) return;
-            FxSend.ring(sl, SUN, c, 0.3f, R, 0.2f, 10);
-            FxSend.ring(sl, HEAT, g.add(0, 0.1, 0), 0.3f, R + 0.5f, 0.12f, 12);
             FxSend.shake(sl, c, big ? 0.6f : 0.3f, 8, 24);
             for (LivingEntity t : enemies(sl, p, new AABB(c, c).inflate(R))) {
                 if (mid(t).distanceTo(c) > R + 0.5) continue;
@@ -400,7 +403,8 @@ public final class MeridianFx {
         p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(AddonItemRegistry.DAYREAVER.get()));
         ServerLevel sl = p.serverLevel();
         play(sl, p.position(), "meridian_reaver", 1.2f, 0.8f);
-        FxSend.ring(sl, SUN, p.position().add(0, 1.2, 0), 0.2f, 1.6f, 0.08f, 8);
+        var arc = fx(2, p.position().add(0, 1.2, 0), 14); arc.d = flat(p.getLookAngle()).normalize(); arc.r = 1.4f; arc.a0 = -0.9f; arc.a1 = 0; send(sl, arc);
+        var fl = fx(9, p.position().add(0, 1.3, 0).add(flat(p.getLookAngle()).normalize().scale(0.6)), 10); fl.r = 0.9f; send(sl, fl);
     }
 
     /** Noonwave: a cone of heat thrown forward - it burns and throws foes back, harder as the sun climbs. */
@@ -410,10 +414,7 @@ public final class MeridianFx {
         float dmg = (2.8f + 7f * m) * dawnbreak(p) * (zenith(p) ? 1.5f : 1f);
         Vec3 look = flat(p.getLookAngle()).normalize(), at = p.position().add(0, 1.0, 0);
         play(sl, at, "meridian_wave", 1.4f, 1f);
-        for (int i = 0; i < 4; i++) {
-            final int k = i;
-            AstaFx.later(i * 2, () -> FxSend.wall(sl, k % 2 == 0 ? SUN : HEAT, at, look, new Vec3(0, 1, 0), 1.5f + k * 1.8f, 2.2f + k * 1.8f, -35, 35, 1.6f, 8, 0, 0));
-        }
+        { var w = fx(3, at, 20); w.d = look; w.r = 8.5f; send(sl, w); }
         double cos = Math.cos(Math.toRadians(35));
         for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(8.5))) {
             Vec3 to = flat(t.position().subtract(p.position()));
@@ -432,19 +433,33 @@ public final class MeridianFx {
         play(sl, p.position(), "meridian_lamp", 0.8f, 1f);
         Vec3 from = p.getEyePosition().add(p.getLookAngle().scale(0.6)), dir = p.getLookAngle();
         float dmg = 3f + 4f * night(p);
+        double reach = lampReach(p, sl, from, dir);
+        { var l = fx(4, from, (int) Math.ceil(reach / 1.1) + 8); l.d = dir; l.r = 1.1f; l.a0 = (float) reach; send(sl, l); }
         lampStep(p, sl, from, dir, 0, dmg);
+    }
+
+    /** How far the lamp flies before it meets a foe or a wall (as lampStep will find it). */
+    static double lampReach(ServerPlayer p, ServerLevel sl, Vec3 from, Vec3 dir) {
+        Vec3 at = from;
+        for (int n = 0; n <= 20; n++) {
+            Vec3 next = at.add(dir.scale(1.1));
+            for (LivingEntity t : enemies(sl, p, new AABB(at, next).inflate(0.5)))
+                if (mid(t).distanceTo(closestOnSegment(at, next, mid(t))) <= 0.9) return from.distanceTo(closestOnSegment(at, next, mid(t)));
+            Vec3 wall = clip(sl, p, at, next);
+            if (wall.distanceToSqr(next) > 1e-4) return from.distanceTo(wall);
+            at = next;
+        }
+        return from.distanceTo(at);
     }
 
     static void lampStep(ServerPlayer p, ServerLevel sl, Vec3 at, Vec3 dir, int n, float dmg) {
         if (n > 20 || !alive(p)) return;
         Vec3 next = at.add(dir.scale(1.1));
         Vec3 wall = clip(sl, p, at, next);
-        Kit.orb(sl, EMBER, at, dir.scale(1.1), 0.25f, 2);
         for (LivingEntity t : enemies(sl, p, new AABB(at, next).inflate(0.5))) {
             if (mid(t).distanceTo(closestOnSegment(at, next, mid(t))) > 0.9) continue;
             AstaFx.damage(p, t, dmg, "lamplight");
             t.setSecondsOnFire(1);
-            FxSend.ring(sl, EMBER, mid(t), 0.1f, 0.6f, 0.04f, 6);
             return;
         }
         if (wall.distanceToSqr(next) > 1e-4) return;
@@ -460,8 +475,8 @@ public final class MeridianFx {
         Player friend = null;
         for (Player o : sl.getEntitiesOfClass(Player.class, p.getBoundingBox().inflate(8), o -> o != p && o.isAlive() && !o.isSpectator() && (p.getTeam() == null || p.isAlliedTo(o))))
             if (friend == null || o.getHealth() / o.getMaxHealth() < friend.getHealth() / friend.getMaxHealth()) friend = o;
-        if (friend != null) { friend.heal(heal); FxSend.ring(sl, EMBER, friend.position().add(0, 0.1, 0), 0.3f, 1.0f, 0.05f, 12); }
-        FxSend.ring(sl, EMBER, p.position().add(0, 0.1, 0), 0.3f, 1.2f, 0.06f, 14);
+        if (friend != null) { friend.heal(heal); send(sl, on(5, friend, 34)); }
+        send(sl, on(5, p, 34));
         play(sl, p.position(), "meridian_warm", 1f, 1f);
     }
 
@@ -473,7 +488,7 @@ public final class MeridianFx {
         ModeHud.show(p, "last_coal", 300);
         p.setAbsorptionAmount(Math.max(p.getAbsorptionAmount(), 2f));
         play(p.serverLevel(), p.position(), "meridian_coal", 1f, 1f);
-        FxSend.ring(p.serverLevel(), EMBER, p.position().add(0, 0.1, 0), 0.9f, 1.1f, 0.05f, 20);
+        { var c = on(6, p, 300); c.a0 = 0.2f; send(p.serverLevel(), c); }
     }
 
     // ================================================================== Zenith
@@ -505,8 +520,8 @@ public final class MeridianFx {
         TimedModifiers.apply(p, Attributes.ATTACK_DAMAGE, ZENITH_DMG, "Zenith", noon ? 0.6 : 0.8, AttributeModifier.Operation.MULTIPLY_TOTAL, len);
         if (s.star != null) s.starSize = 2.2f;
         Vec3 c = p.position();
-        FxSend.ring(sl, SUN, c.add(0, 0.1, 0), 0.3f, 7f, 0.2f, 16);
-        FxSend.beam(sl, WHITE, c, c.add(0, 12, 0), 0.6f, 16);
+        send(sl, fx(8, c, 24));
+        { var z = on(7, p, len); z.a0 = s.borrowed ? 1 : 0; send(sl, z); }
         FxSend.shake(sl, c, 0.5f, 10, 24);
         sync(p);
     }
@@ -517,6 +532,9 @@ public final class MeridianFx {
     public static float testBanked(Player p) { return st(p).banked; }
     public static boolean testStar(Player p) { return st(p).star != null; }
     public static void testCombat(Player p) { st(p).lastCombat = p.level().getGameTime(); }
-    public static void testReset(Player p) { S.remove(p.getUUID()); }
+    public static void testReset(Player p) {
+        S.remove(p.getUUID());
+        if (p instanceof ServerPlayer sp) for (int k : new int[]{0, 6, 7}) { var c = fx(98, sp.position(), 1); c.v = new Vec3(sp.getId(), 0, 0); c.a0 = k; send(sp.serverLevel(), c); }   // and its looks
+    }
     public static long testBorrowDay(Player p) { return st(p).borrowDay; }
 }

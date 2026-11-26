@@ -247,6 +247,9 @@ public final class BoundFx {
                 salt(p, t, 3);
             }
         }
+        SeraphFx.apply(p, true);   // the seraph's own moves on the wheel while it lasts
+        FxSend.impactFrame(sl, p.position().add(0, 1, 0), 5, false, 32);
+        FxSend.cracks(sl, SALT, p.position().add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 4.5f, 30, false, 11);
         BookTree.grow(p, BookTree.BOUND, 5);
         broadcast(p);
     }
@@ -254,6 +257,7 @@ public final class BoundFx {
     static void endAwake(ServerPlayer p) {
         S s = s(p);
         s.awakeUntil = 0;
+        SeraphFx.apply(p, false);
         ModeHud.hide(p, "last_seraph");
         if (s.flyGranted && !p.isCreative() && !p.isSpectator()) { p.getAbilities().mayfly = false; p.getAbilities().flying = false; p.onUpdateAbilities(); }
         s.flyGranted = false;
@@ -502,8 +506,10 @@ public final class BoundFx {
         }
         // the awakening
         if (s.awakeUntil > 0 && now >= s.awakeUntil) endAwake(p);
+        else if (now % 40 == 0 && now >= s.awakeUntil) SeraphFx.apply(p, false);   // never left with the seraph's pages (a crash, a relog)
         if (now < s.awakeUntil) {
             p.fallDistance = 0;
+            SeraphFx.aura(p, sl, now);
             int every = r(p, "s7") > 0 ? 10 : 20;
             if (now % every == 0) for (Map.Entry<LivingEntity, long[]> en : new ArrayList<>(s.sinners.entrySet())) {
                 LivingEntity t = en.getKey();
@@ -542,14 +548,39 @@ public final class BoundFx {
             for (Projectile pr : sl.getEntitiesOfClass(Projectile.class, box, x -> x.getOwner() != p)) { pr.discard(); FxSend.ring(sl, SALT, pr.position(), 0.1f, 0.5f, 0.04f, 5); }
             if (now % 10 == 0) for (LivingEntity x : enemies(sl, p, box)) if (!ally(p, x)) { AstaFx.damage(p, x, 2f, "salt_lance"); salt(p, x, 1); }
         }
-        // Demon Flurry and its ghosts
-        if (now < s.flurryUntil && now % 4 == 0) {
+        // Demon Flurry and its ghosts: a storm of black and red cuts at every angle, the blade's afterimages flickering
+        // through it, and a closing cross-cut (the damage is the same: every 4 ticks)
+        if (now < s.flurryUntil) {
             Vec3 c = r(p, "k6") > 0 ? mid(p) : s.flurryAt;
             if (c != null) {
-                FxSend.slash(sl, now % 8 == 0 ? RED : DARK, c, rotY(p.getLookAngle(), now * 0.9), new Vec3(0, 1, 0), 2.6f, 3.6f, 5, 0);
-                float dmg = 3f * (1f + s.poss / 100f);
-                for (LivingEntity x : enemies(sl, p, new AABB(c, c).inflate(3.5))) if (!ally(p, x)) AstaFx.damage(p, x, dmg, "demon_flurry");
-                play(sl, c, "bd_cut", 0.6f, 1.1f + (now % 3) * 0.1f);
+                java.util.concurrent.ThreadLocalRandom rr = java.util.concurrent.ThreadLocalRandom.current();
+                if (now % 2 == 0) {
+                    double yaw = rr.nextDouble(Math.PI * 2), tilt = rr.nextDouble(-1.2, 1.2);
+                    Vec3 d = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
+                    Vec3 u = new Vec3(0, Math.cos(tilt), 0).add(new Vec3(-d.z, 0, d.x).scale(Math.sin(tilt))).normalize();
+                    Vec3 at = c.add(rr.nextDouble(-1.2, 1.2), rr.nextDouble(-0.6, 0.9), rr.nextDouble(-1.2, 1.2));
+                    FxSend.slash(sl, now % 4 == 0 ? RED : DARK, at, d, u, 1.6f + rr.nextFloat(), 2.8f + rr.nextFloat() * 1.4f, 4, 0, now % 4 == 0 ? 0.45f : 0.9f);
+                    // the blade itself, an afterimage across the storm
+                    Vec3 bd = new Vec3(rr.nextDouble(-1, 1), rr.nextDouble(-0.6, 0.6), rr.nextDouble(-1, 1)).normalize();
+                    FxSend.spike(sl, DARK, at.subtract(bd.scale(1.4)), bd, 2.8f, 0.07f, 3, 0, com.ironspellgrimoire.network.FxPacket.POP);
+                    FxSend.spike(sl, Fx.SILVER, at.subtract(bd.scale(1.4)).add(0, 0.05, 0), bd, 2.6f, 0.025f, 3, 0, com.ironspellgrimoire.network.FxPacket.POP);
+                }
+                if (now % 4 == 0) {
+                    float dmg = 3f * (1f + s.poss / 100f);
+                    for (LivingEntity x : enemies(sl, p, new AABB(c, c).inflate(3.5))) if (!ally(p, x)) AstaFx.damage(p, x, dmg, "demon_flurry");
+                    play(sl, c, "bd_cut", 0.7f, 1.0f + (now % 3) * 0.15f);
+                    FxSend.ring(sl, RED, c.add(0, -0.9, 0), 2.6f, 3.2f, 0.02f, 4);
+                }
+                if (now == s.flurryUntil - 1) {   // the last cut: a great black-and-red cross, and the screen jolts
+                    Vec3 look = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
+                    Vec3 side = new Vec3(-look.z, 0, look.x);
+                    Vec3 d1 = side.add(0, 1, 0).normalize(), d2 = side.add(0, -1, 0).normalize();
+                    FxSend.slash(sl, DARK, c, d1, look, 3.6f, 5.2f, 8, 0, 1.2f);
+                    FxSend.slash(sl, RED, c, d2, look, 3.6f, 5.2f, 8, 0, 0.7f);
+                    FxSend.impactFrame(sl, c, 3, true, 20);
+                    FxSend.shake(sl, c, 0.45f, 6, 18);
+                    play(sl, c, "bd_cut", 1.4f, 0.6f);
+                }
             }
         }
         if (now < s.ghostUntil && now >= s.flurryUntil && now % 5 == 0) {
@@ -634,6 +665,7 @@ public final class BoundFx {
     /** Cursed Edge: a dash along where you look, cutting everything on the way. */
     public static void cursedEdge(ServerPlayer p, float power) {
         if (!free(p)) return;
+        if (!holding(p)) { p.displayClientMessage(Component.literal("Cursed Edge needs the katana in your hand - draw it first.").withStyle(ChatFormatting.GRAY), true); return; }
         S s = s(p);
         ServerLevel sl = p.serverLevel();
         long now = sl.getGameTime();
@@ -753,24 +785,38 @@ public final class BoundFx {
         p.displayClientMessage(Component.literal(n == 0 ? "No one has sinned against you - yet." : n + (n == 1 ? " sinner marked" : " sinners marked")).withStyle(ChatFormatting.DARK_RED), true);
     }
 
-    /** Salt Lance: three lances of salt (after your first awakening, or with Salt in the Veins). */
-    public static void saltLance(ServerPlayer p, float power) {
+    /** Demon's Reach: the demon's shadow lunges out of you along your look, takes the first foe it finds and drags it onto
+     *  your blade - the cut lands as it arrives. (Salt in the Veins: it leaves salt in it, too.) */
+    public static void demonsReach(ServerPlayer p, float power) {
         if (!free(p)) return;
-        if (awakenings(p) <= 0 && r(p, "s1") <= 0) { p.displayClientMessage(Component.literal("The salt answers only one who has woken.").withStyle(ChatFormatting.GRAY), true); return; }
         ServerLevel sl = p.serverLevel();
-        Vec3 eye = p.getEyePosition();
-        boolean pierce = r(p, "s1") > 0;
-        play(sl, p.position(), "bd_salt", 1.1f, 1f);
-        for (double ang : new double[]{-0.14, 0, 0.14}) {
-            Vec3 d = rotY(p.getLookAngle(), ang).normalize();
-            Vec3 end = clip(sl, p, eye, eye.add(d.scale(20)));
-            List<LivingEntity> hit = new ArrayList<>();
-            for (LivingEntity t : enemies(sl, p, new AABB(eye, end).inflate(1))) if (!ally(p, t) && closestOnSegment(eye, end, mid(t)).distanceTo(mid(t)) < 1.0) hit.add(t);
-            hit.sort((x, y) -> Double.compare(x.distanceToSqr(p), y.distanceToSqr(p)));
-            if (!pierce && !hit.isEmpty()) { end = mid(hit.get(0)); hit = hit.subList(0, 1); }
-            FxSend.beam(sl, SALT, eye.add(d), end, 0.12f, 8);
-            for (LivingEntity t : hit) { AstaFx.damage(p, t, 6f, "salt_lance"); salt(p, t, 1); }
+        Vec3 eye = p.getEyePosition(), d = p.getLookAngle();
+        Vec3 end = clip(sl, p, eye, eye.add(d.scale(10)));
+        LivingEntity got = null; double bd = 1e9;
+        for (LivingEntity t : enemies(sl, p, new AABB(eye, end).inflate(1.2)))
+            if (!ally(p, t) && closestOnSegment(eye, end, mid(t)).distanceTo(mid(t)) < 1.3 && t.distanceToSqr(p) < bd) { bd = t.distanceToSqr(p); got = t; }
+        Vec3 reach = got == null ? end : mid(got);
+        play(sl, p.position(), "bd_whisper", 1.1f, 0.6f);
+        // the shadow arm: it grows out over three ticks, a red claw at its end
+        for (int k = 1; k <= 3; k++) {
+            final Vec3 tip = eye.add(reach.subtract(eye).scale(k / 3.0));
+            AstaFx.later(k - 1, () -> { FxSend.trail(sl, DARK, eye.add(d.scale(0.6)), tip, 0.22f, 8); FxSend.trail(sl, RED, eye.add(d.scale(0.6)), tip, 0.05f, 8); });
         }
+        if (got == null) { AstaFx.later(3, () -> FxSend.slash(sl, RED, reach, d, new Vec3(0, 1, 0), 0.6f, 1.2f, 5, 0)); return; }
+        final LivingEntity t = got;
+        AstaFx.later(3, () -> {
+            if (!t.isAlive()) return;
+            FxSend.slash(sl, RED, mid(t), new Vec3(0, -1, 0), d, 0.6f, 1.2f, 5, 0, 0.7f);
+            Vec3 to = p.position().add(new Vec3(d.x, 0, d.z).normalize().scale(1.6));
+            if (!boss(t)) { t.teleportTo(to.x, p.getY(), to.z); t.setDeltaMovement(Vec3.ZERO); t.hurtMarked = true; }
+            FxSend.trail(sl, DARK, reach, mid(t), 0.3f, 8);
+            FxSend.slash(sl, DARK, mid(t), rotY(d, 0.6), new Vec3(0, 1, 0), 1.6f, 2.6f, 6, 0, 0.9f);
+            FxSend.slash(sl, RED, mid(t), rotY(d, -0.6), new Vec3(0, 1, 0), 1.4f, 2.4f, 6, 0, 0.5f);
+            play(sl, t.position(), "bd_cut", 1.2f, 0.8f);
+            AstaFx.damage(p, t, 7f, "demons_reach");
+            if (r(p, "s1") > 0) salt(p, t, 1);
+            feed(p, 3f * gainMul(p));
+        });
     }
 
     /** The Last Seraph: wake the seraph - one great wing, flight, judgment. */

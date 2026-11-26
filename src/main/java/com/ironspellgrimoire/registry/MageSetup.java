@@ -52,6 +52,11 @@ public final class MageSetup {
         e.put(AddonEntities.TAMSIN_DUELIST.get(), com.ironspellgrimoire.entity.TamsinDuelist.attributes().build());
         e.put(AddonEntities.MAGISTRATE_VEY.get(), com.ironspellgrimoire.entity.MagistrateVey.attributes().build());
         e.put(AddonEntities.WARDEN.get(), com.ironspellgrimoire.entity.Warden.attributes().build());
+        e.put(AddonEntities.STORY_MAREN.get(), com.ironspellgrimoire.entity.StoryNpc.attributes().build());
+        e.put(AddonEntities.STORY_SEDGE.get(), com.ironspellgrimoire.entity.StoryNpc.attributes().build());
+        e.put(AddonEntities.STORY_REFUGEE.get(), com.ironspellgrimoire.entity.StoryNpc.attributes().build());
+        e.put(AddonEntities.MILITIA.get(), com.ironspellgrimoire.entity.Militia.attributes().build());
+        e.put(AddonEntities.MOTHER_BELOW.get(), com.ironspellgrimoire.entity.MotherBelow.attributes().build());
     }
 
     @SubscribeEvent

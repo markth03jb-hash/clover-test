@@ -26,41 +26,80 @@ import meridian_models as mm
 
 TEX = "rivals"
 GLOW = em.GLOW
-GRIP = -4.5   # the grip's middle
+GRIP = -5.1   # the grip's middle
 
 
 def katana():
-    # the blade: a gentle curve, edge on +X, from the collar (z 0.6) to the tip
-    L = 20.0
+    """The Demon-Bound Katana (reworked): a long, gently curved blade of ink-black steel - the curve sweeps back toward
+    the spine, the polished edge on +X is the convex side - a glowing crimson groove under the spine, three red seal
+    marks near the collar, a proper point. A gold collar; a black oval guard with two short demon horns curling up toward
+    the blade and a red eye on each face; a black grip bound in red, a horned iron cap and a torn red seal-ribbon."""
+    L, Z0 = 23.0, 0.9
+    N = 24
     spine, edge = [], []
-    for i in range(0, 21):
-        z = 0.6 + L * i / 20
-        back = 0.0   # a straight blade
-        w = 1.35 - 0.25 * i / 20
+    for i in range(N + 1):
+        t = i / N
+        z = Z0 + L * t
+        back = -1.1 * t * t                      # the curve: back toward the spine
+        w = 1.55 - 0.3 * t
         spine.append((back, z)); edge.append((back + w, z))
-    tip = (spine[-1][0] + 0.15, L + 2.4)
-    poly = edge + [tip] + list(reversed(spine))
-    em.prism("blade", poly, -0.3, 0.3, "black")
-    # the honed edge, pale steel
-    hone = [(x - 0.35, z) for x, z in edge] + [tip] + [(x, z) for x, z in reversed(edge)]
-    em.prism("edge", hone, -0.18, 0.18, "steel")
-    # the crimson seam, glowing, a little proud of both faces
-    seam = [(x + 0.42, z) for x, z in spine[1:-2]] + [(x + 0.6, z) for x, z in reversed(spine[1:-2])]
-    em.prism("seam", seam, -0.34, 0.34, "red", glow=True)
-    # the collar (habaki)
-    em.rbox("collar", (0.65, 0, 0.9), (1.7, 0.9, 1.2), "gold")
-    # the guard: eight-sided, black, with a red eye in each flat face
-    g = em.gem("guard", (0, 0, 0), 2.6, 0.55, "black", sides=8, glow=False)
-    g.location = (0.5, 0, -0.3)
-    for y, nm in ((-0.36, "f"), (0.36, "b")):
-        e = em.gem("eye" + nm, (0, 0, 0), 0.9, 0.18, "red", sides=10, glow=True)
-        e.rotation_euler = (math.radians(90 if y < 0 else -90), 0, 0); e.location = (0.5, y, -0.05)
-    # the grip: black, wrapped in red diamonds, an iron cap
-    rm.cyl("grip", (0.5, 0, -9.2), 0.8, 8.8, "black", sides=8)
-    for k in range(7):
-        z = -8.6 + k * 1.2
-        em.rbox("wrap%d" % k, (0.5, 0, z), (1.15, 1.75, 0.55), "red", yaw=0, roll=math.radians(45))
-    rm.cyl("cap", (0.5, 0, -9.9), 0.95, 0.9, "iron", sides=8)
+    # the point (kissaki): the edge sweeps up to meet the spine
+    tz = Z0 + L + 2.6
+    tip = (spine[-1][0] - 0.1, tz)
+    kiss = [(edge[-1][0] - 0.2 * k - 0.05 * k * k, edge[-1][1] + 0.85 * k) for k in (1, 2, 3)]
+    inner = [(x - 0.55, z) for x, z in edge]
+    k_in = [(x - 0.5, z - 0.25) for x, z in kiss]
+    em.prism("blade", inner + k_in + [tip] + list(reversed(spine)), -0.28, 0.28, "ink")
+    # the polished edge: its own band of bright steel, tapering out from the black, the whole length and round the point
+    em.prism("edge", edge + kiss + [tip] + list(reversed(k_in)) + list(reversed(inner)), -0.16, 0.16, "steel")
+    # a fine glowing crimson groove under the spine
+    g = spine[2:N - 3]
+    em.prism("groove", [(x + 0.3, z) for x, z in g] + [(x + 0.46, z) for x, z in reversed(g)], -0.31, 0.31, "red", glow=True)
+    # three seal marks near the collar (both faces)
+    for k, z in enumerate((3.2, 5.0, 6.8)):
+        for y, nm in ((-0.33, "f"), (0.33, "b")):
+            e = em.gem("seal%d%s" % (k, nm), (0, 0, 0), 0.32, 0.12, "red", sides=4, glow=True)
+            e.rotation_euler = (math.radians(90 if y < 0 else -90), 0, 0); e.location = (0.95, y, z)
+    # the collar
+    em.rbox("collar", (0.7, 0, 0.45), (1.9, 0.95, 1.0), "gold")
+    # the guard: a black oval, two horns curling up toward the blade, a red eye on each face
+    rm.cyl("guard", (0.6, 0, -0.55), 2.2, 0.55, "ink", sides=10)
+    rm.cyl("guard_rim", (0.6, 0, -0.62), 2.35, 0.2, "red", sides=10)
+    for sgn in (1, -1):   # the horns: out of the guard's ends, curling up toward the blade
+        hx = 0.6 + sgn * 1.9
+        pts_o = [(hx + sgn * 0.5, -0.4), (hx + sgn * 0.85, 0.6), (hx + sgn * 0.7, 1.6), (hx + sgn * 0.25, 2.5)]
+        pts_i = [(hx + sgn * 0.05, 2.0), (hx + sgn * 0.25, 1.3), (hx + sgn * 0.2, 0.5), (hx - sgn * 0.15, -0.3)]
+        em.prism("horn%d" % sgn, pts_o + pts_i, -0.22, 0.22, "ink")
+    for y, nm in ((-0.38, "f"), (0.38, "b")):
+        e = em.gem("eye" + nm, (0, 0, 0), 0.8, 0.2, "red", sides=10, glow=True)
+        e.rotation_euler = (math.radians(90 if y < 0 else -90), 0, 0); e.location = (0.6, y, -0.3)
+    # the grip: black, bound in red diamonds on both sides, a horned iron cap
+    rm.cyl("grip", (0.6, 0, -9.6), 0.8, 9.0, "ink", sides=8)
+    for k in range(8):
+        z = -9.0 + k * 1.1
+        em.rbox("wrap%d" % k, (0.6, 0, z), (1.1, 1.72, 0.5), "red", roll=math.radians(45 if k % 2 else -45))
+    rm.cyl("cap", (0.6, 0, -10.4), 0.95, 0.9, "iron", sides=8)
+    em.rbox("caphorn", (0.6, 0, -10.9), (0.4, 0.4, 0.9), "iron", roll=math.radians(20))
+    # a torn red seal-ribbon hanging off the cap
+    em.prism("ribbon", [(0.9, -10.6), (1.6, -12.8), (1.2, -14.4), (1.7, -15.6), (1.0, -15.0), (0.6, -13.0), (0.4, -10.8)], -0.08, 0.08, "red")
+
+
+def seraph_halo():
+    """The Last Seraph's halo: a ring of salt-white light, broken in three places, eight short rays standing out of it."""
+    import math as _m
+    R, segs = 6.0, 30
+    for i in range(segs):
+        if i % 10 in (0,):   # the breaks
+            continue
+        a0, a1 = 2 * _m.pi * i / segs, 2 * _m.pi * (i + 1) / segs
+        pts = [(R * _m.cos(a0), R * _m.sin(a0)), (R * _m.cos(a1), R * _m.sin(a1)), ((R - 0.7) * _m.cos(a1), (R - 0.7) * _m.sin(a1)), ((R - 0.7) * _m.cos(a0), (R - 0.7) * _m.sin(a0))]
+        em.prism("h%d" % i, pts, -0.3, 0.3, "white", glow=True)
+    for k in range(8):
+        a = 2 * _m.pi * (k + 0.5) / 8
+        ln = 2.2 if k % 2 == 0 else 1.3
+        c, s_ = _m.cos(a), _m.sin(a); nx, nz = -s_, c
+        base = R + 0.2
+        em.prism("ray%d" % k, [(c * base + nx * 0.35, s_ * base + nz * 0.35), (c * (base + ln), s_ * (base + ln)), (c * base - nx * 0.35, s_ * base - nz * 0.35)], -0.2, 0.2, "crystal", glow=True)
 
 
 def wing():
@@ -151,10 +190,16 @@ def render_sheet(out):
     for view, yaw in (("side", 0), ("angled", -40)):
         mm.fresh(out)
         parts = build(katana, GRIP); mm.material(parts); ob = mm.join(parts, "katana")
-        ob.rotation_euler = (0, math.radians(90), 0); ob.location = (-8, 0, 20)
+        ob.rotation_euler = (0, math.radians(90), 0); ob.location = (-6, 0, 20)
         p = os.path.join(out, "katana_%s.png" % view)
-        mm.scene(42, 20, yaw, p, W=640, H=420); shots.append(p)
-    # held, the branched wing out of the upper left shoulder, seen from behind
+        mm.scene(48, 20, yaw, p, W=640, H=420); shots.append(p)
+    # the halo alone
+    mm.fresh(out)
+    hp = build(seraph_halo); mm.material(hp); h = mm.join(hp, "halo")
+    h.location = (0, 0, 20)
+    p = os.path.join(out, "seraph_halo.png")
+    mm.scene(26, 20, 0, p, W=640, H=420); shots.append(p)
+    # the Last Seraph on a player, from behind: the wing (now much larger) and the halo over the head
     mm.fresh(out)
     rm.body("grey", False, pose={"rarm": (-80, 0, -6), "larm": (0, 0, 8)})
     parts = build(katana, GRIP); mm.material(parts)
@@ -162,30 +207,19 @@ def render_sheet(out):
     k.rotation_euler = (math.radians(-35), 0, 0); k.location = (-5.8, -8, 22)
     wp = build(wing); mm.material(wp)
     w = mm.join(wp, "wing")
-    w.scale = (0.8, 0.8, 0.8); w.location = (2.5, 2.5, 26)   # out from the left shoulder (the camera is behind)
+    w.scale = (1.3, 1.3, 1.3); w.location = (2.5, 2.5, 26)
+    hp = build(seraph_halo); mm.material(hp); h = mm.join(hp, "halo")
+    h.scale = (0.75, 0.75, 0.75); h.location = (0, 4.0, 33)
     for o in list(bpy.data.objects):
-        if o.type == "MESH": o.location = (o.location[0] - 14, o.location[1], o.location[2])
-    p = os.path.join(out, "bound_held.png")
-    mm.scene(150, 44, 160, p, W=640, H=640); shots.append(p)
-    # the branched wing alone
-    mm.fresh(out)
-    wp = build(wing); mm.material(wp); w = mm.join(wp, "wing")
-    w.location = (-22, 0, -14)
-    p = os.path.join(out, "bound_wing.png")
-    mm.scene(80, 4, 0, p, W=640, H=640); shots.append(p)
-    # the black pair (true awakening) on a player, from behind
-    mm.fresh(out)
-    rm.body("grey", False, pose={"rarm": (0, 0, -6), "larm": (0, 0, 8)})
-    for side in (1, -1):
-        bp = build(black_wings); mm.material(bp); bw = mm.join(bp, "bw%d" % side)
-        bw.scale = (side, 1, 1); bw.location = (side * 2.5, 2.5, 22)
-    p = os.path.join(out, "bound_black.png")
-    mm.scene(90, 26, 180, p, W=640, H=640); shots.append(p)
+        if o.type == "MESH": o.location = (o.location[0] - 10, o.location[1], o.location[2])
+    p = os.path.join(out, "seraph_on_player.png")
+    mm.scene(170, 42, 160, p, W=1280, H=640); shots.append(p)
     sheet = Image.new("RGB", (1920, 450 + 670), (12, 12, 16))
     dr = ImageDraw.Draw(sheet)
-    for i, (s, label) in enumerate(zip(shots, ("katana - side", "katana - angled", "first awakening: the branched wing (from behind)", "the branched wing", "true awakening: the black pair (from behind)"))):
-        x, y = (i * 640, 0) if i < 2 else ((i - 2) * 640, 450)
-        sheet.paste(Image.open(s).convert("RGB"), (x, y + 30)); dr.text((x + 10, y + 8), label, fill=(235, 228, 210))
+    labels = ("katana - side", "katana - angled", "the Seraph's halo", "Last Seraph: the wing (x1.3 larger) and the halo, from behind")
+    pos = [(0, 0), (640, 0), (1280, 0), (0, 450)]
+    for s_, label, (x, y) in zip(shots, labels, pos):
+        sheet.paste(Image.open(s_).convert("RGB"), (x, y + 30)); dr.text((x + 10, y + 8), label, fill=(235, 228, 210))
     sheet.save(os.path.join(out, "bound_sheet.png"))
 
 
@@ -208,11 +242,12 @@ def to_game(out):
     rm.paint(os.path.join(out, TEX + ".png"))
     ar.LOW = True
     # held like a sword: the blade up and forward out of the fist, edge forward
-    kd = {"thirdperson_righthand": {"rotation": [0, -90, 0], "translation": [0, 2, 0.5], "scale": [0.85] * 3},
-          "thirdperson_lefthand": {"rotation": [0, 90, 0], "translation": [0, 2, 0.5], "scale": [0.85] * 3},
-          "firstperson_righthand": {"rotation": [0, -90, 20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},
-          "firstperson_lefthand": {"rotation": [0, 90, -20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},
-          "gui": {"rotation": [0, 90, -45], "translation": [-1, -1, 0], "scale": [0.45] * 3},
+    # (the edge is the model's +X; turned +90 about Y it faces the foe: forward, away from you)
+    kd = {"thirdperson_righthand": {"rotation": [40, 90, 0], "translation": [0, 1.5, 0.5], "scale": [0.85] * 3},   # (as the Heartline: blade up and forward, edge to the foe)
+          "thirdperson_lefthand": {"rotation": [40, -90, 0], "translation": [0, 1.5, 0.5], "scale": [0.85] * 3},
+          "firstperson_righthand": {"rotation": [0, 65, -20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},   # edge away from you, a little of the flat showing
+          "firstperson_lefthand": {"rotation": [0, -65, 20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},
+          "gui": {"rotation": [0, 90, -45], "translation": [-1, -1, 0], "scale": [0.36] * 3},
           "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5] * 3},
           "fixed": {"rotation": [0, 90, -45], "translation": [0, 0, 0], "scale": [0.6] * 3}}
     export("demon_katana", katana, GRIP, kd, out)
@@ -220,6 +255,7 @@ def to_game(out):
           "gui": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [0.35] * 3}}
     export("bound_wing", wing, 0.0, wd, out)
     export("bound_wing_black", black_wings, 0.0, wd, out)
+    export("seraph_halo", seraph_halo, 0.0, wd, out)
 
 
 if __name__ == "__main__":

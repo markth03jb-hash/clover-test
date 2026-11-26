@@ -185,6 +185,56 @@ public final class UiShotsServer {
                     sl.addFreshEntity(m);
                 }
             }
+            case "cast3", "mother" -> {
+                folk(p, "none");
+                faceForward(p);
+                boolean mother = what.equals("mother");
+                var types = mother ? java.util.List.<net.minecraft.world.entity.EntityType<?>>of(com.ironspellgrimoire.registry.AddonEntities.MOTHER_BELOW.get())
+                        : java.util.List.<net.minecraft.world.entity.EntityType<?>>of(com.ironspellgrimoire.registry.AddonEntities.STORY_MAREN.get(), com.ironspellgrimoire.registry.AddonEntities.STORY_SEDGE.get(),
+                        com.ironspellgrimoire.registry.AddonEntities.MILITIA.get(), com.ironspellgrimoire.registry.AddonEntities.STORY_REFUGEE.get());
+                double[] xs = mother ? new double[]{0} : new double[]{-4.2, -1.4, 1.4, 4.2};
+                for (int i = 0; i < types.size(); i++) {
+                    var m = (net.minecraft.world.entity.Mob) types.get(i).create(sl);
+                    if (m == null) continue;
+                    m.moveTo(p.getX() + xs[i], p.getY(), p.getZ() + (mother ? 9 : 7), 180, 0);
+                    m.setYBodyRot(180); m.setYHeadRot(180);
+                    m.setNoAi(true);
+                    m.getPersistentData().putBoolean("isg_ui_story", true);
+                    sl.addFreshEntity(m);
+                }
+            }
+            case "ashwick" -> {   // Arc III begins: the road to Ashwick
+                story(p, "clear");
+                Story.testClear(p.server);
+                Story.Party pt = Story.ensure(p);
+                StoryArc1.toChapter(p.server, pt, 5);
+                Story.begin(p);
+                StoryArc2.toChapter(p.server, pt, 7);
+                Story.setBrand(p, 2); pt.brand = 2;
+                Story.begin(p);
+            }
+            case "ashwick_look" -> {   // from the south gate, in over the village to the well
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                var at = StoryStage.at(pt.id, StoryStage.ASHWICK, 0, 1, 19);
+                p.teleportTo(StoryStage.rift(p.server), at.x, at.y, at.z, 180, 4);
+            }
+            case "tunnels" -> {   // a hive, before it's burnt
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                StoryArc3.toChapter(p.server, pt, 2);
+                int[] h = StoryStage3.HIVES[0];
+                var at = StoryStage.at(pt.id, StoryStage.TUNNELS, h[0] + 5, 0, h[1]);
+                StoryStage.enter(p, pt, StoryStage.TUNNELS, at, 90);
+                p.teleportTo(StoryStage.rift(p.server), at.x, at.y, at.z, 90, 8);
+            }
+            case "deep" -> {
+                Story.Party pt = Story.partyOf(p);
+                if (pt == null) return;
+                StoryArc3.toChapter(p.server, pt, 4);
+                pt.step = 1;   // past her waking words: she's there
+                StoryStage.enter(p, pt, StoryStage.DEEP, StoryStage.spawn(pt.id, StoryStage.DEEP), 180);
+            }
             case "arena" -> {
                 story(p, "clear");
                 Story.testClear(p.server);
@@ -400,6 +450,12 @@ public final class UiShotsServer {
                 BoundFx.testFeed(p, 100f);
                 BookTree.sync(p, false);
             }
+            case "hold" -> {
+                for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+                BoundFx.testReset(p);
+                BoundFx.draw(p, false);
+                p.setXRot(0);
+            }
             case "awake" -> {
                 for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
                 BoundFx.testReset(p);
@@ -427,7 +483,13 @@ public final class UiShotsServer {
     public static void element(ServerPlayer p, String which) {
         Moves.ends(p, BloodFx.MODE);
         String w = which.substring(2);
-        ItemStack book = new ItemStack(switch (which.charAt(0)) {
+        equip(p, which.charAt(0));
+        elementCast(p, which, w);
+    }
+
+    /** Wear the grimoire a picture's letter stands for (mastered), with mana to spare. */
+    static void equip(ServerPlayer p, char c) {
+        ItemStack book = new ItemStack(switch (c) {
             case 'g' -> AddonItemRegistry.GRAVITY_GRIMOIRE.get();
             case 'i' -> AddonItemRegistry.INK_GRIMOIRE.get();
             case 'e' -> AddonItemRegistry.ERROR_GRIMOIRE.get();
@@ -460,6 +522,9 @@ public final class UiShotsServer {
         ItemStack cur = io.redspace.ironsspellbooks.api.util.Utils.getPlayerSpellbookStack(p);
         if (cur == null || !cur.is(book.getItem())) CuriosApi.getCuriosInventory(p).ifPresent(h -> h.setEquippedCurio("spellbook", 0, book));
         io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p).setMana(2000);
+    }
+
+    static void elementCast(ServerPlayer p, String which, String w) {
         if (which.charAt(0) == 'p') { parasite(p, w); return; }
         if (which.charAt(0) == 'H') { hunger(p, w); return; }
         if (which.charAt(0) == 'T') { twins(p, w); return; }
@@ -1084,5 +1149,105 @@ public final class UiShotsServer {
             case "page" -> FortressFx.sync(p, true);
             default -> {}
         }
+    }
+
+    /** The Architect's room spells for the pictures: a husk 7 blocks ahead (made once), the room's spell cast at it. */
+    public static void architect(ServerPlayer p, int room) {
+        ServerLevel sl = p.serverLevel();
+        var tag = "isg_ui_arch";
+        var old = sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30), m -> m.getPersistentData().getBoolean(tag));
+        if (room < 0) { for (var m : old) m.discard(); return; }
+        boolean place = room == 99;
+        faceForward(p);
+        net.minecraft.world.entity.Mob h = old.isEmpty() ? null : old.get(0);
+        if (h == null) {
+            for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30))) m.discard();
+            h = net.minecraft.world.entity.EntityType.HUSK.create(sl);
+            if (h == null) return;
+            var look = p.getLookAngle().multiply(1, 0, 1).normalize();
+            var at = p.position().add(look.scale(7));
+            h.moveTo(at.x, p.getY(), at.z, p.getYRot() + 180, 0);
+            h.setNoAi(true);
+            h.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(500); h.setHealth(500);
+            h.getPersistentData().putBoolean(tag, true);
+            sl.addFreshEntity(h);
+        }
+        h.setHealth(500);
+        if (!place) FortressSpells.cast(p, room, h.position().add(0, 0.1, 0), false);
+    }
+
+    /** The reworked effects for the pictures: a husk 7 blocks ahead (the Architect's), the right grimoire, then the move. */
+    public static void showcase(ServerPlayer p, String what) {
+        ServerLevel sl = p.serverLevel();
+        String[] w = what.split(":");
+        if (w[0].equals("clear")) { architect(p, -1); BoundFx.testReset(p); VectorFx.testReset(p); OmenFx.testReset(p); MeridianFx.testReset(p); sl.setDayTime(6000); return; }
+        equip(p, w[0].charAt(0));
+        var old = sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30), m -> m.getPersistentData().getBoolean("isg_ui_arch"));
+        if (old.isEmpty()) { architect(p, 99); old = sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30), m -> m.getPersistentData().getBoolean("isg_ui_arch")); }
+        if (old.isEmpty()) return;
+        var h = old.get(0);
+        h.setHealth(500); h.invulnerableTime = 0;
+        faceForward(p);
+        { var look = p.getLookAngle().multiply(1, 0, 1).normalize(); var at = p.position().add(look.scale(7)); h.teleportTo(at.x, p.getY(), at.z); h.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); }
+        switch (w[1]) {
+            case "hit" -> AstaFx.damage(p, h, 12f, "ui_hit");
+            case "star" -> { sl.setDayTime(6000); MeridianFx.testReset(p); MeridianFx.hearthStar(p, 10f); }
+            case "flare" -> MeridianFx.haughtyFlare(p, 10f);
+            case "wave" -> { sl.setDayTime(6000); MeridianFx.noonwave(p, 10f); }
+            case "reaver" -> { MeridianFx.callDayreaver(p, 10f); }
+            case "mcleave" -> MeridianFx.cleave(p, h, 4f);
+            case "lamp" -> { sl.setDayTime(18000); MeridianFx.lamplight(p, 10f); }
+            case "warm" -> MeridianFx.warmHands(p, 10f);
+            case "coal" -> MeridianFx.lastCoal(p, 10f);
+            case "zenith" -> { sl.setDayTime(6000); MeridianFx.testReset(p); MeridianFx.zenithUnbound(p, 10f); }
+            case "step" -> VectorFx.recoilStep(p, 10f);
+            case "pburst" -> VectorFx.burstPlasma(p, h.position().add(0, 2.5, 0).subtract(p.getLookAngle().multiply(1, 0, 1).normalize().scale(2)), 1f);
+            case "return" -> VectorFx.returnToSender(p, 10f);
+            case "redirect" -> VectorFx.redirect(p, 10f);
+            case "gust" -> VectorFx.pressureGust(p, 10f);
+            case "plasma" -> VectorFx.plasmaPoint(p, 10f);
+            case "wind" -> VectorFx.windVector(p, 10f);
+            case "absolute" -> VectorFx.vectorAbsolute(p, 10f);
+            case "omen_bar" -> { OmenFx.testSet(h, 70f, 0f); }
+            case "calamity" -> { OmenFx.testForce = 0; OmenFx.calamity(p, h, false); }
+            case "flurry" -> { BoundFx.draw(p, false); BoundFx.demonFlurry(p, 10f); }
+            case "reach" -> BoundFx.demonsReach(p, 10f);
+            case "seraph" -> { BoundFx.testReset(p); BoundFx.awaken(p, false); }
+            case "feathers" -> SeraphFx.feathers(p, 10f);
+            case "cleave" -> SeraphFx.wingCleave(p, 10f);
+            case "lance" -> SeraphFx.saltLance(p, 10f);
+            case "verdict" -> SeraphFx.verdict(p, 10f);
+            case "descent" -> SeraphFx.fallOfHeaven(p, 10f);
+            default -> {}
+        }
+    }
+
+    /** A pose bench for checking how a weapon is held: an armour stand (arms showing) holding it, seen from the front,
+     *  from its right side and from above. which = "katana|heart:front|side|top"; "clear" takes the stand away. */
+    public static void poseBench(ServerPlayer p, String which) {
+        ServerLevel sl = p.serverLevel();
+        for (var a : sl.getEntitiesOfClass(net.minecraft.world.entity.decoration.ArmorStand.class, p.getBoundingBox().inflate(40), x -> x.getPersistentData().getBoolean("isg_ui_pose"))) a.discard();
+        if (which.equals("clear")) return;
+        String[] w = which.split(":");
+        net.minecraft.world.phys.Vec3 c = new net.minecraft.world.phys.Vec3(Math.floor(p.getX()) + 0.5, p.getY(), Math.floor(p.getZ()) + 30.5);
+        var st = net.minecraft.world.entity.EntityType.ARMOR_STAND.create(sl);
+        if (st == null) return;
+        st.moveTo(c.x, c.y, c.z, 0, 0);   // facing +Z (south)
+        st.setShowArms(true); st.setNoBasePlate(true); st.setNoGravity(true);
+        st.getPersistentData().putBoolean("isg_ui_pose", true);
+        st.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(w[0].equals("katana") ? AddonItemRegistry.DEMON_KATANA.get() : AddonItemRegistry.HEARTLINE.get()));
+        sl.addFreshEntity(st);
+        switch (w[1]) {
+            case "front" -> p.teleportTo(sl, c.x, c.y, c.z + 3.2, 180, 8);
+            case "side" -> p.teleportTo(sl, c.x - 3.2, c.y, c.z, -90, 8);   // on its right hand side (it faces +Z, so its right is -X)
+            default -> p.teleportTo(sl, c.x, c.y + 4.2, c.z + 0.2, 180, 89);
+        }
+    }
+
+    /** The sword in hand, looking straight ahead (for the first-person calibration shots). */
+    public static void hold(ServerPlayer p, String which) {
+        for (var a : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30))) a.discard();
+        p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(which.equals("katana") ? AddonItemRegistry.DEMON_KATANA.get() : AddonItemRegistry.HEARTLINE.get()));
+        p.setXRot(0);
     }
 }

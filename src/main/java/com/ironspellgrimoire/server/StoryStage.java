@@ -27,8 +27,8 @@ import net.minecraft.world.phys.Vec3;
 public final class StoryStage {
     private StoryStage() {}
 
-    public static final int EMBER = 0, CHAPEL = 1, ARENA = 2, VAULT = 3;
-    public static final String[] NAMES = {"Emberfall", "Sallow's Chapel", "the Cindermarch arena", "Vey's vault"};
+    public static final int EMBER = 0, CHAPEL = 1, ARENA = 2, VAULT = 3, ASHWICK = 4, TUNNELS = 5, DEEP = 6;
+    public static final String[] NAMES = {"Emberfall", "Sallow's Chapel", "the Cindermarch arena", "Vey's vault", "Ashwick", "the tunnels under Ashwick", "the deep cavern"};
     static final int Y = 80, BASE = 8192, STRIDE = 2048;
 
     static int ox(int party) { return -(BASE + party * STRIDE); }
@@ -37,17 +37,17 @@ public final class StoryStage {
     public static Vec3 at(int party, int place, double x, double y, double z) { return new Vec3(ox(party) + x + 0.5, Y + y, oz(place) + z + 0.5); }
 
     /** Where a place's people and scenes gather (for finding what's in it). */
-    public static Vec3 centre(int party, int place) { return at(party, place, 0, 0, place == CHAPEL ? 22 : place == VAULT ? 18 : place == ARENA ? 10 : 0); }
+    public static Vec3 centre(int party, int place) { return at(party, place, 0, 0, place == CHAPEL ? 22 : place == VAULT ? 18 : place == ARENA ? 10 : place == TUNNELS ? -20 : 0); }
     /** Where you come in. */
     public static Vec3 spawn(int party, int place) {
-        return switch (place) { case EMBER -> at(party, place, 0, 0, 18); case CHAPEL -> at(party, place, 0, 0, 3); case ARENA -> at(party, place, 0, 0, 42); default -> at(party, place, 0, 0, 2); };
+        return switch (place) { case EMBER -> at(party, place, 0, 0, 18); case CHAPEL -> at(party, place, 0, 0, 3); case ARENA -> at(party, place, 0, 0, 42); case ASHWICK -> at(party, place, 0, 0, 38); case TUNNELS -> at(party, place, 0, 0, 2); case DEEP -> at(party, place, 0, 0, 18); default -> at(party, place, 0, 0, 2); };
     }
 
     /** Where a player stands: {party, place}, or null outside every story place. */
     public static int[] where(ServerPlayer p) {
         if (!p.level().dimension().equals(Rifts.RIFT) || p.getX() > -BASE + STRIDE / 2.0) return null;
         int party = (int) Math.round((-p.getX() - BASE) / STRIDE), place = (int) Math.round(p.getZ() / 1024);
-        if (place < 0 || place > VAULT || Math.abs(p.getX() - ox(party)) > 200 || Math.abs(p.getZ() - oz(place)) > 200) return null;
+        if (place < 0 || place > DEEP || Math.abs(p.getX() - ox(party)) > 200 || Math.abs(p.getZ() - oz(place)) > 200) return null;
         return new int[]{party, place};
     }
     public static boolean inside(ServerPlayer p, Story.Party pt, int place) { int[] w = where(p); return w != null && w[0] == pt.id && w[1] == place; }
@@ -91,7 +91,10 @@ public final class StoryStage {
         if (place == EMBER) emberfall(sl, ox(party), oz(place), rnd);
         else if (place == CHAPEL) chapel(sl, ox(party), oz(place), rnd);
         else if (place == ARENA) StoryStage2.arena(sl, ox(party), oz(place), rnd);
-        else StoryStage2.vault(sl, ox(party), oz(place), rnd);
+        else if (place == VAULT) StoryStage2.vault(sl, ox(party), oz(place), rnd);
+        else if (place == ASHWICK) StoryStage3.ashwick(sl, ox(party), oz(place), rnd);
+        else if (place == TUNNELS) StoryStage3.tunnels(sl, ox(party), oz(place), rnd);
+        else StoryStage3.deep(sl, ox(party), oz(place), rnd);
     }
 
     // ---- Emberfall: a burnt village on an island of ash, a crater where the star came down, a gate to the south

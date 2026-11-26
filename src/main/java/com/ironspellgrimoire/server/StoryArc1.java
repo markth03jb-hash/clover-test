@@ -230,6 +230,7 @@ public final class StoryArc1 {
 
     static void tick(MinecraftServer s, Story.Party pt, List<ServerPlayer> on) {
         if (pt.arc == 2) { catchFalls(pt, on); follow(s, pt); StoryArc2.tick(s, pt, on); return; }
+        if (pt.arc == 3) { catchFalls(pt, on); follow(s, pt); StoryArc3.tick(s, pt, on); return; }
         if (pt.ch < 0) return;
         long now = s.overworld().getGameTime();
         // nobody falls off a story place
@@ -663,6 +664,7 @@ public final class StoryArc1 {
         MinecraftServer s = p.server;
         if (Story.talking(pt)) return;
         if (pt.arc == 2) { StoryArc2.talkTo(p, pt, npc); return; }
+        if (pt.arc == 3) { StoryArc3.talkTo(p, pt, npc); return; }
         if (npc.who.equals("ilsa")) {
             if (pt.ch == 0 && pt.step == 0) { pt.step = 1; play(s, pt, "ilsa"); }
             else p.sendSystemMessage(Component.literal("Ilsa: ").withStyle(ChatFormatting.GOLD).append(Component.literal(pt.ch == 4 ? "Get me out. Please. Before he comes back." : "Stay close. Please.").withStyle(ChatFormatting.WHITE)));
@@ -747,7 +749,7 @@ public final class StoryArc1 {
 
     static List<StoryNpc> npcs(ServerLevel sl, Story.Party pt, EntityType<StoryNpc> type) {
         List<StoryNpc> out = new ArrayList<>();
-        for (int place = 0; place <= StoryStage.VAULT; place++) {
+        for (int place = 0; place <= StoryStage.DEEP; place++) {
             Vec3 c = StoryStage.centre(pt.id, place);
             out.addAll(sl.getEntitiesOfClass(StoryNpc.class, new AABB(c, c).inflate(60, 30, 60), n -> n.getType() == type && n.party == pt.id && !n.follower && n.isAlive()));
         }
@@ -758,7 +760,7 @@ public final class StoryArc1 {
     static void clearScenes(MinecraftServer s, Story.Party pt) {
         ServerLevel sl = StoryStage.rift(s);
         if (sl == null) return;
-        for (int place = 0; place <= StoryStage.VAULT; place++) {
+        for (int place = 0; place <= StoryStage.DEEP; place++) {
             Vec3 c = StoryStage.centre(pt.id, place);
             for (Entity e : sl.getEntitiesOfClass(Entity.class, new AABB(c, c).inflate(60, 30, 60), e -> e.getPersistentData().getInt("isg_story") == pt.id && !(e instanceof ServerPlayer))) e.discard();
         }

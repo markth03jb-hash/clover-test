@@ -51,7 +51,39 @@ import net.minecraftforge.fml.common.Mod;
 public final class VectorFx {
     private VectorFx() {}
 
-    static final int PAL = 29, PALE = 11;   // Julius's clockwork cyan, mercury white
+    static final int PAL = Fx.SILVER, PALE = 11, BLACK = 47, HOT = Fx.LIGHTNING;   // (47: black with a blue sheen)   // white vectors, black jets, a white-hot core
+
+    // ------------------------------------------------------------------ the look (client/VectorFxClient, FxPacket shape 100)
+    // White vectors with black edges and sharp heads, hard angles where something is turned, warped air, a white-hot
+    // plasma point, a wrung column of air, and in Vector Absolute two jagged black jets out of your back.
+    static com.ironspellgrimoire.network.FxPacket fx(int kind, Vec3 c, int life) {
+        com.ironspellgrimoire.network.FxPacket p = new com.ironspellgrimoire.network.FxPacket();
+        p.shape = 100; p.id = FxSend.nextId(); p.h = kind; p.c = c; p.life = life; p.v = new Vec3(-1, 0, 0); p.a1 = (float) (Math.random() * 100);
+        p.u = c; p.d = c;
+        return p;
+    }
+    static com.ironspellgrimoire.network.FxPacket on(int kind, LivingEntity e, int life) { var p = fx(kind, e.position(), life); p.v = new Vec3(e.getId(), 0, 0); return p; }
+    static void send(ServerLevel sl, com.ironspellgrimoire.network.FxPacket p) { FxSend.sendNear(sl, p.c, p); }
+
+    /** One vector a -> b. */
+    static void arrow(ServerLevel sl, Vec3 a, Vec3 b, float w, int life) {
+        var p = fx(0, a, life + 2); p.u = b; p.d = b; p.r = w; send(sl, p);
+    }
+    /** A bundle of parallel vectors along dir through c. */
+    static void arrows(ServerLevel sl, Vec3 c, Vec3 dir, int n, double len, double spread) {
+        var p = fx(9, c, 8); p.d = dir.normalize(); p.r = (float) len; p.r2 = (float) spread; p.a0 = n; send(sl, p);
+    }
+    /** Something turned: the way it came, a hard angle with a star of light, the way it goes now. */
+    static void deflect(ServerLevel sl, Vec3 at, Vec3 in, Vec3 out) {
+        Vec3 i = in.lengthSqr() < 1e-4 ? out.scale(-1) : in;
+        Vec3 o = out.lengthSqr() < 1e-4 ? new Vec3(0, 1, 0) : out.normalize();
+        var p = fx(0, at.subtract(i.normalize().scale(2.0)), 12); p.u = at; p.d = at.add(o.scale(3.2)); p.r = 0.08f; send(sl, p);
+    }
+    /** The air warped round c. */
+    static void warp(ServerLevel sl, Vec3 c, float r, int life) { var p = fx(1, c, life + 4); p.r = r; send(sl, p); }
+    /** Vector Absolute's black jets (re-sent while it lasts). */
+    static void jets(ServerLevel sl, ServerPlayer p, long now) { send(sl, on(6, p, 8)); }
+
     static final UUID PLATING = UUID.fromString("7a1e0000-0000-4000-8000-0000000000f1"), SLIP = UUID.fromString("7a1e0000-0000-4000-8000-0000000000f2"),
             FLOW = UUID.fromString("7a1e0000-0000-4000-8000-0000000000f3");
     public static final int REFLECT = 0, RETURN = 1, FLOWS = 2;
@@ -120,7 +152,7 @@ public final class VectorFx {
             var md = io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(p);
             float max = (float) p.getAttributeValue(io.redspace.ironsspellbooks.api.registry.AttributeRegistry.MAX_MANA.get());
             md.setMana(Math.min(max, md.getMana() + 50));
-            FxSend.ring(p.serverLevel(), PAL, mid(p), 0.2f, 1.2f, 0.05f, 8);
+            warp(p.serverLevel(), mid(p), 1.0f, 8);
         }
     }
 
@@ -136,6 +168,7 @@ public final class VectorFx {
             aim = near != null ? mid(near) : pr.position().subtract(pr.getDeltaMovement().scale(10));
         }
         Vec3 dir = aim.subtract(pr.position()).normalize();
+        Vec3 came = pr.getDeltaMovement();
         double sp = Math.max(1.2, pr.getDeltaMovement().length()) * speedMul * (mastery(p) >= 3 ? 1.3 : 1.0);
         pr.setDeltaMovement(dir.scale(sp));
         pr.setOwner(p);
@@ -144,7 +177,7 @@ public final class VectorFx {
             a.setPierceLevel((byte) 0);
             if (r(p, "r3") > 0) a.setBaseDamage(a.getBaseDamage() * 1.3);
         }
-        FxSend.ring(sl, PAL, pr.position(), 0.2f, 1.0f, 0.05f, 6);
+        deflect(sl, pr.position(), came, dir);
         play(sl, pr.position(), "vec_reflect", 0.8f, 1.2f + (float) Math.random() * 0.2f);
         plate(p);
         BookTree.grow(p, BookTree.VECTOR, 1);
@@ -198,7 +231,8 @@ public final class VectorFx {
             e.setCanceled(true);
             Kit.push(attacker, away, boss(attacker) ? 0.4 : 1.4, 0.35);
             hit(p, attacker, amt, "vector_absolute");
-            FxSend.ring(sl, PAL, mid(p), 0.3f, 1.8f, 0.08f, 8);
+            warp(sl, mid(p), 1.3f, 6);
+            deflect(sl, mid(p).add(mid(attacker).subtract(mid(p)).scale(0.4)), mid(p).subtract(mid(attacker)), mid(attacker).subtract(mid(p)));
             play(sl, p.position(), "vec_reflect", 1f, 0.8f);
             if (now < s.absoluteUntil) s.redirects++;
             plate(p);
@@ -210,7 +244,7 @@ public final class VectorFx {
         Kit.push(attacker, away, (0.4 + f * 1.6) * (boss(attacker) ? 0.3 : 1), 0.2 + f * 0.2);
         float back = amt * f * (r(p, "k2") > 0 ? 0.25f : 0.5f) / (r(p, "k2") > 0 ? 1f : 1f);
         if (back > 0.5f) AstaFx.later(1, () -> { if (attacker.isAlive()) hit(p, attacker, back, "redirect"); });
-        FxSend.trail(sl, PAL, mid(p), mid(attacker), 0.05f, 5);
+        arrow(sl, mid(p), mid(attacker), 0.04f, 5);
         play(sl, p.position(), "vec_reflect", 0.6f, 0.7f + f);
         plate(p);
         BookTree.grow(p, BookTree.VECTOR, 1);
@@ -230,7 +264,8 @@ public final class VectorFx {
             e.setCanceled(true);
             ServerLevel sl = p.serverLevel();
             float dmg = Math.min(30f, 1.5f * d);
-            FxSend.ring(sl, PAL, p.position().add(0, 0.1, 0), 0.3f, 4f, 0.2f, 10);
+            { var b = fx(4, p.position().add(0, 0.6, 0), 14); b.r = 4f; b.u = p.position(); send(sl, b); }
+            for (int i = 0; i < 8; i++) { double a = i * Math.PI / 4; arrow(sl, p.position().add(Math.cos(a) * 0.8, 0.2, Math.sin(a) * 0.8), p.position().add(Math.cos(a) * 4, 0.2, Math.sin(a) * 4), 0.05f, 7); }
             FxSend.shake(sl, p.position(), 0.4f, 6, 12);
             play(sl, p.position(), "vec_slam", 1.2f, 1f);
             for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(4, 2, 4))) { hit(p, t, dmg, "recoil_step"); Kit.push(t, flatAway(t, p), 0.8, 0.3); }
@@ -259,8 +294,9 @@ public final class VectorFx {
                 reflect(p, pr, field && r(p, "r5") > 0 ? 1.5f : 1.1f);
                 if (abs) s.redirects++;
             }
-            if (now % 4 == 0) FxSend.ring(sl, PAL, mid(p), (float) rr - 0.3f, (float) rr, 0.03f, 5);
+            if (now % 10 == 0) { var f = on(8, p, 14); f.r = abs ? 2.6f : 1.8f; send(sl, f); }
         }
+        if (abs && now % 4 == 0) jets(sl, p, now);
         if (abs) {   // everything rushing you is turned about
             for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(16))) {
                 Vec3 to = new Vec3(p.getX() - t.getX(), 0, p.getZ() - t.getZ());
@@ -271,7 +307,7 @@ public final class VectorFx {
                 s.reversed.put(t, now);
                 Kit.push(t, flatAway(t, p), boss(t) ? 0.3 : 1.0, 0.25);
                 hit(p, t, 2f, "vector_absolute");
-                FxSend.trail(sl, PAL, mid(t), mid(t).add(flatAway(t, p).scale(2)), 0.05f, 6);
+                deflect(sl, mid(t), new Vec3(t.getX() - t.xo, 0, t.getZ() - t.zo), flatAway(t, p));
                 s.redirects++;
                 BookTree.grow(p, BookTree.VECTOR, 0.5f);
             }
@@ -279,7 +315,9 @@ public final class VectorFx {
             s.absoluteUntil = 0;
             if (r(p, "k4") > 0 && s.redirects > 0) {
                 float dmg = Math.min(40f, 4f * s.redirects);
-                FxSend.ring(sl, PAL, p.position().add(0, 0.2, 0), 0.4f, 8f, 0.3f, 12);
+                { var b = fx(4, mid(p), 18); b.r = 8f; b.u = p.position(); send(sl, b); }
+                for (int i = 0; i < 12; i++) { double a = i * Math.PI / 6; arrow(sl, mid(p).add(Math.cos(a), 0, Math.sin(a)), mid(p).add(Math.cos(a) * 8, 0, Math.sin(a) * 8), 0.06f, 8); }
+                FxSend.impactFrame(sl, mid(p), 3, false, 20);
                 FxSend.shake(sl, p.position(), 0.5f, 8, 16);
                 play(sl, p.position(), "vec_absolute", 1.4f, 1.4f);
                 for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(8))) { hit(p, t, dmg, "vector_absolute"); Kit.push(t, flatAway(t, p), 1.2, 0.4); }
@@ -288,7 +326,7 @@ public final class VectorFx {
         }
         // Hover Vector
         if (now < s.hoverUntil) { Vec3 d = p.getDeltaMovement(); p.setDeltaMovement(d.x, Math.max(d.y, 0.0) * 0.5 + 0.005, d.z); p.fallDistance = 0; p.hurtMarked = true;
-            if (now % 3 == 0) FxSend.ring(sl, PAL, p.position().add(0, -0.1, 0), 0.4f, 0.9f, 0.03f, 4); }
+            if (now % 6 == 0) { var st = fx(7, p.position().add(0, -0.1, 0), 10); st.d = new Vec3(0, 1, 0); send(sl, st); } }
         // Slipstream and Flow
         if (now % 20 == 0) {
             if (r(p, "f3") > 0 && p.isSprinting()) {
@@ -310,7 +348,8 @@ public final class VectorFx {
                 if (now > en.getValue() || !t.isAlive()) { it.remove(); continue; }
                 for (LivingEntity o : sl.getEntitiesOfClass(LivingEntity.class, t.getBoundingBox().inflate(0.3), x -> x != t && x != p && x.isAlive() && !x.isAlliedTo(p))) {
                     hit(p, t, 6f, "redirect"); hit(p, o, 6f, "redirect");
-                    FxSend.ring(sl, PALE, mid(t), 0.2f, 1.4f, 0.08f, 8);
+                    warp(sl, mid(t), 1.2f, 6);
+                    FxSend.impactFrame(sl, mid(t), 2, false, 10);
                     play(sl, t.position(), "vec_slam", 0.9f, 1.3f);
                     it.remove();
                     break;
@@ -321,7 +360,7 @@ public final class VectorFx {
         for (Iterator<Wind> it = s.winds.iterator(); it.hasNext(); ) {
             Wind w = it.next();
             if (now >= w.until) { it.remove(); continue; }
-            if (now % 4 == 0) { FxSend.ring(sl, PAL, w.at.add(0, 0.1 + (now % 12) * 0.25, 0), 0.6f, 1.6f, 0.04f, 6); }
+
             for (LivingEntity t : enemies(sl, p, new AABB(w.at, w.at).inflate(w.r, 4, w.r))) {
                 Vec3 to = w.at.add(0, 2, 0).subtract(t.position());
                 double k = boss(t) ? 0.03 : 0.12;
@@ -334,7 +373,7 @@ public final class VectorFx {
         for (Iterator<Plasma> it = s.plasma.iterator(); it.hasNext(); ) {
             Plasma pl = it.next();
             if (now < pl.burst) {
-                if (now % 2 == 0) Kit.orb(sl, PAL, pl.at, Vec3.ZERO, 0.25f + 0.02f * (40 - (pl.burst - now)), 3);
+
                 continue;
             }
             it.remove();
@@ -343,11 +382,11 @@ public final class VectorFx {
         }
     }
 
-    static void burstPlasma(ServerPlayer p, Vec3 at, float k) {
+    public static void burstPlasma(ServerPlayer p, Vec3 at, float k) {
         ServerLevel sl = p.serverLevel();
         double rr = 3 + (r(p, "p2") > 0 ? 1 : 0);
-        FxSend.ring(sl, PALE, at, 0.2f, (float) rr + 0.5f, 0.3f, 10);
-        FxSend.ring(sl, PAL, at, 0.2f, (float) rr, 0.5f, 12);
+        { var b = fx(4, at, 18); b.r = (float) rr + 0.5f; b.u = BossKit.ground(sl, at.add(0, 0.5, 0)); send(sl, b); }
+        FxSend.impactFrame(sl, at, 2, false, 18);
         FxSend.shake(sl, at, 0.3f * k, 6, 14);
         play(sl, at, "vec_plasma", 1.3f, k < 1 ? 1.3f : 1f);
         for (LivingEntity t : enemies(sl, p, new AABB(at, at).inflate(rr))) {
@@ -365,14 +404,14 @@ public final class VectorFx {
         LivingEntity t = aimed(p, 16, 10);
         ServerLevel sl = p.serverLevel();
         play(sl, p.position(), "vec_redirect", 1f, 1f);
-        if (t == null) { FxSend.trail(sl, PAL, p.getEyePosition(), p.getEyePosition().add(p.getLookAngle().scale(6)), 0.05f, 6); return; }
+        if (t == null) { arrow(sl, p.getEyePosition().add(p.getLookAngle()), p.getEyePosition().add(p.getLookAngle().scale(6)), 0.05f, 6); return; }
         int m1 = r(p, "m1");
         Vec3 dir = new Vec3(p.getLookAngle().x, 0, p.getLookAngle().z).normalize();
         double strength = (1.6 + 0.24 * m1) * (boss(t) ? 0.25 : 1);
         t.setDeltaMovement(dir.scale(strength).add(0, 0.45, 0)); t.hurtMarked = true;
         hit(p, t, 5f * (1 + 0.1f * m1), "redirect");
-        FxSend.trail(sl, PAL, mid(t), mid(t).add(dir.scale(4)), 0.08f, 8);
-        FxSend.ring(sl, PALE, mid(t), 0.2f, 1.2f, 0.05f, 8);
+        deflect(sl, mid(t), mid(t).subtract(p.getEyePosition()), dir.add(0, 0.25, 0));
+        arrows(sl, mid(t).add(dir.scale(2)), dir, 4, 2.5, 0.5);
         if (r(p, "m2") > 0) v(p).thrown.put(t, sl.getGameTime() + 30);
         BookTree.grow(p, BookTree.VECTOR, 1);
     }
@@ -389,7 +428,7 @@ public final class VectorFx {
         Vec3 look = p.getLookAngle();
         p.setDeltaMovement(look.x * 1.1, Math.max(0.45, look.y * 0.9 + 0.35), look.z * 1.1);
         p.hurtMarked = true; p.fallDistance = 0;
-        FxSend.ring(p.serverLevel(), PAL, p.position(), 0.2f, 1.1f, 0.05f, 6);
+        { var st = fx(7, p.position(), 10); st.d = look; send(p.serverLevel(), st); }   // a hexagon of compressed air under you, vectors kicked away
         play(p.serverLevel(), p.position(), "vec_step", 0.9f, 1f + 0.1f * s.recoilUsed);
     }
 
@@ -398,7 +437,7 @@ public final class VectorFx {
         cast(p);
         v(p).returnUntil = p.level().getGameTime() + (r(p, "r5") > 0 ? 100 : 60);
         ModeHud.show(p, "return_to_sender", r(p, "r5") > 0 ? 100 : 60);
-        FxSend.ring(p.serverLevel(), PAL, mid(p), 0.4f, 6f, 0.06f, 10);
+        warp(p.serverLevel(), mid(p), 2.2f, 10);
         play(p.serverLevel(), p.position(), "vec_return", 1f, 1f);
     }
 
@@ -413,7 +452,8 @@ public final class VectorFx {
         for (double a : lanes) {
             Vec3 d = rotY(look, a).normalize();
             Vec3 end = clip(sl, p, eye, eye.add(d.scale(12)));
-            FxSend.trail(sl, PAL, eye.add(d), end, 0.12f, 8);
+            { var g = fx(2, eye.add(d), 14); g.d = d; g.r = (float) eye.add(d).distanceTo(end); send(sl, g); }
+            warp(sl, end, 1.2f, 6);
             for (LivingEntity t : enemies(sl, p, new AABB(eye, end).inflate(1.6))) {
                 if (hitSet.contains(t) || closestOnSegment(eye, end, mid(t)).distanceTo(mid(t)) > 1.6) continue;
                 hitSet.add(t);
@@ -430,7 +470,7 @@ public final class VectorFx {
         cast(p);
         v(p).pulseUntil = p.level().getGameTime() + 120;
         ModeHud.show(p, "pulse_touch", 120);
-        FxSend.ring(p.serverLevel(), PALE, Kit.hand(p), 0.1f, 0.5f, 0.04f, 120);
+        warp(p.serverLevel(), Kit.hand(p), 0.35f, 20);
         play(p.serverLevel(), p.position(), "vec_pulse", 0.8f, 1.4f);
     }
 
@@ -440,8 +480,9 @@ public final class VectorFx {
         Vec3 a = mid(first), b = a.add(d.scale(6));
         int count = 2 + (r(p, "m3") > 0 ? 2 : 0);
         float k = r(p, "m3") > 0 ? 1.5f : 1f;
-        FxSend.trail(sl, PALE, a, b, 0.15f, 8);
-        FxSend.ring(sl, PAL, a, 0.2f, 1.4f, 0.1f, 8);
+        { var g = fx(2, a, 12); g.d = d; g.r = 6f; send(sl, g); }
+        warp(sl, a, 1.0f, 6);
+        arrows(sl, a.add(d.scale(3)), d, 6, 3, 0.7);
         play(sl, a, "vec_pulse", 1.2f, 0.9f);
         hit(p, first, 6f * k, "pulse_touch");
         List<LivingEntity> behind = new ArrayList<>(enemies(sl, p, new AABB(a, b).inflate(1.5)));
@@ -464,6 +505,7 @@ public final class VectorFx {
         Vec3 at = BossKit.ground(sl, clip(sl, p, eye, eye.add(p.getLookAngle().scale(8))));
         boolean lat = r(p, "f4") > 0;
         v(p).winds.add(new Wind(at, sl.getGameTime() + (lat ? 120 : 80), lat ? 9 : 6));
+        { var c = fx(5, at, lat ? 120 : 80); c.r = lat ? 9 : 6; send(sl, c); }
         play(sl, at, "vec_wind", 1.2f, 1f);
     }
 
@@ -474,6 +516,7 @@ public final class VectorFx {
         Vec3 eye = p.getEyePosition();
         Vec3 at = clip(sl, p, eye, eye.add(p.getLookAngle().scale(12)));
         v(p).plasma.add(new Plasma(at, sl.getGameTime() + 40, r(p, "p2") > 0));
+        { var c = fx(3, at, 40); c.r = 0.85f; send(sl, c); }   // the point, charging
         play(sl, at, "vec_charge", 1f, 1f);
     }
 
@@ -485,7 +528,10 @@ public final class VectorFx {
         ModeHud.show(p, "vector_absolute", r(p, "k3") > 0 ? 400 : 240);
         s.redirects = 0;
         ServerLevel sl = p.serverLevel();
-        FxSend.ring(sl, PALE, p.position().add(0, 0.1, 0), 0.4f, 16f, 0.2f, 16);
+        { var b = fx(4, mid(p), 18); b.r = 9f; b.u = p.position(); send(sl, b); }   // the world's forces turned, all at once
+        warp(sl, mid(p), 3f, 12);
+        jets(sl, p, sl.getGameTime());
+        FxSend.impactFrame(sl, mid(p), 4, false, 24);
         FxSend.shake(sl, p.position(), 0.3f, 8, 16);
         play(sl, p.position(), "vec_absolute", 1.6f, 1f);
     }
@@ -499,7 +545,7 @@ public final class VectorFx {
                 s.stance = (s.stance + 1) % 3;
                 ModeHud.standing(p, new String[]{"vec_stance_return", "vec_stance_flow"}, s.stance - 1);
                 p.displayClientMessage(Component.literal(new String[]{"Reflect stance: projectiles", "Return stance: blows", "Flow stance: no fall damage, faster"}[s.stance]).withStyle(ChatFormatting.AQUA), true);
-                FxSend.ring(sl, PAL, mid(p), 0.3f, 1.4f, 0.05f, 8);
+                warp(sl, mid(p), 1.2f, 8);
                 play(sl, p.position(), "vec_step", 0.8f, 1.4f);
             }
             case 1 -> {
@@ -513,17 +559,18 @@ public final class VectorFx {
                 for (LivingEntity t : enemies(sl, p, p.getBoundingBox().inflate(10))) {
                     Kit.push(t, flatAway(t, p), boss(t) ? 0.4 : 1.5, 0.35);
                     hit(p, t, 3f, "redirect");
-                    FxSend.trail(sl, PAL, mid(t), mid(t).add(flatAway(t, p).scale(3)), 0.06f, 6);
+                    arrow(sl, mid(t), mid(t).add(flatAway(t, p).scale(3)), 0.05f, 6);
                     n++;
                 }
-                FxSend.ring(sl, PALE, p.position().add(0, 0.1, 0), 0.3f, 10f, 0.15f, 10);
+                { var b = fx(4, mid(p), 16); b.r = 10f; b.u = p.position(); send(sl, b); }
                 play(sl, p.position(), "vec_gust", 1.2f, 0.8f);
                 BookTree.grow(p, BookTree.VECTOR, 0.5f * n);
             }
             default -> {
                 Vec3 eye = p.getEyePosition(), end = clip(sl, p, eye, eye.add(p.getLookAngle().scale(20)));
-                FxSend.beam(sl, PALE, eye.add(p.getLookAngle()), end, 0.25f, 8);
-                FxSend.trail(sl, PAL, eye.add(p.getLookAngle()), end, 0.12f, 10);
+                arrow(sl, eye.add(p.getLookAngle()), end, 0.14f, 8);
+                { var g = fx(2, eye.add(p.getLookAngle()), 14); g.d = p.getLookAngle(); g.r = (float) eye.distanceTo(end); send(sl, g); }
+                arrows(sl, eye.add(p.getLookAngle().scale(4)), p.getLookAngle(), 6, 3, 0.6);
                 play(sl, p.position(), "vec_lance", 1.2f, 1f);
                 for (LivingEntity t : enemies(sl, p, new AABB(eye, end).inflate(1.2)))
                     if (closestOnSegment(eye, end, mid(t)).distanceTo(mid(t)) < 1.3) hit(p, t, 10f, "pressure_gust");

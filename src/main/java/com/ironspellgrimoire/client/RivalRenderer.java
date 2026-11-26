@@ -158,7 +158,23 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
                     new Piece("warden_crest", Bone.HEAD, 0, v(0.000, 0.000, 32.000), v(0, 0, 0), 1.000f))),
             Map.entry("story_tamsin", List.of(
                     new Piece("tamsin_wand", Bone.RARM, -40, v(-5.500, -6.428, 14.340), v(80, 0, 0), 1.600f),
-                    new Piece("tamsin_satchel", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f))));
+                    new Piece("tamsin_satchel", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f))),
+            // ASHFALL, Arc III
+            Map.entry("story_mother", List.of(
+                    new Piece("mother_crown", Bone.HEAD, 0, v(0.000, 0.000, 32.000), v(0, 0, 0), 1.000f),
+                    new Piece("mother_heart", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f),
+                    new Piece("mother_limbs", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f),
+                    new Piece("mother_pauldrons", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f),
+                    new Piece("mother_skirt", Bone.BODY, 0, v(0.000, 0.000, 0.000), v(0, 0, 0), 1.000f),
+                    new Piece("mother_claw", Bone.RARM, -35, v(-6.000, -5.736, 13.808), v(75, 0, 0), 1.000f),
+                    new Piece("mother_claw", Bone.LARM, -35, v(6.000, -5.736, 13.808), v(75, 0, 0), 1.000f))),
+            Map.entry("story_maren", List.of(
+                    new Piece("boar_spear", Bone.RARM, -15, v(-5.500, -2.588, 12.341), v(0, 0, 0), 1.000f),
+                    new Piece("round_shield", Bone.LARM, -25, v(7.200, -5.200, 13.000), v(0, 0, 10), 1.000f))),
+            Map.entry("story_sedge", List.of(
+                    new Piece("sedge_cane", Bone.LARM, -20, v(6.000, -3.420, 12.603), v(0, 0, 0), 1.000f))),
+            Map.entry("story_militia", List.of(
+                    new Piece("pitchfork", Bone.RARM, -15, v(-6.000, -2.588, 12.341), v(0, 0, 0), 1.000f))));
     static { GEAR.putAll(FAMILY_GEAR); }
 
     /** The legionnaire who carries Brannoch's standard: the banner instead of the spear. */

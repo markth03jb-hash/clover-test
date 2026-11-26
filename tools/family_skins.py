@@ -476,10 +476,115 @@ def tamsin_reed():
 STORY2 = (magistrate_vey, warden, tamsin_reed)
 
 
+# ---- ASHFALL, Arc III ("The Hollow War")
+TEAL = (80, 240, 220)
+
+def mother_below():
+    """The Mother Below: stone-grey hide split by branching teal veins, chitin ridges, three burning eyes over a
+    mouth of stone teeth, plates of dark shell on her chest and arms, the light leaking from every seam."""
+    s = Skin(221, False)
+    hide, dark, plate, vein = (92, 96, 102), (40, 44, 50), (56, 58, 66), (60, 210, 196)
+    s.fill("head", hide, 14)
+    s.rows("head", "back", 0, 8, dark, 10); s.rows("head", "top", 0, 8, dark, 10)
+    for f in ("left", "right"):
+        for j in (1, 3, 5): s.rows("head", f, j, j + 1, dark, 8)   # chitin ridges along the sides
+        s.px("head", f, 3, 4, vein, 4); s.px("head", f, 4, 5, vein, 4)
+    for i in range(8): s.px("head", "front", i, 0, dark); s.px("head", "front", i, 1, shade(dark, 1.3))   # the brow plate
+    for i in (1, 2, 5, 6): s.px("head", "front", i, 2, (14, 16, 18)); s.px("head", "front", i, 3, (180, 255, 245) if i in (2, 5) else TEAL, 2)
+    s.px("head", "front", 3, 1, TEAL, 2); s.px("head", "front", 4, 1, TEAL, 2)   # the third eye, split in the brow
+    for i in range(1, 7): s.px("head", "front", i, 5, (20, 24, 26))
+    for i in (1, 3, 5): s.px("head", "front", i, 5, (214, 210, 196)); s.px("head", "front", i + 1, 6, (214, 210, 196))   # stone teeth
+    for i in range(2, 6): s.px("head", "front", i, 6, (24, 60, 58) if i % 2 else (20, 24, 26))
+    s.px("head", "front", 0, 6, vein, 4); s.px("head", "front", 7, 4, vein, 4)
+    s.clear("hat")
+    for f in ("left", "right", "back"): s.rows("hat", f, 0, 2, dark, 8)
+    s.fill("body", hide, 14)
+    def veins(part, face, start, n, rnd_seed):
+        import random
+        r = random.Random(rnd_seed)
+        for _ in range(n):
+            i, j = start
+            for _ in range(10):
+                s.px(part, face, i, j, vein, 6)
+                i += r.choice((-1, 0, 1)); j += r.choice((1, 1, 0, -1))
+                if not (0 <= i < 8 and 0 <= j < 12): break
+    veins("body", "front", (4, 4), 3, 1); veins("body", "back", (3, 2), 3, 2)
+    s.fill("jacket", plate, 8, grain="h")
+    for f in ("front", "back"):
+        for j in range(12):
+            for i in range(8):
+                if f == "front" and 2 <= i <= 5 and 2 <= j <= 9: s.px("jacket", f, i, j, T, 0)   # open over the heart
+            if j % 3 == 2: s.rows("jacket", f, j, j + 1, dark, 6, 0, 2); s.rows("jacket", f, j, j + 1, dark, 6, 6, 8)
+    for i in (1, 6): s.px("jacket", "front", i, 10, vein, 4); s.px("jacket", "front", i, 11, vein, 4)
+    limbs(s, hide, dark, foot=(26, 28, 32), hand=dark)
+    for a, sl in (("rarm", "rsleeve"), ("larm", "lsleeve")):
+        s.fill(sl, plate, 8, grain="h"); cut(s, sl, 6, 12)
+        for j in (2, 5): s.ring(sl, j, j + 1, dark, 6)
+        veins(a, "front", (1, 5), 2, 3 if a == "rarm" else 4)
+        s.ring(a, 11, 12, vein, 4)   # light at the wrists
+    for l in ("rleg", "lleg"): veins(l, "front", (2, 0), 2, 5 if l == "rleg" else 6)
+    s.save("story_mother")
+
+
+def reeve_maren():
+    """Reeve Maren of Ashwick: short dark hair gone grey at the temples, a hard face, a leather jerkin, a red sash, an iron gorget."""
+    s = Skin(222, True)
+    skin, hair, jerkin, sash = (206, 166, 138), (52, 44, 40), (104, 74, 50), (150, 36, 34)
+    s.face(skin, hair, (100, 90, 70), mouth=(140, 92, 84), fringe=1, sides=5)
+    for j in (1, 2): s.px("head", "left", 7, j, (150, 150, 150)); s.px("head", "right", 0, j, (150, 150, 150))
+    s.clear("hat")
+    s.fill("body", jerkin, 10, grain="h")
+    s.clear("jacket")
+    s.rows("jacket", "front", 0, 2, (110, 112, 118), 6); s.rows("jacket", "back", 0, 2, (110, 112, 118), 6)   # the gorget
+    for j in range(12): s.px("jacket", "front", j * 7 // 11, j, sash, 6); s.px("jacket", "back", 7 - j * 7 // 11, j, sash, 6)
+    limbs(s, shade(jerkin, 0.9), (70, 60, 52), foot=(44, 34, 28), hand=skin)
+    s.save("story_maren")
+
+
+def old_sedge():
+    """Old Sedge, elder of the Mirefolk: bog-green skin, a white moss beard to the belt, a hood of reeds, a bead string."""
+    s = Skin(223, False)
+    skin, moss, reed = (88, 108, 70), (214, 220, 200), (110, 104, 64)
+    s.face(skin, reed, (230, 210, 110), mouth=(50, 60, 40), fringe=3, sides=7, beard=moss)
+    s.fill("hat", reed, 10)
+    for i in range(8):
+        for j in range(3, 8): s.px("hat", "front", i, j, T, 0)
+    s.fill("body", (70, 62, 44), 10, grain="v")
+    s.clear("jacket")
+    for j in range(0, 9): 
+        for i in range(2, 6): s.px("jacket", "front", i, j, moss, 10)   # the beard, all the way down
+    for j in range(3, 11, 2): s.px("jacket", "front", 1, j, (226, 218, 192)); s.px("jacket", "front", 6, j, (226, 218, 192))
+    limbs(s, skin, (70, 62, 44), foot=(48, 52, 34), hand=shade(skin, 0.9))
+    for sl in ("rsleeve", "lsleeve"): s.fill(sl, reed, 10); cut(s, sl, 8, 12)
+    s.save("story_sedge")
+
+
+def militia():
+    """Ashwick's militia: a padded brown gambeson, an iron kettle hat, a red armband, plain wool."""
+    s = Skin(224, False)
+    skin, gam, iron = (212, 172, 142), (128, 98, 68), (112, 114, 120)
+    s.face(skin, (90, 64, 44), (80, 100, 70), mouth=(150, 100, 90), fringe=2, sides=4)
+    s.fill("hat", iron, 6)
+    for i in range(8):
+        for j in range(2, 8): s.px("hat", "front", i, j, T, 0)
+    for f in ("left", "right", "back"):
+        for i in range(8):
+            for j in range(3, 8): s.px("hat", f, i, j, T, 0)
+    s.fill("body", gam, 8, grain="h")
+    for j in range(0, 12, 3):
+        for i in range(8): s.px("body", "front", i, j, shade(gam, 0.8), 4)
+    s.clear("jacket")
+    limbs(s, gam, (86, 80, 70), foot=(50, 40, 30), hand=skin)
+    s.ring("lsleeve", 2, 4, (150, 36, 34), 6)
+    s.save("story_militia")
+
+STORY3 = (mother_below, reeve_maren, old_sedge, militia)
+
+
 ALL = (rime_brute, frost_chanter, hoarfrost_jarl, hollow_crawler, hollow_singer, deepwarden, twin_haldric, twin_oswin,
        bog_crawler, mire_hexer, fen_matron, scree_brute, stonecaller, peak_warden, dune_stalker, sandwraith, sun_herald, gloamstalker)
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    for f in ALL + STORY + STORY2: f()
+    for f in ALL + STORY + STORY2 + STORY3: f()
     print("family skins written to", OUT)

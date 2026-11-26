@@ -152,8 +152,8 @@ els = [   # katana proportions: a long two-hand grip, an oval guard, a brass col
 # the blade: many thin sections following one smooth curve (item models only turn in 22.5-degree steps, so the curve is
 # built from small offsets instead), with the texture running on continuously from the collar to the point. The spine
 # curves back gently (more toward the tip); near the end the edge sweeps up to meet the spine in a sharp point (kissaki).
-B0, B1, P0 = 12.2, 27.2, 24.6            # blade start, the very tip, where the point begins
-def spine_z(y): t = (y - B0) / (B1 - B0); return 8.65 + 0.95 * t * t
+B0, B1, P0 = 12.2, 31.6, 28.4            # blade start, the very tip, where the point begins (a long blade: about three grips)
+def spine_z(y): t = (y - B0) / (B1 - B0); return 8.65 + 1.25 * t * t
 def width(y):
     t = (y - B0) / (B1 - B0)
     w = 1.3 - 0.2 * t
@@ -181,8 +181,9 @@ model = {
         # the edge facing the foe (forward-down) and the spine toward you
         "thirdperson_righthand": {"rotation": [40, 0, 0], "translation": [0, 1.0, 0.5], "scale": [0.95, 0.95, 0.95]},
         "thirdperson_lefthand": {"rotation": [40, 0, 0], "translation": [0, 1.0, 0.5], "scale": [0.95, 0.95, 0.95]},
-        "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 1.6, 1.13], "scale": [0.72, 0.72, 0.72]},
-        "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.13, 1.6, 1.13], "scale": [0.72, 0.72, 0.72]},
+        # first person: the edge (the model's -Z) turned to face forward, away from you, the blade leaning forward
+        "firstperson_righthand": {"rotation": [0, 205, 25], "translation": [1.13, 1.2, 1.13], "scale": [0.66, 0.66, 0.66]},
+        "firstperson_lefthand": {"rotation": [0, -205, -25], "translation": [1.13, 1.2, 1.13], "scale": [0.66, 0.66, 0.66]},
         "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.8, 0.8, 0.8]},
         "head": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
     },
