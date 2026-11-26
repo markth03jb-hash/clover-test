@@ -243,8 +243,8 @@ def to_game(out):
     ar.LOW = True
     # held like a sword: the blade up and forward out of the fist, edge forward
     # (the edge is the model's +X; turned +90 about Y it faces the foe: forward, away from you)
-    kd = {"thirdperson_righthand": {"rotation": [0, 90, 0], "translation": [0, 2, 0.5], "scale": [0.85] * 3},
-          "thirdperson_lefthand": {"rotation": [0, -90, 0], "translation": [0, 2, 0.5], "scale": [0.85] * 3},
+    kd = {"thirdperson_righthand": {"rotation": [40, 90, 0], "translation": [0, 1.5, 0.5], "scale": [0.85] * 3},   # (as the Heartline: blade up and forward, edge to the foe)
+          "thirdperson_lefthand": {"rotation": [40, -90, 0], "translation": [0, 1.5, 0.5], "scale": [0.85] * 3},
           "firstperson_righthand": {"rotation": [0, 90, -20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},
           "firstperson_lefthand": {"rotation": [0, -90, 20], "translation": [1.5, 2, 0], "scale": [0.6] * 3},
           "gui": {"rotation": [0, 90, -45], "translation": [-1, -1, 0], "scale": [0.36] * 3},

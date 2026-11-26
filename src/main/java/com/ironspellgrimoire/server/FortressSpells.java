@@ -510,7 +510,38 @@ public final class FortressSpells {
             }
             default -> {}
         }
+        if (!wave) {   // the spells you cast on yourself: a sign you can see in front of you, not only round your feet
+            int fl = switch (room) {
+                case OBSERVATORY, SCRYING, MAP_ROOM -> ARCANE;
+                case LIBRARY, RUNE_VAULT, CHAPEL, RELIQUARY, TREASURY, HERALD, THRONE -> BRASS;
+                case GARDEN -> Fx.TREE;
+                case HALL -> Fx.CRIMSON;
+                case BARRACKS, WORKSHOP, GATEHOUSE -> STONE;
+                case CRYPT -> BONE;
+                default -> -1;
+            };
+            if (fl >= 0) flourish(p, fl);
+        }
         FortressFx.sync(p, false);
+    }
+
+    /** A self-cast room spell made plain: its sigil opens in front of you, light rises round you, motes drift up. */
+    static void flourish(ServerPlayer p, int pal) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 look = FxUtil.flat(p.getLookAngle());
+        Vec3 side = new Vec3(-look.z, 0, look.x), up = new Vec3(0, 1, 0);
+        Vec3 front = p.getEyePosition().add(look.scale(2.4)).add(0, -0.35, 0);
+        FxSend.wall(sl, pal, front, side, up, 0.55f, 0.85f, -180, 180, 0.06f, 16, 6, 0);
+        FxSend.wall(sl, Fx.SILVER, front, side, up, 0.2f, 0.3f, -180, 180, 0.05f, 12, 4, 0);
+        FxSend.ring(sl, pal, p.position().add(0, 0.05, 0), 0.4f, 3.2f, 0.12f, 16);
+        for (int k = 0; k < 6; k++) {
+            double a = k * Math.PI / 3;
+            Vec3 b = p.position().add(Math.cos(a) * 1.7, 0.05, Math.sin(a) * 1.7);
+            FxSend.beam(sl, pal, b, b.add(0, 2.8, 0), 0.08f, 12);
+        }
+        java.util.concurrent.ThreadLocalRandom r = java.util.concurrent.ThreadLocalRandom.current();
+        for (int k = 0; k < 6; k++)
+            Kit.orb(sl, pal, front.add(side.scale(r.nextDouble(-1.2, 1.2))).add(0, r.nextDouble(-0.6, 0.4), 0), new Vec3(0, 0.05, 0), 0.08f, 16);
     }
 
     static final UUID DECREE = UUID.fromString("a7c1f001-0b3e-4c2a-9a01-5f0e1d2c0011");

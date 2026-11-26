@@ -52,12 +52,18 @@ public final class SeraphFx {
 
     static boolean foe(ServerPlayer p, LivingEntity t) { return !BoundFx.ally(p, t); }
 
+    /** Where a move lands: the creature you look at (within range), else the first block down your sight. */
+    static Vec3 mark(ServerPlayer p, double range) {
+        LivingEntity t = aimed(p, range, 12);
+        return t != null && foe(p, t) ? t.position().add(0, t.getBbHeight() * 0.5, 0) : Kit.aim(p, range);
+    }
+
     // ------------------------------------------------------------------ the pages
     /** Judgment Feathers: sixteen feathers out of the wing, thrown at what you look at. */
     public static void feathers(ServerPlayer p, float power) {
         if (!go(p)) return;
         ServerLevel sl = p.serverLevel();
-        Vec3 eye = p.getEyePosition(), target = Kit.aim(p, 24);
+        Vec3 eye = p.getEyePosition(), target = mark(p, 24);
         Vec3 left = rotY(p.getLookAngle(), Math.PI / 2).multiply(1, 0, 1).normalize();
         play(sl, p.position(), "bd_seraph", 1.2f, 1.5f);
         ThreadLocalRandom r = ThreadLocalRandom.current();
@@ -133,7 +139,7 @@ public final class SeraphFx {
     public static void verdict(ServerPlayer p, float power) {
         if (!go(p)) return;
         ServerLevel sl = p.serverLevel();
-        Vec3 c = Kit.aim(p, 20);
+        Vec3 c = mark(p, 20);
         List<Vec3> at = new ArrayList<>();
         for (LivingEntity t : Kit.near(sl, p, c, 12)) if (foe(p, t) && at.size() < 8) at.add(BossKit.ground(sl, t.position()));
         if (at.isEmpty()) at.add(BossKit.ground(sl, c));
@@ -163,7 +169,7 @@ public final class SeraphFx {
     public static void fallOfHeaven(ServerPlayer p, float power) {
         if (!go(p)) return;
         ServerLevel sl = p.serverLevel();
-        Vec3 land = BossKit.ground(sl, Kit.aim(p, 16));
+        Vec3 land = BossKit.ground(sl, mark(p, 16));
         p.setDeltaMovement(p.getDeltaMovement().x * 0.2, 1.3, p.getDeltaMovement().z * 0.2);
         p.hurtMarked = true;
         p.fallDistance = 0;
@@ -217,7 +223,8 @@ public final class SeraphFx {
         if (now % 6 == 0) {
             ThreadLocalRandom r = ThreadLocalRandom.current();
             Vec3 left = rotY(p.getLookAngle(), Math.PI / 2).multiply(1, 0, 1).normalize();
-            Kit.orb(sl, SALT, p.position().add(left.scale(1 + r.nextDouble(3))).add(0, 1.5 + r.nextDouble(3), 0), new Vec3(0, -0.04, 0), 0.12f, 20);
+            Vec3 at = p.position().add(left.scale(1 + r.nextDouble(3))).add(0, 1.5 + r.nextDouble(3), 0);   // a feather drifting down
+            FxSend.spike(sl, SALT, at, new Vec3(r.nextDouble(-0.3, 0.3), -1, r.nextDouble(-0.3, 0.3)), 0.45f, 0.06f, 20, 0, FxPacket.POP, 0, new Vec3(0, -0.06, 0), 18);
         }
         if (now % 20 == 0) FxSend.ring(sl, SALT, p.position().add(0, 0.05, 0), 1.4f, 1.6f, 0.03f, 20);
     }

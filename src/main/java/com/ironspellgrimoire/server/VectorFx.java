@@ -51,7 +51,7 @@ import net.minecraftforge.fml.common.Mod;
 public final class VectorFx {
     private VectorFx() {}
 
-    static final int PAL = Fx.SILVER, PALE = 11, BLACK = Fx.DARK, HOT = Fx.LIGHTNING;   // white vectors, black jets, a white-hot core
+    static final int PAL = Fx.SILVER, PALE = 11, BLACK = 47, HOT = Fx.LIGHTNING;   // (47: black with a blue sheen)   // white vectors, black jets, a white-hot core
 
     // ------------------------------------------------------------------ the look: force made visible
     // Straight white vectors with arrowheads, sharp angular turns where something is redirected, the air itself warped

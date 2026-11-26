@@ -1230,4 +1230,11 @@ public final class UiShotsServer {
             default -> p.teleportTo(sl, c.x, c.y + 4.2, c.z + 0.2, 180, 89);
         }
     }
+
+    /** The sword in hand, looking straight ahead (for the first-person calibration shots). */
+    public static void hold(ServerPlayer p, String which) {
+        for (var a : p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30))) a.discard();
+        p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(which.equals("katana") ? AddonItemRegistry.DEMON_KATANA.get() : AddonItemRegistry.HEARTLINE.get()));
+        p.setXRot(0);
+    }
 }
