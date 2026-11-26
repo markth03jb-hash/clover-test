@@ -1189,6 +1189,8 @@ public final class UiShotsServer {
         h.setHealth(500); h.invulnerableTime = 0;
         faceForward(p);
         { var look = p.getLookAngle().multiply(1, 0, 1).normalize(); var at = p.position().add(look.scale(7)); h.teleportTo(at.x, p.getY(), at.z); h.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); }
+        if (w[1].startsWith("o_")) { OmenFx.showcase(p, h, w[1].substring(2)); return; }
+        if (w[1].startsWith("q_")) { FuseFx.showcase(p, h, w[1].substring(2)); return; }
         switch (w[1]) {
             case "hit" -> AstaFx.damage(p, h, 12f, "ui_hit");
             case "star" -> { sl.setDayTime(6000); MeridianFx.testReset(p); MeridianFx.hearthStar(p, 10f); }

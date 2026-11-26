@@ -87,6 +87,19 @@ public final class FuseFx {
     static float baseDamage(ServerPlayer p) { return (6f + 0.3f * BookTree.level(p)) * (1f + 0.1f * r(p, "p3")); }
     static double radius(ServerPlayer p) { return (2.5 + 0.05 * BookTree.level(p) + 0.5 * r(p, "b1")) * (r(p, "k2") > 0 ? 1.5 : 1); }
 
+    // ------------------------------------------------------------------ its own look (client/FuseFxClient, shape 102)
+    static com.ironspellgrimoire.network.FxPacket fx(int kind, Vec3 c, int life) {
+        com.ironspellgrimoire.network.FxPacket q = new com.ironspellgrimoire.network.FxPacket();
+        q.shape = 102; q.id = FxSend.nextId(); q.h = kind; q.c = c; q.life = life; q.v = new Vec3(-1, 0, 0); q.a1 = (float) (Math.random() * 6.28);
+        return q;
+    }
+    static com.ironspellgrimoire.network.FxPacket on(int kind, Entity e, int life) { var q = fx(kind, e.position(), life); q.v = new Vec3(e.getId(), 0, 0); return q; }
+    static com.ironspellgrimoire.network.FxPacket keyed(int kind, Vec3 c, int key, int life) { var q = fx(kind, c, life); q.v = new Vec3(key, 0, 0); return q; }
+    static void send(ServerLevel sl, com.ironspellgrimoire.network.FxPacket q) { FxSend.sendNear(sl, q.c, q); }
+    /** Take a lasting look of 'kind' off an entity (it went off, or was used up). */
+    static void drop(ServerLevel sl, Entity e, int kind) { var q = fx(98, e.position(), 1); q.v = new Vec3(e.getId(), 0, 0); q.a0 = kind; send(sl, q); }
+    static int key(Object o) { return System.identityHashCode(o) & 0xFFFF; }
+
     // ------------------------------------------------------------------ arming
     /** Arm e for p. extra: past the limit (Primed Coin, Chain Fuse with Sympathetic). */
     public static boolean arm(ServerPlayer p, Entity e, boolean extra) {
@@ -97,7 +110,8 @@ public final class FuseFx {
         if (!extra && normal >= limit(p)) return false;
         s.armed.add(new Armed(e, p.level().getGameTime(), extra));
         ServerLevel sl = p.serverLevel();
-        FxSend.ring(sl, PAL, e.position().add(0, e.getBbHeight() * 0.5, 0), 0.1f, 0.7f, 0.05f, 6);
+        send(sl, fx(13, e.position().add(0, e.getBbHeight() * 0.5, 0), 10));
+        send(sl, on(1, e, 14));
         play(sl, e.position(), "fuse_arm", 0.7f, 1.2f);
         return true;
     }
@@ -107,9 +121,9 @@ public final class FuseFx {
     static int blast(ServerPlayer p, Vec3 at, double rr, float dmg, Entity armedOn, boolean record) {
         ServerLevel sl = p.serverLevel();
         F s = f(p);
-        FxSend.ring(sl, PAL, at, 0.2f, (float) rr, 0.4f, 9);
-        FxSend.ring(sl, HOT, at, 0.2f, (float) rr * 0.6f, 0.6f, 7);
-        Kit.orb(sl, HOT, at, Vec3.ZERO, (float) rr * 0.35f, 5);
+        Vec3 ground = BossKit.ground(sl, at.add(0, 0.5, 0));
+        if (at.y - ground.y > rr) ground = at.add(0, -rr, 0);   // high in the air: no ground ring under it
+        var bl = fx(0, at, 40); bl.r = (float) rr; bl.u = ground; send(sl, bl);
         FxSend.shake(sl, at, (float) Math.min(0.5, rr * 0.12), 6, rr * 4);
         play(sl, at, "fuse_blast", 1.2f, 1.1f - (float) Math.min(0.4, rr * 0.05));
         int n = 0;
@@ -122,7 +136,7 @@ public final class FuseFx {
             AstaFx.damage(p, t, d, "detonate");
             if (!boss(t)) Kit.push(t, t.position().subtract(at).normalize(), 0.5, 0.25);
             if (r(p, "b2") > 0) TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, CONC, "Concussion", -0.3, AttributeModifier.Operation.MULTIPLY_TOTAL, 40);
-            if (sl.getGameTime() < s.chainUntil && t != armedOn) arm(p, t, r(p, "p5") > 0 && s.armed.stream().filter(Armed::extra).count() < 3);
+            if (sl.getGameTime() < s.chainUntil && t != armedOn && arm(p, t, r(p, "p5") > 0 && s.armed.stream().filter(Armed::extra).count() < 3)) { var ln = fx(6, at, 14); ln.u = mid(t); send(sl, ln); }
             hitSet.add(t);
             n++;
         }
@@ -131,12 +145,12 @@ public final class FuseFx {
             far.removeIf(hitSet::contains);
             for (int i = 0; i < Math.min(4, far.size()); i++) {
                 LivingEntity t = far.get(i);
-                FxSend.trail(sl, HOT, at, mid(t), 0.05f, 5);
+                { var sh = fx(12, at, 8); sh.u = mid(t); send(sl, sh); }
                 AstaFx.damage(p, t, dmg * 0.3f, "detonate");
             }
         }
-        if (r(p, "b4") > 0) s.rings.add(new Ring(at, rr, sl.getGameTime() + 60));
-        if (record && sl.getGameTime() < s.loopUntil) s.replays.add(new Replay(at, rr, dmg, sl.getGameTime() + 60, r(p, "k3") > 0 ? 2 : 1));
+        if (r(p, "b4") > 0) { s.rings.add(new Ring(at, rr, sl.getGameTime() + 60)); var ab = fx(10, BossKit.ground(sl, at.add(0, 0.5, 0)).add(0, 0.02, 0), 60); ab.r = (float) rr; send(sl, ab); }
+        if (record && sl.getGameTime() < s.loopUntil) { s.replays.add(new Replay(at, rr, dmg, sl.getGameTime() + 60, r(p, "k3") > 0 ? 2 : 1)); var gh = fx(9, at, 60); gh.r = (float) rr; send(sl, gh); }
         BookTree.grow(p, BookTree.FUSE, n);
         return n;
     }
@@ -146,6 +160,7 @@ public final class FuseFx {
         Entity e = a.e();
         if (!e.isAlive() && !(e instanceof ItemEntity)) return;
         Vec3 at = e.position().add(0, e.getBbHeight() * 0.5, 0);
+        drop(p.serverLevel(), e, 1);
         float dmg = baseDamage(p) * mult;
         if (r(p, "p4") > 0 && p.level().getGameTime() - a.since() >= 100) dmg *= 1.4f;
         if (!(e instanceof LivingEntity)) e.discard();   // an armed item or arrow is used up
@@ -181,6 +196,7 @@ public final class FuseFx {
         // Contact Charge: the next creature to strike you is armed
         if (victim instanceof ServerPlayer p && has(p) && p.level().getGameTime() < f(p).contactUntil && e.getSource().getDirectEntity() == attacker && BookTree.melee(e.getSource())) {
             f(p).contactUntil = 0;
+            drop(p.serverLevel(), p, 4);
             ModeHud.hide(p, "contact_charge");
             arm(p, attacker, true);
             e.setAmount(e.getAmount() * 0.5f);
@@ -192,6 +208,7 @@ public final class FuseFx {
             if (until == null || until < p.level().getGameTime() || attacker == p) return;
             f(p).tenants.remove(victim);
             HOSTS.remove(victim);
+            drop(p.serverLevel(), victim, 7);
             if (f(p).tenants.isEmpty()) ModeHud.hide(p, "hidden_tenant");
             blast(p, mid(attacker), Math.max(2.5, radius(p)), baseDamage(p) * 1.5f, attacker, true);
             if (r(p, "a4") > 0) victim.heal(4f);
@@ -223,7 +240,7 @@ public final class FuseFx {
         ServerLevel sl = p.serverLevel();
         long now = sl.getGameTime();
         // Contact Charge, while it waits: a short ring that goes with you (re-drawn, so it's gone the moment it's spent)
-        if (now < s.contactUntil && now % 5 == 0) FxSend.ring(sl, PAL, mid(p), 0.6f, 0.9f, 0.04f, 6);
+        if (now < s.contactUntil && now % 5 == 0) send(sl, on(4, p, 7));
         // the armed: marks, timers, proximity, running away
         for (Iterator<Armed> it = s.armed.iterator(); it.hasNext(); ) {
             Armed a = it.next();
@@ -233,7 +250,7 @@ public final class FuseFx {
                 else it.remove();
                 continue;
             }
-            if (now % 10 == 0) FxSend.ring(sl, PAL, en.position().add(0, en.getBbHeight() + 0.3, 0), 0.05f, 0.22f, 0.04f, 10);
+            if (now % 10 == 0) send(sl, on(1, en, 14));
             boolean go = (s.mode == TIMER && now - a.since() >= 60)
                     || (s.mode == NEAR && now % 5 == 0 && !sl.getEntitiesOfClass(LivingEntity.class, en.getBoundingBox().inflate(2), x -> x != en && x != p && x.isAlive() && !x.isAlliedTo(p) && x instanceof net.minecraft.world.entity.Mob).isEmpty())
                     || (mastery(p) >= 5 && en.distanceToSqr(p) > 400);
@@ -254,7 +271,7 @@ public final class FuseFx {
                     k.pos()[0] = k.pos()[0].add(0, 1.2, 0);
                 }
             }
-            if (now % 2 == 0) Kit.orb(sl, PAL, k.pos()[0], Vec3.ZERO, 0.22f, 3);
+            if (now % 2 == 0) send(sl, keyed(2, k.pos()[0], key(k), 4));
         }
         // Air Bubbles
         for (Iterator<Bubble> it = s.bubbles.iterator(); it.hasNext(); ) {
@@ -265,7 +282,7 @@ public final class FuseFx {
             if (t != null) at = at.add(mid(t).subtract(at).normalize().scale(b.orbit() ? 0.3 : 0.15));
             else if (b.orbit()) { double a = now * 0.08 + System.identityHashCode(b) % 7; at = at.add(mid(p).add(Math.cos(a) * 2.2, 0.4, Math.sin(a) * 2.2).subtract(at).scale(0.2)); }
             b.pos()[0] = at;
-            if (now % 3 == 0) FxSend.ring(sl, PAL, at, 0.25f, 0.35f, 0.04f, 4);
+            if (now % 2 == 0) send(sl, keyed(3, at, key(b), 4));
             if (t != null && mid(t).distanceToSqr(at) < 1.0) { it.remove(); blast(p, at, radius(p) * 0.6, baseDamage(p) * 0.6f, t, true); }
         }
         // Afterburn
@@ -273,7 +290,6 @@ public final class FuseFx {
             Ring g = it.next();
             if (now >= g.until()) { it.remove(); continue; }
             if (now % 10 == 0) {
-                FxSend.ring(sl, HOT, g.at().add(0, -0.4, 0), (float) g.r() - 0.4f, (float) g.r(), 0.05f, 10);
                 for (LivingEntity t : enemies(sl, p, new AABB(g.at(), g.at()).inflate(g.r()))) AstaFx.damage(p, t, 1f, "detonate");
             }
         }
@@ -283,7 +299,7 @@ public final class FuseFx {
             if (now < rp.when()) continue;
             it.remove();
             blast(p, rp.at(), rp.r(), rp.dmg(), null, false);
-            if (rp.left() > 1) s.replays.add(new Replay(rp.at(), rp.r(), rp.dmg(), now + 60, rp.left() - 1));
+            if (rp.left() > 1) { s.replays.add(new Replay(rp.at(), rp.r(), rp.dmg(), now + 60, rp.left() - 1)); var gh = fx(9, rp.at(), 60); gh.r = (float) rp.r(); send(sl, gh); }
             break;   // one a tick (the list was changed)
         }
         // the Primed Coin in flight
@@ -291,7 +307,7 @@ public final class FuseFx {
             if (now >= s.coinUntil) s.coin = null;
             else {
                 Vec3 nx = s.coin.add(s.coinDir.scale(1.2));
-                FxSend.trail(sl, PAL, s.coin, nx, 0.04f, 4);
+                send(sl, keyed(11, nx, p.getId() & 0xFFFF, 3));
                 for (LivingEntity t : enemies(sl, p, new AABB(s.coin, nx).inflate(0.5))) { arm(p, t, true); s.coin = null; play(sl, t.position(), "fuse_coin", 1f, 1.2f); break; }
                 if (s.coin != null) s.coin = nx;
             }
@@ -356,7 +372,7 @@ public final class FuseFx {
     public static void contactCharge(ServerPlayer p, float power) {
         f(p).contactUntil = p.level().getGameTime() + 200;
         ModeHud.show(p, "contact_charge", 200);
-        FxSend.ring(p.serverLevel(), PAL, mid(p), 0.2f, 1.2f, 0.06f, 8);   // (the waiting ring goes with you - FuseFx.onTick)
+        send(p.serverLevel(), on(4, p, 7));   // (the dial stays on you while it waits - FuseFx.onTick)
         play(p.serverLevel(), p.position(), "fuse_arm", 1f, 0.7f);
     }
 
@@ -364,7 +380,7 @@ public final class FuseFx {
     public static void chainFuse(ServerPlayer p, float power) {
         f(p).chainUntil = p.level().getGameTime() + 300;
         ModeHud.show(p, "chain_fuse", 300);
-        FxSend.ring(p.serverLevel(), HOT, p.position().add(0, 0.1, 0), 0.3f, 2.4f, 0.05f, 12);
+        send(p.serverLevel(), fx(5, p.position(), 40));
         play(p.serverLevel(), p.position(), "fuse_click", 1f, 0.7f);
     }
 
@@ -383,7 +399,8 @@ public final class FuseFx {
         f(p).tenants.put(host, sl.getGameTime() + (r(p, "a4") > 0 ? 1200 : 600));
         ModeHud.show(p, "hidden_tenant", r(p, "a4") > 0 ? 1200 : 600);
         HOSTS.put(host, p.getUUID());
-        FxSend.ring(sl, PAL, mid(host), 0.3f, 1.0f, 0.05f, 10);
+        send(sl, fx(13, mid(host), 10));
+        send(sl, on(7, host, r(p, "a4") > 0 ? 1200 : 600));
         play(sl, host.position(), "fuse_arm", 1f, 0.8f);
         p.displayClientMessage(Component.literal("A tenant hides in " + (host == p ? "you" : host.getDisplayName().getString())).withStyle(ChatFormatting.LIGHT_PURPLE), true);
     }
@@ -393,10 +410,27 @@ public final class FuseFx {
         f(p).loopUntil = p.level().getGameTime() + 300;
         ModeHud.show(p, "loop_of_ruin", 300);
         ServerLevel sl = p.serverLevel();
-        FxSend.ring(sl, PAL, p.position().add(0, 0.1, 0), 0.3f, 12f, 0.1f, 16);
-        FxSend.ring(sl, HOT, p.position().add(0, 0.1, 0), 11.6f, 12f, 0.05f, 300);
+        var lp = on(8, p, 300); lp.r = 12f; send(sl, lp);
         play(sl, p.position(), "fuse_loop", 1.4f, 1f);
         detonateAll(p);
+    }
+
+    // ------------------------------------------------------------------ the UI showcase (client/UiShots fxs_fuse_*)
+    public static void showcase(ServerPlayer p, LivingEntity h, String what) {
+        ServerLevel sl = p.serverLevel();
+        switch (what) {
+            case "arm" -> arm(p, h, true);
+            case "blast" -> { var bl = fx(0, mid(h), 40); bl.r = 3f; bl.u = h.position(); send(sl, bl); }
+            case "seeker" -> heatSeeker(p, 0);
+            case "bubble" -> airBubble(p, 0);
+            case "contact" -> contactCharge(p, 0);
+            case "chain" -> { chainFuse(p, 0); var ln = fx(6, p.position().add(p.getLookAngle().multiply(1, 0, 1).normalize().scale(2)).add(0, 1, 0), 30); ln.u = mid(h); send(sl, ln); }
+            case "tenant" -> hiddenTenant(p, 0);
+            case "loop" -> { var lp = on(8, p, 300); lp.r = 6f; send(sl, lp); var gh = fx(9, mid(h), 60); gh.r = 3f; send(sl, gh); }
+            case "burn" -> { var ab = fx(10, h.position().add(0, 0.02, 0), 60); ab.r = 2.5f; send(sl, ab); }
+            case "clear" -> { STATE.remove(p.getUUID()); for (int k : new int[]{4, 7, 8}) drop(sl, p, k); drop(sl, h, 1); HOSTS.remove(p); }
+            default -> {}
+        }
     }
 
     // ------------------------------------------------------------------ the G wheel

@@ -87,6 +87,19 @@ public final class OmenFx {
     static Mage mage(Player p) { return MAGES.computeIfAbsent(p.getUUID(), k -> new Mage()); }
     private static int printIds;
 
+    // ------------------------------------------------------------------ its own look (client/OmenFxClient, shape 101)
+    static com.ironspellgrimoire.network.FxPacket fx(int kind, Vec3 c, int life) {
+        com.ironspellgrimoire.network.FxPacket q = new com.ironspellgrimoire.network.FxPacket();
+        q.shape = 101; q.id = FxSend.nextId(); q.h = kind; q.c = c; q.life = life; q.v = new Vec3(-1, 0, 0); q.a1 = (float) (Math.random() * 6.28);
+        return q;
+    }
+    static com.ironspellgrimoire.network.FxPacket on(int kind, Entity e, int life) { var q = fx(kind, e.position(), life); q.v = new Vec3(e.getId(), 0, 0); return q; }
+    static void send(ServerLevel sl, com.ironspellgrimoire.network.FxPacket q) { FxSend.sendNear(sl, q.c, q); }
+    /** A black line snapping from a to b. */
+    static void line(ServerLevel sl, Vec3 a, Vec3 b) { var q = fx(6, a, 10); q.u = b; send(sl, q); }
+    /** Ink splashing up at a point. */
+    static void splash(ServerLevel sl, Vec3 at) { send(sl, fx(1, at, 10)); }
+
     static ItemStack book(Player p) { return Utils.getPlayerSpellbookStack(p); }
     public static boolean has(Player p) { ItemStack b = book(p); return b != null && b.is(AddonItemRegistry.OMEN_GRIMOIRE.get()); }
     static int level(Player p) { ItemStack b = book(p); return b == null ? 0 : GrimoireMastery.level(b); }
@@ -251,6 +264,7 @@ public final class OmenFx {
         Mage m = mage(p);
         float scale = karma(t) * (byLaw ? 1f + 0.25f * Math.min(8, m.lawCount) : 1f) * (nested ? 0.6f : 1f);
         int kind = pick(p, t, f, nested);
+        if (byLaw) { var sh = fx(11, t.position(), 10); sh.u = p.position().add(0, 9, 0); send(sl, sh); }
         omen(sl, t, nested);
         strike(p, t, f, kind, scale);
         if (!nested) lastKind = kind;
@@ -262,7 +276,7 @@ public final class OmenFx {
             LivingEntity n = neighbour(p, t, 8, true);
             if (n != null) {
                 Vec3 c = mid(t);
-                FxSend.trail(sl, BLUE, c, mid(n), 0.06f, 8);
+                line(sl, c, mid(n));
                 play(sl, c, "omen_domino", 0.7f, 1.2f);
                 AstaFx.later(6, () -> { chaining = true; try { calamity(p, n, false); } finally { chaining = false; } });
             }
@@ -275,16 +289,7 @@ public final class OmenFx {
     static void omen(ServerLevel sl, LivingEntity t, boolean small) {
         Vec3 feet = t.position().add(0, 0.06, 0), c = mid(t);
         float k = small ? 0.6f : 1f;
-        FxSend.ring(sl, DARK, feet, 0.3f * k, 3.4f * k, 0.12f, 16);
-        FxSend.ring(sl, PALE, feet.add(0, 0.02, 0), 3.1f * k, 3.4f * k, 0.04f, 18);
-        FxSend.cracks(sl, DARK, feet, new Vec3(1, 0, 0), new Vec3(0, 0, 1), 2.8f * k, 22, false, t.getId());
-        for (int i = 0; i < 8; i++) {   // the sigil's rays
-            double a = i * Math.PI / 4 + (t.getId() % 7) * 0.2;
-            Vec3 o = feet.add(Math.cos(a) * 1.0 * k, 0, Math.sin(a) * 1.0 * k), e = feet.add(Math.cos(a) * 3.2 * k, 0, Math.sin(a) * 3.2 * k);
-            FxSend.trail(sl, i % 2 == 0 ? DARK : PALE, o, e, i % 2 == 0 ? 0.09f : 0.04f, 14);
-        }
-        FxSend.beam(sl, DARK, c.add(0, 22, 0), feet, 0.9f * k, 9);
-        FxSend.beam(sl, PALE, c.add(0, 22, 0), feet, 0.25f * k, 10);
+        var sign = fx(13, feet, 34); sign.r = 3.4f * k; send(sl, sign);
         FxSend.shake(sl, feet, small ? 0.2f : 0.45f, 6, 18);
         if (!small) FxSend.impactFrame(sl, c, 3, false, 18);
         play(sl, c, "omen_ledger", 1.2f, 0.5f);
@@ -302,11 +307,11 @@ public final class OmenFx {
         switch (kind) {
             case 0 -> {   // Falling Weight: an iron weight drops out of nowhere
                 Vec3 top = feet.add(0, t.getBbHeight() + 5, 0);
-                FxSend.ring(sl, DARK, feet.add(0, 0.06, 0), 0.2f, 1.1f, 0.05f, 8);
+                splash(sl, feet.add(0, 0.06, 0));
                 for (int i = 0; i < 4; i++) { final int k = i; AstaFx.later(i * 2, () -> { Kit.orb(sl, BLUE, top.add(0, -k * 1.25, 0), new Vec3(0, -1.25, 0), 1.1f, 3); FxSend.box(sl, DARK, top.add(0, -k * 1.25, 0), new Vec3(1, 0, 0), new Vec3(0, 1, 0), 0.6f, 0.6f, 0.5f, 3, 0, com.ironspellgrimoire.network.FxPacket.POP); }); }
                 AstaFx.later(8, () -> {
                     if (!t.isAlive()) return;
-                    FxSend.ring(sl, BLUE, t.position().add(0, 0.1, 0), 0.2f, 3.2f, 0.2f, 10);
+                    splash(sl, t.position().add(0, 0.1, 0));
                     FxSend.cracks(sl, DARK, t.position().add(0, 0.05, 0), new Vec3(1, 0, 0), new Vec3(0, 0, 1), 2f, 20, false, t.getId() + 3);
                     FxSend.shake(sl, t.position(), 0.5f, 6, 16);
                     play(sl, t.position(), "omen_fall", 1.3f, 0.8f);
@@ -315,7 +320,7 @@ public final class OmenFx {
             }
             case 1 -> {   // Stumble: down, and pinned a moment
                 play(sl, feet, "omen_trip", 1f, 1f);
-                FxSend.ring(sl, DARK, feet.add(0, 0.05, 0), 0.3f, 1.2f, 0.04f, 10);
+                splash(sl, feet.add(0, 0.05, 0));
                 TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, TRIP, "Stumble", -0.9, AttributeModifier.Operation.MULTIPLY_TOTAL, 30);
                 t.setDeltaMovement(t.getDeltaMovement().multiply(0.2, 1, 0.2).add(0, -0.3, 0)); t.hurtMarked = true;
                 AstaFx.damage(p, t, 4f * scale, "ill_fated_path");
@@ -323,39 +328,39 @@ public final class OmenFx {
             case 2 -> {   // Stray Shard: a sliver from nowhere
                 double ang = r.nextDouble(Math.PI * 2);
                 Vec3 from = c.add(Math.cos(ang) * 6, 1.5, Math.sin(ang) * 6);
-                FxSend.trail(sl, PALE, from, c, 0.08f, 5);
+                line(sl, from, c);
                 play(sl, c, "omen_shard", 1f, 1f);
                 AstaFx.damage(p, t, 5f * scale, "laden_token");
             }
             case 3 -> {   // Slip: its feet go out, it slides off and lands hard
                 play(sl, feet, "omen_trip", 1f, 1.3f);
-                FxSend.trail(sl, PALE, feet.add(0, 0.1, 0), feet.add(away(p, t).scale(2.5)).add(0, 0.1, 0), 0.05f, 8);
+                line(sl, feet.add(0, 0.1, 0), feet.add(away(p, t).scale(2.5)).add(0, 0.1, 0));
                 Kit.push(t, away(p, t), 0.9, 0.15);
-                AstaFx.later(8, () -> { if (t.isAlive()) { FxSend.ring(sl, DARK, t.position().add(0, 0.05, 0), 0.2f, 1.1f, 0.05f, 8); AstaFx.damage(p, t, 5f * scale, "ill_fated_path"); } });
+                AstaFx.later(8, () -> { if (t.isAlive()) { splash(sl, t.position().add(0, 0.05, 0)); AstaFx.damage(p, t, 5f * scale, "ill_fated_path"); } });
             }
             case 4 -> {   // Tangled Feet: slowed for a while
                 play(sl, feet, "omen_step", 1f, 0.7f);
-                FxSend.ring(sl, BLUE, feet.add(0, 0.05, 0), 0.3f, 0.7f, 0.04f, 100);
+                splash(sl, feet.add(0, 0.05, 0));
                 TimedModifiers.apply(t, Attributes.MOVEMENT_SPEED, TANGLE, "Tangled Feet", -0.4, AttributeModifier.Operation.MULTIPLY_TOTAL, 100);
                 AstaFx.damage(p, t, 2f * scale, "ill_fated_path");
             }
             case 5 -> {   // Fumble: its weapon slips; its blows land half as hard for a while
                 play(sl, c, "omen_shard", 0.9f, 0.6f);
-                FxSend.ring(sl, PALE, c, 0.6f, 0.2f, 0.05f, 10);
+                splash(sl, c);
                 if (t.getAttribute(Attributes.ATTACK_DAMAGE) != null)
                     TimedModifiers.apply(t, Attributes.ATTACK_DAMAGE, FUMBLE, "Fumble", -0.5, AttributeModifier.Operation.MULTIPLY_TOTAL, 120);
                 AstaFx.damage(p, t, 2f * scale, "laden_token");
             }
             case 6 -> {   // Loose Strap: its armour slips
                 play(sl, c, "omen_rebound", 0.8f, 1.4f);
-                FxSend.ring(sl, DARK, c, 0.2f, 0.9f, 0.05f, 10);
+                splash(sl, c);
                 if (t.getAttribute(Attributes.ARMOR) != null)
                     TimedModifiers.apply(t, Attributes.ARMOR, STRAP, "Loose Strap", -0.4, AttributeModifier.Operation.MULTIPLY_TOTAL, 160);
                 AstaFx.damage(p, t, 2f * scale, "laden_token");
             }
             case 7 -> {   // Wrong Turn: it turns its back and wanders off, forgetting you a moment
                 play(sl, feet, "omen_still", 0.8f, 1.3f);
-                FxSend.ring(sl, BLUE, feet.add(0, 0.05, 0), 0.2f, 1f, 0.04f, 10);
+                splash(sl, feet.add(0, 0.05, 0));
                 if (t instanceof Mob mob && !(t instanceof AddonBoss)) {
                     LivingEntity was = mob.getTarget();
                     mob.setTarget(null);
@@ -369,7 +374,7 @@ public final class OmenFx {
             }
             case 8 -> {   // Rebound: its own blow comes back to it
                 play(sl, c, "omen_rebound", 1f, 1f);
-                FxSend.ring(sl, PALE, c, 0.8f, 0.2f, 0.06f, 8);
+                splash(sl, c);
                 AstaFx.damage(p, t, Math.max(4f, f.dealt) * scale, "stillness");
             }
             case 9 -> {   // Collision: knocked into its neighbour; both take it
@@ -380,7 +385,7 @@ public final class OmenFx {
                 AstaFx.later(5, () -> {
                     if (!t.isAlive()) return;
                     Vec3 hit = mid(t).add(mid(o)).scale(0.5);
-                    FxSend.ring(sl, BLUE, hit, 0.2f, 1.3f, 0.08f, 8);
+                    splash(sl, hit);
                     play(sl, hit, "omen_fall", 0.8f, 1.4f);
                     AstaFx.damage(p, t, 5f * scale, "domino");
                     if (o.isAlive()) AstaFx.damage(p, o, 4f * karma(o), "domino");
@@ -401,7 +406,7 @@ public final class OmenFx {
                     final LivingEntity a0 = from, b0 = nx; final int k = i;
                     AstaFx.later(3 + 3 * i, () -> {
                         if (!b0.isAlive()) return;
-                        FxSend.trail(sl, PALE, mid(a0), mid(b0), 0.06f, 5);
+                        line(sl, mid(a0), mid(b0));
                         play(sl, mid(b0), "omen_shard", 0.8f, 1.3f + 0.1f * k);
                         AstaFx.damage(p, b0, 4f * karma(b0), "domino");
                     });
@@ -409,7 +414,7 @@ public final class OmenFx {
                 }
             }
             case 11 -> {   // Needles: the rain turns to needles
-                for (int i = 0; i < 6; i++) { Vec3 a = c.add(r.nextDouble(-1, 1), 4, r.nextDouble(-1, 1)); FxSend.trail(sl, BLUE, a, a.add(-0.3, -4, 0), 0.04f, 4); }
+                send(sl, fx(5, feet, 26));
                 play(sl, c, "omen_needles", 1f, 1f);
                 AstaFx.damage(p, t, 6f * scale, "needle_rain");
             }
@@ -417,24 +422,24 @@ public final class OmenFx {
                 t.setDeltaMovement(t.getDeltaMovement().multiply(0.3, 0, 0.3).add(0, -1.4, 0)); t.hurtMarked = true;
                 AstaFx.later(4, () -> {
                     if (!t.isAlive()) return;
-                    FxSend.ring(sl, BLUE, t.position().add(0, 0.08, 0), 0.2f, 1.8f, 0.1f, 8);
+                    splash(sl, t.position().add(0, 0.08, 0));
                     FxSend.shake(sl, t.position(), 0.2f, 4, 10);
                     play(sl, t.position(), "omen_fall", 1f, 0.8f);
                     AstaFx.damage(p, t, 7f * scale, "the_law_itself");
                 });
             }
             case 13 -> {   // Last Straw: it was already on its last legs
-                FxSend.beam(sl, PALE, c.add(0, 3, 0), c, 0.25f, 6);
+                { var sh = fx(11, feet, 10); sh.u = c.add(0, 6, 0); send(sl, sh); }
                 play(sl, c, "omen_ledger", 0.9f, 1.4f);
                 AstaFx.damage(p, t, 10f * scale, "karmas_ledger");
             }
             case 14 -> {   // Tolling Bell: it rings once, and again
-                FxSend.ring(sl, PALE, c.add(0, t.getBbHeight() * 0.6, 0), 0.1f, 1.0f, 0.05f, 10);
+                splash(sl, c.add(0, t.getBbHeight() * 0.6, 0));
                 play(sl, c, "omen_token", 1.2f, 0.6f);
                 AstaFx.damage(p, t, 4f * scale, "the_law_itself");
                 AstaFx.later(40, () -> {
                     if (!t.isAlive()) return;
-                    FxSend.ring(sl, BLUE, mid(t), 0.2f, 1.6f, 0.08f, 10);
+                    splash(sl, mid(t));
                     play(sl, mid(t), "omen_token", 1.4f, 0.5f);
                     AstaFx.damage(p, t, 6f * scale, "the_law_itself");
                 });
@@ -442,27 +447,27 @@ public final class OmenFx {
             case 15 -> {   // Ill Wind: a gust throws it well away from you
                 play(sl, c, "omen_afterimage", 1.2f, 1.5f);
                 Vec3 d = away(p, t);
-                FxSend.trail(sl, PALE, c.subtract(d.scale(2)), c.add(d.scale(3)), 0.07f, 8);
+                line(sl, c.subtract(d.scale(2)), c.add(d.scale(3)));
                 Kit.push(t, d, 2.0, 0.45);
                 AstaFx.damage(p, t, 3f * scale, "afterimage");
             }
             case 16 -> {   // Toppling Row: it goes down, and the shock knocks the pursuers round it
                 play(sl, feet, "omen_domino", 1.2f, 0.8f);
-                FxSend.ring(sl, DARK, feet.add(0, 0.06, 0), 0.3f, 3.2f, 0.08f, 10);
+                splash(sl, feet.add(0, 0.06, 0));
                 AstaFx.damage(p, t, 5f * scale, "domino");
                 for (LivingEntity o : sl.getEntitiesOfClass(LivingEntity.class, t.getBoundingBox().inflate(3), x -> x != t && x != p && x.isAlive() && pursues(x, p)))
                     AstaFx.damage(p, o, 3f * karma(o), "domino");
             }
             case 17 -> {   // Jinx: its luck stays bad - the next calamity is already half on its way
                 play(sl, c, "omen_token", 1f, 0.8f);
-                FxSend.ring(sl, DARK, c, 0.2f, 0.8f, 0.05f, 20);
+                splash(sl, c);
                 AstaFx.damage(p, t, 3f * scale, "laden_token");
                 AstaFx.later(1, () -> { Fate g = FATES.get(t); if (g != null) g.misfortune = Math.max(g.misfortune, 50f); });
             }
             case 18 -> {   // Cracked Luck: a slice of what it is, gone (bosses keep their caps)
                 play(sl, c, "omen_ledger", 1f, 1.2f);
-                FxSend.ring(sl, PALE, c, 0.1f, 1.2f, 0.06f, 10);
-                FxSend.trail(sl, BLUE, c.add(-0.6, 0.8, 0), c.add(0.6, -0.8, 0), 0.05f, 8);
+                splash(sl, c);
+                line(sl, c.add(-0.6, 0.8, 0), c.add(0.6, -0.8, 0));
                 AstaFx.damage(p, t, Math.min(t.getMaxHealth() * 0.1f, 40f), "karmas_ledger");
             }
             default -> {   // Snowball: one accident leads to another
@@ -499,7 +504,7 @@ public final class OmenFx {
             float amt = e.getAmount();
             e.setCanceled(true);
             play(p.serverLevel(), p.position(), "omen_rebound", 1f, 0.8f);
-            FxSend.ring(p.serverLevel(), PALE, mid(p), 0.3f, 1.3f, 0.05f, 8);
+            { var cr = on(8, p, 14); cr.d = attacker.position().subtract(p.position()).add(0, 0.01, 0); send(p.serverLevel(), cr); }
             f.dealt = Math.max(f.dealt, amt * 1.5f);
             AstaFx.later(1, () -> calamity(p, attacker, false));
         }
@@ -515,7 +520,7 @@ public final class OmenFx {
         ModeHud.show(p, "ill_fated_path", 200);
         m.lastPrintAt = null;
         play(p.serverLevel(), p.position(), "omen_step", 1f, 0.8f);
-        FxSend.ring(p.serverLevel(), DARK, p.position().add(0, 0.05, 0), 0.3f, 1.4f, 0.04f, 10);
+        send(p.serverLevel(), fx(12, p.position(), 26));
     }
 
     static void leavePrint(ServerPlayer p, Mage m, long now) {
@@ -524,7 +529,7 @@ public final class OmenFx {
         if (m.lastPrintAt != null && m.lastPrintAt.distanceToSqr(at) < 0.8 * 0.8) return;
         m.lastPrintAt = at;
         m.prints.add(new Print(at, now + 160, ++printIds));
-        FxSend.ring(p.serverLevel(), BLUE, at.add(0, 0.04, 0), 0.12f, 0.32f, 0.02f, 160);
+        { double yaw = Math.toRadians(p.getYRot()); double side = (printIds % 2 == 0 ? 0.13 : -0.13); var pr = fx(0, at.add(Math.cos(yaw) * side, 0, Math.sin(yaw) * side), 160); pr.a0 = (float) yaw; send(p.serverLevel(), pr); }
     }
 
     static void prints(ServerPlayer p, Mage m, long now) {
@@ -538,7 +543,7 @@ public final class OmenFx {
                 f.lastPrint = pr.id;
                 f.misfortune += 34f;
                 play(sl, pr.at, "omen_step", 0.8f, 1f + 0.1f * f.prints);
-                FxSend.ring(sl, PALE, pr.at.add(0, 0.05, 0), 0.1f, 0.6f, 0.04f, 6);
+                splash(sl, pr.at);
                 if (++f.prints >= 3) { f.prints = 0; calamity(p, t, false); }
                 break;
             }
@@ -557,14 +562,15 @@ public final class OmenFx {
             f.by = p.getUUID();
             f.ladenUntil = sl.getGameTime() + 600;
             f.misfortune += 25f;
-            FxSend.trail(sl, BLUE, eye, mid(aimed), 0.06f, 6);
-            FxSend.ring(sl, DARK, mid(aimed), 0.2f, 0.9f, 0.05f, 12);
+            var fl = fx(2, eye.add(0, -0.3, 0), 6); fl.u = mid(aimed); send(sl, fl);
+            final Vec3 hitAt = aimed.position();
+            AstaFx.later(6, () -> send(sl, fx(4, hitAt, 14)));
             return;
         }
         Vec3 land = BossKit.ground(sl, clip(sl, p, eye, eye.add(dir.scale(10))).add(0, 0.5, 0));
         mage(p).tokens.add(new Token(land, sl.getGameTime() + 600));
-        FxSend.trail(sl, BLUE, eye, land, 0.05f, 6);
-        FxSend.ring(sl, DARK, land.add(0, 0.05, 0), 0.25f, 0.45f, 0.03f, 600);
+        var fl = fx(2, eye.add(0, -0.3, 0), 8); fl.u = land.add(0, 0.35, 0); send(sl, fl);
+        AstaFx.later(8, () -> send(sl, fx(3, land, 592)));
     }
 
     static void tokens(ServerPlayer p, Mage m, long now) {
@@ -577,6 +583,7 @@ public final class OmenFx {
                 if (t instanceof OmenAfterimage) continue;
                 it.remove();
                 play(sl, tk.at, "omen_token", 1f, 0.7f);
+                send(sl, fx(4, tk.at, 14));
                 calamity(p, t, false);
                 break;
             }
@@ -597,7 +604,7 @@ public final class OmenFx {
         sl.addFreshEntity(a);
         for (Mob mob : sl.getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(16), x -> x.isAlive() && (x.getTarget() == p || x instanceof net.minecraft.world.entity.monster.Enemy) && !x.isAlliedTo(p))) mob.setTarget(a);
         play(sl, at, "omen_afterimage", 1.2f, 1f);
-        FxSend.ring(sl, DARK, at.add(0, 0.05, 0), 0.2f, 1.6f, 0.05f, 10);
+        send(sl, fx(12, at, 24));
     }
 
     // ================================================================== 4. Needle Rain
@@ -606,7 +613,7 @@ public final class OmenFx {
         mage(p).rainUntil = p.level().getGameTime() + 100;
         ModeHud.show(p, "needle_rain", 100);
         play(p.serverLevel(), p.position(), "omen_needles", 1.3f, 0.9f);
-        FxSend.ring(p.serverLevel(), BLUE, p.position().add(0, 0.05, 0), 9.8f, 10f, 0.05f, 100);
+        send(p.serverLevel(), fx(12, p.position(), 30));
     }
 
     static void needles(ServerPlayer p, Mage m, long now) {
@@ -615,7 +622,7 @@ public final class OmenFx {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         for (LivingEntity t : sl.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(10), x -> x != p && x.isAlive() && pursues(x, p))) {
             Vec3 c = mid(t);
-            for (int i = 0; i < 3; i++) { Vec3 a = c.add(r.nextDouble(-0.8, 0.8), 3.5, r.nextDouble(-0.8, 0.8)); FxSend.trail(sl, BLUE, a, a.add(-0.25, -3.5, 0), 0.035f, 4); }
+            send(sl, fx(5, t.position(), 26));
             AstaFx.damage(p, t, 3f * (rain ? 1.6f : 1f), "needle_rain");
             Fate f = fate(t);
             f.misfortune += 10f;
@@ -629,7 +636,7 @@ public final class OmenFx {
         mage(p).dominoUntil = p.level().getGameTime() + 300;
         ModeHud.show(p, "domino", 300);
         play(p.serverLevel(), p.position(), "omen_domino", 1.2f, 1f);
-        FxSend.ring(p.serverLevel(), BLUE, mid(p), 0.3f, 2.2f, 0.05f, 10);
+        send(p.serverLevel(), fx(12, p.position(), 24));
     }
 
     /** Stillness: for 4 s, while you stand still, blows aimed at you rebound on their senders as calamity. */
@@ -637,7 +644,7 @@ public final class OmenFx {
         mage(p).stillUntil = p.level().getGameTime() + 80;
         ModeHud.show(p, "stillness", 80);
         play(p.serverLevel(), p.position(), "omen_still", 1.2f, 1f);
-        FxSend.ring(p.serverLevel(), PALE, p.position().add(0, 0.05, 0), 1.3f, 1.5f, 0.05f, 80);
+        send(p.serverLevel(), on(7, p, 80));
     }
 
     /** Karma's Ledger: the one you look at pays for everything at once - its Misfortune and what it has done to you. */
@@ -651,10 +658,14 @@ public final class OmenFx {
         f.misfortune = 0;
         f.dealt = 0;
         Vec3 c = mid(t);
-        FxSend.beam(sl, DARK, c.add(0, 6, 0), c, 0.5f, 10);
-        FxSend.ring(sl, BLUE, t.position().add(0, 0.1, 0), 0.2f, 2.2f, 0.12f, 12);
-        FxSend.shake(sl, c, 0.4f, 6, 16);
-        AstaFx.damage(p, t, dmg, "karmas_ledger");
+        send(sl, fx(9, t.position(), 30));   // the ledger opens over it, the debt writes itself in, and the page slams down
+        final LivingEntity tt = t;
+        AstaFx.later(13, () -> {
+            if (!tt.isAlive() || !p.isAlive()) return;
+            FxSend.shake(sl, tt.position(), 0.4f, 6, 16);
+            play(sl, tt.position(), "omen_fall", 1.2f, 0.6f);
+            AstaFx.damage(p, tt, dmg, "karmas_ledger");
+        });
     }
 
     /** The Law Itself: for 20 s calamity hunts every pursuer within 24 blocks, each blow worse than the last. */
@@ -665,8 +676,32 @@ public final class OmenFx {
         m.lawCount = 0;
         ServerLevel sl = p.serverLevel();
         play(sl, p.position(), "omen_law", 1.6f, 1f);
-        FxSend.ring(sl, DARK, p.position().add(0, 0.1, 0), 0.3f, 24f, 0.15f, 20);
-        FxSend.ring(sl, BLUE, p.position().add(0, 0.08, 0), 23.6f, 24f, 0.05f, 400);
+        send(sl, on(10, p, 400));   // the sigil over you, for as long as the Law holds
+    }
+
+    // ================================================================== the UI showcase (client/UiShots fxs_omen_*)
+    public static void showcase(ServerPlayer p, LivingEntity h, String what) {
+        ServerLevel sl = p.serverLevel();
+        Vec3 look = hz(p.getLookAngle()).normalize();
+        switch (what) {
+            case "path" -> {
+                illFatedPath(p, 0);
+                double yaw = Math.toRadians(p.getYRot());
+                for (int i = 0; i < 7; i++) {
+                    double side = i % 2 == 0 ? 0.13 : -0.13;
+                    var pr = fx(0, p.position().add(look.scale(1.2 + i * 0.8)).add(Math.cos(yaw) * side, 0, Math.sin(yaw) * side), 160); pr.a0 = (float) yaw; send(sl, pr);
+                }
+                splash(sl, p.position().add(look.scale(1.2 + 5 * 0.8)));
+            }
+            case "token" -> { ladenToken(p, 0); send(sl, fx(3, p.position().add(look.scale(3)).add(look.cross(new Vec3(0, 1, 0)).scale(1.5)), 300)); }
+            case "needles" -> { send(sl, fx(5, h.position(), 26)); send(sl, fx(5, h.position().add(look.cross(new Vec3(0, 1, 0)).scale(2.5)), 26)); }
+            case "domino" -> { Vec3 b = h.position().add(look.cross(new Vec3(0, 1, 0)).scale(4)).add(0, 1, 0); var q = fx(6, mid(h), 24); q.u = b; send(sl, q); }
+            case "still" -> { stillness(p, 0); var cr = on(8, p, 20); cr.d = look; send(sl, cr); }
+            case "ledger" -> karmasLedger(p, 0);
+            case "law" -> { theLawItself(p, 0); var sh = fx(11, h.position(), 14); sh.u = p.position().add(0, 9, 0); send(sl, sh); }
+            case "clear" -> { for (int k : new int[]{7, 10}) { var q = fx(98, p.position(), 1); q.v = new Vec3(p.getId(), 0, 0); q.a0 = k; send(sl, q); } }
+            default -> {}
+        }
     }
 
     // ================================================================== test hooks
