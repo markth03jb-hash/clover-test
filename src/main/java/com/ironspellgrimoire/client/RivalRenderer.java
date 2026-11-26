@@ -79,7 +79,7 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
                     new Piece("mira_cat", Bone.BODY, 0, v(5.4, -0.6, 24.2), v(0, 0, 30), 0.7f),
                     new Piece("mira_coins", Bone.BODY, 0, v(0, 0, 16), v(0, 0, 0), 1, 2f),
                     new Piece("mira_scales", Bone.BODY, 0, v(-4.8, -2.4, 11.5), v(0, 0, 0), 0.8f))));
-    /** The wild families and the night hunter (tools/blender/family_models.py, FAMILY - printed by its "java" mode). */
+    /** The wild families, the night hunter and ASHFALL's people (tools/blender/family_models.py, FAMILY - printed by its "java" mode). */
     static final Map<String, List<Piece>> FAMILY_GEAR = Map.ofEntries(
             Map.entry("family_bog_crawler", List.of(
                     new Piece("bog_club", Bone.RARM, -35, v(-6.000, -5.736, 13.808), v(75, 0, 0), 1.000f),
