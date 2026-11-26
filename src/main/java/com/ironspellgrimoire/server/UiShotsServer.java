@@ -1180,8 +1180,9 @@ public final class UiShotsServer {
     public static void showcase(ServerPlayer p, String what) {
         ServerLevel sl = p.serverLevel();
         String[] w = what.split(":");
-        if (w[0].equals("clear")) { architect(p, -1); BoundFx.testReset(p); VectorFx.testReset(p); OmenFx.testReset(p); MeridianFx.testReset(p); sl.setDayTime(6000); return; }
+        if (w[0].equals("clear")) { architect(p, -1); BoundFx.testReset(p); VectorFx.testReset(p); OmenFx.testReset(p); MeridianFx.testReset(p); sl.setDayTime(6000); sl.getServer().setDifficulty(net.minecraft.world.Difficulty.PEACEFUL, true); return; }
         equip(p, w[0].charAt(0));
+        if (sl.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) sl.getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);   // a husk vanishes the moment it spawns in Peaceful
         var old = sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30), m -> m.getPersistentData().getBoolean("isg_ui_arch"));
         if (old.isEmpty()) { architect(p, 99); old = sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30), m -> m.getPersistentData().getBoolean("isg_ui_arch")); }
         if (old.isEmpty()) return;
@@ -1193,7 +1194,6 @@ public final class UiShotsServer {
         faceForward(p);
         { var look = p.getLookAngle().multiply(1, 0, 1).normalize(); var at = p.position().add(look.scale(7)); h.teleportTo(at.x, p.getY(), at.z); h.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); }
         h.setInvulnerable(w[1].length() > 2 && w[1].charAt(1) == '_');   // the effect pictures: the dummy must outlive the blasts and seekers aimed at it
-        if (w[1].length() > 2 && w[1].charAt(1) == '_') p.displayClientMessage(net.minecraft.network.chat.Component.literal("dummy " + h.getId() + " " + h.getType().getDescriptionId() + " alive=" + h.isAlive() + " invis=" + h.isInvisible() + " hp=" + (int) h.getHealth() + " d=" + String.format("%.1f", h.distanceTo(p)) + " n=" + old.size()), true);   // TEMP: where is the dummy
         if (w[1].startsWith("o_")) { OmenFx.showcase(p, h, w[1].substring(2)); return; }
         if (w[1].startsWith("q_")) { FuseFx.showcase(p, h, w[1].substring(2)); return; }
         if (w[1].startsWith("f_")) { ForeseenFx.showcase(p, h, w[1].substring(2)); return; }
