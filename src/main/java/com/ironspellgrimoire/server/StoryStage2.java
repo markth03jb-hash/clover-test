@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * stands rising round it, Vey's balcony, the gate tunnel and the waiting cells, and under it all the catacomb where
  * the ledger is kept - and Vey's vault, a long hall of shelves of stolen grimoires.
  */
-final class StoryStage2 {
+public final class StoryStage2 {
     private StoryStage2() {}
 
     /** Where things are in the arena (x across, y up, z along; the sand's centre at 0). */
