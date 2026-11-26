@@ -1186,7 +1186,10 @@ public final class UiShotsServer {
         if (old.isEmpty()) { architect(p, 99); old = sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(30), m -> m.getPersistentData().getBoolean("isg_ui_arch")); }
         if (old.isEmpty()) return;
         var h = old.get(0);
-        h.setHealth(500); h.invulnerableTime = 0;
+        { var mh = h.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);   // a dummy that lives through every blast aimed at it
+          java.util.UUID id = java.util.UUID.fromString("7a1e0000-0000-4000-8000-0000000000aa");
+          if (mh != null && mh.getModifier(id) == null) mh.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(id, "UI dummy", 2000, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION)); }
+        h.setHealth(h.getMaxHealth()); h.invulnerableTime = 0;
         faceForward(p);
         { var look = p.getLookAngle().multiply(1, 0, 1).normalize(); var at = p.position().add(look.scale(7)); h.teleportTo(at.x, p.getY(), at.z); h.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); }
         h.setInvulnerable(w[1].length() > 2 && w[1].charAt(1) == '_');   // the effect pictures: the dummy must outlive the blasts and seekers aimed at it
