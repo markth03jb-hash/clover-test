@@ -946,7 +946,12 @@ public final class UiShots {
                     "geo/shadow_ravener.geo.json", "textures/geo/shadow_ravener.png", "animations/shadow_ravener.animation.json", "textures/geo/shadow_ravener_living.png",
                     "geo/mantle_helm.geo.json", "geo/mantle_chest.geo.json", "geo/mantle_arm.geo.json", "geo/mantle_leg.geo.json", "textures/item/nightfang.png", "models/item/nightfang_3d.json",
                     "models/item/duskglass_kris.json", "geo/item/dragon_fang.geo.json", "textures/item/dragon_fang.png", "models/item/gilded_thorn.obj", "textures/item/gilded_thorn.png", "models/item/bloodrend.obj", "textures/item/bloodrend.png", "models/item/rosewrath.obj", "textures/item/rosewrath.png", "models/item/frostwing.obj", "textures/item/frostwing.png"},
-            {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"}};
+            {"ovd_", "textures/item/heartline.png", "textures/item/heartline_icon.png", "models/item/heartline.json", "models/item/heartline_3d.json"},
+            // the gear the families, the Twins and ASHFALL's people hold is on the rivals' sheet; their skins are their own
+            {"folk_", "textures/item/rivals.png", "models/item/rival_bog_club.obj", "models/item/rival_hooked_blade.obj"},
+            {"twins", "textures/item/rivals.png", "models/item/rival_tower_shield.obj", "models/item/rival_iron_greatsword.obj"},
+            {"story_", "textures/item/rivals.png", "textures/entity/story_corvin.png", "textures/entity/story_sallow.png", "textures/entity/story_penitent.png", "textures/entity/story_ilsa.png",
+                    "models/item/rival_knight_longsword.obj", "models/item/rival_brand_knife.obj", "models/item/rival_rust_sickle.obj", "models/item/rival_reliquary.obj"}};
 
     private static String assetsKey(String step) {
         long h = 1125899906842597L;
