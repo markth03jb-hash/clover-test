@@ -175,6 +175,7 @@ public class RivalRenderer<T extends Mob> extends HumanoidMobRenderer<T, PlayerM
     }
 
     @Override public ResourceLocation getTextureLocation(T e) { return tex; }
+    public String skinName() { return skin; }
     @Override protected void scale(T e, PoseStack ps, float pt) { ps.scale(size, size, size); }
 
     static boolean kneeling(Mob e) { return e instanceof Rival r && (r.flag() & Rival.YIELDED) != 0 || e instanceof com.ironspellgrimoire.entity.FatherSallow s && s.yielded(); }
